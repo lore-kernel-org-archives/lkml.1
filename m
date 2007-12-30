@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758679AbXL3VsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758907AbXL3Vs4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758679AbXL3VsY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 16:48:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756134AbXL3VsP
+	id S1758907AbXL3Vs4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 16:48:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757248AbXL3Vss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 16:48:15 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:5422 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754446AbXL3VsO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 16:48:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=WPNdkPnQEwLawckD6EYQaAARPscvGGSPFypTbkX/ycv3GRsWdf+bm88K6AA/CZPYy5pHwrClWCtyDilCDG63Nl0bQ0Q2xQI5kq5ka6FuUVxubijmzrnP+VJMm9klsma4BlytzMBEaEQpr3+SfRsDYx9m+qYZ+fZu9c3Xs1uliu0=
-Date: Sun, 30 Dec 2007 22:49:34 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       kernel-janitors <kernel-janitors@vger.kernel.org>
-Subject: Re: [RFC][PATCH] byteorder: introduce le32_add_cpu & friends to
-	core
-Message-ID: <20071230214857.GA14177@joi>
-References: <20071230190619.GA13757@joi> <20071230191825.GA6447@infradead.org>
+	Sun, 30 Dec 2007 16:48:48 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:57492 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755712AbXL3Vss (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 16:48:48 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Hibernation: Document __save_processor_state() on x86-64
+Date: Sun, 30 Dec 2007 23:08:50 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>
+References: <200712281353.37976.rjw@sisk.pl> <200712302248.03567.rjw@sisk.pl> <20071230213126.GB14654@elte.hu>
+In-Reply-To: <20071230213126.GB14654@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071230191825.GA6447@infradead.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200712302308.51562.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 30, 2007 at 07:18:25PM +0000, Christoph Hellwig wrote:
-> On Sun, Dec 30, 2007 at 08:06:34PM +0100, Marcin Slusarz wrote:
-> > There are many places where these functions would be useful.
-> > (just look at: grep -r 'cpu_to_[ble12346]*([ble12346]*_to_cpu.*[-+]' linux-src/)
-> > What do you think?
-> > 
-> > ps: this patch depends on http://lkml.org/lkml/2007/12/25/35
-> > --
-> > 
-> > add inline functions which add native byte order variable to
-> > little/big endian variable to core header and as an example
-> > convert ext3 to use them
+On Sunday, 30 of December 2007, Ingo Molnar wrote:
 > 
-> Various places already have this as be*_add / le*_add, so it might be
-> more useful to keep those names already in use.
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > > how different can it be, for resume to work? I mean, we'll have 
+> > > deeply kernel version dependent variables in RAM. Am i missing 
+> > > something obvious?
+> > 
+> > On x86-64 it can be almost totally different (by restoring a 
+> > hibernation image we replace the entire contents of RAM with almost no 
+> > constraints).
+> > 
+> > [Well, using a relocatable kernel for restoring an image with 
+> > nonrelocatable one or vice versa is rather not the best idea, but 
+> > everything else should work in theory.]
+> > 
+> > On i386 the boot kernel is still required to be the same as the one in 
+> > the image.
+> 
+> what's exactly in the hibernation image? Dirty data i suppose
 
-I found it in XFS only. Did I miss something?
-be32_add is shorter than be32_add_cpu but I think it's not clear
-whether second parameter is in native byte order or not.
+No, everything, including the kernel code, page tables etc. :-)
 
-Marcin
+> - but what about kernel-internal pages. What if we go from SLAB to SLUB?
+> What if the size of a structure changes? Etc.
+
+We can go from SLAB to SLUB just fine, it doesn't matter.  The only thing
+that matters is we have to jump to the right address at the end of
+core_restore_code() (defined in arch/x86/kernel/suspend_asm_64.S).
+
+Rafael
