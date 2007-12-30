@@ -1,53 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758243AbXL3Vxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757780AbXL3VyM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758243AbXL3Vxq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 16:53:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbXL3Vxi
+	id S1757780AbXL3VyM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 16:54:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758466AbXL3Vx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 16:53:38 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:30864 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752095AbXL3Vxh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 16:53:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GEyrdYhQx1i1e6FiIsaZzWH17tjWCSeQAflIL7ZnZ4NSptfqE5WV7s9os1DXoyczaZQbAm2H1oOLrxADGE+8pGdht1Z5R5fZoJ3Mjh0UBH0opttiFHf0k5wDbL0uStiZF4onJrdaRy/b8jjDZbVJWFqP5thQW5x/L2TMRXyNpJY=
-Message-ID: <86802c440712301353w4ced46ffg8919328ff1576d1e@mail.gmail.com>
-Date: Sun, 30 Dec 2007 13:53:35 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86_64: fix section warning about enable_IO_APIC and setup_local_APIC
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "Andi Kleen" <ak@suse.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071230212945.GA14654@elte.hu>
+	Sun, 30 Dec 2007 16:53:56 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:57519 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758463AbXL3Vxz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 16:53:55 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Subject: [PATCH] Hibernation: Document __save_processor_state() on x86-64 (rev. 2)
+Date: Sun, 30 Dec 2007 23:13:51 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
+       Len Brown <lenb@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200712291952.20455.yinghai.lu@sun.com>
-	 <20071230145115.GR16946@elte.hu>
-	 <200712301330.19396.yinghai.lu@sun.com>
-	 <20071230212945.GA14654@elte.hu>
+Message-Id: <200712302313.52483.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 30, 2007 1:29 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
->
-> > [PATCH] x86_64: fix section warning about enable_IO_APIC and setup_local_APIC
-> >
-> > clear IO_APIC before enabing apic error vector cause link warning
-> >
-> > use function call in setup_local_APIC to avoid that.
->
-> as i said, this just works around the link warning - now we've traded
-> the link warning for a runtime crash.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-you got one runtime crash by this fix?
+Document the fact that __save_processor_state() has to save all CPU
+registers referred to by the kernel in case a different kernel is
+used to load and restore a hibernation image containing it. 
 
-YH
+Sigend-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/x86/kernel/suspend_64.c |   20 ++++++++++++++++++++
+ include/asm-x86/suspend_64.h |    9 ++++++++-
+ 2 files changed, 28 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/arch/x86/kernel/suspend_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/suspend_64.c
++++ linux-2.6/arch/x86/kernel/suspend_64.c
+@@ -19,6 +19,21 @@ extern const void __nosave_begin, __nosa
+ 
+ struct saved_context saved_context;
+ 
++/**
++ *	__save_processor_state - save CPU registers before creating a
++ *		hibernation image and before restoring the memory state from it
++ *	@ctxt - structure to store the registers contents in
++ *
++ *	NOTE: If there is a CPU register the modification of which by the
++ *	boot kernel (ie. the kernel used for loading the hibernation image)
++ *	might affect the operations of the restored target kernel (ie. the one
++ *	saved in the hibernation image), then its contents must be saved by this
++ *	function.  In other words, if kernel A is hibernated and different
++ *	kernel B is used for loading the hibernation image into memory, the
++ *	kernel A's __save_processor_state() function must save all registers
++ *	needed by kernel A, so that it can operate correctly after the resume
++ *	regardless of what kernel B does in the meantime.
++ */
+ void __save_processor_state(struct saved_context *ctxt)
+ {
+ 	kernel_fpu_begin();
+@@ -69,6 +84,11 @@ static void do_fpu_end(void)
+ 	kernel_fpu_end();
+ }
+ 
++/**
++ *	__restore_processor_state - restore the contents of CPU registers saved
++ *		by __save_processor_state()
++ *	@ctxt - structure to load the registers contents from
++ */
+ void __restore_processor_state(struct saved_context *ctxt)
+ {
+ 	/*
+Index: linux-2.6/include/asm-x86/suspend_64.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/suspend_64.h
++++ linux-2.6/include/asm-x86/suspend_64.h
+@@ -15,7 +15,14 @@ arch_prepare_suspend(void)
+ 	return 0;
+ }
+ 
+-/* Image of the saved processor state. If you touch this, fix acpi/wakeup.S. */
++/*
++ * Image of the saved processor state, used by the low level ACPI suspend to
++ * RAM code and by the low level hibernation code.
++ *
++ * If you modify it, fix arch/x86/kernel/acpi/wakeup_64.S and make sure that
++ * __save/__restore_processor_state(), defined in arch/x86/kernel/suspend_64.c,
++ * still work as required.
++ */
+ struct saved_context {
+ 	struct pt_regs regs;
+   	u16 ds, es, fs, gs, ss;
