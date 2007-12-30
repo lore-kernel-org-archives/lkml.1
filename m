@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbXL3DyM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbXL3Dzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755575AbXL3DyM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 22:54:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbXL3Dx5
+	id S1755894AbXL3Dzj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 22:55:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbXL3Dzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 22:53:57 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:15132 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753071AbXL3Dx4 (ORCPT
+	Sat, 29 Dec 2007 22:55:32 -0500
+Received: from twinlark.arctic.org ([208.69.40.136]:59676 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753106AbXL3Dzb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 22:53:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=uA2DaDJ2jYUM2EEbCwbOUK514TECyARXxBmvHda+YlfmETEaD83ry/FjrriRchY3fi8TOuiZ/gOWteAYl2W9L6E8xhx3RL97rUbxKHT9QeJsXg/FYs2GAX71hoYuYSfskaKa3LuB2lKGBhLW27WBcjH4fF3WuodOMOYxuSEtrhU=
-Date: Sat, 29 Dec 2007 19:53:49 -0800
-From: mgross <640e9920@gmail.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: [RFC] USB driver for talking to the Microchip PIC18 boot loader
-Message-ID: <20071230035349.GA4741@mgross-t43>
-References: <20071229193409.GA20188@mgross-t43> <Pine.LNX.4.44L0.0712291714041.26261-100000@netrider.rowland.org>
+	Sat, 29 Dec 2007 22:55:31 -0500
+Date: Sat, 29 Dec 2007 19:55:29 -0800 (PST)
+From: dean gaudet <dean@arctic.org>
+To: Valdis.Kletnieks@vt.edu
+cc: David Newall <david@davidnewall.com>, Mark Lord <lkml@rtr.ca>,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: RFC: permit link(2) to work across --bind mounts ?
+In-Reply-To: <25388.1198986232@turing-police.cc.vt.edu>
+Message-ID: <alpine.DEB.0.999999.0712291954560.5207@twinlark.arctic.org>
+References: <47684DBD.6030502@rtr.ca> <20071218230016.GF8181@ftp.linux.org.uk> <20071218231404.GG8181@ftp.linux.org.uk> <47689608.3030503@rtr.ca> <4768973C.8020909@davidnewall.com> <alpine.DEB.0.999999.0712281835240.5207@twinlark.arctic.org>
+ <47760578.2090305@davidnewall.com> <alpine.DEB.0.999999.0712290754230.5207@twinlark.arctic.org> <4776AF82.6010808@davidnewall.com>            <alpine.DEB.0.999999.0712291239360.5207@twinlark.arctic.org> <25388.1198986232@turing-police.cc.vt.edu>
+User-Agent: Alpine 0.999999 (DEB 847 2007-12-06)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0712291714041.26261-100000@netrider.rowland.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 29, 2007 at 05:15:30PM -0500, Alan Stern wrote:
-> On Sat, 29 Dec 2007, mgross wrote:
+On Sat, 29 Dec 2007, Valdis.Kletnieks@vt.edu wrote:
+
+> On Sat, 29 Dec 2007 12:40:47 PST, dean gaudet said:
 > 
-> > I'm playing around with a PIC based project at home (not an Intel
-> > activity) and found I needed a usb driver to talk to the boot loader
-> > so I can program my USB Bitwhacker with new custom firmware.  The
-> > following adds the pic18bl driver to the kernel.  Its pretty simple
-> > and is somewhat based on bits of a libusb driver that does some of
-> > what this driver does.
-> > 
-> > What do you think?
+> > the main worry i have is some user maliciously hardlinks everything
+> > under /var/log somewhere else and slowly fills up the file system with
+> > old rotated logs.
 > 
-> Not to detract from your driver, but would it be possible to do the 
-> whole thing in userspace using libusb?  Maybe by extending the driver 
-> you mentioned?
->
-Yeah, it has been done from user space using a libusb based
-application.  (that didn't work with a usb-hub in the loop) and had
-code that was just too nasty for words, so I made a kernel driver that
-looks nicer to me and enables a nice python FW loader program to work.
+> "Doctor, it hurts when I do this.." "Well, don't do that then".
 
-What is the linux-usb policies on new drivers that could be
-implemented in user space?  When does a kernel driver make  sense over
-a libusb one?
+actually it doesn't hurt.  i have other mechanisms which would pick this 
+up fairly quickly.
 
---mgross
-
+-dean
