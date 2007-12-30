@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757225AbXL3HNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbXL3HNb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757225AbXL3HNQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 02:13:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756019AbXL3HKy
+	id S1757303AbXL3HNb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 02:13:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756076AbXL3HKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 02:10:54 -0500
-Received: from il.qumranet.com ([82.166.9.18]:59483 "EHLO il.qumranet.com"
+	Sun, 30 Dec 2007 02:10:55 -0500
+Received: from il.qumranet.com ([82.166.9.18]:59482 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752144AbXL3HKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752139AbXL3HKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 30 Dec 2007 02:10:44 -0500
 From: Avi Kivity <avi@qumranet.com>
 To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Subject: [PATCH 08/52] KVM: MMU: Add some mmu statistics
-Date: Sun, 30 Dec 2007 09:09:54 +0200
-Message-Id: <1198998638-22713-9-git-send-email-avi@qumranet.com>
+Subject: [PATCH 07/52] KVM: Extend stats support for VM stats
+Date: Sun, 30 Dec 2007 09:09:53 +0200
+Message-Id: <1198998638-22713-8-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1198998638-22713-1-git-send-email-avi@qumranet.com>
 References: <1198998638-22713-1-git-send-email-avi@qumranet.com>
@@ -21,94 +21,173 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is in addition to the current virtual cpu statistics.
+
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/kvm.h |    6 ++++++
- drivers/kvm/mmu.c |    9 ++++++++-
- drivers/kvm/x86.c |    6 ++++++
- 3 files changed, 20 insertions(+), 1 deletions(-)
+ drivers/kvm/kvm.h      |   14 ++++++++++++--
+ drivers/kvm/kvm_main.c |   26 +++++++++++++++++++++++---
+ drivers/kvm/x86.c      |   39 ++++++++++++++++++++-------------------
+ 3 files changed, 55 insertions(+), 24 deletions(-)
 
 diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
-index d3171f9..bdcc44e 100644
+index 5a8a9af..d3171f9 100644
 --- a/drivers/kvm/kvm.h
 +++ b/drivers/kvm/kvm.h
-@@ -362,6 +362,12 @@ struct kvm_memory_slot {
+@@ -231,7 +231,7 @@ struct kvm_pio_request {
+ 	int rep;
  };
  
- struct kvm_vm_stat {
-+	u32 mmu_shadow_zapped;
-+	u32 mmu_pte_write;
-+	u32 mmu_pte_updated;
-+	u32 mmu_pde_zapped;
-+	u32 mmu_flooded;
-+	u32 mmu_recycled;
+-struct kvm_stat {
++struct kvm_vcpu_stat {
+ 	u32 pf_fixed;
+ 	u32 pf_guest;
+ 	u32 tlb_flush;
+@@ -342,7 +342,7 @@ void kvm_io_bus_register_dev(struct kvm_io_bus *bus,
+ 	wait_queue_head_t wq;				\
+ 	int sigset_active;				\
+ 	sigset_t sigset;				\
+-	struct kvm_stat stat;				\
++	struct kvm_vcpu_stat stat;			\
+ 	KVM_VCPU_MMIO
+ 
+ struct kvm_mem_alias {
+@@ -361,6 +361,9 @@ struct kvm_memory_slot {
+ 	int user_alloc;
  };
  
++struct kvm_vm_stat {
++};
++
  struct kvm {
-diff --git a/drivers/kvm/mmu.c b/drivers/kvm/mmu.c
-index 9be54a5..87d8e70 100644
---- a/drivers/kvm/mmu.c
-+++ b/drivers/kvm/mmu.c
-@@ -755,6 +755,7 @@ static void kvm_mmu_zap_page(struct kvm *kvm,
+ 	struct mutex lock; /* protects everything except vcpus */
+ 	int naliases;
+@@ -387,6 +390,7 @@ struct kvm {
+ 	int round_robin_prev_vcpu;
+ 	unsigned int tss_addr;
+ 	struct page *apic_access_page;
++	struct kvm_vm_stat stat;
+ };
+ 
+ static inline struct kvm_pic *pic_irqchip(struct kvm *kvm)
+@@ -809,9 +813,15 @@ static inline u32 get_rdx_init_val(void)
+ #define TSS_REDIRECTION_SIZE (256 / 8)
+ #define RMODE_TSS_SIZE (TSS_BASE_SIZE + TSS_REDIRECTION_SIZE + TSS_IOPB_SIZE + 1)
+ 
++enum kvm_stat_kind {
++	KVM_STAT_VM,
++	KVM_STAT_VCPU,
++};
++
+ struct kvm_stats_debugfs_item {
+ 	const char *name;
+ 	int offset;
++	enum kvm_stat_kind kind;
+ 	struct dentry *dentry;
+ };
+ extern struct kvm_stats_debugfs_item debugfs_entries[];
+diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
+index 3aa34de..1c4e950 100644
+--- a/drivers/kvm/kvm_main.c
++++ b/drivers/kvm/kvm_main.c
+@@ -1281,7 +1281,22 @@ static struct notifier_block kvm_cpu_notifier = {
+ 	.priority = 20, /* must be > scheduler priority */
+ };
+ 
+-static u64 stat_get(void *_offset)
++static u64 vm_stat_get(void *_offset)
++{
++	unsigned offset = (long)_offset;
++	u64 total = 0;
++	struct kvm *kvm;
++
++	spin_lock(&kvm_lock);
++	list_for_each_entry(kvm, &vm_list, vm_list)
++		total += *(u32 *)((void *)kvm + offset);
++	spin_unlock(&kvm_lock);
++	return total;
++}
++
++DEFINE_SIMPLE_ATTRIBUTE(vm_stat_fops, vm_stat_get, NULL, "%llu\n");
++
++static u64 vcpu_stat_get(void *_offset)
  {
- 	u64 *parent_pte;
- 
-+	++kvm->stat.mmu_shadow_zapped;
- 	while (page->multimapped || page->parent_pte) {
- 		if (!page->multimapped)
- 			parent_pte = page->parent_pte;
-@@ -1226,9 +1227,12 @@ static void mmu_pte_write_new_pte(struct kvm_vcpu *vcpu,
- 				  const void *new, int bytes,
- 				  int offset_in_pte)
- {
--	if (page->role.level != PT_PAGE_TABLE_LEVEL)
-+	if (page->role.level != PT_PAGE_TABLE_LEVEL) {
-+		++vcpu->kvm->stat.mmu_pde_zapped;
- 		return;
-+	}
- 
-+	++vcpu->kvm->stat.mmu_pte_updated;
- 	if (page->role.glevels == PT32_ROOT_LEVEL)
- 		paging32_update_pte(vcpu, page, spte, new, bytes,
- 				    offset_in_pte);
-@@ -1263,6 +1267,7 @@ void kvm_mmu_pte_write(struct kvm_vcpu *vcpu, gpa_t gpa,
- 	int npte;
- 
- 	pgprintk("%s: gpa %llx bytes %d\n", __FUNCTION__, gpa, bytes);
-+	++vcpu->kvm->stat.mmu_pte_write;
- 	kvm_mmu_audit(vcpu, "pre pte write");
- 	if (gfn == vcpu->last_pt_write_gfn
- 	    && !last_updated_pte_accessed(vcpu)) {
-@@ -1296,6 +1301,7 @@ void kvm_mmu_pte_write(struct kvm_vcpu *vcpu, gpa_t gpa,
- 			pgprintk("misaligned: gpa %llx bytes %d role %x\n",
- 				 gpa, bytes, page->role.word);
- 			kvm_mmu_zap_page(vcpu->kvm, page);
-+			++vcpu->kvm->stat.mmu_flooded;
- 			continue;
- 		}
- 		page_offset = offset;
-@@ -1344,6 +1350,7 @@ void __kvm_mmu_free_some_pages(struct kvm_vcpu *vcpu)
- 		page = container_of(vcpu->kvm->active_mmu_pages.prev,
- 				    struct kvm_mmu_page, link);
- 		kvm_mmu_zap_page(vcpu->kvm, page);
-+		++vcpu->kvm->stat.mmu_recycled;
- 	}
+ 	unsigned offset = (long)_offset;
+ 	u64 total = 0;
+@@ -1300,7 +1315,12 @@ static u64 stat_get(void *_offset)
+ 	return total;
  }
  
+-DEFINE_SIMPLE_ATTRIBUTE(stat_fops, stat_get, NULL, "%llu\n");
++DEFINE_SIMPLE_ATTRIBUTE(vcpu_stat_fops, vcpu_stat_get, NULL, "%llu\n");
++
++static struct file_operations *stat_fops[] = {
++	[KVM_STAT_VCPU] = &vcpu_stat_fops,
++	[KVM_STAT_VM]   = &vm_stat_fops,
++};
+ 
+ static void kvm_init_debug(void)
+ {
+@@ -1310,7 +1330,7 @@ static void kvm_init_debug(void)
+ 	for (p = debugfs_entries; p->name; ++p)
+ 		p->dentry = debugfs_create_file(p->name, 0444, debugfs_dir,
+ 						(void *)(long)p->offset,
+-						&stat_fops);
++						stat_fops[p->kind]);
+ }
+ 
+ static void kvm_exit_debug(void)
 diff --git a/drivers/kvm/x86.c b/drivers/kvm/x86.c
-index 016abc3..fdc7632 100644
+index a46b95b..016abc3 100644
 --- a/drivers/kvm/x86.c
 +++ b/drivers/kvm/x86.c
-@@ -66,6 +66,12 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
- 	{ "fpu_reload", VCPU_STAT(fpu_reload) },
- 	{ "insn_emulation", VCPU_STAT(insn_emulation) },
- 	{ "insn_emulation_fail", VCPU_STAT(insn_emulation_fail) },
-+	{ "mmu_shadow_zapped", VM_STAT(mmu_shadow_zapped) },
-+	{ "mmu_pte_write", VM_STAT(mmu_pte_write) },
-+	{ "mmu_pte_updated", VM_STAT(mmu_pte_updated) },
-+	{ "mmu_pde_zapped", VM_STAT(mmu_pde_zapped) },
-+	{ "mmu_flooded", VM_STAT(mmu_flooded) },
-+	{ "mmu_recycled", VM_STAT(mmu_recycled) },
+@@ -42,29 +42,30 @@
+ #define CR8_RESERVED_BITS (~(unsigned long)X86_CR8_TPR)
+ #define EFER_RESERVED_BITS 0xfffffffffffff2fe
+ 
+-#define STAT_OFFSET(x) offsetof(struct kvm_vcpu, stat.x)
++#define VM_STAT(x) offsetof(struct kvm, stat.x), KVM_STAT_VM
++#define VCPU_STAT(x) offsetof(struct kvm_vcpu, stat.x), KVM_STAT_VCPU
+ 
+ struct kvm_x86_ops *kvm_x86_ops;
+ 
+ struct kvm_stats_debugfs_item debugfs_entries[] = {
+-	{ "pf_fixed", STAT_OFFSET(pf_fixed) },
+-	{ "pf_guest", STAT_OFFSET(pf_guest) },
+-	{ "tlb_flush", STAT_OFFSET(tlb_flush) },
+-	{ "invlpg", STAT_OFFSET(invlpg) },
+-	{ "exits", STAT_OFFSET(exits) },
+-	{ "io_exits", STAT_OFFSET(io_exits) },
+-	{ "mmio_exits", STAT_OFFSET(mmio_exits) },
+-	{ "signal_exits", STAT_OFFSET(signal_exits) },
+-	{ "irq_window", STAT_OFFSET(irq_window_exits) },
+-	{ "halt_exits", STAT_OFFSET(halt_exits) },
+-	{ "halt_wakeup", STAT_OFFSET(halt_wakeup) },
+-	{ "request_irq", STAT_OFFSET(request_irq_exits) },
+-	{ "irq_exits", STAT_OFFSET(irq_exits) },
+-	{ "host_state_reload", STAT_OFFSET(host_state_reload) },
+-	{ "efer_reload", STAT_OFFSET(efer_reload) },
+-	{ "fpu_reload", STAT_OFFSET(fpu_reload) },
+-	{ "insn_emulation", STAT_OFFSET(insn_emulation) },
+-	{ "insn_emulation_fail", STAT_OFFSET(insn_emulation_fail) },
++	{ "pf_fixed", VCPU_STAT(pf_fixed) },
++	{ "pf_guest", VCPU_STAT(pf_guest) },
++	{ "tlb_flush", VCPU_STAT(tlb_flush) },
++	{ "invlpg", VCPU_STAT(invlpg) },
++	{ "exits", VCPU_STAT(exits) },
++	{ "io_exits", VCPU_STAT(io_exits) },
++	{ "mmio_exits", VCPU_STAT(mmio_exits) },
++	{ "signal_exits", VCPU_STAT(signal_exits) },
++	{ "irq_window", VCPU_STAT(irq_window_exits) },
++	{ "halt_exits", VCPU_STAT(halt_exits) },
++	{ "halt_wakeup", VCPU_STAT(halt_wakeup) },
++	{ "request_irq", VCPU_STAT(request_irq_exits) },
++	{ "irq_exits", VCPU_STAT(irq_exits) },
++	{ "host_state_reload", VCPU_STAT(host_state_reload) },
++	{ "efer_reload", VCPU_STAT(efer_reload) },
++	{ "fpu_reload", VCPU_STAT(fpu_reload) },
++	{ "insn_emulation", VCPU_STAT(insn_emulation) },
++	{ "insn_emulation_fail", VCPU_STAT(insn_emulation_fail) },
  	{ NULL }
  };
  
