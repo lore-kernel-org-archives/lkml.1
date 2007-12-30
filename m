@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbXL3Uox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757336AbXL3UsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757379AbXL3Uox (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 15:44:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbXL3Uop
+	id S1757336AbXL3UsU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 15:48:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751118AbXL3UsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 15:44:45 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:57247 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753215AbXL3Uop (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 15:44:45 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Hibernation: Document __save_processor_state() on x86-64
-Date: Sun, 30 Dec 2007 22:04:56 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>
-References: <200712281353.37976.rjw@sisk.pl> <20071230142109.GK16946@elte.hu>
-In-Reply-To: <20071230142109.GK16946@elte.hu>
+	Sun, 30 Dec 2007 15:48:12 -0500
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:36152 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752095AbXL3UsL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 15:48:11 -0500
+Message-ID: <47780372.40609@keyaccess.nl>
+Date: Sun, 30 Dec 2007 21:45:38 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Richard Harman <richard@richardharman.com>
+CC: Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Option to disable AMD C1E (allows dynticks to work)
+References: <47754735.1050009@richardharman.com> <20071229095242.1300e19c@linux360.ro> <47760ED5.6060207@richardharman.com>
+In-Reply-To: <47760ED5.6060207@richardharman.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712302204.56977.rjw@sisk.pl>
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 30 of December 2007, Ingo Molnar wrote:
-> 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Document the fact that __save_processor_state() has to save all CPU 
-> > registers referred to by the kernel in case a different kernel is used 
-> > to load and restore a hibernation image containing it.
-> 
-> ok - so i guess i should drop this from x86.git:
-> 
->  @@ -53,7 +53,6 @@ void __save_processor_state(struct saved
->          ctxt->cr2 = read_cr2();
->          ctxt->cr3 = read_cr3();
->          ctxt->cr4 = read_cr4();
->  -       ctxt->cr8 = read_cr8();
->   }
-> 
-> right?
+On 29-12-07 10:09, Richard Harman wrote:
 
-Well, if cr8 is used for anything that matters, then yes.
+> Anyway, I'm extremely open to getting to the bottom of working around 
+> the quirks on this hardware.  If I havn't mentioned it previously, this 
+> laptop is an HP dv6408nr, with an amd turion tl-56 cpu and nVidia MCP51 
+> chipset.
+> 
+> What can I do to help?  It has been pulling teeth trying to get to the 
+> bottom of this.
 
-> But i'm wondering - are we really ever resuming to a different  
-> kernel version, for this to be an issue?
+This thread-branch appears to be broken on lkml.org so I couldn't look back 
+through it but was this what you tried?
 
-The boot kernel may be different from the kernel within the image, if that's
-what you're asking for.
+http://lkml.org/lkml/2007/12/29/65
 
-Rafael
+Updated patch with Islam's values added at:
+
+http://lkml.org/lkml/2007/12/29/141
+
+You'd plug in your values similarly and test...
+
+Rene.
