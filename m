@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758605AbXL3WCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758881AbXL3WCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758605AbXL3WCT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 17:02:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756987AbXL3WCK
+	id S1758881AbXL3WCc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 17:02:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758070AbXL3WCQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 17:02:10 -0500
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:42599 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751218AbXL3WCJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 17:02:09 -0500
-Message-ID: <47781499.5010209@keyaccess.nl>
-Date: Sun, 30 Dec 2007 22:58:49 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sun, 30 Dec 2007 17:02:16 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33416 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758048AbXL3WCO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 17:02:14 -0500
+Date: Sun, 30 Dec 2007 22:57:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>
+Subject: Re: [PATCH] Hibernation: Document __save_processor_state() on
+	x86-64
+Message-ID: <20071230215745.GB31386@elte.hu>
+References: <200712281353.37976.rjw@sisk.pl> <200712302248.03567.rjw@sisk.pl> <20071230213126.GB14654@elte.hu> <200712302308.51562.rjw@sisk.pl>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Ingo Molnar <mingo@elte.hu>, Bodo Eggert <7eggert@gmx.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>, dpreed@reed.com,
-       Islam Amer <pharon@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       Ingo Molnar <mingo@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
-References: <9FXbU-3M4-11@gated-at.bofh.it> <9G2Om-4hg-1@gated-at.bofh.it> <9G7O3-3O2-7@gated-at.bofh.it> <9G8qN-4TX-13@gated-at.bofh.it> <E1J92JB-00013N-P3@be1.7eggert.dyndns.org> <20071230181004.GA21968@elte.hu> <477805F1.4070201@zytor.com> <20071230210007.GA3136@elte.hu> <4778113A.4080801@zytor.com>
-In-Reply-To: <4778113A.4080801@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200712302308.51562.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 30-12-07 22:44, H. Peter Anvin wrote:
-> Ingo Molnar wrote:
->>>>
->>> It probably should actually HLT, to avoid sucking power, and 
->>> stressing the thermal system.  We're dead at this point, and the 
->>> early 486's which had problems with HLT will lock up - we don't care.
->>
->> ok. Like the patch below?
->>
-> 
-> Don't need the cli; we're already running with interrupts disabled.
-> 
-> I'd do:
-> 
->     while (1)
->         asm volatile("hlt");
-> 
-> ... mostly on general principles.
 
-At least with current GCC the volatile isn't strictly needed as its implied 
-without output operands but I was only certain after checking that. Do you 
-remember if that used to be different for previous GCC versions? I tend to 
-also stick volatiles on them still...
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-Rene.
+> > what's exactly in the hibernation image? Dirty data i suppose
+> 
+> No, everything, including the kernel code, page tables etc. :-)
+> 
+> > - but what about kernel-internal pages. What if we go from SLAB to 
+> > SLUB? What if the size of a structure changes? Etc.
+> 
+> We can go from SLAB to SLUB just fine, it doesn't matter.  The only 
+> thing that matters is we have to jump to the right address at the end 
+> of core_restore_code() (defined in arch/x86/kernel/suspend_asm_64.S).
+
+ok, just to make sure we are talking about the same thing. Do you mean 
+we can restore an image saved by v2.6.12 into v2.6.24? I.e. a 2.6.24 
+kernel will be able to run a 2.6.12 kernel's hibernation image, with all 
+the kernel internal data from v2.6.12, etc? No way can that work.
+
+	Ingo
