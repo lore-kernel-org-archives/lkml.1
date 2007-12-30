@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbXL3VKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758132AbXL3VLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757596AbXL3VKo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 16:10:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbXL3VKf
+	id S1758132AbXL3VLV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 16:11:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446AbXL3VLN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 16:10:35 -0500
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:37123 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751132AbXL3VKe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 16:10:34 -0500
-Message-ID: <47780888.9070503@keyaccess.nl>
-Date: Sun, 30 Dec 2007 22:07:20 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
+	Sun, 30 Dec 2007 16:11:13 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:41899 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752095AbXL3VLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 16:11:12 -0500
+Date: Sun, 30 Dec 2007 22:11:08 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>, dpreed@reed.com,
-       Islam Amer <pharon@gmail.com>, hpa@zytor.com,
-       Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
-References: <477711DC.5030800@keyaccess.nl> <alpine.LFD.1.00.0712300124440.32517@woody.linux-foundation.org> <20071230144700.78f4605c@the-village.bc.nu> <20071230152835.GX16946@elte.hu> <4777BDA5.4050203@keyaccess.nl> <20071230160751.GB26221@elte.hu> <4777C6E8.7060202@keyaccess.nl> <20071230170612.GA16502@elte.hu> <20071230182937.40f2adcf@the-village.bc.nu> <20071230204650.GA26120@elte.hu>
-In-Reply-To: <20071230204650.GA26120@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH - RFC] x86: unify arch/x86/kernel/Makefile(s)
+Message-ID: <20071230211108.GA14386@uranus.ravnborg.org>
+References: <20071230082952.GA12327@uranus.ravnborg.org> <20071230145517.GT16946@elte.hu> <20071230150602.GU16946@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071230150602.GU16946@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 30-12-07 21:46, Ingo Molnar wrote:
-> * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+On Sun, Dec 30, 2007 at 04:06:02PM +0100, Ingo Molnar wrote:
 > 
->>> So the current plan is to go with an io_delay=udelay default in v2.6.25, 
->>> to give this a migration window, and io_delay=none in v2.6.26 [and a 
->>> complete removal of arch/x86/kernel/io_delay.c], once the _p() uses are 
->>> fixed up. This is gradual enough to notice any regressions we care about 
->>> and also makes it nicely bisectable and gradual.
->> You will break systems if you blindly go around disabling _p delays 
->> for ISA and LPC bus devices. The DEC Hinote laptops for example are 
->> well known for requiring the correct ISA and other keyboard controller 
->> delays. I don't expect anyone to test with a hinote or see it until it 
->> hits Debian or similar 'low resource' friendly devices.
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> well, using io_delay=udelay is not 'blindly disabling'.
+> > > Combine the 32 and 64 bit specific Makefiles in one file. While 
+> > > doing so link order was (almost) preserved on 32 bit but on 64 bit 
+> > > link order changed a lot.
+> > > 
+> > > Patch was checked with defconfig + allyesconfig builds. The same .o 
+> > > files were linked in these configurations.
+> > > 
+> > > To keep readability of the Makefiles a few Kconfig symbols was 
+> > > added/modified and it was checked that they were not used anywhere 
+> > > else.
+> > 
+> > hm, i agree with this change, but would it be possible to split this 
+> > up into gradual steps, to change the rules on 64-bit one by one? That 
+> > would make it much more bisectable. In our experience changes to the 
+> > link order have a high likelyhood of breaking stuff, as we've got so 
+> > many implicit initcall dependencies that are not explicitly spelled 
+> > out.
+> 
+> i've added your full patch meanwhile - maybe we can get away with it. 
+> 
+> Still, if you see any easy way to do a straightforward series of ~40 
+> patches that changes one link rule per patch then that would be great 
+> and we could add them as an easier-to-bisect replacement for this one 
+> large-scope patch.
 
-On the other hand, the patch you just posted that makes io_delay=none the 
-default _is_ blindly disabling. So that wasn't for consumption?
+If it turns out to cause troubles I will redo it in a few smaller steps.
+But I will have to do it by hand so most likely less than 10 steps.
 
-io_delay=udelay additionally blindly disables the race-hiding effect the 
-outb has on SMP and that Alan is seeing so many of. Should also wait for 
-more driver review.
-
-Rene.
+	Sam
