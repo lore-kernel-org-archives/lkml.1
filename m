@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758060AbXL3Qud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758029AbXL3Q5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758060AbXL3Qud (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 11:50:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756025AbXL3Qu0
+	id S1758029AbXL3Q5u (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 11:57:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755005AbXL3Q5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 11:50:26 -0500
-Received: from smtp-out001.kontent.com ([81.88.40.215]:50046 "EHLO
-	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754949AbXL3QuZ (ORCPT
+	Sun, 30 Dec 2007 11:57:41 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55262 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751588AbXL3Q5l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 11:50:25 -0500
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC] sleepy linux
-Date: Sun, 30 Dec 2007 17:39:42 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <20071225230731.GA29030@elf.ucw.cz> <200712271041.30923.oliver@neukum.org> <20071229235134.GC17823@ucw.cz>
-In-Reply-To: <20071229235134.GC17823@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 30 Dec 2007 11:57:41 -0500
+Date: Sun, 30 Dec 2007 16:48:28 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Rene Herman <rene.herman@keyaccess.nl>, dpreed@reed.com,
+       Islam Amer <pharon@gmail.com>, hpa@zytor.com,
+       Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
+Message-ID: <20071230164828.039916c8@the-village.bc.nu>
+In-Reply-To: <20071230160132.GA14311@elte.hu>
+References: <477711DC.5030800@keyaccess.nl>
+	<alpine.LFD.1.00.0712300124440.32517@woody.linux-foundation.org>
+	<20071230144700.78f4605c@the-village.bc.nu>
+	<20071230152835.GX16946@elte.hu>
+	<20071230153818.1a554a7e@the-village.bc.nu>
+	<20071230160132.GA14311@elte.hu>
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712301739.42192.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag, 30. Dezember 2007 00:51:34 schrieb Pavel Machek:
-> Hi!
+> ok. Is it more of a "gets flushed due to timing out", or a 
+> specified-for-sure POST flushing property of all out 0x80 cycles going 
+> to the PCI bridge? I thought PCI posting policy is up to the CPU, it can 
+> delay PCI space writes arbitrarily (within reasonable timeouts) as long 
+> as no read is done from the _same_ IO space address. Note that the port 
+> 0x80 cycle is neither a read, nor for the same address.
+
+Its what appears to happen reliably on real computers.
+
+> i'm wondering, how safe would it be to just dumbly replace outb_p() 
+> with:
 > 
-> > > ... I also don't need to call any suspend() routines, because all the
-> > > drivers are already suspended, right?
-> > 
-> > Well, you have a number of devices which cannot do runtime pm.
-> > They can do suspend/resume with the whole system. For them these
-> > operations mean saving/restoring state.
-> > So for these devices implementing autosuspend makes no sense.
-> > They would sensibly do only idle/busy detection.
-> 
-> Yep... Let's call busy/idle detection and save/restore state
-> "autosuspend" for those devices. It does not save any power, but it
-> can be viewed as "kind-of-suspend". (No, I do not have this kind of
-> details ready).
+> 	out(port);
+> 	in(port);
 
-Well, you probably would have to walk through all devices and check
-all devices are either suspended or can be suspended. That would mean
-struct device has to be extended to show common attributes.
+Catastrophic I imagine. If the delay is for timing access then you've just
+broken the timing, if the port has side effects you've just broken the
+driver.
 
-But what's wrong with calling suspend() the conventional way once you've
-decided to go into sleepy mode?
+> in these drivers. Side-effects of inb() would not be unheard of for the 
+> ancient IO ports, but for even relatively old SCSI hardware, would that 
+> really be a problem?
 
-[..]
-> > We lack a notion of telling devices that they are opened only for
-> > detecting wakeups. Currently a driver has to assume that an opened
-> > device has to be fully functional.
-> 
-> Yes, we'll need to add some userland interfaces. No, this will not be
-> easy.
+The specific drivers need reviewing. There are very few uses in PCI space
+so it's a minor job.
 
-This mainly means input devices.
+> ah, i understand. So i guess a stupid udelay_serialized() which takes a 
+> global spinlock would solve these sort of races? But i guess making them 
+> more likely to trigger would lead to a better kernel in the end ...
 
-	Regards
-		Oliver
+Better to just fix the drivers. I don't think that will take too many
+days after everyone is back working.
+
+> doing it - but we'll do the plunge in v2.6.25 and make io_delay=udelay 
+> the default, hm? Thomas has a real 386DX system, if that doesnt break 
+
+For processors with TSC I think we should aim for 2.6.25 to do this and
+to have the major other _p fixups done. I pity whoever does stuff like
+the scc drivers but most of the rest isn't too bad.
+
+Alan
