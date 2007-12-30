@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757875AbXL3QsK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758060AbXL3Qud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757875AbXL3QsK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 11:48:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755900AbXL3Qr5
+	id S1758060AbXL3Qud (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 11:50:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756025AbXL3Qu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 11:47:57 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40659 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752885AbXL3Qr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 11:47:57 -0500
-Date: Sun, 30 Dec 2007 17:45:45 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull] scheduler updates
-Message-ID: <20071230164545.GA13459@elte.hu>
+	Sun, 30 Dec 2007 11:50:26 -0500
+Received: from smtp-out001.kontent.com ([81.88.40.215]:50046 "EHLO
+	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754949AbXL3QuZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 11:50:25 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC] sleepy linux
+Date: Sun, 30 Dec 2007 17:39:42 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <20071225230731.GA29030@elf.ucw.cz> <200712271041.30923.oliver@neukum.org> <20071229235134.GC17823@ucw.cz>
+In-Reply-To: <20071229235134.GC17823@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200712301739.42192.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Sonntag, 30. Dezember 2007 00:51:34 schrieb Pavel Machek:
+> Hi!
+> 
+> > > ... I also don't need to call any suspend() routines, because all the
+> > > drivers are already suspended, right?
+> > 
+> > Well, you have a number of devices which cannot do runtime pm.
+> > They can do suspend/resume with the whole system. For them these
+> > operations mean saving/restoring state.
+> > So for these devices implementing autosuspend makes no sense.
+> > They would sensibly do only idle/busy detection.
+> 
+> Yep... Let's call busy/idle detection and save/restore state
+> "autosuspend" for those devices. It does not save any power, but it
+> can be viewed as "kind-of-suspend". (No, I do not have this kind of
+> details ready).
 
-Linus, please pull the latest scheduler git tree from:
+Well, you probably would have to walk through all devices and check
+all devices are either suspended or can be suspended. That would mean
+struct device has to be extended to show common attributes.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+But what's wrong with calling suspend() the conventional way once you've
+decided to go into sleepy mode?
 
-Warning fix for sparc64 - no code changed. Thanks!
+[..]
+> > We lack a notion of telling devices that they are opened only for
+> > detecting wakeups. Currently a driver has to assume that an opened
+> > device has to be fully functional.
+> 
+> Yes, we'll need to add some userland interfaces. No, this will not be
+> easy.
 
-	Ingo
+This mainly means input devices.
 
------------------->
-Ingo Molnar (1):
-      sched: fix gcc warnings
-
- sched_debug.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
-index d30467b..80fbbfc 100644
---- a/kernel/sched_debug.c
-+++ b/kernel/sched_debug.c
-@@ -31,9 +31,9 @@
- /*
-  * Ease the printing of nsec fields:
-  */
--static long long nsec_high(long long nsec)
-+static long long nsec_high(unsigned long long nsec)
- {
--	if (nsec < 0) {
-+	if ((long long)nsec < 0) {
- 		nsec = -nsec;
- 		do_div(nsec, 1000000);
- 		return -nsec;
-@@ -43,9 +43,9 @@ static long long nsec_high(long long nsec)
- 	return nsec;
- }
- 
--static unsigned long nsec_low(long long nsec)
-+static unsigned long nsec_low(unsigned long long nsec)
- {
--	if (nsec < 0)
-+	if ((long long)nsec < 0)
- 		nsec = -nsec;
- 
- 	return do_div(nsec, 1000000);
-
+	Regards
+		Oliver
