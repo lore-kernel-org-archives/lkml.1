@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbXL3KVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753539AbXL3LB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753978AbXL3KVn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 05:21:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbXL3KVg
+	id S1753539AbXL3LB1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 06:01:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbXL3LBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 05:21:36 -0500
-Received: from [194.117.236.238] ([194.117.236.238]:58688 "EHLO
-	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751449AbXL3KVf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 05:21:35 -0500
-Date: Sun, 30 Dec 2007 12:17:25 +0200
-From: Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: pharon@gmail.com
-Cc: Rene Herman <rene.herman@keyaccess.nl>, "David P. Reed" <dpreed@reed.com>,
-       Richard Harman <richard@richardharman.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [PATCH] Option to disable AMD C1E (allows dynticks to work)
-Message-ID: <20071230121725.11d05099@linux360.ro>
-In-Reply-To: <1198979361.11150.2.camel@iamer-laptop>
-References: <47765D11.2040903@reed.com>
-	<1198967334.5049.3.camel@iamer-laptop>
-	<4776F6A0.9010801@keyaccess.nl>
-	<1198979361.11150.2.camel@iamer-laptop>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 30 Dec 2007 06:01:19 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:37897 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751827AbXL3LBS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 06:01:18 -0500
+Date: Sun, 30 Dec 2007 13:01:11 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: unify x86 Makefile(s)
+Message-ID: <20071230110111.GB31605@does.not.exist>
+References: <20071228212341.GA6939@uranus.ravnborg.org> <200712292217.37474.ak@suse.de> <20071229214522.GG27360@does.not.exist> <200712300300.51427.ak@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200712300300.51427.ak@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 30 Dec 2007 03:49:21 +0200
-Islam Amer <pharon@gmail.com> wrote:
+On Sun, Dec 30, 2007 at 03:00:51AM +0100, Andi Kleen wrote:
+> 
+> > Without inlining the maxmimum stack usage inside foobar() is
+> > max(stack usage foo(), stack usage bar()). [1]
+> 
+> It's a little more complicated. gcc 4.x (not sure which x, might 0) 
+> is clever enough to not use max() stack, but only use the stack for the 
+> different scopes as needed similar as when the calls weren't inlined. 
+> But gcc 3 didn't do that.
 
-> So what I understand now is that AMD C1E state saves battery like
-> dynticks, so we don't need dynticks ?
+That's roughly what I wanted to say.
 
-No, it's not true.
+> > With foo() and bar() inlined (-funit-at-a-time also enables 
+> > -finline-functions-called-once), the maxmimum stack usage inside 
+> > foobar() is sum(stack usage foo(), stack usage bar()). And this
+> > worst case is the area where gcc 4 is much better than gcc 3.4.
+> 
+> Yes exactly.  If the functions weren't inlined the problem wouldn't
+> occur because the stack sizes do not add up in the same dynamic call chain. 
+> Thus a few statetic noinlines will fix it.
 
-C1E currently saves more power than dynticks just
-because these platforms do not support higher C-states (like C2 and
-C3). So, if we want to enable the current dynticks implementation, we
-have to disable C1E, so we're left only with C1 (the old plain 'hlt'),
-which isn't that great.
+And we are back at my main point that risking regressions for getting 
+better code with some ancient compiler isn't worth it.
 
-Other kernel developers, as discussed previously in this thread, are
-working on a HPET-driven dynticks (as opposed to the current
-LAPIC-driven one), but the change isn't that easy to make. This way,
-dynticks and C1E could be both enabled and thus save more power.
+Plus the fact that noinline's might result in slightly worse code with 
+current compilers.
 
-Moreover, as I previously stated, dynticks isn't just about power
-saving.
+> -Andi
 
-Note that this problem is only related to AMD64 multi-core laptops. As
-far as I can see, devs might not invest much coding effort into this
-and instead say "Go buy an Intel laptop!", as this really is a hardware
-quirk. And if Andi Kleen is correct, this is not just a laptop vendors'
-problem, but AMD itself doesn't offer support for higher C-states.
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
