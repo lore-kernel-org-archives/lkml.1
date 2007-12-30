@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757456AbXL3OVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756635AbXL3O1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757456AbXL3OVs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 09:21:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbXL3OVl
+	id S1756635AbXL3O1R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 09:27:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbXL3O1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 09:21:41 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34646 "EHLO mx2.mail.elte.hu"
+	Sun, 30 Dec 2007 09:27:04 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36116 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752183AbXL3OVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 09:21:40 -0500
-Date: Sun, 30 Dec 2007 15:21:09 +0100
+	id S1753017AbXL3O1D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 09:27:03 -0500
+Date: Sun, 30 Dec 2007 15:23:24 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH] Hibernation: Document __save_processor_state() on
-	x86-64
-Message-ID: <20071230142109.GK16946@elte.hu>
-References: <200712281353.37976.rjw@sisk.pl>
+To: Miguel =?iso-8859-1?Q?Bot=F3n?= <mboton.lkml@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: [PATCH] x86: export 'leave_mm' symbol
+Message-ID: <20071230142324.GL16946@elte.hu>
+References: <200712281658.05958.mboton@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <200712281353.37976.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200712281658.05958.mboton@gmail.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,24 +37,15 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+* Miguel Botón <mboton.lkml@gmail.com> wrote:
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+> This patch fixes a linking error if CONFIG_ACPI_PROCESSOR=m (this 
+> error occurs in the 'mm' branch of linux-2.6-x86.git).
 > 
-> Document the fact that __save_processor_state() has to save all CPU 
-> registers referred to by the kernel in case a different kernel is used 
-> to load and restore a hibernation image containing it.
+> We need to export the 'leave_mm' symbol so it can be accessible for 
+> the ACPI processor module.
 
-ok - so i guess i should drop this from x86.git:
-
- @@ -53,7 +53,6 @@ void __save_processor_state(struct saved
-         ctxt->cr2 = read_cr2();
-         ctxt->cr3 = read_cr3();
-         ctxt->cr4 = read_cr4();
- -       ctxt->cr8 = read_cr8();
-  }
-
-right? But i'm wondering - are we really ever resuming to a different 
-kernel version, for this to be an issue?
+ok - i've added this as EXPORT_SYMBOL_GPL() - this is strictly for 
+kernel internal use.
 
 	Ingo
