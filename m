@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757386AbXL3OTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757456AbXL3OVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757386AbXL3OTR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 09:19:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbXL3OTH
+	id S1757456AbXL3OVs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 09:21:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbXL3OVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 09:19:07 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34229 "EHLO mx2.mail.elte.hu"
+	Sun, 30 Dec 2007 09:21:41 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34646 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752554AbXL3OTF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 09:19:05 -0500
-Date: Sun, 30 Dec 2007 15:18:29 +0100
+	id S1752183AbXL3OVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 09:21:40 -0500
+Date: Sun, 30 Dec 2007 15:21:09 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       tglx@linutronix.de, mingo@redhat.com, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 05/10] x86_64: Use generic percpu
-Message-ID: <20071230141829.GA28415@elte.hu>
-References: <20071228001046.854702000@sgi.com> <20071228001047.556634000@sgi.com> <200712281354.52453.ak@suse.de> <47757311.5050503@sgi.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>
+Subject: Re: [PATCH] Hibernation: Document __save_processor_state() on
+	x86-64
+Message-ID: <20071230142109.GK16946@elte.hu>
+References: <200712281353.37976.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47757311.5050503@sgi.com>
+In-Reply-To: <200712281353.37976.rjw@sisk.pl>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,25 +37,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mike Travis <travis@sgi.com> wrote:
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-> > Also for such changes .text size comparisons before/after are a good 
-> > idea.
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> x86_64-defconfig:
-> 
-> pre-percpu                          post-percpu
->       159373 .init.text                       +3 .init.text
->      1411137 .rodata                          +8 .rodata
->      3629056 .text                           +48 .text
->      7057383 Total                           +59 Total
+> Document the fact that __save_processor_state() has to save all CPU 
+> registers referred to by the kernel in case a different kernel is used 
+> to load and restore a hibernation image containing it.
 
-ok, that looks like really minimal impact, so i'm in favor of merging 
-this into arch/x86 - and the unification it does later on is nice too.
+ok - so i guess i should drop this from x86.git:
 
-to get more test feedback: what would be the best way to get this tested 
-in x86.git in a standalone way? Can i just pick up these 10 patches and 
-remove all the non-x86 arch changes, and expect it to work - or are the 
-other percpu preparatory/cleanup patches in -mm needed too?
+ @@ -53,7 +53,6 @@ void __save_processor_state(struct saved
+         ctxt->cr2 = read_cr2();
+         ctxt->cr3 = read_cr3();
+         ctxt->cr4 = read_cr4();
+ -       ctxt->cr8 = read_cr8();
+  }
+
+right? But i'm wondering - are we really ever resuming to a different 
+kernel version, for this to be an issue?
 
 	Ingo
