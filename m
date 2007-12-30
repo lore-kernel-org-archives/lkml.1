@@ -1,52 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757336AbXL3UsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756615AbXL3Us6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757336AbXL3UsU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 15:48:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751118AbXL3UsM
+	id S1756615AbXL3Us6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 15:48:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbXL3Usv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 15:48:12 -0500
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:36152 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752095AbXL3UsL (ORCPT
+	Sun, 30 Dec 2007 15:48:51 -0500
+Received: from rv-out-0910.google.com ([209.85.198.187]:53768 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751012AbXL3Usu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 15:48:11 -0500
-Message-ID: <47780372.40609@keyaccess.nl>
-Date: Sun, 30 Dec 2007 21:45:38 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Richard Harman <richard@richardharman.com>
-CC: Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+	Sun, 30 Dec 2007 15:48:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HE3Afe4hvsmGce1ggp5dYTcVEJry8Rs9KtyWoPe5h9dDSRfe6tHucotoLcdXT4K4ZGlyYp/WK+Z7u3wEj6VrhBlGTFVnEm5F32X2rUGNOm/crK3VArOe9aQq/Yd14v5YfQCIwSK4+g11zllo3zc3W19gUmPad3M3nWH+nl1hBms=
+Message-ID: <86802c440712301248m38cd000ejf7e48f273d573edd@mail.gmail.com>
+Date: Sun, 30 Dec 2007 12:48:48 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] x86_64: clear IO_APIC before enabing apic error vector. v2
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "Andi Kleen" <ak@suse.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Option to disable AMD C1E (allows dynticks to work)
-References: <47754735.1050009@richardharman.com> <20071229095242.1300e19c@linux360.ro> <47760ED5.6060207@richardharman.com>
-In-Reply-To: <47760ED5.6060207@richardharman.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+In-Reply-To: <20071230145115.GR16946@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Disposition: inline
+References: <200712291952.20455.yinghai.lu@sun.com>
+	 <20071230145115.GR16946@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 29-12-07 10:09, Richard Harman wrote:
+On Dec 30, 2007 6:51 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+>
+> > please check if you can replace the one in the x86-mm
+> >
+> > http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commitdiff;h=ffcbdc220a1520d006a837f33589c7c19ffbeb76
+> >
+> > the updated one avoid one link warning.
+>
+> please send delta patches instead - so that we can review the changes.
 
-> Anyway, I'm extremely open to getting to the bottom of working around 
-> the quirks on this hardware.  If I havn't mentioned it previously, this 
-> laptop is an HP dv6408nr, with an amd turion tl-56 cpu and nVidia MCP51 
-> chipset.
-> 
-> What can I do to help?  It has been pulling teeth trying to get to the 
-> bottom of this.
+will do that in another patch.
 
-This thread-branch appears to be broken on lkml.org so I couldn't look back 
-through it but was this what you tried?
+>
+> > this is the updated verison that take enable_IO_APIC as extra call for
+> > setup_local_APIC to avoid linking warning.
+>
+> hm, what link warning did you get? Perhaps the following __cpuinit:
 
-http://lkml.org/lkml/2007/12/29/65
+WARNING: vmlinux.o(.text+0x163d5): Section mismatch: reference to
+.init.text:enable_IO_APIC (between 'setup_local_APIC' and
+'apic_is_clustered_box')
 
-Updated patch with Islam's values added at:
+>
+> > -void __cpuinit setup_local_APIC (void)
+>
+> does not mix well with an __init call:
+>
+> > +void __init enable_IO_APIC(void)
+>
+> and you hack it around by using a function pointer. Nasty and still
+> buggy. The proper solution would be to mark enable_IO_APIC as __cpuinit
+> too (or something like that).
 
-http://lkml.org/lkml/2007/12/29/141
+after change that to __cpuinit, i got
 
-You'd plug in your values similarly and test...
+WARNING: vmlinux.o(.text+0x17f84): Section mismatch: reference to
+.init.text: (between 'enable_IO_APIC' and 'ioapic_resume')
+WARNING: vmlinux.o(.text+0x17f92): Section mismatch: reference to
+.init.text: (between 'enable_IO_APIC' and 'ioapic_resume')
 
-Rene.
+YH
