@@ -1,85 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754980AbXL3F4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038AbXL3G2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754980AbXL3F4o (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 00:56:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbXL3F4f
+	id S1754038AbXL3G2z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 01:28:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbXL3G2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 00:56:35 -0500
-Received: from mga01.intel.com ([192.55.52.88]:53136 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751073AbXL3F4e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 00:56:34 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,222,1196668800"; 
-   d="scan'208";a="471099584"
-Message-ID: <477732A5.5020501@intel.com>
-Date: Sat, 29 Dec 2007 21:54:45 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
-MIME-Version: 1.0
-To: andi@lisas.de
-CC: e1000-devel@lists.sourceforge.net, auke-jan.h.kok@intel.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, bunk@kernel.org
-Subject: Re: [RFC/PATCH] e100 driver didn't support any MII-less PHYs...
-References: <20071228235118.GA31059@rhlx01.hs-esslingen.de>
-In-Reply-To: <20071228235118.GA31059@rhlx01.hs-esslingen.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 30 Dec 2007 01:28:47 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:42102 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751649AbXL3G2q (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 01:28:46 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: serue@us.ibm.com, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: TOMOYO Linux Security Goal
+In-Reply-To: Your message of "Sun, 30 Dec 2007 14:29:50 +0900."
+             <200712301429.FEF05784.FtFOVJHOOLMSQF@I-love.SAKURA.ne.jp>
+From: Valdis.Kletnieks@vt.edu
+References: <20071226164230.GA14210@sergelap.austin.ibm.com> <200712272200.IIJ73936.OHOFFLMOQJVFtS@I-love.SAKURA.ne.jp> <20071227145431.GB5161@sergelap.austin.ibm.com> <200712282332.EGC57888.OFFQHJOLVSMtFO@I-love.SAKURA.ne.jp> <27904.1198862631@turing-police.cc.vt.edu>
+            <200712301429.FEF05784.FtFOVJHOOLMSQF@I-love.SAKURA.ne.jp>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1198996100_3779P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Sun, 30 Dec 2007 01:28:20 -0500
+Message-ID: <7781.1198996100@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Mohr wrote:
-> Hi all,
+--==_Exmh_1198996100_3779P
+Content-Type: text/plain; charset=us-ascii
+
+On Sun, 30 Dec 2007 14:29:50 +0900, Tetsuo Handa said:
+
+> Use of "learning mode" is independent from "correct policy".
+
+My point *exactly*.
+
+> The "learning mode" merely takes your duty of appending permissions to policy.
+> We can develop and share procedures for how to exercise infrequently used code
+> paths, like how to confirm that your SMTP service won't relay spams.
+> This problem is nothing but "developing and sharing procedures for how to
+> exercise infrequently used code paths" has not started yet.
+
+And I don't have an issue with the concept that you let a "learning mode"
+develop 95% of the policy for you - as long as you make clear that you *do*
+need to do some work to ensure all code paths are tested, or otherwise verify
+that the generated policy is in fact correct.  For instance, semantic analysis
+of the program source can identify what directories a program *should* create
+files in - if some directories aren't in fact listed in the policy, they need
+to be added.  If the actual learned policy includes directories that shouldn't
+have been learned, you've got a *bigger* problem.  And yes, I have worked with
+more than one case where a "benchline" measurement of a system happened to
+include an actual intrusion....
+
+> By the way, what is the definition of "correct policy"?
+
+> The definition of "correct policy" depends on the user.
 > 
-> I was mildly annoyed when rebooting my _headless_ internet gateway after a
-> hotplug -> udev migration and witnessing it not coming up again,
-> which turned out to be due to an eepro100 / e100 loading conflict
-> since eepro100 supported both of my Intel-based network cards,
-> whereas e100 only supported the "newer" one and entirely failed on ifup...
-> (udev had somehow managed to tweak loading sequence as compared to
-> a hotplug setup, which caused the drivers to probe differently)
+> Some users may think that
 > 
-> After investigating this e100 failure for half an hour it was obvious
-> that it was failing in e100_hw_init() -> e100_phy_init() since the driver was
-> prepared to handle MII-capable PHYs only, not certain older(?) MII-less
-> PHYs such as 80c24 or i82503.
-> Investigating some FreeBSD etc. drivers it became terribly clear that there
-> are also some MII-less PHYs and that one would have to handle them properly.
+>   "A ready-made policy is better than a manually-made policy
+>    even if the ready-made policy contains unused/unneeded permissions.
+>    Being unable to handle infrequently used code paths is worse than
+>    leaving a room for not knowing/understanding what can happen."
 > 
-> Thus I decided to add support for those:
-> - after PHY init failure, try to detect whether the EEPROM lists one of
->   the MII-less PHYs
-> - if so, don't fatally fail PHY init function
-> - avoid touching MII in various utility functions in case of MII-less
->   PHY (FIXME: this may need review, it was a quick hack in some places)
-> - add some proper logging on init failure
+> but other users may think that
 > 
-> Note that this is an initial, semi-rough patch only, would love to have
-> it corrected/improved by the e1000 team.
-> (I also added some spelling updates for good measure, these would have
-> to be committed separately obviously)
-> 
-> Frankly I'm quite uncertain as to why one would try to actively deprecate
-> a driver which works for many cards with a newer one which fails to work
-> for several card types and doesn't seem clearly superiour in hindsight
-> after going through it...
-> Oh, right, that's in order to brute-force people to report any
-> nagging problems with the new driver, which is... errm... very
-> understandable after all ;)
-> (I hope that me "reporting" this problem via a patch is ok ;)
-> 
-> For reference, I'm using a BNC/AUI/TP PCI combo card
-> Intel 82557 645477-004 FCC ID EJMNPDEPR10PCTPCI
-> 
-> This mail written using a reassuringly stable connection over the newly
-> adapted driver...
+>   "A manually-made policy is better than a ready-made policy
+>    even if the manually-made policy lacks permissions for infrequently
+>    used code paths.
+>    Leaving a room for not knowing/understanding what can happen is worse than
+>    being unable to handle infrequently used code paths."
+
+Neither.
+
+Policy *correctness* is a measure of how well the policy allows those
+events that should properly happen, and rejects those events that should not
+happen.  What you discuss here is what the relative impact of various *errors*
+in the policy - basically, false-negative versus false-positive identification
+of policy-violating activity.  Your first example says that it's preferable
+to false-negative and fail to flag a violation, your second that it's
+preferable to false-positive and flag something that should have been allowed.
+
+In neither case are you actually talking about *correct* policy - which
+would *properly* describe the desired behavior.  Note that how the policy
+was *created* does not affect the *actual* correctness of the policy - it's
+quite possible to create both correct and incorrect policies via both
+manual and ready-made methods.
+
+The *true* security question is:  What method minimizes your *total* cost of
+both developing the policy and dealing with *both* the false positives and
+negatives of a possibly incorrect policy?
+
+> Since the definition of "correct policy" is not a globally agreed word,
+> I think we can't say that "learning mode unlikely produces correct policy".
+
+I'm pretty sure that most of the security community agrees on what "correct"
+means - the disagreement is in the most cost-effective way to *create* one.
+
+Notice that I never said "learning mode is *unlikely* to produce correct policy".
+What I said was "Learning mode *may* produce a correct policy, but there is a
+non-zero probability that needed things will remain unlearned unless care is
+taken to ensure they are learned".
+
+And I've been in this industry long enough to have *many* teeth marks where
+I've been bitten by very small but non-zero probabilities.... :)
 
 
-ok, barely glanced over the patch but it might just be fine. Can you split up this
-patch and send a separate patch for the spelling mistakes? I'll then have some
-quick testing done on the result and do a bit deeper review after newyears.
+--==_Exmh_1198996100_3779P
+Content-Type: application/pgp-signature
 
-Cheers,
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-Auke
+iD8DBQFHdzqEcC3lWbTT17ARAgPYAKCyxu0bhB/LNjjf77nCtDEkPfAzgACfcmus
+ZpWvdX0wZ20TSqJ35WNq1CI=
+=GAR8
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1198996100_3779P--
