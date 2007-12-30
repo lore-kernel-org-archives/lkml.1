@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391AbXL3HOB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757443AbXL3HOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753391AbXL3HOB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 02:14:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbXL3HK5
+	id S1757443AbXL3HOa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 02:14:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756211AbXL3HK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 02:10:57 -0500
-Received: from il.qumranet.com ([82.166.9.18]:59487 "EHLO il.qumranet.com"
+	Sun, 30 Dec 2007 02:10:58 -0500
+Received: from il.qumranet.com ([82.166.9.18]:59488 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752519AbXL3HKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752496AbXL3HKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 30 Dec 2007 02:10:44 -0500
 From: Avi Kivity <avi@qumranet.com>
 To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
 Cc: Zhang Xiantao <xiantao.zhang@intel.com>
-Subject: [PATCH 11/52] KVM: Portability: MMU initialization and teardown split
-Date: Sun, 30 Dec 2007 09:09:57 +0200
-Message-Id: <1198998638-22713-12-git-send-email-avi@qumranet.com>
+Subject: [PATCH 12/52] KVM: Portability: Move some macro definitions from kvm.h to x86.h
+Date: Sun, 30 Dec 2007 09:09:58 +0200
+Message-Id: <1198998638-22713-13-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1198998638-22713-1-git-send-email-avi@qumranet.com>
 References: <1198998638-22713-1-git-send-email-avi@qumranet.com>
@@ -24,111 +24,108 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Zhang Xiantao <xiantao.zhang@intel.com>
 
-Move out kvm_mmu init and exit functionality from kvm_main.c
-
 Signed-off-by: Zhang Xiantao <xiantao.zhang@intel.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/kvm_main.c |    8 --------
- drivers/kvm/x86.c      |   24 +++++++++++++++++++-----
- 2 files changed, 19 insertions(+), 13 deletions(-)
+ drivers/kvm/kvm.h |   33 ---------------------------------
+ drivers/kvm/x86.h |   33 +++++++++++++++++++++++++++++++++
+ 2 files changed, 33 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index e64dfa2..f9fd865 100644
---- a/drivers/kvm/kvm_main.c
-+++ b/drivers/kvm/kvm_main.c
-@@ -1383,10 +1383,6 @@ int kvm_init(void *opaque, unsigned int vcpu_size,
- 	int r;
- 	int cpu;
+diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
+index c1aa84f..aceecf4 100644
+--- a/drivers/kvm/kvm.h
++++ b/drivers/kvm/kvm.h
+@@ -20,24 +20,6 @@
+ #include <linux/kvm.h>
+ #include <linux/kvm_para.h>
  
--	r = kvm_mmu_module_init();
--	if (r)
--		goto out4;
+-#define CR3_PAE_RESERVED_BITS ((X86_CR3_PWT | X86_CR3_PCD) - 1)
+-#define CR3_NONPAE_RESERVED_BITS ((PAGE_SIZE-1) & ~(X86_CR3_PWT | X86_CR3_PCD))
+-#define CR3_L_MODE_RESERVED_BITS (CR3_NONPAE_RESERVED_BITS|0xFFFFFF0000000000ULL)
 -
- 	kvm_init_debug();
- 
- 	r = kvm_arch_init(opaque);
-@@ -1446,8 +1442,6 @@ int kvm_init(void *opaque, unsigned int vcpu_size,
- 	kvm_preempt_ops.sched_in = kvm_sched_in;
- 	kvm_preempt_ops.sched_out = kvm_sched_out;
- 
--	kvm_mmu_set_nonpresent_ptes(0ull, 0ull);
+-#define KVM_GUEST_CR0_MASK \
+-	(X86_CR0_PG | X86_CR0_PE | X86_CR0_WP | X86_CR0_NE \
+-	 | X86_CR0_NW | X86_CR0_CD)
+-#define KVM_VM_CR0_ALWAYS_ON \
+-	(X86_CR0_PG | X86_CR0_PE | X86_CR0_WP | X86_CR0_NE | X86_CR0_TS \
+-	 | X86_CR0_MP)
+-#define KVM_GUEST_CR4_MASK \
+-	(X86_CR4_VME | X86_CR4_PSE | X86_CR4_PAE | X86_CR4_PGE | X86_CR4_VMXE)
+-#define KVM_PMODE_VM_CR4_ALWAYS_ON (X86_CR4_PAE | X86_CR4_VMXE)
+-#define KVM_RMODE_VM_CR4_ALWAYS_ON (X86_CR4_VME | X86_CR4_PAE | X86_CR4_VMXE)
 -
- 	return 0;
+-#define INVALID_PAGE (~(hpa_t)0)
+-#define UNMAPPED_GVA (~(gpa_t)0)
+-
+ #define KVM_MAX_VCPUS 4
+ #define KVM_ALIAS_SLOTS 4
+ #define KVM_MEMORY_SLOTS 8
+@@ -50,21 +32,6 @@
+ #define KVM_REFILL_PAGES 25
+ #define KVM_MAX_CPUID_ENTRIES 40
  
- out_free:
-@@ -1466,7 +1460,6 @@ out_free_0:
- out:
- 	kvm_arch_exit();
- 	kvm_exit_debug();
--	kvm_mmu_module_exit();
- out4:
- 	return r;
- }
-@@ -1485,6 +1478,5 @@ void kvm_exit(void)
- 	kvm_arch_exit();
- 	kvm_exit_debug();
- 	__free_page(bad_page);
--	kvm_mmu_module_exit();
- }
- EXPORT_SYMBOL_GPL(kvm_exit);
-diff --git a/drivers/kvm/x86.c b/drivers/kvm/x86.c
-index 935e276..2257a0a 100644
---- a/drivers/kvm/x86.c
-+++ b/drivers/kvm/x86.c
-@@ -1711,33 +1711,47 @@ EXPORT_SYMBOL_GPL(kvm_emulate_pio_string);
+-#define DE_VECTOR 0
+-#define UD_VECTOR 6
+-#define NM_VECTOR 7
+-#define DF_VECTOR 8
+-#define TS_VECTOR 10
+-#define NP_VECTOR 11
+-#define SS_VECTOR 12
+-#define GP_VECTOR 13
+-#define PF_VECTOR 14
+-
+-#define SELECTOR_TI_MASK (1 << 2)
+-#define SELECTOR_RPL_MASK 0x03
+-
+-#define IOPL_SHIFT 12
+-
+ #define KVM_PIO_PAGE_OFFSET 1
  
- int kvm_arch_init(void *opaque)
- {
-+	int r;
- 	struct kvm_x86_ops *ops = (struct kvm_x86_ops *)opaque;
+ /*
+diff --git a/drivers/kvm/x86.h b/drivers/kvm/x86.h
+index 4df0641..ec1d669 100644
+--- a/drivers/kvm/x86.h
++++ b/drivers/kvm/x86.h
+@@ -19,6 +19,39 @@
+ #include <linux/kvm.h>
+ #include <linux/kvm_para.h>
  
-+	r = kvm_mmu_module_init();
-+	if (r)
-+		goto out_fail;
++#define CR3_PAE_RESERVED_BITS ((X86_CR3_PWT | X86_CR3_PCD) - 1)
++#define CR3_NONPAE_RESERVED_BITS ((PAGE_SIZE-1) & ~(X86_CR3_PWT | X86_CR3_PCD))
++#define CR3_L_MODE_RESERVED_BITS (CR3_NONPAE_RESERVED_BITS|0xFFFFFF0000000000ULL)
 +
- 	kvm_init_msr_list();
- 
- 	if (kvm_x86_ops) {
- 		printk(KERN_ERR "kvm: already loaded the other module\n");
--		return -EEXIST;
-+		r = -EEXIST;
-+		goto out;
- 	}
- 
- 	if (!ops->cpu_has_kvm_support()) {
- 		printk(KERN_ERR "kvm: no hardware support\n");
--		return -EOPNOTSUPP;
-+		r = -EOPNOTSUPP;
-+		goto out;
- 	}
- 	if (ops->disabled_by_bios()) {
- 		printk(KERN_ERR "kvm: disabled by bios\n");
--		return -EOPNOTSUPP;
-+		r = -EOPNOTSUPP;
-+		goto out;
- 	}
- 
- 	kvm_x86_ops = ops;
--
-+	kvm_mmu_set_nonpresent_ptes(0ull, 0ull);
- 	return 0;
++#define KVM_GUEST_CR0_MASK \
++	(X86_CR0_PG | X86_CR0_PE | X86_CR0_WP | X86_CR0_NE \
++	 | X86_CR0_NW | X86_CR0_CD)
++#define KVM_VM_CR0_ALWAYS_ON \
++	(X86_CR0_PG | X86_CR0_PE | X86_CR0_WP | X86_CR0_NE | X86_CR0_TS \
++	 | X86_CR0_MP)
++#define KVM_GUEST_CR4_MASK \
++	(X86_CR4_VME | X86_CR4_PSE | X86_CR4_PAE | X86_CR4_PGE | X86_CR4_VMXE)
++#define KVM_PMODE_VM_CR4_ALWAYS_ON (X86_CR4_PAE | X86_CR4_VMXE)
++#define KVM_RMODE_VM_CR4_ALWAYS_ON (X86_CR4_VME | X86_CR4_PAE | X86_CR4_VMXE)
 +
-+out:
-+	kvm_mmu_module_exit();
-+out_fail:
-+	return r;
- }
++#define INVALID_PAGE (~(hpa_t)0)
++#define UNMAPPED_GVA (~(gpa_t)0)
++
++#define DE_VECTOR 0
++#define UD_VECTOR 6
++#define NM_VECTOR 7
++#define DF_VECTOR 8
++#define TS_VECTOR 10
++#define NP_VECTOR 11
++#define SS_VECTOR 12
++#define GP_VECTOR 13
++#define PF_VECTOR 14
++
++#define SELECTOR_TI_MASK (1 << 2)
++#define SELECTOR_RPL_MASK 0x03
++
++#define IOPL_SHIFT 12
++
+ extern spinlock_t kvm_lock;
+ extern struct list_head vm_list;
  
- void kvm_arch_exit(void)
- {
- 	kvm_x86_ops = NULL;
-- }
-+	kvm_mmu_module_exit();
-+}
- 
- int kvm_emulate_halt(struct kvm_vcpu *vcpu)
- {
 -- 
 1.5.3.7
 
