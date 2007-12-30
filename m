@@ -1,94 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758748AbXL3WGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759049AbXL3WI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758748AbXL3WGl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 17:06:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758262AbXL3WGb
+	id S1759049AbXL3WI6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 17:08:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757978AbXL3WIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 17:06:31 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:51009 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758120AbXL3WGb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 17:06:31 -0500
-Date: Mon, 31 Dec 2007 00:06:20 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: clear IO_APIC before enabing apic error
-	vector. v2
-Message-ID: <20071230220620.GC17670@does.not.exist>
-References: <200712291952.20455.yinghai.lu@sun.com> <20071230145115.GR16946@elte.hu> <86802c440712301248m38cd000ejf7e48f273d573edd@mail.gmail.com>
+	Sun, 30 Dec 2007 17:08:51 -0500
+Received: from fmmailgate04.web.de ([217.72.192.242]:51173 "EHLO
+	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757980AbXL3WIu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 17:08:50 -0500
+Date: Sun, 30 Dec 2007 23:08:48 +0100
+Message-Id: <77335004@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <86802c440712301248m38cd000ejf7e48f273d573edd@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+From: devzero@web.de
+To: linux-kernel@vger.kernel.org
+Subject: [BUG] 2.6.24rc6 allmodconfig - unload capidrv fails
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX1+T8mraXqup3fmOw6nkFRyzmmCfXhmCqoXTuhJ3PXmC4NQjo
+ NljslqHgHu769zOzY3xKPoSX07DtFR5M95cIcdAitq52SYXAfk=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 30, 2007 at 12:48:48PM -0800, Yinghai Lu wrote:
-> On Dec 30, 2007 6:51 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
-> >
-> > > please check if you can replace the one in the x86-mm
-> > >
-> > > http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commitdiff;h=ffcbdc220a1520d006a837f33589c7c19ffbeb76
-> > >
-> > > the updated one avoid one link warning.
-> >
-> > please send delta patches instead - so that we can review the changes.
-> 
-> will do that in another patch.
-> 
-> >
-> > > this is the updated verison that take enable_IO_APIC as extra call for
-> > > setup_local_APIC to avoid linking warning.
-> >
-> > hm, what link warning did you get? Perhaps the following __cpuinit:
-> 
-> WARNING: vmlinux.o(.text+0x163d5): Section mismatch: reference to
-> .init.text:enable_IO_APIC (between 'setup_local_APIC' and
-> 'apic_is_clustered_box')
+rmmod capidrv never returns
 
-So you are doing complicated things for silencing the warning (there is
-an easier ways for achieving it), but the real bug that you will get an 
-Oops when calling enable_IO_APIC() after bootup since it already got 
-freed stays?
+this is 2.6.24-rc6 with allmodconfig
+gcc version 4.2.1 (SUSE Linux)
 
-> > > -void __cpuinit setup_local_APIC (void)
-> >
-> > does not mix well with an __init call:
-> >
-> > > +void __init enable_IO_APIC(void)
-> >
-> > and you hack it around by using a function pointer. Nasty and still
-> > buggy. The proper solution would be to mark enable_IO_APIC as __cpuinit
-> > too (or something like that).
-> 
-> after change that to __cpuinit, i got
-> 
-> WARNING: vmlinux.o(.text+0x17f84): Section mismatch: reference to
-> .init.text: (between 'enable_IO_APIC' and 'ioapic_resume')
-> WARNING: vmlinux.o(.text+0x17f92): Section mismatch: reference to
-> .init.text: (between 'enable_IO_APIC' and 'ioapic_resume')
+also see https://bugzilla.novell.com/show_bug.cgi?id=350850
 
-find_isa_irq_{apic,pin} are called by enable_IO_APIC() and therefore 
-also have to be changed from __init to __cpuinit.
 
-> YH
+[ 1807.666763] capidrv: Rev 1.1.2.2: loaded
+[ 1810.803450] capidrv: Rev 1.1.2.2 : unloaded
+[ 1810.808417] BUG: unable to handle kernel NULL pointer dereference at virtual address 00000009
+[ 1810.808446] printing eip: c020afca *pde = 00000000
+[ 1810.809301] Oops: 0000 [#1] SMP
+[ 1810.810225] Modules linked in: capidrv kernelcapi isdn slhc iptable_filter ip_tables edd ip6table_filter ip6_tables x_tables ipv6 af_packet microcode firmware_class fuse loop dm_mod 8250_pnp ide_cd cdrom pata_acpi ata_piix ahci parport_pc floppy pcnet32 8250 parport serial_core ata_generic rtc_cmos rtc_core mii rtc_lib libata pcspkr i2c_piix4 i2c_core piix generic container ac ide_core intel_agp power_supply agpgart button thermal shpchp processor pci_hotplug mousedev evdev sg ext3 jbd mbcache sd_mod mptspi mptscsih mptbase scsi_transport_spi scsi_mod
+[ 1810.810402]
+[ 1810.810471] Pid: 4500, comm: kstopmachine Not tainted (2.6.24-rc6allmodconfig #3)
+[ 1810.810488] EIP: 0060:[<c020afca>] EFLAGS: 00010092 CPU: 0
+[ 1810.810609] EIP is at list_del+0xa/0x61
+[ 1810.810716] EAX: e0ae8704 EBX: 00000009 ECX: 00000000 EDX: df686e10
+[ 1810.810808] ESI: de8f4ef0 EDI: 00000000 EBP: deb57fb4 ESP: deb57fa4
+[ 1810.810890]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+[ 1810.812131] Process kstopmachine (pid: 4500, ti=deb57000 task=df686e10 task.ti=deb57000)
+[ 1810.812156] Stack: c03f50ac 00000046 00000000 00000008 deb57fbc c0153506 deb57fd0 c015fb58
+[ 1810.812412]        de8f4ef0 c015fa9c 00000000 deb57fe0 c013fe7e c013fe43 00000000 00000000
+[ 1810.812424]        c0108d77 de8f4e6c 00000000 00000000 00000000 00000000 00000000
+[ 1810.812444] Call Trace:
+[ 1810.812485]  [<c01091cd>] show_trace_log_lvl+0x1a/0x2f
+[ 1810.812569]  [<c010927d>] show_stack_log_lvl+0x9b/0xa3
+[ 1810.812577]  [<c010932c>] show_registers+0xa7/0x179
+[ 1810.812584]  [<c0109538>] die+0x13a/0x225
+[ 1810.812589]  [<c02eb811>] do_page_fault+0x554/0x632
+[ 1810.812616]  [<c02e9e52>] error_code+0x72/0x78
+[ 1810.812624]  [<c0153506>] __unlink_module+0xb/0xf
+[ 1810.812635]  [<c015fb58>] do_stop+0xbc/0x110
+[ 1810.812643]  [<c013fe7e>] kthread+0x3b/0x61
+[ 1810.812649]  [<c0108d77>] kernel_thread_helper+0x7/0x10
+[ 1810.812669]  =======================
+[ 1810.812680] Code: 00 00 8b 53 10 8d 4b 0c 8d 46 0c e8 72 00 00 00 89 f8 e8 87 fe ff ff 83 c4 10 5b 5e 5f 5d c3 90 90 55 89 e5 53 83 ec 0c 8b 58 04 <8b> 0b 39 c1 74 18 89 4c 24 08 89 44 24 04 c7 04 24 1a 1d 39 c0
+[ 1810.812691] EIP: [<c020afca>] list_del+0xa/0x61 SS:ESP 0068:deb57fa4
+[ 1810.812700] ---[ end trace 25d0c1bb6d183e81 ]---
 
-cu
-Adrian
-
-BTW: Is there a reason why your patch doesn't touch the 32bit code?
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+______________________________________________________________________________
+Jetzt neu! Im riesigen WEB.DE Club SmartDrive Dateien freigeben und mit 
+Freunden teilen! http://www.freemail.web.de/club/smartdrive_ttc.htm/?mc=021134
 
