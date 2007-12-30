@@ -1,67 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbXL3NVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756919AbXL3N0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756920AbXL3NVK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 08:21:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbXL3NU5
+	id S1756919AbXL3N0T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 08:26:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbXL3N0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 08:20:57 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:51121 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752874AbXL3NU4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 08:20:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type;
-        b=toovcXHyz1sftBhfq0KEyHI45s88rDRwKIN5xauABL/7H9uyVLWJKhyF9UiVo7rYunWlKT5qtk4+1Fs2CEih1HsTElVvvTGIkxNTZHn9QfYVq8E4puSnzH9XgweYrxzHU1qEWKf/C/3+X1YvduF5HIw+k1YvRfsypuCxq6urU74=
-Message-ID: <6101e8c40712300520r7c702bc9o7411317c2d10cd25@mail.gmail.com>
-Date: Sun, 30 Dec 2007 14:20:54 +0100
-From: "=?ISO-8859-1?Q?Oliver_Pinter_(Pint=E9r_Oliv=E9r)?=" 
-	<oliver.pntr@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [06/06] [typo fix] Documentation/filesystems/porting
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_16342_12577539.1199020854629"
+	Sun, 30 Dec 2007 08:26:10 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:49413 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751891AbXL3N0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 08:26:09 -0500
+Date: Sun, 30 Dec 2007 14:26:08 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
+Subject: [PATCH] x86: unify arch/x86/boot/compressed/Makefile(s)
+Message-ID: <20071230132608.GA13857@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_16342_12577539.1199020854629
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Trivial unification of the two Makefiles.
+Tested doing a defconfig build for both 32 and 64 bit and
+no build changes occured.
 
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+---
+
+Made on top of the mm branch of the x86 tree, but
+expect it to apply cleanly to the setup tree.
+If you want a rediff let me know.
+
+	Sam
+
+>From 4e773455f0a1db85b981dc58d8fc18cb08e62fb2 Mon Sep 17 00:00:00 2001
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Sun, 30 Dec 2007 14:23:06 +0100
+Subject: [PATCH] x86: unify arch/x86/boot/compressed/Makefile(s)
+
+Trivial unification of the two Makefiles.
+Tested doing a defconfig build for both 32 and 64 bit and
+no build changes occured.
+
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+---
+ arch/x86/boot/compressed/Makefile    |   62 ++++++++++++++++++++++++++++++++-
+ arch/x86/boot/compressed/Makefile_32 |   50 ---------------------------
+ arch/x86/boot/compressed/Makefile_64 |   30 ----------------
+ 3 files changed, 60 insertions(+), 82 deletions(-)
+ delete mode 100644 arch/x86/boot/compressed/Makefile_32
+ delete mode 100644 arch/x86/boot/compressed/Makefile_64
+
+diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
+index 52c1db8..0674275 100644
+--- a/arch/x86/boot/compressed/Makefile
++++ b/arch/x86/boot/compressed/Makefile
+@@ -1,5 +1,63 @@
++#
++# linux/arch/x86/boot/compressed/Makefile
++#
++# create a compressed vmlinux image from the original vmlinux
++#
++
++targets := vmlinux vmlinux.bin vmlinux.bin.gz head_$(BITS).o misc_$(BITS).o piggy.o
++
++KBUILD_CFLAGS := -m$(BITS) -D__KERNEL__ $(LINUX_INCLUDE) -O2
++KBUILD_CFLAGS += -fno-strict-aliasing -fPIC
++cflags-$(CONFIG_X86_32) := -mcmodel=small
++KBUILD_CFLAGS += $(cflags-y)
++KBUILD_CFLAGS += $(call cc-option,-ffreestanding)
++KBUILD_CFLAGS += $(call cc-option,-fno-stack-protector)
++
++KBUILD_AFLAGS  := $(KBUILD_CFLAGS) -D__ASSEMBLY__
++
++LDFLAGS := -m elf_$(UTS_MACHINE)
++LDFLAGS_vmlinux := -T
++
++$(obj)/vmlinux: $(src)/vmlinux_$(BITS).lds $(obj)/head_$(BITS).o $(obj)/misc_$(BITS).o $(obj)/piggy.o FORCE
++	$(call if_changed,ld)
++	@:
++
++$(obj)/vmlinux.bin: vmlinux FORCE
++	$(call if_changed,objcopy)
++
++
+ ifeq ($(CONFIG_X86_32),y)
+-include ${srctree}/arch/x86/boot/compressed/Makefile_32
++targets += vmlinux.bin.all vmlinux.relocs
++hostprogs-y := relocs
++
++quiet_cmd_relocs = RELOCS  $@
++      cmd_relocs = $(obj)/relocs $< > $@;$(obj)/relocs --abs-relocs $<
++$(obj)/vmlinux.relocs: vmlinux $(obj)/relocs FORCE
++	$(call if_changed,relocs)
++
++vmlinux.bin.all-y := $(obj)/vmlinux.bin
++vmlinux.bin.all-$(CONFIG_RELOCATABLE) += $(obj)/vmlinux.relocs
++quiet_cmd_relocbin = BUILD   $@
++      cmd_relocbin = cat $(filter-out FORCE,$^) > $@
++$(obj)/vmlinux.bin.all: $(vmlinux.bin.all-y) FORCE
++	$(call if_changed,relocbin)
++
++ifdef CONFIG_RELOCATABLE
++$(obj)/vmlinux.bin.gz: $(obj)/vmlinux.bin.all FORCE
++	$(call if_changed,gzip)
+ else
+-include ${srctree}/arch/x86/boot/compressed/Makefile_64
++$(obj)/vmlinux.bin.gz: $(obj)/vmlinux.bin FORCE
++	$(call if_changed,gzip)
+ endif
++LDFLAGS_piggy.o := -r --format binary --oformat elf32-i386 -T
++
++else
++$(obj)/vmlinux.bin.gz: $(obj)/vmlinux.bin FORCE
++	$(call if_changed,gzip)
++
++LDFLAGS_piggy.o := -r --format binary --oformat elf64-x86-64 -T
++endif
++
++
++$(obj)/piggy.o: $(obj)/vmlinux_$(BITS).scr $(obj)/vmlinux.bin.gz FORCE
++	$(call if_changed,ld)
+diff --git a/arch/x86/boot/compressed/Makefile_32 b/arch/x86/boot/compressed/Makefile_32
+deleted file mode 100644
+index e43ff7c..0000000
+--- a/arch/x86/boot/compressed/Makefile_32
++++ /dev/null
+@@ -1,50 +0,0 @@
+-#
+-# linux/arch/x86/boot/compressed/Makefile
+-#
+-# create a compressed vmlinux image from the original vmlinux
+-#
+-
+-targets		:= vmlinux vmlinux.bin vmlinux.bin.gz head_32.o misc_32.o piggy.o \
+-			vmlinux.bin.all vmlinux.relocs
+-EXTRA_AFLAGS	:= -traditional
+-
+-LDFLAGS_vmlinux := -T
+-hostprogs-y	:= relocs
+-
+-KBUILD_CFLAGS  := -m32 -D__KERNEL__ $(LINUX_INCLUDE) -O2 \
+-	   -fno-strict-aliasing -fPIC \
+-	   $(call cc-option,-ffreestanding) \
+-	   $(call cc-option,-fno-stack-protector)
+-LDFLAGS := -m elf_i386
+-
+-$(obj)/vmlinux: $(src)/vmlinux_32.lds $(obj)/head_32.o $(obj)/misc_32.o $(obj)/piggy.o FORCE
+-	$(call if_changed,ld)
+-	@:
+-
+-$(obj)/vmlinux.bin: vmlinux FORCE
+-	$(call if_changed,objcopy)
+-
+-quiet_cmd_relocs = RELOCS  $@
+-      cmd_relocs = $(obj)/relocs $< > $@;$(obj)/relocs --abs-relocs $<
+-$(obj)/vmlinux.relocs: vmlinux $(obj)/relocs FORCE
+-	$(call if_changed,relocs)
+-
+-vmlinux.bin.all-y := $(obj)/vmlinux.bin
+-vmlinux.bin.all-$(CONFIG_RELOCATABLE) += $(obj)/vmlinux.relocs
+-quiet_cmd_relocbin = BUILD   $@
+-      cmd_relocbin = cat $(filter-out FORCE,$^) > $@
+-$(obj)/vmlinux.bin.all: $(vmlinux.bin.all-y) FORCE
+-	$(call if_changed,relocbin)
+-
+-ifdef CONFIG_RELOCATABLE
+-$(obj)/vmlinux.bin.gz: $(obj)/vmlinux.bin.all FORCE
+-	$(call if_changed,gzip)
+-else
+-$(obj)/vmlinux.bin.gz: $(obj)/vmlinux.bin FORCE
+-	$(call if_changed,gzip)
+-endif
+-
+-LDFLAGS_piggy.o := -r --format binary --oformat elf32-i386 -T
+-
+-$(obj)/piggy.o: $(src)/vmlinux_32.scr $(obj)/vmlinux.bin.gz FORCE
+-	$(call if_changed,ld)
+diff --git a/arch/x86/boot/compressed/Makefile_64 b/arch/x86/boot/compressed/Makefile_64
+deleted file mode 100644
+index 7801e8d..0000000
+--- a/arch/x86/boot/compressed/Makefile_64
++++ /dev/null
+@@ -1,30 +0,0 @@
+-#
+-# linux/arch/x86/boot/compressed/Makefile
+-#
+-# create a compressed vmlinux image from the original vmlinux
+-#
+-
+-targets		:= vmlinux vmlinux.bin vmlinux.bin.gz head_64.o misc_64.o piggy.o
+-
+-KBUILD_CFLAGS := -m64 -D__KERNEL__ $(LINUXINCLUDE) -O2  \
+-	  -fno-strict-aliasing -fPIC -mcmodel=small \
+-	   $(call cc-option, -ffreestanding) \
+-	   $(call cc-option, -fno-stack-protector)
+-KBUILD_AFLAGS  := $(KBUILD_CFLAGS) -D__ASSEMBLY__
+-LDFLAGS := -m elf_x86_64
+-
+-LDFLAGS_vmlinux := -T
+-$(obj)/vmlinux: $(src)/vmlinux_64.lds $(obj)/head_64.o $(obj)/misc_64.o $(obj)/piggy.o FORCE
+-	$(call if_changed,ld)
+-	@:
+-
+-$(obj)/vmlinux.bin: vmlinux FORCE
+-	$(call if_changed,objcopy)
+-
+-$(obj)/vmlinux.bin.gz: $(obj)/vmlinux.bin FORCE
+-	$(call if_changed,gzip)
+-
+-LDFLAGS_piggy.o := -r --format binary --oformat elf64-x86-64 -T
+-
+-$(obj)/piggy.o: $(obj)/vmlinux_64.scr $(obj)/vmlinux.bin.gz FORCE
+-	$(call if_changed,ld)
 -- 
-Thanks,
-Oliver
+1.5.3.7.1112.g9758e
 
-------=_Part_16342_12577539.1199020854629
-Content-Type: text/x-diff; name=06.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: file0
-Content-Disposition: attachment; filename=06.patch
-
-Y29tbWl0IDkzZDAyMWYxMmQ1MzcwZDA2YjFlZWUwNjU5ZDgzZDFlNzA5NWRmNmMKQXV0aG9yOiBP
-bGl2ZXIgUGludGVyIDxvbGl2ZXIucG50ckBnbWFpbC5jb20+CkNvbW1pdDogT2xpdmVyIFBpbnRl
-ciA8b2xpdmVyLnBudHJAZ21haWwuY29tPgoKICAgIFt0eXBvIGZpeF0gRG9jdW1lbnRhdGlvbi9m
-aWxlc3lzdGVtcy9wb3J0aW5nCiAgICAKICAgIHR5cG8gZml4IGluIERvY3VtZW50YXRpb24vZmls
-ZXN5c3RlbXMvcG9ydGluZwogICAgZm9vLWRlc3RvcnkgLT4gZm9vLWRlc3Ryb3kgJiYgd2hpdGVz
-cGFjZSBjbGVhbnVwCiAgICAKICAgIFNpZ25lZC1vZmYtYnk6IE9saXZlciBQaW50ZXIgPG9saXZl
-ci5wbnRyQGdtYWlsLmNvbT4KCmRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2ZpbGVzeXN0ZW1z
-L3BvcnRpbmcgYi9Eb2N1bWVudGF0aW9uL2ZpbGVzeXN0ZW1zL3BvcnRpbmcKaW5kZXggZGFjNDVj
-OS4uMGYzM2M3NyAxMDA2NDQKLS0tIGEvRG9jdW1lbnRhdGlvbi9maWxlc3lzdGVtcy9wb3J0aW5n
-CisrKyBiL0RvY3VtZW50YXRpb24vZmlsZXN5c3RlbXMvcG9ydGluZwpAQCAtMSw2ICsxLDYgQEAK
-IENoYW5nZXMgc2luY2UgMi41LjA6CiAKLS0tLSAKKy0tLQogW3JlY29tbWVuZGVkXQogCiBOZXcg
-aGVscGVyczogc2JfYnJlYWQoKSwgc2JfZ2V0YmxrKCksIHNiX2ZpbmRfZ2V0X2Jsb2NrKCksIHNl
-dF9iaCgpLApAQCAtMTAsNyArMTAsNyBAQCBVc2UgdGhlbS4KIAogKHNiX2ZpbmRfZ2V0X2Jsb2Nr
-KCkgcmVwbGFjZXMgMi40J3MgZ2V0X2hhc2hfdGFibGUoKSkKIAotLS0tIAorLS0tCiBbcmVjb21t
-ZW5kZWRdCiAKIE5ldyBtZXRob2RzOiAtPmFsbG9jX2lub2RlKCkgYW5kIC0+ZGVzdHJveV9pbm9k
-ZSgpLgpAQCAtMjgsNyArMjgsNyBAQCBEZWNsYXJlCiAKIFVzZSBGT09fSShpbm9kZSkgaW5zdGVh
-ZCBvZiAmaW5vZGUtPnUuZm9vX2lub2RlX2k7CiAKLUFkZCBmb29fYWxsb2NfaW5vZGUoKSBhbmQg
-Zm9vX2Rlc3RvcnlfaW5vZGUoKSAtIHRoZSBmb3JtZXIgc2hvdWxkIGFsbG9jYXRlCitBZGQgZm9v
-X2FsbG9jX2lub2RlKCkgYW5kIGZvb19kZXN0cm95X2lub2RlKCkgLSB0aGUgZm9ybWVyIHNob3Vs
-ZCBhbGxvY2F0ZQogZm9vX2lub2RlX2luZm8gYW5kIHJldHVybiB0aGUgYWRkcmVzcyBvZiAtPnZm
-c19pbm9kZSwgdGhlIGxhdHRlciBzaG91bGQgZnJlZQogRk9PX0koaW5vZGUpIChzZWUgaW4tdHJl
-ZSBmaWxlc3lzdGVtcyBmb3IgZXhhbXBsZXMpLgogCg==
-------=_Part_16342_12577539.1199020854629--
