@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbXL3LqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755235AbXL3MOL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754831AbXL3LqR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 06:46:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbXL3LqA
+	id S1755235AbXL3MOL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 07:14:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbXL3MN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 06:46:00 -0500
-Received: from elvis.franken.de ([193.175.24.41]:45742 "EHLO elvis.franken.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752065AbXL3Lp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 06:45:59 -0500
-Date: Sun, 30 Dec 2007 12:37:13 +0100
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: linux-kernel@vger.kernel.org, Bob Picco <bob.picco@hp.com>,
-       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>,
-       Andi Kleen <ak@muc.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Keith Mannthey <kmannth@gmail.com>,
-       "Luck, Tony" <tony.luck@intel.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>, akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@osdl.org>, ralf@linux-mips.org
-Subject: Re: [PATCH] Fix crash with FLAT_MEMORY and ARCH_PFN_OFFSET != 0
-Message-ID: <20071230113713.GA9434@alpha.franken.de>
-References: <20071218120300.7565AE3030@solo.franken.de> <20071218135828.GB24917@csn.ul.ie> <20071218160938.GA20688@alpha.franken.de> <20071220114405.GA9623@csn.ul.ie> <20071220124351.GA8880@alpha.franken.de> <20071220132719.GA29857@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071220132719.GA29857@csn.ul.ie>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tsbogend@alpha.franken.de (Thomas Bogendoerfer)
+	Sun, 30 Dec 2007 07:13:56 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:35373 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752380AbXL3MNz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 07:13:55 -0500
+Subject: Re: [PATCH 01/12] Use mutex instead of semaphore in driver core
+From: Peter Zijlstra <peterz@infradead.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Dave Young <hidave.darkstar@gmail.com>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+In-Reply-To: <200712292242.47960.david-b@pacbell.net>
+References: <Pine.LNX.4.44L0.0712291652540.26261-100000@netrider.rowland.org>
+	 <200712292242.47960.david-b@pacbell.net>
+Content-Type: text/plain
+Date: Sun, 30 Dec 2007 13:13:51 +0100
+Message-Id: <1199016831.31975.7.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 20, 2007 at 01:27:20PM +0000, Mel Gorman wrote:
-> On (20/12/07 13:43), Thomas Bogendoerfer didst pronounce:
-> > On Thu, Dec 20, 2007 at 11:44:06AM +0000, Mel Gorman wrote:
-> > > --- a/include/asm-mips/page.h
-> > > +++ b/include/asm-mips/page.h
-> > > @@ -37,13 +37,6 @@
-> > >  #include <linux/pfn.h>
-> > >  #include <asm/io.h>
-> > >  
-> > > -/*
-> > > - * It's normally defined only for FLATMEM config but it's
-> > > - * used in our early mem init code for all memory models.
-> > > - * So always define it.
-> > > - */
-> > > -#define ARCH_PFN_OFFSET		PFN_UP(PHYS_OFFSET)
-> > > -
-> > 
-> > hmm, doesn't this break what I've fixed ? Without this #define
-> > ARCH_PFN_OFFSET gets defined to 0 and the bug is back. Or did
-> > I miss anything ?
-> > 
+
+On Sat, 2007-12-29 at 22:42 -0800, David Brownell wrote:
+> On Saturday 29 December 2007, Alan Stern wrote:
+
+> > There's no way to remove these, which means there's 
+> > no way to prevent lockdep from issuing a warning.
 > 
-> ARCH_PFN_OFFSET goes to 0, so page_to_pfn() is no longer adjusting by
-> PFN_UP(PHYS_OFFSET) like it was when your problem occured. I am guessing
-> that the nature of the crash was that page_to_pfn() was returning bogus
-> values early in boot and trying to initialise memmap that didn't exist.
+> There may be no *efficient* way to do that.  If it tracked
+> every lock individually these false alarms could go away;
+> but that would increase the overhead to create and destroy
+> such locks too.
 
-ic, your patch works for me.
+No, tracking locks individually defeats the power of lockdep, that is
+warning of lock inversion before it actually happens. That really
+requires classes.
 
-Thomas.
+Annotating a tree requires grouping per level, and that isn't
+particularly hard (although I haven't yet tried it for the device tree -
+doing this conversion is still on my todo list). The hardest part of the
+device->sem conversion is the suspend/resume part, where it locks the
+whole tree and lockdep is limited in tracking held locks.
 
--- 
-Crap can work. Given enough thrust pigs will fly, but it's not necessary a
-good idea.                                                [ RFC1925, 2.3 ]
+
+
