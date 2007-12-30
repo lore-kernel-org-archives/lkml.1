@@ -1,30 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757965AbXL3Qg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757875AbXL3QsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757965AbXL3Qg6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 11:36:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757059AbXL3Qgu
+	id S1757875AbXL3QsK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 11:48:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755900AbXL3Qr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 11:36:50 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35557 "EHLO mx3.mail.elte.hu"
+	Sun, 30 Dec 2007 11:47:57 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40659 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757007AbXL3Qgt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 11:36:49 -0500
-Date: Sun, 30 Dec 2007 17:28:53 +0100
+	id S1752885AbXL3Qr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 11:47:57 -0500
+Date: Sun, 30 Dec 2007 17:45:45 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Rene Herman <rene.herman@keyaccess.nl>, dpreed@reed.com,
-       Islam Amer <pharon@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       hpa@zytor.com, Pavel Machek <pavel@ucw.cz>,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
-Message-ID: <20071230162853.GA32453@elte.hu>
-References: <477711DC.5030800@keyaccess.nl> <alpine.LFD.1.00.0712300124440.32517@woody.linux-foundation.org> <20071230124852.GA30836@one.firstfloor.org> <20071230130544.GB16946@elte.hu> <20071230160817.GB32752@one.firstfloor.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [git pull] scheduler updates
+Message-ID: <20071230164545.GA13459@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071230160817.GB32752@one.firstfloor.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,29 +32,47 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andi Kleen <andi@firstfloor.org> wrote:
+Linus, please pull the latest scheduler git tree from:
 
-> > > The i8259 driver uses it and it is known to be needed on some old 
-> > > chipsets. But it doesn't really have any "own" ports to use afaik.
-> > 
-> > we'll solve that via an i8259-specific quirk. That is a lot cleaner 
-> > and maintainable than the current generic, always-enabled "opt out" 
-> > port-0x80 quirk.
-> 
-> You mean using pci quirks + udelay? Will be probably challenging to 
-> collect PCI-IDs for that. And there might be old systems needing it 
-> without PCI. They likely won't have DMI either.
-> 
-> In theory you could make it a DMI year cut off of course (and assume 
-> old if no DMI, although that happens occasionally with new systems 
-> too); but that is generally considered ugly.
-> 
-> I don't think it's a big problem to keep delays of some form by 
-> default in 8259 -- people who care about performance should be 
-> definitely using APIC mode instead.
+   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
 
-do you remember which old systems/chipsets were affected by this 
-problem? We had many - meanwhile fixed - PIC related problems, maybe 
-it's a red herring and the delay just papered it over.
+Warning fix for sparc64 - no code changed. Thanks!
 
 	Ingo
+
+------------------>
+Ingo Molnar (1):
+      sched: fix gcc warnings
+
+ sched_debug.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
+index d30467b..80fbbfc 100644
+--- a/kernel/sched_debug.c
++++ b/kernel/sched_debug.c
+@@ -31,9 +31,9 @@
+ /*
+  * Ease the printing of nsec fields:
+  */
+-static long long nsec_high(long long nsec)
++static long long nsec_high(unsigned long long nsec)
+ {
+-	if (nsec < 0) {
++	if ((long long)nsec < 0) {
+ 		nsec = -nsec;
+ 		do_div(nsec, 1000000);
+ 		return -nsec;
+@@ -43,9 +43,9 @@ static long long nsec_high(long long nsec)
+ 	return nsec;
+ }
+ 
+-static unsigned long nsec_low(long long nsec)
++static unsigned long nsec_low(unsigned long long nsec)
+ {
+-	if (nsec < 0)
++	if ((long long)nsec < 0)
+ 		nsec = -nsec;
+ 
+ 	return do_div(nsec, 1000000);
+
