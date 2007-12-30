@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758929AbXL3WFt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758419AbXL3WGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758929AbXL3WFt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 17:05:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757980AbXL3WFm
+	id S1758419AbXL3WGW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 17:06:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758120AbXL3WGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 17:05:42 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33707 "EHLO mx3.mail.elte.hu"
+	Sun, 30 Dec 2007 17:06:16 -0500
+Received: from sphinx.net.ru ([82.146.58.194]:54343 "EHLO sphinx.net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757947AbXL3WFl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 17:05:41 -0500
-Date: Sun, 30 Dec 2007 23:01:03 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH] x86: gitignore arch/x86/vdso files
-Message-ID: <20071230220103.GC31386@elte.hu>
-References: <20071230214127.GA16421@uranus.ravnborg.org>
+	id S1758114AbXL3WGP convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 17:06:15 -0500
+X-Greylist: delayed 1756 seconds by postgrey-1.27 at vger.kernel.org; Sun, 30 Dec 2007 17:06:14 EST
+From: Dmitry Dzhus <mail@sphinx.net.ru>
+To: linux-kernel@vger.kernel.org
+Subject: Changing high kernel keycodes
+Date: Mon, 31 Dec 2007 00:32:21 +0300
+Message-ID: <871w93oom2.fsf@sphinx.net.ru>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071230214127.GA16421@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.3 required=5.9 tests=BAYES_00,SUBJECT_FUZZY_TION autolearn=no SpamAssassin version=3.2.3
-	0.2 SUBJECT_FUZZY_TION     Attempt to obfuscate words in Subject:
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0019]
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Greetings!
 
-* Sam Ravnborg <sam@ravnborg.org> wrote:
+Some of the keys on my USB-HID keyboard generate scancodes which are
+bound to big keycodes in `drivers/hid/hid-input.c` and
+`include/linux/input.h`, like 418, 419 or 432. Is there any possibility
+to change it (in runtime, without editing `input.h` and recompiling the
+kernel)? Should `setkeycodes(1)` work today? I'm using 2.6.24-rc6-git4
+kernel snapshot.
 
-> Teach git to ignore generated files in
-> arch/x86/vdso/*
+I've found several postings on lkml considering KDSETKEYCODE ioctl
+functioning in kernel, but I'm not sure about how it is in recent
+versions.
 
-thanks Sam, applied.
+(Sorry if this is an offtopic here, point me to an appropriate
+newsgroup/ml in that case.)
+-- 
+Happy Hacking.
 
-	Ingo
+http://sphinx.net.ru
+む
