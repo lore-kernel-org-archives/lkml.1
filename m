@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbXL3RGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566AbXL3RLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757543AbXL3RGz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 12:06:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbXL3RGq
+	id S1755566AbXL3RLS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 12:11:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbXL3RLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 12:06:46 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47966 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751588AbXL3RGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 12:06:46 -0500
-Date: Sun, 30 Dec 2007 18:06:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>, dpreed@reed.com,
+	Sun, 30 Dec 2007 12:11:10 -0500
+Received: from bender.weihenstephan.org ([62.245.246.226]:50203 "EHLO
+	bender.weihenstephan.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751430AbXL3RLJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 12:11:09 -0500
+From: Juergen Beisert <juergen127@kreuzholzen.de>
+Organization: Privat
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
+Date: Sun, 30 Dec 2007 18:10:58 +0100
+User-Agent: KMail/1.9.4
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Rene Herman <rene.herman@keyaccess.nl>, dpreed@reed.com,
        Islam Amer <pharon@gmail.com>, hpa@zytor.com,
        Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
-Message-ID: <20071230170612.GA16502@elte.hu>
-References: <477711DC.5030800@keyaccess.nl> <alpine.LFD.1.00.0712300124440.32517@woody.linux-foundation.org> <20071230144700.78f4605c@the-village.bc.nu> <20071230152835.GX16946@elte.hu> <4777BDA5.4050203@keyaccess.nl> <20071230160751.GB26221@elte.hu> <4777C6E8.7060202@keyaccess.nl>
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>
+References: <477711DC.5030800@keyaccess.nl> <20071230152835.GX16946@elte.hu> <20071230153818.1a554a7e@the-village.bc.nu>
+In-Reply-To: <20071230153818.1a554a7e@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4777C6E8.7060202@keyaccess.nl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200712301810.59790.juergen127@kreuzholzen.de>
+X-CTCH-RefID: str=0001.0A0B0201.4777D127.0174,ss=1,fgs=0
+X-cff-SpamScore: 0(/)
+X-cff-SpamReport: ----- ----- Message is unknown to the spam scanner.
+X-cff-LastScanner: pcre
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Rene Herman <rene.herman@keyaccess.nl> wrote:
-
->>> Hardly. Duron 1300 on AMD756:
->>
->> but that does not matter at all: that's not '90s era hardware that we 
->> are (slightly) worried about wrt. IO delays in misc_32.c. (i.e. on 
->> _real_ ISA systems)
+On Sunday 30 December 2007 16:38, Alan Cox wrote:
+> > do you have any memories about the outb_p() use of misc_32.c:
+> >
+> >         pos = (x + cols * y) * 2;       /* Update cursor position */
+> >         outb_p(14, vidport);
+> >         outb_p(0xff & (pos >> 9), vidport+1);
+> >         outb_p(15, vidport);
+> >         outb_p(0xff & (pos >> 1), vidport+1);
+> >
+> > was this ever needed? This is so early in the bootup that can we cannot
 >
-> Real ISA systems will also generally respond faster to it than the 
-> unused port (this thing actually has an ISA bus but not VGA on it 
-> ofcourse) which means that "a perfect delay register" it is not. But 
-> yes, I have an actual Am386DX-40 with ISA VGA up and running which 
-> also doesn't care either way, about the ones in misc_32.c or anywhere 
-> else for that matter.
+> None - but we don't care.
 
-yeah - and that's typical of most _p() use: most of them are totally 
-bogus, but the global existence of the delay was used as a "it _might_ 
-break system" boogey-man against replacing it.
+Was this embedded outb to 0x80 for delay only? Maybe I'm wrong. But in the 
+case above it forces the chipselect signal to deselect the hardware between 
+the access to vidport and vidport+1. Some devices need this to latch the 
+values correctly. Otherwise the chipselect signal would be active for all 
+four accesses in the example above (and only data and addresses are changing 
+from device's view).
 
-so _IF_ we do any delay in x86 platform drivers, we at most do a delay 
-on the order of the round-trip latency to the same piece of hardware we 
-are handling. That isolates the quirk to the same hardware category, 
-instead of creating these cross-dependencies and assumed dependencies on 
-fixed, absolute timings. (and most hardware timing bugs are not absolute 
-but depend on some bus speed/frequency, thus round-trip latency of that 
-hardware is a good approximation of that. The round-trip to the same 
-hardware also correctly adds any assumed PCI posting dependencies.)
-
-So the current plan is to go with an io_delay=udelay default in v2.6.25, 
-to give this a migration window, and io_delay=none in v2.6.26 [and a 
-complete removal of arch/x86/kernel/io_delay.c], once the _p() uses are 
-fixed up. This is gradual enough to notice any regressions we care about 
-and also makes it nicely bisectable and gradual.
-
-	Ingo
+Juergen
