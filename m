@@ -1,78 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756615AbXL3Us6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757632AbXL3Uvp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756615AbXL3Us6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 15:48:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbXL3Usv
+	id S1757632AbXL3Uvp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 15:51:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbXL3Uvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 15:48:51 -0500
-Received: from rv-out-0910.google.com ([209.85.198.187]:53768 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751012AbXL3Usu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 15:48:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HE3Afe4hvsmGce1ggp5dYTcVEJry8Rs9KtyWoPe5h9dDSRfe6tHucotoLcdXT4K4ZGlyYp/WK+Z7u3wEj6VrhBlGTFVnEm5F32X2rUGNOm/crK3VArOe9aQq/Yd14v5YfQCIwSK4+g11zllo3zc3W19gUmPad3M3nWH+nl1hBms=
-Message-ID: <86802c440712301248m38cd000ejf7e48f273d573edd@mail.gmail.com>
-Date: Sun, 30 Dec 2007 12:48:48 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86_64: clear IO_APIC before enabing apic error vector. v2
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "Andi Kleen" <ak@suse.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071230145115.GR16946@elte.hu>
+	Sun, 30 Dec 2007 15:51:38 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47399 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751118AbXL3Uvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 15:51:37 -0500
+Date: Sun, 30 Dec 2007 21:51:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>
+Subject: Re: [PATCH] Hibernation: Document __save_processor_state() on
+	x86-64
+Message-ID: <20071230205104.GB26120@elte.hu>
+References: <200712281353.37976.rjw@sisk.pl> <20071230142109.GK16946@elte.hu> <200712302204.56977.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200712291952.20455.yinghai.lu@sun.com>
-	 <20071230145115.GR16946@elte.hu>
+In-Reply-To: <200712302204.56977.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 30, 2007 6:51 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
->
-> > please check if you can replace the one in the x86-mm
-> >
-> > http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commitdiff;h=ffcbdc220a1520d006a837f33589c7c19ffbeb76
-> >
-> > the updated one avoid one link warning.
->
-> please send delta patches instead - so that we can review the changes.
 
-will do that in another patch.
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
->
-> > this is the updated verison that take enable_IO_APIC as extra call for
-> > setup_local_APIC to avoid linking warning.
->
-> hm, what link warning did you get? Perhaps the following __cpuinit:
+> > But i'm wondering - are we really ever resuming to a different 
+> > kernel version, for this to be an issue?
+> 
+> The boot kernel may be different from the kernel within the image, if 
+> that's what you're asking for.
 
-WARNING: vmlinux.o(.text+0x163d5): Section mismatch: reference to
-.init.text:enable_IO_APIC (between 'setup_local_APIC' and
-'apic_is_clustered_box')
+how different can it be, for resume to work? I mean, we'll have deeply 
+kernel version dependent variables in RAM. Am i missing something 
+obvious?
 
->
-> > -void __cpuinit setup_local_APIC (void)
->
-> does not mix well with an __init call:
->
-> > +void __init enable_IO_APIC(void)
->
-> and you hack it around by using a function pointer. Nasty and still
-> buggy. The proper solution would be to mark enable_IO_APIC as __cpuinit
-> too (or something like that).
-
-after change that to __cpuinit, i got
-
-WARNING: vmlinux.o(.text+0x17f84): Section mismatch: reference to
-.init.text: (between 'enable_IO_APIC' and 'ioapic_resume')
-WARNING: vmlinux.o(.text+0x17f92): Section mismatch: reference to
-.init.text: (between 'enable_IO_APIC' and 'ioapic_resume')
-
-YH
+	Ingo
