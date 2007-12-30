@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbXL3O5z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757358AbXL3PKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757596AbXL3O5z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 09:57:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753017AbXL3O5r
+	id S1757358AbXL3PKP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 10:10:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbXL3PKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 09:57:47 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50650 "EHLO mx3.mail.elte.hu"
+	Sun, 30 Dec 2007 10:10:04 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40482 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752380AbXL3O5r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 09:57:47 -0500
-Date: Sun, 30 Dec 2007 15:53:04 +0100
+	id S1752183AbXL3PKB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 10:10:01 -0500
+Date: Sun, 30 Dec 2007 16:09:36 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: tglx@linutronix.de, Maxim <maximlevitsky@gmail.com>,
-       Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG] 2.6.21-rc1,2,3 regressions on my system that I found so
-	far
-Message-ID: <20071230145304.GS16946@elte.hu>
-References: <200703161230.03712.maximlevitsky@gmail.com> <200703161919.44458.lenb@kernel.org> <200703180100.01889.maximlevitsky@gmail.com> <1174174374.13341.448.camel@localhost.localdomain> <1199001010.5452.30.camel@homer.simson.net>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: unify arch/x86/lib/Makefile(s)
+Message-ID: <20071230150936.GW16946@elte.hu>
+References: <20071230140835.GB13990@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1199001010.5452.30.camel@homer.simson.net>
+In-Reply-To: <20071230140835.GB13990@uranus.ravnborg.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,19 +35,17 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mike Galbraith <efault@gmx.de> wrote:
+* Sam Ravnborg <sam@ravnborg.org> wrote:
 
-> > Is this after resume ? If yes, then something (probably BIOS) is 
-> > fiddling with the TSC of one CPU when the resume happens.
-> 
-> My P4 box has the same "problem", which is remedied by..
+> Trivial unification of Makefiles for the
+> x86 specific library part.
 
-> -	start = get_cycles_sync();
-> +	start = last_tsc = get_cycles_sync();
+thanks, applied to x86.git.
 
-this is slightly racy - your second patch that initializes things 
-properly is the right solution IMO. I'm wondering, if others are seeing 
-this too, should we make this a v2.6.24 item? It's a bit late for that i 
-think - although it shouldnt hurt.
+> Linking order is slightly modified but should be harmless.
+
+the link order in this code is indeed expected to be harmless. (unlike 
+the Makefile_64 link order changes, which contain lots of init sections 
+with implicit call ordering - which can easily lead to subtle bugs.)
 
 	Ingo
