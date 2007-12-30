@@ -1,50 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757434AbXL3Otj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757138AbXL3Oxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757434AbXL3Otj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 09:49:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbXL3Otc
+	id S1757138AbXL3Oxi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 09:53:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbXL3Oxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 09:49:32 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56188 "EHLO mx3.mail.elte.hu"
+	Sun, 30 Dec 2007 09:53:31 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58759 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752222AbXL3Otc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 09:49:32 -0500
-Date: Sun, 30 Dec 2007 15:45:09 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/5] x86 makefile unification and cleaning
-Message-ID: <20071230144509.GP16946@elte.hu>
-References: <20071229203836.GA21020@uranus.ravnborg.org> <20071229204414.GA21219@uranus.ravnborg.org>
+	id S1755226AbXL3Oxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 09:53:30 -0500
+Message-ID: <4777B0AA.9050503@redhat.com>
+Date: Sun, 30 Dec 2007 09:52:26 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071229204414.GA21219@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+CC: Harvey Harrison <harvey.harrison@gmail.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: kprobes remove fix_riprel #ifdef
+References: <1198466917.6323.15.camel@brick> <47773CAD.7050907@redhat.com> <20071230132337.GF16946@elte.hu>
+In-Reply-To: <20071230132337.GF16946@elte.hu>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Ingo,
 
-* Sam Ravnborg <sam@ravnborg.org> wrote:
-
-> > 
-> > Patches follows.
+Ingo Molnar wrote:
+> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
 > 
-> And they all list my mail address as "sam@saturn.ravnborg.org".
-> Ingo - can I ask you to manually fix it up or do you want a resend?
+>> Hello Harvey,
+>>
+>> A similar idea was already nack-ed by Ananth.
+>> http://sources.redhat.com/ml/systemtap/2007-q4/msg00468.html
+>> And I agree his thought.
+>>
+>> Especially, "riprel" does not exist on x86_32, so fix_riprel()
+>> is meaningless on it.
+>> Thus, I think it would better be ifdef'd in call-site.
+> 
+> but we regularly do this in generic code: we add calls that are NOPs on 
+> some architectures. For example flush_cache_page() makes no sense on the 
+> x86 architecture.
 
-sure - fixed it up. I've picked up the first 4 patches of yours into 
-x86.git and folded the 5th patch into the fourth.
+Indeed.
+By the way, flush_cache_page() is defined as a do-while(0) on x86.
+Would it better to define fix_riprel() as a do-while(0) on x86-32?
+I think this obviously indicates that function has no effect.
 
-	Ingo
+> So i'm inclined to apply Harvey's cleanup - less
+> #ifdef complexity in higher-level code is very much favored, even
+> if "riprel" is a NOP concept on 32-bit.
+
+OK, I agree about that fix_riprel() which is ifdef'd twice is too much ifdef'd.
+Reducing ifdef is good to me.
+
+Thanks,
+> 
+> 	Ingo
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
+
