@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758470AbXL3WAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758605AbXL3WCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758470AbXL3WAu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 17:00:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbXL3WAl
+	id S1758605AbXL3WCT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 17:02:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756987AbXL3WCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 17:00:41 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:50227 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753107AbXL3WAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 17:00:41 -0500
-Date: Sun, 30 Dec 2007 23:00:18 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       trivial@kernel.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Richard Henderson <rth@twiddle.net>
-Subject: Re: [PATCH 1/3] Remove unused dependency
-Message-ID: <20071230220018.GA16557@uranus.ravnborg.org>
-References: <1198306931-5258-1-git-send-email-joe@perches.com> <1198306931-5258-2-git-send-email-joe@perches.com> <20071222083323.GA22653@uranus.ravnborg.org> <1198313412.4895.24.camel@localhost> <20071222143128.GA24659@uranus.ravnborg.org> <1198351691.4895.42.camel@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1198351691.4895.42.camel@localhost>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 30 Dec 2007 17:02:10 -0500
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:42599 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751218AbXL3WCJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 17:02:09 -0500
+Message-ID: <47781499.5010209@keyaccess.nl>
+Date: Sun, 30 Dec 2007 22:58:49 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Ingo Molnar <mingo@elte.hu>, Bodo Eggert <7eggert@gmx.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>, dpreed@reed.com,
+       Islam Amer <pharon@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Ingo Molnar <mingo@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
+References: <9FXbU-3M4-11@gated-at.bofh.it> <9G2Om-4hg-1@gated-at.bofh.it> <9G7O3-3O2-7@gated-at.bofh.it> <9G8qN-4TX-13@gated-at.bofh.it> <E1J92JB-00013N-P3@be1.7eggert.dyndns.org> <20071230181004.GA21968@elte.hu> <477805F1.4070201@zytor.com> <20071230210007.GA3136@elte.hu> <4778113A.4080801@zytor.com>
+In-Reply-To: <4778113A.4080801@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 22, 2007 at 11:28:11AM -0800, Joe Perches wrote:
-> On Sat, 2007-12-22 at 15:31 +0100, Sam Ravnborg wrote:
-> > I looked at how inflate was used:
-> >  
-> > $ grep inflate */boot/Makefile
-> > alpha/boot/Makefile:$(obj)/misc.o: lib/inflate.c
-> > => redundandt dependency, can be deleted
-> > A cleanup of all this is needed.
+On 30-12-07 22:44, H. Peter Anvin wrote:
+> Ingo Molnar wrote:
+>>>>
+>>> It probably should actually HLT, to avoid sucking power, and 
+>>> stressing the thermal system.  We're dead at this point, and the 
+>>> early 486's which had problems with HLT will lock up - we don't care.
+>>
+>> ok. Like the patch below?
+>>
 > 
-> Perhaps it's better to move lib/inflate.c to the
-> include path (include/lib ?) and convert the files that
-> #include "(../)*lib/inflate.c" to
-> #include <lib/inflate.c>?
+> Don't need the cli; we're already running with interrupts disabled.
+> 
+> I'd do:
+> 
+>     while (1)
+>         asm volatile("hlt");
+> 
+> ... mostly on general principles.
 
-Hi Joe.
+At least with current GCC the volatile isn't strictly needed as its implied 
+without output operands but I was only certain after checking that. Do you 
+remember if that used to be different for previous GCC versions? I tend to 
+also stick volatiles on them still...
 
-Can you please remind me what problem you are actually trying to solve here.
-Your current approach it not good - we do not want .c code in include/*
-And what is wrong with the current include path?
-
-Thanks,
-	Sam
+Rene.
