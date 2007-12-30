@@ -1,89 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757491AbXL3Um3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbXL3Uox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757491AbXL3Um3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 15:42:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbXL3UmV
+	id S1757379AbXL3Uox (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 15:44:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbXL3Uop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 15:42:21 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59530 "EHLO mx3.mail.elte.hu"
+	Sun, 30 Dec 2007 15:44:45 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:57247 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751033AbXL3UmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 15:42:20 -0500
-Date: Sun, 30 Dec 2007 21:34:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Rene Herman <rene.herman@keyaccess.nl>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, dpreed@reed.com,
-       Islam Amer <pharon@gmail.com>, hpa@zytor.com,
-       Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
-Message-ID: <20071230203417.GA12949@elte.hu>
-References: <477711DC.5030800@keyaccess.nl> <alpine.LFD.1.00.0712300124440.32517@woody.linux-foundation.org> <20071230144700.78f4605c@the-village.bc.nu> <20071230152835.GX16946@elte.hu> <4777BDA5.4050203@keyaccess.nl> <alpine.LFD.1.00.0712301009220.32517@woody.linux-foundation.org>
+	id S1753215AbXL3Uop (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 15:44:45 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Hibernation: Document __save_processor_state() on x86-64
+Date: Sun, 30 Dec 2007 22:04:56 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>
+References: <200712281353.37976.rjw@sisk.pl> <20071230142109.GK16946@elte.hu>
+In-Reply-To: <20071230142109.GK16946@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0712301009220.32517@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200712302204.56977.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> So even if that "port 80" access will also cause PCI postings to be 
-> flushed, so would the actual IO access that accompanies it, so I don't 
-> think that is a very strong argument.
+On Sunday, 30 of December 2007, Ingo Molnar wrote:
 > 
-> With all that said: it is certainly possible that the 1us timing makes 
-> a difference on some machine, and it is certainly *also* theoretically 
-> possible that there is a buggy chipset that posts too much, and the 
-> port 80 access might make a difference, but it's not all that likely, 
-> and I suspect we'd be better off handling those devices/drivers on a 
-> one-by-one basis as we find them.
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Document the fact that __save_processor_state() has to save all CPU 
+> > registers referred to by the kernel in case a different kernel is used 
+> > to load and restore a hibernation image containing it.
+> 
+> ok - so i guess i should drop this from x86.git:
+> 
+>  @@ -53,7 +53,6 @@ void __save_processor_state(struct saved
+>          ctxt->cr2 = read_cr2();
+>          ctxt->cr3 = read_cr3();
+>          ctxt->cr4 = read_cr4();
+>  -       ctxt->cr8 = read_cr8();
+>   }
+> 
+> right?
 
-yeah, wholeheartedly agreed, and this is what x86.git is heading 
-towards. All test feedback so far is positive. With strong tools like 
-bisection there's no reason why we couldnt approach it this way. If this 
-change breaks anything, it will be bisected down to the patch below. In 
-fact even io_delay=udelay would be wrong because any problem will be 
-less clearly triggerable and thus less bisectable/debuggable.
+Well, if cr8 is used for anything that matters, then yes.
 
-	Ingo
+> But i'm wondering - are we really ever resuming to a different  
+> kernel version, for this to be an issue?
 
------------------------>
-Subject: x86: make io_delay=none the default
-From: Ingo Molnar <mingo@elte.hu>
+The boot kernel may be different from the kernel within the image, if that's
+what you're asking for.
 
-make io_delay=none the default. This is the first step towards removing 
-all the legacy io-delay API uses.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- arch/x86/Kconfig.debug |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-x86.q/arch/x86/Kconfig.debug
-===================================================================
---- linux-x86.q.orig/arch/x86/Kconfig.debug
-+++ linux-x86.q/arch/x86/Kconfig.debug
-@@ -133,7 +133,7 @@ config IO_DELAY_TYPE_NONE
- 
- choice
- 	prompt "IO delay type"
--	default IO_DELAY_0X80
-+	default IO_DELAY_NONE
- 
- config IO_DELAY_0X80
- 	bool "port 0x80 based port-IO delay [recommended]"
+Rafael
