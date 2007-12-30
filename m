@@ -1,125 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038AbXL3G2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbXL3Gie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754038AbXL3G2z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 01:28:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbXL3G2r
+	id S1755456AbXL3Gie (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 01:38:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbXL3GiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 01:28:47 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:42102 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751649AbXL3G2q (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 01:28:46 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: serue@us.ibm.com, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: TOMOYO Linux Security Goal
-In-Reply-To: Your message of "Sun, 30 Dec 2007 14:29:50 +0900."
-             <200712301429.FEF05784.FtFOVJHOOLMSQF@I-love.SAKURA.ne.jp>
-From: Valdis.Kletnieks@vt.edu
-References: <20071226164230.GA14210@sergelap.austin.ibm.com> <200712272200.IIJ73936.OHOFFLMOQJVFtS@I-love.SAKURA.ne.jp> <20071227145431.GB5161@sergelap.austin.ibm.com> <200712282332.EGC57888.OFFQHJOLVSMtFO@I-love.SAKURA.ne.jp> <27904.1198862631@turing-police.cc.vt.edu>
-            <200712301429.FEF05784.FtFOVJHOOLMSQF@I-love.SAKURA.ne.jp>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1198996100_3779P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Sun, 30 Dec 2007 01:38:25 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:60524 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751657AbXL3GiY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 01:38:24 -0500
+Message-ID: <47773C2D.8070600@redhat.com>
+Date: Sun, 30 Dec 2007 01:35:25 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Harvey Harrison <harvey.harrison@gmail.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: Introduce REX prefix helper for kprobes
+References: <1198466795.6323.12.camel@brick>
+In-Reply-To: <1198466795.6323.12.camel@brick>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-Date: Sun, 30 Dec 2007 01:28:20 -0500
-Message-ID: <7781.1198996100@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1198996100_3779P
-Content-Type: text/plain; charset=us-ascii
+Hi Harvey,
 
-On Sun, 30 Dec 2007 14:29:50 +0900, Tetsuo Handa said:
-
-> Use of "learning mode" is independent from "correct policy".
-
-My point *exactly*.
-
-> The "learning mode" merely takes your duty of appending permissions to policy.
-> We can develop and share procedures for how to exercise infrequently used code
-> paths, like how to confirm that your SMTP service won't relay spams.
-> This problem is nothing but "developing and sharing procedures for how to
-> exercise infrequently used code paths" has not started yet.
-
-And I don't have an issue with the concept that you let a "learning mode"
-develop 95% of the policy for you - as long as you make clear that you *do*
-need to do some work to ensure all code paths are tested, or otherwise verify
-that the generated policy is in fact correct.  For instance, semantic analysis
-of the program source can identify what directories a program *should* create
-files in - if some directories aren't in fact listed in the policy, they need
-to be added.  If the actual learned policy includes directories that shouldn't
-have been learned, you've got a *bigger* problem.  And yes, I have worked with
-more than one case where a "benchline" measurement of a system happened to
-include an actual intrusion....
-
-> By the way, what is the definition of "correct policy"?
-
-> The definition of "correct policy" depends on the user.
+Harvey Harrison wrote:
+> Fold some small ifdefs into a helper function.
 > 
-> Some users may think that
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+> Masami, Ingo, I had this left in some unsent kprobes unification
+> work.  Depends on your tastes, but does reduce ifdefs and is a bit
+> better about self-documenting the REX prefix on X86_64.
+
+Basically, I think it is good idea.
+Could you use a macro same as the stack_addr() macro, like as below?
+
+#defile is_REX_prefix(insn) ((insn & 0xf0) == 0x40))
+
+This is just a bit checker, so I think a macro is better to do that.
+
+> If I find places that could also use this I'll try to find a suitable
+> header any stick a static inline there instead.  Otherwise static to
+> kprobes.c is probably more appropriate for now.
 > 
->   "A ready-made policy is better than a manually-made policy
->    even if the ready-made policy contains unused/unneeded permissions.
->    Being unable to handle infrequently used code paths is worse than
->    leaving a room for not knowing/understanding what can happen."
+>  arch/x86/kernel/kprobes.c |   27 +++++++++++++++++++--------
+>  1 files changed, 19 insertions(+), 8 deletions(-)
 > 
-> but other users may think that
-> 
->   "A manually-made policy is better than a ready-made policy
->    even if the manually-made policy lacks permissions for infrequently
->    used code paths.
->    Leaving a room for not knowing/understanding what can happen is worse than
->    being unable to handle infrequently used code paths."
+> diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+> index 4e33329..b1804e4 100644
+> --- a/arch/x86/kernel/kprobes.c
+> +++ b/arch/x86/kernel/kprobes.c
+> @@ -171,6 +171,19 @@ static void __kprobes set_jmp_op(void *from, void *to)
+>  }
+>  
+>  /*
+> + * Check for the REX prefix which can only exist on X86_64
+> + * X86_32 always returns 0
+> + */
+> +static int __kprobes is_REX_prefix(kprobe_opcode_t *insn)
+> +{
+> +#ifdef CONFIG_X86_64
+> +	if ((*insn & 0xf0) == 0x40)
+> +		return 1;
+> +#endif
+> +	return 0;
+> +}
+> +
+> +/*
+>   * Returns non-zero if opcode is boostable.
+>   * RIP relative instructions are adjusted at copying time in 64 bits mode
+>   */
+> @@ -239,14 +252,14 @@ static int __kprobes is_IF_modifier(kprobe_opcode_t *insn)
+>  	case 0x9d:		/* popf/popfd */
+>  		return 1;
+>  	}
+> -#ifdef CONFIG_X86_64
+> +
+>  	/*
+> -	 * on 64 bit x86, 0x40-0x4f are prefixes so we need to look
+> +	 * on X86_64, 0x40-0x4f are REX prefixes so we need to look
+>  	 * at the next byte instead.. but of course not recurse infinitely
+>  	 */
+> -	if (*insn  >= 0x40 && *insn <= 0x4f)
+> +	if (is_REX_prefix(insn))
+>  		return is_IF_modifier(++insn);
+> -#endif
+> +
+>  	return 0;
+>  }
+>  
+> @@ -284,7 +297,7 @@ static void __kprobes fix_riprel(struct kprobe *p)
+>  	}
+>  
+>  	/* Skip REX instruction prefix.  */
+> -	if ((*insn & 0xf0) == 0x40)
+> +	if (is_REX_prefix(insn))
+>  		++insn;
+>  
+>  	if (*insn == 0x0f) {
+> @@ -748,11 +761,9 @@ static void __kprobes resume_execution(struct kprobe *p,
+>  	unsigned long orig_ip = (unsigned long)p->addr;
+>  	kprobe_opcode_t *insn = p->ainsn.insn;
+>  
+> -#ifdef CONFIG_X86_64
+>  	/*skip the REX prefix*/
+> -	if (*insn >= 0x40 && *insn <= 0x4f)
+> +	if (is_REX_prefix(insn))
+>  		insn++;
+> -#endif
+>  
+>  	regs->flags &= ~X86_EFLAGS_TF;
+>  	switch (*insn) {
 
-Neither.
+-- 
+Masami Hiramatsu
 
-Policy *correctness* is a measure of how well the policy allows those
-events that should properly happen, and rejects those events that should not
-happen.  What you discuss here is what the relative impact of various *errors*
-in the policy - basically, false-negative versus false-positive identification
-of policy-violating activity.  Your first example says that it's preferable
-to false-negative and fail to flag a violation, your second that it's
-preferable to false-positive and flag something that should have been allowed.
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
-In neither case are you actually talking about *correct* policy - which
-would *properly* describe the desired behavior.  Note that how the policy
-was *created* does not affect the *actual* correctness of the policy - it's
-quite possible to create both correct and incorrect policies via both
-manual and ready-made methods.
-
-The *true* security question is:  What method minimizes your *total* cost of
-both developing the policy and dealing with *both* the false positives and
-negatives of a possibly incorrect policy?
-
-> Since the definition of "correct policy" is not a globally agreed word,
-> I think we can't say that "learning mode unlikely produces correct policy".
-
-I'm pretty sure that most of the security community agrees on what "correct"
-means - the disagreement is in the most cost-effective way to *create* one.
-
-Notice that I never said "learning mode is *unlikely* to produce correct policy".
-What I said was "Learning mode *may* produce a correct policy, but there is a
-non-zero probability that needed things will remain unlearned unless care is
-taken to ensure they are learned".
-
-And I've been in this industry long enough to have *many* teeth marks where
-I've been bitten by very small but non-zero probabilities.... :)
+e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
 
 
---==_Exmh_1198996100_3779P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHdzqEcC3lWbTT17ARAgPYAKCyxu0bhB/LNjjf77nCtDEkPfAzgACfcmus
-ZpWvdX0wZ20TSqJ35WNq1CI=
-=GAR8
------END PGP SIGNATURE-----
-
---==_Exmh_1198996100_3779P--
