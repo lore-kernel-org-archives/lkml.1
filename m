@@ -1,85 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbXL3Dob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755491AbXL3Dsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755345AbXL3Dob (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 22:44:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbXL3DoW
+	id S1755491AbXL3Dsv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 22:48:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbXL3Dsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 22:44:22 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:37720 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752911AbXL3DoV (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 22:44:21 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: dean gaudet <dean@arctic.org>
-Cc: David Newall <david@davidnewall.com>, Mark Lord <lkml@rtr.ca>,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: RFC: permit link(2) to work across --bind mounts ?
-In-Reply-To: Your message of "Sat, 29 Dec 2007 12:40:47 PST."
-             <alpine.DEB.0.999999.0712291239360.5207@twinlark.arctic.org>
-From: Valdis.Kletnieks@vt.edu
-References: <47684DBD.6030502@rtr.ca> <20071218230016.GF8181@ftp.linux.org.uk> <20071218231404.GG8181@ftp.linux.org.uk> <47689608.3030503@rtr.ca> <4768973C.8020909@davidnewall.com> <alpine.DEB.0.999999.0712281835240.5207@twinlark.arctic.org> <47760578.2090305@davidnewall.com> <alpine.DEB.0.999999.0712290754230.5207@twinlark.arctic.org> <4776AF82.6010808@davidnewall.com>
-            <alpine.DEB.0.999999.0712291239360.5207@twinlark.arctic.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1198986232_3779P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sat, 29 Dec 2007 22:43:52 -0500
-Message-ID: <25388.1198986232@turing-police.cc.vt.edu>
+	Sat, 29 Dec 2007 22:48:43 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:56070 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752886AbXL3Dsm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Dec 2007 22:48:42 -0500
+Date: Sat, 29 Dec 2007 19:52:20 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] x86_64: clear IO_APIC before enabing apic error vector. v2
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Message-id: <200712291952.20455.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1198986232_3779P
-Content-Type: text/plain; charset=us-ascii
+please check if you can replace the one in the x86-mm
 
-On Sat, 29 Dec 2007 12:40:47 PST, dean gaudet said:
+http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commitdiff;h=ffcbdc220a1520d006a837f33589c7c19ffbeb76
 
-> > See, this is where you show that you don't understand the system.  I'll
-> > explain it, just once.  /var/home contains  home directories.  /var/log and
-> > /var/home are on the same filesystem.  So /var/log/* can be linked to
-> > /var/home/malicious, and that's just one of your basic misunderstandings.
-> 
-> yes you are on crack.
-> 
-> i told you i understand this exactly.  it's right there in the message 
-> sent.
+the updated one avoid one link warning.
 
-So... You understand that if /var/home and /var/log are on one file system,
-you can hard-link, and you set your system up knowing that, and then you're
-*surprised* that:
+YH
 
-> the main worry i have is some user maliciously hardlinks everything
-> under /var/log somewhere else and slowly fills up the file system with
-> old rotated logs.
+[PATCH] x86_64: clear IO_APIC before enabing apic error vector. v2
 
-"Doctor, it hurts when I do this.." "Well, don't do that then".
+some apic id lifting system: 4 socket quad core, 8 socket quad core will do apic id lifting for BSP.
 
-I think the first time I saw the recommendation "Put /home on its own
-filesystem and don't give users directly writable directories on /var (except
-via set-uid helpers) so they can't play hardlink games" back in 1983 or so.
-I know that when SunOS 3.1 came out, that was already well-understood basic
-sysadmining.  Sometimes, there's actual good reasons behind 20-year-old
-voodoo.. ;)
+but io-apic regs for ExtINT still use 0 as dest.
 
-You sure you don't want to redesign your filesystem layout so you don't
-have to worry about your malicious users hardlinking stuff? Might be a lot
-easier than trying to get the kernel to do what you want in this case....
+so when we enable apic error vector in BSP, we will get one APIC error.
 
+CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+CPU: L2 Cache: 512K (64 bytes/line)
+CPU 0/4 -> Node 0
+CPU: Physical Processor ID: 1
+CPU: Processor Core ID: 0
+SMP alternatives: switching to UP code
+ACPI: Core revision 20070126
+enabled ExtINT on CPU#0
+ESR value after enabling vector: 00000000, after 0000000c
+APIC error on CPU0: 0c(08)
+ENABLING IO-APIC IRQs
+Synchronizing Arb IDs.
 
---==_Exmh_1198986232_3779P
-Content-Type: application/pgp-signature
+So move enable_IO_APIC from setup_IO_APIC into setup_local_APIC and call it
+before enabling apic error vector.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+this is the updated verison that take enable_IO_APIC as extra call for
+setup_local_APIC to avoid linking warning.
 
-iD8DBQFHdxP4cC3lWbTT17ARAnI+AKDy+I+wnx4dqqy+xHmBEa501qjWtQCgsWt4
-vyEFBWgrsadb6aXHQ8JQY30=
-=QkUe
------END PGP SIGNATURE-----
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
---==_Exmh_1198986232_3779P--
+Index: linux-2.6/arch/x86/kernel/apic_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic_64.c
++++ linux-2.6/arch/x86/kernel/apic_64.c
+@@ -418,7 +418,7 @@ void __init init_bsp_APIC(void)
+ 	apic_write(APIC_LVT1, value);
+ }
+ 
+-void __cpuinit setup_local_APIC (void)
++void __cpuinit setup_local_APIC (void (*extra_call)(void))
+ {
+ 	unsigned int value, maxlvt;
+ 	int i, j;
+@@ -517,6 +517,13 @@ void __cpuinit setup_local_APIC (void)
+ 		value = APIC_DM_NMI | APIC_LVT_MASKED;
+ 	apic_write(APIC_LVT1, value);
+ 
++	/*
++	 * Now enable IO-APICs, actually call clear_IO_APIC
++	 * We need clear_IO_APIC before enabling vector on BP
++	 */
++	if (extra_call)
++		(*extra_call)();
++
+ 	{
+ 		unsigned oldvalue;
+ 		maxlvt = get_maxlvt();
+@@ -1198,6 +1205,8 @@ int disable_apic;
+  */
+ int __init APIC_init_uniprocessor (void)
+ {
++	void (*extra_call)(void) = NULL;
++
+ 	if (disable_apic) {
+ 		printk(KERN_INFO "Apic disabled\n");
+ 		return -1;
+@@ -1213,7 +1222,10 @@ int __init APIC_init_uniprocessor (void)
+ 	phys_cpu_present_map = physid_mask_of_physid(boot_cpu_id);
+ 	apic_write(APIC_ID, SET_APIC_ID(boot_cpu_id));
+ 
+-	setup_local_APIC();
++	if (!skip_ioapic_setup && nr_ioapics)
++		extra_call = enable_IO_APIC;
++
++	setup_local_APIC(extra_call);
+ 
+ 	if (smp_found_config && !skip_ioapic_setup && nr_ioapics)
+ 		setup_IO_APIC();
+Index: linux-2.6/arch/x86/kernel/io_apic_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/io_apic_64.c
++++ linux-2.6/arch/x86/kernel/io_apic_64.c
+@@ -1171,7 +1171,7 @@ void __apicdebuginit print_PIC(void)
+ 
+ #endif  /*  0  */
+ 
+-static void __init enable_IO_APIC(void)
++void __init enable_IO_APIC(void)
+ {
+ 	union IO_APIC_reg_01 reg_01;
+ 	int i8259_apic, i8259_pin;
+@@ -1790,7 +1790,10 @@ __setup("no_timer_check", notimercheck);
+ 
+ void __init setup_IO_APIC(void)
+ {
+-	enable_IO_APIC();
++
++	/*
++	 * calling enable_IO_APIC() is moved to setup_local_APIC for BP
++	 */
+ 
+ 	if (acpi_ioapic)
+ 		io_apic_irqs = ~0;	/* all IRQs go through IOAPIC */
+Index: linux-2.6/include/asm-x86/hw_irq_64.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/hw_irq_64.h
++++ linux-2.6/include/asm-x86/hw_irq_64.h
+@@ -135,6 +135,7 @@ extern void init_8259A(int aeoi);
+ extern void send_IPI_self(int vector);
+ extern void init_VISWS_APIC_irqs(void);
+ extern void setup_IO_APIC(void);
++extern void enable_IO_APIC(void);
+ extern void disable_IO_APIC(void);
+ extern void print_IO_APIC(void);
+ extern int IO_APIC_get_PCI_irq_vector(int bus, int slot, int fn);
+Index: linux-2.6/arch/x86/kernel/smpboot_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/smpboot_64.c
++++ linux-2.6/arch/x86/kernel/smpboot_64.c
+@@ -211,7 +211,7 @@ void __cpuinit smp_callin(void)
+ 	 */
+ 
+ 	Dprintk("CALLIN, before setup_local_APIC().\n");
+-	setup_local_APIC();
++	setup_local_APIC(NULL);
+ 
+ 	/*
+ 	 * Get our bogomips.
+@@ -879,6 +879,8 @@ static void __init smp_cpu_index_default
+  */
+ void __init smp_prepare_cpus(unsigned int max_cpus)
+ {
++	void (*extra_call)(void) = NULL;
++
+ 	nmi_watchdog_default();
+ 	smp_cpu_index_default();
+ 	current_cpu_data = boot_cpu_data;
+@@ -896,7 +898,10 @@ void __init smp_prepare_cpus(unsigned in
+ 	/*
+ 	 * Switch from PIC to APIC mode.
+ 	 */
+-	setup_local_APIC();
++        if (!skip_ioapic_setup && nr_ioapics)
++                extra_call = enable_IO_APIC;
++
++	setup_local_APIC(extra_call);
+ 
+ 	if (GET_APIC_ID(apic_read(APIC_ID)) != boot_cpu_id) {
+ 		panic("Boot APIC ID in local APIC unexpected (%d vs %d)",
+Index: linux-2.6/include/asm-x86/apic_64.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/apic_64.h
++++ linux-2.6/include/asm-x86/apic_64.h
+@@ -74,7 +74,7 @@ extern int verify_local_APIC (void);
+ extern void cache_APIC_registers (void);
+ extern void sync_Arb_IDs (void);
+ extern void init_bsp_APIC (void);
+-extern void setup_local_APIC (void);
++extern void setup_local_APIC (void (*extra_call)(void));
+ extern void init_apic_mappings (void);
+ extern void smp_local_timer_interrupt (void);
+ extern void setup_boot_APIC_clock (void);
