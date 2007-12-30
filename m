@@ -1,77 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbXL3Hu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756187AbXL3IIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756112AbXL3Hu2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 02:50:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbXL3HuP
+	id S1756187AbXL3IIo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 03:08:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbXL3IIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 02:50:15 -0500
-Received: from mail.gmx.net ([213.165.64.20]:53303 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751389AbXL3HuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 02:50:14 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/UO6cubovUO6cNlOgGW+QgygA0d2/Xy9xQv/KOUU
-	OSSH4T5sa/stO1
-Subject: Re: [BUG] 2.6.21-rc1,2,3 regressions on my system that I found so
-	far
-From: Mike Galbraith <efault@gmx.de>
-To: tglx@linutronix.de
-Cc: Maxim <maximlevitsky@gmail.com>, Len Brown <lenb@kernel.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1174174374.13341.448.camel@localhost.localdomain>
-References: <200703161230.03712.maximlevitsky@gmail.com>
-	 <200703161919.44458.lenb@kernel.org>
-	 <200703180100.01889.maximlevitsky@gmail.com>
-	 <1174174374.13341.448.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Sun, 30 Dec 2007 08:50:10 +0100
-Message-Id: <1199001010.5452.30.camel@homer.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Sun, 30 Dec 2007 03:08:34 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:44062 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751682AbXL3IId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 03:08:33 -0500
+Message-ID: <477751D1.8080909@redhat.com>
+Date: Sun, 30 Dec 2007 03:07:45 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Harvey Harrison <harvey.harrison@gmail.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>
+CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: kprobes change kprobe_handler flow
+References: <1198807702.6323.37.camel@brick>
+In-Reply-To: <1198807702.6323.37.camel@brick>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(hm, google says i'm not the only one seeing this, so...)
+Hello Harvey,
 
-On Sun, 2007-03-18 at 00:32 +0100, Thomas Gleixner wrote:
-> Maxim,
+Thank you for your great works!
+
+Harvey Harrison wrote:
+> Make the control flow of kprobe_handler more obvious.
 > 
-> On Sun, 2007-03-18 at 01:00 +0200, Maxim wrote:
-> > >Mar 14 00:22:23 MAIN kernel: [    2.072931] checking TSC synchronization [CPU#0 -> CPU#1]:
-> > >Mar 14 00:22:23 MAIN kernel: [    2.092922] Measured 72051818872 cycles TSC warp between CPUs, turning off
-> > 
-> > ^ This one I don't think is related to NO_HZ, maybe it is hardware
-> > problem, but it exist without NO_HZ
+> Collapse the separate if blocks/gotos with if/else blocks
+> this unifies the duplication of the check for a breakpoint
+> instruction race with another cpu.
+
+I agree it is good to unify the duplications of
+breakpoint checking and get_kprobe() calling.
+
 > 
-> The TSC is checked for synchronization between the CPUs. It's nothing to
-> worry about. We switch off the TSC and use a different clocksource.
+> Create two jump targets:
+> 	preempt_out: re-enables preemption before returning ret
+> 	out: only returns ret
+
+However, I'm not sure we should change "no_kprobe".
+That label is commonly used in arch/*/kernel/kprobes.c.
+
+And also, I prefer "return 1" to "{ret = 1; goto out;}"
+for simplicity.
+Or, how about initializing "ret" as 1 instead of 0?
+
+Ananth, Jim,
+I'd like to hear your comments on it.
+
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+> Masami, noticed a small bug in the previous version in the !p
+> case when the breakpoint was the kernel's.  Please review this
+> version.
 > 
-> Is this after resume ? If yes, then something (probably BIOS) is
-> fiddling with the TSC of one CPU when the resume happens.
+>  arch/x86/kernel/kprobes.c |   60 +++++++++++++++++++++------------------------
+>  1 files changed, 28 insertions(+), 32 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+> index 4e33329..f8c7ac1 100644
+> --- a/arch/x86/kernel/kprobes.c
+> +++ b/arch/x86/kernel/kprobes.c
+> @@ -480,32 +480,28 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
+>  	preempt_disable();
+>  	kcb = get_kprobe_ctlblk();
+>  
+> -	/* Check we're not actually recursing */
+> -	if (kprobe_running()) {
+> -		p = get_kprobe(addr);
+> -		if (p) {
+> +	p = get_kprobe(addr);
+> +	if (p) {
+> +		/* Check we're not actually recursing */
+> +		if (kprobe_running()) {
+>  			ret = reenter_kprobe(p, regs, kcb);
+>  			if (kcb->kprobe_status == KPROBE_REENTER)
+> -				return 1;
+> +			{
+> +				ret = 1;
+> +				goto out;
 
-My P4 box has the same "problem", which is remedied by..
+I think "return 1" is better.
 
-diff --git a/arch/x86/kernel/tsc_sync.c b/arch/x86/kernel/tsc_sync.c
-index 9125efe..7b74969 100644
---- a/arch/x86/kernel/tsc_sync.c
-+++ b/arch/x86/kernel/tsc_sync.c
-@@ -46,7 +46,7 @@ static __cpuinit void check_tsc_warp(void)
- 	cycles_t start, now, prev, end;
- 	int i;
- 
--	start = get_cycles_sync();
-+	start = last_tsc = get_cycles_sync();
- 	/*
- 	 * The measurement runs for 20 msecs:
- 	 */
+> +			}
+> +			goto preempt_out;
+>  		} else {
+> -			if (*addr != BREAKPOINT_INSTRUCTION) {
+> -			/* The breakpoint instruction was removed by
+> -			 * another cpu right after we hit, no further
+> -			 * handling of this interrupt is appropriate
+> -			 */
+> -				regs->ip = (unsigned long)addr;
+> +			set_current_kprobe(p, regs, kcb);
+> +			kcb->kprobe_status = KPROBE_HIT_ACTIVE;
+> +			if (p->pre_handler && p->pre_handler(p, regs))
+> +			{
+> +				/* handler set things up, skip ss setup */
+>  				ret = 1;
+> -				goto no_kprobe;
+> +				goto out;
 
-..whacking the ancient last_tsc before entering test loop.  Question is,
-is there a good reason to disable the TSC once it's been stepped upon by
-BIOS?  Are there any ill effects to be awaited by ignoring this BIOS
-artifact?  All seems just fine here.
+Ditto.
 
-	-Mike
+>  			}
+> -			p = __get_cpu_var(current_kprobe);
+> -			if (p->break_handler && p->break_handler(p, regs))
+> -				goto ss_probe;
+>  		}
+> -		goto no_kprobe;
+> -	}
+> -
+> -	p = get_kprobe(addr);
+> -	if (!p) {
+> +	} else {
+
+I think you'd better move "!p" block forward, because
+this block means "relatively rare" cases. (sure, I know jprobe uses this block.)
+
+>  		if (*addr != BREAKPOINT_INSTRUCTION) {
+>  			/*
+>  			 * The breakpoint instruction was removed right
+> @@ -518,34 +514,34 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
+>  			 */
+>  			regs->ip = (unsigned long)addr;
+>  			ret = 1;
+> +			goto preempt_out;
+> +		}
+> +		if (kprobe_running()) {
+> +			p = __get_cpu_var(current_kprobe);
+> +			if (p->break_handler && p->break_handler(p, regs))
+> +				goto ss_probe;
+>  		}
+>  		/* Not one of ours: let kernel handle it */
+> -		goto no_kprobe;
+> +		goto preempt_out;
+>  	}
+>  
+> -	set_current_kprobe(p, regs, kcb);
+> -	kcb->kprobe_status = KPROBE_HIT_ACTIVE;
+> -
+> -	if (p->pre_handler && p->pre_handler(p, regs))
+> -		/* handler has already set things up, so skip ss setup */
+> -		return 1;
+> -
+>  ss_probe:
+> +	ret = 1;
+>  #if !defined(CONFIG_PREEMPT) || defined(CONFIG_PM)
+>  	if (p->ainsn.boostable == 1 && !p->post_handler) {
+>  		/* Boost up -- we can execute copied instructions directly */
+>  		reset_current_kprobe();
+>  		regs->ip = (unsigned long)p->ainsn.insn;
+> -		preempt_enable_no_resched();
+> -		return 1;
+> +		goto preempt_out;
+>  	}
+>  #endif
+>  	prepare_singlestep(p, regs);
+>  	kcb->kprobe_status = KPROBE_HIT_SS;
+> -	return 1;
+> +	goto out;
+
+I think "return 1" is better.
+
+>  
+> -no_kprobe:
+> +preempt_out:
+>  	preempt_enable_no_resched();
+> +out:
+>  	return ret;
+>  }
+>  
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
 
