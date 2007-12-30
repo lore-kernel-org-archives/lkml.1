@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbXL3Rsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755701AbXL3RvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755004AbXL3Rsb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 12:48:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbXL3RsX
+	id S1755701AbXL3RvS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 12:51:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbXL3RvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 12:48:23 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:26602 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751868AbXL3RsW (ORCPT
+	Sun, 30 Dec 2007 12:51:09 -0500
+Received: from moutng.kundenserver.de ([212.227.126.179]:50322 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751212AbXL3RvH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 12:48:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=dSTh3/3KrodICCa32ySZZzrRMT6I9JE3bdpaz8LxOJc06t5AhtzTtQPpSXkcUgmXKXJPsdc63XOmhSwhp/jHsn9rrrakBmBeUttVHRCHjKd4gTPyjuum5dyuAK7jWiyPLXpY7GI9RXd1D1mlYaBewOhqfrLEL53bByX+O0jTWSo=
-Message-ID: <4777DAE4.5030101@gmail.com>
-Date: Sun, 30 Dec 2007 18:52:36 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Icedove 1.5.0.14pre (X11/20071020)
+	Sun, 30 Dec 2007 12:51:07 -0500
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
+To: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Rene Herman <rene.herman@keyaccess.nl>, dpreed@reed.com,
+       Islam Amer <pharon@gmail.com>, hpa@zytor.com,
+       Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Reply-To: 7eggert@gmx.de
+Date: Sun, 30 Dec 2007 18:50:45 +0100
+References: <9FXbU-3M4-11@gated-at.bofh.it> <9G2Om-4hg-1@gated-at.bofh.it> <9G7O3-3O2-7@gated-at.bofh.it> <9G8qN-4TX-13@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
 MIME-Version: 1.0
-To: Jarek Poplawski <jarkao2@o2.pl>
-CC: Adrian Bunk <bunk@kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] make I/O schedulers non-modular
-References: <20071125172237.GC6658@kernel.dk> <20071127070912.GB1735@ff.dom.local> <20071127164723.GA3406@stusta.de> <474C9714.1080308@o2.pl>
-In-Reply-To: <474C9714.1080308@o2.pl>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1J92JB-00013N-P3@be1.7eggert.dyndns.org>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1+/xhnzIOEIl9cRjkP+5JZDcPf/G/TeNhGeEBu
+ 9VL2wC488y6LiPqmb9riJmAS7/ma7z0a53C4QUZvMrR+4aBxlA
+ dcPfVTfMkUFG8SkZDUK7w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarek Poplawski wrote, On 11/27/2007 11:15 PM:
+Ingo Molnar <mingo@elte.hu> wrote:
 
-> Adrian Bunk wrote, On 11/27/2007 05:47 PM:
+> do you have any memories about the outb_p() use of misc_32.c:
+> 
+>         pos = (x + cols * y) * 2;       /* Update cursor position */
+>         outb_p(14, vidport);
+>         outb_p(0xff & (pos >> 9), vidport+1);
+>         outb_p(15, vidport);
+>         outb_p(0xff & (pos >> 1), vidport+1);
+> 
+> was this ever needed? This is so early in the bootup that can we cannot
+> do any sensible delay. Perhaps we could try a natural delay sequence via
+> inb from 0x3cc:
+> 
+>         outb(14, vidport);
+>          inb(0x3cc); /* delay */
+>         outb(0xff & (pos >> 9), vidport+1);
 
-...
-
->> There is nothing like a "right of choice".
-
-
-(very late) PS: 
-
-...I was a bit confused with this, wondering: so, we've envied you
-(the West) this "thing" for so many years, and now it seems, you have
-no idea what's this all about?! Happily it was only my English:
-
-http://en.wikipedia.org/wiki/The_Paradox_of_Choice:_Why_More_Is_Less
+I've never seen code which would do that, and it was not suggested by any
+tutorial I ever saw. I'd expect any machine to break on all kinds of software
+if it required this. The only thing I remember being warned about is writing
+the index and the data register at the same time using outw, because that
+would write both registers at the same time on 16-bit-cards.
 
 
-"Freedom of choice" was the right term!
+BTW: The error function in linux-2.6.23/arch/i386/boot/compressed/misc.c
+uses while(1) without cpu_relax() in order to halt the machine. Is this fixed?
+Should it be fixed?
 
-Regards,
-Jarek P.
-
-
-PPS: But, of course, no need to discuss this more... unless we're
-interested in the next Nobel Prize.
