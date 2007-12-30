@@ -1,73 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756720AbXL3TZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756269AbXL3Thq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756720AbXL3TZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 14:25:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXL3TZU
+	id S1756269AbXL3Thq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 14:37:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753469AbXL3Thh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 14:25:20 -0500
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:51687 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750946AbXL3TZT (ORCPT
+	Sun, 30 Dec 2007 14:37:37 -0500
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:42601 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753429AbXL3Thg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 14:25:19 -0500
-Date: Mon, 31 Dec 2007 00:54:06 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, htejun@gmail.com,
-       gregkh@suse.de, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, maneesh@linux.vnet.ibm.com,
-       lkml <linux-kernel@vger.kernel.org>, stable@kernel.org,
-       linux-mm@kvack.org
-Subject: Re: 2.6.22-stable causes oomkiller to be invoked
-Message-ID: <20071230192406.GA10454@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20071215035200.GA22082@linux.vnet.ibm.com> <20071214220030.325f82b8.akpm@linux-foundation.org> <20071215104434.GA26325@linux.vnet.ibm.com> <20071217045904.GB31386@linux.vnet.ibm.com> <Pine.LNX.4.64.0712171143280.12871@schroedinger.engr.sgi.com> <20071217120720.e078194b.akpm@linux-foundation.org> <Pine.LNX.4.64.0712171222470.29500@schroedinger.engr.sgi.com> <20071221044508.GA11996@linux.vnet.ibm.com> <Pine.LNX.4.64.0712261258050.16862@schroedinger.engr.sgi.com> <20071230140116.GC21106@elte.hu>
+	Sun, 30 Dec 2007 14:37:36 -0500
+Message-ID: <4777F297.9070207@keyaccess.nl>
+Date: Sun, 30 Dec 2007 20:33:43 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071230140116.GC21106@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>, dpreed@reed.com,
+       Islam Amer <pharon@gmail.com>, hpa@zytor.com,
+       Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
+References: <477711DC.5030800@keyaccess.nl>	<alpine.LFD.1.00.0712300124440.32517@woody.linux-foundation.org>	<20071230144700.78f4605c@the-village.bc.nu>	<20071230152835.GX16946@elte.hu>	<20071230153818.1a554a7e@the-village.bc.nu>	<20071230160132.GA14311@elte.hu>	<20071230164828.039916c8@the-village.bc.nu>	<4777E010.7030703@keyaccess.nl> <20071230183927.5a5a3c42@the-village.bc.nu>
+In-Reply-To: <20071230183927.5a5a3c42@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 30, 2007 at 03:01:16PM +0100, Ingo Molnar wrote:
-> 
-> * Christoph Lameter <clameter@sgi.com> wrote:
-> 
-> > Index: linux-2.6/arch/x86/mm/pgtable_32.c
-> > ===================================================================
-> > --- linux-2.6.orig/arch/x86/mm/pgtable_32.c	2007-12-26 12:55:10.000000000 -0800
-> > +++ linux-2.6/arch/x86/mm/pgtable_32.c	2007-12-26 12:55:54.000000000 -0800
-> > @@ -366,6 +366,15 @@ void pgd_free(pgd_t *pgd)
-> >  		}
-> >  	/* in the non-PAE case, free_pgtables() clears user pgd entries */
-> >  	quicklist_free(0, pgd_dtor, pgd);
-> > +
-> > +	/*
-> > +	 * We must call check_pgd_cache() here because the pgd is freed after
-> > +	 * tlb flushing and the call to check_pgd_cache. In some cases the VM
-> > +	 * may not call tlb_flush_mmu during process termination (??).
-> 
-> that's incorrect i think: during process termination exit_mmap() calls 
-> tlb_finish_mmu() unconditionally which calls tlb_flush_mmu().
-> 
-> > +	 * If this is repeated then we may never call check_pgd_cache.
-> > +	 * The quicklist will grow and grow. So call check_pgd_cache here.
-> > +	 */
-> > +	check_pgt_cache();
-> >  }
-> 
-> so we still dont seem to understand the failure mode well enough. This 
-> also looks like a quite dangerous change so late in the v2.6.24 cycle. 
-> Does it really fix the OOM? If yes, why exactly?
-> 
+On 30-12-07 19:39, Alan Cox wrote:
 
-No it does not. I've sent out some more information if it helps, will
-send to you separately.
+> On Sun, 30 Dec 2007 19:14:40 +0100
+> Rene Herman <rene.herman@keyaccess.nl> wrote:
 
--- 
-regards,
-Dhaval
+>> I'm by the way looking at drivers/net/wd.c which my 386 uses for its dual 
+>> mode NE2000/WD8013 clone ISA NIC and while it specifically needs no delay at 
+>> all it seems, the mixed use of out and outb_p seems to suggest that someone 
+>> once thought about that. Would you advice sticking in a udelay(2) manually 
+>> there?
+> 
+> I would need to dig out the documentation and NE2000 reference code if I
+> even still have them. From memory NE2K needs them but I don't know
+> offhand if the WD80x3 devices do, or if only some of them do. It'll also
+> depend on the port - the DPRAM is different to the 8390.
+> 
+> Don Becker wrote the drivers and at the time he tuned them carefully for
+> performance so I would expect delays to be the ones needed
+
+This NIC (a Networth UTP16B) has a National Semiconductor DP83905 AT/LANTIC 
+for which I'm reading the software developers guide now. It doesn't seem to 
+list specific delays...
+
+I also just now dug up a "WDC (C) 1987" WD8003EBT and a "Novell, Inc (C) 
+1990" NE1000, both 8-bit ISA NICs and the ownership of which, I would 
+suggest, makes me a really cool person. Both are coax and a little clumsy to 
+test but that 1987 one is probably going to be close to the oldest type around.
+
+I've been testing with the 386's own 2.2.26 kernel upto now but I'll try and 
+compile a 2.6 system on there with uclibc and busybox or some such and test 
+more.
+
+Rene.
