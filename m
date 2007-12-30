@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758881AbXL3WCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759049AbXL3WCp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758881AbXL3WCc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 17:02:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758070AbXL3WCQ
+	id S1759049AbXL3WCp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 17:02:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758785AbXL3WC1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 17:02:16 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33416 "EHLO mx3.mail.elte.hu"
+	Sun, 30 Dec 2007 17:02:27 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33435 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758048AbXL3WCO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 17:02:14 -0500
-Date: Sun, 30 Dec 2007 22:57:45 +0100
+	id S1758734AbXL3WCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 17:02:25 -0500
+Date: Sun, 30 Dec 2007 22:54:35 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH] Hibernation: Document __save_processor_state() on
-	x86-64
-Message-ID: <20071230215745.GB31386@elte.hu>
-References: <200712281353.37976.rjw@sisk.pl> <200712302248.03567.rjw@sisk.pl> <20071230213126.GB14654@elte.hu> <200712302308.51562.rjw@sisk.pl>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Rene Herman <rene.herman@keyaccess.nl>, dpreed@reed.com,
+       Islam Amer <pharon@gmail.com>, hpa@zytor.com,
+       Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
+Message-ID: <20071230215435.GA31386@elte.hu>
+References: <477711DC.5030800@keyaccess.nl> <alpine.LFD.1.00.0712300124440.32517@woody.linux-foundation.org> <20071230144700.78f4605c@the-village.bc.nu> <20071230152835.GX16946@elte.hu> <4777BDA5.4050203@keyaccess.nl> <alpine.LFD.1.00.0712301009220.32517@woody.linux-foundation.org> <20071230203417.GA12949@elte.hu> <20071230212820.0d53f389@the-village.bc.nu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200712302308.51562.rjw@sisk.pl>
+In-Reply-To: <20071230212820.0d53f389@the-village.bc.nu>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,22 +39,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-> > what's exactly in the hibernation image? Dirty data i suppose
-> 
-> No, everything, including the kernel code, page tables etc. :-)
-> 
-> > - but what about kernel-internal pages. What if we go from SLAB to 
-> > SLUB? What if the size of a structure changes? Etc.
-> 
-> We can go from SLAB to SLUB just fine, it doesn't matter.  The only 
-> thing that matters is we have to jump to the right address at the end 
-> of core_restore_code() (defined in arch/x86/kernel/suspend_asm_64.S).
+> You won't bisect obscure timing triggered problems, and the _p users 
+> are almost all for hardware where performance doesn't matter one iota 
+> (eg CMOS).
 
-ok, just to make sure we are talking about the same thing. Do you mean 
-we can restore an image saved by v2.6.12 into v2.6.24? I.e. a 2.6.24 
-kernel will be able to run a 2.6.12 kernel's hibernation image, with all 
-the kernel internal data from v2.6.12, etc? No way can that work.
+actually, people have, and i have too. But i agree that io_delay=none 
+would be stupid now, and would probably be stupid in v2.6.26 too.
+
+i also have a debug patch that counts the number of _p() API uses and 
+prints a stacktrace (once per bootup) if it occurs [wrote it 2 weeks 
+ago] - so i agree with you that we can do this more gradually and more 
+intelligently. As long as it does not turn into a BKL situation. It's 
+2008 in a day and we've still got the NFS client code running under the 
+BKL - quite ridiculous IMO.
 
 	Ingo
