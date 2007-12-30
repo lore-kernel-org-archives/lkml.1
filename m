@@ -1,72 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757467AbXL3OCB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757222AbXL3OGM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757467AbXL3OCB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 09:02:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753178AbXL3OBx
+	id S1757222AbXL3OGM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 09:06:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbXL3OF6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 09:01:53 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46907 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752952AbXL3OBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 09:01:52 -0500
-Date: Sun, 30 Dec 2007 15:01:16 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, htejun@gmail.com,
-       gregkh@suse.de, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, maneesh@linux.vnet.ibm.com,
-       lkml <linux-kernel@vger.kernel.org>, stable@kernel.org,
-       linux-mm@kvack.org
-Subject: Re: 2.6.22-stable causes oomkiller to be invoked
-Message-ID: <20071230140116.GC21106@elte.hu>
-References: <20071214150533.aa30efd4.akpm@linux-foundation.org> <20071215035200.GA22082@linux.vnet.ibm.com> <20071214220030.325f82b8.akpm@linux-foundation.org> <20071215104434.GA26325@linux.vnet.ibm.com> <20071217045904.GB31386@linux.vnet.ibm.com> <Pine.LNX.4.64.0712171143280.12871@schroedinger.engr.sgi.com> <20071217120720.e078194b.akpm@linux-foundation.org> <Pine.LNX.4.64.0712171222470.29500@schroedinger.engr.sgi.com> <20071221044508.GA11996@linux.vnet.ibm.com> <Pine.LNX.4.64.0712261258050.16862@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0712261258050.16862@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sun, 30 Dec 2007 09:05:58 -0500
+Received: from py-out-1112.google.com ([64.233.166.177]:34586 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752865AbXL3OF5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 09:05:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=Z9CjvJ2llgqZegs6vtEnkn81coAdI3gqWHnf61TDaEMF/rdM25i+zb6QzpCO49FgF5WTBxkQOnlkbYcGKfEq7oPmAvaL4z32dlA+Ezq/y9XE6C6e8YbuA82zgAJKrHgLlu0x80er2V/4uYh003m6lxzfMXJC0y19LYPdCt4iGwk=
+Date: Sun, 30 Dec 2007 08:05:52 -0600
+From: Josh Boyer <jwboyer@gmail.com>
+To: devzero@web.de
+Cc: linux-kernel@vger.kernel.org, hidave.darkstar@gmail.com,
+       lcapitulino@mandriva.com.br, linux-mtd@lists.infradead.org,
+       randy.dunlap@oracle.com
+Subject: Re: [PATCH]: 2.6.24-rc5: mtd: PNC-2000 oops
+Message-ID: <20071230080552.744d5103@vader.jdub.homelinux.org>
+In-Reply-To: <76599944@web.de>
+References: <76599944@web.de>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 30 Dec 2007 14:15:13 +0100
+devzero@web.de wrote:
 
-* Christoph Lameter <clameter@sgi.com> wrote:
+> while doing some systematical driver load/unload testing i have also come across this one.
+> 
+> searched lkml and found/tried this patch - seems to work fine, at least driver now behaves as expected:
+> insmod: error inserting 'pnc2000.ko': -1 No such device or address
+> 
+> if it really _works_ is another story, but how can we know ? have searched the net a while for this hardware, but didn`t find _any_ reference that this hardware either exists or existed at all, so it looks that this hardware is very ancient or being used by japanese secret service, only !? :)
 
-> Index: linux-2.6/arch/x86/mm/pgtable_32.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/mm/pgtable_32.c	2007-12-26 12:55:10.000000000 -0800
-> +++ linux-2.6/arch/x86/mm/pgtable_32.c	2007-12-26 12:55:54.000000000 -0800
-> @@ -366,6 +366,15 @@ void pgd_free(pgd_t *pgd)
->  		}
->  	/* in the non-PAE case, free_pgtables() clears user pgd entries */
->  	quicklist_free(0, pgd_dtor, pgd);
+[snip] 
+ 
+> @@ -64,16 +63,29 @@ static struct mtd_info *mymtd;
+>  
+>  static int __init init_pnc2000(void)
+>  {
+> +	int err;
 > +
-> +	/*
-> +	 * We must call check_pgd_cache() here because the pgd is freed after
-> +	 * tlb flushing and the call to check_pgd_cache. In some cases the VM
-> +	 * may not call tlb_flush_mmu during process termination (??).
+>  	printk(KERN_NOTICE "Photron PNC-2000 flash mapping: %x at %x\n", WINDOW_SIZE, \
+> WINDOW_ADDR);  
+> +	pnc_map.virt = ioremap(WINDOW_ADDR, WINDOW_SIZE);
+> +	if (!pnc_map.virt) {
+> +		printk("init_pnc2000(): failed to ioremap\n");
+> +		return -EIO;
+> +	}
+> +
+>  	simple_map_init(&pnc_map);
+>  
+>  	mymtd = do_map_probe("cfi_probe", &pnc_map);
+>  	if (mymtd) {
+>  		mymtd->owner = THIS_MODULE;
+> -		return add_mtd_partitions(mymtd, pnc_partitions, 3);
+> +		err = add_mtd_partitions(mymtd, pnc_partitions, 3);
+> +		if (err) {
+> +			printk("init_pnc2000(): add_mtd_partitions failed\n");
+> +			iounmap(pnc_map.virt);
+> +		}
+>  	}
+>  
+> +	iounmap(pnc_map.virt);
+>  	return -ENXIO;
 
-that's incorrect i think: during process termination exit_mmap() calls 
-tlb_finish_mmu() unconditionally which calls tlb_flush_mmu().
+Sorry, but no.  This bit here is bogus.  It will now iounmap and return
+an error even if nothing went wrong.
 
-> +	 * If this is repeated then we may never call check_pgd_cache.
-> +	 * The quicklist will grow and grow. So call check_pgd_cache here.
-> +	 */
-> +	check_pgt_cache();
->  }
-
-so we still dont seem to understand the failure mode well enough. This 
-also looks like a quite dangerous change so late in the v2.6.24 cycle. 
-Does it really fix the OOM? If yes, why exactly?
-
-	Ingo
+josh
