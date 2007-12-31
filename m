@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752298AbXLaQKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756523AbXLaQK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752298AbXLaQKl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 11:10:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbXLaQK1
+	id S1756523AbXLaQK5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 11:10:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751813AbXLaQKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 11:10:27 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34792 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755083AbXLaQKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 11:10:25 -0500
-Date: Mon, 31 Dec 2007 11:10:21 -0500
-From: Dave Jones <davej@redhat.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Recursive variable `KBUILD_CFLAGS' references itself
-	(eventually).
-Message-ID: <20071231161021.GC27655@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Sam Ravnborg <sam@ravnborg.org>,
-	lkml <linux-kernel@vger.kernel.org>
-References: <20071120001445.GA9243@redhat.com> <20071231131619.GE21871@uranus.ravnborg.org>
+	Mon, 31 Dec 2007 11:10:47 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:54270 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752367AbXLaQKq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Dec 2007 11:10:46 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [2.6.24 patch] Fix Cell OProfile support
+Date: Mon, 31 Dec 2007 17:10:06 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Adrian Bunk <adrian.bunk@movial.fi>,
+       Randy Dunlap <randy.dunlap@oracle.com>, phil.el@wanadoo.fr,
+       linux-kernel@vger.kernel.org, paulus@samba.org,
+       oprofile-list@lists.sourceforge.net
+References: <20071228185649.GC4738@stusta.de> <20071229160921.GB12262@Krystal>
+In-Reply-To: <20071229160921.GB12262@Krystal>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071231131619.GE21871@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200712311710.08869.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+v8QHyl8cnpzetR1kvhJa1Q3bSvLpIsln6H9k
+ +MrqtxM0A6Ro9CGepMsM+dsD7lEl+Zn+61FtRP6xfU/lvNDML1
+ 4/A3+uXmBowguwdPV5ctA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 31, 2007 at 02:16:19PM +0100, Sam Ravnborg wrote:
+On Saturday 29 December 2007, Mathieu Desnoyers wrote:
+> This patch restores the Cell OProfile support that was killed by
+> commit 09cadedbdc01f1a4bea1f427d4fb4642eaa19da9.
+> 
+> It puts it in arch/powerpc/Kconfig. Since I don't see any good reason to leave
+> this as a supplementary user-selectable option, it is now automatically enabled
+> whenever SPU_FS and OPROFILE are enabled.
 
- > > Trying to do a 32bit build on a 64bit machine.
- > > I did..
- > >   make ARCH=i386 oldconfig
- > >   make ARCH=i386 arch/x86/
- > 
- > Walking through my mailbox I found this one.
- > I did not get similar reports and I cannot reproduce it.
- > Do you continue to see this or had it been fixed somehow?
+This one has already been superceded by the fix in 
+aed3a8c9bb1a8623a618232087c5ff62718e3b9a, which made CONFIG_OPROFILE_CELL an
+automatically selected option, from arch/powerpc/platforms/cell/Kconfig.
 
-Still happens for me with the latest tree from git.
-
-$ make ARCH=i386 arch/x86/
-  HOSTCC  scripts/kconfig/conf.o
-  HOSTLD  scripts/kconfig/conf
-scripts/kconfig/conf -s arch/x86/Kconfig
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  UPD     include/linux/utsrelease.h
-  CALL    scripts/checksyscalls.sh
-/mnt/raid0/src/linux-2.6/arch/x86/Makefile_32:43: *** Recursive variable `KBUILD_CFLAGS' references itself (eventually).  Stop.
-make: *** [arch/x86/] Error 2
-
- > The only way I can see it heppen is that you have lost
- > the initial assignmnet in top-level Makefile so
- > make see this as an '=' assinment and not a ':='
- > assignment.
-
-$ git diff Makefile
-$
-
-(This tree is completely pristine, no changes at all)
-
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+	Arnd <><
