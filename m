@@ -1,68 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753114AbXLaT2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616AbXLaThL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753114AbXLaT2s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 14:28:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbXLaT2i
+	id S1752616AbXLaThL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 14:37:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbXLaTg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 14:28:38 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:41297 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751196AbXLaT2g (ORCPT
+	Mon, 31 Dec 2007 14:36:58 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:64685 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750935AbXLaTg5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 14:28:36 -0500
-Date: Mon, 31 Dec 2007 11:26:43 -0800
-From: Greg KH <greg@kroah.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Andreas Mohr <andi@lisas.de>, Ingo Molnar <mingo@elte.hu>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, Pavel Emelyanov <xemul@openvz.org>,
-       "Denis V. Lunev" <den@openvz.org>, USB list <linux-usb@vger.kernel.org>
-Subject: Re: [usb regression] Re: [PATCH 2.6.24-rc3] Fix /proc/net breakage
-Message-ID: <20071231192643.GA25341@kroah.com>
-References: <20071231052500.GB4187@kroah.com> <Pine.LNX.4.44L0.0712311237150.7182-100000@iolanthe.rowland.org>
+	Mon, 31 Dec 2007 14:36:57 -0500
+Date: Mon, 31 Dec 2007 11:35:42 -0800
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: ocfs2-devel@oss.oracle.com, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ocfs2: convert byte order of constant instead of
+	variable
+Message-ID: <20071231193542.GR13821@ca-server1.us.oracle.com>
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
+References: <20071225145256.GD24373@joi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0712311237150.7182-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20071225145256.GD24373@joi>
+Organization: Oracle Corporation
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 31, 2007 at 12:49:52PM -0500, Alan Stern wrote:
-> On Sun, 30 Dec 2007, Greg KH wrote:
-> 
-> > > It looks like Greg misused the debugfs API -- which is ironic, because
-> > > he wrote debugfs in the first place!  :-)
-> > 
-> > Oh crap, sorry, I did mess that up :(
-> > 
-> > > Let me know if this patch fixes the problem.  If it does, I'll submit 
-> > > it to Greg with all the proper accoutrements.
-> > 
-> > This isn't going to work if CONFIG_DEBUGFS is not enabled either :(
-> 
-> Why not?  The debugging files won't be created, true, but the driver
-> should work just fine regardless.  This is exactly the way uhci-hcd
-> behaves, and it hasn't caused any problems.
+On Tue, Dec 25, 2007 at 03:52:59PM +0100, Marcin Slusarz wrote:
+> convert byte order of constant instead of variable
+> it will be done at compile time (vs run time)
+> remove unused le32_and_cpu
 
-Ok, you are right, it was late and after some wine and I shouldn't have
-been responding to email :)
+Ok, this looks good. I'll put it in ocfs2.git later today.
+	--Mark
 
-I'll rework this, and send out a patch tonight or tomorrow when I get a
-chance (am on the road right now).  We should only care about NULL being
-returned here, that's the only "real" error.
-
-And in thinking about it some more, I should go audit all the debugfs
-callers to make sure they are doing something sane too, it shouldn't be
-this complex at all...
-
-thanks,
-
-greg k-h
+--
+Mark Fasheh
+Principal Software Developer, Oracle
+mark.fasheh@oracle.com
