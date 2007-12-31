@@ -1,44 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752558AbXLaWUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbXLaWb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752558AbXLaWUx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 17:20:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750797AbXLaWUn
+	id S1752746AbXLaWb4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 17:31:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751032AbXLaWbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 17:20:43 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:41345 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750789AbXLaWUm (ORCPT
+	Mon, 31 Dec 2007 17:31:48 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:1073 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750989AbXLaWbr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 17:20:42 -0500
-Date: Mon, 31 Dec 2007 23:20:40 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Patrick Mau <mau@oscar.ping.de>
-cc: Bodo Eggert <7eggert@gmx.de>, Adrian Bunk <bunk@kernel.org>,
-       devzero@web.de, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] Force UNIX domain sockets to be built in
-In-Reply-To: <20071231174302.GA1627@oscar.prima.de>
-Message-ID: <Pine.LNX.4.64.0712312316050.28123@fbirervta.pbzchgretzou.qr>
-References: <alpine.LSU.0.999.0712311300020.3686@be1.lrz>
- <20071231122419.GA13803@does.not.exist> <alpine.LSU.0.999.0712311335210.3761@be1.lrz>
- <20071231144255.GB13803@does.not.exist> <alpine.LSU.0.999.0712311553530.4211@be1.lrz>
- <Pine.LNX.4.64.0712311628330.28123@fbirervta.pbzchgretzou.qr>
- <20071231174302.GA1627@oscar.prima.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 31 Dec 2007 17:31:47 -0500
+Date: Tue, 1 Jan 2008 09:31:10 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       davem@davemloft.net
+Subject: Re: [PATCH -mm] crypto: scatterwalk.h needs sched.h
+Message-ID: <20071231223110.GA15921@gondor.apana.org.au>
+References: <20071222233056.d652743e.akpm@linux-foundation.org> <20071231100539.0a782c40.randy.dunlap@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071231100539.0a782c40.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Dec 31, 2007 at 10:05:39AM -0800, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> When CONFIG_PREEMPT_NONE=y, scatterwalk.h still uses cond_resched()
+> so it needs to include sched.h:
 
-On Dec 31 2007 18:43, Patrick Mau wrote:
->
->May I ask something that might be obvious for most of the
->development community:
->
->Modules have to be loaded in seperate pages, right ?
-
-That seems to be the case, judging from /proc/modules always ending in 000,
-meaning each module is aligned at 0x1000 (4096, a page on i386).
-
-Additionally, it looks like 48% of all kernel symbols (from System.map)
-are aligned to 16 byte boundaries (what a waste! ;-))
+Thanks.  This is already in cryptodev-2.6.
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
