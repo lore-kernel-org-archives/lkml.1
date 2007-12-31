@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753241AbXLaTnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752920AbXLaTyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753241AbXLaTnb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 14:43:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbXLaTnX
+	id S1752920AbXLaTyx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 14:54:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbXLaTyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 14:43:23 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:62300 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751695AbXLaTnW (ORCPT
+	Mon, 31 Dec 2007 14:54:45 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:44225 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750935AbXLaTyo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 14:43:22 -0500
-Date: Mon, 31 Dec 2007 11:41:46 -0800
-From: Mark Fasheh <mark.fasheh@oracle.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Marcin Slusarz <marcin.slusarz@gmail.com>, ocfs2-devel@oss.oracle.com,
-       LKML <linux-kernel@vger.kernel.org>,
-       kernel-janitors <kernel-janitors@vger.kernel.org>
-Subject: Re: [RFC][PATCH] byteorder: introduce le32_add_cpu & friends to
-	core
-Message-ID: <20071231194146.GT13821@ca-server1.us.oracle.com>
-Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
-References: <20071230190619.GA13757@joi> <20071230191825.GA6447@infradead.org> <20071230214857.GA14177@joi> <20071231091732.GA29043@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071231091732.GA29043@infradead.org>
-Organization: Oracle Corporation
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 31 Dec 2007 14:54:44 -0500
+Subject: getting rid of filp search in fs_may_remount_ro()
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Christoph Hellwig <hch@lst.de>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071226141214.GA31455@lst.de>
+References: <20071126135220.GA17244@lst.de>  <20071226141214.GA31455@lst.de>
+Content-Type: text/plain
+Date: Mon, 31 Dec 2007 11:54:26 -0800
+Message-Id: <1199130866.13731.27.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 31, 2007 at 09:17:32AM +0000, Christoph Hellwig wrote:
-> > be32_add is shorter than be32_add_cpu but I think it's not clear
-> > whether second parameter is in native byte order or not.
-> 
-> Then again adding foreing endian values doesn't make much sense.
-> 
-> If you insist on your naming please make sure to convert ocfs and xfs
-> to your naming.
+On Wed, 2007-12-26 at 15:12 +0100, Christoph Hellwig wrote:
+> Btw, I just noticed in current -mm fs_may_remount_ro() is still around
+> and not replaced by ther per-sb writers count.  That surely sounds like
+> some kind of mismerge..
 
-Personally, I'd rather stick with the (IMHO) more descriptive name - btw,
-the ones he picked don't require any extra conversion in Ocfs2.
-	--Mark
+I was actually leaving that for later.  Getting rid of the filp search
+is a great benefit of the r/o bind patches, but it isn't strictly
+necessary and it doesn't really hurt anything to keep it.
 
---
-Mark Fasheh
-Principal Software Developer, Oracle
-mark.fasheh@oracle.com
+The reason that it was contentious was that we need some way to be able
+to do an sb-to-mount mapping.  When remounting the sb, we need to
+determine whether *any* of the mounts of that sb have any writers.
+
+We don't currently have any mechanisms to do direct lookups from sb to
+mount.  The only alternative I can see right now is to walk over all
+tasks, then walk over all vfs namespaces, and walk each mount tree to
+see if any mounts are of the sb we're looking for.  This needs to be
+done while already holding the mnt_writers[] locks so that no new mnt
+writers can come in.
+
+*THAT* is going to be a heavyweight operation.  I need to go look in
+detail at how the mount trees are kept, and we'll need some kind of
+mechanism to keep track of which vfs namespaces we've looked at during
+the search so we don't search them twice. 
+
+Can you think of a simpler way to do it?
+
+-- Dave
+
