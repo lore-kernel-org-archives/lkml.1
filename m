@@ -1,76 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbXLaPR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754956AbXLaPTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755546AbXLaPR5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 10:17:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754691AbXLaPRr
+	id S1754956AbXLaPTo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 10:19:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbXLaPTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 10:17:47 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:47009 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754684AbXLaPRm (ORCPT
+	Mon, 31 Dec 2007 10:19:33 -0500
+Received: from moutng.kundenserver.de ([212.227.126.174]:63650 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751004AbXLaPTb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 10:17:42 -0500
-Date: Mon, 31 Dec 2007 09:17:12 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: serue@us.ibm.com, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: TOMOYO Linux Security Goal
-Message-ID: <20071231151712.GA28624@sergelap.austin.ibm.com>
-References: <20071226164230.GA14210@sergelap.austin.ibm.com> <200712272200.IIJ73936.OHOFFLMOQJVFtS@I-love.SAKURA.ne.jp> <20071227145431.GB5161@sergelap.austin.ibm.com> <200712282332.EGC57888.OFFQHJOLVSMtFO@I-love.SAKURA.ne.jp> <20071228151221.GA12548@sergelap.austin.ibm.com> <200712291243.HFE05726.MFOJOVLQFFOtSH@I-love.SAKURA.ne.jp>
+	Mon, 31 Dec 2007 10:19:31 -0500
+Date: Mon, 31 Dec 2007 16:19:23 +0100 (CET)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Adrian Bunk <bunk@kernel.org>
+cc: Bodo Eggert <7eggert@gmx.de>, Jan Engelhardt <jengelh@computergmbh.de>,
+       devzero@web.de, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] Force UNIX domain sockets to be built in
+In-Reply-To: <20071231144255.GB13803@does.not.exist>
+Message-ID: <alpine.LSU.0.999.0712311553530.4211@be1.lrz>
+References: <alpine.LSU.0.999.0712311300020.3686@be1.lrz>
+ <20071231122419.GA13803@does.not.exist> <alpine.LSU.0.999.0712311335210.3761@be1.lrz>
+ <20071231144255.GB13803@does.not.exist>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200712291243.HFE05726.MFOJOVLQFFOtSH@I-love.SAKURA.ne.jp>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=us-ascii
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1/paKzwWkHLalVnxXpLh3kxYx4e4O+YJAzf+fP
+ GUis2Pcx3PEIpWpAM7WSSqtPwFQz7sVUtKUtSxpN/d4ulHRKkt
+ 4r33DN2lvs498azsnHqMg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Tetsuo Handa (penguin-kernel@I-love.SAKURA.ne.jp):
-> Hello.
-> 
-> Serge E. Hallyn wrote:
-> > > > >   * namespace manipulation. (i.e. mount()/umount()/pivot_root())
+On Mon, 31 Dec 2007, Adrian Bunk wrote:
+> On Mon, Dec 31, 2007 at 02:26:42PM +0100, Bodo Eggert wrote:
+> > On Mon, 31 Dec 2007, Adrian Bunk wrote:
+> > > On Mon, Dec 31, 2007 at 01:09:43PM +0100, Bodo Eggert wrote:
+
+> > > > As suggested by Adrian Bunk, UNIX domain sockets should always be built in 
+> > > > on normal systems. This is especially true since udev needs these sockets
+> > > > and fails to run if UNIX=m.
 > > > > 
-> > > > do you track mounts namespace cloning?
+> > > > Signed-Off-By: Bodo Eggert <7eggert@gmx.de>
 > > > > 
-> > > Yes. TOMOYO can recognize mount operation with the following flags.
+> > > > ---
+> > > > Last minute change: I decided against making it a bool because embedded 
+> > > > folks might depend on a small kernel image. Edited in the patch below.
+> > > >...
 > > > 
-> > >   --bind --move --remount
-> > >   --make-unbindable --make-private --make-slave --make-shared
-> > 
-> > No, I mean clone(CLONE_NEWNS) and unshare(CLONE_NEWNS).  Without
-> > tracking those, it seems like a convoluted sequence of mounting,
-> > unmonting, and mount sharing and unsharing could potentially confuse
-> > your policy or your admins...
-> Oh, I see. TOMOYO doesn't track clone() and unshare().
+> > > Is this just a purely theoretical thought or is this a reasonable use 
+> > > case people actually use in practice?
+> >  
+> > For now, it's a theoretical thought, but having an embedded device, I can 
+> > see the reason for $EVERYTHING=m there.
 > 
-> > I haven't fully thought it through.  But at least if an admin makes a
-> > policy update with an expectation that all processes have the same mount
-> > trees the result could be unsafe.
-> TOMOYO doesn't expect that all processes have the same mount trees.
-> But TOMOYO expects that the mount trees won't change unless one of mount()/
-> umount()/pivot_root() are called.
-> Does a process get different mount trees by just calling clone() or unshare()?
-> My understanding is that clone() or unshare() disables propergation of
-> mount tree changes when somebody calls mount() or umount() or pivot_root().
-
-Yes, with further propagation rules possible.
-
-> > > Speak of bind mounts, there comes vfsmount problem.
-> > > AppArmor has been proposing patches to pass "struct vfsmount" parameter to
-> > > VFS helper functions and LSM hooks so that AppArmor/TOMOYO can determine
-> > > which pathname was requested in the bind-mounted environment.
-> > > Without the vfsmount patches, we can't calculate pathname without the risk of
-> > > AB-BA deadlock (if namespace_sem held) or crash (if namespace_sem not held).
-> > > I think we should start discussing how the vfsmount patches can be merged.
-> > > I'm sad to see no response for AppArmor's posting
-> > > at http://lkml.org/lkml/2007/12/20/182 .
-> > 
-> > If the patches solve your problem, and you respond saying "TOMOYO needs
-> > these patches too", it just might get the thread going.
-> > 
-> I'll say it when I submit patches.
+> The only advantage I see is that the kernel image you have to flash 
+> can be made smaller - with the disadvantage that the running kernel
+> is bigger by more than 10%.
 > 
-> Regards.
+> If you don't believe me, try it yourself:
+> Build all drivers statically into your kernel, and then compare the 
+> vmlinux sizes with CONFIG_MODULES=n and CONFIG_MODULES=y.
+
+If you'd aim for a small kernel image, you would build anything as a module 
+that is not requred for booting.
+
+> > > After all, changing it to a bool will allow us to make the kernel image 
+> > > for nearly everyone smaller by a few hundred bytes...
+> > 
+> > I can't see why optionally building it as a module would force us to make 
+> > the kernel bigger. It may be a little more ugly to support =m, but thats it,
+> > isn't it?
+> 
+> On architectures like x86 where __exit code is freed at runtime 
+> af_unix_exit() makes your kernel image (but not the running kernel) 
+> bigger.
+> 
+> With CONFIG_MODULES=y the 13 EXPORT_SYMBOL's that only exist for the 
+> theoretical possibility of CONIG_UNIX=m waste a few hundred bytes 
+> of memory.
+
+#define m='m'
+#if CONIG_UNIX=='m'
+#define EXPORT_SYMBOL_AF_UNIX EXPORT_SYMBOL
+#else
+#define EXPORT_SYMBOL_AF_UNIX()
+#endif
+#undef m
+
+You could also use "#if defined(C_U) && (C_U == m)".
+-- 
+Funny quotes:
+36. You never really learn to swear until you learn to drive.
