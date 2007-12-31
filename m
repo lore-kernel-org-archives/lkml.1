@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbXLaXnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752818AbXLaXvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752858AbXLaXnV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 18:43:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbXLaXnM
+	id S1752818AbXLaXvo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 18:51:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbXLaXvg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 18:43:12 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:41819 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751309AbXLaXnL (ORCPT
+	Mon, 31 Dec 2007 18:51:36 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:37761 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751042AbXLaXvf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 18:43:11 -0500
-Message-ID: <47797E39.7090208@zytor.com>
-Date: Mon, 31 Dec 2007 15:41:45 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 31 Dec 2007 18:51:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=YcPb3sjTo6LmbGhj0VlFUQVkdxMuwUv6ScHPi/EdTW1ngDtD8tMDyO95VucVxMbInaGr4KhYov2615NH5K721XD54szGBN4awyEuHe9sOOEFErIjxaxRhN1o8wt2c2Hfq2vHQH0o5Kmo2juBpmYdCGUOenYLD8QoVZFOGrXO5OA=
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] alsa: fix compilation warning in GCC
+Date: Tue, 1 Jan 2008 00:51:30 +0100
+User-Agent: KMail/1.9.7
+Cc: perex@perex.cz
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Ondrej Zary <linux@rainbow-software.org>,
-       Rene Herman <rene.herman@keyaccess.nl>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>, dpreed@reed.com,
-       Islam Amer <pharon@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       Ingo Molnar <mingo@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
-References: <477711DC.5030800@keyaccess.nl>	<4778FE42.6010003@keyaccess.nl>	<20071231155600.0b06552c@the-village.bc.nu>	<200712312122.13739.linux@rainbow-software.org>	<20071231212525.6940ce70@the-village.bc.nu>	<47796363.8060604@zytor.com> <20071231232412.64347335@the-village.bc.nu>
-In-Reply-To: <20071231232412.64347335@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200801010051.30963.mboton@gmail.com>
+From: Miguel =?utf-8?q?Bot=C3=B3n?= <mboton.lkml@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> However, assuming a bus clock of 6 MHz should be safe (167 ns).
-> 
-> Agreed - or ISA timings directly. Boxes using WD80x3 are not going to
-> have a TSC so might as well stick with port 0x80 as they have done just
-> fine for the past 15 years.
-> 
->> None of this really helps with *memory-mapped* 8390, though, since 
->> memory mapped writes can be posted.  Putting any IOIO transaction in the 
-> 
-> ISA isn't posted only PCI.
-> 
-> PCI 8390 clones seem to be a mix of ASICs and 8390x chips with
-> some quite disgusting FPGA glue logic.
-> 
+This is just a little patch to shut up GCC.
 
-ISA isn't posted no, but on several chipsets the upstream PCI bus will 
-post MMIO writes to ISA space regardless of the spec.
+'snd_shutdown_f_ops' is not a pointer so its address will never be NULL.
+GCC will complain because 'fops_get' will do an unnecessary check because
+'&snd_shutdown_f_ops' is always true.
 
-	-hpa
+Signed-off-by: Miguel Botón <mboton@gmail.com>
+
+diff --git a/sound/core/init.c b/sound/core/init.c
+index 48d38a7..2215ba8 100644
+--- a/sound/core/init.c
++++ b/sound/core/init.c
+@@ -340,8 +340,8 @@ int snd_card_disconnect(struct snd_card *card)
+ 		list_add(&mfile->shutdown_list, &shutdown_files);
+ 		spin_unlock(&shutdown_lock);
+ 
+-		fops_get(&snd_shutdown_f_ops);
+ 		mfile->file->f_op = &snd_shutdown_f_ops;
++		fops_get(mfile->file->f_op);
+ 		
+ 		mfile = mfile->next;
+ 	}
+
+-- 
+	Miguel Botón
