@@ -1,57 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758641AbXLaAQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757496AbXLaAZM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758641AbXLaAQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 19:16:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754937AbXLaAQS
+	id S1757496AbXLaAZM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 19:25:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbXLaAZB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 19:16:18 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:4476 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754690AbXLaAQS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 19:16:18 -0500
-Subject: Re: [PATCH 1/3] Remove unused dependency
-From: Joe Perches <joe@perches.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       trivial@kernel.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Richard Henderson <rth@twiddle.net>
-In-Reply-To: <20071230220018.GA16557@uranus.ravnborg.org>
-References: <1198306931-5258-1-git-send-email-joe@perches.com>
-	 <1198306931-5258-2-git-send-email-joe@perches.com>
-	 <20071222083323.GA22653@uranus.ravnborg.org>
-	 <1198313412.4895.24.camel@localhost>
-	 <20071222143128.GA24659@uranus.ravnborg.org>
-	 <1198351691.4895.42.camel@localhost>
-	 <20071230220018.GA16557@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Sun, 30 Dec 2007 16:16:10 -0800
-Message-Id: <1199060170.9887.27.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
+	Sun, 30 Dec 2007 19:25:01 -0500
+Received: from py-out-1112.google.com ([64.233.166.178]:26193 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752638AbXLaAZA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 19:25:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=IBXRjaSzKrY6A6fPUy4wnOANUzDf5qovHX6YeJ0f9mVmL9eRpqpQ570/girnPn0FtbtMh9MyE72BYvYvRVuJEurR8POuwPBiduI8InmmPOafdIdXrSe8ZJyKlkr9ARXegw+36ZiKjFiftWT7IKKSfXY63IzGTQEN4f4oH5IPri0=
+Message-ID: <524f69650712301624w7bc2ca25jfde8e34aff879895@mail.gmail.com>
+Date: Sun, 30 Dec 2007 18:24:59 -0600
+From: "Steve French" <smfrench@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: LINUX kernel 2.6.23: bug in CIFSSMBSetEA
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-12-30 at 23:00 +0100, Sam Ravnborg wrote:
-> Can you please remind me what problem you are actually trying to solve here.
-> Your current approach it not good - we do not want .c code in include/*
-> And what is wrong with the current include path?
+> In fs/cifs/cifssmb.c, in CIFSSMBSetEA (...) function wrong counting of
+> var exists.
 
-It's not a bit deal.
+>
+> EXISTING CODE:
+> pSMB->DataCount = sizeof(*parm_data) + ea_value_len + name_len + 1;
+>
+> MUST BE:
+> pSMB->DataCount = sizeof(*parm_data) + ea_value_len + name_len;
+>
 
-inflate.c is #include'd with different depth "../" prefixes.
-Currently, depths 1, 3, 4 and 5 are used.
+> REASON:
+> "sizeof(*parm_data)" counts 1 byte from "char name[1];"
+>
+> So, for example in Samba server (sources/smbd/trans2.c), we can see
 
-It seemed neater to take this inflate.c file, which can not
-be stand-alone compiled, and move it to somewhere on the
-include path so that it may be included via #include <inflate.c>
+> wrong processing of EA, cause data sent to server is bigger on 1 byte
+> then it must be.
+>
+> See Extra info for details
+>
+> --------------------------------------------- Extra info
 
-I was originally trying to make each file in a directory via
+>
+> struct fealist *parm_data;
+>
+> 1707 struct fea {
+> 1708 unsigned char EA_flags;
+> 1709 __u8 name_len;
+> 1710 __u16 value_len;
+> 1711 char name
+[1];
+> 1712 /* optionally followed by value */
+> 1713 };
+> 1714 /* flags for _FEA.fEA */
+> 1715 #define FEA_NEEDEA 0x80 /* need EA bit */
 
-for file in $(ls lib/*.c) ; do file=${file%.c}.o ; make $file ; done
+> 1716
+> 1717 struct fealist {
+> 1718 __u32 list_len;
+> 1719 struct fea list[1];
+> 1720 };
 
-and I noticed that inflate.o wasn't made.
 
-cheers, Joe
 
+Yes - you are correct (note that Windows is less strict with the extra
+pad byte than current Samba, and I don't remember seeing this with
+older Samba server versions perhaps the length check ).
+
+
+I have checked in a fix to the cifs development tree. Thanks.
+
+
+
+-- 
+Thanks,
+
+Steve
