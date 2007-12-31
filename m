@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757953AbXLaJzG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758259AbXLaKGZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757953AbXLaJzG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 04:55:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbXLaJy4
+	id S1758259AbXLaKGZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 05:06:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbXLaKGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 04:54:56 -0500
-Received: from smtp3-g19.free.fr ([212.27.42.29]:55779 "EHLO smtp3-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753539AbXLaJyz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 04:54:55 -0500
-User-Agent: Microsoft-Entourage/11.2.5.060620
-Date: Mon, 31 Dec 2007 10:54:52 +0100
-Subject: Re: RAID timeout parameter accessibility request
-From: Jose de la Mancha <hidalgoj@free.fr>
-To: <linux-kernel@vger.kernel.org>
-Message-ID: <C39E7AFC.F5C7%hidalgoj@free.fr>
-Thread-Topic: RAID timeout parameter accessibility request
-Thread-Index: AchLkzAjbm21IbeGEdyZCAADk7o1Ig==
-In-Reply-To: <4778256E.5000309@shaw.ca>
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Content-transfer-encoding: 7bit
+	Mon, 31 Dec 2007 05:06:15 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:35607 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753539AbXLaKGP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Dec 2007 05:06:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=PL8dhUT7/DF8CT1bp/BcyBrBbQZviX3DBFmGQegvNzIqRqOSp8oPjeKiQFH0XbdtiS3I/jRf8rkNnHqexG1MO7zAv8U0eHxXBY/YZbi2nq11pjOIAoMPrC3QSi5vbgYYJ5lA5aXosQA3pmHu/fsYKHA9P5ZM1GvxagowlrZJ/64=
+Message-ID: <2cf50a010712310206v2e116cbclc25e812846bd4030@mail.gmail.com>
+Date: Mon, 31 Dec 2007 21:06:14 +1100
+From: "Jack Andrews" <effbiae@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: wanting to use mmap
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks guys for your answers (please remember to keep CCing me).
+hi all,
 
-Robert Hancock wrote:
-> This always seemed a strange use case to me. If the drive is getting
-> read errors, either it's dying and needs to be replaced, or it has a
-> sporadic bad sector as a result of a power failure during write, etc. in
-> which case the drive should be resynchronized. In either case the drive
-> should be dropped from the array and require manual intervention. It
-> doesn't seem logical to me to just read the data from another drive and
-> carry on in our merry way without any warning.
+i read the O_DIRECT january thread:
+  http://kerneltrap.org/mailarchive/linux-kernel/2007/1/11/44365
 
---> A warning message is OK, but dropping the drive from the array is
-excessive IMHO. And anyway, this should be user-configurable, so that it
-becomes each user's responsibility to choose if the drive shall be dropped
-or not. Currently we don't have any choice.
+i am interested in using mmap as a quick way of getting data
+to and from disk.  i also want to handle errors (like bad blocks)
+as well as is possible using usual read/write calls.
 
-Jan Engelhardt wrote:
-> Not sure about Debian, but perhaps /sys/block/md0/md/safe_mode_delay
-> does something?
+would i be right in saying that
+  a) mmap+madvise+msync
+provides almost the same function as
+  b) read/write(2)+posix_fadvise+fsync
 
---> I'll check that out. Does someone know about how this "safe mode delay"
-works ?
+i have read that fault-tolerance or error-handling is 'better'
+using (b). what does this mean exactly?  i note that write(2)
+may return EIO - what happens if the same underlying error
+occurs when accessing a mmap'ed file?  i notice that in the
+implementation of msync, fsync is called so errno might be
+set to EIO...
 
-Thanasis wrote:
-> WD 2500YS
-> price same as an IDE or SATA
-
---> All RAID edition drives are more expensive that their equivalent
-"desktop edition" drives (same model on "desktop edition"). Just take a look
-at newegg for instance. Besides, trying to find an affordable "RAID edition"
-model is not a solution to this technical timeout issue, just a workaraound
-(a bad one IMHO). Thanks anyway.
-
-
+ta, jack
+(please cc: me)
