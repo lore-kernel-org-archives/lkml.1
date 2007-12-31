@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759145AbXLaMJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759300AbXLaMKL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759145AbXLaMJa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 07:09:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757732AbXLaMJW
+	id S1759300AbXLaMKL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 07:10:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757724AbXLaMJ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 07:09:22 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47314 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757562AbXLaMJV (ORCPT
+	Mon, 31 Dec 2007 07:09:56 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:57320 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757382AbXLaMJy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 07:09:21 -0500
-Date: Mon, 31 Dec 2007 11:59:02 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "David P. Reed" <dpreed@reed.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Rene Herman <rene.herman@keyaccess.nl>, Ingo Molnar <mingo@elte.hu>,
-       Islam Amer <pharon@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       Ingo Molnar <mingo@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
-Message-ID: <20071231115902.72ab8fe7@the-village.bc.nu>
-In-Reply-To: <47783678.9070706@zytor.com>
-References: <477711DC.5030800@keyaccess.nl>
-	<alpine.LFD.1.00.0712300124440.32517@woody.linux-foundation.org>
-	<20071230144700.78f4605c@the-village.bc.nu>
-	<20071230152835.GX16946@elte.hu>
-	<20071230153818.1a554a7e@the-village.bc.nu>
-	<20071230160132.GA14311@elte.hu>
-	<20071230164828.039916c8@the-village.bc.nu>
-	<4777E010.7030703@keyaccess.nl>
-	<20071230183927.5a5a3c42@the-village.bc.nu>
-	<4777F297.9070207@keyaccess.nl>
-	<alpine.LFD.1.00.0712301158410.32517@woody.linux-foundation.org>
-	<47780B93.4050606@reed.com>
-	<20071230213623.410d480a@the-village.bc.nu>
-	<4778266B.2060502@reed.com>
-	<47783678.9070706@zytor.com>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 31 Dec 2007 07:09:54 -0500
+Date: Mon, 31 Dec 2007 13:09:43 +0100 (CET)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Jan Engelhardt <jengelh@computergmbh.de>, devzero@web.de,
+       linux-kernel@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
+       netdev@vger.kernel.org
+Subject: [PATCH] Force UNIX domain sockets to be built in
+Message-ID: <alpine.LSU.0.999.0712311300020.3686@be1.lrz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1/xpGJuN7CXiEJ2MrTLA86msWVnEPN/yIbp8Zs
+ 05fCB8V54K/TBmUDbbbSZeu5pWBPJ6ozOgwVUR3NvxC1dToMN8
+ KSgqSPUSif7wetcsmoRRQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 30 Dec 2007 16:23:20 -0800
-"H. Peter Anvin" <hpa@zytor.com> wrote:
+As suggested by Adrian Bunk, UNIX domain sockets should always be built in 
+on normal systems. This is especially true since udev needs these sockets
+and fails to run if UNIX=m.
 
-> > continuing to investigate for a cause.  It would be nice if it were a 
-> > BIOS-fixable problem.  It would be even nicer if the BIOS were GPL...
-> 
-> If it was an SMM trap, I would expect it to be trapped in the SuperIO chip.
+Signed-Off-By: Bodo Eggert <7eggert@gmx.de>
 
-Many SuperIO chips do port 0x80, but they do it over the LPC and they do
-it in hardware to the parallel port data lines. The timings posted for
-0x80 on his box are really a bit fast for LPC.
+---
+Last minute change: I decided against making it a bool because embedded 
+folks might depend on a small kernel image. Edited in the patch below.
+
+diff -X dontdiff -pruN linux-2.6.23.base/net/unix/Kconfig linux-2.6.23.socket-y/net/unix/Kconfig
+--- linux-2.6.23.base/net/unix/Kconfig	2006-11-29 22:57:37.000000000 +0100
++++ linux-2.6.23.socket-y/net/unix/Kconfig	2007-12-31 12:57:44.000000000 +0100
+@@ -3,7 +3,8 @@
+ #
+ 
+ config UNIX
+-	tristate "Unix domain sockets"
++	tristate "Unix domain sockets" if EMBEDDED
++	default y
+ 	---help---
+ 	  If you say Y here, you will include support for Unix domain sockets;
+ 	  sockets are the standard Unix mechanism for establishing and
+
+-- 
+            A. Top posters
+            Q. What's the most annoying thing on Usenet?
