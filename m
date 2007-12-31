@@ -1,101 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752695AbXLaRwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752767AbXLaRzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752695AbXLaRwX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 12:52:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbXLaRwL
+	id S1752767AbXLaRzY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 12:55:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbXLaRzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 12:52:11 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:51172 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751473AbXLaRwK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 12:52:10 -0500
-Date: Mon, 31 Dec 2007 19:51:58 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Bodo Eggert <7eggert@gmx.de>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>, devzero@web.de,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] Force UNIX domain sockets to be built in
-Message-ID: <20071231175158.GA2360@does.not.exist>
-References: <alpine.LSU.0.999.0712311300020.3686@be1.lrz> <20071231122419.GA13803@does.not.exist> <alpine.LSU.0.999.0712311335210.3761@be1.lrz> <20071231144255.GB13803@does.not.exist> <alpine.LSU.0.999.0712311553530.4211@be1.lrz>
+	Mon, 31 Dec 2007 12:55:12 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:42684 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751622AbXLaRzJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Dec 2007 12:55:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=gJFbaR+iVKnV2IrTkIP+rJMEVbHwEu+n7CuNkCEuxDeQ0BUfCEBMF6unumPzKzt4WVANC73OojxaX4xPIcMDqiVFVepjEZTOWImG5cOk1ghCnkBEu8GaNoLLUxKIDDw3MajDke9kZJ60u6DWixj4yi+i/BtuMvSBNxg8siTxmjY=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Patrick McHardy <kaber@trash.net>
+Subject: Re: [PATCH] ip[6]_tables.c: remove some inlines
+Date: Mon, 31 Dec 2007 17:55:02 +0000
+User-Agent: KMail/1.9.1
+Cc: Harald Welte <laforge@gnumonks.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>
+References: <200712161247.53986.vda.linux@googlemail.com> <200712311643.41946.vda.linux@googlemail.com> <47792032.3020609@trash.net>
+In-Reply-To: <47792032.3020609@trash.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LSU.0.999.0712311553530.4211@be1.lrz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200712311755.02578.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 31, 2007 at 04:19:23PM +0100, Bodo Eggert wrote:
-> On Mon, 31 Dec 2007, Adrian Bunk wrote:
-> > On Mon, Dec 31, 2007 at 02:26:42PM +0100, Bodo Eggert wrote:
-> > > On Mon, 31 Dec 2007, Adrian Bunk wrote:
-> > > > On Mon, Dec 31, 2007 at 01:09:43PM +0100, Bodo Eggert wrote:
+On Monday 31 December 2007 17:00, Patrick McHardy wrote:
+> Denys Vlasenko wrote:
+> > ip[6]_tables.c seem to abuse inline.
+> >
+> > This patch removes inlines except those which are used
+> > by packet matching code and thus are performance-critical.
+> >   
 > 
-> > > > > As suggested by Adrian Bunk, UNIX domain sockets should always be built in 
-> > > > > on normal systems. This is especially true since udev needs these sockets
-> > > > > and fails to run if UNIX=m.
-> > > > > 
-> > > > > Signed-Off-By: Bodo Eggert <7eggert@gmx.de>
-> > > > > 
-> > > > > ---
-> > > > > Last minute change: I decided against making it a bool because embedded 
-> > > > > folks might depend on a small kernel image. Edited in the patch below.
-> > > > >...
-> > > > 
-> > > > Is this just a purely theoretical thought or is this a reasonable use 
-> > > > case people actually use in practice?
-> > >  
-> > > For now, it's a theoretical thought, but having an embedded device, I can 
-> > > see the reason for $EVERYTHING=m there.
-> > 
-> > The only advantage I see is that the kernel image you have to flash 
-> > can be made smaller - with the disadvantage that the running kernel
-> > is bigger by more than 10%.
-> > 
-> > If you don't believe me, try it yourself:
-> > Build all drivers statically into your kernel, and then compare the 
-> > vmlinux sizes with CONFIG_MODULES=n and CONFIG_MODULES=y.
+> Some people also consider the ruleset replacement path performance
+> critical, but overall I agree with your patch. I'm travelling currently
+> though so it will take a few days until I'll apply it.
 > 
-> If you'd aim for a small kernel image, you would build anything as a module 
-> that is not requred for booting.
-> 
-> > > > After all, changing it to a bool will allow us to make the kernel image 
-> > > > for nearly everyone smaller by a few hundred bytes...
-> > > 
-> > > I can't see why optionally building it as a module would force us to make 
-> > > the kernel bigger. It may be a little more ugly to support =m, but thats it,
-> > > isn't it?
-> > 
-> > On architectures like x86 where __exit code is freed at runtime 
-> > af_unix_exit() makes your kernel image (but not the running kernel) 
-> > bigger.
-> > 
-> > With CONFIG_MODULES=y the 13 EXPORT_SYMBOL's that only exist for the 
-> > theoretical possibility of CONIG_UNIX=m waste a few hundred bytes 
-> > of memory.
-> 
-> #define m='m'
-> #if CONIG_UNIX=='m'
-> #define EXPORT_SYMBOL_AF_UNIX EXPORT_SYMBOL
-> #else
-> #define EXPORT_SYMBOL_AF_UNIX()
-> #endif
-> #undef m
-> 
-> You could also use "#if defined(C_U) && (C_U == m)".
+> Do you have some numbers that show the actual difference these
+> changes make?
 
-Look at the number of exports in the kernel and the number of lines 
-changed per months, and it becomes obvious that somwthing like that
-would not be maintainable.
+Before:
 
-cu
-Adrian
+$ size */*/*/ip*tables*.o
+   text    data     bss     dec     hex filename
+   6402     500      16    6918    1b06 net/ipv4/netfilter/ip_tables.o
+   7130     500      16    7646    1dde net/ipv6/netfilter/ip6_tables.o
 
--- 
+After:
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+$ size */*/*/ip*tables*.o
+   text    data     bss     dec     hex filename
+   6307     500      16    6823    1aa7 net/ipv4/netfilter/ip_tables.o
+   7010     500      16    7526    1d66 net/ipv6/netfilter/ip6_tables.o
 
+--
+vda
