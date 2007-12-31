@@ -1,48 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbXLaCue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbXLaDOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754729AbXLaCue (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 21:50:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbXLaCuY
+	id S1756134AbXLaDOS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 22:14:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbXLaDOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 21:50:24 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:49193 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751678AbXLaCuX (ORCPT
+	Sun, 30 Dec 2007 22:14:07 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:43166 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751276AbXLaDOG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 21:50:23 -0500
-Date: Mon, 31 Dec 2007 03:50:22 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jeff Garzik <jeff@garzik.org>
-cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Git Mailing List <git@vger.kernel.org>
-Subject: Re: Updated Kernel Hacker's guide to git
-In-Reply-To: <476E42BF.1010300@garzik.org>
-Message-ID: <Pine.LNX.4.64.0712310349260.2093@fbirervta.pbzchgretzou.qr>
-References: <200612241807.kBOI746w008739@laptop13.inf.utfsm.cl>
- <476E42BF.1010300@garzik.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 30 Dec 2007 22:14:06 -0500
+Date: Sun, 30 Dec 2007 19:13:51 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: =?ISO-8859-1?Q? "Oliver_Pinter_(Pint=E9r_Oliv=E9r)" ?= 
+	<oliver.pntr@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [05/06] [typo fix] Documentation/scsi/ChangeLog.lpfc
+Message-Id: <20071230191351.64a16b2f.randy.dunlap@oracle.com>
+In-Reply-To: <6101e8c40712300520n6f30efbbg2121ee6162bca1ab@mail.gmail.com>
+References: <6101e8c40712300520n6f30efbbg2121ee6162bca1ab@mail.gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 30 Dec 2007 14:20:20 +0100 Oliver Pinter (Pintér Olivér) wrote:
 
-On Dec 23 2007 06:13, Jeff Garzik wrote:
-> Another year, another update!  :)
->
-> The kernel hacker's guide to git has received some updates:
->
-> 	http://linux.yyz.us/git-howto.html
->
+> -- [patch is attachment]
 
-It says
+Please send SCSI patches to linux-scsi@vger.kernel.org and
+cc the appropriate (LPFC) maintainer, as listed in the
+MAINTAINERS file.
 
-"""Don't forget to download tags from time to time.
-
-git pull only downloads sha1-indexed object data, and the requested
-remote head. This misses updates to the .git/refs/tags/ and
-.git/refs/heads/ directories. For tags, run git fetch --tags $URL."""
-
-
-But when I do git pull on a simple tracking tree (e.g. git-clone
-torvalds/linux-2.6.git; git pull;) it automatically grabs new tags.
+---
+~Randy
+desserts:  http://www.xenotime.net/linux/recipes/
