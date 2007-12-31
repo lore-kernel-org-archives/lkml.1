@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755034AbXLaQKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752298AbXLaQKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755034AbXLaQKY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 11:10:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751599AbXLaQKL
+	id S1752298AbXLaQKl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 11:10:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbXLaQK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 11:10:11 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51893 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751334AbXLaQKJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 11:10:09 -0500
-Date: Mon, 31 Dec 2007 16:01:40 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: "Torsten Kaiser" <just.for.lkml@googlemail.com>,
-       "Adrian Bunk" <bunk@kernel.org>, "Bodo Eggert" <7eggert@gmx.de>,
-       "Jan Engelhardt" <jengelh@computergmbh.de>, devzero@web.de,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] Force UNIX domain sockets to be built in
-Message-ID: <20071231160140.579f0fb2@the-village.bc.nu>
-In-Reply-To: <200712311659.14847.mb@bu3sch.de>
-References: <alpine.LSU.0.999.0712311300020.3686@be1.lrz>
-	<20071231144255.GB13803@does.not.exist>
-	<64bb37e0712310755k2446e67eq81d31cd476eb75e3@mail.gmail.com>
-	<200712311659.14847.mb@bu3sch.de>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 31 Dec 2007 11:10:27 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34792 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755083AbXLaQKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Dec 2007 11:10:25 -0500
+Date: Mon, 31 Dec 2007 11:10:21 -0500
+From: Dave Jones <davej@redhat.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Recursive variable `KBUILD_CFLAGS' references itself
+	(eventually).
+Message-ID: <20071231161021.GC27655@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Sam Ravnborg <sam@ravnborg.org>,
+	lkml <linux-kernel@vger.kernel.org>
+References: <20071120001445.GA9243@redhat.com> <20071231131619.GE21871@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071231131619.GE21871@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'd say the practical advantage to the user would be almost zero.
-> Which distribution is going to enable this option and defacto
-> banning external modules?
+On Mon, Dec 31, 2007 at 02:16:19PM +0100, Sam Ravnborg wrote:
 
-It would be a real nuisance for developing code let alone for using it.
-The entries are currently far bigger than is needed and fixing that would
-be much more productive.
+ > > Trying to do a 32bit build on a 64bit machine.
+ > > I did..
+ > >   make ARCH=i386 oldconfig
+ > >   make ARCH=i386 arch/x86/
+ > 
+ > Walking through my mailbox I found this one.
+ > I did not get similar reports and I cannot reproduce it.
+ > Do you continue to see this or had it been fixed somehow?
 
-Alan
+Still happens for me with the latest tree from git.
+
+$ make ARCH=i386 arch/x86/
+  HOSTCC  scripts/kconfig/conf.o
+  HOSTLD  scripts/kconfig/conf
+scripts/kconfig/conf -s arch/x86/Kconfig
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  UPD     include/linux/utsrelease.h
+  CALL    scripts/checksyscalls.sh
+/mnt/raid0/src/linux-2.6/arch/x86/Makefile_32:43: *** Recursive variable `KBUILD_CFLAGS' references itself (eventually).  Stop.
+make: *** [arch/x86/] Error 2
+
+ > The only way I can see it heppen is that you have lost
+ > the initial assignmnet in top-level Makefile so
+ > make see this as an '=' assinment and not a ':='
+ > assignment.
+
+$ git diff Makefile
+$
+
+(This tree is completely pristine, no changes at all)
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
