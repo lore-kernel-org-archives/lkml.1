@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754306AbXLaPfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753593AbXLaPrp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754306AbXLaPfM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 10:35:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbXLaPe5
+	id S1753593AbXLaPrp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 10:47:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbXLaPre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 10:34:57 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:38664 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751332AbXLaPe4 (ORCPT
+	Mon, 31 Dec 2007 10:47:34 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:40491 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750992AbXLaPrc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 10:34:56 -0500
-Date: Mon, 31 Dec 2007 16:34:55 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Bodo Eggert <7eggert@gmx.de>
-cc: Adrian Bunk <bunk@kernel.org>, devzero@web.de,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] Force UNIX domain sockets to be built in
-In-Reply-To: <alpine.LSU.0.999.0712311553530.4211@be1.lrz>
-Message-ID: <Pine.LNX.4.64.0712311628330.28123@fbirervta.pbzchgretzou.qr>
-References: <alpine.LSU.0.999.0712311300020.3686@be1.lrz>
- <20071231122419.GA13803@does.not.exist> <alpine.LSU.0.999.0712311335210.3761@be1.lrz>
- <20071231144255.GB13803@does.not.exist> <alpine.LSU.0.999.0712311553530.4211@be1.lrz>
+	Mon, 31 Dec 2007 10:47:32 -0500
+Date: Mon, 31 Dec 2007 08:47:31 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Douglas Gilbert <dougg@torque.net>
+Cc: Bodo Eggert <7eggert@gmx.de>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Bad escriptions in Kconfig
+Message-ID: <20071231154731.GY11638@parisc-linux.org>
+References: <alpine.LSU.0.999.0712311313050.3761@be1.lrz> <477907DB.8030406@torque.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <477907DB.8030406@torque.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Dec 31, 2007 at 10:16:43AM -0500, Douglas Gilbert wrote:
+> Bodo Eggert wrote:
+> > ---
+> > SCSI target support (SCSI_TGT) [N/m/y/?] (NEW) ?
+> > 
+> > If you want to use SCSI target mode drivers enable this option.
+> > If you choose M, the module will be called scsi_tgt.
+> > ---
+> > 
+> > What TF is a SCSI target mode, what is a target mode driver?
+> 
+> Heard of google :-)
+> 
+> For explanations of SCSI (and other storage) terminology
+> reference could be made to SAM-3 or SAM-4 drafts (because
+> the real standards cost money) at www.t10.org .
+> 
+> Perhaps many other subsections in the kernel could have
+> similar references.
 
-On Dec 31 2007 16:19, Bodo Eggert wrote:
->Adrian Bunk wrote:
->> 
->> The only advantage I see is that the kernel image you have to flash 
->> can be made smaller - with the disadvantage that the running kernel
->> is bigger by more than 10%.
->> 
->> If you don't believe me, try it yourself:
->> Build all drivers statically into your kernel, and then compare the 
->> vmlinux sizes with CONFIG_MODULES=n and CONFIG_MODULES=y.
->
->If you'd aim for a small kernel image, you would build anything as a module 
->that is not requred for booting.
->
-Yes, there is a tradeoff for both.
+I think that's an appalling idea.  Someone's trying to configure their
+kernel, not research hundreds of new ideas on the internet.  Here's a
+better description:
 
-Example:
-16:30 ichi:../net/802 > l fc.o fc.ko 
--rw-r--r-- 1 jengelh users 7961 Dec 27 15:19 fc.ko
--rw-r--r-- 1 jengelh users 2453 Dec 28 23:58 fc.o
-(from a recent not-so-complete patch turning CONFIG_FC etc. into =m)
+	help
+	  The SCSI target code allows your computer to appear as a SCSI
+	  device.  This is useful in a SAN or NAS environment where you
+	  want other computers to be able to treat this computer as a disc.
 
-If fc was modular, it might save the 2453 bytes off the core kernel image,
-but adds ~5508 bytes to disk.
-So one has to pick =y or =m depending on whatever suits his/her situation.
+	  To compile this driver as a module, choose M here: the module
+	  will be called scsi_tgt.
 
-But the choice should be _available_.
-
->>>> After all, changing it to a bool will allow us to make the
->>>> kernel image for nearly everyone smaller by a few hundred
->>>> bytes...
->>> 
->>> I can't see why optionally building it as a module would force us
->>> to make the kernel bigger. It may be a little more ugly to
->>> support =m, but thats it, isn't it?
->> 
->> On architectures like x86 where __exit code is freed at runtime 
->> af_unix_exit() makes your kernel image (but not the running kernel) 
->> bigger.
->> 
->> With CONFIG_MODULES=y the 13 EXPORT_SYMBOL's that only exist for
->> the theoretical possibility of CONIG_UNIX=m waste a few hundred
->> bytes of memory.
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
