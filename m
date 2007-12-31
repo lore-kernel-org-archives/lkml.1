@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753154AbXLaTjJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbXLaTj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753154AbXLaTjJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 14:39:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbXLaTix
+	id S1753416AbXLaTj0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 14:39:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbXLaTjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 14:38:53 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:51263 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751808AbXLaTiw (ORCPT
+	Mon, 31 Dec 2007 14:39:05 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:61095 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752556AbXLaTjD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 14:38:52 -0500
-Date: Mon, 31 Dec 2007 19:38:48 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Bodo Eggert <7eggert@gmx.de>
-Cc: David Miller <davem@davemloft.net>, jengelh@computergmbh.de,
-       devzero@web.de, linux-kernel@vger.kernel.org, bunk@kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] Force UNIX domain sockets to be built in
-Message-ID: <20071231193848.GQ27894@ZenIV.linux.org.uk>
-References: <alpine.LSU.0.999.0712311300020.3686@be1.lrz> <20071231.042055.145660385.davem@davemloft.net> <alpine.LSU.0.999.0712311426520.3761@be1.lrz>
-Mime-Version: 1.0
+	Mon, 31 Dec 2007 14:39:03 -0500
+Date: Mon, 31 Dec 2007 11:38:01 -0800
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       kernel-janitors <kernel-janitors@vger.kernel.org>,
+       ocfs2-devel@oss.oracle.com
+Subject: Re: [RFC][PATCH] byteorder: introduce le32_add_cpu & friends to
+	core
+Message-ID: <20071231193801.GS13821@ca-server1.us.oracle.com>
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
+References: <20071230190619.GA13757@joi>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LSU.0.999.0712311426520.3761@be1.lrz>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <20071230190619.GA13757@joi>
+Organization: Oracle Corporation
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 31, 2007 at 03:03:20PM +0100, Bodo Eggert wrote:
-> On Mon, 31 Dec 2007, David Miller wrote:
-> > From: Bodo Eggert <7eggert@gmx.de>
+On Sun, Dec 30, 2007 at 08:06:34PM +0100, Marcin Slusarz wrote:
+> There are many places where these functions would be useful.
+> (just look at: grep -r 'cpu_to_[ble12346]*([ble12346]*_to_cpu.*[-+]' linux-src/)
+> What do you think?
 > 
-> > > As suggested by Adrian Bunk, UNIX domain sockets should always be built in 
-> > > on normal systems. This is especially true since udev needs these sockets
-> > > and fails to run if UNIX=m.
-> > > 
-> > > Signed-Off-By: Bodo Eggert <7eggert@gmx.de>
-> > 
-> > People who use udev can make sure they have it built into their kernel
-> > if they have such a dependency.
-> > 
-> > Not everyone uses udev, and therefore needs AF_UNIX non-modular.
+> ps: this patch depends on http://lkml.org/lkml/2007/12/25/35
+> --
 > 
-> That's why I kept this option for embedded folks.
-> 
-> Is there any benefit for non-embedded systems from having UNIX=m?
+> add inline functions which add native byte order variable to
+> little/big endian variable to core header and as an example
+> convert ext3 to use them
 
-udev-free != embedded.
+You might want to note where you got these functions from in your message.
+
+Also, it would be easier to follow these changes if you had broken things up
+into two patches - one which moved stuff from ocfs2 into generic helpers and
+a 2nd one to convert ext3.
+
+Looking into my crystal ball, I see a bunch of "convert to using byteorder
+math macros" patches coming down the pipe. Since we're talking about disk
+fields where a mistake could be costly, I suggest that any patch more than a
+couple of lines should be tested by the submitter with sparse. A statement
+that sparse didn't produce any new warnings (with the patch applied) could
+be included in the description.
+	--Mark
+
+--
+Mark Fasheh
+Principal Software Developer, Oracle
+mark.fasheh@oracle.com
