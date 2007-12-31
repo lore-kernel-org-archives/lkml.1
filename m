@@ -1,81 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759024AbXLaL6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759145AbXLaMJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759024AbXLaL6j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 06:58:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757457AbXLaL6a
+	id S1759145AbXLaMJa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 07:09:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757732AbXLaMJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 06:58:30 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:1789 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757382AbXLaL62 (ORCPT
+	Mon, 31 Dec 2007 07:09:22 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47314 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757562AbXLaMJV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 06:58:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NoHqy7R15V9PwJ+c/oAIiCm8r2lqC6BiE4/8zk7jBYBMYPr2oondFxqxiqPer2lOxubNEmwUbt3C+OiGRmItv9B3FPMn/txjRZ/20vGUgD9Z3me6aF/ybsDnyzMrSZTJf0LhpULDJBg6GDWpcgVCGCOh9EuJT2OL7UHRZDQCzsM=
-Message-ID: <e5bfff550712310358g347d883fm9866f328f24e3ad0@mail.gmail.com>
-Date: Mon, 31 Dec 2007 12:58:27 +0100
-From: "Marco Costalba" <mcostalba@gmail.com>
-To: "Filippo Zangheri" <filippo.zangheri@yahoo.it>
-Subject: Re: [ANNOUNCE] qgit-2.1 and qgit-1.5.8
-Cc: "Linux Kernel Development" <linux-kernel@vger.kernel.org>,
-       "Git Mailing List" <git@vger.kernel.org>
-In-Reply-To: <4778CB78.2010906@yahoo.it>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Mon, 31 Dec 2007 07:09:21 -0500
+Date: Mon, 31 Dec 2007 11:59:02 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "David P. Reed" <dpreed@reed.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Rene Herman <rene.herman@keyaccess.nl>, Ingo Molnar <mingo@elte.hu>,
+       Islam Amer <pharon@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Ingo Molnar <mingo@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
+Message-ID: <20071231115902.72ab8fe7@the-village.bc.nu>
+In-Reply-To: <47783678.9070706@zytor.com>
+References: <477711DC.5030800@keyaccess.nl>
+	<alpine.LFD.1.00.0712300124440.32517@woody.linux-foundation.org>
+	<20071230144700.78f4605c@the-village.bc.nu>
+	<20071230152835.GX16946@elte.hu>
+	<20071230153818.1a554a7e@the-village.bc.nu>
+	<20071230160132.GA14311@elte.hu>
+	<20071230164828.039916c8@the-village.bc.nu>
+	<4777E010.7030703@keyaccess.nl>
+	<20071230183927.5a5a3c42@the-village.bc.nu>
+	<4777F297.9070207@keyaccess.nl>
+	<alpine.LFD.1.00.0712301158410.32517@woody.linux-foundation.org>
+	<47780B93.4050606@reed.com>
+	<20071230213623.410d480a@the-village.bc.nu>
+	<4778266B.2060502@reed.com>
+	<47783678.9070706@zytor.com>
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <e5bfff550712302335ie96e143g55c93e984fba6aaa@mail.gmail.com>
-	 <4778CB78.2010906@yahoo.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 31, 2007 11:59 AM, Filippo Zangheri <filippo.zangheri@yahoo.it> wrote:
->
-> Hi,
->
-> I git-cloned qgit-2.1 from your repository, then ran `qmake qgit.pro`, but `make` gave me errors.
+On Sun, 30 Dec 2007 16:23:20 -0800
+"H. Peter Anvin" <hpa@zytor.com> wrote:
 
-Yes, you need qmake of Qt4 not the Qt3 one.
+> > continuing to investigate for a cause.  It would be nice if it were a 
+> > BIOS-fixable problem.  It would be even nicer if the BIOS were GPL...
+> 
+> If it was an SMM trap, I would expect it to be trapped in the SuperIO chip.
 
-> Afterwards I deleted src/Makefile, ran `qmake-qt4 qgit.pro` and `make` starts compiling some files but the process ends with other errors.
-> This is the command line:
->
-> filippo@master:/usr/src/git/qgit$ make
-> cd src && make -f Makefile
-> make[1]: Entering directory `/usr/src/git/qgit/src'
-> make -f Makefile.Release
-> make[2]: Entering directory `/usr/src/git/qgit/src'
-> g++ -c -pipe -O2 -g3 -O2 -Wno-non-virtual-dtor -Wno-long-long -pedantic -Wconversion -Wall -W -D_REENTRANT  -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -I../../../../share/qt4/mkspecs/linux-g++ -I. -I../../../../include/qt4/QtCore -I../../../../include/qt4/QtCore -I../../../../include/qt4/QtGui -I../../../../include/qt4/QtGui -I../../../../include/qt4 -I../src -I../build -I../build -o ../build/customactionimpl.o customactionimpl.cpp
-> make[2]: Leaving directory `/usr/src/git/qgit/src'
-> make[1]: Leaving directory `/usr/src/git/qgit/src'
-> ../build/ui_customaction.h: In member function 'void Ui_CustomActionBase::setupUi(QWidget*)':
-> ../build/ui_customaction.h:68: error: 'class QHBoxLayout' has no member named 'setLeftMargin'
-> ../build/ui_customaction.h:69: error: 'class QHBoxLayout' has no member named 'setTopMargin'
-
-This is because you need at least Qt 4.3 as written in the README.
-
->
->
->
-> I'm running Debian Etch 4.0 with vanilla kernel version 2.6.23.1 and I have the following packages installed:
->
-> filippo@master:/usr/src/git/qgit$ dpkg -l | grep qt4
-> ii libqt4-core                  4.2.1-2+etch1   Qt 4 core non-GUI functionality runtime library
-> ii libqt4-dev                   4.2.1-2+etch1   Qt 4 development files
-> ii libqt4-gui                   4.2.1-2+etch1   Qt 4 core GUI functionality runtime library
-> ii libqt4-qt3support    4.2.1-2+etch1   Qt 3 compatibility library for Qt 4
-> ii libqt4-sql                   4.2.1-2+etch1   Qt 4 SQL database module
-> ii qt4-dev-tools                4.2.1-2+etch1   Qt 4 development tools
->
->
-> what am I doing wrong?
->
-
-Please upgrade to Qt 4.3 and everything will be OK ;-)
-
-
-Happy new year
-Marco
+Many SuperIO chips do port 0x80, but they do it over the LPC and they do
+it in hardware to the parallel port data lines. The timings posted for
+0x80 on his box are really a bit fast for LPC.
