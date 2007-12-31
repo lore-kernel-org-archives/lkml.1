@@ -1,82 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752949AbXLaQDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753741AbXLaQGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752949AbXLaQDT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 11:03:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751109AbXLaQDL
+	id S1753741AbXLaQGi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 11:06:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751109AbXLaQGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 11:03:11 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:56794 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751021AbXLaQDK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 11:03:10 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: asm-x86/msr.h for sanitized headers: clean it or punt it
-Date: Mon, 31 Dec 2007 10:33:33 -0500
-User-Agent: KMail/1.9.7
-Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200712310045.24069.vapier@gentoo.org> <p73sl1jyrqx.fsf@bingen.suse.de>
-In-Reply-To: <p73sl1jyrqx.fsf@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1972407.S1AKZbAnmr";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Mon, 31 Dec 2007 11:06:30 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51880 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750905AbXLaQGa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Dec 2007 11:06:30 -0500
+Date: Mon, 31 Dec 2007 15:56:00 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>, dpreed@reed.com,
+       Islam Amer <pharon@gmail.com>, hpa@zytor.com,
+       Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
+Message-ID: <20071231155600.0b06552c@the-village.bc.nu>
+In-Reply-To: <4778FE42.6010003@keyaccess.nl>
+References: <477711DC.5030800@keyaccess.nl>
+	<alpine.LFD.1.00.0712300124440.32517@woody.linux-foundation.org>
+	<20071230144700.78f4605c@the-village.bc.nu>
+	<20071230152835.GX16946@elte.hu>
+	<20071230153818.1a554a7e@the-village.bc.nu>
+	<20071230160132.GA14311@elte.hu>
+	<20071230164828.039916c8@the-village.bc.nu>
+	<4777E010.7030703@keyaccess.nl>
+	<20071231122344.7b403cd8@the-village.bc.nu>
+	<4778FE42.6010003@keyaccess.nl>
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200712311033.34489.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1972407.S1AKZbAnmr
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> Okay. Am about to go stuff my face with new years celebrations but will 
+> definitely try to make that old WD8003 hickup.
 
-On Monday 31 December 2007, Andi Kleen wrote:
-> Mike Frysinger <vapier@gentoo.org> writes:
-> > The current asm-x86/msr.h does not actually define anything for
-> > (!__KERNEL__ && __i386__).  For x86_64, it fails to build due to u32/u64
-> > types being used. Simply not installing the header seems easiest to me.=
-=20
-> > Otherwise, x86_64 will need sanitizing and i386 should have things added
-> > back, otherwise it's just a pointless empty header.
->
-> Please don't -- asm/msr.h is very useful in user space for rdtscll et.al.
-> I use it all the time in test programs.
+Have fun. Is it an 8390 or an 83905 ?
 
-can you enumerate which functions need to actually go to userspace then ?  =
-the=20
-__KERNEL__ markings are a crapshoot at the moment.  you must also be jumpin=
-g=20
-through hoops in order to use the header in the first place since the vanil=
-la=20
-one wont compile out of the box.
-=2Dmike
+> By the way, expected, but before anyone else mentions it -- no, reading from 
+> port 0x61 is not a reliable delay today. Duron 1300 / AMD756:
 
---nextPart1972407.S1AKZbAnmr
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+No big suprise - the comment is from about 1992.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.8 (GNU/Linux)
-
-iQIcBAABAgAGBQJHeQvOAAoJEEFjO5/oN/WBbW8P/2P6JerX50SWio7NLNoaB7WM
-KAkG+kMDKUi00biZrdoI32TWD3sH66vtHU7TgQvixu4+Ni8irJa+rMffbHAWRc3W
-4yWswNpDYMzi27JxoFf37NueZzAPCLJUUpSd0A89SI87Eq73u0IhIN1RvcfOTUwU
-Koa3WuKmlPht1sEV5uAc4kAuL4I0rBL5GU8fv9EBjiPpIsr9KH3h2VyAC/5TxWe/
-4mQb2pdqnKc+JP6wJG+uZxKibbv0j9oVNtoP/hxrPg1l3m8jygqdkYZur+nL4WAk
-29sEOtPXdxtyU2DcwbP512IJ/M4tMErBUo3UXlX4MTo3z0kM2S+9j1wL1s4rESb2
-odE1n9ozxUcy+g3gonB7IRnoA3Mlj3y9yboohj043vuYqdoNg/NVcxiI8U62UP0E
-xobwWhwMLCF7gyz37i0NjVyn/1HzuC+yKdJ8Kio1QGzWdWeZcOKGjIb5rSKbMLwl
-yGQwbXlFrof6uNEu/Esk9NVJx9Yhb6PehoMoIWiw5x1mh4Ncq8T0TODVMMVwTQ8c
-nEAAmUpJkHxKD8mcB31E3D2sOE81ER2j92d6DYbDGFi+ZFOIFoDJefETwDKO7E6o
-nh6Fj4RQUnTKG1mNoW0H+X6g3WbQdZ65pXUVzZNSjNCBH0VgnGsGoSj+HYNs3mnO
-7ETgGX6TWPBrPN4MSqag
-=alQK
------END PGP SIGNATURE-----
-
---nextPart1972407.S1AKZbAnmr--
+Alan
