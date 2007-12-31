@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759116AbXLaAiw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758902AbXLaAjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759116AbXLaAiw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 19:38:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758666AbXLaAia
+	id S1758902AbXLaAjO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 19:39:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756519AbXLaAib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 19:38:30 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:26771 "EHLO
-	viefep13-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755339AbXLaAi0 (ORCPT
+	Sun, 30 Dec 2007 19:38:31 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:54393 "EHLO
+	viefep23-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758465AbXLaAi2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 19:38:26 -0500
-X-SourceIP: 80.56.237.116
-Message-Id: <20071231001647.509247000@chello.nl>
+	Sun, 30 Dec 2007 19:38:28 -0500
+Message-Id: <20071231001646.997374000@chello.nl>
 References: <20071231001137.147986000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Mon, 31 Dec 2007 01:11:40 +0100
+Date: Mon, 31 Dec 2007 01:11:38 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
@@ -23,1206 +22,670 @@ Cc: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        Gregory Haskins <ghaskins@novell.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [RFC/PATCH 3/3] sched: rt group scheduling
-Content-Disposition: inline; filename=sched-rt-group.patch
+Subject: [RFC/PATCH 1/3] sched: high-res preemption tick
+Content-Disposition: inline; filename=sched-hrtick.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Extend group scheduling to also cover the realtime classes. It uses the time
-limiting introduced by the previous patch to allow multiple realtime groups.
+Use HR-timers (when available) to deliver an accurate preemption tick.
 
-The hard time limit is required to keep behaviour deterministic.
+The regular scheduler tick that runs at 1/HZ can be too coarse when nice
+level are used. The fairness system will still keep the cpu utilisation 'fair'
+by then delaying the task that got an excessive amount of CPU time but try to
+minimize this by delivering preemption points spot-on.
 
-The algorithms used make the realtime scheduler O(tg), linear scaling wrt the
-number of task groups. This is the worst case behaviour I can't seem to get out
-of, the avg. case of the algorithms can be improved, I focused on correctness
-and worst case.
-
-TODO:
- - interface and rt_ratio defaults
+The average frequency of this extra interrupt is sched_latency / nr_latency.
+Which need not be higher than 1/HZ, its just that the distribution within the
+sched_latency period is important.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/init_task.h |    5 
- include/linux/sched.h     |   10 
- kernel/fork.c             |    2 
- kernel/sched.c            |  228 ++++++++++++++++-----
- kernel/sched_rt.c         |  495 ++++++++++++++++++++++++++++++++++------------
- 5 files changed, 556 insertions(+), 184 deletions(-)
+ arch/x86/kernel/entry_64.S       |    6 -
+ arch/x86/kernel/signal_32.c      |    3 
+ arch/x86/kernel/signal_64.c      |    3 
+ include/asm-x86/thread_info_32.h |    2 
+ include/asm-x86/thread_info_64.h |    5 
+ include/linux/hrtimer.h          |    9 +
+ include/linux/sched.h            |    3 
+ kernel/Kconfig.hz                |    2 
+ kernel/sched.c                   |  210 ++++++++++++++++++++++++++++++++++++---
+ kernel/sched_fair.c              |   69 ++++++++++++
+ kernel/sched_idletask.c          |    2 
+ kernel/sched_rt.c                |    2 
+ 12 files changed, 295 insertions(+), 21 deletions(-)
 
-Index: linux-2.6/include/linux/sched.h
-===================================================================
---- linux-2.6.orig/include/linux/sched.h
-+++ linux-2.6/include/linux/sched.h
-@@ -963,6 +963,15 @@ struct sched_rt_entity {
- 	struct list_head run_list;
- 	unsigned int time_slice;
- 	unsigned long timeout;
-+	int nr_cpus_allowed;
-+
-+#ifdef CONFIG_FAIR_GROUP_SCHED
-+	struct sched_rt_entity	*parent;
-+	/* rq on which this entity is (to be) queued: */
-+	struct rt_rq		*rt_rq;
-+	/* rq "owned" by this entity/group: */
-+	struct rt_rq		*my_q;
-+#endif
- };
- 
- struct task_struct {
-@@ -1007,7 +1016,6 @@ struct task_struct {
- 
- 	unsigned int policy;
- 	cpumask_t cpus_allowed;
--	int nr_cpus_allowed;
- 
- #ifdef CONFIG_PREEMPT_RCU
- 	int rcu_read_lock_nesting;
 Index: linux-2.6/kernel/sched.c
 ===================================================================
 --- linux-2.6.orig/kernel/sched.c
 +++ linux-2.6/kernel/sched.c
-@@ -171,6 +171,11 @@ struct task_group {
- 	/* runqueue "owned" by this group on each cpu */
- 	struct cfs_rq **cfs_rq;
+@@ -65,6 +65,7 @@
+ #include <linux/reciprocal_div.h>
+ #include <linux/unistd.h>
+ #include <linux/pagemap.h>
++#include <linux/hrtimer.h>
  
-+	struct sched_rt_entity **rt_se;
-+	struct rt_rq **rt_rq;
-+
-+	unsigned int rt_ratio;
-+
- 	/*
- 	 * shares assigned to a task group governs how much of cpu bandwidth
- 	 * is allocated to the group. The more shares a group has, the more is
-@@ -215,9 +220,15 @@ static DEFINE_PER_CPU(struct sched_entit
- /* Default task group's cfs_rq on each cpu */
- static DEFINE_PER_CPU(struct cfs_rq, init_cfs_rq) ____cacheline_aligned_in_smp;
+ #include <asm/tlb.h>
+ #include <asm/irq_regs.h>
+@@ -451,6 +452,12 @@ struct rq {
+ 	struct list_head migration_queue;
+ #endif
  
-+static DEFINE_PER_CPU(struct sched_rt_entity, init_sched_rt_entity);
-+static DEFINE_PER_CPU(struct rt_rq, init_rt_rq) ____cacheline_aligned_in_smp;
++#ifdef CONFIG_SCHED_HRTICK
++	unsigned long hrtick_flags;
++	ktime_t hrtick_expire;
++	struct hrtimer hrtick_timer;
++#endif
 +
- static struct sched_entity *init_sched_entity_p[NR_CPUS];
- static struct cfs_rq *init_cfs_rq_p[NR_CPUS];
- 
-+static struct sched_rt_entity *init_sched_rt_entity_p[NR_CPUS];
-+static struct rt_rq *init_rt_rq_p[NR_CPUS];
-+
- /* task_group_mutex serializes add/remove of task groups and also changes to
-  * a task group's cpu shares.
-  */
-@@ -240,6 +251,9 @@ static void set_se_shares(struct sched_e
- struct task_group init_task_group = {
- 	.se	= init_sched_entity_p,
- 	.cfs_rq = init_cfs_rq_p,
-+
-+	.rt_se	= init_sched_rt_entity_p,
-+	.rt_rq	= init_rt_rq_p,
+ #ifdef CONFIG_SCHEDSTATS
+ 	/* latency stats */
+ 	struct sched_info rq_sched_info;
+@@ -572,6 +579,8 @@ enum {
+ 	SCHED_FEAT_START_DEBIT		= 4,
+ 	SCHED_FEAT_TREE_AVG		= 8,
+ 	SCHED_FEAT_APPROX_AVG		= 16,
++	SCHED_FEAT_HRTICK		= 32,
++	SCHED_FEAT_DOUBLE_TICK		= 64,
  };
  
- #ifdef CONFIG_FAIR_USER_SCHED
-@@ -269,10 +283,13 @@ static inline struct task_group *task_gr
+ const_debug unsigned int sysctl_sched_features =
+@@ -579,7 +588,9 @@ const_debug unsigned int sysctl_sched_fe
+ 		SCHED_FEAT_WAKEUP_PREEMPT	* 1 |
+ 		SCHED_FEAT_START_DEBIT		* 1 |
+ 		SCHED_FEAT_TREE_AVG		* 0 |
+-		SCHED_FEAT_APPROX_AVG		* 0;
++		SCHED_FEAT_APPROX_AVG		* 0 |
++		SCHED_FEAT_HRTICK		* 1 |
++		SCHED_FEAT_DOUBLE_TICK		* 0;
+ 
+ #define sched_feat(x) (sysctl_sched_features & SCHED_FEAT_##x)
+ 
+@@ -796,6 +807,173 @@ void sched_clock_idle_wakeup_event(u64 d
  }
+ EXPORT_SYMBOL_GPL(sched_clock_idle_wakeup_event);
  
- /* Change a task's cfs_rq and parent entity if it moves across CPUs/groups */
--static inline void set_task_cfs_rq(struct task_struct *p, unsigned int cpu)
-+static inline void set_task_rq(struct task_struct *p, unsigned int cpu)
- {
- 	p->se.cfs_rq = task_group(p)->cfs_rq[cpu];
- 	p->se.parent = task_group(p)->se[cpu];
++static void __resched_task(struct task_struct *p, int tif_bit);
 +
-+	p->rt.rt_rq  = task_group(p)->rt_rq[cpu];
-+	p->rt.parent = task_group(p)->rt_se[cpu];
- }
- 
- static inline void lock_task_group_list(void)
-@@ -297,7 +314,7 @@ static inline void unlock_doms_cur(void)
- 
- #else
- 
--static inline void set_task_cfs_rq(struct task_struct *p, unsigned int cpu) { }
-+static inline void set_task_rq(struct task_struct *p, unsigned int cpu) { }
- static inline void lock_task_group_list(void) { }
- static inline void unlock_task_group_list(void) { }
- static inline void lock_doms_cur(void) { }
-@@ -343,13 +360,22 @@ struct cfs_rq {
- struct rt_rq {
- 	struct rt_prio_array active;
- 	unsigned long rt_nr_running;
-+#if defined CONFIG_SMP || defined CONFIG_FAIR_GROUP_SCHED
-+	int highest_prio; /* highest queued rt task prio */
-+#endif
- #ifdef CONFIG_SMP
- 	unsigned long rt_nr_migratory;
--	int highest_prio; /* highest queued rt task prio */
- 	int overloaded;
- #endif
- 	u64 rt_time;
- 	u64 rt_throttled;
++static inline void resched_task(struct task_struct *p)
++{
++	__resched_task(p, TIF_NEED_RESCHED);
++}
 +
-+#ifdef CONFIG_FAIR_GROUP_SCHED
++#ifdef CONFIG_SCHED_HRTICK
++/*
++ * Use HR-timers to deliver accurate preemption points.
++ *
++ * Its all a bit involved since we cannot program an hrt while holding the
++ * rq->lock. So what we do is store a state in in rq->hrtick_* and ask for a
++ * reschedule event.
++ *
++ * When we get rescheduled we reprogram the hrtick_timer outside of the
++ * rq->lock.
++ */
++static inline void resched_hrt(struct task_struct *p)
++{
++	__resched_task(p, TIF_HRTICK_RESCHED);
++}
++
++static inline void resched_rq(struct rq *rq)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&rq->lock, flags);
++	resched_task(rq->curr);
++	spin_unlock_irqrestore(&rq->lock, flags);
++}
++
++enum {
++	HRTICK_SET,		/* re-programm hrtick_timer */
++	HRTICK_RESET,		/* not a new slice */
++};
++
++/*
++ * Use hrtick when:
++ *  - enabled by features
++ *  - hrtimer is actually high res
++ */
++static inline int hrtick_enabled(struct rq *rq)
++{
++	if (!sched_feat(HRTICK))
++		return 0;
++	return hrtimer_is_hres_active(&rq->hrtick_timer);
++}
++
++/*
++ * Called to set the hrtick timer state.
++ *
++ * called with rq->lock held and irqs disabled
++ */
++static void hrtick_start(struct rq *rq, u64 delay, int reset)
++{
++	assert_spin_locked(&rq->lock);
++
++	/*
++	 * preempt at: now + delay
++	 */
++	rq->hrtick_expire =
++		ktime_add_ns(rq->hrtick_timer.base->get_time(), delay);
++	/*
++	 * indicate we need to program the timer
++	 */
++	__set_bit(HRTICK_SET, &rq->hrtick_flags);
++	if (reset)
++		__set_bit(HRTICK_RESET, &rq->hrtick_flags);
++
++	/*
++	 * New slices are called from the schedule path and don't need a
++	 * forced reschedule.
++	 */
++	if (reset)
++		resched_hrt(rq->curr);
++}
++
++static void hrtick_clear(struct rq *rq)
++{
++	if (hrtimer_active(&rq->hrtick_timer))
++		hrtimer_cancel(&rq->hrtick_timer);
++}
++
++/*
++ * Update the timer from the possible pending state.
++ */
++static void hrtick_set(struct rq *rq)
++{
++	ktime_t time;
++	int set, reset;
++	unsigned long flags;
++
++	WARN_ON_ONCE(cpu_of(rq) != smp_processor_id());
++
++	spin_lock_irqsave(&rq->lock, flags);
++	set = __test_and_clear_bit(HRTICK_SET, &rq->hrtick_flags);
++	reset = __test_and_clear_bit(HRTICK_RESET, &rq->hrtick_flags);
++	time = rq->hrtick_expire;
++	clear_thread_flag(TIF_HRTICK_RESCHED);
++	spin_unlock_irqrestore(&rq->lock, flags);
++
++	if (set) {
++		hrtimer_start(&rq->hrtick_timer, time, HRTIMER_MODE_ABS);
++		if (reset && !hrtimer_active(&rq->hrtick_timer))
++			resched_rq(rq);
++	} else
++		hrtick_clear(rq);
++}
++
++/*
++ * High-resolution timer tick.
++ * Runs from hardirq context with interrupts disabled.
++ */
++static enum hrtimer_restart hrtick(struct hrtimer *timer)
++{
++	struct rq *rq = container_of(timer, struct rq, hrtick_timer);
++
++	WARN_ON_ONCE(cpu_of(rq) != smp_processor_id());
++
++	spin_lock(&rq->lock);
++	__update_rq_clock(rq);
++	rq->curr->sched_class->task_tick(rq, rq->curr, 1);
++	spin_unlock(&rq->lock);
++
++	return HRTIMER_NORESTART;
++}
++
++static inline void init_rq_hrtick(struct rq *rq)
++{
++	rq->hrtick_flags = 0;
++	hrtimer_init(&rq->hrtick_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
++	rq->hrtick_timer.function = hrtick;
++	rq->hrtick_timer.cb_mode = HRTIMER_CB_IRQSAFE_NO_RESTART;
++}
++
++void hrtick_resched(void)
++{
 +	struct rq *rq;
-+	struct list_head leaf_rt_rq_list;
-+	struct task_group *tg;
-+	struct sched_rt_entity *rt_se;
++	unsigned long flags;
++
++	if (!test_thread_flag(TIF_HRTICK_RESCHED))
++		return;
++
++	local_irq_save(flags);
++	rq = cpu_rq(smp_processor_id());
++	hrtick_set(rq);
++	local_irq_restore(flags);
++}
++#else
++static inline void hrtick_clear(struct rq *rq)
++{
++}
++
++static inline void hrtick_set(struct rq *rq)
++{
++}
++
++static inline void init_rq_hrtick(struct rq *rq)
++{
++}
++
++void hrtick_resched(void)
++{
++}
 +#endif
- };
++
+ /*
+  * resched_task - mark a task 'to be rescheduled now'.
+  *
+@@ -809,16 +987,16 @@ EXPORT_SYMBOL_GPL(sched_clock_idle_wakeu
+ #define tsk_is_polling(t) test_tsk_thread_flag(t, TIF_POLLING_NRFLAG)
+ #endif
+ 
+-static void resched_task(struct task_struct *p)
++static void __resched_task(struct task_struct *p, int tif_bit)
+ {
+ 	int cpu;
+ 
+ 	assert_spin_locked(&task_rq(p)->lock);
+ 
+-	if (unlikely(test_tsk_thread_flag(p, TIF_NEED_RESCHED)))
++	if (unlikely(test_tsk_thread_flag(p, tif_bit)))
+ 		return;
+ 
+-	set_tsk_thread_flag(p, TIF_NEED_RESCHED);
++	set_tsk_thread_flag(p, tif_bit);
+ 
+ 	cpu = task_cpu(p);
+ 	if (cpu == smp_processor_id())
+@@ -841,10 +1019,10 @@ static void resched_cpu(int cpu)
+ 	spin_unlock_irqrestore(&rq->lock, flags);
+ }
+ #else
+-static inline void resched_task(struct task_struct *p)
++static void __resched_task(struct task_struct *p, int tif_bit)
+ {
+ 	assert_spin_locked(&task_rq(p)->lock);
+-	set_tsk_need_resched(p);
++	set_tsk_thread_flag(p, tif_bit);
+ }
+ #endif
+ 
+@@ -3496,7 +3674,7 @@ void scheduler_tick(void)
+ 	rq->tick_timestamp = rq->clock;
+ 	update_cpu_load(rq);
+ 	if (curr != rq->idle) /* FIXME: needed? */
+-		curr->sched_class->task_tick(rq, curr);
++		curr->sched_class->task_tick(rq, curr, 0);
+ 	spin_unlock(&rq->lock);
  
  #ifdef CONFIG_SMP
-@@ -411,12 +437,14 @@ struct rq {
- 	u64 nr_switches;
+@@ -3642,6 +3820,8 @@ need_resched_nonpreemptible:
  
- 	struct cfs_rq cfs;
-+	struct rt_rq rt;
-+	u64 rt_period_expire;
+ 	schedule_debug(prev);
+ 
++	hrtick_clear(rq);
 +
- #ifdef CONFIG_FAIR_GROUP_SCHED
- 	/* list of leaf cfs_rq on this cpu: */
- 	struct list_head leaf_cfs_rq_list;
-+	struct list_head leaf_rt_rq_list;
+ 	/*
+ 	 * Do the rq-clock update outside the rq lock:
+ 	 */
+@@ -3679,14 +3859,20 @@ need_resched_nonpreemptible:
+ 		++*switch_count;
+ 
+ 		context_switch(rq, prev, next); /* unlocks the rq */
++		/*
++		 * the context switch might have flipped the stack from under
++		 * us, hence refresh the local variables.
++		 */
++		cpu = smp_processor_id();
++		rq = cpu_rq(cpu);
+ 	} else
+ 		spin_unlock_irq(&rq->lock);
+ 
+-	if (unlikely(reacquire_kernel_lock(current) < 0)) {
+-		cpu = smp_processor_id();
+-		rq = cpu_rq(cpu);
++	hrtick_set(rq);
++
++	if (unlikely(reacquire_kernel_lock(current) < 0))
+ 		goto need_resched_nonpreemptible;
+-	}
++
+ 	preempt_enable_no_resched();
+ 	if (unlikely(test_thread_flag(TIF_NEED_RESCHED)))
+ 		goto need_resched;
+@@ -6901,6 +7087,8 @@ void __init sched_init(void)
+ 		rq->rt.overloaded = 0;
+ 		rq_attach_root(rq, &def_root_domain);
  #endif
--	struct rt_rq rt;
--	u64 rt_period_expire;
- 
- 	/*
- 	 * This is part of a global counter where only the total sum
-@@ -613,9 +641,9 @@ const_debug unsigned int sysctl_sched_rt
- 
- /*
-  * ratio of time -rt tasks may consume.
-- * default: 100%
-+ * default: 95%
-  */
--const_debug unsigned int sysctl_sched_rt_ratio = SCHED_RT_FRAC;
-+const_debug unsigned int sysctl_sched_rt_ratio = 62259;
- 
- /*
-  * For kernel-internal use: high-speed (but slightly incorrect) per-cpu
-@@ -1337,7 +1365,7 @@ unsigned long weighted_cpuload(const int
- 
- static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
- {
--	set_task_cfs_rq(p, cpu);
-+	set_task_rq(p, cpu);
- #ifdef CONFIG_SMP
- 	/*
- 	 * After ->cpu is set up to a new value, task_rq_lock(p, ...) can be
-@@ -5272,7 +5300,7 @@ int set_cpus_allowed(struct task_struct 
- 		p->sched_class->set_cpus_allowed(p, &new_mask);
- 	else {
- 		p->cpus_allowed = new_mask;
--		p->nr_cpus_allowed = cpus_weight(new_mask);
-+		p->rt.nr_cpus_allowed = cpus_weight(new_mask);
- 	}
- 
- 	/* Can the task run on the task's current CPU? If so, we're done */
-@@ -7067,8 +7095,50 @@ static void init_rt_rq(struct rt_rq *rt_
- 
- 	rt_rq->rt_time = 0;
- 	rt_rq->rt_throttled = 0;
++		init_rq_hrtick(rq);
 +
-+#ifdef CONFIG_FAIR_GROUP_SCHED
-+	rt_rq->rq = rq;
-+#endif
+ 		atomic_set(&rq->nr_iowait, 0);
+ 
+ 		array = &rq->rt.active;
+Index: linux-2.6/kernel/sched_fair.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_fair.c
++++ linux-2.6/kernel/sched_fair.c
+@@ -642,13 +642,29 @@ static void put_prev_entity(struct cfs_r
+ 	cfs_rq->curr = NULL;
  }
  
-+#ifdef CONFIG_FAIR_GROUP_SCHED
-+static void init_tg_cfs_entry(struct rq *rq, struct task_group *tg,
-+		struct cfs_rq *cfs_rq, struct sched_entity *se,
-+		int cpu, int add)
-+{
-+	tg->cfs_rq[cpu] = cfs_rq;
-+	init_cfs_rq(cfs_rq, rq);
-+	cfs_rq->tg = tg;
-+	if (add)
-+		list_add(&cfs_rq->leaf_cfs_rq_list, &rq->leaf_cfs_rq_list);
-+
-+	tg->se[cpu] = se;
-+	se->cfs_rq = &rq->cfs;
-+	se->my_q = cfs_rq;
-+	se->load.weight = tg->shares;
-+	se->load.inv_weight = div64_64(1ULL<<32, se->load.weight);
-+	se->parent = NULL;
-+}
-+
-+static void init_tg_rt_entry(struct rq *rq, struct task_group *tg,
-+		struct rt_rq *rt_rq, struct sched_rt_entity *rt_se,
-+		int cpu, int add)
-+{
-+	tg->rt_rq[cpu] = rt_rq;
-+	init_rt_rq(rt_rq, rq);
-+	rt_rq->tg = tg;
-+	rt_rq->rt_se = rt_se;
-+	if (add)
-+		list_add(&rt_rq->leaf_rt_rq_list, &rq->leaf_rt_rq_list);
-+
-+	tg->rt_se[cpu] = rt_se;
-+	rt_se->rt_rq = &rq->rt;
-+	rt_se->my_q = rt_rq;
-+	rt_se->parent = NULL;
-+	INIT_LIST_HEAD(&rt_se->run_list);
-+}
+-static void entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
++static void
++entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued)
+ {
+ 	/*
+ 	 * Update run-time statistics of the 'current'.
+ 	 */
+ 	update_curr(cfs_rq);
+ 
++#ifdef CONFIG_SCHED_HRTICK
++	/*
++	 * queued ticks are scheduled to match the slice, so don't bother
++	 * validating it and just reschedule.
++	 */
++	if (queued)
++		return resched_task(rq_of(cfs_rq)->curr);
++	/*
++	 * don't let the period tick interfere with the hrtick preemption
++	 */
++	if (!sched_feat(DOUBLE_TICK) &&
++			hrtimer_active(&rq_of(cfs_rq)->hrtick_timer))
++		return;
 +#endif
 +
- void __init sched_init(void)
- {
- 	int highest_cpu = 0;
-@@ -7087,30 +7157,20 @@ void __init sched_init(void)
- 		rq->nr_running = 0;
- 		rq->clock = 1;
- 		init_cfs_rq(&rq->cfs, rq);
-+		init_rt_rq(&rq->rt, rq);
- #ifdef CONFIG_FAIR_GROUP_SCHED
--		INIT_LIST_HEAD(&rq->leaf_cfs_rq_list);
--		{
--			struct cfs_rq *cfs_rq = &per_cpu(init_cfs_rq, i);
--			struct sched_entity *se =
--					 &per_cpu(init_sched_entity, i);
--
--			init_cfs_rq_p[i] = cfs_rq;
--			init_cfs_rq(cfs_rq, rq);
--			cfs_rq->tg = &init_task_group;
--			list_add(&cfs_rq->leaf_cfs_rq_list,
--							 &rq->leaf_cfs_rq_list);
--
--			init_sched_entity_p[i] = se;
--			se->cfs_rq = &rq->cfs;
--			se->my_q = cfs_rq;
--			se->load.weight = init_task_group_load;
--			se->load.inv_weight =
--				 div64_64(1ULL<<32, init_task_group_load);
--			se->parent = NULL;
--		}
- 		init_task_group.shares = init_task_group_load;
-+		INIT_LIST_HEAD(&rq->leaf_cfs_rq_list);
-+		init_tg_cfs_entry(rq, &init_task_group,
-+				&per_cpu(init_cfs_rq, i),
-+				&per_cpu(init_sched_entity, i), i, 1);
-+
-+		init_task_group.rt_ratio = sysctl_sched_rt_ratio; /* XXX */
-+		INIT_LIST_HEAD(&rq->leaf_rt_rq_list);
-+		init_tg_rt_entry(rq, &init_task_group,
-+				&per_cpu(init_rt_rq, i),
-+				&per_cpu(init_sched_rt_entity, i), i, 1);
- #endif
--		init_rt_rq(&rq->rt, rq);
- 		rq->rt_period_expire = 0;
- 
- 		for (j = 0; j < CPU_LOAD_IDX_MAX; j++)
-@@ -7454,6 +7514,8 @@ struct task_group *sched_create_group(vo
- 	struct task_group *tg;
- 	struct cfs_rq *cfs_rq;
- 	struct sched_entity *se;
-+	struct rt_rq *rt_rq;
-+	struct sched_rt_entity *rt_se;
- 	struct rq *rq;
- 	int i;
- 
-@@ -7467,56 +7529,73 @@ struct task_group *sched_create_group(vo
- 	tg->se = kzalloc(sizeof(se) * NR_CPUS, GFP_KERNEL);
- 	if (!tg->se)
- 		goto err;
-+	tg->rt_rq = kzalloc(sizeof(rt_rq) * NR_CPUS, GFP_KERNEL);
-+	if (!tg->rt_rq)
-+		goto err;
-+	tg->rt_se = kzalloc(sizeof(rt_se) * NR_CPUS, GFP_KERNEL);
-+	if (!tg->rt_se)
-+		goto err;
-+
-+	tg->shares = NICE_0_LOAD;
-+	tg->rt_ratio = 1024; /* XXX */
- 
- 	for_each_possible_cpu(i) {
- 		rq = cpu_rq(i);
- 
--		cfs_rq = kmalloc_node(sizeof(struct cfs_rq), GFP_KERNEL,
--							 cpu_to_node(i));
-+		cfs_rq = kmalloc_node(sizeof(struct cfs_rq),
-+				GFP_KERNEL|__GFP_ZERO, cpu_to_node(i));
- 		if (!cfs_rq)
- 			goto err;
- 
--		se = kmalloc_node(sizeof(struct sched_entity), GFP_KERNEL,
--							cpu_to_node(i));
-+		se = kmalloc_node(sizeof(struct sched_entity),
-+				GFP_KERNEL|__GFP_ZERO, cpu_to_node(i));
- 		if (!se)
- 			goto err;
- 
--		memset(cfs_rq, 0, sizeof(struct cfs_rq));
--		memset(se, 0, sizeof(struct sched_entity));
-+		rt_rq = kmalloc_node(sizeof(struct rt_rq),
-+				GFP_KERNEL|__GFP_ZERO, cpu_to_node(i));
-+		if (!rt_rq)
-+			goto err;
- 
--		tg->cfs_rq[i] = cfs_rq;
--		init_cfs_rq(cfs_rq, rq);
--		cfs_rq->tg = tg;
--
--		tg->se[i] = se;
--		se->cfs_rq = &rq->cfs;
--		se->my_q = cfs_rq;
--		se->load.weight = NICE_0_LOAD;
--		se->load.inv_weight = div64_64(1ULL<<32, NICE_0_LOAD);
--		se->parent = NULL;
--	}
-+		rt_se = kmalloc_node(sizeof(struct sched_rt_entity),
-+				GFP_KERNEL|__GFP_ZERO, cpu_to_node(i));
-+		if (!rt_se)
-+			goto err;
- 
--	tg->shares = NICE_0_LOAD;
-+		init_tg_cfs_entry(rq, tg, cfs_rq, se, i, 0);
-+		init_tg_rt_entry(rq, tg, rt_rq, rt_se, i, 0);
-+	}
- 
- 	lock_task_group_list();
- 	for_each_possible_cpu(i) {
- 		rq = cpu_rq(i);
- 		cfs_rq = tg->cfs_rq[i];
- 		list_add_rcu(&cfs_rq->leaf_cfs_rq_list, &rq->leaf_cfs_rq_list);
-+		rt_rq = tg->rt_rq[i];
-+		list_add_rcu(&rt_rq->leaf_rt_rq_list, &rq->leaf_rt_rq_list);
- 	}
- 	unlock_task_group_list();
- 
- 	return tg;
- 
- err:
-+	/*
-+	 * XXX: call free_sched_group() instead of duplicate?
-+	 */
- 	for_each_possible_cpu(i) {
- 		if (tg->cfs_rq)
- 			kfree(tg->cfs_rq[i]);
- 		if (tg->se)
- 			kfree(tg->se[i]);
-+		if (tg->rt_rq)
-+			kfree(tg->rt_rq[i]);
-+		if (tg->rt_se)
-+			kfree(tg->rt_se[i]);
- 	}
- 	kfree(tg->cfs_rq);
- 	kfree(tg->se);
-+	kfree(tg->rt_rq);
-+	kfree(tg->rt_se);
- 	kfree(tg);
- 
- 	return ERR_PTR(-ENOMEM);
-@@ -7528,6 +7607,8 @@ static void free_sched_group(struct rcu_
- 	struct task_group *tg = container_of(rhp, struct task_group, rcu);
- 	struct cfs_rq *cfs_rq;
- 	struct sched_entity *se;
-+	struct rt_rq *rt_rq;
-+	struct sched_rt_entity *rt_se;
- 	int i;
- 
- 	/* now it should be safe to free those cfs_rqs */
-@@ -7537,10 +7618,18 @@ static void free_sched_group(struct rcu_
- 
- 		se = tg->se[i];
- 		kfree(se);
-+
-+		rt_rq = tg->rt_rq[i];
-+		kfree(rt_rq);
-+
-+		rt_se = tg->rt_se[i];
-+		kfree(rt_se);
- 	}
- 
- 	kfree(tg->cfs_rq);
- 	kfree(tg->se);
-+	kfree(tg->rt_rq);
-+	kfree(tg->rt_se);
- 	kfree(tg);
+ 	if (cfs_rq->nr_running > 1 || !sched_feat(WAKEUP_PREEMPT))
+ 		check_preempt_tick(cfs_rq, curr);
  }
+@@ -754,6 +770,43 @@ static inline struct sched_entity *paren
  
-@@ -7548,12 +7637,15 @@ static void free_sched_group(struct rcu_
- void sched_destroy_group(struct task_group *tg)
- {
- 	struct cfs_rq *cfs_rq = NULL;
-+	struct rt_rq *rt_rq = NULL;
- 	int i;
- 
- 	lock_task_group_list();
- 	for_each_possible_cpu(i) {
- 		cfs_rq = tg->cfs_rq[i];
- 		list_del_rcu(&cfs_rq->leaf_cfs_rq_list);
-+		rt_rq = tg->rt_rq[i];
-+		list_del_rcu(&rt_rq->leaf_rt_rq_list);
- 	}
- 	unlock_task_group_list();
- 
-@@ -7576,11 +7668,6 @@ void sched_move_task(struct task_struct 
- 
- 	rq = task_rq_lock(tsk, &flags);
- 
--	if (tsk->sched_class != &fair_sched_class) {
--		set_task_cfs_rq(tsk, task_cpu(tsk));
--		goto done;
--	}
--
- 	update_rq_clock(rq);
- 
- 	running = task_current(rq, tsk);
-@@ -7592,7 +7679,7 @@ void sched_move_task(struct task_struct 
- 			tsk->sched_class->put_prev_task(rq, tsk);
- 	}
- 
--	set_task_cfs_rq(tsk, task_cpu(tsk));
-+	set_task_rq(tsk, task_cpu(tsk));
- 
- 	if (on_rq) {
- 		if (unlikely(running))
-@@ -7600,7 +7687,6 @@ void sched_move_task(struct task_struct 
- 		enqueue_task(rq, tsk, 0);
- 	}
- 
--done:
- 	task_rq_unlock(rq, &flags);
- }
- 
-@@ -7685,6 +7771,20 @@ unsigned long sched_group_shares(struct 
- 	return tg->shares;
- }
- 
-+int sched_group_set_rt_ratio(struct task_group *tg, unsigned long rt_ratio)
-+{
-+	/*
-+	 * XXX: validate that \Sum tg.rt_ratio <= sysctl_sched_rt_ratio
-+	 */
-+	tg->rt_ratio = rt_ratio;
-+	return 0;
-+}
-+
-+unsigned long sched_group_rt_ratio(struct task_group *tg)
-+{
-+	return tg->rt_ratio;
-+}
-+
  #endif	/* CONFIG_FAIR_GROUP_SCHED */
  
- #ifdef CONFIG_FAIR_CGROUP_SCHED
-@@ -7760,12 +7860,30 @@ static u64 cpu_shares_read_uint(struct c
- 	return (u64) tg->shares;
++#ifdef CONFIG_SCHED_HRTICK
++static void hrtick_start_fair(struct rq *rq, struct task_struct *p)
++{
++	int requeue = rq->curr == p;
++	struct sched_entity *se = &p->se;
++	struct cfs_rq *cfs_rq = cfs_rq_of(se);
++
++	WARN_ON(task_rq(p) != rq);
++
++	if (hrtick_enabled(rq) && cfs_rq->nr_running > 1) {
++		u64 slice = sched_slice(cfs_rq, se);
++		u64 ran = se->sum_exec_runtime - se->prev_sum_exec_runtime;
++		s64 delta = slice - ran;
++
++		if (delta < 0) {
++			if (rq->curr == p)
++				resched_task(p);
++			return;
++		}
++
++		/*
++		 * Don't schedule slices shorter than 10000ns, that just
++		 * doesn't make sense. Rely on vruntime for fairness.
++		 */
++		if (!requeue)
++			delta = max(10000LL, delta);
++
++		hrtick_start(rq, delta, requeue);
++	}
++}
++#else
++static inline void
++hrtick_start_fair(struct rq *rq, struct task_struct *p)
++{
++}
++#endif
++
+ /*
+  * The enqueue_task method is called before nr_running is
+  * increased. Here we update the fair scheduling stats and
+@@ -782,6 +835,8 @@ static void enqueue_task_fair(struct rq 
+ 	 */
+ 	if (incload)
+ 		inc_cpu_load(rq, topse->load.weight);
++
++	hrtick_start_fair(rq, rq->curr);
  }
  
-+static int cpu_rt_ratio_write_uint(struct cgroup *cgrp, struct cftype *cftype,
-+		u64 rt_ratio_val)
-+{
-+	return sched_group_set_rt_ratio(cgroup_tg(cgrp), rt_ratio_val);
-+}
+ /*
+@@ -814,6 +869,8 @@ static void dequeue_task_fair(struct rq 
+ 	 */
+ 	if (decload)
+ 		dec_cpu_load(rq, topse->load.weight);
 +
-+static u64 cpu_rt_ratio_read_uint(struct cgroup *cgrp, struct cftype *cft)
-+{
-+	struct task_group *tg = cgroup_tg(cgrp);
-+
-+	return (u64) tg->rt_ratio;
-+}
-+
- static struct cftype cpu_files[] = {
- 	{
- 		.name = "shares",
- 		.read_uint = cpu_shares_read_uint,
- 		.write_uint = cpu_shares_write_uint,
- 	},
-+	{
-+		.name = "rt_ratio",
-+		.read_uint = cpu_rt_ratio_read_uint,
-+		.write_uint = cpu_rt_ratio_write_uint,
-+	},
- };
++	hrtick_start_fair(rq, rq->curr);
+ }
  
- static int cpu_cgroup_populate(struct cgroup_subsys *ss, struct cgroup *cont)
+ /*
+@@ -1049,6 +1106,7 @@ static void check_preempt_wakeup(struct 
+ 
+ static struct task_struct *pick_next_task_fair(struct rq *rq)
+ {
++	struct task_struct *p;
+ 	struct cfs_rq *cfs_rq = &rq->cfs;
+ 	struct sched_entity *se;
+ 
+@@ -1060,7 +1118,10 @@ static struct task_struct *pick_next_tas
+ 		cfs_rq = group_cfs_rq(se);
+ 	} while (cfs_rq);
+ 
+-	return task_of(se);
++	p = task_of(se);
++	hrtick_start_fair(rq, p);
++
++	return p;
+ }
+ 
+ /*
+@@ -1235,14 +1296,14 @@ move_one_task_fair(struct rq *this_rq, i
+ /*
+  * scheduler tick hitting a task of our scheduling class:
+  */
+-static void task_tick_fair(struct rq *rq, struct task_struct *curr)
++static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
+ {
+ 	struct cfs_rq *cfs_rq;
+ 	struct sched_entity *se = &curr->se;
+ 
+ 	for_each_sched_entity(se) {
+ 		cfs_rq = cfs_rq_of(se);
+-		entity_tick(cfs_rq, se);
++		entity_tick(cfs_rq, se, queued);
+ 	}
+ }
+ 
+Index: linux-2.6/kernel/Kconfig.hz
+===================================================================
+--- linux-2.6.orig/kernel/Kconfig.hz
++++ linux-2.6/kernel/Kconfig.hz
+@@ -54,3 +54,5 @@ config HZ
+ 	default 300 if HZ_300
+ 	default 1000 if HZ_1000
+ 
++config SCHED_HRTICK
++	def_bool HIGH_RES_TIMERS && X86
+Index: linux-2.6/include/linux/sched.h
+===================================================================
+--- linux-2.6.orig/include/linux/sched.h
++++ linux-2.6/include/linux/sched.h
+@@ -279,6 +279,7 @@ extern void trap_init(void);
+ extern void account_process_tick(struct task_struct *task, int user);
+ extern void update_process_times(int user);
+ extern void scheduler_tick(void);
++extern void hrtick_resched(void);
+ 
+ extern void sched_show_task(struct task_struct *p);
+ 
+@@ -878,7 +879,7 @@ struct sched_class {
+ #endif
+ 
+ 	void (*set_curr_task) (struct rq *rq);
+-	void (*task_tick) (struct rq *rq, struct task_struct *p);
++	void (*task_tick) (struct rq *rq, struct task_struct *p, int queued);
+ 	void (*task_new) (struct rq *rq, struct task_struct *p);
+ 	void (*set_cpus_allowed)(struct task_struct *p, cpumask_t *newmask);
+ 
+Index: linux-2.6/include/linux/hrtimer.h
+===================================================================
+--- linux-2.6.orig/include/linux/hrtimer.h
++++ linux-2.6/include/linux/hrtimer.h
+@@ -216,6 +216,11 @@ static inline ktime_t hrtimer_cb_get_tim
+ 	return timer->base->get_time();
+ }
+ 
++static inline int hrtimer_is_hres_active(struct hrtimer *timer)
++{
++	return timer->base->cpu_base->hres_active;
++}
++
+ /*
+  * The resolution of the clocks. The resolution value is returned in
+  * the clock_getres() system call to give application programmers an
+@@ -247,6 +252,10 @@ static inline ktime_t hrtimer_cb_get_tim
+ 	return timer->base->softirq_time;
+ }
+ 
++static inline int hrtimer_is_hres_active(struct hrtimer *timer)
++{
++	return 0;
++}
+ #endif
+ 
+ extern ktime_t ktime_get(void);
+Index: linux-2.6/kernel/sched_idletask.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_idletask.c
++++ linux-2.6/kernel/sched_idletask.c
+@@ -61,7 +61,7 @@ move_one_task_idle(struct rq *this_rq, i
+ }
+ #endif
+ 
+-static void task_tick_idle(struct rq *rq, struct task_struct *curr)
++static void task_tick_idle(struct rq *rq, struct task_struct *curr, int queued)
+ {
+ }
+ 
 Index: linux-2.6/kernel/sched_rt.c
 ===================================================================
 --- linux-2.6.orig/kernel/sched_rt.c
 +++ linux-2.6/kernel/sched_rt.c
-@@ -45,48 +45,188 @@ static void update_rt_migration(struct r
- }
- #endif /* CONFIG_SMP */
- 
--static int sched_rt_ratio_exceeded(struct rq *rq, struct rt_rq *rt_rq)
-+static inline struct task_struct *rt_task_of(struct sched_rt_entity *rt_se)
- {
-+	return container_of(rt_se, struct task_struct, rt);
-+}
-+
-+static inline int on_rt_rq(struct sched_rt_entity *rt_se)
-+{
-+	return !list_empty(&rt_se->run_list);
-+}
-+
-+#ifdef CONFIG_FAIR_GROUP_SCHED
-+
-+static inline unsigned int sched_rt_ratio(struct rt_rq *rt_rq)
-+{
-+	if (!rt_rq->tg)
-+		return sysctl_sched_rt_ratio;
-+
-+	return rt_rq->tg->rt_ratio;
-+}
-+
-+#define for_each_leaf_rt_rq(rt_rq, rq) \
-+	list_for_each_entry(rt_rq, &rq->leaf_rt_rq_list, leaf_rt_rq_list)
-+
-+static inline struct rq *rq_of_rt_rq(struct rt_rq *rt_rq)
-+{
-+	return rt_rq->rq;
-+}
-+
-+static inline struct rt_rq *rt_rq_of_se(struct sched_rt_entity *rt_se)
-+{
-+	return rt_se->rt_rq;
-+}
-+
-+#define for_each_sched_rt_entity(rt_se) \
-+	for (; rt_se; rt_se = rt_se->parent)
-+
-+static inline struct rt_rq *group_rt_rq(struct sched_rt_entity *rt_se)
-+{
-+	return rt_se->my_q;
-+}
-+
-+static void enqueue_rt_entity(struct sched_rt_entity *rt_se);
-+static void dequeue_rt_entity(struct sched_rt_entity *rt_se);
-+
-+static void sched_rt_ratio_enqueue(struct rt_rq *rt_rq)
-+{
-+	struct sched_rt_entity *rt_se = rt_rq->rt_se;
-+
-+	if (rt_se && !on_rt_rq(rt_se) && rt_rq->rt_nr_running)
-+		enqueue_rt_entity(rt_se);
-+}
-+
-+static void sched_rt_ratio_dequeue(struct rt_rq *rt_rq)
-+{
-+	struct sched_rt_entity *rt_se = rt_rq->rt_se;
-+
-+	if (rt_se && on_rt_rq(rt_se))
-+		dequeue_rt_entity(rt_se);
-+}
-+
-+#else
-+
-+static inline unsigned int sched_rt_ratio(struct rt_rq *rt_rq)
-+{
-+	return sysctl_sched_rt_ratio;
-+}
-+
-+#define for_each_leaf_rt_rq(rt_rq, rq) \
-+	for (rt_rq = &rq->rt; rt_rq; rt_rq = NULL)
-+
-+static inline struct rq *rq_of_rt_rq(struct rt_rq *rt_rq)
-+{
-+	return container_of(rt_rq, struct rq, rt);
-+}
-+
-+static inline struct rt_rq *rt_rq_of_se(struct sched_rt_entity *rt_se)
-+{
-+	struct task_struct *p = rt_task_of(rt_se);
-+	struct rq *rq = task_rq(p);
-+
-+	return &rq->rt;
-+}
-+
-+#define for_each_sched_rt_entity(rt_se) \
-+	for (; rt_se; rt_se = NULL)
-+
-+static inline struct rt_rq *group_rt_rq(struct sched_rt_entity *rt_se)
-+{
-+	return NULL;
-+}
-+
-+static inline void sched_rt_ratio_enqueue(struct rt_rq *rt_rq)
-+{
-+}
-+
-+static inline void sched_rt_ratio_dequeue(struct rt_rq *rt_rq)
-+{
-+}
-+
-+#endif
-+
-+static inline int rt_se_prio(struct sched_rt_entity *rt_se)
-+{
-+#ifdef CONFIG_FAIR_GROUP_SCHED
-+	struct rt_rq *rt_rq = group_rt_rq(rt_se);
-+
-+	if (rt_rq)
-+		return rt_rq->highest_prio;
-+#endif
-+
-+	return rt_task_of(rt_se)->prio;
-+}
-+
-+static int sched_rt_ratio_exceeded(struct rt_rq *rt_rq)
-+{
-+	unsigned int rt_ratio = sched_rt_ratio(rt_rq);
- 	u64 period, ratio;
- 
--	if (sysctl_sched_rt_ratio == SCHED_RT_FRAC)
-+	if (rt_ratio == SCHED_RT_FRAC)
- 		return 0;
- 
- 	if (rt_rq->rt_throttled)
- 		return 1;
- 
- 	period = (u64)sysctl_sched_rt_period * NSEC_PER_MSEC;
--	ratio = (period * sysctl_sched_rt_ratio) >> SCHED_RT_FRAC_SHIFT;
-+	ratio = (period * rt_ratio) >> SCHED_RT_FRAC_SHIFT;
- 
- 	if (rt_rq->rt_time > ratio) {
--		rt_rq->rt_throttled = rq->clock + period - rt_rq->rt_time;
-+		struct rq *rq = rq_of_rt_rq(rt_rq);
-+
-+		rt_rq->rt_throttled = rq->rt_period_expire - rt_rq->rt_time + period;
-+		/* rt_rq->rt_throttled = rq->clock + period - rt_rq->rt_time; */
-+		sched_rt_ratio_dequeue(rt_rq);
- 		return 1;
+@@ -863,7 +863,7 @@ static void watchdog(struct rq *rq, stru
  	}
- 
- 	return 0;
  }
  
-+static int sched_rt_ratio_ok(struct rt_rq *rt_rq)
-+{
-+	struct rq *rq = rq_of_rt_rq(rt_rq);
-+
-+	if (rt_rq->rt_throttled && rq->clock > rt_rq->rt_throttled) {
-+		rt_rq->rt_throttled = 0;
-+		if (!sched_rt_ratio_exceeded(rt_rq)) {
-+			sched_rt_ratio_enqueue(rt_rq);
-+			resched_task(rq->curr);
-+			return 1;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static void __update_sched_rt_period(struct rt_rq *rt_rq, u64 period)
-+{
-+	unsigned long rt_ratio = sched_rt_ratio(rt_rq);
-+	u64 ratio = (period * rt_ratio) >> SCHED_RT_FRAC_SHIFT;
-+
-+	rt_rq->rt_time -= min(rt_rq->rt_time, ratio);
-+}
-+
- static void update_sched_rt_period(struct rq *rq)
+-static void task_tick_rt(struct rq *rq, struct task_struct *p)
++static void task_tick_rt(struct rq *rq, struct task_struct *p, int queued)
  {
--	while (rq->clock > rq->rt_period_expire) {
--		u64 period, ratio;
-+	struct rt_rq *rt_rq;
- 
--		period = (u64)sysctl_sched_rt_period * NSEC_PER_MSEC;
--		ratio = (period * sysctl_sched_rt_ratio) >> SCHED_RT_FRAC_SHIFT;
-+	while (rq->clock > rq->rt_period_expire) {
-+		u64 period = (u64)sysctl_sched_rt_period * NSEC_PER_MSEC;
- 
--		rq->rt.rt_time -= min(rq->rt.rt_time, ratio);
- 		rq->rt_period_expire += period;
--	}
- 
--	/*
--	 * When the rt throttle is expired, let them rip.
--	 * (XXX: use hrtick when available)
--	 */
--	if (rq->rt.rt_throttled && rq->clock > rq->rt.rt_throttled) {
--		rq->rt.rt_throttled = 0;
--		if (!sched_rt_ratio_exceeded(rq, &rq->rt))
--			resched_task(rq->curr);
-+		/* hardcoded two level hierarchy */
-+		rt_rq = &rq->rt;
-+		__update_sched_rt_period(rt_rq, period);
-+
-+		for_each_leaf_rt_rq(rt_rq, rq)
-+			__update_sched_rt_period(rt_rq, period);
- 	}
-+
-+	for_each_leaf_rt_rq(rt_rq, rq)
-+		sched_rt_ratio_ok(rt_rq);
- }
- 
- /*
-@@ -96,10 +236,11 @@ static void update_sched_rt_period(struc
- static void update_curr_rt(struct rq *rq)
- {
- 	struct task_struct *curr = rq->curr;
-+	struct sched_rt_entity *rt_se = &curr->rt;
-+	struct rt_rq *rt_rq;
- 	u64 delta_exec;
- 
--	if (!task_has_rt_policy(curr))
--		return;
-+	BUG_ON(!task_has_rt_policy(curr));
- 
- 	delta_exec = rq->clock - curr->se.exec_start;
- 	if (unlikely((s64)delta_exec < 0))
-@@ -111,95 +252,191 @@ static void update_curr_rt(struct rq *rq
- 	curr->se.exec_start = rq->clock;
- 	cpuacct_charge(curr, delta_exec);
- 
--	rq->rt.rt_time += delta_exec;
--	update_sched_rt_period(rq);
--	if (sched_rt_ratio_exceeded(rq, &rq->rt))
--		resched_task(curr);
-+	for_each_sched_rt_entity(rt_se) {
-+		rt_rq = rt_rq_of_se(rt_se);
-+		rt_rq->rt_time += delta_exec;
-+	}
-+
-+	/*
-+	 * might make it a tad more accurate:
-+	 *
-+	 * update_sched_rt_period(rq);
-+	 */
-+
-+	rt_se = &curr->rt;
-+	for_each_sched_rt_entity(rt_se) {
-+		rt_rq = rt_rq_of_se(rt_se);
-+		if (sched_rt_ratio_exceeded(rt_rq))
-+			resched_task(curr);
-+	}
- }
- 
--static inline void inc_rt_tasks(struct task_struct *p, struct rq *rq)
--{
--	WARN_ON(!rt_task(p));
--	rq->rt.rt_nr_running++;
-+static inline
-+void inc_rt_tasks(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
-+{
-+	WARN_ON(!rt_prio(rt_se_prio(rt_se)));
-+	rt_rq->rt_nr_running++;
-+#if defined CONFIG_SMP || defined CONFIG_FAIR_GROUP_SCHED
-+	if (rt_se_prio(rt_se) < rt_rq->highest_prio)
-+		rt_rq->highest_prio = rt_se_prio(rt_se);
-+#endif
- #ifdef CONFIG_SMP
--	if (p->prio < rq->rt.highest_prio)
--		rq->rt.highest_prio = p->prio;
--	if (p->nr_cpus_allowed > 1)
--		rq->rt.rt_nr_migratory++;
-+	if (rt_se->nr_cpus_allowed > 1)
-+		rt_rq->rt_nr_migratory++;
- 
--	update_rt_migration(rq);
--#endif /* CONFIG_SMP */
-+	update_rt_migration(rq_of_rt_rq(rt_rq));
-+#endif
- }
- 
--static inline void dec_rt_tasks(struct task_struct *p, struct rq *rq)
-+static inline
-+void dec_rt_tasks(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
- {
--	WARN_ON(!rt_task(p));
--	WARN_ON(!rq->rt.rt_nr_running);
--	rq->rt.rt_nr_running--;
--#ifdef CONFIG_SMP
--	if (rq->rt.rt_nr_running) {
-+	WARN_ON(!rt_prio(rt_se_prio(rt_se)));
-+	WARN_ON(!rt_rq->rt_nr_running);
-+	rt_rq->rt_nr_running--;
-+#if defined CONFIG_SMP || defined CONFIG_FAIR_GROUP_SCHED
-+	if (rt_rq->rt_nr_running) {
- 		struct rt_prio_array *array;
- 
--		WARN_ON(p->prio < rq->rt.highest_prio);
--		if (p->prio == rq->rt.highest_prio) {
-+		WARN_ON(rt_se_prio(rt_se) < rt_rq->highest_prio);
-+		if (rt_se_prio(rt_se) == rt_rq->highest_prio) {
- 			/* recalculate */
--			array = &rq->rt.active;
--			rq->rt.highest_prio =
-+			array = &rt_rq->active;
-+			rt_rq->highest_prio =
- 				sched_find_first_bit(array->bitmap);
- 		} /* otherwise leave rq->highest prio alone */
- 	} else
--		rq->rt.highest_prio = MAX_RT_PRIO;
--	if (p->nr_cpus_allowed > 1)
--		rq->rt.rt_nr_migratory--;
-+		rt_rq->highest_prio = MAX_RT_PRIO;
-+#endif
-+#ifdef CONFIG_SMP
-+	if (rt_se->nr_cpus_allowed > 1)
-+		rt_rq->rt_nr_migratory--;
- 
--	update_rt_migration(rq);
-+	update_rt_migration(rq_of_rt_rq(rt_rq));
- #endif /* CONFIG_SMP */
- }
- 
--static void enqueue_task_rt(struct rq *rq, struct task_struct *p, int wakeup)
-+static void enqueue_rt_entity(struct sched_rt_entity *rt_se)
- {
--	struct rt_prio_array *array = &rq->rt.active;
-+	struct rt_rq *rt_rq = rt_rq_of_se(rt_se);
-+	struct rt_prio_array *array = &rt_rq->active;
-+	struct rt_rq *group_rq = group_rt_rq(rt_se);
- 
--	list_add_tail(&p->rt.run_list, array->queue + p->prio);
--	__set_bit(p->prio, array->bitmap);
--	inc_cpu_load(rq, p->se.load.weight);
-+	if (group_rq && group_rq->rt_throttled)
-+		return;
- 
--	inc_rt_tasks(p, rq);
-+	list_add_tail(&rt_se->run_list, array->queue + rt_se_prio(rt_se));
-+	__set_bit(rt_se_prio(rt_se), array->bitmap);
- 
--	if (wakeup)
--		p->rt.timeout = 0;
-+	inc_rt_tasks(rt_se, rt_rq);
-+
-+}
-+
-+static void dequeue_rt_entity(struct sched_rt_entity *rt_se)
-+{
-+	struct rt_rq *rt_rq = rt_rq_of_se(rt_se);
-+	struct rt_prio_array *array = &rt_rq->active;
-+	struct rt_rq *group_rq = group_rt_rq(rt_se);
-+
-+	list_del_init(&rt_se->run_list);
-+	if (list_empty(array->queue + rt_se_prio(rt_se)))
-+		__clear_bit(rt_se_prio(rt_se), array->bitmap);
-+
-+	dec_rt_tasks(rt_se, rt_rq);
-+}
-+
-+/*
-+ * Because the prio of an upper entry depends on the lower
-+ * entries, we must remove entries top - down.
-+ *
-+ * XXX: O(1/2 h^2) because we can only walk up, not down the chain.
-+ *      doesn't matter much for now, as h=2 for GROUP_SCHED.
-+ */
-+static void dequeue_rt_stack(struct task_struct *p)
-+{
-+	struct sched_rt_entity *rt_se, *top_se;
-+
-+	/*
-+	 * dequeue all, top - down.
-+	 */
-+	do {
-+		rt_se = &p->rt;
-+		top_se = NULL;
-+		for_each_sched_rt_entity(rt_se) {
-+			if (on_rt_rq(rt_se))
-+				top_se = rt_se;
-+		}
-+		if (top_se)
-+			dequeue_rt_entity(top_se);
-+	} while (top_se);
- }
- 
- /*
-  * Adding/removing a task to/from a priority array:
-  */
-+static void enqueue_task_rt(struct rq *rq, struct task_struct *p, int wakeup)
-+{
-+	struct sched_rt_entity *rt_se = &p->rt;
-+
-+	if (wakeup)
-+		rt_se->timeout = 0;
-+
-+	dequeue_rt_stack(p);
-+
-+	/*
-+	 * enqueue everybody, bottom - up.
-+	 */
-+	for_each_sched_rt_entity(rt_se)
-+		enqueue_rt_entity(rt_se);
-+
-+	inc_cpu_load(rq, p->se.load.weight);
-+}
-+
- static void dequeue_task_rt(struct rq *rq, struct task_struct *p, int sleep)
- {
--	struct rt_prio_array *array = &rq->rt.active;
-+	struct sched_rt_entity *rt_se = &p->rt;
-+	struct rt_rq *rt_rq;
- 
  	update_curr_rt(rq);
  
--	list_del(&p->rt.run_list);
--	if (list_empty(array->queue + p->prio))
--		__clear_bit(p->prio, array->bitmap);
--	dec_cpu_load(rq, p->se.load.weight);
-+	dequeue_rt_stack(p);
-+
-+	/*
-+	 * re-enqueue all non-empty rt_rq entities.
-+	 */
-+	for_each_sched_rt_entity(rt_se) {
-+		rt_rq = group_rt_rq(rt_se);
-+		if (rt_rq && rt_rq->rt_nr_running)
-+			enqueue_rt_entity(rt_se);
-+	}
- 
--	dec_rt_tasks(p, rq);
-+	dec_cpu_load(rq, p->se.load.weight);
- }
- 
- /*
-  * Put task to the end of the run list without the overhead of dequeue
-  * followed by enqueue.
-  */
-+static
-+void requeue_rt_entity(struct rt_rq *rt_rq, struct sched_rt_entity *rt_se)
-+{
-+	struct rt_prio_array *array = &rt_rq->active;
-+
-+	list_move_tail(&rt_se->run_list, array->queue + rt_se_prio(rt_se));
-+}
-+
- static void requeue_task_rt(struct rq *rq, struct task_struct *p)
- {
--	struct rt_prio_array *array = &rq->rt.active;
-+	struct sched_rt_entity *rt_se = &p->rt;
-+	struct rt_rq *rt_rq;
- 
--	list_move_tail(&p->rt.run_list, array->queue + p->prio);
-+	for_each_sched_rt_entity(rt_se) {
-+		rt_rq = rt_rq_of_se(rt_se);
-+		requeue_rt_entity(rt_rq, rt_se);
-+	}
- }
- 
--static void
--yield_task_rt(struct rq *rq)
-+static void yield_task_rt(struct rq *rq)
- {
- 	requeue_task_rt(rq, rq->curr);
- }
-@@ -229,7 +466,7 @@ static int select_task_rq_rt(struct task
- 	 * cold cache anyway.
- 	 */
- 	if (unlikely(rt_task(rq->curr)) &&
--	    (p->nr_cpus_allowed > 1)) {
-+	    (p->rt.nr_cpus_allowed > 1)) {
- 		int cpu = find_lowest_rq(p);
- 
- 		return (cpu == -1) ? task_cpu(p) : cpu;
-@@ -252,27 +489,53 @@ static void check_preempt_curr_rt(struct
- 		resched_task(rq->curr);
- }
- 
--static struct task_struct *pick_next_task_rt(struct rq *rq)
-+static struct sched_rt_entity *pick_next_rt_entity(struct rq *rq,
-+						   struct rt_rq *rt_rq)
- {
--	struct rt_prio_array *array = &rq->rt.active;
--	struct task_struct *next;
-+	struct rt_prio_array *array = &rt_rq->active;
-+	struct sched_rt_entity *next = NULL;
- 	struct list_head *queue;
--	struct rt_rq *rt_rq = &rq->rt;
- 	int idx;
- 
--	if (sched_rt_ratio_exceeded(rq, rt_rq))
--		return NULL;
-+	if (sched_rt_ratio_exceeded(rt_rq))
-+		goto out;
- 
- 	idx = sched_find_first_bit(array->bitmap);
--	if (idx >= MAX_RT_PRIO)
--		return NULL;
-+	BUG_ON(idx >= MAX_RT_PRIO);
- 
- 	queue = array->queue + idx;
--	next = list_entry(queue->next, struct task_struct, rt.run_list);
-+	next = list_entry(queue->next, struct sched_rt_entity, run_list);
-+ out:
-+	return next;
-+}
-+
-+static struct task_struct *pick_next_task_rt(struct rq *rq)
-+{
-+	struct sched_rt_entity *rt_se;
-+	struct task_struct *p;
-+	struct rt_rq *rt_rq;
- 
--	next->se.exec_start = rq->clock;
-+ retry:
-+	rt_rq = &rq->rt;
- 
--	return next;
-+	if (unlikely(!rt_rq->rt_nr_running))
-+		return NULL;
-+
-+	if (sched_rt_ratio_exceeded(rt_rq))
-+		return NULL;
-+
-+	do {
-+		rt_se = pick_next_rt_entity(rq, rt_rq);
-+		if (unlikely(!rt_se)) {
-+			foo = 1;
-+			goto retry;
-+		}
-+		rt_rq = group_rt_rq(rt_se);
-+	} while (rt_rq);
-+
-+	p = rt_task_of(rt_se);
-+	p->se.exec_start = rq->clock;
-+	return p;
- }
- 
- static void put_prev_task_rt(struct rq *rq, struct task_struct *p)
-@@ -282,6 +545,7 @@ static void put_prev_task_rt(struct rq *
- }
- 
- #ifdef CONFIG_SMP
-+
- /* Only try algorithms three times */
- #define RT_MAX_TRIES 3
- 
-@@ -292,7 +556,7 @@ static int pick_rt_task(struct rq *rq, s
- {
- 	if (!task_running(rq, p) &&
- 	    (cpu < 0 || cpu_isset(cpu, p->cpus_allowed)) &&
--	    (p->nr_cpus_allowed > 1))
-+	    (p->rt.nr_cpus_allowed > 1))
- 		return 1;
- 	return 0;
- }
-@@ -300,52 +564,33 @@ static int pick_rt_task(struct rq *rq, s
- /* Return the second highest RT task, NULL otherwise */
- static struct task_struct *pick_next_highest_task_rt(struct rq *rq, int cpu)
- {
--	struct rt_prio_array *array = &rq->rt.active;
--	struct task_struct *next;
--	struct list_head *queue;
-+	struct task_struct *next = NULL;
-+	struct sched_rt_entity *rt_se;
-+	struct rt_prio_array *array;
-+	struct rt_rq *rt_rq;
- 	int idx;
- 
--	if (likely(rq->rt.rt_nr_running < 2))
--		return NULL;
--
--	idx = sched_find_first_bit(array->bitmap);
--	if (unlikely(idx >= MAX_RT_PRIO)) {
--		WARN_ON(1); /* rt_nr_running is bad */
--		return NULL;
--	}
--
--	queue = array->queue + idx;
--	BUG_ON(list_empty(queue));
--
--	next = list_entry(queue->next, struct task_struct, rt.run_list);
--	if (unlikely(pick_rt_task(rq, next, cpu)))
--		goto out;
--
--	if (queue->next->next != queue) {
--		/* same prio task */
--		next = list_entry(queue->next->next, struct task_struct,
--				  rt.run_list);
--		if (pick_rt_task(rq, next, cpu))
--			goto out;
--	}
--
-- retry:
--	/* slower, but more flexible */
--	idx = find_next_bit(array->bitmap, MAX_RT_PRIO, idx+1);
--	if (unlikely(idx >= MAX_RT_PRIO))
--		return NULL;
--
--	queue = array->queue + idx;
--	BUG_ON(list_empty(queue));
--
--	list_for_each_entry(next, queue, rt.run_list) {
--		if (pick_rt_task(rq, next, cpu))
--			goto out;
-+	for_each_leaf_rt_rq(rt_rq, rq) {
-+		array = &rt_rq->active;
-+		idx = sched_find_first_bit(array->bitmap);
-+ next_idx:
-+		if (idx >= MAX_RT_PRIO)
-+			continue;
-+		if (next && next->prio < idx)
-+			continue;
-+		list_for_each_entry(rt_se, array->queue + idx, run_list) {
-+			struct task_struct *p = rt_task_of(rt_se);
-+			if (pick_rt_task(rq, p, cpu)) {
-+				next = p;
-+				break;
-+			}
-+		}
-+		if (!next) {
-+			idx = find_next_bit(array->bitmap, MAX_RT_PRIO, idx+1);
-+			goto next_idx;
-+		}
- 	}
- 
--	goto retry;
--
-- out:
- 	return next;
- }
- 
-@@ -774,12 +1019,12 @@ static void set_cpus_allowed_rt(struct t
- 	 * Update the migration status of the RQ if we have an RT task
- 	 * which is running AND changing its weight value.
- 	 */
--	if (p->se.on_rq && (weight != p->nr_cpus_allowed)) {
-+	if (p->se.on_rq && (weight != p->rt.nr_cpus_allowed)) {
- 		struct rq *rq = task_rq(p);
- 
--		if ((p->nr_cpus_allowed <= 1) && (weight > 1)) {
-+		if ((p->rt.nr_cpus_allowed <= 1) && (weight > 1)) {
- 			rq->rt.rt_nr_migratory++;
--		} else if ((p->nr_cpus_allowed > 1) && (weight <= 1)) {
-+		} else if ((p->rt.nr_cpus_allowed > 1) && (weight <= 1)) {
- 			BUG_ON(!rq->rt.rt_nr_migratory);
- 			rq->rt.rt_nr_migratory--;
- 		}
-@@ -788,7 +1033,7 @@ static void set_cpus_allowed_rt(struct t
- 	}
- 
- 	p->cpus_allowed    = *new_mask;
--	p->nr_cpus_allowed = weight;
-+	p->rt.nr_cpus_allowed = weight;
- }
- 
- /* Assumes rq->lock is held */
-Index: linux-2.6/include/linux/init_task.h
+Index: linux-2.6/arch/x86/kernel/signal_32.c
 ===================================================================
---- linux-2.6.orig/include/linux/init_task.h
-+++ linux-2.6/include/linux/init_task.h
-@@ -141,12 +141,13 @@ extern struct group_info init_groups;
- 	.normal_prio	= MAX_PRIO-20,					\
- 	.policy		= SCHED_NORMAL,					\
- 	.cpus_allowed	= CPU_MASK_ALL,					\
--	.nr_cpus_allowed = NR_CPUS,					\
- 	.mm		= NULL,						\
- 	.active_mm	= &init_mm,					\
- 	.rt		= {						\
- 		.run_list	= LIST_HEAD_INIT(tsk.rt.run_list),	\
--		.time_slice	= HZ, },				\
-+		.time_slice	= HZ, 					\
-+		.nr_cpus_allowed = NR_CPUS,				\
-+	},								\
- 	.ioprio		= 0,						\
- 	.tasks		= LIST_HEAD_INIT(tsk.tasks),			\
- 	.ptrace_children= LIST_HEAD_INIT(tsk.ptrace_children),		\
-Index: linux-2.6/kernel/fork.c
+--- linux-2.6.orig/arch/x86/kernel/signal_32.c
++++ linux-2.6/arch/x86/kernel/signal_32.c
+@@ -664,6 +664,9 @@ void do_notify_resume(struct pt_regs *re
+ 	/* deal with pending signal delivery */
+ 	if (thread_info_flags & (_TIF_SIGPENDING | _TIF_RESTORE_SIGMASK))
+ 		do_signal(regs);
++
++	if (thread_info_flags & _TIF_HRTICK_RESCHED)
++		hrtick_resched();
+ 	
+ 	clear_thread_flag(TIF_IRET);
+ }
+Index: linux-2.6/include/asm-x86/thread_info_32.h
 ===================================================================
---- linux-2.6.orig/kernel/fork.c
-+++ linux-2.6/kernel/fork.c
-@@ -1252,7 +1252,7 @@ static struct task_struct *copy_process(
- 	 * parent's CPU). This avoids alot of nasty races.
- 	 */
- 	p->cpus_allowed = current->cpus_allowed;
--	p->nr_cpus_allowed = current->nr_cpus_allowed;
-+	p->rt.nr_cpus_allowed = current->rt.nr_cpus_allowed;
- 	if (unlikely(!cpu_isset(task_cpu(p), p->cpus_allowed) ||
- 			!cpu_online(task_cpu(p))))
- 		set_task_cpu(p, smp_processor_id());
+--- linux-2.6.orig/include/asm-x86/thread_info_32.h
++++ linux-2.6/include/asm-x86/thread_info_32.h
+@@ -132,6 +132,7 @@ static inline struct thread_info *curren
+ #define TIF_SYSCALL_AUDIT	6	/* syscall auditing active */
+ #define TIF_SECCOMP		7	/* secure computing */
+ #define TIF_RESTORE_SIGMASK	8	/* restore signal mask in do_signal() */
++#define TIF_HRTICK_RESCHED	9	/* reprogram hrtick timer */
+ #define TIF_MEMDIE		16
+ #define TIF_DEBUG		17	/* uses debug registers */
+ #define TIF_IO_BITMAP		18	/* uses I/O bitmap */
+@@ -151,6 +152,7 @@ static inline struct thread_info *curren
+ #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
+ #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
++#define _TIF_HRTICK_RESCHED	(1<<TIF_HRTICK_RESCHED)
+ #define _TIF_DEBUG		(1<<TIF_DEBUG)
+ #define _TIF_IO_BITMAP		(1<<TIF_IO_BITMAP)
+ #define _TIF_FREEZE		(1<<TIF_FREEZE)
+Index: linux-2.6/arch/x86/kernel/signal_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/signal_64.c
++++ linux-2.6/arch/x86/kernel/signal_64.c
+@@ -476,6 +476,9 @@ do_notify_resume(struct pt_regs *regs, v
+ 	/* deal with pending signal delivery */
+ 	if (thread_info_flags & (_TIF_SIGPENDING|_TIF_RESTORE_SIGMASK))
+ 		do_signal(regs);
++
++	if (thread_info_flags & _TIF_HRTICK_RESCHED)
++		hrtick_resched();
+ }
+ 
+ void signal_fault(struct pt_regs *regs, void __user *frame, char *where)
+Index: linux-2.6/include/asm-x86/thread_info_64.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/thread_info_64.h
++++ linux-2.6/include/asm-x86/thread_info_64.h
+@@ -112,6 +112,7 @@ static inline struct thread_info *stack_
+ #define TIF_SECCOMP		8	/* secure computing */
+ #define TIF_RESTORE_SIGMASK	9	/* restore signal mask in do_signal */
+ #define TIF_MCE_NOTIFY		10	/* notify userspace of an MCE */
++#define TIF_HRTICK_RESCHED	11	/* reprogram hrtick timer */
+ #define TIF_FORCED_TF		16	/* true if TF in eflags artificially */
+ #define TIF_IA32		17	/* 32bit process */ 
+ #define TIF_FORK		18	/* ret_from_fork */
+@@ -134,6 +135,7 @@ static inline struct thread_info *stack_
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+ #define _TIF_MCE_NOTIFY		(1<<TIF_MCE_NOTIFY)
+ #define _TIF_FORCED_TF		(1<<TIF_FORCED_TF)
++#define _TIF_HRTICK_RESCHED	(1<<TIF_HRTICK_RESCHED)
+ #define _TIF_IA32		(1<<TIF_IA32)
+ #define _TIF_FORK		(1<<TIF_FORK)
+ #define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
+@@ -150,6 +152,9 @@ static inline struct thread_info *stack_
+ /* work to do on any return to user space */
+ #define _TIF_ALLWORK_MASK (0x0000FFFF & ~_TIF_SECCOMP)
+ 
++#define _TIF_DO_NOTIFY_MASK \
++	(_TIF_SIGPENDING|_TIF_SINGLESTEP|_TIF_MCE_NOTIFY|_TIF_HRTICK_RESCHED)
++
+ /* flags to check in __switch_to() */
+ #define _TIF_WORK_CTXSW \
+     (_TIF_IO_BITMAP|_TIF_DEBUGCTLMSR|_TIF_DS_AREA_MSR|_TIF_BTS_TRACE_TS)
+Index: linux-2.6/arch/x86/kernel/entry_64.S
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/entry_64.S
++++ linux-2.6/arch/x86/kernel/entry_64.S
+@@ -296,7 +296,7 @@ sysret_careful:
+ sysret_signal:
+ 	TRACE_IRQS_ON
+ 	ENABLE_INTERRUPTS(CLBR_NONE)
+-	testl $(_TIF_SIGPENDING|_TIF_SINGLESTEP|_TIF_MCE_NOTIFY),%edx
++	testl $_TIF_DO_NOTIFY_MASK,%edx
+ 	jz    1f
+ 
+ 	/* Really a signal */
+@@ -390,7 +390,7 @@ int_very_careful:
+ 	jmp int_restore_rest
+ 	
+ int_signal:
+-	testl $(_TIF_SIGPENDING|_TIF_SINGLESTEP|_TIF_MCE_NOTIFY),%edx
++	testl $_TIF_DO_NOTIFY_MASK,%edx
+ 	jz 1f
+ 	movq %rsp,%rdi		# &ptregs -> arg1
+ 	xorl %esi,%esi		# oldset -> arg2
+@@ -620,7 +620,7 @@ retint_careful:
+ 	jmp retint_check
+ 	
+ retint_signal:
+-	testl $(_TIF_SIGPENDING|_TIF_SINGLESTEP|_TIF_MCE_NOTIFY),%edx
++	testl $_TIF_DO_NOTIFY_MASK,%edx
+ 	jz    retint_swapgs
+ 	TRACE_IRQS_ON
+ 	ENABLE_INTERRUPTS(CLBR_NONE)
 
 --
 
