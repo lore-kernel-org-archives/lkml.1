@@ -1,78 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752730AbXLaSgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbXLaSh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752730AbXLaSgY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 13:36:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbXLaSgO
+	id S1753018AbXLaSh4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 13:37:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbXLaShs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 13:36:14 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:59332 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751392AbXLaSgN (ORCPT
+	Mon, 31 Dec 2007 13:37:48 -0500
+Received: from py-out-1112.google.com ([64.233.166.180]:29207 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751393AbXLaShr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 13:36:13 -0500
-Date: Mon, 31 Dec 2007 19:35:58 +0100 (CET)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Douglas Gilbert <dougg@torque.net>
-cc: Matthew Wilcox <matthew@wil.cx>, Bodo Eggert <7eggert@gmx.de>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: Bad escriptions in Kconfig
-In-Reply-To: <47791A32.1020405@torque.net>
-Message-ID: <alpine.LSU.0.999.0712311931080.5775@be1.lrz>
-References: <alpine.LSU.0.999.0712311313050.3761@be1.lrz> <477907DB.8030406@torque.net>
- <20071231154731.GY11638@parisc-linux.org> <47791A32.1020405@torque.net>
+	Mon, 31 Dec 2007 13:37:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LtNGvHVoSOoZRfYx57S8HPmpggvfP95J59quUG9hWwc1+C1PZC1mMFNuWU1pNPRAGO+3nffIBf3wrnWQko4bo8x+kflk1dfQBmYkl+CFW302JdD+42wnPZnSm4nEP/GmwtMgP7+S7Z5HR28Ht6bID6l3STPGeHJFFX5+0Of3zRk=
+Message-ID: <64bb37e0712311037w42bae43ayb3c10b2e0310586d@mail.gmail.com>
+Date: Mon, 31 Dec 2007 19:37:43 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Michael Buesch" <mb@bu3sch.de>
+Subject: Re: [PATCH] Force UNIX domain sockets to be built in
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Adrian Bunk" <bunk@kernel.org>,
+       "Bodo Eggert" <7eggert@gmx.de>,
+       "Jan Engelhardt" <jengelh@computergmbh.de>, devzero@web.de,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <200712311818.12825.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1+Xog8KbrQH/b+JkHPsGkeDv7PtOuDs04d0sOt
- qBIfzxkt2DxO6ivjAeV0BfeQpYrh1+5G22QMcRq0MGIUn7214h
- m+CgACGqbGmd9ZFaNY0Uw==
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LSU.0.999.0712311300020.3686@be1.lrz>
+	 <64bb37e0712310817g621d818dyebbf2228063d4d5f@mail.gmail.com>
+	 <20071231163803.33acb647@the-village.bc.nu>
+	 <200712311818.12825.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 31 Dec 2007, Douglas Gilbert wrote:
-> Matthew Wilcox wrote:
-> > On Mon, Dec 31, 2007 at 10:16:43AM -0500, Douglas Gilbert wrote:
-> >> Bodo Eggert wrote:
+On Dec 31, 2007 6:18 PM, Michael Buesch <mb@bu3sch.de> wrote:
+> On Monday 31 December 2007 17:38:03 Alan Cox wrote:
+> > On Mon, 31 Dec 2007 17:17:19 +0100
+> > "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
+> >
+> > > a) this could be disabled during development if you want this
+> > > b) this would even only affect development if you add new code that
+> > > now needs a EXPORT_SYMBOL that was removed on an earlier build. And
+> > > right now this would also need to trigger a rerun of depmod. And the
+> > > same trigger could redo this garbage collect.
+> > >
+> > > Or am I missing something obvious?
+> >
+> > Development is not a phase seperate from use or distribution. A lot of
+> > module testers for distributions will not be compiling their own modules
+> > but loading in ones to test provided by their vendor - which may of
+> > course then need different ksyms
 
-(Kicking netdev from CC)
+I understand that point.
+I just always assumed that kernel tests meant 'please test this patch'
+and doing the compile yourself.
 
-> >>> ---
-> >>> SCSI target support (SCSI_TGT) [N/m/y/?] (NEW) ?
-> >>>
-> >>> If you want to use SCSI target mode drivers enable this option.
-> >>> If you choose M, the module will be called scsi_tgt.
-> >>> ---
-> >>>
-> >>> What TF is a SCSI target mode, what is a target mode driver?
-> >> Heard of google :-)
-> >>
-> >> For explanations of SCSI (and other storage) terminology
-> >> reference could be made to SAM-3 or SAM-4 drafts (because
-> >> the real standards cost money) at www.t10.org .
-> >>
-> >> Perhaps many other subsections in the kernel could have
-> >> similar references.
-> > 
-> > I think that's an appalling idea.  Someone's trying to configure their
-> > kernel, not research hundreds of new ideas on the internet.  Here's a
-> > better description:
-> > 
-> > 	help
-> > 	  The SCSI target code allows your computer to appear as a SCSI
-> > 	  device.  This is useful in a SAN or NAS environment where you
-> > 	  want other computers to be able to treat this computer as a disc.
-> > 
-> > 	  To compile this driver as a module, choose M here: the module
-> > 	  will be called scsi_tgt.
-> 
-> Appalling or not, it is more accurate to define a SCSI target
-> properly than equate it to a direct access logical unit (i.e.
-> a disk).
+But I'm not convinced be the following:
+> As an example, the whole purpose wireless-compat package is
+> to load latest bleeding edge wireless stuff into a distribution kernel.
+> So people are not required to recompile their kernels for using
+> drivers that support their hardware.
+> And guess what, it is used a _lot_. And lots of bugs are found with it.
+> It increases our testing community a lot.
 
-Yes, but calling the current text a "help text" would be even less accurate.
-Can you create a helpfull text without being incorrect?
--- 
-Field experience is something you don't get until just after you need it.
+This looks more like a "regular" out-of-tree module for the purpose of
+the suggested symbol garbage collector.
+And for that case I already a 'don't use it then'-note.
+
+The base problem is that there already are many options to break
+external modules. (CONFIG_MODULES=n ;) )
+Or in the case of this wireless module: CONFIG_CRYPTO_ARC4=n
+(Without 'arc4' ieee80211_wep_init() will fail, that will fail
+ieee80211_register_hw() and so no mac80211 driver could be loaded)
+
+> So, all this wouldn't work, if kernel symbols could randomly get
+> nuked by some "garbage collector".
+>
+> In practice, no distribution would use symbol garbage collection, as the
+> only benefit from it would be an increased level of bugreports.
+
+The question I can't answer in this context is: Do distributions want
+to support external modules?
+Only if yes, your argument is valid. But then they could just disable
+this feature and prevent this kind of bugreports.
+
+Torsten
