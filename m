@@ -1,103 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbXLaPRk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbXLaPR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754300AbXLaPRk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 10:17:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbXLaPR3
+	id S1755546AbXLaPR5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 10:17:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754691AbXLaPRr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 10:17:29 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55458 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751004AbXLaPR1 (ORCPT
+	Mon, 31 Dec 2007 10:17:47 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:47009 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754684AbXLaPRm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 10:17:27 -0500
-Message-ID: <477907DB.8030406@torque.net>
-Date: Mon, 31 Dec 2007 10:16:43 -0500
-From: Douglas Gilbert <dougg@torque.net>
-Reply-To: dougg@torque.net
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 31 Dec 2007 10:17:42 -0500
+Date: Mon, 31 Dec 2007 09:17:12 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: serue@us.ibm.com, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: TOMOYO Linux Security Goal
+Message-ID: <20071231151712.GA28624@sergelap.austin.ibm.com>
+References: <20071226164230.GA14210@sergelap.austin.ibm.com> <200712272200.IIJ73936.OHOFFLMOQJVFtS@I-love.SAKURA.ne.jp> <20071227145431.GB5161@sergelap.austin.ibm.com> <200712282332.EGC57888.OFFQHJOLVSMtFO@I-love.SAKURA.ne.jp> <20071228151221.GA12548@sergelap.austin.ibm.com> <200712291243.HFE05726.MFOJOVLQFFOtSH@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
-To: Bodo Eggert <7eggert@gmx.de>
-CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Bad escriptions in Kconfig
-References: <alpine.LSU.0.999.0712311313050.3761@be1.lrz>
-In-Reply-To: <alpine.LSU.0.999.0712311313050.3761@be1.lrz>
-X-Enigmail-Version: 0.95.5
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <200712291243.HFE05726.MFOJOVLQFFOtSH@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bodo Eggert wrote:
-> In some of the Kconfig files, the options are not adequately decribed. I 
-> collected a few of the bad descriptions I found:
+Quoting Tetsuo Handa (penguin-kernel@I-love.SAKURA.ne.jp):
+> Hello.
 > 
+> Serge E. Hallyn wrote:
+> > > > >   * namespace manipulation. (i.e. mount()/umount()/pivot_root())
+> > > > 
+> > > > do you track mounts namespace cloning?
+> > > > 
+> > > Yes. TOMOYO can recognize mount operation with the following flags.
+> > > 
+> > >   --bind --move --remount
+> > >   --make-unbindable --make-private --make-slave --make-shared
+> > 
+> > No, I mean clone(CLONE_NEWNS) and unshare(CLONE_NEWNS).  Without
+> > tracking those, it seems like a convoluted sequence of mounting,
+> > unmonting, and mount sharing and unsharing could potentially confuse
+> > your policy or your admins...
+> Oh, I see. TOMOYO doesn't track clone() and unshare().
 > 
-> ---
-> Lowlevel video output switch controls (VIDEO_OUTPUT_CONTROL) [M/n/y/?] (NEW) ?
-> 
-> This framework adds support for low-level control of the video
-> output switch.
-> ---
-> 
-> - What is THE video output switch and why would I need low level control?
-> 
-> - Frameworks should be auto-selected like libraries, shouldn't they?
-> 
-> - WTF is this a module?
-> 
-> 
-> -------------
-> ---
-> Auxiliary Display support (AUXDISPLAY) [N/y/?] (NEW) ?
-> 
-> Say Y here to get to see options for auxiliary display drivers.
-> This option alone does not add any kernel code.
-> ---
-> 
-> - If I knw what an axilary display was, I would not read this help text!
-> 
-> - After digging some time, I discovered that all Auxdisplays are parallel 
->   port devices.
->   Rename to "Parallel port display device support"?
-> 
-> 
-> -------------
-> ---
-> Transformation user configuration interface (XFRM_USER) [N/m/y/?] (NEW)
->   
-> Support for Transformation(XFRM) user configuration interface
-> like IPsec used by native Linux tools.
-> 
-> If unsure, say Y.
-> ---
-> 
-> - I'm not sure if these words combine to a sentence.
-> - I can't tell if IPSEC is the only user or if I'd break other parts by not 
->   saying 'Y'. OTOH, I don't want to bloat my kernel ...
-> - What's a native linux tool?
-> 
->   
-> -------------
-> ---
-> SCSI target support (SCSI_TGT) [N/m/y/?] (NEW) ?
-> 
-> If you want to use SCSI target mode drivers enable this option.
-> If you choose M, the module will be called scsi_tgt.
-> ---
-> 
-> What TF is a SCSI target mode, what is a target mode driver?
+> > I haven't fully thought it through.  But at least if an admin makes a
+> > policy update with an expectation that all processes have the same mount
+> > trees the result could be unsafe.
+> TOMOYO doesn't expect that all processes have the same mount trees.
+> But TOMOYO expects that the mount trees won't change unless one of mount()/
+> umount()/pivot_root() are called.
+> Does a process get different mount trees by just calling clone() or unshare()?
+> My understanding is that clone() or unshare() disables propergation of
+> mount tree changes when somebody calls mount() or umount() or pivot_root().
 
-Heard of google :-)
+Yes, with further propagation rules possible.
 
-For explanations of SCSI (and other storage) terminology
-reference could be made to SAM-3 or SAM-4 drafts (because
-the real standards cost money) at www.t10.org .
-
-Perhaps many other subsections in the kernel could have
-similar references.
-
-Doug Gilbert
-
-
+> > > Speak of bind mounts, there comes vfsmount problem.
+> > > AppArmor has been proposing patches to pass "struct vfsmount" parameter to
+> > > VFS helper functions and LSM hooks so that AppArmor/TOMOYO can determine
+> > > which pathname was requested in the bind-mounted environment.
+> > > Without the vfsmount patches, we can't calculate pathname without the risk of
+> > > AB-BA deadlock (if namespace_sem held) or crash (if namespace_sem not held).
+> > > I think we should start discussing how the vfsmount patches can be merged.
+> > > I'm sad to see no response for AppArmor's posting
+> > > at http://lkml.org/lkml/2007/12/20/182 .
+> > 
+> > If the patches solve your problem, and you respond saying "TOMOYO needs
+> > these patches too", it just might get the thread going.
+> > 
+> I'll say it when I submit patches.
+> 
+> Regards.
