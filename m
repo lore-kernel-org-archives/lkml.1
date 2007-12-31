@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755586AbXLaEvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753429AbXLaFX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755586AbXLaEvK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 23:51:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbXLaEvD
+	id S1753429AbXLaFX6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 00:23:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbXLaFXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 23:51:03 -0500
-Received: from web36702.mail.mud.yahoo.com ([209.191.85.36]:47520 "HELO
-	web36702.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752437AbXLaEvB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 23:51:01 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=PSVG7qesph0mjFTsL7GYZczcET/LZAcZMnl76AuRRfQbzo+WnAEkKrdHlgo1wwjboxuch0gGWZ5h/SR0og5b0jg2Q4LC+GOqtWI+Pi76PGB8jU2gAAQFAfMfdFiHcWeIf7v8s1HbkVbNikaR3rdUbcaZaCQaz6DDnhLUr/t0ucw=;
-X-YMail-OSG: WSYvQvEVM1m.knKH8cv2weN.SybcywGmECTr9tbVRHvbENyyEKflZPptiXYX6SzQao0MRhKGrWuQOhwH8B6VUO5ArENGK76UuwA8E6Kinwbj.38-
-Date: Sun, 30 Dec 2007 20:51:00 -0800 (PST)
-From: Alex Dubov <oakad@yahoo.com>
-Subject: Re: [PATCH] [MEMSTICK] Initial commit for Sony MemoryStick support
-To: Carlos Corbacho <carlos@strangeworlds.co.uk>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, drzeus@drzeus.cx
-In-Reply-To: <200712310115.25455.carlos@strangeworlds.co.uk>
+	Mon, 31 Dec 2007 00:23:49 -0500
+Received: from pip9.gyao.ne.jp ([61.122.117.247]:1356 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751114AbXLaFXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Dec 2007 00:23:48 -0500
+Date: Mon, 31 Dec 2007 14:23:36 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Cc: Joe Perches <joe@perches.com>, Jens Axboe <jens.axboe@oracle.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-sh <linux-sh@vger.kernel.org>
+Subject: Re: [PATCH] SH/Dreamcast - add support for GD-Rom device
+Message-ID: <20071231052336.GA29275@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Adrian McMenamin <adrian@newgolddream.dyndns.info>,
+	Joe Perches <joe@perches.com>, Jens Axboe <jens.axboe@oracle.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	linux-sh <linux-sh@vger.kernel.org>
+References: <1198774339.6170.11.camel@localhost.localdomain> <1198796281.4833.31.camel@localhost> <1199021904.6222.7.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <259674.66754.qm@web36702.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1199021904.6222.7.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Dec 30, 2007 at 01:38:24PM +0000, Adrian McMenamin wrote:
+> On Thu, 2007-12-27 at 14:58 -0800, Joe Perches wrote:
+> > On Thu, 2007-12-27 at 16:52 +0000, Adrian McMenamin wrote:
+> > > This patch adds support for the CD-Rom drive on the SEGA Dreamcast.
+> > 
+> > Because it was already so close, might as well make it checkpatch clean.
+> > 
+> > I also added a function gdrom_is_busy() to make a couple of tests
+> > fit on a single line and perhaps easier to read.
+> > 
+> > Signed-off-by: Joe Perches <joe@perches.com>
+> > 
+> Not really for me to decide if this gets applied - I'll leave that to
+> Paul as the maintainer. But I have no objection to them :)
 
---- Carlos Corbacho <carlos@strangeworlds.co.uk> wrote:
-
-> 
-> So do we require changes to the userspace udev rules here, or just some use of 
-> modalias in the drivers?
-> 
-
-It was handled by whoever manages the distro's udev rules until now. Here's the example:
-
-https://lists.ubuntu.com/archives/ubuntu-patches/2007-September/012537.html
-
-
-
-
-      ____________________________________________________________________________________
-Never miss a thing.  Make Yahoo your home page. 
-http://www.yahoo.com/r/hs
+Both patches are fine with me, but it is ultimately Jens (as the
+drivers/cdrom authority) that will have to decide whether to sign off on
+the GDROM patches or not, and through which tree the patches will end up
+being merged. I can certainly merge them through my tree with his
+Acked-by if that's deemed the most convenient.
