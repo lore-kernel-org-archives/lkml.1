@@ -1,76 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758447AbXLaAB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758809AbXLaABw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758447AbXLaAB2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 19:01:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756134AbXLaABT
+	id S1758809AbXLaABw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 19:01:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758109AbXLaABm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 19:01:19 -0500
-Received: from slackadelic.com ([65.196.224.53]:40155 "EHLO
-	mail.slackadelic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755712AbXLaABS (ORCPT
+	Sun, 30 Dec 2007 19:01:42 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:42625 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756134AbXLaABl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 19:01:18 -0500
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
-To: oakad@exemail.com.au
-Subject: Re: [PATCH] [MEMSTICK] Initial commit for Sony MemoryStick support
-Date: Mon, 31 Dec 2007 00:01:14 +0000
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, drzeus@drzeus.cx,
-       Alex Dubov <oakad@yahoo.com>
-References: <1198465597-14059-1-git-send-email-oakad@exemail.com.au>
-In-Reply-To: <1198465597-14059-1-git-send-email-oakad@exemail.com.au>
+	Sun, 30 Dec 2007 19:01:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=dAN3mMz9p0j570TMHe1SZ8OKG3okFQJJwTGOD0T21ZMcz2LTmKOmFM4KNw96BYZKr3Er7d5tPTh6kE7t+3hnBKRFIE6tCZvjCovPj+lgO8sKWLwld0PgTASiJPnk4zh253L5gQO33kDTxDvYuhswHOoAM+pHcwVAdayWUqrtFOc=
+Message-ID: <86802c440712301601g62448de8i412895a105a9ae61@mail.gmail.com>
+Date: Sun, 30 Dec 2007 16:01:39 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: [PATCH] x86_64: clear IO_APIC before enabing apic error vector. v2
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071230232354.GA3083@does.not.exist>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712310001.15395.carlos@strangeworlds.co.uk>
+References: <200712291952.20455.yinghai.lu@sun.com>
+	 <20071230145115.GR16946@elte.hu>
+	 <86802c440712301248m38cd000ejf7e48f273d573edd@mail.gmail.com>
+	 <20071230220620.GC17670@does.not.exist>
+	 <86802c440712301442q476979f0hef047a45e5444c84@mail.gmail.com>
+	 <20071230232354.GA3083@does.not.exist>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mostly just stylistic comments from me here.
-
-On Monday 24 December 2007 03:06:37 oakad@exemail.com.au wrote:
-> From: Alex Dubov <oakad@yahoo.com>
+On Dec 30, 2007 3:23 PM, Adrian Bunk <bunk@kernel.org> wrote:
 >
-> Sony MemoryStick cards are used in many products manufactured by Sony. They
-> are available both as storage and as IO expansion cards. Currently, only
-> MemoryStick Pro storage cards are supported via TI FlashMedia MemoryStick
-> interface.
+> On Sun, Dec 30, 2007 at 02:42:41PM -0800, Yinghai Lu wrote:
+> > On Dec 30, 2007 2:06 PM, Adrian Bunk <bunk@kernel.org> wrote:
+> > > On Sun, Dec 30, 2007 at 12:48:48PM -0800, Yinghai Lu wrote:
+> > > > On Dec 30, 2007 6:51 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> > > > >
+> > > > > * Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+> > > > >
+> > > > > > please check if you can replace the one in the x86-mm
+> > > > > >
+> > > > > > http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commitdiff;h=ffcbdc220a1520d006a837f33589c7c19ffbeb76
+> > > > > >
+> > > > > > the updated one avoid one link warning.
+> > > > >
+> > > > > please send delta patches instead - so that we can review the changes.
+> > > >
+> > > > will do that in another patch.
+> > > >
+> > > > >
+> > > > > > this is the updated verison that take enable_IO_APIC as extra call for
+> > > > > > setup_local_APIC to avoid linking warning.
+> > > > >
+> > > > > hm, what link warning did you get? Perhaps the following __cpuinit:
+> > > >
+> > > > WARNING: vmlinux.o(.text+0x163d5): Section mismatch: reference to
+> > > > .init.text:enable_IO_APIC (between 'setup_local_APIC' and
+> > > > 'apic_is_clustered_box')
+> > >
+> > > So you are doing complicated things for silencing the warning (there is
+> > > an easier ways for achieving it), but the real bug that you will get an
+> > > Oops when calling enable_IO_APIC() after bootup since it already got
+> > > freed stays?
+> >
+> > the enable_IO_APIC is actually doing clear_IO_APIC. and it is only
+> > called by BSP via setup_local_APIC
+> > and it is not called again after bootup
 >
-> Signed-off-by: Alex Dubov <oakad@yahoo.com>
+> OK, this was a bit hidden inside your pointer games.
+>
+> Please send a patch that ignores the warning (and therefore doesn't do
+> these pointer games), and I'll fix the warning in a followup patch.
 
-For MemoryStick Pro on my TI7421 card reader (since my old MemoryStick card 
-and camera have disappeared somewhere, so I cannot currently test that):
+the old one is in x86-mm tree
 
-Tested-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
+http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commitdiff;h=ffcbdc220a1520d006a837f33589c7c19ffbeb76
 
-However, my only concerns are that:
+function call delta
+http://lkml.org/lkml/2007/12/30/211
 
-1) tifm_ms was not autoloaded
-2) On loading tifm_ms, only memstick was autoloaded - mspro_block was not.
+thanks
 
-Although, whether this is an issue with userspace (ie. udev) not dealing with 
-the modules properly, I don't know.
-
-> --- /dev/null
-> +++ b/drivers/memstick/core/memstick.c
-> @@ -0,0 +1,557 @@
-> +/*
-> + *  memstick.c - Sony MemoryStick support
-
-File names in comments are now frowned upon - there was a thread on this in 
-October on LKML:
-
-http://lkml.org/lkml/2007/10/12/524
-
-Also, before Andrew gets in with this - you should run this through 
-checkpatch, as there are a few errors it throws up (mostly foo* and C99 
-comments).
-
--Carlos
--- 
-E-Mail: carlos@strangeworlds.co.uk
-Web: strangeworlds.co.uk
-GPG Key ID: 0x23EE722D
+YH
