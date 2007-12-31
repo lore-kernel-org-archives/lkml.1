@@ -1,49 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753272AbXLaUWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752327AbXLaUWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753272AbXLaUWb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 15:22:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbXLaUWW
+	id S1752327AbXLaUWq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 15:22:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbXLaUW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 15:22:22 -0500
-Received: from mail.atlantis.sk ([80.94.52.35]:50976 "EHLO mail.atlantis.sk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751393AbXLaUWV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 15:22:21 -0500
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
-Date: Mon, 31 Dec 2007 21:22:09 +0100
-User-Agent: KMail/1.9.7
-Cc: Rene Herman <rene.herman@keyaccess.nl>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>, dpreed@reed.com,
-       Islam Amer <pharon@gmail.com>, hpa@zytor.com,
-       Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-References: <477711DC.5030800@keyaccess.nl> <4778FE42.6010003@keyaccess.nl> <20071231155600.0b06552c@the-village.bc.nu>
-In-Reply-To: <20071231155600.0b06552c@the-village.bc.nu>
+	Mon, 31 Dec 2007 15:22:29 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:40584 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752519AbXLaUW2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Dec 2007 15:22:28 -0500
+Date: Tue, 1 Jan 2008 01:52:12 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: hbabu@us.ibm.com, lkml <linux-kernel@vger.kernel.org>,
+       kexec@lists.infradead.org
+Subject: Re: kexec refuses to boot latest -mm
+Message-ID: <20071231202212.GA27601@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20071228124532.GB32643@linux.vnet.ibm.com> <20071228142739.GA4560@redhat.com> <20071229054113.GB17426@linux.vnet.ibm.com> <20071231150658.GA27060@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712312122.13739.linux@rainbow-software.org>
+In-Reply-To: <20071231150658.GA27060@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 31 December 2007 16:56:00 Alan Cox wrote:
-> > Okay. Am about to go stuff my face with new years celebrations but will
-> > definitely try to make that old WD8003 hickup.
->
-> Have fun. Is it an 8390 or an 83905 ?
->
+On Mon, Dec 31, 2007 at 10:06:58AM -0500, Vivek Goyal wrote:
+> On Sat, Dec 29, 2007 at 11:11:13AM +0530, Dhaval Giani wrote:
+> > On Fri, Dec 28, 2007 at 09:27:39AM -0500, Vivek Goyal wrote:
+> > > On Fri, Dec 28, 2007 at 06:15:32PM +0530, Dhaval Giani wrote:
+> > > > Hi Vivek,
+> > > > 
+> > > > I can't seem to get the latest -mm (2.6.24-rc6-mm1) to boot with
+> > > > kexec. It just gets stuck at "Starting new kernel".
+> > > > 
+> > > > It does boot normally when booted as the first kernel.
+> > > > 
+> > > > Any hints debugging? (x86 architecture)
+> > > 
+> > > I generally try few things.
+> > > 
+> > > - Specify earlyprintk= parameter for second kernel and see if control
+> > >   is reaching to second kernel.
+> > > 
+> > > - Otherwise specify --console-serial parameter on "kexec -l" commandline
+> > >   and it should display a message "I am in purgatory" on serial console.
+> > >   This will just mean that control has reached at least till purgatory.
+> > > 
+> > 
+> > Ok, so it reaches till here. I get "I'm in purgatory" on the console.
+> > 
+> 
+> Ok. So it atleast reaches till purgatory. My hunch is that it also reaches
+> the second kernel but dies early in that kernel before any message can
+> be printed on screen.
+> 
+> Can you put some "outb()" messages on serial console in start_kernel() in
+> second kernel and see up to what point do you reach.
+> 
+> My 2.6.24-rc6-mm1 kernel panics during boot on 32bit box. Let me try it on
+> 64 bit box.
+> 
 
-What about HP PCLan 16/TP+ cards? I have one that runs 24/7 in a 486 box 
-(2.6.20.6 kernel) and one spare. It has some VLSI HP chip and also ST-NIC 
-DP83902AV - is that a good candidate for testing?
-
-I also have WD8013EP with DP8390DV chip - that's probably even better.
+Apply the hotfixes :-)
 
 -- 
-Ondrej Zary
+regards,
+Dhaval
