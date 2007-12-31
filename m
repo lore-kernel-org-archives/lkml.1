@@ -1,54 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756523AbXLaQK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756619AbXLaQL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756523AbXLaQK5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 11:10:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751813AbXLaQKr
+	id S1756619AbXLaQL1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 11:11:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbXLaQLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 11:10:47 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:54270 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752367AbXLaQKq (ORCPT
+	Mon, 31 Dec 2007 11:11:14 -0500
+Received: from py-out-1112.google.com ([64.233.166.181]:13084 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751857AbXLaQLM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 11:10:46 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [2.6.24 patch] Fix Cell OProfile support
-Date: Mon, 31 Dec 2007 17:10:06 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Adrian Bunk <adrian.bunk@movial.fi>,
-       Randy Dunlap <randy.dunlap@oracle.com>, phil.el@wanadoo.fr,
-       linux-kernel@vger.kernel.org, paulus@samba.org,
-       oprofile-list@lists.sourceforge.net
-References: <20071228185649.GC4738@stusta.de> <20071229160921.GB12262@Krystal>
-In-Reply-To: <20071229160921.GB12262@Krystal>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 31 Dec 2007 11:11:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NQiMall6MieX2itZNfd+zrUC/sXrQGwiUUC3QCJGcpUqvEIfieYzaY3gTBqmZpcab8z1K1HbYgwFzMSVW2IVPyJD2Nwd8+SByvAEqwb2metlKc7WoTqe2PzRIhNjwF6gzPJKUalwcCgoZXHgmewB1oJKjybXK3CTFy7TO5g2nDk=
+Message-ID: <64bb37e0712310811r34423ff5q2e9516d02f6247de@mail.gmail.com>
+Date: Mon, 31 Dec 2007 17:11:11 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Michael Buesch" <mb@bu3sch.de>
+Subject: Re: [PATCH] Force UNIX domain sockets to be built in
+Cc: "Adrian Bunk" <bunk@kernel.org>, "Bodo Eggert" <7eggert@gmx.de>,
+       "Jan Engelhardt" <jengelh@computergmbh.de>, devzero@web.de,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <200712311659.14847.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712311710.08869.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+v8QHyl8cnpzetR1kvhJa1Q3bSvLpIsln6H9k
- +MrqtxM0A6Ro9CGepMsM+dsD7lEl+Zn+61FtRP6xfU/lvNDML1
- 4/A3+uXmBowguwdPV5ctA==
+References: <alpine.LSU.0.999.0712311300020.3686@be1.lrz>
+	 <20071231144255.GB13803@does.not.exist>
+	 <64bb37e0712310755k2446e67eq81d31cd476eb75e3@mail.gmail.com>
+	 <200712311659.14847.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 29 December 2007, Mathieu Desnoyers wrote:
-> This patch restores the Cell OProfile support that was killed by
-> commit 09cadedbdc01f1a4bea1f427d4fb4642eaa19da9.
-> 
-> It puts it in arch/powerpc/Kconfig. Since I don't see any good reason to leave
-> this as a supplementary user-selectable option, it is now automatically enabled
-> whenever SPU_FS and OPROFILE are enabled.
+On Dec 31, 2007 4:59 PM, Michael Buesch <mb@bu3sch.de> wrote:
+> On Monday 31 December 2007 16:55:57 Torsten Kaiser wrote:
+> > One thing I always wondered about in this discussion about wasted
+> > EXPORT_SYMBOL's:
+> > Shouldn't it be possible to garbage collect these?
+> >
+> > depmod already contains code to analyze all modules to create a
+> > dependency tree. It should not be too difficult to extend it to create
+> > a list of all symbols that really are used by the current modules.
+> > Everything else could be stripped to save space.
+> >
+> > The problem with that:
+> > * out-of-tree modules would break if they don't get lucky to only use
+> > the remaining symbol. I would not see this as a problem, if the help
+> > text of the garbage-collect-option would contain a note like "don't
+> > enable this if you want out-of-tree modules".
+> > * if you later change your .config to include additional modules you
+> > might need to rebuild vmlinux and reboot into the new kernel.
+> > Currently you can probably build and load new modules without a
+> > reboot. (for example: usb drivers)
+>
+> I'd say the practical advantage to the user would be almost zero.
+> Which distribution is going to enable this option and defacto
+> banning external modules?
 
-This one has already been superceded by the fix in 
-aed3a8c9bb1a8623a618232087c5ff62718e3b9a, which made CONFIG_OPROFILE_CELL an
-automatically selected option, from arch/powerpc/platforms/cell/Kconfig.
+I would default this option to not remove used symbols, because it
+could break something.
+For distributions it could be used in both ways:
+* enabled -> only "distro approved" modules can be loaded
+* disabled -> works as of now
 
-	Arnd <><
+For every other user who compiles own kernels without external modules
+(Not including out-of-tree drivers that get patched into the kernel
+code! Only modules that get compiled later independent from the kernel
+build!) it will save space.
+
+If this space would not matter there would be no need to be so hard on
+currently unused EXPORT_SYMBOLs.
+
+Torsten
