@@ -1,40 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757570AbXLaHeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757565AbXLaHmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757570AbXLaHeU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 02:34:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbXLaHeJ
+	id S1757565AbXLaHmN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 02:42:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbXLaHl6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 02:34:09 -0500
-Received: from adsl21-234.ath.forthnet.gr ([77.49.212.234]:49798 "EHLO
-	vergina.dyndns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752814AbXLaHeI (ORCPT
+	Mon, 31 Dec 2007 02:41:58 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:41485 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751647AbXLaHl5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 02:34:08 -0500
-X-Greylist: delayed 879 seconds by postgrey-1.27 at vger.kernel.org; Mon, 31 Dec 2007 02:34:08 EST
-Message-ID: <477897FA.2060001@asyr.hopto.org>
-Date: Mon, 31 Dec 2007 09:19:22 +0200
-From: Thanasis <thanasis@asyr.hopto.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071229)
+	Mon, 31 Dec 2007 02:41:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=evAbP4VG1uHopWGuE4H4hJnbe8n2JnOjaVHQO7vuYojGnc/XtTmsHyGAdo8plhfR54h61OvnbbBd/SEihlqMTSK+UptrfETr3PSdo09I2Q+iMFUbNOZxhTIpSSgLRs2PQ6Us9/UFBUbbhSBIH9FzTHiFiLsq3WWH0hJU7xfveII=
+Message-ID: <e5bfff550712302335ie96e143g55c93e984fba6aaa@mail.gmail.com>
+Date: Mon, 31 Dec 2007 08:35:29 +0100
+From: "Marco Costalba" <mcostalba@gmail.com>
+To: "Git Mailing List" <git@vger.kernel.org>,
+       msysGit <msysgit@googlegroups.com>,
+       "Linux Kernel Development" <linux-kernel@vger.kernel.org>
+Subject: [ANNOUNCE] qgit-2.1 and qgit-1.5.8
+Cc: "Pavel Roskin" <proski@gnu.org>
 MIME-Version: 1.0
-To: Jose de la Mancha <hidalgoj@free.fr>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: RAID timeout parameter accessibility request
-References: <C39DDD66.F5A0%hidalgoj@free.fr>
-In-Reply-To: <C39DDD66.F5A0%hidalgoj@free.fr>
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-on 12/31/2007 12:42 AM Jose de la Mancha wrote the following:
-> 
-> Of course there are "RAID edition" hard drives with a feature called TLER
-> (Time Limited Error Recovery) which stops the hard drive from entering into
-> a deep recovery cycle. The hard drive will only spend 7 seconds to attempt
-> to recover. This means that the hard drive will not be dropped from a RAID
-> array. But these "special" hard drives are way too expensive IMHO just for a
-> small firmware-based feature.
+Hi all,
 
-WD 2500YS
-price same as an IDE or SATA
+  new versions of Qt4 based qgit-2.1 and stable Qt3 based qgit-1.5.8
+have been released.
+
+Download tarballs from
+http://sourceforge.net/project/showfiles.php?group_id=139897
+
+Or directly from git repositories
+
+git://git.kernel.org/pub/scm/qgit/qgit.git   (qgit-1.5.8)
+git://git.kernel.org/pub/scm/qgit/qgit4.git  (qgit-2.1)
+
+
+Stable qgit-1.5.8 has only maintenance fixes, not a lot indeed, it
+happens to be already very stable.
+
+New stuff is in qgit-2.1, you can find a detailed changelog at
+
+http://git.kernel.org/?p=qgit/qgit.git;a=shortlog
+
+
+After popular request, this time I have packaged qgit-2.1 in a nice
+Windows installer (Inno Setup based) downloadable from the above
+sourceforge link, so that our Window's friends can try qgit without
+worrying about compilers, Qt libraries and other geeky things ;-)
+
+Window installer will ask you to locate the msysgit directory. Indeed
+msysgit is the only supported git distribution under Windows, because
+Cygwin has some issues and is also muuuch slower.
+
+So the only prerequisite is to have already installed msysgit
+(http://code.google.com/p/msysgit/)
+
+
+Happy new year 2008 !
+Marco
