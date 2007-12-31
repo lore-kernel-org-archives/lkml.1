@@ -1,107 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752539AbXLaFYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754287AbXLaFpc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752539AbXLaFYZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 00:24:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbXLaFYI
+	id S1754287AbXLaFpc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 00:45:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbXLaFp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 00:24:08 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60168 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753868AbXLaFYE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 00:24:04 -0500
-Date: Sun, 30 Dec 2007 21:25:00 -0800
-From: Greg KH <greg@kroah.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Andreas Mohr <andi@lisas.de>, Ingo Molnar <mingo@elte.hu>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, Pavel Emelyanov <xemul@openvz.org>,
-       "Denis V. Lunev" <den@openvz.org>
-Subject: Re: [usb regression] Re: [PATCH 2.6.24-rc3] Fix /proc/net breakage
-Message-ID: <20071231052500.GB4187@kroah.com>
-References: <20071230161405.GA27788@elte.hu> <Pine.LNX.4.44L0.0712301526090.1963-100000@netrider.rowland.org>
+	Mon, 31 Dec 2007 00:45:26 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:60566 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751114AbXLaFpZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Dec 2007 00:45:25 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+Subject: asm-x86/msr.h for sanitized headers: clean it or punt it
+Date: Mon, 31 Dec 2007 00:45:23 -0500
+User-Agent: KMail/1.9.7
+Cc: LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0712301526090.1963-100000@netrider.rowland.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200712310045.24069.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 30, 2007 at 03:34:45PM -0500, Alan Stern wrote:
-> On Sun, 30 Dec 2007, Ingo Molnar wrote:
-> 
-> > * Andreas Mohr <andi@lisas.de> wrote:
-> > 
-> > > (yes, that's all there is, despite CONFIG_USB_DEBUG being set)
-> > > 
-> > > The LED of a usb stick isn't active either, for obvious reasons.
-> > > 
-> > > And keep in mind that this is a (relatively old) OHCI-only machine... 
-> > > (which had the 2.6.19 lsmod showing ohci-hcd just fine and working 
-> > > fine with WLAN USB)
-> > > 
-> > > Now pondering whether to try -rc6 proper or whether to revert specific 
-> > > guilty-looking USB changes... And wondering how to properly elevate 
-> > > this issue (prompt Greg about it, new thread, bug #, ...?)
-> 
-> It looks like Greg misused the debugfs API -- which is ironic, because
-> he wrote debugfs in the first place!  :-)
+The current asm-x86/msr.h does not actually define anything for (!__KERNEL__
+&& __i386__).  For x86_64, it fails to build due to u32/u64 types being used.
+Simply not installing the header seems easiest to me.  Otherwise, x86_64 will
+need sanitizing and i386 should have things added back, otherwise it's just a
+pointless empty header.
 
-Oh crap, sorry, I did mess that up :(
-
-> Let me know if this patch fixes the problem.  If it does, I'll submit 
-> it to Greg with all the proper accoutrements.
-
-This isn't going to work if CONFIG_DEBUGFS is not enabled either :(
-
-> Index: 2.6.24-rc6-mm1/drivers/usb/host/ohci-hcd.c
-> ===================================================================
-> --- 2.6.24-rc6-mm1.orig/drivers/usb/host/ohci-hcd.c
-> +++ 2.6.24-rc6-mm1/drivers/usb/host/ohci-hcd.c
-> @@ -1067,14 +1067,8 @@ static int __init ohci_hcd_mod_init(void
->  
->  #ifdef DEBUG
->  	ohci_debug_root = debugfs_create_dir("ohci", NULL);
-> -	if (!ohci_debug_root || IS_ERR(ohci_debug_root)) {
-> -		if (!ohci_debug_root)
-> -			retval = -ENOENT;
-> -		else
-> -			retval = PTR_ERR(ohci_debug_root);
-> -
-> -		goto error_debug;
-> -	}
-> +	if (!ohci_debug_root)
-> +		return -ENOENT;
-
-It needs to check for ERR_PTR(-ENODEV) which is the return value if
-debugfs is not enabled, and if so, just ignore things.
-
-If NULL is returned, or anything else, it's a real error.
-
-So, try something like:
-	if (!ohci_debug_root) {
-		retval = -ENOENT;
-		goto error_debug;
-	}
-	if (IS_ERR(ohci_debug_root) && PTR_ERR(ohci_debug_root) != -ENODEV) {
-		retval = PTR_ERR(ohci_debug_root);
-		goto error_debug;
-	}
-
-and let me know of that works for you.
-
-Although the combination of CONFIG_USB_DEBUG and not CONFIG_DEBUGFS is
-strange, we could just enable CONFIG_DEBUGFS is USB_DEBUG is enabled and
-then simplify this logic a bunch at the same time.
-
-thanks,
-
-greg k-h
+Signed-Off-By: Mike Frysinger <vapier@gentoo.org>
+---
+diff --git a/include/asm-x86/Kbuild b/include/asm-x86/Kbuild
+index 12db5a1..6453804 100644
+--- a/include/asm-x86/Kbuild
++++ b/include/asm-x86/Kbuild
+@@ -4,7 +4,6 @@ header-y += boot.h
+ header-y += bootparam.h
+ header-y += debugreg.h
+ header-y += ldt.h
+-header-y += msr-index.h
+ header-y += prctl.h
+ header-y += ptrace-abi.h
+ header-y += sigcontext32.h
+@@ -14,7 +13,6 @@ header-y += vsyscall32.h
+ unifdef-y += e820.h
+ unifdef-y += ist.h
+ unifdef-y += mce.h
+-unifdef-y += msr.h
+ unifdef-y += mtrr.h
+ unifdef-y += page_32.h
+ unifdef-y += page_64.h
