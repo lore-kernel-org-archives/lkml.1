@@ -1,56 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754306AbXLaPKJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbXLaPRk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754306AbXLaPKJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 10:10:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508AbXLaPJ4
+	id S1754300AbXLaPRk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 10:17:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbXLaPR3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 10:09:56 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:37125 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751216AbXLaPJz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 10:09:55 -0500
-Date: Mon, 31 Dec 2007 10:08:43 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: hbabu@us.ibm.com, lkml <linux-kernel@vger.kernel.org>,
-       kexec@lists.infradead.org
-Subject: Re: kexec refuses to boot latest -mm
-Message-ID: <20071231150843.GB27060@redhat.com>
-References: <20071228124532.GB32643@linux.vnet.ibm.com> <20071228142739.GA4560@redhat.com> <20071229054113.GB17426@linux.vnet.ibm.com>
+	Mon, 31 Dec 2007 10:17:29 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55458 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751004AbXLaPR1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Dec 2007 10:17:27 -0500
+Message-ID: <477907DB.8030406@torque.net>
+Date: Mon, 31 Dec 2007 10:16:43 -0500
+From: Douglas Gilbert <dougg@torque.net>
+Reply-To: dougg@torque.net
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
+To: Bodo Eggert <7eggert@gmx.de>
+CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Bad escriptions in Kconfig
+References: <alpine.LSU.0.999.0712311313050.3761@be1.lrz>
+In-Reply-To: <alpine.LSU.0.999.0712311313050.3761@be1.lrz>
+X-Enigmail-Version: 0.95.5
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071229054113.GB17426@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 29, 2007 at 11:11:13AM +0530, Dhaval Giani wrote:
-> On Fri, Dec 28, 2007 at 09:27:39AM -0500, Vivek Goyal wrote:
-> > On Fri, Dec 28, 2007 at 06:15:32PM +0530, Dhaval Giani wrote:
-> > > Hi Vivek,
-> > > 
-> > > I can't seem to get the latest -mm (2.6.24-rc6-mm1) to boot with
-> > > kexec. It just gets stuck at "Starting new kernel".
-> > > 
-> > > It does boot normally when booted as the first kernel.
-> > > 
-> > > Any hints debugging? (x86 architecture)
-> > 
-> > I generally try few things.
-> > 
-> > - Specify earlyprintk= parameter for second kernel and see if control
-> >   is reaching to second kernel.
-> > 
-> > - Otherwise specify --console-serial parameter on "kexec -l" commandline
-> >   and it should display a message "I am in purgatory" on serial console.
-> >   This will just mean that control has reached at least till purgatory.
-> > 
+Bodo Eggert wrote:
+> In some of the Kconfig files, the options are not adequately decribed. I 
+> collected a few of the bad descriptions I found:
 > 
-> Ok, so it reaches till here. I get "I'm in purgatory" on the console.
+> 
+> ---
+> Lowlevel video output switch controls (VIDEO_OUTPUT_CONTROL) [M/n/y/?] (NEW) ?
+> 
+> This framework adds support for low-level control of the video
+> output switch.
+> ---
+> 
+> - What is THE video output switch and why would I need low level control?
+> 
+> - Frameworks should be auto-selected like libraries, shouldn't they?
+> 
+> - WTF is this a module?
+> 
+> 
+> -------------
+> ---
+> Auxiliary Display support (AUXDISPLAY) [N/y/?] (NEW) ?
+> 
+> Say Y here to get to see options for auxiliary display drivers.
+> This option alone does not add any kernel code.
+> ---
+> 
+> - If I knw what an axilary display was, I would not read this help text!
+> 
+> - After digging some time, I discovered that all Auxdisplays are parallel 
+>   port devices.
+>   Rename to "Parallel port display device support"?
+> 
+> 
+> -------------
+> ---
+> Transformation user configuration interface (XFRM_USER) [N/m/y/?] (NEW)
+>   
+> Support for Transformation(XFRM) user configuration interface
+> like IPsec used by native Linux tools.
+> 
+> If unsure, say Y.
+> ---
+> 
+> - I'm not sure if these words combine to a sentence.
+> - I can't tell if IPSEC is the only user or if I'd break other parts by not 
+>   saying 'Y'. OTOH, I don't want to bloat my kernel ...
+> - What's a native linux tool?
+> 
+>   
+> -------------
+> ---
+> SCSI target support (SCSI_TGT) [N/m/y/?] (NEW) ?
+> 
+> If you want to use SCSI target mode drivers enable this option.
+> If you choose M, the module will be called scsi_tgt.
+> ---
+> 
+> What TF is a SCSI target mode, what is a target mode driver?
 
-One more thing. Is 2.6.24-rc6 working properly?
+Heard of google :-)
 
-Thanks
-Vivek
+For explanations of SCSI (and other storage) terminology
+reference could be made to SAM-3 or SAM-4 drafts (because
+the real standards cost money) at www.t10.org .
+
+Perhaps many other subsections in the kernel could have
+similar references.
+
+Doug Gilbert
+
+
