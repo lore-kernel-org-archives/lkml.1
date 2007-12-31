@@ -1,90 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbXLaSh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753209AbXLaSk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753018AbXLaSh4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 13:37:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbXLaShs
+	id S1753209AbXLaSk2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 13:40:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbXLaSkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 13:37:48 -0500
-Received: from py-out-1112.google.com ([64.233.166.180]:29207 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751393AbXLaShr (ORCPT
+	Mon, 31 Dec 2007 13:40:22 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:44454 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750789AbXLaSkV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 13:37:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LtNGvHVoSOoZRfYx57S8HPmpggvfP95J59quUG9hWwc1+C1PZC1mMFNuWU1pNPRAGO+3nffIBf3wrnWQko4bo8x+kflk1dfQBmYkl+CFW302JdD+42wnPZnSm4nEP/GmwtMgP7+S7Z5HR28Ht6bID6l3STPGeHJFFX5+0Of3zRk=
-Message-ID: <64bb37e0712311037w42bae43ayb3c10b2e0310586d@mail.gmail.com>
-Date: Mon, 31 Dec 2007 19:37:43 +0100
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Michael Buesch" <mb@bu3sch.de>
-Subject: Re: [PATCH] Force UNIX domain sockets to be built in
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Adrian Bunk" <bunk@kernel.org>,
-       "Bodo Eggert" <7eggert@gmx.de>,
-       "Jan Engelhardt" <jengelh@computergmbh.de>, devzero@web.de,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <200712311818.12825.mb@bu3sch.de>
+	Mon, 31 Dec 2007 13:40:21 -0500
+Date: Mon, 31 Dec 2007 13:40:20 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Warn about attempts to register/unregister devices during
+ system suspend
+Message-ID: <Pine.LNX.4.44L0.0712311335360.10555-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LSU.0.999.0712311300020.3686@be1.lrz>
-	 <64bb37e0712310817g621d818dyebbf2228063d4d5f@mail.gmail.com>
-	 <20071231163803.33acb647@the-village.bc.nu>
-	 <200712311818.12825.mb@bu3sch.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 31, 2007 6:18 PM, Michael Buesch <mb@bu3sch.de> wrote:
-> On Monday 31 December 2007 17:38:03 Alan Cox wrote:
-> > On Mon, 31 Dec 2007 17:17:19 +0100
-> > "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
-> >
-> > > a) this could be disabled during development if you want this
-> > > b) this would even only affect development if you add new code that
-> > > now needs a EXPORT_SYMBOL that was removed on an earlier build. And
-> > > right now this would also need to trigger a rerun of depmod. And the
-> > > same trigger could redo this garbage collect.
-> > >
-> > > Or am I missing something obvious?
-> >
-> > Development is not a phase seperate from use or distribution. A lot of
-> > module testers for distributions will not be compiling their own modules
-> > but loading in ones to test provided by their vendor - which may of
-> > course then need different ksyms
+This patch (as1030) prints warning messages in the system log when
+drivers try to register or unregister devices during a system sleep
+transition.  These actions are now illegal and will either fail or
+block (likely leading to deadlock).
 
-I understand that point.
-I just always assumed that kernel tests meant 'please test this patch'
-and doing the compile yourself.
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
-But I'm not convinced be the following:
-> As an example, the whole purpose wireless-compat package is
-> to load latest bleeding edge wireless stuff into a distribution kernel.
-> So people are not required to recompile their kernels for using
-> drivers that support their hardware.
-> And guess what, it is used a _lot_. And lots of bugs are found with it.
-> It increases our testing community a lot.
+---
 
-This looks more like a "regular" out-of-tree module for the purpose of
-the suggested symbol garbage collector.
-And for that case I already a 'don't use it then'-note.
+This patch applies on top of
+gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch.  The
+new locking arrangement can cause deadlocks or other errors if drivers
+try to do the wrong thing.  With this patch we should easily be able to
+tell where the problems are.
 
-The base problem is that there already are many options to break
-external modules. (CONFIG_MODULES=n ;) )
-Or in the case of this wireless module: CONFIG_CRYPTO_ARC4=n
-(Without 'arc4' ieee80211_wep_init() will fail, that will fail
-ieee80211_register_hw() and so no mac80211 driver could be loaded)
+Alan Stern
 
-> So, all this wouldn't work, if kernel symbols could randomly get
-> nuked by some "garbage collector".
->
-> In practice, no distribution would use symbol garbage collection, as the
-> only benefit from it would be an increased level of bugreports.
 
-The question I can't answer in this context is: Do distributions want
-to support external modules?
-Only if yes, your argument is valid. But then they could just disable
-this feature and prevent this kind of bugreports.
+Index: usb-2.6/drivers/base/core.c
+===================================================================
+--- usb-2.6.orig/drivers/base/core.c
++++ usb-2.6/drivers/base/core.c
+@@ -789,8 +789,11 @@ int device_add(struct device *dev)
+ 	int error;
+ 
+ 	error = pm_sleep_lock();
+-	if (error)
++	if (error) {
++		dev_warn(dev, "Illegal %s during suspend\n", __FUNCTION__);
++		dump_stack();
+ 		return error;
++	}
+ 
+ 	dev = get_device(dev);
+ 	if (!dev || !strlen(dev->bus_id)) {
+@@ -953,6 +956,13 @@ void device_del(struct device * dev)
+ 	struct device * parent = dev->parent;
+ 	struct class_interface *class_intf;
+ 
++	if (pm_sleep_lock()) {
++		dev_warn(dev, "Illegal %s during suspend\n", __FUNCTION__);
++		dump_stack();
++	} else {
++		pm_sleep_unlock();
++	}
++
+ 	if (parent)
+ 		klist_del(&dev->knode_parent);
+ 	if (MAJOR(dev->devt))
 
-Torsten
