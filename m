@@ -1,56 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757864AbXLaA0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757952AbXLaA3F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757864AbXLaA0Y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 19:26:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbXLaA0R
+	id S1757952AbXLaA3F (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 19:29:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753727AbXLaA2z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 19:26:17 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:36064 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753441AbXLaA0Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 19:26:16 -0500
-Message-ID: <47783678.9070706@zytor.com>
-Date: Sun, 30 Dec 2007 16:23:20 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sun, 30 Dec 2007 19:28:55 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:56383 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753441AbXLaA2z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 19:28:55 -0500
+Date: Mon, 31 Dec 2007 02:28:45 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86_64: clear IO_APIC before enabing apic error
+	vector. v2
+Message-ID: <20071231002845.GB3083@does.not.exist>
+References: <200712291952.20455.yinghai.lu@sun.com> <20071230145115.GR16946@elte.hu> <86802c440712301248m38cd000ejf7e48f273d573edd@mail.gmail.com> <20071230220620.GC17670@does.not.exist> <86802c440712301442q476979f0hef047a45e5444c84@mail.gmail.com> <20071230232354.GA3083@does.not.exist> <86802c440712301601g62448de8i412895a105a9ae61@mail.gmail.com>
 MIME-Version: 1.0
-To: "David P. Reed" <dpreed@reed.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Rene Herman <rene.herman@keyaccess.nl>, Ingo Molnar <mingo@elte.hu>,
-       Islam Amer <pharon@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       Ingo Molnar <mingo@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
-References: <477711DC.5030800@keyaccess.nl>	<alpine.LFD.1.00.0712300124440.32517@woody.linux-foundation.org>	<20071230144700.78f4605c@the-village.bc.nu>	<20071230152835.GX16946@elte.hu>	<20071230153818.1a554a7e@the-village.bc.nu>	<20071230160132.GA14311@elte.hu>	<20071230164828.039916c8@the-village.bc.nu>	<4777E010.7030703@keyaccess.nl>	<20071230183927.5a5a3c42@the-village.bc.nu>	<4777F297.9070207@keyaccess.nl>	<alpine.LFD.1.00.0712301158410.32517@woody.linux-foundation.org>	<47780B93.4050606@reed.com> <20071230213623.410d480a@the-village.bc.nu> <4778266B.2060502@reed.com>
-In-Reply-To: <4778266B.2060502@reed.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <86802c440712301601g62448de8i412895a105a9ae61@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David P. Reed wrote:
-> Alan Cox wrote:
->>> Now what's interesting is that the outb to port 80 is *faster* than 
->>> an outb to an unused port, on my machine.  So there's something there 
->>> - actually accepting the bus transaction.   In the ancient 5150 PC, 
->>> 80 was     
->>
->> Yes and I even told you a while back how to verify where it is. From the
->> timing you get its not on the LPC bus but chipset core so pretty
->> certainly an SMM trap as other systems with the same chipset don't have
->> the bug. Probably all that is needed is a BIOS upgrade
->>
->>   
-> Actually, I could see whether it was SMM trapping due to AMD MSR's that 
-> would allow such trapping, performance or debug registers.  Nothing was 
-> set to trap with SMI or other traps on any port outputs.   But I'm 
-> continuing to investigate for a cause.  It would be nice if it were a 
-> BIOS-fixable problem.  It would be even nicer if the BIOS were GPL...
+On Sun, Dec 30, 2007 at 04:01:39PM -0800, Yinghai Lu wrote:
+> On Dec 30, 2007 3:23 PM, Adrian Bunk <bunk@kernel.org> wrote:
+> >
+> > On Sun, Dec 30, 2007 at 02:42:41PM -0800, Yinghai Lu wrote:
+> > > On Dec 30, 2007 2:06 PM, Adrian Bunk <bunk@kernel.org> wrote:
+> > > > On Sun, Dec 30, 2007 at 12:48:48PM -0800, Yinghai Lu wrote:
+> > > > > On Dec 30, 2007 6:51 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> > > > > >
+> > > > > > * Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+> > > > > >
+> > > > > > > please check if you can replace the one in the x86-mm
+> > > > > > >
+> > > > > > > http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commitdiff;h=ffcbdc220a1520d006a837f33589c7c19ffbeb76
+> > > > > > >
+> > > > > > > the updated one avoid one link warning.
+> > > > > >
+> > > > > > please send delta patches instead - so that we can review the changes.
+> > > > >
+> > > > > will do that in another patch.
+> > > > >
+> > > > > >
+> > > > > > > this is the updated verison that take enable_IO_APIC as extra call for
+> > > > > > > setup_local_APIC to avoid linking warning.
+> > > > > >
+> > > > > > hm, what link warning did you get? Perhaps the following __cpuinit:
+> > > > >
+> > > > > WARNING: vmlinux.o(.text+0x163d5): Section mismatch: reference to
+> > > > > .init.text:enable_IO_APIC (between 'setup_local_APIC' and
+> > > > > 'apic_is_clustered_box')
+> > > >
+> > > > So you are doing complicated things for silencing the warning (there is
+> > > > an easier ways for achieving it), but the real bug that you will get an
+> > > > Oops when calling enable_IO_APIC() after bootup since it already got
+> > > > freed stays?
+> > >
+> > > the enable_IO_APIC is actually doing clear_IO_APIC. and it is only
+> > > called by BSP via setup_local_APIC
+> > > and it is not called again after bootup
+> >
+> > OK, this was a bit hidden inside your pointer games.
+> >
+> > Please send a patch that ignores the warning (and therefore doesn't do
+> > these pointer games), and I'll fix the warning in a followup patch.
+> 
+> the old one is in x86-mm tree
+> 
+> http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commitdiff;h=ffcbdc220a1520d006a837f33589c7c19ffbeb76
+>...
 
-If it was an SMM trap, I would expect it to be trapped in the SuperIO chip.
+Sorry for the dumb question, but what in
 
-	-hpa
++       if (!smp_processor_id() && !skip_ioapic_setup && nr_ioapics)
++               enable_IO_APIC();
+
+guarantees that this call doesn't happen when you hotplug CPU 0 ?
+
+> thanks
+> 
+> YH
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
