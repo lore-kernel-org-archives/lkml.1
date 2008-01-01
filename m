@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758728AbYAAPuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758654AbYAAPut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758728AbYAAPuS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 10:50:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755511AbYAAPg6
+	id S1758654AbYAAPut (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 10:50:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbYAAPg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 10:36:58 -0500
-Received: from il.qumranet.com ([82.166.9.18]:33805 "EHLO il.qumranet.com"
+	Tue, 1 Jan 2008 10:36:59 -0500
+Received: from il.qumranet.com ([82.166.9.18]:33785 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755244AbYAAPgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755256AbYAAPgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 1 Jan 2008 10:36:32 -0500
 From: Avi Kivity <avi@qumranet.com>
 To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Subject: [PATCH 49/54] KVM: MMU: Move set_pte() into guest paging mode independent code
-Date: Tue,  1 Jan 2008 17:36:15 +0200
-Message-Id: <1199201780-14001-50-git-send-email-avi@qumranet.com>
+Subject: [PATCH 51/54] KVM: MMU: Use mmu_set_spte() for real-mode shadows
+Date: Tue,  1 Jan 2008 17:36:17 +0200
+Message-Id: <1199201780-14001-52-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1199201780-14001-1-git-send-email-avi@qumranet.com>
 References: <1199201780-14001-1-git-send-email-avi@qumranet.com>
@@ -21,228 +21,105 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As set_pte() no longer references either a gpte or the guest walker, we can
-move it out of paging mode dependent code (which compiles twice and is
-generally nasty).
+In addition to removing some duplicated code, this also handles the unlikely
+case of real-mode code updating a guest page table.  This can happen when
+one vcpu (in real mode) touches a second vcpu's (in protected mode) page
+tables, or if a vcpu switches to real mode, touches page tables, and switches
+back.
 
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/mmu.c         |   83 ++++++++++++++++++++++++++++++++++++++++
- drivers/kvm/paging_tmpl.h |   93 ++------------------------------------------
- 2 files changed, 88 insertions(+), 88 deletions(-)
+ drivers/kvm/mmu.c |   41 ++++++++++-------------------------------
+ 1 files changed, 10 insertions(+), 31 deletions(-)
 
 diff --git a/drivers/kvm/mmu.c b/drivers/kvm/mmu.c
-index cace1e4..a91e05b 100644
+index b4dd726..ba71e8d 100644
 --- a/drivers/kvm/mmu.c
 +++ b/drivers/kvm/mmu.c
-@@ -879,6 +879,89 @@ struct page *gva_to_page(struct kvm_vcpu *vcpu, gva_t gva)
- 	return gfn_to_page(vcpu->kvm, gpa >> PAGE_SHIFT);
- }
- 
-+static void mmu_set_spte(struct kvm_vcpu *vcpu, u64 *shadow_pte,
-+			 unsigned pt_access, unsigned pte_access,
-+			 int user_fault, int write_fault, int dirty,
-+			 int *ptwrite, gfn_t gfn)
-+{
-+	u64 spte;
-+	int was_rmapped = is_rmap_pte(*shadow_pte);
-+	struct page *page;
-+
-+	pgprintk("%s: spte %llx gpte %llx access %x write_fault %d"
-+		 " user_fault %d gfn %lx\n",
-+		 __FUNCTION__, *shadow_pte, (u64)gpte, pt_access,
-+		 write_fault, user_fault, gfn);
-+
-+	/*
-+	 * We don't set the accessed bit, since we sometimes want to see
-+	 * whether the guest actually used the pte (in order to detect
-+	 * demand paging).
-+	 */
-+	spte = PT_PRESENT_MASK | PT_DIRTY_MASK;
-+	if (!dirty)
-+		pte_access &= ~ACC_WRITE_MASK;
-+	if (!(pte_access & ACC_EXEC_MASK))
-+		spte |= PT64_NX_MASK;
-+
-+	page = gfn_to_page(vcpu->kvm, gfn);
-+
-+	spte |= PT_PRESENT_MASK;
-+	if (pte_access & ACC_USER_MASK)
-+		spte |= PT_USER_MASK;
-+
-+	if (is_error_page(page)) {
-+		set_shadow_pte(shadow_pte,
-+			       shadow_trap_nonpresent_pte | PT_SHADOW_IO_MARK);
-+		kvm_release_page_clean(page);
-+		return;
-+	}
-+
-+	spte |= page_to_phys(page);
-+
-+	if ((pte_access & ACC_WRITE_MASK)
-+	    || (write_fault && !is_write_protection(vcpu) && !user_fault)) {
-+		struct kvm_mmu_page *shadow;
-+
-+		spte |= PT_WRITABLE_MASK;
-+		if (user_fault) {
-+			mmu_unshadow(vcpu->kvm, gfn);
-+			goto unshadowed;
-+		}
-+
-+		shadow = kvm_mmu_lookup_page(vcpu->kvm, gfn);
-+		if (shadow) {
-+			pgprintk("%s: found shadow page for %lx, marking ro\n",
-+				 __FUNCTION__, gfn);
-+			pte_access &= ~ACC_WRITE_MASK;
-+			if (is_writeble_pte(spte)) {
-+				spte &= ~PT_WRITABLE_MASK;
-+				kvm_x86_ops->tlb_flush(vcpu);
-+			}
-+			if (write_fault)
-+				*ptwrite = 1;
-+		}
-+	}
-+
-+unshadowed:
-+
-+	if (pte_access & ACC_WRITE_MASK)
-+		mark_page_dirty(vcpu->kvm, gfn);
-+
-+	pgprintk("%s: setting spte %llx\n", __FUNCTION__, spte);
-+	set_shadow_pte(shadow_pte, spte);
-+	page_header_update_slot(vcpu->kvm, shadow_pte, gfn);
-+	if (!was_rmapped) {
-+		rmap_add(vcpu, shadow_pte, gfn);
-+		if (!is_rmap_pte(*shadow_pte))
-+			kvm_release_page_clean(page);
-+	}
-+	else
-+		kvm_release_page_clean(page);
-+	if (!ptwrite || !*ptwrite)
-+		vcpu->last_pte_updated = shadow_pte;
-+}
-+
- static void nonpaging_new_cr3(struct kvm_vcpu *vcpu)
+@@ -966,40 +966,23 @@ static void nonpaging_new_cr3(struct kvm_vcpu *vcpu)
  {
  }
-diff --git a/drivers/kvm/paging_tmpl.h b/drivers/kvm/paging_tmpl.h
-index 2e5a80a..3ab3fb6 100644
---- a/drivers/kvm/paging_tmpl.h
-+++ b/drivers/kvm/paging_tmpl.h
-@@ -235,89 +235,6 @@ err:
- 	return 0;
- }
  
--static void FNAME(set_pte)(struct kvm_vcpu *vcpu, u64 *shadow_pte,
--			   unsigned pt_access, unsigned pte_access,
--			   int user_fault, int write_fault, int dirty,
--			   int *ptwrite, gfn_t gfn)
--{
--	u64 spte;
--	int was_rmapped = is_rmap_pte(*shadow_pte);
+-static int nonpaging_map(struct kvm_vcpu *vcpu, gva_t v, struct page *page)
++static int nonpaging_map(struct kvm_vcpu *vcpu, gva_t v, int write, gfn_t gfn)
+ {
+ 	int level = PT32E_ROOT_LEVEL;
+ 	hpa_t table_addr = vcpu->mmu.root_hpa;
++	int pt_write = 0;
+ 
+ 	for (; ; level--) {
+ 		u32 index = PT64_INDEX(v, level);
+ 		u64 *table;
+-		u64 pte;
+ 
+ 		ASSERT(VALID_PAGE(table_addr));
+ 		table = __va(table_addr);
+ 
+ 		if (level == 1) {
+-			int was_rmapped;
+-
+-			pte = table[index];
+-			was_rmapped = is_rmap_pte(pte);
+-			if (is_shadow_present_pte(pte) && is_writeble_pte(pte)) {
+-				kvm_release_page_clean(page);
+-				return 0;
+-			}
+-			mark_page_dirty(vcpu->kvm, v >> PAGE_SHIFT);
+-			page_header_update_slot(vcpu->kvm, table,
+-						v >> PAGE_SHIFT);
+-			table[index] = page_to_phys(page)
+-				| PT_PRESENT_MASK | PT_WRITABLE_MASK
+-				| PT_USER_MASK;
+-			if (!was_rmapped)
+-				rmap_add(vcpu, &table[index], v >> PAGE_SHIFT);
+-			else
+-				kvm_release_page_clean(page);
+-
+-			return 0;
++			mmu_set_spte(vcpu, &table[index], ACC_ALL, ACC_ALL,
++				     0, write, 1, &pt_write, gfn);
++			return pt_write || is_io_pte(table[index]);
+ 		}
+ 
+ 		if (table[index] == shadow_trap_nonpresent_pte) {
+@@ -1013,7 +996,6 @@ static int nonpaging_map(struct kvm_vcpu *vcpu, gva_t v, struct page *page)
+ 						     1, ACC_ALL, &table[index]);
+ 			if (!new_table) {
+ 				pgprintk("nonpaging_map: ENOMEM\n");
+-				kvm_release_page_clean(page);
+ 				return -ENOMEM;
+ 			}
+ 
+@@ -1114,9 +1096,10 @@ static gpa_t nonpaging_gva_to_gpa(struct kvm_vcpu *vcpu, gva_t vaddr)
+ static int nonpaging_page_fault(struct kvm_vcpu *vcpu, gva_t gva,
+ 				u32 error_code)
+ {
 -	struct page *page;
--
--	pgprintk("%s: spte %llx gpte %llx access %x write_fault %d"
--		 " user_fault %d gfn %lx\n",
--		 __FUNCTION__, *shadow_pte, (u64)gpte, pt_access,
--		 write_fault, user_fault, gfn);
--
--	/*
--	 * We don't set the accessed bit, since we sometimes want to see
--	 * whether the guest actually used the pte (in order to detect
--	 * demand paging).
--	 */
--	spte = PT_PRESENT_MASK | PT_DIRTY_MASK;
--	if (!dirty)
--		pte_access &= ~ACC_WRITE_MASK;
--	if (!(pte_access & ACC_EXEC_MASK))
--		spte |= PT64_NX_MASK;
--
--	page = gfn_to_page(vcpu->kvm, gfn);
--
--	spte |= PT_PRESENT_MASK;
--	if (pte_access & ACC_USER_MASK)
--		spte |= PT_USER_MASK;
++	gfn_t gfn;
+ 	int r;
+ 
++	pgprintk("%s: gva %lx error %x\n", __FUNCTION__, gva, error_code);
+ 	r = mmu_topup_memory_caches(vcpu);
+ 	if (r)
+ 		return r;
+@@ -1124,14 +1107,10 @@ static int nonpaging_page_fault(struct kvm_vcpu *vcpu, gva_t gva,
+ 	ASSERT(vcpu);
+ 	ASSERT(VALID_PAGE(vcpu->mmu.root_hpa));
+ 
+-	page = gfn_to_page(vcpu->kvm, gva >> PAGE_SHIFT);
 -
 -	if (is_error_page(page)) {
--		set_shadow_pte(shadow_pte,
--			       shadow_trap_nonpresent_pte | PT_SHADOW_IO_MARK);
 -		kvm_release_page_clean(page);
--		return;
+-		return 1;
 -	}
--
--	spte |= page_to_phys(page);
--
--	if ((pte_access & ACC_WRITE_MASK)
--	    || (write_fault && !is_write_protection(vcpu) && !user_fault)) {
--		struct kvm_mmu_page *shadow;
--
--		spte |= PT_WRITABLE_MASK;
--		if (user_fault) {
--			mmu_unshadow(vcpu->kvm, gfn);
--			goto unshadowed;
--		}
--
--		shadow = kvm_mmu_lookup_page(vcpu->kvm, gfn);
--		if (shadow) {
--			pgprintk("%s: found shadow page for %lx, marking ro\n",
--				 __FUNCTION__, gfn);
--			pte_access &= ~ACC_WRITE_MASK;
--			if (is_writeble_pte(spte)) {
--				spte &= ~PT_WRITABLE_MASK;
--				kvm_x86_ops->tlb_flush(vcpu);
--			}
--			if (write_fault)
--				*ptwrite = 1;
--		}
--	}
--
--unshadowed:
--
--	if (pte_access & ACC_WRITE_MASK)
--		mark_page_dirty(vcpu->kvm, gfn);
--
--	pgprintk("%s: setting spte %llx\n", __FUNCTION__, spte);
--	set_shadow_pte(shadow_pte, spte);
--	page_header_update_slot(vcpu->kvm, shadow_pte, gfn);
--	if (!was_rmapped) {
--		rmap_add(vcpu, shadow_pte, gfn);
--		if (!is_rmap_pte(*shadow_pte))
--			kvm_release_page_clean(page);
--	}
--	else
--		kvm_release_page_clean(page);
--	if (!ptwrite || !*ptwrite)
--		vcpu->last_pte_updated = shadow_pte;
--}
--
- static void FNAME(update_pte)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *page,
- 			      u64 *spte, const void *pte, int bytes,
- 			      int offset_in_pte)
-@@ -335,8 +252,8 @@ static void FNAME(update_pte)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *page,
- 		return;
- 	pgprintk("%s: gpte %llx spte %p\n", __FUNCTION__, (u64)gpte, spte);
- 	pte_access = page->role.access & FNAME(gpte_access)(vcpu, gpte);
--	FNAME(set_pte)(vcpu, spte, page->role.access, pte_access, 0, 0,
--		       gpte & PT_DIRTY_MASK, NULL, gpte_to_gfn(gpte));
-+	mmu_set_spte(vcpu, spte, page->role.access, pte_access, 0, 0,
-+		     gpte & PT_DIRTY_MASK, NULL, gpte_to_gfn(gpte));
++	gfn = gva >> PAGE_SHIFT;
+ 
+-	return nonpaging_map(vcpu, gva & PAGE_MASK, page);
++	return nonpaging_map(vcpu, gva & PAGE_MASK,
++			     error_code & PFERR_WRITE_MASK, gfn);
  }
  
- /*
-@@ -399,9 +316,9 @@ static u64 *FNAME(fetch)(struct kvm_vcpu *vcpu, gva_t addr,
- 		*shadow_ent = shadow_pte;
- 	}
- 
--	FNAME(set_pte)(vcpu, shadow_ent, access, walker->pte_access & access,
--		       user_fault, write_fault, walker->pte & PT_DIRTY_MASK,
--		       ptwrite, walker->gfn);
-+	mmu_set_spte(vcpu, shadow_ent, access, walker->pte_access & access,
-+		     user_fault, write_fault, walker->pte & PT_DIRTY_MASK,
-+		     ptwrite, walker->gfn);
- 
- 	return shadow_ent;
- }
+ static void nonpaging_free(struct kvm_vcpu *vcpu)
 -- 
 1.5.3.7
 
