@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbYAAAS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753785AbYAAASo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753141AbYAAAS0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 19:18:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbYAAASR
+	id S1753785AbYAAASo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 19:18:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbYAAASe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 19:18:17 -0500
+	Mon, 31 Dec 2007 19:18:34 -0500
 Received: from ug-out-1314.google.com ([66.249.92.174]:65118 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751749AbYAAASP convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751775AbYAAASR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 19:18:15 -0500
+	Mon, 31 Dec 2007 19:18:17 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=rVfszzVbDQg8E9HBOsbWNZt4HLStGuilS361tpLsrhXJGJikocejfnYTG85eMu3ctBfAWEyseR6o+/nAbgTj0TJG07/SKX7nUHXw007H7B6EHQhqS1YNdTR17Pt7cVo+BNtRYLEr8ft9Cntzov1rjBnJC+wT5GXkAKE4CbMICSM=
+        b=SO04LlnXoPDNphexwj7Q7h9hCRfzt7VJQHc/MQfFsypoa+CzfzLo7UiN4Eb0ZTRzYNpyxVQLH1SnKjAxZRArSa/iDSyOTM8w5JwrWZLZWXqQkCODO7k4pUcPeJz3A63HQUOmgU/eAn408Ro7+LOk8ucy9qalXUn3huPq0J/PrNM=
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] ssb: add 'ssb_pcihost_set_power_state' function
-Date: Tue, 1 Jan 2008 01:16:46 +0100
+Subject: [PATCH 2/2] b44: power down PHY when interface down
+Date: Tue, 1 Jan 2008 01:17:54 +0100
 User-Agent: KMail/1.9.7
 Cc: linux-wireless@vger.kernel.org, linville@tuxdriver.com, mb@bu3sch.de
 MIME-Version: 1.0
@@ -24,36 +24,111 @@ Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200801010116.46190.mboton@gmail.com>
+Message-Id: <200801010117.54411.mboton@gmail.com>
 From: Miguel =?utf-8?q?Bot=C3=B3n?= <mboton.lkml@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the 'ssb_pcihost_set_power_state' function.
-
-This function allows us to set the power state of a PCI device
-(for example b44 ethernet device). 
+This is just this patch (http://lkml.org/lkml/2007/7/1/51) but adapted
+to the 'b44' ssb driver.
 
 Signed-off-by: Miguel Botón <mboton@gmail.com>
 
-diff --git a/include/linux/ssb/ssb.h b/include/linux/ssb/ssb.h
-index a21ab29..aa70fd0 100644
---- a/include/linux/ssb/ssb.h
-+++ b/include/linux/ssb/ssb.h
-@@ -349,6 +349,13 @@ static inline void ssb_pcihost_unregister(struct pci_driver *driver)
- {
- 	pci_unregister_driver(driver);
- }
-+
-+static inline
-+void ssb_pcihost_set_power_state(struct ssb_device *sdev, pci_power_t state)
-+{
-+	if (sdev->bus->bustype == SSB_BUSTYPE_PCI)
-+		pci_set_power_state(sdev->bus->host_pci, state);
-+}
- #endif /* CONFIG_SSB_PCIHOST */
+diff --git a/drivers/net/b44.c b/drivers/net/b44.c
+index 49e9172..ea2a2b5 100644
+--- a/drivers/net/b44.c
++++ b/drivers/net/b44.c
+@@ -128,6 +128,8 @@ static void b44_init_rings(struct b44 *);
+ #define B44_FULL_RESET		1
+ #define B44_FULL_RESET_SKIP_PHY	2
+ #define B44_PARTIAL_RESET	3
++#define B44_CHIP_RESET_FULL	4
++#define B44_CHIP_RESET_PARTIAL	5
  
+ static void b44_init_hw(struct b44 *, int);
+ 
+@@ -1259,7 +1261,7 @@ static void b44_clear_stats(struct b44 *bp)
+ }
+ 
+ /* bp->lock is held. */
+-static void b44_chip_reset(struct b44 *bp)
++static void b44_chip_reset(struct b44 *bp, int reset_kind)
+ {
+ 	struct ssb_device *sdev = bp->sdev;
+ 
+@@ -1281,6 +1283,13 @@ static void b44_chip_reset(struct b44 *bp)
+ 	ssb_device_enable(bp->sdev, 0);
+ 	b44_clear_stats(bp);
+ 
++	/*
++	 * Don't enable PHY if we are doing a partial reset
++	 * we are probably going to power down
++	 */
++	if (reset_kind == B44_CHIP_RESET_PARTIAL)
++		return;
++
+ 	switch (sdev->bus->bustype) {
+ 	case SSB_BUSTYPE_SSB:
+ 		bw32(bp, B44_MDIO_CTRL, (MDIO_CTRL_PREAMBLE |
+@@ -1316,7 +1325,14 @@ static void b44_chip_reset(struct b44 *bp)
+ static void b44_halt(struct b44 *bp)
+ {
+ 	b44_disable_ints(bp);
+-	b44_chip_reset(bp);
++	/* reset PHY */
++	b44_phy_reset(bp);
++	/* power down PHY */
++	printk(KERN_INFO PFX "%s: powering down PHY\n", bp->dev->name);
++	bw32(bp, B44_MAC_CTRL, MAC_CTRL_PHY_PDOWN);
++	/* now reset the chip, but without enabling the MAC&PHY
++	 * part of it. This has to be done _after_ we shut down the PHY */
++	b44_chip_reset(bp, B44_CHIP_RESET_PARTIAL);
+ }
+ 
+ /* bp->lock is held. */
+@@ -1365,7 +1381,7 @@ static void b44_init_hw(struct b44 *bp, int reset_kind)
+ {
+ 	u32 val;
+ 
+-	b44_chip_reset(bp);
++	b44_chip_reset(bp, B44_CHIP_RESET_FULL);
+ 	if (reset_kind == B44_FULL_RESET) {
+ 		b44_phy_reset(bp);
+ 		b44_setup_phy(bp);
+@@ -1422,7 +1438,7 @@ static int b44_open(struct net_device *dev)
+ 	err = request_irq(dev->irq, b44_interrupt, IRQF_SHARED, dev->name, dev);
+ 	if (unlikely(err < 0)) {
+ 		napi_disable(&bp->napi);
+-		b44_chip_reset(bp);
++		b44_chip_reset(bp, B44_CHIP_RESET_PARTIAL);
+ 		b44_free_rings(bp);
+ 		b44_free_consistent(bp);
+ 		goto out;
+@@ -2188,7 +2204,7 @@ static int __devinit b44_init_one(struct ssb_device *sdev,
+ 	/* Chip reset provides power to the b44 MAC & PCI cores, which
+ 	 * is necessary for MAC register access.
+ 	 */
+-	b44_chip_reset(bp);
++	b44_chip_reset(bp, B44_CHIP_RESET_FULL);
+ 
+ 	printk(KERN_INFO "%s: Broadcom 44xx/47xx 10/100BaseT Ethernet %s\n",
+ 	       dev->name, print_mac(mac, dev->dev_addr));
+@@ -2212,6 +2228,7 @@ static void __devexit b44_remove_one(struct ssb_device *sdev)
+ 	unregister_netdev(dev);
+ 	ssb_bus_may_powerdown(sdev->bus);
+ 	free_netdev(dev);
++	ssb_pcihost_set_power_state(sdev, PCI_D3hot);
+ 	ssb_set_drvdata(sdev, NULL);
+ }
+ 
+@@ -2240,6 +2257,7 @@ static int b44_suspend(struct ssb_device *sdev, pm_message_t state)
+ 		b44_setup_wol(bp);
+ 	}
+ 
++	ssb_pcihost_set_power_state(sdev, PCI_D3hot);
+ 	return 0;
+ }
  
 
 -- 
