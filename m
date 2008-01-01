@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753346AbYAAAtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753639AbYAAAwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753346AbYAAAtp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 19:49:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbYAAAth
+	id S1753639AbYAAAwe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 19:52:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbYAAAwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 19:49:37 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:39262 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751095AbYAAAtg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 19:49:36 -0500
-Date: Tue, 1 Jan 2008 01:49:37 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Dave Jones <davej@redhat.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Recursive variable `KBUILD_CFLAGS' references itself (eventually).
-Message-ID: <20080101004937.GD22317@uranus.ravnborg.org>
-References: <20071120001445.GA9243@redhat.com> <20071231131619.GE21871@uranus.ravnborg.org> <20071231161021.GC27655@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 31 Dec 2007 19:52:25 -0500
+Received: from vs166246.vserver.de ([62.75.166.246]:59964 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750989AbYAAAwY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Dec 2007 19:52:24 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: Miguel =?utf-8?q?Bot=C3=B3n?= <mboton.lkml@gmail.com>
+Subject: Re: [PATCH 1/2] ssb: add 'ssb_pcihost_set_power_state' function
+Date: Tue, 1 Jan 2008 01:50:47 +0100
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       linville@tuxdriver.com
+References: <200801010116.46190.mboton@gmail.com>
+In-Reply-To: <200801010116.46190.mboton@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20071231161021.GC27655@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200801010150.47787.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 31, 2007 at 11:10:21AM -0500, Dave Jones wrote:
-> On Mon, Dec 31, 2007 at 02:16:19PM +0100, Sam Ravnborg wrote:
+On Tuesday 01 January 2008 01:16:46 Miguel Botón wrote:
+> This patch adds the 'ssb_pcihost_set_power_state' function.
 > 
->  > > Trying to do a 32bit build on a 64bit machine.
->  > > I did..
->  > >   make ARCH=i386 oldconfig
->  > >   make ARCH=i386 arch/x86/
->  > 
->  > Walking through my mailbox I found this one.
->  > I did not get similar reports and I cannot reproduce it.
->  > Do you continue to see this or had it been fixed somehow?
+> This function allows us to set the power state of a PCI device
+> (for example b44 ethernet device). 
 > 
-> Still happens for me with the latest tree from git.
-> 
-> $ make ARCH=i386 arch/x86/
->   HOSTCC  scripts/kconfig/conf.o
->   HOSTLD  scripts/kconfig/conf
-> scripts/kconfig/conf -s arch/x86/Kconfig
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   UPD     include/linux/utsrelease.h
->   CALL    scripts/checksyscalls.sh
-> /mnt/raid0/src/linux-2.6/arch/x86/Makefile_32:43: *** Recursive variable `KBUILD_CFLAGS' references itself (eventually).  Stop.
-> make: *** [arch/x86/] Error 2
+> Signed-off-by: Miguel Botón <mboton@gmail.com>
 
-Can reproduce it now. Will take a look tomorrow.
+Acked-by: Michael Buesch <mb@bu3sch.de>
 
-	Sam
+> 
+> diff --git a/include/linux/ssb/ssb.h b/include/linux/ssb/ssb.h
+> index a21ab29..aa70fd0 100644
+> --- a/include/linux/ssb/ssb.h
+> +++ b/include/linux/ssb/ssb.h
+> @@ -349,6 +349,13 @@ static inline void ssb_pcihost_unregister(struct pci_driver *driver)
+>  {
+>  	pci_unregister_driver(driver);
+>  }
+> +
+> +static inline
+> +void ssb_pcihost_set_power_state(struct ssb_device *sdev, pci_power_t state)
+> +{
+> +	if (sdev->bus->bustype == SSB_BUSTYPE_PCI)
+> +		pci_set_power_state(sdev->bus->host_pci, state);
+> +}
+>  #endif /* CONFIG_SSB_PCIHOST */
+>  
+>  
+> 
+
+
+
+-- 
+Greetings Michael.
