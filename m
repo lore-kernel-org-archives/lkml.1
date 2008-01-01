@@ -1,55 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbYAAPSH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbYAAPS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754728AbYAAPSH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 10:18:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753500AbYAAPRz
+	id S1755088AbYAAPS1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 10:18:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbYAAPSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 10:17:55 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:47925 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753482AbYAAPRy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 10:17:54 -0500
-Date: Tue, 1 Jan 2008 16:19:42 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
-       Christoph Lameter <clameter@sgi.com>, Willy Tarreau <w@1wt.eu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Major regression on hackbench with SLUB (more numbers)
-Message-ID: <20080101151942.GA28085@one.firstfloor.org>
-References: <alpine.LFD.0.9999.0712221251110.21557@woody.linux-foundation.org> <20071222221050.GA20753@1wt.eu> <Pine.LNX.4.58.0712221954530.19187@gandalf.stny.rr.com> <20071223051241.GA4449@1wt.eu> <20071223141500.GB6430@one.firstfloor.org> <20071224034530.GB16658@thunk.org> <Pine.LNX.4.64.0712241120230.8849@schroedinger.engr.sgi.com> <20071224233701.GB9784@kernel.org> <20071225033418.GA29199@one.firstfloor.org> <20080101124741.GH11776@mit.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 1 Jan 2008 10:18:07 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:54184 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754612AbYAAPSG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 10:18:06 -0500
+Date: Tue, 1 Jan 2008 17:17:51 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] remove CONFIG_EXPERIMENTAL
+Message-ID: <20080101151751.GW2360@does.not.exist>
+References: <20080101134809.GK2360@does.not.exist> <20080101142344.769f16c7@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080101124741.GH11776@mit.edu>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080101142344.769f16c7@the-village.bc.nu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yeah, unfortunately, querying to find out how much memory is being
-> used by which parts of the system is something which I think needs to
-> be more than just a debugging feature.  One could argue that "vmstat",
+On Tue, Jan 01, 2008 at 02:23:44PM +0000, Alan Cox wrote:
+> On Tue, 1 Jan 2008 15:48:09 +0200
+> Adrian Bunk <bunk@kernel.org> wrote:
+> 
+> > This patch removes the EXPERIMENTAL option and all dependencies on
+> > EXPERIMENTAL since they are pointless.
+> 
+> NAK
+> 
+> Experimental is an important guide to driver and code quality. 
+>...
 
-slabinfo is about querying kernel internals and requiring stable
-and permanent interfaces to that would imply freezing the kernel
-internals.
+History has shown that EXPERIMENTAL tags in many areas of the kernel 
+have not been maintained in a way that they would be usable as a guide.
 
-People who want to have information about slabs and other similar
-kernel internal allocations will always have to deal with version
-dependencies.
+And as soon as you need _one_ driver or feature depending on 
+EXPERIMENTAL, you anyway lose all benefits it might have had.
 
-No way around that.
+The latter is the point where it makes sense if a user or distribution 
+e.g. enables CONFIG_ATA_EXPERIMENTAL for getting all hardware supported 
+but not CONFIG_CRYPTO_EXPERIMENTAL because he doesn't want to use
+(resp. support usage of) experimental cryptographic algorithm 
+implementations.
 
-> Perhaps /proc/slabinfo should be that relatively stable interface, if
+> >	This patch has been sent on:
+> >	 11 Dec 2007
+> >	 25 Nov 2007
+> >	 17 Nov 2007
+> 
+> So why not drop it instead. It clearly has no consensus
 
-That would require at least never changing any slab caches in any 
-subsystem. Obviously not an option. 
+That's not about consensus, it's more that the number of submissions 
+required until Andrew includes a patch into -mm seems to be related to 
+the number of files touched...
 
--Andi
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
