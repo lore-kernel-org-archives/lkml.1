@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbYAACKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbYAACLD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754713AbYAACKo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 21:10:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbYAACFx
+	id S1754733AbYAACLD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 21:11:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbYAACFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 21:05:53 -0500
+	Mon, 31 Dec 2007 21:05:54 -0500
 Received: from fmailhost06.isp.att.net ([204.127.217.106]:42370 "EHLO
 	fmailhost06.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753705AbYAACFe (ORCPT
+	with ESMTP id S1753815AbYAACFf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 21:05:34 -0500
+	Mon, 31 Dec 2007 21:05:35 -0500
 X-Originating-IP: [68.222.90.230]
 From: jacliburn@bellsouth.net
 To: jeff@garzik.org
 Cc: csnook@redhat.com, linux-kernel@vger.kernel.org,
        atl1-devel@lists.sourceforge.net, Jay Cliburn <jacliburn@bellsouth.net>
-Subject: [PATCH 08/26] atl1: additional DMA engine configuration
-Date: Mon, 31 Dec 2007 19:59:46 -0600
-Message-Id: <1199152804-3889-9-git-send-email-jacliburn@bellsouth.net>
+Subject: [PATCH 15/26] atl1: tidy up ring management
+Date: Mon, 31 Dec 2007 19:59:53 -0600
+Message-Id: <1199152804-3889-16-git-send-email-jacliburn@bellsouth.net>
 X-Mailer: git-send-email 1.5.3.3
 In-Reply-To: <1199152804-3889-1-git-send-email-jacliburn@bellsouth.net>
 References: <1199152804-3889-1-git-send-email-jacliburn@bellsouth.net>
@@ -27,60 +27,87 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jay Cliburn <jacliburn@bellsouth.net>
 
-Add DMA engine configuration tweaks per current vendor atl1 driver version
-1.2.40.2.
+Check for null pointers and such in ring handling functions.  Make
+needlessly global functions static.  Clean up some comments and indentation.
 
 Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
 ---
- drivers/net/atlx/atl1.c |   10 ++++++++++
- drivers/net/atlx/atlx.h |    6 ++++++
- 2 files changed, 16 insertions(+), 0 deletions(-)
+ drivers/net/atlx/atl1.c |   20 +++++++++++---------
+ 1 files changed, 11 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/net/atlx/atl1.c b/drivers/net/atlx/atl1.c
-index c93cf19..fb0a0af 100644
+index f40cc6e..db6e76c 100644
 --- a/drivers/net/atlx/atl1.c
 +++ b/drivers/net/atlx/atl1.c
-@@ -666,6 +666,7 @@ static u32 atl1_configure(struct atl1_adapter *adapter)
+@@ -141,8 +141,7 @@ static s32 atl1_reset_hw(struct atl1_hw *hw)
+ 	return 0;
+ }
+ 
+-/* function about EEPROM
+- *
++/*
+  * check_eeprom_exist
+  * return 0 if eeprom exist
+  */
+@@ -166,7 +165,7 @@ static bool atl1_read_eeprom(struct atl1_hw *hw, u32 offset, u32 *p_value)
+ 	u32 control;
+ 
+ 	if (offset & 3)
+-		/* address do not align */
++		/* unaligned address */
+ 		return false;
+ 
+ 	iowrite32(0, hw->hw_addr + REG_VPD_DATA);
+@@ -417,7 +416,7 @@ static void atl1_hash_set(struct atl1_hw *hw, u32 hash_value)
+ 	 * bit BitArray[hash_value]. So we figure out what register
+ 	 * the bit is in, read it, OR in the new bit, then write
+ 	 * back the new value.  The register is determined by the
+-	 * upper 7 bits of the hash value and the bit within that
++	 * upper bit of the hash value, and the bits within that
+ 	 * register are determined by the lower 5 bits of the value.
+ 	 */
+ 	hash_reg = (hash_value >> 31) & 0x1;
+@@ -439,9 +438,9 @@ static s32 atl1_write_phy_reg(struct atl1_hw *hw, u32 reg_addr, u16 phy_data)
+ 	u32 val;
+ 
+ 	val = ((u32) (phy_data & MDIO_DATA_MASK)) << MDIO_DATA_SHIFT |
+-	    (reg_addr & MDIO_REG_ADDR_MASK) << MDIO_REG_ADDR_SHIFT |
+-	    MDIO_SUP_PREAMBLE |
+-	    MDIO_START | MDIO_CLK_25_4 << MDIO_CLK_SEL_SHIFT;
++		(reg_addr & MDIO_REG_ADDR_MASK) << MDIO_REG_ADDR_SHIFT |
++		MDIO_SUP_PREAMBLE | MDIO_START |
++		MDIO_CLK_25_4 << MDIO_CLK_SEL_SHIFT;
+ 	iowrite32(val, hw->hw_addr + REG_MDIO_CTRL);
+ 	ioread32(hw->hw_addr + REG_MDIO_CTRL);
+ 
+@@ -872,7 +871,7 @@ static int atl1_mii_ioctl(struct net_device *netdev, struct ifreq *ifr, int cmd)
+  *
+  * Return 0 on success, negative on failure
+  */
+-s32 atl1_setup_ring_resources(struct atl1_adapter *adapter)
++static s32 atl1_setup_ring_resources(struct atl1_adapter *adapter)
  {
- 	struct atl1_hw *hw = &adapter->hw;
- 	u32 value;
-+	u16 x;
+ 	struct atl1_tpd_ring *tpd_ring = &adapter->tpd_ring;
+ 	struct atl1_rfd_ring *rfd_ring = &adapter->rfd_ring;
+@@ -987,6 +986,9 @@ static void atl1_clean_rx_ring(struct atl1_adapter *adapter)
+ 	unsigned long size;
+ 	unsigned int i;
  
- 	/* clear interrupt status */
- 	iowrite32(0xffffffff, adapter->hw.hw_addr + REG_ISR);
-@@ -797,6 +798,15 @@ static u32 atl1_configure(struct atl1_adapter *adapter)
- 	iowrite32(value, hw->hw_addr + REG_RXQ_CTRL);
- 
- 	/* config DMA Engine */
-+	value = ioread32(hw->hw_addr + REG_DEVICE_CTRL);
-+	x = (value >> DEVICE_CTRL_MAX_PAYLOAD_SHIFT) &
-+		DEVICE_CTRL_MAX_PAYLOAD_MASK;
-+	if (x < hw->dmaw_block)
-+		hw->dmaw_block = x;
-+	x = (value >> DEVICE_CTRL_MAX_RREQ_SZ_SHIFT) &
-+		DEVICE_CTRL_MAX_RREQ_SZ_MASK;
-+	if (x < hw->dmar_block)
-+		hw->dmar_block = x;
- 	value = ((((u32) hw->dmar_block) & DMA_CTRL_DMAR_BURST_LEN_MASK)
- 		<< DMA_CTRL_DMAR_BURST_LEN_SHIFT) |
- 		((((u32) hw->dmaw_block) & DMA_CTRL_DMAW_BURST_LEN_MASK)
-diff --git a/drivers/net/atlx/atlx.h b/drivers/net/atlx/atlx.h
-index 3be7c09..43b8531 100644
---- a/drivers/net/atlx/atlx.h
-+++ b/drivers/net/atlx/atlx.h
-@@ -53,6 +53,12 @@ MODULE_VERSION(ATLX_DRIVER_VERSION);
- 
- #define REG_PCIE_CAP_LIST		0x58
- 
-+#define REG_DEVICE_CTRL			0x60
-+#define DEVICE_CTRL_MAX_PAYLOAD_MASK	0x7
-+#define DEVICE_CTRL_MAX_PAYLOAD_SHIFT	5
-+#define DEVICE_CTRL_MAX_RREQ_SZ_MASK	0x7
-+#define DEVICE_CTRL_MAX_RREQ_SZ_SHIFT	12
++	if (!rfd_ring->buffer_info || !rfd_ring->desc)
++		return;
 +
- #define REG_VPD_CAP			0x6C
- #define VPD_CAP_ID_MASK			0xFF
- #define VPD_CAP_ID_SHIFT		0
+ 	/* Free all the Rx ring sk_buffs */
+ 	for (i = 0; i < rfd_ring->count; i++) {
+ 		buffer_info = &rfd_ring->buffer_info[i];
+@@ -1060,7 +1062,7 @@ static void atl1_clean_tx_ring(struct atl1_adapter *adapter)
+  *
+  * Free all transmit software resources
+  */
+-void atl1_free_ring_resources(struct atl1_adapter *adapter)
++static void atl1_free_ring_resources(struct atl1_adapter *adapter)
+ {
+ 	struct pci_dev *pdev = adapter->pdev;
+ 	struct atl1_tpd_ring *tpd_ring = &adapter->tpd_ring;
 -- 
 1.5.3.3
 
