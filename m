@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757721AbYAAPrE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757734AbYAAPrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757721AbYAAPrE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 10:47:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755472AbYAAPgv
+	id S1757734AbYAAPrb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 10:47:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481AbYAAPgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 1 Jan 2008 10:36:51 -0500
-Received: from il.qumranet.com ([82.166.9.18]:33807 "EHLO il.qumranet.com"
+Received: from il.qumranet.com ([82.166.9.18]:33793 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754648AbYAAPg3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754794AbYAAPg3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 1 Jan 2008 10:36:29 -0500
 From: Avi Kivity <avi@qumranet.com>
 To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Subject: [PATCH 34/54] KVM: Replace #GP injection by the generalized exception queue
-Date: Tue,  1 Jan 2008 17:36:00 +0200
-Message-Id: <1199201780-14001-35-git-send-email-avi@qumranet.com>
+Subject: [PATCH 39/54] KVM: x86 emulator: Fix stack instructions on 64-bit mode
+Date: Tue,  1 Jan 2008 17:36:05 +0200
+Message-Id: <1199201780-14001-40-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1199201780-14001-1-git-send-email-avi@qumranet.com>
 References: <1199201780-14001-1-git-send-email-avi@qumranet.com>
@@ -21,337 +21,105 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Stack instructions are always 64-bit on 64-bit mode; many of the
+emulated stack instructions did not take that into account.  Fix by
+adding a 'Stack' bitflag and setting the operand size appropriately
+during the decode stage (except for 'push r/m', which is in a group
+with a few other instructions, so it gets its own treatment).
+
+This fixes random crashes on Vista x64.
+
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/svm.c         |   17 ++---------------
- drivers/kvm/vmx.c         |   18 ++----------------
- drivers/kvm/x86.c         |   43 +++++++++++++++++++------------------------
- drivers/kvm/x86.h         |    7 +++++--
- drivers/kvm/x86_emulate.c |    4 ++--
- 5 files changed, 30 insertions(+), 59 deletions(-)
+ drivers/kvm/x86_emulate.c |   27 +++++++++++++++------------
+ 1 files changed, 15 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
-index ce77f15..b896614 100644
---- a/drivers/kvm/svm.c
-+++ b/drivers/kvm/svm.c
-@@ -207,17 +207,6 @@ static bool svm_exception_injected(struct kvm_vcpu *vcpu)
- 	return !(svm->vmcb->control.exit_int_info & SVM_EXITINTINFO_VALID);
- }
- 
--static void svm_inject_gp(struct kvm_vcpu *vcpu, unsigned error_code)
--{
--	struct vcpu_svm *svm = to_svm(vcpu);
--
--	svm->vmcb->control.event_inj =		SVM_EVTINJ_VALID |
--						SVM_EVTINJ_VALID_ERR |
--						SVM_EVTINJ_TYPE_EXEPT |
--						GP_VECTOR;
--	svm->vmcb->control.event_inj_err = error_code;
--}
--
- static void inject_ud(struct kvm_vcpu *vcpu)
- {
- 	to_svm(vcpu)->vmcb->control.event_inj = SVM_EVTINJ_VALID |
-@@ -1115,7 +1104,7 @@ static int rdmsr_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
- 	u64 data;
- 
- 	if (svm_get_msr(&svm->vcpu, ecx, &data))
--		svm_inject_gp(&svm->vcpu, 0);
-+		kvm_inject_gp(&svm->vcpu, 0);
- 	else {
- 		svm->vmcb->save.rax = data & 0xffffffff;
- 		svm->vcpu.regs[VCPU_REGS_RDX] = data >> 32;
-@@ -1176,7 +1165,7 @@ static int wrmsr_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
- 		| ((u64)(svm->vcpu.regs[VCPU_REGS_RDX] & -1u) << 32);
- 	svm->next_rip = svm->vmcb->save.rip + 2;
- 	if (svm_set_msr(&svm->vcpu, ecx, data))
--		svm_inject_gp(&svm->vcpu, 0);
-+		kvm_inject_gp(&svm->vcpu, 0);
- 	else
- 		skip_emulated_instruction(&svm->vcpu);
- 	return 1;
-@@ -1688,8 +1677,6 @@ static struct kvm_x86_ops svm_x86_ops = {
- 
- 	.tlb_flush = svm_flush_tlb,
- 
--	.inject_gp = svm_inject_gp,
--
- 	.run = svm_vcpu_run,
- 	.handle_exit = handle_exit,
- 	.skip_emulated_instruction = skip_emulated_instruction,
-diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
-index 20e9dfc..92660db 100644
---- a/drivers/kvm/vmx.c
-+++ b/drivers/kvm/vmx.c
-@@ -613,18 +613,6 @@ static bool vmx_exception_injected(struct kvm_vcpu *vcpu)
- 	return !(vmx->idt_vectoring_info & VECTORING_INFO_VALID_MASK);
- }
- 
--static void vmx_inject_gp(struct kvm_vcpu *vcpu, unsigned error_code)
--{
--	printk(KERN_DEBUG "inject_general_protection: rip 0x%lx\n",
--	       vmcs_readl(GUEST_RIP));
--	vmcs_write32(VM_ENTRY_EXCEPTION_ERROR_CODE, error_code);
--	vmcs_write32(VM_ENTRY_INTR_INFO_FIELD,
--		     GP_VECTOR |
--		     INTR_TYPE_EXCEPTION |
--		     INTR_INFO_DELIEVER_CODE_MASK |
--		     INTR_INFO_VALID_MASK);
--}
--
- static void vmx_inject_ud(struct kvm_vcpu *vcpu)
- {
- 	vmcs_write32(VM_ENTRY_INTR_INFO_FIELD,
-@@ -2083,7 +2071,7 @@ static int handle_rdmsr(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 	u64 data;
- 
- 	if (vmx_get_msr(vcpu, ecx, &data)) {
--		vmx_inject_gp(vcpu, 0);
-+		kvm_inject_gp(vcpu, 0);
- 		return 1;
- 	}
- 
-@@ -2101,7 +2089,7 @@ static int handle_wrmsr(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 		| ((u64)(vcpu->regs[VCPU_REGS_RDX] & -1u) << 32);
- 
- 	if (vmx_set_msr(vcpu, ecx, data) != 0) {
--		vmx_inject_gp(vcpu, 0);
-+		kvm_inject_gp(vcpu, 0);
- 		return 1;
- 	}
- 
-@@ -2619,8 +2607,6 @@ static struct kvm_x86_ops vmx_x86_ops = {
- 
- 	.tlb_flush = vmx_flush_tlb,
- 
--	.inject_gp = vmx_inject_gp,
--
- 	.run = vmx_vcpu_run,
- 	.handle_exit = kvm_handle_exit,
- 	.skip_emulated_instruction = skip_emulated_instruction,
-diff --git a/drivers/kvm/x86.c b/drivers/kvm/x86.c
-index dc007a3..6deb052 100644
---- a/drivers/kvm/x86.c
-+++ b/drivers/kvm/x86.c
-@@ -128,11 +128,6 @@ void kvm_set_apic_base(struct kvm_vcpu *vcpu, u64 data)
- }
- EXPORT_SYMBOL_GPL(kvm_set_apic_base);
- 
--static void inject_gp(struct kvm_vcpu *vcpu)
--{
--	kvm_x86_ops->inject_gp(vcpu, 0);
--}
--
- void kvm_queue_exception(struct kvm_vcpu *vcpu, unsigned nr)
- {
- 	WARN_ON(vcpu->exception.pending);
-@@ -232,20 +227,20 @@ void set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
- 	if (cr0 & CR0_RESERVED_BITS) {
- 		printk(KERN_DEBUG "set_cr0: 0x%lx #GP, reserved bits 0x%lx\n",
- 		       cr0, vcpu->cr0);
--		inject_gp(vcpu);
-+		kvm_inject_gp(vcpu, 0);
- 		return;
- 	}
- 
- 	if ((cr0 & X86_CR0_NW) && !(cr0 & X86_CR0_CD)) {
- 		printk(KERN_DEBUG "set_cr0: #GP, CD == 0 && NW == 1\n");
--		inject_gp(vcpu);
-+		kvm_inject_gp(vcpu, 0);
- 		return;
- 	}
- 
- 	if ((cr0 & X86_CR0_PG) && !(cr0 & X86_CR0_PE)) {
- 		printk(KERN_DEBUG "set_cr0: #GP, set PG flag "
- 		       "and a clear PE flag\n");
--		inject_gp(vcpu);
-+		kvm_inject_gp(vcpu, 0);
- 		return;
- 	}
- 
-@@ -257,14 +252,14 @@ void set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
- 			if (!is_pae(vcpu)) {
- 				printk(KERN_DEBUG "set_cr0: #GP, start paging "
- 				       "in long mode while PAE is disabled\n");
--				inject_gp(vcpu);
-+				kvm_inject_gp(vcpu, 0);
- 				return;
- 			}
- 			kvm_x86_ops->get_cs_db_l_bits(vcpu, &cs_db, &cs_l);
- 			if (cs_l) {
- 				printk(KERN_DEBUG "set_cr0: #GP, start paging "
- 				       "in long mode while CS.L == 1\n");
--				inject_gp(vcpu);
-+				kvm_inject_gp(vcpu, 0);
- 				return;
- 
- 			}
-@@ -273,7 +268,7 @@ void set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
- 		if (is_pae(vcpu) && !load_pdptrs(vcpu, vcpu->cr3)) {
- 			printk(KERN_DEBUG "set_cr0: #GP, pdptrs "
- 			       "reserved bits\n");
--			inject_gp(vcpu);
-+			kvm_inject_gp(vcpu, 0);
- 			return;
- 		}
- 
-@@ -299,7 +294,7 @@ void set_cr4(struct kvm_vcpu *vcpu, unsigned long cr4)
- {
- 	if (cr4 & CR4_RESERVED_BITS) {
- 		printk(KERN_DEBUG "set_cr4: #GP, reserved bits\n");
--		inject_gp(vcpu);
-+		kvm_inject_gp(vcpu, 0);
- 		return;
- 	}
- 
-@@ -307,19 +302,19 @@ void set_cr4(struct kvm_vcpu *vcpu, unsigned long cr4)
- 		if (!(cr4 & X86_CR4_PAE)) {
- 			printk(KERN_DEBUG "set_cr4: #GP, clearing PAE while "
- 			       "in long mode\n");
--			inject_gp(vcpu);
-+			kvm_inject_gp(vcpu, 0);
- 			return;
- 		}
- 	} else if (is_paging(vcpu) && !is_pae(vcpu) && (cr4 & X86_CR4_PAE)
- 		   && !load_pdptrs(vcpu, vcpu->cr3)) {
- 		printk(KERN_DEBUG "set_cr4: #GP, pdptrs reserved bits\n");
--		inject_gp(vcpu);
-+		kvm_inject_gp(vcpu, 0);
- 		return;
- 	}
- 
- 	if (cr4 & X86_CR4_VMXE) {
- 		printk(KERN_DEBUG "set_cr4: #GP, setting VMXE\n");
--		inject_gp(vcpu);
-+		kvm_inject_gp(vcpu, 0);
- 		return;
- 	}
- 	kvm_x86_ops->set_cr4(vcpu, cr4);
-@@ -340,7 +335,7 @@ void set_cr3(struct kvm_vcpu *vcpu, unsigned long cr3)
- 	if (is_long_mode(vcpu)) {
- 		if (cr3 & CR3_L_MODE_RESERVED_BITS) {
- 			printk(KERN_DEBUG "set_cr3: #GP, reserved bits\n");
--			inject_gp(vcpu);
-+			kvm_inject_gp(vcpu, 0);
- 			return;
- 		}
- 	} else {
-@@ -348,13 +343,13 @@ void set_cr3(struct kvm_vcpu *vcpu, unsigned long cr3)
- 			if (cr3 & CR3_PAE_RESERVED_BITS) {
- 				printk(KERN_DEBUG
- 				       "set_cr3: #GP, reserved bits\n");
--				inject_gp(vcpu);
-+				kvm_inject_gp(vcpu, 0);
- 				return;
- 			}
- 			if (is_paging(vcpu) && !load_pdptrs(vcpu, cr3)) {
- 				printk(KERN_DEBUG "set_cr3: #GP, pdptrs "
- 				       "reserved bits\n");
--				inject_gp(vcpu);
-+				kvm_inject_gp(vcpu, 0);
- 				return;
- 			}
- 		}
-@@ -375,7 +370,7 @@ void set_cr3(struct kvm_vcpu *vcpu, unsigned long cr3)
- 	 * to debug) behavior on the guest side.
- 	 */
- 	if (unlikely(!gfn_to_memslot(vcpu->kvm, cr3 >> PAGE_SHIFT)))
--		inject_gp(vcpu);
-+		kvm_inject_gp(vcpu, 0);
- 	else {
- 		vcpu->cr3 = cr3;
- 		vcpu->mmu.new_cr3(vcpu);
-@@ -388,7 +383,7 @@ void set_cr8(struct kvm_vcpu *vcpu, unsigned long cr8)
- {
- 	if (cr8 & CR8_RESERVED_BITS) {
- 		printk(KERN_DEBUG "set_cr8: #GP, reserved bits 0x%lx\n", cr8);
--		inject_gp(vcpu);
-+		kvm_inject_gp(vcpu, 0);
- 		return;
- 	}
- 	if (irqchip_in_kernel(vcpu->kvm))
-@@ -436,14 +431,14 @@ static void set_efer(struct kvm_vcpu *vcpu, u64 efer)
- 	if (efer & EFER_RESERVED_BITS) {
- 		printk(KERN_DEBUG "set_efer: 0x%llx #GP, reserved bits\n",
- 		       efer);
--		inject_gp(vcpu);
-+		kvm_inject_gp(vcpu, 0);
- 		return;
- 	}
- 
- 	if (is_paging(vcpu)
- 	    && (vcpu->shadow_efer & EFER_LME) != (efer & EFER_LME)) {
- 		printk(KERN_DEBUG "set_efer: #GP, change LME while paging\n");
--		inject_gp(vcpu);
-+		kvm_inject_gp(vcpu, 0);
- 		return;
- 	}
- 
-@@ -2047,7 +2042,7 @@ int kvm_emulate_pio_string(struct kvm_vcpu *vcpu, struct kvm_run *run, int in,
- 		 * String I/O in reverse.  Yuck.  Kill the guest, fix later.
- 		 */
- 		pr_unimpl(vcpu, "guest string pio down\n");
--		inject_gp(vcpu);
-+		kvm_inject_gp(vcpu, 0);
- 		return 1;
- 	}
- 	vcpu->run->io.count = now;
-@@ -2062,7 +2057,7 @@ int kvm_emulate_pio_string(struct kvm_vcpu *vcpu, struct kvm_run *run, int in,
- 		vcpu->pio.guest_pages[i] = page;
- 		mutex_unlock(&vcpu->kvm->lock);
- 		if (!page) {
--			inject_gp(vcpu);
-+			kvm_inject_gp(vcpu, 0);
- 			free_pio_guest_pages(vcpu);
- 			return 1;
- 		}
-diff --git a/drivers/kvm/x86.h b/drivers/kvm/x86.h
-index d3ac4e2..78396d6 100644
---- a/drivers/kvm/x86.h
-+++ b/drivers/kvm/x86.h
-@@ -220,8 +220,6 @@ struct kvm_x86_ops {
- 
- 	void (*tlb_flush)(struct kvm_vcpu *vcpu);
- 
--	void (*inject_gp)(struct kvm_vcpu *vcpu, unsigned err_code);
--
- 	void (*run)(struct kvm_vcpu *vcpu, struct kvm_run *run);
- 	int (*handle_exit)(struct kvm_run *run, struct kvm_vcpu *vcpu);
- 	void (*skip_emulated_instruction)(struct kvm_vcpu *vcpu);
-@@ -467,6 +465,11 @@ static inline u32 get_rdx_init_val(void)
- 	return 0x600; /* P6 family */
- }
- 
-+static inline void kvm_inject_gp(struct kvm_vcpu *vcpu, u32 error_code)
-+{
-+	kvm_queue_exception_e(vcpu, GP_VECTOR, error_code);
-+}
-+
- #define ASM_VMX_VMCLEAR_RAX       ".byte 0x66, 0x0f, 0xc7, 0x30"
- #define ASM_VMX_VMLAUNCH          ".byte 0x0f, 0x01, 0xc2"
- #define ASM_VMX_VMRESUME          ".byte 0x0f, 0x01, 0xc3"
 diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
-index 3e3eba7..2e259a8 100644
+index f423b0e..0a6ab06 100644
 --- a/drivers/kvm/x86_emulate.c
 +++ b/drivers/kvm/x86_emulate.c
-@@ -1779,7 +1779,7 @@ twobyte_insn:
- 			| ((u64)c->regs[VCPU_REGS_RDX] << 32);
- 		rc = kvm_set_msr(ctxt->vcpu, c->regs[VCPU_REGS_RCX], msr_data);
- 		if (rc) {
--			kvm_x86_ops->inject_gp(ctxt->vcpu, 0);
-+			kvm_inject_gp(ctxt->vcpu, 0);
- 			c->eip = ctxt->vcpu->rip;
+@@ -65,6 +65,7 @@
+ #define BitOp       (1<<8)
+ #define MemAbs      (1<<9)      /* Memory operand is absolute displacement */
+ #define String      (1<<10)     /* String instruction (rep capable) */
++#define Stack       (1<<11)     /* Stack instruction (push/pop) */
+ 
+ static u16 opcode_table[256] = {
+ 	/* 0x00 - 0x07 */
+@@ -104,14 +105,16 @@ static u16 opcode_table[256] = {
+ 	/* 0x48 - 0x4F */
+ 	DstReg, DstReg, DstReg, DstReg,	DstReg, DstReg, DstReg, DstReg,
+ 	/* 0x50 - 0x57 */
+-	SrcReg, SrcReg, SrcReg, SrcReg, SrcReg, SrcReg, SrcReg, SrcReg,
++	SrcReg | Stack, SrcReg | Stack, SrcReg | Stack, SrcReg | Stack,
++	SrcReg | Stack, SrcReg | Stack, SrcReg | Stack, SrcReg | Stack,
+ 	/* 0x58 - 0x5F */
+-	DstReg, DstReg, DstReg, DstReg,	DstReg, DstReg, DstReg, DstReg,
++	DstReg | Stack, DstReg | Stack, DstReg | Stack, DstReg | Stack,
++	DstReg | Stack, DstReg | Stack, DstReg | Stack, DstReg | Stack,
+ 	/* 0x60 - 0x67 */
+ 	0, 0, 0, DstReg | SrcMem32 | ModRM | Mov /* movsxd (x86/64) */ ,
+ 	0, 0, 0, 0,
+ 	/* 0x68 - 0x6F */
+-	0, 0, ImplicitOps|Mov, 0,
++	0, 0, ImplicitOps | Mov | Stack, 0,
+ 	SrcNone  | ByteOp  | ImplicitOps, SrcNone  | ImplicitOps, /* insb, insw/insd */
+ 	SrcNone  | ByteOp  | ImplicitOps, SrcNone  | ImplicitOps, /* outsb, outsw/outsd */
+ 	/* 0x70 - 0x77 */
+@@ -128,9 +131,10 @@ static u16 opcode_table[256] = {
+ 	/* 0x88 - 0x8F */
+ 	ByteOp | DstMem | SrcReg | ModRM | Mov, DstMem | SrcReg | ModRM | Mov,
+ 	ByteOp | DstReg | SrcMem | ModRM | Mov, DstReg | SrcMem | ModRM | Mov,
+-	0, ModRM | DstReg, 0, DstMem | SrcNone | ModRM | Mov,
++	0, ModRM | DstReg, 0, DstMem | SrcNone | ModRM | Mov | Stack,
+ 	/* 0x90 - 0x9F */
+-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ImplicitOps, ImplicitOps, 0, 0,
++	0, 0, 0, 0, 0, 0, 0, 0,
++	0, 0, 0, 0, ImplicitOps | Stack, ImplicitOps | Stack, 0, 0,
+ 	/* 0xA0 - 0xA7 */
+ 	ByteOp | DstReg | SrcMem | Mov | MemAbs, DstReg | SrcMem | Mov | MemAbs,
+ 	ByteOp | DstMem | SrcReg | Mov | MemAbs, DstMem | SrcReg | Mov | MemAbs,
+@@ -144,7 +148,7 @@ static u16 opcode_table[256] = {
+ 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+ 	/* 0xC0 - 0xC7 */
+ 	ByteOp | DstMem | SrcImm | ModRM, DstMem | SrcImmByte | ModRM,
+-	0, ImplicitOps, 0, 0,
++	0, ImplicitOps | Stack, 0, 0,
+ 	ByteOp | DstMem | SrcImm | ModRM | Mov, DstMem | SrcImm | ModRM | Mov,
+ 	/* 0xC8 - 0xCF */
+ 	0, 0, 0, 0, 0, 0, 0, 0,
+@@ -157,7 +161,8 @@ static u16 opcode_table[256] = {
+ 	/* 0xE0 - 0xE7 */
+ 	0, 0, 0, 0, 0, 0, 0, 0,
+ 	/* 0xE8 - 0xEF */
+-	ImplicitOps, SrcImm|ImplicitOps, 0, SrcImmByte|ImplicitOps, 0, 0, 0, 0,
++	ImplicitOps | Stack, SrcImm|ImplicitOps, 0, SrcImmByte|ImplicitOps,
++	0, 0, 0, 0,
+ 	/* 0xF0 - 0xF7 */
+ 	0, 0, 0, 0,
+ 	ImplicitOps, ImplicitOps,
+@@ -868,6 +873,9 @@ done_prefixes:
  		}
- 		rc = X86EMUL_CONTINUE;
-@@ -1789,7 +1789,7 @@ twobyte_insn:
- 		/* rdmsr */
- 		rc = kvm_get_msr(ctxt->vcpu, c->regs[VCPU_REGS_RCX], &msr_data);
- 		if (rc) {
--			kvm_x86_ops->inject_gp(ctxt->vcpu, 0);
-+			kvm_inject_gp(ctxt->vcpu, 0);
- 			c->eip = ctxt->vcpu->rip;
- 		} else {
- 			c->regs[VCPU_REGS_RAX] = (u32)msr_data;
+ 	}
+ 
++	if (mode == X86EMUL_MODE_PROT64 && (c->d & Stack))
++		c->op_bytes = 8;
++
+ 	/* ModRM and SIB bytes. */
+ 	if (c->d & ModRM)
+ 		rc = decode_modrm(ctxt, ops);
+@@ -988,11 +996,6 @@ static inline int emulate_grp1a(struct x86_emulate_ctxt *ctxt,
+ 	struct decode_cache *c = &ctxt->decode;
+ 	int rc;
+ 
+-	/* 64-bit mode: POP always pops a 64-bit operand. */
+-
+-	if (ctxt->mode == X86EMUL_MODE_PROT64)
+-		c->dst.bytes = 8;
+-
+ 	rc = ops->read_std(register_address(ctxt->ss_base,
+ 					    c->regs[VCPU_REGS_RSP]),
+ 			   &c->dst.val, c->dst.bytes, ctxt->vcpu);
 -- 
 1.5.3.7
 
