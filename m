@@ -1,64 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbYAAHnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbYAAH4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754205AbYAAHnt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 02:43:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbYAAHnl
+	id S1754019AbYAAH4E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 02:56:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbYAAHzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 02:43:41 -0500
-Received: from po-out-1718.google.com ([72.14.252.158]:61733 "EHLO
-	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751818AbYAAHnk (ORCPT
+	Tue, 1 Jan 2008 02:55:53 -0500
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:32604 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750722AbYAAHzw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 02:43:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=miFrkwQqgB7v+tdz5HRbBLtIDBvrdgGK7s7okzzZRVxAoK+KFH8Ib+dTO9yxsXU0a5t9I9G1Iu2Nosv6MpWXAecEFYihkLf7cLKimE4FR4az6uHph6LFGZOqiaVnLYyW8thQmDPVf/0SnG4Xu7EjfZ5E7/24RAx94LZh9kNC5Tk=
-Date: Tue, 1 Jan 2008 15:43:52 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kbuild@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>
-Subject: [Patch 8/8] Remove 'TOPDIR' from the Top Makefile
-Message-ID: <20080101074352.GI2496@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <20080101071311.GA2496@hacking>
+	Tue, 1 Jan 2008 02:55:52 -0500
+Message-ID: <4779F200.1020507@panasas.com>
+Date: Tue, 01 Jan 2008 09:55:44 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080101071311.GA2496@hacking>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Marco Costalba <mcostalba@gmail.com>
+CC: Filippo Zangheri <filippo.zangheri@yahoo.it>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Git Mailing List <git@vger.kernel.org>
+Subject: Re: [ANNOUNCE] qgit-2.1 and qgit-1.5.8
+References: <e5bfff550712302335ie96e143g55c93e984fba6aaa@mail.gmail.com>	 <4778CB78.2010906@yahoo.it>	 <e5bfff550712310358g347d883fm9866f328f24e3ad0@mail.gmail.com>	 <47792B3E.60509@panasas.com> <e5bfff550712311007j1cd8223es51b6a59dfb958193@mail.gmail.com>
+In-Reply-To: <e5bfff550712311007j1cd8223es51b6a59dfb958193@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Jan 2008 07:55:49.0973 (UTC) FILETIME=[B992E850:01C84C4B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Dec 31 2007 at 20:07 +0200, "Marco Costalba" <mcostalba@gmail.com> wrote:
+> On Dec 31, 2007 6:47 PM, Boaz Harrosh <bharrosh@panasas.com> wrote:
+>> On Mon, Dec 31 2007 at 13:58 +0200, "Marco Costalba" <mcostalba@gmail.com> wrote:
+>>> On Dec 31, 2007 11:59 AM, Filippo Zangheri <filippo.zangheri@yahoo.it> wrote:
+>>>> Hi,
+>>>>
+>>>> I git-cloned qgit-2.1 from your repository, then ran `qmake qgit.pro`, but `make` gave me errors.
+>>> Yes, you need qmake of Qt4 not the Qt3 one.
+>>>
+>> <snip>
+>>
+>> A Theoretical question.
+>> Is it possible to compile Qt4 app all statically linked and run it on a Qt3 based KDE
+>> machine. Some thing like the windows installation, where every thing is self-contained?
+>>
+> 
+> It's also very practical...I have _only_ KDE 3 installed, not KDE 4 ;-)
+> 
+> I have both Qt4 and Qt3 development (shared) libraries installed and
+> there is absolutely no compatibility problem, the only thing you have
+> to remember is when running
+> 
+> qmake qgit.pro
+> 
+> the first time, you need to be sure is the Qt4 qmake, not the Qt3.
+> Because I have Qt3 qmake in path, not the Qt4 one, I need to
+> explicitly give the whole path the first time I configure the sources,
+> something like
+> 
+> /usr/lib/qt4/bin/qmake qgit.pro
+> 
+> Then no other settings are needed, when you call make, the Makefiles
+> are already built by qmake to search for the correct libraries.
+> 
+> 
+> Hope this helps...
+> 
+> Marco
 
-TOPDIR is obsolete, thus can be removed.
-This patch removes TOPDIR from the top Makefile.
+Thanks because of your help I was brave enough to install qt4 and compile qgit.
+It works.
 
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+We use it a lot here. When the guys make a mess, and you need to figure what
+happened than qgit is your only friend. I intend to hack some extra stuff that
+we need often.
 
----
-
-diff --git a/Makefile b/Makefile
-index fbb8dfc..c892d14 100644
---- a/Makefile
-+++ b/Makefile
-@@ -148,15 +148,13 @@ _all: modules
- endif
- 
- srctree		:= $(if $(KBUILD_SRC),$(KBUILD_SRC),$(CURDIR))
--TOPDIR		:= $(srctree)
--# FIXME - TOPDIR is obsolete, use srctree/objtree
- objtree		:= $(CURDIR)
- src		:= $(srctree)
- obj		:= $(objtree)
- 
- VPATH		:= $(srctree)$(if $(KBUILD_EXTMOD),:$(KBUILD_EXTMOD))
- 
--export srctree objtree VPATH TOPDIR
-+export srctree objtree VPATH
- 
- 
- # SUBARCH tells the usermode build what the underlying arch is.  That is set
+Boaz
