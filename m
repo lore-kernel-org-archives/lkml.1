@@ -1,66 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758554AbYAAXSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758625AbYAAXT5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758554AbYAAXSz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 18:18:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756599AbYAAXSs
+	id S1758625AbYAAXT5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 18:19:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756599AbYAAXTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 18:18:48 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:50800 "EHLO smtp6.pp.htv.fi"
+	Tue, 1 Jan 2008 18:19:49 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38007 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754641AbYAAXSs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 18:18:48 -0500
-Date: Wed, 2 Jan 2008 01:18:33 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: clear IO_APIC before enabing apic error
-	vector. v2
-Message-ID: <20080101231832.GI27566@does.not.exist>
-References: <200712291952.20455.yinghai.lu@sun.com> <20071230145115.GR16946@elte.hu> <86802c440712301248m38cd000ejf7e48f273d573edd@mail.gmail.com> <20071230220620.GC17670@does.not.exist> <86802c440712301442q476979f0hef047a45e5444c84@mail.gmail.com> <20071230232354.GA3083@does.not.exist> <86802c440712301601g62448de8i412895a105a9ae61@mail.gmail.com> <20071231002845.GB3083@does.not.exist> <86802c440712301703w1929ae9fue5bf937bf7f4e005@mail.gmail.com>
+	id S1754907AbYAAXTs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 18:19:48 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: nigel@nigel.suspend2.net
+Subject: Re: What's in store for 2008 for TuxOnIce?
+Date: Wed, 2 Jan 2008 00:21:36 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: suspend2-devel@lists.tuxonice.net,
+       "The place to get help!" <suspend2-users@lists.tuxonice.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <477AC060.5040004@nigel.suspend2.net>
+In-Reply-To: <477AC060.5040004@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <86802c440712301703w1929ae9fue5bf937bf7f4e005@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200801020021.37259.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 30, 2007 at 05:03:50PM -0800, Yinghai Lu wrote:
-> On Dec 30, 2007 4:28 PM, Adrian Bunk <bunk@kernel.org> wrote:
-> >
-> > On Sun, Dec 30, 2007 at 04:01:39PM -0800, Yinghai Lu wrote:
->...
-> > > the old one is in x86-mm tree
-> > >
-> > > http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commitdiff;h=ffcbdc220a1520d006a837f33589c7c19ffbeb76
-> > >...
-> >
-> > Sorry for the dumb question, but what in
-> >
-> > +       if (!smp_processor_id() && !skip_ioapic_setup && nr_ioapics)
-> > +               enable_IO_APIC();
-> >
-> > guarantees that this call doesn't happen when you hotplug CPU 0 ?
-> >
+On Tuesday, 1 of January 2008, Nigel Cunningham wrote:
+> Hi all.
+
+Hi Nigel,
+
+> With the start of a new year, I suppose it's a good time to think about
+> what I'd like to do with TuxOnIce this year and see what feedback I get.
 > 
-> if CPU 0 (BSP) can be hotplug, it will be restarted via smp_callin.
-> and the delta function call patch will use setup_local_APIC(NULL),
-> then it will be safe.
+> First up, I'm thinking about closing the mailing lists and asking people
+> to use LKML instead for reporting issues and so on. I'm thinking about
+> this because it will help with allowing people who work on mainline to
+> see how stable (or otherwise!) TuxOnIce is now. It should also help when
+> (as often happens) bug reports aren't actually issues with the patch,
+> but with vanilla (ie drivers).
 
-We are talking about the version without the pointer games.
+I would also like the TuxOnIce issues related to drivers, ACPI, etc. to go to
+one of the kernel-related lists, but I think linux-pm may be better for that
+due to the much lower traffic.
 
-> YH
+> Perhaps it will also help with whatever effort I find time to make towards
+> convincing Andrew that it really does have significant advantages over
+> [u]swsusp and kexec based hibernation. 
+> 
+> Secondly, I'm planning on moving the website soonish. It's taken longer
+> than I planned because it will be sharing with another server I'm
+> maintaining, and it has taken longer than expected to find good hosting
+> for the other server (which was done first). Now that I'm happy with the
+> other server's state, I'm hoping to start shifting
+> suspend2.net/tuxonice.net soon.
+> 
+> For those who might be looking for hosting themselves, I'm using
+> slicehost. I initially tried GoDaddy, but had terrible service, problems
+> with draconian limits on the volume of outgoing email (1000/day by
+> default - useless if you're doing mailing lists) and unexpected,
+> unexplained delays in mail delivery through the SMTP delay they force
+> you to use. Slicehost, on the other hand, are terrific to deal with in
+> everyway. If you sign up with them because of this email, please
+> consider putting my email (nigel at suspend2.net) as the referrer - I
+> then get a discount on the cost of the hosting.
+> 
+> Third, regarding the patch itself, I'm taking my time in working towards
+> the 3.0 release. We don't have any major bugs with 3.0-rc3 reported, but
+> I have some things I want to complete before the final release:
+> * see it well tested;
+> * get a finished initial version of the cluster support;
+> * finish completing support for the new resume-from-other kernels
+> functionality that Rafael has added in 2.6.24. (We can resume from the
+> same kernel at the moment, but I need to convince myself that nosave
+> data is properly handled).
 
-cu
-Adrian
+Have you finished the support for freezing filesystems before freezing tasks
+that we talked about some time ago?
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Greetings,
+Rafael
