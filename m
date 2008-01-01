@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753917AbYAAHlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbYAAHnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753917AbYAAHlA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 02:41:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbYAAHkx
+	id S1754205AbYAAHnt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 02:43:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbYAAHnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 02:40:53 -0500
-Received: from po-out-1718.google.com ([72.14.252.154]:60352 "EHLO
+	Tue, 1 Jan 2008 02:43:41 -0500
+Received: from po-out-1718.google.com ([72.14.252.158]:61733 "EHLO
 	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751164AbYAAHkw (ORCPT
+	with ESMTP id S1751818AbYAAHnk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 02:40:52 -0500
+	Tue, 1 Jan 2008 02:43:40 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=TbijHAE4/QoKCoP7aNp7twD0acUyZLO18Oxh3V4toPpR0hW6Jp7gtTJ8DU7qaaZlu1xTU81myU3yzF5tuimFDlreSAfUxIzNk91SszpFdp65ErNG2cbSiXg9Jq+6mrDTv2QiO5O14CbCDnlQmpKjEpyVKeFbkU2yB4seT8XrA0o=
-Date: Tue, 1 Jan 2008 15:41:05 +0800
+        b=miFrkwQqgB7v+tdz5HRbBLtIDBvrdgGK7s7okzzZRVxAoK+KFH8Ib+dTO9yxsXU0a5t9I9G1Iu2Nosv6MpWXAecEFYihkLf7cLKimE4FR4az6uHph6LFGZOqiaVnLYyW8thQmDPVf/0SnG4Xu7EjfZ5E7/24RAx94LZh9kNC5Tk=
+Date: Tue, 1 Jan 2008 15:43:52 +0800
 From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Tim Shimmin <xfs-masters@oss.sgi.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kbuild@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       viro@zeniv.linux.org.uk
-Subject: [Patch 7/8] FS: Remove 'TOPDIR' from Makefiles
-Message-ID: <20080101074105.GH2496@hacking>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kbuild@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>
+Subject: [Patch 8/8] Remove 'TOPDIR' from the Top Makefile
+Message-ID: <20080101074352.GI2496@hacking>
 Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
 References: <20080101071311.GA2496@hacking>
 MIME-Version: 1.0
@@ -34,31 +33,32 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-TOPDIR is obsolete, use objtree instead.
-This patch removes TOPDIR from all fs/ Makefiles.
+TOPDIR is obsolete, thus can be removed.
+This patch removes TOPDIR from the top Makefile.
 
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>
-Cc: Tim Shimmin <xfs-masters@oss.sgi.com>
 Cc: Sam Ravnborg <sam@ravnborg.org>
 Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
 
 ---
 
-diff --git a/fs/smbfs/Makefile b/fs/smbfs/Makefile
-index 6673ee8..9b5e92b 100644
---- a/fs/smbfs/Makefile
-+++ b/fs/smbfs/Makefile
-@@ -34,5 +34,5 @@ proto:
- 	@echo >> proto2.h "struct sock;"
- 	@echo >> proto2.h "struct statfs;"
- 	@echo >> proto2.h ""
--	cproto -E "gcc -E" -e -v -I $(TOPDIR)/include -DMAKING_PROTO -D__KERNEL__ $(SRC) >> proto2.h
-+	cproto -E "gcc -E" -e -v -I $(objtree)/include -DMAKING_PROTO -D__KERNEL__ $(SRC) >> proto2.h
- 	mv proto2.h proto.h
-diff --git a/fs/xfs/Makefile b/fs/xfs/Makefile
-index 49e3e7e..d1d3d49 100644
---- a/fs/xfs/Makefile
-+++ b/fs/xfs/Makefile
-@@ -1 +1 @@
--include $(TOPDIR)/fs/xfs/Makefile-linux-$(VERSION).$(PATCHLEVEL)
-+include $(objtree)/fs/xfs/Makefile-linux-$(VERSION).$(PATCHLEVEL)
+diff --git a/Makefile b/Makefile
+index fbb8dfc..c892d14 100644
+--- a/Makefile
++++ b/Makefile
+@@ -148,15 +148,13 @@ _all: modules
+ endif
+ 
+ srctree		:= $(if $(KBUILD_SRC),$(KBUILD_SRC),$(CURDIR))
+-TOPDIR		:= $(srctree)
+-# FIXME - TOPDIR is obsolete, use srctree/objtree
+ objtree		:= $(CURDIR)
+ src		:= $(srctree)
+ obj		:= $(objtree)
+ 
+ VPATH		:= $(srctree)$(if $(KBUILD_EXTMOD),:$(KBUILD_EXTMOD))
+ 
+-export srctree objtree VPATH TOPDIR
++export srctree objtree VPATH
+ 
+ 
+ # SUBARCH tells the usermode build what the underlying arch is.  That is set
