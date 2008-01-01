@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757224AbYAAW1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757312AbYAAWga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757224AbYAAW1a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 17:27:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbYAAW1W
+	id S1757312AbYAAWga (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 17:36:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754925AbYAAWgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 17:27:22 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39588 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754902AbYAAW1W (ORCPT
+	Tue, 1 Jan 2008 17:36:21 -0500
+Received: from home.nigel.suspend2.net ([203.171.70.205]:33795 "EHLO
+	server1.example.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754641AbYAAWgU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 17:27:22 -0500
-Date: Tue, 1 Jan 2008 14:26:06 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Greg KH <greg@kroah.com>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Boaz Harrosh <bharrosh@panasas.com>, Alan Cox <alan@redhat.com>
-Subject: Re: 2.6.24-rc6-git7: Reported regressions from 2.6.23
-In-Reply-To: <200801012202.57851.rjw@sisk.pl>
-Message-ID: <alpine.LFD.1.00.0801011408470.32517@woody.linux-foundation.org>
-References: <200801012202.57851.rjw@sisk.pl>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 1 Jan 2008 17:36:20 -0500
+Message-ID: <477AC060.5040004@nigel.suspend2.net>
+Date: Wed, 02 Jan 2008 09:36:16 +1100
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: suspend2-devel@lists.tuxonice.net,
+       "The place to get help!" <suspend2-users@lists.tuxonice.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: What's in store for 2008 for TuxOnIce?
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all.
 
+With the start of a new year, I suppose it's a good time to think about
+what I'd like to do with TuxOnIce this year and see what feedback I get.
 
-On Tue, 1 Jan 2008, Rafael J. Wysocki wrote:
-> 
-> Subject	: Could not set non-blocking flag with 2.6.24-rc5
-> Submitter	: Tino Keitel <tino.keitel@gmx.de>
-> Date		: 2007-12-13 16:27
-> References	: http://lkml.org/lkml/2007/12/13/392
-> 		  http://bugzilla.kernel.org/show_bug.cgi?id=9557
-> Handled-By	: 
-> Patch		: 
+First up, I'm thinking about closing the mailing lists and asking people
+to use LKML instead for reporting issues and so on. I'm thinking about
+this because it will help with allowing people who work on mainline to
+see how stable (or otherwise!) TuxOnIce is now. It should also help when
+(as often happens) bug reports aren't actually issues with the patch,
+but with vanilla (ie drivers). Perhaps it will also help with whatever
+effort I find time to make towards convincing Andrew that it really does
+have significant advantages over [u]swsusp and kexec based hibernation.
 
-That strace shows that trying to open /dev/null fails with ENXIO:
+Secondly, I'm planning on moving the website soonish. It's taken longer
+than I planned because it will be sharing with another server I'm
+maintaining, and it has taken longer than expected to find good hosting
+for the other server (which was done first). Now that I'm happy with the
+other server's state, I'm hoping to start shifting
+suspend2.net/tuxonice.net soon.
 
-	[pid  6050] open("/dev/null", O_RDONLY <unfinished ...>
-	[pid  6050] <... open resumed> )        = -1 ENXIO (No such device or address)
+For those who might be looking for hosting themselves, I'm using
+slicehost. I initially tried GoDaddy, but had terrible service, problems
+with draconian limits on the volume of outgoing email (1000/day by
+default - useless if you're doing mailing lists) and unexpected,
+unexplained delays in mail delivery through the SMTP delay they force
+you to use. Slicehost, on the other hand, are terrific to deal with in
+everyway. If you sign up with them because of this email, please
+consider putting my email (nigel at suspend2.net) as the referrer - I
+then get a discount on the cost of the hosting.
 
-and everything goes downhill from there.
+Third, regarding the patch itself, I'm taking my time in working towards
+the 3.0 release. We don't have any major bugs with 3.0-rc3 reported, but
+I have some things I want to complete before the final release:
+* see it well tested;
+* get a finished initial version of the cluster support;
+* finish completing support for the new resume-from-other kernels
+functionality that Rafael has added in 2.6.24. (We can resume from the
+same kernel at the moment, but I need to convince myself that nosave
+data is properly handled).
 
-It would be worth looking at your /dev/null to see what kind of (broken) 
-device node it is, and get a clue about *why* it is broken.
+Regards,
 
-Greg, any udev breakage that could affect /dev/null? 
-
-> Subject	: Problems on booting
-> Submitter	: "werner" <werner@copaya.yi.org>
-> Date		: 2007-12-22 14:29
-> References	: http://lkml.org/lkml/2007/12/22/110
-> 		  http://bugzilla.kernel.org/show_bug.cgi?id=9621
-> Handled-By	: 
-> Patch		: 
-
-Hmm. I assume the "-git6" and "-git7" are 2.6.24-rc4-gitX, ie commits
-
- - 2.6.24-rc5-git6: 3e3b3916a9c5c28a16528585478de19fea59816b
- - 2.6.24-rc5-git7: fbdcf18df73758b2e187ab94678b30cd5f6ff9f9
-
-and doing a
-
-	gitk 3e3b3916a9..fbdcf18df7
-
-does show a SCSI merge, and two commits that touch drivers/scsi/initio.*.
-
-James, Alan and Boaz, ideas? 
-
-		Linus
+Nigel
