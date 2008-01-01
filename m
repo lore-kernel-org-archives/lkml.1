@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752038AbYAAWWE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757224AbYAAW1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752038AbYAAWWE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 17:22:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754935AbYAAWVy
+	id S1757224AbYAAW1a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 17:27:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbYAAW1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 17:21:54 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:46918 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754701AbYAAWVx (ORCPT
+	Tue, 1 Jan 2008 17:27:22 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39588 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754902AbYAAW1W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 17:21:53 -0500
-Date: Tue, 1 Jan 2008 23:19:55 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: ACPI mailing list <linux-acpi@vger.kernel.org>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Kohjinsha sleep problems
-Message-ID: <20080101231955.GA1931@ucw.cz>
+	Tue, 1 Jan 2008 17:27:22 -0500
+Date: Tue, 1 Jan 2008 14:26:06 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Greg KH <greg@kroah.com>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Boaz Harrosh <bharrosh@panasas.com>, Alan Cox <alan@redhat.com>
+Subject: Re: 2.6.24-rc6-git7: Reported regressions from 2.6.23
+In-Reply-To: <200801012202.57851.rjw@sisk.pl>
+Message-ID: <alpine.LFD.1.00.0801011408470.32517@woody.linux-foundation.org>
+References: <200801012202.57851.rjw@sisk.pl>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-On kohjinsha, wakeup code does not seem to be reached at all. I tried
-looking around FACS, but it seems very empty:
 
-(none):/data/l/kohji# acpidump -t FACS
-FACS @ 0x1f7bffc0
-  0000: 46 41 43 53 40 00 00 00 00 00 00 00 00 00 00 00
-FACS@...........
-  0010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-................
-  0020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-................
-  0030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-................
+On Tue, 1 Jan 2008, Rafael J. Wysocki wrote:
+> 
+> Subject	: Could not set non-blocking flag with 2.6.24-rc5
+> Submitter	: Tino Keitel <tino.keitel@gmx.de>
+> Date		: 2007-12-13 16:27
+> References	: http://lkml.org/lkml/2007/12/13/392
+> 		  http://bugzilla.kernel.org/show_bug.cgi?id=9557
+> Handled-By	: 
+> Patch		: 
 
-(none):/data/l/kohji# iasl -d FACS.aml
+That strace shows that trying to open /dev/null fails with ENXIO:
 
-Intel ACPI Component Architecture
-AML Disassembler version 20060912 [Dec 20 2006]
-Copyright (C) 2000 - 2006 Intel Corporation
-Supports ACPI Specification Revision 3.0a
+	[pid  6050] open("/dev/null", O_RDONLY <unfinished ...>
+	[pid  6050] <... open resumed> )        = -1 ENXIO (No such device or address)
 
-Loading Acpi table from file FACS.aml
-iasl[1864]: segfault at 080e5000 eip 08062f5c esp bf9d1e50 error 4
-Segmentation fault
-(none):/data/l/kohji#
+and everything goes downhill from there.
 
-In dmesg I find:
+It would be worth looking at your /dev/null to see what kind of (broken) 
+device node it is, and get a clue about *why* it is broken.
 
-DMI 2.3 present.
-ACPI: RSDP 000E9010, 0014 (r0 OID_00)
-ACPI: RSDT 1F7B1E40, 0030 (r1 AMD    RSDT_000 31303030 AMD  31303030)
-ACPI: FACP 1F7B1D40, 0084 (r1 AMD    FACP_000 31303030 AMD  31303030)
-ACPI: DSDT 1F7B0000, 1D30 (r1 INSYDE CS553x       1007 INTL 20030122)
-ACPI: FACS 1F7BFFC0, 0040
-ACPI: BOOT 1F7B1DD0, 0028 (r1 AMD    BOOT_000 31303030 AMD  31303030)
-ACPI: DBGP 1F7B1E00, 0034 (r1 AMD    DBGP_000 31303030 AMD  31303030)
-ACPI: PM-Timer IO Port: 0x9c10
+Greg, any udev breakage that could affect /dev/null? 
 
-What should be done to debug this? I guess FACS is strictly neccessary
-for sleep support?
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> Subject	: Problems on booting
+> Submitter	: "werner" <werner@copaya.yi.org>
+> Date		: 2007-12-22 14:29
+> References	: http://lkml.org/lkml/2007/12/22/110
+> 		  http://bugzilla.kernel.org/show_bug.cgi?id=9621
+> Handled-By	: 
+> Patch		: 
+
+Hmm. I assume the "-git6" and "-git7" are 2.6.24-rc4-gitX, ie commits
+
+ - 2.6.24-rc5-git6: 3e3b3916a9c5c28a16528585478de19fea59816b
+ - 2.6.24-rc5-git7: fbdcf18df73758b2e187ab94678b30cd5f6ff9f9
+
+and doing a
+
+	gitk 3e3b3916a9..fbdcf18df7
+
+does show a SCSI merge, and two commits that touch drivers/scsi/initio.*.
+
+James, Alan and Boaz, ideas? 
+
+		Linus
