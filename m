@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753639AbYAAAwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbYAABpy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753639AbYAAAwe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 19:52:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbYAAAwZ
+	id S1753354AbYAABpy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 20:45:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbYAABpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 19:52:25 -0500
-Received: from vs166246.vserver.de ([62.75.166.246]:59964 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750989AbYAAAwY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 19:52:24 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: Miguel =?utf-8?q?Bot=C3=B3n?= <mboton.lkml@gmail.com>
-Subject: Re: [PATCH 1/2] ssb: add 'ssb_pcihost_set_power_state' function
-Date: Tue, 1 Jan 2008 01:50:47 +0100
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       linville@tuxdriver.com
-References: <200801010116.46190.mboton@gmail.com>
-In-Reply-To: <200801010116.46190.mboton@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200801010150.47787.mb@bu3sch.de>
+	Mon, 31 Dec 2007 20:45:45 -0500
+Received: from main.gmane.org ([80.91.229.2]:34548 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751500AbYAABpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Dec 2007 20:45:45 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: "Holger Hoffstaette" <holger@wizards.de>
+Subject: Re: SATA kernel-buffered read VERY slow (not raid, Promise TX300 card); 2.6.23.1(vanilla)
+Date: Tue, 01 Jan 2008 02:45:23 +0100
+Organization: The Fists of the White Lotus
+Message-ID: <pan.2008.01.01.01.45.23.430875@wizards.de>
+References: <fa.6TIOCGhBpW0r4XW9rqR+Ad8P+Js@ifi.uio.no> <4777E08C.4000603@shaw.ca> <4779870E.5070507@tlinx.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: port-87-234-135-174.dynamic.qsc.de
+User-Agent: Pan/0.13.91 (Before we let euphoria convince us we are free)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 01 January 2008 01:16:46 Miguel Botón wrote:
-> This patch adds the 'ssb_pcihost_set_power_state' function.
-> 
-> This function allows us to set the power state of a PCI device
-> (for example b44 ethernet device). 
-> 
-> Signed-off-by: Miguel Botón <mboton@gmail.com>
+On Mon, 31 Dec 2007 16:19:26 -0800, Linda Walsh wrote:
 
-Acked-by: Michael Buesch <mb@bu3sch.de>
+> [snip]
+>     Another new "problem" (not as important) -- even though SATA disks are
+> called with "sdX", my ATA disks that *were* at hda-hdc are now at hde-hdg.
+> Devices hda-hdd are not populated in my dev directory on bootup.  Of
 
-> 
-> diff --git a/include/linux/ssb/ssb.h b/include/linux/ssb/ssb.h
-> index a21ab29..aa70fd0 100644
-> --- a/include/linux/ssb/ssb.h
-> +++ b/include/linux/ssb/ssb.h
-> @@ -349,6 +349,13 @@ static inline void ssb_pcihost_unregister(struct pci_driver *driver)
->  {
->  	pci_unregister_driver(driver);
->  }
-> +
-> +static inline
-> +void ssb_pcihost_set_power_state(struct ssb_device *sdev, pci_power_t state)
-> +{
-> +	if (sdev->bus->bustype == SSB_BUSTYPE_PCI)
-> +		pci_set_power_state(sdev->bus->host_pci, state);
-> +}
->  #endif /* CONFIG_SSB_PCIHOST */
->  
->  
-> 
+I think this is because the Promise SATA card also has one or more PATA
+channels, so if the card is activated it takes precedence over your old
+controller. But it should only be one channel, not four?
+As for the other problem - I plan on adding such a card to one of my
+systems during the week and might be able to contribute some findings.
+
+Holger
 
 
-
--- 
-Greetings Michael.
