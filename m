@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758621AbYAAXmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758233AbYAAXq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758621AbYAAXmU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 18:42:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756926AbYAAXlD
+	id S1758233AbYAAXq2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 18:46:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbYAAXqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 18:41:03 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38118 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756221AbYAAXk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 18:40:58 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: pm list <linux-pm@lists.linux-foundation.org>
-Subject: [PATCH 2/4] PM: Do not destroy/create devices while suspended in msr.c (rev. 2)
-Date: Wed, 2 Jan 2008 00:40:01 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
-       Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>
-References: <200801020032.45529.rjw@sisk.pl>
-In-Reply-To: <200801020032.45529.rjw@sisk.pl>
+	Tue, 1 Jan 2008 18:46:21 -0500
+Received: from py-out-1112.google.com ([64.233.166.178]:7588 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754857AbYAAXqU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 18:46:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Di3iM5xr63uxMRgqiotZJhI8SiUcGgz24aZX6+nDiC7/p8O2x0nbf+C2P1qJfIa3N2zvFfOEOdkCNu658ASW0vCRJRG7aUi5GFjplTU5QYgHqp2qWxQCTXpZOqcVEnoCdQeMx9v1TbV6QH0pdDD8qextLqgYCiDUnzQdrawdDmI=
+Message-ID: <524f69650801011546r292daedau3eb87dd6cb1ba265@mail.gmail.com>
+Date: Tue, 1 Jan 2008 17:46:19 -0600
+From: "Steve French" <smfrench@gmail.com>
+To: "Christoph Hellwig" <hch@infradead.org>
+Subject: Re: [2.6 patch] CIFS: #if 0 mode_to_access_flags()
+Cc: "Adrian Bunk" <bunk@kernel.org>, sfrench@samba.org,
+       linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080101181030.GA25656@infradead.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200801020040.02190.rjw@sisk.pl>
-Content-Type: text/plain;
-  charset="iso-8859-2"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080101134644.GE2360@does.not.exist>
+	 <20080101181030.GA25656@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+The cifsacl code which uses that function was not ready in time for
+2.6.24 but is in the cifs development tree now..
 
-The MSR driver should not attempt to destroy/create a device while
-suspended, unless this device corresponds to a nonboot CPU that
-failed to go online during a resume, in which case the PM core should
-be asked to remove it.
+On Jan 1, 2008 12:10 PM, Christoph Hellwig <hch@infradead.org> wrote:
+> On Tue, Jan 01, 2008 at 03:46:44PM +0200, Adrian Bunk wrote:
+> > This patch #if 0's the unused mode_to_access_flags(), fixing the
+> > following compile warning:
+>
+> Please remove it completely instead.
+>
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/x86/kernel/msr.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/arch/x86/kernel/msr.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/msr.c
-+++ linux-2.6/arch/x86/kernel/msr.c
-@@ -155,15 +155,15 @@ static int __cpuinit msr_class_cpu_callb
- 
- 	switch (action) {
- 	case CPU_UP_PREPARE:
--	case CPU_UP_PREPARE_FROZEN:
- 		err = msr_device_create(cpu);
- 		break;
- 	case CPU_UP_CANCELED:
--	case CPU_UP_CANCELED_FROZEN:
- 	case CPU_DEAD:
--	case CPU_DEAD_FROZEN:
- 		msr_device_destroy(cpu);
- 		break;
-+	case CPU_UP_CANCELED_FROZEN:
-+		destroy_suspended_device(msr_class, MKDEV(MSR_MAJOR, cpu));
-+		break;
- 	}
- 	return err ? NOTIFY_BAD : NOTIFY_OK;
- }
 
+-- 
+Thanks,
+
+Steve
