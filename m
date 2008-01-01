@@ -1,31 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755485AbYAAQtj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928AbYAAQud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755485AbYAAQtj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 11:49:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753604AbYAAQtb
+	id S1755928AbYAAQud (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 11:50:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753604AbYAAQu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 11:49:31 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41750 "EHLO mx2.mail.elte.hu"
+	Tue, 1 Jan 2008 11:50:26 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39909 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751483AbYAAQta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 11:49:30 -0500
-Date: Tue, 1 Jan 2008 17:48:55 +0100
+	id S1751483AbYAAQuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 11:50:25 -0500
+Date: Tue, 1 Jan 2008 17:43:38 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rene Herman <rene.herman@keyaccess.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>, dpreed@reed.com,
-       Islam Amer <pharon@gmail.com>, hpa@zytor.com,
-       Ingo Molnar <mingo@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
-Message-ID: <20080101164855.GA3488@elte.hu>
-References: <alpine.LFD.1.00.0712300124440.32517@woody.linux-foundation.org> <20071230144700.78f4605c@the-village.bc.nu> <20071230152835.GX16946@elte.hu> <4777BDA5.4050203@keyaccess.nl> <20071230160751.GB26221@elte.hu> <4777C6E8.7060202@keyaccess.nl> <20071230170612.GA16502@elte.hu> <20071230182937.40f2adcf@the-village.bc.nu> <20071230204650.GA26120@elte.hu> <20071231131107.GA26339@ucw.cz>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "David P. Reed" <dpreed@reed.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Rene Herman <rene.herman@gmail.com>, Paul Rolland <rol@as2917.net>,
+       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
+Message-ID: <20080101164338.GA901@elte.hu>
+References: <4765D43E.1010800@gmail.com> <4765D95C.4010404@zytor.com> <4765DCB0.8030901@gmail.com> <4765EE7F.80002@zytor.com> <47667366.7010405@gmail.com> <4766AE88.4080904@zytor.com> <4766D175.7040807@reed.com> <20071217212509.5edaa372@the-village.bc.nu> <477A634C.8040000@reed.com> <20080101161557.3ce2d5f8@the-village.bc.nu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071231131107.GA26339@ucw.cz>
+In-Reply-To: <20080101161557.3ce2d5f8@the-village.bc.nu>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,19 +38,29 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Pavel Machek <pavel@ucw.cz> wrote:
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-> > well, using io_delay=udelay is not 'blindly disabling'. 
-> > io_delay=none would be the end goal, once all _p() API uses are 
-> > eliminated by transformation. In drivers/ alone that's more than 
-> > 1000 callsites, so it's quite frequently used, and wont go away 
-> > overnight.
-> 
-> IOW elimination of broken inb_p()/outb_p() interfaces is the ultimate 
-> goal. Agreed.
+> Ingo - the fact that so many ISA bus devices need _p to mean "ISA bus 
+> clocks" says to me we should keep the _p port 0x80 using variant for 
+> old systems/device combinations (eg ISA ethernet cards) which won't 
+> show up in any problem system (we know this from 15 odd years of 
+> testing), but stop using it for PCI and embedded devices on modern 
+> systems.
 
-yeah - although i'd not call it "broken", it's simply historic, and due 
-to the side-effects of the _implementation_, a few non-standard uses 
-(such as reliance on PCI posting/flushing effects) grew.
+yes, ISA is fragile, and no way do we want to remove the delay, but are 
+there strong counter-arguments against doing the clean thing and adding 
+an udelay(2) (or udelay(1)) to replace those _p() uses in ISA drivers? 
+That removes the global effect once and forever. Initially for 
+standalone drivers without early bootup functionality, not platform 
+drivers that might need to run before we have calibrated udelay.
+
+if someone runs a fresh new kernel on an ancient device then timings 
+_will_ change a bit, no matter what we do. Alignments change, the 
+compiler output will change (old compilers get deprecated so a new 
+compiler might have to be picked), cache effects change - and this is 
+inevitable. The important thing is to not eliminate the delays - but we 
+sure dont have to keep them cycle accurate (we couldnt even if we wanted 
+to). The only way to get the _exact same_ behavior is to not change the 
+kernel at all.
 
 	Ingo
