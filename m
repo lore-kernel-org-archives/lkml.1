@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753818AbYAACFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068AbYAACG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753818AbYAACFf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 21:05:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbYAACFX
+	id S1754068AbYAACG0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 21:06:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbYAACFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 21:05:23 -0500
-Received: from fmailhost01.isp.att.net ([204.127.217.101]:39013 "EHLO
-	fmailhost01.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750797AbYAACFW (ORCPT
+	Mon, 31 Dec 2007 21:05:40 -0500
+Received: from fmailhost05.isp.att.net ([207.115.11.55]:53368 "EHLO
+	fmailhost05.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751376AbYAACFX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 21:05:22 -0500
-X-Greylist: delayed 311 seconds by postgrey-1.27 at vger.kernel.org; Mon, 31 Dec 2007 21:05:22 EST
+	Mon, 31 Dec 2007 21:05:23 -0500
+X-Greylist: delayed 316 seconds by postgrey-1.27 at vger.kernel.org; Mon, 31 Dec 2007 21:05:23 EST
 X-Originating-IP: [68.222.90.230]
 From: jacliburn@bellsouth.net
 To: jeff@garzik.org
 Cc: csnook@redhat.com, linux-kernel@vger.kernel.org,
        atl1-devel@lists.sourceforge.net, Jay Cliburn <jacliburn@bellsouth.net>
-Subject: [PATCH 06/26] atl1: update initialization parameters
-Date: Mon, 31 Dec 2007 19:59:44 -0600
-Message-Id: <1199152804-3889-7-git-send-email-jacliburn@bellsouth.net>
+Subject: [PATCH 19/26] atl1: modernize down/up functions
+Date: Mon, 31 Dec 2007 19:59:57 -0600
+Message-Id: <1199152804-3889-20-git-send-email-jacliburn@bellsouth.net>
 X-Mailer: git-send-email 1.5.3.3
 In-Reply-To: <1199152804-3889-1-git-send-email-jacliburn@bellsouth.net>
 References: <1199152804-3889-1-git-send-email-jacliburn@bellsouth.net>
@@ -28,46 +28,98 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jay Cliburn <jacliburn@bellsouth.net>
 
-Update initialization parameters to match the current vendor driver
+Update atl1_down() and atl1_up() to conform with the current vendor driver
 version 1.2.40.2.
 
 Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
 ---
- drivers/net/atlx/atl1.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+ drivers/net/atlx/atl1.c |   21 ++++++++-------------
+ drivers/net/atlx/atl1.h |    1 -
+ drivers/net/atlx/atlx.c |    2 +-
+ 3 files changed, 9 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/net/atlx/atl1.c b/drivers/net/atlx/atl1.c
-index 262d3ca..695dcbc 100644
+index 7697e80..972de34 100644
 --- a/drivers/net/atlx/atl1.c
 +++ b/drivers/net/atlx/atl1.c
-@@ -136,20 +136,20 @@ static int __devinit atl1_sw_init(struct atl1_adapter *adapter)
- 	hw->rfd_fetch_gap = 1;
- 	hw->rx_jumbo_th = adapter->rx_buffer_len / 8;
- 	hw->rx_jumbo_lkah = 1;
--	hw->rrd_ret_timer = 16;
--	hw->tpd_burst = 4;
-+	hw->rrd_ret_timer = 4;	/* 8 us */
-+	hw->tpd_burst = 8;
- 	hw->tpd_fetch_th = 16;
--	hw->txf_burst = 0x100;
-+	hw->txf_burst = 0x200;
- 	hw->tx_jumbo_task_th = (hw->max_frame_size + 7) >> 3;
- 	hw->tpd_fetch_gap = 1;
- 	hw->rcb_value = atl1_rcb_64;
- 	hw->dma_ord = atl1_dma_ord_enh;
--	hw->dmar_block = atl1_dma_req_256;
--	hw->dmaw_block = atl1_dma_req_256;
-+	hw->dmar_block = atl1_dma_req_1024;
-+	hw->dmaw_block = atl1_dma_req_1024;
- 	hw->cmb_rrd = 4;
- 	hw->cmb_tpd = 4;
--	hw->cmb_rx_timer = 1;	/* about 2us */
--	hw->cmb_tx_timer = 1;	/* about 2us */
-+	hw->cmb_rx_timer = 2;	/* about 4us */
-+	hw->cmb_tx_timer = 256;	/* about 512us */
- 	hw->smb_timer = 100000;	/* about 200ms */
+@@ -2388,7 +2388,6 @@ static s32 atl1_up(struct atl1_adapter *adapter)
+ 	}
  
- 	spin_lock_init(&adapter->lock);
+ 	clear_bit(__ATL1_DOWN, &adapter->flags);
+-	mod_timer(&adapter->watchdog_timer, jiffies + (4 * HZ));
+ 	retval = ioread32(&adapter->hw + REG_MASTER_CTRL);
+ 	retval |= MASTER_CTRL_MANUAL_INT;
+ 	iowrite32(retval, &adapter->hw + REG_MASTER_CTRL);
+@@ -2401,21 +2400,18 @@ void atl1_down(struct atl1_adapter *adapter)
+ {
+ 	struct net_device *netdev = adapter->netdev;
+ 
+-	del_timer_sync(&adapter->watchdog_timer);
+-	del_timer_sync(&adapter->phy_config_timer);
+-	adapter->phy_timer_pending = false;
+-
+-	atlx_irq_disable(adapter);
+-	free_irq(adapter->pdev->irq, netdev);
+-	pci_disable_msi(adapter->pdev);
++	set_bit(__ATL1_DOWN, &adapter->flags);
++	netif_stop_queue(netdev);
+ 	atl1_reset_hw(&adapter->hw);
+ 	adapter->cmb.cmb->int_stats = 0;
+-
++	msleep(1);
++	atlx_irq_disable(adapter);
++	del_timer_sync(&adapter->watchdog_timer);
++	del_timer_sync(&adapter->phy_config_timer);
++	clear_bit(0, &adapter->cfg_phy);
++	netif_carrier_off(netdev);
+ 	adapter->link_speed = SPEED_0;
+ 	adapter->link_duplex = -1;
+-	netif_carrier_off(netdev);
+-	netif_stop_queue(netdev);
+-
+ 	atl1_clean_tx_ring(adapter);
+ 	atl1_clean_rx_ring(adapter);
+ }
+@@ -2821,7 +2817,6 @@ static int __devinit atl1_probe(struct pci_dev *pdev,
+ 	init_timer(&adapter->phy_config_timer);
+ 	adapter->phy_config_timer.function = &atl1_phy_config;
+ 	adapter->phy_config_timer.data = (unsigned long)adapter;
+-	adapter->phy_timer_pending = false;
+ 
+ 	INIT_WORK(&adapter->reset_task, atl1_reset_task);
+ 	INIT_WORK(&adapter->link_chg_task, atlx_link_chg_task);
+diff --git a/drivers/net/atlx/atl1.h b/drivers/net/atlx/atl1.h
+index 1f245e0..5187f74 100644
+--- a/drivers/net/atlx/atl1.h
++++ b/drivers/net/atlx/atl1.h
+@@ -790,7 +790,6 @@ struct atl1_adapter {
+ 	struct work_struct link_chg_task;
+ 	struct timer_list watchdog_timer;
+ 	struct timer_list phy_config_timer;
+-	bool phy_timer_pending;
+ 	unsigned long cfg_phy;
+ 
+ 	/* all descriptor rings' memory */
+diff --git a/drivers/net/atlx/atlx.c b/drivers/net/atlx/atlx.c
+index 18c2d7e..9cc9441 100644
+--- a/drivers/net/atlx/atlx.c
++++ b/drivers/net/atlx/atlx.c
+@@ -91,7 +91,6 @@ static void atlx_check_for_link(struct atlx_adapter *adapter)
+ 	u16 phy_data = 0;
+ 
+ 	spin_lock(&adapter->lock);
+-	adapter->phy_timer_pending = false;
+ 	atlx_read_phy_reg(&adapter->hw, MII_BMSR, &phy_data);
+ 	atlx_read_phy_reg(&adapter->hw, MII_BMSR, &phy_data);
+ 	spin_unlock(&adapter->lock);
+@@ -104,6 +103,7 @@ static void atlx_check_for_link(struct atlx_adapter *adapter)
+ 			dev_info(&adapter->pdev->dev, "%s link is down\n",
+ 				netdev->name);
+ 			adapter->link_speed = SPEED_0;
++			clear_bit(0, &adapter->hw.force_ps);
+ 			netif_carrier_off(netdev);
+ 			netif_stop_queue(netdev);
+ 		}
 -- 
 1.5.3.3
 
