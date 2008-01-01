@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbYAACHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbYAACIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754493AbYAACHs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 21:07:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927AbYAACFo
+	id S1753196AbYAACIK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 21:08:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934AbYAACFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 21:05:44 -0500
-Received: from fmailhost01.isp.att.net ([204.127.217.101]:39013 "EHLO
-	fmailhost01.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753436AbYAACFb (ORCPT
+	Mon, 31 Dec 2007 21:05:46 -0500
+Received: from fmailhost05.isp.att.net ([207.115.11.55]:53368 "EHLO
+	fmailhost05.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753460AbYAACFc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 21:05:31 -0500
-X-Greylist: delayed 311 seconds by postgrey-1.27 at vger.kernel.org; Mon, 31 Dec 2007 21:05:22 EST
+	Mon, 31 Dec 2007 21:05:32 -0500
+X-Greylist: delayed 316 seconds by postgrey-1.27 at vger.kernel.org; Mon, 31 Dec 2007 21:05:23 EST
 X-Originating-IP: [68.222.90.230]
 From: jacliburn@bellsouth.net
 To: jeff@garzik.org
 Cc: csnook@redhat.com, linux-kernel@vger.kernel.org,
        atl1-devel@lists.sourceforge.net, Jay Cliburn <jacliburn@bellsouth.net>
-Subject: [PATCH 13/26] atl1: refactor interrupt handling
-Date: Mon, 31 Dec 2007 19:59:51 -0600
-Message-Id: <1199152804-3889-14-git-send-email-jacliburn@bellsouth.net>
+Subject: [PATCH 09/26] atl1: refactor tx processing
+Date: Mon, 31 Dec 2007 19:59:47 -0600
+Message-Id: <1199152804-3889-10-git-send-email-jacliburn@bellsouth.net>
 X-Mailer: git-send-email 1.5.3.3
 In-Reply-To: <1199152804-3889-1-git-send-email-jacliburn@bellsouth.net>
 References: <1199152804-3889-1-git-send-email-jacliburn@bellsouth.net>
@@ -28,385 +28,688 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jay Cliburn <jacliburn@bellsouth.net>
 
-Refactor interrupt handling to conform with the current vendor driver
-version 1.2.40.2.
+Refactor tx processing to use a less convoluted tx packet descriptor and
+to conform generally with the vendor's current version 1.2.40.2.
 
 Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
 ---
- drivers/net/atlx/atl1.c |  196 ++++++++++++++++++++++-------------------------
- drivers/net/atlx/atl1.h |   25 +++++-
- drivers/net/atlx/atlx.c |    2 +-
- 3 files changed, 114 insertions(+), 109 deletions(-)
+ drivers/net/atlx/atl1.c |  265 +++++++++++++++++++++++++----------------------
+ drivers/net/atlx/atl1.h |  201 +++++++++++++++++++-----------------
+ 2 files changed, 246 insertions(+), 220 deletions(-)
 
 diff --git a/drivers/net/atlx/atl1.c b/drivers/net/atlx/atl1.c
-index d38f26f..9c86ef4 100644
+index fb0a0af..b0c3273 100644
 --- a/drivers/net/atlx/atl1.c
 +++ b/drivers/net/atlx/atl1.c
-@@ -1740,12 +1740,11 @@ next:
- 	return num_alloc;
+@@ -1288,8 +1288,6 @@ static void atl1_intr_tx(struct atl1_adapter *adapter)
+ 			dev_kfree_skb_irq(buffer_info->skb);
+ 			buffer_info->skb = NULL;
+ 		}
+-		tpd->buffer_addr = 0;
+-		tpd->desc.data = 0;
+ 
+ 		if (++sw_tpd_next_to_clean == tpd_ring->count)
+ 			sw_tpd_next_to_clean = 0;
+@@ -1311,48 +1309,69 @@ static u16 atl1_tpd_avail(struct atl1_tpd_ring *tpd_ring)
  }
  
--static void atl1_intr_rx(struct atl1_adapter *adapter)
-+static void atl1_clean_rx_irq(struct atl1_adapter *adapter)
+ static int atl1_tso(struct atl1_adapter *adapter, struct sk_buff *skb,
+-			 struct tso_param *tso)
++	struct tx_packet_desc *ptpd)
  {
-+	struct net_device *netdev = adapter->netdev;
- 	int i, count;
--	u16 length;
--	u16 rrd_next_to_clean;
--	u32 value;
-+	u16 length, rrd_next_to_clean;
- 	struct atl1_rfd_ring *rfd_ring = &adapter->rfd_ring;
- 	struct atl1_rrd_ring *rrd_ring = &adapter->rrd_ring;
- 	struct atl1_buffer *buffer_info;
-@@ -1754,7 +1753,7 @@ static void atl1_intr_rx(struct atl1_adapter *adapter)
+-	/* We enter this function holding a spinlock. */
+-	u8 ipofst;
++	/* spinlock held */
++	u8 hdr_len, ip_off;
++	u32 real_len;
+ 	int err;
  
- 	count = 0;
- 
--	rrd_next_to_clean = atomic_read(&rrd_ring->next_to_clean);
-+	rrd_next_to_clean = (u16) atomic_read(&rrd_ring->next_to_clean);
- 
- 	while (1) {
- 		rrd = ATL1_RRD_DESC(rrd_ring, rrd_next_to_clean);
-@@ -1795,6 +1794,7 @@ chk_rrd:
- 			/* bad rrd */
- 			dev_printk(KERN_DEBUG, &adapter->pdev->dev,
- 				"bad RRD\n");
-+
- 			/* see if update RFD index */
- 			if (rrd->num_buf > 1)
- 				atl1_update_rfd_index(adapter, rrd);
-@@ -1823,13 +1823,18 @@ rrd_ok:
- 		count++;
- 
- 		if (unlikely(rrd->pkt_flg & PACKET_FLAG_ERR)) {
--			if (!(rrd->err_flg &
--				(ERR_FLAG_IP_CHKSUM | ERR_FLAG_L4_CHKSUM
--				| ERR_FLAG_LEN))) {
--				/* packet error, don't need upstream */
--				buffer_info->alloced = 0;
--				rrd->xsz.valid = 0;
--				continue;
-+			if (rrd->err_flg & (ERR_FLAG_CRC | ERR_FLAG_TRUNC |
-+				ERR_FLAG_CODE | ERR_FLAG_OV)) {
-+				if (!(netdev->flags & IFF_PROMISC)) {
-+					/* packet error, don't need upstream */
-+					buffer_info->alloced = 0;
-+					rrd->xsz.valid = 0;
-+					dev_printk(KERN_DEBUG,
-+						&adapter->pdev->dev,
-+						"rrd error flag 0x%08X\n",
-+						rrd->err_flg);
-+					continue;
-+				}
- 			}
+ 	if (skb_shinfo(skb)->gso_size) {
+ 		if (skb_header_cloned(skb)) {
+ 			err = pskb_expand_head(skb, 0, 0, GFP_ATOMIC);
+ 			if (unlikely(err))
+-				return err;
++				return -1;
  		}
  
-@@ -1862,33 +1867,13 @@ rrd_ok:
+ 		if (skb->protocol == ntohs(ETH_P_IP)) {
+ 			struct iphdr *iph = ip_hdr(skb);
+ 
+-			iph->tot_len = 0;
++			real_len = (((unsigned char *)iph - skb->data) +
++				ntohs(iph->tot_len));
++			if (real_len < skb->len)
++				pskb_trim(skb, real_len);
++			hdr_len = (skb_transport_offset(skb) + tcp_hdrlen(skb));
++			if (skb->len == hdr_len) {
++				iph->check = 0;
++				tcp_hdr(skb)->check =
++					~csum_tcpudp_magic(iph->saddr,
++					iph->daddr, tcp_hdrlen(skb),
++					IPPROTO_TCP, 0);
++				ptpd->word3 |= (iph->ihl & TPD_IPHL_MASK) <<
++					TPD_IPHL_SHIFT;
++				ptpd->word3 |= ((tcp_hdrlen(skb) >> 2) &
++					TPD_TCPHDRLEN_MASK) <<
++					TPD_TCPHDRLEN_SHIFT;
++				ptpd->word3 |= 1 << TPD_IP_CSUM_SHIFT;
++				ptpd->word3 |= 1 << TPD_TCP_CSUM_SHIFT;
++				return 1;
++			}
++
+ 			iph->check = 0;
+ 			tcp_hdr(skb)->check = ~csum_tcpudp_magic(iph->saddr,
+-				iph->daddr, 0, IPPROTO_TCP, 0);
+-			ipofst = skb_network_offset(skb);
+-			if (ipofst != ETH_HLEN) /* 802.3 frame */
+-				tso->tsopl |= 1 << TSO_PARAM_ETHTYPE_SHIFT;
+-
+-			tso->tsopl |= (iph->ihl &
+-				TSO_PARAM_IPHL_MASK) << TSO_PARAM_IPHL_SHIFT;
+-			tso->tsopl |= ((tcp_hdrlen(skb) >> 2) &
+-				TSO_PARAM_TCPHDRLEN_MASK) <<
+-				TSO_PARAM_TCPHDRLEN_SHIFT;
+-			tso->tsopl |= (skb_shinfo(skb)->gso_size &
+-				TSO_PARAM_MSS_MASK) << TSO_PARAM_MSS_SHIFT;
+-			tso->tsopl |= 1 << TSO_PARAM_IPCKSUM_SHIFT;
+-			tso->tsopl |= 1 << TSO_PARAM_TCPCKSUM_SHIFT;
+-			tso->tsopl |= 1 << TSO_PARAM_SEGMENT_SHIFT;
+-			return true;
++					iph->daddr, 0, IPPROTO_TCP, 0);
++			ip_off = (unsigned char *)iph -
++				(unsigned char *) skb_network_header(skb);
++			if (ip_off == 8) /* 802.3-SNAP frame */
++				ptpd->word3 |= 1 << TPD_ETHTYPE_SHIFT;
++			else if (ip_off != 0)
++				return -2;
++
++			ptpd->word3 |= (iph->ihl & TPD_IPHL_MASK) <<
++				TPD_IPHL_SHIFT;
++			ptpd->word3 |= ((tcp_hdrlen(skb) >> 2) &
++				TPD_TCPHDRLEN_MASK) << TPD_TCPHDRLEN_SHIFT;
++			ptpd->word3 |= (skb_shinfo(skb)->gso_size &
++				TPD_MSS_MASK) << TPD_MSS_SHIFT;
++			ptpd->word3 |= 1 << TPD_SEGMENT_EN_SHIFT;
++			return 3;
+ 		}
  	}
- 
- 	atomic_set(&rrd_ring->next_to_clean, rrd_next_to_clean);
--
- 	atl1_alloc_rx_buffers(adapter);
- 
--	/* update mailbox ? */
--	if (count) {
--		u32 tpd_next_to_use;
--		u32 rfd_next_to_use;
--
--		spin_lock(&adapter->mb_lock);
--
--		tpd_next_to_use = atomic_read(&adapter->tpd_ring.next_to_use);
--		rfd_next_to_use =
--		    atomic_read(&adapter->rfd_ring.next_to_use);
--		rrd_next_to_clean =
--		    atomic_read(&adapter->rrd_ring.next_to_clean);
--		value = ((rfd_next_to_use & MB_RFD_PROD_INDX_MASK) <<
--			MB_RFD_PROD_INDX_SHIFT) |
--                        ((rrd_next_to_clean & MB_RRD_CONS_INDX_MASK) <<
--			MB_RRD_CONS_INDX_SHIFT) |
--                        ((tpd_next_to_use & MB_TPD_PROD_INDX_MASK) <<
--			MB_TPD_PROD_INDX_SHIFT);
--		iowrite32(value, adapter->hw.hw_addr + REG_MAILBOX);
--		spin_unlock(&adapter->mb_lock);
--	}
-+	if (count)
-+		atl1_update_mailbox(adapter);
+ 	return false;
  }
  
--static void atl1_intr_tx(struct atl1_adapter *adapter)
-+static bool atl1_clean_tx_irq(struct atl1_adapter *adapter)
+ static int atl1_tx_csum(struct atl1_adapter *adapter, struct sk_buff *skb,
+-	struct csum_param *csum)
++	struct tx_packet_desc *ptpd)
  {
+ 	u8 css, cso;
+ 
+@@ -1364,115 +1383,116 @@ static int atl1_tx_csum(struct atl1_adapter *adapter, struct sk_buff *skb,
+ 				"payload offset not an even number\n");
+ 			return -1;
+ 		}
+-		csum->csumpl |= (cso & CSUM_PARAM_PLOADOFFSET_MASK) <<
+-			CSUM_PARAM_PLOADOFFSET_SHIFT;
+-		csum->csumpl |= (css & CSUM_PARAM_XSUMOFFSET_MASK) <<
+-			CSUM_PARAM_XSUMOFFSET_SHIFT;
+-		csum->csumpl |= 1 << CSUM_PARAM_CUSTOMCKSUM_SHIFT;
++		ptpd->word3 |= (cso & TPD_PLOADOFFSET_MASK) <<
++			TPD_PLOADOFFSET_SHIFT;
++		ptpd->word3 |= (css & TPD_CCSUMOFFSET_MASK) <<
++			TPD_CCSUMOFFSET_SHIFT;
++		ptpd->word3 |= 1 << TPD_CUST_CSUM_EN_SHIFT;
+ 		return true;
+ 	}
+-
+-	return true;
++	return 0;
+ }
+ 
+ static void atl1_tx_map(struct atl1_adapter *adapter, struct sk_buff *skb,
+-	bool tcp_seg)
++	struct tx_packet_desc *ptpd)
+ {
+-	/* We enter this function holding a spinlock. */
++	/* spinlock held */
  	struct atl1_tpd_ring *tpd_ring = &adapter->tpd_ring;
  	struct atl1_buffer *buffer_info;
-@@ -1905,7 +1890,7 @@ static void atl1_intr_tx(struct atl1_adapter *adapter)
- 		buffer_info = &tpd_ring->buffer_info[sw_tpd_next_to_clean];
- 		if (buffer_info->dma) {
- 			pci_unmap_page(adapter->pdev, buffer_info->dma,
--				       buffer_info->length, PCI_DMA_TODEVICE);
-+				buffer_info->length, PCI_DMA_TODEVICE);
- 			buffer_info->dma = 0;
++	u16 buf_len = skb->len;
+ 	struct page *page;
+-	int first_buf_len = skb->len;
+ 	unsigned long offset;
+ 	unsigned int nr_frags;
+ 	unsigned int f;
+-	u16 tpd_next_to_use;
+-	u16 proto_hdr_len;
+-	u16 len12;
++	int retval;
++	u16 next_to_use;
++	u16 data_len;
++	u8 hdr_len;
+ 
+-	first_buf_len -= skb->data_len;
++	buf_len -= skb->data_len;
+ 	nr_frags = skb_shinfo(skb)->nr_frags;
+-	tpd_next_to_use = atomic_read(&tpd_ring->next_to_use);
+-	buffer_info = &tpd_ring->buffer_info[tpd_next_to_use];
++	next_to_use = atomic_read(&tpd_ring->next_to_use);
++	buffer_info = &tpd_ring->buffer_info[next_to_use];
+ 	if (unlikely(buffer_info->skb))
+ 		BUG();
+ 	/* put skb in last TPD */
+ 	buffer_info->skb = NULL;
+ 
+-	if (tcp_seg) {
+-		/* TSO/GSO */
+-		proto_hdr_len = skb_transport_offset(skb) + tcp_hdrlen(skb);
+-		buffer_info->length = proto_hdr_len;
++	retval = (ptpd->word3 >> TPD_SEGMENT_EN_SHIFT) & TPD_SEGMENT_EN_MASK;
++	if (retval) {
++		/* TSO */
++		hdr_len = skb_transport_offset(skb) + tcp_hdrlen(skb);
++		buffer_info->length = hdr_len;
+ 		page = virt_to_page(skb->data);
+ 		offset = (unsigned long)skb->data & ~PAGE_MASK;
+ 		buffer_info->dma = pci_map_page(adapter->pdev, page,
+-						offset, proto_hdr_len,
++						offset, hdr_len,
+ 						PCI_DMA_TODEVICE);
+ 
+-		if (++tpd_next_to_use == tpd_ring->count)
+-			tpd_next_to_use = 0;
++		if (++next_to_use == tpd_ring->count)
++			next_to_use = 0;
+ 
+-		if (first_buf_len > proto_hdr_len) {
+-			int i, m;
++		if (buf_len > hdr_len) {
++			int i, nseg;
+ 
+-			len12 = first_buf_len - proto_hdr_len;
+-			m = (len12 + ATL1_MAX_TX_BUF_LEN - 1) /
++			data_len = buf_len - hdr_len;
++			nseg = (data_len + ATL1_MAX_TX_BUF_LEN - 1) /
+ 				ATL1_MAX_TX_BUF_LEN;
+-			for (i = 0; i < m; i++) {
++			for (i = 0; i < nseg; i++) {
+ 				buffer_info =
+-				    &tpd_ring->buffer_info[tpd_next_to_use];
++				    &tpd_ring->buffer_info[next_to_use];
+ 				buffer_info->skb = NULL;
+ 				buffer_info->length =
+ 				    (ATL1_MAX_TX_BUF_LEN >=
+-				     len12) ? ATL1_MAX_TX_BUF_LEN : len12;
+-				len12 -= buffer_info->length;
++				     data_len) ? ATL1_MAX_TX_BUF_LEN : data_len;
++				data_len -= buffer_info->length;
+ 				page = virt_to_page(skb->data +
+-					(proto_hdr_len +
+-					i * ATL1_MAX_TX_BUF_LEN));
++					(hdr_len + i * ATL1_MAX_TX_BUF_LEN));
+ 				offset = (unsigned long)(skb->data +
+-					(proto_hdr_len +
+-					i * ATL1_MAX_TX_BUF_LEN)) & ~PAGE_MASK;
++					(hdr_len + i * ATL1_MAX_TX_BUF_LEN)) &
++					~PAGE_MASK;
+ 				buffer_info->dma = pci_map_page(adapter->pdev,
+ 					page, offset, buffer_info->length,
+ 					PCI_DMA_TODEVICE);
+-				if (++tpd_next_to_use == tpd_ring->count)
+-					tpd_next_to_use = 0;
++				if (++next_to_use == tpd_ring->count)
++					next_to_use = 0;
+ 			}
  		}
+ 	} else {
+-		/* not TSO/GSO */
+-		buffer_info->length = first_buf_len;
++		/* not TSO */
++		buffer_info->length = buf_len;
+ 		page = virt_to_page(skb->data);
+ 		offset = (unsigned long)skb->data & ~PAGE_MASK;
+ 		buffer_info->dma = pci_map_page(adapter->pdev, page,
+-			offset, first_buf_len, PCI_DMA_TODEVICE);
+-		if (++tpd_next_to_use == tpd_ring->count)
+-			tpd_next_to_use = 0;
++			offset, buf_len, PCI_DMA_TODEVICE);
++		if (++next_to_use == tpd_ring->count)
++			next_to_use = 0;
+ 	}
  
-@@ -1922,6 +1907,11 @@ static void atl1_intr_tx(struct atl1_adapter *adapter)
- 	if (netif_queue_stopped(adapter->netdev)
- 	    && netif_carrier_ok(adapter->netdev))
- 		netif_wake_queue(adapter->netdev);
-+
-+	if (sw_tpd_next_to_clean == (u16) atomic_read(&tpd_ring->next_to_use))
-+		return true;
-+	else
-+		return false;
- }
+ 	for (f = 0; f < nr_frags; f++) {
+ 		struct skb_frag_struct *frag;
+-		u16 lenf, i, m;
++		u16 i, nseg;
  
- static u16 atl1_tpd_avail(struct atl1_tpd_ring *tpd_ring)
-@@ -2285,80 +2275,75 @@ static int atl1_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
- static irqreturn_t atl1_intr(int irq, void *data)
- {
- 	struct atl1_adapter *adapter = netdev_priv(data);
-+	struct atl1_hw *hw = &adapter->hw;
- 	u32 status;
--	u8 update_rx;
- 	int max_ints = 10;
+ 		frag = &skb_shinfo(skb)->frags[f];
+-		lenf = frag->size;
++		buf_len = frag->size;
  
- 	status = adapter->cmb.cmb->int_stats;
- 	if (!status)
- 		return IRQ_NONE;
+-		m = (lenf + ATL1_MAX_TX_BUF_LEN - 1) / ATL1_MAX_TX_BUF_LEN;
+-		for (i = 0; i < m; i++) {
+-			buffer_info = &tpd_ring->buffer_info[tpd_next_to_use];
++		nseg = (buf_len + ATL1_MAX_TX_BUF_LEN - 1) /
++			ATL1_MAX_TX_BUF_LEN;
++		for (i = 0; i < nseg; i++) {
++			buffer_info = &tpd_ring->buffer_info[next_to_use];
+ 			if (unlikely(buffer_info->skb))
+ 				BUG();
+ 			buffer_info->skb = NULL;
+-			buffer_info->length = (lenf > ATL1_MAX_TX_BUF_LEN) ?
+-				ATL1_MAX_TX_BUF_LEN : lenf;
+-			lenf -= buffer_info->length;
++			buffer_info->length = (buf_len > ATL1_MAX_TX_BUF_LEN) ?
++				ATL1_MAX_TX_BUF_LEN : buf_len;
++			buf_len -= buffer_info->length;
+ 			buffer_info->dma = pci_map_page(adapter->pdev,
+ 				frag->page,
+ 				frag->page_offset + (i * ATL1_MAX_TX_BUF_LEN),
+ 				buffer_info->length, PCI_DMA_TODEVICE);
  
--	update_rx = 0;
--
--	do {
--		/* clear CMB interrupt status at once */
--		adapter->cmb.cmb->int_stats = 0;
--
--		if (status & ISR_GPHY)	/* clear phy status */
--			atlx_clear_phy_int(adapter);
-+loopint:
-+	/* clear CMB interrupt status at once */
-+	adapter->cmb.cmb->int_stats = 0;
- 
--		/* clear ISR status, and Enable CMB DMA/Disable Interrupt */
--		iowrite32(status | ISR_DIS_INT, adapter->hw.hw_addr + REG_ISR);
-+	if (status & ISR_GPHY)	/* clear phy status */
-+		atlx_clear_phy_int(adapter);
- 
--		/* check if SMB intr */
--		if (status & ISR_SMB)
--			atl1_inc_smb(adapter);
-+	/* clear ISR status, and Enable CMB DMA/Disable Interrupt */
-+	status |= (ISR_DIS_INT | ISR_DIS_DMA);
-+	iowrite32(status, adapter->hw.hw_addr + REG_ISR);
- 
--		/* check if PCIE PHY Link down */
--		if (status & ISR_PHY_LINKDOWN) {
--			dev_printk(KERN_DEBUG, &adapter->pdev->dev,
--				"pcie phy link down %x\n", status);
--			if (netif_running(adapter->netdev)) {	/* reset MAC */
--				iowrite32(0, adapter->hw.hw_addr + REG_IMR);
--				schedule_work(&adapter->pcie_dma_to_rst_task);
--				return IRQ_HANDLED;
--			}
--		}
--
--		/* check if DMA read/write error ? */
--		if (status & (ISR_DMAR_TO_RST | ISR_DMAW_TO_RST)) {
--			dev_printk(KERN_DEBUG, &adapter->pdev->dev,
--				"pcie DMA r/w error (status = 0x%x)\n",
--				status);
--			iowrite32(0, adapter->hw.hw_addr + REG_IMR);
--			schedule_work(&adapter->pcie_dma_to_rst_task);
-+	/* check if PCIE PHY Link down */
-+	if (status & ISR_PHY_LINKDOWN) {
-+		dev_printk(KERN_DEBUG, &adapter->pdev->dev,
-+			"pcie phy link down %x\n", status);
-+		if (netif_running(adapter->netdev)) {
-+			/* reset MAC */
-+			iowrite32(0, hw->hw_addr + REG_ISR);
-+			iowrite32(0, hw->hw_addr + REG_IMR);
-+			ioread32(hw->hw_addr + REG_IMR);
-+			schedule_work(&adapter->reset_task);
- 			return IRQ_HANDLED;
+-			if (++tpd_next_to_use == tpd_ring->count)
+-				tpd_next_to_use = 0;
++			if (++next_to_use == tpd_ring->count)
++				next_to_use = 0;
  		}
-+	}
+ 	}
  
--		/* link event */
--		if (status & ISR_GPHY) {
--			adapter->soft_stats.tx_carrier_errors++;
--			atl1_check_for_link(adapter);
--		}
-+	/* check if DMA read/write error ? */
-+	if (status & (ISR_DMAR_TO_RST | ISR_DMAW_TO_RST)) {
-+		dev_printk(KERN_DEBUG, &adapter->pdev->dev,
-+			"pcie DMA r/w error (status = 0x%x)\n",
-+			status);
-+		iowrite32(0, hw->hw_addr + REG_ISR);
-+		iowrite32(0, hw->hw_addr + REG_IMR);
-+		ioread32(hw->hw_addr + REG_IMR);
-+		schedule_work(&adapter->reset_task);
-+		return IRQ_HANDLED;
-+	}
- 
--		/* transmit event */
--		if (status & ISR_CMB_TX)
--			atl1_intr_tx(adapter);
--
--		/* rx exception */
--		if (unlikely(status & (ISR_RXF_OV | ISR_RFD_UNRUN |
--			ISR_RRD_OV | ISR_HOST_RFD_UNRUN |
--			ISR_HOST_RRD_OV | ISR_CMB_RX))) {
--			if (status & (ISR_RXF_OV | ISR_RFD_UNRUN |
--				ISR_RRD_OV | ISR_HOST_RFD_UNRUN |
--				ISR_HOST_RRD_OV))
--				dev_printk(KERN_DEBUG, &adapter->pdev->dev,
--					"rx exception, ISR = 0x%x\n", status);
--			atl1_intr_rx(adapter);
--		}
-+	/* check if SMB intr */
-+	if (status & ISR_SMB)
-+		atl1_inc_smb(adapter);
- 
--		if (--max_ints < 0)
--			break;
-+	/* link event */
-+	if (status & (ISR_GPHY | ISR_MANUAL)) {
-+		adapter->soft_stats.tx_carrier_errors++;
-+		atl1_check_for_link(adapter);
-+	}
-+
-+	/* transmit event */
-+	if (status & ISR_TX_EVENT)
-+		atl1_clean_tx_irq(adapter);
- 
--	} while ((status = adapter->cmb.cmb->int_stats));
-+	/* rx event */
-+	if (status & ISR_RX_EVENT)
-+		atl1_clean_rx_irq(adapter);
- 
--	/* re-enable Interrupt */
--	iowrite32(ISR_DIS_SMB | ISR_DIS_DMA, adapter->hw.hw_addr + REG_ISR);
-+	status = adapter->cmb.cmb->int_stats;
-+	if ((--max_ints > 0) && status)
-+		goto loopint;
-+
-+	/* re-enable interrupts */
-+	iowrite32((ISR_DIS_SMB | ISR_DIS_DMA), adapter->hw.hw_addr + REG_ISR);
- 	return IRQ_HANDLED;
+@@ -1480,39 +1500,44 @@ static void atl1_tx_map(struct atl1_adapter *adapter, struct sk_buff *skb,
+ 	buffer_info->skb = skb;
  }
  
-@@ -2460,16 +2445,22 @@ void atl1_down(struct atl1_adapter *adapter)
- 	atl1_clean_rx_ring(adapter);
- }
- 
--static void atl1_tx_timeout_task(struct work_struct *work)
-+static void atl1_reinit_locked(struct atl1_adapter *adapter)
+-static void atl1_tx_queue(struct atl1_adapter *adapter, int count,
+-       union tpd_descr *descr)
++static void atl1_tx_queue(struct atl1_adapter *adapter, u16 count,
++       struct tx_packet_desc *ptpd)
  {
--	struct atl1_adapter *adapter =
--		container_of(work, struct atl1_adapter, tx_timeout_task);
--	struct net_device *netdev = adapter->netdev;
--
--	netif_device_detach(netdev);
-+	WARN_ON(in_interrupt());
-+	while (test_and_set_bit(__ATL1_RESETTING, &adapter->flags))
-+		msleep(1);
- 	atl1_down(adapter);
- 	atl1_up(adapter);
--	netif_device_attach(netdev);
-+	clear_bit(__ATL1_RESETTING, &adapter->flags);
-+}
-+
-+static void atl1_reset_task(struct work_struct *work)
-+{
-+	struct atl1_adapter *adapter;
-+
-+	adapter = container_of(work, struct atl1_adapter, reset_task);
-+	atl1_reinit_locked(adapter);
+-	/* We enter this function holding a spinlock. */
++	/* spinlock held */
+ 	struct atl1_tpd_ring *tpd_ring = &adapter->tpd_ring;
+-	int j;
+-	u32 val;
+ 	struct atl1_buffer *buffer_info;
+ 	struct tx_packet_desc *tpd;
+-	u16 tpd_next_to_use = atomic_read(&tpd_ring->next_to_use);
++	u16 j;
++	u32 val;
++	u16 next_to_use = (u16) atomic_read(&tpd_ring->next_to_use);
+ 
+ 	for (j = 0; j < count; j++) {
+-		buffer_info = &tpd_ring->buffer_info[tpd_next_to_use];
+-		tpd = ATL1_TPD_DESC(&adapter->tpd_ring, tpd_next_to_use);
+-		tpd->desc.csum.csumpu = descr->csum.csumpu;
+-		tpd->desc.csum.csumpl = descr->csum.csumpl;
+-		tpd->desc.tso.tsopu = descr->tso.tsopu;
+-		tpd->desc.tso.tsopl = descr->tso.tsopl;
++		buffer_info = &tpd_ring->buffer_info[next_to_use];
++		tpd = ATL1_TPD_DESC(&adapter->tpd_ring, next_to_use);
++		if (tpd != ptpd)
++			memcpy(tpd, ptpd, sizeof(struct tx_packet_desc));
+ 		tpd->buffer_addr = cpu_to_le64(buffer_info->dma);
+-		tpd->desc.data = descr->data;
+-		tpd->desc.tso.tsopu |= (cpu_to_le16(buffer_info->length) &
+-			TSO_PARAM_BUFLEN_MASK) << TSO_PARAM_BUFLEN_SHIFT;
++		tpd->word2 = (cpu_to_le16(buffer_info->length) &
++			TPD_BUFLEN_MASK) << TPD_BUFLEN_SHIFT;
+ 
+-		val = (descr->tso.tsopl >> TSO_PARAM_SEGMENT_SHIFT) &
+-			TSO_PARAM_SEGMENT_MASK;
+-		if (val && !j)
+-			tpd->desc.tso.tsopl |= 1 << TSO_PARAM_HDRFLAG_SHIFT;
++		/*
++		 * if this is the first packet in a TSO chain, set
++		 * TPD_HDRFLAG, otherwise, clear it.
++		 */
++		val = (tpd->word3 >> TPD_SEGMENT_EN_SHIFT) &
++			TPD_SEGMENT_EN_MASK;
++		if (val) {
++			if (!j)
++				tpd->word3 |= 1 << TPD_HDRFLAG_SHIFT;
++			else
++				tpd->word3 &= ~(1 << TPD_HDRFLAG_SHIFT);
++		}
+ 
+ 		if (j == (count - 1))
+-			tpd->desc.tso.tsopl |= 1 << TSO_PARAM_EOP_SHIFT;
++			tpd->word3 |= 1 << TPD_EOP_SHIFT;
+ 
+-		if (++tpd_next_to_use == tpd_ring->count)
+-			tpd_next_to_use = 0;
++		if (++next_to_use == tpd_ring->count)
++			next_to_use = 0;
+ 	}
+ 	/*
+ 	 * Force memory writes to complete before letting h/w
+@@ -1522,18 +1547,18 @@ static void atl1_tx_queue(struct atl1_adapter *adapter, int count,
+ 	 */
+ 	wmb();
+ 
+-	atomic_set(&tpd_ring->next_to_use, (int)tpd_next_to_use);
++	atomic_set(&tpd_ring->next_to_use, next_to_use);
  }
  
- /*
-@@ -2857,12 +2848,9 @@ static int __devinit atl1_probe(struct pci_dev *pdev,
- 	adapter->phy_config_timer.data = (unsigned long)adapter;
- 	adapter->phy_timer_pending = false;
+ static int atl1_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
+ {
+ 	struct atl1_adapter *adapter = netdev_priv(netdev);
++	struct atl1_tpd_ring *tpd_ring = &adapter->tpd_ring;
+ 	int len = skb->len;
+ 	int tso;
+ 	int count = 1;
+ 	int ret_val;
+-	u32 val;
+-	union tpd_descr param;
++	struct tx_packet_desc *ptpd;
+ 	u16 frag_size;
+ 	u16 vlan_tag;
+ 	unsigned long flags;
+@@ -1544,18 +1569,11 @@ static int atl1_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
  
--	INIT_WORK(&adapter->tx_timeout_task, atl1_tx_timeout_task);
--
-+	INIT_WORK(&adapter->reset_task, atl1_reset_task);
- 	INIT_WORK(&adapter->link_chg_task, atlx_link_chg_task);
+ 	len -= skb->data_len;
  
--	INIT_WORK(&adapter->pcie_dma_to_rst_task, atl1_tx_timeout_task);
+-	if (unlikely(skb->len == 0)) {
++	if (unlikely(skb->len <= 0)) {
+ 		dev_kfree_skb_any(skb);
+ 		return NETDEV_TX_OK;
+ 	}
+ 
+-	param.data = 0;
+-	param.tso.tsopu = 0;
+-	param.tso.tsopl = 0;
+-	param.csum.csumpu = 0;
+-	param.csum.csumpl = 0;
 -
- 	err = register_netdev(netdev);
- 	if (err)
- 		goto err_common;
+-	/* nr_frags will be nonzero if we're doing scatter/gather (SG) */
+ 	nr_frags = skb_shinfo(skb)->nr_frags;
+ 	for (f = 0; f < nr_frags; f++) {
+ 		frag_size = skb_shinfo(skb)->frags[f].size;
+@@ -1564,10 +1582,9 @@ static int atl1_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
+ 				ATL1_MAX_TX_BUF_LEN;
+ 	}
+ 
+-	/* mss will be nonzero if we're doing segment offload (TSO/GSO) */
+ 	mss = skb_shinfo(skb)->gso_size;
+ 	if (mss) {
+-		if (skb->protocol == htons(ETH_P_IP)) {
++		if (skb->protocol == ntohs(ETH_P_IP)) {
+ 			proto_hdr_len = (skb_transport_offset(skb) +
+ 					 tcp_hdrlen(skb));
+ 			if (unlikely(proto_hdr_len > len)) {
+@@ -1596,18 +1613,20 @@ static int atl1_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
+ 		return NETDEV_TX_BUSY;
+ 	}
+ 
+-	param.data = 0;
++	ptpd = ATL1_TPD_DESC(tpd_ring,
++		(u16) atomic_read(&tpd_ring->next_to_use));
++	memset(ptpd, 0, sizeof(struct tx_packet_desc));
+ 
+ 	if (adapter->vlgrp && vlan_tx_tag_present(skb)) {
+ 		vlan_tag = vlan_tx_tag_get(skb);
+ 		vlan_tag = (vlan_tag << 4) | (vlan_tag >> 13) |
+ 			((vlan_tag >> 9) & 0x8);
+-		param.tso.tsopl |= 1 << TSO_PARAM_INSVLAG_SHIFT;
+-		param.tso.tsopu |= (vlan_tag & TSO_PARAM_VLANTAG_MASK) <<
+-			TSO_PARAM_VLAN_SHIFT;
++		ptpd->word3 |= 1 << TPD_INS_VL_TAG_SHIFT;
++		ptpd->word3 |= (vlan_tag & TPD_VL_TAGGED_MASK) <<
++			TPD_VL_TAGGED_SHIFT;
+ 	}
+ 
+-	tso = atl1_tso(adapter, skb, &param.tso);
++	tso = atl1_tso(adapter, skb, ptpd);
+ 	if (tso < 0) {
+ 		spin_unlock_irqrestore(&adapter->lock, flags);
+ 		dev_kfree_skb_any(skb);
+@@ -1615,7 +1634,7 @@ static int atl1_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
+ 	}
+ 
+ 	if (!tso) {
+-		ret_val = atl1_tx_csum(adapter, skb, &param.csum);
++		ret_val = atl1_tx_csum(adapter, skb, ptpd);
+ 		if (ret_val < 0) {
+ 			spin_unlock_irqrestore(&adapter->lock, flags);
+ 			dev_kfree_skb_any(skb);
+@@ -1623,13 +1642,11 @@ static int atl1_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
+ 		}
+ 	}
+ 
+-	val = (param.tso.tsopl >> TSO_PARAM_SEGMENT_SHIFT) &
+-		TSO_PARAM_SEGMENT_MASK;
+-	atl1_tx_map(adapter, skb, 1 == val);
+-	atl1_tx_queue(adapter, count, &param);
+-	netdev->trans_start = jiffies;
+-	spin_unlock_irqrestore(&adapter->lock, flags);
++	atl1_tx_map(adapter, skb, ptpd);
++	atl1_tx_queue(adapter, count, ptpd);
+ 	atl1_update_mailbox(adapter);
++	spin_unlock_irqrestore(&adapter->lock, flags);
++	netdev->trans_start = jiffies;
+ 	return NETDEV_TX_OK;
+ }
+ 
+@@ -2788,7 +2805,7 @@ const struct ethtool_ops atl1_ethtool_ops = {
+ 	.get_ringparam		= atl1_get_ringparam,
+ 	.set_ringparam		= atl1_set_ringparam,
+ 	.get_pauseparam		= atl1_get_pauseparam,
+-	.set_pauseparam 	= atl1_set_pauseparam,
++	.set_pauseparam		= atl1_set_pauseparam,
+ 	.get_rx_csum		= atl1_get_rx_csum,
+ 	.set_tx_csum		= ethtool_op_set_tx_hw_csum,
+ 	.get_link		= ethtool_op_get_link,
 diff --git a/drivers/net/atlx/atl1.h b/drivers/net/atlx/atl1.h
-index 2c2570e..8198f82 100644
+index 30c5a8d..f50441b 100644
 --- a/drivers/net/atlx/atl1.h
 +++ b/drivers/net/atlx/atl1.h
-@@ -262,7 +262,7 @@ extern const struct ethtool_ops atl1_ethtool_ops;
- #define ISR_RRD_OV				0x20
- #define ISR_TXF_UNRUN				0x40
- #define ISR_LINK				0x80
--#define ISR_HOST_RFD_UNRUN			0x100
-+#define ISR_HOST_RFD_UR				0x100
- #define ISR_HOST_RRD_OV				0x200
- #define ISR_DMAR_TO_RST				0x400
- #define ISR_DMAW_TO_RST				0x800
-@@ -288,6 +288,24 @@ extern const struct ethtool_ops atl1_ethtool_ops;
- 	ISR_CMB_TX	|\
- 	ISR_CMB_RX)
+@@ -452,106 +452,115 @@ struct rx_free_desc {
+ 	/* __attribute__ ((packed)) is required */
+ } __attribute__ ((packed));
  
-+#define ISR_TX_EVENT	(\
-+	ISR_TXF_UNRUN	|\
-+	ISR_TX_PKT	|\
-+	ISR_TX_DMA	|\
-+	ISR_CMB_TX	|\
-+	ISR_MAC_TX)
+-/* tsopu defines */
+-#define TSO_PARAM_BUFLEN_MASK		0x3FFF
+-#define TSO_PARAM_BUFLEN_SHIFT		0
+-#define TSO_PARAM_DMAINT_MASK		0x0001
+-#define TSO_PARAM_DMAINT_SHIFT		14
+-#define TSO_PARAM_PKTNT_MASK		0x0001
+-#define TSO_PARAM_PKTINT_SHIFT		15
+-#define TSO_PARAM_VLANTAG_MASK		0xFFFF
+-#define TSO_PARAM_VLAN_SHIFT		16
+-
+-/* tsopl defines */
+-#define TSO_PARAM_EOP_MASK		0x0001
+-#define TSO_PARAM_EOP_SHIFT		0
+-#define TSO_PARAM_COALESCE_MASK		0x0001
+-#define TSO_PARAM_COALESCE_SHIFT	1
+-#define TSO_PARAM_INSVLAG_MASK		0x0001
+-#define TSO_PARAM_INSVLAG_SHIFT		2
+-#define TSO_PARAM_CUSTOMCKSUM_MASK	0x0001
+-#define TSO_PARAM_CUSTOMCKSUM_SHIFT	3
+-#define TSO_PARAM_SEGMENT_MASK		0x0001
+-#define TSO_PARAM_SEGMENT_SHIFT		4
+-#define TSO_PARAM_IPCKSUM_MASK		0x0001
+-#define TSO_PARAM_IPCKSUM_SHIFT		5
+-#define TSO_PARAM_TCPCKSUM_MASK		0x0001
+-#define TSO_PARAM_TCPCKSUM_SHIFT	6
+-#define TSO_PARAM_UDPCKSUM_MASK		0x0001
+-#define TSO_PARAM_UDPCKSUM_SHIFT	7
+-#define TSO_PARAM_VLANTAGGED_MASK	0x0001
+-#define TSO_PARAM_VLANTAGGED_SHIFT	8
+-#define TSO_PARAM_ETHTYPE_MASK		0x0001
+-#define TSO_PARAM_ETHTYPE_SHIFT		9
+-#define TSO_PARAM_IPHL_MASK		0x000F
+-#define TSO_PARAM_IPHL_SHIFT		10
+-#define TSO_PARAM_TCPHDRLEN_MASK	0x000F
+-#define TSO_PARAM_TCPHDRLEN_SHIFT	14
+-#define TSO_PARAM_HDRFLAG_MASK		0x0001
+-#define TSO_PARAM_HDRFLAG_SHIFT		18
+-#define TSO_PARAM_MSS_MASK		0x1FFF
+-#define TSO_PARAM_MSS_SHIFT		19
+-
+-/* csumpu defines */
+-#define CSUM_PARAM_BUFLEN_MASK		0x3FFF
+-#define CSUM_PARAM_BUFLEN_SHIFT		0
+-#define CSUM_PARAM_DMAINT_MASK		0x0001
+-#define CSUM_PARAM_DMAINT_SHIFT		14
+-#define CSUM_PARAM_PKTINT_MASK		0x0001
+-#define CSUM_PARAM_PKTINT_SHIFT		15
+-#define CSUM_PARAM_VALANTAG_MASK	0xFFFF
+-#define CSUM_PARAM_VALAN_SHIFT		16
+-
+-/* csumpl defines*/
+-#define CSUM_PARAM_EOP_MASK		0x0001
+-#define CSUM_PARAM_EOP_SHIFT		0
+-#define CSUM_PARAM_COALESCE_MASK	0x0001
+-#define CSUM_PARAM_COALESCE_SHIFT	1
+-#define CSUM_PARAM_INSVLAG_MASK		0x0001
+-#define CSUM_PARAM_INSVLAG_SHIFT	2
+-#define CSUM_PARAM_CUSTOMCKSUM_MASK	0x0001
+-#define CSUM_PARAM_CUSTOMCKSUM_SHIFT	3
+-#define CSUM_PARAM_SEGMENT_MASK		0x0001
+-#define CSUM_PARAM_SEGMENT_SHIFT	4
+-#define CSUM_PARAM_IPCKSUM_MASK		0x0001
+-#define CSUM_PARAM_IPCKSUM_SHIFT	5
+-#define CSUM_PARAM_TCPCKSUM_MASK	0x0001
+-#define CSUM_PARAM_TCPCKSUM_SHIFT	6
+-#define CSUM_PARAM_UDPCKSUM_MASK	0x0001
+-#define CSUM_PARAM_UDPCKSUM_SHIFT	7
+-#define CSUM_PARAM_VLANTAGGED_MASK	0x0001
+-#define CSUM_PARAM_VLANTAGGED_SHIFT	8
+-#define CSUM_PARAM_ETHTYPE_MASK		0x0001
+-#define CSUM_PARAM_ETHTYPE_SHIFT	9
+-#define CSUM_PARAM_IPHL_MASK		0x000F
+-#define CSUM_PARAM_IPHL_SHIFT		10
+-#define CSUM_PARAM_PLOADOFFSET_MASK	0x00FF
+-#define CSUM_PARAM_PLOADOFFSET_SHIFT	16
+-#define CSUM_PARAM_XSUMOFFSET_MASK	0x00FF
+-#define CSUM_PARAM_XSUMOFFSET_SHIFT	24
+-
+-/* TPD descriptor */
+-struct tso_param {
+-	/* The order of these declarations is important -- don't change it */
+-	u32 tsopu;	/* tso_param upper word */
+-	u32 tsopl;	/* tso_param lower word */
+-};
+-
+-struct csum_param {
+-	/* The order of these declarations is important -- don't change it */
+-	u32 csumpu;	/* csum_param upper word */
+-	u32 csumpl;	/* csum_param lower word */
+-};
++/*
++ * The L1 transmit packet descriptor is comprised of four 32-bit words.
++ *
++ *	31					0
++ *	+---------------------------------------+
++ *      |	Word 0: Buffer addr lo 		|
++ *      +---------------------------------------+
++ *      |	Word 1: Buffer addr hi		|
++ *      +---------------------------------------+
++ *      |		Word 2			|
++ *      +---------------------------------------+
++ *      |		Word 3			|
++ *      +---------------------------------------+
++ *
++ * Words 0 and 1 combine to form a 64-bit buffer address.
++ *
++ * Word 2 is self explanatory in the #define block below.
++ *
++ * Word 3 has two forms, depending upon the state of bits 3 and 4.
++ * If bits 3 and 4 are both zero, then bits 14:31 are unused by the
++ * hardware.  Otherwise, if either bit 3 or 4 is set, the definition
++ * of bits 14:31 vary according to the following depiction.
++ *
++ *	0	End of packet			0	End of packet
++ *	1	Coalesce			1	Coalesce
++ *	2	Insert VLAN tag			2	Insert VLAN tag
++ *	3	Custom csum enable = 0		3	Custom csum enable = 1
++ *	4	Segment enable = 1		4	Segment enable = 0
++ *	5	Generate IP checksum		5	Generate IP checksum
++ *	6	Generate TCP checksum		6	Generate TCP checksum
++ *	7	Generate UDP checksum		7	Generate UDP checksum
++ *	8	VLAN tagged			8	VLAN tagged
++ *	9	Ethernet frame type		9	Ethernet frame type
++ *	10-+ 					10-+
++ *	11 |	IP hdr length (10:13)		11 |	IP hdr length (10:13)
++ *	12 |	(num 32-bit words)		12 |	(num 32-bit words)
++ *	13-+					13-+
++ *	14-+					14	Unused
++ *	15 |	TCP hdr length (14:15)		15	Unused
++ *	16 |	(num 32-bit words)		16-+
++ *	17-+					17 |
++ *	18	Header TPD flag			18 |
++ *	19-+					19 |	Payload offset
++ *	20 |					20 |	    (16:23)
++ *	21 |					21 |
++ *	22 |					22 |
++ *	23 |					23-+
++ *	24 |					24-+
++ *	25 |	MSS (19:31)			25 |
++ *	26 |					26 |
++ *	27 |					27 |	Custom csum offset
++ *	28 |					28 |	     (24:31)
++ *	29 |					29 |
++ *	30 |					30 |
++ *	31-+					31-+
++ */
+ 
+-union tpd_descr {
+-	u64 data;
+-	struct csum_param csum;
+-	struct tso_param tso;
+-};
++/* tpd word 2 */
++#define TPD_BUFLEN_MASK		0x3FFF
++#define TPD_BUFLEN_SHIFT	0
++#define TPD_DMAINT_MASK		0x0001
++#define TPD_DMAINT_SHIFT	14
++#define TPD_PKTNT_MASK		0x0001
++#define TPD_PKTINT_SHIFT	15
++#define TPD_VLANTAG_MASK	0xFFFF
++#define TPD_VLAN_SHIFT		16
 +
-+#define ISR_RX_EVENT	(\
-+	ISR_RXF_OV	|\
-+	ISR_RFD_UNRUN	|\
-+	ISR_RRD_OV	|\
-+	ISR_HOST_RFD_UR	|\
-+	ISR_HOST_RRD_OV	|\
-+	ISR_RX_PKT	|\
-+	ISR_RX_DMA	|\
-+	ISR_CMB_RX	|\
-+	ISR_MAC_RX)
++/* tpd word 3 bits 0:13 */
++#define TPD_EOP_MASK		0x0001
++#define TPD_EOP_SHIFT		0
++#define TPD_COALESCE_MASK	0x0001
++#define TPD_COALESCE_SHIFT	1
++#define TPD_INS_VL_TAG_MASK	0x0001
++#define TPD_INS_VL_TAG_SHIFT	2
++#define TPD_CUST_CSUM_EN_MASK	0x0001
++#define TPD_CUST_CSUM_EN_SHIFT	3
++#define TPD_SEGMENT_EN_MASK	0x0001
++#define TPD_SEGMENT_EN_SHIFT	4
++#define TPD_IP_CSUM_MASK	0x0001
++#define TPD_IP_CSUM_SHIFT	5
++#define TPD_TCP_CSUM_MASK	0x0001
++#define TPD_TCP_CSUM_SHIFT	6
++#define TPD_UDP_CSUM_MASK	0x0001
++#define TPD_UDP_CSUM_SHIFT	7
++#define TPD_VL_TAGGED_MASK	0x0001
++#define TPD_VL_TAGGED_SHIFT	8
++#define TPD_ETHTYPE_MASK	0x0001
++#define TPD_ETHTYPE_SHIFT	9
++#define TPD_IPHL_MASK		0x000F
++#define TPD_IPHL_SHIFT		10
 +
- /* Debug Interrupt Mask  (enable all interrupt) */
- #define IMR_DEBUG_MASK	(\
- 	ISR_SMB		|\
-@@ -762,10 +780,8 @@ struct atl1_adapter {
- 	u32 wol;
- 	u16 link_speed;
- 	u16 link_duplex;
--	spinlock_t lock;
--	struct work_struct tx_timeout_task;
-+	struct work_struct reset_task;
- 	struct work_struct link_chg_task;
--	struct work_struct pcie_dma_to_rst_task;
- 	struct timer_list watchdog_timer;
- 	struct timer_list phy_config_timer;
- 	bool phy_timer_pending;
-@@ -776,6 +792,7 @@ struct atl1_adapter {
- 	/* TX */
- 	struct atl1_tpd_ring tpd_ring;
- 	spinlock_t mb_lock;
-+	spinlock_t lock;
++/* tpd word 3 bits 14:31 if segment enabled */
++#define TPD_TCPHDRLEN_MASK	0x000F
++#define TPD_TCPHDRLEN_SHIFT	14
++#define TPD_HDRFLAG_MASK	0x0001
++#define TPD_HDRFLAG_SHIFT	18
++#define TPD_MSS_MASK		0x1FFF
++#define TPD_MSS_SHIFT		19
++
++/* tpd word 3 bits 16:31 if custom csum enabled */
++#define TPD_PLOADOFFSET_MASK	0x00FF
++#define TPD_PLOADOFFSET_SHIFT	16
++#define TPD_CCSUMOFFSET_MASK	0x00FF
++#define TPD_CCSUMOFFSET_SHIFT	24
  
- 	/* RX */
- 	struct atl1_rfd_ring rfd_ring;
-diff --git a/drivers/net/atlx/atlx.c b/drivers/net/atlx/atlx.c
-index 354050f..18c2d7e 100644
---- a/drivers/net/atlx/atlx.c
-+++ b/drivers/net/atlx/atlx.c
-@@ -204,7 +204,7 @@ static void atlx_tx_timeout(struct net_device *netdev)
- {
- 	struct atlx_adapter *adapter = netdev_priv(netdev);
- 	/* Do the reset outside of interrupt context */
--	schedule_work(&adapter->tx_timeout_task);
-+	schedule_work(&adapter->reset_task);
- }
+ struct tx_packet_desc {
+ 	__le64 buffer_addr;
+-	union tpd_descr desc;
++	__le32 word2;
++	__le32 word3;
+ };
  
- /*
+ /* DMA Order Settings */
 -- 
 1.5.3.3
 
