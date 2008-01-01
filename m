@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755033AbYAANuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbYAANum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755033AbYAANuV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 08:50:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755237AbYAANs6
+	id S1755567AbYAANum (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 08:50:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755325AbYAANtg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 08:48:58 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:50118 "EHLO smtp5.pp.htv.fi"
+	Tue, 1 Jan 2008 08:49:36 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:37127 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755227AbYAANsy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 08:48:54 -0500
-Date: Tue, 1 Jan 2008 15:48:39 +0200
+	id S1754802AbYAANt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 08:49:28 -0500
+Date: Tue, 1 Jan 2008 15:49:13 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Thomas Gleixner <tglx@cruncher.tec.linutronix.de>, dwmw2@infradead.org
-Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] remove broken MTD drivers
-Message-ID: <20080101134839.GN2360@does.not.exist>
+To: jejb@steeleye.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] remove ps2esdi
+Message-ID: <20080101134911.GP2360@does.not.exist>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,8 +23,14 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes two MTD drivers that have been marked as
-BROKEN 19 months ago due to requiring nonexisting header files.
+The ps2esdi driver was marked as BROKEN more than two years ago due 
+to being no longer working for some time.
+
+A drivers that had been marked as BROKEN for such a long time seems to 
+be unlikely to be revived in the forseeable future.
+
+But if anyone wants to ever revive this driver, the code is still 
+present in the older kernel releases.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
@@ -33,717 +39,1297 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 This patch has been sent on:
 - 24 Oct 2007
 
- drivers/mtd/nand/Kconfig          |   12 
- drivers/mtd/nand/Makefile         |    2 
- drivers/mtd/nand/ppchameleonevb.c |  439 ------------------------------
- drivers/mtd/nand/toto.c           |  208 --------------
- 4 files changed, 661 deletions(-)
+ Documentation/mca.txt   |   17 
+ drivers/block/Kconfig   |   10 
+ drivers/block/Makefile  |    1 
+ drivers/block/ps2esdi.c | 1079 ----------------------------------------
+ include/linux/Kbuild    |    1 
+ include/linux/ps2esdi.h |   98 ---
+ 6 files changed, 5 insertions(+), 1201 deletions(-)
 
-eb65564be12f427ae8a96a2ffa7e727a814e1129 
-diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
-index 246d451..fa6b8b5 100644
---- a/drivers/mtd/nand/Kconfig
-+++ b/drivers/mtd/nand/Kconfig
-@@ -69,12 +69,6 @@ config MTD_NAND_AMS_DELTA
- 	help
- 	  Support for NAND flash on Amstrad E3 (Delta).
+f4480cb1ae56ae76c962648996a462a8d170c27d 
+diff --git a/Documentation/mca.txt b/Documentation/mca.txt
+index aabce4a..510375d 100644
+--- a/Documentation/mca.txt
++++ b/Documentation/mca.txt
+@@ -143,14 +143,7 @@ MCA Device Drivers
  
--config MTD_NAND_TOTO
--	tristate "NAND Flash device on TOTO board"
--	depends on ARCH_OMAP && BROKEN
--	help
--	  Support for NAND flash on Texas Instruments Toto platform.
--
- config MTD_NAND_TS7250
- 	tristate "NAND Flash device on TS-7250 board"
- 	depends on MACH_TS72XX
-@@ -120,12 +114,6 @@ config MTD_NAND_RTC_FROM4
- 	  This enables the driver for the Renesas Technology AG-AND
- 	  flash interface board (FROM_BOARD4)
+ Currently, there are a number of MCA-specific device drivers.
  
--config MTD_NAND_PPCHAMELEONEVB
--	tristate "NAND Flash device on PPChameleonEVB board"
--	depends on PPCHAMELEONEVB && BROKEN
--	help
--	  This enables the NAND flash driver on the PPChameleon EVB Board.
+-1) PS/2 ESDI
+-	drivers/block/ps2esdi.c
+-	include/linux/ps2esdi.h
+-   Uses major number 36, and should use /dev files /dev/eda, /dev/edb.
+-   Supports two drives, but only one controller.  May use the
+-   command-line args "ed=cyl,head,sec" and "tp720".
 -
- config MTD_NAND_S3C2410
- 	tristate "NAND Flash support for S3C2410/S3C2440 SoC"
- 	depends on ARCH_S3C2410
-diff --git a/drivers/mtd/nand/Makefile b/drivers/mtd/nand/Makefile
-index 3ad6c01..f6b27de 100644
---- a/drivers/mtd/nand/Makefile
-+++ b/drivers/mtd/nand/Makefile
-@@ -9,12 +9,10 @@ obj-$(CONFIG_MTD_NAND_IDS)		+= nand_ids.o
- obj-$(CONFIG_MTD_NAND_CAFE)		+= cafe_nand.o
- obj-$(CONFIG_MTD_NAND_SPIA)		+= spia.o
- obj-$(CONFIG_MTD_NAND_AMS_DELTA)	+= ams-delta.o
--obj-$(CONFIG_MTD_NAND_TOTO)		+= toto.o
- obj-$(CONFIG_MTD_NAND_AUTCPU12)		+= autcpu12.o
- obj-$(CONFIG_MTD_NAND_EDB7312)		+= edb7312.o
- obj-$(CONFIG_MTD_NAND_AU1550)		+= au1550nd.o
- obj-$(CONFIG_MTD_NAND_BF5XX)		+= bf5xx_nand.o
--obj-$(CONFIG_MTD_NAND_PPCHAMELEONEVB)	+= ppchameleonevb.o
- obj-$(CONFIG_MTD_NAND_S3C2410)		+= s3c2410.o
- obj-$(CONFIG_MTD_NAND_DISKONCHIP)	+= diskonchip.o
- obj-$(CONFIG_MTD_NAND_H1900)		+= h1910.o
-diff --git a/drivers/mtd/nand/ppchameleonevb.c b/drivers/mtd/nand/ppchameleonevb.c
+-2) PS/2 SCSI
++1) PS/2 SCSI
+ 	drivers/scsi/ibmmca.c
+ 	drivers/scsi/ibmmca.h
+    The driver for the IBM SCSI subsystem.  Includes both integrated
+@@ -159,25 +152,25 @@ Currently, there are a number of MCA-specific device drivers.
+    machine with a front-panel display (i.e. model 95), you can use
+    "ibmmcascsi=display" to enable a drive activity indicator.
+ 
+-3) 3c523
++2) 3c523
+ 	drivers/net/3c523.c
+ 	drivers/net/3c523.h
+    3Com 3c523 Etherlink/MC ethernet driver.
+ 
+-4) SMC Ultra/MCA and IBM Adapter/A
++3) SMC Ultra/MCA and IBM Adapter/A
+ 	drivers/net/smc-mca.c
+ 	drivers/net/smc-mca.h
+ 	Driver for the MCA version of the SMC Ultra and various other
+ 	OEM'ed and work-alike cards (Elite, Adapter/A, etc).
+ 
+-5) NE/2
++4) NE/2
+ 	driver/net/ne2.c
+ 	driver/net/ne2.h
+ 	The NE/2 is the MCA version of the NE2000.  This may not work
+ 	with clones that have a different adapter id than the original
+ 	NE/2.
+ 
+-6) Future Domain MCS-600/700, OEM'd IBM Fast SCSI Adapter/A and
++5) Future Domain MCS-600/700, OEM'd IBM Fast SCSI Adapter/A and
+    Reply Sound Blaster/SCSI (SCSI part)
+ 	Better support for these cards than the driver for ISA.
+    Supports multiple cards with IRQ sharing.
+diff --git a/drivers/block/Kconfig b/drivers/block/Kconfig
+index 4d0119e..7c82de5 100644
+--- a/drivers/block/Kconfig
++++ b/drivers/block/Kconfig
+@@ -44,16 +44,6 @@ config MAC_FLOPPY
+ 	  If you have a SWIM-3 (Super Woz Integrated Machine 3; from Apple)
+ 	  floppy controller, say Y here. Most commonly found in PowerMacs.
+ 
+-config BLK_DEV_PS2
+-	tristate "PS/2 ESDI hard disk support"
+-	depends on MCA && MCA_LEGACY && BROKEN
+-	help
+-	  Say Y here if you have a PS/2 machine with a MCA bus and an ESDI
+-	  hard disk.
+-
+-	  To compile this driver as a module, choose M here: the
+-	  module will be called ps2esdi.
+-
+ config AMIGA_Z2RAM
+ 	tristate "Amiga Zorro II ramdisk support"
+ 	depends on ZORRO
+diff --git a/drivers/block/Makefile b/drivers/block/Makefile
+index 7691505..2df163f 100644
+--- a/drivers/block/Makefile
++++ b/drivers/block/Makefile
+@@ -13,7 +13,6 @@ obj-$(CONFIG_ATARI_FLOPPY)	+= ataflop.o
+ obj-$(CONFIG_AMIGA_Z2RAM)	+= z2ram.o
+ obj-$(CONFIG_BLK_DEV_RAM)	+= rd.o
+ obj-$(CONFIG_BLK_DEV_LOOP)	+= loop.o
+-obj-$(CONFIG_BLK_DEV_PS2)	+= ps2esdi.o
+ obj-$(CONFIG_BLK_DEV_XD)	+= xd.o
+ obj-$(CONFIG_BLK_CPQ_DA)	+= cpqarray.o
+ obj-$(CONFIG_BLK_CPQ_CISS_DA)  += cciss.o
+diff --git a/drivers/block/ps2esdi.c b/drivers/block/ps2esdi.c
 deleted file mode 100644
-index 082073a..0000000
---- a/drivers/mtd/nand/ppchameleonevb.c
+index 3c796e2..0000000
+--- a/drivers/block/ps2esdi.c
 +++ /dev/null
-@@ -1,439 +0,0 @@
--/*
-- *  drivers/mtd/nand/ppchameleonevb.c
-- *
-- *  Copyright (C) 2003 DAVE Srl (info@wawnet.biz)
-- *
-- *  Derived from drivers/mtd/nand/edb7312.c
-- *
-- *
-- * $Id: ppchameleonevb.c,v 1.7 2005/11/07 11:14:31 gleixner Exp $
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
-- *
-- *  Overview:
-- *   This is a device driver for the NAND flash devices found on the
-- *   PPChameleon/PPChameleonEVB system.
-- *   PPChameleon options (autodetected):
-- *   - BA model: no NAND
-- *   - ME model: 32MB (Samsung K9F5608U0B)
-- *   - HI model: 128MB (Samsung K9F1G08UOM)
-- *   PPChameleonEVB options:
-- *   - 32MB (Samsung K9F5608U0B)
+@@ -1,1079 +0,0 @@
+-/* ps2esdi driver based on assembler code by Arindam Banerji,
+-   written by Peter De Schrijver */
+-/* Reassuring note to IBM : This driver was NOT developed by vice-versa
+-   engineering the PS/2's BIOS */
+-/* Dedicated to Wannes, Tofke, Ykke, Godot, Killroy and all those 
+-   other lovely fish out there... */
+-/* This code was written during the long and boring WINA 
+-   elections 1994 */
+-/* Thanks to Arindam Banerij for giving me the source of his driver */
+-/* This code may be freely distributed and modified in any way, 
+-   as long as these notes remain intact */
+-
+-/*  Revised: 05/07/94 by Arindam Banerji (axb@cse.nd.edu) */
+-/*  Revised: 09/08/94 by Peter De Schrijver (stud11@cc4.kuleuven.ac.be)
+-   Thanks to Arindam Banerij for sending me the docs of the adapter */
+-
+-/* BA Modified for ThinkPad 720 by Boris Ashkinazi */
+-/*                    (bash@vnet.ibm.com) 08/08/95 */
+-
+-/* Modified further for ThinkPad-720C by Uri Blumenthal */
+-/*                    (uri@watson.ibm.com) Sep 11, 1995 */
+-
+-/* TODO : 
+-   + Timeouts
+-   + Get disk parameters
+-   + DMA above 16MB
+-   + reset after read/write error
 - */
 -
+-#define DEVICE_NAME "PS/2 ESDI"
+-
+-#include <linux/major.h>
+-#include <linux/errno.h>
+-#include <linux/wait.h>
+-#include <linux/interrupt.h>
+-#include <linux/fs.h>
+-#include <linux/kernel.h>
+-#include <linux/genhd.h>
+-#include <linux/ps2esdi.h>
+-#include <linux/blkdev.h>
+-#include <linux/mca-legacy.h>
 -#include <linux/init.h>
--#include <linux/slab.h>
+-#include <linux/ioport.h>
 -#include <linux/module.h>
--#include <linux/mtd/mtd.h>
--#include <linux/mtd/nand.h>
--#include <linux/mtd/partitions.h>
+-#include <linux/hdreg.h>
+-
+-#include <asm/system.h>
 -#include <asm/io.h>
--#include <platforms/PPChameleonEVB.h>
+-#include <asm/dma.h>
+-#include <asm/mca_dma.h>
+-#include <asm/uaccess.h>
 -
--#undef USE_READY_BUSY_PIN
--#define USE_READY_BUSY_PIN
--/* see datasheets (tR) */
--#define NAND_BIG_DELAY_US		25
--#define NAND_SMALL_DELAY_US		10
+-#define PS2ESDI_IRQ 14
+-#define MAX_HD 2
+-#define MAX_RETRIES 5
+-#define MAX_16BIT 65536
+-#define ESDI_TIMEOUT   0xf000
+-#define ESDI_STAT_TIMEOUT 4
 -
--/* handy sizes */
--#define SZ_4M                           0x00400000
--#define NAND_SMALL_SIZE                 0x02000000
--#define NAND_MTD_NAME		"ppchameleon-nand"
--#define NAND_EVB_MTD_NAME	"ppchameleonevb-nand"
+-#define TYPE_0_CMD_BLK_LENGTH 2
+-#define TYPE_1_CMD_BLK_LENGTH 4
 -
--/* GPIO pins used to drive NAND chip mounted on processor module */
--#define NAND_nCE_GPIO_PIN 		(0x80000000 >> 1)
--#define NAND_CLE_GPIO_PIN 		(0x80000000 >> 2)
--#define NAND_ALE_GPIO_PIN 		(0x80000000 >> 3)
--#define NAND_RB_GPIO_PIN 		(0x80000000 >> 4)
--/* GPIO pins used to drive NAND chip mounted on EVB */
--#define NAND_EVB_nCE_GPIO_PIN 	(0x80000000 >> 14)
--#define NAND_EVB_CLE_GPIO_PIN 	(0x80000000 >> 15)
--#define NAND_EVB_ALE_GPIO_PIN 	(0x80000000 >> 16)
--#define NAND_EVB_RB_GPIO_PIN 	(0x80000000 >> 31)
+-static void reset_ctrl(void);
 -
--/*
-- * MTD structure for PPChameleonEVB board
-- */
--static struct mtd_info *ppchameleon_mtd = NULL;
--static struct mtd_info *ppchameleonevb_mtd = NULL;
+-static int ps2esdi_geninit(void);
 -
--/*
-- * Module stuff
-- */
--static unsigned long ppchameleon_fio_pbase = CFG_NAND0_PADDR;
--static unsigned long ppchameleonevb_fio_pbase = CFG_NAND1_PADDR;
+-static void do_ps2esdi_request(struct request_queue * q);
 -
--#ifdef MODULE
--module_param(ppchameleon_fio_pbase, ulong, 0);
--module_param(ppchameleonevb_fio_pbase, ulong, 0);
+-static void ps2esdi_readwrite(int cmd, struct request *req);
+-
+-static void ps2esdi_fill_cmd_block(u_short * cmd_blk, u_short cmd,
+-u_short cyl, u_short head, u_short sector, u_short length, u_char drive);
+-
+-static int ps2esdi_out_cmd_blk(u_short * cmd_blk);
+-
+-static void ps2esdi_prep_dma(char *buffer, u_short length, u_char dma_xmode);
+-
+-static irqreturn_t ps2esdi_interrupt_handler(int irq, void *dev_id);
+-static void (*current_int_handler) (u_int) = NULL;
+-static void ps2esdi_normal_interrupt_handler(u_int);
+-static void ps2esdi_initial_reset_int_handler(u_int);
+-static void ps2esdi_geometry_int_handler(u_int);
+-static int ps2esdi_getgeo(struct block_device *bdev, struct hd_geometry *geo);
+-
+-static int ps2esdi_read_status_words(int num_words, int max_words, u_short * buffer);
+-
+-static void dump_cmd_complete_status(u_int int_ret_code);
+-
+-static void ps2esdi_get_device_cfg(void);
+-
+-static void ps2esdi_reset_timer(unsigned long unused);
+-
+-static u_int dma_arb_level;		/* DMA arbitration level */
+-
+-static DECLARE_WAIT_QUEUE_HEAD(ps2esdi_int);
+-
+-static int no_int_yet;
+-static int ps2esdi_drives;
+-static u_short io_base;
+-static DEFINE_TIMER(esdi_timer, ps2esdi_reset_timer, 0, 0);
+-static int reset_status;
+-static int ps2esdi_slot = -1;
+-static int tp720esdi = 0;	/* Is it Integrated ESDI of ThinkPad-720? */
+-static int intg_esdi = 0;       /* If integrated adapter */
+-struct ps2esdi_i_struct {
+-	unsigned int head, sect, cyl, wpcom, lzone, ctl;
+-};
+-static DEFINE_SPINLOCK(ps2esdi_lock);
+-static struct request_queue *ps2esdi_queue;
+-static struct request *current_req;
+-
+-#if 0
+-#if 0				/* try both - I don't know which one is better... UB */
+-static struct ps2esdi_i_struct ps2esdi_info[MAX_HD] =
+-{
+-	{4, 48, 1553, 0, 0, 0},
+-	{0, 0, 0, 0, 0, 0}};
 -#else
--__setup("ppchameleon_fio_pbase=", ppchameleon_fio_pbase);
--__setup("ppchameleonevb_fio_pbase=", ppchameleonevb_fio_pbase);
+-static struct ps2esdi_i_struct ps2esdi_info[MAX_HD] =
+-{
+-	{64, 32, 161, 0, 0, 0},
+-	{0, 0, 0, 0, 0, 0}};
 -#endif
+-#endif
+-static struct ps2esdi_i_struct ps2esdi_info[MAX_HD] =
+-{
+-	{0, 0, 0, 0, 0, 0},
+-	{0, 0, 0, 0, 0, 0}};
 -
--#ifdef CONFIG_MTD_PARTITIONS
--/*
-- * Define static partitions for flash devices
-- */
--static struct mtd_partition partition_info_hi[] = {
--      { .name = "PPChameleon HI Nand Flash",
--	.offset = 0,
--	.size = 128 * 1024 * 1024
--      }
+-static struct block_device_operations ps2esdi_fops =
+-{
+-	.owner		= THIS_MODULE,
+-	.getgeo		= ps2esdi_getgeo,
 -};
 -
--static struct mtd_partition partition_info_me[] = {
--      { .name = "PPChameleon ME Nand Flash",
--	.offset = 0,
--	.size = 32 * 1024 * 1024
--      }
--};
+-static struct gendisk *ps2esdi_gendisk[2];
 -
--static struct mtd_partition partition_info_evb[] = {
--      { .name = "PPChameleonEVB Nand Flash",
--	.offset = 0,
--	.size = 32 * 1024 * 1024
--      }
--};
--
--#define NUM_PARTITIONS 1
--
--extern int parse_cmdline_partitions(struct mtd_info *master, struct mtd_partition **pparts, const char *mtd_id);
--#endif
--
--/*
-- *	hardware specific access to control-lines
-- */
--static void ppchameleon_hwcontrol(struct mtd_info *mtdinfo, int cmd,
--				  unsigned int ctrl)
+-/* initialization routine called by ll_rw_blk.c   */
+-static int __init ps2esdi_init(void)
 -{
--	struct nand_chip *chip = mtd->priv;
 -
--	if (ctrl & NAND_CTRL_CHANGE) {
--#error Missing headerfiles. No way to fix this. -tglx
--		switch (cmd) {
--		case NAND_CTL_SETCLE:
--			MACRO_NAND_CTL_SETCLE((unsigned long)CFG_NAND0_PADDR);
--			break;
--		case NAND_CTL_CLRCLE:
--			MACRO_NAND_CTL_CLRCLE((unsigned long)CFG_NAND0_PADDR);
--			break;
--		case NAND_CTL_SETALE:
--			MACRO_NAND_CTL_SETALE((unsigned long)CFG_NAND0_PADDR);
--			break;
--		case NAND_CTL_CLRALE:
--			MACRO_NAND_CTL_CLRALE((unsigned long)CFG_NAND0_PADDR);
--			break;
--		case NAND_CTL_SETNCE:
--			MACRO_NAND_ENABLE_CE((unsigned long)CFG_NAND0_PADDR);
--			break;
--		case NAND_CTL_CLRNCE:
--			MACRO_NAND_DISABLE_CE((unsigned long)CFG_NAND0_PADDR);
--			break;
--		}
--	}
--	if (cmd != NAND_CMD_NONE)
--		writeb(cmd, chip->IO_ADDR_W);
--}
+-	int error = 0;
 -
--static void ppchameleonevb_hwcontrol(struct mtd_info *mtdinfo, int cmd,
--				     unsigned int ctrl)
--{
--	struct nand_chip *chip = mtd->priv;
+-	/* register the device - pass the name and major number */
+-	if (register_blkdev(PS2ESDI_MAJOR, "ed"))
+-		return -EBUSY;
 -
--	if (ctrl & NAND_CTRL_CHANGE) {
--#error Missing headerfiles. No way to fix this. -tglx
--		switch (cmd) {
--		case NAND_CTL_SETCLE:
--			MACRO_NAND_CTL_SETCLE((unsigned long)CFG_NAND1_PADDR);
--			break;
--		case NAND_CTL_CLRCLE:
--			MACRO_NAND_CTL_CLRCLE((unsigned long)CFG_NAND1_PADDR);
--			break;
--		case NAND_CTL_SETALE:
--			MACRO_NAND_CTL_SETALE((unsigned long)CFG_NAND1_PADDR);
--			break;
--		case NAND_CTL_CLRALE:
--			MACRO_NAND_CTL_CLRALE((unsigned long)CFG_NAND1_PADDR);
--			break;
--		case NAND_CTL_SETNCE:
--			MACRO_NAND_ENABLE_CE((unsigned long)CFG_NAND1_PADDR);
--			break;
--		case NAND_CTL_CLRNCE:
--			MACRO_NAND_DISABLE_CE((unsigned long)CFG_NAND1_PADDR);
--			break;
--		}
--	}
--	if (cmd != NAND_CMD_NONE)
--		writeb(cmd, chip->IO_ADDR_W);
--}
--
--#ifdef USE_READY_BUSY_PIN
--/*
-- *	read device ready pin
-- */
--static int ppchameleon_device_ready(struct mtd_info *minfo)
--{
--	if (in_be32((volatile unsigned *)GPIO0_IR) & NAND_RB_GPIO_PIN)
--		return 1;
--	return 0;
--}
--
--static int ppchameleonevb_device_ready(struct mtd_info *minfo)
--{
--	if (in_be32((volatile unsigned *)GPIO0_IR) & NAND_EVB_RB_GPIO_PIN)
--		return 1;
--	return 0;
--}
--#endif
--
--#ifdef CONFIG_MTD_PARTITIONS
--const char *part_probes[] = { "cmdlinepart", NULL };
--const char *part_probes_evb[] = { "cmdlinepart", NULL };
--#endif
--
--/*
-- * Main initialization routine
-- */
--static int __init ppchameleonevb_init(void)
--{
--	struct nand_chip *this;
--	const char *part_type = 0;
--	int mtd_parts_nb = 0;
--	struct mtd_partition *mtd_parts = 0;
--	void __iomem *ppchameleon_fio_base;
--	void __iomem *ppchameleonevb_fio_base;
--
--	/*********************************
--	* Processor module NAND (if any) *
--	*********************************/
--	/* Allocate memory for MTD device structure and private data */
--	ppchameleon_mtd = kmalloc(sizeof(struct mtd_info) + sizeof(struct nand_chip), GFP_KERNEL);
--	if (!ppchameleon_mtd) {
--		printk("Unable to allocate PPChameleon NAND MTD device structure.\n");
+-	/* set up some global information - indicating device specific info */
+-	ps2esdi_queue = blk_init_queue(do_ps2esdi_request, &ps2esdi_lock);
+-	if (!ps2esdi_queue) {
+-		unregister_blkdev(PS2ESDI_MAJOR, "ed");
 -		return -ENOMEM;
 -	}
 -
--	/* map physical address */
--	ppchameleon_fio_base = ioremap(ppchameleon_fio_pbase, SZ_4M);
--	if (!ppchameleon_fio_base) {
--		printk("ioremap PPChameleon NAND flash failed\n");
--		kfree(ppchameleon_mtd);
--		return -EIO;
+-	/* some minor housekeeping - setup the global gendisk structure */
+-	error = ps2esdi_geninit();
+-	if (error) {
+-		printk(KERN_WARNING "PS2ESDI: error initialising"
+-			" device, releasing resources\n");
+-		unregister_blkdev(PS2ESDI_MAJOR, "ed");
+-		blk_cleanup_queue(ps2esdi_queue);
+-		return error;
 -	}
+-	return 0;
+-}				/* ps2esdi_init */
 -
--	/* Get pointer to private data */
--	this = (struct nand_chip *)(&ppchameleon_mtd[1]);
+-#ifndef MODULE
 -
--	/* Initialize structures */
--	memset(ppchameleon_mtd, 0, sizeof(struct mtd_info));
--	memset(this, 0, sizeof(struct nand_chip));
+-module_init(ps2esdi_init);
 -
--	/* Link the private data with the MTD structure */
--	ppchameleon_mtd->priv = this;
--	ppchameleon_mtd->owner = THIS_MODULE;
+-#else
 -
--	/* Initialize GPIOs */
--	/* Pin mapping for NAND chip */
--	/*
--	   CE   GPIO_01
--	   CLE  GPIO_02
--	   ALE  GPIO_03
--	   R/B  GPIO_04
+-static int cyl[MAX_HD] = {-1,-1};
+-static int head[MAX_HD] = {-1, -1};
+-static int sect[MAX_HD] = {-1, -1};
+-
+-module_param(tp720esdi, bool, 0);
+-module_param_array(cyl, int, NULL, 0);
+-module_param_array(head, int, NULL, 0);
+-module_param_array(sect, int, NULL, 0);
+-MODULE_LICENSE("GPL");
+-
+-int init_module(void) {
+-	int drive;
+-
+-	for(drive = 0; drive < MAX_HD; drive++) {
+-	        struct ps2esdi_i_struct *info = &ps2esdi_info[drive];
+-
+-        	if (cyl[drive] != -1) {
+-		  	info->cyl = info->lzone = cyl[drive];
+-			info->wpcom = 0;
+-		}
+-        	if (head[drive] != -1) {
+-			info->head = head[drive];
+-			info->ctl = (head[drive] > 8 ? 8 : 0);
+-		}
+-        	if (sect[drive] != -1) info->sect = sect[drive];
+-	}
+-	return ps2esdi_init();
+-}
+-
+-void
+-cleanup_module(void) {
+-	int i;
+-	if(ps2esdi_slot) {
+-		mca_mark_as_unused(ps2esdi_slot);
+-		mca_set_adapter_procfn(ps2esdi_slot, NULL, NULL);
+-	}
+-	release_region(io_base, 4);
+-	free_dma(dma_arb_level);
+-	free_irq(PS2ESDI_IRQ, &ps2esdi_gendisk);
+-	unregister_blkdev(PS2ESDI_MAJOR, "ed");
+-	blk_cleanup_queue(ps2esdi_queue);
+-	for (i = 0; i < ps2esdi_drives; i++) {
+-		del_gendisk(ps2esdi_gendisk[i]);
+-		put_disk(ps2esdi_gendisk[i]);
+-	}
+-}
+-#endif /* MODULE */
+-
+-/* handles boot time command line parameters */
+-void __init tp720_setup(char *str, int *ints)
+-{
+-	/* no params, just sets the tp720esdi flag if it exists */
+-
+-	printk("%s: TP 720 ESDI flag set\n", DEVICE_NAME);
+-	tp720esdi = 1;
+-}
+-
+-void __init ed_setup(char *str, int *ints)
+-{
+-	int hdind = 0;
+-
+-	/* handles 3 parameters only - corresponding to
+-	   1. Number of cylinders
+-	   2. Number of heads
+-	   3. Sectors/track
 -	 */
--	/* output select */
--	out_be32((volatile unsigned *)GPIO0_OSRH, in_be32((volatile unsigned *)GPIO0_OSRH) & 0xC0FFFFFF);
--	/* three-state select */
--	out_be32((volatile unsigned *)GPIO0_TSRH, in_be32((volatile unsigned *)GPIO0_TSRH) & 0xC0FFFFFF);
--	/* enable output driver */
--	out_be32((volatile unsigned *)GPIO0_TCR,
--		 in_be32((volatile unsigned *)GPIO0_TCR) | NAND_nCE_GPIO_PIN | NAND_CLE_GPIO_PIN | NAND_ALE_GPIO_PIN);
--#ifdef USE_READY_BUSY_PIN
--	/* three-state select */
--	out_be32((volatile unsigned *)GPIO0_TSRH, in_be32((volatile unsigned *)GPIO0_TSRH) & 0xFF3FFFFF);
--	/* high-impedecence */
--	out_be32((volatile unsigned *)GPIO0_TCR, in_be32((volatile unsigned *)GPIO0_TCR) & (~NAND_RB_GPIO_PIN));
--	/* input select */
--	out_be32((volatile unsigned *)GPIO0_ISR1H,
--		 (in_be32((volatile unsigned *)GPIO0_ISR1H) & 0xFF3FFFFF) | 0x00400000);
--#endif
 -
--	/* insert callbacks */
--	this->IO_ADDR_R = ppchameleon_fio_base;
--	this->IO_ADDR_W = ppchameleon_fio_base;
--	this->cmd_ctrl = ppchameleon_hwcontrol;
--#ifdef USE_READY_BUSY_PIN
--	this->dev_ready = ppchameleon_device_ready;
--#endif
--	this->chip_delay = NAND_BIG_DELAY_US;
--	/* ECC mode */
--	this->ecc.mode = NAND_ECC_SOFT;
+-	if (ints[0] != 3)
+-		return;
 -
--	/* Scan to find existence of the device (it could not be mounted) */
--	if (nand_scan(ppchameleon_mtd, 1)) {
--		iounmap((void *)ppchameleon_fio_base);
--		ppchameleon_fio_base = NULL;
--		kfree(ppchameleon_mtd);
--		goto nand_evb_init;
+-	/* print out the information - seen at boot time */
+-	printk("%s: ints[0]=%d ints[1]=%d ints[2]=%d ints[3]=%d\n",
+-	       DEVICE_NAME, ints[0], ints[1], ints[2], ints[3]);
+-
+-	/* set the index into device specific information table */
+-	if (ps2esdi_info[0].head != 0)
+-		hdind = 1;
+-
+-	/* set up all the device information */
+-	ps2esdi_info[hdind].head = ints[2];
+-	ps2esdi_info[hdind].sect = ints[3];
+-	ps2esdi_info[hdind].cyl = ints[1];
+-	ps2esdi_info[hdind].wpcom = 0;
+-	ps2esdi_info[hdind].lzone = ints[1];
+-	ps2esdi_info[hdind].ctl = (ints[2] > 8 ? 8 : 0);
+-#if 0				/* this may be needed for PS2/Mod.80, but it hurts ThinkPad! */
+-	ps2esdi_drives = hdind + 1;	/* increment index for the next time */
+-#endif
+-}				/* ed_setup */
+-
+-static int ps2esdi_getinfo(char *buf, int slot, void *d)
+-{
+-	int len = 0;
+-
+-	len += sprintf(buf + len, "DMA Arbitration Level: %d\n",
+-		       dma_arb_level);
+-	len += sprintf(buf + len, "IO Port: %x\n", io_base);
+-	len += sprintf(buf + len, "IRQ: 14\n");
+-	len += sprintf(buf + len, "Drives: %d\n", ps2esdi_drives);
+-
+-	return len;
+-}
+-
+-/* ps2 esdi specific initialization - called thru the gendisk chain */
+-static int __init ps2esdi_geninit(void)
+-{
+-	/*
+-	   The first part contains the initialization code
+-	   for the ESDI disk subsystem.  All we really do
+-	   is search for the POS registers of the controller
+-	   to do some simple setup operations.  First, we
+-	   must ensure that the controller is installed,
+-	   enabled, and configured as PRIMARY.  Then we must
+-	   determine the DMA arbitration level being used by
+-	   the controller so we can handle data transfer
+-	   operations properly.  If all of this works, then
+-	   we will set the INIT_FLAG to a non-zero value.
+-	 */
+-
+-	int slot = 0, i, reset_start, reset_end;
+-	u_char status;
+-	unsigned short adapterID;
+-	int error = 0;
+-
+-	if ((slot = mca_find_adapter(INTG_ESDI_ID, 0)) != MCA_NOTFOUND) {
+-		adapterID = INTG_ESDI_ID;
+-		printk("%s: integrated ESDI adapter found in slot %d\n",
+-		       DEVICE_NAME, slot+1);
+-#ifndef MODULE
+-		mca_set_adapter_name(slot, "PS/2 Integrated ESDI");
+-#endif
+-	} else if ((slot = mca_find_adapter(NRML_ESDI_ID, 0)) != -1) {
+-		adapterID = NRML_ESDI_ID;
+-		printk("%s: normal ESDI adapter found in slot %d\n",
+-		       DEVICE_NAME, slot+1);
+-		mca_set_adapter_name(slot, "PS/2 ESDI");
+-	} else {
+-		return -ENODEV;
 -	}
--#ifndef USE_READY_BUSY_PIN
--	/* Adjust delay if necessary */
--	if (ppchameleon_mtd->size == NAND_SMALL_SIZE)
--		this->chip_delay = NAND_SMALL_DELAY_US;
+-
+-	ps2esdi_slot = slot;
+-	mca_mark_as_used(slot);
+-	mca_set_adapter_procfn(slot, (MCA_ProcFn) ps2esdi_getinfo, NULL);
+-
+-	/* Found the slot - read the POS register 2 to get the necessary
+-	   configuration and status information.  POS register 2 has the
+-	   following information :
+-	   Bit           Function
+-	   7             reserved = 0
+-	   6             arbitration method
+-	   0 - fairness enabled
+-	   1 - fairness disabled, linear priority assignment
+-	   5-2           arbitration level
+-	   1             alternate address
+-	   1              alternate address
+-	   0 - use addresses 0x3510 - 0x3517
+-	   0             adapter enable
+-	 */
+-
+-	status = mca_read_stored_pos(slot, 2);
+-	/* is it enabled ? */
+-	if (!(status & STATUS_ENABLED)) {
+-		printk("%s: ESDI adapter disabled\n", DEVICE_NAME);
+-		error = -ENODEV;
+-		goto err_out1;
+-	}
+-	/* try to grab IRQ, and try to grab a slow IRQ if it fails, so we can
+-	   share with the SCSI driver */
+-	if (request_irq(PS2ESDI_IRQ, ps2esdi_interrupt_handler,
+-		  IRQF_DISABLED | IRQF_SHARED, "PS/2 ESDI", &ps2esdi_gendisk)
+-	    && request_irq(PS2ESDI_IRQ, ps2esdi_interrupt_handler,
+-			   IRQF_SHARED, "PS/2 ESDI", &ps2esdi_gendisk)
+-	    ) {
+-		printk("%s: Unable to get IRQ %d\n", DEVICE_NAME, PS2ESDI_IRQ);
+-		error = -EBUSY;
+-		goto err_out1;
+-	}
+-	if (status & STATUS_ALTERNATE)
+-		io_base = ALT_IO_BASE;
+-	else
+-		io_base = PRIMARY_IO_BASE;
+-
+-	if (!request_region(io_base, 4, "ed")) {
+-		printk(KERN_WARNING"Unable to request region 0x%x\n", io_base);
+-		error = -EBUSY;
+-		goto err_out2;
+-	}
+-	/* get the dma arbitration level */
+-	dma_arb_level = (status >> 2) & 0xf;
+-
+-	/* BA */
+-	printk("%s: DMA arbitration level : %d\n",
+-	       DEVICE_NAME, dma_arb_level);
+-
+-	LITE_ON;
+-	current_int_handler = ps2esdi_initial_reset_int_handler;
+-	reset_ctrl();
+-	reset_status = 0;
+-	reset_start = jiffies;
+-	while (!reset_status) {
+-		init_timer(&esdi_timer);
+-		esdi_timer.expires = jiffies + HZ;
+-		esdi_timer.data = 0;
+-		add_timer(&esdi_timer);
+-		sleep_on(&ps2esdi_int);
+-	}
+-	reset_end = jiffies;
+-	LITE_OFF;
+-	printk("%s: reset interrupt after %d jiffies,  %u.%02u secs\n",
+-	       DEVICE_NAME, reset_end - reset_start, (reset_end - reset_start) / HZ,
+-	       (reset_end - reset_start) % HZ);
+-
+-
+-	/* Integrated ESDI Disk and Controller has only one drive! */
+-	if (adapterID == INTG_ESDI_ID) {/* if not "normal" PS2 ESDI adapter */
+-		ps2esdi_drives = 1;	/* then we have only one physical disk! */		intg_esdi = 1;
+-	}
+-
+-
+-
+-	/* finally this part sets up some global data structures etc. */
+-
+-	ps2esdi_get_device_cfg();
+-
+-	/* some annoyance in the above routine returns TWO drives?
+-	 Is something else happining in the background?
+-	 Regaurdless we fix the # of drives again. AJK */
+-	/* Integrated ESDI Disk and Controller has only one drive! */
+-	if (adapterID == INTG_ESDI_ID)	/* if not "normal" PS2 ESDI adapter */
+-		ps2esdi_drives = 1;	/* Not three or two, ONE DAMNIT! */
+-
+-	current_int_handler = ps2esdi_normal_interrupt_handler;
+-
+-	if (request_dma(dma_arb_level, "ed") !=0) {
+-		printk(KERN_WARNING "PS2ESDI: Can't request dma-channel %d\n"
+-			,(int) dma_arb_level);
+-		error = -EBUSY;
+-		goto err_out3;
+-	}
+-	blk_queue_max_sectors(ps2esdi_queue, 128);
+-
+-	error = -ENOMEM;
+-	for (i = 0; i < ps2esdi_drives; i++) {
+-		struct gendisk *disk = alloc_disk(64);
+-		if (!disk)
+-			goto err_out4;
+-		disk->major = PS2ESDI_MAJOR;
+-		disk->first_minor = i<<6;
+-		sprintf(disk->disk_name, "ed%c", 'a'+i);
+-		disk->fops = &ps2esdi_fops;
+-		ps2esdi_gendisk[i] = disk;
+-	}
+-
+-	for (i = 0; i < ps2esdi_drives; i++) {
+-		struct gendisk *disk = ps2esdi_gendisk[i];
+-		set_capacity(disk, ps2esdi_info[i].head * ps2esdi_info[i].sect *
+-				ps2esdi_info[i].cyl);
+-		disk->queue = ps2esdi_queue;
+-		disk->private_data = &ps2esdi_info[i];
+-		add_disk(disk);
+-	}
+-	return 0;
+-err_out4:
+-	while (i--)
+-		put_disk(ps2esdi_gendisk[i]);
+-err_out3:
+-	release_region(io_base, 4);
+-err_out2:
+-	free_irq(PS2ESDI_IRQ, &ps2esdi_gendisk);
+-err_out1:
+-	if(ps2esdi_slot) {
+-		mca_mark_as_unused(ps2esdi_slot);
+-		mca_set_adapter_procfn(ps2esdi_slot, NULL, NULL);
+-	}
+-	return error;
+-}
+-
+-static void __init ps2esdi_get_device_cfg(void)
+-{
+-	u_short cmd_blk[TYPE_0_CMD_BLK_LENGTH];
+-
+-	/*BA */ printk("%s: Drive 0\n", DEVICE_NAME);
+-	current_int_handler = ps2esdi_geometry_int_handler;
+-	cmd_blk[0] = CMD_GET_DEV_CONFIG | 0x600;
+-	cmd_blk[1] = 0;
+-	no_int_yet = TRUE;
+-	ps2esdi_out_cmd_blk(cmd_blk);
+-	if (no_int_yet)
+-		sleep_on(&ps2esdi_int);
+-
+-	if (ps2esdi_drives > 1) {
+-		printk("%s: Drive 1\n", DEVICE_NAME);	/*BA */
+-		cmd_blk[0] = CMD_GET_DEV_CONFIG | (1 << 5) | 0x600;
+-		cmd_blk[1] = 0;
+-		no_int_yet = TRUE;
+-		ps2esdi_out_cmd_blk(cmd_blk);
+-		if (no_int_yet)
+-			sleep_on(&ps2esdi_int);
+-	}			/* if second physical drive is present */
+-	return;
+-}
+-
+-/* strategy routine that handles most of the IO requests */
+-static void do_ps2esdi_request(struct request_queue * q)
+-{
+-	struct request *req;
+-	/* since, this routine is called with interrupts cleared - they 
+-	   must be before it finishes  */
+-
+-	req = elv_next_request(q);
+-	if (!req)
+-		return;
+-
+-#if 0
+-	printk("%s:got request. device : %s command : %d  sector : %ld count : %ld, buffer: %p\n",
+-	       DEVICE_NAME,
+-	       req->rq_disk->disk_name,
+-	       req->cmd, req->sector,
+-	       req->current_nr_sectors, req->buffer);
 -#endif
 -
--#ifdef CONFIG_MTD_PARTITIONS
--	ppchameleon_mtd->name = "ppchameleon-nand";
--	mtd_parts_nb = parse_mtd_partitions(ppchameleon_mtd, part_probes, &mtd_parts, 0);
--	if (mtd_parts_nb > 0)
--		part_type = "command line";
--	else
--		mtd_parts_nb = 0;
+-	/* check for above 16Mb dmas */
+-	if (isa_virt_to_bus(req->buffer + req->current_nr_sectors * 512) > 16 * MB) {
+-		printk("%s: DMA above 16MB not supported\n", DEVICE_NAME);
+-		end_request(req, FAIL);
+-		return;
+-	}
+-
+-	if (req->sector+req->current_nr_sectors > get_capacity(req->rq_disk)) {
+-		printk("Grrr. error. ps2esdi_drives: %d, %llu %llu\n",
+-		    ps2esdi_drives, req->sector,
+-		    (unsigned long long)get_capacity(req->rq_disk));
+-		end_request(req, FAIL);
+-		return;
+-	}
+-
+-	switch (rq_data_dir(req)) {
+-	case READ:
+-		ps2esdi_readwrite(READ, req);
+-		break;
+-	case WRITE:
+-		ps2esdi_readwrite(WRITE, req);
+-		break;
+-	default:
+-		printk("%s: Unknown command\n", req->rq_disk->disk_name);
+-		end_request(req, FAIL);
+-		break;
+-	}		/* handle different commands */
+-}				/* main strategy routine */
+-
+-/* resets the ESDI adapter */
+-static void reset_ctrl(void)
+-{
+-
+-	u_long expire;
+-	u_short status;
+-
+-	/* enable interrupts on the controller */
+-	status = inb(ESDI_INTRPT);
+-	outb((status & 0xe0) | ATT_EOI, ESDI_ATTN);	/* to be sure we don't have
+-							   any interrupt pending... */
+-	outb_p(CTRL_ENABLE_INTR, ESDI_CONTROL);
+-
+-	/* read the ESDI status port - if the controller is not busy,
+-	   simply do a soft reset (fast) - otherwise we'll have to do a
+-	   hard (slow) reset.  */
+-	if (!(inb_p(ESDI_STATUS) & STATUS_BUSY)) {
+-		/*BA */ printk("%s: soft reset...\n", DEVICE_NAME);
+-		outb_p(CTRL_SOFT_RESET, ESDI_ATTN);
+-	}
+-	/* soft reset */ 
+-	else {
+-		/*BA */
+-		printk("%s: hard reset...\n", DEVICE_NAME);
+-		outb_p(CTRL_HARD_RESET, ESDI_CONTROL);
+-		expire = jiffies + 2*HZ;
+-		while (time_before(jiffies, expire));
+-		outb_p(1, ESDI_CONTROL);
+-	}			/* hard reset */
+-
+-
+-}				/* reset the controller */
+-
+-/* called by the strategy routine to handle read and write requests */
+-static void ps2esdi_readwrite(int cmd, struct request *req)
+-{
+-	struct ps2esdi_i_struct *p = req->rq_disk->private_data;
+-	unsigned block = req->sector;
+-	unsigned count = req->current_nr_sectors;
+-	int drive = p - ps2esdi_info;
+-	u_short track, head, cylinder, sector;
+-	u_short cmd_blk[TYPE_1_CMD_BLK_LENGTH];
+-
+-	/* do some relevant arithmatic */
+-	track = block / p->sect;
+-	head = track % p->head;
+-	cylinder = track / p->head;
+-	sector = block % p->sect;
+-
+-#if 0
+-	printk("%s: cyl=%d head=%d sect=%d\n", DEVICE_NAME, cylinder, head, sector);
 -#endif
--	if (mtd_parts_nb == 0) {
--		if (ppchameleon_mtd->size == NAND_SMALL_SIZE)
--			mtd_parts = partition_info_me;
+-	/* call the routine that actually fills out a command block */
+-	ps2esdi_fill_cmd_block
+-	    (cmd_blk,
+-	     (cmd == READ) ? CMD_READ : CMD_WRITE,
+-	     cylinder, head, sector, count, drive);
+-
+-	/* send the command block to the controller */
+-	current_req = req;
+-	spin_unlock_irq(&ps2esdi_lock);
+-	if (ps2esdi_out_cmd_blk(cmd_blk)) {
+-		spin_lock_irq(&ps2esdi_lock);
+-		printk("%s: Controller failed\n", DEVICE_NAME);
+-		if ((++req->errors) >= MAX_RETRIES)
+-			end_request(req, FAIL);
+-	}
+-	/* check for failure to put out the command block */ 
+-	else {
+-		spin_lock_irq(&ps2esdi_lock);
+-#if 0
+-		printk("%s: waiting for xfer\n", DEVICE_NAME);
+-#endif
+-		/* turn disk lights on */
+-		LITE_ON;
+-	}
+-
+-}				/* ps2esdi_readwrite */
+-
+-/* fill out the command block */
+-static void ps2esdi_fill_cmd_block(u_short * cmd_blk, u_short cmd,
+- u_short cyl, u_short head, u_short sector, u_short length, u_char drive)
+-{
+-
+-	cmd_blk[0] = (drive << 5) | cmd;
+-	cmd_blk[1] = length;
+-	cmd_blk[2] = ((cyl & 0x1f) << 11) | (head << 5) | sector;
+-	cmd_blk[3] = (cyl & 0x3E0) >> 5;
+-
+-}				/* fill out the command block */
+-
+-/* write a command block to the controller */
+-static int ps2esdi_out_cmd_blk(u_short * cmd_blk)
+-{
+-
+-	int i;
+-	unsigned long jif;
+-	u_char status;
+-
+-	/* enable interrupts */
+-	outb(CTRL_ENABLE_INTR, ESDI_CONTROL);
+-
+-	/* do not write to the controller, if it is busy */
+-	for (jif = jiffies + ESDI_STAT_TIMEOUT;
+-		time_after(jif, jiffies) &&
+-			(inb(ESDI_STATUS) & STATUS_BUSY); )
+-		;
+-
+-#if 0
+-	printk("%s: i(1)=%ld\n", DEVICE_NAME, jif);
+-#endif
+-
+-	/* if device is still busy - then just time out */
+-	if (inb(ESDI_STATUS) & STATUS_BUSY) {
+-		printk("%s: ps2esdi_out_cmd timed out (1)\n", DEVICE_NAME);
+-		return ERROR;
+-	}			/* timeout ??? */
+-	/* Set up the attention register in the controller */
+-	outb(((*cmd_blk) & 0xE0) | 1, ESDI_ATTN);
+-
+-#if 0
+-	printk("%s: sending %d words to controller\n", DEVICE_NAME, (((*cmd_blk) >> 14) + 1) << 1);
+-#endif
+-
+-	/* one by one send each word out */
+-	for (i = (((*cmd_blk) >> 14) + 1) << 1; i; i--) {
+-		status = inb(ESDI_STATUS);
+-		for (jif = jiffies + ESDI_STAT_TIMEOUT;
+-		     time_after(jif, jiffies) && (status & STATUS_BUSY) &&
+-		   (status & STATUS_CMD_INF); status = inb(ESDI_STATUS));
+-		if ((status & (STATUS_BUSY | STATUS_CMD_INF)) == STATUS_BUSY) {
+-#if 0
+-			printk("%s: sending %04X\n", DEVICE_NAME, *cmd_blk);
+-#endif
+-			outw(*cmd_blk++, ESDI_CMD_INT);
+-		} else {
+-			printk("%s: ps2esdi_out_cmd timed out while sending command (status=%02X)\n",
+-			       DEVICE_NAME, status);
+-			return ERROR;
+-		}
+-	}			/* send all words out */
+-	return OK;
+-}				/* send out the commands */
+-
+-
+-/* prepare for dma - do all the necessary setup */
+-static void ps2esdi_prep_dma(char *buffer, u_short length, u_char dma_xmode)
+-{
+-	unsigned long flags = claim_dma_lock();
+-
+-	mca_disable_dma(dma_arb_level);
+-
+-	mca_set_dma_addr(dma_arb_level, isa_virt_to_bus(buffer));
+-
+-	mca_set_dma_count(dma_arb_level, length * 512 / 2);
+-
+-	mca_set_dma_mode(dma_arb_level, dma_xmode);
+-
+-	mca_enable_dma(dma_arb_level);
+-
+-	release_dma_lock(flags);
+-
+-}				/* prepare for dma */
+-
+-
+-
+-static irqreturn_t ps2esdi_interrupt_handler(int irq, void *dev_id)
+-{
+-	u_int int_ret_code;
+-
+-	if (inb(ESDI_STATUS) & STATUS_INTR) {
+-		int_ret_code = inb(ESDI_INTRPT);
+-		if (current_int_handler) {
+-			/* Disable adapter interrupts till processing is finished */
+-			outb(CTRL_DISABLE_INTR, ESDI_CONTROL);
+-			current_int_handler(int_ret_code);
+-		} else
+-			printk("%s: help ! No interrupt handler.\n", DEVICE_NAME);
+-	} else {
+-		return IRQ_NONE;
+-	}
+-	return IRQ_HANDLED;
+-}
+-
+-static void ps2esdi_initial_reset_int_handler(u_int int_ret_code)
+-{
+-
+-	switch (int_ret_code & 0xf) {
+-	case INT_RESET:
+-		/*BA */
+-		printk("%s: initial reset completed.\n", DEVICE_NAME);
+-		outb((int_ret_code & 0xe0) | ATT_EOI, ESDI_ATTN);
+-		wake_up(&ps2esdi_int);
+-		break;
+-	case INT_ATTN_ERROR:
+-		printk("%s: Attention error. interrupt status : %02X\n", DEVICE_NAME,
+-		       int_ret_code);
+-		printk("%s: status: %02x\n", DEVICE_NAME, inb(ESDI_STATUS));
+-		break;
+-	default:
+-		printk("%s: initial reset handler received interrupt: %02X\n",
+-		       DEVICE_NAME, int_ret_code);
+-		outb((int_ret_code & 0xe0) | ATT_EOI, ESDI_ATTN);
+-		break;
+-	}
+-	outb(CTRL_ENABLE_INTR, ESDI_CONTROL);
+-}
+-
+-
+-static void ps2esdi_geometry_int_handler(u_int int_ret_code)
+-{
+-	u_int status, drive_num;
+-	unsigned long rba;
+-	int i;
+-
+-	drive_num = int_ret_code >> 5;
+-	switch (int_ret_code & 0xf) {
+-	case INT_CMD_COMPLETE:
+-		for (i = ESDI_TIMEOUT; i && !(inb(ESDI_STATUS) & STATUS_STAT_AVAIL); i--);
+-		if (!(inb(ESDI_STATUS) & STATUS_STAT_AVAIL)) {
+-			printk("%s: timeout reading status word\n", DEVICE_NAME);
+-			outb((int_ret_code & 0xe0) | ATT_EOI, ESDI_ATTN);
+-			break;
+-		}
+-		status = inw(ESDI_STT_INT);
+-		if ((status & 0x1F) == CMD_GET_DEV_CONFIG) {
+-#define REPLY_WORDS 5		/* we already read word 0 */
+-			u_short reply[REPLY_WORDS];
+-
+-			if (ps2esdi_read_status_words((status >> 8) - 1, REPLY_WORDS, reply)) {
+-				/*BA */
+-				printk("%s: Device Configuration Status for drive %u\n",
+-				       DEVICE_NAME, drive_num);
+-
+-				printk("%s: Spares/cyls: %u", DEVICE_NAME, reply[0] >> 8);
+-
+-				printk
+-				    ("Config bits: %s%s%s%s%s\n",
+-				     (reply[0] & CONFIG_IS) ? "Invalid Secondary, " : "",
+-				     ((reply[0] & CONFIG_ZD) && !(reply[0] & CONFIG_IS))
+-				 ? "Zero Defect, " : "Defects Present, ",
+-				     (reply[0] & CONFIG_SF) ? "Skewed Format, " : "",
+-				     (reply[0] & CONFIG_FR) ? "Removable, " : "Non-Removable, ",
+-				     (reply[0] & CONFIG_RT) ? "No Retries" : "Retries");
+-
+-				rba = reply[1] | ((unsigned long) reply[2] << 16);
+-				printk("%s: Number of RBA's: %lu\n", DEVICE_NAME, rba);
+-
+-				printk("%s: Physical number of cylinders: %u, Sectors/Track: %u, Heads: %u\n",
+-				       DEVICE_NAME, reply[3], reply[4] >> 8, reply[4] & 0xff);
+-
+-				if (!ps2esdi_info[drive_num].head) {
+-					ps2esdi_info[drive_num].head = 64;
+-					ps2esdi_info[drive_num].sect = 32;
+-					ps2esdi_info[drive_num].cyl = rba / (64 * 32);
+-					ps2esdi_info[drive_num].wpcom = 0;
+-					ps2esdi_info[drive_num].lzone = ps2esdi_info[drive_num].cyl;
+-					ps2esdi_info[drive_num].ctl = 8;
+-					if (tp720esdi) {	/* store the retrieved parameters */
+-						ps2esdi_info[0].head = reply[4] & 0Xff;
+-						ps2esdi_info[0].sect = reply[4] >> 8;
+-						ps2esdi_info[0].cyl = reply[3];
+-						ps2esdi_info[0].wpcom = 0;
+-						ps2esdi_info[0].lzone = reply[3];
+-					} else {
+-						if (!intg_esdi)
+-							ps2esdi_drives++;
+-					}
+-				}
+-#ifdef OBSOLETE
+-				if (!ps2esdi_info[drive_num].head) {
+-					ps2esdi_info[drive_num].head = reply[4] & 0Xff;
+-					ps2esdi_info[drive_num].sect = reply[4] >> 8;
+-					ps2esdi_info[drive_num].cyl = reply[3];
+-					ps2esdi_info[drive_num].wpcom = 0;
+-					ps2esdi_info[drive_num].lzone = reply[3];
+-					if (tp720esdi) {	/* store the retrieved parameters */
+-						ps2esdi_info[0].head = reply[4] & 0Xff;
+-						ps2esdi_info[0].sect = reply[4] >> 8;
+-						ps2esdi_info[0].cyl = reply[3];
+-						ps2esdi_info[0].wpcom = 0;
+-						ps2esdi_info[0].lzone = reply[3];
+-					} else {
+-						ps2esdi_drives++;
+-					}
+-				}
+-#endif
+-
+-			} else
+-				printk("%s: failed while getting device config\n", DEVICE_NAME);
+-#undef REPLY_WORDS
+-		} else
+-			printk("%s: command %02X unknown by geometry handler\n",
+-			       DEVICE_NAME, status & 0x1f);
+-
+-		outb((int_ret_code & 0xe0) | ATT_EOI, ESDI_ATTN);
+-		break;
+-
+-	case INT_ATTN_ERROR:
+-		printk("%s: Attention error. interrupt status : %02X\n", DEVICE_NAME,
+-		       int_ret_code);
+-		printk("%s: Device not available\n", DEVICE_NAME);
+-		break;
+-	case INT_CMD_ECC:
+-	case INT_CMD_RETRY:
+-	case INT_CMD_ECC_RETRY:
+-	case INT_CMD_WARNING:
+-	case INT_CMD_ABORT:
+-	case INT_CMD_FAILED:
+-	case INT_DMA_ERR:
+-	case INT_CMD_BLK_ERR:
+-		/*BA */ printk("%s: Whaa. Error occurred...\n", DEVICE_NAME);
+-		dump_cmd_complete_status(int_ret_code);
+-		outb((int_ret_code & 0xe0) | ATT_EOI, ESDI_ATTN);
+-		break;
+-	default:
+-		printk("%s: Unknown interrupt reason: %02X\n",
+-		       DEVICE_NAME, int_ret_code & 0xf);
+-		outb((int_ret_code & 0xe0) | ATT_EOI, ESDI_ATTN);
+-		break;
+-	}
+-
+-	wake_up(&ps2esdi_int);
+-	no_int_yet = FALSE;
+-	outb(CTRL_ENABLE_INTR, ESDI_CONTROL);
+-
+-}
+-
+-static void ps2esdi_normal_interrupt_handler(u_int int_ret_code)
+-{
+-	unsigned long flags;
+-	u_int status;
+-	u_int ending;
+-	int i;
+-
+-	switch (int_ret_code & 0x0f) {
+-	case INT_TRANSFER_REQ:
+-		ps2esdi_prep_dma(current_req->buffer,
+-				 current_req->current_nr_sectors,
+-		    (rq_data_dir(current_req) == READ)
+-		    ? MCA_DMA_MODE_16 | MCA_DMA_MODE_WRITE | MCA_DMA_MODE_XFER
+-		    : MCA_DMA_MODE_16 | MCA_DMA_MODE_READ);
+-		outb(CTRL_ENABLE_DMA | CTRL_ENABLE_INTR, ESDI_CONTROL);
+-		ending = -1;
+-		break;
+-
+-	case INT_ATTN_ERROR:
+-		printk("%s: Attention error. interrupt status : %02X\n", DEVICE_NAME,
+-		       int_ret_code);
+-		outb(CTRL_ENABLE_INTR, ESDI_CONTROL);
+-		ending = FAIL;
+-		break;
+-
+-	case INT_CMD_COMPLETE:
+-		for (i = ESDI_TIMEOUT; i && !(inb(ESDI_STATUS) & STATUS_STAT_AVAIL); i--);
+-		if (!(inb(ESDI_STATUS) & STATUS_STAT_AVAIL)) {
+-			printk("%s: timeout reading status word\n", DEVICE_NAME);
+-			outb((int_ret_code & 0xe0) | ATT_EOI, ESDI_ATTN);
+-			outb(CTRL_ENABLE_INTR, ESDI_CONTROL);
+-			if ((++current_req->errors) >= MAX_RETRIES)
+-				ending = FAIL;
+-			else
+-				ending = -1;
+-			break;
+-		}
+-		status = inw(ESDI_STT_INT);
+-		switch (status & 0x1F) {
+-		case (CMD_READ & 0xff):
+-		case (CMD_WRITE & 0xff):
+-			LITE_OFF;
+-			outb((int_ret_code & 0xe0) | ATT_EOI, ESDI_ATTN);
+-			outb(CTRL_ENABLE_INTR, ESDI_CONTROL);
+-			ending = SUCCES;
+-			break;
+-		default:
+-			printk("%s: interrupt for unknown command %02X\n",
+-			       DEVICE_NAME, status & 0x1f);
+-			outb((int_ret_code & 0xe0) | ATT_EOI, ESDI_ATTN);
+-			outb(CTRL_ENABLE_INTR, ESDI_CONTROL);
+-			ending = -1;
+-			break;
+-		}
+-		break;
+-	case INT_CMD_ECC:
+-	case INT_CMD_RETRY:
+-	case INT_CMD_ECC_RETRY:
+-		LITE_OFF;
+-		dump_cmd_complete_status(int_ret_code);
+-		outb((int_ret_code & 0xe0) | ATT_EOI, ESDI_ATTN);
+-		outb(CTRL_ENABLE_INTR, ESDI_CONTROL);
+-		ending = SUCCES;
+-		break;
+-	case INT_CMD_WARNING:
+-	case INT_CMD_ABORT:
+-	case INT_CMD_FAILED:
+-	case INT_DMA_ERR:
+-		LITE_OFF;
+-		dump_cmd_complete_status(int_ret_code);
+-		outb((int_ret_code & 0xe0) | ATT_EOI, ESDI_ATTN);
+-		outb(CTRL_ENABLE_INTR, ESDI_CONTROL);
+-		if ((++current_req->errors) >= MAX_RETRIES)
+-			ending = FAIL;
 -		else
--			mtd_parts = partition_info_hi;
--		mtd_parts_nb = NUM_PARTITIONS;
--		part_type = "static";
+-			ending = -1;
+-		break;
+-
+-	case INT_CMD_BLK_ERR:
+-		dump_cmd_complete_status(int_ret_code);
+-		outb((int_ret_code & 0xe0) | ATT_EOI, ESDI_ATTN);
+-		outb(CTRL_ENABLE_INTR, ESDI_CONTROL);
+-		ending = FAIL;
+-		break;
+-
+-	case INT_CMD_FORMAT:
+-		printk("%s: huh ? Who issued this format command ?\n"
+-		       ,DEVICE_NAME);
+-		outb((int_ret_code & 0xe0) | ATT_EOI, ESDI_ATTN);
+-		outb(CTRL_ENABLE_INTR, ESDI_CONTROL);
+-		ending = -1;
+-		break;
+-
+-	case INT_RESET:
+-		/* BA printk("%s: reset completed.\n", DEVICE_NAME) */ ;
+-		outb((int_ret_code & 0xe0) | ATT_EOI, ESDI_ATTN);
+-		outb(CTRL_ENABLE_INTR, ESDI_CONTROL);
+-		ending = -1;
+-		break;
+-
+-	default:
+-		printk("%s: Unknown interrupt reason: %02X\n",
+-		       DEVICE_NAME, int_ret_code & 0xf);
+-		outb((int_ret_code & 0xe0) | ATT_EOI, ESDI_ATTN);
+-		outb(CTRL_ENABLE_INTR, ESDI_CONTROL);
+-		ending = -1;
+-		break;
 -	}
--
--	/* Register the partitions */
--	printk(KERN_NOTICE "Using %s partition definition\n", part_type);
--	add_mtd_partitions(ppchameleon_mtd, mtd_parts, mtd_parts_nb);
--
-- nand_evb_init:
--	/****************************
--	* EVB NAND (always present) *
--	****************************/
--	/* Allocate memory for MTD device structure and private data */
--	ppchameleonevb_mtd = kmalloc(sizeof(struct mtd_info) + sizeof(struct nand_chip), GFP_KERNEL);
--	if (!ppchameleonevb_mtd) {
--		printk("Unable to allocate PPChameleonEVB NAND MTD device structure.\n");
--		if (ppchameleon_fio_base)
--			iounmap(ppchameleon_fio_base);
--		return -ENOMEM;
+-	if(ending != -1) {
+-		spin_lock_irqsave(&ps2esdi_lock, flags);
+-		end_request(current_req, ending);
+-		current_req = NULL;
+-		do_ps2esdi_request(ps2esdi_queue);
+-		spin_unlock_irqrestore(&ps2esdi_lock, flags);
 -	}
+-}				/* handle interrupts */
 -
--	/* map physical address */
--	ppchameleonevb_fio_base = ioremap(ppchameleonevb_fio_pbase, SZ_4M);
--	if (!ppchameleonevb_fio_base) {
--		printk("ioremap PPChameleonEVB NAND flash failed\n");
--		kfree(ppchameleonevb_mtd);
--		if (ppchameleon_fio_base)
--			iounmap(ppchameleon_fio_base);
--		return -EIO;
+-
+-
+-static int ps2esdi_read_status_words(int num_words,
+-				     int max_words,
+-				     u_short * buffer)
+-{
+-	int i;
+-
+-	for (; max_words && num_words; max_words--, num_words--, buffer++) {
+-		for (i = ESDI_TIMEOUT; i && !(inb(ESDI_STATUS) & STATUS_STAT_AVAIL); i--);
+-		if (!(inb(ESDI_STATUS) & STATUS_STAT_AVAIL)) {
+-			printk("%s: timeout reading status word\n", DEVICE_NAME);
+-			return FAIL;
+-		}
+-		*buffer = inw(ESDI_STT_INT);
 -	}
+-	return SUCCES;
+-}
 -
--	/* Get pointer to private data */
--	this = (struct nand_chip *)(&ppchameleonevb_mtd[1]);
 -
--	/* Initialize structures */
--	memset(ppchameleonevb_mtd, 0, sizeof(struct mtd_info));
--	memset(this, 0, sizeof(struct nand_chip));
 -
--	/* Link the private data with the MTD structure */
--	ppchameleonevb_mtd->priv = this;
 -
--	/* Initialize GPIOs */
--	/* Pin mapping for NAND chip */
--	/*
--	   CE   GPIO_14
--	   CLE  GPIO_15
--	   ALE  GPIO_16
--	   R/B  GPIO_31
--	 */
--	/* output select */
--	out_be32((volatile unsigned *)GPIO0_OSRH, in_be32((volatile unsigned *)GPIO0_OSRH) & 0xFFFFFFF0);
--	out_be32((volatile unsigned *)GPIO0_OSRL, in_be32((volatile unsigned *)GPIO0_OSRL) & 0x3FFFFFFF);
--	/* three-state select */
--	out_be32((volatile unsigned *)GPIO0_TSRH, in_be32((volatile unsigned *)GPIO0_TSRH) & 0xFFFFFFF0);
--	out_be32((volatile unsigned *)GPIO0_TSRL, in_be32((volatile unsigned *)GPIO0_TSRL) & 0x3FFFFFFF);
--	/* enable output driver */
--	out_be32((volatile unsigned *)GPIO0_TCR, in_be32((volatile unsigned *)GPIO0_TCR) | NAND_EVB_nCE_GPIO_PIN |
--		 NAND_EVB_CLE_GPIO_PIN | NAND_EVB_ALE_GPIO_PIN);
--#ifdef USE_READY_BUSY_PIN
--	/* three-state select */
--	out_be32((volatile unsigned *)GPIO0_TSRL, in_be32((volatile unsigned *)GPIO0_TSRL) & 0xFFFFFFFC);
--	/* high-impedecence */
--	out_be32((volatile unsigned *)GPIO0_TCR, in_be32((volatile unsigned *)GPIO0_TCR) & (~NAND_EVB_RB_GPIO_PIN));
--	/* input select */
--	out_be32((volatile unsigned *)GPIO0_ISR1L,
--		 (in_be32((volatile unsigned *)GPIO0_ISR1L) & 0xFFFFFFFC) | 0x00000001);
--#endif
+-static void dump_cmd_complete_status(u_int int_ret_code)
+-{
+-#define WAIT_FOR_STATUS \
+-  for(i=ESDI_TIMEOUT;i && !(inb(ESDI_STATUS) & STATUS_STAT_AVAIL);i--); \
+-    if(!(inb(ESDI_STATUS) & STATUS_STAT_AVAIL)) { \
+-    printk("%s: timeout reading status word\n",DEVICE_NAME); \
+-    return; \
+-    }
 -
--	/* insert callbacks */
--	this->IO_ADDR_R = ppchameleonevb_fio_base;
--	this->IO_ADDR_W = ppchameleonevb_fio_base;
--	this->cmd_ctrl = ppchameleonevb_hwcontrol;
--#ifdef USE_READY_BUSY_PIN
--	this->dev_ready = ppchameleonevb_device_ready;
--#endif
--	this->chip_delay = NAND_SMALL_DELAY_US;
+-	int i, word_count;
+-	u_short stat_word;
+-	u_long rba;
 -
--	/* ECC mode */
--	this->ecc.mode = NAND_ECC_SOFT;
+-	printk("%s: Device: %u, interrupt ID: %02X\n",
+-	       DEVICE_NAME, int_ret_code >> 5,
+-	       int_ret_code & 0xf);
 -
--	/* Scan to find existence of the device */
--	if (nand_scan(ppchameleonevb_mtd, 1)) {
--		iounmap((void *)ppchameleonevb_fio_base);
--		kfree(ppchameleonevb_mtd);
--		if (ppchameleon_fio_base)
--			iounmap(ppchameleon_fio_base);
--		return -ENXIO;
+-	WAIT_FOR_STATUS;
+-	stat_word = inw(ESDI_STT_INT);
+-	word_count = (stat_word >> 8) - 1;
+-	printk("%s: %u status words, command: %02X\n", DEVICE_NAME, word_count,
+-	       stat_word & 0xff);
+-
+-	if (word_count--) {
+-		WAIT_FOR_STATUS;
+-		stat_word = inw(ESDI_STT_INT);
+-		printk("%s: command status code: %02X, command error code: %02X\n",
+-		       DEVICE_NAME, stat_word >> 8, stat_word & 0xff);
 -	}
--#ifdef CONFIG_MTD_PARTITIONS
--	ppchameleonevb_mtd->name = NAND_EVB_MTD_NAME;
--	mtd_parts_nb = parse_mtd_partitions(ppchameleonevb_mtd, part_probes_evb, &mtd_parts, 0);
--	if (mtd_parts_nb > 0)
--		part_type = "command line";
--	else
--		mtd_parts_nb = 0;
--#endif
--	if (mtd_parts_nb == 0) {
--		mtd_parts = partition_info_evb;
--		mtd_parts_nb = NUM_PARTITIONS;
--		part_type = "static";
+-	if (word_count--) {
+-		WAIT_FOR_STATUS;
+-		stat_word = inw(ESDI_STT_INT);
+-		printk("%s: device error code: %s%s%s%s%s,%02X\n", DEVICE_NAME,
+-		       (stat_word & 0x1000) ? "Ready, " : "Not Ready, ",
+-		  (stat_word & 0x0800) ? "Selected, " : "Not Selected, ",
+-		       (stat_word & 0x0400) ? "Write Fault, " : "",
+-		       (stat_word & 0x0200) ? "Track 0, " : "",
+-		(stat_word & 0x0100) ? "Seek or command complete, " : "",
+-		       stat_word >> 8);
 -	}
+-	if (word_count--) {
+-		WAIT_FOR_STATUS;
+-		stat_word = inw(ESDI_STT_INT);
+-		printk("%s: Blocks to do: %u", DEVICE_NAME, stat_word);
+-	}
+-	if (word_count -= 2) {
+-		WAIT_FOR_STATUS;
+-		rba = inw(ESDI_STT_INT);
+-		WAIT_FOR_STATUS;
+-		rba |= inw(ESDI_STT_INT) << 16;
+-		printk(", Last Cyl: %u Head: %u Sector: %u\n",
+-		       (u_short) ((rba & 0x1ff80000) >> 11),
+-		 (u_short) ((rba & 0x7E0) >> 5), (u_short) (rba & 0x1f));
+-	} else
+-		printk("\n");
 -
--	/* Register the partitions */
--	printk(KERN_NOTICE "Using %s partition definition\n", part_type);
--	add_mtd_partitions(ppchameleonevb_mtd, mtd_parts, mtd_parts_nb);
+-	if (word_count--) {
+-		WAIT_FOR_STATUS;
+-		stat_word = inw(ESDI_STT_INT);
+-		printk("%s: Blocks required ECC: %u", DEVICE_NAME, stat_word);
+-	}
+-	printk("\n");
 -
--	/* Return happy */
+-#undef WAIT_FOR_STATUS
+-
+-}
+-
+-static int ps2esdi_getgeo(struct block_device *bdev, struct hd_geometry *geo)
+-{
+-	struct ps2esdi_i_struct *p = bdev->bd_disk->private_data;
+-
+-	geo->heads = p->head;
+-	geo->sectors = p->sect;
+-	geo->cylinders = p->cyl;
 -	return 0;
 -}
 -
--module_init(ppchameleonevb_init);
--
--/*
-- * Clean up routine
-- */
--static void __exit ppchameleonevb_cleanup(void)
+-static void ps2esdi_reset_timer(unsigned long unused)
 -{
--	struct nand_chip *this;
 -
--	/* Release resources, unregister device(s) */
--	nand_release(ppchameleon_mtd);
--	nand_release(ppchameleonevb_mtd);
+-	int status;
 -
--	/* Release iomaps */
--	this = (struct nand_chip *) &ppchameleon_mtd[1];
--	iounmap((void *) this->IO_ADDR_R);
--	this = (struct nand_chip *) &ppchameleonevb_mtd[1];
--	iounmap((void *) this->IO_ADDR_R);
--
--	/* Free the MTD device structure */
--	kfree (ppchameleon_mtd);
--	kfree (ppchameleonevb_mtd);
+-	status = inb(ESDI_INTRPT);
+-	if ((status & 0xf) == INT_RESET) {
+-		outb((status & 0xe0) | ATT_EOI, ESDI_ATTN);
+-		outb(CTRL_ENABLE_INTR, ESDI_CONTROL);
+-		reset_status = 1;
+-	}
+-	wake_up(&ps2esdi_int);
 -}
--module_exit(ppchameleonevb_cleanup);
--
--MODULE_LICENSE("GPL");
--MODULE_AUTHOR("DAVE Srl <support-ppchameleon@dave-tech.it>");
--MODULE_DESCRIPTION("MTD map driver for DAVE Srl PPChameleonEVB board");
-diff --git a/drivers/mtd/nand/toto.c b/drivers/mtd/nand/toto.c
+diff --git a/include/linux/Kbuild b/include/linux/Kbuild
+index 6a65231..6d45693 100644
+--- a/include/linux/Kbuild
++++ b/include/linux/Kbuild
+@@ -128,7 +128,6 @@ header-y += pkt_sched.h
+ header-y += posix_types.h
+ header-y += ppdev.h
+ header-y += prctl.h
+-header-y += ps2esdi.h
+ header-y += qnxtypes.h
+ header-y += quotaio_v1.h
+ header-y += quotaio_v2.h
+diff --git a/include/linux/ps2esdi.h b/include/linux/ps2esdi.h
 deleted file mode 100644
-index f9e2d4a..0000000
---- a/drivers/mtd/nand/toto.c
+index c0e050b..0000000
+--- a/include/linux/ps2esdi.h
 +++ /dev/null
-@@ -1,208 +0,0 @@
--/*
-- *  drivers/mtd/nand/toto.c
-- *
-- *  Copyright (c) 2003 Texas Instruments
-- *
-- *  Derived from drivers/mtd/autcpu12.c
-- *
-- *  Copyright (c) 2002 Thomas Gleixner <tgxl@linutronix.de>
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
-- *
-- *  Overview:
-- *   This is a device driver for the NAND flash device found on the
-- *   TI fido board. It supports 32MiB and 64MiB cards
-- *
-- * $Id: toto.c,v 1.5 2005/11/07 11:14:31 gleixner Exp $
-- */
+@@ -1,98 +0,0 @@
+-#ifndef _PS2ESDI_H_
+-#define _PS2ESDI_H_
 -
--#include <linux/slab.h>
--#include <linux/init.h>
--#include <linux/module.h>
--#include <linux/delay.h>
--#include <linux/mtd/mtd.h>
--#include <linux/mtd/nand.h>
--#include <linux/mtd/partitions.h>
--#include <asm/io.h>
--#include <asm/arch/hardware.h>
--#include <asm/sizes.h>
--#include <asm/arch/toto.h>
--#include <asm/arch-omap1510/hardware.h>
--#include <asm/arch/gpio.h>
+-#define NRML_ESDI_ID 0xddff
+-#define INTG_ESDI_ID 0xdf9f
 -
--#define CONFIG_NAND_WORKAROUND 1
+-#define PRIMARY_IO_BASE 0x3510
+-#define ALT_IO_BASE 0x3518
 -
--/*
-- * MTD structure for TOTO board
-- */
--static struct mtd_info *toto_mtd = NULL;
+-#define ESDI_CMD_INT (io_base+0)
+-#define ESDI_STT_INT (io_base+0)
+-#define ESDI_CONTROL (io_base+2)
+-#define ESDI_STATUS  (io_base+2)
+-#define ESDI_ATTN    (io_base+3)
+-#define ESDI_INTRPT  (io_base+3)
 -
--static unsigned long toto_io_base = OMAP_FLASH_1_BASE;
+-#define STATUS_ENABLED    0x01
+-#define STATUS_ALTERNATE  0x02
+-#define STATUS_BUSY       0x10
+-#define STATUS_STAT_AVAIL 0x08
+-#define STATUS_INTR       0x01
+-#define STATUS_RESET_FAIL 0xea
+-#define STATUS_CMD_INF	  0x04
 -
--/*
-- * Define partitions for flash devices
-- */
+-#define CTRL_SOFT_RESET   0xe4
+-#define CTRL_HARD_RESET   0x80
+-#define CTRL_EOI          0xe2
+-#define CTRL_ENABLE_DMA   0x02
+-#define CTRL_ENABLE_INTR  0x01
+-#define CTRL_DISABLE_INTR  0x00
 -
--static struct mtd_partition partition_info64M[] = {
--	{ .name =	"toto kernel partition 1",
--	  .offset =	0,
--	  .size	=	2 * SZ_1M },
--	{ .name =	"toto file sys partition 2",
--	  .offset =	2 * SZ_1M,
--	  .size =	14 * SZ_1M },
--	{ .name =	"toto user partition 3",
--	  .offset =	16 * SZ_1M,
--	  .size =	16 * SZ_1M },
--	{ .name =	"toto devboard extra partition 4",
--	  .offset =	32 * SZ_1M,
--	  .size =	32 * SZ_1M },
+-#define ATT_EOI 0x02
+-
+-/* bits of word 0 of configuration status block. more info see p.38 of tech ref */
+-#define CONFIG_IS 0x10 /* Invalid Secondary */
+-#define CONFIG_ZD 0x08 /* Zero Defect */
+-#define CONFIG_SF 0x04 /* Skewed Format */
+-#define CONFIG_FR 0x02 /* Removable */
+-#define CONFIG_RT 0x01 /* Retries */
+-
+-#define PORT_SYS_A   0x92
+-#define PORT_DMA_FN  0x18
+-#define PORT_DMA_EX  0x1a
+-
+-#define ON (unsigned char)0x40
+-#define OFF (unsigned char)~ON
+-#define LITE_ON outb(inb(PORT_SYS_A) | ON,PORT_SYS_A)
+-#define LITE_OFF outb((inb(PORT_SYS_A) & OFF),PORT_SYS_A)
+-
+-#define FAIL 0
+-#define SUCCES 1
+-
+-#define INT_CMD_COMPLETE 0x01
+-#define INT_CMD_ECC      0x03
+-#define INT_CMD_RETRY    0x05
+-#define INT_CMD_FORMAT   0x06
+-#define INT_CMD_ECC_RETRY 0x07
+-#define INT_CMD_WARNING  0x08
+-#define INT_CMD_ABORT    0x09
+-#define INT_RESET        0x0A
+-#define INT_TRANSFER_REQ 0x0B
+-#define INT_CMD_FAILED   0x0C
+-#define INT_DMA_ERR      0x0D
+-#define INT_CMD_BLK_ERR  0x0E
+-#define INT_ATTN_ERROR   0x0F
+-
+-#define DMA_MASK_CHAN 0x90
+-#define DMA_UNMASK_CHAN 0xA0
+-#define DMA_WRITE_ADDR 0x20
+-#define DMA_WRITE_TC 0x40
+-#define DMA_WRITE_MODE 0x70
+-
+-#define CMD_GET_DEV_CONFIG 0x09
+-#define CMD_READ 0x4601
+-#define CMD_WRITE 0x4602
+-#define DMA_READ_16 0x4C
+-#define DMA_WRITE_16 0x44
+-
+-
+-#define MB 1024*1024
+-#define SECT_SIZE 512   
+-
+-#define ERROR 1
+-#define OK 0
+-
+-#define HDIO_GETGEO 0x0301
+-
+-#define FALSE 0
+-#define TRUE !FALSE
+-
+-struct ps2esdi_geometry {
+-	unsigned char heads;
+-	unsigned char sectors;
+-	unsigned short cylinders;
+-	unsigned long start;
 -};
 -
--static struct mtd_partition partition_info32M[] = {
--	{ .name =	"toto kernel partition 1",
--	  .offset =	0,
--	  .size =	2 * SZ_1M },
--	{ .name =	"toto file sys partition 2",
--	  .offset =	2 * SZ_1M,
--	  .size =	14 * SZ_1M },
--	{ .name =	"toto user partition 3",
--	  .offset =	16 * SZ_1M,
--	  .size =	16 * SZ_1M },
--};
--
--#define NUM_PARTITIONS32M 3
--#define NUM_PARTITIONS64M 4
--
--/*
-- *	hardware specific access to control-lines
-- *
-- *	ctrl:
-- *	NAND_NCE: bit 0 -> bit 14 (0x4000)
-- *	NAND_CLE: bit 1 -> bit 12 (0x1000)
-- *	NAND_ALE: bit 2 -> bit 1  (0x0002)
-- */
--static void toto_hwcontrol(struct mtd_info *mtd, int cmd,
--			   unsigned int ctrl)
--{
--	struct nand_chip *chip = mtd->priv;
--
--	if (ctrl & NAND_CTRL_CHANGE) {
--		unsigned long bits;
--
--		/* hopefully enough time for tc make proceding write to clear */
--		udelay(1);
--
--		bits = (~ctrl & NAND_NCE) << 14;
--		bits |= (ctrl & NAND_CLE) << 12;
--		bits |= (ctrl & NAND_ALE) >> 1;
--
--#warning Wild guess as gpiosetout() is nowhere defined in the kernel source - tglx
--		gpiosetout(0x5002, bits);
--
--#ifdef CONFIG_NAND_WORKAROUND
--		/* "some" dev boards busted, blue wired to rts2 :( */
--		rts2setout(2, (ctrl & NAND_CLE) << 1);
--#endif
--		/* allow time to ensure gpio state to over take memory write */
--		udelay(1);
--	}
--
--	if (cmd != NAND_CMD_NONE)
--		writeb(cmd, chip->IO_ADDR_W);
--}
--
--/*
-- * Main initialization routine
-- */
--static int __init toto_init(void)
--{
--	struct nand_chip *this;
--	int err = 0;
--
--	/* Allocate memory for MTD device structure and private data */
--	toto_mtd = kmalloc(sizeof(struct mtd_info) + sizeof(struct nand_chip), GFP_KERNEL);
--	if (!toto_mtd) {
--		printk(KERN_WARNING "Unable to allocate toto NAND MTD device structure.\n");
--		err = -ENOMEM;
--		goto out;
--	}
--
--	/* Get pointer to private data */
--	this = (struct nand_chip *)(&toto_mtd[1]);
--
--	/* Initialize structures */
--	memset(toto_mtd, 0, sizeof(struct mtd_info));
--	memset(this, 0, sizeof(struct nand_chip));
--
--	/* Link the private data with the MTD structure */
--	toto_mtd->priv = this;
--	toto_mtd->owner = THIS_MODULE;
--
--	/* Set address of NAND IO lines */
--	this->IO_ADDR_R = toto_io_base;
--	this->IO_ADDR_W = toto_io_base;
--	this->cmd_ctrl = toto_hwcontrol;
--	this->dev_ready = NULL;
--	/* 25 us command delay time */
--	this->chip_delay = 30;
--	this->ecc.mode = NAND_ECC_SOFT;
--
--	/* Scan to find existance of the device */
--	if (nand_scan(toto_mtd, 1)) {
--		err = -ENXIO;
--		goto out_mtd;
--	}
--
--	/* Register the partitions */
--	switch (toto_mtd->size) {
--	case SZ_64M:
--		add_mtd_partitions(toto_mtd, partition_info64M, NUM_PARTITIONS64M);
--		break;
--	case SZ_32M:
--		add_mtd_partitions(toto_mtd, partition_info32M, NUM_PARTITIONS32M);
--		break;
--	default:{
--			printk(KERN_WARNING "Unsupported Nand device\n");
--			err = -ENXIO;
--			goto out_buf;
--		}
--	}
--
--	gpioreserve(NAND_MASK);	/* claim our gpios */
--	archflashwp(0, 0);	/* open up flash for writing */
--
--	goto out;
--
-- out_mtd:
--	kfree(toto_mtd);
-- out:
--	return err;
--}
--
--module_init(toto_init);
--
--/*
-- * Clean up routine
-- */
--static void __exit toto_cleanup(void)
--{
--	/* Release resources, unregister device */
--	nand_release(toto_mtd);
--
--	/* Free the MTD device structure */
--	kfree(toto_mtd);
--
--	/* stop flash writes */
--	archflashwp(0, 1);
--
--	/* release gpios to system */
--	gpiorelease(NAND_MASK);
--}
--
--module_exit(toto_cleanup);
--
--MODULE_LICENSE("GPL");
--MODULE_AUTHOR("Richard Woodruff <r-woodruff2@ti.com>");
--MODULE_DESCRIPTION("Glue layer for NAND flash on toto board");
+-#endif /* _PS2ESDI_H_ */
 
