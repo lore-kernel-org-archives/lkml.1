@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758793AbYAAPsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758879AbYAAPtG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758793AbYAAPsp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 10:48:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbYAAPgz
+	id S1758879AbYAAPtG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 10:49:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbYAAPg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 10:36:55 -0500
-Received: from il.qumranet.com ([82.166.9.18]:33792 "EHLO il.qumranet.com"
+	Tue, 1 Jan 2008 10:36:56 -0500
+Received: from il.qumranet.com ([82.166.9.18]:33796 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755051AbYAAPg3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 10:36:29 -0500
+	id S1754515AbYAAPg1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 10:36:27 -0500
 From: Avi Kivity <avi@qumranet.com>
 To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Subject: [PATCH 40/54] KVM: SVM: Trap access to the cr8 register
-Date: Tue,  1 Jan 2008 17:36:06 +0200
-Message-Id: <1199201780-14001-41-git-send-email-avi@qumranet.com>
+Cc: Marcelo Tosatti <marcelo@kvack.org>
+Subject: [PATCH 31/54] KVM: MMU: Remove unused prev_shadow_ent variable from fetch()
+Date: Tue,  1 Jan 2008 17:35:57 +0200
+Message-Id: <1199201780-14001-32-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1199201780-14001-1-git-send-email-avi@qumranet.com>
 References: <1199201780-14001-1-git-send-email-avi@qumranet.com>
@@ -21,60 +22,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Later we may be able to use the virtual tpr feature, but for now,
-just trap it.
+From: Marcelo Tosatti <marcelo@kvack.org>
 
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/svm.c |    8 ++++++--
- drivers/kvm/svm.h |    1 +
- 2 files changed, 7 insertions(+), 2 deletions(-)
+ drivers/kvm/paging_tmpl.h |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
-index 8b1cc60..677b525 100644
---- a/drivers/kvm/svm.c
-+++ b/drivers/kvm/svm.c
-@@ -449,11 +449,13 @@ static void init_vmcb(struct vmcb *vmcb)
+diff --git a/drivers/kvm/paging_tmpl.h b/drivers/kvm/paging_tmpl.h
+index b24bc7c..3c40a59 100644
+--- a/drivers/kvm/paging_tmpl.h
++++ b/drivers/kvm/paging_tmpl.h
+@@ -300,7 +300,6 @@ static u64 *FNAME(fetch)(struct kvm_vcpu *vcpu, gva_t addr,
+ 	hpa_t shadow_addr;
+ 	int level;
+ 	u64 *shadow_ent;
+-	u64 *prev_shadow_ent = NULL;
  
- 	control->intercept_cr_read = 	INTERCEPT_CR0_MASK |
- 					INTERCEPT_CR3_MASK |
--					INTERCEPT_CR4_MASK;
-+					INTERCEPT_CR4_MASK |
-+					INTERCEPT_CR8_MASK;
+ 	if (!is_present_pte(walker->pte))
+ 		return NULL;
+@@ -326,7 +325,6 @@ static u64 *FNAME(fetch)(struct kvm_vcpu *vcpu, gva_t addr,
+ 			if (level == PT_PAGE_TABLE_LEVEL)
+ 				break;
+ 			shadow_addr = *shadow_ent & PT64_BASE_ADDR_MASK;
+-			prev_shadow_ent = shadow_ent;
+ 			continue;
+ 		}
  
- 	control->intercept_cr_write = 	INTERCEPT_CR0_MASK |
- 					INTERCEPT_CR3_MASK |
--					INTERCEPT_CR4_MASK;
-+					INTERCEPT_CR4_MASK |
-+					INTERCEPT_CR8_MASK;
+@@ -355,7 +353,6 @@ static u64 *FNAME(fetch)(struct kvm_vcpu *vcpu, gva_t addr,
+ 		shadow_pte = shadow_addr | PT_PRESENT_MASK | PT_ACCESSED_MASK
+ 			| PT_WRITABLE_MASK | PT_USER_MASK;
+ 		*shadow_ent = shadow_pte;
+-		prev_shadow_ent = shadow_ent;
+ 	}
  
- 	control->intercept_dr_read = 	INTERCEPT_DR0_MASK |
- 					INTERCEPT_DR1_MASK |
-@@ -1195,10 +1197,12 @@ static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
- 	[SVM_EXIT_READ_CR0]           		= emulate_on_interception,
- 	[SVM_EXIT_READ_CR3]           		= emulate_on_interception,
- 	[SVM_EXIT_READ_CR4]           		= emulate_on_interception,
-+	[SVM_EXIT_READ_CR8]           		= emulate_on_interception,
- 	/* for now: */
- 	[SVM_EXIT_WRITE_CR0]          		= emulate_on_interception,
- 	[SVM_EXIT_WRITE_CR3]          		= emulate_on_interception,
- 	[SVM_EXIT_WRITE_CR4]          		= emulate_on_interception,
-+	[SVM_EXIT_WRITE_CR8]          		= emulate_on_interception,
- 	[SVM_EXIT_READ_DR0] 			= emulate_on_interception,
- 	[SVM_EXIT_READ_DR1]			= emulate_on_interception,
- 	[SVM_EXIT_READ_DR2]			= emulate_on_interception,
-diff --git a/drivers/kvm/svm.h b/drivers/kvm/svm.h
-index 5fa277c..5fd5049 100644
---- a/drivers/kvm/svm.h
-+++ b/drivers/kvm/svm.h
-@@ -204,6 +204,7 @@ struct __attribute__ ((__packed__)) vmcb {
- #define INTERCEPT_CR0_MASK 1
- #define INTERCEPT_CR3_MASK (1 << 3)
- #define INTERCEPT_CR4_MASK (1 << 4)
-+#define INTERCEPT_CR8_MASK (1 << 8)
- 
- #define INTERCEPT_DR0_MASK 1
- #define INTERCEPT_DR1_MASK (1 << 1)
+ 	FNAME(set_pte)(vcpu, walker->pte, shadow_ent,
 -- 
 1.5.3.7
 
