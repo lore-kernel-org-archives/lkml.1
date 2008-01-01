@@ -1,87 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758625AbYAAXT5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758665AbYAAXVb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758625AbYAAXT5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 18:19:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756599AbYAAXTt
+	id S1758665AbYAAXVb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 18:21:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756385AbYAAXVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 18:19:49 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38007 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754907AbYAAXTs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 18:19:48 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: nigel@nigel.suspend2.net
-Subject: Re: What's in store for 2008 for TuxOnIce?
-Date: Wed, 2 Jan 2008 00:21:36 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: suspend2-devel@lists.tuxonice.net,
-       "The place to get help!" <suspend2-users@lists.tuxonice.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <477AC060.5040004@nigel.suspend2.net>
-In-Reply-To: <477AC060.5040004@nigel.suspend2.net>
+	Tue, 1 Jan 2008 18:21:22 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:56523 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755838AbYAAXVV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 18:21:21 -0500
+Date: Wed, 2 Jan 2008 00:20:11 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Yi Yang <yi.y.yang@intel.com>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, lenb@kernel.org,
+       acpi-bugzilla@lists.sourceforge.net
+Subject: Re: [PATCH linux-acpi] Correct wakeup set error and append a new column PCI ID
+Message-ID: <20080101232011.GA2545@ucw.cz>
+References: <1198738022.8950.3.camel@yangyi-dev.bj.intel.com> <1198744900.3640.4.camel@yangyi-dev.bj.intel.com> <1198916553.3806.2.camel@yangyi-dev.bj.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801020021.37259.rjw@sisk.pl>
+In-Reply-To: <1198916553.3806.2.camel@yangyi-dev.bj.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 1 of January 2008, Nigel Cunningham wrote:
-> Hi all.
+Hi!
 
-Hi Nigel,
+> /proc/acpi/wakeup is also case-sensitive, case-insensitive is better.
 
-> With the start of a new year, I suppose it's a good time to think about
-> what I'd like to do with TuxOnIce this year and see what feedback I get.
+Why?
+
+> In addtion, this patch appends a new column 'PCI ID' to /proc/acpi/wakeup
+> , the user can use it to get the corresponding device name very
+> conveniently because PCI ID is a unique identifier and platform-independent.
+
+Userland interface change...?
+
+Maybe this file should be left for compatibility and we should present
+something reasonable in /sys? Can't you already get PCI ID from sysfs
+node?
+								Pavel
+
+> [root@localhost ~]# cat /proc/acpi/wakeup
+> Device  S-state   Status   Sysfs node
+> C093      S5     disabled  pci:0000:00:1e.0
+> C0E8      S3     disabled  pci:0000:00:1d.0
+> C0EF      S3     disabled  pci:0000:00:1d.1
+> C0F0      S3     disabled  pci:0000:00:1d.2
+> C0F1      S3     disabled  pci:0000:00:1d.3
+> C0F2      S3     disabled  pci:0000:00:1d.7
+> C0F9      S0     disabled  pci:0000:00:1c.0
+> C21D      S0     disabled  pci:0000:08:00.0
+> C109      S5     disabled  pci:0000:00:1c.1
+> C228      S5     disabled  pci:0000:10:00.0
+> C10F      S5     disabled  pci:0000:00:1c.3
+> C229      S5     disabled
+> [root@localhost ~]#
 > 
-> First up, I'm thinking about closing the mailing lists and asking people
-> to use LKML instead for reporting issues and so on. I'm thinking about
-> this because it will help with allowing people who work on mainline to
-> see how stable (or otherwise!) TuxOnIce is now. It should also help when
-> (as often happens) bug reports aren't actually issues with the patch,
-> but with vanilla (ie drivers).
-
-I would also like the TuxOnIce issues related to drivers, ACPI, etc. to go to
-one of the kernel-related lists, but I think linux-pm may be better for that
-due to the much lower traffic.
-
-> Perhaps it will also help with whatever effort I find time to make towards
-> convincing Andrew that it really does have significant advantages over
-> [u]swsusp and kexec based hibernation. 
+> After applying this patch, the output is:
 > 
-> Secondly, I'm planning on moving the website soonish. It's taken longer
-> than I planned because it will be sharing with another server I'm
-> maintaining, and it has taken longer than expected to find good hosting
-> for the other server (which was done first). Now that I'm happy with the
-> other server's state, I'm hoping to start shifting
-> suspend2.net/tuxonice.net soon.
-> 
-> For those who might be looking for hosting themselves, I'm using
-> slicehost. I initially tried GoDaddy, but had terrible service, problems
-> with draconian limits on the volume of outgoing email (1000/day by
-> default - useless if you're doing mailing lists) and unexpected,
-> unexplained delays in mail delivery through the SMTP delay they force
-> you to use. Slicehost, on the other hand, are terrific to deal with in
-> everyway. If you sign up with them because of this email, please
-> consider putting my email (nigel at suspend2.net) as the referrer - I
-> then get a discount on the cost of the hosting.
-> 
-> Third, regarding the patch itself, I'm taking my time in working towards
-> the 3.0 release. We don't have any major bugs with 3.0-rc3 reported, but
-> I have some things I want to complete before the final release:
-> * see it well tested;
-> * get a finished initial version of the cluster support;
-> * finish completing support for the new resume-from-other kernels
-> functionality that Rafael has added in 2.6.24. (We can resume from the
-> same kernel at the moment, but I need to convince myself that nosave
-> data is properly handled).
+> [root@localhost ~]# cat /proc/acpi/wakeup
+> Device  S-state   Status   Sysfs node           PCI ID
+> C093      S5     disabled  pci:0000:00:1e.0     0x2448
+> C0E8      S3     disabled  pci:0000:00:1d.0     0x27c8
+> C0EF      S3     disabled  pci:0000:00:1d.1     0x27c9
+> C0F0      S3     disabled  pci:0000:00:1d.2     0x27ca
+> C0F1      S3     disabled  pci:0000:00:1d.3     0x27cb
+> C0F2      S3     disabled  pci:0000:00:1d.7     0x27cc
+> C0F9      S0     disabled  pci:0000:00:1c.0     0x27d0
+> C21D      S0     disabled  pci:0000:08:00.0     0x16fd
+> C109      S5     disabled  pci:0000:00:1c.1     0x27d2
+> C228      S5     disabled  pci:0000:10:00.0     0x4222
+> C10F      S5     disabled  pci:0000:00:1c.3     0x27d6
+> C229      S5     disabled
 
-Have you finished the support for freezing filesystems before freezing tasks
-that we talked about some time ago?
-
-Greetings,
-Rafael
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
