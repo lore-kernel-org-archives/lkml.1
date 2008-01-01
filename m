@@ -1,87 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756642AbYAARmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756262AbYAARoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756642AbYAARmZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 12:42:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbYAARmR
+	id S1756262AbYAARoS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 12:44:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbYAARoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 12:42:17 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:56358 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753639AbYAARmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 12:42:15 -0500
-Date: Tue, 1 Jan 2008 18:42:14 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, linux-s390@vger.kernel.org
-Subject: Re: (Try #2) [Patch 3/8] S390: Tiny fixes for Makefile
-Message-ID: <20080101174214.GB31575@uranus.ravnborg.org>
-References: <20080101071311.GA2496@hacking> <20080101072555.GD2496@hacking> <20080101101720.GC28913@uranus.ravnborg.org> <20080101132739.GC2499@hacking>
+	Tue, 1 Jan 2008 12:44:09 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56580 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754607AbYAARoI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 12:44:08 -0500
+Date: Tue, 1 Jan 2008 17:35:32 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] remove CONFIG_EXPERIMENTAL
+Message-ID: <20080101173532.1db4019f@the-village.bc.nu>
+In-Reply-To: <20080101163337.GX2360@does.not.exist>
+References: <20080101134809.GK2360@does.not.exist>
+	<20080101142344.769f16c7@the-village.bc.nu>
+	<20080101151751.GW2360@does.not.exist>
+	<20080101160708.5bb5cc2a@the-village.bc.nu>
+	<20080101163337.GX2360@does.not.exist>
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080101132739.GC2499@hacking>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 01, 2008 at 09:27:39PM +0800, WANG Cong wrote:
-> 
-> >> -binfmt_elf32.o:	$(TOPDIR)/fs/binfmt_elf.c
-> >> +binfmt_elf32.o:	$(objtree)/fs/binfmt_elf.c
-> >
-> >This prerequisite listing looks just bogus and should be removed altogether.
-> >We only need to list prerequisites explicit for generated files.
-> 
-> Not so sure whether this is what s390 people do on purpose.
-> Thanks anyway!
-> 
-> The following one contains the new fix.
-> 
-> ------------>
-> 
-> This patch removes TOPDIR and fixes a bogus prerequisite
-> in arch/s390/kernel/Makefile.
-> 
-> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-> 
-> ----
-> 
-> diff --git a/arch/s390/kernel/Makefile b/arch/s390/kernel/Makefile
-> index 56cb710..4accf27 100644
-> --- a/arch/s390/kernel/Makefile
-> +++ b/arch/s390/kernel/Makefile
-> @@ -20,7 +20,7 @@ obj-$(CONFIG_AUDIT)		+= audit.o
->  compat-obj-$(CONFIG_AUDIT)	+= compat_audit.o
->  obj-$(CONFIG_COMPAT)		+= compat_linux.o compat_signal.o \
->  					compat_wrapper.o compat_exec_domain.o \
-> -					binfmt_elf32.o $(compat-obj-y)
-> +					binfmt_elf.o $(compat-obj-y)
->  
->  obj-$(CONFIG_VIRT_TIMER)	+= vtime.o
->  obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
-> @@ -34,4 +34,4 @@ obj-$(CONFIG_KEXEC) += $(S390_KEXEC_OBJS)
->  #
->  # This is just to get the dependencies...
->  #
-> -binfmt_elf32.o:	$(TOPDIR)/fs/binfmt_elf.c
-> +binfmt_elf.o:	$(objtree)/fs/binfmt_elf.c
+> So smbfs is still considered rock solid while no serious distribution 
+> would be crazy enough to ship the EXPERIMENTAL NFSv4 support to their 
+> customers?
 
-This is wrong. s390 have a file named binfmt_elf32.c and with this
-change it does no longer build.
+Thats a different problem. The kernel as I've said many times has no
+proper process for
 
-If the output file does not exist then kbuild does not care about the
-dependencies and will just build the target.
-On the second invocation when the target exists then kbuild has
-created a file named .<target>.cmd that list the dependencies
-and this includes any included .c file.
-So there is just no pint in defining this dependency explicit
-in the MAkefile - kbuild will figure it out automatically.
+- removing expired/missing maintainers
+- handling stuff that decays
+- removing dead documentation
+- removing dead drivers and ports
 
-The right fix is just to kill the explicit listed dependency.
+Although you've certainly started on fixing much of that.
 
-	Sam
+> I'm not claiming that all EXPERIMENTAL tags were wrong [1], but many 
+> were wrong.
+
+So why not fix the wrong tags, and mark smbfs obsolete ?
+
+> Plus the fact that CONFIG_EXPERIMENTAL controlled so many different 
+> things with one switch that CONFIG_EXPERIMENTAL=n .config's are really 
+> rare.
+
+Agreed
