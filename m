@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752553AbYAAFjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752633AbYAAGJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752553AbYAAFjd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 00:39:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbYAAFjX
+	id S1752633AbYAAGJU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 01:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbYAAGJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 00:39:23 -0500
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:59795 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750983AbYAAFjW (ORCPT
+	Tue, 1 Jan 2008 01:09:10 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:5164 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750967AbYAAGJJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 00:39:22 -0500
-X-Greylist: delayed 2213 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Jan 2008 00:39:21 EST
-Date: Tue, 1 Jan 2008 00:01:54 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Bodo Eggert <7eggert@gmx.de>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, David Miller <davem@davemloft.net>,
-       jengelh@computergmbh.de, devzero@web.de, linux-kernel@vger.kernel.org,
-       bunk@kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] Force UNIX domain sockets to be built in
-Message-ID: <20080101050154.GG11776@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Bodo Eggert <7eggert@gmx.de>, Al Viro <viro@ZenIV.linux.org.uk>,
-	David Miller <davem@davemloft.net>, jengelh@computergmbh.de,
-	devzero@web.de, linux-kernel@vger.kernel.org, bunk@kernel.org,
-	netdev@vger.kernel.org
-References: <alpine.LSU.0.999.0712311300020.3686@be1.lrz> <20071231.042055.145660385.davem@davemloft.net> <alpine.LSU.0.999.0712311426520.3761@be1.lrz> <20071231193848.GQ27894@ZenIV.linux.org.uk> <alpine.LSU.0.999.0801010418260.2337@be1.lrz>
+	Tue, 1 Jan 2008 01:09:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OBlNOkP08YipEFP1ye0hrdKVAdkY6tdIB4QiA5qeITJO4GfFX6zf4nBXoPSUQuB8UTGPEIlrMfcCXnMZ8wO+9YR8Lc2h0OsDuh9WTEglXIz5QI7BI/WT0Ph58rV1XDjIwI6s+NSb13YXPSFqgbn9/c/fsy/F2cvAxCGc4ovBGb4=
+Message-ID: <b25c3fa70712312209q772db28l69ee22dcdafd2679@mail.gmail.com>
+Date: Tue, 1 Jan 2008 15:09:08 +0900
+From: "Joonwoo Park" <joonwpark81@gmail.com>
+To: "jacliburn@bellsouth.net" <jacliburn@bellsouth.net>
+Subject: Re: [PATCH 25/26] atl1: add NAPI support
+Cc: jeff@garzik.org, csnook@redhat.com, linux-kernel@vger.kernel.org,
+       atl1-devel@lists.sourceforge.net
+In-Reply-To: <1199152804-3889-26-git-send-email-jacliburn@bellsouth.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LSU.0.999.0801010418260.2337@be1.lrz>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+References: <1199152804-3889-1-git-send-email-jacliburn@bellsouth.net>
+	 <1199152804-3889-26-git-send-email-jacliburn@bellsouth.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 01, 2008 at 04:45:21AM +0100, Bodo Eggert wrote:
-> > udev-free != embedded.
-> 
-> But UNIX=m == waste RAM and have an effectively b0rken system until the 
-> module is loaded. 
+2008/1/1, jacliburn@bellsouth.net <jacliburn@bellsouth.net>:
+> From: Jay Cliburn <jacliburn@bellsouth.net>
+>
+> Add support for NAPI, styled after the e1000 NAPI implementation.  That we
+> follow the e1000 for NAPI shouldn't come as much of a surprise, since the
+> entire atl1 driver is based heavily upon it.
+>
+> Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
+> ---
+>  drivers/net/Kconfig     |   14 ++++
+>  drivers/net/atlx/atl1.c |  151 +++++++++++++++++++++++++++++++++++++++++++++--
+>  drivers/net/atlx/atl1.h |   20 ++++++
+>  drivers/net/atlx/atlx.h |    7 ++-
+>  4 files changed, 186 insertions(+), 6 deletions(-)
+>
+> +       if ((!tx_cleaned && (work_done == 0)) ||
+> +               !netif_running(poll_dev)) {
+> +quit_polling:
+> +               netif_rx_complete(poll_dev, napi);
+> +
+> +               if (!test_bit(__ATL1_DOWN, &adapter->flags))
+> +                       atlx_irq_enable(adapter);
+> +       }
 
-Well, the system isn't necessarily totally broken.  If you don't use
-udev, then system will be crippled, but not totally broken.  Then
-again, besides udev, packages such as dbus, gdm, and acpid all use
-Unix Domain Sockets --- not to mention cups, avahi-daemon, bluez,
-emacsclient, and any X program when the DISPLAY is :0.0.
+Hi Jay,
+if buget == work_done is true, you should not call netif_rx_complete.
+Searching recent netdev mailbox would be help.
 
-The question is whether the size of the Unix domain sockets support is
-worth the complexity of yet another config option that we expose to
-the user.  For the embedded world, OK, maybe they want to save 14k of
-non-swappable memory.  But for the non-embedded world, given the 117k
-mandatory memory usage of sysfs, or the 124k memory usage of the core
-networking stack, never mind the 3 megabytes of memory used by objects
-in the kernel subdirectory, it's not clear that it's worth worrying
-over 14k of memory, especially when many Unix programs assume
-that Unix Domain Sockets are present.
-
-						- Ted
+Thanks.
+Joonwoo
