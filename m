@@ -1,72 +1,441 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756660AbYAARs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755602AbYAARu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756660AbYAARs7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 12:48:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754297AbYAARsw
+	id S1755602AbYAARu2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 12:50:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbYAARuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 12:48:52 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43569 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751483AbYAARsv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 12:48:51 -0500
-Date: Tue, 1 Jan 2008 17:38:41 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "David P. Reed" <dpreed@reed.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Rene Herman <rene.herman@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Paul Rolland <rol@as2917.net>,
-       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       rol@witbe.net
-Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
-Message-ID: <20080101173841.5fe353f0@the-village.bc.nu>
-In-Reply-To: <477A7941.8080603@reed.com>
-References: <4762C551.5070003@zytor.com>
-	<20071214210652.GB28793@elf.ucw.cz>
-	<4763001A.1070102@zytor.com>
-	<20071214232955.545ab809@the-village.bc.nu>
-	<20071215080831.404cdb32@tux.DEF.witbe.net>
-	<47638C8C.2090604@gmail.com>
-	<476438B4.2020600@zytor.com>
-	<476462BE.3030701@gmail.com>
-	<4764687D.6080609@zytor.com>
-	<476524DB.7020806@gmail.com>
-	<20071216152250.GA21245@elte.hu>
-	<4765D43E.1010800@gmail.com>
-	<4765D95C.4010404@zytor.com>
-	<4765DCB0.8030901@gmail.com>
-	<4765EE7F.80002@zytor.com>
-	<47667366.7010405@gmail.com>
-	<4766AE88.4080904@zytor.com>
-	<4766D175.7040807@reed.com>
-	<20071217212509.5edaa372@the-village.bc.nu>
-	<477A634C.8040000@reed.com>
-	<20080101161557.3ce2d5f8@the-village.bc.nu>
-	<477A7941.8080603@reed.com>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 1 Jan 2008 12:50:20 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45105 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751483AbYAARuS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 12:50:18 -0500
+Message-ID: <477A7D1F.8020703@redhat.com>
+Date: Tue, 01 Jan 2008 12:49:19 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Abhishek Sagar <sagar.abhishek@gmail.com>
+CC: Harvey Harrison <harvey.harrison@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, qbarnes@gmail.com,
+       ananth@in.ibm.com, jkenisto@us.ibm.com
+Subject: Re: [PATCH] x86: kprobes change kprobe_handler flow
+References: <1198806265.6323.34.camel@brick> <4778E8B0.6010400@gmail.com>
+In-Reply-To: <4778E8B0.6010400@gmail.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 80 diagnostic codes and sending them to the "drawer" management 
-> processor through a management backplane.   This is a little puzzling, 
-> because you'd think they would have noticed port 80 issues, since they 
-> run Linux in their systems.  Maybe not hangs, but it seems unhelpful to 
+Hello Abhishek,
 
-Most of the chipsets let you turn it on and off so presumably the BIOS
-turns it off before running Linux. Thats certainly done by several
-chipsets and we recently had a bug where a BIOS forgot to turn them off
-which confused someones parallel port devices.
+Abhishek Sagar wrote:
+> Harvey Harrison wrote:
+>> Make the control flow of kprobe_handler more obvious.
+>>
+>> Collapse the separate if blocks/gotos with if/else blocks
+>> this unifies the duplication of the check for a breakpoint
+>> instruction race with another cpu.
+> 
+> This is a patch derived from kprobe_handler of the ARM kprobes
+> port. This further simplifies the current x86 kprobe_handler.
+> The resulting definition is smaller, more readable, has no
+> goto's and contains only a single call to get_kprobe.
 
-> Anyone know if the Linux kernels used on blade servers have been patched 
-> to not do the port 80 things?  I don't think this would break anything 
+Thank you.
+As far as I can see, this patch did more than cleanup.
+Could you separate changing logic from cleanup and explain
+why the logic should be changed?
+That will be very useful for reviewers.
 
-I'm not aware of such, or requests for them.
+> Signed-off-by: Abhishek Sagar <sagar.abhishek@gmail.com>
+> Signed-off-by: Quentin Barnes <qbarnes@gmail.com>
+> ---
+> 
+> diff --git a/arch/x86/kernel/kprobes_32.c b/arch/x86/kernel/kprobes_32.c
+> index 3a020f7..5a626fd 100644
+> --- a/arch/x86/kernel/kprobes_32.c
+> +++ b/arch/x86/kernel/kprobes_32.c
+> @@ -240,108 +240,110 @@ void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
+>  	*sara = (unsigned long) &kretprobe_trampoline;
+>  }
+>  
+> +static __always_inline void setup_singlestep(struct kprobe *p,
+> +					     struct pt_regs *regs,
+> +					     struct kprobe_ctlblk *kcb)
+> +{
+> +#if !defined(CONFIG_PREEMPT) || defined(CONFIG_PM)
+> +	if (p->ainsn.boostable == 1 && !p->post_handler) {
+> +		/* Boost up -- we can execute copied instructions directly */
+> +		reset_current_kprobe();
+> +		regs->eip = (unsigned long)p->ainsn.insn;
+> +		preempt_enable_no_resched();
+> +	} else {
+> +		prepare_singlestep(p, regs);
+> +		kcb->kprobe_status = KPROBE_HIT_SS;
+> +	}
+> +#else
+> +	prepare_singlestep(p, regs);
+> +	kcb->kprobe_status = KPROBE_HIT_SS;
 
-Alan
+please avoid code duplication.
+
+> +#endif
+> +}
+> +
+>  /*
+>   * Interrupts are disabled on entry as trap3 is an interrupt gate and they
+>   * remain disabled thorough out this function.
+>   */
+>  static int __kprobes kprobe_handler(struct pt_regs *regs)
+>  {
+> -	struct kprobe *p;
+>  	int ret = 0;
+>  	kprobe_opcode_t *addr;
+> +	struct kprobe *p, *cur;
+>  	struct kprobe_ctlblk *kcb;
+>  
+>  	addr = (kprobe_opcode_t *)(regs->eip - sizeof(kprobe_opcode_t));
+> +	if (*addr != BREAKPOINT_INSTRUCTION) {
+> +		/*
+> +		 * The breakpoint instruction was removed right
+> +		 * after we hit it.  Another cpu has removed
+> +		 * either a probepoint or a debugger breakpoint
+> +		 * at this address.  In either case, no further
+> +		 * handling of this interrupt is appropriate.
+> +		 * Back up over the (now missing) int3 and run
+> +		 * the original instruction.
+> +		 */
+> +		regs->eip -= sizeof(kprobe_opcode_t);
+> +		return 1;
+> +	}
+>  
+> -	/*
+> -	 * We don't want to be preempted for the entire
+> -	 * duration of kprobe processing
+> -	 */
+>  	preempt_disable();
+>  	kcb = get_kprobe_ctlblk();
+> +	cur = kprobe_running();
+> +	p = get_kprobe(addr);
+>  
+> -	/* Check we're not actually recursing */
+> -	if (kprobe_running()) {
+> -		p = get_kprobe(addr);
+> -		if (p) {
+> -			if (kcb->kprobe_status == KPROBE_HIT_SS &&
+> -				*p->ainsn.insn == BREAKPOINT_INSTRUCTION) {
+> -				regs->eflags &= ~TF_MASK;
+> -				regs->eflags |= kcb->kprobe_saved_eflags;
+> -				goto no_kprobe;
+> -			}
+> -			/* We have reentered the kprobe_handler(), since
+> -			 * another probe was hit while within the handler.
+> -			 * We here save the original kprobes variables and
+> -			 * just single step on the instruction of the new probe
+> -			 * without calling any user handlers.
+> -			 */
+> -			save_previous_kprobe(kcb);
+> -			set_current_kprobe(p, regs, kcb);
+> -			kprobes_inc_nmissed_count(p);
+> -			prepare_singlestep(p, regs);
+> -			kcb->kprobe_status = KPROBE_REENTER;
+> -			return 1;
+> -		} else {
+> -			if (*addr != BREAKPOINT_INSTRUCTION) {
+> -			/* The breakpoint instruction was removed by
+> -			 * another cpu right after we hit, no further
+> -			 * handling of this interrupt is appropriate
+> -			 */
+> -				regs->eip -= sizeof(kprobe_opcode_t);
+> +	if (p) {
+> +		if (cur) {
+> +			switch (kcb->kprobe_status) {
+> +			case KPROBE_HIT_ACTIVE:
+> +			case KPROBE_HIT_SSDONE:
+> +				/* a probe has been hit inside a
+> +				 * user handler */
+> +				save_previous_kprobe(kcb);
+> +				set_current_kprobe(p, regs, kcb);
+> +				kprobes_inc_nmissed_count(p);
+> +				prepare_singlestep(p, regs);
+> +				kcb->kprobe_status = KPROBE_REENTER;
+>  				ret = 1;
+> -				goto no_kprobe;
+> -			}
+> -			p = __get_cpu_var(current_kprobe);
+> -			if (p->break_handler && p->break_handler(p, regs)) {
+> -				goto ss_probe;
+> +				break;
+> +			case KPROBE_HIT_SS:
+> +				if (*p->ainsn.insn == BREAKPOINT_INSTRUCTION) {
+> +					regs->eflags &= ~TF_MASK;
+> +					regs->eflags |=
+> +						kcb->kprobe_saved_eflags;
+> +				} else {
+> +					/* BUG? */
+> +				}
+> +				break;
+> +			default:
+> +				/* impossible cases */
+> +				BUG();
+>  			}
+> -		}
+> -		goto no_kprobe;
+> -	}
+> +		} else {
+> +			set_current_kprobe(p, regs, kcb);
+> +			kcb->kprobe_status = KPROBE_HIT_ACTIVE;
+>  
+> -	p = get_kprobe(addr);
+> -	if (!p) {
+> -		if (*addr != BREAKPOINT_INSTRUCTION) {
+>  			/*
+> -			 * The breakpoint instruction was removed right
+> -			 * after we hit it.  Another cpu has removed
+> -			 * either a probepoint or a debugger breakpoint
+> -			 * at this address.  In either case, no further
+> -			 * handling of this interrupt is appropriate.
+> -			 * Back up over the (now missing) int3 and run
+> -			 * the original instruction.
+> +			 * If we have no pre-handler or it returned 0, we
+> +			 * continue with normal processing.  If we have a
+> +			 * pre-handler and it returned non-zero, it prepped
+> +			 * for calling the break_handler below on re-entry
+> +			 * for jprobe processing, so get out doing nothing
+> +			 * more here.
+>  			 */
+> -			regs->eip -= sizeof(kprobe_opcode_t);
+> +			if (!p->pre_handler || !p->pre_handler(p, regs))
+> +				setup_singlestep(p, regs, kcb);
+>  			ret = 1;
+>  		}
+> -		/* Not one of ours: let kernel handle it */
+> -		goto no_kprobe;
+> -	}
+> -
+> -	set_current_kprobe(p, regs, kcb);
+> -	kcb->kprobe_status = KPROBE_HIT_ACTIVE;
+> -
+> -	if (p->pre_handler && p->pre_handler(p, regs))
+> -		/* handler has already set things up, so skip ss setup */
+> -		return 1;
+> +	} else if (cur) {
+> +		p = __get_cpu_var(current_kprobe);
+> +		if (p->break_handler && p->break_handler(p, regs)) {
+> +			setup_singlestep(p, regs, kcb);
+> +			ret = 1;
+> +		}
+> +	} /* else: not a kprobe fault; let the kernel handle it */
+>  
+> -ss_probe:
+> -#if !defined(CONFIG_PREEMPT) || defined(CONFIG_PM)
+> -	if (p->ainsn.boostable == 1 && !p->post_handler){
+> -		/* Boost up -- we can execute copied instructions directly */
+> -		reset_current_kprobe();
+> -		regs->eip = (unsigned long)p->ainsn.insn;
+> +	if (!ret)
+>  		preempt_enable_no_resched();
+> -		return 1;
+> -	}
+> -#endif
+> -	prepare_singlestep(p, regs);
+> -	kcb->kprobe_status = KPROBE_HIT_SS;
+> -	return 1;
+> -
+> -no_kprobe:
+> -	preempt_enable_no_resched();
+>  	return ret;
+>  }
+>  
+> diff --git a/arch/x86/kernel/kprobes_64.c b/arch/x86/kernel/kprobes_64.c
+> index 5df19a9..788114c 100644
+> --- a/arch/x86/kernel/kprobes_64.c
+> +++ b/arch/x86/kernel/kprobes_64.c
+> @@ -278,30 +278,47 @@ void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
+>  	*sara = (unsigned long) &kretprobe_trampoline;
+>  }
+>  
+> -int __kprobes kprobe_handler(struct pt_regs *regs)
+> +static int __kprobes kprobe_handler(struct pt_regs *regs)
+>  {
+> -	struct kprobe *p;
+>  	int ret = 0;
+> -	kprobe_opcode_t *addr = (kprobe_opcode_t *)(regs->rip - sizeof(kprobe_opcode_t));
+> +	kprobe_opcode_t *addr;
+> +	struct kprobe *p, *cur;
+>  	struct kprobe_ctlblk *kcb;
+>  
+> -	/*
+> -	 * We don't want to be preempted for the entire
+> -	 * duration of kprobe processing
+> -	 */
+> +	addr = (kprobe_opcode_t *)(regs->rip - sizeof(kprobe_opcode_t));
+> +	if (*addr != BREAKPOINT_INSTRUCTION) {
+> +		/*
+> +		 * The breakpoint instruction was removed right
+> +		 * after we hit it.  Another cpu has removed
+> +		 * either a probepoint or a debugger breakpoint
+> +		 * at this address.  In either case, no further
+> +		 * handling of this interrupt is appropriate.
+> +		 * Back up over the (now missing) int3 and run
+> +		 * the original instruction.
+> +		 */
+> +		regs->rip = (unsigned long)addr;
+> +		return 1;
+> +	}
+> +
+>  	preempt_disable();
+>  	kcb = get_kprobe_ctlblk();
+> +	cur = kprobe_running();
+> +	p = get_kprobe(addr);
+>  
+> -	/* Check we're not actually recursing */
+> -	if (kprobe_running()) {
+> -		p = get_kprobe(addr);
+> -		if (p) {
+> -			if (kcb->kprobe_status == KPROBE_HIT_SS &&
+> -				*p->ainsn.insn == BREAKPOINT_INSTRUCTION) {
+> -				regs->eflags &= ~TF_MASK;
+> -				regs->eflags |= kcb->kprobe_saved_rflags;
+> -				goto no_kprobe;
+> -			} else if (kcb->kprobe_status == KPROBE_HIT_SSDONE) {
+> +	if (p) {
+> +		if (cur) {
+> +			switch (kcb->kprobe_status) {
+> +			case KPROBE_HIT_ACTIVE:
+> +				/* a probe has been hit inside a
+> +				 * user handler */
+> +				save_previous_kprobe(kcb);
+> +				set_current_kprobe(p, regs, kcb);
+> +				kprobes_inc_nmissed_count(p);
+> +				prepare_singlestep(p, regs);
+> +				kcb->kprobe_status = KPROBE_REENTER;
+> +				ret = 1;
+> +				break;
+> +			case KPROBE_HIT_SSDONE:
+>  				/* TODO: Provide re-entrancy from
+>  				 * post_kprobes_handler() and avoid exception
+>  				 * stack corruption while single-stepping on
+> @@ -311,72 +328,49 @@ int __kprobes kprobe_handler(struct pt_regs *regs)
+>  				regs->rip = (unsigned long)p->addr;
+>  				reset_current_kprobe();
+>  				ret = 1;
+> -			} else {
+> -				/* We have reentered the kprobe_handler(), since
+> -				 * another probe was hit while within the
+> -				 * handler. We here save the original kprobe
+> -				 * variables and just single step on instruction
+> -				 * of the new probe without calling any user
+> -				 * handlers.
+> -				 */
+> -				save_previous_kprobe(kcb);
+> -				set_current_kprobe(p, regs, kcb);
+> -				kprobes_inc_nmissed_count(p);
+> -				prepare_singlestep(p, regs);
+> -				kcb->kprobe_status = KPROBE_REENTER;
+> -				return 1;
+> +				break;
+> +			case KPROBE_HIT_SS:
+> +				if (*p->ainsn.insn == BREAKPOINT_INSTRUCTION) {
+> +					regs->eflags &= ~TF_MASK;
+> +					regs->eflags |=
+> +						kcb->kprobe_saved_eflags;
+> +				} else {
+> +					/* BUG? */
+> +				}
+> +				break;
+> +			default:
+> +				/* impossible cases */
+> +				BUG();
+>  			}
+>  		} else {
+> -			if (*addr != BREAKPOINT_INSTRUCTION) {
+> -			/* The breakpoint instruction was removed by
+> -			 * another cpu right after we hit, no further
+> -			 * handling of this interrupt is appropriate
+> -			 */
+> -				regs->rip = (unsigned long)addr;
+> -				ret = 1;
+> -				goto no_kprobe;
+> -			}
+> -			p = __get_cpu_var(current_kprobe);
+> -			if (p->break_handler && p->break_handler(p, regs)) {
+> -				goto ss_probe;
+> -			}
+> -		}
+> -		goto no_kprobe;
+> -	}
+> +			set_current_kprobe(p, regs, kcb);
+> +			kcb->kprobe_status = KPROBE_HIT_ACTIVE;
+>  
+> -	p = get_kprobe(addr);
+> -	if (!p) {
+> -		if (*addr != BREAKPOINT_INSTRUCTION) {
+>  			/*
+> -			 * The breakpoint instruction was removed right
+> -			 * after we hit it.  Another cpu has removed
+> -			 * either a probepoint or a debugger breakpoint
+> -			 * at this address.  In either case, no further
+> -			 * handling of this interrupt is appropriate.
+> -			 * Back up over the (now missing) int3 and run
+> -			 * the original instruction.
+> +			 * If we have no pre-handler or it returned 0, we
+> +			 * continue with normal processing.  If we have a
+> +			 * pre-handler and it returned non-zero, it prepped
+> +			 * for calling the break_handler below on re-entry
+> +			 * for jprobe processing, so get out doing nothing
+> +			 * more here.
+>  			 */
+> -			regs->rip = (unsigned long)addr;
+> +			if (!p->pre_handler || !p->pre_handler(p, regs)) {
+> +				prepare_singlestep(p, regs);
+> +				kcb->kprobe_status = KPROBE_HIT_SS;
+> +			}
+>  			ret = 1;
+>  		}
+> -		/* Not one of ours: let kernel handle it */
+> -		goto no_kprobe;
+> -	}
+> -
+> -	set_current_kprobe(p, regs, kcb);
+> -	kcb->kprobe_status = KPROBE_HIT_ACTIVE;
+> -
+> -	if (p->pre_handler && p->pre_handler(p, regs))
+> -		/* handler has already set things up, so skip ss setup */
+> -		return 1;
+> -
+> -ss_probe:
+> -	prepare_singlestep(p, regs);
+> -	kcb->kprobe_status = KPROBE_HIT_SS;
+> -	return 1;
+> +	} else if (cur) {
+> +		p = __get_cpu_var(current_kprobe);
+> +		if (p->break_handler && p->break_handler(p, regs)) {
+> +			prepare_singlestep(p, regs);
+> +			kcb->kprobe_status = KPROBE_HIT_SS;
+> +			ret = 1;
+> +		}
+> +	} /* else: not a kprobe fault; let the kernel handle it */
+>  
+> -no_kprobe:
+> -	preempt_enable_no_resched();
+> +	if (!ret)
+> +		preempt_enable_no_resched();
+>  	return ret;
+>  }
+>  
+> 
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
+
+
