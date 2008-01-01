@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbYAAKtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754185AbYAAMEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753984AbYAAKtu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 05:49:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbYAAKtn
+	id S1754185AbYAAMEg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 07:04:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbYAAME0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 05:49:43 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:53962 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752147AbYAAKtm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 05:49:42 -0500
-Date: Tue, 1 Jan 2008 11:49:42 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, jdike@addtoit.com,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [Patch 1/8] UML: Remove 'TOPDIR' from Makefiles
-Message-ID: <20080101104942.GI28913@uranus.ravnborg.org>
-References: <20080101071311.GA2496@hacking> <20080101071846.GB2496@hacking> <20080101103342.GH28913@uranus.ravnborg.org>
+	Tue, 1 Jan 2008 07:04:26 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:1628 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753196AbYAAMEZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 07:04:25 -0500
+Date: Tue, 1 Jan 2008 23:04:07 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Torsten Kaiser <just.for.lkml@googlemail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Neil Brown <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>,
+       netdev@vger.kernel.org, Tom Tucker <tom@opengridcomputing.com>
+Subject: Re: 2.6.24-rc6-mm1
+Message-ID: <20080101120406.GA27209@gondor.apana.org.au>
+References: <20071222233056.d652743e.akpm@linux-foundation.org> <64bb37e0712230827m7d368e2l3174f3b4396d09c1@mail.gmail.com> <64bb37e0712281453y4aac82b7h7acc8ec314ca6e3e@mail.gmail.com> <20071228150746.42b3bbc0.akpm@linux-foundation.org> <64bb37e0712290851r6d41768dk270e47884713a3de@mail.gmail.com> <20071230013021.GA13603@gondor.apana.org.au> <64bb37e0712291934o77a3d365h56c9c31ac8437469@mail.gmail.com> <64bb37e0712311215x519b10e9kd51eb745b3b7290a@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080101103342.GH28913@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <64bb37e0712311215x519b10e9kd51eb745b3b7290a@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 01, 2008 at 11:33:42AM +0100, Sam Ravnborg wrote:
-> On Tue, Jan 01, 2008 at 03:18:46PM +0800, WANG Cong wrote:
-> > 
-> > TOPDIR is obsolete, use objtree instead.
-> > This patch removes TOPDIR from all UML Makefiles.
-> > 
+On Mon, Dec 31, 2007 at 09:15:19PM +0100, Torsten Kaiser wrote:
 > 
-> I do not feel confident with these changes.
-> In some places I had expected to see srctree and not objtree.
-> I would like to see this tested before applying it.
-> 
-> Building a ppc toolchain now to test it...
+> I then tried to "fix" it with this suspect.
+> I changed "skb_release_all(dst);" back to "skb_release_data(dst);" in
+> skb_morph() (net/core/skbuff.c).
 
-It seems that building a ppc based um kernel is not supported
-in mainline.
-Kconfig.ppc is missing and when creating it um build fails
-in sys-ppc/ due to user-offset.c is missing.
+Check /proc/net/snmp to see if you're getting any fragments, if not
+then skb_morph shouldn't even be getting called.
 
-As most of your patch touches ppc specific code I suggest
-to just replace TOPDIR with srctree all over (no semantic change)
-and the the um people can figure out the ppc stuff when they get to it.
+> I'm now at 205 of 210 packages completed without a further hang. I
+> also do not see an obvious memory leak.
 
-	Sam
+In any case, I suspect the cause of your problem is that somebody
+somewhere is doing a double-free on an skb.
+
+Since you're the only person who can reproduce this, we really need
+your help to track this down.  Since bisecting the mm tree is not
+practical, you could start by checking whether the bug is in mm only
+or whether it affects rc6 too.
+
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
