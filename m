@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757902AbYAAVZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbYAAVa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757902AbYAAVZV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 16:25:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754857AbYAAVZJ
+	id S1756816AbYAAVa3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 16:30:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754670AbYAAVaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 16:25:09 -0500
-Received: from smtp-vbr9.xs4all.nl ([194.109.24.29]:3331 "EHLO
-	smtp-vbr9.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754574AbYAAVZH (ORCPT
+	Tue, 1 Jan 2008 16:30:18 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:58324 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754641AbYAAVaR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 16:25:07 -0500
-X-Greylist: delayed 427 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Jan 2008 16:25:07 EST
-Date: Tue, 1 Jan 2008 22:17:57 +0100
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: linux-kernel@vger.kernel.org
-Subject: G965 & on-board serial port
-Message-ID: <20080101211757.GG2340@vanheusden.com>
+	Tue, 1 Jan 2008 16:30:17 -0500
+Message-ID: <477AAF95.2060806@zytor.com>
+Date: Tue, 01 Jan 2008 13:24:37 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Read-Receipt-To: <folkert@vanheusden.com>
-Reply-By: Wed Jan  2 20:02:51 CET 2008
-X-Message-Flag: MultiTail - tail on steroids
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Christer Weinigel <christer@weinigel.se>
+CC: Rene Herman <rene.herman@keyaccess.nl>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, "David P. Reed" <dpreed@reed.com>,
+       Rene Herman <rene.herman@gmail.com>, Paul Rolland <rol@as2917.net>,
+       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
+References: <4765DCB0.8030901@gmail.com>	<4765EE7F.80002@zytor.com>	<47667366.7010405@gmail.com>	<4766AE88.4080904@zytor.com>	<4766D175.7040807@reed.com>	<20071217212509.5edaa372@the-village.bc.nu>	<477A634C.8040000@reed.com>	<20080101161557.3ce2d5f8@the-village.bc.nu>	<20080101164338.GA901@elte.hu>	<20080101183238.74307174@weinigel.se>	<20080101184659.GA9250@elte.hu>	<20080101203518.26e889f2@weinigel.se>	<477A9B98.2090608@keyaccess.nl> <20080101215545.0785beef@weinigel.se>
+In-Reply-To: <20080101215545.0785beef@weinigel.se>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Christer Weinigel wrote:
+> 
+>> For that matter does anyone actually have video cards old enough for us
+>> to care actually still in use with Linux today ? 
+> 
+> I'm afraid that some PC104 systems may still use ancient video cards.
+> 
 
-I'm trying to figure out a problem that I have with 2 different
-motherboards. Both have the Intel G965 chipset, an Intel DG965WH and a
-Gigabyte 965G-DS3. What happens is, that datacommunication, either
-through normal receiving bytes and via fiddling with signalling lines
-(for a dcf-77 radio clock) don't work. To be honest I used a vendor
-kernel, a Debian 2.6.22-3-amd64 image.
-Is this a known problem?
+PC/104 is actual ISA, not even LPC...
 
-
-Folkert van Heusden
-
--- 
-MultiTail cok yonlu kullanimli bir program, loglari okumak, verilen
-kommandolari yerine getirebilen. Filter, renk verme, merge, 'diff-
-view', vs.  http://www.vanheusden.com/multitail/
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+	-hpa
