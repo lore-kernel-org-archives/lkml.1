@@ -1,105 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755934AbYAACOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbYAACOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755934AbYAACOc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 21:14:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbYAACIX
+	id S1755471AbYAACOs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 21:14:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbYAACIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 21:08:23 -0500
-Received: from fmailhost02.isp.att.net ([207.115.11.52]:47304 "EHLO
-	fmailhost02.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754268AbYAACIR (ORCPT
+	Mon, 31 Dec 2007 21:08:44 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54338 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754633AbYAACIm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 21:08:17 -0500
-X-Originating-IP: [68.222.90.230]
-From: jacliburn@bellsouth.net
-To: jeff@garzik.org
-Cc: csnook@redhat.com, linux-kernel@vger.kernel.org,
-       atl1-devel@lists.sourceforge.net, Jay Cliburn <jacliburn@bellsouth.net>
-Subject: [PATCH 14/26] atl1: move stray defines to header file
-Date: Mon, 31 Dec 2007 19:59:52 -0600
-Message-Id: <1199152804-3889-15-git-send-email-jacliburn@bellsouth.net>
-X-Mailer: git-send-email 1.5.3.3
-In-Reply-To: <1199152804-3889-1-git-send-email-jacliburn@bellsouth.net>
-References: <1199152804-3889-1-git-send-email-jacliburn@bellsouth.net>
+	Mon, 31 Dec 2007 21:08:42 -0500
+Date: Tue, 1 Jan 2008 01:58:12 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linda Walsh <lkml@tlinx.org>
+Cc: Robert Hancock <hancockr@shaw.ca>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: SATA kernel-buffered read VERY slow (not raid, Promise TX300
+ card); 2.6.23.1(vanilla)
+Message-ID: <20080101015812.59e9ebf0@the-village.bc.nu>
+In-Reply-To: <4779870E.5070507@tlinx.org>
+References: <fa.6TIOCGhBpW0r4XW9rqR+Ad8P+Js@ifi.uio.no>
+	<4777E08C.4000603@shaw.ca>
+	<4779870E.5070507@tlinx.org>
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jay Cliburn <jacliburn@bellsouth.net>
+> rate began falling and at 128k block-reads-at-a-time or larger, it drops 
+> below
+> 20MB/s (again, only on buffered SATA).   It's hard to imagine what would
+> slow down buffered SATA reads but not ATA and SCSI reads of the same
+> size.  I'm using the 'cfq' scheduler with everything running at default
 
-Move some stray defines out to a header file.  Improve indentation from
-ghastly to horrid.
+Try disabling NCQ - see if you've got a drive with the 'NCQ = no
+readahead' flaw.
 
-Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
----
- drivers/net/atlx/atl1.c |   29 ++++++++++++-----------------
- drivers/net/atlx/atl1.h |    6 ++++++
- 2 files changed, 18 insertions(+), 17 deletions(-)
+> priorities, but again, why only SATA slowness?  It seems that at the driver
+> level, using direct reads, the SATA disk has the highest read rate (near
+> 80MB/s). 
 
-diff --git a/drivers/net/atlx/atl1.c b/drivers/net/atlx/atl1.c
-index 9c86ef4..f40cc6e 100644
---- a/drivers/net/atlx/atl1.c
-+++ b/drivers/net/atlx/atl1.c
-@@ -217,12 +217,6 @@ static s32 atl1_read_phy_reg(struct atl1_hw *hw, u16 reg_addr, u16 *phy_data)
- 	return ATLX_ERR_PHY;
- }
- 
--#define CUSTOM_SPI_CS_SETUP	2
--#define CUSTOM_SPI_CLK_HI	2
--#define CUSTOM_SPI_CLK_LO	2
--#define CUSTOM_SPI_CS_HOLD	2
--#define CUSTOM_SPI_CS_HI	3
--
- static bool atl1_spi_read(struct atl1_hw *hw, u32 addr, u32 *buf)
- {
- 	int i;
-@@ -232,17 +226,18 @@ static bool atl1_spi_read(struct atl1_hw *hw, u32 addr, u32 *buf)
- 	iowrite32(addr, hw->hw_addr + REG_SPI_ADDR);
- 
- 	value = SPI_FLASH_CTRL_WAIT_READY |
--	    (CUSTOM_SPI_CS_SETUP & SPI_FLASH_CTRL_CS_SETUP_MASK) <<
--	    SPI_FLASH_CTRL_CS_SETUP_SHIFT | (CUSTOM_SPI_CLK_HI &
--					     SPI_FLASH_CTRL_CLK_HI_MASK) <<
--	    SPI_FLASH_CTRL_CLK_HI_SHIFT | (CUSTOM_SPI_CLK_LO &
--					   SPI_FLASH_CTRL_CLK_LO_MASK) <<
--	    SPI_FLASH_CTRL_CLK_LO_SHIFT | (CUSTOM_SPI_CS_HOLD &
--					   SPI_FLASH_CTRL_CS_HOLD_MASK) <<
--	    SPI_FLASH_CTRL_CS_HOLD_SHIFT | (CUSTOM_SPI_CS_HI &
--					    SPI_FLASH_CTRL_CS_HI_MASK) <<
--	    SPI_FLASH_CTRL_CS_HI_SHIFT | (1 & SPI_FLASH_CTRL_INS_MASK) <<
--	    SPI_FLASH_CTRL_INS_SHIFT;
-+		(CUSTOM_SPI_CS_SETUP & SPI_FLASH_CTRL_CS_SETUP_MASK) <<
-+		SPI_FLASH_CTRL_CS_SETUP_SHIFT |
-+		(CUSTOM_SPI_CLK_HI & SPI_FLASH_CTRL_CLK_HI_MASK) <<
-+		SPI_FLASH_CTRL_CLK_HI_SHIFT |
-+		(CUSTOM_SPI_CLK_LO & SPI_FLASH_CTRL_CLK_LO_MASK) <<
-+		SPI_FLASH_CTRL_CLK_LO_SHIFT |
-+		(CUSTOM_SPI_CS_HOLD & SPI_FLASH_CTRL_CS_HOLD_MASK) <<
-+		SPI_FLASH_CTRL_CS_HOLD_SHIFT |
-+		(CUSTOM_SPI_CS_HI & SPI_FLASH_CTRL_CS_HI_MASK) <<
-+		SPI_FLASH_CTRL_CS_HI_SHIFT |
-+		(1 & SPI_FLASH_CTRL_INS_MASK) <<
-+		SPI_FLASH_CTRL_INS_SHIFT;
- 
- 	iowrite32(value, hw->hw_addr + REG_SPI_FLASH_CTRL);
- 
-diff --git a/drivers/net/atlx/atl1.h b/drivers/net/atlx/atl1.h
-index 8198f82..3db9a34 100644
---- a/drivers/net/atlx/atl1.h
-+++ b/drivers/net/atlx/atl1.h
-@@ -335,6 +335,12 @@ extern const struct ethtool_ops atl1_ethtool_ops;
- 
- #define ATL1_EEDUMP_LEN				48
- 
-+#define CUSTOM_SPI_CS_SETUP	2
-+#define CUSTOM_SPI_CLK_HI	2
-+#define CUSTOM_SPI_CLK_LO	2
-+#define CUSTOM_SPI_CS_HOLD	2
-+#define CUSTOM_SPI_CS_HI	3
-+
- /* Statistics counters collected by the MAC */
- struct stats_msg_block {
- 	/* rx */
--- 
-1.5.3.3
+Beats me - something is wrong that your setup triggers - could be
+firmware funnies or Linux ones. 
+
+>     The only way I could tell before was using hdparm to read the 
+> parameters.
+> Since that doesn't work, it's hard to tell if they are set correctly, 
+> but given
+
+hdparm supports identify to read modes on drives with libata. The one
+thing you cannot do is force modes right now.
+
+>     More importantly, how does one set parameters for acoustic and power
+> saving parameters?  Some of my disks are used as 'backup' devices for my
+
+hdparm or blktool
+
+> other computers.  With the ATA disks, they were kept "spun down" when not
+> being used (only used, 'normally', in early AM hours).
+
+Well for backup devices you can use the fact SATA is hot/warm plug.
+
+>     Another new "problem" (not as important) -- even though SATA disks are
+> called with "sdX", my ATA disks that *were* at hda-hdc are now at hde-hdg.
+
+NOTABUG - your BIOS has decided to move them from the legacy addresses so
+they move from hda-d to e-g.
 
