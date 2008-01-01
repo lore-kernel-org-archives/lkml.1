@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757726AbYAAPq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758219AbYAAPqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757726AbYAAPq3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 10:46:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755454AbYAAPgt
+	id S1758219AbYAAPqp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 10:46:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755471AbYAAPgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 10:36:49 -0500
-Received: from il.qumranet.com ([82.166.9.18]:33806 "EHLO il.qumranet.com"
+	Tue, 1 Jan 2008 10:36:50 -0500
+Received: from il.qumranet.com ([82.166.9.18]:33798 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754579AbYAAPg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 10:36:28 -0500
+	id S1754622AbYAAPg3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 10:36:29 -0500
 From: Avi Kivity <avi@qumranet.com>
 To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Subject: [PATCH 32/54] KVM: Generalize exception injection mechanism
-Date: Tue,  1 Jan 2008 17:35:58 +0200
-Message-Id: <1199201780-14001-33-git-send-email-avi@qumranet.com>
+Subject: [PATCH 36/54] KVM: x86 emulator: fix eflags preparation for emulation
+Date: Tue,  1 Jan 2008 17:36:02 +0200
+Message-Id: <1199201780-14001-37-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1199201780-14001-1-git-send-email-avi@qumranet.com>
 References: <1199201780-14001-1-git-send-email-avi@qumranet.com>
@@ -21,191 +21,57 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Instead of each subarch doing its own thing, add an API for queuing an
-injection, and manage failed exception injection centerally (i.e., if
-an inject failed due to a shadow page fault, we need to requeue it).
+We prepare eflags for the emulated instruction, then clobber it with an 'andl'.
+Fix by popping eflags as the last thing in the sequence.
+
+Patch taken from Xen (16143:959b4b92b6bf)
 
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/svm.c |   21 +++++++++++++++++++++
- drivers/kvm/vmx.c |   20 ++++++++++++++++++++
- drivers/kvm/x86.c |   33 ++++++++++++++++++++++++++++++++-
- drivers/kvm/x86.h |   13 +++++++++++++
- 4 files changed, 86 insertions(+), 1 deletions(-)
+ drivers/kvm/x86_emulate.c |   30 +++++++++++++++---------------
+ 1 files changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
-index 04e6b39..f4c61c8 100644
---- a/drivers/kvm/svm.c
-+++ b/drivers/kvm/svm.c
-@@ -188,6 +188,25 @@ static void svm_set_efer(struct kvm_vcpu *vcpu, u64 efer)
- 	vcpu->shadow_efer = efer;
- }
+diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
+index 2e259a8..f423b0e 100644
+--- a/drivers/kvm/x86_emulate.c
++++ b/drivers/kvm/x86_emulate.c
+@@ -256,21 +256,21 @@ static u16 twobyte_table[256] = {
+ #define EFLAGS_MASK (EFLG_OF|EFLG_SF|EFLG_ZF|EFLG_AF|EFLG_PF|EFLG_CF)
  
-+static void svm_queue_exception(struct kvm_vcpu *vcpu, unsigned nr,
-+				bool has_error_code, u32 error_code)
-+{
-+	struct vcpu_svm *svm = to_svm(vcpu);
-+
-+	svm->vmcb->control.event_inj = nr
-+		| SVM_EVTINJ_VALID
-+		| (has_error_code ? SVM_EVTINJ_VALID_ERR : 0)
-+		| SVM_EVTINJ_TYPE_EXEPT;
-+	svm->vmcb->control.event_inj_err = error_code;
-+}
-+
-+static bool svm_exception_injected(struct kvm_vcpu *vcpu)
-+{
-+	struct vcpu_svm *svm = to_svm(vcpu);
-+
-+	return !(svm->vmcb->control.exit_int_info & SVM_EXITINTINFO_VALID);
-+}
-+
- static void svm_inject_gp(struct kvm_vcpu *vcpu, unsigned error_code)
- {
- 	struct vcpu_svm *svm = to_svm(vcpu);
-@@ -1712,6 +1731,8 @@ static struct kvm_x86_ops svm_x86_ops = {
- 	.patch_hypercall = svm_patch_hypercall,
- 	.get_irq = svm_get_irq,
- 	.set_irq = svm_set_irq,
-+	.queue_exception = svm_queue_exception,
-+	.exception_injected = svm_exception_injected,
- 	.inject_pending_irq = svm_intr_assist,
- 	.inject_pending_vectors = do_interrupt_requests,
+ /* Before executing instruction: restore necessary bits in EFLAGS. */
+-#define _PRE_EFLAGS(_sav, _msk, _tmp) \
+-	/* EFLAGS = (_sav & _msk) | (EFLAGS & ~_msk); */	\
+-	"push %"_sav"; "					\
+-	"movl %"_msk",%"_LO32 _tmp"; "				\
+-	"andl %"_LO32 _tmp",("_STK"); "				\
+-	"pushf; "						\
+-	"notl %"_LO32 _tmp"; "					\
+-	"andl %"_LO32 _tmp",("_STK"); "				\
+-	"pop  %"_tmp"; "					\
+-	"orl  %"_LO32 _tmp",("_STK"); "				\
+-	"popf; "						\
+-	/* _sav &= ~msk; */					\
+-	"movl %"_msk",%"_LO32 _tmp"; "				\
+-	"notl %"_LO32 _tmp"; "					\
+-	"andl %"_LO32 _tmp",%"_sav"; "
++#define _PRE_EFLAGS(_sav, _msk, _tmp)					\
++	/* EFLAGS = (_sav & _msk) | (EFLAGS & ~_msk); _sav &= ~_msk; */ \
++	"movl %"_sav",%"_LO32 _tmp"; "                                  \
++	"push %"_tmp"; "                                                \
++	"push %"_tmp"; "                                                \
++	"movl %"_msk",%"_LO32 _tmp"; "                                  \
++	"andl %"_LO32 _tmp",("_STK"); "                                 \
++	"pushf; "                                                       \
++	"notl %"_LO32 _tmp"; "                                          \
++	"andl %"_LO32 _tmp",("_STK"); "                                 \
++	"andl %"_LO32 _tmp","__stringify(BITS_PER_LONG/4)"("_STK"); "	\
++	"pop  %"_tmp"; "                                                \
++	"orl  %"_LO32 _tmp",("_STK"); "                                 \
++	"popf; "                                                        \
++	"pop  %"_sav"; "
  
-diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
-index 8e43feb..1ec1c28 100644
---- a/drivers/kvm/vmx.c
-+++ b/drivers/kvm/vmx.c
-@@ -595,6 +595,24 @@ static void skip_emulated_instruction(struct kvm_vcpu *vcpu)
- 	vcpu->interrupt_window_open = 1;
- }
- 
-+static void vmx_queue_exception(struct kvm_vcpu *vcpu, unsigned nr,
-+				bool has_error_code, u32 error_code)
-+{
-+	vmcs_write32(VM_ENTRY_INTR_INFO_FIELD,
-+		     nr | INTR_TYPE_EXCEPTION
-+		     | (has_error_code ? INTR_INFO_DELIEVER_CODE_MASK : 0)
-+		     | INTR_INFO_VALID_MASK);
-+	if (has_error_code)
-+		vmcs_write32(VM_ENTRY_EXCEPTION_ERROR_CODE, error_code);
-+}
-+
-+static bool vmx_exception_injected(struct kvm_vcpu *vcpu)
-+{
-+	struct vcpu_vmx *vmx = to_vmx(vcpu);
-+
-+	return !(vmx->idt_vectoring_info & VECTORING_INFO_VALID_MASK);
-+}
-+
- static void vmx_inject_gp(struct kvm_vcpu *vcpu, unsigned error_code)
- {
- 	printk(KERN_DEBUG "inject_general_protection: rip 0x%lx\n",
-@@ -2641,6 +2659,8 @@ static struct kvm_x86_ops vmx_x86_ops = {
- 	.patch_hypercall = vmx_patch_hypercall,
- 	.get_irq = vmx_get_irq,
- 	.set_irq = vmx_inject_irq,
-+	.queue_exception = vmx_queue_exception,
-+	.exception_injected = vmx_exception_injected,
- 	.inject_pending_irq = vmx_intr_assist,
- 	.inject_pending_vectors = do_interrupt_requests,
- 
-diff --git a/drivers/kvm/x86.c b/drivers/kvm/x86.c
-index c9e4b67..11440d1 100644
---- a/drivers/kvm/x86.c
-+++ b/drivers/kvm/x86.c
-@@ -133,6 +133,32 @@ static void inject_gp(struct kvm_vcpu *vcpu)
- 	kvm_x86_ops->inject_gp(vcpu, 0);
- }
- 
-+void kvm_queue_exception(struct kvm_vcpu *vcpu, unsigned nr)
-+{
-+	WARN_ON(vcpu->exception.pending);
-+	vcpu->exception.pending = true;
-+	vcpu->exception.has_error_code = false;
-+	vcpu->exception.nr = nr;
-+}
-+EXPORT_SYMBOL_GPL(kvm_queue_exception);
-+
-+void kvm_queue_exception_e(struct kvm_vcpu *vcpu, unsigned nr, u32 error_code)
-+{
-+	WARN_ON(vcpu->exception.pending);
-+	vcpu->exception.pending = true;
-+	vcpu->exception.has_error_code = true;
-+	vcpu->exception.nr = nr;
-+	vcpu->exception.error_code = error_code;
-+}
-+EXPORT_SYMBOL_GPL(kvm_queue_exception_e);
-+
-+static void __queue_exception(struct kvm_vcpu *vcpu)
-+{
-+	kvm_x86_ops->queue_exception(vcpu, vcpu->exception.nr,
-+				     vcpu->exception.has_error_code,
-+				     vcpu->exception.error_code);
-+}
-+
- /*
-  * Load the pae pdptrs.  Return true is they are all valid.
-  */
-@@ -2370,7 +2396,9 @@ again:
- 		goto out;
- 	}
- 
--	if (irqchip_in_kernel(vcpu->kvm))
-+	if (vcpu->exception.pending)
-+		__queue_exception(vcpu);
-+	else if (irqchip_in_kernel(vcpu->kvm))
- 		kvm_x86_ops->inject_pending_irq(vcpu);
- 	else
- 		kvm_x86_ops->inject_pending_vectors(vcpu, kvm_run);
-@@ -2409,6 +2437,9 @@ again:
- 		profile_hit(KVM_PROFILING, (void *)vcpu->rip);
- 	}
- 
-+	if (vcpu->exception.pending && kvm_x86_ops->exception_injected(vcpu))
-+		vcpu->exception.pending = false;
-+
- 	r = kvm_x86_ops->handle_exit(kvm_run, vcpu);
- 
- 	if (r > 0) {
-diff --git a/drivers/kvm/x86.h b/drivers/kvm/x86.h
-index eed7964..1e71668 100644
---- a/drivers/kvm/x86.h
-+++ b/drivers/kvm/x86.h
-@@ -139,6 +139,13 @@ struct kvm_vcpu {
- 	struct kvm_pio_request pio;
- 	void *pio_data;
- 
-+	struct kvm_queued_exception {
-+		bool pending;
-+		bool has_error_code;
-+		u8 nr;
-+		u32 error_code;
-+	} exception;
-+
- 	struct {
- 		int active;
- 		u8 save_iopl;
-@@ -224,6 +231,9 @@ struct kvm_x86_ops {
- 				unsigned char *hypercall_addr);
- 	int (*get_irq)(struct kvm_vcpu *vcpu);
- 	void (*set_irq)(struct kvm_vcpu *vcpu, int vec);
-+	void (*queue_exception)(struct kvm_vcpu *vcpu, unsigned nr,
-+				bool has_error_code, u32 error_code);
-+	bool (*exception_injected)(struct kvm_vcpu *vcpu);
- 	void (*inject_pending_irq)(struct kvm_vcpu *vcpu);
- 	void (*inject_pending_vectors)(struct kvm_vcpu *vcpu,
- 				       struct kvm_run *run);
-@@ -294,6 +304,9 @@ void kvm_get_cs_db_l_bits(struct kvm_vcpu *vcpu, int *db, int *l);
- int kvm_get_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 *pdata);
- int kvm_set_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 data);
- 
-+void kvm_queue_exception(struct kvm_vcpu *vcpu, unsigned nr);
-+void kvm_queue_exception_e(struct kvm_vcpu *vcpu, unsigned nr, u32 error_code);
-+
- void fx_init(struct kvm_vcpu *vcpu);
- 
- int emulator_read_std(unsigned long addr,
+ /* After executing instruction: write-back necessary bits in EFLAGS. */
+ #define _POST_EFLAGS(_sav, _msk, _tmp) \
 -- 
 1.5.3.7
 
