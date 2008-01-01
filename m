@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758939AbYAAXWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbYAAXlM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758939AbYAAXWa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 18:22:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757193AbYAAXWW
+	id S1757913AbYAAXlM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 18:41:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755057AbYAAXkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 18:22:22 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56539 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754907AbYAAXWV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 18:22:21 -0500
-Date: Tue, 1 Jan 2008 23:12:50 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Christer Weinigel <christer@weinigel.se>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       "David P. Reed" <dpreed@reed.com>, Rene Herman <rene.herman@gmail.com>,
-       Paul Rolland <rol@as2917.net>, Pavel Machek <pavel@ucw.cz>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>, rol@witbe.net
-Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
-Message-ID: <20080101231250.054b7352@the-village.bc.nu>
-In-Reply-To: <20080102000545.5c68f183@weinigel.se>
-References: <4765DCB0.8030901@gmail.com>
-	<4765EE7F.80002@zytor.com>
-	<47667366.7010405@gmail.com>
-	<4766AE88.4080904@zytor.com>
-	<4766D175.7040807@reed.com>
-	<20071217212509.5edaa372@the-village.bc.nu>
-	<477A634C.8040000@reed.com>
-	<20080101161557.3ce2d5f8@the-village.bc.nu>
-	<20080101164338.GA901@elte.hu>
-	<20080101183238.74307174@weinigel.se>
-	<20080101184659.GA9250@elte.hu>
-	<20080101203518.26e889f2@weinigel.se>
-	<477AAEEB.5060407@zytor.com>
-	<20080102000545.5c68f183@weinigel.se>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 1 Jan 2008 18:40:52 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38092 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754936AbYAAXkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 18:40:51 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Subject: [PATCH 4/4] PM: Do not destroy/create devices while suspended in cpuid.c
+Date: Wed, 2 Jan 2008 00:42:11 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
+       Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>
+References: <200801020032.45529.rjw@sisk.pl>
+In-Reply-To: <200801020032.45529.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801020042.12466.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Besides the above there are only a handful of _p uses outside of real
-> ISA device drivers, and those should not be relevant for a modern PC
-> unless somebody wants to use an 8390 based PCMCIA card, but we could
-> tell them "don't do that then".
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-We need to build 8390.c twice anyway - once for PCI once for ISA with the
-_p changes whichever way it gets done. PCMCIA can use whichever we decide
-is right. Anyone know if PCMCIA is guaranteed to be 8MHz ?
+The cpuid driver should not attempt to destroy/create a device while
+suspended, unless this device corresponds to a nonboot CPU that
+failed to go online during a resume, in which case the PM core should
+be asked to remove it.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/x86/kernel/cpuid.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/cpuid.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpuid.c
++++ linux-2.6/arch/x86/kernel/cpuid.c
+@@ -157,15 +157,15 @@ static int __cpuinit cpuid_class_cpu_cal
+ 
+ 	switch (action) {
+ 	case CPU_UP_PREPARE:
+-	case CPU_UP_PREPARE_FROZEN:
+ 		err = cpuid_device_create(cpu);
+ 		break;
+ 	case CPU_UP_CANCELED:
+-	case CPU_UP_CANCELED_FROZEN:
+ 	case CPU_DEAD:
+-	case CPU_DEAD_FROZEN:
+ 		cpuid_device_destroy(cpu);
+ 		break;
++	case CPU_UP_CANCELED_FROZEN:
++		destroy_suspended_device(cpuid_class, MKDEV(CPUID_MAJOR, cpu));
++		break;
+ 	}
+ 	return err ? NOTIFY_BAD : NOTIFY_OK;
+ }
