@@ -1,76 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbYAAM71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbYAANBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754135AbYAAM71 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 07:59:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbYAAM7Q
+	id S1754585AbYAANBW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 08:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbYAANBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 07:59:16 -0500
-Received: from py-out-1112.google.com ([64.233.166.180]:22612 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753628AbYAAM7O (ORCPT
+	Tue, 1 Jan 2008 08:01:15 -0500
+Received: from po-out-1718.google.com ([72.14.252.158]:36314 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753400AbYAANBN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 07:59:14 -0500
+	Tue, 1 Jan 2008 08:01:13 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=v+RAQkgv3SkS1HbuYvmMlX0efGGlnDcLEG7GuX2srreEJtymBBTZq4+hjoHE02W3mC+h93H/AVxrJg779lCXzGHotFbxlPuasDRIqTX7p3Q3lrBcJLxo87HQ/KYCQqVQckOXBLnuT8Kx2kAJagp0JhEhvFWd07mELLHXY+kChuM=
-Message-ID: <64bb37e0801010459h68976d56i21d505eb2817f1ac@mail.gmail.com>
-Date: Tue, 1 Jan 2008 13:59:12 +0100
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Herbert Xu" <herbert@gondor.apana.org.au>
-Subject: Re: 2.6.24-rc6-mm1
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Neil Brown" <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>,
-       netdev@vger.kernel.org, "Tom Tucker" <tom@opengridcomputing.com>
-In-Reply-To: <20080101120406.GA27209@gondor.apana.org.au>
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=pRBZSnswubG6F0YoQ4DkKvkuJrpn3VF6ZRrJLR1mizv5P+8zfob0zQ3iuTm1ZYqKeFMtOdHw51mtLKEDM7DYbNqlgP9yqIFd1o0SkEjTL43HoLi2wMsNs2nHDxYzLfvDRz3ZeVXefufQmC6XeZwSL8ijSGFOZILI0efMMP295FA=
+Date: Tue, 1 Jan 2008 21:01:25 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       jdike@addtoit.com, user-mode-linux-devel@lists.sourceforge.net
+Subject: (Try #2) [Patch 1/8] UML: Remove 'TOPDIR' from Makefiles
+Message-ID: <20080101130125.GA2499@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <20080101071311.GA2496@hacking> <20080101071846.GB2496@hacking> <20080101103342.GH28913@uranus.ravnborg.org> <20080101104942.GI28913@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20071222233056.d652743e.akpm@linux-foundation.org>
-	 <64bb37e0712230827m7d368e2l3174f3b4396d09c1@mail.gmail.com>
-	 <64bb37e0712281453y4aac82b7h7acc8ec314ca6e3e@mail.gmail.com>
-	 <20071228150746.42b3bbc0.akpm@linux-foundation.org>
-	 <64bb37e0712290851r6d41768dk270e47884713a3de@mail.gmail.com>
-	 <20071230013021.GA13603@gondor.apana.org.au>
-	 <64bb37e0712291934o77a3d365h56c9c31ac8437469@mail.gmail.com>
-	 <64bb37e0712311215x519b10e9kd51eb745b3b7290a@mail.gmail.com>
-	 <20080101120406.GA27209@gondor.apana.org.au>
+In-Reply-To: <20080101104942.GI28913@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 1, 2008 1:04 PM, Herbert Xu <herbert@gondor.apana.org.au> wrote:
-> On Mon, Dec 31, 2007 at 09:15:19PM +0100, Torsten Kaiser wrote:
-> >
-> > I then tried to "fix" it with this suspect.
-> > I changed "skb_release_all(dst);" back to "skb_release_data(dst);" in
-> > skb_morph() (net/core/skbuff.c).
+On Tue, Jan 01, 2008 at 11:49:42AM +0100, Sam Ravnborg wrote:
+>On Tue, Jan 01, 2008 at 11:33:42AM +0100, Sam Ravnborg wrote:
+>> On Tue, Jan 01, 2008 at 03:18:46PM +0800, WANG Cong wrote:
+>> > 
+>> > TOPDIR is obsolete, use objtree instead.
+>> > This patch removes TOPDIR from all UML Makefiles.
+>> > 
+>> 
+>> I do not feel confident with these changes.
+>> In some places I had expected to see srctree and not objtree.
+>> I would like to see this tested before applying it.
+>> 
+>> Building a ppc toolchain now to test it...
 >
-> Check /proc/net/snmp to see if you're getting any fragments, if not
-> then skb_morph shouldn't even be getting called.
-
-OK, thanks for that hint.
-I look at this after my next tests.
-
-> > I'm now at 205 of 210 packages completed without a further hang. I
-> > also do not see an obvious memory leak.
+>It seems that building a ppc based um kernel is not supported
+>in mainline.
+>Kconfig.ppc is missing and when creating it um build fails
+>in sys-ppc/ due to user-offset.c is missing.
 >
-> In any case, I suspect the cause of your problem is that somebody
-> somewhere is doing a double-free on an skb.
+>As most of your patch touches ppc specific code I suggest
+>to just replace TOPDIR with srctree all over (no semantic change)
+>and the the um people can figure out the ppc stuff when they get to it.
 
-Is there any debug option I could turn on to catch this?
+You're right. I use srctree instead. And tested with:
 
-Hmm... __alloc_skb() uses kmem_cache_alloc_node() and I did run
--rc3-mm2 a long time with slub_debug=FZP and that did not catch
-anything. Shouldn't the poisoning catch that? (Sorry if this question
-is stupid, but while I can read C, I'm not a kernel expert)
+$ make O=../foobar/ ARCH=um linux
 
-> Since you're the only person who can reproduce this, we really need
-> your help to track this down.  Since bisecting the mm tree is not
-> practical, you could start by checking whether the bug is in mm only
-> or whether it affects rc6 too.
+It works fine. Thanks for your points!
 
-I will try -rc6-mm1 and vanilla -rc6 and report back.
+-------->
 
-Torsten
+TOPDIR is obsolete, use srctree instead.
+This patch removes TOPDIR from all UML Makefiles.
+
+Cc: Jeff Dike <jdike@addtoit.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+
+---
+
+diff --git a/arch/um/Makefile b/arch/um/Makefile
+index ba6813a..08a2865 100644
+--- a/arch/um/Makefile
++++ b/arch/um/Makefile
+@@ -158,7 +158,7 @@ ifneq ($(KBUILD_SRC),)
+ 	$(Q)mkdir -p $(objtree)/include/asm-um
+ 	$(Q)ln -fsn $(srctree)/include/asm-um/$(basename $(notdir $@))-$(SUBARCH)$(suffix $@) $@
+ else
+-	$(Q)cd $(TOPDIR)/$(dir $@) ; \
++	$(Q)cd $(srctree)/$(dir $@) ; \
+ 	ln -sf $(basename $(notdir $@))-$(SUBARCH)$(suffix $@) $(notdir $@)
+ endif
+ 
+@@ -168,7 +168,7 @@ ifneq ($(KBUILD_SRC),)
+ 	$(Q)mkdir -p $(objtree)/include/asm-um
+ 	$(Q)ln -fsn $(srctree)/include/asm-$(HEADER_ARCH) include/asm-um/arch
+ else
+-	$(Q)cd $(TOPDIR)/include/asm-um && ln -fsn ../asm-$(HEADER_ARCH) arch
++	$(Q)cd $(srctree)/include/asm-um && ln -fsn ../asm-$(HEADER_ARCH) arch
+ endif
+ 
+ $(objtree)/$(ARCH_DIR)/include:
+diff --git a/arch/um/sys-ppc/Makefile b/arch/um/sys-ppc/Makefile
+index a9814a7..0890152 100644
+--- a/arch/um/sys-ppc/Makefile
++++ b/arch/um/sys-ppc/Makefile
+@@ -6,7 +6,7 @@ OBJ = built-in.o
+ OBJS = ptrace.o sigcontext.o semaphore.o checksum.o miscthings.o misc.o \
+ 	ptrace_user.o sysrq.o
+ 
+-EXTRA_AFLAGS := -DCONFIG_PPC32 -I. -I$(TOPDIR)/arch/ppc/kernel
++EXTRA_AFLAGS := -DCONFIG_PPC32 -I. -I$(srctree)/arch/ppc/kernel
+ 
+ all: $(OBJ)
+ 
+@@ -22,25 +22,25 @@ sigcontext.o: sigcontext.c
+ 
+ semaphore.c:
+ 	rm -f $@
+-	ln -s $(TOPDIR)/arch/ppc/kernel/$@ $@
++	ln -s $(srctree)/arch/ppc/kernel/$@ $@
+ 
+ checksum.S:
+ 	rm -f $@
+-	ln -s $(TOPDIR)/arch/ppc/lib/$@ $@
++	ln -s $(srctree)/arch/ppc/lib/$@ $@
+ 
+ mk_defs.c:
+ 	rm -f $@
+-	ln -s $(TOPDIR)/arch/ppc/kernel/$@ $@
++	ln -s $(srctree)/arch/ppc/kernel/$@ $@
+ 
+ ppc_defs.head:
+ 	rm -f $@
+-	ln -s $(TOPDIR)/arch/ppc/kernel/$@ $@
++	ln -s $(srctree)/arch/ppc/kernel/$@ $@
+ 
+ ppc_defs.h: mk_defs.c ppc_defs.head \
+-		$(TOPDIR)/include/asm-ppc/mmu.h \
+-		$(TOPDIR)/include/asm-ppc/processor.h \
+-		$(TOPDIR)/include/asm-ppc/pgtable.h \
+-		$(TOPDIR)/include/asm-ppc/ptrace.h
++		$(srctree)/include/asm-ppc/mmu.h \
++		$(srctree)/include/asm-ppc/processor.h \
++		$(srctree)/include/asm-ppc/pgtable.h \
++		$(srctree)/include/asm-ppc/ptrace.h
+ #	$(CC) $(CFLAGS) -S mk_defs.c
+ 	cp ppc_defs.head ppc_defs.h
+ # for bk, this way we can write to the file even if it's not checked out
+@@ -56,13 +56,13 @@ ppc_defs.h: mk_defs.c ppc_defs.head \
+ 
+ checksum.o: checksum.S
+ 	rm -f asm
+-	ln -s $(TOPDIR)/include/asm-ppc asm
++	ln -s $(srctree)/include/asm-ppc asm
+ 	$(CC) $(EXTRA_AFLAGS) $(KBUILD_AFLAGS) -D__ASSEMBLY__ -D__UM_PPC__ -c $< -o $*.o
+ 	rm -f asm
+ 
+ misc.o: misc.S ppc_defs.h
+ 	rm -f asm
+-	ln -s $(TOPDIR)/include/asm-ppc asm
++	ln -s $(srctree)/include/asm-ppc asm
+ 	$(CC) $(EXTRA_AFLAGS) $(KBUILD_AFLAGS) -D__ASSEMBLY__ -D__UM_PPC__ -c $< -o $*.o
+ 	rm -f asm
+ 
