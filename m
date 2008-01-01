@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbYAAPek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbYAAPgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754882AbYAAPek (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 10:34:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbYAAPec
+	id S1755356AbYAAPgh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 10:36:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbYAAPgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 10:34:32 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:58086 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753889AbYAAPeb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 10:34:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=SAt1VzhrF2M8oCMWFCt/0XamsfFQjeN7luMLWLYS+NZAewbrd+izYQ5nPX4e8pmjtSc2VQQiyo0mEpVZejl7CjLo8+sTO9SiEh59Eu0yXTj1z7SIwt9kDqFnTY4Oq+0ZvyzMr6PpUQN1g/xfqUj7zYgSBrVi5gRprcMMB9uL3E8=
-Date: Tue, 1 Jan 2008 18:34:24 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [x86] get rid of checkpatch.pl complains on apm_32.c
-Message-ID: <20080101153424.GF7937@cvg.cvg>
-References: <20071231204753.GA7411@cvg.cvg> <20080101150054.GB4434@elte.hu> <20080101151112.GC7937@cvg.cvg> <20080101152931.GH4434@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080101152931.GH4434@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 1 Jan 2008 10:36:23 -0500
+Received: from il.qumranet.com ([82.166.9.18]:33760 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752225AbYAAPgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 10:36:23 -0500
+From: Avi Kivity <avi@qumranet.com>
+To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
+Subject: [PATCH 01/54] KVM: MMU: Remove gva_to_hpa()
+Date: Tue,  1 Jan 2008 17:35:27 +0200
+Message-Id: <1199201780-14001-2-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.3.7
+In-Reply-To: <1199201780-14001-1-git-send-email-avi@qumranet.com>
+References: <1199201780-14001-1-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Tue, Jan 01, 2008 at 04:29:31PM +0100]
-| 
-| * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| 
-| > damn me! *really* sorry for this.
-| 
-| nah, this happens all the time for me too - that's why i run a script 
-| over cleanup patches.
-| 
+No longer used.
 
-yep, but i don't want to put additional work on developers so i must
-review the patches i'm sending *several* times at least! so that is my
-fault ;)
+Signed-off-by: Avi Kivity <avi@qumranet.com>
+---
+ drivers/kvm/kvm.h |    1 -
+ drivers/kvm/mmu.c |    9 ---------
+ 2 files changed, 0 insertions(+), 10 deletions(-)
 
-| > Ingo, do you use some script for this checking? if yes - could you 
-| > share it? ;) (i think it's not really hard to write myown, but your 
-| > one is really preferred ;)
-| 
-| sure, pick up the script from:
-| 
-|  http://redhat.com/~mingo/misc/q-size-obj-compare
-| 
-| it depends on having the patch in a quilt queue. (and it's really sucky, 
-| no error checking, etc.)
-| 
-| just run it - it picks up a modified .c file and compares that. If you 
-| modify multiple files and want to check another one, give that file as 
-| an argument to the script.
-| 
-| 	Ingo
-| 
+diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
+index eda82cd..31315bc 100644
+--- a/drivers/kvm/kvm.h
++++ b/drivers/kvm/kvm.h
+@@ -379,7 +379,6 @@ hpa_t gpa_to_hpa(struct kvm *kvm, gpa_t gpa);
+ #define HPA_MSB ((sizeof(hpa_t) * 8) - 1)
+ #define HPA_ERR_MASK ((hpa_t)1 << HPA_MSB)
+ static inline int is_error_hpa(hpa_t hpa) { return hpa >> HPA_MSB; }
+-hpa_t gva_to_hpa(struct kvm_vcpu *vcpu, gva_t gva);
+ struct page *gva_to_page(struct kvm_vcpu *vcpu, gva_t gva);
+ 
+ extern struct page *bad_page;
+diff --git a/drivers/kvm/mmu.c b/drivers/kvm/mmu.c
+index 1965185..6aa0319 100644
+--- a/drivers/kvm/mmu.c
++++ b/drivers/kvm/mmu.c
+@@ -881,15 +881,6 @@ hpa_t gpa_to_hpa(struct kvm *kvm, gpa_t gpa)
+ 	return hpa;
+ }
+ 
+-hpa_t gva_to_hpa(struct kvm_vcpu *vcpu, gva_t gva)
+-{
+-	gpa_t gpa = vcpu->mmu.gva_to_gpa(vcpu, gva);
+-
+-	if (gpa == UNMAPPED_GVA)
+-		return UNMAPPED_GVA;
+-	return gpa_to_hpa(vcpu->kvm, gpa);
+-}
+-
+ struct page *gva_to_page(struct kvm_vcpu *vcpu, gva_t gva)
+ {
+ 	gpa_t gpa = vcpu->mmu.gva_to_gpa(vcpu, gva);
+-- 
+1.5.3.7
 
-thanks, Ingo.
-
-		- Cyrill -
