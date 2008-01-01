@@ -1,140 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756092AbYAAUyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756754AbYAAUz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756092AbYAAUyX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 15:54:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754578AbYAAUyN
+	id S1756754AbYAAUz4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 15:55:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754578AbYAAUzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 15:54:13 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:17359 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754574AbYAAUyM (ORCPT
+	Tue, 1 Jan 2008 15:55:48 -0500
+Received: from 2-1-3-15a.ens.sth.bostream.se ([82.182.31.214]:39876 "EHLO
+	zoo.weinigel.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752038AbYAAUzs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 15:54:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rdcmEtp1kXxRLOquKef1CE18x8lWxdps0lXaHEqKH+LJERQQIIay9CgDCyQVJiVaARiJ6vYGXRwgmqjh9HFq1Rbl0kG4EWANxqYJ4DfxRj0BJ3iB48QzH1nscaC34xtVv3vyDw1PzvVCH8TirQHSikkI0Dx4LBv+cHn8aNpzEm8=
-Message-ID: <863e9df20801011254g12f30cces58d452cfeeb4350e@mail.gmail.com>
-Date: Wed, 2 Jan 2008 02:24:09 +0530
-From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
-To: "Harvey Harrison" <harvey.harrison@gmail.com>
-Subject: Re: [PATCH] x86: kprobes change kprobe_handler flow
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Masami Hiramatsu" <mhiramat@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>, qbarnes@gmail.com,
-       ananth@in.ibm.com, jkenisto@us.ibm.com
-In-Reply-To: <1199218777.6323.59.camel@brick>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 1 Jan 2008 15:55:48 -0500
+Date: Tue, 1 Jan 2008 21:55:45 +0100
+From: Christer Weinigel <christer@weinigel.se>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "David P. Reed" <dpreed@reed.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Rene Herman <rene.herman@gmail.com>, Paul Rolland <rol@as2917.net>,
+       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
+Message-ID: <20080101215545.0785beef@weinigel.se>
+In-Reply-To: <477A9B98.2090608@keyaccess.nl>
+References: <4765DCB0.8030901@gmail.com>
+	<4765EE7F.80002@zytor.com>
+	<47667366.7010405@gmail.com>
+	<4766AE88.4080904@zytor.com>
+	<4766D175.7040807@reed.com>
+	<20071217212509.5edaa372@the-village.bc.nu>
+	<477A634C.8040000@reed.com>
+	<20080101161557.3ce2d5f8@the-village.bc.nu>
+	<20080101164338.GA901@elte.hu>
+	<20080101183238.74307174@weinigel.se>
+	<20080101184659.GA9250@elte.hu>
+	<20080101203518.26e889f2@weinigel.se>
+	<477A9B98.2090608@keyaccess.nl>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1198806265.6323.34.camel@brick> <4778E8B0.6010400@gmail.com>
-	 <20080101153558.GJ4434@elte.hu> <477A971A.8030006@gmail.com>
-	 <1199218777.6323.59.camel@brick>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/2/08, Harvey Harrison <harvey.harrison@gmail.com> wrote:
-> > +#if !defined(CONFIG_PREEMPT) || defined(CONFIG_PM)
-> > +static __always_inline int setup_boost(struct kprobe *p, struct pt_regs *regs)
-> > +{
-> > +     if (p->ainsn.boostable == 1 && !p->post_handler) {
-> > +             /* Boost up -- we can execute copied instructions directly */
-> > +             reset_current_kprobe();
-> > +             regs->ip = (unsigned long)p->ainsn.insn;
-> > +             preempt_enable_no_resched();
-> > +             return 0;
-> > +     }
-> > +     return 1;
-> > +}
-> > +#else
-> > +static __always_inline int setup_boost(struct kprobe *p, struct pt_regs *regs)
-> > +{
-> > +     return 1;
-> > +}
-> > +#endif
-> > +
-> In the kernel __always_inline == inline, also I think it's nicer to only
-> have one function declaration, and then ifdef the body of the function.
->
-> Something like:
->
-> static inline int setup_boost(struct kprobe *p, struct pt_regs *regs)
-> {
-> #if !defined(CONFIG_PREEMPT) || defined(CONFIG_PM)
->         if (p->ainsn.boostable == 1 && !p->post_handler) {
->                 /* Boost up -- we can execute copied instructions directly */
->                 reset_current_kprobe();
->                 regs->ip = (unsigned long)p->ainsn.insn;
->                 preempt_enable_no_resched();
->                 return 0;
->         }
-> #endif
->         return 1;
-> }
+On Tue, 01 Jan 2008 20:59:20 +0100
+Rene Herman <rene.herman@keyaccess.nl> wrote:
 
-Ok...will include this after I pick up some more comments.
+> On 01-01-08 20:35, Christer Weinigel wrote:
+> 
+> > On old hardware (or anything with an ISA bus which I'd guess
+> > includes the Geode SCx200 SoC which is basically a MediaGX
+> > processor, a southbridge and an ISA bus with a Super I/O chip on
+> > it) an out to 80h will use exactly one ISA cycle.
+> 
+> Not to disagree with the point but more like 8 (1 us at 8 MHz). It's
+> the timeout property.
 
-> >  static int __kprobes kprobe_handler(struct pt_regs *regs)
-> >  {
-> > -     struct kprobe *p;
-> >       int ret = 0;
-> >       kprobe_opcode_t *addr;
-> > +     struct kprobe *p, *cur;
-> >       struct kprobe_ctlblk *kcb;
-> >
-> >       addr = (kprobe_opcode_t *)(regs->ip - sizeof(kprobe_opcode_t));
-> > +     if (*addr != BREAKPOINT_INSTRUCTION) {
-> > +             /*
-> > +              * The breakpoint instruction was removed right
-> > +              * after we hit it.  Another cpu has removed
-> > +              * either a probepoint or a debugger breakpoint
-> > +              * at this address.  In either case, no further
-> > +              * handling of this interrupt is appropriate.
-> > +              * Back up over the (now missing) int3 and run
-> > +              * the original instruction.
-> > +              */
-> > +             regs->ip = (unsigned long)addr;
-> > +             return 1;
-> > +     }
->
-> This return is fine I guess, but after the preempt_disable() I like
-> the goto approach as it will be easier to see what paths enable
-> preemption again and which don't....bonus points if we can move this
-> to the caller or make sure we reenable in all cases before returning
-> and pull in the code in the caller that does this for us.
->
-> But I guess your approach of using ret to test whether we need to
-> reenable preemption or not would work as a signal to the caller that
-> they need to reenable preemption.
+Ah, sorry, you're right of course.
 
-Hmm...since enabling preemption is tied to 'ret', anyone reading
-kprobe_handler will have to follow around all calls which modify it.
-There are some checks in the current kprobe_handler definition made
-just to do what you're saying, i.e, to push all preemption
-enable/disables in krpobe_handler. LIke this one (from the current x86
-kprobe_handler):
+> > I'm not sure what Alan meant with his comments about locking, but if
+> > changing outb_p to use an udelay means that we have to add locking,
+> > that is also going to affect the code size and speed.
+> 
+> Explained here:
+> 
+> http://lkml.org/lkml/2007/12/30/136
+> 
+> However, that's not an argument. Missing locking is a bug, and
+> current outb I/O delay use hiding it doesn't change that.
 
-------------
-ret = reenter_kprobe(p, regs, kcb);
-if (kcb->kprobe_status == KPROBE_REENTER)
-{
-    ret = 1;
-    goto out;
-}
-goto preempt_out;
+Thanks, I had missed that one.
 
--------------
+Regarding Alan's comment:
 
-This is just confusing because we're not actually making any
-exceptions here for the KPROBE_REENTER case (which has been partially
-handled in reenter_kprobe), rather just tricking our way out of
-preemption enabling for a cpl of cases in reenter_kprobe.
+>For that matter does anyone actually have video cards old enough for us
+>to care actually still in use with Linux today ? 
 
-> Cheers,
->
-> Harvey
+I'm afraid that some PC104 systems may still use ancient video cards.
 
-Thanks,
-Abhishek
+  /Christer
