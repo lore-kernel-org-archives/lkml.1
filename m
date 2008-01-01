@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758233AbYAAXq2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758133AbYAAXyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758233AbYAAXq2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 18:46:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbYAAXqV
+	id S1758133AbYAAXyX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 18:54:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754907AbYAAXyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 18:46:21 -0500
-Received: from py-out-1112.google.com ([64.233.166.178]:7588 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754857AbYAAXqU (ORCPT
+	Tue, 1 Jan 2008 18:54:14 -0500
+Received: from kolab.mylinuxtime.de ([212.112.242.22]:43254 "EHLO
+	kolab.mylinuxtime.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754857AbYAAXyN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 18:46:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Di3iM5xr63uxMRgqiotZJhI8SiUcGgz24aZX6+nDiC7/p8O2x0nbf+C2P1qJfIa3N2zvFfOEOdkCNu658ASW0vCRJRG7aUi5GFjplTU5QYgHqp2qWxQCTXpZOqcVEnoCdQeMx9v1TbV6QH0pdDD8qextLqgYCiDUnzQdrawdDmI=
-Message-ID: <524f69650801011546r292daedau3eb87dd6cb1ba265@mail.gmail.com>
-Date: Tue, 1 Jan 2008 17:46:19 -0600
-From: "Steve French" <smfrench@gmail.com>
-To: "Christoph Hellwig" <hch@infradead.org>
-Subject: Re: [2.6 patch] CIFS: #if 0 mode_to_access_flags()
-Cc: "Adrian Bunk" <bunk@kernel.org>, sfrench@samba.org,
-       linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080101181030.GA25656@infradead.org>
+	Tue, 1 Jan 2008 18:54:13 -0500
+X-Greylist: delayed 1433 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Jan 2008 18:54:13 EST
+X-Spam-ASN: AS24900 212.112.224.0/19
+From: Christian Hesse <mail@earthworm.de>
+To: suspend2-devel@lists.tuxonice.net, nigel@nigel.suspend2.net
+Subject: Reboot problem (was: Re: [Suspend2-devel] What's in store for 2008 for TuxOnIce?)
+Date: Wed, 2 Jan 2008 00:30:03 +0100
+User-Agent: KMail/1.9.7
+Cc: "The place to get help!" <suspend2-users@lists.tuxonice.net>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <477AC060.5040004@nigel.suspend2.net>
+In-Reply-To: <477AC060.5040004@nigel.suspend2.net>
+X-Face: 1\p'dhO'VZk,x0lx6U}!Y*9UjU4n2@4c<"a*K%3Eiu'VwM|-OYs;S-PH>4EdJMfGyycC)=?utf-8?q?k=0A=09=3Anv*xqk4C?=@1b8tdr||mALWpN[2|~h#Iv;)M"O$$#P9Kg+S8+O#%EJx0TBH7b&Q<m)=?utf-8?q?n=23Q=2Eo=0A=09kE=7E=26T=5D0cQX6=5D?=<q!HEE,F}O'Jd#lx/+){Gr@W~J`h7sTS(M+oe5<=?utf-8?q?3O7GY9y=5Fi!qG=26Vv=5CD8/=0A=09=254?=@&~$Z@UwV'NQ$Ph&3fZc(qbDO?{LN'nk>+kRh4`C3[KN`-1uT-TD_m
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080101134644.GE2360@does.not.exist>
-	 <20080101181030.GA25656@infradead.org>
+Message-Id: <200801020030.06940.mail@earthworm.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The cifsacl code which uses that function was not ready in time for
-2.6.24 but is in the cifs development tree now..
+On Tuesday 01 January 2008, Nigel Cunningham wrote:
+> Third, regarding the patch itself, I'm taking my time in working towards
+> the 3.0 release. We don't have any major bugs with 3.0-rc3 reported [...].
 
-On Jan 1, 2008 12:10 PM, Christoph Hellwig <hch@infradead.org> wrote:
-> On Tue, Jan 01, 2008 at 03:46:44PM +0200, Adrian Bunk wrote:
-> > This patch #if 0's the unused mode_to_access_flags(), fixing the
-> > following compile warning:
->
-> Please remove it completely instead.
->
+Well, I think I still have a bug, though it is possibly a mainline problem and 
+it's not a showstopper. After a suspend/resume cycle the reboot does not 
+work. The system hangs with "Rebooting system" (or similar). After that you 
+have to hard reset the system, which is not really a problem as filesystems 
+have been unmounted before. Reboot without a suspend cycle before and halt 
+with and without suspend cycle work without problems.
+I'm using toi 3.0-rc3 with kernel 2.6.24-rc6 and beside the problem described 
+above I'm really happy with toi.
 
-
-
+Happy new your to everybody!
 -- 
-Thanks,
-
-Steve
+Regards,
+Chris
