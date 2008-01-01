@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbYAAPgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbYAAPg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755356AbYAAPgh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 10:36:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbYAAPgX
+	id S1755287AbYAAPg4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 10:36:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbYAAPgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 10:36:23 -0500
-Received: from il.qumranet.com ([82.166.9.18]:33760 "EHLO il.qumranet.com"
+	Tue, 1 Jan 2008 10:36:24 -0500
+Received: from il.qumranet.com ([82.166.9.18]:33764 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752225AbYAAPgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753482AbYAAPgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 1 Jan 2008 10:36:23 -0500
 From: Avi Kivity <avi@qumranet.com>
 To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Subject: [PATCH 01/54] KVM: MMU: Remove gva_to_hpa()
-Date: Tue,  1 Jan 2008 17:35:27 +0200
-Message-Id: <1199201780-14001-2-git-send-email-avi@qumranet.com>
+Subject: [PATCH 04/54] KVM: MMU: Rename 'release_page'
+Date: Tue,  1 Jan 2008 17:35:30 +0200
+Message-Id: <1199201780-14001-5-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1199201780-14001-1-git-send-email-avi@qumranet.com>
 References: <1199201780-14001-1-git-send-email-avi@qumranet.com>
@@ -21,46 +21,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No longer used.
+Rename the awkwardly named variable.
 
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/kvm.h |    1 -
- drivers/kvm/mmu.c |    9 ---------
- 2 files changed, 0 insertions(+), 10 deletions(-)
+ drivers/kvm/mmu.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
-index eda82cd..31315bc 100644
---- a/drivers/kvm/kvm.h
-+++ b/drivers/kvm/kvm.h
-@@ -379,7 +379,6 @@ hpa_t gpa_to_hpa(struct kvm *kvm, gpa_t gpa);
- #define HPA_MSB ((sizeof(hpa_t) * 8) - 1)
- #define HPA_ERR_MASK ((hpa_t)1 << HPA_MSB)
- static inline int is_error_hpa(hpa_t hpa) { return hpa >> HPA_MSB; }
--hpa_t gva_to_hpa(struct kvm_vcpu *vcpu, gva_t gva);
- struct page *gva_to_page(struct kvm_vcpu *vcpu, gva_t gva);
- 
- extern struct page *bad_page;
 diff --git a/drivers/kvm/mmu.c b/drivers/kvm/mmu.c
-index 1965185..6aa0319 100644
+index 86896da..0cb6580 100644
 --- a/drivers/kvm/mmu.c
 +++ b/drivers/kvm/mmu.c
-@@ -881,15 +881,6 @@ hpa_t gpa_to_hpa(struct kvm *kvm, gpa_t gpa)
- 	return hpa;
- }
+@@ -430,18 +430,18 @@ static void rmap_remove(struct kvm *kvm, u64 *spte)
+ 	struct kvm_rmap_desc *desc;
+ 	struct kvm_rmap_desc *prev_desc;
+ 	struct kvm_mmu_page *sp;
+-	struct page *release_page;
++	struct page *page;
+ 	unsigned long *rmapp;
+ 	int i;
  
--hpa_t gva_to_hpa(struct kvm_vcpu *vcpu, gva_t gva)
--{
--	gpa_t gpa = vcpu->mmu.gva_to_gpa(vcpu, gva);
--
--	if (gpa == UNMAPPED_GVA)
--		return UNMAPPED_GVA;
--	return gpa_to_hpa(vcpu->kvm, gpa);
--}
--
- struct page *gva_to_page(struct kvm_vcpu *vcpu, gva_t gva)
- {
- 	gpa_t gpa = vcpu->mmu.gva_to_gpa(vcpu, gva);
+ 	if (!is_rmap_pte(*spte))
+ 		return;
+ 	sp = page_header(__pa(spte));
+-	release_page = pfn_to_page((*spte & PT64_BASE_ADDR_MASK) >> PAGE_SHIFT);
++	page = pfn_to_page((*spte & PT64_BASE_ADDR_MASK) >> PAGE_SHIFT);
+ 	if (is_writeble_pte(*spte))
+-		kvm_release_page_dirty(release_page);
++		kvm_release_page_dirty(page);
+ 	else
+-		kvm_release_page_clean(release_page);
++		kvm_release_page_clean(page);
+ 	rmapp = gfn_to_rmap(kvm, sp->gfns[spte - sp->spt]);
+ 	if (!*rmapp) {
+ 		printk(KERN_ERR "rmap_remove: %p %llx 0->BUG\n", spte, *spte);
 -- 
 1.5.3.7
 
