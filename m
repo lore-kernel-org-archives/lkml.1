@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758705AbYAAX5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758926AbYAAX6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758705AbYAAX5Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 18:57:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbYAAX5R
+	id S1758926AbYAAX6R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 18:58:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756578AbYAAX6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 18:57:17 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:51947 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755131AbYAAX5Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 18:57:16 -0500
-Date: Wed, 2 Jan 2008 01:57:01 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] the scheduled 'time' option removal
-Message-ID: <20080101235701.GJ27566@does.not.exist>
-References: <20080101134656.GG2360@does.not.exist> <Pine.LNX.4.64.0801011852250.14900@fbirervta.pbzchgretzou.qr>
+	Tue, 1 Jan 2008 18:58:08 -0500
+Received: from home.nigel.suspend2.net ([203.171.70.205]:52156 "EHLO
+	server1.example.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755331AbYAAX6G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 18:58:06 -0500
+Message-ID: <477AD38C.6030206@nigel.suspend2.net>
+Date: Wed, 02 Jan 2008 10:58:04 +1100
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801011852250.14900@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Christian Hesse <mail@earthworm.de>
+CC: suspend2-devel@lists.tuxonice.net,
+       "The place to get help!" <suspend2-users@lists.tuxonice.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Suspend2-devel] Reboot problem
+References: <477AC060.5040004@nigel.suspend2.net> <200801020030.06940.mail@earthworm.de>
+In-Reply-To: <200801020030.06940.mail@earthworm.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 01, 2008 at 06:53:54PM +0100, Jan Engelhardt wrote:
+Hi Christian.
+
+Christian Hesse wrote:
+> On Tuesday 01 January 2008, Nigel Cunningham wrote:
+>> Third, regarding the patch itself, I'm taking my time in working towards
+>> the 3.0 release. We don't have any major bugs with 3.0-rc3 reported [...].
 > 
-> On Jan 1 2008 15:46, Adrian Bunk wrote:
-> >index 20c4c8b..93aac19 100644
-> >--- a/Documentation/feature-removal-schedule.txt
-> >+++ b/Documentation/feature-removal-schedule.txt
-> >@@ -233,10 +233,2 @@ Who:	Jean Delvare <khali@linux-fr.org>
-> > ---------------------------
-> >-
-> >-What:	'time' kernel boot parameter
-> >-When:	January 2008
-> >-Why:	replaced by 'printk.time=<value>' so that printk timestamps can be
-> >-	enabled or disabled as needed
-> >-Who:	Randy Dunlap <randy.dunlap@oracle.com>
-> >-
+> Well, I think I still have a bug, though it is possibly a mainline problem and 
+> it's not a showstopper. After a suspend/resume cycle the reboot does not 
+> work. The system hangs with "Rebooting system" (or similar). After that you 
+> have to hard reset the system, which is not really a problem as filesystems 
+> have been unmounted before. Reboot without a suspend cycle before and halt 
+> with and without suspend cycle work without problems.
+
+Just to clarify, do you mean rebooting after writing an image, or
+shutting down and rebooting? It could be that there's some change to the
+semantics in 2.6.24 that I haven't noticed yet.
+
+> I'm using toi 3.0-rc3 with kernel 2.6.24-rc6 and beside the problem described 
+> above I'm really happy with toi.
 > 
-> I am sure the people who added themselves in the Who: line would have
-> taken care of this soon enough, I mean, it's just 19 hours into the
-> first day :-)
+> Happy new your to everybody!
 
-If Randy decides he wants to submit his own patch for this that wouldn't 
-be a problem for me.  :-)
+And to you too!
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Nigel
