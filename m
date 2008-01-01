@@ -1,80 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbYAAO5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbYAAO54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754515AbYAAO5h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 09:57:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbYAAO52
+	id S1754134AbYAAO54 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 09:57:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbYAAO5p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 09:57:28 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:56790 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752185AbYAAO51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 09:57:27 -0500
-Date: Tue, 1 Jan 2008 16:57:14 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [2.6 patch] remove CONFIG_EXPERIMENTAL
-Message-ID: <20080101145713.GV2360@does.not.exist>
-References: <20080101134809.GK2360@does.not.exist> <20080101142623.GA3592@elte.hu> <20080101143022.664e8894@the-village.bc.nu>
+	Tue, 1 Jan 2008 09:57:45 -0500
+Received: from py-out-1112.google.com ([64.233.166.177]:24783 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754629AbYAAO5k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 09:57:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SwCc5faNlYocIr1l78FkJRlyiLnt05feQQK2YRayH8I/IJ5y8JXr1jZZJLAz0ErXWKplVtgbeT0rWpQqlQ4VwKk8w8/Q3uBKugkc8WLLBrEH9BHqbOdgjiYGm0iFRATWWm4vZKqaJcwv2xCmE3PgiSazXELteB+mcuqz/II22cs=
+Message-ID: <386072610801010657o59fd2aboee90e29f8a637a7f@mail.gmail.com>
+Date: Tue, 1 Jan 2008 22:57:38 +0800
+From: "Bryan Wu" <cooloney.lkml@gmail.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: [RFC: 2.6 patch] make BINFMT_FLAT a bool
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+In-Reply-To: <20080101134831.GM2360@does.not.exist>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080101143022.664e8894@the-village.bc.nu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20080101134831.GM2360@does.not.exist>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 01, 2008 at 02:30:22PM +0000, Alan Cox wrote:
-> On Tue, 1 Jan 2008 15:26:23 +0100
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * Adrian Bunk <bunk@kernel.org> wrote:
-> > 
-> > > This patch removes the EXPERIMENTAL option and all dependencies on 
-> > > EXPERIMENTAL since they are pointless.
-> > 
-> > agreed. CONFIG_BROKEN has real use - but CONFIG_EXPERIMENTAL is pretty 
-> > pointless in the 90-days kernel development model.
-> 
-> Then I need a replacement equivalent for the ATA layer and all the other
-> drivers using it to indicate stuff that *IS* experimental, or not yet
-> known to be highly robust. Drivers are not the same as core code Ingo and
-> the world driver writers live in is very different to the one you operate
-> in as is clearly shown by this and by the _p discussion.
-> 
-> Still NAK.  As the alternative is
-> 
-> CONFIG_ATA_EXPERIMENTAL, CONFIG_NET_EXPERIMENTAL,
-> CONFIG_VIDEO_EXPERIMENTAL, ... all being added by developers
+On Jan 1, 2008 9:48 PM, Adrian Bunk <bunk@kernel.org> wrote:
+> I have not yet seen anyone saying he has a reasonable use case for using
+> BINFMT_FLAT modular on his embedded device.
+>
+> Considering that fs/binfmt_flat.c even lacks a MODULE_LICENSE() I really
+> doubt there is any, and this patch therefore makes BINFMT_FLAT a bool.
+>
 
-But this alternative is actually _better_.
+It is OK for Blackfin. There is no application using FLAT binary
+format as module.
 
-The point is that e.g. a user having to enable CONFIG_ATA_EXPERIMENTAL 
-for getting his hardware supported does not necessarily want to see 
-options for experimental congestion control algorithms that might be 
-made available by CONFIG_NET_EXPERIMENTAL.
+Thanks
+-Bryan
 
-> We will also need experimental badly in future when the EU liability
-> rules (and probably the US ones in a similar time scale) change so that
-> liability applies to software, because then it will be very important to
-> clearly label code that is experimental or development code as such.
-
-Whatever that will imply for free software projects is something 
-completely different from what our current CONFIG_EXPERIMENTAL
-mess does.
-
-> Alan
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+>
+> ---
+>
+>  fs/Kconfig.binfmt |    2 +-
+>  fs/binfmt_flat.c  |    6 ------
+>  2 files changed, 1 insertion(+), 7 deletions(-)
+>
+> 5437fb7517380d1b93dde3c09dbd3a2efaf276c3
+> diff --git a/fs/Kconfig.binfmt b/fs/Kconfig.binfmt
+> index d4fc609..c16a16c 100644
+> --- a/fs/Kconfig.binfmt
+> +++ b/fs/Kconfig.binfmt
+> @@ -37,7 +37,7 @@ config BINFMT_ELF_FDPIC
+>           It is also possible to run FDPIC ELF binaries on MMU linux also.
+>
+>  config BINFMT_FLAT
+> -       tristate "Kernel support for flat binaries"
+> +       bool "Kernel support for flat binaries"
+>         depends on !MMU
+>         help
+>           Support uClinux FLAT format binaries.
+> diff --git a/fs/binfmt_flat.c b/fs/binfmt_flat.c
+> index 33764fd..274d723 100644
+> --- a/fs/binfmt_flat.c
+> +++ b/fs/binfmt_flat.c
+> @@ -933,14 +933,8 @@ static int __init init_flat_binfmt(void)
+>         return register_binfmt(&flat_format);
+>  }
+>
+> -static void __exit exit_flat_binfmt(void)
+> -{
+> -       unregister_binfmt(&flat_format);
+> -}
+> -
+>  /****************************************************************************/
+>
+>  core_initcall(init_flat_binfmt);
+> -module_exit(exit_flat_binfmt);
+>
+>  /****************************************************************************/
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
