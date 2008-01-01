@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758086AbYAAPp7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757726AbYAAPq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758086AbYAAPp7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 10:45:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755445AbYAAPgs
+	id S1757726AbYAAPq3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 10:46:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755454AbYAAPgt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 10:36:48 -0500
-Received: from il.qumranet.com ([82.166.9.18]:33797 "EHLO il.qumranet.com"
+	Tue, 1 Jan 2008 10:36:49 -0500
+Received: from il.qumranet.com ([82.166.9.18]:33806 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754140AbYAAPg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754579AbYAAPg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 1 Jan 2008 10:36:28 -0500
 From: Avi Kivity <avi@qumranet.com>
 To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Cc: Guillaume Thouvenin <guillaume.thouvenin@ext.bull.net>
-Subject: [PATCH 14/54] KVM: x86 emulator: cmps instruction
-Date: Tue,  1 Jan 2008 17:35:40 +0200
-Message-Id: <1199201780-14001-15-git-send-email-avi@qumranet.com>
+Subject: [PATCH 32/54] KVM: Generalize exception injection mechanism
+Date: Tue,  1 Jan 2008 17:35:58 +0200
+Message-Id: <1199201780-14001-33-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1199201780-14001-1-git-send-email-avi@qumranet.com>
 References: <1199201780-14001-1-git-send-email-avi@qumranet.com>
@@ -22,96 +21,191 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Guillaume Thouvenin <guillaume.thouvenin@ext.bull.net>
+Instead of each subarch doing its own thing, add an API for queuing an
+injection, and manage failed exception injection centerally (i.e., if
+an inject failed due to a shadow page fault, we need to requeue it).
 
-Add emulation for the cmps instruction.  This lets OpenBSD boot on kvm.
-
-Signed-off-by: Guillaume Thouvenin <guillaume.thouvenin@ext.bull.net>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/x86_emulate.c |   58 +++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 56 insertions(+), 2 deletions(-)
+ drivers/kvm/svm.c |   21 +++++++++++++++++++++
+ drivers/kvm/vmx.c |   20 ++++++++++++++++++++
+ drivers/kvm/x86.c |   33 ++++++++++++++++++++++++++++++++-
+ drivers/kvm/x86.h |   13 +++++++++++++
+ 4 files changed, 86 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
-index 22fdf0a..84e5366 100644
---- a/drivers/kvm/x86_emulate.c
-+++ b/drivers/kvm/x86_emulate.c
-@@ -1535,10 +1535,31 @@ special_insn:
- 		break;
+diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
+index 04e6b39..f4c61c8 100644
+--- a/drivers/kvm/svm.c
++++ b/drivers/kvm/svm.c
+@@ -188,6 +188,25 @@ static void svm_set_efer(struct kvm_vcpu *vcpu, u64 efer)
+ 	vcpu->shadow_efer = efer;
+ }
+ 
++static void svm_queue_exception(struct kvm_vcpu *vcpu, unsigned nr,
++				bool has_error_code, u32 error_code)
++{
++	struct vcpu_svm *svm = to_svm(vcpu);
++
++	svm->vmcb->control.event_inj = nr
++		| SVM_EVTINJ_VALID
++		| (has_error_code ? SVM_EVTINJ_VALID_ERR : 0)
++		| SVM_EVTINJ_TYPE_EXEPT;
++	svm->vmcb->control.event_inj_err = error_code;
++}
++
++static bool svm_exception_injected(struct kvm_vcpu *vcpu)
++{
++	struct vcpu_svm *svm = to_svm(vcpu);
++
++	return !(svm->vmcb->control.exit_int_info & SVM_EXITINTINFO_VALID);
++}
++
+ static void svm_inject_gp(struct kvm_vcpu *vcpu, unsigned error_code)
+ {
+ 	struct vcpu_svm *svm = to_svm(vcpu);
+@@ -1712,6 +1731,8 @@ static struct kvm_x86_ops svm_x86_ops = {
+ 	.patch_hypercall = svm_patch_hypercall,
+ 	.get_irq = svm_get_irq,
+ 	.set_irq = svm_set_irq,
++	.queue_exception = svm_queue_exception,
++	.exception_injected = svm_exception_injected,
+ 	.inject_pending_irq = svm_intr_assist,
+ 	.inject_pending_vectors = do_interrupt_requests,
+ 
+diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
+index 8e43feb..1ec1c28 100644
+--- a/drivers/kvm/vmx.c
++++ b/drivers/kvm/vmx.c
+@@ -595,6 +595,24 @@ static void skip_emulated_instruction(struct kvm_vcpu *vcpu)
+ 	vcpu->interrupt_window_open = 1;
+ }
+ 
++static void vmx_queue_exception(struct kvm_vcpu *vcpu, unsigned nr,
++				bool has_error_code, u32 error_code)
++{
++	vmcs_write32(VM_ENTRY_INTR_INFO_FIELD,
++		     nr | INTR_TYPE_EXCEPTION
++		     | (has_error_code ? INTR_INFO_DELIEVER_CODE_MASK : 0)
++		     | INTR_INFO_VALID_MASK);
++	if (has_error_code)
++		vmcs_write32(VM_ENTRY_EXCEPTION_ERROR_CODE, error_code);
++}
++
++static bool vmx_exception_injected(struct kvm_vcpu *vcpu)
++{
++	struct vcpu_vmx *vmx = to_vmx(vcpu);
++
++	return !(vmx->idt_vectoring_info & VECTORING_INFO_VALID_MASK);
++}
++
+ static void vmx_inject_gp(struct kvm_vcpu *vcpu, unsigned error_code)
+ {
+ 	printk(KERN_DEBUG "inject_general_protection: rip 0x%lx\n",
+@@ -2641,6 +2659,8 @@ static struct kvm_x86_ops vmx_x86_ops = {
+ 	.patch_hypercall = vmx_patch_hypercall,
+ 	.get_irq = vmx_get_irq,
+ 	.set_irq = vmx_inject_irq,
++	.queue_exception = vmx_queue_exception,
++	.exception_injected = vmx_exception_injected,
+ 	.inject_pending_irq = vmx_intr_assist,
+ 	.inject_pending_vectors = do_interrupt_requests,
+ 
+diff --git a/drivers/kvm/x86.c b/drivers/kvm/x86.c
+index c9e4b67..11440d1 100644
+--- a/drivers/kvm/x86.c
++++ b/drivers/kvm/x86.c
+@@ -133,6 +133,32 @@ static void inject_gp(struct kvm_vcpu *vcpu)
+ 	kvm_x86_ops->inject_gp(vcpu, 0);
+ }
+ 
++void kvm_queue_exception(struct kvm_vcpu *vcpu, unsigned nr)
++{
++	WARN_ON(vcpu->exception.pending);
++	vcpu->exception.pending = true;
++	vcpu->exception.has_error_code = false;
++	vcpu->exception.nr = nr;
++}
++EXPORT_SYMBOL_GPL(kvm_queue_exception);
++
++void kvm_queue_exception_e(struct kvm_vcpu *vcpu, unsigned nr, u32 error_code)
++{
++	WARN_ON(vcpu->exception.pending);
++	vcpu->exception.pending = true;
++	vcpu->exception.has_error_code = true;
++	vcpu->exception.nr = nr;
++	vcpu->exception.error_code = error_code;
++}
++EXPORT_SYMBOL_GPL(kvm_queue_exception_e);
++
++static void __queue_exception(struct kvm_vcpu *vcpu)
++{
++	kvm_x86_ops->queue_exception(vcpu, vcpu->exception.nr,
++				     vcpu->exception.has_error_code,
++				     vcpu->exception.error_code);
++}
++
+ /*
+  * Load the pae pdptrs.  Return true is they are all valid.
+  */
+@@ -2370,7 +2396,9 @@ again:
+ 		goto out;
  	}
- 	if (c->rep_prefix) {
-+		/* All REP prefixes have the same first termination condition */
- 		if (c->regs[VCPU_REGS_RCX] == 0) {
- 			ctxt->vcpu->rip = c->eip;
- 			goto done;
- 		}
-+		/* The second termination condition only applies for REPE
-+		 * and REPNE. Test if the repeat string operation prefix is
-+		 * REPE/REPZ or REPNE/REPNZ and if it's the case it tests the
-+		 * corresponding termination condition according to:
-+		 * 	- if REPE/REPZ and ZF = 0 then done
-+		 * 	- if REPNE/REPNZ and ZF = 1 then done
-+		 */
-+		if ((c->b == 0xa6) || (c->b == 0xa7) ||
-+				(c->b == 0xae) || (c->b == 0xaf)) {
-+			if ((c->rep_prefix == REPE_PREFIX) &&
-+				((ctxt->eflags & EFLG_ZF) == 0)) {
-+					ctxt->vcpu->rip = c->eip;
-+					goto done;
-+			}
-+			if ((c->rep_prefix == REPNE_PREFIX) &&
-+				((ctxt->eflags & EFLG_ZF) == EFLG_ZF)) {
-+				ctxt->vcpu->rip = c->eip;
-+				goto done;
-+			}
-+		}
- 		c->regs[VCPU_REGS_RCX]--;
- 		c->eip = ctxt->vcpu->rip;
+ 
+-	if (irqchip_in_kernel(vcpu->kvm))
++	if (vcpu->exception.pending)
++		__queue_exception(vcpu);
++	else if (irqchip_in_kernel(vcpu->kvm))
+ 		kvm_x86_ops->inject_pending_irq(vcpu);
+ 	else
+ 		kvm_x86_ops->inject_pending_vectors(vcpu, kvm_run);
+@@ -2409,6 +2437,9 @@ again:
+ 		profile_hit(KVM_PROFILING, (void *)vcpu->rip);
  	}
-@@ -1564,8 +1585,41 @@ special_insn:
- 							   : c->dst.bytes);
- 		break;
- 	case 0xa6 ... 0xa7:	/* cmps */
--		DPRINTF("Urk! I don't handle CMPS.\n");
--		goto cannot_emulate;
-+		c->src.type = OP_NONE; /* Disable writeback. */
-+		c->src.bytes = (c->d & ByteOp) ? 1 : c->op_bytes;
-+		c->src.ptr = (unsigned long *)register_address(
-+				c->override_base ? *c->override_base :
-+						   ctxt->ds_base,
-+						   c->regs[VCPU_REGS_RSI]);
-+		if ((rc = ops->read_emulated((unsigned long)c->src.ptr,
-+						&c->src.val,
-+						c->src.bytes,
-+						ctxt->vcpu)) != 0)
-+			goto done;
+ 
++	if (vcpu->exception.pending && kvm_x86_ops->exception_injected(vcpu))
++		vcpu->exception.pending = false;
 +
-+		c->dst.type = OP_NONE; /* Disable writeback. */
-+		c->dst.bytes = (c->d & ByteOp) ? 1 : c->op_bytes;
-+		c->dst.ptr = (unsigned long *)register_address(
-+						   ctxt->es_base,
-+						   c->regs[VCPU_REGS_RDI]);
-+		if ((rc = ops->read_emulated((unsigned long)c->dst.ptr,
-+						&c->dst.val,
-+						c->dst.bytes,
-+						ctxt->vcpu)) != 0)
-+			goto done;
+ 	r = kvm_x86_ops->handle_exit(kvm_run, vcpu);
+ 
+ 	if (r > 0) {
+diff --git a/drivers/kvm/x86.h b/drivers/kvm/x86.h
+index eed7964..1e71668 100644
+--- a/drivers/kvm/x86.h
++++ b/drivers/kvm/x86.h
+@@ -139,6 +139,13 @@ struct kvm_vcpu {
+ 	struct kvm_pio_request pio;
+ 	void *pio_data;
+ 
++	struct kvm_queued_exception {
++		bool pending;
++		bool has_error_code;
++		u8 nr;
++		u32 error_code;
++	} exception;
 +
-+		DPRINTF("cmps: mem1=0x%p mem2=0x%p\n", c->src.ptr, c->dst.ptr);
+ 	struct {
+ 		int active;
+ 		u8 save_iopl;
+@@ -224,6 +231,9 @@ struct kvm_x86_ops {
+ 				unsigned char *hypercall_addr);
+ 	int (*get_irq)(struct kvm_vcpu *vcpu);
+ 	void (*set_irq)(struct kvm_vcpu *vcpu, int vec);
++	void (*queue_exception)(struct kvm_vcpu *vcpu, unsigned nr,
++				bool has_error_code, u32 error_code);
++	bool (*exception_injected)(struct kvm_vcpu *vcpu);
+ 	void (*inject_pending_irq)(struct kvm_vcpu *vcpu);
+ 	void (*inject_pending_vectors)(struct kvm_vcpu *vcpu,
+ 				       struct kvm_run *run);
+@@ -294,6 +304,9 @@ void kvm_get_cs_db_l_bits(struct kvm_vcpu *vcpu, int *db, int *l);
+ int kvm_get_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 *pdata);
+ int kvm_set_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 data);
+ 
++void kvm_queue_exception(struct kvm_vcpu *vcpu, unsigned nr);
++void kvm_queue_exception_e(struct kvm_vcpu *vcpu, unsigned nr, u32 error_code);
 +
-+		emulate_2op_SrcV("cmp", c->src, c->dst, ctxt->eflags);
-+
-+		register_address_increment(c->regs[VCPU_REGS_RSI],
-+				       (ctxt->eflags & EFLG_DF) ? -c->src.bytes
-+								  : c->src.bytes);
-+		register_address_increment(c->regs[VCPU_REGS_RDI],
-+				       (ctxt->eflags & EFLG_DF) ? -c->dst.bytes
-+								  : c->dst.bytes);
-+
-+		break;
- 	case 0xaa ... 0xab:	/* stos */
- 		c->dst.type = OP_MEM;
- 		c->dst.bytes = (c->d & ByteOp) ? 1 : c->op_bytes;
+ void fx_init(struct kvm_vcpu *vcpu);
+ 
+ int emulator_read_std(unsigned long addr,
 -- 
 1.5.3.7
 
