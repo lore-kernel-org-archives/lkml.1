@@ -1,74 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbYAASne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756149AbYAASr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755454AbYAASne (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 13:43:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754190AbYAASnZ
+	id S1756149AbYAASr2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 13:47:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754574AbYAASrV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 13:43:25 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:9606 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754153AbYAASnY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 13:43:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rf6USnviSPlmSovbrEQDNGvaqqcrVOhkt9Blb/8wyHZt8h0GF2NFIB5H4pS+abHJBDZVIapY3s777vQBTgmqPe2kAQXqc1uIP+7uBfm9/yIrt2Zob5KdVeTXrv9GgJb6ylnaFnEaWeFYjsFDUrViiClaltFmdV1oa90TGDiIMks=
-Message-ID: <6101e8c40801011043k209e1db6t1f5877b1c034c865@mail.gmail.com>
-Date: Tue, 1 Jan 2008 19:43:23 +0100
-From: "=?ISO-8859-1?Q?Oliver_Pinter_(Pint=E9r_Oliv=E9r)?=" 
-	<oliver.pntr@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>, stable@kernel.org
-Subject: Re: [2.6 patch] OSS msnd: fix array overflows
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080101134921.GQ2360@does.not.exist>
+	Tue, 1 Jan 2008 13:47:21 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58420 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754276AbYAASrV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 13:47:21 -0500
+Date: Tue, 1 Jan 2008 19:46:59 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Christer Weinigel <christer@weinigel.se>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, "David P. Reed" <dpreed@reed.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Rene Herman <rene.herman@gmail.com>,
+       Paul Rolland <rol@as2917.net>, Pavel Machek <pavel@ucw.cz>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, rol@witbe.net
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
+Message-ID: <20080101184659.GA9250@elte.hu>
+References: <4765DCB0.8030901@gmail.com> <4765EE7F.80002@zytor.com> <47667366.7010405@gmail.com> <4766AE88.4080904@zytor.com> <4766D175.7040807@reed.com> <20071217212509.5edaa372@the-village.bc.nu> <477A634C.8040000@reed.com> <20080101161557.3ce2d5f8@the-village.bc.nu> <20080101164338.GA901@elte.hu> <20080101183238.74307174@weinigel.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080101134921.GQ2360@does.not.exist>
+In-Reply-To: <20080101183238.74307174@weinigel.se>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-then it is auch to 2.6.22-stable?
 
-On 1/1/08, Adrian Bunk <bunk@kernel.org> wrote:
-> This patch fixes array overflows in the OSS msnd driver spotted by the
-> Coverity checker.
->
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
->
-> ---
->
-> This patch has been sent on:
-> - 27 Oct 2007
->
-> 97463a59dfb9ccb915d3b615225c98cb3e310c0a
-> diff --git a/sound/oss/msnd.h b/sound/oss/msnd.h
-> index 05cf786..d0ca582 100644
-> --- a/sound/oss/msnd.h
-> +++ b/sound/oss/msnd.h
-> @@ -233,8 +233,8 @@ typedef struct multisound_dev {
->  	spinlock_t lock;
->  	int nresets;
->  	unsigned long recsrc;
-> -	int left_levels[16];
-> -	int right_levels[16];
-> +	int left_levels[32];
-> +	int right_levels[32];
->  	int mixer_mod_count;
->  	int calibrate_signal;
->  	int play_sample_size, play_sample_rate, play_channels;
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+* Christer Weinigel <christer@weinigel.se> wrote:
 
+> What I'm afraid is that udelay will be significantly slower, [...]
 
--- 
-Thanks,
-Oliver
+why should it be significantly slower?
+
+	Ingo
