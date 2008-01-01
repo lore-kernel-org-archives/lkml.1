@@ -1,51 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758133AbYAAXyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758813AbYAAXyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758133AbYAAXyX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 18:54:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754907AbYAAXyO
+	id S1758813AbYAAXyl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 18:54:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758118AbYAAXyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 18:54:14 -0500
-Received: from kolab.mylinuxtime.de ([212.112.242.22]:43254 "EHLO
-	kolab.mylinuxtime.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754857AbYAAXyN (ORCPT
+	Tue, 1 Jan 2008 18:54:23 -0500
+Received: from home.nigel.suspend2.net ([203.171.70.205]:52137 "EHLO
+	server1.example.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758069AbYAAXyV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 18:54:13 -0500
-X-Greylist: delayed 1433 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Jan 2008 18:54:13 EST
-X-Spam-ASN: AS24900 212.112.224.0/19
-From: Christian Hesse <mail@earthworm.de>
-To: suspend2-devel@lists.tuxonice.net, nigel@nigel.suspend2.net
-Subject: Reboot problem (was: Re: [Suspend2-devel] What's in store for 2008 for TuxOnIce?)
-Date: Wed, 2 Jan 2008 00:30:03 +0100
-User-Agent: KMail/1.9.7
-Cc: "The place to get help!" <suspend2-users@lists.tuxonice.net>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <477AC060.5040004@nigel.suspend2.net>
-In-Reply-To: <477AC060.5040004@nigel.suspend2.net>
-X-Face: 1\p'dhO'VZk,x0lx6U}!Y*9UjU4n2@4c<"a*K%3Eiu'VwM|-OYs;S-PH>4EdJMfGyycC)=?utf-8?q?k=0A=09=3Anv*xqk4C?=@1b8tdr||mALWpN[2|~h#Iv;)M"O$$#P9Kg+S8+O#%EJx0TBH7b&Q<m)=?utf-8?q?n=23Q=2Eo=0A=09kE=7E=26T=5D0cQX6=5D?=<q!HEE,F}O'Jd#lx/+){Gr@W~J`h7sTS(M+oe5<=?utf-8?q?3O7GY9y=5Fi!qG=26Vv=5CD8/=0A=09=254?=@&~$Z@UwV'NQ$Ph&3fZc(qbDO?{LN'nk>+kRh4`C3[KN`-1uT-TD_m
+	Tue, 1 Jan 2008 18:54:21 -0500
+Message-ID: <477AD2AA.4070707@nigel.suspend2.net>
+Date: Wed, 02 Jan 2008 10:54:18 +1100
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: suspend2-devel@lists.tuxonice.net,
+       "The place to get help!" <suspend2-users@lists.tuxonice.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Freezing filesystems (Was Re: What's in store for 2008 for TuxOnIce?)
+References: <477AC060.5040004@nigel.suspend2.net> <200801020021.37259.rjw@sisk.pl>
+In-Reply-To: <200801020021.37259.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801020030.06940.mail@earthworm.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 01 January 2008, Nigel Cunningham wrote:
-> Third, regarding the patch itself, I'm taking my time in working towards
-> the 3.0 release. We don't have any major bugs with 3.0-rc3 reported [...].
+Hi.
 
-Well, I think I still have a bug, though it is possibly a mainline problem and 
-it's not a showstopper. After a suspend/resume cycle the reboot does not 
-work. The system hangs with "Rebooting system" (or similar). After that you 
-have to hard reset the system, which is not really a problem as filesystems 
-have been unmounted before. Reboot without a suspend cycle before and halt 
-with and without suspend cycle work without problems.
-I'm using toi 3.0-rc3 with kernel 2.6.24-rc6 and beside the problem described 
-above I'm really happy with toi.
+Rafael J. Wysocki wrote:
+> On Tuesday, 1 of January 2008, Nigel Cunningham wrote:
+>> Hi all.
+> 
+> Hi Nigel,
 
-Happy new your to everybody!
--- 
-Regards,
-Chris
+Gidday :)
+
+>> With the start of a new year, I suppose it's a good time to think about
+>> what I'd like to do with TuxOnIce this year and see what feedback I get.
+>>
+>> First up, I'm thinking about closing the mailing lists and asking people
+>> to use LKML instead for reporting issues and so on. I'm thinking about
+>> this because it will help with allowing people who work on mainline to
+>> see how stable (or otherwise!) TuxOnIce is now. It should also help when
+>> (as often happens) bug reports aren't actually issues with the patch,
+>> but with vanilla (ie drivers).
+> 
+> I would also like the TuxOnIce issues related to drivers, ACPI, etc. to go to
+> one of the kernel-related lists, but I think linux-pm may be better for that
+> due to the much lower traffic.
+
+I guess that makes sense. I guess people can always be referred to LKML
+for the issues where the appropriate person isn't on linux-pm.
+
+>> Perhaps it will also help with whatever effort I find time to make towards
+>> convincing Andrew that it really does have significant advantages over
+>> [u]swsusp and kexec based hibernation. 
+>>
+>> Secondly, I'm planning on moving the website soonish. It's taken longer
+>> than I planned because it will be sharing with another server I'm
+>> maintaining, and it has taken longer than expected to find good hosting
+>> for the other server (which was done first). Now that I'm happy with the
+>> other server's state, I'm hoping to start shifting
+>> suspend2.net/tuxonice.net soon.
+>>
+>> For those who might be looking for hosting themselves, I'm using
+>> slicehost. I initially tried GoDaddy, but had terrible service, problems
+>> with draconian limits on the volume of outgoing email (1000/day by
+>> default - useless if you're doing mailing lists) and unexpected,
+>> unexplained delays in mail delivery through the SMTP delay they force
+>> you to use. Slicehost, on the other hand, are terrific to deal with in
+>> everyway. If you sign up with them because of this email, please
+>> consider putting my email (nigel at suspend2.net) as the referrer - I
+>> then get a discount on the cost of the hosting.
+>>
+>> Third, regarding the patch itself, I'm taking my time in working towards
+>> the 3.0 release. We don't have any major bugs with 3.0-rc3 reported, but
+>> I have some things I want to complete before the final release:
+>> * see it well tested;
+>> * get a finished initial version of the cluster support;
+>> * finish completing support for the new resume-from-other kernels
+>> functionality that Rafael has added in 2.6.24. (We can resume from the
+>> same kernel at the moment, but I need to convince myself that nosave
+>> data is properly handled).
+> 
+> Have you finished the support for freezing filesystems before freezing tasks
+> that we talked about some time ago?
+
+Hmm. I've had too many things going through my little brain since then.
+What I currently have is support for freezing fuse filesystems
+separately. It looks like:
+
+int freeze_processes(void)
+{
+        int error;
+
+        printk("Stopping fuse filesystems.\n");
+        freeze_filesystems(FS_FREEZER_FUSE);
+        freezer_state = FREEZER_FILESYSTEMS_FROZEN;
+        printk("Freezing user space processes ... ");
+        error = try_to_freeze_tasks(FREEZER_USER_SPACE);
+        if (error)
+                goto Exit;
+        printk("done.\n");
+
+        sys_sync();
+        printk("Stopping normal filesystems.\n");
+        freeze_filesystems(FS_FREEZER_NORMAL);
+        freezer_state = FREEZER_USERSPACE_FROZEN;
+        printk("Freezing remaining freezable tasks ... ");
+        error = try_to_freeze_tasks(FREEZER_KERNEL_THREADS);
+        if (error)
+                goto Exit;
+        printk("done.");
+        freezer_state = FREEZER_FULLY_ON;
+ Exit:
+        BUG_ON(in_atomic());
+        printk("\n");
+        return error;
+}
+
+(I'm not yet worrying about ext3 on fuse or such like, but it shouldn't
+be hard to extend the model to do that).
+
+Nigel
