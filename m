@@ -1,152 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754405AbYAAM6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbYAAM71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754405AbYAAM6r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 07:58:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753400AbYAAM6k
+	id S1754135AbYAAM71 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 07:59:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbYAAM7Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 07:58:40 -0500
-Received: from hera.kernel.org ([140.211.167.34]:41463 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753476AbYAAM6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 07:58:38 -0500
-Date: Tue, 1 Jan 2008 12:58:37 +0000
-From: Willy Tarreau <wtarreau@hera.kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.4.36 released
-Message-ID: <20080101125837.GA31679@hera.kernel.org>
-Reply-To: w@1wt.eu
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 1 Jan 2008 07:59:16 -0500
+Received: from py-out-1112.google.com ([64.233.166.180]:22612 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753628AbYAAM7O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 07:59:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=v+RAQkgv3SkS1HbuYvmMlX0efGGlnDcLEG7GuX2srreEJtymBBTZq4+hjoHE02W3mC+h93H/AVxrJg779lCXzGHotFbxlPuasDRIqTX7p3Q3lrBcJLxo87HQ/KYCQqVQckOXBLnuT8Kx2kAJagp0JhEhvFWd07mELLHXY+kChuM=
+Message-ID: <64bb37e0801010459h68976d56i21d505eb2817f1ac@mail.gmail.com>
+Date: Tue, 1 Jan 2008 13:59:12 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Herbert Xu" <herbert@gondor.apana.org.au>
+Subject: Re: 2.6.24-rc6-mm1
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Neil Brown" <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>,
+       netdev@vger.kernel.org, "Tom Tucker" <tom@opengridcomputing.com>
+In-Reply-To: <20080101120406.GA27209@gondor.apana.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+References: <20071222233056.d652743e.akpm@linux-foundation.org>
+	 <64bb37e0712230827m7d368e2l3174f3b4396d09c1@mail.gmail.com>
+	 <64bb37e0712281453y4aac82b7h7acc8ec314ca6e3e@mail.gmail.com>
+	 <20071228150746.42b3bbc0.akpm@linux-foundation.org>
+	 <64bb37e0712290851r6d41768dk270e47884713a3de@mail.gmail.com>
+	 <20071230013021.GA13603@gondor.apana.org.au>
+	 <64bb37e0712291934o77a3d365h56c9c31ac8437469@mail.gmail.com>
+	 <64bb37e0712311215x519b10e9kd51eb745b3b7290a@mail.gmail.com>
+	 <20080101120406.GA27209@gondor.apana.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Jan 1, 2008 1:04 PM, Herbert Xu <herbert@gondor.apana.org.au> wrote:
+> On Mon, Dec 31, 2007 at 09:15:19PM +0100, Torsten Kaiser wrote:
+> >
+> > I then tried to "fix" it with this suspect.
+> > I changed "skb_release_all(dst);" back to "skb_release_data(dst);" in
+> > skb_morph() (net/core/skbuff.c).
+>
+> Check /proc/net/snmp to see if you're getting any fragments, if not
+> then skb_morph shouldn't even be getting called.
 
-New year, new kernel :-)
+OK, thanks for that hint.
+I look at this after my next tests.
 
-Linux 2.4.36 is finally ready and has been checked long enough to
-be released. Quite a bunch of bugs, build errors and security issues
-have been fixed since 2.4.35, but all of those fixes were merged
-into 2.4.35-stable. I should say that I'm quite statisfied of this
-dual-branch release model which proves to be very successful at
-separating quick fixes from changes which require more thorough testing.
-The full changelog between 2.4.35 and 2.4.36 is appended at the end of
-this mail.
+> > I'm now at 205 of 210 packages completed without a further hang. I
+> > also do not see an obvious memory leak.
+>
+> In any case, I suspect the cause of your problem is that somebody
+> somewhere is doing a double-free on an skb.
 
-The remaining changes between 2.4.35.5 and 2.4.36 are just minimal :
- - IDE support for JMicron 20363 and UDMA on ICH7
- - the addition of the mmap_min_addr sysctl which provides the ability to
-   prevent processes from mapping the NULL address, thus preventing the
-   exploitation of a kind of possibly yet undiscovered kernel bugs (NULL
-   dereferences) to escalade privileges. This is the convergence of an
-   Openwall kernel 2.4 patch by Solar Designer, and Eric Paris' 2.6 patch.
+Is there any debug option I could turn on to catch this?
 
-The mmap_min_addr protection is not enabled by default. In order to
-activate it, you have to write the minimum allowed user-space address
-in mmap_min_addr :
+Hmm... __alloc_skb() uses kmem_cache_alloc_node() and I did run
+-rc3-mm2 a long time with slub_debug=FZP and that did not catch
+anything. Shouldn't the poisoning catch that? (Sorry if this question
+is stupid, but while I can read C, I'm not a kernel expert)
 
-  # echo 4096 > /proc/sys/vm/mmap_min_addr
+> Since you're the only person who can reproduce this, we really need
+> your help to track this down.  Since bisecting the mm tree is not
+> practical, you could start by checking whether the bug is in mm only
+> or whether it affects rc6 too.
 
-or alternatively :
+I will try -rc6-mm1 and vanilla -rc6 and report back.
 
-  # sysctl -w vm.mmap_min_addr=4096
-
-I have been running with values between 4096 and 65536 on various machines
-without any problem. Default value is zero, thus disabling the protection.
-Feedback from the field welcome, of course.
-
-Concerning future versions, I have nothing pending in the queue anymore. I
-will then go on with 2.4.36.X when bug fixes come in, and only open 2.4.37
-when I get something which I do not consider suitable for 2.4.36.X.
-
-Happy new year 2008 to everyone !
-Willy
-
----
-Changelog between 2.4.35 and 2.4.36
----
-
-final:
- - v2.4.36-rc1 was released as 2.4.36 with no changes.
-
-Summary of changes from v2.4.36-pre2 to v2.4.36-rc1
-============================================
-
-Jonas Danielsson (1):
-      net/ipv4/arp.c: Fix arp reply when sender ip 0
-
-Krzysztof Strasburger (1):
-      fix arch/i386/config.in to be able to boot on 386
-
-Pete Zaitcev (1):
-      usb: Move linux-usb-devel
-
-Willy Tarreau (8):
-      GCC >= 4.2 miscompiles the kernel
-      prevent do_brk() from allocating below mmap_min_addr
-      fix build of ia32entry.S on x86_64
-      vfs: coredumping fix
-      isdn: avoid copying overly-long strings
-      prevent SIGCONT from waking up a PTRACED process (CVE-2007-4774)
-      isdn: fix isdn_ioctl memory overrun vulnerability
-      Change VERSION to 2.4.36-rc1
-
-Summary of changes from v2.4.36-pre1 to v2.4.36-pre2
-============================================
-
-Andi Kleen (1):
-      x86_64: Make sure to validate all 64bits of ptrace information
-
-Franck Bourdonnec (1):
-      fix missing MODULE_LICENSE in some drivers
-
-Gilles Espinasse (1):
-      fix unresolved symbols on alpha
-
-Moritz Muehlenhoff (1):
-      corrupted cramfs filesystems cause kernel oops (CVE-2006-5823)
-
-Stephen Hemminger (1):
-      Bridge STP timer fixes
-
-Tony Battersby (1):
-      sym53c8xx_2 SMP deadlock on driver load
-
-Willy Tarreau (3):
-      ATM: avoid kernel panic upon access to /proc/net/atm/arp
-      PPP: fix crash using usb-serial on high speed devices
-      Change VERSION to 2.4.36-pre2
-
-dann frazier (4):
-      [OpenPROM]: Fix signedness bug in openprom char driver
-      [OpenPROM]: Fix user-access checking bugs in openpromfs
-      [OpenPROM] Prevent overflow of sprintf buffer
-      [OpenPROM] Prevent unsigned roll-overs in
-
-ivaylo@bglans.net (2):
-      IDE: enable support for JMicron 20363
-      IDE: enable PATA UDMA support for ICH7
-
-Summary of changes from v2.4.35 to v2.4.36-pre1
-============================================
-
-Marc Haisenko (1):
-      b44: fix force mac address before ifconfig up
-
-Willy Tarreau (12):
-      build fix for lvm with gcc 4
-      fix wdt83627 build breakage with gcc 4.x
-      wdt83627: fix wdt_init() return code
-      module fdomain_cs requires fdomain_setup()
-      do not use gcc's builtin strpbrk
-      fix incorrect use of -fno-unit-at-a-time on GCC >= 4
-      second build fix for some rare buggy versions of GCC 4
-      CVE-2007-3848 Privilege escalation via PR_SET_PDEATHSIG
-      i386: do_test_wp_bit() must not be inlined
-      restore -fno-unit-at-a-time on GCC >= 4
-      sysctl to prevent normal processes from mapping NULL
-      Change VERSION to 2.4.36-pre1
-
+Torsten
