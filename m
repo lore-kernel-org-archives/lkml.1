@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753944AbYAACKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbYAACKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753944AbYAACKZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 21:10:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753950AbYAACFx
+	id S1754713AbYAACKo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 21:10:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbYAACFx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 31 Dec 2007 21:05:53 -0500
-Received: from fmailhost02.isp.att.net ([207.115.11.52]:44509 "EHLO
-	fmailhost02.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753704AbYAACFe (ORCPT
+Received: from fmailhost06.isp.att.net ([204.127.217.106]:42370 "EHLO
+	fmailhost06.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753705AbYAACFe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 31 Dec 2007 21:05:34 -0500
 X-Originating-IP: [68.222.90.230]
@@ -15,9 +15,9 @@ From: jacliburn@bellsouth.net
 To: jeff@garzik.org
 Cc: csnook@redhat.com, linux-kernel@vger.kernel.org,
        atl1-devel@lists.sourceforge.net, Jay Cliburn <jacliburn@bellsouth.net>
-Subject: [PATCH 24/26] atl1: update wake-on-lan
-Date: Mon, 31 Dec 2007 20:00:02 -0600
-Message-Id: <1199152804-3889-25-git-send-email-jacliburn@bellsouth.net>
+Subject: [PATCH 08/26] atl1: additional DMA engine configuration
+Date: Mon, 31 Dec 2007 19:59:46 -0600
+Message-Id: <1199152804-3889-9-git-send-email-jacliburn@bellsouth.net>
 X-Mailer: git-send-email 1.5.3.3
 In-Reply-To: <1199152804-3889-1-git-send-email-jacliburn@bellsouth.net>
 References: <1199152804-3889-1-git-send-email-jacliburn@bellsouth.net>
@@ -27,216 +27,60 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jay Cliburn <jacliburn@bellsouth.net>
 
-Update wake-on-lan to conform with the current vendor driver version
+Add DMA engine configuration tweaks per current vendor atl1 driver version
 1.2.40.2.
 
 Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
 ---
- drivers/net/atlx/atl1.c |  140 ++++++++++++++++++++++++++++-------------------
- 1 files changed, 84 insertions(+), 56 deletions(-)
+ drivers/net/atlx/atl1.c |   10 ++++++++++
+ drivers/net/atlx/atlx.h |    6 ++++++
+ 2 files changed, 16 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/net/atlx/atl1.c b/drivers/net/atlx/atl1.c
-index b89201e..237622e 100644
+index c93cf19..fb0a0af 100644
 --- a/drivers/net/atlx/atl1.c
 +++ b/drivers/net/atlx/atl1.c
-@@ -1457,22 +1457,6 @@ static u32 atl1_configure(struct atl1_adapter *adapter)
- 	return value;
- }
- 
--/*
-- * When ACPI resume on some VIA MotherBoard, the Interrupt Disable bit/0x400
-- * on PCI Command register is disable.
-- * The function enable this bit.
-- * Brackett, 2006/03/15
-- */
--static void atl1_via_workaround(struct atl1_adapter *adapter)
--{
--	unsigned long value;
--
--	value = ioread16(adapter->hw.hw_addr + PCI_COMMAND);
--	if (value & PCI_COMMAND_INTX_DISABLE)
--		value &= ~PCI_COMMAND_INTX_DISABLE;
--	iowrite32(value, adapter->hw.hw_addr + PCI_COMMAND);
--}
--
- static void atl1_inc_smb(struct atl1_adapter *adapter)
+@@ -666,6 +666,7 @@ static u32 atl1_configure(struct atl1_adapter *adapter)
  {
- 	struct stats_msg_block *smb = adapter->smb.smb;
-@@ -2607,65 +2591,97 @@ static int atl1_suspend(struct pci_dev *pdev, pm_message_t state)
- 	struct net_device *netdev = pci_get_drvdata(pdev);
- 	struct atl1_adapter *adapter = netdev_priv(netdev);
  	struct atl1_hw *hw = &adapter->hw;
-+	u16 speed, duplex;
- 	u32 ctrl = 0;
- 	u32 wufc = adapter->wol;
-+	int retval;
+ 	u32 value;
++	u16 x;
  
- 	netif_device_detach(netdev);
--	if (netif_running(netdev))
-+	if (netif_running(netdev)) {
-+		WARN_ON(test_bit(__ATL1_RESETTING, &adapter->flags));
- 		atl1_down(adapter);
-+	}
+ 	/* clear interrupt status */
+ 	iowrite32(0xffffffff, adapter->hw.hw_addr + REG_ISR);
+@@ -797,6 +798,15 @@ static u32 atl1_configure(struct atl1_adapter *adapter)
+ 	iowrite32(value, hw->hw_addr + REG_RXQ_CTRL);
+ 
+ 	/* config DMA Engine */
++	value = ioread32(hw->hw_addr + REG_DEVICE_CTRL);
++	x = (value >> DEVICE_CTRL_MAX_PAYLOAD_SHIFT) &
++		DEVICE_CTRL_MAX_PAYLOAD_MASK;
++	if (x < hw->dmaw_block)
++		hw->dmaw_block = x;
++	x = (value >> DEVICE_CTRL_MAX_RREQ_SZ_SHIFT) &
++		DEVICE_CTRL_MAX_RREQ_SZ_MASK;
++	if (x < hw->dmar_block)
++		hw->dmar_block = x;
+ 	value = ((((u32) hw->dmar_block) & DMA_CTRL_DMAR_BURST_LEN_MASK)
+ 		<< DMA_CTRL_DMAR_BURST_LEN_SHIFT) |
+ 		((((u32) hw->dmaw_block) & DMA_CTRL_DMAW_BURST_LEN_MASK)
+diff --git a/drivers/net/atlx/atlx.h b/drivers/net/atlx/atlx.h
+index 3be7c09..43b8531 100644
+--- a/drivers/net/atlx/atlx.h
++++ b/drivers/net/atlx/atlx.h
+@@ -53,6 +53,12 @@ MODULE_VERSION(ATLX_DRIVER_VERSION);
+ 
+ #define REG_PCIE_CAP_LIST		0x58
+ 
++#define REG_DEVICE_CTRL			0x60
++#define DEVICE_CTRL_MAX_PAYLOAD_MASK	0x7
++#define DEVICE_CTRL_MAX_PAYLOAD_SHIFT	5
++#define DEVICE_CTRL_MAX_RREQ_SZ_MASK	0x7
++#define DEVICE_CTRL_MAX_RREQ_SZ_SHIFT	12
 +
-+	retval = pci_save_state(pdev);
-+	if (retval)
-+		return retval;
- 
--	atl1_read_phy_reg(hw, MII_BMSR, (u16 *) & ctrl);
--	atl1_read_phy_reg(hw, MII_BMSR, (u16 *) & ctrl);
-+	atl1_read_phy_reg(hw, MII_BMSR, (u16 *) &ctrl);
-+	atl1_read_phy_reg(hw, MII_BMSR, (u16 *) &ctrl);
- 	if (ctrl & BMSR_LSTATUS)
- 		wufc &= ~ATLX_WUFC_LNKC;
- 
--	/* reduce speed to 10/100M */
--	if (wufc) {
--		/* if resume, let driver to re- setup link */
--		hw->phy_configured = false;
--		atl1_set_mac_addr(hw);
--		atlx_set_multi(netdev);
-+	if ((ctrl & BMSR_LSTATUS) && wufc) {
-+		retval = atl1_get_speed_and_duplex(hw, &speed, &duplex);
-+		if (retval) {
-+			dev_printk(KERN_DEBUG, &adapter->pdev->dev,
-+				"speed/duplex error during suspend\n");
-+			goto wol_dis;
-+		}
- 
- 		ctrl = 0;
- 		/* turn on magic packet wol */
- 		if (wufc & ATLX_WUFC_MAG)
- 			ctrl = WOL_MAGIC_EN | WOL_MAGIC_PME_EN;
- 
--		/* turn on Link change WOL */
--		if (wufc & ATLX_WUFC_LNKC)
--			ctrl |= (WOL_LINK_CHG_EN | WOL_LINK_CHG_PME_EN);
- 		iowrite32(ctrl, hw->hw_addr + REG_WOL_CTRL);
- 
--		/* turn on all-multi mode if wake on multicast is enabled */
--		ctrl = ioread32(hw->hw_addr + REG_MAC_CTRL);
--		ctrl &= ~MAC_CTRL_DBG;
--		ctrl &= ~MAC_CTRL_PROMIS_EN;
--		if (wufc & ATLX_WUFC_MC)
--			ctrl |= MAC_CTRL_MC_ALL_EN;
--		else
--			ctrl &= ~MAC_CTRL_MC_ALL_EN;
-+		ctrl = MAC_CTRL_RX_EN;
-+		ctrl |= ((u32) ((speed == SPEED_1000) ?	MAC_CTRL_SPEED_1000 :
-+			MAC_CTRL_SPEED_10_100) << MAC_CTRL_SPEED_SHIFT);
-+
-+		if (duplex == FULL_DUPLEX)
-+			ctrl |= (((u32) adapter->hw.preamble_len &
-+				MAC_CTRL_PRMLEN_MASK) <<
-+				MAC_CTRL_PRMLEN_SHIFT);
- 
--		/* turn on broadcast mode if wake on-BC is enabled */
--		if (wufc & ATLX_WUFC_BC)
-+		if (adapter->vlgrp)
-+			ctrl |= MAC_CTRL_RMV_VLAN;
-+
-+		if (wufc & ATLX_WUFC_MAG)
- 			ctrl |= MAC_CTRL_BC_EN;
--		else
--			ctrl &= ~MAC_CTRL_BC_EN;
- 
--		/* enable RX */
--		ctrl |= MAC_CTRL_RX_EN;
- 		iowrite32(ctrl, hw->hw_addr + REG_MAC_CTRL);
--		pci_enable_wake(pdev, PCI_D3hot, 1);
--		pci_enable_wake(pdev, PCI_D3cold, 1);
--	} else {
--		iowrite32(0, hw->hw_addr + REG_WOL_CTRL);
--		pci_enable_wake(pdev, PCI_D3hot, 0);
--		pci_enable_wake(pdev, PCI_D3cold, 0);
-+
-+		ctrl = ioread32(hw->hw_addr + REG_PCIE_PHY_MISC1);
-+		ctrl |= PCIE_PHY_MISC1_FORCE_RCV_DET;
-+		iowrite32(ctrl, hw->hw_addr + REG_PCIE_PHY_MISC1);
-+		ioread32(hw->hw_addr + REG_PCIE_PHY_MISC1);
-+		hw->phy_configured = false;
-+		pci_enable_wake(pdev, pci_choose_state(pdev, state), 1);
-+		goto suspend_exit;
- 	}
- 
--	pci_save_state(pdev);
--	pci_disable_device(pdev);
-+	if (!(ctrl & BMSR_LSTATUS) && (wufc & ATLX_WUFC_LNKC)) {
-+		ctrl |= WOL_LINK_CHG_EN | WOL_LINK_CHG_PME_EN;
-+		iowrite32(ctrl, hw->hw_addr + REG_WOL_CTRL);
-+		iowrite32(0, hw->hw_addr + REG_MAC_CTRL);
-+
-+		ctrl = ioread32(hw->hw_addr + REG_PCIE_PHY_MISC1);
-+		ctrl |= PCIE_PHY_MISC1_FORCE_RCV_DET;
-+		iowrite32(ctrl, hw->hw_addr + REG_PCIE_PHY_MISC1);
-+		ioread32(hw->hw_addr + REG_PCIE_PHY_MISC1);
-+		hw->phy_configured = false;
-+		pci_enable_wake(pdev, pci_choose_state(pdev, state), 1);
-+		goto suspend_exit;
-+	}
-+
-+wol_dis:
-+	iowrite32(0, hw->hw_addr + REG_WOL_CTRL);
-+	ctrl = ioread32(hw->hw_addr + REG_PCIE_PHY_MISC1);
-+	ctrl |= PCIE_PHY_MISC1_FORCE_RCV_DET;
-+	iowrite32(ctrl, hw->hw_addr + REG_PCIE_PHY_MISC1);
-+	ioread32(hw->hw_addr + REG_PCIE_PHY_MISC1);
-+	atl1_force_ps(hw);
-+	hw->phy_configured = false;
-+	pci_enable_wake(pdev, pci_choose_state(pdev, state), 0);
-+
-+suspend_exit:
-+	if (netif_running(netdev))
-+		atl1_free_irq(adapter);
- 
--	pci_set_power_state(pdev, PCI_D3hot);
-+	pci_disable_device(pdev);
-+	pci_set_power_state(pdev, pci_choose_state(pdev, state));
- 
- 	return 0;
- }
-@@ -2674,24 +2690,36 @@ static int atl1_resume(struct pci_dev *pdev)
- {
- 	struct net_device *netdev = pci_get_drvdata(pdev);
- 	struct atl1_adapter *adapter = netdev_priv(netdev);
-+	struct atl1_hw *hw = &adapter->hw;
- 	u32 err;
- 
- 	pci_set_power_state(pdev, PCI_D0);
- 	pci_restore_state(pdev);
- 
--	/* FIXME: check and handle */
- 	err = pci_enable_device(pdev);
-+	if (err) {
-+		dev_printk(KERN_DEBUG, &adapter->pdev->dev,
-+			"pci enable device error on resume\n");
-+		return err;
-+	}
-+
-+	pci_set_master(pdev);
-+	ioread32(hw->hw_addr + REG_WOL_CTRL);
- 	pci_enable_wake(pdev, PCI_D3hot, 0);
- 	pci_enable_wake(pdev, PCI_D3cold, 0);
-+	iowrite32(0, hw->hw_addr + REG_WOL_CTRL);
-+
-+	err = atl1_request_irq(adapter);
-+	if (netif_running(netdev) && err)
-+		return err;
- 
--	iowrite32(0, adapter->hw.hw_addr + REG_WOL_CTRL);
--	atl1_reset(adapter);
-+	atl1_reset_hw(hw);
-+	adapter->cmb.cmb->int_stats = 0;
- 
- 	if (netif_running(netdev))
- 		atl1_up(adapter);
--	netif_device_attach(netdev);
- 
--	atl1_via_workaround(adapter);
-+	netif_device_attach(netdev);
- 
- 	return 0;
- }
+ #define REG_VPD_CAP			0x6C
+ #define VPD_CAP_ID_MASK			0xFF
+ #define VPD_CAP_ID_SHIFT		0
 -- 
 1.5.3.3
 
