@@ -1,86 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbYAAPzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759969AbYAAPzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756175AbYAAPzV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 10:55:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755579AbYAAPhS
+	id S1759969AbYAAPzo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 10:55:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755601AbYAAPhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 10:37:18 -0500
-Received: from il.qumranet.com ([82.166.9.18]:33801 "EHLO il.qumranet.com"
+	Tue, 1 Jan 2008 10:37:20 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33528 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754297AbYAAPg1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 10:36:27 -0500
-From: Avi Kivity <avi@qumranet.com>
-To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Cc: Carlo Marcelo Arenas Belon <carenas@sajinet.com.pe>
-Subject: [PATCH 22/54] KVM: SVM: Remove KVM specific defines for MSR_EFER
-Date: Tue,  1 Jan 2008 17:35:48 +0200
-Message-Id: <1199201780-14001-23-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1199201780-14001-1-git-send-email-avi@qumranet.com>
-References: <1199201780-14001-1-git-send-email-avi@qumranet.com>
+	id S1755350AbYAAPgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 10:36:37 -0500
+Date: Tue, 1 Jan 2008 16:32:00 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: David Brownell <david-b@pacbell.net>, florian@openwrt.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] gpio: fix x86 build problem: gpio_keys
+Message-ID: <20080101153200.GI4434@elte.hu>
+References: <20071222233056.d652743e.akpm@linux-foundation.org> <20071231101837.65640746.randy.dunlap@oracle.com> <200712311040.28190.david-b@pacbell.net> <20071231111016.eaab0c70.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071231111016.eaab0c70.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Carlo Marcelo Arenas Belon <carenas@sajinet.com.pe>
 
-This patch removes the KVM specific defines for MSR_EFER that were being used
-in the svm support file and migrates all references to use instead the ones
-from the kernel headers that are used everywhere else and that have the same
-values.
+* Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-Signed-off-by: Carlo Marcelo Arenas Belon <carenas@sajinet.com.pe>
-Signed-off-by: Avi Kivity <avi@qumranet.com>
----
- drivers/kvm/svm.c |   17 +++++++----------
- 1 files changed, 7 insertions(+), 10 deletions(-)
+> > Find whatever broken patch selected (on x86_64)
+> > 
+> >    CONFIG_GENERIC_GPIO=y
+> > 
+> > without actually providing that support (by providing <asm/gpio.h> and
+> > an implementation backing it up).  That's the patch which broke those
+> > various GPIO-dependant drivers.
+> 
+> OK, thanks for the direction.
+> 
+> ---
+> 
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> X86_RDC321X is X86_32, so make it depend on X86_32 so that
+> X86_64 random configs don't try to build RDC and fail.
 
-diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
-index 928fb35..04e6b39 100644
---- a/drivers/kvm/svm.c
-+++ b/drivers/kvm/svm.c
-@@ -42,9 +42,6 @@ MODULE_LICENSE("GPL");
- #define SEG_TYPE_LDT 2
- #define SEG_TYPE_BUSY_TSS16 3
- 
--#define KVM_EFER_LMA (1 << 10)
--#define KVM_EFER_LME (1 << 8)
--
- #define SVM_FEATURE_NPT  (1 << 0)
- #define SVM_FEATURE_LBRV (1 << 1)
- #define SVM_DEATURE_SVML (1 << 2)
-@@ -184,8 +181,8 @@ static inline void flush_guest_tlb(struct kvm_vcpu *vcpu)
- 
- static void svm_set_efer(struct kvm_vcpu *vcpu, u64 efer)
- {
--	if (!(efer & KVM_EFER_LMA))
--		efer &= ~KVM_EFER_LME;
-+	if (!(efer & EFER_LMA))
-+		efer &= ~EFER_LME;
- 
- 	to_svm(vcpu)->vmcb->save.efer = efer | MSR_EFER_SVME_MASK;
- 	vcpu->shadow_efer = efer;
-@@ -777,15 +774,15 @@ static void svm_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
- 	struct vcpu_svm *svm = to_svm(vcpu);
- 
- #ifdef CONFIG_X86_64
--	if (vcpu->shadow_efer & KVM_EFER_LME) {
-+	if (vcpu->shadow_efer & EFER_LME) {
- 		if (!is_paging(vcpu) && (cr0 & X86_CR0_PG)) {
--			vcpu->shadow_efer |= KVM_EFER_LMA;
--			svm->vmcb->save.efer |= KVM_EFER_LMA | KVM_EFER_LME;
-+			vcpu->shadow_efer |= EFER_LMA;
-+			svm->vmcb->save.efer |= EFER_LMA | EFER_LME;
- 		}
- 
- 		if (is_paging(vcpu) && !(cr0 & X86_CR0_PG)) {
--			vcpu->shadow_efer &= ~KVM_EFER_LMA;
--			svm->vmcb->save.efer &= ~(KVM_EFER_LMA | KVM_EFER_LME);
-+			vcpu->shadow_efer &= ~EFER_LMA;
-+			svm->vmcb->save.efer &= ~(EFER_LMA | EFER_LME);
- 		}
- 	}
- #endif
--- 
-1.5.3.7
+thanks Randy, i have applied your fix to x86.git.
 
+	Ingo
