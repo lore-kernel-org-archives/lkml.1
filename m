@@ -1,58 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755995AbYAAR6F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbYAASET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755995AbYAAR6F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 12:58:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754388AbYAAR5y
+	id S1755399AbYAASET (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 13:04:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbYAASEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 12:57:54 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:57402 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753815AbYAAR5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 12:57:54 -0500
-Date: Tue, 1 Jan 2008 18:57:54 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andreas Schwab <schwab@suse.de>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>, Ralf Baechle <ralf@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org
-Subject: Re: [Patch 2/8] MIPS: Remove 'TOPDIR' from Makefiles
-Message-ID: <20080101175754.GC31575@uranus.ravnborg.org>
-References: <20080101071311.GA2496@hacking> <20080101072238.GC2496@hacking> <20080101101540.GB28913@uranus.ravnborg.org> <jefxxhlkxb.fsf@sykes.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <jefxxhlkxb.fsf@sykes.suse.de>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 1 Jan 2008 13:04:10 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:53687 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754153AbYAASEJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 13:04:09 -0500
+Date: Tue, 1 Jan 2008 19:04:08 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Ingo Molnar <mingo@elte.hu>, Adrian Bunk <bunk@kernel.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] remove CONFIG_EXPERIMENTAL
+In-Reply-To: <20080101143022.664e8894@the-village.bc.nu>
+Message-ID: <Pine.LNX.4.64.0801011858350.14900@fbirervta.pbzchgretzou.qr>
+References: <20080101134809.GK2360@does.not.exist> <20080101142623.GA3592@elte.hu>
+ <20080101143022.664e8894@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 01, 2008 at 02:44:48PM +0100, Andreas Schwab wrote:
-> Sam Ravnborg <sam@ravnborg.org> writes:
-> 
-> >> @@ -24,7 +24,7 @@ HEAD_DEFINES := -D_kernel_start=0x$(KERNEL_START) \
-> >>  		-D TIMESTAMP=$(shell date +%s)
-> >>  
-> >>  $(obj)/head.o: $(obj)/head.S $(KERNEL_IMAGE)
-> >> -	$(CC) -fno-pic $(HEAD_DEFINES) -I$(TOPDIR)/include -c -o $@ $<
-> >> +	$(CC) -fno-pic $(HEAD_DEFINES) -I$(objtree)/include -c -o $@ $<
-> > This has never worked with O=.. builds.
-> > The correct fix here is to use:
-> >> +	$(CC) -fno-pic $(HEAD_DEFINES) -Iinclude -Iinclude2 -c -o $@ $<
-> >
-> > The -Iinclude2 is only for O=... builds so to keep current
-> > behaviour removing $(TOPDIR)/ would do it.
-> 
-> Shouldn't that use $(LINUXINCLUDE), or $(KBUILD_CPPFLAGS)?
-It would be better to use $(LINUXINCLUDE) as we then pull in all config
-symbols too and do not have to hardcode kbuild internal names (include2).
 
-As for the use of KBUILD_CPPFLAGS at present the usage is not consistent
-across the architectures. Why does arm for example say:
-KBUILD_CPPFLAGS       += -mbig-endian
+On Jan 1 2008 14:30, Alan Cox wrote:
+>> * Adrian Bunk <bunk@kernel.org> wrote:
+>> 
+>> > This patch removes the EXPERIMENTAL option and all dependencies on 
+>> > EXPERIMENTAL since they are pointless.
+>> 
+>> agreed. CONFIG_BROKEN has real use - but CONFIG_EXPERIMENTAL is pretty 
+>> pointless in the 90-days kernel development model.
+>
+>Then I need a replacement equivalent for the ATA layer and all the other
+>drivers using it to indicate stuff that *IS* experimental, or not yet
+>known to be highly robust. [...]
+>
+>CONFIG_ATA_EXPERIMENTAL, CONFIG_NET_EXPERIMENTAL,
+>CONFIG_VIDEO_EXPERIMENTAL, ... all being added by developers
 
-This looks like a KBUILD_CFLAGS thing to me.
+Yes please.
 
-So we should preferably stick with LINUXINCLUDE for now.
 
-	Sam
+menuconfig actually supports placing config options in more than one
+place, would this be helpful? (besides the itch that it is defined in 
+two places.)
+
+---
+ drivers/ata/Kconfig |    5 +++++
+ init/Kconfig        |    8 ++++++++
+ 2 files changed, 13 insertions(+)
+
+Index: linux-2.6_nosov/drivers/ata/Kconfig
+===================================================================
+--- linux-2.6_nosov.orig/drivers/ata/Kconfig
++++ linux-2.6_nosov/drivers/ata/Kconfig
+@@ -23,6 +23,11 @@ menuconfig ATA
+ 
+ if ATA
+ 
++# also see init/Kconfig
++config ATA_EXPERIMENTAL
++	bool "Prompt for experimental libata drivers"
++	depends on EXPERIMENTAL
++
+ config ATA_NONSTANDARD
+        bool
+        default n
+Index: linux-2.6_nosov/init/Kconfig
+===================================================================
+--- linux-2.6_nosov.orig/init/Kconfig
++++ linux-2.6_nosov/init/Kconfig
+@@ -40,6 +40,14 @@ config EXPERIMENTAL
+ 	  you say Y here, you will be offered the choice of using features or
+ 	  drivers that are currently considered to be in the alpha-test phase.
+ 
++if EXPERIMENTAL
++
++# also see drivers/ata/Kconfig
++config ATA_EXPERIMENTAL
++	bool "Prompt for experimental libata drivers"
++
++endif # EXPERIMENTAL
++
+ config BROKEN
+ 	bool
+ 
