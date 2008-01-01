@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755742AbYAANu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755082AbYAANvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755742AbYAANu6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 08:50:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755341AbYAANtl
+	id S1755082AbYAANvU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 08:51:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755346AbYAANtm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 08:49:41 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:50143 "EHLO smtp5.pp.htv.fi"
+	Tue, 1 Jan 2008 08:49:42 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:37140 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755326AbYAANtg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 08:49:36 -0500
-Date: Tue, 1 Jan 2008 15:49:21 +0200
+	id S1754761AbYAANtj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 08:49:39 -0500
+Date: Tue, 1 Jan 2008 15:49:24 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] OSS msnd: fix array overflows
-Message-ID: <20080101134921.GQ2360@does.not.exist>
+To: Shannon Nelson <shannon.nelson@intel.com>, dan.j.williams@intel.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] #if 0 dma_async_memcpy_buf_to_buf()
+Message-ID: <20080101134924.GR2360@does.not.exist>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -22,30 +23,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes array overflows in the OSS msnd driver spotted by the 
-Coverity checker.
+This patch #if 0's the unused dma_async_memcpy_buf_to_buf().
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
 This patch has been sent on:
-- 27 Oct 2007
+- 14 Aug 2007
 
-97463a59dfb9ccb915d3b615225c98cb3e310c0a 
-diff --git a/sound/oss/msnd.h b/sound/oss/msnd.h
-index 05cf786..d0ca582 100644
---- a/sound/oss/msnd.h
-+++ b/sound/oss/msnd.h
-@@ -233,8 +233,8 @@ typedef struct multisound_dev {
- 	spinlock_t lock;
- 	int nresets;
- 	unsigned long recsrc;
--	int left_levels[16];
--	int right_levels[16];
-+	int left_levels[32];
-+	int right_levels[32];
- 	int mixer_mod_count;
- 	int calibrate_signal;
- 	int play_sample_size, play_sample_rate, play_channels;
+ drivers/dma/dmaengine.c   |    2 ++
+ include/linux/dmaengine.h |    2 --
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+b91933344bed48adf2b64ca0f98c45b92ef69b79 
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index 8248992..f0cda56 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -459,6 +459,7 @@ void dma_async_device_unregister(struct dma_device *device)
+ }
+ EXPORT_SYMBOL(dma_async_device_unregister);
+ 
++#if 0
+ /**
+  * dma_async_memcpy_buf_to_buf - offloaded copy between virtual addresses
+  * @chan: DMA channel to offload copy to
+@@ -501,6 +502,7 @@ dma_async_memcpy_buf_to_buf(struct dma_chan *chan, void *dest,
+ 	return cookie;
+ }
+ EXPORT_SYMBOL(dma_async_memcpy_buf_to_buf);
++#endif  /*  0  */
+ 
+ /**
+  * dma_async_memcpy_buf_to_pg - offloaded copy from address to page
+diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
+index a3b6035..75bdd65 100644
+--- a/include/linux/dmaengine.h
++++ b/include/linux/dmaengine.h
+@@ -302,8 +302,6 @@ struct dma_device {
+ void dma_async_client_register(struct dma_client *client);
+ void dma_async_client_unregister(struct dma_client *client);
+ void dma_async_client_chan_request(struct dma_client *client);
+-dma_cookie_t dma_async_memcpy_buf_to_buf(struct dma_chan *chan,
+-	void *dest, void *src, size_t len);
+ dma_cookie_t dma_async_memcpy_buf_to_pg(struct dma_chan *chan,
+ 	struct page *page, unsigned int offset, void *kdata, size_t len);
+ dma_cookie_t dma_async_memcpy_pg_to_pg(struct dma_chan *chan,
 
