@@ -1,43 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753084AbYAAKJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbYAAKMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753084AbYAAKJl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 05:09:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYAAKJb
+	id S1753425AbYAAKMt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 05:12:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbYAAKMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 05:09:31 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:58815 "EHLO pasmtpA.tele.dk"
+	Tue, 1 Jan 2008 05:12:42 -0500
+Received: from sa2.bezeqint.net ([192.115.104.16]:59786 "EHLO sa2.bezeqint.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751988AbYAAKJa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 05:09:30 -0500
-Date: Tue, 1 Jan 2008 11:09:30 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [Patch 0/8] Remove 'TOPDIR' from Makefiles
-Message-ID: <20080101100930.GA28913@uranus.ravnborg.org>
-References: <20080101071311.GA2496@hacking>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080101071311.GA2496@hacking>
-User-Agent: Mutt/1.4.2.1i
+	id S1751808AbYAAKMl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 05:12:41 -0500
+Message-ID: <477A1206.4070805@panasas.com>
+Date: Tue, 01 Jan 2008 12:12:22 +0200
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Andy Whitcroft <apw@shadowen.org>
+CC: lkml <linux-kernel@vger.kernel.org>, Joel Schopp <jschopp@austin.ibm.com>
+Subject: [PATCH] checkpatch.pl: recognize the #elif preprocessor directive
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 01, 2008 at 03:13:11PM +0800, WANG Cong wrote:
-> 
-> TOPDIR is obsolete, use srctree or objtree instead.
+checkpatch.pl does not recognize #elif as a preprocessor directive
+causing it to print bogus errors for, e.g.:
+ERROR: need consistent spacing around '&' (ctx:WxV)
+when the operator is not recognized as unary in this context.
 
-Glad to see this being done - long overdue.
+for example:
 
-Most of your patches (if not all) replaces TOPDIR
-with objtree but usage of objtree is only
-correct when dealing with output files.
-Note that objtree != srctree only for O=... builds.
+void foo(void)
+{
+	int x, y, z;
+	void *p[1] = {
+#if defined(X)
+		&x
+#elif defined(Y)
+		&y
+#else
+		&z
+#endif
+	};
+}
 
-And a few cases should be dealt with differently.
-See individual comments.
+Signed-off-by: Benny Halevy <bhalevy@panasas.com>
+---
+ scripts/checkpatch.pl |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-	Sam
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 579f50f..9911c17 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -534,7 +534,7 @@ sub annotate_values {
+ 			$preprocessor = 1;
+ 			$paren_type[$paren] = 'N';
+ 
+-		} elsif ($cur =~ /^(#\s*(?:ifdef|ifndef|if|else|endif))/o) {
++		} elsif ($cur =~ /^(#\s*(?:ifdef|ifndef|if|else|elif|endif))/o) {
+ 			print "PRE($1)\n" if ($debug);
+ 			$preprocessor = 1;
+ 			$type = 'N';
+
