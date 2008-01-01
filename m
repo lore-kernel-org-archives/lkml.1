@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbYAAQZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756375AbYAAQZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756118AbYAAQZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 11:25:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbYAAQZT
+	id S1756375AbYAAQZs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 11:25:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbYAAQZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 11:25:19 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:56567 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752253AbYAAQZS (ORCPT
+	Tue, 1 Jan 2008 11:25:38 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:34807 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755190AbYAAQZh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 11:25:18 -0500
-Date: Tue, 1 Jan 2008 17:25:16 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Gene Heskett <gene.heskett@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: semi-regular plea for stable device mapping
-In-Reply-To: <200801011054.40512.gene.heskett@gmail.com>
-Message-ID: <Pine.LNX.4.64.0801011723140.14900@fbirervta.pbzchgretzou.qr>
-References: <200801011054.40512.gene.heskett@gmail.com>
+	Tue, 1 Jan 2008 11:25:37 -0500
+X-Greylist: delayed 582 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Jan 2008 11:25:37 EST
+X-IronPort-AV: E=Sophos;i="4.24,230,1196658000"; 
+   d="scan'208";a="46009219"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+Subject: Re: improve remapping of vmalloc regions
+Date: Tue, 1 Jan 2008 11:16:49 -0500
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801011116.49819.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 01 Jan 2008 16:15:53.0629 (UTC) FILETIME=[95257CD0:01C84C91]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Nick:
 
-On Jan 1 2008 10:54, Gene Heskett wrote:
->
->BUT!  This defeats a fix I've had in my modprobe.conf for over a year now that 
->gave the LVM stuff a stable major device # of 238, and now my LVM major is 
->back to whatever mood the kernel is in, in this particular bootup case to 
->#253.
->
->It may now be stable for a bit at that number because I see that pktcdvd has 
->been given a stable address of its own, apparently with a major of 10.  That 
->was the wedgie that fscked things up originally for me.  But what else lurks 
->in the deep end of this experimental pool, to play piranna with us again when 
->we least expect it?
+In Apr 2006, you sent around some patches 
 
-Why exactly would you require a fixed major - not running udev or thelike?
-Use the boot parameter, dm_mod.major=238.
+> vm_insert_page and remap_pfn_range loops are really clever, bit
+> probably asking a bit too much of most drivers. I was able to get
+> rid of most of them without too much trouble.
 
->This drives tar up a wall because it uses this device number as part of the 
->file comparisons it does, and it thinks everything is therefore new and needs 
->a full level 0 backup.  This is not at all practical, and requires that 
+http://lkml.org/lkml/2006/4/20/196
 
-I wonder how FreeBSD gets around this, because they've got dynamic numbers
-everywhere.
+It doesn't seem like those made it into mainline - was there a reason why? (I 
+looked around and didn't see anything).
 
+Thanks
+-Robin
