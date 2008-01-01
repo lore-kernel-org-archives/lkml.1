@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753664AbYAADpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753943AbYAADsx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753664AbYAADpj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Dec 2007 22:45:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750829AbYAADpd
+	id S1753943AbYAADsx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Dec 2007 22:48:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbYAADsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Dec 2007 22:45:33 -0500
-Received: from moutng.kundenserver.de ([212.227.126.177]:60060 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750797AbYAADpb (ORCPT
+	Mon, 31 Dec 2007 22:48:45 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46118
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750829AbYAADso (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Dec 2007 22:45:31 -0500
-Date: Tue, 1 Jan 2008 04:45:21 +0100 (CET)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: Bodo Eggert <7eggert@gmx.de>, David Miller <davem@davemloft.net>,
-       jengelh@computergmbh.de, devzero@web.de, linux-kernel@vger.kernel.org,
-       bunk@kernel.org, netdev@vger.kernel.org
+	Mon, 31 Dec 2007 22:48:44 -0500
+Date: Mon, 31 Dec 2007 19:48:43 -0800 (PST)
+Message-Id: <20071231.194843.136619677.davem@davemloft.net>
+To: 7eggert@gmx.de
+Cc: viro@ZenIV.linux.org.uk, jengelh@computergmbh.de, devzero@web.de,
+       linux-kernel@vger.kernel.org, bunk@kernel.org, netdev@vger.kernel.org
 Subject: Re: [PATCH] Force UNIX domain sockets to be built in
-In-Reply-To: <20071231193848.GQ27894@ZenIV.linux.org.uk>
-Message-ID: <alpine.LSU.0.999.0801010418260.2337@be1.lrz>
-References: <alpine.LSU.0.999.0712311300020.3686@be1.lrz>
- <20071231.042055.145660385.davem@davemloft.net> <alpine.LSU.0.999.0712311426520.3761@be1.lrz>
- <20071231193848.GQ27894@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX18cUF1cobpauD0HhRYwgMNxCSLsooMCQcP7p3m
- vhXu7dfQfyWQMXXWFaj2DRFDaqkngslHst8ifu+82YsxR06O98
- 1akDunaTr7ByvRMVEZt+g==
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LSU.0.999.0801010418260.2337@be1.lrz>
+References: <alpine.LSU.0.999.0712311426520.3761@be1.lrz>
+	<20071231193848.GQ27894@ZenIV.linux.org.uk>
+	<alpine.LSU.0.999.0801010418260.2337@be1.lrz>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 31 Dec 2007, Al Viro wrote:
-> On Mon, Dec 31, 2007 at 03:03:20PM +0100, Bodo Eggert wrote:
-> > On Mon, 31 Dec 2007, David Miller wrote:
-> > > From: Bodo Eggert <7eggert@gmx.de>
+From: Bodo Eggert <7eggert@gmx.de>
+Date: Tue, 1 Jan 2008 04:45:21 +0100 (CET)
 
-> > > > As suggested by Adrian Bunk, UNIX domain sockets should always be built in 
-> > > > on normal systems. This is especially true since udev needs these sockets
-> > > > and fails to run if UNIX=m.
-> > > > 
-> > > > Signed-Off-By: Bodo Eggert <7eggert@gmx.de>
-> > > 
-> > > People who use udev can make sure they have it built into their kernel
-> > > if they have such a dependency.
-> > > 
-> > > Not everyone uses udev, and therefore needs AF_UNIX non-modular.
-> > 
-> > That's why I kept this option for embedded folks.
-> > 
-> > Is there any benefit for non-embedded systems from having UNIX=m?
-> 
-> udev-free != embedded.
+> The big question is: Is there any non-embedded system where you have
+> to aim for a small kernel image?
 
-But UNIX=m == waste RAM and have an effectively b0rken system until the 
-module is loaded. It would be silly to do this unless you have a very small 
-space for the kernel image and some free space for storing the needed 
-modules. The big question is: Is there any non-embedded system where you 
-have to aim for a small kernel image?
+One some platforms, due to bootloader restrictions or whatever,
+there are hard limits on how large the main kernel image can be.
 
--- 
-Fun things to slip into your budget
-Half a million dollars for consultants to design a web site that was being
-done by an intern in his spare time.
+On sparc64 for example the limit is around 6.5MB
+
+But this "big question" isn't the important issue, in fact it's
+tangental and has no bearing on the final decision we make
+here.
+
+Rather, choice is, and taking choice away is bad.  I may have a reason
+to make AF_UNIX modular, I might not, but either way taking that
+option away from me is not the right thing to do.
