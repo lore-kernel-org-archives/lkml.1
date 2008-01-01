@@ -1,73 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754361AbYAAMxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754405AbYAAM6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754361AbYAAMxo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 07:53:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbYAAMxe
+	id S1754405AbYAAM6r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 07:58:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753400AbYAAM6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 07:53:34 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:38629 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753252AbYAAMxd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 07:53:33 -0500
-Date: Tue, 1 Jan 2008 07:47:41 -0500
-From: Theodore Tso <tytso@MIT.EDU>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Christoph Lameter <clameter@sgi.com>, Willy Tarreau <w@1wt.eu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Major regression on hackbench with SLUB (more numbers)
-Message-ID: <20080101124741.GH11776@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andi Kleen <andi@firstfloor.org>,
-	Christoph Lameter <clameter@sgi.com>, Willy Tarreau <w@1wt.eu>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Christoph Hellwig <hch@infradead.org>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>
-References: <20071222192550.GD28891@thunk.org> <alpine.LFD.0.9999.0712221251110.21557@woody.linux-foundation.org> <20071222221050.GA20753@1wt.eu> <Pine.LNX.4.58.0712221954530.19187@gandalf.stny.rr.com> <20071223051241.GA4449@1wt.eu> <20071223141500.GB6430@one.firstfloor.org> <20071224034530.GB16658@thunk.org> <Pine.LNX.4.64.0712241120230.8849@schroedinger.engr.sgi.com> <20071224233701.GB9784@kernel.org> <20071225033418.GA29199@one.firstfloor.org>
-MIME-Version: 1.0
+	Tue, 1 Jan 2008 07:58:40 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41463 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753476AbYAAM6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 07:58:38 -0500
+Date: Tue, 1 Jan 2008 12:58:37 +0000
+From: Willy Tarreau <wtarreau@hera.kernel.org>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.4.36 released
+Message-ID: <20080101125837.GA31679@hera.kernel.org>
+Reply-To: w@1wt.eu
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071225033418.GA29199@one.firstfloor.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 25, 2007 at 04:34:18AM +0100, Andi Kleen wrote:
-> > And is /sys/slab
-> > guaranteed to be a stable and permanent interface if the SLAB
-> 
-> Debugging feature and "stable and permanent" just don't 
-> fit together. It's like requesting stable and permanent
-> sysrq output.
+Hi all,
 
-Yeah, unfortunately, querying to find out how much memory is being
-used by which parts of the system is something which I think needs to
-be more than just a debugging feature.  One could argue that "vmstat",
-"iostat", and "sar" are debugging features as well, but other people
-would consider them "critical programs to get information necessary to
-monitor the health of their system".
+New year, new kernel :-)
 
-Perhaps /proc/slabinfo should be that relatively stable interface, if
-/sys/slab can't be guaranteed to be stable.  But there *are* people
-who will want to monitor information like this on an ongoing fashion
-on production systems.  One of the major downsides of /sys seems to be
-that it's very hard to keep it stable, so maybe it's not the right
-tool for this.  /proc/slabinfo has the advantage that it's a simple
-text file, and its format is relatively well-understood, and doesn't a
-patch to provide /proc/slabinfo for SLUB already exist?
+Linux 2.4.36 is finally ready and has been checked long enough to
+be released. Quite a bunch of bugs, build errors and security issues
+have been fixed since 2.4.35, but all of those fixes were merged
+into 2.4.35-stable. I should say that I'm quite statisfied of this
+dual-branch release model which proves to be very successful at
+separating quick fixes from changes which require more thorough testing.
+The full changelog between 2.4.35 and 2.4.36 is appended at the end of
+this mail.
 
-							- Ted
+The remaining changes between 2.4.35.5 and 2.4.36 are just minimal :
+ - IDE support for JMicron 20363 and UDMA on ICH7
+ - the addition of the mmap_min_addr sysctl which provides the ability to
+   prevent processes from mapping the NULL address, thus preventing the
+   exploitation of a kind of possibly yet undiscovered kernel bugs (NULL
+   dereferences) to escalade privileges. This is the convergence of an
+   Openwall kernel 2.4 patch by Solar Designer, and Eric Paris' 2.6 patch.
+
+The mmap_min_addr protection is not enabled by default. In order to
+activate it, you have to write the minimum allowed user-space address
+in mmap_min_addr :
+
+  # echo 4096 > /proc/sys/vm/mmap_min_addr
+
+or alternatively :
+
+  # sysctl -w vm.mmap_min_addr=4096
+
+I have been running with values between 4096 and 65536 on various machines
+without any problem. Default value is zero, thus disabling the protection.
+Feedback from the field welcome, of course.
+
+Concerning future versions, I have nothing pending in the queue anymore. I
+will then go on with 2.4.36.X when bug fixes come in, and only open 2.4.37
+when I get something which I do not consider suitable for 2.4.36.X.
+
+Happy new year 2008 to everyone !
+Willy
+
+---
+Changelog between 2.4.35 and 2.4.36
+---
+
+final:
+ - v2.4.36-rc1 was released as 2.4.36 with no changes.
+
+Summary of changes from v2.4.36-pre2 to v2.4.36-rc1
+============================================
+
+Jonas Danielsson (1):
+      net/ipv4/arp.c: Fix arp reply when sender ip 0
+
+Krzysztof Strasburger (1):
+      fix arch/i386/config.in to be able to boot on 386
+
+Pete Zaitcev (1):
+      usb: Move linux-usb-devel
+
+Willy Tarreau (8):
+      GCC >= 4.2 miscompiles the kernel
+      prevent do_brk() from allocating below mmap_min_addr
+      fix build of ia32entry.S on x86_64
+      vfs: coredumping fix
+      isdn: avoid copying overly-long strings
+      prevent SIGCONT from waking up a PTRACED process (CVE-2007-4774)
+      isdn: fix isdn_ioctl memory overrun vulnerability
+      Change VERSION to 2.4.36-rc1
+
+Summary of changes from v2.4.36-pre1 to v2.4.36-pre2
+============================================
+
+Andi Kleen (1):
+      x86_64: Make sure to validate all 64bits of ptrace information
+
+Franck Bourdonnec (1):
+      fix missing MODULE_LICENSE in some drivers
+
+Gilles Espinasse (1):
+      fix unresolved symbols on alpha
+
+Moritz Muehlenhoff (1):
+      corrupted cramfs filesystems cause kernel oops (CVE-2006-5823)
+
+Stephen Hemminger (1):
+      Bridge STP timer fixes
+
+Tony Battersby (1):
+      sym53c8xx_2 SMP deadlock on driver load
+
+Willy Tarreau (3):
+      ATM: avoid kernel panic upon access to /proc/net/atm/arp
+      PPP: fix crash using usb-serial on high speed devices
+      Change VERSION to 2.4.36-pre2
+
+dann frazier (4):
+      [OpenPROM]: Fix signedness bug in openprom char driver
+      [OpenPROM]: Fix user-access checking bugs in openpromfs
+      [OpenPROM] Prevent overflow of sprintf buffer
+      [OpenPROM] Prevent unsigned roll-overs in
+
+ivaylo@bglans.net (2):
+      IDE: enable support for JMicron 20363
+      IDE: enable PATA UDMA support for ICH7
+
+Summary of changes from v2.4.35 to v2.4.36-pre1
+============================================
+
+Marc Haisenko (1):
+      b44: fix force mac address before ifconfig up
+
+Willy Tarreau (12):
+      build fix for lvm with gcc 4
+      fix wdt83627 build breakage with gcc 4.x
+      wdt83627: fix wdt_init() return code
+      module fdomain_cs requires fdomain_setup()
+      do not use gcc's builtin strpbrk
+      fix incorrect use of -fno-unit-at-a-time on GCC >= 4
+      second build fix for some rare buggy versions of GCC 4
+      CVE-2007-3848 Privilege escalation via PR_SET_PDEATHSIG
+      i386: do_test_wp_bit() must not be inlined
+      restore -fno-unit-at-a-time on GCC >= 4
+      sysctl to prevent normal processes from mapping NULL
+      Change VERSION to 2.4.36-pre1
+
