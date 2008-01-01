@@ -1,72 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbYAAQUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbYAAQWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755454AbYAAQUM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 11:20:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbYAAQT7
+	id S1755993AbYAAQWR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 11:22:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbYAAQWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 11:19:59 -0500
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:20694 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753500AbYAAQT6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 11:19:58 -0500
-Message-ID: <477A6732.4010609@panasas.com>
-Date: Tue, 01 Jan 2008 18:15:46 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-CC: Andy Whitcroft <apw@shadowen.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: WARNING: do not add new typedefs - is that for real?
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Jan 2008 16:15:50.0590 (UTC) FILETIME=[9355C5E0:01C84C91]
+	Tue, 1 Jan 2008 11:22:03 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:46636 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753955AbYAAQWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 11:22:01 -0500
+Date: Tue, 1 Jan 2008 17:22:00 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Avi Kivity <avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
+Subject: Re: [PATCH 21/54] KVM: Export include/linux/kvm.h only if $ARCH actually supports KVM
+Message-ID: <20080101162200.GA30024@uranus.ravnborg.org>
+References: <1199201780-14001-1-git-send-email-avi@qumranet.com> <1199201780-14001-22-git-send-email-avi@qumranet.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1199201780-14001-22-git-send-email-avi@qumranet.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have this code:
+On Tue, Jan 01, 2008 at 05:35:47PM +0200, Avi Kivity wrote:
+> Currently, make headers_check barfs due to <asm/kvm.h>, which <linux/kvm.h>
+> includes, not existing.  Rather than add a zillion <asm/kvm.h>s, export kvm.h
+> only if the arch actually supports it.
+> 
+> Signed-off-by: Avi Kivity <avi@qumranet.com>
+> ---
+>  arch/x86/Kconfig     |    4 ++++
+>  drivers/kvm/Kconfig  |    4 ++--
+>  include/linux/Kbuild |    2 +-
+>  3 files changed, 7 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index 80b7ba4..e029a93 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -116,6 +116,10 @@ config ARCH_SUPPORTS_OPROFILE
+>  	bool
+>  	default y
+>  
+> +config ARCH_SUPPORTS_KVM
+> +	bool
+> +	default y
+> +
+>  
+>  config ZONE_DMA32
+>  	bool
+> diff --git a/drivers/kvm/Kconfig b/drivers/kvm/Kconfig
+> index 6569206..4086080 100644
+> --- a/drivers/kvm/Kconfig
+> +++ b/drivers/kvm/Kconfig
+> @@ -3,7 +3,7 @@
+>  #
+>  menuconfig VIRTUALIZATION
+>  	bool "Virtualization"
+> -	depends on X86
+> +	depends on ARCH_SUPPORTS_KVM || X86
+>  	default y
+>  	---help---
+>  	  Say Y here to get to see options for using your Linux host to run other
+> @@ -16,7 +16,7 @@ if VIRTUALIZATION
+>  
+>  config KVM
+>  	tristate "Kernel-based Virtual Machine (KVM) support"
+> -	depends on X86 && EXPERIMENTAL
+> +	depends on ARCH_SUPPORTS_KVM && EXPERIMENTAL
+>  	select PREEMPT_NOTIFIERS
+>  	select ANON_INODES
+>  	---help---
 
-<c_code>
-/* 
- * osd-r10 4.12.5 Data-In and Data-Out buffer offsets
- * byte offset = mantissa * (2^(exponent+8))
- */
-typedef __be32 osd_cdb_offset;
+An approach like the following is preferred:
+kvm/Kconfig:
 
-osd_cdb_offset __osd_encode_offset(u64 offset, unsigned *padding,
-	int min_shift, int max_shift);
+# config symbols to be selected by archs that implment virtualization/kvm
+config HAVE_VIRTUALIZATION
+config HAVE_KVM
 
-struct osd_attributes_list_mode {
-	__be32		get_attr_desc_bytes;
-	osd_cdb_offset	get_attr_desc_offset;
+menuconfig VIRTUALIZATION
+	bool "..."
+	depends on HAVE_VIRTUALIZATION
 
-	__be32		get_attr_alloc_length;
-	osd_cdb_offset	get_attr_offset;
+config KVM
+	tristate "..."
+	depends on HAVE_KVM
 
-	__be32		set_attr_bytes;
-	osd_cdb_offset	set_attr_offset;
-	__be32 not_used;
-};
-</c_code>
+arch/x86/Kconfig:
+
+config X86
+	select HAVE_VIRTUALIZATION
+	select HAVE_KVM
 
 
-the osd_cdb_offset above is this special OSD-standard floating-point-like
-special type. It is of size 32 bit in special network order. What should
-I do then:
+I dunno about the additional "HAVE_VIRTUALIZATION" - I added it
+because I assume virtualization is more than just kvm.
 
-__be32 __osd_encode_offset(u64 offset, unsigned *padding,
-	int min_shift, int max_shift);
+The rationales behinds this approach is:
 
-But it is not a __be32. It is this special floating-point-like thingy!!!?
-How was __be32 defined with a #define???!!
+-> We do not define a new config variable for each arch
+-> We have a common way to say that an arch supports a feature
+-> We have a common naming scheme
 
-Come on guys, it is not checkpatch.pl place to complain about good language
-constructs that can be misused. This is the maintainers and reviewers
-job to say that a: "typedef struct foo Foo;" is bad practice and we don't
-like it, but it can not be left to a script. "typedef"s should be used
-where they should be used.
 
-Boaz
+	Sam
