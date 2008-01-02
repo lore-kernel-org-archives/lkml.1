@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759384AbYABVaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759421AbYABVba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759384AbYABVaV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 16:30:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbYABVaF
+	id S1759421AbYABVba (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 16:31:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbYABVbV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 16:30:05 -0500
-Received: from home.nigel.suspend2.net ([203.171.70.205]:56481 "EHLO
-	server1.example.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752822AbYABVaD (ORCPT
+	Wed, 2 Jan 2008 16:31:21 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57840 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753697AbYABVbU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 16:30:03 -0500
-Message-ID: <477C0258.8080609@nigel.suspend2.net>
-Date: Thu, 03 Jan 2008 08:30:00 +1100
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Kyle Moffett <mrmacman_g4@mac.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, David Chinner <dgc@sgi.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, xfs-masters@oss.sgi.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: freeze vs freezer
-References: <4744FD87.7010301@goop.org> <200711262253.35420.rjw@sisk.pl> <20071127053846.GA28884@srcf.ucam.org> <200711271840.24825.rjw@sisk.pl> <8B00F353-983F-40E7-931B-EA73CCD32F0A@mac.com> <20080102160234.GA17070@ucw.cz>
-In-Reply-To: <20080102160234.GA17070@ucw.cz>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 2 Jan 2008 16:31:20 -0500
+Date: Wed, 2 Jan 2008 21:21:43 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Diego Calleja <diegocg@gmail.com>, sct@redhat.com,
+       akpm@linux-foundation.org, adilger@clusterfs.com,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.24 patch] let EXT4DEV_FS depend on BROKEN
+Message-ID: <20080102212143.01cb82bd@the-village.bc.nu>
+In-Reply-To: <20080102211655.GC15898@does.not.exist>
+References: <20080102013218.GO27566@does.not.exist>
+	<20080102192629.28e67241.diegocg@gmail.com>
+	<20080102211655.GC15898@does.not.exist>
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+> Stable kernels are mainly meant for usage, not for trying stuff.
 
-Pavel Machek wrote:
-> Hi!
-> 
->>>>>> So how do you handle threads that are blocked on I/O or a lock  
->>>>>> during the system freeze process, then?
->>>>> We wait until they can continue.
->>>> So if I have a process blocked on an unavilable NFS mount, I can't
->>>> suspend?
->>> That's correct, you can't.
->>>
->>> [And I know what you're going to say. ;-)]
->> Why exactly does suspend/hibernation depend on "TASK_INTERRUPTIBLE"  
->> instead of a zero preempt_count()?  Really what we should do is just  
->> iterate over all of the actual physical devices and tell each one  
->> "Block new IO requests preemptably, finish pending DMA, put the  
->> hardware in low-power mode, and prepare for suspend/hibernate".  As  
->> long as each driver knows how to do those simple things we can have  
->> an entirely consistent kernel image for both suspend and for  
->> hibernation.
-> 
-> "each driver" means this is a lot of work. But yes, that is probably
-> way to go, and patch would be welcome.
+You appear to be reinventing history in your attempt to justify removing
+CONFIG_EXPERIMENTAL.
 
-Yes, that does work. It's what I've done in my (preliminary) support for
-fuse.
+> And although I see a point in perhaps shipping some not-yet-perfect 
+> device drivers for otherwise unsupported hardware or some
+> not-yet-perfect filesystems required for accessing foreign
+> (non-Linux) filesystems, I don't see any point in offering a
+> WIP Linux-only filesystem in stable kernels.
 
-Regards,
+So that people can use it and test it. Most people don't run -mm or GIT.
 
-Nigel
-
+Alan
