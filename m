@@ -1,75 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754764AbYABXmI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757091AbYABXmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754764AbYABXmI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 18:42:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756077AbYABXlw
+	id S1757091AbYABXmZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 18:42:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757590AbYABXl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 18:41:52 -0500
-Received: from kolab.mylinuxtime.de ([212.112.242.22]:49087 "EHLO
-	kolab.mylinuxtime.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752726AbYABXlv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 18:41:51 -0500
-X-Spam-ASN: AS24900 212.112.224.0/19
-From: Christian Hesse <mail@earthworm.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Suspend2-devel] Reboot problem
-Date: Thu, 3 Jan 2008 00:41:34 +0100
-User-Agent: KMail/1.9.7
-Cc: nigel@nigel.suspend2.net, suspend2-devel@lists.tuxonice.net,
-       "The place to get help!" <suspend2-users@lists.tuxonice.net>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <477AC060.5040004@nigel.suspend2.net> <200801020124.13935.mail@earthworm.de> <200801021409.04682.rjw@sisk.pl>
-In-Reply-To: <200801021409.04682.rjw@sisk.pl>
-X-Face: 1\p'dhO'VZk,x0lx6U}!Y*9UjU4n2@4c<"a*K%3Eiu'VwM|-OYs;S-PH>4EdJMfGyycC)=?utf-8?q?k=0A=09=3Anv*xqk4C?=@1b8tdr||mALWpN[2|~h#Iv;)M"O$$#P9Kg+S8+O#%EJx0TBH7b&Q<m)=?utf-8?q?n=23Q=2Eo=0A=09kE=7E=26T=5D0cQX6=5D?=<q!HEE,F}O'Jd#lx/+){Gr@W~J`h7sTS(M+oe5<=?utf-8?q?3O7GY9y=5Fi!qG=26Vv=5CD8/=0A=09=254?=@&~$Z@UwV'NQ$Ph&3fZc(qbDO?{LN'nk>+kRh4`C3[KN`-1uT-TD_m
+	Wed, 2 Jan 2008 18:41:59 -0500
+Received: from rtr.ca ([76.10.145.34]:3404 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757197AbYABXl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 18:41:57 -0500
+Message-ID: <477C2143.8090406@rtr.ca>
+Date: Wed, 02 Jan 2008 18:41:55 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, abelay@novell.com,
+       lenb@kernel.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: + restore-missing-sysfs-max_cstate-attr.patch added to -mm tree
+References: <200711302153.lAULrZ7n026255@imap1.linux-foundation.org>	<924EFEDD5F540B4284297C4DC59F3DEE2FAE6A@orsmsx423.amr.corp.intel.com>	<20071130142058.816d1693.akpm@linux-foundation.org>	<924EFEDD5F540B4284297C4DC59F3DEE2FAEAF@orsmsx423.amr.corp.intel.com>	<4750CC78.9070105@rtr.ca>	<20071130190227.1976e682@laptopd505.fenrus.org>	<4750D180.6080001@rtr.ca> <20071130191816.3e744205@laptopd505.fenrus.org> <4750D585.1030200@rtr.ca>
+In-Reply-To: <4750D585.1030200@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801030041.38495.mail@earthworm.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 January 2008, Rafael J. Wysocki wrote:
-> On Wednesday, 2 of January 2008, Christian Hesse wrote:
-> > On Wednesday 02 January 2008, Nigel Cunningham wrote:
-> > > Hi Christian.
-> > >
-> > > Christian Hesse wrote:
-> > > > On Tuesday 01 January 2008, Nigel Cunningham wrote:
-> > > >> Third, regarding the patch itself, I'm taking my time in working
-> > > >> towards the 3.0 release. We don't have any major bugs with 3.0-rc3
-> > > >> reported [...].
-> > > >
-> > > > Well, I think I still have a bug, though it is possibly a mainline
-> > > > problem and it's not a showstopper. After a suspend/resume cycle the
-> > > > reboot does not work. The system hangs with "Rebooting system" (or
-> > > > similar). After that you have to hard reset the system, which is not
-> > > > really a problem as filesystems have been unmounted before. Reboot
-> > > > without a suspend cycle before and halt with and without suspend
-> > > > cycle work without problems.
-> > >
-> > > Just to clarify, do you mean rebooting after writing an image, or
-> > > shutting down and rebooting? It could be that there's some change to
-> > > the semantics in 2.6.24 that I haven't noticed yet.
-> >
-> > I speak about shutting down and rebooting. I have not used reboot after
-> > writing an image for a long time now. Will test what happens in this
-> > case.
+Arjan van de Ven wrote:
+> On Fri, 30 Nov 2007 22:31:17 -0500
+> Mark Lord <lkml@rtr.ca> wrote:
+> 
+>> Arjan van de Ven wrote:
+>>> On Fri, 30 Nov 2007 22:14:08 -0500
+>>> Mark Lord <lkml@rtr.ca> wrote:
+>>>
+>>>>> in -mm there is.. the QoS stuff allows you to set maximum
+>>>>> tolerable
+>>>> ..
+>>>>
+>>>> That's encouraging, I think, but not for 2.6.24.
+>>>>
+>>>>> latency. If your app cant take any latency, you should set
+>>>>> those... and the side effect is that the kernel will not do
+>>>>> long-latency C-states or P-state transitions..
+>>>> ..
+>>>>
+>>>> I don't mind the cpufreq changing (actually, I want it to drop in
+>>>> cpugfreq to save power and keep the fan off), but the C-states just
+>>>> kill this app.
+>>>>
+>>>> The app is VMware.  I force the max_state=1 when launching,
+>>> ah but then its' even easier... and can be done in 2.6.24 already.
+>>> VMWare after all has a kernel module, and the latency stuff is in
+>>> 2.6.23 and 2.6.24 available inside the kernel already.
+>> ..
+>>
+>> Oh, I'm perfectly happy to write my own kernel module if that's what
+> 
+> all you need to do in your kernel module is call
+> 
+> add_latency_constraint("mark_wants_his_mouse", 5);
+> 
+> or so
+..
 
-Reboot after writing image does not work, too. The system hangs with "Ready to 
-reboot".
+Dredging up an old regression again now:
 
-> > I had the issue before 2.6.24(-rc) already, thought I don't know whether
-> > there were times it worked. I use it way too seldom.
->
-> Well, this is similar to http://bugzilla.kernel.org/show_bug.cgi?id=6655 ,
-> which definitely is a mainline problem (still pending).
+The "make my own module to replace /sys/.../max_cstate" doesn't work
+for the single-core machine we use a lot around here.
 
-Yes, that sound like my problem. I will test the patches and keep the bug 
-report in focus.
--- 
-Regards,
-Chris
+VMware is totally sluggish unless I go to another text window and do this:
+
+    while ( true ); do echo -n ; done
+
+At which point VMware performs well again,
+the same as with "echo 1 > max_cstate" in 2.6.23.
+
+Anyone got any suggestions on how to fix this regression
+or work around it for 2.6.24 ?
+
+Thanks 
+
+
