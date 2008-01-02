@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759331AbYABBWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758098AbYABBbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759331AbYABBWq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 20:22:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755571AbYABBWj
+	id S1758098AbYABBbw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 20:31:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755031AbYABBbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 20:22:39 -0500
-Received: from home.nigel.suspend2.net ([203.171.70.205]:43222 "EHLO
-	server1.example.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755530AbYABBWj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 20:22:39 -0500
-Message-ID: <477AE75A.5080305@nigel.suspend2.net>
-Date: Wed, 02 Jan 2008 12:22:34 +1100
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Tue, 1 Jan 2008 20:31:42 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:55038 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754969AbYABBbm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 20:31:42 -0500
+Date: Wed, 2 Jan 2008 03:31:26 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Mike Frysinger <vapier@gentoo.org>,
+       tglx@linutronix.de, mingo@redhat.com, Andi Kleen <andi@firstfloor.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: asm-x86/byteorder.h: clean up for userspace
+Message-ID: <20080102013126.GN27566@does.not.exist>
+References: <200712311312.46450.vapier@gentoo.org> <20080101174708.GA25089@infradead.org> <477AAE6E.8080305@zytor.com>
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       "The place to get help!" <suspend2-users@lists.tuxonice.net>,
-       suspend2-devel@lists.tuxonice.net, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Suspend2-devel] Freezing filesystems (Was Re: What's in	store
- for 2008 for TuxOnIce?)
-References: <477AC060.5040004@nigel.suspend2.net>	<200801020021.37259.rjw@sisk.pl>	<477AD2AA.4070707@nigel.suspend2.net> <20080102010325.GC13288@mit.edu>
-In-Reply-To: <20080102010325.GC13288@mit.edu>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <477AAE6E.8080305@zytor.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ted.
+On Tue, Jan 01, 2008 at 01:19:42PM -0800, H. Peter Anvin wrote:
+> Christoph Hellwig wrote:
+>> On Mon, Dec 31, 2007 at 01:12:45PM -0500, Mike Frysinger wrote:
+>>> Since asm-x86/byteorder.h is exported to userspace, use __asm__ rather than
+>>> asm in its code.
+>>
+>> The correct fix is to not export it to userspace.
+>
+> Unfortunately, it's historically been provided, for over 15 years.  It's 
+> also trivial to export, without funnies, and it's *useful* to userspace, as 
+> it provides an interface sorely lacking from the stock libc interfaces.
+>...
 
-Theodore Tso wrote:
-> On Wed, Jan 02, 2008 at 10:54:18AM +1100, Nigel Cunningham wrote:
->>> I would also like the TuxOnIce issues related to drivers, ACPI, etc. to go to
->>> one of the kernel-related lists, but I think linux-pm may be better for that
->>> due to the much lower traffic.
->> I guess that makes sense. I guess people can always be referred to LKML
->> for the issues where the appropriate person isn't on linux-pm.
-> 
-> Hi Nigel,
-> 
-> I'd really recommend pushing the TuxOnIce discussions to LKML.  That
-> way people can see the size of the user community and Andrew and Linus
-> can see how many people are using TuxOnIce.  They can also see how
-> well the TuxOnIce community helps address user problems, which is a
-> big consideration when Linus decides whether or not to merge a
-> particular technology. 
-> 
-> If the goal is eventual merger of TuxOnIce, LKML is really the best
-> place to have the discussions.  Examples such as Realtime, CFS, and
-> others have shown that you really want to keep the discussion front
-> and center.  When one developer says, "not my problem; my code is
-> perfect", and the other developer is working with users who report
-> problems, guess which technology generally ends up getting merged by
-> Linus?
+Userspace either has to #define CONFIG_X86_BSWAP or it'll get the slow 
+versions of these functions...
 
-Yes. The goal is eventual merger. That's what I was thinking too. Thanks
-for the input!
+Leaking CONFIG_ variables to userspace is not really funny - I remember 
+e.g. what tricks MySQL does (did?) for (ab)using asm-i386/atomic.h in 
+userspace.
 
-Nigel
+> 	-hpa
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
