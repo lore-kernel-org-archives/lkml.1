@@ -1,78 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757984AbYABJ6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757055AbYABKDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757984AbYABJ6l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 04:58:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754236AbYABJ6d
+	id S1757055AbYABKDw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 05:03:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbYABKDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 04:58:33 -0500
-Received: from hqemgate02.nvidia.com ([216.228.112.143]:16019 "EHLO
-	HQEMGATE02.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755316AbYABJ6c convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 04:58:32 -0500
-X-PGP-Universal: processed;
-	by hqnvupgp02.nvidia.com on Wed, 02 Jan 2008 01:58:31 -0800
-X-MimeOLE: Produced By Microsoft Exchange V6.5
+	Wed, 2 Jan 2008 05:03:43 -0500
+Received: from namei.org ([69.55.235.186]:40218 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752926AbYABKDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 05:03:42 -0500
+Date: Wed, 2 Jan 2008 21:02:23 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: KaiGai Kohei <kaigai@kaigai.gr.jp>
+cc: KaiGai Kohei <kaigai@ak.jp.nec.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       akpm@osdl.org, morgan@kernel.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Exporting capability code/name pairs
+In-Reply-To: <477B457E.6000802@kaigai.gr.jp>
+Message-ID: <Xine.LNX.4.64.0801022100550.30212@us.intercode.com.au>
+References: <477321C8.3070004@ak.jp.nec.com> <20071227161435.GB9677@sergelap.austin.ibm.com>
+ <477455A0.7060603@ak.jp.nec.com> <477494C3.2040301@ak.jp.nec.com>
+ <Xine.LNX.4.64.0712281957520.23510@us.intercode.com.au> <477B457E.6000802@kaigai.gr.jp>
 MIME-Version: 1.0
-Subject: RE: [PATCH] msi: set 'En' bit of MSI Mapping Capability
-Date: Wed, 2 Jan 2008 17:57:32 +0800
-Message-ID: <15F501D1A78BD343BE8F4D8DB854566B1F9AC8B0@hkemmail01.nvidia.com>
-In-Reply-To: <m1lk7kl3de.fsf@ebiederm.dsl.xmission.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] msi: set 'En' bit of MSI Mapping Capability
-Thread-Index: AchGIxCwaS2ghDupTG+xhYihZwo7dgHAmXLA
-References: <200712182300373901202@gmail.com><m14pefaclv.fsf@ebiederm.dsl.xmission.com><15F501D1A78BD343BE8F4D8DB854566B1F24C119@hkemmail01.nvidia.com><m1d4t17zkn.fsf@ebiederm.dsl.xmission.com><15F501D1A78BD343BE8F4D8DB854566B1F571D0F@hkemmail01.nvidia.com> <m1lk7kl3de.fsf@ebiederm.dsl.xmission.com>
-From: "Peer Chen" <pchen@nvidia.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "peerchen" <peerchen@gmail.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "akpm" <akpm@linux-foundation.org>, "Andy Currid" <ACurrid@nvidia.com>
-X-OriginalArrivalTime: 02 Jan 2008 09:57:33.0597 (UTC) FILETIME=[E5493CD0:01C84D25]
-Content-class: urn:content-classes:message
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think it's more reasonable to only apply this rule onto AMD platform.
+On Wed, 2 Jan 2008, KaiGai Kohei wrote:
 
-BRs
-Peer Chen
+> > Another issue is that securityfs depends on CONFIG_SECURITY, which might be
+> > undesirable, given that capabilities are a standard feature.
+> 
+> We can implement this feature on another pseudo filesystems.
+> Do you think what filesystem is the best candidate?
+> I prefer procfs or sysfs instead.
 
------Original Message-----
-From: Eric W. Biederman [mailto:ebiederm@xmission.com] 
-Sent: Monday, December 24, 2007 7:49 PM
-To: Peer Chen
-Cc: peerchen; linux-kernel; akpm; Andy Currid
-Subject: Re: [PATCH] msi: set 'En' bit of MSI Mapping Capability
+Sysfs makes more sense, as this information is system-wide and does not 
+relate to specific processes.
 
-"Peer Chen" <pchen@nvidia.com> writes:
 
-> I feel it's dangerous to set the En bit on Intel platform, If the HT
-MSI
-> En is set, the MSI should be expected to transform to HT INT message
-> format. It may cause interrupt lost or hardware internal state machine
-> failed depend on the hardware design.
-
-Reasonable.  As long as what the quirk is to avoid errata and
-chipset specific issues I don't have a problem with it.
-
-I figure the quirk should be a separate patch though.
-
-My concern is that the general rule that always enabling HT MSI
-mapping capabilities is reasonable.  Even if there are some
-specific exceptions where we don't want to do that.
-
-I want code that requires the smallest list of chipset
-exceptions that we can make. 
-
-Eric
------------------------------------------------------------------------------------
-This email message is for the sole use of the intended recipient(s) and may contain
-confidential information.  Any unauthorized review, use, disclosure or distribution
-is prohibited.  If you are not the intended recipient, please contact the sender by
-reply email and destroy all copies of the original message.
------------------------------------------------------------------------------------
+-- 
+James Morris
+<jmorris@namei.org>
