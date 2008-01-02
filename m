@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759824AbYABUxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758590AbYABUz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759824AbYABUxb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 15:53:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756133AbYABUxI
+	id S1758590AbYABUz2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 15:55:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753283AbYABUzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 15:53:08 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:47257 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755656AbYABUxH (ORCPT
+	Wed, 2 Jan 2008 15:55:20 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34206 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752262AbYABUzT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 15:53:07 -0500
-Date: Wed, 2 Jan 2008 13:53:06 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
-Message-ID: <20080102205306.GE11638@parisc-linux.org>
-References: <20080102162534.GA4041@elte.hu> <1199292381.3258.32.camel@localhost.localdomain> <alpine.LFD.1.00.0801021113150.32517@woody.linux-foundation.org> <20080102194030.GC11638@parisc-linux.org> <alpine.LFD.1.00.0801021151420.32517@woody.linux-foundation.org> <20080102201734.GA13881@infradead.org> <alpine.LFD.1.00.0801021245460.32517@woody.linux-foundation.org>
+	Wed, 2 Jan 2008 15:55:19 -0500
+Date: Wed, 2 Jan 2008 12:55:18 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andi Kleen <ak@suse.de>
+cc: travis@sgi.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>, tglx@linutronix.de,
+       mingo@redhat.com
+Subject: Re: [PATCH 05/10] x86_64: Use generic percpu
+In-Reply-To: <200712281354.52453.ak@suse.de>
+Message-ID: <Pine.LNX.4.64.0801021254250.22538@schroedinger.engr.sgi.com>
+References: <20071228001046.854702000@sgi.com> <20071228001047.556634000@sgi.com>
+ <200712281354.52453.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0801021245460.32517@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 02, 2008 at 12:49:32PM -0800, Linus Torvalds wrote:
-> Maybe it's not that one suspicious test. Maybe it's somethign else. But 
-> that commit was confirmed to break something, almost two months ago. You 
-> guys seem to be in denial, and saying "it didn't change anything".
-> 
-> And no, waiting for more reporters when one reporter has already narrowed 
-> it down to the exact (smallish) commit, is simply not good. Either you can 
-> fix it by looking at the source, or it gets reverted.
-> 
-> I was hoping somebody in SCSI-land would actually look at the commit and 
-> try to find out what's wrong, instead of all of you apparently trying to 
-> say "nothing is wrong".
+On Fri, 28 Dec 2007, Andi Kleen wrote:
 
-I've spent about a week of time looking at it over the last couple of
-months.  I haven't been able to figure it out.  That's why I'm calling
-for it to be reverted, not because I'm "in denial".
+> On Friday 28 December 2007 01:10:51 travis@sgi.com wrote:
+> > x86_64 provides an optimized way to determine the local per cpu area
+> > offset through the pda and determines the base by accessing a remote
+> > pda.
+> 
+> And? The rationale for this patch seems to be incomplete.
+> 
+> As far as I can figure out you're replacing an optimized percpu 
+> implementation which a dumber generic one. Which needs
+> at least some description why.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+The implementation stays the same. The code is just consolidated.
+
