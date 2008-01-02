@@ -1,91 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759036AbYABNiG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757974AbYABNlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759036AbYABNiG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 08:38:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbYABNhz
+	id S1757974AbYABNlR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 08:41:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbYABNlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 08:37:55 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:35616 "EHLO smtp.gentoo.org"
+	Wed, 2 Jan 2008 08:41:04 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:57794 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754058AbYABNhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 08:37:54 -0500
+	id S1754029AbYABNlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 08:41:01 -0500
 From: Mike Frysinger <vapier@gentoo.org>
 Organization: wh0rd.org
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] asm-x86/msr.h: pull in linux/types.h
-Date: Wed, 2 Jan 2008 08:37:52 -0500
+To: David Miller <davem@davemloft.net>
+Subject: Re: [patch] linux/ufs_fs.h: do not export to userspace anymore
+Date: Wed, 2 Jan 2008 08:40:59 -0500
 User-Agent: KMail/1.9.7
-Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>
-References: <200801012008.53275.vapier@gentoo.org> <20080102114849.GA25887@elte.hu>
-In-Reply-To: <20080102114849.GA25887@elte.hu>
+Cc: hch@infradead.org, bunk@kernel.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+References: <200801012051.41474.vapier@gentoo.org> <20080102075033.GA16267@infradead.org> <20080102.000444.18510965.davem@davemloft.net>
+In-Reply-To: <20080102.000444.18510965.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1542628.olPUTayWRp";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200801020837.53860.vapier@gentoo.org>
+Content-Disposition: inline
+Message-Id: <200801020841.00332.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1542628.olPUTayWRp
-Content-Type: text/plain;
-  charset="iso-8859-6"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-On Wednesday 02 January 2008, Ingo Molnar wrote:
-> * Mike Frysinger <vapier@gentoo.org> wrote:
-> > Forgot to mention this before, but since the msr.h header uses types
-> > like __u32, it should pull in linux/types.h.
+On Wednesday 02 January 2008, David Miller wrote:
+> From: Christoph Hellwig <hch@infradead.org>
+> > The only non-kernel user of this known to me is silo, which should just
+> > have it's own header documenting the solaris sparc ufs variant it needs
+> > to understand, possibly by using a copy of the kernel version at any
+> > given point of time.
 >
-> does not build with the attached config.
+> And this is what the current SILO sources do.
 
-sorry, forgot about __ASSEMBLY__ protection.
-=2D--
-Since the msr.h header uses types like __u32, it should pull in linux/types=
-=2Eh.
+then if silo has gotten its stuff together ...
+---
+Do not export linux/ufs_fs.h to userspace anymore as the only userspace
+consumer has been fixed to not need it anymore.
 
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-=2D--
-diff --git a/include/asm-x86/msr.h b/include/asm-x86/msr.h
-index 664a2fa..80b0270 100644
-=2D-- a/include/asm-x86/msr.h
-+++ b/include/asm-x86/msr.h
-@@ -3,6 +3,10 @@
-=20
- #include <asm/msr-index.h>
-=20
-+#ifndef __ASSEMBLY__
-+# include <linux/types.h>
-+#endif
-+
- #ifdef __i386__
-=20
- #ifdef __KERNEL__
-
---nextPart1542628.olPUTayWRp
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.8 (GNU/Linux)
-
-iQIcBAABAgAGBQJHe5OxAAoJEEFjO5/oN/WBJVkQAKeMw1OPdUBx/0wdkE1qNlHN
-I2Y8/YvMl+693bvLym24edLA3xnzz1FYshKjsfGVMMl2AvUXq3ArgCOkWcjnsv9Q
-NnMfQ0xLd4fKwh6czKf9RwRfOCKisr0RYNMrXvyciUuxiLwTCn4jz+TENZqPfi3c
-X6WuBKz1ga5WbaNqTEuAnb/sDY7OVuFkxB2W7fZmhOBaOCnT14l/wSKJBzT8fjn6
-FH3J3oE2BrgbiwzhAkXngG/A+R5x1ORWuZzHBzzyX0evEX4pEkeGU9TDHpdx2LEb
-NN3gbii3oGaIpMKhuiEJetxhduNHL5Lf7DYkBW92XUdj2H+49KK/1HmbiURh3YiD
-h0LjnakR3/hTgawxzEkfq296bIgESYUlNQSf4etQOshbHTTgfnStkQcQIt7fOaOp
-TE1NCSHaW0DYjGZw7BmvpHHcVmKNij3aQtANmI09NEeRvbcVq6Cf6q/09kS6tFs3
-HX15ZyW2pQ96ugIwGZH0eVeMPAtm6Kk7EzpB2S56Tdgykb/tJnNOV7HmGg4io3j5
-tdP+vLx93foI0Qi5WBtDucvS8PPehc0yLp2deY82vWqHr1aMEUORW67HseaNCSbY
-mwQrfnzDieOxWCBGsCYs6viwtQKJC2qfEEnejiF+jszyT54hSekgDaREfHmiBlCX
-QOQlwxEJnPUzQolvecLc
-=vkhW
------END PGP SIGNATURE-----
-
---nextPart1542628.olPUTayWRp--
+---
+diff --git a/include/linux/Kbuild b/include/linux/Kbuild
+index f30fa92..fd2570f 100644
+--- a/include/linux/Kbuild
++++ b/include/linux/Kbuild
+@@ -336,7 +336,6 @@ unifdef-y += tty.h
+ unifdef-y += types.h
+ unifdef-y += udf_fs_i.h
+ unifdef-y += udp.h
+-unifdef-y += ufs_fs.h
+ unifdef-y += uinput.h
+ unifdef-y += uio.h
+ unifdef-y += unistd.h
+diff --git a/include/linux/ufs_fs.h b/include/linux/ufs_fs.h
+index 10b854d..46e4a8d 100644
+--- a/include/linux/ufs_fs.h
++++ b/include/linux/ufs_fs.h
+@@ -35,16 +35,10 @@
+ #include <linux/stat.h>
+ #include <linux/fs.h>
+ 
+-#ifndef __KERNEL__
+-typedef __u64 __fs64;
+-typedef __u32 __fs32;
+-typedef __u16 __fs16;
+-#else
+ #include <asm/div64.h>
+ typedef __u64 __bitwise __fs64;
+ typedef __u32 __bitwise __fs32;
+ typedef __u16 __bitwise __fs16;
+-#endif
+ 
+ #define UFS_BBLOCK 0
+ #define UFS_BBSIZE 8192
