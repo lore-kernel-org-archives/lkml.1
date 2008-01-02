@@ -1,30 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759549AbYABXxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760050AbYABXxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759549AbYABXxS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 18:53:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754196AbYABXxK
+	id S1760050AbYABXxn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 18:53:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754196AbYABXxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 18:53:10 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47820 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753514AbYABXxJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 18:53:09 -0500
-Date: Wed, 2 Jan 2008 23:51:28 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Brett T. Warden" <brett.warden@gmail.com>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
-       Bill Davidsen <davidsen@tmr.com>,
-       "Brett T. Warden" <brett.warden@gmail.com>
-Subject: Re: [PATCH] bw-qcam: Rename parameter 'aggressive' to 'force_init'
-Message-ID: <20080102235128.1df94b4e@lxorguk.ukuu.org.uk>
-In-Reply-To: <1199317885-1625-2-git-send-email-brett.warden@gmail.com>
-References: <1199317885-1625-1-git-send-email-brett.warden@gmail.com>
-	<1199317885-1625-2-git-send-email-brett.warden@gmail.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 2 Jan 2008 18:53:32 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:55746 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752775AbYABXxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 18:53:31 -0500
+Date: Wed, 2 Jan 2008 18:53:26 -0500
+From: Rik van Riel <riel@redhat.com>
+To: "minchan Kim" <barrioskmc@gmail.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: why do we call clear_active_flags in shrink_inactive_list ?
+Message-ID: <20080102185326.66a3a883@bree.surriel.com>
+In-Reply-To: <44c63dc40712292332s4a2e7e4aief37a2dbdd03fc21@mail.gmail.com>
+References: <44c63dc40712292332s4a2e7e4aief37a2dbdd03fc21@mail.gmail.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,11 +26,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed,  2 Jan 2008 15:51:25 -0800
-"Brett T. Warden" <brett.warden@gmail.com> wrote:
+On Sun, 30 Dec 2007 16:32:42 +0900
+"minchan Kim" <barrioskmc@gmail.com> wrote:
 
-> Changed new parameter name to 'force_init' for clarity, as per feedback.
-> 
-> Signed-off-by: Brett T. Warden <brett.warden@gmail.com>
+> In 2.6.23's shrink_inactive_list function, why do we have to call
+> clear_active_flags after isolate_lru_pages call ?
+> IMHO, If it call isolate_lru_pages with "zone->inactive_list", It can
+> be sure that it is not PG_active. 
 
-Acked-by: Alan Cox <alan@redhat.com>
+If we call isolate_lru_pages with mode = ISOLATE_BOTH, then it
+can return both active and inactive pages and the calling function
+has to be able to deal with both kinds of pages.
+
+ISOLATE_BOTH is used when the kernel is trying to defragment memory,
+for larger physically contiguous allocations.
+
+-- 
+All rights reversed.
