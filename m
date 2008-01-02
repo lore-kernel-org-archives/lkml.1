@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756291AbYABTQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784AbYABTTt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756291AbYABTQj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 14:16:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYABTQb
+	id S1754784AbYABTTt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 14:19:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbYABTTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 14:16:31 -0500
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:25842 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751934AbYABTQb (ORCPT
+	Wed, 2 Jan 2008 14:19:42 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60646 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751408AbYABTTl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 14:16:31 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=WZZfTW9t5QnE3aEzYGjX2DTtu1+vAV1y2huIAw/quCFbJ9m/t19ltU68k1zUJJm2TTUnNaRm6y/COTgLDyhtEaYGxHelEsnvV91gWVVB180u+HX8w55uRPzzufA5baao7EG05awAZrP97OGZuOYPaOLZdt3Zd9gNkXK3tNu9U30=  ;
-X-YMail-OSG: NHf6TpUVM1nbw0BIKWtp4ptzKW8D6mshiVu6x1wBt8_mP6svip0mQXYBEVlTZHdfCNV5KrtOxg--
-From: David Brownell <david-b@pacbell.net>
-To: linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] [PATCH] : Allow embedded developers USB options normally reserved for OTG
-Date: Wed, 2 Jan 2008 11:16:28 -0800
-User-Agent: KMail/1.9.6
-Cc: "Mike Frysinger" <vapier.adi@gmail.com>, gregkh@suse.de,
-       Robin Getz <rgetz@blackfin.uclinux.org>, linux-kernel@vger.kernel.org
-References: <200801020948.51310.rgetz@blackfin.uclinux.org> <200801021047.16036.david-b@pacbell.net> <8bd0f97a0801021058g15d32de7nd29102ec552ba5fa@mail.gmail.com>
-In-Reply-To: <8bd0f97a0801021058g15d32de7nd29102ec552ba5fa@mail.gmail.com>
+	Wed, 2 Jan 2008 14:19:41 -0500
+Date: Wed, 2 Jan 2008 11:19:14 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
+In-Reply-To: <1199292381.3258.32.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.1.00.0801021113150.32517@woody.linux-foundation.org>
+References: <20080102162534.GA4041@elte.hu> <1199292381.3258.32.camel@localhost.localdomain>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200801021116.29067.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 January 2008, Mike Frysinger wrote:
-> > >
-> > > Allow embedded developers to turn support for USB Hubs off even if they have a
-> > > full root hub. This saves the overhead (RAM and Flash size).
-> >
-> > ISTR that it won't save very much code though ... the Linux USB
-> > stack structures all its enumeration logic around hubs.
+
+
+On Wed, 2 Jan 2008, James Bottomley wrote:
 > 
-> perhaps the code size is arguable as to whether it really matters.
-> the reason we want it is that we have a USB host controller that will
-> not work with USB hubs, so we want to make sure the system does not
-> attempt such things.  (yes, such a USB host controller is retarded,
-> but the decision was out of our hands.)
+> I disagree with this.  We only have one reporter of a problem and it
+> appears to be some type of obscure interaction with pktdvd which no-one
+> can track down (although it's not really helped by the reporter not
+> being very responsive).
 
-Well, it won't work with *external* hubs.  Root hubs are a different
-story.  :)
+It's totally immaterial if we have one reporter or many. The fact is, that 
+thing has been outstanding for almost two months now. The root cause is 
+almost certainly known (and Matthew is apparently even aware of it), but 
+it has been dicked-around-with by having totally weak excuses ("is it an 
+ide-scsi thing?")
 
-I think that's one of a class of decisions sometimes made by folk
-who need to conserve silicon real estate.  Supporting external hubs
-has always been optional for OTG systems.
+> The correct thing to do is root cause the problem and fix it at source,
+> since it's very likely that this is a pre-existing bug that was simply
+> uncovered by the patch you're recommending we revert.
 
-- Dave
+No, the correct thing would have been to fix it a month ago.
 
+By now, it needs to either have a patch, or to be reverted. It's too late 
+to make excuses.
 
+And no, it doesn't really need any more reporters or ways to reproduce it, 
+all it needs is looking at the patch and seeing what the differences are 
+AT A SOURCE level. And quite frankly, I see one huge honking difference, 
+which is that new test for 
+
+	if (cmd->request->cmd_type != REQ_TYPE_BLOCK_PC) 
+
+which will disable all the crud that sd_done() does.
+
+And guess what? Look at what sd_done() does: it checks whether the request 
+was partially filled, and tries to handle that end-of-medium case nicely. 
+Which is *exactly* what seems  to have broken.
+
+So I think you are making totally idiotic excuses. I may not know the SCSI 
+layer all that intimately, and maybe I'm wrong and there is some other 
+cause for this, but quite frankly, I doubt it. And I can look at just the 
+patch and have a damn good idea of why something is broken, but I can't 
+actually fix it myself because I don't know how to look up a a 
+"scsi_driver" from a "scsi_cmnd" sanely.
+
+But almost two months after the fact, we should have had a patch that does 
+that, or we should revert it.
+
+NO MORE BOGUS EXCUSES!
+
+			Linus
