@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756250AbYABLY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbYABLlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756250AbYABLY3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 06:24:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbYABLYT
+	id S1754627AbYABLlm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 06:41:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbYABLle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 06:24:19 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:53572 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751988AbYABLYS (ORCPT
+	Wed, 2 Jan 2008 06:41:34 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:58593 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752051AbYABLle (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 06:24:18 -0500
-Subject: Re: 2.6.24-rc6-mm1
-From: Peter Zijlstra <peterz@infradead.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Ingo Molnar <mingo@elte.hu>, Herbert Xu <herbert@gondor.apana.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>, trem <tremyfr@yahoo.fr>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <200801022212.29303.nickpiggin@yahoo.com.au>
-References: <9DtBq-2jD-3@gated-at.bofh.it>
-	 <200801022131.15482.nickpiggin@yahoo.com.au>
-	 <1199271676.6821.112.camel@twins>
-	 <200801022212.29303.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Wed, 02 Jan 2008 12:24:07 +0100
-Message-Id: <1199273047.6821.119.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Jan 2008 06:41:34 -0500
+Date: Wed, 2 Jan 2008 12:41:32 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Dave Young <hidave.darkstar@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
+       gregkh@suse.de, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: The perfect patch - Posting a patch series (was Re: [PATCH 06/12]
+ pci : Use mutex instead of semaphore in driver core)
+In-Reply-To: <477B7219.4080508@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.64.0801021238450.14900@fbirervta.pbzchgretzou.qr>
+References: <20071229011057.GG2883@darkstar.te-china.tietoenator.com> 
+ <20071229025506.GL11638@parisc-linux.org>  <477632A7.6050208@s5r6.in-berlin.de>
+ <a8e1da0801011829p15da81dcw9db0f7cbb5444467@mail.gmail.com>
+ <477B7219.4080508@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 2008-01-02 at 22:12 +1100, Nick Piggin wrote:
-> On Wednesday 02 January 2008 22:01, Peter Zijlstra wrote:
+On Jan 2 2008 12:14, Stefan Richter wrote:
+>There is nothing wrong with a 0/n posting per se.  But whenever you
+>write a 0/n posting, ask yourself:
+>  - Isn't the information I provide here necessary to keep around by
+>    somebody who takes my patch series into his quilt series or into his
+>    source repository?
+>  - Couldn't the information here be useful at a later point in time
+>    when people look into the mainline Linux history?
+>If "yes" or "maybe yes", then add this information to the changelogs in
+>the patches.  You can then leave the 0/n posting as is, or make it
+>briefer, or omit it entirely.
 
-> > I've seen 1s+ desktop latencies due to PREEMPT_BKL when I was still
-> > using reiserfs.
-> 
-> Fair enough; so the former ifdefery would be preferable for now then.
+Please emit a [0/n] and the [m/n] as a reply so that threading-aware
+mail readers can collapse and/or use delete-thread-at-a-time feature.
+If there is no info in [0/n], let it be empty or a one,two-liner brief
+introduction.
 
-To be honest, I must mention that the load that did that was a kernel
-build -j5 on a dual socket Athlon MP box. With a current kernel and XFS
-that load is making the box slow but its still very servicable.
+>It is never necessary to post a 0/n message, because _everything_ which
+>could be said in this message can also be said in the i/n messages.
+>(Things which are not meant for the SCM changelog can be written after a
+>"---" delimiter line or other patch delimiters.)  However, it is
+>sometimes convenient to repeat or summarize some of the information from
+>the i/n messages in a 0/n message.  Think about convenience of the
+>_recipients_ though, not about the sender's convenience.
 
-> > Both reiserfs and tty were fighting for the bkl and massive prio
-> > inversion ensued. Turning PREEMPT_BKL off made the system usable again.
-> 
-> Are either of those subsystems actually using the BKL to protect against
-> anything else (than themselves)?
-
-I doubt it.
-
-IIRC Alan is working on getting tty BKL free.
-
->  It would be sweet to have them use
-> private mutexes for the job instead (although even then it probably
-> wouldn't be a straight conversion)...
-
-I tried a quick conversion of reiser3 at the time, but it really wants a
-recursive lock and I couldn't be bothered to fix a 'legacy' filesystem
-so I just gave up and converted the filesystem to XFS.
-
+And [0/n] sometimes contain a diffstat which gives an approximate
+line count of how big the patchset actually is.
