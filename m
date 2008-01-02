@@ -1,93 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbYABCJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963AbYABCOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755507AbYABCJS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 21:09:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbYABCJE
+	id S1753963AbYABCOR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 21:14:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbYABCOE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 21:09:04 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:46840 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752319AbYABCJD (ORCPT
+	Tue, 1 Jan 2008 21:14:04 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54237 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751894AbYABCOD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 21:09:03 -0500
-Date: Tue, 1 Jan 2008 18:07:51 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Adrian Bunk <bunk@kernel.org>
+	Tue, 1 Jan 2008 21:14:03 -0500
+Date: Tue, 1 Jan 2008 18:12:12 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Bernd Petrovitsch <bernd@firmix.at>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] the scheduled 'time' option removal
-Message-Id: <20080101180751.9d31262b.randy.dunlap@oracle.com>
-In-Reply-To: <20080101134656.GG2360@does.not.exist>
-References: <20080101134656.GG2360@does.not.exist>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Subject: Re: Get physical MAC address
+Message-ID: <20080101181212.1e7b5ff0@deepthought>
+In-Reply-To: <1199228848.3912.651.camel@gimli.at.home>
+References: <Pine.LNX.4.44.0712311233290.17732-100000@hpcnc.cpe.ku.ac.th>
+	<1199228848.3912.651.camel@gimli.at.home>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Jan 2008 15:46:56 +0200 Adrian Bunk wrote:
+On Wed, 02 Jan 2008 00:07:28 +0100
+Bernd Petrovitsch <bernd@firmix.at> wrote:
 
-> This patch contains the scheduled removal of the 'time' option.
+> On Mon, 2007-12-31 at 12:39 +0700, Theewara Vorakosit wrote:
+> [...]
+> > I get MAC address from ioctl. However, ifconfig can change this  MAC 
+> > address. Can I get a real physical MAC address of the NIC?
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
-Thanks.  Looks good except that Documentation/kernel-parameters.txt
-needs a patch also:  delete these 3 lines:
-
-	time		Show timing data prefixed to each printk message line
-			[deprecated, see 'printk.time']
-
-then I will Ack it.
-
-> ---
+> - You can get the initial MAC address right after bootup before anyone
+>   changes it.
+> - Some (if not many if not all) of the drivers output it on
+>   driver initialization time so you could read it from `dmesg` or
+>   some /var/log/messages or .....
+> There is no "get initial MAC address" ioctl (but it's not that
+> complicated to implement it).
 > 
->  Documentation/feature-removal-schedule.txt |    8 --------
->  kernel/printk.c                            |   13 -------------
->  2 files changed, 21 deletions(-)
-> 
-> c0ea16c447460698c0e85963310c38fa051f0e23 
-> diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-> index 20c4c8b..93aac19 100644
-> --- a/Documentation/feature-removal-schedule.txt
-> +++ b/Documentation/feature-removal-schedule.txt
-> @@ -233,10 +233,2 @@ Who:	Jean Delvare <khali@linux-fr.org>
->  ---------------------------
-> -
-> -What:	'time' kernel boot parameter
-> -When:	January 2008
-> -Why:	replaced by 'printk.time=<value>' so that printk timestamps can be
-> -	enabled or disabled as needed
-> -Who:	Randy Dunlap <randy.dunlap@oracle.com>
-> -
-> ----------------------------
->  
-> diff --git a/kernel/printk.c b/kernel/printk.c
-> index a30fe33..296c4ea 100644
-> --- a/kernel/printk.c
-> +++ b/kernel/printk.c
-> @@ -560,15 +560,2 @@ static int printk_time = 0;
->  module_param_named(time, printk_time, bool, S_IRUGO | S_IWUSR);
-> -
-> -static int __init printk_time_setup(char *str)
-> -{
-> -	if (*str)
-> -		return 0;
-> -	printk_time = 1;
-> -	printk(KERN_NOTICE "The 'time' option is deprecated and "
-> -		"is scheduled for removal in early 2008\n");
-> -	printk(KERN_NOTICE "Use 'printk.time=<value>' instead\n");
-> -	return 1;
-> -}
-> -
-> -__setup("time", printk_time_setup);
+> 	Bernd
+
+There is already ethtool interface to get what you want (ETHTOOL_GPERMADDR)
 
 
----
-~Randy
-desserts:  http://www.xenotime.net/linux/recipes/
+-- 
+Stephen Hemminger <stephen.hemminger@vyatta.com>
