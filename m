@@ -1,213 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759461AbYABBD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759597AbYABBDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759461AbYABBD0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 20:03:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757600AbYABBDR
+	id S1759597AbYABBDj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 20:03:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758921AbYABBDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 20:03:17 -0500
-Received: from tim.rpsys.net ([194.106.48.114]:54347 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756584AbYABBDQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 20:03:16 -0500
-Subject: [RFC PATCH] Add input event to APM event bridge for embedded
-	devices
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
-Content-Type: text/plain
-Date: Wed, 02 Jan 2008 01:03:09 +0000
-Message-Id: <1199235789.4653.62.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 1 Jan 2008 20:03:22 -0500
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:55228 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758155AbYABBDU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 20:03:20 -0500
+Message-ID: <477AE225.3070706@keyaccess.nl>
+Date: Wed, 02 Jan 2008 02:00:21 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Christer Weinigel <christer@weinigel.se>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "David P. Reed" <dpreed@reed.com>, Rene Herman <rene.herman@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Paul Rolland <rol@as2917.net>,
+       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
+References: <4762C551.5070003@zytor.com>	<20071214210652.GB28793@elf.ucw.cz>	<4763001A.1070102@zytor.com>	<20071214232955.545ab809@the-village.bc.nu>	<20071215080831.404cdb32@tux.DEF.witbe.net>	<47638C8C.2090604@gmail.com>	<476438B4.2020600@zytor.com>	<476462BE.3030701@gmail.com>	<4764687D.6080609@zytor.com>	<476524DB.7020806@gmail.com>	<20071216152250.GA21245@elte.hu>	<4765D43E.1010800@gmail.com>	<4765D95C.4010404@zytor.com>	<4765DCB0.8030901@gmail.com>	<4765EE7F.80002@zytor.com>	<47667366.7010405@gmail.com>	<4766AE88.4080904@zytor.com>	<4766D175.7040807@reed.com>	<20071217212509.5edaa372@the-village.bc.nu>	<477A634C.8040000@reed.com>	<20080101161557.3ce2d5f8@the-village.bc.nu>	<477AAD7B.5040405@zytor.com>	<477AB204.3070904@keyaccess.nl>	<477AB433.5070506@zytor.com>	<477AC02A.40108@keyaccess.nl>	<477AC130.3050901@zytor.com>	<477AC8BA.2050503@keyaccess.nl> <20080102015539.58d80332@weinigel.se>
+In-Reply-To: <20080102015539.58d80332@weinigel.se>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a very simple input power event to APM user suspend
-event bridge. Its currently only works for the systems using the
-emulated APM driver but could easily be extended to work with anything
-with a true APM BIOS too.
+On 02-01-08 01:55, Christer Weinigel wrote:
 
-This covers a standard embedded system need which is to suspend when the
-user presses a suspend button. It leaves options open to system
-integrators to ignore (or unload) this code and implement their own more
-complex event handling system.
+> On Wed, 02 Jan 2008 00:11:54 +0100
+> Rene Herman <rene.herman@keyaccess.nl> wrote:
+> 
+>> Well, on the PIIX it is and I guess on anything where it's _not_
+>> fully internal an 0xf0 write wouldn't have any effect on IRQ13...
+>>
+>> When you earlier mentioned this it seemed 0xed switched on DMI would
+>> be good enough, but well.
+>>
+>> Alan, do you have an opinion on the port 0xf0 write? It should
+>> probably still be combined with a replacement/deletion for new
+>> machines due to the bus-locking "bad for real-time" thing you
+>> mentioned earlier but in the short run it could be a fairly
+>> low-impact replacement on anything except a 386+387
+> 
+> Both 0xed and 0xf0 are mapped to internal functions on the AMD Elan
+> SC400 processor.  It is an AMD 486 based system on a chip and since AMD
+> just knew that it would never have a math coprocessor, they reused the
+> 0xf0-0xf2 range for the PCMCIA controller.  I guess the AMD Elan SC500
+> will have similar problems.
+> 
+> I seem to recall that back when I was working with the Elan SC400
+> (sometime around 1998?) there were discussions about finding an
+> alternate delay port because outb to 0x80 messed up the debug port.  I
+> think the Elan stopped those discussions because just about every port
+> on the Elan was reused for some alternate purpose.  
 
-Its hidden behind the EMBEDDED Kconfig option since its only likely to
-be of use to embedded style systems. It can be built as a module so the
-"hardcoded" policy can easily be removed from the kernel at runtime if
-desired too.
+Okay, thanks much. So 0xf0 would be unuseable on 386+387 and AMD Elan SC400 
+and could possibly change timing on an unknown number of systems due to not 
+being put on the bus.
 
-Signed-off-by: Richard Purdie <rpurdie@rpsys.net>
+0x80 only fails for some recent HP laptops instead so it seems there would 
+be not enough cause to go with 0xf0 onstead of 0x80 as the default choice; 
+if we're quirking around machines anyway it might as well be the DMI based 
+quirking currently suggested.
 
----
-
- drivers/input/Kconfig     |   12 ++++
- drivers/input/Makefile    |    1 
- drivers/input/apm-power.c |  125 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 138 insertions(+)
-
-Index: kernel-hacking/drivers/input/Kconfig
-===================================================================
---- kernel-hacking.orig/drivers/input/Kconfig	2008-01-01 23:50:13.000000000 +0000
-+++ kernel-hacking/drivers/input/Kconfig	2008-01-02 00:45:33.000000000 +0000
-@@ -137,6 +137,18 @@ config INPUT_EVBUG
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called evbug.
- 
-+config INPUT_APMPOWER
-+	tristate "Input Power Event -> APM Bridge" if EMBEDDED
-+	depends on INPUT && APM_EMULATION
-+	---help---
-+	  Say Y here if you want suspend key events to trigger a user
-+	  requested suspend through APM. This is useful on embedded
-+	  systems where such behviour is desired without userspace
-+	  interaction. If unsure, say N.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called apm-power.
-+
- comment "Input Device Drivers"
- 
- source "drivers/input/keyboard/Kconfig"
-Index: kernel-hacking/drivers/input/Makefile
-===================================================================
---- kernel-hacking.orig/drivers/input/Makefile	2008-01-01 23:50:13.000000000 +0000
-+++ kernel-hacking/drivers/input/Makefile	2008-01-02 00:39:03.000000000 +0000
-@@ -22,3 +22,4 @@ obj-$(CONFIG_INPUT_TABLET)	+= tablet/
- obj-$(CONFIG_INPUT_TOUCHSCREEN)	+= touchscreen/
- obj-$(CONFIG_INPUT_MISC)	+= misc/
- 
-+obj-$(CONFIG_INPUT_APMPOWER)	+= apm-power.o
-Index: kernel-hacking/drivers/input/apm-power.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ kernel-hacking/drivers/input/apm-power.c	2008-01-02 00:43:42.000000000 +0000
-@@ -0,0 +1,125 @@
-+/*
-+ *  Input Power Event -> APM Bridge
-+ *
-+ *  Copyright (c) 2007 Richard Purdie
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License version 2 as
-+ *  published by the Free Software Foundation.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/input.h>
-+#include <linux/slab.h>
-+#include <linux/init.h>
-+#include <linux/tty.h>
-+#include <linux/delay.h>
-+#include <linux/pm.h>
-+#include <linux/apm-emulation.h>
-+
-+static void system_power_event(unsigned int keycode)
-+{
-+	switch (keycode) {
-+		case KEY_SUSPEND:
-+			apm_queue_event(APM_USER_SUSPEND);
-+
-+			printk(KERN_INFO "apm-power: Requesting system suspend...\n");
-+			break;
-+		default:
-+			break;
-+	}
-+}
-+
-+static void apmpower_event(struct input_handle *handle, unsigned int type,
-+		        unsigned int code, int value)
-+{
-+	/* only react on key down events */
-+	if (value != 1)
-+		return;
-+
-+	switch (type) {
-+		case EV_PWR:
-+			system_power_event(code);
-+			break;
-+
-+		default:
-+			break;
-+	}
-+}
-+
-+static int apmpower_connect(struct input_handler *handler,
-+					  struct input_dev *dev,
-+					  const struct input_device_id *id)
-+{
-+	struct input_handle *handle;
-+	int err;
-+
-+	if (!(handle = kzalloc(sizeof(struct input_handle), GFP_KERNEL)))
-+		return -ENOMEM;
-+
-+	handle->dev = dev;
-+	handle->handler = handler;
-+	handle->name = "apm-power";
-+
-+	handler->private = handle;
-+	err = input_register_handle(handle);
-+	if (err < 0) {
-+		printk(KERN_ERR "apm-power.c: Failed to register input power handler\n");
-+		kfree(handle);
-+		return err;
-+	}
-+
-+	err = input_open_device(handle);
-+	if (err < 0) {
-+		printk(KERN_ERR "apm-power.c: Failed to open input power device\n");
-+		input_unregister_handle(handle);
-+		kfree(handle);
-+		return err;
-+	}
-+
-+	return 0;
-+}
-+
-+static void apmpower_disconnect(struct input_handle *handler)
-+{
-+	struct input_handle *handle = handler->private;
-+
-+	input_close_device(handle);
-+	kfree(handle);
-+}
-+
-+static const struct input_device_id apmpower_ids[] = {
-+	{
-+		.flags = INPUT_DEVICE_ID_MATCH_EVBIT,
-+		.evbit = { BIT_MASK(EV_PWR) },
-+	},
-+	{ },
-+};
-+
-+MODULE_DEVICE_TABLE(input, apmpower_ids);
-+
-+static struct input_handler apmpower_handler = {
-+	.event =	apmpower_event,
-+	.connect =	apmpower_connect,
-+	.disconnect =	apmpower_disconnect,
-+	.name =		"apm-power",
-+	.id_table =	apmpower_ids,
-+};
-+
-+static int __init apmpower_init(void)
-+{
-+	return input_register_handler(&apmpower_handler);
-+}
-+
-+static void __exit apmpower_exit(void)
-+{
-+	input_unregister_handler(&apmpower_handler);
-+}
-+
-+module_init(apmpower_init);
-+module_exit(apmpower_exit);
-+
-+MODULE_AUTHOR("Richard Purdie <rpurdie@rpsys.net>");
-+MODULE_DESCRIPTION("Input Power Event -> APM Bridge");
-+MODULE_LICENSE("GPL");
+Rene.
 
