@@ -1,62 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbYABJ4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbYABJ6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756873AbYABJ4u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 04:56:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754224AbYABJ4n
+	id S1757529AbYABJ6S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 04:58:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754224AbYABJ6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 04:56:43 -0500
-Received: from hobbit.corpit.ru ([81.13.94.6]:20435 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753211AbYABJ4m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 04:56:42 -0500
-Message-ID: <477B5FD8.5070503@msgid.tls.msk.ru>
-Date: Wed, 02 Jan 2008 12:56:40 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Icedove 1.5.0.14pre (X11/20071018)
+	Wed, 2 Jan 2008 04:58:08 -0500
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3740 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754052AbYABJ6H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 04:58:07 -0500
+Date: Wed, 2 Jan 2008 09:58:28 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: WARNING: do not add new typedefs - is that for real?
+Message-ID: <20080102095828.GC23164@shadowen.org>
+References: <477A6732.4010609@panasas.com>
 MIME-Version: 1.0
-To: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: acpi/apm events as inputs: how to handle?
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: id=4F9CF57E
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <477A6732.4010609@panasas.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Not so) recently, ACPI events started appearing as
-key press events over linux input subsystem.  The
-question regarding this is simple: how it's supposed
-to be handled?
+On Tue, Jan 01, 2008 at 06:15:46PM +0200, Boaz Harrosh wrote:
+> I have this code:
+> 
+> <c_code>
+> /* 
+>  * osd-r10 4.12.5 Data-In and Data-Out buffer offsets
+>  * byte offset = mantissa * (2^(exponent+8))
+>  */
+> typedef __be32 osd_cdb_offset;
+> 
+> osd_cdb_offset __osd_encode_offset(u64 offset, unsigned *padding,
+> 	int min_shift, int max_shift);
+> 
+> struct osd_attributes_list_mode {
+> 	__be32		get_attr_desc_bytes;
+> 	osd_cdb_offset	get_attr_desc_offset;
+> 
+> 	__be32		get_attr_alloc_length;
+> 	osd_cdb_offset	get_attr_offset;
+> 
+> 	__be32		set_attr_bytes;
+> 	osd_cdb_offset	set_attr_offset;
+> 	__be32 not_used;
+> };
+> </c_code>
+> 
+> 
+> the osd_cdb_offset above is this special OSD-standard floating-point-like
+> special type. It is of size 32 bit in special network order. What should
+> I do then:
+> 
+> __be32 __osd_encode_offset(u64 offset, unsigned *padding,
+> 	int min_shift, int max_shift);
+> 
+> But it is not a __be32. It is this special floating-point-like thingy!!!?
+> How was __be32 defined with a #define???!!
+> 
+> Come on guys, it is not checkpatch.pl place to complain about good language
+> constructs that can be misused. This is the maintainers and reviewers
+> job to say that a: "typedef struct foo Foo;" is bad practice and we don't
+> like it, but it can not be left to a script. "typedef"s should be used
+> where they should be used.
 
-First of all, I don't know any software so far that
-can handle input layer in userspace when not running
-X.  In X, it's usually done using window manager
-setup or with special application (like, volume
-up/down keys etc).  But without X, there's no such
-application, as far as I can see.
+It is checkpatch's role to point out things which are likely to be
+wrong.  There will always be exceptions.  Lines whihc are much more
+readable if they spill over 80 characters, typedefs which do make sense.
+atomic_t's for example.  This may well be a valid use of them.  Note
+that this is mentioned as a WARNING not an ERROR.  As is stated in the
+patch submission notes, you are meant to be comfortable with everything
+which checkpatch is still reporting.
 
-It's easy to write one, but there may be.. issues
-with finding which input device to use.
+checkpatch is a style _guide_, not the be all and end all.  It is meant
+to carry a preferred style to try and maintain some consistency kernel
+wide.
 
-Now, linux already have hotplug subsystem, using
-/sbin/hotplug helper (or whatever it points to,
-or using netlink).  ACPI key events are rare.
-
-What I'm thinking about is: why ACPI events are
-routed over input subsystem, instead of hotplug
-subsystem?  With input, there's a need for a
-special daemon/application listening on the
-specific "keyboard" device, while with hotplug
-subsystem, it's already here - linux (by default
-anyway, if not running udev etc), kernel fires
-up a script when an event occurs.  I don't see
-how this special application/daemon is different
-from ol'good acpid.
-
-Or.. maybe I missed something?
-
-Thanks!
-
-/mjt
+-apw
