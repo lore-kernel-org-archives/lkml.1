@@ -1,108 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbYABQfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759284AbYABQls@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758934AbYABQfj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 11:35:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754565AbYABQfa
+	id S1759284AbYABQls (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 11:41:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755155AbYABQli
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 11:35:30 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:42509 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754140AbYABQf2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 11:35:28 -0500
-Date: Wed, 2 Jan 2008 11:33:09 -0500
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "K. Prasad" <prasad@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, dipankar@in.ibm.com, ego@in.ibm.com,
-       mathieu.desnoyers@polymtl.ca, paulmck@linux.vnet.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 2/2] Markers Implementation for Preempt RCU Boost Tracing
-Message-ID: <20080102163309.GC11496@redhat.com>
-References: <20071231060911.GB6461@in.ibm.com> <20071231102045.GB30380@elte.hu> <y0modc4vr7a.fsf@ton.toronto.redhat.com> <20080102124734.GC11208@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080102124734.GC11208@elte.hu>
-User-Agent: Mutt/1.4.1i
+	Wed, 2 Jan 2008 11:41:38 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:44015 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754912AbYABQlh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 11:41:37 -0500
+Date: Wed, 2 Jan 2008 11:41:36 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
+       Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH 1/4] PM: Introduce destroy_suspended_device()
+In-Reply-To: <200801021433.47651.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0801021122070.5062-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
+On Wed, 2 Jan 2008, Rafael J. Wysocki wrote:
 
-On Wed, Jan 02, 2008 at 01:47:34PM +0100, Ingo Molnar wrote:
-> [...]
-> > FWIW, I'm not keen about the format strings either, but they don't 
-> > constitute a performance hit beyond an additional parameter.  It does 
-> > not need to actually get parsed at run time.
-> 
-> "only" an additional parameter. The whole _point_ behind these markers 
-> is for them to have minimal effect!
-
-Agreed.  The only alternative I recall seeing proposed was my own
-cartesian-product macro suite that encodes parameter types into the
-marker function/macro name itself.  (Maybe some of that could be
-hidden with gcc typeof() magic.)  There appeared to be a consensus
-that this was more undesirable.  Do you agree?
-
-
-> [...]
-> this is a general policy matter. It is _so much easier_ to add markers 
-> if they _can_ have near-zero overhead (as in 1-2 instructions). 
-> Otherwise we'll keep arguing about it, especially if any is added to 
-> performance-critical codepath. (where we are counting instructions)
-
-The effect of the immediate-values patch, combined with gcc
-CFLAGS+=-freorder-blocks, *is* to keep the overhead at 1-2
-dcache-impact-free instructions.  The register saves, parameter
-evaluation, the function call, can all be moved out of line.
-
-
-> > > Whatever became of the obvious suggestion that i outlined years ago, 
-> > > to have a _single_ trace call instruction and to _patch out_ the 
-> > > damn marker calls by default?  [...]  only leaving a ~5-byte NOP 
-> > > sequence behind them (and some minimal disturbance to the variables 
-> > > the tracepoint accesses). [...]
+> On Wednesday, 2 of January 2008, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
 > > 
-> > This has been answered several times before.  It's because the marker 
-> > parameters have to be (conditionally) evaluated and pushed onto a call 
-> > frame.  It's not just a call that would need being nop'd, but a whole 
-> > function call setup/teardown sequence, which itself can be interleaved 
-> > with adjacent code.
+> > It sometimes is necessary to destroy a device object during a suspend or
+> > hibernation, but the PM core is supposed to control all device objects in that
+> > cases.  For this reason, it is necessary to introduce a mechanism allowing one
+> > to ask the PM core to remove a device object corresponding to a suspended
+> > device on one's behalf.
+> > 
+> > Define function destroy_suspended_device() that will schedule the removal of
+> > a device object corresponding to a suspended device by the PM core during the
+> > subsequent resume.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> you are still missing my point. Firstly, the kernel is regparm built so 
-> there's no call frame to be pushed to in most cases - we pass most 
-> parameters in registers. [...]
+> Sorry, a small fix is needed for this patch.  Namely, dpm_sysfs_remove(dev)
+> should not be called by device_pm_schedule_removal(), because it will be called
+> anyway from device_pm_remove() when the device object is finally unregistered
+> (we're talking here about unlikely error paths only, but still).
 
-Yes, but those registers will already be used, so their former values
-need to be saved or later recomputed as a part of the call sequence.
-Even wrapping it all with an asm barrier may not be enough to
-completely bound the code with an address range that can be naively
-NOP'd out.
+The situation is a little confusing, because the source files under 
+drivers/base/power are maintained in Greg's tree and he already has 
+gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch 
+installed.  That patch conflicts with this one.
 
+One of the these two patches will have to be rewritten to apply on top 
+of the other.  Which do you think should be changed?
 
-> Secondly, the side-effects of a function call is what i referred to via:
-> 
-> > [...]  (and some minimal disturbance to the variables the tracepoint 
-> > accesses). [...]
-> 
-> really, a tracepoint obviously accesses data that is readily accessible 
-> in that spot. Worst-case we'll have some additional register constraints 
-> that make the code a bit less optimal. [...]
+Alan Stern
 
-It's more than that - people will want to pass some dereferenced
-fields from a struct*; some old function parameters that were by the
-time of the marker call shoved out of registers again.  Register
-constraints that prohibit general expressions would impede the
-utility of the tool.
-
-
-> what cannot be optimized away at all are the conditional
-> instructions introduced by the probe points, extra parameters and
-> the space overhead of the function call itself.
-
-Almost all of that can & should be moved out of line.
-
-
-- FChE
