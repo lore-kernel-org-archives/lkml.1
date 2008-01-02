@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758635AbYABTyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbYABT6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758635AbYABTyy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 14:54:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754242AbYABTyq
+	id S1753838AbYABT6V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 14:58:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbYABT6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 14:54:46 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49854 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753764AbYABTyp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 14:54:45 -0500
-Date: Wed, 2 Jan 2008 20:54:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: clean up apic_32/64.c
-Message-ID: <20080102195425.GA31700@elte.hu>
-References: <477BD875.2090508@ct.jp.nec.com>
+	Wed, 2 Jan 2008 14:58:13 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51334 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751144AbYABT6M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 14:58:12 -0500
+Date: Wed, 2 Jan 2008 11:57:10 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Matthew Wilcox <matthew@wil.cx>
+cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
+In-Reply-To: <20080102194030.GC11638@parisc-linux.org>
+Message-ID: <alpine.LFD.1.00.0801021151420.32517@woody.linux-foundation.org>
+References: <20080102162534.GA4041@elte.hu> <1199292381.3258.32.camel@localhost.localdomain> <alpine.LFD.1.00.0801021113150.32517@woody.linux-foundation.org> <20080102194030.GC11638@parisc-linux.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <477BD875.2090508@ct.jp.nec.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.0664]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
 
-> White space and coding style clean up. Make apic_32/64.c similar.
+On Wed, 2 Jan 2008, Matthew Wilcox wrote:
+> 
+> sd_done and sr_done are called for REQ_TYPE_FS -- if the request comes
+> in through one of the SG interfaces, we call scsi_setup_blk_pc_cmnd()
+> which sets the ->done callback to scsi_blk_pc_done.
 
-thanks, applied. FYI, there's still a bit left in apic_32.c:
+Why do you think that REQ_TYPE_BLOCK_PC has anything to do with SG?
 
- total: 5 errors, 1 warnings, 1566 lines checked
+It has *nothing* to do with SG, and anybody who uses SG in this day and 
+age on a block device is just crazy. 
 
-we might as well go for all of them? :-)
+The way you do generic SCSI commands (on perfectly normal block device 
+nodes) is using the SCSI ioctl() interfaces.  That's how you are supposed 
+to do things like burn DVD's or do any kind of special ops.
 
-	Ingo
+So REQ_TYPE_BLOCK_PC does quite commonly happen on perfectly regular block 
+devices, it's how all commands that aren't pure reads or writes done by 
+the kernel behave.
+
+If you actually use /dev/sg*, you will be using the SG driver, and if you 
+don't want that to have a ->done callback, then just set "done" to NULL 
+for sg_driver.
+
+			Linus
