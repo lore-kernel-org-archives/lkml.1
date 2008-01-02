@@ -1,47 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759191AbYABNgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759036AbYABNiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759191AbYABNgs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 08:36:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754947AbYABNgl
+	id S1759036AbYABNiG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 08:38:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbYABNhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 08:36:41 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45888 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754925AbYABNgk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 08:36:40 -0500
-Date: Wed, 2 Jan 2008 13:26:21 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Wed, 2 Jan 2008 08:37:55 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:35616 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754058AbYABNhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 08:37:54 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>, trem <tremyfr@yahoo.fr>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.24-rc6-mm1
-Message-ID: <20080102132621.4da29e29@the-village.bc.nu>
-In-Reply-To: <20080102121909.GA6285@elte.hu>
-References: <9DtBq-2jD-3@gated-at.bofh.it>
-	<200801022131.15482.nickpiggin@yahoo.com.au>
-	<1199271676.6821.112.camel@twins>
-	<200801022212.29303.nickpiggin@yahoo.com.au>
-	<1199273047.6821.119.camel@twins>
-	<20080102121909.GA6285@elte.hu>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: Re: [patch] asm-x86/msr.h: pull in linux/types.h
+Date: Wed, 2 Jan 2008 08:37:52 -0500
+User-Agent: KMail/1.9.7
+Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>
+References: <200801012008.53275.vapier@gentoo.org> <20080102114849.GA25887@elte.hu>
+In-Reply-To: <20080102114849.GA25887@elte.hu>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1542628.olPUTayWRp";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200801020837.53860.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> BKL properties, that could be wrapped. I guess fixing the TTY code to 
-> have no BKL dependencies has a higher chance of success - given that 
-> Alan is working on it :-)
+--nextPart1542628.olPUTayWRp
+Content-Type: text/plain;
+  charset="iso-8859-6"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Bit by bit when I can face it, and with a lot of other people
-contributing parts. Right now the BKL mostly protects the open/close
-paths and those are *really* ugly
+On Wednesday 02 January 2008, Ingo Molnar wrote:
+> * Mike Frysinger <vapier@gentoo.org> wrote:
+> > Forgot to mention this before, but since the msr.h header uses types
+> > like __u32, it should pull in linux/types.h.
+>
+> does not build with the attached config.
+
+sorry, forgot about __ASSEMBLY__ protection.
+=2D--
+Since the msr.h header uses types like __u32, it should pull in linux/types=
+=2Eh.
+
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+=2D--
+diff --git a/include/asm-x86/msr.h b/include/asm-x86/msr.h
+index 664a2fa..80b0270 100644
+=2D-- a/include/asm-x86/msr.h
++++ b/include/asm-x86/msr.h
+@@ -3,6 +3,10 @@
+=20
+ #include <asm/msr-index.h>
+=20
++#ifndef __ASSEMBLY__
++# include <linux/types.h>
++#endif
++
+ #ifdef __i386__
+=20
+ #ifdef __KERNEL__
+
+--nextPart1542628.olPUTayWRp
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.8 (GNU/Linux)
+
+iQIcBAABAgAGBQJHe5OxAAoJEEFjO5/oN/WBJVkQAKeMw1OPdUBx/0wdkE1qNlHN
+I2Y8/YvMl+693bvLym24edLA3xnzz1FYshKjsfGVMMl2AvUXq3ArgCOkWcjnsv9Q
+NnMfQ0xLd4fKwh6czKf9RwRfOCKisr0RYNMrXvyciUuxiLwTCn4jz+TENZqPfi3c
+X6WuBKz1ga5WbaNqTEuAnb/sDY7OVuFkxB2W7fZmhOBaOCnT14l/wSKJBzT8fjn6
+FH3J3oE2BrgbiwzhAkXngG/A+R5x1ORWuZzHBzzyX0evEX4pEkeGU9TDHpdx2LEb
+NN3gbii3oGaIpMKhuiEJetxhduNHL5Lf7DYkBW92XUdj2H+49KK/1HmbiURh3YiD
+h0LjnakR3/hTgawxzEkfq296bIgESYUlNQSf4etQOshbHTTgfnStkQcQIt7fOaOp
+TE1NCSHaW0DYjGZw7BmvpHHcVmKNij3aQtANmI09NEeRvbcVq6Cf6q/09kS6tFs3
+HX15ZyW2pQ96ugIwGZH0eVeMPAtm6Kk7EzpB2S56Tdgykb/tJnNOV7HmGg4io3j5
+tdP+vLx93foI0Qi5WBtDucvS8PPehc0yLp2deY82vWqHr1aMEUORW67HseaNCSbY
+mwQrfnzDieOxWCBGsCYs6viwtQKJC2qfEEnejiF+jszyT54hSekgDaREfHmiBlCX
+QOQlwxEJnPUzQolvecLc
+=vkhW
+-----END PGP SIGNATURE-----
+
+--nextPart1542628.olPUTayWRp--
