@@ -1,62 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758300AbYABWwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756960AbYABXAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758300AbYABWwp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 17:52:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbYABWwh
+	id S1756960AbYABXAr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 18:00:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754105AbYABXAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 17:52:37 -0500
-Received: from waste.org ([66.93.16.53]:39117 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754118AbYABWwg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 17:52:36 -0500
-Subject: Re: [PATCH] procfs: provide slub's /proc/slabinfo
-From: Matt Mackall <mpm@selenic.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Hugh Dickins <hugh@veritas.com>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Wed, 2 Jan 2008 18:00:39 -0500
+Received: from xenotime.net ([66.160.160.81]:37106 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753701AbYABXAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 18:00:38 -0500
+Date: Wed, 2 Jan 2008 15:00:34 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Andreas Mohr <andi@lisas.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>, Andrew Morton <akpm@osdl.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.1.00.0801021130210.32517@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com>
-	 <84144f020801021109v78e06c6k10d26af0e330fc85@mail.gmail.com>
-	 <alpine.LFD.1.00.0801021130210.32517@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 02 Jan 2008 16:50:18 -0600
-Message-Id: <1199314218.4497.109.camel@cinder.waste.org>
+Subject: Re: [PATCH] eradicate bashisms in scripts/patch-kernel
+Message-Id: <20080102150034.0703b30f.rdunlap@xenotime.net>
+In-Reply-To: <20071117205125.GA26425@rhlx01.hs-esslingen.de>
+References: <20071101082457.ff9a5d67.randy.dunlap@oracle.com>
+	<20071101221606.GA10116@rhlx01.hs-esslingen.de>
+	<20071101160857.6e877307.rdunlap@xenotime.net>
+	<20071102020118.GA13852@gondor.apana.org.au>
+	<20071102200935.GA14153@rhlx01.hs-esslingen.de>
+	<20071102131707.6023a5b7.rdunlap@xenotime.net>
+	<20071105195827.GA24117@rhlx01.hs-esslingen.de>
+	<20071114144627.8628f2dd.rdunlap@xenotime.net>
+	<20071117163327.GA4296@rhlx01.hs-esslingen.de>
+	<20071117172816.GC7213@uranus.ravnborg.org>
+	<20071117205125.GA26425@rhlx01.hs-esslingen.de>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 17 Nov 2007 21:51:25 +0100 Andreas Mohr wrote:
 
-On Wed, 2008-01-02 at 11:35 -0800, Linus Torvalds wrote:
+> Make the patch-kernel shell script sufficiently compatible with POSIX
+> shells,
+> i.e., remove bashisms from scripts/patch-kernel.
+> This means that it now also works on dash 0.5.3-5
+> and still works on bash 3.1dfsg-8.
 > 
-> On Wed, 2 Jan 2008, Pekka Enberg wrote:
-> > 
-> > I already sent the remaining bits to Linus but this looks much
-> > cleaner. Thanks Hugh!
-> > 
-> > Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> 
-> Actually, I'd much rather just do this instead (on top of your patch)
-> 
-> It just creates a new CONFIG_SLABINFO that automatically has the right 
-> dependencies (ie depends on PROC being on, and either SLAB or SLUB), and 
-> then both SLAB and SLUB just have the exact same interfaces.
-> 
-> Which means that SLOB could also trivially implement the same thing, with 
-> no new #ifdef'fery or other crud.
+> Full changelog:
+> - replaced non-standard "==" by standard "="
+> - replaced non-standard "source" statement by POSIX "dot" command
+> - use leading ./ on mktemp filename to force the tempfile to a local
+>   directory, so that the search path is not used
+> - replace bash syntax to remove leading dot by similar POSIX syntax
+> - added missing (optional/not required) $ signs to shell variable names
 
-Except SLOB's emulation of slabs is so thin, it doesn't have the
-relevant information. We have a very small struct kmem_cache, which I
-suppose could contain a counter. But we don't have anything like the
-kmalloc slabs, so you'd only be getting half the picture anyway.
-The output of slabtop would simply be misleading because there are no
-underlying "slabs" in the first place.
+The use of $(($x)) should not be needed with latest dash....
+anyway, Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
--- 
-Mathematics is the supreme nostalgia of our time.
 
+> Signed-off-by: Andreas Mohr <andi@lisas.de>
+> ---
+> Thanks for all comments! I might want to make sure to read more specs
+> next time...
+> Cowardly didn't dare to pre-add Randy's line, feel free to ack ;)
+> 
+> --- linux-2.6.23/scripts/patch-kernel.orig	2007-11-17 21:26:47.000000000 +0100
+> +++ linux-2.6.23/scripts/patch-kernel	2007-11-17 21:27:59.000000000 +0100
+> @@ -65,7 +65,7 @@
+>  patchdir=${2-.}
+>  stopvers=${3-default}
+>  
+> -if [ "$1" == -h -o "$1" == --help -o ! -r "$sourcedir/Makefile" ]; then
+> +if [ "$1" = -h -o "$1" = --help -o ! -r "$sourcedir/Makefile" ]; then
+>  cat << USAGE
+>  usage: $PNAME [-h] [ sourcedir [ patchdir [ stopversion ] [ -acxx ] ] ]
+>    source directory defaults to /usr/src/linux,
+> @@ -182,10 +182,12 @@
+>  }
+>  
+>  # set current VERSION, PATCHLEVEL, SUBLEVEL, EXTRAVERSION
+> -TMPFILE=`mktemp .tmpver.XXXXXX` || { echo "cannot make temp file" ; exit 1; }
+> +# force $TMPFILEs below to be in local directory: a slash character prevents
+> +# the dot command from using the search path.
+> +TMPFILE=`mktemp ./.tmpver.XXXXXX` || { echo "cannot make temp file" ; exit 1; }
+>  grep -E "^(VERSION|PATCHLEVEL|SUBLEVEL|EXTRAVERSION)" $sourcedir/Makefile > $TMPFILE
+>  tr -d [:blank:] < $TMPFILE > $TMPFILE.1
+> -source $TMPFILE.1
+> +. $TMPFILE.1
+>  rm -f $TMPFILE*
+>  if [ -z "$VERSION" -o -z "$PATCHLEVEL" -o -z "$SUBLEVEL" ]
+>  then
+> @@ -202,11 +204,7 @@
+>  EXTRAVER=
+>  if [ x$EXTRAVERSION != "x" ]
+>  then
+> -	if [ ${EXTRAVERSION:0:1} == "." ]; then
+> -		EXTRAVER=${EXTRAVERSION:1}
+> -	else
+> -		EXTRAVER=$EXTRAVERSION
+> -	fi
+> +	EXTRAVER=${EXTRAVERSION#.}
+>  	EXTRAVER=${EXTRAVER%%[[:punct:]]*}
+>  	#echo "$PNAME: changing EXTRAVERSION from $EXTRAVERSION to $EXTRAVER"
+>  fi
+> @@ -251,16 +249,16 @@
+>  do
+>      CURRENTFULLVERSION="$VERSION.$PATCHLEVEL.$SUBLEVEL"
+>      EXTRAVER=
+> -    if [ $stopvers == $CURRENTFULLVERSION ]; then
+> +    if [ $stopvers = $CURRENTFULLVERSION ]; then
+>          echo "Stopping at $CURRENTFULLVERSION base as requested."
+>          break
+>      fi
+>  
+> -    SUBLEVEL=$((SUBLEVEL + 1))
+> +    SUBLEVEL=$(($SUBLEVEL + 1))
+>      FULLVERSION="$VERSION.$PATCHLEVEL.$SUBLEVEL"
+>      #echo "#___ trying $FULLVERSION ___"
+>  
+> -    if [ $((SUBLEVEL)) -gt $((STOPSUBLEVEL)) ]; then
+> +    if [ $(($SUBLEVEL)) -gt $(($STOPSUBLEVEL)) ]; then
+>  	echo "Stopping since sublevel ($SUBLEVEL) is beyond stop-sublevel ($STOPSUBLEVEL)"
+>  	exit 1
+>      fi
+> @@ -297,7 +295,7 @@
+>  if [ x$gotac != x ]; then
+>    # Out great user wants the -ac patches
+>  	# They could have done -ac (get latest) or -acxx where xx=version they want
+> -	if [ $gotac == "-ac" ]; then
+> +	if [ $gotac = "-ac" ]; then
+>  	  # They want the latest version
+>  		HIGHESTPATCH=0
+>  		for PATCHNAMES in $patchdir/patch-${CURRENTFULLVERSION}-ac*\.*
+> -
+
+---
+~Randy
+desserts:  http://www.xenotime.net/linux/recipes/
