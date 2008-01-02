@@ -1,133 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758303AbYABUmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758978AbYABUmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758303AbYABUmk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 15:42:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756201AbYABUm2
+	id S1758978AbYABUmz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 15:42:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758202AbYABUmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 15:42:28 -0500
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:30000 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752073AbYABUm1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 15:42:27 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: Linux 2.6.23.12
-Date: Wed, 2 Jan 2008 13:42:23 -0700
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org,
-       Zhao Yakui <yakui.zhao@intel.com>, Li Shaohua <shaohua.li@intel.com>,
-       Thomas Renninger <trenn@suse.de>, Adam Belay <ambx1@neo.rr.com>,
-       Len Brown <lenb@kernel.org>
-References: <20071218224559.GA12696@kroah.com> <20071218224635.GB12696@kroah.com>
-In-Reply-To: <20071218224635.GB12696@kroah.com>
+	Wed, 2 Jan 2008 15:42:36 -0500
+Received: from tetsuo.zabbo.net ([207.173.201.20]:53438 "EHLO tetsuo.zabbo.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758151AbYABUme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 15:42:34 -0500
+Message-ID: <477BF72B.4000608@oracle.com>
+Date: Wed, 02 Jan 2008 12:42:19 -0800
+From: Zach Brown <zach.brown@oracle.com>
+User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Erez Zadok <ezk@cs.sunysb.edu>
+CC: linux-kernel@vger.kernel.org, ext3-users@redhat.com,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-fsdevel@vger.kernel.org,
+       Jan Kara <jack@suse.cz>
+Subject: Re: lockdep warning with LTP dio test (v2.6.24-rc6-125-g5356f66)
+References: <200712242302.lBON2O8s011190@agora.fsl.cs.sunysb.edu>
+In-Reply-To: <200712242302.lBON2O8s011190@agora.fsl.cs.sunysb.edu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801021342.23763.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The patch below was put in 2.6.23.12 as a fix for
-http://bugzilla.kernel.org/show_bug.cgi?id=9514.  It apparently
-does make 9514 go away, but only by coincidence.  There are a
-couple other ideas about fixing 9514.  My proposed patch is
-attached in the bugzilla.
+Erez Zadok wrote:
+> Setting: ltp-full-20071031, dio01 test on ext3 with Linus's latest tree.
+> Kernel w/ SMP, preemption, and lockdep configured.
 
-The .12 patch reduces the number of resources we reserve from
-24 to 8 ioport regions and from 12 to 4 mmio regions per PNP device.
-It also removes a warning about regions we ignore.
+This is a real lock ordering problem.  Thanks for reporting it.
 
-Obviously, we want to reserve ALL the regions for PNP devices,
-and Thomas is working on a patch for that (which I hope will be
-ready for 2.6.25).  But in the meantime, the .12 patch makes it
-more likely that we will have resource conflicts with PNP devices.
+The updating of atime inside sys_mmap() orders the mmap_sem in the vfs
+outside of the journal handle in ext3's inode dirtying:
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9630 appears to be
-such a conflict.
+> -> #1 (jbd_handle){--..}:
+>        [<c023068f>] __lock_acquire+0x9cc/0xb95
+>        [<c0230c2f>] lock_acquire+0x5f/0x78
+>        [<c029c7e9>] journal_start+0xee/0xf8
+>        [<c02959d6>] ext3_journal_start_sb+0x48/0x4a
+>        [<c029152b>] ext3_dirty_inode+0x27/0x6c
+>        [<c026f701>] __mark_inode_dirty+0x29/0x144
+>        [<c026817b>] touch_atime+0xb7/0xbc
+>        [<c023af6d>] generic_file_mmap+0x2d/0x42
+>        [<c024a5cc>] mmap_region+0x1e6/0x3b4
+>        [<c024aa6b>] do_mmap_pgoff+0x1fb/0x253
+>        [<c02067af>] sys_mmap2+0x9b/0xb5
+>        [<c020275e>] syscall_call+0x7/0xb
+>        [<ffffffff>] 0xffffffff
 
-I think the patch below should be removed from the stable series.
+ext3_direct_IO() orders the journal handle outside of the mmap_sem that
+dio_get_page() acquires to pin pages with get_user_pages():
 
-Bjorn
+> -> #0 (&mm->mmap_sem){----}:
+>        [<c023057f>] __lock_acquire+0x8bc/0xb95
+>        [<c0230c2f>] lock_acquire+0x5f/0x78
+>        [<c0397d4f>] down_read+0x3a/0x4c
+>        [<c02778a2>] dio_get_page+0x4e/0x15d
+>        [<c0278352>] __blockdev_direct_IO+0x431/0xa81
+>        [<c0291318>] ext3_direct_IO+0x10c/0x1a1
+>        [<c023c091>] generic_file_direct_IO+0x124/0x139
+>        [<c023c0fc>] generic_file_direct_write+0x56/0x11c
+>        [<c023ca15>] __generic_file_aio_write_nolock+0x33d/0x489
+>        [<c023cbb9>] generic_file_aio_write+0x58/0xb6
+>        [<c028d4e3>] ext3_file_write+0x27/0x99
+>        [<c0256d0f>] do_sync_write+0xc5/0x102
+>        [<c0257463>] vfs_write+0x90/0x119
+>        [<c0257a25>] sys_write+0x3d/0x61
+>        [<c02026d6>] sysenter_past_esp+0x5f/0xa5
+>        [<ffffffff>] 0xffffffff
 
-On Tuesday 18 December 2007 03:46:36 pm Greg Kroah-Hartman wrote:
-> diff --git a/Makefile b/Makefile
-> index ada10d5..96c3f02 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -1,7 +1,7 @@
->  VERSION = 2
->  PATCHLEVEL = 6
->  SUBLEVEL = 23
-> -EXTRAVERSION = .11
-> +EXTRAVERSION = .12
->  NAME = Arr Matey! A Hairy Bilge Rat!
->  
->  # *DOCUMENTATION*
-> diff --git a/drivers/pnp/pnpacpi/rsparser.c b/drivers/pnp/pnpacpi/rsparser.c
-> index 5abf5ea..0e3b8d0 100644
-> --- a/drivers/pnp/pnpacpi/rsparser.c
-> +++ b/drivers/pnp/pnpacpi/rsparser.c
-> @@ -82,11 +82,9 @@ static void pnpacpi_parse_allocated_irqresource(struct pnp_resource_table *res,
->  	while (!(res->irq_resource[i].flags & IORESOURCE_UNSET) &&
->  	       i < PNP_MAX_IRQ)
->  		i++;
-> -	if (i >= PNP_MAX_IRQ) {
-> -		printk(KERN_ERR "pnpacpi: exceeded the max number of IRQ "
-> -				"resources: %d \n", PNP_MAX_IRQ);
-> +	if (i >= PNP_MAX_IRQ)
->  		return;
-> -	}
-> +
->  	res->irq_resource[i].flags = IORESOURCE_IRQ;	// Also clears _UNSET flag
->  	res->irq_resource[i].flags |= irq_flags(triggering, polarity);
->  	irq = acpi_register_gsi(gsi, triggering, polarity);
-> @@ -165,9 +163,6 @@ static void pnpacpi_parse_allocated_dmaresource(struct pnp_resource_table *res,
->  		}
->  		res->dma_resource[i].start = dma;
->  		res->dma_resource[i].end = dma;
-> -	} else {
-> -		printk(KERN_ERR "pnpacpi: exceeded the max number of DMA "
-> -				"resources: %d \n", PNP_MAX_DMA);
->  	}
->  }
->  
-> @@ -189,9 +184,6 @@ static void pnpacpi_parse_allocated_ioresource(struct pnp_resource_table *res,
->  		}
->  		res->port_resource[i].start = io;
->  		res->port_resource[i].end = io + len - 1;
-> -	} else {
-> -		printk(KERN_ERR "pnpacpi: exceeded the max number of IO "
-> -				"resources: %d \n", PNP_MAX_PORT);
->  	}
->  }
->  
-> @@ -215,9 +207,6 @@ static void pnpacpi_parse_allocated_memresource(struct pnp_resource_table *res,
->  
->  		res->mem_resource[i].start = mem;
->  		res->mem_resource[i].end = mem + len - 1;
-> -	} else {
-> -		printk(KERN_ERR "pnpacpi: exceeded the max number of mem "
-> -				"resources: %d\n", PNP_MAX_MEM);
->  	}
->  }
->  
-> diff --git a/include/linux/pnp.h b/include/linux/pnp.h
-> index 62decab..16b46aa 100644
-> --- a/include/linux/pnp.h
-> +++ b/include/linux/pnp.h
-> @@ -13,8 +13,8 @@
->  #include <linux/errno.h>
->  #include <linux/mod_devicetable.h>
->  
-> -#define PNP_MAX_PORT		24
-> -#define PNP_MAX_MEM		12
-> +#define PNP_MAX_PORT		8
-> +#define PNP_MAX_MEM		4
->  #define PNP_MAX_IRQ		2
->  #define PNP_MAX_DMA		2
->  #define PNP_NAME_LEN		50
+Two fixes come to mind:
+
+1) use something like Peter's ->mmap_prepare() to update atime before
+acquiring the mmap_sem.  ( http://lkml.org/lkml/2007/11/11/97 ).  I
+don't know if this would leave more paths which do a journal_start()
+while holding the mmap_sem.
+
+2) rework ext3's dio to only hold the jbd handle in ext3_get_block().
+Chris has a patch for this kicking around somewhere but I'm told it has
+problems exposing old blocks in ordered data mode.
+
+Does anyone have preferences?  I could go either way.  I certainly don't
+like the idea of journal handles being held across the entirety of
+fs/direct-io.c.  It's yet another case of O_DIRECT differing wildly from
+the buffered path :(.
+
+- z
