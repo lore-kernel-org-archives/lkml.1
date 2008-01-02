@@ -1,505 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759353AbYABBCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759461AbYABBD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759353AbYABBCq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 20:02:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757600AbYABBCi
+	id S1759461AbYABBD0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 20:03:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757600AbYABBDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 20:02:38 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:33061 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755248AbYABBCh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 20:02:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=aVozygquLtTK1nqkplGJYAdTEORYheBv4kmyetsGmrlKFPvRO+UXPZPNKWbeT1BLOBMqkc0YBtbjyYc7m1m3B6vXOxXVlAaKBHzdBThj9bK6NbaFXcEGD4tipFOGM/5TTHM8+pxiq5K+LYBtfR0fPNohvgKSVsbXwfLweSvwM+U=
-Date: Tue, 1 Jan 2008 17:05:49 -0800
-From: "Carlos R. Mafra" <crmafra@gmail.com>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix errors detected by checkpatch.pl on nmi_int.c
-Message-ID: <20080102010549.GA23991@localhost.physics.ucla.edu>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="GvXjxJ+pjyke8COw"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 1 Jan 2008 20:03:17 -0500
+Received: from tim.rpsys.net ([194.106.48.114]:54347 "EHLO tim.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756584AbYABBDQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 20:03:16 -0500
+Subject: [RFC PATCH] Add input event to APM event bridge for embedded
+	devices
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
+Content-Type: text/plain
+Date: Wed, 02 Jan 2008 01:03:09 +0000
+Message-Id: <1199235789.4653.62.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch adds a very simple input power event to APM user suspend
+event bridge. Its currently only works for the systems using the
+emulated APM driver but could easily be extended to work with anything
+with a true APM BIOS too.
 
---GvXjxJ+pjyke8COw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+This covers a standard embedded system need which is to suspend when the
+user presses a suspend button. It leaves options open to system
+integrators to ignore (or unload) this code and implement their own more
+complex event handling system.
 
-This patch fixes most errors detected by checkpatch.pl.
+Its hidden behind the EMBEDDED Kconfig option since its only likely to
+be of use to embedded style systems. It can be built as a module so the
+"hardcoded" policy can easily be removed from the kernel at runtime if
+desired too.
 
-                                     errors   lines of code   errors/KLOC
-arch/x86/oprofile/nmi_int.c (after)       1             461           2.1
-arch/x86/oprofile/nmi_int.c (before)     60             477         125.7
+Signed-off-by: Richard Purdie <rpurdie@rpsys.net>
 
-No code changed.
+---
 
-size:
-   text    data     bss     dec     hex filename
-   2675     264     472    3411     d53 nmi_int.o.after
-   2675     264     472    3411     d53 nmi_int.o.before
-   
-md5sum:
-  847aea0cc68fe1a2b5e7019439f3b4dd  nmi_int.o.after
-  847aea0cc68fe1a2b5e7019439f3b4dd  nmi_int.o.before
-  
-Signed-off-by: Carlos R. Mafra <crmafra@gmail.com>
+ drivers/input/Kconfig     |   12 ++++
+ drivers/input/Makefile    |    1 
+ drivers/input/apm-power.c |  125 ++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 138 insertions(+)
 
---GvXjxJ+pjyke8COw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="nmi_int.c_cleanup.patch"
-
-diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
-index 2d0eeac..9510b08 100644
---- a/arch/x86/oprofile/nmi_int.c
-+++ b/arch/x86/oprofile/nmi_int.c
-@@ -18,11 +18,11 @@
- #include <asm/nmi.h>
- #include <asm/msr.h>
- #include <asm/apic.h>
-- 
+Index: kernel-hacking/drivers/input/Kconfig
+===================================================================
+--- kernel-hacking.orig/drivers/input/Kconfig	2008-01-01 23:50:13.000000000 +0000
++++ kernel-hacking/drivers/input/Kconfig	2008-01-02 00:45:33.000000000 +0000
+@@ -137,6 +137,18 @@ config INPUT_EVBUG
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called evbug.
+ 
++config INPUT_APMPOWER
++	tristate "Input Power Event -> APM Bridge" if EMBEDDED
++	depends on INPUT && APM_EMULATION
++	---help---
++	  Say Y here if you want suspend key events to trigger a user
++	  requested suspend through APM. This is useful on embedded
++	  systems where such behviour is desired without userspace
++	  interaction. If unsure, say N.
 +
- #include "op_counter.h"
- #include "op_x86_model.h"
- 
--static struct op_x86_model_spec const * model;
-+static struct op_x86_model_spec const *model;
- static struct op_msrs cpu_msrs[NR_CPUS];
- static unsigned long saved_lvtpc[NR_CPUS];
- 
-@@ -41,7 +41,6 @@ static int nmi_suspend(struct sys_device *dev, pm_message_t state)
- 	return 0;
- }
- 
--
- static int nmi_resume(struct sys_device *dev)
- {
- 	if (nmi_enabled == 1)
-@@ -49,29 +48,27 @@ static int nmi_resume(struct sys_device *dev)
- 	return 0;
- }
- 
--
- static struct sysdev_class oprofile_sysclass = {
- 	set_kset_name("oprofile"),
- 	.resume		= nmi_resume,
- 	.suspend	= nmi_suspend,
- };
- 
--
- static struct sys_device device_oprofile = {
- 	.id	= 0,
- 	.cls	= &oprofile_sysclass,
- };
- 
--
- static int __init init_sysfs(void)
- {
- 	int error;
--	if (!(error = sysdev_class_register(&oprofile_sysclass)))
++	  To compile this driver as a module, choose M here: the
++	  module will be called apm-power.
 +
-+	error = sysdev_class_register(&oprofile_sysclass);
-+	if (!error)
- 		error = sysdev_register(&device_oprofile);
- 	return error;
- }
+ comment "Input Device Drivers"
  
--
- static void exit_sysfs(void)
- {
- 	sysdev_unregister(&device_oprofile);
-@@ -90,7 +87,7 @@ static int profile_exceptions_notify(struct notifier_block *self,
- 	int ret = NOTIFY_DONE;
- 	int cpu = smp_processor_id();
+ source "drivers/input/keyboard/Kconfig"
+Index: kernel-hacking/drivers/input/Makefile
+===================================================================
+--- kernel-hacking.orig/drivers/input/Makefile	2008-01-01 23:50:13.000000000 +0000
++++ kernel-hacking/drivers/input/Makefile	2008-01-02 00:39:03.000000000 +0000
+@@ -22,3 +22,4 @@ obj-$(CONFIG_INPUT_TABLET)	+= tablet/
+ obj-$(CONFIG_INPUT_TOUCHSCREEN)	+= touchscreen/
+ obj-$(CONFIG_INPUT_MISC)	+= misc/
  
--	switch(val) {
-+	switch (val) {
- 	case DIE_NMI:
- 		if (model->check_ctrs(args->regs, &cpu_msrs[cpu]))
- 			ret = NOTIFY_STOP;
-@@ -101,24 +98,24 @@ static int profile_exceptions_notify(struct notifier_block *self,
- 	return ret;
- }
- 
--static void nmi_cpu_save_registers(struct op_msrs * msrs)
-+static void nmi_cpu_save_registers(struct op_msrs *msrs)
- {
- 	unsigned int const nr_ctrs = model->num_counters;
--	unsigned int const nr_ctrls = model->num_controls; 
--	struct op_msr * counters = msrs->counters;
--	struct op_msr * controls = msrs->controls;
-+	unsigned int const nr_ctrls = model->num_controls;
-+	struct op_msr *counters = msrs->counters;
-+	struct op_msr *controls = msrs->controls;
- 	unsigned int i;
- 
- 	for (i = 0; i < nr_ctrs; ++i) {
--		if (counters[i].addr){
-+		if (counters[i].addr) {
- 			rdmsr(counters[i].addr,
- 				counters[i].saved.low,
- 				counters[i].saved.high);
- 		}
- 	}
-- 
++obj-$(CONFIG_INPUT_APMPOWER)	+= apm-power.o
+Index: kernel-hacking/drivers/input/apm-power.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ kernel-hacking/drivers/input/apm-power.c	2008-01-02 00:43:42.000000000 +0000
+@@ -0,0 +1,125 @@
++/*
++ *  Input Power Event -> APM Bridge
++ *
++ *  Copyright (c) 2007 Richard Purdie
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License version 2 as
++ *  published by the Free Software Foundation.
++ *
++ */
 +
- 	for (i = 0; i < nr_ctrls; ++i) {
--		if (controls[i].addr){
-+		if (controls[i].addr) {
- 			rdmsr(controls[i].addr,
- 				controls[i].saved.low,
- 				controls[i].saved.high);
-@@ -126,15 +123,13 @@ static void nmi_cpu_save_registers(struct op_msrs * msrs)
- 	}
- }
- 
--
--static void nmi_save_registers(void * dummy)
-+static void nmi_save_registers(void *dummy)
- {
- 	int cpu = smp_processor_id();
--	struct op_msrs * msrs = &cpu_msrs[cpu];
-+	struct op_msrs *msrs = &cpu_msrs[cpu];
- 	nmi_cpu_save_registers(msrs);
- }
- 
--
- static void free_msrs(void)
- {
- 	int i;
-@@ -146,7 +141,6 @@ static void free_msrs(void)
- 	}
- }
- 
--
- static int allocate_msrs(void)
- {
- 	int success = 1;
-@@ -173,11 +167,10 @@ static int allocate_msrs(void)
- 	return success;
- }
- 
--
--static void nmi_cpu_setup(void * dummy)
-+static void nmi_cpu_setup(void *dummy)
- {
- 	int cpu = smp_processor_id();
--	struct op_msrs * msrs = &cpu_msrs[cpu];
-+	struct op_msrs *msrs = &cpu_msrs[cpu];
- 	spin_lock(&oprofilefs_lock);
- 	model->setup_ctrs(msrs);
- 	spin_unlock(&oprofilefs_lock);
-@@ -193,13 +186,14 @@ static struct notifier_block profile_exceptions_nb = {
- 
- static int nmi_setup(void)
- {
--	int err=0;
-+	int err = 0;
- 	int cpu;
- 
- 	if (!allocate_msrs())
- 		return -ENOMEM;
- 
--	if ((err = register_die_notifier(&profile_exceptions_nb))){
-+	err = register_die_notifier(&profile_exceptions_nb);
-+	if (err) {
- 		free_msrs();
- 		return err;
- 	}
-@@ -210,7 +204,7 @@ static int nmi_setup(void)
- 
- 	/* Assume saved/restored counters are the same on all CPUs */
- 	model->fill_in_addresses(&cpu_msrs[0]);
--	for_each_possible_cpu (cpu) {
-+	for_each_possible_cpu(cpu) {
- 		if (cpu != 0) {
- 			memcpy(cpu_msrs[cpu].counters, cpu_msrs[0].counters,
- 				sizeof(struct op_msr) * model->num_counters);
-@@ -226,39 +220,37 @@ static int nmi_setup(void)
- 	return 0;
- }
- 
--
--static void nmi_restore_registers(struct op_msrs * msrs)
-+static void nmi_restore_registers(struct op_msrs *msrs)
- {
- 	unsigned int const nr_ctrs = model->num_counters;
--	unsigned int const nr_ctrls = model->num_controls; 
--	struct op_msr * counters = msrs->counters;
--	struct op_msr * controls = msrs->controls;
-+	unsigned int const nr_ctrls = model->num_controls;
-+	struct op_msr *counters = msrs->counters;
-+	struct op_msr *controls = msrs->controls;
- 	unsigned int i;
- 
- 	for (i = 0; i < nr_ctrls; ++i) {
--		if (controls[i].addr){
-+		if (controls[i].addr) {
- 			wrmsr(controls[i].addr,
- 				controls[i].saved.low,
- 				controls[i].saved.high);
- 		}
- 	}
-- 
++#include <linux/module.h>
++#include <linux/input.h>
++#include <linux/slab.h>
++#include <linux/init.h>
++#include <linux/tty.h>
++#include <linux/delay.h>
++#include <linux/pm.h>
++#include <linux/apm-emulation.h>
 +
- 	for (i = 0; i < nr_ctrs; ++i) {
--		if (counters[i].addr){
-+		if (counters[i].addr) {
- 			wrmsr(counters[i].addr,
- 				counters[i].saved.low,
- 				counters[i].saved.high);
- 		}
- 	}
- }
-- 
- 
--static void nmi_cpu_shutdown(void * dummy)
-+static void nmi_cpu_shutdown(void *dummy)
- {
- 	unsigned int v;
- 	int cpu = smp_processor_id();
--	struct op_msrs * msrs = &cpu_msrs[cpu];
-- 
-+	struct op_msrs *msrs = &cpu_msrs[cpu];
++static void system_power_event(unsigned int keycode)
++{
++	switch (keycode) {
++		case KEY_SUSPEND:
++			apm_queue_event(APM_USER_SUSPEND);
 +
- 	/* restoring APIC_LVTPC can trigger an apic error because the delivery
- 	 * mode and vector nr combination can be illegal. That's by design: on
- 	 * power on apic lvt contain a zero vector nr which are legal only for
-@@ -271,7 +263,6 @@ static void nmi_cpu_shutdown(void * dummy)
- 	nmi_restore_registers(msrs);
- }
- 
-- 
- static void nmi_shutdown(void)
- {
- 	nmi_enabled = 0;
-@@ -281,45 +272,40 @@ static void nmi_shutdown(void)
- 	free_msrs();
- }
- 
-- 
--static void nmi_cpu_start(void * dummy)
-+static void nmi_cpu_start(void *dummy)
- {
--	struct op_msrs const * msrs = &cpu_msrs[smp_processor_id()];
-+	struct op_msrs const *msrs = &cpu_msrs[smp_processor_id()];
- 	model->start(msrs);
- }
-- 
- 
- static int nmi_start(void)
- {
- 	on_each_cpu(nmi_cpu_start, NULL, 0, 1);
- 	return 0;
- }
-- 
-- 
--static void nmi_cpu_stop(void * dummy)
-+
-+static void nmi_cpu_stop(void *dummy)
- {
--	struct op_msrs const * msrs = &cpu_msrs[smp_processor_id()];
-+	struct op_msrs const *msrs = &cpu_msrs[smp_processor_id()];
- 	model->stop(msrs);
- }
-- 
-- 
-+
- static void nmi_stop(void)
- {
- 	on_each_cpu(nmi_cpu_stop, NULL, 0, 1);
- }
- 
--
- struct op_counter_config counter_config[OP_MAX_COUNTER];
- 
--static int nmi_create_files(struct super_block * sb, struct dentry * root)
-+static int nmi_create_files(struct super_block *sb, struct dentry *root)
- {
- 	unsigned int i;
- 
- 	for (i = 0; i < model->num_counters; ++i) {
--		struct dentry * dir;
-+		struct dentry *dir;
- 		char buf[4];
-- 
-- 		/* quick little hack to _not_ expose a counter if it is not
-+
-+		/* quick little hack to _not_ expose a counter if it is not
- 		 * available for use.  This should protect userspace app.
- 		 * NOTE:  assumes 1:1 mapping here (that counters are organized
- 		 *        sequentially in their struct assignment).
-@@ -329,21 +315,21 @@ static int nmi_create_files(struct super_block * sb, struct dentry * root)
- 
- 		snprintf(buf,  sizeof(buf), "%d", i);
- 		dir = oprofilefs_mkdir(sb, root, buf);
--		oprofilefs_create_ulong(sb, dir, "enabled", &counter_config[i].enabled); 
--		oprofilefs_create_ulong(sb, dir, "event", &counter_config[i].event); 
--		oprofilefs_create_ulong(sb, dir, "count", &counter_config[i].count); 
--		oprofilefs_create_ulong(sb, dir, "unit_mask", &counter_config[i].unit_mask); 
--		oprofilefs_create_ulong(sb, dir, "kernel", &counter_config[i].kernel); 
--		oprofilefs_create_ulong(sb, dir, "user", &counter_config[i].user); 
-+		oprofilefs_create_ulong(sb, dir, "enabled", &counter_config[i].enabled);
-+		oprofilefs_create_ulong(sb, dir, "event", &counter_config[i].event);
-+		oprofilefs_create_ulong(sb, dir, "count", &counter_config[i].count);
-+		oprofilefs_create_ulong(sb, dir, "unit_mask", &counter_config[i].unit_mask);
-+		oprofilefs_create_ulong(sb, dir, "kernel", &counter_config[i].kernel);
-+		oprofilefs_create_ulong(sb, dir, "user", &counter_config[i].user);
- 	}
- 
- 	return 0;
- }
-- 
-+
- static int p4force;
- module_param(p4force, int, 0);
-- 
--static int __init p4_init(char ** cpu_type)
-+
-+static int __init p4_init(char **cpu_type)
- {
- 	__u8 cpu_model = boot_cpu_data.x86_model;
- 
-@@ -356,15 +342,15 @@ static int __init p4_init(char ** cpu_type)
- 	return 1;
- #else
- 	switch (smp_num_siblings) {
--		case 1:
--			*cpu_type = "i386/p4";
--			model = &op_p4_spec;
--			return 1;
--
--		case 2:
--			*cpu_type = "i386/p4-ht";
--			model = &op_p4_ht2_spec;
--			return 1;
-+	case 1:
-+		*cpu_type = "i386/p4";
-+		model = &op_p4_spec;
-+		return 1;
-+
-+	case 2:
-+		*cpu_type = "i386/p4-ht";
-+		model = &op_p4_ht2_spec;
-+		return 1;
- 	}
- #endif
- 
-@@ -373,8 +359,7 @@ static int __init p4_init(char ** cpu_type)
- 	return 0;
- }
- 
--
--static int __init ppro_init(char ** cpu_type)
-+static int __init ppro_init(char **cpu_type)
- {
- 	__u8 cpu_model = boot_cpu_data.x86_model;
- 
-@@ -409,52 +394,52 @@ int __init op_nmi_init(struct oprofile_operations *ops)
- 
- 	if (!cpu_has_apic)
- 		return -ENODEV;
-- 
-+
- 	switch (vendor) {
--		case X86_VENDOR_AMD:
--			/* Needs to be at least an Athlon (or hammer in 32bit mode) */
-+	case X86_VENDOR_AMD:
-+		/* Needs to be at least an Athlon (or hammer in 32bit mode) */
- 
--			switch (family) {
--			default:
-+		switch (family) {
++			printk(KERN_INFO "apm-power: Requesting system suspend...\n");
++			break;
 +		default:
-+			return -ENODEV;
-+		case 6:
-+			model = &op_athlon_spec;
-+			cpu_type = "i386/athlon";
 +			break;
-+		case 0xf:
-+			model = &op_athlon_spec;
-+			/* Actually it could be i386/hammer too, but give
-+			 user space an consistent name. */
-+			cpu_type = "x86-64/hammer";
++	}
++}
++
++static void apmpower_event(struct input_handle *handle, unsigned int type,
++		        unsigned int code, int value)
++{
++	/* only react on key down events */
++	if (value != 1)
++		return;
++
++	switch (type) {
++		case EV_PWR:
++			system_power_event(code);
 +			break;
-+		case 0x10:
-+			model = &op_athlon_spec;
-+			cpu_type = "x86-64/family10";
++
++		default:
 +			break;
-+		}
-+		break;
++	}
++}
 +
-+	case X86_VENDOR_INTEL:
-+		switch (family) {
-+			/* Pentium IV */
-+		case 0xf:
-+			if (!p4_init(&cpu_type))
- 				return -ENODEV;
--			case 6:
--				model = &op_athlon_spec;
--				cpu_type = "i386/athlon";
--				break;
--			case 0xf:
--				model = &op_athlon_spec;
--				/* Actually it could be i386/hammer too, but give
--				   user space an consistent name. */
--				cpu_type = "x86-64/hammer";
--				break;
--			case 0x10:
--				model = &op_athlon_spec;
--				cpu_type = "x86-64/family10";
--				break;
--			}
- 			break;
-- 
--		case X86_VENDOR_INTEL:
--			switch (family) {
--				/* Pentium IV */
--				case 0xf:
--					if (!p4_init(&cpu_type))
--						return -ENODEV;
--					break;
--
--				/* A P6-class processor */
--				case 6:
--					if (!ppro_init(&cpu_type))
--						return -ENODEV;
--					break;
--
--				default:
--					return -ENODEV;
--			}
++static int apmpower_connect(struct input_handler *handler,
++					  struct input_dev *dev,
++					  const struct input_device_id *id)
++{
++	struct input_handle *handle;
++	int err;
 +
-+			/* A P6-class processor */
-+		case 6:
-+			if (!ppro_init(&cpu_type))
-+				return -ENODEV;
- 			break;
- 
- 		default:
- 			return -ENODEV;
-+		}
-+		break;
++	if (!(handle = kzalloc(sizeof(struct input_handle), GFP_KERNEL)))
++		return -ENOMEM;
 +
-+	default:
-+		return -ENODEV;
- 	}
- 
- 	init_sysfs();
-@@ -469,7 +454,6 @@ int __init op_nmi_init(struct oprofile_operations *ops)
- 	return 0;
- }
- 
--
- void op_nmi_exit(void)
- {
- 	if (using_nmi)
++	handle->dev = dev;
++	handle->handler = handler;
++	handle->name = "apm-power";
++
++	handler->private = handle;
++	err = input_register_handle(handle);
++	if (err < 0) {
++		printk(KERN_ERR "apm-power.c: Failed to register input power handler\n");
++		kfree(handle);
++		return err;
++	}
++
++	err = input_open_device(handle);
++	if (err < 0) {
++		printk(KERN_ERR "apm-power.c: Failed to open input power device\n");
++		input_unregister_handle(handle);
++		kfree(handle);
++		return err;
++	}
++
++	return 0;
++}
++
++static void apmpower_disconnect(struct input_handle *handler)
++{
++	struct input_handle *handle = handler->private;
++
++	input_close_device(handle);
++	kfree(handle);
++}
++
++static const struct input_device_id apmpower_ids[] = {
++	{
++		.flags = INPUT_DEVICE_ID_MATCH_EVBIT,
++		.evbit = { BIT_MASK(EV_PWR) },
++	},
++	{ },
++};
++
++MODULE_DEVICE_TABLE(input, apmpower_ids);
++
++static struct input_handler apmpower_handler = {
++	.event =	apmpower_event,
++	.connect =	apmpower_connect,
++	.disconnect =	apmpower_disconnect,
++	.name =		"apm-power",
++	.id_table =	apmpower_ids,
++};
++
++static int __init apmpower_init(void)
++{
++	return input_register_handler(&apmpower_handler);
++}
++
++static void __exit apmpower_exit(void)
++{
++	input_unregister_handler(&apmpower_handler);
++}
++
++module_init(apmpower_init);
++module_exit(apmpower_exit);
++
++MODULE_AUTHOR("Richard Purdie <rpurdie@rpsys.net>");
++MODULE_DESCRIPTION("Input Power Event -> APM Bridge");
++MODULE_LICENSE("GPL");
 
---GvXjxJ+pjyke8COw--
