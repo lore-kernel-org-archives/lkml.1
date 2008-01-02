@@ -1,76 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbYABUqL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759237AbYABUrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755251AbYABUqL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 15:46:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754704AbYABUpp
+	id S1759237AbYABUrn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 15:47:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbYABUrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 15:45:45 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33827 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754351AbYABUpo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 15:45:44 -0500
-Date: Wed, 2 Jan 2008 12:45:43 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, htejun@gmail.com,
-       gregkh@suse.de, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, maneesh@linux.vnet.ibm.com,
-       lkml <linux-kernel@vger.kernel.org>, stable@kernel.org,
-       linux-mm@kvack.org
-Subject: Re: 2.6.22-stable causes oomkiller to be invoked
-In-Reply-To: <20071228101109.GB5083@linux.vnet.ibm.com>
-Message-ID: <Pine.LNX.4.64.0801021237330.21526@schroedinger.engr.sgi.com>
-References: <20071214150533.aa30efd4.akpm@linux-foundation.org>
- <20071215035200.GA22082@linux.vnet.ibm.com> <20071214220030.325f82b8.akpm@linux-foundation.org>
- <20071215104434.GA26325@linux.vnet.ibm.com> <20071217045904.GB31386@linux.vnet.ibm.com>
- <Pine.LNX.4.64.0712171143280.12871@schroedinger.engr.sgi.com>
- <20071217120720.e078194b.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0712171222470.29500@schroedinger.engr.sgi.com>
- <20071221044508.GA11996@linux.vnet.ibm.com>
- <Pine.LNX.4.64.0712261258050.16862@schroedinger.engr.sgi.com>
- <20071228101109.GB5083@linux.vnet.ibm.com>
+	Wed, 2 Jan 2008 15:47:36 -0500
+Received: from mx2-2.mail.ru ([194.67.23.122]:28824 "EHLO mx2.mail.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753307AbYABUrf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 15:47:35 -0500
+Date: Wed, 2 Jan 2008 23:47:04 +0300
+From: Evgeniy Dushistov <dushistov@mail.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Steven <stevenaaus@yahoo.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH]: ufs: fix symlink creation on ufs2
+Message-ID: <20080102204649.GA16373@rain>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Steven <stevenaaus@yahoo.com>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Dec 2007, Dhaval Giani wrote:
+If create symlink on UFS2 filesystem under Linux,
+it looks wrong under other OSes, because of max symlink length
+field was not initialized properly, and data blocks were not
+used to save short symlink names.
 
-> we managed to get your required information. Last 10,000 lines are
-> attached (The uncompressed file comes to 500 kb).
-> 
-> Hope it helps.
+Signed-off-by: Evgeniy Dushistov <dushistov@mail.ru>
+Cc: Steven <stevenaaus@yahoo.com>
 
-Somehow the nr_pages field is truncated to 16 bit and it 
-seems that there are sign issues there? We are wrapping around....
+---
 
- q->nr_pages is 36877, min_pages is 25 ----> swapper
- q->nr_pages is 46266, min_pages is 25 ----> bash
- q->nr_pages is 36877, min_pages is 25 ----> swapper
- q->nr_pages is 36877, min_pages is 25 ----> swapper
- q->nr_pages is 46265, min_pages is 25 ----> bash
- q->nr_pages is 46265, min_pages is 25 ----> cat
- q->nr_pages is 36877, min_pages is 25 ----> swapper
- q->nr_pages is 46265, min_pages is 25 ----> cat
- q->nr_pages is 36877, min_pages is 25 ----> swapper
- q->nr_pages is 0, min_pages is 25 ----> swapper
- q->nr_pages is 36877, min_pages is 25 ----> swapper
- q->nr_pages is 36877, min_pages is 25 ----> swapper
- q->nr_pages is 46265, min_pages is 25 ----> cat
-
-
-An int is just a 16 bit field on i386? I thought it was 32 bits? Or is 
-the result due to the way that systemtap works?
-
-Could you post the neighboring per cpu variables to quicklist (look at the 
-System.map). Maybe somehow we corrupt the nr_pages and page contents.
-
-Also could you do another systemtap and also print out the current 
-processor? Maybe nr_pages gets only corrupted on a specific processor. I 
-see a zero there and sometimes other sane values.
-
-
+diff --git a/fs/ufs/super.c b/fs/ufs/super.c
+index 0072cb3..14605c0 100644
+--- a/fs/ufs/super.c
++++ b/fs/ufs/super.c
+@@ -131,6 +131,8 @@ static void ufs_print_super_stuff(struct super_block *sb,
+ 		printk(KERN_INFO"  cs_nffree(Num of free frags): %llu\n",
+ 		       (unsigned long long)
+ 		       fs64_to_cpu(sb, usb3->fs_un1.fs_u2.cs_nffree));
++		printk(KERN_INFO"  fs_maxsymlinklen: %u\n",
++		       usb3->fs_un2.fs_44.fs_maxsymlinklen);
+ 	} else {
+ 		printk(" sblkno:      %u\n", fs32_to_cpu(sb, usb1->fs_sblkno));
+ 		printk(" cblkno:      %u\n", fs32_to_cpu(sb, usb1->fs_cblkno));
+@@ -1060,8 +1062,8 @@ magic_found:
+ 	uspi->s_bpf = uspi->s_fsize << 3;
+ 	uspi->s_bpfshift = uspi->s_fshift + 3;
+ 	uspi->s_bpfmask = uspi->s_bpf - 1;
+-	if ((sbi->s_mount_opt & UFS_MOUNT_UFSTYPE) ==
+-	    UFS_MOUNT_UFSTYPE_44BSD)
++	if ((sbi->s_mount_opt & UFS_MOUNT_UFSTYPE) == UFS_MOUNT_UFSTYPE_44BSD ||
++	    (sbi->s_mount_opt & UFS_MOUNT_UFSTYPE) == UFS_MOUNT_UFSTYPE_UFS2)
+ 		uspi->s_maxsymlinklen =
+ 		    fs32_to_cpu(sb, usb3->fs_un2.fs_44.fs_maxsymlinklen);
+ 
+-- 
+/Evgeniy
 
