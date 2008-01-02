@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759919AbYABVeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbYABVmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759919AbYABVeg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 16:34:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567AbYABVe3
+	id S1755416AbYABVmu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 16:42:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbYABVmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 16:34:29 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48126 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752095AbYABVe2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 16:34:28 -0500
-Date: Wed, 2 Jan 2008 22:33:31 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Mike Travis <travis@sgi.com>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       tglx@linutronix.de, mingo@redhat.com, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 05/10] x86_64: Use generic percpu
-Message-ID: <20080102213331.GA14664@elte.hu>
-References: <20071228001046.854702000@sgi.com> <20071228001047.556634000@sgi.com> <200712281354.52453.ak@suse.de> <47757311.5050503@sgi.com> <20071230141829.GA28415@elte.hu> <477916ED.8010602@sgi.com> <47792295.8070001@sgi.com> <20080101191758.GA14045@elte.hu> <Pine.LNX.4.64.0801021302530.22538@schroedinger.engr.sgi.com>
+	Wed, 2 Jan 2008 16:42:42 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42922 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751794AbYABVml (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 16:42:41 -0500
+Date: Wed, 2 Jan 2008 13:42:04 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       davem@davemloft.net, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Use __u64 in aligned_u64's definition
+In-Reply-To: <Pine.LNX.4.64.0801022225460.14900@fbirervta.pbzchgretzou.qr>
+Message-ID: <alpine.LFD.1.00.0801021341070.3010@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0801022135500.14900@fbirervta.pbzchgretzou.qr> <alpine.LFD.1.00.0801021251040.32517@woody.linux-foundation.org> <Pine.LNX.4.64.0801022225460.14900@fbirervta.pbzchgretzou.qr>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801021302530.22538@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Christoph Lameter <clameter@sgi.com> wrote:
 
-> On Tue, 1 Jan 2008, Ingo Molnar wrote:
-> 
-> > FYI, i tried your patchset on 2.6.24-rc6+x86.git, and randconfig testing 
-> > found a faulty 32-bit config below - the bootup would spontaneously 
-> > reboot shortly after hitting user-space. (which suggests a triple fault) 
-> > No log messages on the serial console.
-> 
-> The triple fault does not occur without the patchset?
+On Wed, 2 Jan 2008, Jan Engelhardt wrote:
+>
+> A cleanup. Or perhaps a precautionary change, should unsigned long
+> long ever become something that is not 64-bit. It was intended for
+> 2.6.25 actually. You don't take patches this early, do you?
 
-correct.
+Yeah, no, I don't take patches early. I've considered setting up another 
+branch for early patches, but decided that I'm (a) lazy and (b) better off 
+encouraging people in the late -rc timeframe to just concentrate on the 
+-rc's, not the next version.
 
-	Ingo
+		Linus
