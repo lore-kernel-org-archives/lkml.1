@@ -1,159 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759754AbYABX0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbYABX0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759754AbYABX0Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 18:26:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755224AbYABXWi
+	id S1756428AbYABX0m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 18:26:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758085AbYABXWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 18:22:38 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49868 "EHLO mx1.redhat.com"
+	Wed, 2 Jan 2008 18:22:39 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:49867 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755060AbYABXWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755045AbYABXWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 2 Jan 2008 18:22:17 -0500
-Message-Id: <20080102224154.700695350@redhat.com>
-References: <20080102224144.885671949@redhat.com>
+Message-Id: <20080102224144.885671949@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 02 Jan 2008 17:41:55 -0500
+Date: Wed, 02 Jan 2008 17:41:44 -0500
 From: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org, lee.schermerhorn@hp.com
-Subject: [patch 11/19] Non-reclaimable page statistics
-Content-Disposition: inline; filename=noreclaim-01.2-report-nonreclaimable-memory.patch
+Subject: [patch 00/19] VM pageout scalability improvements
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-V2 -> V3:
-+ rebase to 23-mm1 atop RvR's split LRU series
+On large memory systems, the VM can spend way too much time scanning
+through pages that it cannot (or should not) evict from memory. Not
+only does it use up CPU time, but it also provokes lock contention
+and can leave large systems under memory presure in a catatonic state.
 
-V1 -> V2:
-	no changes
+Against 2.6.24-rc6-mm1
 
-Report non-reclaimable pages per zone and system wide.
+This patch series improves VM scalability by:
 
-Note:  may want to track/report some specific reasons for 
-nonreclaimability for deciding when to splice the noreclaim
-lists back to the normal lru.  That will be tricky,
-especially in shrink_active_list(), where we'd need someplace
-to save the per page reason for non-reclaimability until the
-pages are dumped back onto the noreclaim list from the pagevec.
+1) making the locking a little more scalable
 
-Note:  my tests indicate that NR_NORECLAIM and probably the
-other LRU stats aren't being maintained properly--especially
-with large amounts of mlocked memory and the mlock patch in
-this series installed.  Can't be sure of this, as I don't 
-know why the pages are on the noreclaim list. Needs further
-investigation.
+2) putting filesystem backed, swap backed and non-reclaimable pages
+   onto their own LRUs, so the system only scans the pages that it
+   can/should evict from memory
 
-Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
+3) switching to SEQ replacement for the anonymous LRUs, so the
+   number of pages that need to be scanned when the system
+   starts swapping is bound to a reasonable number
 
-Index: linux-2.6.24-rc6-mm1/mm/page_alloc.c
-===================================================================
---- linux-2.6.24-rc6-mm1.orig/mm/page_alloc.c	2008-01-02 12:37:58.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/mm/page_alloc.c	2008-01-02 12:38:03.000000000 -0500
-@@ -1899,12 +1899,20 @@ void show_free_areas(void)
- 	}
- 
- 	printk("Active_anon:%lu active_file:%lu inactive_anon%lu\n"
--		" inactive_file:%lu dirty:%lu writeback:%lu unstable:%lu\n"
-+		" inactive_file:%lu"
-+//TODO:  check/adjust line lengths
-+#ifdef CONFIG_NORECLAIM
-+		" noreclaim:%lu"
-+#endif
-+		" dirty:%lu writeback:%lu unstable:%lu\n"
- 		" free:%lu slab:%lu mapped:%lu pagetables:%lu bounce:%lu\n",
- 		global_page_state(NR_ACTIVE_ANON),
- 		global_page_state(NR_ACTIVE_FILE),
- 		global_page_state(NR_INACTIVE_ANON),
- 		global_page_state(NR_INACTIVE_FILE),
-+#ifdef CONFIG_NORECLAIM
-+		global_page_state(NR_NORECLAIM),
-+#endif
- 		global_page_state(NR_FILE_DIRTY),
- 		global_page_state(NR_WRITEBACK),
- 		global_page_state(NR_UNSTABLE_NFS),
-@@ -1931,6 +1939,9 @@ void show_free_areas(void)
- 			" inactive_anon:%lukB"
- 			" active_file:%lukB"
- 			" inactive_file:%lukB"
-+#ifdef CONFIG_NORECLAIM
-+			" noreclaim:%lukB"
-+#endif
- 			" present:%lukB"
- 			" pages_scanned:%lu"
- 			" all_unreclaimable? %s"
-@@ -1944,6 +1955,9 @@ void show_free_areas(void)
- 			K(zone_page_state(zone, NR_INACTIVE_ANON)),
- 			K(zone_page_state(zone, NR_ACTIVE_FILE)),
- 			K(zone_page_state(zone, NR_INACTIVE_FILE)),
-+#ifdef CONFIG_NORECLAIM
-+			K(zone_page_state(zone, NR_NORECLAIM)),
-+#endif
- 			K(zone->present_pages),
- 			zone->pages_scanned,
- 			(zone_is_all_unreclaimable(zone) ? "yes" : "no")
-Index: linux-2.6.24-rc6-mm1/mm/vmstat.c
-===================================================================
---- linux-2.6.24-rc6-mm1.orig/mm/vmstat.c	2008-01-02 12:37:48.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/mm/vmstat.c	2008-01-02 12:38:03.000000000 -0500
-@@ -690,6 +690,9 @@ static const char * const vmstat_text[] 
- 	"nr_active_anon",
- 	"nr_inactive_file",
- 	"nr_active_file",
-+#ifdef CONFIG_NORECLAIM
-+	"nr_noreclaim",
-+#endif
- 	"nr_anon_pages",
- 	"nr_mapped",
- 	"nr_file_pages",
-Index: linux-2.6.24-rc6-mm1/drivers/base/node.c
-===================================================================
---- linux-2.6.24-rc6-mm1.orig/drivers/base/node.c	2008-01-02 12:37:38.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/drivers/base/node.c	2008-01-02 12:38:03.000000000 -0500
-@@ -52,6 +52,9 @@ static ssize_t node_read_meminfo(struct 
- 		       "Node %d Inactive(anon): %8lu kB\n"
- 		       "Node %d Active(file):   %8lu kB\n"
- 		       "Node %d Inactive(file): %8lu kB\n"
-+#ifdef CONFIG_NORECLAIM
-+		       "Node %d Noreclaim:    %8lu kB\n"
-+#endif
- #ifdef CONFIG_HIGHMEM
- 		       "Node %d HighTotal:      %8lu kB\n"
- 		       "Node %d HighFree:       %8lu kB\n"
-@@ -76,6 +79,9 @@ static ssize_t node_read_meminfo(struct 
- 		       nid, node_page_state(nid, NR_INACTIVE_ANON),
- 		       nid, node_page_state(nid, NR_ACTIVE_FILE),
- 		       nid, node_page_state(nid, NR_INACTIVE_FILE),
-+#ifdef CONFIG_NORECLAIM
-+		       nid, node_page_state(nid, NR_NORECLAIM),
-+#endif
- #ifdef CONFIG_HIGHMEM
- 		       nid, K(i.totalhigh),
- 		       nid, K(i.freehigh),
-Index: linux-2.6.24-rc6-mm1/fs/proc/proc_misc.c
-===================================================================
---- linux-2.6.24-rc6-mm1.orig/fs/proc/proc_misc.c	2008-01-02 12:37:38.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/fs/proc/proc_misc.c	2008-01-02 12:38:03.000000000 -0500
-@@ -162,6 +162,9 @@ static int meminfo_read_proc(char *page,
- 		"Inactive(anon): %8lu kB\n"
- 		"Active(file):   %8lu kB\n"
- 		"Inactive(file): %8lu kB\n"
-+#ifdef CONFIG_NORECLAIM
-+		"Noreclaim:    %8lu kB\n"
-+#endif
- #ifdef CONFIG_HIGHMEM
- 		"HighTotal:      %8lu kB\n"
- 		"HighFree:       %8lu kB\n"
-@@ -194,6 +197,9 @@ static int meminfo_read_proc(char *page,
- 		K(global_page_state(NR_INACTIVE_ANON)),
- 		K(global_page_state(NR_ACTIVE_FILE)),
- 		K(global_page_state(NR_INACTIVE_FILE)),
-+#ifdef CONFIG_NORECLAIM
-+		K(global_page_state(NR_NORECLAIM)),
-+#endif
- #ifdef CONFIG_HIGHMEM
- 		K(i.totalhigh),
- 		K(i.freehigh),
+The noreclaim patches come verbatim from Lee Schermerhorn and
+Nick Piggin.  I have made a few small fixes to them and left out
+the bits that are no longer needed with split file/anon lists.
+
+The exception is "Scan noreclaim list for reclaimable pages",
+which should not be needed but could be a useful debugging tool.
 
 -- 
 All Rights Reversed
