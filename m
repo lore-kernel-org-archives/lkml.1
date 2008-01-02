@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757910AbYABGDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758009AbYABGEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757910AbYABGDT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 01:03:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755097AbYABGDI
+	id S1758009AbYABGEe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 01:04:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755093AbYABGEY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 01:03:08 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:45602 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754773AbYABGDF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 01:03:05 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: linux-scsi@vger.kernel.org
-Subject: [PATCH] Only print SCSI data direction warning once for a command
-Date: Wed, 2 Jan 2008 07:03:01 +0100
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
+	Wed, 2 Jan 2008 01:04:24 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:38221 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754606AbYABGEX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 01:04:23 -0500
+Date: Wed, 2 Jan 2008 07:04:22 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Andreas Mohr <andi@lisas.de>, Ingo Molnar <mingo@elte.hu>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>, Pavel Emelyanov <xemul@openvz.org>,
+       "Denis V. Lunev" <den@openvz.org>, Greg KH <greg@kroah.com>
+Subject: Re: [usb regression] Re: [PATCH 2.6.24-rc3] Fix /proc/net breakage
+Message-ID: <20080102060422.GA30929@rhlx01.hs-esslingen.de>
+References: <20071230161405.GA27788@elte.hu> <Pine.LNX.4.44L0.0712301526090.1963-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801020703.01180.ak@suse.de>
+In-Reply-To: <Pine.LNX.4.44L0.0712301526090.1963-100000@netrider.rowland.org>
+X-Priority: none
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-When I use cdparanoia my logs get spammed a lot by
+On Sun, Dec 30, 2007 at 03:34:45PM -0500, Alan Stern wrote:
+> It looks like Greg misused the debugfs API -- which is ironic, because
+> he wrote debugfs in the first place!  :-)
+> 
+> Let me know if this patch fixes the problem.  If it does, I'll submit 
+> it to Greg with all the proper accoutrements.
 
-printk: 464 messages suppressed.
-sg_write: data in/out 30576/30576 bytes for SCSI command 0xbe--guessing data in;
-   program cdparanoia not setting count and/or reply_len properly
-printk: 1078 messages suppressed.
+Finally a 2.6.24-rc6-mm1 with working USB WLAN. :)
+IOW I can confirm that this was the cause of the USB problem I was having.
 
-and many more of those. With this patch the message is only printed once
-for a command in a row.
+Thanks!
 
-Signed-off-by: Andi Kleen <ak@suse.de>
-
----
- drivers/scsi/sg.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
-
-Index: linux/drivers/scsi/sg.c
-===================================================================
---- linux.orig/drivers/scsi/sg.c
-+++ linux/drivers/scsi/sg.c
-@@ -602,8 +602,9 @@ sg_write(struct file *filp, const char _
- 	 * but is is possible that the app intended SG_DXFER_TO_DEV, because there
- 	 * is a non-zero input_size, so emit a warning.
- 	 */
--	if (hp->dxfer_direction == SG_DXFER_TO_FROM_DEV)
--		if (printk_ratelimit())
-+	if (hp->dxfer_direction == SG_DXFER_TO_FROM_DEV) {
-+		static char cmd[TASK_COMM_LEN];
-+		if (printk_ratelimit() && strcmp(current->comm, cmd)) {
- 			printk(KERN_WARNING
- 			       "sg_write: data in/out %d/%d bytes for SCSI command 0x%x--"
- 			       "guessing data in;\n" KERN_WARNING "   "
-@@ -611,6 +612,9 @@ sg_write(struct file *filp, const char _
- 			       old_hdr.reply_len - (int)SZ_SG_HEADER,
- 			       input_size, (unsigned int) cmnd[0],
- 			       current->comm);
-+			strcpy(cmd, current->comm);
-+		}
-+	}
- 	k = sg_common_write(sfp, srp, cmnd, sfp->timeout, blocking);
- 	return (k < 0) ? k : count;
- }
+Andreas Mohr
