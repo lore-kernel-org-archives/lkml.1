@@ -1,94 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757316AbYABFze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757697AbYABF7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757316AbYABFze (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 00:55:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbYABFz0
+	id S1757697AbYABF7V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 00:59:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754706AbYABF7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 00:55:26 -0500
-Received: from po-out-1718.google.com ([72.14.252.159]:46421 "EHLO
-	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751337AbYABFzZ (ORCPT
+	Wed, 2 Jan 2008 00:59:03 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:49502 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754485AbYABF7A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 00:55:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=kUndLnrex5zF4wpnHS4t2SBEvR3xux78jhcfi5vmXOqm2HAylqBFhKU/mYG//DdOnKoM+TngaU2bCfw/m2fCS6pxFQGlWoL5SIjk0dngynhFX5Npo2uKfdW9scpe2So+88nGeXoW2sB50ZzCWHxql2cuCJgjH1RaBF29MRUNI7w=
-Date: Wed, 2 Jan 2008 13:55:33 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Eric Sandeen <sandeen@sandeen.net>, xfs-masters@oss.sgi.com,
-       LKML <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, viro@zeniv.linux.org.uk
-Subject: (Try #3) [Patch 7/8] FS: Remove dead code
-Message-ID: <20080102055533.GD2493@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <20080101071311.GA2496@hacking> <20080101074105.GH2496@hacking> <477A7809.5000106@sandeen.net> <20080101173729.GA31575@uranus.ravnborg.org>
+	Wed, 2 Jan 2008 00:59:00 -0500
+Date: Tue, 1 Jan 2008 22:00:06 -0800
+From: Greg KH <greg@kroah.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Andreas Mohr <andi@lisas.de>, Ingo Molnar <mingo@elte.hu>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>, Pavel Emelyanov <xemul@openvz.org>,
+       "Denis V. Lunev" <den@openvz.org>, USB list <linux-usb@vger.kernel.org>
+Subject: Re: [usb regression] Re: [PATCH 2.6.24-rc3] Fix /proc/net breakage
+Message-ID: <20080102060006.GA27693@kroah.com>
+References: <20071231052500.GB4187@kroah.com> <Pine.LNX.4.44L0.0712311237150.7182-100000@iolanthe.rowland.org> <20071231192643.GA25341@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080101173729.GA31575@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20071231192643.GA25341@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 01, 2008 at 06:37:29PM +0100, Sam Ravnborg wrote:
->On Tue, Jan 01, 2008 at 11:27:37AM -0600, Eric Sandeen wrote:
->> WANG Cong wrote:
->> > TOPDIR is obsolete, use objtree instead.
->> > This patch removes TOPDIR from all fs/ Makefiles.
->> 
->> > diff --git a/fs/xfs/Makefile b/fs/xfs/Makefile
->> > index 49e3e7e..d1d3d49 100644
->> > --- a/fs/xfs/Makefile
->> > +++ b/fs/xfs/Makefile
->> > @@ -1 +1 @@
->> > -include $(TOPDIR)/fs/xfs/Makefile-linux-$(VERSION).$(PATCHLEVEL)
->> > +include $(objtree)/fs/xfs/Makefile-linux-$(VERSION).$(PATCHLEVEL)
->> 
->> FWIW $(TOPDIR) is already banished from the latest xfs build code:
->> 
->Good - I will ignore the xfs bits.
+On Mon, Dec 31, 2007 at 11:26:43AM -0800, Greg KH wrote:
+> On Mon, Dec 31, 2007 at 12:49:52PM -0500, Alan Stern wrote:
+> > On Sun, 30 Dec 2007, Greg KH wrote:
+> > 
+> > > > It looks like Greg misused the debugfs API -- which is ironic, because
+> > > > he wrote debugfs in the first place!  :-)
+> > > 
+> > > Oh crap, sorry, I did mess that up :(
 
-Thanks. I will drop the xfs part.
+Ok, no, I didn't write that patch, I'm getting very confused here.
 
-------->
+In 2.6.24-rc6 there is no usage of debugfs in the ohci driver.
 
-Remove dead code in smbfs makefile.
+In the -mm tree there is a patch, from Tony Jones, that moves some debug
+code out of sysfs and into debugfs where it belongs.  It does it for
+both the ehci and ohci USB host controller drivers, and this is the code
+that is incorrect if CONFIG_DEBUGFS is not enabled.
 
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>
-Cc: Tim Shimmin <xfs-masters@oss.sgi.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+So, for the 2.6.24 release, nothing needs to be changed, all is good,
+and there is no regression.
 
----
+Right?  Or am I still confused about this whole thing?
 
-diff --git a/fs/smbfs/Makefile b/fs/smbfs/Makefile
-index 6673ee8..4faf8c4 100644
---- a/fs/smbfs/Makefile
-+++ b/fs/smbfs/Makefile
-@@ -16,23 +16,3 @@ EXTRA_CFLAGS += -DSMBFS_PARANOIA
- #EXTRA_CFLAGS += -DDEBUG_SMB_TIMESTAMP
- #EXTRA_CFLAGS += -Werror
- 
--#
--# Maintainer rules
--#
--
--# getopt.c not included. It is intentionally separate
--SRC = proc.c dir.c cache.c sock.c inode.c file.c ioctl.c smbiod.c request.c \
--	symlink.c
--
--proto:
--	-rm -f proto.h
--	@echo >  proto2.h "/*"
--	@echo >> proto2.h " *  Autogenerated with cproto on: " `date`
--	@echo >> proto2.h " */"
--	@echo >> proto2.h ""
--	@echo >> proto2.h "struct smb_request;"
--	@echo >> proto2.h "struct sock;"
--	@echo >> proto2.h "struct statfs;"
--	@echo >> proto2.h ""
--	cproto -E "gcc -E" -e -v -I $(TOPDIR)/include -DMAKING_PROTO -D__KERNEL__ $(SRC) >> proto2.h
--	mv proto2.h proto.h
+I will go fix up Tony's patches in the -mm tree that do not handle the
+error return values from debugfs properly, but that is not such a rush,
+as Tony is on vacation for a few weeks, and those patches are going to
+be going in only after 2.6.24 is out.
+
+Hm, I wonder if this means I can go back to drinking more holiday
+wine... :)
+
+thanks,
+
+greg k-h
