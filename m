@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759104AbYABAYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758715AbYABA2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759104AbYABAYf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 19:24:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754907AbYABAY2
+	id S1758715AbYABA2g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 19:28:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754857AbYABA23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 19:24:28 -0500
-Received: from kolab.mylinuxtime.de ([212.112.242.22]:49223 "EHLO
-	kolab.mylinuxtime.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754857AbYABAY1 (ORCPT
+	Tue, 1 Jan 2008 19:28:29 -0500
+Received: from mail-out.m-online.net ([212.18.0.9]:59555 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754907AbYABA22 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 19:24:27 -0500
-X-Spam-ASN: AS24900 212.112.224.0/19
-From: Christian Hesse <mail@earthworm.de>
-To: nigel@nigel.suspend2.net
-Subject: Re: [Suspend2-devel] Reboot problem
-Date: Wed, 2 Jan 2008 01:24:12 +0100
-User-Agent: KMail/1.9.7
-Cc: suspend2-devel@lists.tuxonice.net,
-       "The place to get help!" <suspend2-users@lists.tuxonice.net>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <477AC060.5040004@nigel.suspend2.net> <200801020030.06940.mail@earthworm.de> <477AD38C.6030206@nigel.suspend2.net>
-In-Reply-To: <477AD38C.6030206@nigel.suspend2.net>
-X-Face: 1\p'dhO'VZk,x0lx6U}!Y*9UjU4n2@4c<"a*K%3Eiu'VwM|-OYs;S-PH>4EdJMfGyycC)=?utf-8?q?k=0A=09=3Anv*xqk4C?=@1b8tdr||mALWpN[2|~h#Iv;)M"O$$#P9Kg+S8+O#%EJx0TBH7b&Q<m)=?utf-8?q?n=23Q=2Eo=0A=09kE=7E=26T=5D0cQX6=5D?=<q!HEE,F}O'Jd#lx/+){Gr@W~J`h7sTS(M+oe5<=?utf-8?q?3O7GY9y=5Fi!qG=26Vv=5CD8/=0A=09=254?=@&~$Z@UwV'NQ$Ph&3fZc(qbDO?{LN'nk>+kRh4`C3[KN`-1uT-TD_m
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801020124.13935.mail@earthworm.de>
+	Tue, 1 Jan 2008 19:28:28 -0500
+X-Auth-Info: 7p8vrUi+Mf++R115OZaYUKUCoQw8h+PdcfRVsAYMciQ=
+X-Auth-Info: 7p8vrUi+Mf++R115OZaYUKUCoQw8h+PdcfRVsAYMciQ=
+X-Auth-Info: 7p8vrUi+Mf++R115OZaYUKUCoQw8h+PdcfRVsAYMciQ=
+X-Auth-Info: 7p8vrUi+Mf++R115OZaYUKUCoQw8h+PdcfRVsAYMciQ=
+X-Auth-Info: 4F42JB2/exUQjtTQw2/0YI0xwvCfRb3WDoM+Z4onZvU=
+To: Adrian Bunk <bunk@kernel.org>
+cc: David Woodhouse <dwmw2@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [2.6 patch] remove broken MTD drivers
+Mime-version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+In-reply-to: Your message of "Wed, 02 Jan 2008 01:11:40 +0200."
+             <20080101231140.GF27566@does.not.exist>
+Date: Wed, 02 Jan 2008 01:28:26 +0100
+Message-Id: <20080102002826.574C324889@gemini.denx.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 January 2008, Nigel Cunningham wrote:
-> Hi Christian.
+In message <20080101231140.GF27566@does.not.exist> you wrote:
 >
-> Christian Hesse wrote:
-> > On Tuesday 01 January 2008, Nigel Cunningham wrote:
-> >> Third, regarding the patch itself, I'm taking my time in working towards
-> >> the 3.0 release. We don't have any major bugs with 3.0-rc3 reported
-> >> [...].
-> >
-> > Well, I think I still have a bug, though it is possibly a mainline
-> > problem and it's not a showstopper. After a suspend/resume cycle the
-> > reboot does not work. The system hangs with "Rebooting system" (or
-> > similar). After that you have to hard reset the system, which is not
-> > really a problem as filesystems have been unmounted before. Reboot
-> > without a suspend cycle before and halt with and without suspend cycle
-> > work without problems.
->
-> Just to clarify, do you mean rebooting after writing an image, or
-> shutting down and rebooting? It could be that there's some change to the
-> semantics in 2.6.24 that I haven't noticed yet.
+> The header of ppchameleonevb.c claims it comes from info@wawnet.biz 
 
-I speak about shutting down and rebooting. I have not used reboot after 
-writing an image for a long time now. Will test what happens in this case.
+Argh. That's indeed ancient code.
 
-I had the issue before 2.6.24(-rc) already, thought I don't know whether there 
-were times it worked. I use it way too seldom.
+So what should I do to fix this? Wait for Thomas' response, or port
+patches here?
+
+Best regards,
+
+Wolfgang Denk
+
 -- 
-Regards,
-Chris
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+A Chairman was as necessary to a Board planet  as  the  zero  was  in
+mathematics, but being a zero had big disadvantages...
+                         - Terry Pratchett, _The Dark Side of the Sun_
