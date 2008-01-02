@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbYABLnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbYABLpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755355AbYABLnw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 06:43:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYABLno
+	id S1756091AbYABLpb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 06:45:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbYABLpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 06:43:44 -0500
-Received: from cvs.mpc-ogw.co.uk ([81.2.99.171]:1361 "EHLO
-	molson.mpc-data.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752056AbYABLnn convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 06:43:43 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 2 Jan 2008 06:45:25 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43916 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752225AbYABLpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 06:45:24 -0500
+Date: Wed, 2 Jan 2008 12:41:08 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] Hibernation: Document __save_processor_state() on
+	x86-64 (rev. 2)
+Message-ID: <20080102114108.GA24329@elte.hu>
+References: <200712302313.52483.rjw@sisk.pl> <20080102000222.GA2404@ucw.cz> <200801020023.58040.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="windows-1250"
-Content-Transfer-Encoding: 8BIT
-Subject: [PATCH] sh: sh7712 defconfig
-Date: Wed, 2 Jan 2008 11:43:39 -0000
-Message-ID: <0C997DD87CC88A4F86C897F52650B52B820E95@MOLSON.mpc-data.co.uk>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] sh: sh7712 defconfig
-Thread-Index: AchLyrpP8ZlwI+8FRzmQcVdtMnkC2QBaG3jQ
-From: "Andrew Murray" <amurray@mpc-data.co.uk>
-To: <lethal@linux-sh.org>
-Cc: <linux-sh@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200801020023.58040.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Murray <amurray@mpc-data.co.uk>
 
-This patch provides a correct value for CONFIG_SH_PCLK_FREQ for the SH7712 solution engine when used with the board's default factory settings. This results in the board running at its maximum CPU clock rate (200 MHz).
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-The board I have is a Japanese Solution Engine with a 66 MHz (extal) crystal. Is this the only variant of the Solution Engine for the SH7712?
+> > > Document the fact that __save_processor_state() has to save all 
+> > > CPU registers referred to by the kernel in case a different kernel 
+> > > is used to load and restore a hibernation image containing it.
+> > > 
+> > > Sigend-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > ACK.
+> 
+> Thanks!
+> 
+> Ingo, can you please take this patch for 2.6.25 or should I forward it 
+> to Len?
 
-Signed-off-by: Andrew Murray <amurray@mpc-data.co.uk>
----
-diff -uprN -X sh-2.6/Documentation/dontdiff sh-2.6/arch/sh/configs/se7712_defconfig sh-2.6-devel/arch/sh/configs/se7712_defconfig
---- sh-2.6/arch/sh/configs/se7712_defconfig     2008-01-02 10:13:44.000000000 +0000
-+++ sh-2.6-devel/arch/sh/configs/se7712_defconfig       2008-01-02 10:28:32.000000000 +0000
-@@ -237,7 +237,7 @@ CONFIG_CPU_HAS_SR_RB=y
- CONFIG_SH_TMU=y
- CONFIG_SH_TIMER_IRQ=16
- # CONFIG_NO_IDLE_HZ is not set
--CONFIG_SH_PCLK_FREQ=33333333
-+CONFIG_SH_PCLK_FREQ=66666666
+sure, applied it to x86.git. I've also zapped the cr8 elimination patch.
 
- #
- # CPU Frequency scaling
-
-Internal Virus Database is out-of-date.
-Checked by AVG Free Edition. 
-Version: 7.5.516 / Virus Database: 269.17.8 - Release Date: 24/12/2007 00:00
- 
+	Ingo
