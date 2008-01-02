@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbYABMeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbYABMej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754651AbYABMeS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 07:34:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbYABMeH
+	id S1755990AbYABMej (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 07:34:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbYABMe3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 07:34:07 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:28229 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752120AbYABMeE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 07:34:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=My3AP5HvLUOLm33iQ0FXeLA4xn0a064ZizOAhEmpWITUgqL2OSKQrT7qpqDcwhBqJ+9P6UrlNkBqHBMgTQUgdiEBWthLMNOdpMlCbVJeZ4/+0JIseMcv+gP+d2YSm2En35fZemLVTtyrZpgLCSxfXb9ub/V7rYuy/9wX0BPdBgg=
-Date: Wed, 2 Jan 2008 13:39:38 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: Greg KH <gregkh@suse.de>, Dave Young <hidave.darkstar@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 01/12] Use mutex instead of semaphore in driver core
-Message-ID: <20080102123938.GA3476@ff.dom.local>
+	Wed, 2 Jan 2008 07:34:29 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48315 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752189AbYABMe2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 07:34:28 -0500
+Date: Wed, 2 Jan 2008 13:33:55 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Quentin Barnes <qbarnes@gmail.com>, linux-kernel@vger.kernel.org,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH] [CFT] Code clarification patch to Kprobes arch code
+Message-ID: <20080102123355.GB11208@elte.hu>
+References: <b70efdcb0712310929y1bf871eah2adb531a7ed89673@mail.gmail.com> <20080101151943.GE4434@elte.hu> <20080102044353.GA7027@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080102070008.GA31343@suse.de>
+In-Reply-To: <20080102044353.GA7027@in.ibm.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02-01-2008 08:00, Greg KH wrote:
-...
-> If no one has noticed any issues in this area, [...]
 
-...Could also mean there are hidden issues, so it doesn't look like
-very convincing argument.
+* Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
 
-...Unless after the change there will be found no hidden issues,
-then, of course, it looks like convincing enough.
+> > Signed-off-by: Quentin Barnes <qbarnes@gmail.com>
+> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> 
+> Tested on x86.
+> 
+> Acked-by: Ananth N Mavinakayahanalli <ananth@in.ibm.com>
 
-Regards,
-Jarek P.
+thanks Ananth, i've updated the patch.
+
+btw., do you have some script that i could use to test kprobes 
+functionality? Right now the only time i notice kprobes regressions is 
+when randconfig picks up CONFIG_NET_TCPPROBE=y which activates kprobes.
+
+It would be so much nicer if kprobes had some runs-during-bootup kind of 
+quick self-test, with all the important functionality unit-tested. Like 
+lib/locking-selftest.c, or CONFIG_RCU_TORTURE_TEST=y.
+
+	Ingo
