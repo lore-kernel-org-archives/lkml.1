@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758978AbYABUpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbYABUqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758978AbYABUpx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 15:45:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754658AbYABUpo
+	id S1755251AbYABUqL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 15:46:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754704AbYABUpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 15:45:44 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47239 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752875AbYABUpn (ORCPT
+	Wed, 2 Jan 2008 15:45:45 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33827 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754351AbYABUpo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 15:45:43 -0500
-Date: Wed, 2 Jan 2008 12:45:25 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Matthew Wilcox <matthew@wil.cx>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
-In-Reply-To: <1199304735.3258.53.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.1.00.0801021227140.32517@woody.linux-foundation.org>
-References: <20080102162534.GA4041@elte.hu>  <1199292381.3258.32.camel@localhost.localdomain>  <alpine.LFD.1.00.0801021113150.32517@woody.linux-foundation.org>  <20080102194030.GC11638@parisc-linux.org> <1199304735.3258.53.camel@localhost.localdomain>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Wed, 2 Jan 2008 15:45:44 -0500
+Date: Wed, 2 Jan 2008 12:45:43 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, htejun@gmail.com,
+       gregkh@suse.de, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, maneesh@linux.vnet.ibm.com,
+       lkml <linux-kernel@vger.kernel.org>, stable@kernel.org,
+       linux-mm@kvack.org
+Subject: Re: 2.6.22-stable causes oomkiller to be invoked
+In-Reply-To: <20071228101109.GB5083@linux.vnet.ibm.com>
+Message-ID: <Pine.LNX.4.64.0801021237330.21526@schroedinger.engr.sgi.com>
+References: <20071214150533.aa30efd4.akpm@linux-foundation.org>
+ <20071215035200.GA22082@linux.vnet.ibm.com> <20071214220030.325f82b8.akpm@linux-foundation.org>
+ <20071215104434.GA26325@linux.vnet.ibm.com> <20071217045904.GB31386@linux.vnet.ibm.com>
+ <Pine.LNX.4.64.0712171143280.12871@schroedinger.engr.sgi.com>
+ <20071217120720.e078194b.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0712171222470.29500@schroedinger.engr.sgi.com>
+ <20071221044508.GA11996@linux.vnet.ibm.com>
+ <Pine.LNX.4.64.0712261258050.16862@schroedinger.engr.sgi.com>
+ <20071228101109.GB5083@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 28 Dec 2007, Dhaval Giani wrote:
 
-
-On Wed, 2 Jan 2008, James Bottomley wrote:
+> we managed to get your required information. Last 10,000 lines are
+> attached (The uncompressed file comes to 500 kb).
 > 
-> OK ... I'll revert it.  However, I still think it's the wrong course of
-> action, because as far as my analysis goes, this code is functionally
-> equivalent to what went before with the exception that we now rely on
-> the request->cmd_type information in the post processing (previously we
-> just relied on the cmnd->done pointer).
+> Hope it helps.
 
-To say that another way:
+Somehow the nr_pages field is truncated to 16 bit and it 
+seems that there are sign issues there? We are wrapping around....
 
- "the code is functionally equivalent, EXCEPT IT ISN'T, and it's 
-  known to be broken".
+ q->nr_pages is 36877, min_pages is 25 ----> swapper
+ q->nr_pages is 46266, min_pages is 25 ----> bash
+ q->nr_pages is 36877, min_pages is 25 ----> swapper
+ q->nr_pages is 36877, min_pages is 25 ----> swapper
+ q->nr_pages is 46265, min_pages is 25 ----> bash
+ q->nr_pages is 46265, min_pages is 25 ----> cat
+ q->nr_pages is 36877, min_pages is 25 ----> swapper
+ q->nr_pages is 46265, min_pages is 25 ----> cat
+ q->nr_pages is 36877, min_pages is 25 ----> swapper
+ q->nr_pages is 0, min_pages is 25 ----> swapper
+ q->nr_pages is 36877, min_pages is 25 ----> swapper
+ q->nr_pages is 36877, min_pages is 25 ----> swapper
+ q->nr_pages is 46265, min_pages is 25 ----> cat
 
-wouldn't you say my version is more honest and correct?
 
-The old code did a per-command callback. The new one doesn't. The code was 
-*supposed* to be equivalent, but it clearly isn't. Why argue the point?
+An int is just a 16 bit field on i386? I thought it was 32 bits? Or is 
+the result due to the way that systemtap works?
 
-And no, maybe it's not that REQ_TYPE_BLOCK_PC should be calling ->done, 
-maybe it's that some REQ_TYPE_FS commands should *not* be calling ->done. 
-Or maybe we somehow got the wrong ->done in the first place, because we 
-now get it from a different source.
+Could you post the neighboring per cpu variables to quicklist (look at the 
+System.map). Maybe somehow we corrupt the nr_pages and page contents.
 
-I don't know, but what I'm arguing (very strongly) against is this 
-attitude of "we don't know what's wrong, but wë́'ll leave it broken because 
-we can't be bothered to figure it out".
+Also could you do another systemtap and also print out the current 
+processor? Maybe nr_pages gets only corrupted on a specific processor. I 
+see a zero there and sometimes other sane values.
 
-That is exactly what reverting is there for. It doesn't matter one *whit* 
-if the new code is cleaner and prettier, if it doesn't work.
 
-			Linus
+
