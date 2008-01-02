@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757344AbYABJuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757178AbYABJwP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757344AbYABJuZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 04:50:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754218AbYABJuD
+	id S1757178AbYABJwP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 04:52:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbYABJv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 04:50:03 -0500
-Received: from hellhawk.shadowen.org ([80.68.90.175]:3114 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753988AbYABJuA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 04:50:00 -0500
-Date: Wed, 2 Jan 2008 09:49:56 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-To: Benny Halevy <bhalevy@panasas.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, Joel Schopp <jschopp@austin.ibm.com>
-Subject: Re: [PATCH] checkpatch.pl: recognize the #elif preprocessor directive
-Message-ID: <20080102094956.GB23164@shadowen.org>
-References: <477A1206.4070805@panasas.com>
-MIME-Version: 1.0
+	Wed, 2 Jan 2008 04:51:59 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:47734 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751899AbYABJv6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 04:51:58 -0500
+Date: Wed, 2 Jan 2008 10:51:59 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [Patch 0/8] Remove 'TOPDIR' from Makefiles
+Message-ID: <20080102095159.GB7815@uranus.ravnborg.org>
+References: <20080101071311.GA2496@hacking>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <477A1206.4070805@panasas.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080101071311.GA2496@hacking>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 01, 2008 at 12:12:22PM +0200, Benny Halevy wrote:
-> checkpatch.pl does not recognize #elif as a preprocessor directive
-> causing it to print bogus errors for, e.g.:
-> ERROR: need consistent spacing around '&' (ctx:WxV)
-> when the operator is not recognized as unary in this context.
+On Tue, Jan 01, 2008 at 03:13:11PM +0800, WANG Cong wrote:
 > 
-> for example:
+> TOPDIR is obsolete, use srctree or objtree instead.
 > 
-> void foo(void)
-> {
-> 	int x, y, z;
-> 	void *p[1] = {
-> #if defined(X)
-> 		&x
-> #elif defined(Y)
-> 		&y
-> #else
-> 		&z
-> #endif
-> 	};
-> }
+> This patch set removes all the TOPDIR use in the whole
+> source tree and finally drops it in the top Makefile.
+> They're against the current linus-tree.
 > 
-> Signed-off-by: Benny Halevy <bhalevy@panasas.com>
+> Note that Patch [8/8] should be applied _after_ all the
+> previous patches are applied.
 
-Yes, thanks; good catch.  Commited this and added tests for it.
-Will be in 0.13 which is imminent.
+Hi Wang.
 
--apw
+You a heads up. I will most likely apply
+the remaining of the patches tonight, except the UM stuff
+which I hope Jeff to take and the final removal of TOPDIR
+may wait a bit.
+I want the s390, xfs and um changes to hit -mm at least
+and we have several external modules that uses TOPDIR.
+
+And some of these external modules I care about - not
+all of them but some of them.
+
+	Sam
