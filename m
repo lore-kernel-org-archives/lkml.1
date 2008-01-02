@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbYABOzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756640AbYABPAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757378AbYABOzU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 09:55:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbYABOzH
+	id S1756640AbYABPAS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 10:00:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbYABPAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 09:55:07 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:13770 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752823AbYABOzD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 09:55:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=n1HDQWL0ysW/HV+/t21Lc+Sw8Tc8f2/XNt6Dn6CQaX7b0kmAmyBdwqYbJmOqOJYvovM0gDEZBz5BzOYdobjaI7A0Scr2SElrH6w31bA+1GXJnw8KFu2f78JZew6getep0PW8vPqC7kuUrvwZvlmBKbh3C8qUu42oVWmGdInWGRA=
-Message-ID: <3ae72650801020655h6ec31ce8n5cd9014c00c9f6ad@mail.gmail.com>
-Date: Wed, 2 Jan 2008 15:55:00 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 0/4] PM: Do not destroy/create devices while suspended (rev. 2)
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "pm list" <linux-pm@lists.linux-foundation.org>,
-       "ACPI Devel Maling List" <linux-acpi@vger.kernel.org>,
-       "Alan Stern" <stern@rowland.harvard.edu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Len Brown" <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       "Pavel Machek" <pavel@suse.cz>, "Greg KH" <gregkh@suse.de>,
-       "David Brownell" <david-b@pacbell.net>
-In-Reply-To: <20080102131529.GA32160@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Jan 2008 10:00:06 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:55284 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753176AbYABPAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 10:00:04 -0500
+Date: Wed, 2 Jan 2008 20:29:08 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Quentin Barnes <qbarnes@gmail.com>, linux-kernel@vger.kernel.org,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH] [CFT] Code clarification patch to Kprobes arch code
+Message-ID: <20080102145908.GA6527@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <b70efdcb0712310929y1bf871eah2adb531a7ed89673@mail.gmail.com> <20080101151943.GE4434@elte.hu> <20080102044353.GA7027@in.ibm.com> <20080102123355.GB11208@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200801020032.45529.rjw@sisk.pl> <20080102105217.GA14731@elte.hu>
-	 <200801021356.59865.rjw@sisk.pl> <20080102131529.GA32160@elte.hu>
-X-Google-Sender-Auth: 102dac149ff2ceb0
+In-Reply-To: <20080102123355.GB11208@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 2, 2008 2:15 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> A stupid question. The old RTC driver is in
-> drivers/char/rtc.c, and maps to:
->
->   crw-r--r-- 1 root root  10, 135 Oct 25 18:02 /dev/rtc
->
-> the new driver is in drivers/rtc/*, and maps to:
->
->   crw-r--r-- 1 root root 254,   0 Dec 12 02:30 /dev/rtc0
->
-> but all the x86 distro boxes i have access to make use of /dev/rtc.
-> There's no symlink set up from /dev/rtc to /dev/rtc0 either. So it
-> appears to me that the new RTC driver isnt actually utilized on most
-> distributions.
->
-> shouldnt we provide a Kconfig way of replacing dev 10:135 with the new
-> driver's 254:0 device? (while keeping all the current modes of operation
-> as well, of course.) It's all supposed to be 100% ioctl ABI compatible
-> with the old driver, right?
+On Wed, Jan 02, 2008 at 01:33:55PM +0100, Ingo Molnar wrote:
+> 
+> * Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
+> 
+> > > Signed-off-by: Quentin Barnes <qbarnes@gmail.com>
+> > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> > 
+> > Tested on x86.
+> > 
+> > Acked-by: Ananth N Mavinakayahanalli <ananth@in.ibm.com>
+> 
+> thanks Ananth, i've updated the patch.
 
-It's not compatible enough to "fake" only the old major/minor. Userspace
-must be fixed not to depend on stuff like:  /proc/sys/dev/rtc/max-user-freq:
-  http://lkml.org/lkml/2007/8/4/183
+Hi Ingo,
 
-> That way distros could start migrating to it
-> as well, without depending on any udev hackery.
+> btw., do you have some script that i could use to test kprobes 
+> functionality? Right now the only time i notice kprobes regressions is 
+> when randconfig picks up CONFIG_NET_TCPPROBE=y which activates kprobes.
+> 
+> It would be so much nicer if kprobes had some runs-during-bootup kind of 
+> quick self-test, with all the important functionality unit-tested. Like 
+> lib/locking-selftest.c, or CONFIG_RCU_TORTURE_TEST=y.
 
-It's in the default udev setup:
-  KERNEL=="rtc|rtc0",             MODE="0644"
-  KERNEL=="rtc0",                 SYMLINK+="rtc"
+The simplest way to do a basic sanity check is build the kprobes samples/
+and try them out. We have one sample each to test kprobes, kretprobes
+and jprobes. This should serve the purpose.
 
-Kay
+I had posted patches for the same sometime back
+(http://marc.info/?l=linux-kernel&m=119297044801420&w=2), but they needed
+some rework to fix a build break on sparc64
+(http://marc.info/?l=linux-kernel&m=119735423212298&w=2).
+
+I will rebase the patchset against the latest mm and repost soon...
+
+Ananth
