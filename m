@@ -1,123 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760270AbYABX27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760638AbYABX33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760270AbYABX27 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 18:28:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755874AbYABXWs
+	id S1760638AbYABX33 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 18:29:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755247AbYABXYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 18:22:48 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49877 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757321AbYABXW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 18:22:27 -0500
-Message-Id: <20080102224155.497742391@redhat.com>
-References: <20080102224144.885671949@redhat.com>
-User-Agent: quilt/0.46-1
-Date: Wed, 02 Jan 2008 17:42:03 -0500
-From: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org, lee.schermerhorn@hp.com
-Subject: [patch 19/19] cull non-reclaimable anon pages from the LRU at fault time
-Content-Disposition: inline; filename=noreclaim-07-cull-nonreclaimable-anon-pages-in-fault-path.patch
-To: unlisted-recipients:; (no To-header on input)
+	Wed, 2 Jan 2008 18:24:05 -0500
+Received: from hqemgate02.nvidia.com ([216.228.112.143]:14406 "EHLO
+	HQEMGATE02.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759583AbYABXYB convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 18:24:01 -0500
+X-PGP-Universal: processed;
+	by hqnvupgp02.nvidia.com on Wed, 02 Jan 2008 15:23:50 -0800
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+MIME-Version: 1.0
+Subject: RE: sata_nv + ADMA + Samsung disk problem
+Date: Wed, 2 Jan 2008 15:23:26 -0800
+Message-ID: <F72FA20C31DD4F4C997B91C5B3690A0950557D@hqemmail07.nvidia.com>
+In-Reply-To: <477BDEA5.8040701@garzik.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: sata_nv + ADMA + Samsung disk problem
+Thread-Index: AchNcV+2oUZO7rMYRimjKlyxu8kLaQAJFjFQ
+References: <20070808120804.GB5257@boogie.lpds.sztaki.hu> <20080101164416.GA29574@boogie.lpds.sztaki.hu> <477B0429.7040909@gmail.com> <477B0CFD.1030603@shaw.ca> <F72FA20C31DD4F4C997B91C5B3690A09505577@hqemmail07.nvidia.com> <477BDEA5.8040701@garzik.org>
+From: "Allen Martin" <AMartin@nvidia.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Cc: "Robert Hancock" <hancockr@shaw.ca>, "Tejun Heo" <htejun@gmail.com>,
+       "Gabor Gombas" <gombasg@sztaki.hu>, <linux-kernel@vger.kernel.org>,
+       <linux-ide@vger.kernel.org>, "Kuan Luo" <kluo@nvidia.com>,
+       "Peer Chen" <pchen@nvidia.com>
+X-OriginalArrivalTime: 02 Jan 2008 23:23:27.0057 (UTC) FILETIME=[7A31B410:01C84D96]
+Content-class: urn:content-classes:message
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-V2 -> V3:
-+ rebase to 23-mm1 atop RvR's split lru series.
+> The software definitely provides that guarantee for all NCQ-capable 
+> controllers.
+> 
 
-V1 -> V2:
-+  no changes
+Well if that's not it, it must be some problem entering ADMA legacy
+mode.  Here's what the Windows driver does:
 
-Optional part of "noreclaim infrastructure"
 
-In the fault paths that install new anonymous pages, check whether
-the page is reclaimable or not using lru_cache_add_active_or_noreclaim().
-If the page is reclaimable, just add it to the active lru list [via
-the pagevec cache], else add it to the noreclaim list.  
-
-This "proactive" culling in the fault path mimics the handling of
-mlocked pages in Nick Piggin's series to keep mlocked pages off
-the lru lists.
-
-Notes:
-
-1) This patch is optional--e.g., if one is concerned about the
-   additional test in the fault path.  We can defer the moving of
-   nonreclaimable pages until when vmscan [shrink_*_list()]
-   encounters them.  Vmscan will only need to handle such pages
-   once.
-
-2) I moved the call to page_add_new_anon_rmap() to before the test
-   for page_reclaimable() and thus before the calls to
-   lru_cache_add_{active|noreclaim}(), so that page_reclaimable()
-   could recognize the page as anon, thus obviating, I think, the
-   vma arg to page_reclaimable() for this purpose.  Still needed for
-   culling mlocked pages in fault path [later patch].
-   TBD:   I think this reordering is OK, but the previous order may
-   have existed to close some obscure race?
-
-3) With this and other patches above installed, any anon pages
-   created before swap is added--e.g., init's anonymous memory--
-   will be declared non-reclaimable and placed on the noreclaim
-   LRU list.  Need to add mechanism to bring such pages back when
-   swap becomes available.
-
-Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
-Signed-off-by:  Rik van Riel <riel@redhat.com>
-
-Index: linux-2.6.24-rc6-mm1/mm/memory.c
-===================================================================
---- linux-2.6.24-rc6-mm1.orig/mm/memory.c	2008-01-02 12:37:38.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/mm/memory.c	2008-01-02 15:14:31.000000000 -0500
-@@ -1665,7 +1665,7 @@ gotten:
- 		set_pte_at(mm, address, page_table, entry);
- 		update_mmu_cache(vma, address, entry);
- 		SetPageSwapBacked(new_page);
--		lru_cache_add_active_anon(new_page);
-+		lru_cache_add_active_or_noreclaim(new_page, vma);
- 		page_add_new_anon_rmap(new_page, vma, address);
- 
- 		/* Free the old page.. */
-@@ -2133,7 +2133,7 @@ static int do_anonymous_page(struct mm_s
- 		goto release;
- 	inc_mm_counter(mm, anon_rss);
- 	SetPageSwapBacked(page);
--	lru_cache_add_active_anon(page);
-+	lru_cache_add_active_or_noreclaim(page, vma);
- 	page_add_new_anon_rmap(page, vma, address);
- 	set_pte_at(mm, address, page_table, entry);
- 
-@@ -2285,10 +2285,10 @@ static int __do_fault(struct mm_struct *
- 			entry = maybe_mkwrite(pte_mkdirty(entry), vma);
- 		set_pte_at(mm, address, page_table, entry);
- 		if (anon) {
--                        inc_mm_counter(mm, anon_rss);
-+			inc_mm_counter(mm, anon_rss);
- 			SetPageSwapBacked(page);
--                        lru_cache_add_active_anon(page);
--                        page_add_new_anon_rmap(page, vma, address);
-+			lru_cache_add_active_or_noreclaim(page, vma);
-+			page_add_new_anon_rmap(page, vma, address);
- 		} else {
- 			inc_mm_counter(mm, file_rss);
- 			page_add_file_rmap(page);
-Index: linux-2.6.24-rc6-mm1/mm/swap_state.c
-===================================================================
---- linux-2.6.24-rc6-mm1.orig/mm/swap_state.c	2008-01-02 12:37:52.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/mm/swap_state.c	2008-01-02 15:14:31.000000000 -0500
-@@ -300,7 +300,10 @@ struct page *read_swap_cache_async(swp_e
- 			/*
- 			 * Initiate read into locked page and return.
- 			 */
--			lru_cache_add_anon(new_page);
-+			if (!page_reclaimable(new_page, vma))
-+				lru_cache_add_noreclaim(new_page);
-+			else
-+				lru_cache_add_anon(new_page);
- 			swap_readpage(NULL, new_page);
- 			return new_page;
- 		}
-
--- 
-All Rights Reversed
-
+ADMACtrl.aGO = 0
+ADMACtrl.aEIEN = 0
+poll {
+  until ADMAStatus.aLGCY = 1 || timeout
+}
+-----------------------------------------------------------------------------------
+This email message is for the sole use of the intended recipient(s) and may contain
+confidential information.  Any unauthorized review, use, disclosure or distribution
+is prohibited.  If you are not the intended recipient, please contact the sender by
+reply email and destroy all copies of the original message.
+-----------------------------------------------------------------------------------
