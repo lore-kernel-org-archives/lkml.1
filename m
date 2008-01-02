@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757025AbYABUeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757002AbYABUhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757025AbYABUeY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 15:34:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbYABUeO
+	id S1757002AbYABUhr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 15:37:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbYABUhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 15:34:14 -0500
-Received: from verein.lst.de ([213.95.11.210]:44441 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753530AbYABUeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 15:34:14 -0500
-Date: Wed, 2 Jan 2008 21:33:57 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: Christoph Hellwig <hch@lst.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: getting rid of filp search in fs_may_remount_ro()
-Message-ID: <20080102203357.GB884@lst.de>
-References: <20071126135220.GA17244@lst.de> <20071226141214.GA31455@lst.de> <1199130866.13731.27.camel@localhost> <1199141688.13731.35.camel@localhost>
-Mime-Version: 1.0
+	Wed, 2 Jan 2008 15:37:39 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55596 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752775AbYABUhj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 15:37:39 -0500
+Date: Wed, 2 Jan 2008 20:37:35 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andy Whitcroft <apw@shadowen.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: WARNING: do not add new typedefs - is that for real?
+Message-ID: <20080102203735.GB15099@infradead.org>
+References: <477A6732.4010609@panasas.com> <20080102100852.GA19859@infradead.org> <477B8113.6080602@panasas.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1199141688.13731.35.camel@localhost>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+In-Reply-To: <477B8113.6080602@panasas.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 31, 2007 at 02:54:48PM -0800, Dave Hansen wrote:
-> Here's one blatantly untested idea I have.  The idea is to keep track if
-> anyone might be writing to a mnt.  We keep track on a flag in the mnt.
-> When we set the flag, we increment a counter in the sb and decrement
-> when the flag is cleared.
+On Wed, Jan 02, 2008 at 02:18:27PM +0200, Boaz Harrosh wrote:
+> > But yes, this is one of the rare cases where a typedef makes sense,
+> > but ???'d call it osd_off_t or something like that.
+> > 
 > 
-> We can't simply look at mnt->__mnt_writers because there might be
-> "checked-out" writers in the mnt_writers[] array.  We also have to keep
-> new writers from coming in while we do this, so we use the spinlocks in
-> the mnt_writers[] array for exclusion.  This is a pretty heavyweight
-> lock, but it only gets used at rw->ro transitions.
+> You mean osd_cdb_offset_t. I thought of dropping that _t, I hate it,
+> just a personal preference.
 
-This idea looks good to me, but if you're going to a final version
-please just inline fs_may_remount_ro into its only caller.
+No, I mean osd_off_t :)  off vs offset is purely cosmetic, but in Linux
+we have a strong preference for short typenames.  Just look how ugly
+the prototype and struct defintion in your original posting look :)
+
+Also I thing the _cdb is superflous because there is no other offset
+type in the OSD spec.
 
