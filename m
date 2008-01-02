@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756615AbYABU34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755084AbYABUbH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756615AbYABU34 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 15:29:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754195AbYABU3r
+	id S1755084AbYABUbH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 15:31:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754505AbYABUay
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 15:29:47 -0500
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:46729 "HELO
-	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753530AbYABU3q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 15:29:46 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=fA85KSFnvLb8vo6dnhHV65bEhb8xy+gAF0MJEoZCid9cqshk/pnnEDqtJ7B57unAJBNP6K2J4MYtNil1XX8oMJUOngW3ylo2mNtRRZjtj548Txzm5kRsiji5Cb+RuHzNc8GMCuywc4mj2lihU8yxB5YH+o5pa/JGtylKLHnzFCE=  ;
-X-YMail-OSG: 8FgYW2AVM1m6PpnCg_r2hNnIHJmtYglFd9b0jg0rOWq8_wJscqVxgkQP3.6SheZYu0BdZWDUNw--
-From: David Brownell <david-b@pacbell.net>
+	Wed, 2 Jan 2008 15:30:54 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43423 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754213AbYABUax (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 15:30:53 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 0/4] PM: Do not destroy/create devices while suspended (rev. 2)
-Date: Wed, 2 Jan 2008 12:29:42 -0800
-User-Agent: KMail/1.9.6
-Cc: kay.sievers@vrfy.org, a.zummo@towertech.it, stern@rowland.harvard.edu,
-       rjw@sisk.pl, pavel@suse.cz, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       lenb@kernel.org, gregkh@suse.de, akpm@linux-foundation.org
-References: <200801020032.45529.rjw@sisk.pl> <20080102175400.3C2E0EF588@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <20080102201451.GC3985@elte.hu>
-In-Reply-To: <20080102201451.GC3985@elte.hu>
+Subject: Re: [patch] x86 compat_binfmt_elf, Makefile fixes (was: Re: 2.6.24-rc6-mm1)
+Date: Wed, 2 Jan 2008 21:32:30 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>
+References: <20071222233056.d652743e.akpm@linux-foundation.org> <200712232344.39302.rjw@sisk.pl> <20080102200511.GA3722@elte.hu>
+In-Reply-To: <20080102200511.GA3722@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801021229.43555.david-b@pacbell.net>
+Message-Id: <200801022132.30994.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 January 2008, Ingo Molnar wrote:
+On Wednesday, 2 of January 2008, Ingo Molnar wrote:
 > 
-> then please provide a kernel config option for the new driver to take 
-> over 10:135 too. There's nothing worse to the adoption of new kernel 
-> features necessiating user-space attention. I've got several images of 
-> old distros that i dont want to reconfigure in any way, and it would be 
-> nice to have a drop-in /dev/rtc replacement for them. Really. This is 
-> how we do it for just about everything else too.
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > > Try to delete your fs/ directory in your output dir. Then I expect 
+> > > the same bug to surface again.
+> > 
+> > It does surface indeed.
+> 
+> could you try the patch from Sam below - does it fix the problem? 
 
-I'll let someone else chase that particular issue.  :)
+Well, with this patch applied the compilation reliably fails with:
 
+No rule to make target `arch/x86/ia32/ia32_binfmt.o', needed by `arch/x86/ia32/built-in.o'.
+
+[Do you want the .config, btw?]
+
+Rafael
