@@ -1,76 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbYABNNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756668AbYABNRO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756841AbYABNNR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 08:13:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754404AbYABNNH
+	id S1756668AbYABNRO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 08:17:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754089AbYABNQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 08:13:07 -0500
-Received: from mho-01-bos.mailhop.org ([63.208.196.178]:60209 "EHLO
-	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754142AbYABNNG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 08:13:06 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 216.15.117.105
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1/sQtvruEXACg5dWUqTc5wp
-Message-ID: <477B8D75.3010808@reed.com>
-Date: Wed, 02 Jan 2008 08:11:17 -0500
-From: "David P. Reed" <dpreed@reed.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.9) Gecko/20071115 Fedora/2.0.0.9-1.fc8 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
+	Wed, 2 Jan 2008 08:16:58 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41925 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753924AbYABNQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 08:16:57 -0500
+Date: Wed, 2 Jan 2008 14:15:29 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
+       Greg KH <gregkh@suse.de>, David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH 0/4] PM: Do not destroy/create devices while suspended
+	(rev. 2)
+Message-ID: <20080102131529.GA32160@elte.hu>
+References: <200801020032.45529.rjw@sisk.pl> <20080102105217.GA14731@elte.hu> <200801021356.59865.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
-       Rene Herman <rene.herman@gmail.com>, Paul Rolland <rol@as2917.net>,
-       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       rol@witbe.net
-Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
- I/O delay override.
-References: <47667366.7010405@gmail.com> <4766AE88.4080904@zytor.com> <4766D175.7040807@reed.com> <20071217212509.5edaa372@the-village.bc.nu> <477A634C.8040000@reed.com> <20080101161557.3ce2d5f8@the-village.bc.nu> <20080101164338.GA901@elte.hu> <20080101173212.1bba4939@the-village.bc.nu> <20080101184524.GA6655@elte.hu> <20080101210734.03414931@the-village.bc.nu> <20080102100436.GB4389@elte.hu>
-In-Reply-To: <20080102100436.GB4389@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200801021356.59865.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FYI - another quirky Quanta motherboard from HP, with DMI readings 
-reported to me.
 
--------- Original Message --------
-Date: 	Wed, 2 Jan 2008 16:23:27 +1030
-From: 	Joel Stanley <joel.stanley@adelaide.edu.au>
-To: 	David P. Reed <dpreed@reed.com>
-Subject: 	Re: [PATCH] Option to disable AMD C1E (allows dynticks to work)
+(David Brownell Cc:-ed too)
 
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
+> Well, we have the following test script in the userland suspend 
+> package that is supposed to work right now:
+> 
+> #!/bin/bash
+> date
+> cd /sys/class/rtc/rtc0
+> echo $(( $(cat since_epoch) + 20 )) > wakealarm
+> s2ram
+> date
+> 
+> provided that the new rtc driver code is compiled (and the old one is not).
 
-On Dec 30, 2007 1:13 AM, David P. Reed <dpreed@reed.com> wrote:
-> I have also attached a c program that only touches port 80.  Compile it
-> for 32-bit mode (see comment), run it as root, and after two or three
-> runs, it will hang a system that has the port 80 bug.
+ok, will try that. A stupid question. The old RTC driver is in 
+drivers/char/rtc.c, and maps to:
 
-Using port80.c, I could hard lock a HP Pavilion tx1000 laptop on the
-first go. This was with ubuntu hardy's stock kernel (a 2.6.24-rc)
+  crw-r--r-- 1 root root  10, 135 Oct 25 18:02 /dev/rtc
 
-> dmidecode -s baseboard-manufacturer
-> dmidecode -s baseboard-product-name
+the new driver is in drivers/rtc/*, and maps to:
 
-Quanta
-30BF
+  crw-r--r-- 1 root root 254,   0 Dec 12 02:30 /dev/rtc0
 
-Tonight, I will try compiling a kernel with these values added to your patch.
+but all the x86 distro boxes i have access to make use of /dev/rtc. 
+There's no symlink set up from /dev/rtc to /dev/rtc0 either. So it 
+appears to me that the new RTC driver isnt actually utilized on most 
+distributions.
 
-Some history, feel free to ignore if it's not relevant: ubuntu
-feisty's 2.6.22 based kernel worked fine, irc. We were having issues
-with sound, so tried fedora8's .23 based kernel, but this would
-sporadically hard lock. Ubuntu hardy's 2.6.24 appeared fine, for the 2
-hours or so I used it last night, until using the port80.c program,
-obviously.
+shouldnt we provide a Kconfig way of replacing dev 10:135 with the new 
+driver's 254:0 device? (while keeping all the current modes of operation 
+as well, of course.) It's all supposed to be 100% ioctl ABI compatible 
+with the old driver, right? That way distros could start migrating to it 
+as well, without depending on any udev hackery.
 
-Cheers,
+> > That way any suspend breakage would be detectable (and bisectable) 
+> > in automated testing - if the resume does not come back after 10-20 
+> > seconds then the test failed.
+> 
+> Yes, but please note that some systems require user space 
+> manipulations of the graphics adapter for suspend to work and to 
+> detect a breakage of such a system you need to boot it into X and use 
+> s2ram to suspend.
 
-Joel
+yeah, i wouldnt expect graphics mode to come back without quirks. But it 
+should still work fine over the network, right? (which is my main mode 
+of testing anyway)
 
-
+	Ingo
