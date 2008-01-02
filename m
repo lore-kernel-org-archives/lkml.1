@@ -1,69 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759955AbYABXvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759549AbYABXxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759955AbYABXvs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 18:51:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbYABXv2
+	id S1759549AbYABXxS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 18:53:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754196AbYABXxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 18:51:28 -0500
-Received: from pool-71-245-101-243.ptldor.fios.verizon.net ([71.245.101.243]:52810
-	"EHLO scooby.int.st.wgz.org" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753169AbYABXv1 (ORCPT
+	Wed, 2 Jan 2008 18:53:10 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47820 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753514AbYABXxJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 18:51:27 -0500
-From: "Brett T. Warden" <brett.warden@gmail.com>
-To: linux-kernel@vger.kernel.org, trivial@kernel.org
-Cc: Bill Davidsen <davidsen@tmr.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Wed, 2 Jan 2008 18:53:09 -0500
+Date: Wed, 2 Jan 2008 23:51:28 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Brett T. Warden" <brett.warden@gmail.com>
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
+       Bill Davidsen <davidsen@tmr.com>,
        "Brett T. Warden" <brett.warden@gmail.com>
-Subject: [PATCH] bw-qcam: Rename parameter 'aggressive' to 'force_init'
-Date: Wed,  2 Jan 2008 15:51:25 -0800
-Message-Id: <1199317885-1625-2-git-send-email-brett.warden@gmail.com>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1199317885-1625-1-git-send-email-brett.warden@gmail.com>
-References: a372714f0712051031n31b933bfw6a5f9cb57b8cb5b8@mail.gmail.com
- <1199317885-1625-1-git-send-email-brett.warden@gmail.com>
+Subject: Re: [PATCH] bw-qcam: Rename parameter 'aggressive' to 'force_init'
+Message-ID: <20080102235128.1df94b4e@lxorguk.ukuu.org.uk>
+In-Reply-To: <1199317885-1625-2-git-send-email-brett.warden@gmail.com>
+References: <1199317885-1625-1-git-send-email-brett.warden@gmail.com>
+	<1199317885-1625-2-git-send-email-brett.warden@gmail.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changed new parameter name to 'force_init' for clarity, as per feedback.
+On Wed,  2 Jan 2008 15:51:25 -0800
+"Brett T. Warden" <brett.warden@gmail.com> wrote:
 
-Signed-off-by: Brett T. Warden <brett.warden@gmail.com>
----
- drivers/media/video/bw-qcam.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+> Changed new parameter name to 'force_init' for clarity, as per feedback.
+> 
+> Signed-off-by: Brett T. Warden <brett.warden@gmail.com>
 
-diff --git a/drivers/media/video/bw-qcam.c b/drivers/media/video/bw-qcam.c
-index b74a9cb..0322653 100644
---- a/drivers/media/video/bw-qcam.c
-+++ b/drivers/media/video/bw-qcam.c
-@@ -82,15 +82,15 @@ OTHER DEALINGS IN THE SOFTWARE.
- static unsigned int maxpoll=250;   /* Maximum busy-loop count for qcam I/O */
- static unsigned int yieldlines=4;  /* Yield after this many during capture */
- static int video_nr = -1;
--static unsigned int aggressive;		/* Whether to probe aggressively */
-+static unsigned int force_init;		/* Whether to probe aggressively */
- 
- module_param(maxpoll, int, 0);
- module_param(yieldlines, int, 0);
- module_param(video_nr, int, 0);
- 
--/* Set aggressive=1 to avoid detection by polling status register and
-+/* Set force_init=1 to avoid detection by polling status register and
-  * immediately attempt to initialize qcam */
--module_param(aggressive, int, 0);
-+module_param(force_init, int, 0);
- 
- static inline int read_lpstatus(struct qcam_device *q)
- {
-@@ -336,7 +336,7 @@ static int qc_detect(struct qcam_device *q)
- 	int count = 0;
- 	int i;
- 
--	if (aggressive)
-+	if (force_init)
- 		return 1;
- 
- 	lastreg = reg = read_lpstatus(q) & 0xf0;
--- 
-1.5.3.7
-
+Acked-by: Alan Cox <alan@redhat.com>
