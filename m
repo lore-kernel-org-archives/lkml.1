@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758756AbYABTwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758635AbYABTyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758756AbYABTwS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 14:52:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754692AbYABTwG
+	id S1758635AbYABTyy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 14:54:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754242AbYABTyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 14:52:06 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:33385 "EHLO smtp6.pp.htv.fi"
+	Wed, 2 Jan 2008 14:54:46 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49854 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754383AbYABTwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 14:52:05 -0500
-Date: Wed, 2 Jan 2008 21:51:46 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.24 patch] let EXT4DEV_FS depend on BROKEN
-Message-ID: <20080102195146.GB15898@does.not.exist>
-References: <20080102013218.GO27566@does.not.exist> <20080102174157.GD3351@webber.adilger.int>
+	id S1753764AbYABTyp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 14:54:45 -0500
+Date: Wed, 2 Jan 2008 20:54:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: clean up apic_32/64.c
+Message-ID: <20080102195425.GA31700@elte.hu>
+References: <477BD875.2090508@ct.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080102174157.GD3351@webber.adilger.int>
+In-Reply-To: <477BD875.2090508@ct.jp.nec.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.0664]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 02, 2008 at 10:41:57AM -0700, Andreas Dilger wrote:
-> On Jan 02, 2008  03:32 +0200, Adrian Bunk wrote:
-> > It might make sense to offer ext4 in -mm and even in early -rc kernels, 
-> > but I've already seen people using ext4 simply because a stable kernel 
-> > offered it - and that's definitely not intended.
-> > 
-> > Anyone who _really_ wants to test ext4 should anyway be able to do the 
-> > trivial change of removing the "depends on BROKEN" line.
-> > 
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> > 
-> > @@ -138,7 +138,7 @@ config EXT3_FS_SECURITY
-> >  
-> >  config EXT4DEV_FS
-> >  	tristate "Ext4dev/ext4 extended fs support development (EXPERIMENTAL)"
-> > -	depends on EXPERIMENTAL
-> > +	depends on BROKEN
-> >  	select JBD2
-> >  	select CRC16
-> >  	help
-> 
-> Isn't CONFIG_EXPERIMENTAL enough?
 
-Most people and all distributions use CONFIG_EXPERIMENTAL=y simply 
-because too many options (including options required for hardware 
-support) depend on it.
+* Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
 
-Compare e.g.:
-- "Marvell SATA support (HIGHLY EXPERIMENTAL)"
-- "Provide NFSv4 client support (EXPERIMENTAL)"
-- "Ext4dev/ext4 extended fs support development (EXPERIMENTAL)"
+> White space and coding style clean up. Make apic_32/64.c similar.
 
-And I really do not have the impression that ext4 is ready for being 
-used by people who cannot remove this depends line from a Kconfig file
-in their kernel.
+thanks, applied. FYI, there's still a bit left in apic_32.c:
 
-> Cheers, Andreas
+ total: 5 errors, 1 warnings, 1566 lines checked
 
-cu
-Adrian
+we might as well go for all of them? :-)
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	Ingo
