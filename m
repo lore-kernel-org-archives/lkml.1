@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759150AbYABVyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758055AbYABV50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759150AbYABVyX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 16:54:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbYABVyP
+	id S1758055AbYABV50 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 16:57:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbYABV5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 16:54:15 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:51625 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752035AbYABVyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 16:54:14 -0500
-Date: Wed, 2 Jan 2008 13:54:12 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, htejun@gmail.com,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, maneesh@linux.vnet.ibm.com,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: 2.6.22-stable causes oomkiller to be invoked
-In-Reply-To: <Pine.LNX.4.64.0801021237330.21526@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0801021346580.3778@schroedinger.engr.sgi.com>
-References: <20071214150533.aa30efd4.akpm@linux-foundation.org>
- <20071215035200.GA22082@linux.vnet.ibm.com> <20071214220030.325f82b8.akpm@linux-foundation.org>
- <20071215104434.GA26325@linux.vnet.ibm.com> <20071217045904.GB31386@linux.vnet.ibm.com>
- <Pine.LNX.4.64.0712171143280.12871@schroedinger.engr.sgi.com>
- <20071217120720.e078194b.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0712171222470.29500@schroedinger.engr.sgi.com>
- <20071221044508.GA11996@linux.vnet.ibm.com>
- <Pine.LNX.4.64.0712261258050.16862@schroedinger.engr.sgi.com>
- <20071228101109.GB5083@linux.vnet.ibm.com> <Pine.LNX.4.64.0801021237330.21526@schroedinger.engr.sgi.com>
+	Wed, 2 Jan 2008 16:57:15 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:49277 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752333AbYABV5O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 16:57:14 -0500
+Date: Wed, 2 Jan 2008 16:57:06 -0500
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Torsten Kaiser <just.for.lkml@googlemail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Neil Brown <neilb@suse.de>, netdev@vger.kernel.org,
+       Tom Tucker <tom@opengridcomputing.com>
+Subject: Re: 2.6.24-rc6-mm1
+Message-ID: <20080102215706.GB6480@fieldses.org>
+References: <64bb37e0712230827m7d368e2l3174f3b4396d09c1@mail.gmail.com> <64bb37e0712281453y4aac82b7h7acc8ec314ca6e3e@mail.gmail.com> <20071228150746.42b3bbc0.akpm@linux-foundation.org> <64bb37e0712290851r6d41768dk270e47884713a3de@mail.gmail.com> <20071230013021.GA13603@gondor.apana.org.au> <64bb37e0712291934o77a3d365h56c9c31ac8437469@mail.gmail.com> <64bb37e0712311215x519b10e9kd51eb745b3b7290a@mail.gmail.com> <20080101120406.GA27209@gondor.apana.org.au> <64bb37e0801021029u1735bb9eta53906b123abf577@mail.gmail.com> <20080102215154.GA13911@gondor.apana.org.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080102215154.GA13911@gondor.apana.org.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just traced it again on my system: It is okay for the number of pages on 
-the quicklist to reach the high count that we see (although the 16 bit 
-limits are weird. You have around 4GB of memory in the system?). Up to 
-1/16th of free memory of a node can be allocated for quicklists (this 
-allows the effective shutting down and restarting of large amounts of 
-processes)
+On Thu, Jan 03, 2008 at 08:51:54AM +1100, Herbert Xu wrote:
+> On Wed, Jan 02, 2008 at 07:29:59PM +0100, Torsten Kaiser wrote:
+> >
+> > Vanilla 2.6.24-rc6 seems stable. I did not see any crash or warnings.
+> 
+> OK that's great.  The next step would be to try excluding specific git
+> trees from mm to see if they make a difference.
+> 
+> The two specific trees of interest would be git-nfsd and git-net.
 
-The problem may be that this is run on a HIGHMEM system and the 
-calculation of allowable pages on the quicklists does not take into 
-account that highmem pages are not usable for quicklists (not sure about 
-ZONE_MOVABLE on i386. Maybe we need to take that into account as well?)
+Also, if it's git-nfsd, it'd be useful to test with the current git-nfsd
+from the for-mm branch at:
 
-Here is a patch that removes the HIGHMEM portion from the calculation. 
-Does this change anything:
+	git://linux-nfs.org/~bfields/linus.git for-mm
 
-Index: linux-2.6/mm/quicklist.c
-===================================================================
---- linux-2.6.orig/mm/quicklist.c	2008-01-02 13:41:10.000000000 -0800
-+++ linux-2.6/mm/quicklist.c	2008-01-02 13:44:15.000000000 -0800
-@@ -29,6 +29,12 @@ static unsigned long max_pages(unsigned 
- 
- 	node_free_pages = node_page_state(numa_node_id(),
- 			NR_FREE_PAGES);
-+#ifdef CONFIG_HIGHMEM
-+	/* Take HIGHMEM pages out of consideration */
-+	node_free_pages -= zone_page_state(&NODE_DATA(numa_node_id())->node_zones[ZONE_HIGHMEM],
-+				NR_FREE_PAGES);
-+#endif
-+
- 	max = node_free_pages / FRACTION_OF_NODE_MEM;
- 	return max(max, min_pages);
- }
+and then any bisection results (even partial) from that tree would help
+immensely....
+
+--b.
