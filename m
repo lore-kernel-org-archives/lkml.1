@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753491AbYABG4G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758367AbYABG6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753491AbYABG4G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 01:56:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbYABGzz
+	id S1758367AbYABG6y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 01:58:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756090AbYABG6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 01:55:55 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:61985 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753974AbYABGzy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 01:55:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=YFWL//uS7tJh2bKWpTKBkMMm218Uyq/D78TDey4KkLfFQc8XAzyijk9MJmLpO3cv1s5JoE0qtDCrYUXL9doeEpD3SG4yuFE02BJvgHaR5Tfd2rkAcCoxwu4Souxkac+ThAR61mpCnQ8Jky9CSYxhm4P7GV0bWGiNHyGWmhqgJDI=
-Message-ID: <477B3571.6080500@gmail.com>
-Date: Wed, 02 Jan 2008 15:55:45 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 2 Jan 2008 01:58:47 -0500
+Received: from cantor.suse.de ([195.135.220.2]:58262 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751210AbYABG6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 01:58:46 -0500
+Date: Tue, 1 Jan 2008 23:00:08 -0800
+From: Greg KH <gregkh@suse.de>
+To: David Miller <davem@davemloft.net>
+Cc: hidave.darkstar@gmail.com, greg@kroah.com, peterz@infradead.org,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Re: [PATCH 01/12] Use mutex instead of semaphore in driver core
+Message-ID: <20080102070008.GA31343@suse.de>
+References: <20071229170730.GA1351@kroah.com> <a8e1da0801011654j1427d466m3971f693f0439954@mail.gmail.com> <20080102051828.GA24431@suse.de> <20080101.212501.00751091.davem@davemloft.net>
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: Jeff Garzik <jeff@garzik.org>, Gabor Gombas <gombasg@sztaki.hu>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       kluo@nvidia.com, AMartin@nvidia.com, pchen@nvidia.com
-Subject: Re: sata_nv + ADMA + Samsung disk problem
-References: <20070808120804.GB5257@boogie.lpds.sztaki.hu> <20080101164416.GA29574@boogie.lpds.sztaki.hu> <477B0429.7040909@gmail.com> <477B0CFD.1030603@shaw.ca> <477B10F2.9000107@shaw.ca> <477B1233.3090706@gmail.com> <477B2CE4.8070602@garzik.org> <477B318E.4030309@shaw.ca>
-In-Reply-To: <477B318E.4030309@shaw.ca>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080101.212501.00751091.davem@davemloft.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Jeff Garzik wrote:
->> Tejun Heo wrote:
->>> Thanks a lot for the detailed explanation.  Nvidia ppl, any ideas?
->>> FLUSH is used regularly.  We really need to fix this.
->>
->>
->> I reiterate my opinion :)  ...   We should remove ADMA support from
->> sata_nv.  It's only in a few chips, it's not appearing in any new
->> chips, and nasty problems have lingered since ADMA support was
->> introduced.
->>
->> Definitely sounds like we should disable ADMA by default for
->> 2.6.24-rc, too.
+On Tue, Jan 01, 2008 at 09:25:01PM -0800, David Miller wrote:
+> From: Greg KH <gregkh@suse.de>
+> Date: Tue, 1 Jan 2008 21:18:28 -0800
 > 
-> I wouldn't agree.. It's only in a few chips (CK804/MCP04), but those
-> chips are very common in desktop, workstation, even some server
-> machines. Given the huge number of these chips out there, problem
-> reports have been quite rare.
+> > But is the usage of this semaphore in the class code really a problem?
+> > Has it been seen to cause issues anywhere?  Does it show up on any
+> > benchmarks as being something that really needs to be replaced?
+> 
+> It's a question of maintainability and simplicity also Greg.
+> 
+> I actually have no idea why you're making any sort of fuss about this.
+> To me it's so clear cut that we should do that.
 
-I agree with Jeff here.  Maybe not remove but disable it by default and
-when enabling warn loudly.  NCQ just doesn't enough for its cost when
-the cost includes erratic behaviors.  Only very small fraction of error
-cases actually make to bugzilla or this mailing list.
+For most cases, yes, I agree with this, but due to the lockdep issues
+that occur here, and the whole mess with the suspend path and locking
+the device tree, that has been hashed out many times in the past, I am
+interested in trying to see if there is any real reason why this is
+absolutely necessary to convert.
 
-Nvidia gents, is there anyway (be it NDA or whatever) to get Robert or
-any of us technical documentation?
+If no one has noticed any issues in this area, I think the complexity
+that will be involved in any such conversion will strongly outweigh any
+simplicity that might be expected.
 
-Thanks.
+I'm very open to potential patches to do this, just don't ignore the
+issues that others have run into in the past when attempting this.
 
--- 
-tejun
+thanks,
+
+greg k-h
