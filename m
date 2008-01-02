@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbYABMZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbYABM04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754224AbYABMZm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 07:25:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYABMZd
+	id S1754760AbYABM04 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 07:26:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYABM0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 07:25:33 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44818 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752581AbYABMZc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 07:25:32 -0500
-Date: Wed, 2 Jan 2008 13:19:09 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>, trem <tremyfr@yahoo.fr>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: 2.6.24-rc6-mm1
-Message-ID: <20080102121909.GA6285@elte.hu>
-References: <9DtBq-2jD-3@gated-at.bofh.it> <200801022131.15482.nickpiggin@yahoo.com.au> <1199271676.6821.112.camel@twins> <200801022212.29303.nickpiggin@yahoo.com.au> <1199273047.6821.119.camel@twins>
+	Wed, 2 Jan 2008 07:26:46 -0500
+Received: from moutng.kundenserver.de ([212.227.126.174]:52413 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752133AbYABM0p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 07:26:45 -0500
+Date: Wed, 2 Jan 2008 13:26:10 +0100 (CET)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+cc: Theodore Tso <tytso@mit.edu>, 7eggert@gmx.de, viro@zeniv.linux.org.uk,
+       davem@davemloft.net, jengelh@computergmbh.de, devzero@web.de,
+       linux-kernel@vger.kernel.org, bunk@kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] Force UNIX domain sockets to be built in
+In-Reply-To: <E1JA0mT-0008U2-00@gondolin.me.apana.org.au>
+Message-ID: <alpine.LSU.0.999.0801021308260.2414@be1.lrz>
+References: <E1JA0mT-0008U2-00@gondolin.me.apana.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1199273047.6821.119.camel@twins>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=us-ascii
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1++uJD59AhYAWB2XBZ9LzIgcqcBbGy7ygI4L8b
+ QMcG+r+uo7/91Vop7QHk2Wv2/12fODnFQ7y15Fhj4wntWPxmQU
+ DsVZxesTSPlWTYu7pPTWQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2 Jan 2008, Herbert Xu wrote:
+> Theodore Tso <tytso@mit.edu> wrote:
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
-
-> >  It would be sweet to have them use private mutexes for the job 
-> > instead (although even then it probably wouldn't be a straight 
-> > conversion)...
+> > The question is whether the size of the Unix domain sockets support is
+> > worth the complexity of yet another config option that we expose to
+> > the user.  For the embedded world, OK, maybe they want to save 14k of
+> > non-swappable memory.  But for the non-embedded world, given the 117k
+> > mandatory memory usage of sysfs, or the 124k memory usage of the core
+> > networking stack, never mind the 3 megabytes of memory used by objects
+> > in the kernel subdirectory, it's not clear that it's worth worrying
+> > over 14k of memory, especially when many Unix programs assume
+> > that Unix Domain Sockets are present.
 > 
-> I tried a quick conversion of reiser3 at the time, but it really wants 
-> a recursive lock and I couldn't be bothered to fix a 'legacy' 
-> filesystem so I just gave up and converted the filesystem to XFS.
+> That would make sense if we were proposing to get rid of the CONFIG_UNIX
+> question altogether for !CONFIG_EMBEDDED.
 
-as long as the only requirement is recursion, and not any of the other 
-BKL properties, that could be wrapped. I guess fixing the TTY code to 
-have no BKL dependencies has a higher chance of success - given that 
-Alan is working on it :-)
+Exactly this is what my patch does: The question is not to be displayed 
+unless EMBEDDED, and the default is changed to y.
 
-	Ingo
+>  However, the proposal here is
+> merely to eliminate the modular option but the CONFIG_UNIX prompt itself
+> will remain even without CONFIG_EMBEDDED.
+> 
+> This I think is quite pointless.
+
+That's what another patch would do. I decided that s/tristate/bool/ is 
+something completely different from adding the default and hiding the 
+option, and that I'd avoid this discussion by not eliminating UNIX=m.
+
+-- 
+Top 100 things you don't want the sysadmin to say:
+96. That's SOOOOO bizarre.
