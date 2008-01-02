@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760534AbYGUEgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760454AbYGUEhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760534AbYGUEgV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 00:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbYGUEgM
+	id S1760454AbYGUEhz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jul 2008 00:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbYGUEhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 00:36:12 -0400
-Received: from www.swissdisk.com ([216.66.254.197]:38454 "EHLO
+	Mon, 21 Jul 2008 00:37:47 -0400
+Received: from www.swissdisk.com ([216.66.254.197]:32856 "EHLO
 	swissweb.swissdisk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752268AbYGUEgL (ORCPT
+	with ESMTP id S1752254AbYGUEhq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 00:36:11 -0400
-X-Greylist: delayed 2497 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Jul 2008 00:36:11 EDT
-From: Tim Gardner <tim.gardner@canonical.com>
+	Mon, 21 Jul 2008 00:37:46 -0400
+X-Greylist: delayed 2592 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Jul 2008 00:37:46 EDT
+From: Ben Collins <ben.collins@canonical.com>
 Date: Wed, 2 Jan 2008 08:57:35 -0700
-Subject: [PATCH 1/7] netfilter: Export ip6t_mh.h and xt_quota.h for iptables build
-CC: netfilter-devel@vger.kernel.org
+Subject: [PATCH 0/7] Patches from Ubuntu kernel tree
 To: linux-kernel@vger.kernel.org
-In-Reply-To: <24762.90.138.930.038.1036103001.ben.collins@canonical.com>
-Message-Id: <E1KKl4I-00068B-LW@swissweb.swissdisk.com>
+Message-ID: <24762.90.138.930.038.1036103001.ben.collins@canonical.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC: netfilter-devel@vger.kernel.org
-Signed-off-by: Soren Hansen <soren@ubuntu.com>
-Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
-Signed-off-by: Ben Collins <ben.lcollins@canonical.com>
----
+The following is a set of patches collected from our tree. They are
+available from:
+
+	git.kernel.org:/pub/scm/linux/kernel/git/bcollins/linux-ubuntu#for-linus
+
+NOTE: Contrary to the branch name, this isn't meant to be pulled
+wholesale.
+
+Alexandre Karpenko (1):
+      HID: Add quirks for fourth generation MacBooks (4,1)
+
+Ben Collins (3):
+      bluetooth: Add quirks for a few hci_usb devices
+      [airprime] Add support for more devices
+      pm: Config option to disable handling of console during suspend/resume
+
+Chuck Short (1):
+      ata: blacklist FUJITSU MHW2160BH PL
+
+Matthew Garrett (1):
+      irda: Default to dongle type 9 on IBM hardware
+
+Tim Gardner (1):
+      netfilter: Export ip6t_mh.h and xt_quota.h for iptables build
+
+ drivers/ata/libata-core.c           |    1 +
+ drivers/bluetooth/hci_usb.c         |    7 +++++++
+ drivers/hid/usbhid/hid-quirks.c     |   13 ++++++++++++-
+ drivers/net/irda/nsc-ircc.c         |    5 ++++-
+ drivers/usb/serial/airprime.c       |    9 +++++++++
  include/linux/netfilter/Kbuild      |    2 ++
  include/linux/netfilter_ipv6/Kbuild |    1 +
- 2 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/netfilter/Kbuild b/include/linux/netfilter/Kbuild
-index 3aff513..3a04da3 100644
---- a/include/linux/netfilter/Kbuild
-+++ b/include/linux/netfilter/Kbuild
-@@ -31,6 +31,8 @@ header-y += xt_multiport.h
- header-y += xt_owner.h
- header-y += xt_pkttype.h
- header-y += xt_rateest.h
-+header-y += xt_policy.h
-+header-y += xt_quota.h
- header-y += xt_realm.h
- header-y += xt_sctp.h
- header-y += xt_state.h
-diff --git a/include/linux/netfilter_ipv6/Kbuild b/include/linux/netfilter_ipv6/Kbuild
-index 8887a5f..aca4bd1 100644
---- a/include/linux/netfilter_ipv6/Kbuild
-+++ b/include/linux/netfilter_ipv6/Kbuild
-@@ -11,6 +11,7 @@ header-y += ip6t_length.h
- header-y += ip6t_limit.h
- header-y += ip6t_mac.h
- header-y += ip6t_mark.h
-+header-y += ip6t_mh.h
- header-y += ip6t_multiport.h
- header-y += ip6t_opts.h
- header-y += ip6t_owner.h
--- 
-1.5.4.3
-
+ kernel/power/Kconfig                |   15 +++++++++++++++
+ kernel/power/console.c              |    4 ++++
+ 9 files changed, 55 insertions(+), 2 deletions(-)
