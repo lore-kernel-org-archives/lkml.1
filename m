@@ -1,82 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757728AbYABA2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759200AbYABAfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757728AbYABA2w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 19:28:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759022AbYABA2m
+	id S1759200AbYABAfh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 19:35:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756242AbYABAf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 19:28:42 -0500
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:38943 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759019AbYABA2l (ORCPT
+	Tue, 1 Jan 2008 19:35:28 -0500
+Received: from moutng.kundenserver.de ([212.227.126.183]:62497 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754857AbYABAf1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 19:28:41 -0500
-Message-ID: <477AD9EB.9050306@keyaccess.nl>
-Date: Wed, 02 Jan 2008 01:25:15 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 1 Jan 2008 19:35:27 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] [2.6.24] Add PPC nvram ioctls to compat_ioctl
+Date: Wed, 2 Jan 2008 01:34:41 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: Olof Johansson <olof@lixom.net>, paulus@samba.org,
+       linux-kernel@vger.kernel.org
+References: <20071231224558.GA16517@lixom.net>
+In-Reply-To: <20071231224558.GA16517@lixom.net>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, "David P. Reed" <dpreed@reed.com>,
-       Ingo Molnar <mingo@elte.hu>, Paul Rolland <rol@as2917.net>,
-       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       rol@witbe.net
-Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
-References: <4762C551.5070003@zytor.com>	<20071214210652.GB28793@elf.ucw.cz>	<4763001A.1070102@zytor.com>	<20071214232955.545ab809@the-village.bc.nu>	<20071215080831.404cdb32@tux.DEF.witbe.net>	<47638C8C.2090604@gmail.com>	<476438B4.2020600@zytor.com>	<476462BE.3030701@gmail.com>	<4764687D.6080609@zytor.com>	<476524DB.7020806@gmail.com>	<20071216152250.GA21245@elte.hu>	<4765D43E.1010800@gmail.com>	<4765D95C.4010404@zytor.com>	<4765DCB0.8030901@gmail.com>	<4765EE7F.80002@zytor.com>	<47667366.7010405@gmail.com>	<4766AE88.4080904@zytor.com>	<4766D175.7040807@reed.com>	<20071217212509.5edaa372@the-village.bc.nu>	<477A634C.8040000@reed.com> <20080101161557.3ce2d5f8@the-village.bc.nu> <477AAD7B.5040405@zytor.com> <477AB204.3070904@keyaccess.nl> <477AB433.5070506@zytor.com> <477AC02A.40108@keyaccess.nl> <477AC130.3050901@zytor.com> <477AC8BA.2050503@keyaccess.nl>
-In-Reply-To: <477AC8BA.2050503@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Disposition: inline
+Message-Id: <200801020134.41761.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18O6ysTPTixBKJneQ5Nz5g6k5o3eHV1BMLeR+F
+ hq+32EvR7w3T9LlvOeb5gyuYr/8lT3QNQGPWtosQ+TQw3Nqlph
+ 8QeQ9K78i3h3AYOhB2/8A==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02-01-08 00:11, Rene Herman wrote:
-
-> On 01-01-08 23:39, H. Peter Anvin wrote:
+On Monday 31 December 2007, Olof Johansson wrote:
+> Fix the following console warning when running 'nvsetenv', and makes
+> setting of new variables work again:
 > 
->>>> Yes, we do.  It's exactly this side effect which makes this safer 
->>>> than either 0x80 or 0xED -- it's a port that *guaranteed* can't be 
->>>> reclaimed for other purposes without breaking MS-DOS compatibility.
->>>
->>> I see that with CR0.NE set (*) we indeed don't care about IGNNE#...
->>>
->>> However, I'm worried about this comment in arch/x86/kernel/i8259_32.c
->>>
->>> ===
->>> /*
->>>  * New motherboards sometimes make IRQ 13 be a PCI interrupt,
->>>  * so allow interrupt sharing.
->>>  */
->>> ===
->>>
->>> Is it really safe to just blindly negate IRQ13 on everything out 
->>> there, from regular PC through funky embedded thingies?
->>
->> It's not any IRQ 13, it's IRQ 13 from the FPU.
+> ioctl32(nvsetenv:4022): Unknown cmd fd(3) cmd(20007043){t:'p';sz:0}
+> arg(00000003) on /dev/nvram
 > 
-> Well, on the PIIX it is and I guess on anything where it's _not_ fully 
-> internal an 0xf0 write wouldn't have any effect on IRQ13...
+> That's the IOC_NVRAM_SYNC call.
 > 
-> When you earlier mentioned this it seemed 0xed switched on DMI would be 
-> good enough, but well.
 > 
-> Alan, do you have an opinion on the port 0xf0 write? It should probably 
-> still be combined with a replacement/deletion for new machines due to 
-> the bus-locking "bad for real-time" thing you mentioned earlier but in 
-> the short run it could be a fairly low-impact replacement on anything 
-> except a 386+387
+> Signed-off-by: Olof Johansson <olof@lixom.net>
 > 
-> We should do a another timing measurement survey and it makes for 
-> sligtly worse code if we indeed feel it's not safe enough to write 
-> anything other than 0, but otherwise it's quite minimal.
+> diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
+> index e8b7c3a..7be6765 100644
+> --- a/fs/compat_ioctl.c
+> +++ b/fs/compat_ioctl.c
 
-Thinking about this, my main worry about 0xf0 as a 0x80 replacement would be 
-systems that have elected to _not_ let port 0xf0 writes flow through to ISA 
-changing the timing-characteristics. Given that it's a known port, someone 
-may have elected to just keep it fully internal.
+Please don't. I have this long-term plan of getting rid of fs/compat_ioctl.c,
+the better answer is to convert arch/powerpc/kernel/nvram_64.c and
+drivers/char/generic_nvram.c from the .ioctl file_operation to
+.unlocked_ioctl/.compat_ioctl.
 
-Upto now the datasheets I've read do put it on ISA...
-
-Rene.
-
+	Arnd <><
