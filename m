@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759284AbYABQls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759039AbYABQqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759284AbYABQls (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 11:41:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755155AbYABQli
+	id S1759039AbYABQqg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 11:46:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755258AbYABQq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 11:41:38 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:44015 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754912AbYABQlh (ORCPT
+	Wed, 2 Jan 2008 11:46:29 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:40644 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755083AbYABQq2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 11:41:37 -0500
-Date: Wed, 2 Jan 2008 11:41:36 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
-       Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH 1/4] PM: Introduce destroy_suspended_device()
-In-Reply-To: <200801021433.47651.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0801021122070.5062-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 2 Jan 2008 11:46:28 -0500
+Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20080102162534.GA4041@elte.hu>
+References: <20080102162534.GA4041@elte.hu>
+Content-Type: text/plain
+Date: Wed, 02 Jan 2008 10:46:21 -0600
+Message-Id: <1199292381.3258.32.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Jan 2008, Rafael J. Wysocki wrote:
 
-> On Wednesday, 2 of January 2008, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > It sometimes is necessary to destroy a device object during a suspend or
-> > hibernation, but the PM core is supposed to control all device objects in that
-> > cases.  For this reason, it is necessary to introduce a mechanism allowing one
-> > to ask the PM core to remove a device object corresponding to a suspended
-> > device on one's behalf.
-> > 
-> > Define function destroy_suspended_device() that will schedule the removal of
-> > a device object corresponding to a suspended device by the PM core during the
-> > subsequent resume.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+On Wed, 2008-01-02 at 17:25 +0100, Ingo Molnar wrote:
+> revert commit:
 > 
-> Sorry, a small fix is needed for this patch.  Namely, dpm_sysfs_remove(dev)
-> should not be called by device_pm_schedule_removal(), because it will be called
-> anyway from device_pm_remove() when the device object is finally unregistered
-> (we're talking here about unlikely error paths only, but still).
+>   commit 6f5391c283d7fdcf24bf40786ea79061919d1e1d
+>   Author: Matthew Wilcox <matthew@wil.cx>
+>   Date:   Tue Sep 25 12:42:04 2007 -0400
+> 
+>       [SCSI] Get rid of scsi_cmnd->done
+> 
+> this is a supposed-to-be-cleanup commit, but apparently it causes
+> regressions:
+> 
+>   Bug 9370 - v2.6.24-rc2-409-g9418d5d: attempt to access beyond end of device
+>   http://bugzilla.kernel.org/show_bug.cgi?id=9370
+> 
+> this patch should be reintroduced in a more split-up form to make
+> testing of it easier.
 
-The situation is a little confusing, because the source files under 
-drivers/base/power are maintained in Greg's tree and he already has 
-gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch 
-installed.  That patch conflicts with this one.
+I disagree with this.  We only have one reporter of a problem and it
+appears to be some type of obscure interaction with pktdvd which no-one
+can track down (although it's not really helped by the reporter not
+being very responsive).
 
-One of the these two patches will have to be rewritten to apply on top 
-of the other.  Which do you think should be changed?
+The correct thing to do is root cause the problem and fix it at source,
+since it's very likely that this is a pre-existing bug that was simply
+uncovered by the patch you're recommending we revert.
 
-Alan Stern
+Unfortunately, I suspect it won't get fixed until someone else actually
+manages to reproduce it (which I haven't been able to so far).
+
+James
+
 
