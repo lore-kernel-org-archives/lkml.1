@@ -1,141 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752685AbYABRiz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752945AbYABRmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752685AbYABRiz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 12:38:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbYABRir
+	id S1752945AbYABRmQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 12:42:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbYABRmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 12:38:47 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:36462 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750823AbYABRir (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 12:38:47 -0500
-Message-ID: <477BCC1F.5@redhat.com>
-Date: Wed, 02 Jan 2008 11:38:39 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
+	Wed, 2 Jan 2008 12:42:00 -0500
+Received: from mail.clusterfs.com ([74.0.229.162]:33748 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751091AbYABRl7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 12:41:59 -0500
+Date: Wed, 2 Jan 2008 10:41:57 -0700
+From: Andreas Dilger <adilger@sun.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.24 patch] let EXT4DEV_FS depend on BROKEN
+Message-ID: <20080102174157.GD3351@webber.adilger.int>
+Mail-Followup-To: Adrian Bunk <bunk@kernel.org>, sct@redhat.com,
+	akpm@linux-foundation.org, adilger@clusterfs.com,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080102013218.GO27566@does.not.exist>
 MIME-Version: 1.0
-To: Roman Zippel <zippel@linux-m68k.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] UPDATED2: hfs: handle more on-disk corruptions without oopsing
-References: <47699C29.4010706@redhat.com> <476A8F36.2050007@redhat.com> <200712240316.43308.zippel@linux-m68k.org>
-In-Reply-To: <200712240316.43308.zippel@linux-m68k.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080102013218.GO27566@does.not.exist>
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roman, with this on top does it look better to you?
-I'll get hfsplus done in a bit.
+On Jan 02, 2008  03:32 +0200, Adrian Bunk wrote:
+> It might make sense to offer ext4 in -mm and even in early -rc kernels, 
+> but I've already seen people using ext4 simply because a stable kernel 
+> offered it - and that's definitely not intended.
+> 
+> Anyone who _really_ wants to test ext4 should anyway be able to do the 
+> trivial change of removing the "depends on BROKEN" line.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> @@ -138,7 +138,7 @@ config EXT3_FS_SECURITY
+>  
+>  config EXT4DEV_FS
+>  	tristate "Ext4dev/ext4 extended fs support development (EXPERIMENTAL)"
+> -	depends on EXPERIMENTAL
+> +	depends on BROKEN
+>  	select JBD2
+>  	select CRC16
+>  	help
 
-Thanks,
--Eric
+Isn't CONFIG_EXPERIMENTAL enough?
 
------------------
-
-Fix up previous hfs fsfuzzer patch to address Roman's comments.
-
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
-
----
-
-diff -u linux-2.6.24-rc3/fs/hfs/brec.c linux-2.6.24-rc3/fs/hfs/brec.c
---- linux-2.6.24-rc3/fs/hfs/brec.c
-+++ linux-2.6.24-rc3/fs/hfs/brec.c
-@@ -49,14 +49,14 @@
- 			if (retval > node->tree->max_key_len + 2) {
- 				printk(KERN_ERR "hfs: keylen %d too large\n",
- 					retval);
--				retval = HFS_BAD_KEYLEN;
-+				retval = 0;
- 			}
- 		} else {
- 			retval = (hfs_bnode_read_u8(node, recoff) | 1) + 1;
- 			if (retval > node->tree->max_key_len + 1) {
- 				printk(KERN_ERR "hfs: keylen %d too large\n",
- 					retval);
--				retval = HFS_BAD_KEYLEN;
-+				retval = 0;
- 			}
- 		}
- 	}
-diff -u linux-2.6.24-rc3/fs/hfs/bfind.c linux-2.6.24-rc3/fs/hfs/bfind.c
---- linux-2.6.24-rc3/fs/hfs/bfind.c
-+++ linux-2.6.24-rc3/fs/hfs/bfind.c
-@@ -52,7 +52,7 @@
- 		rec = (e + b) / 2;
- 		len = hfs_brec_lenoff(bnode, rec, &off);
- 		keylen = hfs_brec_keylen(bnode, rec);
--		if (keylen == HFS_BAD_KEYLEN) {
-+		if (keylen == 0) {
- 			res = -EINVAL;
- 			goto fail;
- 		}
-@@ -71,7 +71,7 @@
- 	if (rec != e && e >= 0) {
- 		len = hfs_brec_lenoff(bnode, e, &off);
- 		keylen = hfs_brec_keylen(bnode, e);
--		if (keylen == HFS_BAD_KEYLEN) {
-+		if (keylen == 0) {
- 			res = -EINVAL;
- 			goto fail;
- 		}
-@@ -207,7 +207,7 @@
- 
- 	len = hfs_brec_lenoff(bnode, fd->record, &off);
- 	keylen = hfs_brec_keylen(bnode, fd->record);
--	if (keylen == HFS_BAD_KEYLEN) {
-+	if (keylen == 0) {
- 		res = -EINVAL;
- 		goto out;
- 	}
-diff -u linux-2.6.24-rc3/fs/hfs/hfs.h linux-2.6.24-rc3/fs/hfs/hfs.h
---- linux-2.6.24-rc3/fs/hfs/hfs.h
-+++ linux-2.6.24-rc3/fs/hfs/hfs.h
-@@ -28,8 +28,6 @@
- #define HFS_MAX_NAMELEN		128
- #define HFS_MAX_VALENCE		32767U
- 
--#define HFS_BAD_KEYLEN		0xFF
--
- /* Meanings of the drAtrb field of the MDB,
-  * Reference: _Inside Macintosh: Files_ p. 2-61
-  */
-diff -u linux-2.6.24-rc3/fs/hfs/btree.c linux-2.6.24-rc3/fs/hfs/btree.c
---- linux-2.6.24-rc3/fs/hfs/btree.c
-+++ linux-2.6.24-rc3/fs/hfs/btree.c
-@@ -81,15 +81,23 @@
- 		goto fail_page;
- 	if (!tree->node_count)
- 		goto fail_page;
--	if ((id == HFS_EXT_CNID) && (tree->max_key_len != HFS_MAX_EXT_KEYLEN)) {
--		printk(KERN_ERR "hfs: invalid extent max_key_len %d\n",
--			tree->max_key_len);
--		goto fail_page;
--	}
--	if ((id == HFS_CAT_CNID) && (tree->max_key_len != HFS_MAX_CAT_KEYLEN)) {
--		printk(KERN_ERR "hfs: invalid catalog max_key_len %d\n",
--			tree->max_key_len);
--		goto fail_page;
-+	switch(id) {
-+	case HFS_EXT_CNID:
-+		if (tree->max_key_len != HFS_MAX_EXT_KEYLEN) {
-+			printk(KERN_ERR "hfs: invalid extent max_key_len %d\n",
-+				tree->max_key_len);
-+			goto fail_page;
-+		}
-+		break;
-+	case HFS_CAT_CNID:
-+		if (tree->max_key_len != HFS_MAX_CAT_KEYLEN) {
-+			printk(KERN_ERR "hfs: invalid catalog max_key_len %d\n",
-+				tree->max_key_len);
-+			goto fail_page;
-+		}
-+		break;
-+	default:
-+		BUG();
- 	}
- 
-
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
