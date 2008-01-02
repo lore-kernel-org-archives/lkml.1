@@ -1,45 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbYABDGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756537AbYABDH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbYABDGT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 22:06:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbYABDGJ
+	id S1756537AbYABDH3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 22:07:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbYABDHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 22:06:09 -0500
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:44722 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752858AbYABDGI (ORCPT
+	Tue, 1 Jan 2008 22:07:15 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50964
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753417AbYABDHN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 22:06:08 -0500
-Message-ID: <477AFEA4.5060509@keyaccess.nl>
-Date: Wed, 02 Jan 2008 04:01:56 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>, dpreed@reed.com,
-       Islam Amer <pharon@gmail.com>, hpa@zytor.com,
-       Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
-References: <477711DC.5030800@keyaccess.nl>	<alpine.LFD.1.00.0712300124440.32517@woody.linux-foundation.org>	<20071230144700.78f4605c@the-village.bc.nu>	<20071230152835.GX16946@elte.hu>	<20071230153818.1a554a7e@the-village.bc.nu>	<20071230160132.GA14311@elte.hu>	<20071230164828.039916c8@the-village.bc.nu>	<4777E010.7030703@keyaccess.nl>	<20071231122344.7b403cd8@the-village.bc.nu>	<4778FE42.6010003@keyaccess.nl> <20071231155600.0b06552c@the-village.bc.nu>
-In-Reply-To: <20071231155600.0b06552c@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Tue, 1 Jan 2008 22:07:13 -0500
+Date: Tue, 01 Jan 2008 19:07:12 -0800 (PST)
+Message-Id: <20080101.190712.216262124.davem@davemloft.net>
+To: joonwpark81@gmail.com
+Cc: jacliburn@bellsouth.net, jeff@garzik.org, csnook@redhat.com,
+       linux-kernel@vger.kernel.org, atl1-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org, shemminger@linux-foundation.org
+Subject: Re: [PATCH 25/26] [REVISED] atl1: add NAPI support
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <000001c84ceb$18a967c0$47e7a8c0@jason>
+References: <1199152804-3889-26-git-send-email-jacliburn@bellsouth.net>
+	<20080101121536.3df9c497@osprey.hogchain.net>
+	<000001c84ceb$18a967c0$47e7a8c0@jason>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 31-12-07 16:56, Alan Cox wrote:
+From: "Joonwoo Park" <joonwpark81@gmail.com>
+Date: Wed, 2 Jan 2008 11:56:36 +0900
 
->> Okay. Am about to go stuff my face with new years celebrations but will 
->> definitely try to make that old WD8003 hickup.
-> 
-> Have fun. Is it an 8390 or an 83905 ?
+> Since we had reached a consensus on fixing it without each drivers
+> modifications, there is no best solution for that problem for
+> now. I'm expecting Dave or others work for net-core.
+> (http://lkml.org/lkml/2007/12/20/600)
 
-A DP8390BN. And I have a DP8390CN on a 3Com Etherlink II. The NE1000 has a 
-DP83901AV, my new-fangled Networth combo WD/NE cards DP83905s.
-
-Rene.
+Indeed, I really hope to try and close this out very soon.
+Sorry for taking so long.
