@@ -1,149 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbYABSbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755838AbYABSep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756040AbYABSbm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 13:31:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbYABSbc
+	id S1755838AbYABSep (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 13:34:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbYABSeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 13:31:32 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:37714 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753226AbYABSbb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 13:31:31 -0500
-Message-ID: <477BD875.2090508@ct.jp.nec.com>
-Date: Wed, 02 Jan 2008 10:31:17 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: clean up apic_32/64.c
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 2 Jan 2008 13:34:36 -0500
+Received: from mx0.towertech.it ([213.215.222.73]:40459 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752444AbYABSef (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 13:34:35 -0500
+Date: Wed, 2 Jan 2008 19:34:15 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: David Brownell <david-b@pacbell.net>
+Cc: stern@rowland.harvard.edu, rjw@sisk.pl, pavel@suse.cz, mingo@elte.hu,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, lenb@kernel.org, kay.sievers@vrfy.org,
+       gregkh@suse.de, akpm@linux-foundation.org
+Subject: Re: [PATCH 0/4] PM: Do not destroy/create devices while suspended 
+ (rev. 2)
+Message-ID: <20080102193415.1d7af667@i1501.lan.towertech.it>
+In-Reply-To: <20080102181254.3469E28CE0F@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+References: <200801020032.45529.rjw@sisk.pl>
+	<20080102105217.GA14731@elte.hu>
+	<200801021356.59865.rjw@sisk.pl>
+	<20080102131529.GA32160@elte.hu>
+	<3ae72650801020655h6ec31ce8n5cd9014c00c9f6ad@mail.gmail.com>
+	<20080102160137.GA21046@elte.hu>
+	<20080102175400.3C2E0EF588@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	<20080102190537.2fc735fe@i1501.lan.towertech.it>
+	<20080102181254.3469E28CE0F@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-White space and coding style clean up.
-Make apic_32/64.c similar.
+On Wed, 02 Jan 2008 10:12:54 -0800
+David Brownell <david-b@pacbell.net> wrote:
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- arch/x86/kernel/apic_32.c |    5 ++---
- arch/x86/kernel/apic_64.c |   23 +++++++++++++++++------
- 2 files changed, 19 insertions(+), 9 deletions(-)
+> > > It'd need to have some NTP sync solution for RTC_LIB devices, but
+> > > ISTR the gentime stuff still assumes an update_persistent_clock()
+> > > that doesn't sleep ... and hence can't be used with I2C based RTCs.
+> >
+> > I still believe NTP sync stuff should be done outside of the kernel.
+> > given the mean accuracy of RTC chips and other sync factors, imho
+> > you haven't so much to gain with an in-kernel sync code.
+> 
+> Then the kernel/time/ntp.c stuff should be removed on all systems?
 
-diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
-index 2865792..1e417df 100644
---- a/arch/x86/kernel/apic_32.c
-+++ b/arch/x86/kernel/apic_32.c
-@@ -577,7 +577,6 @@ static void local_apic_timer_interrupt(void)
-  * [ if a single-CPU system runs an SMP kernel then we call the local
-  *   interrupt as well. Thus we cannot inline the local irq ... ]
-  */
--
- void smp_apic_timer_interrupt(struct pt_regs *regs)
- {
- 	struct pt_regs *old_regs = set_irq_regs(regs);
-@@ -1021,7 +1020,7 @@ void __cpuinit setup_local_APIC(void)
- /*
-  * Detect and initialize APIC
-  */
--static int __init detect_init_APIC (void)
-+static int __init detect_init_APIC(void)
- {
- 	u32 h, l, features;
- 
-@@ -1165,7 +1164,7 @@ fake_ioapic_page:
-  * This initializes the IO-APIC and APIC hardware if this is
-  * a UP kernel.
-  */
--int __init APIC_init_uniprocessor (void)
-+int __init APIC_init_uniprocessor(void)
- {
- 	if (enable_local_apic < 0)
- 		clear_cpu_cap(&boot_cpu_data, X86_FEATURE_APIC);
-diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
-index 9439aa3..286a396 100644
---- a/arch/x86/kernel/apic_64.c
-+++ b/arch/x86/kernel/apic_64.c
-@@ -23,33 +23,37 @@
- #include <linux/mc146818rtc.h>
- #include <linux/kernel_stat.h>
- #include <linux/sysdev.h>
--#include <linux/module.h>
- #include <linux/ioport.h>
- #include <linux/clockchips.h>
- #include <linux/acpi_pmtmr.h>
-+#include <linux/module.h>
- 
- #include <asm/atomic.h>
- #include <asm/smp.h>
- #include <asm/mtrr.h>
- #include <asm/mpspec.h>
-+#include <asm/hpet.h>
- #include <asm/pgalloc.h>
- #include <asm/mach_apic.h>
- #include <asm/nmi.h>
- #include <asm/idle.h>
- #include <asm/proto.h>
- #include <asm/timex.h>
--#include <asm/hpet.h>
- #include <asm/apic.h>
- 
--int apic_verbosity;
- int disable_apic_timer __cpuinitdata;
- static int apic_calibrate_pmtmr __initdata;
- int disable_apic;
- 
--/* Local APIC timer works in C2? */
-+/* Local APIC timer works in C2 */
- int local_apic_timer_c2_ok;
- EXPORT_SYMBOL_GPL(local_apic_timer_c2_ok);
- 
-+/*
-+ * Debug level, exported for io_apic.c
-+ */
-+int apic_verbosity;
-+
- static struct resource lapic_resource = {
- 	.name = "Local APIC",
- 	.flags = IORESOURCE_MEM | IORESOURCE_BUSY,
-@@ -355,6 +359,11 @@ static void __init calibrate_APIC_clock(void)
- 	calibration_result = result / HZ;
- }
- 
-+/*
-+ * Setup the boot APIC
-+ *
-+ * Calibrate and verify the result.
-+ */
- void __init setup_boot_APIC_clock(void)
- {
- 	/*
-@@ -1109,8 +1118,8 @@ static struct sysdev_class lapic_sysclass = {
- };
- 
- static struct sys_device device_lapic = {
--	.id		= 0,
--	.cls		= &lapic_sysclass,
-+	.id	= 0,
-+	.cls	= &lapic_sysclass,
- };
- 
- static void __cpuinit apic_pm_activate(void)
-@@ -1121,9 +1130,11 @@ static void __cpuinit apic_pm_activate(void)
- static int __init init_lapic_sysfs(void)
- {
- 	int error;
-+
- 	if (!cpu_has_apic)
- 		return 0;
- 	/* XXX: remove suspend/resume procs if !apic_pm_state.active? */
-+
- 	error = sysdev_class_register(&lapic_sysclass);
- 	if (!error)
- 		error = sysdev_register(&device_lapic);
+ I'd say yes, but I think that would be dangerous to my own life :)
+
 -- 
-1.5.3.6
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
 
