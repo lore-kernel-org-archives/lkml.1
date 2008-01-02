@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbYABTJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbYABTOZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754716AbYABTJd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 14:09:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbYABTJZ
+	id S1755552AbYABTOZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 14:14:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYABTOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 14:09:25 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:7663 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751813AbYABTJY (ORCPT
+	Wed, 2 Jan 2008 14:14:16 -0500
+Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:45756 "HELO
+	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752685AbYABTOP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 14:09:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=QzhBoLxzlndJnm20Eap+k9+JSL0H7KLfBbLhCsiPIAWJSy+cYF3ofltiv3/TBoKXMIqhOcpS21GsA9DjqgqYg3kfqBVwsWAqBii0RS7AzEqVbdnR4cCs+daH3pByJRl8mqDuHp0sKrX4jb1JZvMyPSfO3eDpe6aN6e2B7TO2lLs=
-Message-ID: <84144f020801021109v78e06c6k10d26af0e330fc85@mail.gmail.com>
-Date: Wed, 2 Jan 2008 21:09:20 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Hugh Dickins" <hugh@veritas.com>
-Subject: Re: [PATCH] procfs: provide slub's /proc/slabinfo
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <andi@firstfloor.org>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com>
+	Wed, 2 Jan 2008 14:14:15 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ObHwnErbXGO4wYD/EHOw1AU/R9GGt93MpyPliNtTxQheQNvoJtCufxPAXEsjFgjldqiOZy1XAf4j5i2Oe8/NNcTWj7yUNzC7oh7CEF6r4yW4A8iitdf1okbhg+RFVSsnKusAJW39zLxMILK/82L9FFQsU5Ik4CrKzMz0Y2qiVyY=  ;
+X-YMail-OSG: c.JD3SsVM1lVxqrV4lgtefTxPZilnt9N1b10M7.pZr6rE5L75LLoR9UGeLmHpacavLWPRin0ZQ--
+From: David Brownell <david-b@pacbell.net>
+To: linux-usb-devel@lists.sourceforge.net, me@felipebalbi.com
+Subject: Re: [linux-usb-devel] [PATCH] : Allow embedded developers USB	options normally reserved for OTG
+Date: Wed, 2 Jan 2008 11:14:10 -0800
+User-Agent: KMail/1.9.6
+Cc: gregkh@suse.de, Robin Getz <rgetz@blackfin.uclinux.org>,
+       linux-kernel@vger.kernel.org
+References: <200801020948.51310.rgetz@blackfin.uclinux.org> <200801021047.16036.david-b@pacbell.net> <20080102185745.GA17890@kedavra.cpe.vivax.com.br>
+In-Reply-To: <20080102185745.GA17890@kedavra.cpe.vivax.com.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com>
-X-Google-Sender-Auth: 53dc16b54819091d
+Message-Id: <200801021114.11074.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wednesday 02 January 2008, Felipe Balbi wrote:
+> 	 The problem I see here is that my only
+> "user" is musb driver, currently only available on linux-omap git tree.
+> 
+> Maybe it's time to send it to mainline, what do you think Dave?
 
-On Jan 2, 2008 8:43 PM, Hugh Dickins <hugh@veritas.com> wrote:
-> SLUB's new slabinfo isn't there: it looks as if a last minute change
-> to Pekka's patch left it dependent on CONFIG_SLAB at the procfs end:
-> allow for CONFIG_SLUB too.
->
-> Signed-off-by: Hugh Dickins <hugh@veritas.com>
-> ---
-> To minimize ifdeffery, this leaves it with S_IWUSR though unwritable:
-> I'm assuming that's acceptable.
+Probably time, yes.  ISTR the main open issues are on host side
+behavior, and it'll be easier to sort those out if musb_hdrc can
+be updated without a few months intervening lag time.
 
-I already sent the remaining bits to Linus but this looks much
-cleaner. Thanks Hugh!
+Plus that'll make it easier to merge the Blackfin platform updates
+for that driver.  It's fine that musb_hdrc works on N800, N810,
+DaVinci, OMAP2430, and more ... but non-TI chips also integrate
+that high speed OTG silicon.  :)
 
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+- Dave
+
