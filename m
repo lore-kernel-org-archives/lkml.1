@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756878AbYABKbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756878AbYABKnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756878AbYABKbn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 05:31:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbYABKbg
+	id S1756878AbYABKnQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 05:43:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbYABKm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 05:31:36 -0500
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:30426 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751715AbYABKbf (ORCPT
+	Wed, 2 Jan 2008 05:42:58 -0500
+Received: from fk-out-0910.google.com ([209.85.128.185]:26474 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754396AbYABKm5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 05:31:35 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=oMOHsnMp3pMRJso9s2Zv7gON7tbBAeHtJ/JBFnvqHRRAnqQsUixEMEwjYxcazOwLifP/ir3WYNCk0IfSMt0tRgqTM79wjAUnH0pFJZ0tIgGhmN1EvXXIZAUHZwQmKQUe4/PrhcDDKxQuWkEpUsI32E9GnR1oq+EazRNb4cB6Z0g=  ;
-X-YMail-OSG: oGzi99oVM1l0hIShCLttcU9wf.Vb9J0vteSJkc10Rjte5tiZAyuivKNBXi7OZS6EfjFjrc7e3A--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.24-rc6-mm1
-Date: Wed, 2 Jan 2008 21:31:15 +1100
-User-Agent: KMail/1.9.5
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>, trem <tremyfr@yahoo.fr>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <9DtBq-2jD-3@gated-at.bofh.it> <20071224012524.GA21843@gondor.apana.org.au> <20071230131018.GC16946@elte.hu>
-In-Reply-To: <20071230131018.GC16946@elte.hu>
+	Wed, 2 Jan 2008 05:42:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=V0lurF56ooP2WAxG2ANTty527pw2ONwmzWX6aw2DSpMxhoJWWq5XZfiRDOdkBY8mYfGEJpZUcZZvu/SGccjggZ5l0Fc9MogzFPhGpajf8g/fE3Gylm+K+Lvmn+PINdpMomf4mIv5pO5y3fRH2O9Ld0TyCqO9YKjangTnYxR6X4s=
+Message-ID: <477B6AA5.5020803@gmail.com>
+Date: Wed, 02 Jan 2008 13:42:45 +0300
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+CC: hal@lists.freedesktop.org, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: kpowersave stuck at battery charging
+References: <200801021248.55844.arvidjaar@mail.ru>
+In-Reply-To: <200801021248.55844.arvidjaar@mail.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801022131.15482.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 31 December 2007 00:10, Ingo Molnar wrote:
-> * Herbert Xu <herbert@gondor.apana.org.au> wrote:
-> > > Ingo, it's not good that we have cond_resched() definitions
-> > > conditionally duplicated in kernel.h - that's increasing the risk of
-> > > bugs like this one.
-> >
-> > Actually, why do we even have cond_resched when real preemption is on?
-> > It seems to be a waste of space and time.
+Andrey Borzenkov wrote:
+> This is did not happen before; I am not sure right now what caused this (i.e. 
+> battery aging or some software change) nor whether this is kernel/HAL/kpowersave 
+> issue.
 >
-> due to the BKL. cond_resched() in BKL code breaks up BKL latencies.
+> kpowersave is stuck at assuming battery is loading and at 94%. Sysfs displays 
+> battery state as Full:
 >
-> i dont mind not doing that though - we should increase the pain for BKL
-> users, so that subsystems finally get rid of it altogether.
-> lock_kernel() use within the kernel is still rampant - there are still
-> more than 400 callsites to lock_kernel().
+>   
+Frequent battery charging shortens lifetime of the battery, so some (may 
+be all now)
+notebook manufacturers do not start charging  battery until it discharge 
+to some degree (~90%).
+It could be your case. Please try to discharge battery to, say, 89% and 
+then check if it charges to the
+100%.
+> - does ACPI battery code misuse POWER_SUPPLY_PROP_ENERGY_FULL?
+> - does HAL misuse .../energy_full?
+> - does kpowersave misuse battery.charge_level.last_full?
+>   
 
-It would be silly to potentially increase latency in some areas
-for CONFIG_PREEMPT kernels, though.
-
-Better may be to detect when there is CONFIG_PREEMPT and
-CONFIG_PREEMPT_BKL, and ifdef away the cond_resched in that case
-(or -- why do we even make CONFIG_PREEMPT_BKL an option? Are there
-really workloads left where it causes throughput regressions?)
