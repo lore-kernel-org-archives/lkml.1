@@ -1,92 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757445AbYABXmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758023AbYABXtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757445AbYABXmp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 18:42:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757590AbYABXma
+	id S1758023AbYABXtT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 18:49:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbYABXtI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 18:42:30 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:34968 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756763AbYABXm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 18:42:28 -0500
-Date: Thu, 3 Jan 2008 01:42:09 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Andreas Mohr <andi@lisas.de>
-Cc: Richard Jonsson <richie@coderworld.net>, linux-kernel@vger.kernel.org,
-       Ayaz Abdulla <aabdulla@nvidia.com>, jgarzik@pobox.com,
-       netdev@vger.kernel.org
-Subject: Re: forcedeth: MAC-address reversed on resume from suspend
-Message-ID: <20080102234209.GA10831@does.not.exist>
-References: <477BFC71.7090002@coderworld.net> <20080102214843.GA19224@rhlx01.hs-esslingen.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080102214843.GA19224@rhlx01.hs-esslingen.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 2 Jan 2008 18:49:08 -0500
+Received: from qmta05.westchester.pa.mail.comcast.net ([76.96.62.48]:34393
+	"EHLO QMTA05.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752797AbYABXtH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 18:49:07 -0500
+X-Authority-Analysis: v=1.0 c=1 a=sGE9Mcn9CyMA:10 a=dwR8q1bI2sQtoxzSypAA:9 a=voBrfO6jdX3qMvs7gxvk45kqGy4A:4 a=si9q_4b84H0A:10 a=WuK_CZDBSqoA:10
+Subject: Re: [PATCH 2/2] Markers Implementation for Preempt RCU Boost
+	Tracing
+From: Nicholas Miell <nmiell@comcast.net>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "K. Prasad" <prasad@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       dipankar@in.ibm.com, ego@in.ibm.com, mathieu.desnoyers@polymtl.ca,
+       paulmck@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20080102163309.GC11496@redhat.com>
+References: <20071231060911.GB6461@in.ibm.com>
+	 <20071231102045.GB30380@elte.hu> <y0modc4vr7a.fsf@ton.toronto.redhat.com>
+	 <20080102124734.GC11208@elte.hu>  <20080102163309.GC11496@redhat.com>
+Content-Type: text/plain
+Date: Wed, 02 Jan 2008 15:49:03 -0800
+Message-Id: <1199317743.2438.8.camel@entropy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8.0.njm.3) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ original bug report: http://lkml.org/lkml/2008/1/2/253 ]
 
-On Wed, Jan 02, 2008 at 10:48:43PM +0100, Andreas Mohr wrote:
-> Hi,
+On Wed, 2008-01-02 at 11:33 -0500, Frank Ch. Eigler wrote:
+> Hi -
 > 
-> On Wed, Jan 02, 2008 at 10:04:49PM +0100, Richard Jonsson wrote:
-> > Bugreport regarding forcedeth driver.
-> >
-> > When returning from suspend-to-RAM the MAC-address byteorder is reversed. 
-> > After another suspend-resume cycle the MAC-address is again correct. This 
-> > brings a great deal of pain since the NIC is assigned a random MAC-address 
-> > when it is detected as invalid.
-> >
-> > I cannot say if this issue appeared recently or if it's been in the kernel 
-> > for a while, as I've been using wireless until recently.
-> >
-> > I read somewhere on lkml that the mac is read from the device, then 
-> > reversed and finally written back to the device. Can it be that it is read 
-> > again on resume and reversed, and then again written to the device? This 
-> > would explain why it's ok every other resume cycle.
+> On Wed, Jan 02, 2008 at 01:47:34PM +0100, Ingo Molnar wrote:
+> > [...]
+> > > FWIW, I'm not keen about the format strings either, but they don't 
+> > > constitute a performance hit beyond an additional parameter.  It does 
+> > > not need to actually get parsed at run time.
+> > 
+> > "only" an additional parameter. The whole _point_ behind these markers 
+> > is for them to have minimal effect!
 > 
-> Uh, Use The Source, Luke?
+> Agreed.  The only alternative I recall seeing proposed was my own
+> cartesian-product macro suite that encodes parameter types into the
+> marker function/macro name itself.  (Maybe some of that could be
+> hidden with gcc typeof() magic.)  There appeared to be a consensus
+> that this was more undesirable.  Do you agree?
 > 
-> But no, I think it's simply driver dainbreadness, not a matter of
-> complicated writing and reading back in reversed order.
 > 
-> drivers/net/forcedeth.c has a nice DEV_HAS_CORRECT_MACADDR flag which is
-> being enabled for certain cards (those which need this) and disabled for others.
-> 
-> The nv_probe() function then nicely obeys this flag by reversing the
-> address if needed, _however_ there's another function, nv_copy_mac_to_hw(),
-> which does _NOT_ obey it and simply copies the _raw_ netdev dev_addr
-> to the card register (NvRegMacAddrA etc.).
-> 
-> I don't know, this all looks a bit dirty to me, MAC reading/writing
-> should have been implemented in a more central way, then those people
-> wouldn't have confused heaven and hell with MAC address fiddling.
-> 
-> And yeah, this certainly looks like a bug that should be fixed ASAP,
-> unless my short analysis somehow happened to be wrong.
-> (I could probably fix it, but then the forcedeth people
-> most likely know better how they would like to see it implemented)
-> 
-> Thank you for your report!
-> 
-> Now the only thing remaining would be: is there a specific way to
-> contact forcedeth-related people? I didn't find anything within a short
-> search.
 
-Cc's added.
+C++ name mangling would be extremely useful here.
 
-> Andreas Mohr
 
-cu
-Adrian
+Actually, why isn't the DWARF information for the functions sufficient?
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Nicholas Miell <nmiell@comcast.net>
 
