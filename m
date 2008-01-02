@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758926AbYAAX6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758575AbYABAGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758926AbYAAX6R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 18:58:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756578AbYAAX6I
+	id S1758575AbYABAGc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 19:06:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755057AbYABAGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 18:58:08 -0500
-Received: from home.nigel.suspend2.net ([203.171.70.205]:52156 "EHLO
-	server1.example.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755331AbYAAX6G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 18:58:06 -0500
-Message-ID: <477AD38C.6030206@nigel.suspend2.net>
-Date: Wed, 02 Jan 2008 10:58:04 +1100
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Tue, 1 Jan 2008 19:06:24 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:52199 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754902AbYABAGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 19:06:23 -0500
+Date: Wed, 2 Jan 2008 02:06:08 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] remove CONFIG_EXPERIMENTAL
+Message-ID: <20080102000608.GK27566@does.not.exist>
+References: <20080101134809.GK2360@does.not.exist> <20080101142344.769f16c7@the-village.bc.nu> <20080101151751.GW2360@does.not.exist> <20080101160708.5bb5cc2a@the-village.bc.nu> <20080101163337.GX2360@does.not.exist> <20080101173532.1db4019f@the-village.bc.nu>
 MIME-Version: 1.0
-To: Christian Hesse <mail@earthworm.de>
-CC: suspend2-devel@lists.tuxonice.net,
-       "The place to get help!" <suspend2-users@lists.tuxonice.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Suspend2-devel] Reboot problem
-References: <477AC060.5040004@nigel.suspend2.net> <200801020030.06940.mail@earthworm.de>
-In-Reply-To: <200801020030.06940.mail@earthworm.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080101173532.1db4019f@the-village.bc.nu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christian.
-
-Christian Hesse wrote:
-> On Tuesday 01 January 2008, Nigel Cunningham wrote:
->> Third, regarding the patch itself, I'm taking my time in working towards
->> the 3.0 release. We don't have any major bugs with 3.0-rc3 reported [...].
+On Tue, Jan 01, 2008 at 05:35:32PM +0000, Alan Cox wrote:
+> > So smbfs is still considered rock solid while no serious distribution 
+> > would be crazy enough to ship the EXPERIMENTAL NFSv4 support to their 
+> > customers?
 > 
-> Well, I think I still have a bug, though it is possibly a mainline problem and 
-> it's not a showstopper. After a suspend/resume cycle the reboot does not 
-> work. The system hangs with "Rebooting system" (or similar). After that you 
-> have to hard reset the system, which is not really a problem as filesystems 
-> have been unmounted before. Reboot without a suspend cycle before and halt 
-> with and without suspend cycle work without problems.
-
-Just to clarify, do you mean rebooting after writing an image, or
-shutting down and rebooting? It could be that there's some change to the
-semantics in 2.6.24 that I haven't noticed yet.
-
-> I'm using toi 3.0-rc3 with kernel 2.6.24-rc6 and beside the problem described 
-> above I'm really happy with toi.
+> Thats a different problem. The kernel as I've said many times has no
+> proper process for
 > 
-> Happy new your to everybody!
+> - removing expired/missing maintainers
+> - handling stuff that decays
+> - removing dead documentation
+> - removing dead drivers and ports
+> 
+> Although you've certainly started on fixing much of that.
+> 
+> > I'm not claiming that all EXPERIMENTAL tags were wrong [1], but many 
+> > were wrong.
+> 
+> So why not fix the wrong tags, and mark smbfs obsolete ?
 
-And to you too!
+It's also the other way around:
+Is e.g. NFSv4 support really still experimental?
 
-Nigel
+There are only few parts of the kernel where the EXPERIMENTAL tags are 
+actually maintained, but most of them were simply added once and stayed 
+forever. If my "remove all EXPERIMENTAL tags" approach is not considered 
+the best solution I have no problem with starting with "convert 
+EXPERIMENTAL to FOO_EXPERIMENTAL in all areas where the subsystem 
+maintainer wants to do so" and remove the remaining EXPERIMENTAL tags 
+later.
+
+> > Plus the fact that CONFIG_EXPERIMENTAL controlled so many different 
+> > things with one switch that CONFIG_EXPERIMENTAL=n .config's are really 
+> > rare.
+> 
+> Agreed
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
