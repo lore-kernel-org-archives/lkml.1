@@ -1,65 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758023AbYABXtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758634AbYABXvf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758023AbYABXtT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 18:49:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbYABXtI
+	id S1758634AbYABXvf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 18:51:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbYABXv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 18:49:08 -0500
-Received: from qmta05.westchester.pa.mail.comcast.net ([76.96.62.48]:34393
-	"EHLO QMTA05.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752797AbYABXtH (ORCPT
+	Wed, 2 Jan 2008 18:51:27 -0500
+Received: from pool-71-245-101-243.ptldor.fios.verizon.net ([71.245.101.243]:59358
+	"EHLO scooby.int.st.wgz.org" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753071AbYABXv1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 18:49:07 -0500
-X-Authority-Analysis: v=1.0 c=1 a=sGE9Mcn9CyMA:10 a=dwR8q1bI2sQtoxzSypAA:9 a=voBrfO6jdX3qMvs7gxvk45kqGy4A:4 a=si9q_4b84H0A:10 a=WuK_CZDBSqoA:10
-Subject: Re: [PATCH 2/2] Markers Implementation for Preempt RCU Boost
-	Tracing
-From: Nicholas Miell <nmiell@comcast.net>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "K. Prasad" <prasad@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       dipankar@in.ibm.com, ego@in.ibm.com, mathieu.desnoyers@polymtl.ca,
-       paulmck@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20080102163309.GC11496@redhat.com>
-References: <20071231060911.GB6461@in.ibm.com>
-	 <20071231102045.GB30380@elte.hu> <y0modc4vr7a.fsf@ton.toronto.redhat.com>
-	 <20080102124734.GC11208@elte.hu>  <20080102163309.GC11496@redhat.com>
-Content-Type: text/plain
-Date: Wed, 02 Jan 2008 15:49:03 -0800
-Message-Id: <1199317743.2438.8.camel@entropy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8.0.njm.3) 
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Jan 2008 18:51:27 -0500
+From: "Brett T. Warden" <brett.warden@gmail.com>
+To: linux-kernel@vger.kernel.org, trivial@kernel.org
+Cc: Bill Davidsen <davidsen@tmr.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Brett T. Warden" <brett.warden@gmail.com>
+Subject: [PATCH] bw-qcam: Adds module parameter 'aggressive' to skip polite auto-detection prior to direct initialization.
+Date: Wed,  2 Jan 2008 15:51:24 -0800
+Message-Id: <1199317885-1625-1-git-send-email-brett.warden@gmail.com>
+X-Mailer: git-send-email 1.5.3.7
+In-Reply-To: a372714f0712051031n31b933bfw6a5f9cb57b8cb5b8@mail.gmail.com
+References: a372714f0712051031n31b933bfw6a5f9cb57b8cb5b8@mail.gmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Setting aggressive=1 bypasses the friendly auto-detection by polling the status register, and instead attempts to initialize the qcam directly. Not friendly to other parallel devices, but much more reliable than the auto-detection.
 
-On Wed, 2008-01-02 at 11:33 -0500, Frank Ch. Eigler wrote:
-> Hi -
-> 
-> On Wed, Jan 02, 2008 at 01:47:34PM +0100, Ingo Molnar wrote:
-> > [...]
-> > > FWIW, I'm not keen about the format strings either, but they don't 
-> > > constitute a performance hit beyond an additional parameter.  It does 
-> > > not need to actually get parsed at run time.
-> > 
-> > "only" an additional parameter. The whole _point_ behind these markers 
-> > is for them to have minimal effect!
-> 
-> Agreed.  The only alternative I recall seeing proposed was my own
-> cartesian-product macro suite that encodes parameter types into the
-> marker function/macro name itself.  (Maybe some of that could be
-> hidden with gcc typeof() magic.)  There appeared to be a consensus
-> that this was more undesirable.  Do you agree?
-> 
-> 
+Signed-off-by: Brett T. Warden <brett.warden@gmail.com>
+---
+ drivers/media/video/bw-qcam.c |   10 +++++++++-
+ 1 files changed, 9 insertions(+), 1 deletions(-)
 
-C++ name mangling would be extremely useful here.
-
-
-Actually, why isn't the DWARF information for the functions sufficient?
-
+diff --git a/drivers/media/video/bw-qcam.c b/drivers/media/video/bw-qcam.c
+index 5842352..b74a9cb 100644
+--- a/drivers/media/video/bw-qcam.c
++++ b/drivers/media/video/bw-qcam.c
+@@ -82,11 +82,16 @@ OTHER DEALINGS IN THE SOFTWARE.
+ static unsigned int maxpoll=250;   /* Maximum busy-loop count for qcam I/O */
+ static unsigned int yieldlines=4;  /* Yield after this many during capture */
+ static int video_nr = -1;
++static unsigned int aggressive;		/* Whether to probe aggressively */
+ 
+ module_param(maxpoll, int, 0);
+ module_param(yieldlines, int, 0);
+ module_param(video_nr, int, 0);
+ 
++/* Set aggressive=1 to avoid detection by polling status register and
++ * immediately attempt to initialize qcam */
++module_param(aggressive, int, 0);
++
+ static inline int read_lpstatus(struct qcam_device *q)
+ {
+ 	return parport_read_status(q->pport);
+@@ -331,6 +336,9 @@ static int qc_detect(struct qcam_device *q)
+ 	int count = 0;
+ 	int i;
+ 
++	if (aggressive)
++		return 1;
++
+ 	lastreg = reg = read_lpstatus(q) & 0xf0;
+ 
+ 	for (i = 0; i < 500; i++)
+@@ -354,12 +362,12 @@ static int qc_detect(struct qcam_device *q)
+ 
+ 	/* Be (even more) liberal in what you accept...  */
+ 
+-/*	if (count > 30 && count < 200) */
+ 	if (count > 20 && count < 400) {
+ 		return 1;	/* found */
+ 	} else {
+ 		printk(KERN_ERR "No Quickcam found on port %s\n",
+ 			q->pport->name);
++		printk(KERN_DEBUG "Quickcam detection counter: %u\n", count);
+ 		return 0;	/* not found */
+ 	}
+ }
 -- 
-Nicholas Miell <nmiell@comcast.net>
+1.5.3.7
 
