@@ -1,130 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbYABRyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754824AbYABRzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754300AbYABRyT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 12:54:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbYABRyG
+	id S1754824AbYABRzl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 12:55:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbYABRzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 12:54:06 -0500
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:46100 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752184AbYABRyE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 12:54:04 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=dUnxCK8M6ERV5NxS1N9WUbiQ4FP3/8nbc5Bl5jCbMTZctGlk64Lcy0cuU8VQm1QDTCJBHUwtzw9M+NUjkvzggQupbesB+SokYW5beOE/irFpjilrehe79F4tWJc4lfzNpS07L+me6oN9JdCgdxh0drQyKFV3idSwB3ZplE5MlLE=  ;
-X-YMail-OSG: hxE5xlcVM1nezXGJqmr0kT675EvJj7Kez_RjbEwK3_ycKbLsxOn8gHnD0qQSpo1FiX975iSWY.ZEz1pFaiEEWny13NbRiDIRx_iJp2Z2.Hatmbw1UA--
-Date: Wed, 02 Jan 2008 09:54:00 -0800
-From: David Brownell <david-b@pacbell.net>
-To: mingo@elte.hu, kay.sievers@vrfy.org
-Subject: Re: [PATCH 0/4] PM: Do not destroy/create devices while suspended 
- (rev. 2)
-Cc: a.zummo@towertech.it, stern@rowland.harvard.edu, rjw@sisk.pl,
-       pavel@suse.cz, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       lenb@kernel.org, gregkh@suse.de, akpm@linux-foundation.org
-References: <200801020032.45529.rjw@sisk.pl>
- <20080102105217.GA14731@elte.hu> <200801021356.59865.rjw@sisk.pl>
- <20080102131529.GA32160@elte.hu>
- <3ae72650801020655h6ec31ce8n5cd9014c00c9f6ad@mail.gmail.com>
- <20080102160137.GA21046@elte.hu>
-In-Reply-To: <20080102160137.GA21046@elte.hu>
+	Wed, 2 Jan 2008 12:55:33 -0500
+Received: from mail.tmr.com ([64.65.253.246]:34247 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751097AbYABRzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 12:55:32 -0500
+Message-ID: <477BD52C.8030104@tmr.com>
+Date: Wed, 02 Jan 2008 13:17:16 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Newsgroups: gmane.linux.kernel
+To: Jose de la Mancha <hidalgoj@free.fr>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: RAID timeout parameter accessibility request
+References: <C39DDD66.F5A0%hidalgoj@free.fr>
+In-Reply-To: <C39DDD66.F5A0%hidalgoj@free.fr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080102175400.3C2E0EF588@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > shouldnt we provide a Kconfig way of replacing dev 10:135 with the 
-> > > new driver's 254:0 device? (while keeping all the current modes of 
-> > > operation as well, of course.) It's all supposed to be 100% ioctl 
-> > > ABI compatible with the old driver, right?
-> > 
-> > It's not compatible enough to "fake" only the old major/minor. Userspace
-> > must be fixed not to depend on stuff like:  /proc/sys/dev/rtc/max-user-freq:
-> >   http://lkml.org/lkml/2007/8/4/183
->
-> i think that should be fixed by providing a compatible 
-> /proc/sys/dev/rtc/max-user-freq implementation in the new driver too.
+Jose de la Mancha wrote:
+> Hi everyone. I'm sorry but I'm not currently subscribed to this list (I've
+> been sent here by the listmaster), so please CC me all your
+> answers/comments. Thanks in advance.
+> 
+> SHORT QUESTION :
+> In a Debian-controlled RAID array, is there a parameter that handles the
+> timeout before a non-responding drive is dropped from the array ? Can this
+> timeout become user-adjustable in a future build ?
+> 
+> EXPLANATIONS :
+> As you might know, if you install and use a "desktop edition" hard drive in
+> a RAID array, the drive may not work correctly. This is caused by the normal
+> error recovery procedure that a desktop edition hard drive uses : when an
+> error is found on a desktop edition hard drive, the drive will enter into a
+> deep recovery cycle to attempt to repair the error, recover the data from
+> the problematic area, and then reallocate a dedicated area to replace the
+> problematic area. This process can take up to 120 seconds depending on the
+> severity of the issue.
+> 
+> The problem is that most RAID controllers allow a very short amount of time
+> (7-15 seconds) for a hard drive to recover from an error. If a hard drive
+> takes too long to complete this process, the drive will be dropped from the
+> RAID array !
+> 
+> Of course there are "RAID edition" hard drives with a feature called TLER
+> (Time Limited Error Recovery) which stops the hard drive from entering into
+> a deep recovery cycle. The hard drive will only spend 7 seconds to attempt
+> to recover. This means that the hard drive will not be dropped from a RAID
+> array. But these "special" hard drives are way too expensive IMHO just for a
+> small firmware-based feature.
+> 
+I'm not sure "way too expensive" is appropriate. I'm using Seagate 320GB 
+"NS" drives instead of "AS" models, and at the time I bought them they 
+were $100 vs. $95 and are now $95 vs. $85. Other sizes and vendors have 
+similar price points. A 10-15% premium seems reasonable for the 
+firmware, faster access, and a general assurance that the drive is 
+intended for 7/24 use.
 
-I see /sys/class/rtc/rtc0/max_user_freq, fwiw ...
+On a small home array the cost is minimal, and if you are running 
+desktop drives in huge arrays 7/24 you probably are doing other cost 
+cutting tradeoffs to reliability, it's a choice.
 
+> There would be an easy way to allow users to use "ordinary" hard drives in a
+> Debian software-controlled RAID array. So here's my request : I suppose
+> there is a parameter that handles the default timeout before a drive is
+> dropped from the RAID array. I don't know if this parameter is hardcoded,
+> but it would be nice if it was user-adjustable. This way, we could simply
+> set up this parameter to 120 seconds or more (instead of 7-15) and we
+> wouldn't have any more problems with using desktop "edition hard" drives in
+> a RAID array.
+> 
+> What do you think ? Can it be done in a future build ?
+> 
+Just in general I agree, I'd like to see the error reported back up and 
+let the user make the decision. One of the benefits of Linux is that it 
+lets you make your own decisions, even bad ones. Windows assumes it owns 
+the computer, you're an idiot, and it will let you use your computer if 
+you do it their way.
 
-> > > That way distros could start migrating to it
-> > > as well, without depending on any udev hackery.
-> > 
-> > It's in the default udev setup:
-> >   KERNEL=="rtc|rtc0",             MODE="0644"
-> >   KERNEL=="rtc0",                 SYMLINK+="rtc"
->
-> but if it breaks max-user-freq (which is needed by qemu for example) 
-> then distros would likely disable it, right?
->
-> or this rule might be broken in some way. For example my Fedora 8 box 
-> has this in /etc/udev/rules.d/50-udev-default.rules:
->
->  # miscellaneous
->  KERNEL=="fuse",                 MODE="0666"
->  KERNEL=="rtc|rtc0",             MODE="0644"
->  KERNEL=="rtc0",                 SYMLINK+="rtc"
->
-> still i've got:
->
->  crw------- 1 root root  10, 135 Dec 28 08:13 /dev/rtc
->  crw-r--r-- 1 root root 254,   0 Dec 28 08:13 /dev/rtc0
+> I really hope that you'll be able to help, because I guess a lot of people
+> can be concerned by this issue.
+> 
+Not so much, with rewrites of sectors where possible this problem is 
+less common than it was. But I agree on the drive kicking option, more 
+control is good. However, the timeout should be in the driver, not in 
+the raid code, that's where it belongs. The kernel copes with errors 
+better than having a drive go practice self-gratification for minutes at 
+a time.
 
-I suspect the /dev/rtc node was provided by the distro, so those
-udev rules won't trigger.
-
-
-> _and_ my distro kernel doesnt even have CONFIG_RTC enabled - i run the 
-> Fedora 9 devel/rawhide kernel on this box:
->
->  # CONFIG_RTC is not set
->  # CONFIG_GEN_RTC is not set
->  # CONFIG_HPET_RTC_IRQ is not set
->  CONFIG_RTC_LIB=y
->  CONFIG_RTC_CLASS=y
->  # CONFIG_RTC_HCTOSYS is not set
->  # CONFIG_RTC_DEBUG is not set
->  # RTC interfaces
->  CONFIG_RTC_INTF_SYSFS=y
->  CONFIG_RTC_INTF_PROC=y
->  CONFIG_RTC_INTF_DEV=y
->  # CONFIG_RTC_INTF_DEV_UIE_EMUL is not set
->  # CONFIG_RTC_DRV_TEST is not set
->
-> udev-116-3.fc8.
-
-I run my x86 systems like that (also with RTC_DRV_CMOS), but
-the ARM systems usually have RTC_HCTOSYS set too (plus some
-RTC driver other than rtc-cmos).  The x86 system init code
-pokes directly at the legacy RTC hardware in several cases.
-
-
->	Maybe i just misunderstood what the grand plan was here 
-> - i assumed it was to smoothly convert from old driver to new driver, 
-> without forcing any changes on user-space.
-
-If there was a Grand Plan, I never heard of it. :)
-
-It'd need to have some NTP sync solution for RTC_LIB devices, but
-ISTR the gentime stuff still assumes an update_persistent_clock()
-that doesn't sleep ... and hence can't be used with I2C based RTCs.
-
-
-I've been trying to make sure the x86 world could realistically
-switch to the RTC framework used by other Linux platforms, hence
-e.g. the util-unix-ng updates, but never assumed there would be
-no userspace changes.  After all, userspace was using a mishmash
-of tools that were far from platform-agnostic, and moving away
-from x86-dependency implies such things will change.
-
-However I *do* think that symlinking rtc to /dev/rtc0 should
-make it practical to use most older binaries.
-
-- Dave
-
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
