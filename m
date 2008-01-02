@@ -1,78 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755713AbYABFTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756382AbYABFZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755713AbYABFTt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 00:19:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYABFTk
+	id S1756382AbYABFZR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 00:25:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbYABFZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 00:19:40 -0500
-Received: from mx2.suse.de ([195.135.220.15]:43758 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751261AbYABFTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 00:19:39 -0500
-Date: Tue, 1 Jan 2008 21:18:28 -0800
-From: Greg KH <gregkh@suse.de>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Greg KH <greg@kroah.com>, Peter Zijlstra <peterz@infradead.org>,
+	Wed, 2 Jan 2008 00:25:04 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53982
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752249AbYABFZB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 00:25:01 -0500
+Date: Tue, 01 Jan 2008 21:25:01 -0800 (PST)
+Message-Id: <20080101.212501.00751091.davem@davemloft.net>
+To: gregkh@suse.de
+Cc: hidave.darkstar@gmail.com, greg@kroah.com, peterz@infradead.org,
        linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
 Subject: Re: [PATCH 01/12] Use mutex instead of semaphore in driver core
-Message-ID: <20080102051828.GA24431@suse.de>
-References: <1198892544.6821.103.camel@twins> <a8e1da0712281752q68ec8a98kcc5f84928091a8d2@mail.gmail.com> <1198893445.6821.108.camel@twins> <a8e1da0712281803i11c04b37ic5e92a4c27c79b07@mail.gmail.com> <a8e1da0712281836t418881fbi5c8b924ba353bf90@mail.gmail.com> <20071229044200.GA16712@suse.de> <a8e1da0712282106j666988acndcc5eab302a5a284@mail.gmail.com> <a8e1da0712282307p3723857ex534d787f128db112@mail.gmail.com> <20071229170730.GA1351@kroah.com> <a8e1da0801011654j1427d466m3971f693f0439954@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a8e1da0801011654j1427d466m3971f693f0439954@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080102051828.GA24431@suse.de>
+References: <20071229170730.GA1351@kroah.com>
+	<a8e1da0801011654j1427d466m3971f693f0439954@mail.gmail.com>
+	<20080102051828.GA24431@suse.de>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 02, 2008 at 08:54:53AM +0800, Dave Young wrote:
-> On Dec 30, 2007 1:07 AM, Greg KH <greg@kroah.com> wrote:
-> >
-> > On Sat, Dec 29, 2007 at 03:07:30PM +0800, Dave Young wrote:
-> > > On Dec 29, 2007 1:06 PM, Dave Young <hidave.darkstar@gmail.com> wrote:
-> > > >
-> > > > On Dec 29, 2007 12:42 PM, Greg KH <gregkh@suse.de> wrote:
-> > > > > On Sat, Dec 29, 2007 at 10:36:49AM +0800, Dave Young wrote:
-> > > > > > >
-> > > > > > The full boot dmesg with lockdep output is out, there's one warnings in it :
-> > > > >
-> > > > > Please fix that warning before the next repost of these patches (along
-> > > > > with fixing the problem of them not being able to be applied and
-> > > > > successfully built at every point in the series...)
-> > > > >
-> > > >
-> > > > Ok, thanks, I will fix them and repost.
-> > > >
-> > >
-> > > Hi,
-> > > After digging the code, I feel hard to fix the lockdep warning due to
-> > > some misterious relationship with usb.
-> > >
-> > > Could someone help on this? thanks.
-> >
-> > My question back to you is why are you doing this conversion?  Have you
-> > found that it is needed for something?  Are there problems in the -rt
-> > kernels that this conversion helps with?  Or is it just a janitorial
-> > "convert semaphore to mutex" type thing.
-> 
-> Sorry for delay-reply because recently I have little free time.
-> 
-> Mutex is lightweighter than semaphore, the device/class is used
-> heavily in kernel, so I think the convert would be worth.
+From: Greg KH <gregkh@suse.de>
+Date: Tue, 1 Jan 2008 21:18:28 -0800
 
-But is the usage of this semaphore in the class code really a problem?
-Has it been seen to cause issues anywhere?  Does it show up on any
-benchmarks as being something that really needs to be replaced?
+> But is the usage of this semaphore in the class code really a problem?
+> Has it been seen to cause issues anywhere?  Does it show up on any
+> benchmarks as being something that really needs to be replaced?
 
-All of the places this is used should be on a "slow" code-path, and the
-semaphores themselves should very rarely ever have to block anyone under
-normal usages.
+It's a question of maintainability and simplicity also Greg.
 
-Without any real problems being reported for this, I wouldn't worry
-about this, the effort involved is non-trivial as you are quickly
-finding out :)
+I actually have no idea why you're making any sort of fuss about this.
+To me it's so clear cut that we should do that.
 
-good luck,
+Mutexes provide a much simpler locking technology.  The things that
+semaphores can do that mutexes can't are rarely if ever used.
 
-greg k-h
+Therefore it's better to convert all of those cases only using the
+simpler semantic set of mutexes from semaphores.
+
+And we've been converting the entire tree this way for about 2 years,
+I'm sorry that you've only just noticed that this is happening and
+that there is general agreement that in general all such conversions
+should be made.
