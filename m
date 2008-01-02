@@ -1,288 +1,240 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759656AbYABVM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759964AbYABVNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759656AbYABVM4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 16:12:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755526AbYABVMs
+	id S1759964AbYABVNW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 16:13:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755886AbYABVNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 16:12:48 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:33638 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755204AbYABVMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 16:12:46 -0500
+	Wed, 2 Jan 2008 16:13:13 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:30814 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755526AbYABVNM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 16:13:12 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=FBomAwDa3YENzisdSdyra60/k9hdskNi6gHHx9ERbj7DamRtCvHTc0/N2zjZfTwR/
+	vYHRC4aZFSPGtwCgqX3Aw==
+Message-ID: <3f1a065b0801021312w6f823cbeh9ea6b73d2b0c46c8@mail.gmail.com>
+Date: Wed, 2 Jan 2008 13:12:58 -0800
+From: "Russell Leidich" <rml@google.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [PATCH] AMD Thermal Interrupt Support
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
+       valdis.kletnieks@vt.edu
+In-Reply-To: <20080102200039.GA13784@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-X-Fcc: ~/Mail/linus
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: [PATCH -mm] x86 compat_binfmt_elf
-X-Fcc: ~/Mail/linus
-In-Reply-To: Roland McGrath's message of  Wednesday, 2 January 2008 13:08:31 -0800 <20080102210831.9F80426F9A0@magilla.localdomain>
-References: <20071223183920.GA13976@elte.hu>
-	<20071223211603.3FFB126F8E7@magilla.localdomain>
-	<20071230163614.GB1384@elte.hu>
-	<20080102044157.A5CC526F99F@magilla.localdomain>
-	<20080102111431.GD14731@elte.hu>
-	<20080102191030.GA11217@uranus.ravnborg.org>
-	<20080102210831.9F80426F9A0@magilla.localdomain>
-X-Antipastobozoticataclysm: Bariumenemanilow
-Message-Id: <20080102211243.D7CFA26F9A0@magilla.localdomain>
-Date: Wed,  2 Jan 2008 13:12:43 -0800 (PST)
+Content-Disposition: inline
+References: <20071217185453.C4597CC562@localhost>
+	 <20071225140413.e8b4f2cd.akpm@linux-foundation.org>
+	 <3f1a065b0712271057s150b62f8nb11ebc28dc55f811@mail.gmail.com>
+	 <20071227233419.d1adf3f3.akpm@linux-foundation.org>
+	 <3f1a065b0712281240p14c8223agfe83db0ac26aca4c@mail.gmail.com>
+	 <p731w9410yc.fsf@bingen.suse.de>
+	 <3f1a065b0801021143y5fc15e29r4201ac19bc7c1daa@mail.gmail.com>
+	 <20080102200039.GA13784@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch replaces the earlier patch by the same title already in x86/mm:
+On Jan 2, 2008 12:00 PM, Andi Kleen <andi@firstfloor.org> wrote:
+> On Wed, Jan 02, 2008 at 11:43:08AM -0800, Russell Leidich wrote:
+> > > > +      */
+> > > > +     for (nb_num = 0; nb_num < num_k8_northbridges; nb_num++) {
+> > > > +             if ((k8_northbridges[nb_num]->device) == 0x1103)
+> > > > +                     goto out;
+> > > > +     }
+> > >
+> > > AFAIK that's all K8s so the code will never work on them.
+> >
+> > Well, yes, this is Barcelona-only at the moment (and in all
+>
+> Ok, but that was totally unclear to me which suggests it should
+> be somewhere in the description/changelog and possibly in the comments.
 
-	commit a9014d2dfcb253fb3ce5f4e3318849f743b85427
-	Author: Roland McGrath <roland@redhat.com>
+Deal.
 
-	    x86 compat_binfmt_elf
+>
+> > likelihood, will extend to some future CPUs).  Indeed, as far as my
+> > testing has determined, there is no stepping of K8s which properly
+> > implements thermal throttling.  Even Rev F has a crippling erratum.
+>
+> How about RevG?
 
-It requires the new patch I just posted, titled "compat_binfmt_elf Kconfig".
+I don't know of any RevG.  Please explain.
+
+> >
+> > > Same with the rename.
+> >
+> > I disagree here.  The original code was exclusively focussed on
+> > setting some MCE-related "threshold".  With my changes, it's more
+> > generic.  "amd_" might not be the most appropriate prefix, but
+> > "threshold_" certainly is not.
+>
+> But such changes should be separate.
+
+OK, I'll back it out.
+
+>
+> >
+> > > +             printk(KERN_CRIT "CPU 0x%x: Thermal monitoring not "
+> > > +                     "functional.\n", cpu);
+> > >
+> > > Why is that KERN_CRIT? Does not seem that critical to me.
+> >
+> > So what this message really says is:  "The OS cannot hook the thermal
+> > interrupt because it has been hijacked or misconfigured by the BIOS.
+> > Therefore, the throttling MCEs which you might naturally expect to see
+> > on other Barcelona systems will not occur on this one.  Therefore, if
+> > your cooling policy relies on these MCEs (bad idea, but legal), it
+>
+> I don't think any Linux relies on that MCE for cooling so that seems like
+> a highly hypothetical situation. You would need a kernel driver for it
+> because there is no way to get it in user space even using a mce trigger.
+>
+> If anything that should be handled through ACPI thermal trip anyways.
+>
+> I think my point stands that this is not critical.
+
+OK, KERN_WARN then.
+
+>
+> > I agree, but it sounds like that should be the subject of another
+> > patch which touches lots of other components.
+>
+> Sure.
+>
+> >
+> > > The erratum number/part number should be documented and the kernel ought to print
+> > > why it didn't initialize thermal on that hardware.
+> >
+> > I don't think there's a need for this, because 0x1103 came before
+> > Barcelona; therefore, we can just consider this as a
+> > Barcelona-and-later feature.
+>
+> Ok, but that needs to be documented somewhere. Otherwise people will
+> eventually find out and then require lots of research to find this out.
+>
+> e.g. if you had a high level comment that says
+>
+> /* AMD Fam10h supports thermal throttling. When such a event happens we do
+>  * .... because of X Y Z. Implement this in the following code.
+>  * We don't do it on K8 due to crippling errata.
+>  */
+>
+> it would have been all clear.
+
+Will do.
+
+>
+> >
+> > > You're technically racy against parallel cpu hotplug happening from initrd
+> > > (which already runs during initcall -- yes that is a deathtrap)
+> > > although that is typically hard to fix.
+> >
+> > Can you elaborate?  I'm assuming that I still need to fix this in
+> > order to get the patch accepted, no?
+>
+> initrd user space can run in parallel with __initcall and in theory
+> it could trigger CPU hotplug events (and do lots of other things too)
+>
+> It's quite unexpected and regularly causes bugs.
+>
+> A lot of subsystems are racy this way.  Also it's not easily fixable because
+> of locking problems in the cpu hotplug subsystem.
+>
+> I just mentioned it for completeness; fixing it is probably beyond
+> scope of your patch and not a merging requirement.
+
+OK, well it's good to have your comment in the mail archives for when
+someone tries to fix this globally.
+
+>
+> >
+> > > thermal_apic_init_allowed seems like a hack. A separate notifier would
+> > > be cleaner.
+> >
+> > A variable is always lighter than a notifier.  I'm just trying to make
+>
+> Lighter but still a hack.  I don't insist on it, it just makes
+> your code uglier than it could be.
+
+I'm going to be ugly, but if someone to beautify it later, I won't oppose.
+
+>
+> > sure that if a CPU comes online before I'm ready to hook the thermal
+> > interrupt, that it does not attempt to do so prematurely.  I'm not
+> > sure what a notifier would do, other than set
+> > thermal_apic_init_allowed anyway.
+> >
+> > > PCI is already initialized before normal initcall, otherwise pretty much
+> > > all drivers would break.
+> >
+> > I'll change the comment.  I still want the convenience of a process
+> > context, so I plan to keep the late_initcall().
+>
+> All __initcalls are in process context. late etc. just changes the
+> ordering inside them.
+>
+> >
+> > > mce_thermal.c seems to be just unnecessary to me. It would be cleaner
+> > > to just keep the separate own handlers, especially since they do quite
+> > > different things anyways. Don't mesh together what is quite different.
+> >
+> > As I mentioned to Andrew Morton, this is not easily avoidable without
+> > some gross runtime CPUID hack.  Specifically, how do you handle a
+> > kernel build which supports both AMD and Intel thermal throttling,
+> > wherein you don't know which CPU -- if either -- is present until
+> > runtime?  The root of the problem is that both architectures share the
+> > same APIC vector, but implement throttling in incompatible ways.
+>
+> You set different handlers depending on the CPU type.
+
+Right.  But that's exactly what I'm doing.  If I understand correctly,
+your complaint is just that I'm doing the CPU-independent stuff in one
+place (before branching to the CPU-specific code), and it would be
+better to create duplicate code?  If I do it your way, I'll need to do
+something gross in entry_64.S.  Specifically, thermal_interrupt() will
+need to change from:
+--------------------------
+ENTRY(thermal_interrupt)
+	apicinterrupt THERMAL_APIC_VECTOR,smp_thermal_interrupt
+END(thermal_interrupt)
+--------------------------
+to:
+--------------------------
+ENTRY(thermal_interrupt)
+        push %rax
+        mov ($some_memory_location), %rax
+	apicinterrupt THERMAL_APIC_VECTOR,%rax
+        pop %rax
+END(thermal_interrupt)
+--------------------------
+which might not work, depending on how apicinterrupt is defined, and
+how easily I can get $some_memory_location loaded with the right
+value.
+
+Is this the fix you have in mind?
+
+>
+> >
+> > > Also "cpu_specific_smp_thermal_interrupt_callback_t" is definitely too long.
+> >
+> > I'll delete some characters to make it more obscure and Linux-like.
+>
+> If you just set different handlers you don't need it at all.
+
+True.
+
+>
+> -Andi
+>
 
 
-Thanks,
-Roland
----
-x86 compat_binfmt_elf
 
-This switches x86-64's 32-bit ELF support to use the shared
-fs/compat_binfmt_elf.c code instead of our own ia32_binfmt.c.
-
-Signed-off-by: Roland McGrath <roland@redhat.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- arch/x86/Kconfig             |    1 +
- arch/x86/ia32/Makefile       |    3 +-
- arch/x86/vdso/vdso32-setup.c |   33 ++++++++++++++++
- include/asm-x86/elf.h        |   88 ++++++++++++++++++++++++++++++-----------
- 4 files changed, 99 insertions(+), 26 deletions(-)
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 66d38bf..0000000 100644  
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1546,6 +1546,7 @@ source "fs/Kconfig.binfmt"
- config IA32_EMULATION
- 	bool "IA32 Emulation"
- 	depends on X86_64
-+	select COMPAT_BINFMT_ELF
- 	help
- 	  Include code to run 32-bit programs under a 64-bit kernel. You should
- 	  likely turn this on, unless you're 100% sure that you don't have any
-diff --git a/arch/x86/ia32/Makefile b/arch/x86/ia32/Makefile
-index 93a6fda..0000000 100644  
---- a/arch/x86/ia32/Makefile
-+++ b/arch/x86/ia32/Makefile
-@@ -2,8 +2,7 @@
- # Makefile for the ia32 kernel emulation subsystem.
- #
- 
--obj-$(CONFIG_IA32_EMULATION) := ia32entry.o sys_ia32.o ia32_signal.o \
--	ia32_binfmt.o
-+obj-$(CONFIG_IA32_EMULATION) := ia32entry.o sys_ia32.o ia32_signal.o
- 
- sysv-$(CONFIG_SYSVIPC) := ipc32.o
- obj-$(CONFIG_IA32_EMULATION) += $(sysv-y)
-diff --git a/arch/x86/vdso/vdso32-setup.c b/arch/x86/vdso/vdso32-setup.c
-index e0feb66..0000000 100644  
---- a/arch/x86/vdso/vdso32-setup.c
-+++ b/arch/x86/vdso/vdso32-setup.c
-@@ -377,6 +377,39 @@ int arch_setup_additional_pages(struct l
- 
- __initcall(sysenter_setup);
- 
-+#ifdef CONFIG_SYSCTL
-+/* Register vsyscall32 into the ABI table */
-+#include <linux/sysctl.h>
-+
-+static ctl_table abi_table2[] = {
-+	{
-+		.procname	= "vsyscall32",
-+		.data		= &sysctl_vsyscall32,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= proc_dointvec
-+	},
-+	{}
-+};
-+
-+static ctl_table abi_root_table2[] = {
-+	{
-+		.ctl_name = CTL_ABI,
-+		.procname = "abi",
-+		.mode = 0555,
-+		.child = abi_table2
-+	},
-+	{}
-+};
-+
-+static __init int ia32_binfmt_init(void)
-+{
-+	register_sysctl_table(abi_root_table2);
-+	return 0;
-+}
-+__initcall(ia32_binfmt_init);
-+#endif
-+
- #else  /* CONFIG_X86_32 */
- 
- const char *arch_vma_name(struct vm_area_struct *vma)
-diff --git a/include/asm-x86/elf.h b/include/asm-x86/elf.h
-index d6bf742..0000000 100644  
---- a/include/asm-x86/elf.h
-+++ b/include/asm-x86/elf.h
-@@ -73,6 +73,9 @@ typedef struct user_fxsr_struct elf_fpxr
- #endif
- 
- #ifdef __KERNEL__
-+#include <asm/vdso.h>
-+
-+extern unsigned int vdso_enabled;
- 
- /*
-  * This is used to ensure we don't load something for the wrong architecture.
-@@ -84,7 +87,6 @@ typedef struct user_fxsr_struct elf_fpxr
- #include <asm/processor.h>
- #include <asm/system.h>		/* for savesegment */
- #include <asm/desc.h>
--#include <asm/vdso.h>
- 
- #define elf_check_arch(x)	elf_check_arch_ia32(x)
- 
-@@ -106,7 +108,6 @@ typedef struct user_fxsr_struct elf_fpxr
- 
- #define ELF_PLATFORM	(utsname()->machine)
- #define set_personality_64bit()	do { } while (0)
--extern unsigned int vdso_enabled;
- 
- #else /* CONFIG_X86_32 */
- 
-@@ -118,29 +119,57 @@ extern unsigned int vdso_enabled;
- #define elf_check_arch(x) \
- 	((x)->e_machine == EM_X86_64)
- 
-+#define compat_elf_check_arch(x)	elf_check_arch_ia32(x)
-+
-+static inline void start_ia32_thread(struct pt_regs *regs, u32 ip, u32 sp)
-+{
-+	asm volatile("movl %0,%%fs" :: "r" (0));
-+	asm volatile("movl %0,%%es; movl %0,%%ds" : : "r" (__USER32_DS));
-+	load_gs_index(0);
-+	regs->ip = ip;
-+	regs->sp = sp;
-+	regs->flags = X86_EFLAGS_IF;
-+	regs->cs = __USER32_CS;
-+	regs->ss = __USER32_DS;
-+}
-+
-+static inline void elf_common_init(struct thread_struct *t,
-+				   struct pt_regs *regs, const u16 ds)
-+{
-+	regs->ax = regs->bx = regs->cx = regs->dx = 0;
-+	regs->si = regs->di = regs->bp = 0;
-+	regs->r8 = regs->r9 = regs->r10 = regs->r11 = 0;
-+	regs->r12 = regs->r13 = regs->r14 = regs->r15 = 0;
-+	t->fs = t->gs = 0;
-+	t->fsindex = t->gsindex = 0;
-+	t->ds = t->es = ds;
-+}
-+
- #define ELF_PLAT_INIT(_r, load_addr)	do {		  \
--	struct task_struct *cur = current;		  \
--	(_r)->bx = 0; (_r)->cx = 0; (_r)->dx = 0;	  \
--	(_r)->si = 0; (_r)->di = 0; (_r)->bp = 0;	  \
--	(_r)->ax = 0;					  \
--	(_r)->r8 = 0;					  \
--	(_r)->r9 = 0;					  \
--	(_r)->r10 = 0;					  \
--	(_r)->r11 = 0;					  \
--	(_r)->r12 = 0;					  \
--	(_r)->r13 = 0;					  \
--	(_r)->r14 = 0;					  \
--	(_r)->r15 = 0;					  \
--	cur->thread.fs = 0; cur->thread.gs = 0;		  \
--	cur->thread.fsindex = 0; cur->thread.gsindex = 0; \
--	cur->thread.ds = 0; cur->thread.es = 0;		  \
-+	elf_common_init(&current->thread, _r, 0);	  \
- 	clear_thread_flag(TIF_IA32);			  \
- } while (0)
- 
-+#define	COMPAT_ELF_PLAT_INIT(regs, load_addr)	\
-+	elf_common_init(&current->thread, regs, __USER_DS)
-+#define	compat_start_thread(regs, ip, sp)	do {		\
-+		start_ia32_thread(regs, ip, sp);		\
-+		set_fs(USER_DS);				\
-+	} while (0)
-+#define COMPAT_SET_PERSONALITY(ex, ibcs2)	do {		\
-+		if (test_thread_flag(TIF_IA32))			\
-+			clear_thread_flag(TIF_ABI_PENDING);	\
-+		else						\
-+			set_thread_flag(TIF_ABI_PENDING);	\
-+		current->personality |= force_personality32;	\
-+	} while (0)
-+#define COMPAT_ELF_PLATFORM			("i686")
-+
- /* I'm not sure if we can use '-' here */
- #define ELF_PLATFORM       ("x86_64")
- extern void set_personality_64bit(void);
--extern int vdso_enabled;
-+extern unsigned int sysctl_vsyscall32;
-+extern int force_personality32;
- 
- #endif /* !CONFIG_X86_32 */
- 
-@@ -179,17 +208,19 @@ extern int vdso_enabled;
- 
- struct task_struct;
- 
-+#define	ARCH_DLINFO_IA32(vdso_enabled) \
-+do if (vdso_enabled) {							\
-+		NEW_AUX_ENT(AT_SYSINFO,	VDSO_ENTRY);			\
-+		NEW_AUX_ENT(AT_SYSINFO_EHDR, VDSO_CURRENT_BASE);	\
-+} while (0)
-+
- #ifdef CONFIG_X86_32
- 
- #define VDSO_HIGH_BASE		(__fix_to_virt(FIX_VDSO))
- 
--/* update AT_VECTOR_SIZE_ARCH if the number of NEW_AUX_ENT entries changes */
-+#define ARCH_DLINFO		ARCH_DLINFO_IA32(vdso_enabled)
- 
--#define ARCH_DLINFO \
--do if (vdso_enabled) {							\
--		NEW_AUX_ENT(AT_SYSINFO,	VDSO_ENTRY);			\
--		NEW_AUX_ENT(AT_SYSINFO_EHDR, VDSO_CURRENT_BASE);	\
--} while (0)
-+/* update AT_VECTOR_SIZE_ARCH if the number of NEW_AUX_ENT entries changes */
- 
- #else /* CONFIG_X86_32 */
- 
-@@ -203,6 +234,12 @@ do if (vdso_enabled) {						\
- 	NEW_AUX_ENT(AT_SYSINFO_EHDR,(unsigned long)current->mm->context.vdso);\
- } while (0)
- 
-+#define AT_SYSINFO		32
-+
-+#define COMPAT_ARCH_DLINFO	ARCH_DLINFO_IA32(sysctl_vsyscall32)
-+
-+#define COMPAT_ELF_ET_DYN_BASE	(TASK_UNMAPPED_BASE + 0x1000000)
-+
- #endif /* !CONFIG_X86_32 */
- 
- #define VDSO_CURRENT_BASE	((unsigned long)current->mm->context.vdso)
-@@ -216,6 +253,9 @@ struct linux_binprm;
- extern int arch_setup_additional_pages(struct linux_binprm *bprm,
- 				       int executable_stack);
- 
-+extern int syscall32_setup_pages(struct linux_binprm *, int exstack);
-+#define compat_arch_setup_additional_pages	syscall32_setup_pages
-+
- extern unsigned long arch_randomize_brk(struct mm_struct *mm);
- #define arch_randomize_brk arch_randomize_brk
- 
+-- 
+Russell Leidich
