@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756666AbYABSe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbYABSkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756666AbYABSe5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 13:34:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754523AbYABSeq
+	id S1754820AbYABSkW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 13:40:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYABSkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 13:34:46 -0500
-Received: from mail.tmr.com ([64.65.253.246]:34280 "EHLO gaimboi.tmr.com"
+	Wed, 2 Jan 2008 13:40:10 -0500
+Received: from ishtar.tlinx.org ([64.81.245.74]:52578 "EHLO ishtar.tlinx.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755877AbYABSep (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 13:34:45 -0500
-Message-ID: <477BDE0C.8040302@tmr.com>
-Date: Wed, 02 Jan 2008 13:55:08 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1751653AbYABSkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 13:40:08 -0500
+Message-ID: <477BDA87.7030702@tlinx.org>
+Date: Wed, 02 Jan 2008 10:40:07 -0800
+From: Linda Walsh <lkml@tlinx.org>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Nigel Cunningham <nigel@nigel.suspend2.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       "The place to get help!" <suspend2-users@lists.tuxonice.net>,
-       suspend2-devel@lists.tuxonice.net, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Freezing filesystems (Was Re: What's in   store for 2008 for
- TuxOnIce?)
-References: <477AC060.5040004@nigel.suspend2.net>	<200801020021.37259.rjw@sisk.pl>	<477AD2AA.4070707@nigel.suspend2.net> <20080102010325.GC13288@mit.edu>
-In-Reply-To: <20080102010325.GC13288@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Holger Hoffstaette <holger@wizards.de>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: SATA kernel-buffered read VERY slow (not raid, Promise TX300
+ card); 2.6.23.1(vanilla)
+References: <fa.6TIOCGhBpW0r4XW9rqR+Ad8P+Js@ifi.uio.no> <4777E08C.4000603@shaw.ca> <4779870E.5070507@tlinx.org> <pan.2008.01.01.01.45.23.430875@wizards.de>
+In-Reply-To: <pan.2008.01.01.01.45.23.430875@wizards.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Wed, Jan 02, 2008 at 10:54:18AM +1100, Nigel Cunningham wrote:
->>> I would also like the TuxOnIce issues related to drivers, ACPI, etc. to go to
->>> one of the kernel-related lists, but I think linux-pm may be better for that
->>> due to the much lower traffic.
->> I guess that makes sense. I guess people can always be referred to LKML
->> for the issues where the appropriate person isn't on linux-pm.
-> 
-> Hi Nigel,
-> 
-> I'd really recommend pushing the TuxOnIce discussions to LKML.  That
-> way people can see the size of the user community and Andrew and Linus
-> can see how many people are using TuxOnIce.  They can also see how
-> well the TuxOnIce community helps address user problems, which is a
-> big consideration when Linus decides whether or not to merge a
-> particular technology. 
-> 
-> If the goal is eventual merger of TuxOnIce, LKML is really the best
-> place to have the discussions.  Examples such as Realtime, CFS, and
-> others have shown that you really want to keep the discussion front
-> and center.  When one developer says, "not my problem; my code is
-> perfect", and the other developer is working with users who report
-> problems, guess which technology generally ends up getting merged by
-> Linus?
-> 
-Judging from the fact that TuxOnIce is still excluded, I would say the 
-answer is obvious. :-(
-Posession is nine points of the law...
+Holger Hoffstaette wrote:
+>>     Another new "problem" (not as important) -- even though SATA disks are
+>> called with "sdX", my ATA disks that *were* at hda-hdc are now at hde-hdg.
+>> Devices hda-hdd are not populated in my dev directory on bootup.  Of
+>>     
+>
+> I think this is because the Promise SATA card also has one or more PATA
+> channels, so if the card is activated it takes precedence over your old
+> controller. But it should only be one channel, not four?
+> As for the other problem - I plan on adding such a card to one of my
+> systems during the week and might be able to contribute some findings.
+>   
+---
+    FYI - this specific card was sold as "4-SATA" channels.  There were
+other contemporary (same package design) Promise cards offered that
+were advertised to 1) support 2-sata+2pata or 2) support RAID w/SATA.
+I think there was also a RAID card supporting PATA-only as well.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+    It is quite possible (though thoroughly 'lame'), that they have 1
+card providing, both 4 SATA and 4 PATA, but only provide the connectors
+for some subset, with the RAID being a firmware-only (software-only)
+option that is implemented in software on the card (as my web searching
+indicated was true for some Promise SATA cards). 
+
+    Perhaps an "RFE" for hdparm might be someway to specify the
+target device by using a label on one of the devices partitions, since
+my boot-time hdparm settings suffer from the same problems my
+/etc/fstab used to suffer before "labels" were available.
+
+
