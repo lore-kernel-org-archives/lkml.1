@@ -1,48 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755316AbYABOlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755172AbYABOsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755316AbYABOlW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 09:41:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbYABOlO
+	id S1755172AbYABOsK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 09:48:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbYABOr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 09:41:14 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:55217 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752691AbYABOlN (ORCPT
+	Wed, 2 Jan 2008 09:47:57 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:61825 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752980AbYABOrz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 09:41:13 -0500
-Message-ID: <477BA254.9010702@s5r6.in-berlin.de>
-Date: Wed, 02 Jan 2008 15:40:20 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
+	Wed, 2 Jan 2008 09:47:55 -0500
+X-IronPort-AV: E=Sophos;i="4.24,235,1196658000"; 
+   d="scan'208";a="59299171"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: gregkh@suse.de
+Subject: [PATCH] : Allow embedded developers USB options normally reserved for OTG
+Date: Wed, 2 Jan 2008 09:48:51 -0500
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
 MIME-Version: 1.0
-To: Jon Masters <jonathan@jonmasters.org>
-CC: Matt Domsch <Matt_Domsch@dell.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Adrian Bunk <bunk@kernel.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] ide: use MODULE_VERSION()
-References: <200801011840.38757.bzolnier@gmail.com>	 <20080101175333.GA27566@does.not.exist>	 <200801011933.43930.bzolnier@gmail.com>	 <1199241156.3300.55.camel@perihelion>	 <20080102044620.GB10762@auslistsprd01.us.dell.com> <1199252790.3300.77.camel@perihelion>
-In-Reply-To: <1199252790.3300.77.camel@perihelion>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+Message-Id: <200801020948.51310.rgetz@blackfin.uclinux.org>
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Jan 2008 14:47:53.0833 (UTC) FILETIME=[748E4D90:01C84D4E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Masters wrote:
-> On Tue, 2008-01-01 at 22:46 -0600, Matt Domsch wrote:
->> $ modinfo dell_rbu | grep version
->> version:        3.2
->> srcversion:     1D4815D7D6FBEE6612F3C18
-> 
-> Right. And I was referring to the is above (I forgot it's a CRC32 and
-> not a SHA1). But my point is why not codify some "policy" here with
-> respect to module versioning, rather than have the latter exist to
-> workaround the case that module versions aren't bumped manually.
+From: Robin Getz <rgetz@blackfin.uclinux.org>
 
-How about this version scheme:
-driver version == Linux kernel version
--- 
-Stefan Richter
--=====-==--- ---= ---=-
-http://arcgraph.de/sr/
+Allow embedded developers to turn support for USB Hubs off even if they have a 
+full root hub. This saves the overhead (RAM and Flash size).
+
+Allow embedded developers the capabilities of the "otg_whitelist.h" - a 
+product whitelist, so USB peripherals not listed there will be rejected 
+during enumeration. This is the desired operation for many embedded products.
+
+Signed-off-by: Robin Getz <rgetz@blackfin.uclinux.org>
+
+---
+
+ drivers/usb/core/Kconfig |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+
+Index: linux-2.6.x/drivers/usb/core/Kconfig
+===================================================================
+--- linux-2.6.x/drivers/usb/core/Kconfig	(revision 4074)
++++ linux-2.6.x/drivers/usb/core/Kconfig	(working copy)
+@@ -95,8 +95,9 @@
+ 
+ config USB_OTG_WHITELIST
+ 	bool "Rely on OTG Targeted Peripherals List"
+-	depends on USB_OTG
+-	default y
++	depends on USB_OTG || EMBEDDED
++	default y if USB_OTG
++	default n if EMBEDDED
+ 	help
+ 	  If you say Y here, the "otg_whitelist.h" file will be used as a
+ 	  product whitelist, so USB peripherals not listed there will be
+@@ -111,7 +112,7 @@
+ 
+ config USB_OTG_BLACKLIST_HUB
+ 	bool "Disable external hubs"
+-	depends on USB_OTG
++	depends on USB_OTG || EMBEDDED
+ 	help
+ 	  If you say Y here, then Linux will refuse to enumerate
+ 	  external hubs.  OTG hosts are allowed to reduce hardware
