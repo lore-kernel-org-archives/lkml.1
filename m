@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756878AbYABKnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757414AbYABKxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756878AbYABKnQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 05:43:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbYABKm6
+	id S1757414AbYABKxT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 05:53:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754407AbYABKxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 05:42:58 -0500
-Received: from fk-out-0910.google.com ([209.85.128.185]:26474 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754396AbYABKm5 (ORCPT
+	Wed, 2 Jan 2008 05:53:05 -0500
+Received: from smtp-out001.kontent.com ([81.88.40.215]:53338 "EHLO
+	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754030AbYABKxE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 05:42:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=V0lurF56ooP2WAxG2ANTty527pw2ONwmzWX6aw2DSpMxhoJWWq5XZfiRDOdkBY8mYfGEJpZUcZZvu/SGccjggZ5l0Fc9MogzFPhGpajf8g/fE3Gylm+K+Lvmn+PINdpMomf4mIv5pO5y3fRH2O9Ld0TyCqO9YKjangTnYxR6X4s=
-Message-ID: <477B6AA5.5020803@gmail.com>
-Date: Wed, 02 Jan 2008 13:42:45 +0300
-From: Alexey Starikovskiy <aystarik@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Wed, 2 Jan 2008 05:53:04 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC] sleepy linux
+Date: Wed, 2 Jan 2008 11:52:51 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <20071225230731.GA29030@elf.ucw.cz> <200712301739.42192.oliver@neukum.org> <20071231144447.GD26339@ucw.cz>
+In-Reply-To: <20071231144447.GD26339@ucw.cz>
 MIME-Version: 1.0
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-CC: hal@lists.freedesktop.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: kpowersave stuck at battery charging
-References: <200801021248.55844.arvidjaar@mail.ru>
-In-Reply-To: <200801021248.55844.arvidjaar@mail.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801021152.52639.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrey Borzenkov wrote:
-> This is did not happen before; I am not sure right now what caused this (i.e. 
-> battery aging or some software change) nor whether this is kernel/HAL/kpowersave 
-> issue.
->
-> kpowersave is stuck at assuming battery is loading and at 94%. Sysfs displays 
-> battery state as Full:
->
->   
-Frequent battery charging shortens lifetime of the battery, so some (may 
-be all now)
-notebook manufacturers do not start charging  battery until it discharge 
-to some degree (~90%).
-It could be your case. Please try to discharge battery to, say, 89% and 
-then check if it charges to the
-100%.
-> - does ACPI battery code misuse POWER_SUPPLY_PROP_ENERGY_FULL?
-> - does HAL misuse .../energy_full?
-> - does kpowersave misuse battery.charge_level.last_full?
->   
+Am Montag, 31. Dezember 2007 15:44:47 schrieb Pavel Machek:
+> On Sun 2007-12-30 17:39:42, Oliver Neukum wrote:
 
+> > But what's wrong with calling suspend() the conventional way once you've
+> > decided to go into sleepy mode?
+> 
+> I'm not sure if it can be done in non-racy way. It is different from
+> "conventional" suspend(): you can still have userland requests after
+> this suspend(), and you should abort auto-sleep if you get one. (As
+> opposed to blocking in system suspend case).
+
+But we are always racing against hardware in these cases.
+
+Strictly speaking you cannot have pure userland request. If no task
+is runnable and no timer about to fire any activity will require kernel
+activity unless you are doing direct hardware access from user space
+which in the generic case precludes suspension anyway.
+
+	Regards
+		Oliver
