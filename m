@@ -1,173 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171AbYABEnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbYABE4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756171AbYABEnu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 23:43:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbYABEnl
+	id S1756505AbYABE4L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 23:56:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbYABEz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 23:43:41 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:42564 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753339AbYABEnk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 23:43:40 -0500
-Date: Wed, 2 Jan 2008 10:13:53 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Quentin Barnes <qbarnes@gmail.com>, linux-kernel@vger.kernel.org,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH] [CFT] Code clarification patch to Kprobes arch code
-Message-ID: <20080102044353.GA7027@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <b70efdcb0712310929y1bf871eah2adb531a7ed89673@mail.gmail.com> <20080101151943.GE4434@elte.hu>
+	Tue, 1 Jan 2008 23:55:59 -0500
+Received: from ausc60pc101.us.dell.com ([143.166.85.206]:9909 "EHLO
+	ausc60pc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753049AbYABEz6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 23:55:58 -0500
+X-Greylist: delayed 566 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Jan 2008 23:55:58 EST
+X-IronPort-AV: E=Sophos;i="4.24,232,1196661600"; 
+   d="scan'208";a="512095033"
+Date: Tue, 1 Jan 2008 22:46:20 -0600
+From: Matt Domsch <Matt_Domsch@dell.com>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Adrian Bunk <bunk@kernel.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] ide: use MODULE_VERSION()
+Message-ID: <20080102044620.GB10762@auslistsprd01.us.dell.com>
+References: <200801011840.38757.bzolnier@gmail.com> <20080101175333.GA27566@does.not.exist> <200801011933.43930.bzolnier@gmail.com> <1199241156.3300.55.camel@perihelion>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080101151943.GE4434@elte.hu>
+In-Reply-To: <1199241156.3300.55.camel@perihelion>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 01, 2008 at 04:19:43PM +0100, Ingo Molnar wrote:
+On Tue, Jan 01, 2008 at 09:32:36PM -0500, Jon Masters wrote:
+> On Tue, 2008-01-01 at 19:33 +0100, Bartlomiej Zolnierkiewicz wrote:
 > 
-> * Quentin Barnes <qbarnes@gmail.com> wrote:
+> > On the second thought: maybe we will be better off with limiting
+> > MODULE_VERSION() to the device drivers and the IDE core module for now,
+> > and just removing all these private version numbers from host drivers
+> > (with one or two exceptions they are not printed or exported currently,
+> > moreover exceptions are the cases like stale version numbers from 199x)?
 > 
-> > Since people are discussing some x86 Kprobes code cleanup, I thought I 
-> > would contribute a small change as well.  When developing the Kprobes 
-> > arch code for ARM, I ran across some code found in x86 and s390 
-> > Kprobes arch code which I didn't consider as good as it could be.
-> > 
-> > Once I figured out what the code was doing, I changed the code for ARM 
-> > Kprobes to work the way I felt was more appropriate. I've tested the 
-> > code this way in ARM for about a year and would like to push the same 
-> > change to the other affected architectures.
-> 
-> thanks Quentin, it looks good to me and i've applied the x86 bit to 
-> x86.git. (find the merged patch attached below)
-> 
-> small note:
-> 
-> > @@ -654,12 +655,12 @@ int __kprobes kprobe_exceptions_notify(struct
-> > notifier_block *self,
-> >  			ret = NOTIFY_STOP;
-> 
-> your email client apparently line-wrapped this portion of the patch - i 
-> fixed it up manually (wasnt a big issue). Please see 
-> Documentation/email-clients.txt about how to set up your email client.
-> 
-> 	Ingo
-> 
-> -------------------->
-> Subject: Code clarification patch to Kprobes arch code
-> From: "Quentin Barnes" <qbarnes@gmail.com>
-> 
-> When developing the Kprobes arch code for ARM, I ran across some code
-> found in x86 and s390 Kprobes arch code which I didn't consider as
-> good as it could be.
-> 
-> Once I figured out what the code was doing, I changed the code
-> for ARM Kprobes to work the way I felt was more appropriate.
-> I've tested the code this way in ARM for about a year and would
-> like to push the same change to the other affected architectures.
-> 
-> The code in question is in kprobe_exceptions_notify() which
-> does:
-> ====
->           /* kprobe_running() needs smp_processor_id() */
->           preempt_disable();
->           if (kprobe_running() &&
->               kprobe_fault_handler(args->regs, args->trapnr))
->                   ret = NOTIFY_STOP;
->           preempt_enable();
-> ====
-> 
-> For the moment, ignore the code having the preempt_disable()/
-> preempt_enable() pair in it.
-> 
-> The problem is that kprobe_running() needs to call smp_processor_id()
-> which will assert if preemption is enabled.  That sanity check by
-> smp_processor_id() makes perfect sense since calling it with preemption
-> enabled would return an unreliable result.
-> 
-> But the function kprobe_exceptions_notify() can be called from a
-> context where preemption could be enabled.  If that happens, the
-> assertion in smp_processor_id() happens and we're dead.  So what
-> the original author did (speculation on my part!) is put in the
-> preempt_disable()/preempt_enable() pair to simply defeat the check.
-> 
-> Once I figured out what was going on, I considered this an
-> inappropriate approach.  If kprobe_exceptions_notify() is called
-> from a preemptible context, we can't be in a kprobe processing
-> context at that time anyways since kprobes requires preemption to
-> already be disabled, so just check for preemption enabled, and if
-> so, blow out before ever calling kprobe_running().  I wrote the ARM
-> kprobe code like this:
-> ====
->           /* To be potentially processing a kprobe fault and to
->            * trust the result from kprobe_running(), we have
->            * be non-preemptible. */
->           if (!preemptible() && kprobe_running() &&
->               kprobe_fault_handler(args->regs, args->trapnr))
->                   ret = NOTIFY_STOP;
-> ====
-> 
-> The above code has been working fine for ARM Kprobes for a year.
-> So I changed the x86 code (2.6.24-rc6) to be the same way and ran
-> the Systemtap tests on that kernel.  As on ARM, Systemtap on x86
-> comes up with the same test results either way, so it's a neutral
-> external functional change (as expected).
-> 
-> This issue has been discussed previously on linux-arm-kernel and the
-> Systemtap mailing lists.  Pointers to the by base for the two
-> discussions:
-> http://lists.arm.linux.org.uk/lurker/message/20071219.223225.1f5c2a5e.en.html
-> http://sourceware.org/ml/systemtap/2007-q1/msg00251.html
-> 
-> Signed-off-by: Quentin Barnes <qbarnes@gmail.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Things like checkpatch could help advise people to bump the version
+> number, but it's a bit iffy. Matt D. actually uses the special source
+> version modinfo for DKMS - which is different - but it makes me wonder
+> whether dynamically generating a version based on source SHA1 wouldn't
+> be a better idea in most cases than an outdated hard-coded one.
 
-Tested on x86.
+We've got that already, it's called 'srcversion', and it's a CRC32
+IIRC after some limited parsing to let it ignore whitspace changes and
+comment changes only.  
 
-Acked-by: Ananth N Mavinakayahanalli <ananth@in.ibm.com>
+$ modinfo dell_rbu | grep version
+version:        3.2
+srcversion:     1D4815D7D6FBEE6612F3C18
 
-> ---
->  arch/x86/kernel/kprobes.c |   11 +++++++----
->  1 file changed, 7 insertions(+), 4 deletions(-)
-> 
-> Index: linux-x86.q/arch/x86/kernel/kprobes.c
-> ===================================================================
-> --- linux-x86.q.orig/arch/x86/kernel/kprobes.c
-> +++ linux-x86.q/arch/x86/kernel/kprobes.c
-> @@ -44,6 +44,7 @@
->  #include <linux/ptrace.h>
->  #include <linux/string.h>
->  #include <linux/slab.h>
-> +#include <linux/hardirq.h>
->  #include <linux/preempt.h>
->  #include <linux/module.h>
->  #include <linux/kdebug.h>
-> @@ -951,12 +952,14 @@ int __kprobes kprobe_exceptions_notify(s
->  			ret = NOTIFY_STOP;
->  		break;
->  	case DIE_GPF:
-> -		/* kprobe_running() needs smp_processor_id() */
-> -		preempt_disable();
-> -		if (kprobe_running() &&
-> +		/*
-> +		 * To be potentially processing a kprobe fault and to
-> +		 * trust the result from kprobe_running(), we have
-> +		 * be non-preemptible.
-> +		 */
-> +		if (!preemptible() && kprobe_running() &&
->  		    kprobe_fault_handler(args->regs, args->trapnr))
->  			ret = NOTIFY_STOP;
-> -		preempt_enable();
->  		break;
->  	default:
->  		break;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+DKMS uses the srcversion if present recognize an exact match.
+srcversions can't be tested for anything <> though, only =.
+
+DKMS also uses the version field as supplied by MODULE_VERSION() to
+try to determine older-vs-newer modules.  On occasion we've had to
+release updated "fixed" kernel modules, in which case we bump the
+value in MODULE_VERSION() slightly (typically append .1 or something
+similar) so the "fixed" module version compares higher.  Such version
+fields aren't generally used with stock kernel.org kernels (where
+users can be expected to upgrade to a later stock kernel), but for
+users of a distro kernel where we need to fix a module without forcing
+the user to upgrade the whole kernel.
+
+-Matt
+
+-- 
+Matt Domsch
+Linux Technology Strategist, Dell Office of the CTO
+linux.dell.com & www.dell.com/linux
