@@ -1,90 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758222AbYABVx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759150AbYABVyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758222AbYABVx1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 16:53:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759266AbYABVxN
+	id S1759150AbYABVyX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 16:54:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbYABVyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 16:53:13 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:54992 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756125AbYABVxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 16:53:11 -0500
-Date: Wed, 2 Jan 2008 22:53:11 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH -mm] compat_binfmt_elf Kconfig
-Message-ID: <20080102215311.GA12558@uranus.ravnborg.org>
-References: <20071223183920.GA13976@elte.hu> <20071223211603.3FFB126F8E7@magilla.localdomain> <20071230163614.GB1384@elte.hu> <20080102044157.A5CC526F99F@magilla.localdomain> <20080102111431.GD14731@elte.hu> <20080102191030.GA11217@uranus.ravnborg.org> <20080102210831.9F80426F9A0@magilla.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080102210831.9F80426F9A0@magilla.localdomain>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 2 Jan 2008 16:54:15 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:51625 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752035AbYABVyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 16:54:14 -0500
+Date: Wed, 2 Jan 2008 13:54:12 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, htejun@gmail.com,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, maneesh@linux.vnet.ibm.com,
+       lkml <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: 2.6.22-stable causes oomkiller to be invoked
+In-Reply-To: <Pine.LNX.4.64.0801021237330.21526@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0801021346580.3778@schroedinger.engr.sgi.com>
+References: <20071214150533.aa30efd4.akpm@linux-foundation.org>
+ <20071215035200.GA22082@linux.vnet.ibm.com> <20071214220030.325f82b8.akpm@linux-foundation.org>
+ <20071215104434.GA26325@linux.vnet.ibm.com> <20071217045904.GB31386@linux.vnet.ibm.com>
+ <Pine.LNX.4.64.0712171143280.12871@schroedinger.engr.sgi.com>
+ <20071217120720.e078194b.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0712171222470.29500@schroedinger.engr.sgi.com>
+ <20071221044508.GA11996@linux.vnet.ibm.com>
+ <Pine.LNX.4.64.0712261258050.16862@schroedinger.engr.sgi.com>
+ <20071228101109.GB5083@linux.vnet.ibm.com> <Pine.LNX.4.64.0801021237330.21526@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 02, 2008 at 01:08:31PM -0800, Roland McGrath wrote:
-> This patch should go in immediately after:
-> 
-> 	commit 5e45efc63e33ee2bae9ff4d500b53d3bf86d2b48
-> 	Author: Roland McGrath <roland@redhat.com>
-> 
-> 	    compat_binfmt_elf
-> 
-> Thanks,
-> Roland
-> 
-> ---
-> [PATCH] compat_binfmt_elf Kconfig
-> 
-> This adds Kconfig and Makefile bits to build fs/compat_binfmt_elf.c,
-> just added.  Each arch that wants to use this file needs to add a
-> "select COMPAT_BINFMT_ELF" line in its Kconfig bits that enable COMPAT.
-> 
-> Signed-off-by: Roland McGrath <roland@redhat.com>
-> ---
->  fs/Kconfig.binfmt |    4 ++++
->  fs/Makefile       |    1 +
->  2 files changed, 5 insertions(+), 0 deletions(-)
-> 
-> diff --git a/fs/Kconfig.binfmt b/fs/Kconfig.binfmt
-> index d4fc609..0000000 100644  
-> --- a/fs/Kconfig.binfmt
-> +++ b/fs/Kconfig.binfmt
-> @@ -23,6 +23,10 @@ config BINFMT_ELF
->  	  ld.so (check the file <file:Documentation/Changes> for location and
->  	  latest version).
->  
-> +config COMPAT_BINFMT_ELF
-> +	bool
-> +	depends on COMPAT && MMU
-> +
->  config BINFMT_ELF_FDPIC
->  	bool "Kernel support for FDPIC ELF binaries"
->  	default y
-> diff --git a/fs/Makefile b/fs/Makefile
-> index 500cf15..0000000 100644  
-> --- a/fs/Makefile
-> +++ b/fs/Makefile
-> @@ -39,6 +39,7 @@ obj-$(CONFIG_BINFMT_MISC)	+= binfmt_misc
->  obj-y				+= binfmt_script.o
->  
->  obj-$(CONFIG_BINFMT_ELF)	+= binfmt_elf.o
-> +obj-$(CONFIG_COMPAT_BINFMT_ELF)	+= compat_binfmt_elf.o
->  obj-$(CONFIG_BINFMT_ELF_FDPIC)	+= binfmt_elf_fdpic.o
->  obj-$(CONFIG_BINFMT_SOM)	+= binfmt_som.o
->  obj-$(CONFIG_BINFMT_FLAT)	+= binfmt_flat.o
+Just traced it again on my system: It is okay for the number of pages on 
+the quicklist to reach the high count that we see (although the 16 bit 
+limits are weird. You have around 4GB of memory in the system?). Up to 
+1/16th of free memory of a node can be allocated for quicklists (this 
+allows the effective shutting down and restarting of large amounts of 
+processes)
 
-You totally missed the point of having selectable features noted
-by a config symbol named "HAVE_*".
-When you see such a "HAVE_*" you know it is supposed to be selected
-and thus you need to be much more careful about the dependencies.
+The problem may be that this is run on a HIGHMEM system and the 
+calculation of allowable pages on the quicklists does not take into 
+account that highmem pages are not usable for quicklists (not sure about 
+ZONE_MOVABLE on i386. Maybe we need to take that into account as well?)
 
-And my patch was purely a cooked up example btw and not at all tested.
-Should have been clear about that.
+Here is a patch that removes the HIGHMEM portion from the calculation. 
+Does this change anything:
 
-	Sam
-
+Index: linux-2.6/mm/quicklist.c
+===================================================================
+--- linux-2.6.orig/mm/quicklist.c	2008-01-02 13:41:10.000000000 -0800
++++ linux-2.6/mm/quicklist.c	2008-01-02 13:44:15.000000000 -0800
+@@ -29,6 +29,12 @@ static unsigned long max_pages(unsigned 
+ 
+ 	node_free_pages = node_page_state(numa_node_id(),
+ 			NR_FREE_PAGES);
++#ifdef CONFIG_HIGHMEM
++	/* Take HIGHMEM pages out of consideration */
++	node_free_pages -= zone_page_state(&NODE_DATA(numa_node_id())->node_zones[ZONE_HIGHMEM],
++				NR_FREE_PAGES);
++#endif
++
+ 	max = node_free_pages / FRACTION_OF_NODE_MEM;
+ 	return max(max, min_pages);
+ }
