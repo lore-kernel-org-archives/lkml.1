@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756988AbYABE6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbYABFEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756988AbYABE6S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 23:58:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbYABE6M
+	id S1755273AbYABFEo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 00:04:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750817AbYABFEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 23:58:12 -0500
-Received: from ausc60pc101.us.dell.com ([143.166.85.206]:36801 "EHLO
-	ausc60pc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753373AbYABE6L (ORCPT
+	Wed, 2 Jan 2008 00:04:36 -0500
+Received: from mga03.intel.com ([143.182.124.21]:31057 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750781AbYABFEf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 23:58:11 -0500
-X-IronPort-AV: E=Sophos;i="4.24,232,1196661600"; 
-   d="scan'208";a="512113222"
-Date: Tue, 1 Jan 2008 22:58:00 -0600
-From: Matt Domsch <Matt_Domsch@dell.com>
-To: Theewara Vorakosit <thvo@hpcnc.cpe.ku.ac.th>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Get physical MAC address
-Message-ID: <20080102045800.GC10762@auslistsprd01.us.dell.com>
-References: <Pine.LNX.4.44.0712311233290.17732-100000@hpcnc.cpe.ku.ac.th>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0712311233290.17732-100000@hpcnc.cpe.ku.ac.th>
-User-Agent: Mutt/1.5.11
+	Wed, 2 Jan 2008 00:04:35 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,232,1196668800"; 
+   d="scan'208";a="355487534"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [2.6 patch] #if 0 dma_async_memcpy_buf_to_buf()
+Date: Tue, 1 Jan 2008 21:04:33 -0800
+Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C03B06B38@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <20080101142531.787084d5@the-village.bc.nu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [2.6 patch] #if 0 dma_async_memcpy_buf_to_buf()
+Thread-Index: AchMg17G+JEKXeGjSxmAr1/b0UonrQAeSipg
+References: <20080101134924.GR2360@does.not.exist> <20080101142531.787084d5@the-village.bc.nu>
+From: "Nelson, Shannon" <shannon.nelson@intel.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Adrian Bunk" <bunk@kernel.org>
+Cc: "Williams, Dan J" <dan.j.williams@intel.com>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 02 Jan 2008 05:04:34.0515 (UTC) FILETIME=[F7563230:01C84CFC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 31, 2007 at 12:39:11PM +0700, Theewara Vorakosit wrote:
-> Hello,
-> 
-> I get MAC address from ioctl. However, ifconfig can change this  MAC 
-> address. Can I get a real physical MAC address of the NIC?
+>From: Alan Cox [mailto:alan@lxorguk.ukuu.org.uk] 
+>Sent: Tuesday, January 01, 2008 6:26 AM
+>To: Adrian Bunk
+>Cc: Nelson, Shannon; Williams, Dan J; linux-kernel@vger.kernel.org
+>Subject: Re: [2.6 patch] #if 0 dma_async_memcpy_buf_to_buf()
+>
+>On Tue, 1 Jan 2008 15:49:24 +0200
+>Adrian Bunk <bunk@kernel.org> wrote:
+>
+>> This patch #if 0's the unused dma_async_memcpy_buf_to_buf().
+>> 
+>> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+>
+>NAK. Yet again you are trying to remove bits of APIs in ways that make
+>no sense.
+>
 
-yes.  It's ETHTOOL_GPERMADDR to the ethtool ioctl.
+Yes, this should be a NAK.
 
-        case ETHTOOL_GPERMADDR:
-                rc = ethtool_get_perm_addr(dev, useraddr);
-                break;
+Thank you Alan.
 
-When the driver is first loaded, before ifconfig can change the MAC
-address, the existing (permanent) MAC address is stored away, able to
-be retrieved via this ioctl.  Jon Wetzel, a Dell intern of a few
-summers ago, wrote the code and was able to have it included.
-
-Thanks,
-Matt
-
--- 
-Matt Domsch
-Linux Technology Strategist, Dell Office of the CTO
-linux.dell.com & www.dell.com/linux
+sln
