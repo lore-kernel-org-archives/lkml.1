@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963AbYABCOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038AbYABC0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753963AbYABCOR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 21:14:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbYABCOE
+	id S1754038AbYABC0q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 21:26:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYABC0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 21:14:04 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54237 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751894AbYABCOD (ORCPT
+	Tue, 1 Jan 2008 21:26:36 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:39447 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751703AbYABC0g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 21:14:03 -0500
-Date: Tue, 1 Jan 2008 18:12:12 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Bernd Petrovitsch <bernd@firmix.at>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Get physical MAC address
-Message-ID: <20080101181212.1e7b5ff0@deepthought>
-In-Reply-To: <1199228848.3912.651.camel@gimli.at.home>
-References: <Pine.LNX.4.44.0712311233290.17732-100000@hpcnc.cpe.ku.ac.th>
-	<1199228848.3912.651.camel@gimli.at.home>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 1 Jan 2008 21:26:36 -0500
+Message-ID: <477AF560.1000002@zytor.com>
+Date: Tue, 01 Jan 2008 18:22:24 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: Christoph Hellwig <hch@infradead.org>, Mike Frysinger <vapier@gentoo.org>,
+       tglx@linutronix.de, mingo@redhat.com, Andi Kleen <andi@firstfloor.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: asm-x86/byteorder.h: clean up for userspace
+References: <200712311312.46450.vapier@gentoo.org> <20080101174708.GA25089@infradead.org> <477AAE6E.8080305@zytor.com> <20080102013126.GN27566@does.not.exist>
+In-Reply-To: <20080102013126.GN27566@does.not.exist>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 02 Jan 2008 00:07:28 +0100
-Bernd Petrovitsch <bernd@firmix.at> wrote:
-
-> On Mon, 2007-12-31 at 12:39 +0700, Theewara Vorakosit wrote:
-> [...]
-> > I get MAC address from ioctl. However, ifconfig can change this  MAC 
-> > address. Can I get a real physical MAC address of the NIC?
+Adrian Bunk wrote:
 > 
-> - You can get the initial MAC address right after bootup before anyone
->   changes it.
-> - Some (if not many if not all) of the drivers output it on
->   driver initialization time so you could read it from `dmesg` or
->   some /var/log/messages or .....
-> There is no "get initial MAC address" ioctl (but it's not that
-> complicated to implement it).
+> Userspace either has to #define CONFIG_X86_BSWAP or it'll get the slow 
+> versions of these functions...
 > 
-> 	Bernd
+> Leaking CONFIG_ variables to userspace is not really funny - I remember 
+> e.g. what tricks MySQL does (did?) for (ab)using asm-i386/atomic.h in 
+> userspace.
+> 
 
-There is already ethtool interface to get what you want (ETHTOOL_GPERMADDR)
+True.  CONFIG_X86_BSWAP isn't appropriate for userspace anyway, 
+userspace needs to use the appropriate gcc intrinsics for 486+.
 
-
--- 
-Stephen Hemminger <stephen.hemminger@vyatta.com>
+	-hpa
