@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbYABUYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbYABUZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756202AbYABUYT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 15:24:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbYABUYK
+	id S1753409AbYABUZU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 15:25:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754173AbYABUZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 15:24:10 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57111 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752425AbYABUYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 15:24:09 -0500
-Date: Wed, 2 Jan 2008 21:23:15 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Abhishek Sagar <sagar.abhishek@gmail.com>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, qbarnes@gmail.com,
-       ananth@in.ibm.com, jkenisto@us.ibm.com
-Subject: Re: [PATCH] x86: kprobes change kprobe_handler flow
-Message-ID: <20080102202315.GE3985@elte.hu>
-References: <1198806265.6323.34.camel@brick> <4778E8B0.6010400@gmail.com> <20080101153558.GJ4434@elte.hu> <477A971A.8030006@gmail.com> <477BD366.1060504@redhat.com> <863e9df20801021131j3a4d655dgd00fa60e39a97ec@mail.gmail.com>
+	Wed, 2 Jan 2008 15:25:08 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33141 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753714AbYABUZG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 15:25:06 -0500
+Date: Wed, 2 Jan 2008 12:25:04 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Al Viro <viro@ZenIV.linux.org.uk>
+cc: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: SLUB sysfs support
+In-Reply-To: <20071228032645.GM27894@ZenIV.linux.org.uk>
+Message-ID: <Pine.LNX.4.64.0801021222250.20331@schroedinger.engr.sgi.com>
+References: <20071226221631.GD27894@ZenIV.linux.org.uk>
+ <Pine.LNX.4.64.0712262149000.19009@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0712271222190.31582@schroedinger.engr.sgi.com>
+ <20071227225947.GH27894@ZenIV.linux.org.uk> <Pine.LNX.4.64.0712271508080.917@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0712271552420.1154@schroedinger.engr.sgi.com>
+ <20071227235804.GJ27894@ZenIV.linux.org.uk> <Pine.LNX.4.64.0712271601200.1294@schroedinger.engr.sgi.com>
+ <20071228004504.GK27894@ZenIV.linux.org.uk> <Pine.LNX.4.64.0712271811470.2053@schroedinger.engr.sgi.com>
+ <20071228032645.GM27894@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <863e9df20801021131j3a4d655dgd00fa60e39a97ec@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 28 Dec 2007, Al Viro wrote:
 
-* Abhishek Sagar <sagar.abhishek@gmail.com> wrote:
-
-> > > +     default:
-> > > +             /* impossible cases */
-> > > +             BUG();
-> >
-> > I think no need to check that here.
+> On Thu, Dec 27, 2007 at 06:19:46PM -0800, Christoph Lameter wrote:
+> > nfsd4_delegations? What is this about?
 > 
-> It may not get hit at runtime but is quite informative.
+> The random lifetimes of user-visible files you create in sysfs.
 
-sidenote: please use WARN_ON(1) instead. In the case of the impossible 
-triggering somehow (the Linux kernel is notorious for that ;-), we'd 
-have a nice WARN_ON(1) in the dmesg, instead of a crashed box.
+Well these are symlinks.
 
-	Ingo
+> > How do I scan for the symlinks in sysfs?
+> 
+> At which point are you going to do that?  AFAICS, the fundamental problem
+> is that you
+> 	* have aliases indistinguishable, so kmem_cache_destroy() can't tell
+> which one is going away, no matter what
+> 	* have per-alias objects in sysfs
+> As the result, you have a user-visible mess in that directory in sysfs.
+> And I don't see how you would deal with that - on the "the contents of
+> directory changes in so-and-so way when such-and-such operation is
+> done", not the implementation details one.
+
+If the alias count of a kmem_cache structure reaches zero then all aliases 
+can be taken down. At that point we know that no aliases exist anymore.
+
+> BTW, I'm rather sceptical about free use of slabs; keep in mind that their
+> names have to be unique with your sysfs layout, so...
+
+What do you mean by free use of slabs? Creation of new slab caches to 
+avoid the rounding up to order 2 size?
+
