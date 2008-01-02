@@ -1,39 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbYABDb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756709AbYABDuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754773AbYABDb0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 22:31:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbYABDbP
+	id S1756709AbYABDuP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 22:50:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754386AbYABDuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 22:31:15 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57025
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756674AbYABDbN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 22:31:13 -0500
-Date: Tue, 01 Jan 2008 19:31:12 -0800 (PST)
-Message-Id: <20080101.193112.20706369.davem@davemloft.net>
-To: julia@diku.dk
-Cc: eis@baty.hanse.de, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] net/x25: Add missing x25_neigh_put
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0801012206090.19803@ask.diku.dk>
-References: <Pine.LNX.4.64.0801012206090.19803@ask.diku.dk>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 1 Jan 2008 22:50:04 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:60263 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754080AbYABDuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 22:50:03 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+X-Fcc: ~/Mail/linus
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: gitignore arch/x86/vdso files
+In-Reply-To: Sam Ravnborg's message of  Sunday, 30 December 2007 22:41:27 +0100 <20071230214127.GA16421@uranus.ravnborg.org>
+References: <20071230214127.GA16421@uranus.ravnborg.org>
+X-Shopping-List: (1) Prevalent rubber
+   (2) Perspicacious gold
+   (3) Musical flammable concussion battalions
+   (4) Absorbent excellent salmon
+Message-Id: <20080102034958.4381026F99F@magilla.localdomain>
+Date: Tue,  1 Jan 2008 19:49:58 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
-Date: Tue, 1 Jan 2008 22:07:04 +0100 (CET)
+I'd make those *.lds or at least vdso*.lds, since it is more likely there
+will be other variants than that there will be any .lds source files (since
+they are .lds.S instead).
 
-> The function x25_get_neigh increments a reference count.  At the point of
-> the second goto out, the result of calling x25_get_neigh is only stored in
-> a local variable, and thus no one outside the function will be able to
-> decrease the reference count.  Thus, x25_neigh_put should be called before
-> the return in this case.
 
-Patch applied, thanks.
+Thanks,
+Roland
