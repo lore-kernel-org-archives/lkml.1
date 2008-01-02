@@ -1,60 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757918AbYABLuF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbYABMPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757918AbYABLuF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 06:50:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbYABLt4
+	id S1754538AbYABMPy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 07:15:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750881AbYABMPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 06:49:56 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:52036 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752206AbYABLt4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 06:49:56 -0500
-Date: Wed, 2 Jan 2008 12:49:56 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Abdel <draconux@gmail.com>
-Cc: linux-kernel@vger.kernel.org
+	Wed, 2 Jan 2008 07:15:46 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:49267 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750855AbYABMPp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 07:15:45 -0500
+From: Bodo Eggert <7eggert@gmx.de>
 Subject: Re: macro _set_base - "do - while(0)" question
-Message-ID: <20080102114956.GB8489@uranus.ravnborg.org>
-References: <60d29d630801020345i200a2f72pe860b0d38b530a05@mail.gmail.com>
-Mime-Version: 1.0
+To: Abdel <draconux@gmail.com>, linux-kernel@vger.kernel.org
+Reply-To: 7eggert@gmx.de
+Date: Wed, 02 Jan 2008 13:15:33 +0100
+References: <9HagT-66H-21@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <60d29d630801020345i200a2f72pe860b0d38b530a05@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1JA2VS-0000eS-DV@be1.7eggert.dyndns.org>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX193ObQBHVN4qYYT78G4ESqR95+8SwFvE00YMsi
+ ubrIQFF6wthXDoWwb1qEk4YR2FD2WIVNLuaMQTHoQwvzyn6agj
+ St6aabijbHNQVMzAXm4Dg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 02, 2008 at 12:45:39PM +0100, Abdel wrote:
-> Hi,
-> 
+Abdel <draconux@gmail.com> wrote:
+
 > In file include/asm-i386/system.h,  _set_base and _set_limit use an
 > useless do ... while(0)
 > 
 > Why is this needed ?
-> 
-> exemple with _set_base from linux-2.6.23
-> 
-> #define _set_base(addr,base) do { unsigned long __pr; \
-> __asm__ __volatile__ ("movw %%dx,%1\n\t" \
-> 	"rorl $16,%%edx\n\t" \
-> 	"movb %%dl,%2\n\t" \
-> 	"movb %%dh,%3" \
-> 	:"=&d" (__pr) \
-> 	:"m" (*((addr)+2)), \
-> 	 "m" (*((addr)+4)), \
-> 	 "m" (*((addr)+7)), \
->          "0" (base) \
->         ); } while(0)
-> 
-Without the do {} while (0)
 
-then
-1) you could not define the variable __pr
-2) You would be fooled when you did:
+http://kernelnewbies.org/FAQ/DoWhile0
 
-	if (foo != bar)
-		set_base(addr,base);
-
-
-	Sam
