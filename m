@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756385AbYABWkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757392AbYABWlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756385AbYABWkh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 17:40:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbYABWk1
+	id S1757392AbYABWlz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 17:41:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbYABWls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 17:40:27 -0500
-Received: from ausc60ps301.us.dell.com ([143.166.148.206]:14183 "EHLO
-	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753092AbYABWk1 (ORCPT
+	Wed, 2 Jan 2008 17:41:48 -0500
+Received: from nz-out-0506.google.com ([64.233.162.237]:52822 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753278AbYABWlr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 17:40:27 -0500
-X-IronPort-AV: E=Sophos;i="4.24,236,1196661600"; 
-   d="scan'208";a="469433266"
-Date: Wed, 2 Jan 2008 16:40:16 -0600
-From: Matt Domsch <Matt_Domsch@dell.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Jon Masters <jonathan@jonmasters.org>, Adrian Bunk <bunk@kernel.org>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] ide: use MODULE_VERSION()
-Message-ID: <20080102224016.GA30155@auslistsprd01.us.dell.com>
-References: <200801011840.38757.bzolnier@gmail.com> <1199241156.3300.55.camel@perihelion> <20080102044620.GB10762@auslistsprd01.us.dell.com> <200801022345.17529.bzolnier@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 2 Jan 2008 17:41:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Li7piIRiWkh301/AAWlJT/dblSE6EkPlSkItzH/M0JAuUIh57l/tdon1suJK1xO75IVPuwyn3KthTSebi1ZbwkXD9QYY3LPZMrtC+5oPZwASHhkfq6CmYA3kyl7BJsc60EozKnb0aChVMIWyxmaFILjwHXhlyqO5WjrCCHHGDYA=
+Message-ID: <4d8e3fd30801021441h51f180des465f94ed24b107c2@mail.gmail.com>
+Date: Thu, 3 Jan 2008 02:11:44 +0330
+From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: New branch for +1 kernel Was:Re: [PATCH] Use __u64 in aligned_u64's definition
+Cc: "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       davem@davemloft.net, "Andrew Morton" <akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200801022345.17529.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 02, 2008 at 11:45:17PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> Unfortunately 'srcversion' is set only if MODULE_VERSION() is used... :(
+On 1/3/08, Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-or CONFIG_MODULE_SRCVERSION_ALL=y.  I see Fedora doesn't use that :-(
-but Ubuntu, openSUSE do.
+> > 2.6.25 actually. You don't take patches this early, do you?
+>
+> Yeah, no, I don't take patches early. I've considered setting up another
+> branch for early patches, but decided that I'm (a) lazy and (b) better off
+> encouraging people in the late -rc timeframe to just concentrate on the
+> -rc's, not the next version.
 
-/me files a change request...
 
+This is something i was thinking to suggest.
+Kernel is made of a lot of different "areas" and the regression list
+is a great tool for monitoring every single area so why not opening a
+new branch and accepting patches only for areas which are not in the
+current regression list.?
+Sounds like a good way to be more strict about regressions and
+incentive people to solve regressions quicker.
+
+Ciao,
 -- 
-Matt Domsch
-Linux Technology Strategist, Dell Office of the CTO
-linux.dell.com & www.dell.com/linux
+Paolo
+http://paolo.ciarrocchi.googlepages.com/
