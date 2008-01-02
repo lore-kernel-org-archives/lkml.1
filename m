@@ -1,70 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757546AbYABGNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757864AbYABGTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757546AbYABGNW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 01:13:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755095AbYABGNL
+	id S1757864AbYABGTd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 01:19:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755556AbYABGTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 01:13:11 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:35330 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750765AbYABGNJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 01:13:09 -0500
-Date: Wed, 2 Jan 2008 07:13:08 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: Greg KH <greg@kroah.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Andreas Mohr <andi@lisas.de>,
-       Ingo Molnar <mingo@elte.hu>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, Pavel Emelyanov <xemul@openvz.org>,
-       "Denis V. Lunev" <den@openvz.org>, USB list <linux-usb@vger.kernel.org>
-Subject: Re: [usb regression] Re: [PATCH 2.6.24-rc3] Fix /proc/net breakage
-Message-ID: <20080102061308.GB30929@rhlx01.hs-esslingen.de>
-References: <20071231052500.GB4187@kroah.com> <Pine.LNX.4.44L0.0712311237150.7182-100000@iolanthe.rowland.org> <20071231192643.GA25341@kroah.com> <20080102060006.GA27693@kroah.com>
+	Wed, 2 Jan 2008 01:19:24 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:52122 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755095AbYABGTX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 01:19:23 -0500
+Message-ID: <477B2CE4.8070602@garzik.org>
+Date: Wed, 02 Jan 2008 01:19:16 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080102060006.GA27693@kroah.com>
-X-Priority: none
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Tejun Heo <htejun@gmail.com>
+CC: Robert Hancock <hancockr@shaw.ca>, Gabor Gombas <gombasg@sztaki.hu>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       kluo@nvidia.com, AMartin@nvidia.com, pchen@nvidia.com
+Subject: Re: sata_nv + ADMA + Samsung disk problem
+References: <20070808120804.GB5257@boogie.lpds.sztaki.hu> <20080101164416.GA29574@boogie.lpds.sztaki.hu> <477B0429.7040909@gmail.com> <477B0CFD.1030603@shaw.ca> <477B10F2.9000107@shaw.ca> <477B1233.3090706@gmail.com>
+In-Reply-To: <477B1233.3090706@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Tejun Heo wrote:
+> Thanks a lot for the detailed explanation.  Nvidia ppl, any ideas?
+> FLUSH is used regularly.  We really need to fix this.
 
-On Tue, Jan 01, 2008 at 10:00:06PM -0800, Greg KH wrote:
-> Ok, no, I didn't write that patch, I'm getting very confused here.
-> 
-> In 2.6.24-rc6 there is no usage of debugfs in the ohci driver.
-> 
-> In the -mm tree there is a patch, from Tony Jones, that moves some debug
-> code out of sysfs and into debugfs where it belongs.  It does it for
-> both the ehci and ohci USB host controller drivers, and this is the code
-> that is incorrect if CONFIG_DEBUGFS is not enabled.
-> 
-> So, for the 2.6.24 release, nothing needs to be changed, all is good,
-> and there is no regression.
-> 
-> Right?  Or am I still confused about this whole thing?
 
-Probably, since I also wasn't sure about this getting added to the
-post-2.6.23 regressions. I'd expect this problem to be -mm only myself,
-but then I didn't actively verify it in code (and I haven't tried -rc6
-proper on that machine yet either, build takes ages ;).
-OK, since I cannot really offer anything other than positive feelings about
-this being non-rc6 breakage, should I try -rc6 proper, too?
+I reiterate my opinion :)  ...   We should remove ADMA support from 
+sata_nv.  It's only in a few chips, it's not appearing in any new chips, 
+and nasty problems have lingered since ADMA support was introduced.
 
-> Hm, I wonder if this means I can go back to drinking more holiday
-> wine... :)
+Definitely sounds like we should disable ADMA by default for 2.6.24-rc, too.
 
-.....even more confusion? :)
+	Jeff
 
-Thanks for your help,
 
-Andreas Mohr
