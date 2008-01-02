@@ -1,53 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757414AbYABKxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbYABKxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757414AbYABKxT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 05:53:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754407AbYABKxF
+	id S1756128AbYABKxf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 05:53:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756188AbYABKxL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 05:53:05 -0500
-Received: from smtp-out001.kontent.com ([81.88.40.215]:53338 "EHLO
-	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754030AbYABKxE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 05:53:04 -0500
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC] sleepy linux
-Date: Wed, 2 Jan 2008 11:52:51 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <20071225230731.GA29030@elf.ucw.cz> <200712301739.42192.oliver@neukum.org> <20071231144447.GD26339@ucw.cz>
-In-Reply-To: <20071231144447.GD26339@ucw.cz>
+	Wed, 2 Jan 2008 05:53:11 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54078 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756041AbYABKxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 05:53:08 -0500
+Date: Wed, 2 Jan 2008 11:52:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
+       Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH 0/4] PM: Do not destroy/create devices while suspended
+	(rev. 2)
+Message-ID: <20080102105217.GA14731@elte.hu>
+References: <200801020032.45529.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200801021152.52639.oliver@neukum.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200801020032.45529.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 31. Dezember 2007 15:44:47 schrieb Pavel Machek:
-> On Sun 2007-12-30 17:39:42, Oliver Neukum wrote:
 
-> > But what's wrong with calling suspend() the conventional way once you've
-> > decided to go into sleepy mode?
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+
+> Hi,
 > 
-> I'm not sure if it can be done in non-racy way. It is different from
-> "conventional" suspend(): you can still have userland requests after
-> this suspend(), and you should abort auto-sleep if you get one. (As
-> opposed to blocking in system suspend case).
+> Some device drivers register CPU hotplug notifiers and use them to 
+> destroy device objects when removing the corresponding CPUs and to 
+> create these objects when adding the CPUs back.
+> 
+> Unfortunately, this is not the right thing to do during 
+> suspend/hibernation, since in that cases the CPU hotplug notifiers are 
+> called after suspending devices and before resuming them, so the 
+> operations in question are carried out on the objects representing 
+> suspended devices which shouldn't be unregistered behing the PM core's 
+> back.  Although right now it usually doesn't lead to any practical 
+> complications, it will predictably deadlock if 
+> gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch is 
+> applied.
+> 
+> The solution is to prevent drivers from removing/adding devices from 
+> within CPU hotplug notifiers during suspend/hibernation using the 
+> FROZEN bit in the notifier's action argument.  However, this has to be 
+> done with care, since the devices objects related to the nonboot CPUs 
+> that failed to go online during resume should not be present in the 
+> system.  For this reason, it seems reasonable to introduce a mechanism 
+> allowing drivers to ask the PM core to remove device objects 
+> corresponding to suspended devices on their behalf.
+> 
+> The first patch in the series introduces such a mechanism.  The 
+> remaining three patches modify the MSR, x86-64 MCE and cpuid drivers 
+> in accordance with the above approach.
 
-But we are always racing against hardware in these cases.
+btw., it would be really, really cool if there was a scriptable way i 
+could test suspend/resume functionality. Pavel has this /dev/rtc thing 
+to set up an alarm (not sure how functional it is) - would it be 
+possible to have it as a "suspend for 10 seconds then resume" debug 
+functionality? That way any suspend breakage would be detectable (and 
+bisectable) in automated testing - if the resume does not come back 
+after 10-20 seconds then the test failed.
 
-Strictly speaking you cannot have pure userland request. If no task
-is runnable and no timer about to fire any activity will require kernel
-activity unless you are doing direct hardware access from user space
-which in the generic case precludes suspension anyway.
-
-	Regards
-		Oliver
+	Ingo
