@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757164AbYABUSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758223AbYABUSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757164AbYABUSd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 15:18:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755835AbYABUSK
+	id S1758223AbYABUSq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 15:18:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756106AbYABUSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 2 Jan 2008 15:18:11 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:57140 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755855AbYABUSK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 2 Jan 2008 15:18:10 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48808 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755508AbYABUSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 15:18:08 -0500
-Date: Wed, 2 Jan 2008 21:17:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Brownell <david-b@pacbell.net>
-Cc: rjw@sisk.pl, a.zummo@towertech.it, stern@rowland.harvard.edu,
-       pavel@suse.cz, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       lenb@kernel.org, gregkh@suse.de, akpm@linux-foundation.org
-Subject: Re: [PATCH 0/4] PM: Do not destroy/create devices while suspended
-	(rev. 2)
-Message-ID: <20080102201707.GD3985@elte.hu>
-References: <200801020032.45529.rjw@sisk.pl> <20080102105217.GA14731@elte.hu> <200801021356.59865.rjw@sisk.pl> <20080102131529.GA32160@elte.hu> <20080102172625.CE0C2F6DFE@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Date: Wed, 2 Jan 2008 13:18:09 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
+Message-ID: <20080102201809.GD11638@parisc-linux.org>
+References: <20080102162534.GA4041@elte.hu> <1199292381.3258.32.camel@localhost.localdomain> <alpine.LFD.1.00.0801021113150.32517@woody.linux-foundation.org> <20080102194030.GC11638@parisc-linux.org> <alpine.LFD.1.00.0801021151420.32517@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080102172625.CE0C2F6DFE@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <alpine.LFD.1.00.0801021151420.32517@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* David Brownell <david-b@pacbell.net> wrote:
-
-> > shouldnt we provide a Kconfig way of replacing dev 10:135 with the 
-> > new driver's 254:0 device? (while keeping all the current modes of 
-> > operation as well, of course.)
+On Wed, Jan 02, 2008 at 11:57:10AM -0800, Linus Torvalds wrote:
+> On Wed, 2 Jan 2008, Matthew Wilcox wrote:
+> > 
+> > sd_done and sr_done are called for REQ_TYPE_FS -- if the request comes
+> > in through one of the SG interfaces, we call scsi_setup_blk_pc_cmnd()
+> > which sets the ->done callback to scsi_blk_pc_done.
 > 
-> The major number 254 is not statically allocated, ISTR; that should be 
-> managed only by udev.
+> Why do you think that REQ_TYPE_BLOCK_PC has anything to do with SG?
+> 
+> It has *nothing* to do with SG, and anybody who uses SG in this day and 
+> age on a block device is just crazy. 
+> 
+> The way you do generic SCSI commands (on perfectly normal block device 
+> nodes) is using the SCSI ioctl() interfaces.  That's how you are supposed 
+> to do things like burn DVD's or do any kind of special ops.
+> 
+> So REQ_TYPE_BLOCK_PC does quite commonly happen on perfectly regular block 
+> devices, it's how all commands that aren't pure reads or writes done by 
+> the kernel behave.
 
-sorry, i meant a .config option that would cause 10:135 to be managed by 
-the new RTC code too. (Config option can be default-off.)
+I spoke imprecisely; a raw command one through SG or ioctl is
+REQ_TYPE_BLOCK_PC and did not go through sd_done or sr_done before this
+patch.
 
-	Ingo
+> If you actually use /dev/sg*, you will be using the SG driver, and if you 
+> don't want that to have a ->done callback, then just set "done" to NULL 
+> for sg_driver.
+
+Unless you think that we should see different behaviour when using
+/dev/sg* and /dev/sd*, the aspect of the patch you criticised was
+correct.
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
