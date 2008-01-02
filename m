@@ -1,55 +1,505 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759031AbYABBAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759353AbYABBCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759031AbYABBAs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 20:00:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756863AbYABBAk
+	id S1759353AbYABBCq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 20:02:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757600AbYABBCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 20:00:40 -0500
-Received: from hs-out-0708.google.com ([64.233.178.243]:2057 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756210AbYABBAk (ORCPT
+	Tue, 1 Jan 2008 20:02:38 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:33061 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755248AbYABBCh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 20:00:40 -0500
+	Tue, 1 Jan 2008 20:02:37 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZPU1LmlhxkGeFEGGr3bONI1S4lpPRv8MF5YUPxo+xxM7CdjGZhursmq5aiS16cr2BEMVWxjngTCE+b6+16MUKLkh1mz2iA3FxfR8SoVj1nZ+0THWEfFrcNHCXa5Ur3NV6cUvn523HC+1np/jEXNL+x5ogsT0P1FkunOoKTUIHgY=
-Message-ID: <a8e1da0801011700q72f63ce1wf2a224900b459b37@mail.gmail.com>
-Date: Wed, 2 Jan 2008 09:00:39 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: [BUG][PATCH] bluetooth: put_device before device_del fix
-Cc: marcel@holtmann.org, akpm@linux-foundation.org, greg@kroah.com,
-       linux-kernel@vger.kernel.org, bluez-devel@lists.sourceforge.net
-In-Reply-To: <20071229.191855.100656438.davem@davemloft.net>
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=aVozygquLtTK1nqkplGJYAdTEORYheBv4kmyetsGmrlKFPvRO+UXPZPNKWbeT1BLOBMqkc0YBtbjyYc7m1m3B6vXOxXVlAaKBHzdBThj9bK6NbaFXcEGD4tipFOGM/5TTHM8+pxiq5K+LYBtfR0fPNohvgKSVsbXwfLweSvwM+U=
+Date: Tue, 1 Jan 2008 17:05:49 -0800
+From: "Carlos R. Mafra" <crmafra@gmail.com>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix errors detected by checkpatch.pl on nmi_int.c
+Message-ID: <20080102010549.GA23991@localhost.physics.ucla.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="GvXjxJ+pjyke8COw"
 Content-Disposition: inline
-References: <20071227052750.GA6296@darkstar.te-china.tietoenator.com>
-	 <20071229.191855.100656438.davem@davemloft.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 30, 2007 11:18 AM, David Miller <davem@davemloft.net> wrote:
-> From: Dave Young <hidave.darkstar@gmail.com>
-> Date: Thu, 27 Dec 2007 13:27:50 +0800
->
-> > Because of workqueue delay, the put_device could be called before device_del, so move it to del_conn.
-> >
-> > Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
->
-> Applied, thanks Dave.
->
-> Please post bluetooth patches, just like any other networking patches,
-> to netdev@vger.kernel.org (CC:'ing me) so that other networking
-> developers can process them during times like these when most
-> maintainers aren't around and thus not looking at bug fixes like
-> your's.
->
 
-Ok, thanks for pointing out, I didn't know this before.
+--GvXjxJ+pjyke8COw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Regards
-dave
+This patch fixes most errors detected by checkpatch.pl.
+
+                                     errors   lines of code   errors/KLOC
+arch/x86/oprofile/nmi_int.c (after)       1             461           2.1
+arch/x86/oprofile/nmi_int.c (before)     60             477         125.7
+
+No code changed.
+
+size:
+   text    data     bss     dec     hex filename
+   2675     264     472    3411     d53 nmi_int.o.after
+   2675     264     472    3411     d53 nmi_int.o.before
+   
+md5sum:
+  847aea0cc68fe1a2b5e7019439f3b4dd  nmi_int.o.after
+  847aea0cc68fe1a2b5e7019439f3b4dd  nmi_int.o.before
+  
+Signed-off-by: Carlos R. Mafra <crmafra@gmail.com>
+
+--GvXjxJ+pjyke8COw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="nmi_int.c_cleanup.patch"
+
+diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
+index 2d0eeac..9510b08 100644
+--- a/arch/x86/oprofile/nmi_int.c
++++ b/arch/x86/oprofile/nmi_int.c
+@@ -18,11 +18,11 @@
+ #include <asm/nmi.h>
+ #include <asm/msr.h>
+ #include <asm/apic.h>
+- 
++
+ #include "op_counter.h"
+ #include "op_x86_model.h"
+ 
+-static struct op_x86_model_spec const * model;
++static struct op_x86_model_spec const *model;
+ static struct op_msrs cpu_msrs[NR_CPUS];
+ static unsigned long saved_lvtpc[NR_CPUS];
+ 
+@@ -41,7 +41,6 @@ static int nmi_suspend(struct sys_device *dev, pm_message_t state)
+ 	return 0;
+ }
+ 
+-
+ static int nmi_resume(struct sys_device *dev)
+ {
+ 	if (nmi_enabled == 1)
+@@ -49,29 +48,27 @@ static int nmi_resume(struct sys_device *dev)
+ 	return 0;
+ }
+ 
+-
+ static struct sysdev_class oprofile_sysclass = {
+ 	set_kset_name("oprofile"),
+ 	.resume		= nmi_resume,
+ 	.suspend	= nmi_suspend,
+ };
+ 
+-
+ static struct sys_device device_oprofile = {
+ 	.id	= 0,
+ 	.cls	= &oprofile_sysclass,
+ };
+ 
+-
+ static int __init init_sysfs(void)
+ {
+ 	int error;
+-	if (!(error = sysdev_class_register(&oprofile_sysclass)))
++
++	error = sysdev_class_register(&oprofile_sysclass);
++	if (!error)
+ 		error = sysdev_register(&device_oprofile);
+ 	return error;
+ }
+ 
+-
+ static void exit_sysfs(void)
+ {
+ 	sysdev_unregister(&device_oprofile);
+@@ -90,7 +87,7 @@ static int profile_exceptions_notify(struct notifier_block *self,
+ 	int ret = NOTIFY_DONE;
+ 	int cpu = smp_processor_id();
+ 
+-	switch(val) {
++	switch (val) {
+ 	case DIE_NMI:
+ 		if (model->check_ctrs(args->regs, &cpu_msrs[cpu]))
+ 			ret = NOTIFY_STOP;
+@@ -101,24 +98,24 @@ static int profile_exceptions_notify(struct notifier_block *self,
+ 	return ret;
+ }
+ 
+-static void nmi_cpu_save_registers(struct op_msrs * msrs)
++static void nmi_cpu_save_registers(struct op_msrs *msrs)
+ {
+ 	unsigned int const nr_ctrs = model->num_counters;
+-	unsigned int const nr_ctrls = model->num_controls; 
+-	struct op_msr * counters = msrs->counters;
+-	struct op_msr * controls = msrs->controls;
++	unsigned int const nr_ctrls = model->num_controls;
++	struct op_msr *counters = msrs->counters;
++	struct op_msr *controls = msrs->controls;
+ 	unsigned int i;
+ 
+ 	for (i = 0; i < nr_ctrs; ++i) {
+-		if (counters[i].addr){
++		if (counters[i].addr) {
+ 			rdmsr(counters[i].addr,
+ 				counters[i].saved.low,
+ 				counters[i].saved.high);
+ 		}
+ 	}
+- 
++
+ 	for (i = 0; i < nr_ctrls; ++i) {
+-		if (controls[i].addr){
++		if (controls[i].addr) {
+ 			rdmsr(controls[i].addr,
+ 				controls[i].saved.low,
+ 				controls[i].saved.high);
+@@ -126,15 +123,13 @@ static void nmi_cpu_save_registers(struct op_msrs * msrs)
+ 	}
+ }
+ 
+-
+-static void nmi_save_registers(void * dummy)
++static void nmi_save_registers(void *dummy)
+ {
+ 	int cpu = smp_processor_id();
+-	struct op_msrs * msrs = &cpu_msrs[cpu];
++	struct op_msrs *msrs = &cpu_msrs[cpu];
+ 	nmi_cpu_save_registers(msrs);
+ }
+ 
+-
+ static void free_msrs(void)
+ {
+ 	int i;
+@@ -146,7 +141,6 @@ static void free_msrs(void)
+ 	}
+ }
+ 
+-
+ static int allocate_msrs(void)
+ {
+ 	int success = 1;
+@@ -173,11 +167,10 @@ static int allocate_msrs(void)
+ 	return success;
+ }
+ 
+-
+-static void nmi_cpu_setup(void * dummy)
++static void nmi_cpu_setup(void *dummy)
+ {
+ 	int cpu = smp_processor_id();
+-	struct op_msrs * msrs = &cpu_msrs[cpu];
++	struct op_msrs *msrs = &cpu_msrs[cpu];
+ 	spin_lock(&oprofilefs_lock);
+ 	model->setup_ctrs(msrs);
+ 	spin_unlock(&oprofilefs_lock);
+@@ -193,13 +186,14 @@ static struct notifier_block profile_exceptions_nb = {
+ 
+ static int nmi_setup(void)
+ {
+-	int err=0;
++	int err = 0;
+ 	int cpu;
+ 
+ 	if (!allocate_msrs())
+ 		return -ENOMEM;
+ 
+-	if ((err = register_die_notifier(&profile_exceptions_nb))){
++	err = register_die_notifier(&profile_exceptions_nb);
++	if (err) {
+ 		free_msrs();
+ 		return err;
+ 	}
+@@ -210,7 +204,7 @@ static int nmi_setup(void)
+ 
+ 	/* Assume saved/restored counters are the same on all CPUs */
+ 	model->fill_in_addresses(&cpu_msrs[0]);
+-	for_each_possible_cpu (cpu) {
++	for_each_possible_cpu(cpu) {
+ 		if (cpu != 0) {
+ 			memcpy(cpu_msrs[cpu].counters, cpu_msrs[0].counters,
+ 				sizeof(struct op_msr) * model->num_counters);
+@@ -226,39 +220,37 @@ static int nmi_setup(void)
+ 	return 0;
+ }
+ 
+-
+-static void nmi_restore_registers(struct op_msrs * msrs)
++static void nmi_restore_registers(struct op_msrs *msrs)
+ {
+ 	unsigned int const nr_ctrs = model->num_counters;
+-	unsigned int const nr_ctrls = model->num_controls; 
+-	struct op_msr * counters = msrs->counters;
+-	struct op_msr * controls = msrs->controls;
++	unsigned int const nr_ctrls = model->num_controls;
++	struct op_msr *counters = msrs->counters;
++	struct op_msr *controls = msrs->controls;
+ 	unsigned int i;
+ 
+ 	for (i = 0; i < nr_ctrls; ++i) {
+-		if (controls[i].addr){
++		if (controls[i].addr) {
+ 			wrmsr(controls[i].addr,
+ 				controls[i].saved.low,
+ 				controls[i].saved.high);
+ 		}
+ 	}
+- 
++
+ 	for (i = 0; i < nr_ctrs; ++i) {
+-		if (counters[i].addr){
++		if (counters[i].addr) {
+ 			wrmsr(counters[i].addr,
+ 				counters[i].saved.low,
+ 				counters[i].saved.high);
+ 		}
+ 	}
+ }
+- 
+ 
+-static void nmi_cpu_shutdown(void * dummy)
++static void nmi_cpu_shutdown(void *dummy)
+ {
+ 	unsigned int v;
+ 	int cpu = smp_processor_id();
+-	struct op_msrs * msrs = &cpu_msrs[cpu];
+- 
++	struct op_msrs *msrs = &cpu_msrs[cpu];
++
+ 	/* restoring APIC_LVTPC can trigger an apic error because the delivery
+ 	 * mode and vector nr combination can be illegal. That's by design: on
+ 	 * power on apic lvt contain a zero vector nr which are legal only for
+@@ -271,7 +263,6 @@ static void nmi_cpu_shutdown(void * dummy)
+ 	nmi_restore_registers(msrs);
+ }
+ 
+- 
+ static void nmi_shutdown(void)
+ {
+ 	nmi_enabled = 0;
+@@ -281,45 +272,40 @@ static void nmi_shutdown(void)
+ 	free_msrs();
+ }
+ 
+- 
+-static void nmi_cpu_start(void * dummy)
++static void nmi_cpu_start(void *dummy)
+ {
+-	struct op_msrs const * msrs = &cpu_msrs[smp_processor_id()];
++	struct op_msrs const *msrs = &cpu_msrs[smp_processor_id()];
+ 	model->start(msrs);
+ }
+- 
+ 
+ static int nmi_start(void)
+ {
+ 	on_each_cpu(nmi_cpu_start, NULL, 0, 1);
+ 	return 0;
+ }
+- 
+- 
+-static void nmi_cpu_stop(void * dummy)
++
++static void nmi_cpu_stop(void *dummy)
+ {
+-	struct op_msrs const * msrs = &cpu_msrs[smp_processor_id()];
++	struct op_msrs const *msrs = &cpu_msrs[smp_processor_id()];
+ 	model->stop(msrs);
+ }
+- 
+- 
++
+ static void nmi_stop(void)
+ {
+ 	on_each_cpu(nmi_cpu_stop, NULL, 0, 1);
+ }
+ 
+-
+ struct op_counter_config counter_config[OP_MAX_COUNTER];
+ 
+-static int nmi_create_files(struct super_block * sb, struct dentry * root)
++static int nmi_create_files(struct super_block *sb, struct dentry *root)
+ {
+ 	unsigned int i;
+ 
+ 	for (i = 0; i < model->num_counters; ++i) {
+-		struct dentry * dir;
++		struct dentry *dir;
+ 		char buf[4];
+- 
+- 		/* quick little hack to _not_ expose a counter if it is not
++
++		/* quick little hack to _not_ expose a counter if it is not
+ 		 * available for use.  This should protect userspace app.
+ 		 * NOTE:  assumes 1:1 mapping here (that counters are organized
+ 		 *        sequentially in their struct assignment).
+@@ -329,21 +315,21 @@ static int nmi_create_files(struct super_block * sb, struct dentry * root)
+ 
+ 		snprintf(buf,  sizeof(buf), "%d", i);
+ 		dir = oprofilefs_mkdir(sb, root, buf);
+-		oprofilefs_create_ulong(sb, dir, "enabled", &counter_config[i].enabled); 
+-		oprofilefs_create_ulong(sb, dir, "event", &counter_config[i].event); 
+-		oprofilefs_create_ulong(sb, dir, "count", &counter_config[i].count); 
+-		oprofilefs_create_ulong(sb, dir, "unit_mask", &counter_config[i].unit_mask); 
+-		oprofilefs_create_ulong(sb, dir, "kernel", &counter_config[i].kernel); 
+-		oprofilefs_create_ulong(sb, dir, "user", &counter_config[i].user); 
++		oprofilefs_create_ulong(sb, dir, "enabled", &counter_config[i].enabled);
++		oprofilefs_create_ulong(sb, dir, "event", &counter_config[i].event);
++		oprofilefs_create_ulong(sb, dir, "count", &counter_config[i].count);
++		oprofilefs_create_ulong(sb, dir, "unit_mask", &counter_config[i].unit_mask);
++		oprofilefs_create_ulong(sb, dir, "kernel", &counter_config[i].kernel);
++		oprofilefs_create_ulong(sb, dir, "user", &counter_config[i].user);
+ 	}
+ 
+ 	return 0;
+ }
+- 
++
+ static int p4force;
+ module_param(p4force, int, 0);
+- 
+-static int __init p4_init(char ** cpu_type)
++
++static int __init p4_init(char **cpu_type)
+ {
+ 	__u8 cpu_model = boot_cpu_data.x86_model;
+ 
+@@ -356,15 +342,15 @@ static int __init p4_init(char ** cpu_type)
+ 	return 1;
+ #else
+ 	switch (smp_num_siblings) {
+-		case 1:
+-			*cpu_type = "i386/p4";
+-			model = &op_p4_spec;
+-			return 1;
+-
+-		case 2:
+-			*cpu_type = "i386/p4-ht";
+-			model = &op_p4_ht2_spec;
+-			return 1;
++	case 1:
++		*cpu_type = "i386/p4";
++		model = &op_p4_spec;
++		return 1;
++
++	case 2:
++		*cpu_type = "i386/p4-ht";
++		model = &op_p4_ht2_spec;
++		return 1;
+ 	}
+ #endif
+ 
+@@ -373,8 +359,7 @@ static int __init p4_init(char ** cpu_type)
+ 	return 0;
+ }
+ 
+-
+-static int __init ppro_init(char ** cpu_type)
++static int __init ppro_init(char **cpu_type)
+ {
+ 	__u8 cpu_model = boot_cpu_data.x86_model;
+ 
+@@ -409,52 +394,52 @@ int __init op_nmi_init(struct oprofile_operations *ops)
+ 
+ 	if (!cpu_has_apic)
+ 		return -ENODEV;
+- 
++
+ 	switch (vendor) {
+-		case X86_VENDOR_AMD:
+-			/* Needs to be at least an Athlon (or hammer in 32bit mode) */
++	case X86_VENDOR_AMD:
++		/* Needs to be at least an Athlon (or hammer in 32bit mode) */
+ 
+-			switch (family) {
+-			default:
++		switch (family) {
++		default:
++			return -ENODEV;
++		case 6:
++			model = &op_athlon_spec;
++			cpu_type = "i386/athlon";
++			break;
++		case 0xf:
++			model = &op_athlon_spec;
++			/* Actually it could be i386/hammer too, but give
++			 user space an consistent name. */
++			cpu_type = "x86-64/hammer";
++			break;
++		case 0x10:
++			model = &op_athlon_spec;
++			cpu_type = "x86-64/family10";
++			break;
++		}
++		break;
++
++	case X86_VENDOR_INTEL:
++		switch (family) {
++			/* Pentium IV */
++		case 0xf:
++			if (!p4_init(&cpu_type))
+ 				return -ENODEV;
+-			case 6:
+-				model = &op_athlon_spec;
+-				cpu_type = "i386/athlon";
+-				break;
+-			case 0xf:
+-				model = &op_athlon_spec;
+-				/* Actually it could be i386/hammer too, but give
+-				   user space an consistent name. */
+-				cpu_type = "x86-64/hammer";
+-				break;
+-			case 0x10:
+-				model = &op_athlon_spec;
+-				cpu_type = "x86-64/family10";
+-				break;
+-			}
+ 			break;
+- 
+-		case X86_VENDOR_INTEL:
+-			switch (family) {
+-				/* Pentium IV */
+-				case 0xf:
+-					if (!p4_init(&cpu_type))
+-						return -ENODEV;
+-					break;
+-
+-				/* A P6-class processor */
+-				case 6:
+-					if (!ppro_init(&cpu_type))
+-						return -ENODEV;
+-					break;
+-
+-				default:
+-					return -ENODEV;
+-			}
++
++			/* A P6-class processor */
++		case 6:
++			if (!ppro_init(&cpu_type))
++				return -ENODEV;
+ 			break;
+ 
+ 		default:
+ 			return -ENODEV;
++		}
++		break;
++
++	default:
++		return -ENODEV;
+ 	}
+ 
+ 	init_sysfs();
+@@ -469,7 +454,6 @@ int __init op_nmi_init(struct oprofile_operations *ops)
+ 	return 0;
+ }
+ 
+-
+ void op_nmi_exit(void)
+ {
+ 	if (using_nmi)
+
+--GvXjxJ+pjyke8COw--
