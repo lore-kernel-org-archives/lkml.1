@@ -1,40 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757358AbYABVEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759307AbYABVFM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757358AbYABVEe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 16:04:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753163AbYABVEZ
+	id S1759307AbYABVFM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 16:05:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753163AbYABVE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 16:04:25 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:52324 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751927AbYABVEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 16:04:25 -0500
-Date: Wed, 2 Jan 2008 13:04:23 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Mike Travis <travis@sgi.com>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       tglx@linutronix.de, mingo@redhat.com, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 05/10] x86_64: Use generic percpu
-In-Reply-To: <20080101191758.GA14045@elte.hu>
-Message-ID: <Pine.LNX.4.64.0801021302530.22538@schroedinger.engr.sgi.com>
-References: <20071228001046.854702000@sgi.com> <20071228001047.556634000@sgi.com>
- <200712281354.52453.ak@suse.de> <47757311.5050503@sgi.com>
- <20071230141829.GA28415@elte.hu> <477916ED.8010602@sgi.com> <47792295.8070001@sgi.com>
- <20080101191758.GA14045@elte.hu>
+	Wed, 2 Jan 2008 16:04:58 -0500
+Received: from proxy1.bredband.net ([195.54.101.71]:46030 "EHLO
+	proxy1.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754520AbYABVE6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 16:04:58 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AlF4AA+Le0dT48OPRmdsb2JhbACBV44wAQEBN4Eili8
+Message-ID: <477BFC71.7090002@coderworld.net>
+Date: Wed, 02 Jan 2008 22:04:49 +0100
+From: Richard Jonsson <richie@coderworld.net>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+Subject: forcedeth: MAC-address reversed on resume from suspend
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Jan 2008, Ingo Molnar wrote:
+Bugreport regarding forcedeth driver.
 
-> FYI, i tried your patchset on 2.6.24-rc6+x86.git, and randconfig testing 
-> found a faulty 32-bit config below - the bootup would spontaneously 
-> reboot shortly after hitting user-space. (which suggests a triple fault) 
-> No log messages on the serial console.
+When returning from suspend-to-RAM the MAC-address byteorder is 
+reversed. After another suspend-resume cycle the MAC-address is again 
+correct. This brings a great deal of pain since the NIC is assigned a 
+random MAC-address when it is detected as invalid.
 
-The triple fault does not occur without the patchset?
+I cannot say if this issue appeared recently or if it's been in the 
+kernel for a while, as I've been using wireless until recently.
+
+I read somewhere on lkml that the mac is read from the device, then 
+reversed and finally written back to the device. Can it be that it is 
+read again on resume and reversed, and then again written to the device? 
+This would explain why it's ok every other resume cycle.
+
+MAC is always correct when cold booting.
+
+Random computer info:
+HP dv2140eu, amd64 smp, nvidia mcp51, kernel 2.6.24-rc3, ubuntu feisty
+
+dmesg when fail:
+forcedeth 0000:00:14.0: Invalid Mac address detected: e1:97:11:d3:16:00
+forcedeth 0000:00:14.0: ifname eth0, PHY OUI 0x5043 @ 1, addr 
+00:00:6c:1e:34:69
+
+dmesg when good:
+forcedeth 0000:00:14.0: ifname eth0, PHY OUI 0x5043 @ 1, addr 
+00:16:d3:11:97:e1
