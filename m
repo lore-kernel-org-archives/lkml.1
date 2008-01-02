@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759369AbYABQHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759475AbYABQI1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759369AbYABQHm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 11:07:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754481AbYABQHf
+	id S1759475AbYABQI1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 11:08:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754823AbYABQIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 11:07:35 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34816 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754297AbYABQHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 11:07:34 -0500
-Date: Wed, 2 Jan 2008 17:07:06 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] asm-x86/msr.h: pull in linux/types.h
-Message-ID: <20080102160706.GB21046@elte.hu>
-References: <200801012008.53275.vapier@gentoo.org> <20080102114849.GA25887@elte.hu> <200801020837.53860.vapier@gentoo.org>
+	Wed, 2 Jan 2008 11:08:18 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:50307 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754481AbYABQIR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 11:08:17 -0500
+Date: Wed, 2 Jan 2008 11:08:16 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <gregkh@suse.de>
+cc: David Miller <davem@davemloft.net>, Dave Young <hidave.darkstar@gmail.com>,
+       Greg KH <greg@kroah.com>, <peterz@infradead.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH 01/12] Use mutex instead of semaphore in driver core
+In-Reply-To: <20080102070008.GA31343@suse.de>
+Message-ID: <Pine.LNX.4.44L0.0801021057020.4861-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200801020837.53860.vapier@gentoo.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 1 Jan 2008, Greg KH wrote:
 
-* Mike Frysinger <vapier@gentoo.org> wrote:
-
-> On Wednesday 02 January 2008, Ingo Molnar wrote:
-> > * Mike Frysinger <vapier@gentoo.org> wrote:
-> > > Forgot to mention this before, but since the msr.h header uses types
-> > > like __u32, it should pull in linux/types.h.
-> >
-> > does not build with the attached config.
+> For most cases, yes, I agree with this, but due to the lockdep issues
+> that occur here, and the whole mess with the suspend path and locking
+> the device tree, that has been hashed out many times in the past, I am
+> interested in trying to see if there is any real reason why this is
+> absolutely necessary to convert.
 > 
-> sorry, forgot about __ASSEMBLY__ protection.
+> If no one has noticed any issues in this area, I think the complexity
+> that will be involved in any such conversion will strongly outweigh any
+> simplicity that might be expected.
+> 
+> I'm very open to potential patches to do this, just don't ignore the
+> issues that others have run into in the past when attempting this.
 
-thanks, applied.
+There are two separate things to consider here.  One is struct device 
+and the other is struct class.
 
-(note, your patch was not plaintext, had to fix it by hand)
+We know that replacing semaphores with mutexes in struct device doesn't 
+sit well with lockdep.  However the replacement may work perfectly 
+smoothly for struct class.  It would be worthwhile for Dave Young to 
+separate out just that part and try it.
 
-	Ingo
+Alan Stern
+
