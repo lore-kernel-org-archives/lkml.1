@@ -1,86 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756953AbYABVJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759377AbYABVJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756953AbYABVJT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 16:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbYABVJG
+	id S1759377AbYABVJe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 16:09:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757756AbYABVJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 16:09:06 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53179 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752875AbYABVJF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 16:09:05 -0500
+	Wed, 2 Jan 2008 16:09:24 -0500
+Received: from home.nigel.suspend2.net ([203.171.70.205]:37294 "EHLO
+	server1.example.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757647AbYABVJX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 16:09:23 -0500
+Message-ID: <477BFD7A.3060403@nigel.suspend2.net>
+Date: Thu, 03 Jan 2008 08:09:14 +1100
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Theodore Tso <tytso@mit.edu>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       "The place to get help!" <suspend2-users@lists.tuxonice.net>,
+       suspend2-devel@lists.tuxonice.net, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Suspend2-devel] Freezing filesystems (Was Re: What's in store
+ for 2008 for TuxOnIce?)
+References: <477AC060.5040004@nigel.suspend2.net> <477AD2AA.4070707@nigel.suspend2.net> <20080102010325.GC13288@mit.edu> <200801021401.23492.rjw@sisk.pl>
+In-Reply-To: <200801021401.23492.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-X-Fcc: ~/Mail/linus
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: [PATCH -mm] compat_binfmt_elf Kconfig
-In-Reply-To: Sam Ravnborg's message of  Wednesday, 2 January 2008 20:10:30 +0100 <20080102191030.GA11217@uranus.ravnborg.org>
-References: <20071223183920.GA13976@elte.hu>
-	<20071223211603.3FFB126F8E7@magilla.localdomain>
-	<20071230163614.GB1384@elte.hu>
-	<20080102044157.A5CC526F99F@magilla.localdomain>
-	<20080102111431.GD14731@elte.hu>
-	<20080102191030.GA11217@uranus.ravnborg.org>
-X-Zippy-Says: ANN JILLIAN'S HAIR makes LONI ANDERSON'S HAIR look like RICARDO
-    MONTALBAN'S HAIR!
-Message-Id: <20080102210831.9F80426F9A0@magilla.localdomain>
-Date: Wed,  2 Jan 2008 13:08:31 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch should go in immediately after:
+Hi.
 
-	commit 5e45efc63e33ee2bae9ff4d500b53d3bf86d2b48
-	Author: Roland McGrath <roland@redhat.com>
+Rafael J. Wysocki wrote:
+> On Wednesday, 2 of January 2008, Theodore Tso wrote:
+>> On Wed, Jan 02, 2008 at 10:54:18AM +1100, Nigel Cunningham wrote:
+>>>> I would also like the TuxOnIce issues related to drivers, ACPI, etc. to go to
+>>>> one of the kernel-related lists, but I think linux-pm may be better for that
+>>>> due to the much lower traffic.
+>>> I guess that makes sense. I guess people can always be referred to LKML
+>>> for the issues where the appropriate person isn't on linux-pm.
+>> Hi Nigel,
+>>
+>> I'd really recommend pushing the TuxOnIce discussions to LKML.
+> 
+> CCing linux-pm (or even linux-acpi) on problem reports would still be
+> recommended, though. :-)
 
-	    compat_binfmt_elf
+Right. And that may make things easier as far as TuxOnIce users go too.
+I have one user who currently subscribes to suspend2-users who already
+tried subscribing to LKML and said he didn't like the experience. Using
+linux-pm instead would save some pain there.
 
-Thanks,
-Roland
-
----
-[PATCH] compat_binfmt_elf Kconfig
-
-This adds Kconfig and Makefile bits to build fs/compat_binfmt_elf.c,
-just added.  Each arch that wants to use this file needs to add a
-"select COMPAT_BINFMT_ELF" line in its Kconfig bits that enable COMPAT.
-
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- fs/Kconfig.binfmt |    4 ++++
- fs/Makefile       |    1 +
- 2 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/fs/Kconfig.binfmt b/fs/Kconfig.binfmt
-index d4fc609..0000000 100644  
---- a/fs/Kconfig.binfmt
-+++ b/fs/Kconfig.binfmt
-@@ -23,6 +23,10 @@ config BINFMT_ELF
- 	  ld.so (check the file <file:Documentation/Changes> for location and
- 	  latest version).
- 
-+config COMPAT_BINFMT_ELF
-+	bool
-+	depends on COMPAT && MMU
-+
- config BINFMT_ELF_FDPIC
- 	bool "Kernel support for FDPIC ELF binaries"
- 	default y
-diff --git a/fs/Makefile b/fs/Makefile
-index 500cf15..0000000 100644  
---- a/fs/Makefile
-+++ b/fs/Makefile
-@@ -39,6 +39,7 @@ obj-$(CONFIG_BINFMT_MISC)	+= binfmt_misc
- obj-y				+= binfmt_script.o
- 
- obj-$(CONFIG_BINFMT_ELF)	+= binfmt_elf.o
-+obj-$(CONFIG_COMPAT_BINFMT_ELF)	+= compat_binfmt_elf.o
- obj-$(CONFIG_BINFMT_ELF_FDPIC)	+= binfmt_elf_fdpic.o
- obj-$(CONFIG_BINFMT_SOM)	+= binfmt_som.o
- obj-$(CONFIG_BINFMT_FLAT)	+= binfmt_flat.o
+Nigel
