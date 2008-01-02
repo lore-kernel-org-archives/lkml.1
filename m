@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbYABLlm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbYABLnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754627AbYABLlm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 06:41:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbYABLle
+	id S1755355AbYABLnw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 06:43:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYABLno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 06:41:34 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:58593 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752051AbYABLle (ORCPT
+	Wed, 2 Jan 2008 06:43:44 -0500
+Received: from cvs.mpc-ogw.co.uk ([81.2.99.171]:1361 "EHLO
+	molson.mpc-data.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752056AbYABLnn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 06:41:34 -0500
-Date: Wed, 2 Jan 2008 12:41:32 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-cc: Dave Young <hidave.darkstar@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
-       gregkh@suse.de, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: The perfect patch - Posting a patch series (was Re: [PATCH 06/12]
- pci : Use mutex instead of semaphore in driver core)
-In-Reply-To: <477B7219.4080508@s5r6.in-berlin.de>
-Message-ID: <Pine.LNX.4.64.0801021238450.14900@fbirervta.pbzchgretzou.qr>
-References: <20071229011057.GG2883@darkstar.te-china.tietoenator.com> 
- <20071229025506.GL11638@parisc-linux.org>  <477632A7.6050208@s5r6.in-berlin.de>
- <a8e1da0801011829p15da81dcw9db0f7cbb5444467@mail.gmail.com>
- <477B7219.4080508@s5r6.in-berlin.de>
+	Wed, 2 Jan 2008 06:43:43 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="windows-1250"
+Content-Transfer-Encoding: 8BIT
+Subject: [PATCH] sh: sh7712 defconfig
+Date: Wed, 2 Jan 2008 11:43:39 -0000
+Message-ID: <0C997DD87CC88A4F86C897F52650B52B820E95@MOLSON.mpc-data.co.uk>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] sh: sh7712 defconfig
+Thread-Index: AchLyrpP8ZlwI+8FRzmQcVdtMnkC2QBaG3jQ
+From: "Andrew Murray" <amurray@mpc-data.co.uk>
+To: <lethal@linux-sh.org>
+Cc: <linux-sh@vger.kernel.org>, <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Andrew Murray <amurray@mpc-data.co.uk>
 
-On Jan 2 2008 12:14, Stefan Richter wrote:
->There is nothing wrong with a 0/n posting per se.  But whenever you
->write a 0/n posting, ask yourself:
->  - Isn't the information I provide here necessary to keep around by
->    somebody who takes my patch series into his quilt series or into his
->    source repository?
->  - Couldn't the information here be useful at a later point in time
->    when people look into the mainline Linux history?
->If "yes" or "maybe yes", then add this information to the changelogs in
->the patches.  You can then leave the 0/n posting as is, or make it
->briefer, or omit it entirely.
+This patch provides a correct value for CONFIG_SH_PCLK_FREQ for the SH7712 solution engine when used with the board's default factory settings. This results in the board running at its maximum CPU clock rate (200 MHz).
 
-Please emit a [0/n] and the [m/n] as a reply so that threading-aware
-mail readers can collapse and/or use delete-thread-at-a-time feature.
-If there is no info in [0/n], let it be empty or a one,two-liner brief
-introduction.
+The board I have is a Japanese Solution Engine with a 66 MHz (extal) crystal. Is this the only variant of the Solution Engine for the SH7712?
 
->It is never necessary to post a 0/n message, because _everything_ which
->could be said in this message can also be said in the i/n messages.
->(Things which are not meant for the SCM changelog can be written after a
->"---" delimiter line or other patch delimiters.)  However, it is
->sometimes convenient to repeat or summarize some of the information from
->the i/n messages in a 0/n message.  Think about convenience of the
->_recipients_ though, not about the sender's convenience.
+Signed-off-by: Andrew Murray <amurray@mpc-data.co.uk>
+---
+diff -uprN -X sh-2.6/Documentation/dontdiff sh-2.6/arch/sh/configs/se7712_defconfig sh-2.6-devel/arch/sh/configs/se7712_defconfig
+--- sh-2.6/arch/sh/configs/se7712_defconfig     2008-01-02 10:13:44.000000000 +0000
++++ sh-2.6-devel/arch/sh/configs/se7712_defconfig       2008-01-02 10:28:32.000000000 +0000
+@@ -237,7 +237,7 @@ CONFIG_CPU_HAS_SR_RB=y
+ CONFIG_SH_TMU=y
+ CONFIG_SH_TIMER_IRQ=16
+ # CONFIG_NO_IDLE_HZ is not set
+-CONFIG_SH_PCLK_FREQ=33333333
++CONFIG_SH_PCLK_FREQ=66666666
 
-And [0/n] sometimes contain a diffstat which gives an approximate
-line count of how big the patchset actually is.
+ #
+ # CPU Frequency scaling
+
+Internal Virus Database is out-of-date.
+Checked by AVG Free Edition. 
+Version: 7.5.516 / Virus Database: 269.17.8 - Release Date: 24/12/2007 00:00
+ 
