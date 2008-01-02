@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759533AbYABQse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758792AbYABRCl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759533AbYABQse (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 11:48:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755830AbYABQsZ
+	id S1758792AbYABRCl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 12:02:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbYABRCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 11:48:25 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:42672 "EHLO ogre.sisk.pl"
+	Wed, 2 Jan 2008 12:02:30 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60052 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755258AbYABQsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 11:48:24 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/4] PM: Introduce destroy_suspended_device()
-Date: Wed, 2 Jan 2008 17:50:15 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
-       Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>
-References: <Pine.LNX.4.44L0.0801021122070.5062-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0801021122070.5062-100000@iolanthe.rowland.org>
+	id S1754596AbYABRC3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 12:02:29 -0500
+Date: Wed, 2 Jan 2008 18:01:57 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: "K. Prasad" <prasad@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, dipankar@in.ibm.com, ego@in.ibm.com,
+       mathieu.desnoyers@polymtl.ca, paulmck@linux.vnet.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 2/2] Markers Implementation for Preempt RCU Boost
+	Tracing
+Message-ID: <20080102170157.GA11161@elte.hu>
+References: <20071231060911.GB6461@in.ibm.com> <20071231102045.GB30380@elte.hu> <y0modc4vr7a.fsf@ton.toronto.redhat.com> <20080102124734.GC11208@elte.hu> <20080102163309.GC11496@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801021750.16359.rjw@sisk.pl>
+In-Reply-To: <20080102163309.GC11496@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 2 of January 2008, Alan Stern wrote:
-> On Wed, 2 Jan 2008, Rafael J. Wysocki wrote:
-> 
-> > On Wednesday, 2 of January 2008, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > 
-> > > It sometimes is necessary to destroy a device object during a suspend or
-> > > hibernation, but the PM core is supposed to control all device objects in that
-> > > cases.  For this reason, it is necessary to introduce a mechanism allowing one
-> > > to ask the PM core to remove a device object corresponding to a suspended
-> > > device on one's behalf.
-> > > 
-> > > Define function destroy_suspended_device() that will schedule the removal of
-> > > a device object corresponding to a suspended device by the PM core during the
-> > > subsequent resume.
-> > > 
-> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Sorry, a small fix is needed for this patch.  Namely, dpm_sysfs_remove(dev)
-> > should not be called by device_pm_schedule_removal(), because it will be called
-> > anyway from device_pm_remove() when the device object is finally unregistered
-> > (we're talking here about unlikely error paths only, but still).
-> 
-> The situation is a little confusing, because the source files under 
-> drivers/base/power are maintained in Greg's tree and he already has 
-> gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch 
-> installed.  That patch conflicts with this one.
-> 
-> One of the these two patches will have to be rewritten to apply on top 
-> of the other.  Which do you think should be changed?
 
-Well, from the bisectability point of view, it would be better to adjust
-gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch and let the
-$subject patch series go first, if you don't mind.
+* Frank Ch. Eigler <fche@redhat.com> wrote:
 
-Rafael
+> > [...] this is a general policy matter. It is _so much easier_ to add 
+> > markers if they _can_ have near-zero overhead (as in 1-2 
+> > instructions). Otherwise we'll keep arguing about it, especially if 
+> > any is added to performance-critical codepath. (where we are 
+> > counting instructions)
+> 
+> The effect of the immediate-values patch, combined with gcc 
+> CFLAGS+=-freorder-blocks, *is* to keep the overhead at 1-2 
+> dcache-impact-free instructions.  The register saves, parameter 
+> evaluation, the function call, can all be moved out of line.
+
+well, -freorder-blocks seems to be default-enabled at -O2 on gcc 4.2, so 
+we should already be getting that, right?
+
+There's one thing that would make out-of-line tracepoints have a lot 
+less objectionable to me: right now the 'out of line' area is put to the 
+end of functions. That splinters the kernel image with inactive, rarely 
+taken areas of code - blowing up its icache footprint considerably. For 
+example sched.o has ~100 functions, with the average function size being 
+200 bytes. At 64 bytes L1 cacheline size that's a 10-20% icache waste 
+already.
+
+It's true that keeping the off-site code within the function keeps total 
+codesize slightly smaller, because the offsets (and hence the 
+conditional jumps) are thus 8 bit - but that's below 1% and the 
+cache-blow-up aspect is more severe in practice at 10-20%.
+
+So it would be nice if we could collect all this offline code and stuff 
+it away into another portion of the kernel image. (or, into another 
+portion of the object file - which would still be good enough in 
+practice)
+
+	Ingo
