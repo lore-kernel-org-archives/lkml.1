@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756595AbYACAhF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759312AbYACAhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756595AbYACAhF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 19:37:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbYACAgz
+	id S1759312AbYACAhp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 19:37:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754242AbYACAhh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 19:36:55 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:34664 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752707AbYACAgy (ORCPT
+	Wed, 2 Jan 2008 19:37:37 -0500
+Received: from smtp102.plus.mail.mud.yahoo.com ([68.142.206.235]:42687 "HELO
+	smtp102.plus.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753905AbYACAhg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 19:36:54 -0500
-Message-ID: <477C2E1F.2040307@zytor.com>
-Date: Wed, 02 Jan 2008 16:36:47 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 2 Jan 2008 19:37:36 -0500
+X-Greylist: delayed 4606 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Jan 2008 19:37:36 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.fr;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=GJNHW9qwisRYJY7EZbv46w23zWigqqFi1iBMD9JVXrIgDOUZnRVQ1OSlo2taD8OBlr96Cuv0Evg5rrWPbDoNI3Wj+Kp0lXp4mql5raye+enP1u8ABedeNYXS6DIhtzwC2z8Dx+kKulmfS88P+OVJMZlnmBCv40meM19lgroYNsk=  ;
+X-YMail-OSG: dXXcb8kVM1kBeuUf84sDb7JcviML4YgHCK5AHPhNxSJGKYoZ
+Message-ID: <477C10AD.7060303@yahoo.fr>
+Date: Wed, 02 Jan 2008 23:31:09 +0100
+From: =?ISO-8859-1?Q?R=E9mi_H=E9rilier?= <rherilier@yahoo.fr>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071212)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jonathan Lim <jlim@sgi.com>, linux-kernel@vger.kernel.org, jlan@sgi.com
-Subject: Re: [PATCH] Provide u64 version of jiffies_to_usecs() in kernel/tsacct.c
-References: <200801022103.m02L3oL1051764@sabah.engr.sgi.com> <20080102162338.c67769af.akpm@linux-foundation.org>
-In-Reply-To: <20080102162338.c67769af.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Carlos Corbacho <carlos@strangeworlds.co.uk>
+CC: linux-kernel@vger.kernel.org, dtor@mail.ru, linux-input@vger.kernel.org
+Subject: Re: PATCH] adding wistron_btns support for X86_64 systems.
+References: <200712222040.14422.carlos@strangeworlds.co.uk>
+In-Reply-To: <200712222040.14422.carlos@strangeworlds.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 28 Dec 2007 13:26:07 -0800 (PST) Jonathan Lim <jlim@sgi.com> wrote:
+Carlos Corbacho wrote:
+> (CC'ing linux-input, as that is the relevant subsystem list for wistron-btns).
 > 
->> It's possible that the values used in and returned from jiffies_to_usecs() are
->> incorrect because of truncation when variables of type u64 are involved.  So a
->> function specific to that type is used instead.
->>
->> Diff'd against: linux/kernel/git/stable/linux-2.6.23.y.git
->>
->> Signed-off-by: Jonathan Lim <jlim@sgi.com>
->>
->> --- a/kernel/tsacct.c	2007-12-28 11:58:05.182065029 -0800
->> +++ b/kernel/tsacct.c	2007-12-28 11:57:37.949013675 -0800
->> @@ -71,6 +71,17 @@ void bacct_add_tsk(struct taskstats *sta
->>  
->>  #ifdef CONFIG_TASK_XACCT
->>  
->> +static inline u64 jiffies_to_usecs_u64(const u64 j)
->> +{
->> +#if HZ <= USEC_PER_SEC && !(USEC_PER_SEC % HZ)
->> +	return (USEC_PER_SEC / HZ) * j;
->> +#elif HZ > USEC_PER_SEC && !(HZ % USEC_PER_SEC)
->> +	return (j + (HZ / USEC_PER_SEC) - 1)/(HZ / USEC_PER_SEC);
->> +#else
->> +	return (j * USEC_PER_SEC) / HZ;
->> +#endif
->> +}
->> +
->>  #define KB 1024
->>  #define MB (1024*KB)
->>  /*
->> @@ -81,8 +92,8 @@ void xacct_add_tsk(struct taskstats *sta
->>  	struct mm_struct *mm;
->>  
->>  	/* convert pages-jiffies to Mbyte-usec */
->> -	stats->coremem = jiffies_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
->> -	stats->virtmem = jiffies_to_usecs(p->acct_vm_mem1) * PAGE_SIZE / MB;
->> +	stats->coremem = jiffies_to_usecs_u64(p->acct_rss_mem1) * PAGE_SIZE / MB;
->> +	stats->virtmem = jiffies_to_usecs_u64(p->acct_vm_mem1) * PAGE_SIZE / MB;
->>  	mm = get_task_mm(p);
->>  	if (mm) {
->>  		/* adjust to KB unit */
+> Rémi Hérilier wrote:
+>> To use my previous patch (wistron_btns support for fujitsu-siemens amilo
+>> pro edition v3505) with my laptop, I need to make the wistron module
+>> compile for x86_64. It is based on Linux 2.4.24-rc4 too.
 > 
-> Fair enough.  But I guess that new function should be a kernel-wide thing
-> because surely other users will turn up.
+> NAK.
 > 
-> Peter has been working on the accuracy of some of these conversion
-> functions and might need to know about this change?
+> You cannot make 32 bit BIOS calls in a 64 bit OS.
+> 
+> This will (and does) segfault on x86-64 (tested on my Aspire 5020, where  
+> call_bios wistron-btns just segfaults on x86-64 with this patch).
+> 
+> This is a known issue, and the reason why wistron-btns (and the out-of-tree 
+> acerhk) have not been ported to x86-64.
+> 
+> -Carlos
 
-Yes, the function should be coded using the new #defines produced by 
-timeconst.h; that way you end up avoiding a possible overflow in the 
-multiplication.
+Yes, in theory, this must segfault on x86-64.
 
-I believe all three cases can be folded, then, to:
+In pratice, there is one laptop where it seems to works (no problem
+for 3 weeks). A good reason to find why.
 
-	return (j*HZ_TO_USEC_NUM + HZ_TO_USEC_DEN-1) / HZ_TO_USEC_DEN;
 
-I would also like to observe that the roundoff behaviour of the function 
-  above is inconsistent; in case 2 it will round up, but in case 3 it 
-will round down.  The line proposed above has round up behaviour.
+Best regards
 
-	-hpa
+Remi Herilier
