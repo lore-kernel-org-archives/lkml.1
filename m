@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbYABSPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752874AbYABSQE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754906AbYABSPj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 13:15:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYABSPc
+	id S1752874AbYABSQE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 13:16:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYABSPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 13:15:32 -0500
-Received: from mail.tmr.com ([64.65.253.246]:34261 "EHLO gaimboi.tmr.com"
+	Wed, 2 Jan 2008 13:15:53 -0500
+Received: from 1wt.eu ([62.212.114.60]:1157 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752339AbYABSPb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 13:15:31 -0500
-Message-ID: <477BD9DA.8030403@tmr.com>
-Date: Wed, 02 Jan 2008 13:37:14 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
+	id S1751458AbYABSPw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 13:15:52 -0500
+Date: Wed, 2 Jan 2008 19:10:36 +0100
+From: Willy Tarreau <w@1wt.eu>
 To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: semi-regular plea for stable device mapping
-References: <200801011054.40512.gene.heskett@gmail.com> <Pine.LNX.4.64.0801011723140.14900@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0801011723140.14900@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Cc: Eric Paris <eparis@redhat.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, jmorris@namei.org, alan@redhat.com,
+       chrisw@redhat.com, akpm@linux-foundation.org,
+       linux-security-module@vger.kernel.org, solar@openwall.com
+Subject: Re: [PATCH] Allow Kconfig to set default mmap_min_addr protection
+Message-ID: <20080102181036.GA10010@1wt.eu>
+References: <1198101545.6197.52.camel@localhost.localdomain> <Pine.LNX.4.64.0712200027230.5524@fbirervta.pbzchgretzou.qr> <1198269079.3732.3.camel@localhost.localdomain> <Pine.LNX.4.64.0712212209240.11671@fbirervta.pbzchgretzou.qr> <20071221211602.GA14811@1wt.eu> <Pine.LNX.4.64.0712212303410.18570@fbirervta.pbzchgretzou.qr> <20071221223526.GC24780@kroah.com> <Pine.LNX.4.64.0712212358440.25803@fbirervta.pbzchgretzou.qr> <1199293771.3716.21.camel@localhost.localdomain> <Pine.LNX.4.64.0801021825550.14900@fbirervta.pbzchgretzou.qr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0801021825550.14900@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Jan 1 2008 10:54, Gene Heskett wrote:
->> BUT!  This defeats a fix I've had in my modprobe.conf for over a year now that 
->> gave the LVM stuff a stable major device # of 238, and now my LVM major is 
->> back to whatever mood the kernel is in, in this particular bootup case to 
->> #253.
->>
->> It may now be stable for a bit at that number because I see that pktcdvd has 
->> been given a stable address of its own, apparently with a major of 10.  That 
->> was the wedgie that fscked things up originally for me.  But what else lurks 
->> in the deep end of this experimental pool, to play piranna with us again when 
->> we least expect it?
+On Wed, Jan 02, 2008 at 06:26:07PM +0100, Jan Engelhardt wrote:
 > 
-> Why exactly would you require a fixed major - not running udev or thelike?
-> Use the boot parameter, dm_mod.major=238.
-> 
-What? And what happens when that gets used for something else? And if 
-you say "we'll avoid using that" then you are treating it as a fixed 
-value anyway.
+> On Jan 2 2008 12:09, Eric Paris wrote:
+> >
+> >So in the end we are all happy with the original patch I sent?
+> >
+> No objections at least :)
 
->> This drives tar up a wall because it uses this device number as part of the 
->> file comparisons it does, and it thinks everything is therefore new and needs 
->> a full level 0 backup.  This is not at all practical, and requires that 
-> 
-> I wonder how FreeBSD gets around this, because they've got dynamic numbers
-> everywhere.
+I agree too. BTW, I've intentionally not merged it into 2.4, I
+prefer that admins deliberately set the sysctl on their servers
+than using a kernel in which they forgot it was enabled. But I
+agree that for wider use, the kernel option will help a lot.
 
-Did they? I haven't tried using tar in the appropriate ways on BSD to 
-see if it behaves in the same way. Of course on a system which doesn't 
-change between backups I guess the dynamic number would be the same in 
-any case.
+Regards,
+Willy
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
