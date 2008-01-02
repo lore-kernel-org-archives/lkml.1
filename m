@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbYABOhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbYABOiD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754596AbYABOhh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 09:37:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbYABOh3
+	id S1755872AbYABOiD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 09:38:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbYABOhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 09:37:29 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:51355 "EHLO mx1.redhat.com"
+	Wed, 2 Jan 2008 09:37:52 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:36251 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752360AbYABOh2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 09:37:28 -0500
-Date: Wed, 2 Jan 2008 09:37:19 -0500
-From: Rik van Riel <riel@redhat.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] restrict reading from /proc/<pid>/maps to those who
- share ->mm or can ptrace pid
-Message-ID: <20080102093719.4f9bc413@bree.surriel.com>
-In-Reply-To: <20080102140957.GR27894@ZenIV.linux.org.uk>
-References: <20080102140957.GR27894@ZenIV.linux.org.uk>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1754925AbYABOhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 09:37:51 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [patch] linux/{socket,stat}.h: change __GLIBC__ cruft to __KLIBC__
+Date: Wed, 2 Jan 2008 09:37:50 -0500
+User-Agent: KMail/1.9.7
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801020937.50770.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Jan 2008 14:09:57 +0000
-Al Viro <viro@ZenIV.linux.org.uk> wrote:
+The __GLIBC__ hacks were re-added to the headers because the klibc peeps want
+to be lazy.  But rather than properly address things, they just wrongly left
+it as __GLIBC__.  This patch changes the __GLIBC__ cruft to __KLIBC__ so real
+libcs don't get screwed due to kilbc's laziness.
 
-> 	Contents of /proc/*/maps is sensitive and may become sensitive
-> after open() (e.g. if target originally shares our ->mm and later
-> does exec on suid-root binary).
-> 	Check at read() (actually, ->start() of iterator) time that
-> mm_struct we'd grabbed and locked is
-> 	* still the ->mm of target
-> 	* equal to reader's ->mm or the target is ptracable by reader.
-> 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-Acked-by: Rik van Riel <riel@redhat.com>
-
--- 
-All rights reversed.
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+diff --git a/include/linux/socket.h b/include/linux/socket.h
+index c22ef1c..90af15b 100644
+--- a/include/linux/socket.h
++++ b/include/linux/socket.h
+@@ -16,7 +16,7 @@ struct __kernel_sockaddr_storage {
+ 				/* _SS_MAXSIZE value minus size of ss_family */
+ } __attribute__ ((aligned(_K_SS_ALIGNSIZE)));	/* force desired alignment */
+ 
+-#if defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2)
++#if defined(__KERNEL__) || defined(__KLIBC__)
+ 
+ #include <asm/socket.h>			/* arch-dependent defines	*/
+ #include <linux/sockios.h>		/* the SIOCxxx I/O controls	*/
+diff --git a/include/linux/stat.h b/include/linux/stat.h
+index 611c398..e8c1943 100644
+--- a/include/linux/stat.h
++++ b/include/linux/stat.h
+@@ -7,7 +7,7 @@
+ 
+ #endif
+ 
+-#if defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2)
++#if defined(__KERNEL__) || defined(__KLIBC__)
+ 
+ #define S_IFMT  00170000
+ #define S_IFSOCK 0140000
