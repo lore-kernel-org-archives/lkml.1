@@ -1,65 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756640AbYABPAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758719AbYABPE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756640AbYABPAS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 10:00:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbYABPAG
+	id S1758719AbYABPE4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 10:04:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbYABPEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 10:00:06 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:55284 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753176AbYABPAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 10:00:04 -0500
-Date: Wed, 2 Jan 2008 20:29:08 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Quentin Barnes <qbarnes@gmail.com>, linux-kernel@vger.kernel.org,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH] [CFT] Code clarification patch to Kprobes arch code
-Message-ID: <20080102145908.GA6527@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <b70efdcb0712310929y1bf871eah2adb531a7ed89673@mail.gmail.com> <20080101151943.GE4434@elte.hu> <20080102044353.GA7027@in.ibm.com> <20080102123355.GB11208@elte.hu>
+	Wed, 2 Jan 2008 10:04:48 -0500
+Received: from saraswathi.solana.com ([198.99.130.12]:54173 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753187AbYABPEs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 10:04:48 -0500
+Date: Wed, 2 Jan 2008 10:02:55 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: (Try #2) [Patch 1/8] UML: Remove 'TOPDIR' from Makefiles
+Message-ID: <20080102150255.GA5567@c2.user-mode-linux.org>
+References: <20080101071311.GA2496@hacking> <20080101071846.GB2496@hacking> <20080101103342.GH28913@uranus.ravnborg.org> <20080101104942.GI28913@uranus.ravnborg.org> <20080101130125.GA2499@hacking>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080102123355.GB11208@elte.hu>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080101130125.GA2499@hacking>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 02, 2008 at 01:33:55PM +0100, Ingo Molnar wrote:
-> 
-> * Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
-> 
-> > > Signed-off-by: Quentin Barnes <qbarnes@gmail.com>
-> > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> > 
-> > Tested on x86.
-> > 
-> > Acked-by: Ananth N Mavinakayahanalli <ananth@in.ibm.com>
-> 
-> thanks Ananth, i've updated the patch.
+On Tue, Jan 01, 2008 at 09:01:25PM +0800, WANG Cong wrote:
+> TOPDIR is obsolete, use srctree instead.
+> This patch removes TOPDIR from all UML Makefiles.
 
-Hi Ingo,
+Thanks, I'll send this to Andrew.
 
-> btw., do you have some script that i could use to test kprobes 
-> functionality? Right now the only time i notice kprobes regressions is 
-> when randconfig picks up CONFIG_NET_TCPPROBE=y which activates kprobes.
-> 
-> It would be so much nicer if kprobes had some runs-during-bootup kind of 
-> quick self-test, with all the important functionality unit-tested. Like 
-> lib/locking-selftest.c, or CONFIG_RCU_TORTURE_TEST=y.
+				Jeff
 
-The simplest way to do a basic sanity check is build the kprobes samples/
-and try them out. We have one sample each to test kprobes, kretprobes
-and jprobes. This should serve the purpose.
-
-I had posted patches for the same sometime back
-(http://marc.info/?l=linux-kernel&m=119297044801420&w=2), but they needed
-some rework to fix a build break on sparc64
-(http://marc.info/?l=linux-kernel&m=119735423212298&w=2).
-
-I will rebase the patchset against the latest mm and repost soon...
-
-Ananth
+-- 
+Work email - jdike at linux dot intel dot com
