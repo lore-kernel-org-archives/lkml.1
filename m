@@ -1,74 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758575AbYABAGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758442AbYABAS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758575AbYABAGc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Jan 2008 19:06:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755057AbYABAGY
+	id S1758442AbYABAS0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Jan 2008 19:18:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755244AbYABASQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Jan 2008 19:06:24 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:52199 "EHLO smtp6.pp.htv.fi"
+	Tue, 1 Jan 2008 19:18:16 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:55087 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754902AbYABAGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Jan 2008 19:06:23 -0500
-Date: Wed, 2 Jan 2008 02:06:08 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] remove CONFIG_EXPERIMENTAL
-Message-ID: <20080102000608.GK27566@does.not.exist>
-References: <20080101134809.GK2360@does.not.exist> <20080101142344.769f16c7@the-village.bc.nu> <20080101151751.GW2360@does.not.exist> <20080101160708.5bb5cc2a@the-village.bc.nu> <20080101163337.GX2360@does.not.exist> <20080101173532.1db4019f@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080101173532.1db4019f@the-village.bc.nu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	id S1755031AbYABASP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Jan 2008 19:18:15 -0500
+Date: Wed, 2 Jan 2008 11:18:08 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Julia Lawall <julia@diku.dk>
+Cc: paulus@au.ibm.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 1/3] arch/powerpc/platforms/pseries: Add missing
+ of_node_put
+Message-Id: <20080102111808.3e358093.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.64.0801012202040.19803@ask.diku.dk>
+References: <Pine.LNX.4.64.0801012202040.19803@ask.diku.dk>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__2_Jan_2008_11_18_08_+1100_Gb_ViJ98z6KoLqW6"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 01, 2008 at 05:35:32PM +0000, Alan Cox wrote:
-> > So smbfs is still considered rock solid while no serious distribution 
-> > would be crazy enough to ship the EXPERIMENTAL NFSv4 support to their 
-> > customers?
-> 
-> Thats a different problem. The kernel as I've said many times has no
-> proper process for
-> 
-> - removing expired/missing maintainers
-> - handling stuff that decays
-> - removing dead documentation
-> - removing dead drivers and ports
-> 
-> Although you've certainly started on fixing much of that.
-> 
-> > I'm not claiming that all EXPERIMENTAL tags were wrong [1], but many 
-> > were wrong.
-> 
-> So why not fix the wrong tags, and mark smbfs obsolete ?
+--Signature=_Wed__2_Jan_2008_11_18_08_+1100_Gb_ViJ98z6KoLqW6
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It's also the other way around:
-Is e.g. NFSv4 support really still experimental?
+On Tue, 1 Jan 2008 22:02:49 +0100 (CET) Julia Lawall <julia@diku.dk> wrote:
+>
+> From: Julia Lawall <julia@diku.dk>
+>=20
+> Of_get_parent and of_find_compatible_node do an of_node_get, and thus a
+> corresponding of_code_put is needed in the error case.
 
-There are only few parts of the kernel where the EXPERIMENTAL tags are 
-actually maintained, but most of them were simply added once and stayed 
-forever. If my "remove all EXPERIMENTAL tags" approach is not considered 
-the best solution I have no problem with starting with "convert 
-EXPERIMENTAL to FOO_EXPERIMENTAL in all areas where the subsystem 
-maintainer wants to do so" and remove the remaining EXPERIMENTAL tags 
-later.
+Thanks for these.
 
-> > Plus the fact that CONFIG_EXPERIMENTAL controlled so many different 
-> > things with one switch that CONFIG_EXPERIMENTAL=n .config's are really 
-> > rare.
-> 
-> Agreed
+In the future, any patch that touches arch/powerpc (or
+include/asm-powerpc) should be (at least) cc'd to linuxppc-dev@ozlabs.org
+(where the PowerPC developers lurk).  That way they will also be saved in
+Patchwork (http://patchwork.ozlabs.org/) and not lost.
 
-cu
-Adrian
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--- 
+--Signature=_Wed__2_Jan_2008_11_18_08_+1100_Gb_ViJ98z6KoLqW6
+Content-Type: application/pgp-signature
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQFHethFTgG2atn1QN8RAgpXAJ0bbZQvWovvFZrZF89BttepRaRk7QCeM6yH
+vRuwKIsu7m8XW8N5BuFLbxY=
+=6KpH
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__2_Jan_2008_11_18_08_+1100_Gb_ViJ98z6KoLqW6--
