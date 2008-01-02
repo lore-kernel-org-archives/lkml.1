@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754464AbYABR6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753683AbYABSGN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754464AbYABR6l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 12:58:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbYABR6c
+	id S1753683AbYABSGN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 13:06:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbYABSF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 12:58:32 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:48610 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751911AbYABR6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 12:58:31 -0500
-Date: Wed, 2 Jan 2008 12:56:06 -0500
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>,
-       "K. Prasad" <prasad@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, dipankar@in.ibm.com, ego@in.ibm.com,
-       mathieu.desnoyers@polymtl.ca, paulmck@linux.vnet.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 2/2] Markers Implementation for Preempt RCU Boost Tracing
-Message-ID: <20080102175606.GD11496@redhat.com>
-References: <20071231060911.GB6461@in.ibm.com> <20071231102045.GB30380@elte.hu> <y0modc4vr7a.fsf@ton.toronto.redhat.com> <20080102124734.GC11208@elte.hu> <20080102163309.GC11496@redhat.com> <20080102170157.GA11161@elte.hu>
+	Wed, 2 Jan 2008 13:05:59 -0500
+Received: from mx0.towertech.it ([213.215.222.73]:59317 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751332AbYABSF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 13:05:58 -0500
+Date: Wed, 2 Jan 2008 19:05:37 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: David Brownell <david-b@pacbell.net>
+Cc: mingo@elte.hu, kay.sievers@vrfy.org, stern@rowland.harvard.edu,
+       rjw@sisk.pl, pavel@suse.cz, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       lenb@kernel.org, gregkh@suse.de, akpm@linux-foundation.org
+Subject: Re: [PATCH 0/4] PM: Do not destroy/create devices while suspended 
+ (rev. 2)
+Message-ID: <20080102190537.2fc735fe@i1501.lan.towertech.it>
+In-Reply-To: <20080102175400.3C2E0EF588@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+References: <200801020032.45529.rjw@sisk.pl>
+	<20080102105217.GA14731@elte.hu>
+	<200801021356.59865.rjw@sisk.pl>
+	<20080102131529.GA32160@elte.hu>
+	<3ae72650801020655h6ec31ce8n5cd9014c00c9f6ad@mail.gmail.com>
+	<20080102160137.GA21046@elte.hu>
+	<20080102175400.3C2E0EF588@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080102170157.GA11161@elte.hu>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
+On Wed, 02 Jan 2008 09:54:00 -0800
+David Bro
+> It'd need to have some NTP sync solution for RTC_LIB devices, but
+> ISTR the gentime stuff still assumes an update_persistent_clock()
+> that doesn't sleep ... and hence can't be used with I2C based RTCs.
 
-On Wed, Jan 02, 2008 at 06:01:57PM +0100, Ingo Molnar wrote:
-> [...]
-> well, -freorder-blocks seems to be default-enabled at -O2 on gcc 4.2, so 
-> we should already be getting that, right?
+ I still believe NTP sync stuff should be done outside of the kernel.
+ given the mean accuracy of RTC chips and other sync factors, imho
+ you haven't so much to gain with an in-kernel sync code.
 
-Right.
 
-> [...]  So it would be nice if we could collect all this offline code
-> and stuff it away into another portion of the kernel image. (or,
-> into another portion of the object file - which would still be good
-> enough in practice)
+-- 
 
-That would be the -freorder-blocks-and-partition flag, as proposed by
-Arjan two Februarys ago.  I don't see any traces of Andi's overriding
-"-fno-reorder-blocks" in the current linus tree, so maybe it's time to
-resurrect this one:
+ Best regards,
 
-http://readlist.com/lists/vger.kernel.org/linux-kernel/39/196123.html
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
 
-- FChE
+  http://www.towertech.it
+
