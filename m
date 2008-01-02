@@ -1,76 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757133AbYABFrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757316AbYABFze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757133AbYABFrY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 00:47:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbYABFrK
+	id S1757316AbYABFze (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 00:55:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbYABFz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 00:47:10 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:39799 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752926AbYABFrI (ORCPT
+	Wed, 2 Jan 2008 00:55:26 -0500
+Received: from po-out-1718.google.com ([72.14.252.159]:46421 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751337AbYABFzZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 00:47:08 -0500
-Subject: Re: [PATCH 1/3] ide: use MODULE_VERSION()
-From: Jon Masters <jonathan@jonmasters.org>
-To: Matt Domsch <Matt_Domsch@dell.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Adrian Bunk <bunk@kernel.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080102044620.GB10762@auslistsprd01.us.dell.com>
-References: <200801011840.38757.bzolnier@gmail.com>
-	 <20080101175333.GA27566@does.not.exist>
-	 <200801011933.43930.bzolnier@gmail.com>
-	 <1199241156.3300.55.camel@perihelion>
-	 <20080102044620.GB10762@auslistsprd01.us.dell.com>
-Content-Type: text/plain
-Organization: World Organi[sz]ation Of Broken Dreams
-Date: Wed, 02 Jan 2008 00:46:30 -0500
-Message-Id: <1199252790.3300.77.camel@perihelion>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 74.92.29.237
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	Wed, 2 Jan 2008 00:55:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=kUndLnrex5zF4wpnHS4t2SBEvR3xux78jhcfi5vmXOqm2HAylqBFhKU/mYG//DdOnKoM+TngaU2bCfw/m2fCS6pxFQGlWoL5SIjk0dngynhFX5Npo2uKfdW9scpe2So+88nGeXoW2sB50ZzCWHxql2cuCJgjH1RaBF29MRUNI7w=
+Date: Wed, 2 Jan 2008 13:55:33 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Eric Sandeen <sandeen@sandeen.net>, xfs-masters@oss.sgi.com,
+       LKML <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, viro@zeniv.linux.org.uk
+Subject: (Try #3) [Patch 7/8] FS: Remove dead code
+Message-ID: <20080102055533.GD2493@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <20080101071311.GA2496@hacking> <20080101074105.GH2496@hacking> <477A7809.5000106@sandeen.net> <20080101173729.GA31575@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080101173729.GA31575@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jan 01, 2008 at 06:37:29PM +0100, Sam Ravnborg wrote:
+>On Tue, Jan 01, 2008 at 11:27:37AM -0600, Eric Sandeen wrote:
+>> WANG Cong wrote:
+>> > TOPDIR is obsolete, use objtree instead.
+>> > This patch removes TOPDIR from all fs/ Makefiles.
+>> 
+>> > diff --git a/fs/xfs/Makefile b/fs/xfs/Makefile
+>> > index 49e3e7e..d1d3d49 100644
+>> > --- a/fs/xfs/Makefile
+>> > +++ b/fs/xfs/Makefile
+>> > @@ -1 +1 @@
+>> > -include $(TOPDIR)/fs/xfs/Makefile-linux-$(VERSION).$(PATCHLEVEL)
+>> > +include $(objtree)/fs/xfs/Makefile-linux-$(VERSION).$(PATCHLEVEL)
+>> 
+>> FWIW $(TOPDIR) is already banished from the latest xfs build code:
+>> 
+>Good - I will ignore the xfs bits.
 
-On Tue, 2008-01-01 at 22:46 -0600, Matt Domsch wrote:
-> On Tue, Jan 01, 2008 at 09:32:36PM -0500, Jon Masters wrote:
-> > On Tue, 2008-01-01 at 19:33 +0100, Bartlomiej Zolnierkiewicz wrote:
-> > 
-> > > On the second thought: maybe we will be better off with limiting
-> > > MODULE_VERSION() to the device drivers and the IDE core module for now,
-> > > and just removing all these private version numbers from host drivers
-> > > (with one or two exceptions they are not printed or exported currently,
-> > > moreover exceptions are the cases like stale version numbers from 199x)?
-> > 
-> > Things like checkpatch could help advise people to bump the version
-> > number, but it's a bit iffy. Matt D. actually uses the special source
-> > version modinfo for DKMS - which is different - but it makes me wonder
-> > whether dynamically generating a version based on source SHA1 wouldn't
-> > be a better idea in most cases than an outdated hard-coded one.
-> 
-> We've got that already, it's called 'srcversion', and it's a CRC32
-> IIRC after some limited parsing to let it ignore whitspace changes and
-> comment changes only.  
-> 
-> $ modinfo dell_rbu | grep version
-> version:        3.2
-> srcversion:     1D4815D7D6FBEE6612F3C18
+Thanks. I will drop the xfs part.
 
-Right. And I was referring to the is above (I forgot it's a CRC32 and
-not a SHA1). But my point is why not codify some "policy" here with
-respect to module versioning, rather than have the latter exist to
-workaround the case that module versions aren't bumped manually.
+------->
 
-(I'm not arguing to remove srcversion, just asking whether that might be
-a better approach in general - perhaps allow a module to print this
-version string at init time also, rather than just be in modinfo?)
+Remove dead code in smbfs makefile.
 
-Jon.
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: Tim Shimmin <xfs-masters@oss.sgi.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
 
+---
 
+diff --git a/fs/smbfs/Makefile b/fs/smbfs/Makefile
+index 6673ee8..4faf8c4 100644
+--- a/fs/smbfs/Makefile
++++ b/fs/smbfs/Makefile
+@@ -16,23 +16,3 @@ EXTRA_CFLAGS += -DSMBFS_PARANOIA
+ #EXTRA_CFLAGS += -DDEBUG_SMB_TIMESTAMP
+ #EXTRA_CFLAGS += -Werror
+ 
+-#
+-# Maintainer rules
+-#
+-
+-# getopt.c not included. It is intentionally separate
+-SRC = proc.c dir.c cache.c sock.c inode.c file.c ioctl.c smbiod.c request.c \
+-	symlink.c
+-
+-proto:
+-	-rm -f proto.h
+-	@echo >  proto2.h "/*"
+-	@echo >> proto2.h " *  Autogenerated with cproto on: " `date`
+-	@echo >> proto2.h " */"
+-	@echo >> proto2.h ""
+-	@echo >> proto2.h "struct smb_request;"
+-	@echo >> proto2.h "struct sock;"
+-	@echo >> proto2.h "struct statfs;"
+-	@echo >> proto2.h ""
+-	cproto -E "gcc -E" -e -v -I $(TOPDIR)/include -DMAKING_PROTO -D__KERNEL__ $(SRC) >> proto2.h
+-	mv proto2.h proto.h
