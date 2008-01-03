@@ -1,37 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbYACR1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbYACR13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755199AbYACR1K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 12:27:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbYACR06
+	id S1756590AbYACR13 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 12:27:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbYACR1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 12:26:58 -0500
-Received: from mx1.suse.de ([195.135.220.2]:59036 "EHLO mx1.suse.de"
+	Thu, 3 Jan 2008 12:27:00 -0500
+Received: from ns.suse.de ([195.135.220.2]:59038 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752204AbYACR05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 12:26:57 -0500
+	id S1752272AbYACR06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 12:26:58 -0500
 From: Andi Kleen <ak@suse.de>
-Message-Id: <20080103626.635376000@suse.de>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] [0/8] GB pages (PDP1GB) support for the kernel direct mapping
-Date: Thu,  3 Jan 2008 18:26:56 +0100 (CET)
+References: <20080103626.635376000@suse.de>
+In-Reply-To: <20080103626.635376000@suse.de>
+To: ebiederm@xmission.com, vgoyal@redhat.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] [1/8] GBPAGES: Handle kernel near memory hole in clear_kernel_mapping
+Message-Id: <20080103172657.B5CFA14DDD@wotan.suse.de>
+Date: Thu,  3 Jan 2008 18:26:57 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This patchkit implement GB pages support for AMD Fam10h CPUs. This patchkit only
-implements it for the kernel direct mapping for now; support for hugetlbfs is upcomming.
+This was a long standing obscure problem in the relocatable kernel. The
+AMD GART driver needs to unmap part of the GART in the kernel direct mapping to 
+prevent cache corruption. With the relocatable kernel it is in theory possible 
+that the separate kernel text mapping straddles that area too. 
 
-This allows to map the kernel direct mapping using 1GB TLBs instead of 2MB 
-TLBs and get hopefully less TLB misses for the kernel.
+Normally it should not happen because GART tends to be >= 2GB, and the kernel 
+is normally not loaded that high, but it is possible in theory. 
 
-The GB pages are only implemented for 64bit (because the CPU only implements
-them for long mode) and also only for data pages (because Fam10h doesn't have GB ITLBs
-and AMD recommends against running code in them) 
+Teach clear_kernel_mapping() about this case.
 
-There is an option to turn them off (direct_gbpages=off), although I hope that
-won't be needed.
+This will become more important once the kernel mapping uses 1GB pages.
 
-Also includes one generic bug fix for clear_page_kernel.
+Cc: ebiederm@xmission.com
+Cc: vgoyal@redhat.com
 
--Andi
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+---
+ arch/x86/mm/init_64.c |   20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
+
+Index: linux/arch/x86/mm/init_64.c
+===================================================================
+--- linux.orig/arch/x86/mm/init_64.c
++++ linux/arch/x86/mm/init_64.c
+@@ -411,7 +411,8 @@ void __init paging_init(void)
+    from the CPU leading to inconsistent cache lines. address and size
+    must be aligned to 2MB boundaries. 
+    Does nothing when the mapping doesn't exist. */
+-void __init clear_kernel_mapping(unsigned long address, unsigned long size) 
++static void __init
++__clear_kernel_mapping(unsigned long address, unsigned long size)
+ {
+ 	unsigned long end = address + size;
+ 
+@@ -441,6 +442,23 @@ void __init clear_kernel_mapping(unsigne
+ 	__flush_tlb_all();
+ } 
+ 
++#define overlaps(as,ae,bs,be) ((ae) >= (bs) && (as) <= (be))
++
++void __init clear_kernel_mapping(unsigned long address, unsigned long size)
++{
++	int sh = PMD_SHIFT;
++	unsigned long kernel = __pa(__START_KERNEL_map);
++
++	if (overlaps(kernel>>sh, (kernel + KERNEL_TEXT_SIZE)>>sh,
++			__pa(address)>>sh, __pa(address + size)>>sh)) {
++		printk(KERN_INFO
++			"Kernel at %lx overlaps memory hole at %lx-%lx\n",
++				kernel, __pa(address), __pa(address+size));
++		__clear_kernel_mapping(__START_KERNEL_map+__pa(address), size);
++	}
++	__clear_kernel_mapping(address, size);
++}
++
+ /*
+  * Memory hotplug specific functions
+  */
