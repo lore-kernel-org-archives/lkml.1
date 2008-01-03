@@ -1,102 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083AbYACV7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbYACWBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755083AbYACV7s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 16:59:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbYACV6e
+	id S1756133AbYACWBS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 17:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbYACWBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 16:58:34 -0500
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:11152 "EHLO
-	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752638AbYACV6a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 16:58:30 -0500
-Date: Thu, 03 Jan 2008 14:29:40 -0700
-From: dougthompson@xmission.com
-To: dougthompson@xmission.com, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 1/4] drivers-edac-pci-broken-parity-regression
-Message-ID: <477d53c4.o3h/SVR7MjSDUKwy%dougthompson@xmission.com>
-User-Agent: Heirloom mailx 12.1 6/15/06
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 3 Jan 2008 17:01:09 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:44375 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753205AbYACWBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 17:01:08 -0500
+Date: Thu, 3 Jan 2008 17:00:35 -0500
+From: Rik van Riel <riel@redhat.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Eric Whitney <eric.whitney@hp.com>
+Subject: Re: [patch 00/19] VM pageout scalability improvements
+Message-ID: <20080103170035.105d22c8@cuia.boston.redhat.com>
+In-Reply-To: <1199380412.5295.29.camel@localhost>
+References: <20080102224144.885671949@redhat.com>
+	<1199379128.5295.21.camel@localhost>
+	<20080103120000.1768f220@cuia.boston.redhat.com>
+	<1199380412.5295.29.camel@localhost>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From:	Bryan Boatright <b1@omega71.com>
+On Thu, 03 Jan 2008 12:13:32 -0500
+Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
 
-Using the EDAC code in kernel.org kernel version 2.6.23.8 I am seeing the
-following problem:
+> Yes, but the problem, when it occurs, is very awkward.  The system just
+> hangs for hours/days spinning on the reverse mapping locks--in both
+> page_referenced() and try_to_unmap().  No pages get reclaimed and NO OOM
+> kill occurs because we never get that far.  So, I'm not sure I'd call
+> any OOM kills resulting from this patch as "false".  The memory is
+> effectively nonreclaimable.   Now, I think that your anon pages SEQ
+> patch will eliminate the contention in page_referenced[_anon](), but we
+> could still hang in try_to_unmap().
 
-    In the kernel there is a pci device attribute located in sysfs that is
-    checked by the EDAC PCI scanning code. If that attribute is set,
-    PCI parity/error scannining is skipped for that device. The attribute
-    is:
+I am hoping that Nick's ticket spinlocks will fix this problem.
 
-            broken_parity_status
+Would you happen to have any test cases for the above problem that
+I could use to reproduce the problem and look for an automatic fix?
 
-    as is located in /sys/devices/pci<XXX>/0000:XX:YY.Z directorys for
-    PCI devices.
+Any fix that requires the sysadmin to tune things _just_ right seems
+too dangerous to me - especially if a change in the workload can
+result in the system doing exactly the wrong thing...
 
+The idea is valid, but it just has to work automagically.
 
-I don't think this check was actually implemented.  I have a misbehaved card
-that reports a parity error every 1000 ms:
+Btw, if page_referenced() is called less, the locks that try_to_unmap()
+also takes should get less contention.
 
-Nov 25 07:28:43 beta kernel: EDAC PCI: Master Data Parity Error on 0000:05:01.0
-Nov 25 07:28:44 beta kernel: EDAC PCI: Master Data Parity Error on 0000:05:01.0
-Nov 25 07:28:45 beta kernel: EDAC PCI: Master Data Parity Error on 0000:05:01.0
-
-Setting that card's broken_parity_status bit did not mask the error:
-
-echo "1" > /sys/bus/pci/devices/0000:05:01.0/broken_parity_status
-
-
-I looked through the EDAC code and did not readily see any reference to
-broken_parity_status at all (which makes sense based on the behavior I am
-seeing).  I applied the following patch as a proof-of-concept and now EDAC's
-PCI parity error reporting behaves as documented:
-
-bryan
-
-Good regression find, bryan. It used to work. sigh.
-I added more logic to your patch, for more coverage of the error.
-
-Doug T
-
-Signed-off-by:	Bryan Boatright <b1@omega71.com>
-Signed-off-by:	Doug Thompson <dougthompson@xmisson.com>
----
- edac_pci_sysfs.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.24-rc6-mm1/drivers/edac/edac_pci_sysfs.c
-===================================================================
---- linux-2.6.24-rc6-mm1.orig/drivers/edac/edac_pci_sysfs.c
-+++ linux-2.6.24-rc6-mm1/drivers/edac/edac_pci_sysfs.c
-@@ -558,8 +558,10 @@ static void edac_pci_dev_parity_test(str
- 
- 	debugf4("PCI STATUS= 0x%04x %s\n", status, dev->dev.bus_id);
- 
--	/* check the status reg for errors */
--	if (status) {
-+	/* check the status reg for errors on boards NOT marked as broken
-+	 * if broken, we cannot trust any of the status bits
-+	 */
-+	if (status && !dev->broken_parity_status) {
- 		if (status & (PCI_STATUS_SIG_SYSTEM_ERROR)) {
- 			edac_printk(KERN_CRIT, EDAC_PCI,
- 				"Signaled System Error on %s\n",
-@@ -593,8 +595,10 @@ static void edac_pci_dev_parity_test(str
- 
- 		debugf4("PCI SEC_STATUS= 0x%04x %s\n", status, dev->dev.bus_id);
- 
--		/* check the secondary status reg for errors */
--		if (status) {
-+		/* check the secondary status reg for errors,
-+		 * on NOT broken boards
-+		 */
-+		if (status && !dev->broken_parity_status) {
- 			if (status & (PCI_STATUS_SIG_SYSTEM_ERROR)) {
- 				edac_printk(KERN_CRIT, EDAC_PCI, "Bridge "
- 					"Signaled System Error on %s\n",
+-- 
+All Rights Reversed
