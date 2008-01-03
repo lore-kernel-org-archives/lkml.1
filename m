@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757820AbYACJdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757320AbYACJi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757820AbYACJdt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 04:33:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754161AbYACJdm
+	id S1757320AbYACJi5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 04:38:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754164AbYACJit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 04:33:42 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51949 "EHLO mx3.mail.elte.hu"
+	Thu, 3 Jan 2008 04:38:49 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55243 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752325AbYACJdl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 04:33:41 -0500
-Date: Thu, 3 Jan 2008 10:33:03 +0100
+	id S1754161AbYACJis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 04:38:48 -0500
+Date: Thu, 3 Jan 2008 10:38:37 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: akpm@linux-foundation.org, lkml <linux-kernel@vger.kernel.org>,
-       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
-       davem@davemloft.net, mathieu.desnoyers@polymtl.ca,
-       hskinnemoen@atmel.com, mhiramat@redhat.com, sam@ravnborg.org,
-       randy.dunlap@oracle.com
-Subject: Re: [PATCH 2/2] Kprobes: Move kprobes examples to samples/
-Message-ID: <20080103093303.GB16803@elte.hu>
-References: <20080103062425.GA22781@in.ibm.com> <20080103062825.GB22781@in.ibm.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: qbarnes <qbarnes@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: Use is_kprobe_fault to better match usage
+Message-ID: <20080103093837.GA18355@elte.hu>
+References: <1199322323.6323.76.camel@brick>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080103062825.GB22781@in.ibm.com>
+In-Reply-To: <1199322323.6323.76.camel@brick>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,24 +36,30 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
+* Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-> From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> Currently the notify_page_fault helper is used to test it the page 
+> fault was caused by a kprobe causing an early return from 
+> do_page_fault.
 > 
-> Move kprobes examples from Documentation/kprobes.txt to under 
-> samples/. Patch originally by Randy Dunlap.
+> Change the name of the helper to is_kprobe_fault to match the usage 
+> and remove the preempt_disable/enable pair around kprobe_running() 
+> with an explicit test for preemption.  The idea for this comes from a 
+> patch by Quentin Barnes to kprobes.c
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 
-nice!
+hm, this doesnt apply:
 
-> +config SAMPLE_KPROBES
-> +	tristate "Build kprobes examples -- loadable modules only"
-> +	depends on KPROBES && m
-> +	help
-> +	  This build several kprobes example modules.
+ Hunk #3 FAILED at 426.
+ Hunk #4 succeeded at 413 (offset -22 lines).
+ 1 out of 4 hunks FAILED -- rejects in file arch/x86/mm/fault_32.c
+ patching file arch/x86/mm/fault_64.c
+ Hunk #3 FAILED at 476.
+ Hunk #4 succeeded at 475 (offset -10 lines).
+ 1 out of 4 hunks FAILED -- rejects in file arch/x86/mm/fault_64.c
 
-feature request: please make this work in the !modular case as well - if 
-built-in then it should just run sometime during bootup and run the 
-tests and report success/failure. This way automated testing can pick up 
-any regressions much easier.
+could you double-check x86.git#mm, perhaps we are out of sync with a 
+patch somewhere?
 
 	Ingo
