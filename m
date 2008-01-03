@@ -1,131 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755495AbYACPZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754932AbYACP0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755495AbYACPZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 10:25:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753738AbYACPYZ
+	id S1754932AbYACP0R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 10:26:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbYACPY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 10:24:25 -0500
-Received: from ns2.suse.de ([195.135.220.15]:43015 "EHLO mx2.suse.de"
+	Thu, 3 Jan 2008 10:24:28 -0500
+Received: from mail.suse.de ([195.135.220.2]:46747 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752693AbYACPYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 10:24:22 -0500
+	id S1753946AbYACPY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 10:24:26 -0500
 From: Andi Kleen <ak@suse.de>
 References: <20080103424.989432000@suse.de>
 In-Reply-To: <20080103424.989432000@suse.de>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH CPA] [7/28] Extract page table dumping code from i386 fault handler into dump_pagetable()
-Message-Id: <20080103152421.695B314E23@wotan.suse.de>
-Date: Thu,  3 Jan 2008 16:24:21 +0100 (CET)
+Subject: [PATCH CPA] [11/28] CPA: Change 32bit back to init_mm semaphore locking
+Message-Id: <20080103152425.AA33B14E23@wotan.suse.de>
+Date: Thu,  3 Jan 2008 16:24:25 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Similar to x86-64. This is useful in other situations where we want
-the page table dumped too.
-
-Besides anything that makes i386 do_page_fault shorter is good.
+Now that debug pagealloc uses a separate function it is better
+to change standard change_page_attr back to init_mm semaphore locking like 64bit.
+Various things are simpler when sleeping is allowed.
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86/mm/fault_32.c |   72 ++++++++++++++++++++++++++-----------------------
- 1 file changed, 39 insertions(+), 33 deletions(-)
+ arch/x86/mm/pageattr_32.c |   14 +++++---------
+ 1 file changed, 5 insertions(+), 9 deletions(-)
 
-Index: linux/arch/x86/mm/fault_32.c
+Index: linux/arch/x86/mm/pageattr_32.c
 ===================================================================
---- linux.orig/arch/x86/mm/fault_32.c
-+++ linux/arch/x86/mm/fault_32.c
-@@ -28,6 +28,44 @@
- #include <asm/desc.h>
- #include <asm/segment.h>
+--- linux.orig/arch/x86/mm/pageattr_32.c
++++ linux/arch/x86/mm/pageattr_32.c
+@@ -14,10 +14,9 @@
+ #include <asm/pgalloc.h>
+ #include <asm/sections.h>
  
-+void dump_pagetable(unsigned long address)
-+{
-+	typeof(pte_val(__pte(0))) page;
-+
-+	page = read_cr3();
-+	page = ((__typeof__(page) *) __va(page))[address >> PGDIR_SHIFT];
-+#ifdef CONFIG_X86_PAE
-+	printk("*pdpt = %016Lx ", page);
-+	if ((page >> PAGE_SHIFT) < max_low_pfn
-+	    && page & _PAGE_PRESENT) {
-+		page &= PAGE_MASK;
-+		page = ((__typeof__(page) *) __va(page))[(address >> PMD_SHIFT)
-+		                                         & (PTRS_PER_PMD - 1)];
-+		printk(KERN_CONT "*pde = %016Lx ", page);
-+		page &= ~_PAGE_NX;
-+	}
-+#else
-+	printk("*pde = %08lx ", page);
-+#endif
-+
-+	/*
-+	 * We must not directly access the pte in the highpte
-+	 * case if the page table is located in highmem.
-+	 * And let's rather not kmap-atomic the pte, just in case
-+	 * it's allocated already.
-+	 */
-+	if ((page >> PAGE_SHIFT) < max_low_pfn
-+	    && (page & _PAGE_PRESENT)
-+	    && !(page & _PAGE_PSE)) {
-+		page &= PAGE_MASK;
-+		page = ((__typeof__(page) *) __va(page))[(address >> PAGE_SHIFT)
-+		                                         & (PTRS_PER_PTE - 1)];
-+		printk("*pte = %0*Lx ", sizeof(page)*2, (u64)page);
-+	}
-+
-+	printk("\n");
-+}
-+
- /*
-  * Page fault error code bits
-  *	bit 0 == 0 means no page found, 1 means protection fault
-@@ -602,7 +640,6 @@ no_context:
- 	bust_spinlocks(1);
+-static DEFINE_SPINLOCK(cpa_lock);
++/* Protected by init_mm.mmap_sem */
+ static struct list_head df_list = LIST_HEAD_INIT(df_list);
  
- 	if (oops_may_print()) {
--		__typeof__(pte_val(__pte(0))) page;
- 
- #ifdef CONFIG_X86_PAE
- 		if (error_code & 16) {
-@@ -623,38 +660,7 @@ no_context:
- 		printk(" at virtual address %08lx\n", address);
- 		printk(KERN_ALERT "printing ip: %08lx ", regs->ip);
- 
--		page = read_cr3();
--		page = ((__typeof__(page) *) __va(page))[address >> PGDIR_SHIFT];
--#ifdef CONFIG_X86_PAE
--		printk("*pdpt = %016Lx ", page);
--		if ((page >> PAGE_SHIFT) < max_low_pfn
--		    && page & _PAGE_PRESENT) {
--			page &= PAGE_MASK;
--			page = ((__typeof__(page) *) __va(page))[(address >> PMD_SHIFT)
--			                                         & (PTRS_PER_PMD - 1)];
--			printk(KERN_CONT "*pde = %016Lx ", page);
--			page &= ~_PAGE_NX;
--		}
--#else
--		printk("*pde = %08lx ", page);
--#endif
 -
--		/*
--		 * We must not directly access the pte in the highpte
--		 * case if the page table is located in highmem.
--		 * And let's rather not kmap-atomic the pte, just in case
--		 * it's allocated already.
--		 */
--		if ((page >> PAGE_SHIFT) < max_low_pfn
--		    && (page & _PAGE_PRESENT)
--		    && !(page & _PAGE_PSE)) {
--			page &= PAGE_MASK;
--			page = ((__typeof__(page) *) __va(page))[(address >> PAGE_SHIFT)
--			                                         & (PTRS_PER_PTE - 1)];
--			printk("*pte = %0*Lx ", sizeof(page)*2, (u64)page);
--		}
--
--		printk("\n");
-+		dump_pagetable(address);
- 	}
+ pte_t *lookup_address(unsigned long address, int *level)
+ { 
+ 	pgd_t *pgd = pgd_offset_k(address);
+@@ -46,9 +45,7 @@ static struct page *split_large_page(uns
+ 	struct page *base;
+ 	pte_t *pbase;
  
- 	tsk->thread.cr2 = address;
+-	spin_unlock_irq(&cpa_lock);
+ 	base = alloc_pages(GFP_KERNEL, 0);
+-	spin_lock_irq(&cpa_lock);
+ 	if (!base) 
+ 		return NULL;
+ 
+@@ -224,15 +221,14 @@ int change_page_attr(struct page *page, 
+ {
+ 	int err = 0; 
+ 	int i; 
+-	unsigned long flags;
+ 
+-	spin_lock_irqsave(&cpa_lock, flags);
++	down_write(&init_mm.mmap_sem);
+ 	for (i = 0; i < numpages; i++, page++) { 
+ 		err = __change_page_attr(page, prot);
+ 		if (err) 
+ 			break; 
+ 	} 	
+-	spin_unlock_irqrestore(&cpa_lock, flags);
++	up_write(&init_mm.mmap_sem);
+ 	return err;
+ }
+ 
+@@ -243,9 +239,9 @@ void global_flush_tlb(void)
+ 
+ 	BUG_ON(irqs_disabled());
+ 
+-	spin_lock_irq(&cpa_lock);
++	down_write(&init_mm.mmap_sem);
+ 	list_replace_init(&df_list, &l);
+-	spin_unlock_irq(&cpa_lock);
++	up_write(&init_mm.mmap_sem);
+ 	flush_map(&l);
+ 	list_for_each_entry_safe(pg, next, &l, lru) {
+ 		list_del(&pg->lru);
