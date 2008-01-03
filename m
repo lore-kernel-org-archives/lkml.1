@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759312AbYACAhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758219AbYACAk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759312AbYACAhp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 19:37:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754242AbYACAhh
+	id S1758219AbYACAk1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 19:40:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbYACAkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 19:37:37 -0500
-Received: from smtp102.plus.mail.mud.yahoo.com ([68.142.206.235]:42687 "HELO
-	smtp102.plus.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753905AbYACAhg (ORCPT
+	Wed, 2 Jan 2008 19:40:17 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:31932 "EHLO
+	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753442AbYACAkQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 19:37:36 -0500
-X-Greylist: delayed 4606 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Jan 2008 19:37:36 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.fr;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=GJNHW9qwisRYJY7EZbv46w23zWigqqFi1iBMD9JVXrIgDOUZnRVQ1OSlo2taD8OBlr96Cuv0Evg5rrWPbDoNI3Wj+Kp0lXp4mql5raye+enP1u8ABedeNYXS6DIhtzwC2z8Dx+kKulmfS88P+OVJMZlnmBCv40meM19lgroYNsk=  ;
-X-YMail-OSG: dXXcb8kVM1kBeuUf84sDb7JcviML4YgHCK5AHPhNxSJGKYoZ
-Message-ID: <477C10AD.7060303@yahoo.fr>
-Date: Wed, 02 Jan 2008 23:31:09 +0100
-From: =?ISO-8859-1?Q?R=E9mi_H=E9rilier?= <rherilier@yahoo.fr>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071212)
-MIME-Version: 1.0
-To: Carlos Corbacho <carlos@strangeworlds.co.uk>
-CC: linux-kernel@vger.kernel.org, dtor@mail.ru, linux-input@vger.kernel.org
-Subject: Re: PATCH] adding wistron_btns support for X86_64 systems.
-References: <200712222040.14422.carlos@strangeworlds.co.uk>
-In-Reply-To: <200712222040.14422.carlos@strangeworlds.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Wed, 2 Jan 2008 19:40:16 -0500
+Date: Wed, 02 Jan 2008 18:40:08 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH] ide: delete filenames/versions from comments
+In-reply-to: <fa.CAem1qRl3AG/KJjVoPZU/Cn8U1g@ifi.uio.no>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-id: <477C2EE8.50301@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.CAem1qRl3AG/KJjVoPZU/Cn8U1g@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Carlos Corbacho wrote:
-> (CC'ing linux-input, as that is the relevant subsystem list for wistron-btns).
+Bartlomiej Zolnierkiewicz wrote:
+> Delete filenames/versions from comments.
 > 
-> Rémi Hérilier wrote:
->> To use my previous patch (wistron_btns support for fujitsu-siemens amilo
->> pro edition v3505) with my laptop, I need to make the wistron module
->> compile for x86_64. It is based on Linux 2.4.24-rc4 too.
+> I'm leaving decisions about adding DRV_VERSION defines and MODULE_VERSION()-s
+> to maintainers of the respective drivers.
 > 
-> NAK.
+> While at it:
 > 
-> You cannot make 32 bit BIOS calls in a 64 bit OS.
+> * Remove unused VERSION define from ide.c.
 > 
-> This will (and does) segfault on x86-64 (tested on my Aspire 5020, where  
-> call_bios wistron-btns just segfaults on x86-64 with this patch).
+> * Remove unused/stale DRV_VERSION define from au1xxx-ide.c.
 > 
-> This is a known issue, and the reason why wistron-btns (and the out-of-tree 
-> acerhk) have not been ported to x86-64.
-> 
-> -Carlos
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-Yes, in theory, this must segfault on x86-64.
+How about getting rid of this stupid thing in drivers/ide/ide.c:
 
-In pratice, there is one laptop where it seems to works (no problem
-for 3 weeks). A good reason to find why.
+#define	REVISION	"Revision: 7.00alpha2"
 
+which is used in:
 
-Best regards
+printk(KERN_INFO "Uniform Multi-Platform E-IDE driver " REVISION "\n");
 
-Remi Herilier
+It's been 7.00alpha2 for god knows how long, so clearly this version 
+number is not useful..
+
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
