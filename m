@@ -1,65 +1,446 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbYACEu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759656AbYACEwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758749AbYACEu2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 23:50:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755433AbYACEuP
+	id S1759656AbYACEwV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 23:52:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbYACEwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 23:50:15 -0500
-Received: from lixom.net ([66.141.50.11]:57497 "EHLO mail.lixom.net"
+	Wed, 2 Jan 2008 23:52:13 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:50766 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755393AbYACEuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 23:50:14 -0500
-Date: Wed, 2 Jan 2008 22:58:39 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 1/3] move WARN_ON() out of line
-Message-ID: <20080103045838.GA25642@lixom.net>
-References: <477C32DA.5060905@linux.intel.com>
+	id S1753873AbYACEwM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 23:52:12 -0500
+Message-ID: <477C694A.9030004@redhat.com>
+Date: Wed, 02 Jan 2008 23:49:14 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <477C32DA.5060905@linux.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Harvey Harrison <harvey.harrison@gmail.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, davem@davemloft.net,
+       Keshavamurthy Anil S <anil.s.keshavamurthy@intel.com>,
+       Roland McGrath <roland@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] kprobes: Introduce is_kprobe_fault()
+References: <1199333115.6323.104.camel@brick>
+In-Reply-To: <1199333115.6323.104.camel@brick>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 03, 2008 at 01:56:58AM +0100, Arjan van de Ven wrote:
-> Subject: move WARN_ON() out of line
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> CC: Ingo Molnar <mingo@elte.hu>
-> CC: Andrew Morton <akpm@linux-foundation.org>
->
-> A quick grep shows that there are currently 1145 instances of WARN_ON
-> in the kernel. Currently, WARN_ON is pretty much entirely inlined,
-> which makes it hard to enhance it without growing the size of the kernel
-> (and getting Andrew unhappy).
->
-> This patch moves WARN_ON() out of line entirely. I've considered keeping
-> the test inline and moving only the slowpath out of line, but I decided
-> against that: an out of line test reduces the pressure on the CPUs
-> branch predictor logic and gives smaller code, while a function call
-> to a fixed location is quite fast. Likewise I've considered doing something
-> similar to BUG() (eg use a trapping instruction) but that's not really
-> better (it needs the test inline again and recovering from an invalid
-> instruction isn't quite fun).
+Hi Harvey,
 
-Hi Arjan,
+Thank you for greate work!
+This seems including all of what I've expected.
+I'll try to test.
 
-I've got a couple of patches in -mm at the moment that introduces __WARN()
-and uses that (and lets architectures override __WARN, since for example
-powerpc does use trapping instructions similarly to BUG()).
+Please send this to all of kprobe maintainers, Because this
+involves all of the architectures which kprobes supports.
 
-The two patches in question are:
+Maintainers;
+could you help reviewing this?
 
-bugh-remove-have_arch_bug--have_arch_warn.patch
-powerpc-switch-to-generic-warn_on-bug_on.patch
+Thank you,
 
-Care to do this incrementally on top of that instead? I.e. call
-do_warn_on() from the asm-generic/bug.h __WARN() instead.
+Best Regards,
 
+Harvey Harrison wrote:
+> Use a central is_kprobe_fault() inline in kprobes.h to remove all
+> of the arch-dependant, practically identical implementations in
+> avr32, ia64, powerpc, s390, sparc64, and x86.
+> 
+> avr32 was the only arch without the preempt_disable/enable pair
+> in its notify_page_fault implementation.  This should be checked
+> by avr32 people.
+> 
+> This uncovered a possible bug in the s390 version as that purely
+> copied the x86 version unconditionally passing 14 as the trapnr
+> rather than the error_code parameter.  This has been preserved
+> in this patch, s390 people should check if error_code really was
+> intended.
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+> Andrew, this came up when discussing some x86 fault unification
+> work, figured you were the right person to feed this through.
+> 
+> At least the diffstat says I did something right.  Patch against
+> current Linus tree.
+> 
+>  arch/avr32/mm/fault.c   |   21 +--------------------
+>  arch/ia64/mm/fault.c    |   24 +-----------------------
+>  arch/powerpc/mm/fault.c |   25 +------------------------
+>  arch/s390/mm/fault.c    |   25 +------------------------
+>  arch/sparc64/mm/fault.c |   23 +----------------------
+>  arch/x86/mm/fault_32.c  |   26 ++------------------------
+>  arch/x86/mm/fault_64.c  |   26 ++------------------------
+>  include/linux/kprobes.h |   19 +++++++++++++++++++
+>  8 files changed, 28 insertions(+), 161 deletions(-)
+> 
+> diff --git a/arch/avr32/mm/fault.c b/arch/avr32/mm/fault.c
+> index 6560cb1..a95cce2 100644
+> --- a/arch/avr32/mm/fault.c
+> +++ b/arch/avr32/mm/fault.c
+> @@ -20,25 +20,6 @@
+>  #include <asm/tlb.h>
+>  #include <asm/uaccess.h>
+>  
+> -#ifdef CONFIG_KPROBES
+> -static inline int notify_page_fault(struct pt_regs *regs, int trap)
+> -{
+> -	int ret = 0;
+> -
+> -	if (!user_mode(regs)) {
+> -		if (kprobe_running() && kprobe_fault_handler(regs, trap))
+> -			ret = 1;
+> -	}
+> -
+> -	return ret;
+> -}
+> -#else
+> -static inline int notify_page_fault(struct pt_regs *regs, int trap)
+> -{
+> -	return 0;
+> -}
+> -#endif
+> -
+>  int exception_trace = 1;
+>  
+>  /*
+> @@ -66,7 +47,7 @@ asmlinkage void do_page_fault(unsigned long ecr, struct pt_regs *regs)
+>  	int code;
+>  	int fault;
+>  
+> -	if (notify_page_fault(regs, ecr))
+> +	if (is_kprobe_fault(regs, ecr))
+>  		return;
+>  
+>  	address = sysreg_read(TLBEAR);
+> diff --git a/arch/ia64/mm/fault.c b/arch/ia64/mm/fault.c
+> index 7571076..1696805 100644
+> --- a/arch/ia64/mm/fault.c
+> +++ b/arch/ia64/mm/fault.c
+> @@ -18,28 +18,6 @@
+>  
+>  extern void die (char *, struct pt_regs *, long);
+>  
+> -#ifdef CONFIG_KPROBES
+> -static inline int notify_page_fault(struct pt_regs *regs, int trap)
+> -{
+> -	int ret = 0;
+> -
+> -	if (!user_mode(regs)) {
+> -		/* kprobe_running() needs smp_processor_id() */
+> -		preempt_disable();
+> -		if (kprobe_running() && kprobes_fault_handler(regs, trap))
+> -			ret = 1;
+> -		preempt_enable();
+> -	}
+> -
+> -	return ret;
+> -}
+> -#else
+> -static inline int notify_page_fault(struct pt_regs *regs, int trap)
+> -{
+> -	return 0;
+> -}
+> -#endif
+> -
+>  /*
+>   * Return TRUE if ADDRESS points at a page in the kernel's mapped segment
+>   * (inside region 5, on ia64) and that page is present.
+> @@ -106,7 +84,7 @@ ia64_do_page_fault (unsigned long address, unsigned long isr, struct pt_regs *re
+>  	/*
+>  	 * This is to handle the kprobes on user space access instructions
+>  	 */
+> -	if (notify_page_fault(regs, TRAP_BRKPT))
+> +	if (is_kprobe_fault(regs, TRAP_BRKPT))
+>  		return;
+>  
+>  	down_read(&mm->mmap_sem);
+> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+> index 8135da0..00df6f9 100644
+> --- a/arch/powerpc/mm/fault.c
+> +++ b/arch/powerpc/mm/fault.c
+> @@ -39,29 +39,6 @@
+>  #include <asm/tlbflush.h>
+>  #include <asm/siginfo.h>
+>  
+> -
+> -#ifdef CONFIG_KPROBES
+> -static inline int notify_page_fault(struct pt_regs *regs)
+> -{
+> -	int ret = 0;
+> -
+> -	/* kprobe_running() needs smp_processor_id() */
+> -	if (!user_mode(regs)) {
+> -		preempt_disable();
+> -		if (kprobe_running() && kprobe_fault_handler(regs, 11))
+> -			ret = 1;
+> -		preempt_enable();
+> -	}
+> -
+> -	return ret;
+> -}
+> -#else
+> -static inline int notify_page_fault(struct pt_regs *regs)
+> -{
+> -	return 0;
+> -}
+> -#endif
+> -
+>  /*
+>   * Check whether the instruction at regs->nip is a store using
+>   * an update addressing form which will update r1.
+> @@ -164,7 +141,7 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
+>  	is_write = error_code & ESR_DST;
+>  #endif /* CONFIG_4xx || CONFIG_BOOKE */
+>  
+> -	if (notify_page_fault(regs))
+> +	if (is_kprobe_fault(regs, 11))
+>  		return 0;
+>  
+>  	if (trap == 0x300) {
+> diff --git a/arch/s390/mm/fault.c b/arch/s390/mm/fault.c
+> index 2456b52..59d3f0e 100644
+> --- a/arch/s390/mm/fault.c
+> +++ b/arch/s390/mm/fault.c
+> @@ -51,29 +51,6 @@ extern int sysctl_userprocess_debug;
+>  
+>  extern void die(const char *,struct pt_regs *,long);
+>  
+> -#ifdef CONFIG_KPROBES
+> -static inline int notify_page_fault(struct pt_regs *regs, long err)
+> -{
+> -	int ret = 0;
+> -
+> -	/* kprobe_running() needs smp_processor_id() */
+> -	if (!user_mode(regs)) {
+> -		preempt_disable();
+> -		if (kprobe_running() && kprobe_fault_handler(regs, 14))
+> -			ret = 1;
+> -		preempt_enable();
+> -	}
+> -
+> -	return ret;
+> -}
+> -#else
+> -static inline int notify_page_fault(struct pt_regs *regs, long err)
+> -{
+> -	return 0;
+> -}
+> -#endif
+> -
+> -
+>  /*
+>   * Unlock any spinlocks which will prevent us from getting the
+>   * message out.
+> @@ -309,7 +286,7 @@ do_exception(struct pt_regs *regs, unsigned long error_code, int write)
+>  	int si_code;
+>  	int fault;
+>  
+> -	if (notify_page_fault(regs, error_code))
+> +	if (is_kprobe_fault(regs, 14))
+>  		return;
+>  
+>  	tsk = current;
+> diff --git a/arch/sparc64/mm/fault.c b/arch/sparc64/mm/fault.c
+> index e2027f2..bb5c36a 100644
+> --- a/arch/sparc64/mm/fault.c
+> +++ b/arch/sparc64/mm/fault.c
+> @@ -31,27 +31,6 @@
+>  #include <asm/sections.h>
+>  #include <asm/mmu_context.h>
+>  
+> -#ifdef CONFIG_KPROBES
+> -static inline int notify_page_fault(struct pt_regs *regs)
+> -{
+> -	int ret = 0;
+> -
+> -	/* kprobe_running() needs smp_processor_id() */
+> -	if (!user_mode(regs)) {
+> -		preempt_disable();
+> -		if (kprobe_running() && kprobe_fault_handler(regs, 0))
+> -			ret = 1;
+> -		preempt_enable();
+> -	}
+> -	return ret;
+> -}
+> -#else
+> -static inline int notify_page_fault(struct pt_regs *regs)
+> -{
+> -	return 0;
+> -}
+> -#endif
+> -
+>  /*
+>   * To debug kernel to catch accesses to certain virtual/physical addresses.
+>   * Mode = 0 selects physical watchpoints, mode = 1 selects virtual watchpoints.
+> @@ -280,7 +259,7 @@ asmlinkage void __kprobes do_sparc64_fault(struct pt_regs *regs)
+>  
+>  	fault_code = get_thread_fault_code();
+>  
+> -	if (notify_page_fault(regs))
+> +	if (is_kprobe_fault(regs, 0))
+>  		return;
+>  
+>  	si_code = SEGV_MAPERR;
+> diff --git a/arch/x86/mm/fault_32.c b/arch/x86/mm/fault_32.c
+> index a2273d4..f2e909b 100644
+> --- a/arch/x86/mm/fault_32.c
+> +++ b/arch/x86/mm/fault_32.c
+> @@ -33,28 +33,6 @@
+>  
+>  extern void die(const char *,struct pt_regs *,long);
+>  
+> -#ifdef CONFIG_KPROBES
+> -static inline int notify_page_fault(struct pt_regs *regs)
+> -{
+> -	int ret = 0;
+> -
+> -	/* kprobe_running() needs smp_processor_id() */
+> -	if (!user_mode_vm(regs)) {
+> -		preempt_disable();
+> -		if (kprobe_running() && kprobe_fault_handler(regs, 14))
+> -			ret = 1;
+> -		preempt_enable();
+> -	}
+> -
+> -	return ret;
+> -}
+> -#else
+> -static inline int notify_page_fault(struct pt_regs *regs)
+> -{
+> -	return 0;
+> -}
+> -#endif
+> -
+>  /*
+>   * Return EIP plus the CS segment base.  The segment limit is also
+>   * adjusted, clamped to the kernel/user address space (whichever is
+> @@ -331,7 +309,7 @@ fastcall void __kprobes do_page_fault(struct pt_regs *regs,
+>  	if (unlikely(address >= TASK_SIZE)) {
+>  		if (!(error_code & 0x0000000d) && vmalloc_fault(address) >= 0)
+>  			return;
+> -		if (notify_page_fault(regs))
+> +		if (is_kprobe_fault(regs, 14))
+>  			return;
+>  		/*
+>  		 * Don't take the mm semaphore here. If we fixup a prefetch
+> @@ -340,7 +318,7 @@ fastcall void __kprobes do_page_fault(struct pt_regs *regs,
+>  		goto bad_area_nosemaphore;
+>  	}
+>  
+> -	if (notify_page_fault(regs))
+> +	if (is_kprobe_fault(regs, 14))
+>  		return;
+>  
+>  	/* It's safe to allow irq's after cr2 has been saved and the vmalloc
+> diff --git a/arch/x86/mm/fault_64.c b/arch/x86/mm/fault_64.c
+> index 0e26230..376e218 100644
+> --- a/arch/x86/mm/fault_64.c
+> +++ b/arch/x86/mm/fault_64.c
+> @@ -41,28 +41,6 @@
+>  #define PF_RSVD	(1<<3)
+>  #define PF_INSTR	(1<<4)
+>  
+> -#ifdef CONFIG_KPROBES
+> -static inline int notify_page_fault(struct pt_regs *regs)
+> -{
+> -	int ret = 0;
+> -
+> -	/* kprobe_running() needs smp_processor_id() */
+> -	if (!user_mode(regs)) {
+> -		preempt_disable();
+> -		if (kprobe_running() && kprobe_fault_handler(regs, 14))
+> -			ret = 1;
+> -		preempt_enable();
+> -	}
+> -
+> -	return ret;
+> -}
+> -#else
+> -static inline int notify_page_fault(struct pt_regs *regs)
+> -{
+> -	return 0;
+> -}
+> -#endif
+> -
+>  /* Sometimes the CPU reports invalid exceptions on prefetch.
+>     Check that here and ignore.
+>     Opcode checker based on code by Richard Brunner */
+> @@ -343,7 +321,7 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
+>  			if (vmalloc_fault(address) >= 0)
+>  				return;
+>  		}
+> -		if (notify_page_fault(regs))
+> +		if (is_kprobe_fault(regs, 14))
+>  			return;
+>  		/*
+>  		 * Don't take the mm semaphore here. If we fixup a prefetch
+> @@ -352,7 +330,7 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
+>  		goto bad_area_nosemaphore;
+>  	}
+>  
+> -	if (notify_page_fault(regs))
+> +	if (is_kprobe_fault(regs, 14))
+>  		return;
+>  
+>  	if (likely(regs->eflags & X86_EFLAGS_IF))
+> diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
+> index 8189158..65c1ffb 100644
+> --- a/include/linux/kprobes.h
+> +++ b/include/linux/kprobes.h
+> @@ -36,6 +36,7 @@
+>  #include <linux/spinlock.h>
+>  #include <linux/rcupdate.h>
+>  #include <linux/mutex.h>
+> +#include <linux/hardirq.h>
+>  
+>  #ifdef CONFIG_KPROBES
+>  #include <asm/kprobes.h>
+> @@ -203,6 +204,20 @@ static inline struct kprobe *kprobe_running(void)
+>  	return (__get_cpu_var(current_kprobe));
+>  }
+>  
+> +/*
+> + * If it is a kprobe pagefault we can not be premptible so return before
+> + * calling kprobe_running() as it will assert on smp_processor_id if
+> + * preemption is enabled.
+> + */
+> +static inline int is_kprobe_fault(struct pt_regs *regs, int trapnr)
+> +{
+> +	if (!user_mode(regs) && !preemptible() && kprobe_running() &&
+> +	    kprobe_fault_handler(regs, trapnr))
+> +		return 1;
+> +	else
+> +		return 0;
+> +}
+> +
+>  static inline void reset_current_kprobe(void)
+>  {
+>  	__get_cpu_var(current_kprobe) = NULL;
+> @@ -237,6 +252,10 @@ static inline struct kprobe *kprobe_running(void)
+>  {
+>  	return NULL;
+>  }
+> +static inline int is_kprobe_fault(struct pt_regs *regs, int trapnr)
+> +{
+> +	return 0;
+> +}
+>  static inline int register_kprobe(struct kprobe *p)
+>  {
+>  	return -ENOSYS;
 
--Olof
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
 
