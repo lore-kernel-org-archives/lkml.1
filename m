@@ -1,61 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753249AbYACOir@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753511AbYACOjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753249AbYACOir (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 09:38:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbYACOik
+	id S1753511AbYACOjy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 09:39:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751988AbYACOjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 09:38:40 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:45596 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751005AbYACOij (ORCPT
+	Thu, 3 Jan 2008 09:39:47 -0500
+Received: from fmmailgate05.web.de ([217.72.192.243]:58181 "EHLO
+	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751894AbYACOjq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 09:38:39 -0500
-Subject: Re: [x86] kernel/audit.c cleanup according to checkpatch.pl
-From: David Woodhouse <dwmw2@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-       Cyrill Gorcunov <gorcunov@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080103143711.GA29606@elte.hu>
-References: <20080103111925.GC8046@cvg>
-	 <20080103112957.GA14693@lazybastard.org> <20080103140549.GA19363@elte.hu>
-	 <1199370550.3697.79.camel@shinybook.infradead.org>
-	 <20080103143711.GA29606@elte.hu>
-Content-Type: text/plain
-Date: Thu, 03 Jan 2008 14:37:24 +0000
-Message-Id: <1199371044.3697.80.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-3.fc8.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 3 Jan 2008 09:39:46 -0500
+Date: Thu, 03 Jan 2008 15:39:43 +0100
+Message-Id: <83783877@web.de>
+MIME-Version: 1.0
+From: devzero@web.de
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: serial console _after_ boot ? - was: Redirect kernel console
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX19IkuNZsVISI+cmu/SMlxC/9UNec3Y14W89KHEeZO8X4EXVU
+ hzEXoUni7kqtS5uFiCs84Zp2t8Km6Nbl4mDeTcnOeod3gJLSK0=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+fantastic, thanks!
 
-On Thu, 2008-01-03 at 15:37 +0100, Ingo Molnar wrote:
-> * David Woodhouse <dwmw2@infradead.org> wrote:
-> 
-> > On Thu, 2008-01-03 at 15:05 +0100, Ingo Molnar wrote:
-> > > not to make a big issue out of this, but when was the last time you 
-> > > tried to grep this way:
-> > > 
-> > >   grep -E "audit_rate_limit=[0-9]+ audit_backlog" */*.c
-> > 
-> > Not precisely that, but I've certainly had greps fail because people 
-> > have split up strings to meet the stupid 80-character "limit".
-> 
-> yes - but if you read my whole reply you'll see that i qualified it:
-> 
-> >> That's pretty much the only grep pattern that would break. People 
-> >> usually grep on the constant portion of the string, so breaking up a 
-> >>                                                       ^^^^^^^^^^^^^
-> >> line along a variable boundary is perfectly okay.
+unfortunately......
 
-Yes, you did. But you failed to provide any good reason for actually
-changing it, either. Leave it as it was.
+opensuse103:/home/roland/serialcons # ./mytioccons
+ioctl: Device or resource busy
 
--- 
-dwmw2
+but, it`s not userspace:
+
+opensuse103:/home/roland # lsof |egrep "console|ttyS0"
+opensuse103:/home/roland #
+
+
+in tty_io.c -> ticoccons() there is
+
+        if (redirect) {
+                spin_unlock(&redirect_lock);
+                return -EBUSY;
+        }
+
+
+but i`m not deep enough into programming to understand this.
+
+-------------------
+mytioccons.c
+
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <libio.h>
+#include <errno.h>
+#include <stdio.h>
+
+int main(void)
+{
+int fd = open("/dev/ttyS0", O_RDWR);
+int errno;
+
+ioctl(0, TIOCCONS, NULL);
+
+if (ioctl(fd, TIOCCONS, NULL) < 0)
+        printf("ioctl: %s\n", strerror(errno));
+}
+-------------------
+
+
+
+
+> -----Ursprüngliche Nachricht-----
+> Von: "Jan Engelhardt" <jengelh@computergmbh.de>
+> Gesendet: 03.01.08 14:28:45
+> An: devzero@web.de
+> CC: linux-kernel@vger.kernel.org
+> Betreff: Re: serial console _after_ boot ? - was: Redirect kernel console
+
+
+> 
+> 
+> On Jan 3 2008 13:43, devzero@web.de wrote:
+> >
+> >hi !
+> >
+> >i was wondering how to make kernel messages appear on /dev/ttyS0 without a reboot, i.e. kernelparam "console=ttyS0"
+> 
+> The solution is simple... the following piece of code is inside
+> opensuse-10.3/src/sysvinit-2.86-115.src.rpm#showconsole-1.08.tar.bz2#showconsole-1.08/blogd.c
+> 
+>     (void)ioctl(0, TIOCCONS, NULL);  /* Undo any current map if any */
+>     if (ioctl(pts, TIOCCONS, NULL) < 0)
+>         error("can not set console device to %s: %s\n", ptsname, strerror(errno));
+> 
+> so I suppose that's it. Write up a new program that calls the ioctl
+> on a tty, and you should be done. IOW:
+> 
+> #include <sys/ioctl.h>
+> #include <sys/stat.h>
+> #include <sys/types.h>
+> #include <fcntl.h>
+> 
+> int main(void)
+> {
+> 	int fd = open("/dev/ttyS0", O_RDWR);
+> 	ioctl(0, TIOCCONS, NULL);
+> 	ioctl(fd, TIOCCONS, NULL);
+> }
+> 
+
+
+__________________________________________________________________________
+Erweitern Sie FreeMail zu einem noch leistungsstärkeren E-Mail-Postfach!		
+Mehr Infos unter http://produkte.web.de/club/?mc=021131
 
