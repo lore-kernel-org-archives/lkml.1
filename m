@@ -1,42 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755696AbYACWci@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756509AbYACWdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755696AbYACWci (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 17:32:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbYACWca
+	id S1756509AbYACWdc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 17:33:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbYACWdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 17:32:30 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56030 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753092AbYACWca (ORCPT
+	Thu, 3 Jan 2008 17:33:24 -0500
+Received: from nz-out-0506.google.com ([64.233.162.235]:20548 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753205AbYACWdX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 17:32:30 -0500
-Date: Thu, 3 Jan 2008 22:30:54 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Matthias Goebl <matthias@goebl.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kkeil@suse.de,
-       kai.germaschewski@gmx.de
-Subject: Re: [PATCH] isdn/i4l: 'NO CARRIER' message lost after ldisc flush
-Message-ID: <20080103223054.2b51450b@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080103220039.GV19071@night.goebl.net>
-References: <1178571957.3665.8.camel@amdx2.microgate.com>
-	<20080103220039.GV19071@night.goebl.net>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 3 Jan 2008 17:33:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eFDDVXt+SGE7L+j86mdH7NjQsic7OPccC92cJH/k3FghgE8iFU97pGvAL/osXAoMrzGn5gggH3on0Z5erTafG1mL3Sgb1HPaBPKT02qMG7UiBJm+QK+qqRzXLveahmTA16jNDpqvL4i+cfWRc3NCCaGOiDxbsA0/eofbolUBNPk=
+Message-ID: <8bd0f97a0801031433mdaff6d9j5ed4e3cb49ea2007@mail.gmail.com>
+Date: Thu, 3 Jan 2008 17:33:20 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/3] Merge mkubootimg tool for building U-Boot images
+Cc: sam@ravnborg.org, paulus@samba.org, linux-kernel@vger.kernel.org,
+       wd@denx.de
+In-Reply-To: <20080103162613.09674907@zod.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080103160104.171f9aaa@zod.rchland.ibm.com>
+	 <20080103160244.6a28519b@zod.rchland.ibm.com>
+	 <8bd0f97a0801031415g66e6b6f1o8a64dddc98c29399@mail.gmail.com>
+	 <20080103162613.09674907@zod.rchland.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> For non-audio connections the problem remains.
-> Maybe we can remove the tty_ldisc_flush() in isdn_tty_modem_result()
-> at all because it's done at tty_close?
+On Jan 3, 2008 5:26 PM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+> On Thu, 3 Jan 2008 17:15:48 -0500 "Mike Frysinger" <vapier.adi@gmail.com> wrote:
+> > On Jan 3, 2008 5:02 PM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+> > > Several platforms require the mkimage tool to generate a uImage file that is
+> > > used with U-Boot.  This brings the mkimage tool in-kernel to enable building
+> > > those platforms without having mkimage externally provided.  The tool is named
+> > > mkubootimg for better clarity.
+> > >
+> > > This is currently based off of the version found in U-Boot 1.3.1.
+> > >
+> > > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> > >
+> > > ---
+> > >  scripts/Makefile             |    1
+> > >  scripts/mkubootimg/Makefile  |    6
+> > >  scripts/mkubootimg/crc32.c   |  199 +++++++++++
+> > >  scripts/mkubootimg/mkimage.c |  728 +++++++++++++++++++++++++++++++++++++++++++
+> > >  scripts/mkubootimg/sha1.c    |  413 ++++++++++++++++++++++++
+> > >  scripts/mkubootimg/sha1.h    |  115 ++++++
+> > >  scripts/mkubootimg/uimage.h  |  161 +++++++++
+> > >  7 files changed, 1623 insertions(+)
+> >
+> > i'm fairly certain sha1 is not needed.  the u-boot makefile has a bug
+> > in the 1.3.1 release where mkimage depends on sha1.o but doesnt
+> > actually use sha1 functions.  i posted a patch to u-boot mailing list
+> > to get this dropped.  regardless, no need for the kernel to import it.
+>
+> No need to yet anyway.  There are discussions on-going to make a new
+> image format that can do sha1 sums instead of crc32.  Either way is
+> fine with me, I just opted to include it now to keep it the same as
+> U-Boot and avoid having to include it in the future.
+>
+> If you want an updated patch with the sha1 code removed, I can do
+> that.  Sam, Wolfgang?
 
-I'm not sure I understand why the tty_ldisc_flush is being done in the
-ISDN layer at this point but this change looks fine to me.
-
-
-Alan
+yes, but i think the next image format is going to require quite a bit
+of changes in the build system anyways, especially since with the
+kernel you will want the option to produce either format, so simply
+dropping the sha1 makes sense to me.  but i dont really care either
+way, just making sure you're aware of the issue (and it sounds like
+you are).
+-mike
