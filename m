@@ -1,37 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbYACTzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbYACT72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753840AbYACTzw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 14:55:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbYACTzo
+	id S1753899AbYACT72 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 14:59:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbYACT7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 14:55:44 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:56332 "EHLO pasmtpB.tele.dk"
+	Thu, 3 Jan 2008 14:59:21 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:47356 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752120AbYACTzo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 14:55:44 -0500
-Date: Thu, 3 Jan 2008 20:55:34 +0100
+	id S1751030AbYACT7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 14:59:20 -0500
+Date: Thu, 3 Jan 2008 20:59:20 +0100
 From: Sam Ravnborg <sam@ravnborg.org>
-To: "Theodore Ts'o" <tytso@mit.edu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH,RFC 1/3] Change CONFIG_LOCALVERSION_AUTO to use a git-describe-ish format
-Message-ID: <20080103195534.GC21227@uranus.ravnborg.org>
-References: <1194054781-16609-1-git-send-email-tytso@mit.edu>
+To: Jesper Nilsson <jesper.nilsson@axis.com>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>,
+       Mikael Starvik <mikael.starvik@axis.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, dev-etrax@axis.com,
+       Andreas Schwab <schwab@suse.de>
+Subject: Re: (Try #3) [Patch 4/8] CRIS: Remove 'TOPDIR' from Makefiles
+Message-ID: <20080103195920.GD21227@uranus.ravnborg.org>
+References: <20080101071311.GA2496@hacking> <20080101072922.GE2496@hacking> <20080101102010.GD28913@uranus.ravnborg.org> <20080101133421.GD2499@hacking> <20080102062759.GF2493@hacking> <20080102192535.GC11217@uranus.ravnborg.org> <20080103170322.GC9512@axis.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1194054781-16609-1-git-send-email-tytso@mit.edu>
+In-Reply-To: <20080103170322.GC9512@axis.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 02, 2007 at 09:52:59PM -0400, Theodore Ts'o wrote:
-> Change the automatic local version to have the form -nnnnn-gSHA1SUMID,
-> where 'nnnnn' is the number of commits since the last tag (i.e.,
-> 2.6.21-rc7).  This makes it much more likely that the package names created
-> for the kernel will look "newer" to a package manager.
+On Thu, Jan 03, 2008 at 06:03:22PM +0100, Jesper Nilsson wrote:
+> On Wed, Jan 02, 2008 at 08:25:35PM +0100, Sam Ravnborg wrote:
+> > On Wed, Jan 02, 2008 at 02:27:59PM +0800, WANG Cong wrote:
+> > > 
+> > > Refine it as suggested by Andreas.
+> > > 
+> > > -------->
+> > > 
+> > > This patch removes TOPDIR from Cris Makefiles.
+> 
+> We had the TOPDIR replaced with $(srcdir) already, but this looks better.
+> 
+> Compiles OK for both EtraxFS and ARTPEC-3 cpus in our tree.
 
-Applied all three. Removed the dash in git describe to make in conformant
-to versions of git without it.
+Thanks - added a:
+Tested-by: Jesper Nilsson <jesper.nilsson@axis.com>
 
 	Sam
