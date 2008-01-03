@@ -1,55 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756898AbYACRLL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754537AbYACRMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756898AbYACRLL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 12:11:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbYACRK6
+	id S1754537AbYACRMz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 12:12:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbYACRMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 12:10:58 -0500
-Received: from outbound-mail-12.bluehost.com ([69.89.18.112]:32827 "HELO
-	outbound-mail-12.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752120AbYACRK5 (ORCPT
+	Thu, 3 Jan 2008 12:12:48 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:9545 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751408AbYACRMr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 12:10:57 -0500
-From: "Richard D" <richard@embunus.com>
-To: "'Bryan Wu'" <cooloney.lkml@gmail.com>,
-       "'David Brownell'" <david-b@pacbell.net>
-Cc: "'Robin Getz'" <rgetz@blackfin.uclinux.org>,
-       <linux-usb-devel@lists.sourceforge.net>, <gregkh@suse.de>,
-       <linux-kernel@vger.kernel.org>
-References: <200801020948.51310.rgetz@blackfin.uclinux.org>	 <200801021943.38716.david-b@pacbell.net>	 <386072610801022040ja4919bapa8a0712c1246c3f3@mail.gmail.com>	 <200801022336.10355.david-b@pacbell.net> <386072610801030005g7408f333m935c665c82d3412a@mail.gmail.com>
-In-Reply-To: <386072610801030005g7408f333m935c665c82d3412a@mail.gmail.com>
-Subject: RE: [linux-usb-devel] [PATCH] : Allow embedded developers USB options normally reserved for OTG
-Date: Thu, 3 Jan 2008 22:34:06 +0530
-Message-ID: <001c01c84e2a$ad3bceb0$07b36c10$@com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+	Thu, 3 Jan 2008 12:12:47 -0500
+Subject: Re: [patch 00/19] VM pageout scalability improvements
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Eric Whitney <eric.whitney@hp.com>
+In-Reply-To: <20080103120000.1768f220@cuia.boston.redhat.com>
+References: <20080102224144.885671949@redhat.com>
+	 <1199379128.5295.21.camel@localhost>
+	 <20080103120000.1768f220@cuia.boston.redhat.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Thu, 03 Jan 2008 12:13:32 -0500
+Message-Id: <1199380412.5295.29.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AchN32NaS20vL34PSAyfvuL4SVr6MwASyK/Q
-Content-Language: en-us
-X-Identified-User: {2260:host187.hostmonster.com:embunusc:embunus.com} {sentby:bopbeforesmtp 121.247.188.187 authed with embunus.com}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Does all USB Host controller hardware have the ability to disable PING?
+On Thu, 2008-01-03 at 12:00 -0500, Rik van Riel wrote:
+> On Thu, 03 Jan 2008 11:52:08 -0500
+> Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
+> 
+> > Also, I should point out that the full noreclaim series includes a
+> > couple of other patches NOT posted here by Rik:
+> > 
+> > 1) treat swap backed pages as nonreclaimable when no swap space is
+> > available.  This addresses a problem we've seen in real life, with
+> > vmscan spending a lot of time trying to reclaim anon/shmem/tmpfs/...
+> > pages only to find that there is no swap space--add_to_swap() fails.
+> > Maybe not a problem with Rik's new anon page handling.
+> 
+> If there is no swap space, my VM code will not bother scanning
+> any anon pages.  This has the same effect as moving the pages
+> to the no-reclaim list, with the extra benefit of being able to
+> resume scanning the anon lists once swap space is freed.
+> 
+> > 2) treat anon pages with "excessively long" anon_vma lists as
+> > nonreclaimable.   "excessively long" here is a sysctl tunable parameter.
+> > This also addresses problems we've seen with benchmarks and stress
+> > tests--all cpus spinning on some anon_vma lock.  In "real life", we've
+> > seen this behavior with file backed pages--spinning on the
+> > i_mmap_lock--running Oracle workloads with user counts in the few
+> > thousands.  Again, something we may not need with Rik's vmscan rework.
+> > If we did want to do this, we'd probably want to address file backed
+> > pages and add support to bring the pages back from the noreclaim list
+> > when the number of "mappers" drops below the threshold.  My current
+> > patch leaves anon pages as non-reclaimable until they're freed, or
+> > manually scanned via the mechanism introduced by patch 12.
+> 
+> I can see some issues with that patch.  Specifically, if the threshold
+> is set too high no pages will be affected, and if the threshold is too
+> low all pages will become non-reclaimable, leading to a false OOM kill.
+> 
+> Not only is it a very big hammer, it's also a rather awkward one...
 
-> > > 2. Do you remember the PING issue I reported in OMAP list? How do
-> you
-> > > think of that?
-> >
-> > Yes, something needs to be done.  EHCI might benefit from the same
-> > kind of patch, to cope with ill-behaved usb thumb drives.
-> >
-> >
-> > > > I have an idea: the USB_NAKLIMIT0 should be set to some value,
-> when we
-> > > > got NAK timeout interrupt, we can disable PING. When enumerating
-> normal
-> > > > USB stick, there is no NAK timeout, because PING is efficient for
-> > > > handshaking. While problem USB stick will generate NAK timeout
-> > > > interrupt, we disable PING for this kind of USB device
-> enumeration.
+Yes, but the problem, when it occurs, is very awkward.  The system just
+hangs for hours/days spinning on the reverse mapping locks--in both
+page_referenced() and try_to_unmap().  No pages get reclaimed and NO OOM
+kill occurs because we never get that far.  So, I'm not sure I'd call
+any OOM kills resulting from this patch as "false".  The memory is
+effectively nonreclaimable.   Now, I think that your anon pages SEQ
+patch will eliminate the contention in page_referenced[_anon](), but we
+could still hang in try_to_unmap().  And we have the issue with file
+back pages and the i_mmap_lock.  I'll see if this issue comes up in
+testings with the current series.  If not, cool!  If so, we just have
+more work to do.
 
+Later,
+Lee
+> 
 
