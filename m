@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbYACVet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754920AbYACVjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755486AbYACVet (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 16:34:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbYACVem
+	id S1754920AbYACVjj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 16:39:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751030AbYACVjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 16:34:42 -0500
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:7084 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752781AbYACVel (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 16:34:41 -0500
-X-IronPort-AV: E=Sophos;i="4.24,240,1196668800"; 
-   d="scan'208";a="17022621"
-To: David Dillow <dillowda@ornl.gov>
-Cc: torvalds@linux-foundation.org, general@lists.openfabrics.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] please pull infiniband.git for-linus
-X-Message-Flag: Warning: May contain useful information
-References: <adak5mqu5i8.fsf@cisco.com>
-	<1199385590.7561.11.camel@lap75545.ornl.gov>
-	<adafxxeu495.fsf@cisco.com>
-	<1199391187.7561.38.camel@lap75545.ornl.gov>
-	<1199391609.7561.46.camel@lap75545.ornl.gov>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 03 Jan 2008 13:34:24 -0800
-In-Reply-To: <1199391609.7561.46.camel@lap75545.ornl.gov> (David Dillow's message of "Thu, 03 Jan 2008 15:20:09 -0500")
-Message-ID: <ada3atetwyn.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Thu, 3 Jan 2008 16:39:32 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:49352 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752580AbYACVjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 16:39:31 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without HOTPLUG_CPU
+Date: Thu, 3 Jan 2008 22:41:28 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: pavel@suse.cz, linux-kernel@vger.kernel.org
+References: <20080103442.621670000@suse.de> <200801031822.02668.rjw@sisk.pl> <200801031842.49668.ak@suse.de>
+In-Reply-To: <200801031842.49668.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 03 Jan 2008 21:34:24.0876 (UTC) FILETIME=[6929DAC0:01C84E50]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801032241.29218.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > @@ -423,8 +423,8 @@ static void srp_remove_work(struct work_struct *work)
- >  	list_del(&target->list);
- >  	spin_unlock(&target->srp_host->target_lock);
- >  
- > -	srp_remove_host(target->scsi_host);
- >  	scsi_remove_host(target->scsi_host);
- > +	srp_remove_host(target->scsi_host);
+On Thursday, 3 of January 2008, Andi Kleen wrote:
+> 
+> > > +config PM_CPUINIT
+> > > +	bool
+> > > +	depends on PM
+> > 
+> > Please make it PM_SLEEP (PM is more than suspend/hibernation).
+> 
+> That was something that irritated me too while writing the patch, but the functions I 
+> am interested in with this  are referenced from arch/x86/power/cpu.c and that is
+> 
+> obj-$(CONFIG_PM)                += cpu.o
+> 
+> So you would need to fix that first. Would be fine for me, but is out of scope for
+> my patch.
 
-Thanks... I just confirmed (by crashing my system) that either this
-change or the fix to the srp transport class is needed too.  I think
-we have time before 2.6.24 final to get the right fix in, so I'll wait
-until tomorrow before asking Linus to pull this.
+OK, I'll fix that up later.
 
- - R.
-
+Thanks,
+Rafael
