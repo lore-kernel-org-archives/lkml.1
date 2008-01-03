@@ -1,113 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbYACXvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756300AbYACXwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755339AbYACXvZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 18:51:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbYACXvR
+	id S1756300AbYACXwh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 18:52:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbYACXw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 18:51:17 -0500
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:21236 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752450AbYACXvP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 18:51:15 -0500
-Subject: Re: Error returns not handled
-	correctly	by	sysfs.c:subsys_attr_store()
-From: Andrew Patterson <andrew.patterson@hp.com>
-To: Tejun Heo <teheo@suse.de>
-Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-hotplug@vger.kernel.org,
-       bjorn.helgaas@hp.com
-In-Reply-To: <1196716558.20124.179.camel@bluto.andrew>
-References: <1195683419.16019.225.camel@grinch>
-	 <20071126203116.0c93cdb9.akpm@linux-foundation.org>
-	 <20071127053321.GA975@kroah.com>  <474D1BD4.2050805@suse.de>
-	 <1196278300.5431.9.camel@grinch>  <474E10CF.7050009@suse.de>
-	 <1196716558.20124.179.camel@bluto.andrew>
-Content-Type: text/plain
-Date: Thu, 03 Jan 2008 16:51:13 -0700
-Message-Id: <1199404273.7025.21.camel@bluto.andrew>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Thu, 3 Jan 2008 18:52:29 -0500
+Received: from smtp3-g19.free.fr ([212.27.42.29]:45920 "EHLO smtp3-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751579AbYACXw2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 18:52:28 -0500
+From: Guillaume Chazarain <guichaz@yahoo.fr>
+Subject: [PATCH] proc: advertise new restrictions on /proc/*/maps &
+	/proc/*/smaps
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org
+Date: Fri, 04 Jan 2008 00:51:50 +0100
+Message-ID: <20080103235150.2870.31703.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-12-03 at 14:15 -0700, Andrew Patterson wrote:
-> On Thu, 2007-11-29 at 10:07 +0900, Tejun Heo wrote:
-> > Andrew Patterson wrote:
-> > > I tried with clean 2.6.24-rc3 and get the same bad behavior.  This is on
-> > > an ia64 box, so maybe that is an issue. I can try on an x86 box as well.
-> > > Oh, one other thing.  I tried a "uname -r" to make sure I had the
-> > > correct kernel booted and got:
-> > > 
-> > > # uname -r
-> > > 2.6.24-rc3
-> > > x
-> > > y
-> > > z
-> > > #
-> > 
-> > Yeah, please try it on another machine from clean tree.  sysfs code is
-> > definitely not endian dependent and is 64 bit clean.  Heck, all my test
-> > machines run 64 bit these days.  I would be surprised if it's something
-> > architecture dependent but please try on a different machine with
-> > different userland with kernel built from fresh source tree.
-> > 
-> > Thanks.
-> 
-> I tried this on a AMD system running an i386 kernel. I get the same bad
-> behavior.  This is from a 2.6.24-rc3 kernel downloaded from kernel.org.
-> I ran "make mrproper" followed by "make oldconfig" and accepted all the
-> defaults for the config.
-> 
-> There is one slight change with this experiment.  Other nodes are not
-> getting corrupted, i.e., uname -r is getting the correct value.
+Now that strangers are kept out of /proc/<pid>/maps, let's welcome them
+with -EPERM instead of a blank file.
 
-It looks like this is a shell issue.  After looking through the sysfs
-code, I realized that this problem seems to be driven from user-land.
-So I performed some experiments:
+Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
+---
 
-     1. Wrote a simple program that just used write(2) to write to the
-        sysfs entry. This works fine.
-     2. Used /bin/echo instead of the built-in echo command.  This too
-        works fine.
-     3. Tried several shells.  Zsh and Bash both fail.  Csh works fine.
+ fs/proc/base.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-I then ran strace on the following shell-script:
 
-#!/bin/bash
-
-echo x > allow_restart
-echo y > allow_restart
-echo z > allow_restart
-
-and got:
-
-# strace -e trace=write ~/tmp/tester.sh 
-write(1, "x\n", 2)                      = -1 EINVAL (Invalid argument)
-write(1, "x\n", 2)                      = -1 EINVAL (Invalid argument)
-write(2, "/home/andrew/tmp/tester.sh: line"..., 72/home/andrew/tmp/tester.sh: line 4: echo: write error: Invalid argument
-) = 72
-write(1, "x\ny\n", 4)                   = -1 EINVAL (Invalid argument)
-write(1, "x\ny\n", 4)                   = -1 EINVAL (Invalid argument)
-write(2, "/home/andrew/tmp/tester.sh: line"..., 72/home/andrew/tmp/tester.sh: line 5: echo: write error: Invalid argument
-) = 72
-write(1, "x\ny\nz\n", 6)                = -1 EINVAL (Invalid argument)
-write(1, "x\ny\nz\n", 6)                = -1 EINVAL (Invalid argument)
-write(2, "/home/andrew/tmp/tester.sh: line"..., 72/home/andrew/tmp/tester.sh: line 6: echo: write error: Invalid argument
-) = 72
-write(1, "x\ny\nz\n", 6x
-y
-z
-)                = 6
-Process 3800 detached
-
-As you can see, subsequent echo commands have their arguments appended
-to the previous command. So it seems that the shell is not resetting the
-buffer between failed echo commands.  
-
--- 
-Andrew Patterson
-Hewlett-Packard Company
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 7411bfb..c824b23 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -2207,7 +2207,7 @@ static const struct pid_entry tgid_base_stuff[] = {
+ 	INF("cmdline",    S_IRUGO, pid_cmdline),
+ 	INF("stat",       S_IRUGO, tgid_stat),
+ 	INF("statm",      S_IRUGO, pid_statm),
+-	REG("maps",       S_IRUGO, maps),
++	REG("maps",       S_IRUSR, maps),
+ #ifdef CONFIG_NUMA
+ 	REG("numa_maps",  S_IRUGO, numa_maps),
+ #endif
+@@ -2219,7 +2219,7 @@ static const struct pid_entry tgid_base_stuff[] = {
+ 	REG("mountstats", S_IRUSR, mountstats),
+ #ifdef CONFIG_MMU
+ 	REG("clear_refs", S_IWUSR, clear_refs),
+-	REG("smaps",      S_IRUGO, smaps),
++	REG("smaps",      S_IRUSR, smaps),
+ #endif
+ #ifdef CONFIG_SECURITY
+ 	DIR("attr",       S_IRUGO|S_IXUGO, attr_dir),
+@@ -2533,7 +2533,7 @@ static const struct pid_entry tid_base_stuff[] = {
+ 	INF("cmdline",   S_IRUGO, pid_cmdline),
+ 	INF("stat",      S_IRUGO, tid_stat),
+ 	INF("statm",     S_IRUGO, pid_statm),
+-	REG("maps",      S_IRUGO, maps),
++	REG("maps",      S_IRUSR, maps),
+ #ifdef CONFIG_NUMA
+ 	REG("numa_maps", S_IRUGO, numa_maps),
+ #endif
+@@ -2544,7 +2544,7 @@ static const struct pid_entry tid_base_stuff[] = {
+ 	REG("mounts",    S_IRUGO, mounts),
+ #ifdef CONFIG_MMU
+ 	REG("clear_refs", S_IWUSR, clear_refs),
+-	REG("smaps",     S_IRUGO, smaps),
++	REG("smaps",     S_IRUSR, smaps),
+ #endif
+ #ifdef CONFIG_SECURITY
+ 	DIR("attr",      S_IRUGO|S_IXUGO, attr_dir),
 
