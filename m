@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760317AbYACBIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759873AbYACBJK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760317AbYACBIu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 20:08:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755818AbYACBIl
+	id S1759873AbYACBJK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 20:09:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759663AbYACBIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 20:08:41 -0500
+	Wed, 2 Jan 2008 20:08:44 -0500
 Received: from an-out-0708.google.com ([209.85.132.242]:51267 "EHLO
 	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751580AbYACBIk (ORCPT
+	with ESMTP id S1758810AbYACBIn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 20:08:40 -0500
+	Wed, 2 Jan 2008 20:08:43 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=k6FLQB7H+Kt+pcz35WvTMsG63ewNaBPvzr0JcEKTkVhRieIn2FcyNaB/SjEO0UrVIMp4ItDW+PH5jYmDTVYXPrRqxjQx9OK4XhwWhU2z1Cv4Fsmo2xFDWoEDb+v+vzCh+iiWdDj3vcS0OCi3LIctRonhQGrgSyQ4JS3VPNL0xuQ=
-Subject: [PATCH] x86: fault_{32|64}.c unify do_page_fault
+        b=a2XsQA/d/4TFdNPgyZbSz1GbHg17l70/iTGo17wEVXEKYsUe1M2vr2VhVD63MvwDnSTUaFxEkE1ld87JpYh4YF5yQJaTtjkd1ytQb39PTD9OYsfH3LCE6E8JzHfjXbLsaj08rj3zyRyXpBzuXhf6wYqftjrOskun+7xNOhtY11g=
+Subject: [PATCH] x86: Use is_kprobe_fault to better match usage
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
+To: Ingo Molnar <mingo@elte.hu>, qbarnes <qbarnes@gmail.com>
 Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
        Thomas Gleixner <tglx@linutronix.de>
 Content-Type: text/plain
-Date: Wed, 02 Jan 2008 17:01:02 -0800
-Message-Id: <1199322063.6323.72.camel@brick>
+Date: Wed, 02 Jan 2008 17:05:23 -0800
+Message-Id: <1199322323.6323.76.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -29,173 +29,155 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Begin to unify do_page_fault(), easy code movement first.
+Currently the notify_page_fault helper is used to test it the page
+fault was caused by a kprobe causing an early return from do_page_fault.
+
+Change the name of the helper to is_kprobe_fault to match the usage and
+remove the preempt_disable/enable pair around kprobe_running() with an
+explicit test for preemption.  The idea for this comes from a patch
+by Quentin Barnes to kprobes.c
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
-Ingo, similar to the kprobes unification patches I did, it gets a bit
-uglier before it gets better ;-)
+Ingo, this may not be functionally equivalent, feel free to yank it out
+if there is any trouble, but from what I've seen it should be OK.
 
- arch/x86/mm/fault_32.c |   38 +++++++++++++++++++++++++++++---------
- arch/x86/mm/fault_64.c |   23 ++++++++++++++++++-----
- 2 files changed, 47 insertions(+), 14 deletions(-)
+Did you ever find a good kprobes test?
+
+ arch/x86/mm/fault_32.c |   30 ++++++++++++++----------------
+ arch/x86/mm/fault_64.c |   30 ++++++++++++++----------------
+ 2 files changed, 28 insertions(+), 32 deletions(-)
 
 diff --git a/arch/x86/mm/fault_32.c b/arch/x86/mm/fault_32.c
-index b1893eb..051a4ec 100644
+index 051a4ec..5c48cc2 100644
 --- a/arch/x86/mm/fault_32.c
 +++ b/arch/x86/mm/fault_32.c
-@@ -375,19 +375,26 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
- 	struct mm_struct *mm;
- 	struct vm_area_struct *vma;
- 	unsigned long address;
--	int write, si_code;
--	int fault;
-+	int write, fault;
-+#ifdef CONFIG_x86_64
-+	unsigned long flags;
-+#endif
-+	int si_code;
+@@ -12,6 +12,7 @@
+ #include <linux/mman.h>
+ #include <linux/mm.h>
+ #include <linux/smp.h>
++#include <linux/hardirq.h>
+ #include <linux/interrupt.h>
+ #include <linux/init.h>
+ #include <linux/tty.h>
+@@ -42,23 +43,20 @@
+ #define PF_RSVD	(1<<3)
+ #define PF_INSTR	(1<<4)
  
- 	/*
- 	 * We can fault from pretty much anywhere, with unknown IRQ state.
- 	 */
- 	trace_hardirqs_fixup();
- 
--	/* get the address */
--	address = read_cr2();
+-static inline int notify_page_fault(struct pt_regs *regs)
++static inline int is_kprobe_fault(struct pt_regs *regs)
+ {
+-#ifdef CONFIG_KPROBES
+ 	int ret = 0;
 -
- 	tsk = current;
-+	mm = tsk->mm;
- 
-+#ifdef CONFIG_x86_64
-+	prefetchw(&mm->mmap_sem);
-+#endif
-+
-+	/* get the address */
-+	address = read_cr2();
- 	si_code = SEGV_MAPERR;
- 
- 	/*
-@@ -403,9 +410,24 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
- 	 * (error_code & 4) == 0, and that the fault was not a
- 	 * protection error (error_code & 9) == 0.
- 	 */
-+#ifdef CONFIG_X86_32
- 	if (unlikely(address >= TASK_SIZE)) {
--		if (!(error_code & 0x0000000d) && vmalloc_fault(address) >= 0)
-+		if (!(error_code & (PF_RSVD|PF_USER|PF_PROT)) &&
-+		    vmalloc_fault(address) >= 0)
- 			return;
-+#else
-+	if (unlikely(address >= TASK_SIZE64)) {
-+		/*
-+		 * Don't check for the module range here: its PML4
-+		 * is always initialized because it's shared with the main
-+		 * kernel text. Only vmalloc may need PML4 syncups.
-+		 */
-+		if (!(error_code & (PF_RSVD|PF_USER|PF_PROT)) &&
-+		      ((address >= VMALLOC_START && address < VMALLOC_END))) {
-+			if (vmalloc_fault(address) >= 0)
-+				return;
-+		}
-+#endif
- 		if (notify_page_fault(regs))
- 			return;
- 		/*
-@@ -423,8 +445,6 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
- 	if (regs->flags & (X86_EFLAGS_IF|VM_MASK))
- 		local_irq_enable();
- 
--	mm = tsk->mm;
+-	/* kprobe_running() needs smp_processor_id() */
+-	if (!user_mode_vm(regs)) {
+-		preempt_disable();
+-		if (kprobe_running() && kprobe_fault_handler(regs, 14))
+-			ret = 1;
+-		preempt_enable();
+-	}
 -
- 	/*
- 	 * If we're in an interrupt, have no user context or are running in an
- 	 * atomic region then we must not take the fault.
-@@ -495,7 +515,7 @@ good_area:
- 			goto bad_area;
- 	}
+-	return ret;
+-#else
+-	return 0;
++#ifdef CONFIG_KPROBES
++	/*
++	 * If it is a kprobe fault we can not be premptible so return before
++	 * calling kprobe_running() as it will assert on smp_processor_id if
++	 * preemption is enabled.
++	 */
++	if (!user_mode_vm(regs) && !preemptible() && kprobe_running() &&
++	    kprobe_fault_handler(regs, 14))
++		ret = 1;
+ #endif
++	return ret;
+ }
  
-- survive:
-+survive:
- 	/*
- 	 * If for any reason at all we couldn't handle the fault,
- 	 * make sure we exit gracefully rather than endlessly redo
-diff --git a/arch/x86/mm/fault_64.c b/arch/x86/mm/fault_64.c
-index 357a3e0..97b92b6 100644
---- a/arch/x86/mm/fault_64.c
-+++ b/arch/x86/mm/fault_64.c
-@@ -426,7 +426,9 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
- 	struct vm_area_struct *vma;
- 	unsigned long address;
- 	int write, fault;
-+#ifdef CONFIG_x86_64
- 	unsigned long flags;
-+#endif
- 	int si_code;
- 
- 	/*
-@@ -436,14 +438,15 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
- 
- 	tsk = current;
- 	mm = tsk->mm;
-+
-+#ifdef CONFIG_x86_64
- 	prefetchw(&mm->mmap_sem);
-+#endif
- 
- 	/* get the address */
- 	address = read_cr2();
--
- 	si_code = SEGV_MAPERR;
- 
--
- 	/*
- 	 * We fault-in kernel-space virtual memory on-demand. The
- 	 * 'reference' page table is init_mm.pgd.
-@@ -457,6 +460,12 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
- 	 * (error_code & 4) == 0, and that the fault was not a
- 	 * protection error (error_code & 9) == 0.
- 	 */
-+#ifdef CONFIG_X86_32
-+	if (unlikely(address >= TASK_SIZE)) {
-+		if (!(error_code & (PF_RSVD|PF_USER|PF_PROT)) &&
-+		    vmalloc_fault(address) >= 0)
-+			return;
-+#else
- 	if (unlikely(address >= TASK_SIZE64)) {
- 		/*
- 		 * Don't check for the module range here: its PML4
-@@ -468,6 +477,7 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
- 			if (vmalloc_fault(address) >= 0)
+ #ifdef CONFIG_X86_32
+@@ -428,7 +426,7 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
  				return;
  		}
-+#endif
- 		if (notify_page_fault(regs))
+ #endif
+-		if (notify_page_fault(regs))
++		if (is_kprobe_fault(regs))
  			return;
  		/*
-@@ -500,7 +510,7 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
- 	if (user_mode_vm(regs))
- 		error_code |= PF_USER;
+ 		 * Don't take the mm semaphore here. If we fixup a prefetch
+@@ -437,7 +435,7 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
+ 		goto bad_area_nosemaphore;
+ 	}
  
-- again:
-+again:
- 	/* When running in the kernel we expect faults to occur only to
- 	 * addresses in user space.  All other faults represent errors in the
- 	 * kernel and should generate an OOPS.  Unfortunately, in the case of an
-@@ -531,8 +541,11 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
- 	if (!(vma->vm_flags & VM_GROWSDOWN))
- 		goto bad_area;
- 	if (error_code & PF_USER) {
--		/* Allow userspace just enough access below the stack pointer
--		 * to let the 'enter' instruction work.
-+		/*
-+		 * Accessing the stack below %sp is always a bug.
-+		 * The large cushion allows instructions like enter
-+		 * and pusha to work.  ("enter $65535,$31" pushes
-+		 * 32 pointers and then decrements %sp by 65535.)
- 		 */
- 		if (address + 65536 + 32 * sizeof(unsigned long) < regs->sp)
- 			goto bad_area;
+-	if (notify_page_fault(regs))
++	if (is_kprobe_fault(regs))
+ 		return;
+ 
+ 	/* It's safe to allow irq's after cr2 has been saved and the vmalloc
+diff --git a/arch/x86/mm/fault_64.c b/arch/x86/mm/fault_64.c
+index 97b92b6..09008e5 100644
+--- a/arch/x86/mm/fault_64.c
++++ b/arch/x86/mm/fault_64.c
+@@ -13,6 +13,7 @@
+ #include <linux/mman.h>
+ #include <linux/mm.h>
+ #include <linux/smp.h>
++#include <linux/hardirq.h>
+ #include <linux/interrupt.h>
+ #include <linux/init.h>
+ #include <linux/tty.h>
+@@ -45,23 +46,20 @@
+ #define PF_RSVD	(1<<3)
+ #define PF_INSTR	(1<<4)
+ 
+-static inline int notify_page_fault(struct pt_regs *regs)
++static inline int is_kprobe_fault(struct pt_regs *regs)
+ {
+-#ifdef CONFIG_KPROBES
+ 	int ret = 0;
+-
+-	/* kprobe_running() needs smp_processor_id() */
+-	if (!user_mode(regs)) {
+-		preempt_disable();
+-		if (kprobe_running() && kprobe_fault_handler(regs, 14))
+-			ret = 1;
+-		preempt_enable();
+-	}
+-
+-	return ret;
+-#else
+-	return 0;
++#ifdef CONFIG_KPROBES
++	/*
++	 * If it is a kprobe fault we can not be premptible so return before
++	 * calling kprobe_running() as it will assert on smp_processor_id if
++	 * preemption is enabled.
++	 */
++	if (!user_mode_vm(regs) && !preemptible() && kprobe_running() &&
++	    kprobe_fault_handler(regs, 14))
++		ret = 1;
+ #endif
++	return ret;
+ }
+ 
+ #ifdef CONFIG_X86_32
+@@ -478,7 +476,7 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
+ 				return;
+ 		}
+ #endif
+-		if (notify_page_fault(regs))
++		if (is_kprobe_fault(regs))
+ 			return;
+ 		/*
+ 		 * Don't take the mm semaphore here. If we fixup a prefetch
+@@ -487,7 +485,7 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
+ 		goto bad_area_nosemaphore;
+ 	}
+ 
+-	if (notify_page_fault(regs))
++	if (is_kprobe_fault(regs))
+ 		return;
+ 
+ 	if (likely(regs->flags & X86_EFLAGS_IF))
 -- 
 1.5.4.rc2.1097.gb6e0d
 
