@@ -1,68 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbYACW2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755757AbYACW3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755180AbYACW2S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 17:28:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbYACW2J
+	id S1755757AbYACW3S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 17:29:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbYACW3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 17:28:09 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:51927 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752036AbYACW2I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 17:28:08 -0500
-Date: Thu, 3 Jan 2008 16:26:13 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Cc: sam@ravnborg.org, paulus@samba.org, linux-kernel@vger.kernel.org,
-       wd@denx.de
-Subject: Re: [PATCH 1/3] Merge mkubootimg tool for building U-Boot images
-Message-ID: <20080103162613.09674907@zod.rchland.ibm.com>
-In-Reply-To: <8bd0f97a0801031415g66e6b6f1o8a64dddc98c29399@mail.gmail.com>
-References: <20080103160104.171f9aaa@zod.rchland.ibm.com>
-	<20080103160244.6a28519b@zod.rchland.ibm.com>
-	<8bd0f97a0801031415g66e6b6f1o8a64dddc98c29399@mail.gmail.com>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 3 Jan 2008 17:29:09 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:49537 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752793AbYACW3H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 17:29:07 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: nigel@nigel.suspend2.net
+Subject: Re: freeze vs freezer
+Date: Thu, 3 Jan 2008 23:31:05 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@ucw.cz>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, David Chinner <dgc@sgi.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, xfs-masters@oss.sgi.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <4744FD87.7010301@goop.org> <200801022304.19279.rjw@sisk.pl> <477CA8A8.2090201@nigel.suspend2.net>
+In-Reply-To: <477CA8A8.2090201@nigel.suspend2.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801032331.06703.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Jan 2008 17:15:48 -0500
-"Mike Frysinger" <vapier.adi@gmail.com> wrote:
-
-> On Jan 3, 2008 5:02 PM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
-> > Several platforms require the mkimage tool to generate a uImage file that is
-> > used with U-Boot.  This brings the mkimage tool in-kernel to enable building
-> > those platforms without having mkimage externally provided.  The tool is named
-> > mkubootimg for better clarity.
-> >
-> > This is currently based off of the version found in U-Boot 1.3.1.
-> >
-> > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> >
-> > ---
-> >  scripts/Makefile             |    1
-> >  scripts/mkubootimg/Makefile  |    6
-> >  scripts/mkubootimg/crc32.c   |  199 +++++++++++
-> >  scripts/mkubootimg/mkimage.c |  728 +++++++++++++++++++++++++++++++++++++++++++
-> >  scripts/mkubootimg/sha1.c    |  413 ++++++++++++++++++++++++
-> >  scripts/mkubootimg/sha1.h    |  115 ++++++
-> >  scripts/mkubootimg/uimage.h  |  161 +++++++++
-> >  7 files changed, 1623 insertions(+)
+On Thursday, 3 of January 2008, Nigel Cunningham wrote:
+> Hi.
 > 
-> i'm fairly certain sha1 is not needed.  the u-boot makefile has a bug
-> in the 1.3.1 release where mkimage depends on sha1.o but doesnt
-> actually use sha1 functions.  i posted a patch to u-boot mailing list
-> to get this dropped.  regardless, no need for the kernel to import it.
+> Rafael J. Wysocki wrote:
+> > On Wednesday, 2 of January 2008, Nigel Cunningham wrote:
+> >> Pavel Machek wrote:
+> >>>>>>>> So how do you handle threads that are blocked on I/O or a lock  
+> >>>>>>>> during the system freeze process, then?
+> >>>>>>> We wait until they can continue.
+> >>>>>> So if I have a process blocked on an unavilable NFS mount, I can't
+> >>>>>> suspend?
+> >>>>> That's correct, you can't.
+> >>>>>
+> >>>>> [And I know what you're going to say. ;-)]
+> >>>> Why exactly does suspend/hibernation depend on "TASK_INTERRUPTIBLE"  
+> >>>> instead of a zero preempt_count()?  Really what we should do is just  
+> >>>> iterate over all of the actual physical devices and tell each one  
+> >>>> "Block new IO requests preemptably, finish pending DMA, put the  
+> >>>> hardware in low-power mode, and prepare for suspend/hibernate".  As  
+> >>>> long as each driver knows how to do those simple things we can have  
+> >>>> an entirely consistent kernel image for both suspend and for  
+> >>>> hibernation.
+> >>> "each driver" means this is a lot of work. But yes, that is probably
+> >>> way to go, and patch would be welcome.
+> >> Yes, that does work. It's what I've done in my (preliminary) support for
+> >> fuse.
+> > 
+> > Hmm, can you please elaborate a bit?
+> 
+> Sorry. I wasn't very unambiguous, was I? And I'm not sure now whether
+> you're meaning "How does fuse support relate to freezing block devices?"
+> or "What's this about fuse support?". Let me therefore seek to answer
+> both questions:
+> 
+> Higher level, I know (filesystems rather than block devices), but I was
+> meaning the general concept of blocking new requests and completing
+> existing ones worked fine for the supposedly impossible fuse support.
+> 
+> Re fuse support, let me start by saying "I know this doesn't handle all
+> situations, but I think it's a good enough proof-of-concept implementation".
+> 
+> I added some simple hooks to the code for submitting new work to fuse
+> threads.
+> 
+> #define FUSE_MIGHT_FREEZE(superblock, desc) \
+> do { \
+>        int printed = 0; \
+>        while(superblock->s_frozen != SB_UNFROZEN) { \
+>                if (!printed) { \
+>                        printk("%d frozen in " desc ".\n", current->pid); \
+>                        printed = 1; \
+>                } \
+>                try_to_freeze(); \
+>                yield(); \
+>        } \
+> } while (0)
+> 
+> On top of this, I made a (too simple at the moment) freeze_filesystems
+> function which iterates through &super_blocks in reverse order, freezing
+> fuse filesystems or ordinary ones. I say 'too simple' because it doesn't
+> currently allow for the possibility of someone mounting (say) ext3 on
+> fuse, but that would just be an extension of what's already done.
+> 
+> The end result is:
+> 
+> int freeze_processes(void)
+> {
+>         int error;
+> 
+>         printk(KERN_INFO "Stopping fuse filesystems.\n");
+>         freeze_filesystems(FS_FREEZER_FUSE);
+>         freezer_state = FREEZER_FILESYSTEMS_FROZEN;
+>         printk(KERN_INFO "Freezing user space processes ... ");
+>         error = try_to_freeze_tasks(FREEZER_USER_SPACE);
+>         if (error)
+>                 goto Exit;
+>         printk(KERN_INFO "done.\n");
+> 
+>         sys_sync();
+>         printk(KERN_INFO "Stopping normal filesystems.\n");
+>         freeze_filesystems(FS_FREEZER_NORMAL);
+>         freezer_state = FREEZER_USERSPACE_FROZEN;
+>         printk(KERN_INFO "Freezing remaining freezable tasks ... ");
+>         error = try_to_freeze_tasks(FREEZER_KERNEL_THREADS);
+>         if (error)
+>                 goto Exit;
+>         printk(KERN_INFO "done.");
+>         freezer_state = FREEZER_FULLY_ON;
+>  Exit:
+>         BUG_ON(in_atomic());
+>         printk("\n");
+>         return error;
+> }
+> 
+> Sorry if that's more info than you wanted.
 
-No need to yet anyway.  There are discussions on-going to make a new
-image format that can do sha1 sums instead of crc32.  Either way is
-fine with me, I just opted to include it now to keep it the same as
-U-Boot and avoid having to include it in the future.
+No, that's fine, thanks.
 
-If you want an updated patch with the sha1 code removed, I can do
-that.  Sam, Wolfgang?
-
-josh
+Greetings,
+Rafael
