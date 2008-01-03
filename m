@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757177AbYACQWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756266AbYACQYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757177AbYACQWs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 11:22:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbYACQWj
+	id S1756266AbYACQYd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 11:24:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbYACQYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 11:22:39 -0500
-Received: from pfx2.jmh.fr ([194.153.89.55]:50444 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752536AbYACQWj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 11:22:39 -0500
-Date: Thu, 3 Jan 2008 17:22:35 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Andi Kleen <ak@suse.de>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH x86] [6/16] Add a new arch_early_alloc() interface for
- x86-64
-Message-Id: <20080103172235.58c069c9.dada1@cosmosbay.com>
-In-Reply-To: <20080103154220.0CCD814DDB@wotan.suse.de>
-References: <20080103442.621670000@suse.de>
-	<20080103154220.0CCD814DDB@wotan.suse.de>
-X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 3 Jan 2008 11:24:25 -0500
+Received: from mga06.intel.com ([134.134.136.21]:4280 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751599AbYACQYY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 11:24:24 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,240,1196668800"; 
+   d="scan'208";a="248441380"
+Message-ID: <477D0BC6.2060204@linux.intel.com>
+Date: Thu, 03 Jan 2008 17:22:30 +0100
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 1/3] move WARN_ON() out of line
+References: <477C32DA.5060905@linux.intel.com> <20080103092502.GA16096@elte.hu>
+In-Reply-To: <20080103092502.GA16096@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu,  3 Jan 2008 16:42:20 +0100 (CET)
-Andi Kleen <ak@suse.de> wrote:
+Ingo Molnar wrote:
+> * Arjan van de Ven <arjan@linux.intel.com> wrote:
+> 
+>> +#define WARN_ON(condition) do_warn_on((unsigned long)(condition), __FILE__, \
+>> +					 __LINE__, __FUNCTION__)
+> 
+> hm. This passes in 4 arguments to do_warn_on().
+> 
+> i think we could get away with no arguments (!), by using section 
+> tricks. Firstly, we can get rid of __FUNCTION__ and replace it with a 
+> ksyms lookup - that is fine enough.
 
-> 
-> This allows to allocate memory really early before bootmem is setup.
-> 
-> And a symbol that can be tested by the preprocessor.
-> 
-> pgtable.h is probably not the best include for it, but also not the worst.
-> 
-> Cc: peterz@infradead.org
-> 
-> Signed-off-by: Andi Kleen <ak@suse.de>
-> 
-> ---
->  arch/x86/kernel/e820_64.c    |   14 ++++++++++++++
->  include/asm-x86/pgtable_64.h |    3 +++
->  2 files changed, 17 insertions(+)
-> 
-> Index: linux/arch/x86/kernel/e820_64.c
-> ===================================================================
-> --- linux.orig/arch/x86/kernel/e820_64.c
-> +++ linux/arch/x86/kernel/e820_64.c
-> @@ -819,3 +819,17 @@ int __init arch_get_ram_range(int slot, 
->  		max_pfn << PAGE_SHIFT) - *addr;
->  	return i + 1;
->  }
-> +
-> +#define EARLY_ALLOC_START (32<<20)
-> +__init void *arch_early_alloc(unsigned long size)
-> +{
-> +	unsigned long p = find_e820_area(EARLY_ALLOC_START, -1UL, size);
-> +	if (p == -1ULL) {
-> +		/* Risk filling the DMA zone */
-> +		p = find_e820_area(EARLY_ALLOC_START, -1UL, size);
+I can see that; I'll play with that
 
-Hum... Are you sure of this EARLY_ALLOC_START here ?
+> Secondly, we could put __FILE__ and 
+> __LINE__ into a text section and key it up to the return address from 
+> do_warn_on().
 
-> +		if (p == -1ULL)
-> +			panic("arch_early_alloc %lu failed", size);
-> +	}
-> +	reserve_early(p, p + size);
-> +	return __va(p);
-> +}
+the asm generated for this is 2 movl instructions for immediate to register.
+Doing fancy tricks ... it may well end up bigger and gain nothing.
+> 
+> the condition code should not be passed in at all i think - it creates 
+> extra function calls to do_warn_on() all the time.
+
+function calls are *CHEAP*.
+
+passing the condition is actually near free (remember we have regparm!), it's likely to be
+in a register already anyway.
+
+Doing the test inline makes stuff bigger, and also spreads the branch prediction pain around
+rather than having one nicely predictable place...
+
 
