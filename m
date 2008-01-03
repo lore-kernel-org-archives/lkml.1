@@ -1,64 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756266AbYACQYd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754240AbYACQ2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756266AbYACQYd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 11:24:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbYACQYZ
+	id S1754240AbYACQ2c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 11:28:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbYACQ2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 11:24:25 -0500
-Received: from mga06.intel.com ([134.134.136.21]:4280 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751599AbYACQYY (ORCPT
+	Thu, 3 Jan 2008 11:28:25 -0500
+Received: from smtp02.citrix.com ([66.165.176.63]:49476 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751042AbYACQ2Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 11:24:24 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,240,1196668800"; 
-   d="scan'208";a="248441380"
-Message-ID: <477D0BC6.2060204@linux.intel.com>
-Date: Thu, 03 Jan 2008 17:22:30 +0100
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5 (Windows/20051201)
+	Thu, 3 Jan 2008 11:28:24 -0500
+X-Greylist: delayed 581 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Jan 2008 11:28:24 EST
+X-SBRS: None
+X-MesageID: 36239785
+X-Ironport-Server: ftlpip02.citrite.net
+X-Remote-IP: 216.142.71.134
+X-Policy: $Relay
+X-IronPort-AV: E=Sophos;i="4.24,240,1196658000"; 
+   d="scan'208";a="36239785"
+Date: Thu, 3 Jan 2008 16:17:54 +0000
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, torvalds@osdl.org
+Subject: [PATCH][DOC] Console is utf-8 by default
+Message-ID: <20080103161754.GD4305@implementation.uk.xensource.com>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+	torvalds@osdl.org
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 1/3] move WARN_ON() out of line
-References: <477C32DA.5060905@linux.intel.com> <20080103092502.GA16096@elte.hu>
-In-Reply-To: <20080103092502.GA16096@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Arjan van de Ven <arjan@linux.intel.com> wrote:
-> 
->> +#define WARN_ON(condition) do_warn_on((unsigned long)(condition), __FILE__, \
->> +					 __LINE__, __FUNCTION__)
-> 
-> hm. This passes in 4 arguments to do_warn_on().
-> 
-> i think we could get away with no arguments (!), by using section 
-> tricks. Firstly, we can get rid of __FUNCTION__ and replace it with a 
-> ksyms lookup - that is fine enough.
+The console is now by default in UTF-8 mode.
+Also fix the needed "vt." prefix.
 
-I can see that; I'll play with that
+Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
 
-> Secondly, we could put __FILE__ and 
-> __LINE__ into a text section and key it up to the return address from 
-> do_warn_on().
+---
+This documentation fix really deserves going into 2.6.24, else we'll
+probably get a lot of bug reports like
+http://bugzilla.kernel.org/show_bug.cgi?id=9319
+(not that we won't have any...). Maybe that should even be announced in
+a more highlighted place?
 
-the asm generated for this is 2 movl instructions for immediate to register.
-Doing fancy tricks ... it may well end up bigger and gain nothing.
-> 
-> the condition code should not be passed in at all i think - it creates 
-> extra function calls to do_warn_on() all the time.
-
-function calls are *CHEAP*.
-
-passing the condition is actually near free (remember we have regparm!), it's likely to be
-in a register already anyway.
-
-Doing the test inline makes stuff bigger, and also spreads the branch prediction pain around
-rather than having one nicely predictable place...
-
-
+--- Documentation/kernel-parameters.txt	2007-12-23 22:56:31.000000000 +0100
++++ Documentation/kernel-parameters.txt	2007-12-26 00:01:44.000000000 +0100
+@@ -527,29 +527,30 @@
+ 			Format: <area>[,<node>]
+ 			See also Documentation/networking/decnet.txt.
+ 
+-	default_blu=	[VT]
++	vt.default_blu=	[VT]
+ 			Format: <blue0>,<blue1>,<blue2>,...,<blue15>
+ 			Change the default blue palette of the console.
+ 			This is a 16-member array composed of values
+ 			ranging from 0-255.
+ 
+-	default_grn=	[VT]
++	vt.default_grn=	[VT]
+ 			Format: <green0>,<green1>,<green2>,...,<green15>
+ 			Change the default green palette of the console.
+ 			This is a 16-member array composed of values
+ 			ranging from 0-255.
+ 
+-	default_red=	[VT]
++	vt.default_red=	[VT]
+ 			Format: <red0>,<red1>,<red2>,...,<red15>
+ 			Change the default red palette of the console.
+ 			This is a 16-member array composed of values
+ 			ranging from 0-255.
+ 
+-	default_utf8=   [VT]
++	vt.default_utf8=
++			[VT]
+ 			Format=<0|1>
+ 			Set system-wide default UTF-8 mode for all tty's.
+-			Default is 0 and by setting to 1, it enables UTF-8
+-			mode for all newly opened or allocated terminals.
++			Default is 1, i.e. UTF-8 mode is enabled for all
++			newly opened terminals.
+ 
+ 	dhash_entries=	[KNL]
+ 			Set number of hash buckets for dentry cache.
