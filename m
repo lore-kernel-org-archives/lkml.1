@@ -1,79 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758475AbYACLK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbYACLPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758475AbYACLK5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 06:10:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbYACLKu
+	id S1756042AbYACLPH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 06:15:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbYACLO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 06:10:50 -0500
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:30152 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751404AbYACLKt (ORCPT
+	Thu, 3 Jan 2008 06:14:57 -0500
+Received: from smtp-out001.kontent.com ([81.88.40.215]:54181 "EHLO
+	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750790AbYACLO4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 06:10:49 -0500
-Date: Thu, 3 Jan 2008 11:10:58 +0000
-From: Andy Whitcroft <andyw@uk.ibm.com>
-To: Christer Weinigel <christer@weinigel.se>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] teach checkpatch.pl about list_for_each
-Message-ID: <20080103111058.GE10861@shadowen.org>
-References: <20071202130335.690a8daf@cw05lap>
+	Thu, 3 Jan 2008 06:14:56 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: nigel@nigel.suspend2.net
+Subject: Re: freeze vs freezer
+Date: Thu, 3 Jan 2008 12:15:05 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, David Chinner <dgc@sgi.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, xfs-masters@oss.sgi.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <4744FD87.7010301@goop.org> <200801031047.58559.oliver@neukum.org> <477CB075.5080507@nigel.suspend2.net>
+In-Reply-To: <477CB075.5080507@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071202130335.690a8daf@cw05lap>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200801031215.07145.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 02, 2007 at 01:03:35PM +0100, Christer Weinigel wrote:
-> Hi Andy,
+Am Donnerstag, 3. Januar 2008 10:52:53 schrieb Nigel Cunningham:
+> Hi.
 > 
-> you seem to be the last person messing around with checkpatch.pl so I'm
-> addressing this to you. :-)
+> Oliver Neukum wrote:
+> > Am Donnerstag 03 Januar 2008 schrieb Nigel Cunningham:
+> >> On top of this, I made a (too simple at the moment) freeze_filesystems
+> >> function which iterates through &super_blocks in reverse order, freezing
+> >> fuse filesystems or ordinary ones. I say 'too simple' because it doesn't
+> >> currently allow for the possibility of someone mounting (say) ext3 on
+> >> fuse, but that would just be an extension of what's already done.
+> > 
+> > How do you deal with fuse server tasks using other fuse filesystems?
 > 
-> checkpatch complains about the following:
-> 
-> WARNING: no space between function name and open parenthesis '('
-> #520: FILE: drivers/spi/spi_s3c24xx_dma.c:478:
-> +       list_for_each_entry (transfer, &message->transfers, transfer_list) {
-> 
-> which I think is a bit bogus since it actually is a for statement in
-> disguise.  The following patch adds list_for_each to the list of things
-> that look like functions that it shouldn't complain about.
+> Since they're frozen in reverse order, the dependant one would be frozen
+> first.
 
-We have had some stabs at changing this, but no consensus was reached on
-whether it was a "for" or a "function".  My memory is of there being
-slightly more "without a space" tenders than the other and so it has not
-been changed.  This thread also seems so far to have not really
-generated a concensus.  So I would tend to leave things as they are.  
+Say I do:
 
-A third option might be to accept either on *for_each* constructs.
-That might tend to lead to divergance.  Difficult.  However, also see my
-later comments on "style guide".
+a) mount fuse on /tmp/first
+b) mount fuse on /tmp/second
 
-> 
-> By the way, what is the consensus on lines over 80 characters?
-> checkpatch complains about the following:
-> 
-> WARNING: line over 80 characters
-> #762: FILE: drivers/spi/spi_s3c24xx_dma.c:720:
-> +       printk(KERN_INFO "S3C24xx SPI DMA driver (c) 2007 Nordnav Technologies AB\n");
-> 
-> I can of course break this into:
-> 
->         printk(KERN_INFO "S3C24xx SPI DMA driver (c) 2007 Nordnav "
-> 	       "Technologies AB\n");
-> 
-> but in my opinion that becomes more even unreadable.  Would it be
-> possible to add a special case so that checkpatch ignores long strings
-> that go beyond 80 characters?  Do you think it is a good idea?
+Then the server task for (a) does "ls /tmp/second". So it will be frozen,
+right? How do you then freeze (a)? And keep in mind that the server task
+may have forked.
 
-I think you are miss-understanding the point of checkpatch here.  It has
-flagged this line as suspect.  You are happy it is better as it is.  You
-should therefore leave it as it is as you "are happy to justify that
-checkpatch failure".  Checkpatch is a style guide, if it complains you
-should think about its complaint and act as you see fit in response.
-Sometimes you will ignore it, that is fine.
-
--apw
+	Regards
+		Oliver
