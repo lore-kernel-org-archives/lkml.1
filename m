@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbYACKpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756385AbYACKsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756576AbYACKpx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 05:45:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751674AbYACKpp
+	id S1756385AbYACKsT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 05:48:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYACKsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 05:45:45 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45185 "EHLO mx2.mail.elte.hu"
+	Thu, 3 Jan 2008 05:48:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45835 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751495AbYACKpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 05:45:44 -0500
-Date: Thu, 3 Jan 2008 11:45:26 +0100
+	id S1751450AbYACKsG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 05:48:06 -0500
+Date: Thu, 3 Jan 2008 11:47:54 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Andi Kleen <ak@suse.de>
-Cc: andreas.herrmann3@amd.com, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] [11/20] x86: Use the correct cpuid method to detect
-	MWAIT support for C states
-Message-ID: <20080103104526.GC29194@elte.hu>
-References: <20080103149.088038000@suse.de> <20080103005006.BE79A14D40@wotan.suse.de>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] [5/20] x86: Introduce nsec_barrier()
+Message-ID: <20080103104754.GD29194@elte.hu>
+References: <20080103149.088038000@suse.de> <20080103005000.65D0C14D40@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080103005006.BE79A14D40@wotan.suse.de>
+In-Reply-To: <20080103005000.65D0C14D40@wotan.suse.de>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,21 +37,20 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Andi Kleen <ak@suse.de> wrote:
 
-> +static int mwait_usable(const struct cpuinfo_x86 *c)
-> +{
-> +	if (force_mwait)
-> +		return 1;
-> +	/* Any C1 states supported? */
-> +	return c->cpuid_level >= 5 && ((cpuid_edx(5) >> 4) & 0xf) > 0;
-> +}
-> +
->  void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
->  {
-> -	if (cpu_has(c, X86_FEATURE_MWAIT)) {
-> +	if (cpu_has(c, X86_FEATURE_MWAIT) && mwait_usable(c)) {
->  		printk("monitor/mwait feature present.\n");
+> nsec_barrier() is a new barrier primitive that stops RDTSC speculation 
+> to avoid races with timer interrupts on other CPUs.
+> 
+> Add it to all architectures. Except for x86 it is a nop right now. I 
+> only tested x86, but it's a very simple change.
+> 
+> On x86 it expands either to LFENCE (for Intel CPUs) or MFENCE (for AMD 
+> CPUs) which stops RDTSC on all currently known microarchitectures that 
+> implement SSE. On CPUs without SSE there is generally no RDTSC 
+> speculation.
 
-hm, why not clear FEATURE_MWAIT if it's "not usable"? That's the 
-standard approach we do for CPU features that do not work.
+i've picked up your rdtsc patches into x86.git but have simplified it: 
+there's no nsec_barrier() anymore - rdtsc() is always synchronous. 
+MFENCE/LFENCE is fast enough. Open-coding such barriers almost always 
+leads to needless trouble. Please check the next x86.git tree.
 
 	Ingo
