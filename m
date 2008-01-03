@@ -1,126 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757419AbYACMGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756369AbYACMLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757419AbYACMGW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 07:06:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbYACMGI
+	id S1756369AbYACMLA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 07:11:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753756AbYACMKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 07:06:08 -0500
-Received: from ro-out-1112.google.com ([72.14.202.183]:20615 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753419AbYACMF5 (ORCPT
+	Thu, 3 Jan 2008 07:10:53 -0500
+Received: from neopsis.com ([213.239.204.14]:59020 "EHLO
+	matterhorn.dbservice.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753394AbYACMKw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 07:05:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mime-version:content-type:content-disposition:user-agent;
-        b=j8cvSSyyFD3/jRB8ld4MYIrnwgKDEjVOMyYQ0dZLTNpJsVxljXtLpvQ4iBTcPEYr1BX5UlIRl16VKxzMsXFhQ0h6dfDV7oAEbAzemFEQcITBvS0ZKhKcklkQiIOolGyLA0Kov+kDiPBaNtnxo2vnhR3RTuL3+1xv91N+LAD190g=
-Date: Thu, 3 Jan 2008 20:05:50 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       David Miller <davem@davemloft.net>, netdev@vger.kernel.org
-Subject: [Patch] xfrm_policy_destroy: rename and relative fixes
-Message-ID: <20080103120550.GB2498@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+	Thu, 3 Jan 2008 07:10:52 -0500
+Message-ID: <477CD0B4.5000408@dbservice.com>
+Date: Thu, 03 Jan 2008 13:10:28 +0100
+From: Tomas Carnecky <tom@dbservice.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071216)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: =?ISO-8859-1?Q?J=F6rn_Engel_ <joern@logfs.org>, ?=@gmail.com,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [x86] kernel/audit.c cleanup according to checkpatch.pl
+References: <20080103111925.GC8046@cvg> <20080103112957.GA14693@lazybastard.org> <20080103114642.GD8046@cvg>
+In-Reply-To: <20080103114642.GD8046@cvg>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Neopsis-MailScanner-Information: Neopsis MailScanner using ClamAV and Spaassassin
+X-Neopsis-MailScanner: Found to be clean
+X-Neopsis-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-1.342, required 5, AWL -0.65, BAD_ENC_HEADER 1.81,
+	BAYES_00 -2.60, RDNS_DYNAMIC 0.10)
+X-MailScanner-From: tom@dbservice.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Cyrill Gorcunov wrote:
+> [=?ISO-8859-1?Q?J=F6rn_Engel_ - Thu, Jan 03, 2008 at 12:29:57PM +0100]
+> | On Thu, 3 January 2008 14:19:25 +0300, Cyrill Gorcunov wrote:
+> | > @@ -232,7 +232,8 @@ void audit_log_lost(const char *message)
+> | >  
+> | >  	if (print) {
+> | >  		printk(KERN_WARNING
+> | > -		       "audit: audit_lost=%d audit_rate_limit=%d audit_backlog_limit=%d\n",
+> | > +		       "audit: audit_lost=%d audit_rate_limit=%d "
+> | > +		       "audit_backlog_limit=%d\n",
+> | >  		       atomic_read(&audit_lost),
+> | >  		       audit_rate_limit,
+> | >  		       audit_backlog_limit);
+> | 
+> | This hunk is a bit questionable.  It can easily deceive a reader to
+> | assume two seperate lines printed out and sometimes defeats grepping
+> | for printk output to find the code generating the message.
+> | 
+> | Rest looks good to me.
+> | 
+> | Jörn
+> | 
+> | -- 
+> | He that composes himself is wiser than he that composes a book.
+> | -- B. Franklin
+> | 
+> 
+> indeed.
+> 
+> here is updated one (with these part removed)
 
-Since __xfrm_policy_destroy is used to destory the resources
-allocated by xfrm_policy_alloc. So using the name
-__xfrm_policy_destroy is not correspond with xfrm_policy_alloc.
-Rename it to xfrm_policy_destroy.
+Instead of removing that part completely, why not print this:
+"audit: lost=%d rate_limit=%d backlog_limit=%d\n"
 
-And along with some instances that call xfrm_policy_alloc
-but not using xfrm_policy_destroy to destroy the resource,
-fix them.
+In that line there were too many 'audit's IMHO, and if someone wants to 
+grep 'audit_lost=' he still can, 'audit:.*lost=' or something like that..
 
-Cc: David Miller <davem@davemloft.net>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-
----
-
-diff --git a/include/net/xfrm.h b/include/net/xfrm.h
-index 58dfa82..6eff085 100644
---- a/include/net/xfrm.h
-+++ b/include/net/xfrm.h
-@@ -505,12 +505,12 @@ static inline void xfrm_pol_hold(struct xfrm_policy *policy)
- 		atomic_inc(&policy->refcnt);
- }
- 
--extern void __xfrm_policy_destroy(struct xfrm_policy *policy);
-+extern void xfrm_policy_destroy(struct xfrm_policy *policy);
- 
- static inline void xfrm_pol_put(struct xfrm_policy *policy)
- {
- 	if (atomic_dec_and_test(&policy->refcnt))
--		__xfrm_policy_destroy(policy);
-+		xfrm_policy_destroy(policy);
- }
- 
- #ifdef CONFIG_XFRM_SUB_POLICY
-diff --git a/net/key/af_key.c b/net/key/af_key.c
-index 26d5e63..3667f44 100644
---- a/net/key/af_key.c
-+++ b/net/key/af_key.c
-@@ -2291,8 +2291,7 @@ static int pfkey_spdadd(struct sock *sk, struct sk_buff *skb, struct sadb_msg *h
- 	return 0;
- 
- out:
--	security_xfrm_policy_free(xp);
--	kfree(xp);
-+	xfrm_policy_destroy(xp);
- 	return err;
- }
- 
-@@ -3236,8 +3235,7 @@ static struct xfrm_policy *pfkey_compile_policy(struct sock *sk, int opt,
- 	return xp;
- 
- out:
--	security_xfrm_policy_free(xp);
--	kfree(xp);
-+	xfrm_policy_destroy(xp);
- 	return NULL;
- }
- 
-diff --git a/net/xfrm/xfrm_policy.c b/net/xfrm/xfrm_policy.c
-index 26b846e..087484e 100644
---- a/net/xfrm/xfrm_policy.c
-+++ b/net/xfrm/xfrm_policy.c
-@@ -206,7 +206,7 @@ EXPORT_SYMBOL(xfrm_policy_alloc);
- 
- /* Destroy xfrm_policy: descendant resources must be released to this moment. */
- 
--void __xfrm_policy_destroy(struct xfrm_policy *policy)
-+void xfrm_policy_destroy(struct xfrm_policy *policy)
- {
- 	BUG_ON(!policy->dead);
- 
-@@ -218,7 +218,7 @@ void __xfrm_policy_destroy(struct xfrm_policy *policy)
- 	security_xfrm_policy_free(policy);
- 	kfree(policy);
- }
--EXPORT_SYMBOL(__xfrm_policy_destroy);
-+EXPORT_SYMBOL(xfrm_policy_destroy);
- 
- static void xfrm_policy_gc_kill(struct xfrm_policy *policy)
- {
-diff --git a/net/xfrm/xfrm_user.c b/net/xfrm/xfrm_user.c
-index e75dbdc..73cc755 100644
---- a/net/xfrm/xfrm_user.c
-+++ b/net/xfrm/xfrm_user.c
-@@ -1048,7 +1048,7 @@ static struct xfrm_policy *xfrm_policy_construct(struct xfrm_userpolicy_info *p,
- 	return xp;
-  error:
- 	*errp = err;
--	kfree(xp);
-+	xfrm_policy_destroy(xp);
- 	return NULL;
- }
- 
+tom
