@@ -1,78 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823AbYACQMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbYACQQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754823AbYACQMU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 11:12:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbYACQMK
+	id S1754551AbYACQQS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 11:16:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYACQQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 11:12:10 -0500
-Received: from outbound-mail-28.bluehost.com ([69.89.17.198]:40921 "HELO
-	outbound-mail-28.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751897AbYACQMJ (ORCPT
+	Thu, 3 Jan 2008 11:16:07 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:44721 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752120AbYACQQF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 11:12:09 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Jan 2008 11:12:09 EST
+	Thu, 3 Jan 2008 11:16:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=v0uTwiRJm8GLPQtboA/jffj/aUkHQyu1osfmUvSNN7Z3i7XxYMOukKo3ygIywVSLg1ZWhkPTxpnESKOZZB0lE5UnhxIH6LguD/gYY7H7iQB7D+p6nuJCnWMfdG6X+PbVpuYm7jJZdIFGVHuWlh6D6Cykz0hABwJsxgzDf6pGaYg=
+Message-ID: <d120d5000801030816o697219d8h664b2823e1965cfc@mail.gmail.com>
+Date: Thu, 3 Jan 2008 11:16:02 -0500
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Richard Purdie" <rpurdie@rpsys.net>
+Subject: Re: [PATCH] Fix spitzkbd suspend key handling
+Cc: Linux-Input <linux-input@atrey.karlin.mff.cuni.cz>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1199233037.4653.44.camel@localhost.localdomain>
 MIME-Version: 1.0
-Date: Thu, 3 Jan 2008 09:05:28 -0700
-From: Bernd Prager <bernd@prager.ws>
-To: linux-kernel@vger.kernel.org
-Subject: kernel config for AMD Athlon 64 X2 4200+ Manchester
-Message-ID: <bb078b9bc5a6138dc7ac78609713efdd@prager.ws>
-User-Agent: RoundCube Webmail/0.1-rc1
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Identified-User: {1020:box307.bluehost.com:pragerws:prager.ws} {sentby:smtp auth 69.89.31.107 authed with bernd@prager.ws}
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1199233037.4653.44.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Jan 1, 2008 7:17 PM, Richard Purdie <rpurdie@rpsys.net> wrote:
+> The spitz keyboard driver reports KEY_SUSPEND events but doesn't
+> register its use of this event in the keybit bitfield, breaking input
+> events for this key. This patch fixes that by registering the key in the
+> keybit bitfield.
+>
 
-I am running kernel 2.6.23.12 and compiled with SMP on.
-Unfortunately the kernel doesn't recognize my dual core processor:
+Applied to my tree - for-linus branch. Thank you Richard.
 
-$ dmesg | grep -i cpu
-CPU has 2 num_cores
-Processor #0 (Bootup-CPU)
-SMP: Allowing 1 CPUs, 0 hotplug CPUs
-PERCPU: Allocating 34344 bytes of per cpu data
-Initializing CPU#0
-CPU 0: aperture @ 610000000 size 32 MB
-CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
-CPU: L2 Cache: 512K (64 bytes/line)
-CPU 0/0 -> Node 0
-Brought up 1 CPUs
+-- 
+Dmitry
 
-$  cat /proc/cpuinfo 
-processor       : 0
-vendor_id       : AuthenticAMD
-cpu family      : 15
-model           : 43
-model name      : AMD Hammer Family processor - Model Unknown
-stepping        : 1
-cpu MHz         : 2211.347
-cache size      : 512 KB
-physical id     : 0
-siblings        : 1
-core id         : 0
-cpu cores       : 1
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
-cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext fxsr_opt lm
-3dnowext 3dnow up rep_good pni lahf_lm
-bogomips        : 4425.39
-TLB size        : 1024 4K pages
-clflush size    : 64
-cache_alignment : 64
-address sizes   : 40 bits physical, 48 bits virtual
-power management: ts fid vid ttp
-
-
-Any ideas how I can configure the kernel to fix that?
-
-Thanks for any help,
--- Bernd Prager
-
-
+P.S. Try to migrate to linux-input@vger, I'd like to get off atrey server
