@@ -1,206 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756763AbYACP3O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757744AbYACP3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756763AbYACP3O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 10:29:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbYACPYi
+	id S1757744AbYACP3e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 10:29:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754566AbYACPYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 10:24:38 -0500
-Received: from ns2.suse.de ([195.135.220.15]:43016 "EHLO mx2.suse.de"
+	Thu, 3 Jan 2008 10:24:39 -0500
+Received: from mx2.suse.de ([195.135.220.15]:43026 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752812AbYACPYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 10:24:23 -0500
+	id S1754360AbYACPYe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 10:24:34 -0500
 From: Andi Kleen <ak@suse.de>
 References: <20080103424.989432000@suse.de>
 In-Reply-To: <20080103424.989432000@suse.de>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH CPA] [8/28] CPA: Return the page table level in lookup_address()
-Message-Id: <20080103152422.7A89D14E23@wotan.suse.de>
-Date: Thu,  3 Jan 2008 16:24:22 +0100 (CET)
+Subject: [PATCH CPA] [18/28] CPA: Make change_page_attr() more robust against use of PAT bits
+Message-Id: <20080103152433.22C3F14E23@wotan.suse.de>
+Date: Thu,  3 Jan 2008 16:24:33 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Needed for the next change.
-
-And change all the callers.
+Use the page table level instead of the PSE bit to check if the PTE 
+is for a 4K page or not. This makes the code more robust when the PAT
+bit is changed because the PAT bit on 4K pages is in the same position as the
+PSE bit.
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86/mm/fault_32.c       |    3 ++-
- arch/x86/mm/init_32.c        |    3 ++-
- arch/x86/mm/pageattr_32.c    |    7 +++++--
- arch/x86/mm/pageattr_64.c    |    7 +++++--
- arch/x86/xen/mmu.c           |    9 ++++++---
- include/asm-x86/pgtable_32.h |    2 +-
- include/asm-x86/pgtable_64.h |    2 +-
- 7 files changed, 22 insertions(+), 11 deletions(-)
+ arch/x86/mm/pageattr_32.c |    4 ++--
+ arch/x86/mm/pageattr_64.c |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-Index: linux/arch/x86/mm/pageattr_64.c
-===================================================================
---- linux.orig/arch/x86/mm/pageattr_64.c
-+++ linux/arch/x86/mm/pageattr_64.c
-@@ -13,7 +13,7 @@
- #include <asm/tlbflush.h>
- #include <asm/io.h>
- 
--pte_t *lookup_address(unsigned long address)
-+pte_t *lookup_address(unsigned long address, int *level)
- { 
- 	pgd_t *pgd = pgd_offset_k(address);
- 	pud_t *pud;
-@@ -27,8 +27,10 @@ pte_t *lookup_address(unsigned long addr
- 	pmd = pmd_offset(pud, address);
- 	if (!pmd_present(*pmd))
- 		return NULL; 
-+	*level = 3;
- 	if (pmd_large(*pmd))
- 		return (pte_t *)pmd;
-+	*level = 4;
- 	pte = pte_offset_kernel(pmd, address);
- 	if (pte && !pte_present(*pte))
- 		pte = NULL; 
-@@ -129,8 +131,9 @@ __change_page_attr(unsigned long address
- 	pte_t *kpte; 
- 	struct page *kpte_page;
- 	pgprot_t ref_prot2;
-+	int level;
- 
--	kpte = lookup_address(address);
-+	kpte = lookup_address(address, &level);
- 	if (!kpte) return 0;
- 	kpte_page = virt_to_page(((unsigned long)kpte) & PAGE_MASK);
- 	BUG_ON(PageLRU(kpte_page));
-Index: linux/include/asm-x86/pgtable_64.h
-===================================================================
---- linux.orig/include/asm-x86/pgtable_64.h
-+++ linux/include/asm-x86/pgtable_64.h
-@@ -409,7 +409,7 @@ extern struct list_head pgd_list;
- 
- extern int kern_addr_valid(unsigned long addr); 
- 
--pte_t *lookup_address(unsigned long addr);
-+pte_t *lookup_address(unsigned long addr, int *level);
- 
- #define io_remap_pfn_range(vma, vaddr, pfn, size, prot)		\
- 		remap_pfn_range(vma, vaddr, pfn, size, prot)
 Index: linux/arch/x86/mm/pageattr_32.c
 ===================================================================
 --- linux.orig/arch/x86/mm/pageattr_32.c
 +++ linux/arch/x86/mm/pageattr_32.c
-@@ -18,7 +18,7 @@ static DEFINE_SPINLOCK(cpa_lock);
- static struct list_head df_list = LIST_HEAD_INIT(df_list);
+@@ -209,7 +209,7 @@ __change_page_attr(struct page *page, pg
+ 	set_tlb_flush(address);
  
- 
--pte_t *lookup_address(unsigned long address) 
-+pte_t *lookup_address(unsigned long address, int *level)
- { 
- 	pgd_t *pgd = pgd_offset_k(address);
- 	pud_t *pud;
-@@ -31,8 +31,10 @@ pte_t *lookup_address(unsigned long addr
- 	pmd = pmd_offset(pud, address);
- 	if (pmd_none(*pmd))
- 		return NULL;
-+	*level = 2;
- 	if (pmd_large(*pmd))
- 		return (pte_t *)pmd;
-+	*level = 3;
-         return pte_offset_kernel(pmd, address);
- } 
- 
-@@ -148,11 +150,12 @@ __change_page_attr(struct page *page, pg
- 	pte_t *kpte; 
- 	unsigned long address;
- 	struct page *kpte_page;
-+	int level;
- 
- 	BUG_ON(PageHighMem(page));
- 	address = (unsigned long)page_address(page);
- 
--	kpte = lookup_address(address);
-+	kpte = lookup_address(address, &level);
- 	if (!kpte)
- 		return -EINVAL;
- 	kpte_page = virt_to_page(kpte);
-Index: linux/include/asm-x86/pgtable_32.h
+ 	if (pgprot_val(prot) != pgprot_val(PAGE_KERNEL)) { 
+-		if (!pte_huge(*kpte)) {
++		if (level == 3) {
+ 			set_pte_atomic(kpte, mk_pte(page, prot)); 
+ 		} else {
+ 			pgprot_t ref_prot;
+@@ -225,7 +225,7 @@ __change_page_attr(struct page *page, pg
+ 			kpte_page = split;
+ 		}
+ 		page_private(kpte_page)++;
+-	} else if (!pte_huge(*kpte)) {
++	} else if (level == 3) {
+ 		set_pte_atomic(kpte, mk_pte(page, PAGE_KERNEL));
+ 		BUG_ON(page_private(kpte_page) == 0);
+ 		page_private(kpte_page)--;
+Index: linux/arch/x86/mm/pageattr_64.c
 ===================================================================
---- linux.orig/include/asm-x86/pgtable_32.h
-+++ linux/include/asm-x86/pgtable_32.h
-@@ -443,7 +443,7 @@ static inline pte_t pte_modify(pte_t pte
-  * NOTE: the return type is pte_t but if the pmd is PSE then we return it
-  * as a pte too.
-  */
--extern pte_t *lookup_address(unsigned long address);
-+extern pte_t *lookup_address(unsigned long address, int *level);
+--- linux.orig/arch/x86/mm/pageattr_64.c
++++ linux/arch/x86/mm/pageattr_64.c
+@@ -184,7 +184,7 @@ __change_page_attr(unsigned long address
+ 	set_tlb_flush(address);
  
- /*
-  * Make a given kernel text page executable/non-executable.
-Index: linux/arch/x86/mm/fault_32.c
-===================================================================
---- linux.orig/arch/x86/mm/fault_32.c
-+++ linux/arch/x86/mm/fault_32.c
-@@ -643,7 +643,8 @@ no_context:
- 
- #ifdef CONFIG_X86_PAE
- 		if (error_code & 16) {
--			pte_t *pte = lookup_address(address);
-+			int level;
-+			pte_t *pte = lookup_address(address, &level);
- 
- 			if (pte && pte_present(*pte) && !pte_exec_kernel(*pte))
- 				printk(KERN_CRIT "kernel tried to execute "
-Index: linux/arch/x86/mm/init_32.c
-===================================================================
---- linux.orig/arch/x86/mm/init_32.c
-+++ linux/arch/x86/mm/init_32.c
-@@ -528,11 +528,12 @@ int __init set_kernel_exec(unsigned long
- {
- 	pte_t *pte;
- 	int ret = 1;
-+	int level;
- 
- 	if (!nx_enabled)
- 		goto out;
- 
--	pte = lookup_address(vaddr);
-+	pte = lookup_address(vaddr, &level);
- 	BUG_ON(!pte);
- 
- 	if (!pte_exec_kernel(*pte))
-Index: linux/arch/x86/xen/mmu.c
-===================================================================
---- linux.orig/arch/x86/xen/mmu.c
-+++ linux/arch/x86/xen/mmu.c
-@@ -58,7 +58,8 @@
- 
- xmaddr_t arbitrary_virt_to_machine(unsigned long address)
- {
--	pte_t *pte = lookup_address(address);
-+	int level;
-+	pte_t *pte = lookup_address(address, &level);
- 	unsigned offset = address & PAGE_MASK;
- 
- 	BUG_ON(pte == NULL);
-@@ -70,8 +71,9 @@ void make_lowmem_page_readonly(void *vad
- {
- 	pte_t *pte, ptev;
- 	unsigned long address = (unsigned long)vaddr;
-+	int level;
- 
--	pte = lookup_address(address);
-+	pte = lookup_address(address, &level);
- 	BUG_ON(pte == NULL);
- 
- 	ptev = pte_wrprotect(*pte);
-@@ -84,8 +86,9 @@ void make_lowmem_page_readwrite(void *va
- {
- 	pte_t *pte, ptev;
- 	unsigned long address = (unsigned long)vaddr;
-+	int level;
- 
--	pte = lookup_address(address);
-+	pte = lookup_address(address, &level);
- 	BUG_ON(pte == NULL);
- 
- 	ptev = pte_mkwrite(*pte);
+ 	if (pgprot_val(prot) != pgprot_val(ref_prot)) { 
+-		if (!pte_huge(*kpte)) {
++		if (level == 4) {
+ 			set_pte(kpte, pfn_pte(pfn, prot));
+ 		} else {
+  			/*
+@@ -201,7 +201,7 @@ __change_page_attr(unsigned long address
+ 			kpte_page = split;
+ 		}
+ 		page_private(kpte_page)++;
+-	} else if (!pte_huge(*kpte)) {
++	} else if (level == 4) {
+ 		set_pte(kpte, pfn_pte(pfn, ref_prot));
+ 		BUG_ON(page_private(kpte_page) == 0);
+ 		page_private(kpte_page)--;
