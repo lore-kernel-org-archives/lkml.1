@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757564AbYACJZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756844AbYACJbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757564AbYACJZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 04:25:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbYACJZT
+	id S1756844AbYACJbT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 04:31:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbYACJbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 04:25:19 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:32842 "EHLO mx3.mail.elte.hu"
+	Thu, 3 Jan 2008 04:31:07 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56100 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754428AbYACJZS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 04:25:18 -0500
-Date: Thu, 3 Jan 2008 10:25:02 +0100
+	id S1753934AbYACJbF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 04:31:05 -0500
+Date: Thu, 3 Jan 2008 10:30:48 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 1/3] move WARN_ON() out of line
-Message-ID: <20080103092502.GA16096@elte.hu>
-References: <477C32DA.5060905@linux.intel.com>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+Subject: Re: [GIT] More NFS client fixes for 2.6.24-rc6
+Message-ID: <20080103093048.GA16803@elte.hu>
+References: <1199329417.28241.3.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <477C32DA.5060905@linux.intel.com>
+In-Reply-To: <1199329417.28241.3.camel@heimdal.trondhjem.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -34,20 +36,45 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Arjan van de Ven <arjan@linux.intel.com> wrote:
+* Trond Myklebust <Trond.Myklebust@netapp.com> wrote:
 
-> +#define WARN_ON(condition) do_warn_on((unsigned long)(condition), __FILE__, \
-> +					 __LINE__, __FUNCTION__)
+> commit 53478daff2c8b494d2af1ede6611f166f81bc393
+> Author: Trond Myklebust <Trond.Myklebust@netapp.com>
+> Date:   Wed Jan 2 13:28:57 2008 -0500
+> 
+>     NFS: Fix a possible Oops in fs/nfs/super.c
+>     
+>     Sigh... commit 4584f520e1f773082ef44ff4f8969a5d992b16ec (NFS: Fix NFS
+>     mountpoint crossing...) had a slight flaw: server can be NULL if sget()
+>     returned an existing superblock.
+>     
+>     Fix the fix by dereferencing s->s_fs_info.
+>     
+>     Also add in the same namespace Oops fix for NFSv4 in both the mountpoint
+>     crossing case, and the referral case.
+>     
+>     Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-hm. This passes in 4 arguments to do_warn_on().
+shouldnt this commit have included the full credit of the bugfix:
 
-i think we could get away with no arguments (!), by using section 
-tricks. Firstly, we can get rid of __FUNCTION__ and replace it with a 
-ksyms lookup - that is fine enough. Secondly, we could put __FILE__ and 
-__LINE__ into a text section and key it up to the return address from 
-do_warn_on().
+  http://bugzilla.kernel.org/show_bug.cgi?id=9647
 
-the condition code should not be passed in at all i think - it creates 
-extra function calls to do_warn_on() all the time.
+  ------------>
+  Description From Adrian Bunk 2007-12-27 12:36
+
+  The Coverity checker spotted that commit
+  4584f520e1f773082ef44ff4f8969a5d992b16ec introduced the following NULL
+  dereference in 2.6.24-rc6:
+
+  <--  snip  -->
+         if (s->s_fs_info != server) {
+                 nfs_free_server(server);
+                 server = NULL;     <---------------
+         }
+
+  ------- Comment #1 From Adrian Bunk 2007-12-27 12:37:42 -------
+  The NULL dereference is at the 
+  server->nfs_client->rpc_ops->dir_inode_ops.
+  <--------------
 
 	Ingo
