@@ -1,109 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757240AbYACWd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbYACWhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757240AbYACWd4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 17:33:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbYACWdq
+	id S1755593AbYACWhq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 17:37:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbYACWhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 17:33:46 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:41758 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754246AbYACWdp (ORCPT
+	Thu, 3 Jan 2008 17:37:35 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:51912 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752877AbYACWhe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 17:33:45 -0500
-Date: Thu, 3 Jan 2008 23:33:44 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Kbuild update
-In-Reply-To: <20080103213255.GA21811@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0801032308400.26693@fbirervta.pbzchgretzou.qr>
-References: <20080103213255.GA21811@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 3 Jan 2008 17:37:34 -0500
+Date: Thu, 3 Jan 2008 16:35:36 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Cc: sam@ravnborg.org, paulus@samba.org, linux-kernel@vger.kernel.org,
+       wd@denx.de
+Subject: Re: [PATCH 1/3] Merge mkubootimg tool for building U-Boot images
+Message-ID: <20080103163536.316a6c58@zod.rchland.ibm.com>
+In-Reply-To: <8bd0f97a0801031433mdaff6d9j5ed4e3cb49ea2007@mail.gmail.com>
+References: <20080103160104.171f9aaa@zod.rchland.ibm.com>
+	<20080103160244.6a28519b@zod.rchland.ibm.com>
+	<8bd0f97a0801031415g66e6b6f1o8a64dddc98c29399@mail.gmail.com>
+	<20080103162613.09674907@zod.rchland.ibm.com>
+	<8bd0f97a0801031433mdaff6d9j5ed4e3cb49ea2007@mail.gmail.com>
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 3 Jan 2008 17:33:20 -0500
+"Mike Frysinger" <vapier.adi@gmail.com> wrote:
 
-On Jan 3 2008 22:32, Sam Ravnborg wrote:
->
->On top of this I have my personal todo items such as:
->- modern ncurses interface for menuconfig (ala tig, htop and others)
+> On Jan 3, 2008 5:26 PM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+> > On Thu, 3 Jan 2008 17:15:48 -0500 "Mike Frysinger" <vapier.adi@gmail.com> wrote:
+> > > On Jan 3, 2008 5:02 PM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+> > > > Several platforms require the mkimage tool to generate a uImage file that is
+> > > > used with U-Boot.  This brings the mkimage tool in-kernel to enable building
+> > > > those platforms without having mkimage externally provided.  The tool is named
+> > > > mkubootimg for better clarity.
+> > > >
+> > > > This is currently based off of the version found in U-Boot 1.3.1.
+> > > >
+> > > > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> > > >
+> > > > ---
+> > > >  scripts/Makefile             |    1
+> > > >  scripts/mkubootimg/Makefile  |    6
+> > > >  scripts/mkubootimg/crc32.c   |  199 +++++++++++
+> > > >  scripts/mkubootimg/mkimage.c |  728 +++++++++++++++++++++++++++++++++++++++++++
+> > > >  scripts/mkubootimg/sha1.c    |  413 ++++++++++++++++++++++++
+> > > >  scripts/mkubootimg/sha1.h    |  115 ++++++
+> > > >  scripts/mkubootimg/uimage.h  |  161 +++++++++
+> > > >  7 files changed, 1623 insertions(+)
+> > >
+> > > i'm fairly certain sha1 is not needed.  the u-boot makefile has a bug
+> > > in the 1.3.1 release where mkimage depends on sha1.o but doesnt
+> > > actually use sha1 functions.  i posted a patch to u-boot mailing list
+> > > to get this dropped.  regardless, no need for the kernel to import it.
+> >
+> > No need to yet anyway.  There are discussions on-going to make a new
+> > image format that can do sha1 sums instead of crc32.  Either way is
+> > fine with me, I just opted to include it now to keep it the same as
+> > U-Boot and avoid having to include it in the future.
+> >
+> > If you want an updated patch with the sha1 code removed, I can do
+> > that.  Sam, Wolfgang?
+> 
+> yes, but i think the next image format is going to require quite a bit
+> of changes in the build system anyways, especially since with the
+> kernel you will want the option to produce either format, so simply
+> dropping the sha1 makes sense to me.  but i dont really care either
+> way, just making sure you're aware of the issue (and it sounds like
+> you are).
 
-Sorry.. your comparison {menuconfig, htop} raises an "incompatible
-pointer passed" on my side. Please explain :)
+Yep, I am.  I plan on maintaining the in-kernel version too, as most
+of the PPC 44x boards these days use U-Boot.  So I'll be sure to keep on
+top of things.
 
-
->TODO items (from my mailbox - I have plenty more)
->=================================================
->- allow kconfig to accept overrides (Jan Engelhart)
->  maybe there is a patch, needs followup
-
-Indeed there is/was a patch. Well, the one I sent last time.
-http://lkml.org/lkml/2007/10/18/206
-
-I have updated it to Linus's current treetop.
-git://computergmbh.de/linux 'kconfig' branch;
-
-===
-
-commit da9389c3e640f9ee261865beb6b9861fe5b30b78
-Author: Jan Engelhardt <jengelh@computergmbh.de>
-Date:   Thu Jan 3 23:23:38 2008 +0100
-
-    kconfig: allow overriding symbols
-    
-    Allow config variables in .config to override earlier ones in the same
-    file. In other words,
-    
-    	# CONFIG_SECURITY is not defined
-    	CONFIG_SECURITY=y
-    
-    will activate it. This makes it a bit easier to do
-    
-    	cat original-config myconfig myconfig2 ... >.config;
-    
-    and run *config as expected.
-    
-    Signed-off-by: Jan Engelhardt <jengelh@computergmbh.de>
-
-diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
-index e0f402f..2853ca7 100644
---- a/scripts/kconfig/confdata.c
-+++ b/scripts/kconfig/confdata.c
-@@ -232,8 +232,7 @@ load:
- 					sym->type = S_BOOLEAN;
- 			}
- 			if (sym->flags & def_flags) {
--				conf_warning("trying to reassign symbol %s", sym->name);
--				break;
-+				conf_warning("override: reassigning to symbol %s", sym->name);
- 			}
- 			switch (sym->type) {
- 			case S_BOOLEAN:
-@@ -272,8 +271,7 @@ load:
- 					sym->type = S_OTHER;
- 			}
- 			if (sym->flags & def_flags) {
--				conf_warning("trying to reassign symbol %s", sym->name);
--				break;
-+				conf_warning("override: reassigning to symbol %s", sym->name);
- 			}
- 			if (conf_set_sym_val(sym, def, def_flags, p))
- 				continue;
-@@ -297,11 +295,9 @@ load:
- 				}
- 				break;
- 			case yes:
--				if (cs->def[def].tri != no) {
--					conf_warning("%s creates inconsistent choice state", sym->name);
--					cs->flags &= ~def_flags;
--				} else
--					cs->def[def].val = sym;
-+				if(cs->def[def].tri != no)
-+					conf_warning("override: %s changes choice state", sym->name);
-+				cs->def[def].val = sym;
- 				break;
- 			}
- 			cs->def[def].tri = E_OR(cs->def[def].tri, sym->def[def].tri);
+josh
