@@ -1,74 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759412AbYACBsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759224AbYACBza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759412AbYACBsy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 20:48:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbYACBsq
+	id S1759224AbYACBza (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 20:55:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbYACBzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 20:48:46 -0500
-Received: from twinlark.arctic.org ([208.69.40.136]:39060 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753510AbYACBsp (ORCPT
+	Wed, 2 Jan 2008 20:55:18 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:58088 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753378AbYACBzR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 20:48:45 -0500
-Message-ID: <477C3EE9.2060600@kernel.org>
-Date: Wed, 02 Jan 2008 17:48:25 -0800
-From: Andrew Morgan <morgan@kernel.org>
-User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
-MIME-Version: 1.0
-To: KaiGai Kohei <kaigai@kaigai.gr.jp>
-CC: KaiGai Kohei <kaigai@ak.jp.nec.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       jmorris@namei.org, akpm@osdl.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Exporting capability code/name pairs
-References: <477321C8.3070004@ak.jp.nec.com> <20071227161435.GB9677@sergelap.austin.ibm.com> <477455A0.7060603@ak.jp.nec.com> <477494C3.2040301@ak.jp.nec.com> <4777C745.8080700@kernel.org> <477B468A.3050702@kaigai.gr.jp>
-In-Reply-To: <477B468A.3050702@kaigai.gr.jp>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-2022-JP
+	Wed, 2 Jan 2008 20:55:17 -0500
+Subject: [GIT PATCH] SCSI bug fix for 2.6.24-rc6
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 02 Jan 2008 19:55:05 -0600
+Message-Id: <1199325305.3258.103.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+This is the bug fix for
 
-There is also the issue of compiled code which explicitly raises and
-lowers capabilities around critical code sections (ie., as they were
-intended to be used) is also not well served by this change.
+http://bugzilla.kernel.org/show_bug.cgi?id=9674
 
-That is, unless the code was compiled with things like CAP_MAC_ADMIN
-being #define'd then it won't be able to do things like cap_set_flag()
-appropriately.
+It's available here:
 
-Cheers
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
 
-Andrew
+I've just attached it below as well.
 
-KaiGai Kohei wrote:
-> Andrew Morgan wrote:
->> -----BEGIN PGP SIGNED MESSAGE-----
->> Hash: SHA1
->>
->> KaiGai Kohei wrote:
->>> Remaining issues:
->>> - We have to mount securityfs explicitly, or use /etc/fstab.
->>>   It can cause a matter when we want to use this feature on
->>>   very early phase on boot. (like /sbin/init)
->> I'm not altogether clear how you intend this to work.
->>
->> Are you saying that some future version of libcap will require that
->> securityfs be mounted before it (libcap) will work?
-> 
-> Yes, but implementing this feature on securityfs might be not good
-> idea as as James said. If this feature is on procfs or sysfs, it is
-> not necessary to mount securityfs explicitly.
-> 
-> Thanks,
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+James
 
-iD8DBQFHfD7n+bHCR3gb8jsRAsgcAKDY6qXBR3JV2addHUg5sxyZHJEkDQCfdLOL
-zJlf3T4SQsUNENr3kwR5pr8=
-=v8C5
------END PGP SIGNATURE-----
+---
+
+>From 751bf4d7865e4ced406be93b04c7436d866d3684 Mon Sep 17 00:00:00 2001
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Date: Wed, 2 Jan 2008 11:14:30 -0600
+Subject: [SCSI] scsi_sysfs: restore prep_fn when ULD is removed
+
+A recent bug report:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=9674
+
+Was caused because the ULDs now set their own prep functions, but
+don't necessarily reset the prep function back to the SCSI default
+when they are removed.  This leads to panics if commands are sent to
+the device after the module is removed because the prep_fn is still
+pointing to the old module code.  The fix for this is to implement a
+bus remove method that resets the prep_fn pointer correctly before
+calling the ULD specific driver remove method.
+
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+---
+ drivers/scsi/scsi_lib.c   |    2 +-
+ drivers/scsi/scsi_priv.h  |    3 +++
+ drivers/scsi/scsi_sysfs.c |   17 +++++++++++++++++
+ 3 files changed, 21 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index 0e81e4c..a9ac5b1 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -1332,7 +1332,7 @@ int scsi_prep_return(struct request_queue *q, struct request *req, int ret)
+ }
+ EXPORT_SYMBOL(scsi_prep_return);
+ 
+-static int scsi_prep_fn(struct request_queue *q, struct request *req)
++int scsi_prep_fn(struct request_queue *q, struct request *req)
+ {
+ 	struct scsi_device *sdev = q->queuedata;
+ 	int ret = BLKPREP_KILL;
+diff --git a/drivers/scsi/scsi_priv.h b/drivers/scsi/scsi_priv.h
+index eff0059..3f34e93 100644
+--- a/drivers/scsi/scsi_priv.h
++++ b/drivers/scsi/scsi_priv.h
+@@ -74,6 +74,9 @@ extern struct request_queue *scsi_alloc_queue(struct scsi_device *sdev);
+ extern void scsi_free_queue(struct request_queue *q);
+ extern int scsi_init_queue(void);
+ extern void scsi_exit_queue(void);
++struct request_queue;
++struct request;
++extern int scsi_prep_fn(struct request_queue *, struct request *);
+ 
+ /* scsi_proc.c */
+ #ifdef CONFIG_SCSI_PROC_FS
+diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
+index f374fdc..00b3866 100644
+--- a/drivers/scsi/scsi_sysfs.c
++++ b/drivers/scsi/scsi_sysfs.c
+@@ -373,12 +373,29 @@ static int scsi_bus_resume(struct device * dev)
+ 	return err;
+ }
+ 
++static int scsi_bus_remove(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	struct scsi_device *sdev = to_scsi_device(dev);
++	int err = 0;
++
++	/* reset the prep_fn back to the default since the
++	 * driver may have altered it and it's being removed */
++	blk_queue_prep_rq(sdev->request_queue, scsi_prep_fn);
++
++	if (drv && drv->remove)
++		err = drv->remove(dev);
++
++	return 0;
++}
++
+ struct bus_type scsi_bus_type = {
+         .name		= "scsi",
+         .match		= scsi_bus_match,
+ 	.uevent		= scsi_bus_uevent,
+ 	.suspend	= scsi_bus_suspend,
+ 	.resume		= scsi_bus_resume,
++	.remove		= scsi_bus_remove,
+ };
+ 
+ int scsi_sysfs_register(void)
+-- 
+1.5.3.6
+
+
+
