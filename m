@@ -1,86 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759607AbYACEk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbYACEu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759607AbYACEk1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 23:40:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbYACEkR
+	id S1758749AbYACEu2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 23:50:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755433AbYACEuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 23:40:17 -0500
-Received: from py-out-1112.google.com ([64.233.166.180]:4603 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753705AbYACEkP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 23:40:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=H6Bz1l5y/B0NJaRTITX9iQhscgob9LYeEHFjf8X0SS+5LMTiSQfFqciB6sx0bRTx2TzWaLmEtk4ETNSYP4VrQxztclvdLnh/pHMqiFv/4km7qnKQfhuHDO7hFTvjN0/mhsFD24PTTeg2abVPMrzoOmgXFuJ3cBTwDtXR8ZtF558=
-Message-ID: <386072610801022040ja4919bapa8a0712c1246c3f3@mail.gmail.com>
-Date: Thu, 3 Jan 2008 12:40:14 +0800
-From: "Bryan Wu" <cooloney.lkml@gmail.com>
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: [linux-usb-devel] [PATCH] : Allow embedded developers USB options normally reserved for OTG
-Cc: "Robin Getz" <rgetz@blackfin.uclinux.org>,
-       linux-usb-devel@lists.sourceforge.net, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200801021943.38716.david-b@pacbell.net>
+	Wed, 2 Jan 2008 23:50:15 -0500
+Received: from lixom.net ([66.141.50.11]:57497 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755393AbYACEuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 23:50:14 -0500
+Date: Wed, 2 Jan 2008 22:58:39 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 1/3] move WARN_ON() out of line
+Message-ID: <20080103045838.GA25642@lixom.net>
+References: <477C32DA.5060905@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200801020948.51310.rgetz@blackfin.uclinux.org>
-	 <200801021047.16036.david-b@pacbell.net>
-	 <200801022203.04991.rgetz@blackfin.uclinux.org>
-	 <200801021943.38716.david-b@pacbell.net>
+In-Reply-To: <477C32DA.5060905@linux.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 3, 2008 11:43 AM, David Brownell <david-b@pacbell.net> wrote:
-> On Wednesday 02 January 2008, Robin Getz wrote:
-> > On Wed 2 Jan 2008 13:47, David Brownell pondered:
-> > > On Wednesday 02 January 2008, Robin Getz wrote:
-> > > > From: Robin Getz <rgetz@blackfin.uclinux.org>
-> > > >
-> > > > Allow embedded developers to turn support for USB Hubs off even if
-> > > > they have a full root hub. This saves the overhead (RAM and Flash size).
-> > >
-> > > ISTR that it won't save very much code though ... the Linux USB
-> > > stack structures all its enumeration logic around hubs.
-> >
-> > Today, there is an USB (Host), USB_GADGET and USB_OTG (which depends on USB &&
-> > USB_GADGET).
-> >
-> > This just enables cutting more code out, with out having to have USB_GADGET &
-> > USB_OTG enabled. When I checked - that is where most of the savings came
-> > from.
+On Thu, Jan 03, 2008 at 01:56:58AM +0100, Arjan van de Ven wrote:
+> Subject: move WARN_ON() out of line
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> CC: Ingo Molnar <mingo@elte.hu>
+> CC: Andrew Morton <akpm@linux-foundation.org>
 >
-> Right.  I'm not objecting to this at all.  Just pointing
-> out that usbcore will still end up including quite a lot
-> of hub functionality, because there's still going to be
-> a root hub in the system and a khubd managing it.
+> A quick grep shows that there are currently 1145 instances of WARN_ON
+> in the kernel. Currently, WARN_ON is pretty much entirely inlined,
+> which makes it hard to enhance it without growing the size of the kernel
+> (and getting Andrew unhappy).
 >
-> This patch might be improved slightly -- in ways that, as I
-> understand things, could save some RAM on Blackfin! -- by
-> having the BLACKLIST_HUB option get rid of the transaction
-> translator support (changing C code not just Kconfig).
-> It's pretty minimal, but won't be used...
->
-> Also, as you point out, it's no longer OTG specific, so
-> renaming the option would improve clarity.   Maybe to
-> something along the lines of USB_HOST_NO_EXTERNAL_HUBS.
-> No big deal, at least now.
->
+> This patch moves WARN_ON() out of line entirely. I've considered keeping
+> the test inline and moving only the slowpath out of line, but I decided
+> against that: an out of line test reduces the pressure on the CPUs
+> branch predictor logic and gives smaller code, while a function call
+> to a fixed location is quite fast. Likewise I've considered doing something
+> similar to BUG() (eg use a trapping instruction) but that's not really
+> better (it needs the test inline again and recovering from an invalid
+> instruction isn't quite fun).
 
-Thanks, that's the point.
-Maybe Robin can choose a good name of this option.
-I am just very happy that when plug-in an external hubs or something
-like that will not make our system hangs, -:)))
+Hi Arjan,
 
-B.T.W, 2 questions about the MUSB driver:
-1. What's the plan for mainline merge of the whole MUSB driver? maybe
-I can cleanup current Blackfin ports to you guys.
-2. Do you remember the PING issue I reported in OMAP list? How do you
-think of that?
+I've got a couple of patches in -mm at the moment that introduces __WARN()
+and uses that (and lets architectures override __WARN, since for example
+powerpc does use trapping instructions similarly to BUG()).
 
-Best Regards,
--Bryan Wu
+The two patches in question are:
+
+bugh-remove-have_arch_bug--have_arch_warn.patch
+powerpc-switch-to-generic-warn_on-bug_on.patch
+
+Care to do this incrementally on top of that instead? I.e. call
+do_warn_on() from the asm-generic/bug.h __WARN() instead.
+
+
+-Olof
+
