@@ -1,95 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758352AbYACRg5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757495AbYACRhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758352AbYACRg5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 12:36:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757142AbYACRgo
+	id S1757495AbYACRhT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 12:37:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757911AbYACRgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 12:36:44 -0500
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:33014 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756339AbYACRgl (ORCPT
+	Thu, 3 Jan 2008 12:36:51 -0500
+Received: from an-out-0708.google.com ([209.85.132.242]:45105 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757844AbYACRgt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 12:36:41 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAFarfEdMROHU/2dsb2JhbACBV6hf
-Date: Thu, 3 Jan 2008 12:36:39 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Thu, 3 Jan 2008 12:36:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=b6pB3HBvnLmeJzqqFoppypviuG0xjTDOdFPDg9Zlbmq9zWuWD4w/lhuRHIUWeWN5W7/6zEaovRUjzQIEA9VSBA9FOSGqT6BV/ht7TrYRRbeOtZI8z/7q7OvWGMqx15mbNMzaQIKsYcyTOAm0CssG6gCYabMbz7J06WwwYbSGvyE=
+Subject: Re: [PATCH] kprobes: Introduce is_kprobe_fault()
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: ananth@in.ibm.com
+Cc: Masami Hiramatsu <mhiramat@redhat.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       "William L. Irwin" <sparclinux@vger.kernel.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 02/11] Add fastcall to do_IRQ for i386
-Message-ID: <20080103173639.GB30582@Krystal>
-References: <20080103071609.478486470@goodmis.org> <20080103072226.934978594@goodmis.org>
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080103070526.GA7690@in.ibm.com>
+References: <1199333115.6323.104.camel@brick>
+	 <20080103070526.GA7690@in.ibm.com>
+Content-Type: text/plain
+Date: Thu, 03 Jan 2008 09:36:46 -0800
+Message-Id: <1199381806.6323.109.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20080103072226.934978594@goodmis.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:35:48 up 60 days, 22:41,  5 users,  load average: 1.42, 1.55,
-	0.82
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> MCOUNT will disable the regparm parameters of the i386 compile
-> options. When doing so, this breaks the prototype of do_IRQ
-> where the fastcall must be explicitly called.
+On Thu, 2008-01-03 at 12:35 +0530, Ananth N Mavinakayanahalli wrote:
+> On Wed, Jan 02, 2008 at 08:05:14PM -0800, Harvey Harrison wrote:
 > 
-> Also fixed some whitespace damage in the call to do_IRQ.
+> Thanks for the cleanup...
 > 
+> ...
+> 
+> > diff --git a/arch/x86/mm/fault_32.c b/arch/x86/mm/fault_32.c
+> > index a2273d4..f2e909b 100644
+> > --- a/arch/x86/mm/fault_32.c
+> > +++ b/arch/x86/mm/fault_32.c
+> > @@ -33,28 +33,6 @@
+> > 
+> >  extern void die(const char *,struct pt_regs *,long);
+> > 
+> > -#ifdef CONFIG_KPROBES
+> > -static inline int notify_page_fault(struct pt_regs *regs)
+> > -{
+> > -	int ret = 0;
+> > -
+> > -	/* kprobe_running() needs smp_processor_id() */
+> > -	if (!user_mode_vm(regs)) {
+> 		^^^^^^^^^^^
+> For x86_32, this check is important. See commit
+> 6444541671bd821b950dbaafee70d65188198aa6 (Never allow int3 traps
+> from V8086 mode to enter the kprobes handler) for precise reason why its
+> user_mode_vm() and not user_mode() for x86_32.
+> 
+> You'll need to make room for this check in the generic macro below...
 
-I would propose to try to see how we can #ifdef two different __mcount
-assembly functions that would prepare the stack appropriately for each
-REGPARM cases.
+Or just keep X86_32 using its existing notify_page_fault, everyone else
+can use the new is_kprobe_fault.  I'll wait for a bit and see if
+the s390 or avr32 people respond before resending.
 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  arch/x86/kernel/irq_32.c |    2 +-
->  include/asm-x86/irq_32.h |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: linux-compile.git/arch/x86/kernel/irq_32.c
-> ===================================================================
-> --- linux-compile.git.orig/arch/x86/kernel/irq_32.c	2007-12-20 00:20:29.000000000 -0500
-> +++ linux-compile.git/arch/x86/kernel/irq_32.c	2007-12-20 00:21:55.000000000 -0500
-> @@ -67,7 +67,7 @@ static union irq_ctx *softirq_ctx[NR_CPU
->   * handlers).
->   */
->  fastcall unsigned int do_IRQ(struct pt_regs *regs)
-> -{	
-> +{
->  	struct pt_regs *old_regs;
->  	/* high bit used in ret_from_ code */
->  	int irq = ~regs->orig_eax;
-> Index: linux-compile.git/include/asm-x86/irq_32.h
-> ===================================================================
-> --- linux-compile.git.orig/include/asm-x86/irq_32.h	2007-12-20 00:20:29.000000000 -0500
-> +++ linux-compile.git/include/asm-x86/irq_32.h	2007-12-20 00:21:55.000000000 -0500
-> @@ -41,7 +41,7 @@ extern int irqbalance_disable(char *str)
->  extern void fixup_irqs(cpumask_t map);
->  #endif
->  
-> -unsigned int do_IRQ(struct pt_regs *regs);
-> +fastcall unsigned int do_IRQ(struct pt_regs *regs);
->  void init_IRQ(void);
->  void __init native_init_IRQ(void);
->  
-> 
-> -- 
+Harvey
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+
+
