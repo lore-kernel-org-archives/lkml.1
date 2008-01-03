@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753166AbYACUvB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753365AbYACU4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753166AbYACUvB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 15:51:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbYACUuv
+	id S1753365AbYACU4c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 15:56:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbYACU4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 15:50:51 -0500
-Received: from smtprelay12.ispgateway.de ([80.67.29.29]:53890 "EHLO
-	smtprelay12.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751030AbYACUuv (ORCPT
+	Thu, 3 Jan 2008 15:56:23 -0500
+Received: from lap75545.ornl.gov ([160.91.210.54]:36474 "EHLO
+	lap75545.ornl.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751657AbYACU4X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 15:50:51 -0500
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Jan 2008 15:50:50 EST
-Message-ID: <477D491F.1060001@selhorst.net>
-Date: Thu, 03 Jan 2008 21:44:15 +0100
-From: Marcel Selhorst <tpm@selhorst.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071117)
-MIME-Version: 1.0
-To: TPM Device Driver List <tpmdd-devel@lists.sourceforge.net>,
-       linux-kernel@vger.kernel.org
-CC: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] - TPM save state before suspending to ram
-Content-Type: text/plain; charset=ISO-8859-15
+	Thu, 3 Jan 2008 15:56:23 -0500
+Subject: Re: [ofa-general] Re: list corruption on ib_srp load in v2.6.24-rc5
+From: David Dillow <dave@thedillows.org>
+To: FUJITA Tomonori <tomof@acm.org>
+Cc: fujita.tomonori@lab.ntt.co.jp, rdreier@cisco.com,
+       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+In-Reply-To: <1199390957.7561.33.camel@lap75545.ornl.gov>
+References: <20071223014407L.tomof@acm.org>
+	 <1198689251.25003.2.camel@lap75545.ornl.gov> <adaprwkundh.fsf@cisco.com>
+	 <20080103173330T.tomof@acm.org>
+	 <1199390957.7561.33.camel@lap75545.ornl.gov>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.1-5; AVE: 7.6.0.46; VDF: 7.0.1.191; host: mail)
+Date: Thu, 03 Jan 2008 15:51:25 -0500
+Message-Id: <1199393485.7561.51.camel@lap75545.ornl.gov>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear list,
 
-this patch fixes a bug, that prevents the TPM chip to resume correctly from a
-suspended state.
+On Thu, 2008-01-03 at 15:09 -0500, David Dillow wrote:
+> As for a better fix, I'm not sure.
 
-Signed-off-by: Marcel Selhorst <tpm@selhorst.net>
----
---- linux-tpm/drivers/char/tpm/tpm.c	2008-01-03 20:44:43.000000000 +0100
-+++ linux/drivers/char/tpm/tpm.c	2008-01-03 21:08:13.000000000 +0100
-@@ -1041,7 +1041,7 @@ void tpm_remove_hardware(struct device *
- }
- EXPORT_SYMBOL_GPL(tpm_remove_hardware);
+Here's a better way than the strncmp. If this meets everyone's approval,
+then I can roll up a proper commit.
 
--static u8 savestate[] = {
-+static const u8 savestate[] = {
- 	0, 193,			/* TPM_TAG_RQU_COMMAND */
- 	0, 0, 0, 10,		/* blob length (in bytes) */
- 	0, 0, 0, 152		/* TPM_ORD_SaveState */
-@@ -1053,11 +1053,13 @@ static u8 savestate[] = {
-  */
- int tpm_pm_suspend(struct device *dev, pm_message_t pm_state)
+diff --git a/drivers/scsi/scsi_transport_srp.c b/drivers/scsi/scsi_transport_srp.c
+index 44a340b..65c584d 100644
+--- a/drivers/scsi/scsi_transport_srp.c
++++ b/drivers/scsi/scsi_transport_srp.c
+@@ -265,7 +265,8 @@ EXPORT_SYMBOL_GPL(srp_rport_del);
+ 
+ static int do_srp_rport_del(struct device *dev, void *data)
  {
-+	u8 data[max_t(int, max(ARRAY_SIZE(savestate), ARRAY_SIZE(savestate)), 10)];
- 	struct tpm_chip *chip = dev_get_drvdata(dev);
- 	if (chip == NULL)
- 		return -ENODEV;
-
--	tpm_transmit(chip, savestate, sizeof(savestate));
-+	memcpy(data, savestate, sizeof(savestate));
-+	tpm_transmit(chip, data, sizeof(data));
+-	srp_rport_del(dev_to_rport(dev));
++	if (scsi_is_srp_rport(dev))
++		srp_rport_del(dev_to_rport(dev));
  	return 0;
  }
- EXPORT_SYMBOL_GPL(tpm_pm_suspend);
-
+ 
 
