@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758176AbYACEOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759147AbYACEQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758176AbYACEOR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 23:14:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754753AbYACEOG
+	id S1759147AbYACEQX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 23:16:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbYACEQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 23:14:06 -0500
-Received: from rtr.ca ([76.10.145.34]:1180 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754150AbYACEOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 23:14:05 -0500
-Message-ID: <477C610A.30805@rtr.ca>
-Date: Wed, 02 Jan 2008 23:14:02 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 2 Jan 2008 23:16:16 -0500
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:43696 "EHLO
+	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754137AbYACEQP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 23:16:15 -0500
+Date: Thu, 3 Jan 2008 09:46:06 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, htejun@gmail.com,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, maneesh@linux.vnet.ibm.com,
+       lkml <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: 2.6.22-stable causes oomkiller to be invoked
+Message-ID: <20080103041606.GC26166@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20071217045904.GB31386@linux.vnet.ibm.com> <Pine.LNX.4.64.0712171143280.12871@schroedinger.engr.sgi.com> <20071217120720.e078194b.akpm@linux-foundation.org> <Pine.LNX.4.64.0712171222470.29500@schroedinger.engr.sgi.com> <20071221044508.GA11996@linux.vnet.ibm.com> <Pine.LNX.4.64.0712261258050.16862@schroedinger.engr.sgi.com> <20071228101109.GB5083@linux.vnet.ibm.com> <Pine.LNX.4.64.0801021237330.21526@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0801021346580.3778@schroedinger.engr.sgi.com> <20080103035942.GB26166@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Allen Martin <AMartin@nvidia.com>, Jeff Garzik <jeff@garzik.org>,
-       Tejun Heo <htejun@gmail.com>, Gabor Gombas <gombasg@sztaki.hu>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Kuan Luo <kluo@nvidia.com>, Peer Chen <pchen@nvidia.com>
-Subject: Re: sata_nv + ADMA + Samsung disk problem
-References: <20070808120804.GB5257@boogie.lpds.sztaki.hu> <20080101164416.GA29574@boogie.lpds.sztaki.hu> <477B0429.7040909@gmail.com> <477B0CFD.1030603@shaw.ca> <F72FA20C31DD4F4C997B91C5B3690A09505577@hqemmail07.nvidia.com> <477BDEA5.8040701@garzik.org> <F72FA20C31DD4F4C997B91C5B3690A0950557D@hqemmail07.nvidia.com> <477C2A99.9010208@shaw.ca>
-In-Reply-To: <477C2A99.9010208@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080103035942.GB26166@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
->
-> What we're doing to enter legacy mode is essentially:
+On Thu, Jan 03, 2008 at 09:29:42AM +0530, Dhaval Giani wrote:
+> On Wed, Jan 02, 2008 at 01:54:12PM -0800, Christoph Lameter wrote:
+> > Just traced it again on my system: It is okay for the number of pages on 
+> > the quicklist to reach the high count that we see (although the 16 bit 
+> > limits are weird. You have around 4GB of memory in the system?). Up to 
+> > 1/16th of free memory of a node can be allocated for quicklists (this 
+> > allows the effective shutting down and restarting of large amounts of 
+> > processes)
+> > 
+> > The problem may be that this is run on a HIGHMEM system and the 
+> > calculation of allowable pages on the quicklists does not take into 
+> > account that highmem pages are not usable for quicklists (not sure about 
+> > ZONE_MOVABLE on i386. Maybe we need to take that into account as well?)
+> > 
+> > Here is a patch that removes the HIGHMEM portion from the calculation. 
+> > Does this change anything:
+> > 
 > 
-> -wait until ADMA status indicates IDLE bit set (max wait of 1 microsecond)
-> -clear GO bit in control register
-> -wait until status indicates LEGACY bit set (max wait of 1 microsecond)
+> Yep. This one hits it. I don't see the obvious signs of the oom
+> happening in the 5 mins I have run the script. I will let it run for
+> some more time.
 > 
-> and to enter ADMA mode:
-> 
-> -set GO bit in control register
-> -wait until status indicates LEGACY bit cleared and IDLE bit set (max 
-> wait of 1 microsecond)
-..
 
-If there are outstanding TCQ/NCQ commands (any drive),
-then this could take (much) longer to enter legacy mode,
-as the ADMA engine will wait for them all to finish.
+Yes, no oom even after 20 mins of running (which is double the normal
+time for the oom to occur), also no changes in free lowmem.
 
-But for normal, "nothing outstanding" mode, it should be very quick.
+Thanks for the fix. Feel free to add a 
 
-Cheers
+Tested-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+
+-- 
+regards,
+Dhaval
