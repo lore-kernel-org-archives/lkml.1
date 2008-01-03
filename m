@@ -1,51 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754037AbYACSkB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbYACSn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754037AbYACSkB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 13:40:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbYACSjx
+	id S1754744AbYACSn5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 13:43:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbYACSnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 13:39:53 -0500
-Received: from emroute3.ornl.gov ([160.91.4.110]:48354 "EHLO emroute3.ornl.gov"
+	Thu, 3 Jan 2008 13:43:50 -0500
+Received: from cantor.suse.de ([195.135.220.2]:42650 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751343AbYACSjw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 13:39:52 -0500
-Date: Thu, 03 Jan 2008 13:39:50 -0500
-From: David Dillow <dillowda@ornl.gov>
-Subject: Re: [GIT PULL] please pull infiniband.git for-linus
-In-reply-to: <adak5mqu5i8.fsf@cisco.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: torvalds@linux-foundation.org, general@lists.openfabrics.org,
-       linux-kernel@vger.kernel.org
-Message-id: <1199385590.7561.11.camel@lap75545.ornl.gov>
-Organization: Oak Ridge National Laboratory
-MIME-version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8)
-Content-type: text/plain
-Content-transfer-encoding: 7bit
-References: <adak5mqu5i8.fsf@cisco.com>
+	id S1752249AbYACSnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 13:43:49 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [PATCH] [1/8] GBPAGES: Handle kernel near memory hole in clear_kernel_mapping
+Date: Thu, 3 Jan 2008 19:43:05 +0100
+User-Agent: KMail/1.9.6
+Cc: ebiederm@xmission.com, linux-kernel@vger.kernel.org
+References: <20080103626.635376000@suse.de> <20080103172657.B5CFA14DDD@wotan.suse.de> <20080103182928.GC3028@redhat.com>
+In-Reply-To: <20080103182928.GC3028@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801031943.05688.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 2008-01-03 at 10:29 -0800, Roland Dreier wrote:
-> Linus, please pull from
-> 
->     master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
-> 
-> This tree is also available from kernel.org mirrors at:
-> 
->     git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
-> 
-> This will pull one fix for an oops caused by reloading the ib_srp module:
-> 
-> David Dillow (1):
->       IB/srp: Fix list corruption/oops on module reload
+> Got a question. How will kernel continue to run if we unmap the kernel
+> text/data region mappings?
 
-If we've got time before 2.6.24 final, I'd wait on this a bit.
-ib_srp:srp_remove_work() has them reversed as well, and I'm currently
-tracking down why it oopses when the srp_remove_host() happens before
-the scsi_remove_host(), which is the documented call sequence.
+Normally it shouldn't be in the same 2MB area as the aperture (which
+is the only thing that is unmapped). The problem is mostly
+the rest of the 40MB kernel mapping.
 
-This "fixes" the oops I see on unload, but I'm sure it is a correct fix.
+-Andi
 
