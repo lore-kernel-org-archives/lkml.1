@@ -1,111 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbYACPdD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbYACPiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755593AbYACPdD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 10:33:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754741AbYACPYv
+	id S1755486AbYACPiA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 10:38:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbYACPht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 10:24:51 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:43008 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751734AbYACPYR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 10:24:17 -0500
-From: Andi Kleen <ak@suse.de>
-References: <20080103424.989432000@suse.de>
-In-Reply-To: <20080103424.989432000@suse.de>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH CPA] [2/28] CPA: Do a simple self test at boot
-Message-Id: <20080103152416.1D59D14E23@wotan.suse.de>
-Date: Thu,  3 Jan 2008 16:24:16 +0100 (CET)
+	Thu, 3 Jan 2008 10:37:49 -0500
+Received: from py-out-1112.google.com ([64.233.166.176]:21697 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752040AbYACPhr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 10:37:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WNfZ4y7rNQbQi4Xzygzp/FVuiZgg+Ac4MFqP98z3btKRf1IegP4GMJEq3Ln7pUimQldo6ArNZBTUPpvGJs2EFUgNMCbM4w7jG49XfAn/W7qIUMKXO0cl98UjVsN0ONhDLs5ebr5/h0r/U0cQBUpYdDEeDfSchRRO+byZPyQGECE=
+Message-ID: <64bb37e0801030737r435ff2b1r6632ab98c2286f46@mail.gmail.com>
+Date: Thu, 3 Jan 2008 16:37:46 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Subject: Re: 2.6.24-rc6-mm1
+Cc: "Herbert Xu" <herbert@gondor.apana.org.au>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "Neil Brown" <neilb@suse.de>,
+       netdev@vger.kernel.org, "Tom Tucker" <tom@opengridcomputing.com>
+In-Reply-To: <20080102215706.GB6480@fieldses.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <64bb37e0712230827m7d368e2l3174f3b4396d09c1@mail.gmail.com>
+	 <20071228150746.42b3bbc0.akpm@linux-foundation.org>
+	 <64bb37e0712290851r6d41768dk270e47884713a3de@mail.gmail.com>
+	 <20071230013021.GA13603@gondor.apana.org.au>
+	 <64bb37e0712291934o77a3d365h56c9c31ac8437469@mail.gmail.com>
+	 <64bb37e0712311215x519b10e9kd51eb745b3b7290a@mail.gmail.com>
+	 <20080101120406.GA27209@gondor.apana.org.au>
+	 <64bb37e0801021029u1735bb9eta53906b123abf577@mail.gmail.com>
+	 <20080102215154.GA13911@gondor.apana.org.au>
+	 <20080102215706.GB6480@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jan 2, 2008 10:57 PM, J. Bruce Fields <bfields@fieldses.org> wrote:
+> On Thu, Jan 03, 2008 at 08:51:54AM +1100, Herbert Xu wrote:
+> > The two specific trees of interest would be git-nfsd and git-net.
+>
+> Also, if it's git-nfsd, it'd be useful to test with the current git-nfsd
+> from the for-mm branch at:
+>
+>         git://linux-nfs.org/~bfields/linus.git for-mm
+>
+> and then any bisection results (even partial) from that tree would help
+> immensely....
 
-When CONFIG_DEBUG_RODATA is enabled undo the ro mapping and redo it again.
-This gives some simple testing for change_page_attr()
+Wrong URL, its (now?) at git://git.linux-nfs.org/projects/bfields/linux.git
 
-Optional patch, but I find it useful.
+Using "HEAD is now at cd7e1c9... Merge commit 'server-xprt-switch^' into for-mm"
+I was able to compile&install 54 packages, so this seems to be working.
 
-Signed-off-by: Andi Kleen <ak@suse.de>
+Now git-fetch'ing
+git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6.25.git
 
----
- arch/x86/Kconfig.debug |    5 +++++
- arch/x86/mm/init_32.c  |   22 ++++++++++++++++++++++
- arch/x86/mm/init_64.c  |   10 ++++++++++
- 3 files changed, 37 insertions(+)
-
-Index: linux/arch/x86/mm/init_64.c
-===================================================================
---- linux.orig/arch/x86/mm/init_64.c
-+++ linux/arch/x86/mm/init_64.c
-@@ -596,6 +596,16 @@ void mark_rodata_ro(void)
- 	 * of who is the culprit.
- 	 */
- 	global_flush_tlb();
-+
-+#ifdef CONFIG_CPA_DEBUG
-+	printk("Testing CPA: undo %lx-%lx\n", start, end);
-+	change_page_attr_addr(start, (end - start) >> PAGE_SHIFT, PAGE_KERNEL);
-+	global_flush_tlb();
-+
-+	printk("Testing CPA: again\n");
-+	change_page_attr_addr(start, (end - start) >> PAGE_SHIFT, PAGE_KERNEL_RO);
-+	global_flush_tlb();
-+#endif
- }
- #endif
- 
-Index: linux/arch/x86/mm/init_32.c
-===================================================================
---- linux.orig/arch/x86/mm/init_32.c
-+++ linux/arch/x86/mm/init_32.c
-@@ -792,6 +792,18 @@ void mark_rodata_ro(void)
- 		change_page_attr(virt_to_page(start),
- 		                 size >> PAGE_SHIFT, PAGE_KERNEL_RX);
- 		printk("Write protecting the kernel text: %luk\n", size >> 10);
-+
-+#ifdef CONFIG_CPA_DEBUG
-+		global_flush_tlb();
-+
-+		printk("Testing CPA: undo %lx-%lx\n", start, start+size);
-+		change_page_attr(virt_to_page(start), size>>PAGE_SHIFT, PAGE_KERNEL_EXEC);
-+		global_flush_tlb();
-+
-+		printk("Testing CPA: write protecting again\n");
-+		change_page_attr(virt_to_page(start),size>>PAGE_SHIFT,PAGE_KERNEL_RX);
-+		global_flush_tlb();
-+#endif
- 	}
- #endif
- 	start += size;
-@@ -808,6 +820,16 @@ void mark_rodata_ro(void)
- 	 * of who is the culprit.
- 	 */
- 	global_flush_tlb();
-+
-+#ifdef CONFIG_CPA_DEBUG
-+	printk("Testing CPA: undo %lx-%lx\n", start, start + size);
-+	change_page_attr(virt_to_page(start), size >> PAGE_SHIFT, PAGE_KERNEL);
-+	global_flush_tlb();
-+
-+	printk("Testing CPA: write protecting again\n");
-+	change_page_attr(virt_to_page(start), size >> PAGE_SHIFT, PAGE_KERNEL_RO);
-+	global_flush_tlb();
-+#endif
- }
- #endif
- 
-Index: linux/arch/x86/Kconfig.debug
-===================================================================
---- linux.orig/arch/x86/Kconfig.debug
-+++ linux/arch/x86/Kconfig.debug
-@@ -185,4 +185,9 @@ config DEFAULT_IO_DELAY_TYPE
- 	default IO_DELAY_TYPE_NONE
- endif
- 
-+config CPA_DEBUG
-+	bool "CPA self test code"
-+	help
-+	  Do change_page_attr self tests at boot.
-+
- endmenu
+Torsten
