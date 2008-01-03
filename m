@@ -1,503 +1,422 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757487AbYACEDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759068AbYACEF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757487AbYACEDR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 23:03:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbYACEDF
+	id S1759068AbYACEF3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 23:05:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbYACEFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 23:03:05 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:38975 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754541AbYACEDD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 23:03:03 -0500
-Date: Wed, 2 Jan 2008 22:02:59 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       hch@infradead.org, serue@us.ibm.com
-Subject: Re: [PATCH] track number of mnts writing to superblocks
-Message-ID: <20080103040258.GB14117@sergelap.austin.ibm.com>
-References: <20080102215110.F3A0B1DC@kernel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080102215110.F3A0B1DC@kernel>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 2 Jan 2008 23:05:21 -0500
+Received: from an-out-0708.google.com ([209.85.132.248]:43805 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753910AbYACEFT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 23:05:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=hMiZuPdKMQSJ2fxCx4r44VNAsO1Jv4a4jwHltbklj6ajgI4rPXOweI0sRgf8oDMrzaS7+3C9XwmmYjxlkqs08xJCqrRZkhGOlnse+lVIjrsTCo7oQzQy4yG4pDYmXFjEcBi7LXw0N7cOLa9xrB6VvnpdlLQys5KkuCqxpja9TYQ=
+Subject: [PATCH] kprobes: Introduce is_kprobe_fault()
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 02 Jan 2008 20:05:14 -0800
+Message-Id: <1199333115.6323.104.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Dave Hansen (haveblue@us.ibm.com):
-> 
-> One of the benefits of the r/o bind mount patches is that they
-> make it explicit when a write to a superblock might occur.
-> We currently search sb->s_files when remounting rw->ro to look
-> for writable files.  But, that search is not comprehensive, and
-> it is racy.  This replaces that search.
-> 
-> The idea is to keep a bit in each mount saying whether the
-> mount has any writers on it.  When the bit is set the first
-> time, we also increment a counter in the superblock.  That
-> sb counter is the number of mounts with that bit set and
-> thus, potential writers.
-> 
-> The other problem is that, after we make this check for
-> the number of writable mounts, we need to exclude all new
-> writers on those mounts.  We do this by requring that the
-> superblock mnt writer count be incremented under a
-> lock_super() and also holding that lock over the remount
-> operation.  Effectively, this keeps us from *adding* to
-> the sb's writable mounts during a remount.
-> 
-> The alternative to doing this is to do a much simpler list
-> of mounts for each superblock.  I could also code that up
-> to see what it look like.  Shouldn't be too bad.
+Use a central is_kprobe_fault() inline in kprobes.h to remove all
+of the arch-dependant, practically identical implementations in
+avr32, ia64, powerpc, s390, sparc64, and x86.
 
-Ok I'm blabbing quite a bit here while trying to figure out
-the patch, and maybe there are some useful hints for where more
-comments would be useful.  But other than the fact that
-mark_mnt_has_writer() needs to the atomic_inc() even if
-cpu_writer was passed in as NULL, the patch seems good.
+avr32 was the only arch without the preempt_disable/enable pair
+in its notify_page_fault implementation.  This should be checked
+by avr32 people.
 
-thanks,
--serge
+This uncovered a possible bug in the s390 version as that purely
+copied the x86 version unconditionally passing 14 as the trapnr
+rather than the error_code parameter.  This has been preserved
+in this patch, s390 people should check if error_code really was
+intended.
 
-> Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
-> ---
-> 
->  linux-2.6.git-dave/fs/file_table.c       |   24 -----
->  linux-2.6.git-dave/fs/namespace.c        |  134 +++++++++++++++++++++++++------
->  linux-2.6.git-dave/fs/super.c            |   61 +++++++++++---
->  linux-2.6.git-dave/include/linux/fs.h    |    5 -
->  linux-2.6.git-dave/include/linux/mount.h |    3 
->  5 files changed, 163 insertions(+), 64 deletions(-)
-> 
-> diff -puN fs/file_table.c~track_sb_mnt_writers fs/file_table.c
-> --- linux-2.6.git/fs/file_table.c~track_sb_mnt_writers	2008-01-02 10:49:11.000000000 -0800
-> +++ linux-2.6.git-dave/fs/file_table.c	2008-01-02 10:49:11.000000000 -0800
-> @@ -374,30 +374,6 @@ void file_kill(struct file *file)
->  	}
->  }
-> 
-> -int fs_may_remount_ro(struct super_block *sb)
-> -{
-> -	struct file *file;
-> -
-> -	/* Check that no files are currently opened for writing. */
-> -	file_list_lock();
-> -	list_for_each_entry(file, &sb->s_files, f_u.fu_list) {
-> -		struct inode *inode = file->f_path.dentry->d_inode;
-> -
-> -		/* File with pending delete? */
-> -		if (inode->i_nlink == 0)
-> -			goto too_bad;
-> -
-> -		/* Writeable file? */
-> -		if (S_ISREG(inode->i_mode) && (file->f_mode & FMODE_WRITE))
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Andrew, this came up when discussing some x86 fault unification
+work, figured you were the right person to feed this through.
 
-(why did this originally skip directories?)
+At least the diffstat says I did something right.  Patch against
+current Linus tree.
 
-> -			goto too_bad;
-> -	}
-> -	file_list_unlock();
-> -	return 1; /* Tis' cool bro. */
-> -too_bad:
-> -	file_list_unlock();
-> -	return 0;
-> -}
-> -
->  void __init files_init(unsigned long mempages)
->  { 
->  	int n; 
-> diff -puN fs/file_table.c.orig~track_sb_mnt_writers fs/file_table.c.orig
-> diff -puN fs/namespace.c~track_sb_mnt_writers fs/namespace.c
-> --- linux-2.6.git/fs/namespace.c~track_sb_mnt_writers	2008-01-02 10:49:11.000000000 -0800
-> +++ linux-2.6.git-dave/fs/namespace.c	2008-01-02 13:39:52.000000000 -0800
-> @@ -118,7 +118,7 @@ struct mnt_writer {
->  	 * If holding multiple instances of this lock, they
->  	 * must be ordered by cpu number.
->  	 */
-> -	spinlock_t lock;
-> +	struct mutex lock;
->  	struct lock_class_key lock_class; /* compiles out with !lockdep */
->  	unsigned long count;
->  	struct vfsmount *mnt;
-> @@ -130,7 +130,7 @@ static int __init init_mnt_writers(void)
->  	int cpu;
->  	for_each_possible_cpu(cpu) {
->  		struct mnt_writer *writer = &per_cpu(mnt_writers, cpu);
-> -		spin_lock_init(&writer->lock);
-> +		mutex_init(&writer->lock);
->  		lockdep_set_class(&writer->lock, &writer->lock_class);
->  		writer->count = 0;
->  	}
-> @@ -145,11 +145,52 @@ static void mnt_unlock_cpus(void)
-> 
->  	for_each_possible_cpu(cpu) {
->  		cpu_writer = &per_cpu(mnt_writers, cpu);
-> -		spin_unlock(&cpu_writer->lock);
-> +		mutex_unlock(&cpu_writer->lock);
->  	}
->  }
-> 
-> -static inline void __clear_mnt_count(struct mnt_writer *cpu_writer)
-> +static int mark_mnt_has_writer(struct vfsmount *mnt,
-> +			       struct mnt_writer *cpu_writer)
-> +{
-> +	/*
-> +	 * Ensure that if there are people racing to set
-> +	 * the bit that only one of them succeeds and can
-> +	 * increment the sb count.
-> +	 */
-> +	if (test_and_set_bit(ilog2(MNT_MAY_HAVE_WRITERS), &mnt->mnt_flags))
-> +		return 0;
+ arch/avr32/mm/fault.c   |   21 +--------------------
+ arch/ia64/mm/fault.c    |   24 +-----------------------
+ arch/powerpc/mm/fault.c |   25 +------------------------
+ arch/s390/mm/fault.c    |   25 +------------------------
+ arch/sparc64/mm/fault.c |   23 +----------------------
+ arch/x86/mm/fault_32.c  |   26 ++------------------------
+ arch/x86/mm/fault_64.c  |   26 ++------------------------
+ include/linux/kprobes.h |   19 +++++++++++++++++++
+ 8 files changed, 28 insertions(+), 161 deletions(-)
 
-Comment isn't entirely clear, but you're returning 0 here because
-someone else has already set the flag and incremented
-sb->__s_mnt_writers so you don't have to and you're all set to go on
-with writing?
+diff --git a/arch/avr32/mm/fault.c b/arch/avr32/mm/fault.c
+index 6560cb1..a95cce2 100644
+--- a/arch/avr32/mm/fault.c
++++ b/arch/avr32/mm/fault.c
+@@ -20,25 +20,6 @@
+ #include <asm/tlb.h>
+ #include <asm/uaccess.h>
+ 
+-#ifdef CONFIG_KPROBES
+-static inline int notify_page_fault(struct pt_regs *regs, int trap)
+-{
+-	int ret = 0;
+-
+-	if (!user_mode(regs)) {
+-		if (kprobe_running() && kprobe_fault_handler(regs, trap))
+-			ret = 1;
+-	}
+-
+-	return ret;
+-}
+-#else
+-static inline int notify_page_fault(struct pt_regs *regs, int trap)
+-{
+-	return 0;
+-}
+-#endif
+-
+ int exception_trace = 1;
+ 
+ /*
+@@ -66,7 +47,7 @@ asmlinkage void do_page_fault(unsigned long ecr, struct pt_regs *regs)
+ 	int code;
+ 	int fault;
+ 
+-	if (notify_page_fault(regs, ecr))
++	if (is_kprobe_fault(regs, ecr))
+ 		return;
+ 
+ 	address = sysreg_read(TLBEAR);
+diff --git a/arch/ia64/mm/fault.c b/arch/ia64/mm/fault.c
+index 7571076..1696805 100644
+--- a/arch/ia64/mm/fault.c
++++ b/arch/ia64/mm/fault.c
+@@ -18,28 +18,6 @@
+ 
+ extern void die (char *, struct pt_regs *, long);
+ 
+-#ifdef CONFIG_KPROBES
+-static inline int notify_page_fault(struct pt_regs *regs, int trap)
+-{
+-	int ret = 0;
+-
+-	if (!user_mode(regs)) {
+-		/* kprobe_running() needs smp_processor_id() */
+-		preempt_disable();
+-		if (kprobe_running() && kprobes_fault_handler(regs, trap))
+-			ret = 1;
+-		preempt_enable();
+-	}
+-
+-	return ret;
+-}
+-#else
+-static inline int notify_page_fault(struct pt_regs *regs, int trap)
+-{
+-	return 0;
+-}
+-#endif
+-
+ /*
+  * Return TRUE if ADDRESS points at a page in the kernel's mapped segment
+  * (inside region 5, on ia64) and that page is present.
+@@ -106,7 +84,7 @@ ia64_do_page_fault (unsigned long address, unsigned long isr, struct pt_regs *re
+ 	/*
+ 	 * This is to handle the kprobes on user space access instructions
+ 	 */
+-	if (notify_page_fault(regs, TRAP_BRKPT))
++	if (is_kprobe_fault(regs, TRAP_BRKPT))
+ 		return;
+ 
+ 	down_read(&mm->mmap_sem);
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 8135da0..00df6f9 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -39,29 +39,6 @@
+ #include <asm/tlbflush.h>
+ #include <asm/siginfo.h>
+ 
+-
+-#ifdef CONFIG_KPROBES
+-static inline int notify_page_fault(struct pt_regs *regs)
+-{
+-	int ret = 0;
+-
+-	/* kprobe_running() needs smp_processor_id() */
+-	if (!user_mode(regs)) {
+-		preempt_disable();
+-		if (kprobe_running() && kprobe_fault_handler(regs, 11))
+-			ret = 1;
+-		preempt_enable();
+-	}
+-
+-	return ret;
+-}
+-#else
+-static inline int notify_page_fault(struct pt_regs *regs)
+-{
+-	return 0;
+-}
+-#endif
+-
+ /*
+  * Check whether the instruction at regs->nip is a store using
+  * an update addressing form which will update r1.
+@@ -164,7 +141,7 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	is_write = error_code & ESR_DST;
+ #endif /* CONFIG_4xx || CONFIG_BOOKE */
+ 
+-	if (notify_page_fault(regs))
++	if (is_kprobe_fault(regs, 11))
+ 		return 0;
+ 
+ 	if (trap == 0x300) {
+diff --git a/arch/s390/mm/fault.c b/arch/s390/mm/fault.c
+index 2456b52..59d3f0e 100644
+--- a/arch/s390/mm/fault.c
++++ b/arch/s390/mm/fault.c
+@@ -51,29 +51,6 @@ extern int sysctl_userprocess_debug;
+ 
+ extern void die(const char *,struct pt_regs *,long);
+ 
+-#ifdef CONFIG_KPROBES
+-static inline int notify_page_fault(struct pt_regs *regs, long err)
+-{
+-	int ret = 0;
+-
+-	/* kprobe_running() needs smp_processor_id() */
+-	if (!user_mode(regs)) {
+-		preempt_disable();
+-		if (kprobe_running() && kprobe_fault_handler(regs, 14))
+-			ret = 1;
+-		preempt_enable();
+-	}
+-
+-	return ret;
+-}
+-#else
+-static inline int notify_page_fault(struct pt_regs *regs, long err)
+-{
+-	return 0;
+-}
+-#endif
+-
+-
+ /*
+  * Unlock any spinlocks which will prevent us from getting the
+  * message out.
+@@ -309,7 +286,7 @@ do_exception(struct pt_regs *regs, unsigned long error_code, int write)
+ 	int si_code;
+ 	int fault;
+ 
+-	if (notify_page_fault(regs, error_code))
++	if (is_kprobe_fault(regs, 14))
+ 		return;
+ 
+ 	tsk = current;
+diff --git a/arch/sparc64/mm/fault.c b/arch/sparc64/mm/fault.c
+index e2027f2..bb5c36a 100644
+--- a/arch/sparc64/mm/fault.c
++++ b/arch/sparc64/mm/fault.c
+@@ -31,27 +31,6 @@
+ #include <asm/sections.h>
+ #include <asm/mmu_context.h>
+ 
+-#ifdef CONFIG_KPROBES
+-static inline int notify_page_fault(struct pt_regs *regs)
+-{
+-	int ret = 0;
+-
+-	/* kprobe_running() needs smp_processor_id() */
+-	if (!user_mode(regs)) {
+-		preempt_disable();
+-		if (kprobe_running() && kprobe_fault_handler(regs, 0))
+-			ret = 1;
+-		preempt_enable();
+-	}
+-	return ret;
+-}
+-#else
+-static inline int notify_page_fault(struct pt_regs *regs)
+-{
+-	return 0;
+-}
+-#endif
+-
+ /*
+  * To debug kernel to catch accesses to certain virtual/physical addresses.
+  * Mode = 0 selects physical watchpoints, mode = 1 selects virtual watchpoints.
+@@ -280,7 +259,7 @@ asmlinkage void __kprobes do_sparc64_fault(struct pt_regs *regs)
+ 
+ 	fault_code = get_thread_fault_code();
+ 
+-	if (notify_page_fault(regs))
++	if (is_kprobe_fault(regs, 0))
+ 		return;
+ 
+ 	si_code = SEGV_MAPERR;
+diff --git a/arch/x86/mm/fault_32.c b/arch/x86/mm/fault_32.c
+index a2273d4..f2e909b 100644
+--- a/arch/x86/mm/fault_32.c
++++ b/arch/x86/mm/fault_32.c
+@@ -33,28 +33,6 @@
+ 
+ extern void die(const char *,struct pt_regs *,long);
+ 
+-#ifdef CONFIG_KPROBES
+-static inline int notify_page_fault(struct pt_regs *regs)
+-{
+-	int ret = 0;
+-
+-	/* kprobe_running() needs smp_processor_id() */
+-	if (!user_mode_vm(regs)) {
+-		preempt_disable();
+-		if (kprobe_running() && kprobe_fault_handler(regs, 14))
+-			ret = 1;
+-		preempt_enable();
+-	}
+-
+-	return ret;
+-}
+-#else
+-static inline int notify_page_fault(struct pt_regs *regs)
+-{
+-	return 0;
+-}
+-#endif
+-
+ /*
+  * Return EIP plus the CS segment base.  The segment limit is also
+  * adjusted, clamped to the kernel/user address space (whichever is
+@@ -331,7 +309,7 @@ fastcall void __kprobes do_page_fault(struct pt_regs *regs,
+ 	if (unlikely(address >= TASK_SIZE)) {
+ 		if (!(error_code & 0x0000000d) && vmalloc_fault(address) >= 0)
+ 			return;
+-		if (notify_page_fault(regs))
++		if (is_kprobe_fault(regs, 14))
+ 			return;
+ 		/*
+ 		 * Don't take the mm semaphore here. If we fixup a prefetch
+@@ -340,7 +318,7 @@ fastcall void __kprobes do_page_fault(struct pt_regs *regs,
+ 		goto bad_area_nosemaphore;
+ 	}
+ 
+-	if (notify_page_fault(regs))
++	if (is_kprobe_fault(regs, 14))
+ 		return;
+ 
+ 	/* It's safe to allow irq's after cr2 has been saved and the vmalloc
+diff --git a/arch/x86/mm/fault_64.c b/arch/x86/mm/fault_64.c
+index 0e26230..376e218 100644
+--- a/arch/x86/mm/fault_64.c
++++ b/arch/x86/mm/fault_64.c
+@@ -41,28 +41,6 @@
+ #define PF_RSVD	(1<<3)
+ #define PF_INSTR	(1<<4)
+ 
+-#ifdef CONFIG_KPROBES
+-static inline int notify_page_fault(struct pt_regs *regs)
+-{
+-	int ret = 0;
+-
+-	/* kprobe_running() needs smp_processor_id() */
+-	if (!user_mode(regs)) {
+-		preempt_disable();
+-		if (kprobe_running() && kprobe_fault_handler(regs, 14))
+-			ret = 1;
+-		preempt_enable();
+-	}
+-
+-	return ret;
+-}
+-#else
+-static inline int notify_page_fault(struct pt_regs *regs)
+-{
+-	return 0;
+-}
+-#endif
+-
+ /* Sometimes the CPU reports invalid exceptions on prefetch.
+    Check that here and ignore.
+    Opcode checker based on code by Richard Brunner */
+@@ -343,7 +321,7 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
+ 			if (vmalloc_fault(address) >= 0)
+ 				return;
+ 		}
+-		if (notify_page_fault(regs))
++		if (is_kprobe_fault(regs, 14))
+ 			return;
+ 		/*
+ 		 * Don't take the mm semaphore here. If we fixup a prefetch
+@@ -352,7 +330,7 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
+ 		goto bad_area_nosemaphore;
+ 	}
+ 
+-	if (notify_page_fault(regs))
++	if (is_kprobe_fault(regs, 14))
+ 		return;
+ 
+ 	if (likely(regs->eflags & X86_EFLAGS_IF))
+diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
+index 8189158..65c1ffb 100644
+--- a/include/linux/kprobes.h
++++ b/include/linux/kprobes.h
+@@ -36,6 +36,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/rcupdate.h>
+ #include <linux/mutex.h>
++#include <linux/hardirq.h>
+ 
+ #ifdef CONFIG_KPROBES
+ #include <asm/kprobes.h>
+@@ -203,6 +204,20 @@ static inline struct kprobe *kprobe_running(void)
+ 	return (__get_cpu_var(current_kprobe));
+ }
+ 
++/*
++ * If it is a kprobe pagefault we can not be premptible so return before
++ * calling kprobe_running() as it will assert on smp_processor_id if
++ * preemption is enabled.
++ */
++static inline int is_kprobe_fault(struct pt_regs *regs, int trapnr)
++{
++	if (!user_mode(regs) && !preemptible() && kprobe_running() &&
++	    kprobe_fault_handler(regs, trapnr))
++		return 1;
++	else
++		return 0;
++}
++
+ static inline void reset_current_kprobe(void)
+ {
+ 	__get_cpu_var(current_kprobe) = NULL;
+@@ -237,6 +252,10 @@ static inline struct kprobe *kprobe_running(void)
+ {
+ 	return NULL;
+ }
++static inline int is_kprobe_fault(struct pt_regs *regs, int trapnr)
++{
++	return 0;
++}
+ static inline int register_kprobe(struct kprobe *p)
+ {
+ 	return -ENOSYS;
+-- 
+1.5.4.rc2.1097.gb6e0d
 
-> +	if (cpu_writer == NULL)
-> +		return 0;
-> +
-> +	/*
-> +	 * Our goal here is to get exclusion from a superblock
-> +	 * remount operation (fs_may_remount_ro()).  This is
-> +	 * effectively a slow path that we must go through the
-> +	 * first time we set the bit on each mount, but never
-> +	 * again unless the writer counts get coalesced.
-> +	 */
-> +
-> +	mutex_unlock(&cpu_writer->lock);
-> +	lock_super(mnt->mnt_sb);
-> +
-> +	atomic_inc(&mnt->mnt_sb->__s_mnt_writers);
 
-The atomic_inc of course should be done even if cpu_writer was passed
-in as NULL, you just don't need to do the locking then, and can
-return 0 in that case?
 
-> +
-> +	unlock_super(mnt->mnt_sb);
-> +	mutex_lock(&cpu_writer->lock);
-> +	return -EAGAIN;
-> +}
-> +
-> +static void __mark_sb_if_writable(struct vfsmount *mnt)
-
-This function is taking the writable state from a mnt and marking it in
-the sb.  So the name should be a shorter verison of something like
-"commit_mnt_writable_state_to_sb"
-
-> +{
-> +	int bitnr = ilog2(MNT_MAY_HAVE_WRITERS);
-> +
-> +	if (atomic_read(&mnt->__mnt_writers))
-> +		mark_mnt_has_writer(mnt, NULL);
-> +	else if (test_and_clear_bit(bitnr, &mnt->mnt_flags))
-> +		atomic_dec(&mnt->mnt_sb->__s_mnt_writers);
-
-And after staring at this code for awhile it did make sense, but a
-comment above it would help saying that
-
-	/* If mnt has writers, mark_mnt_has_writer() will make
-	   sure that is marked in the sb.  If mnt has no writers,
-	   then if mnt->mnt_flags was previously set, that means
-	   that mnt->mnt_sb->__s_mnt_writers reflects our having
-	   writers, so we decrement it
-	 */
-
-Ok, maybe it's clearer to other people and the comment isn't needed...
-
-> +}
-> +
-> +static inline void __move_cpu_mnt_count(struct mnt_writer *cpu_writer)
->  {
->  	if (!cpu_writer->mnt)
->  		return;
-> @@ -164,7 +205,7 @@ static inline void use_cpu_writer_for_mo
->  {
->  	if (cpu_writer->mnt == mnt)
->  		return;
-> -	__clear_mnt_count(cpu_writer);
-> +	__move_cpu_mnt_count(cpu_writer);
->  	cpu_writer->mnt = mnt;
->  }
-> 
-> @@ -188,20 +229,31 @@ static inline void use_cpu_writer_for_mo
->   */
->  int mnt_want_write(struct vfsmount *mnt)
->  {
-> -	int ret = 0;
-> +	int ret;
->  	struct mnt_writer *cpu_writer;
-> 
-> -	cpu_writer = &get_cpu_var(mnt_writers);
-> -	spin_lock(&cpu_writer->lock);
-> +	/*
-> +	 * It is OK to not disable preemption here.  We
-> +	 * only use the per-cpu vars to reduce cache
-> +	 * effects, and not for any real exclusion.
-> +	 * We use the mutexes for that.
-> +	 */
-> +	cpu_writer = &__get_cpu_var(mnt_writers);
-> +	mutex_lock(&cpu_writer->lock);
-> +again:
-> +	ret = 0;
->  	if (__mnt_is_readonly(mnt)) {
->  		ret = -EROFS;
->  		goto out;
->  	}
-> +	ret = mark_mnt_has_writer(mnt, cpu_writer);
-> +	/* did we hit the slow path and re-do the lock? */
-> +	if (ret == -EAGAIN)
-> +		goto again;
->  	use_cpu_writer_for_mount(cpu_writer, mnt);
->  	cpu_writer->count++;
->  out:
-> -	spin_unlock(&cpu_writer->lock);
-> -	put_cpu_var(mnt_writers);
-> +	mutex_unlock(&cpu_writer->lock);
->  	return ret;
->  }
->  EXPORT_SYMBOL_GPL(mnt_want_write);
-> @@ -213,13 +265,37 @@ static void lock_and_coalesce_cpu_mnt_wr
-> 
->  	for_each_possible_cpu(cpu) {
->  		cpu_writer = &per_cpu(mnt_writers, cpu);
-> -		spin_lock(&cpu_writer->lock);
-> -		__clear_mnt_count(cpu_writer);
-> +		mutex_lock(&cpu_writer->lock);
-> +		__move_cpu_mnt_count(cpu_writer);
-> +		/*
-> +		 * __mnt_writers may temporarily hit zero
-> +		 * (and trigger MNT_MAY_HAVE_WRITERS to get
-> +		 * cleared), but it will get set again if
-> +		 * and when another mnt_writer[] has an
-> +		 * entry for that mnt later in this loop.
-> +		 * Holding the locks keeps anyone from
-> +		 * seeing this.
-> +		 */
-> +		__mark_sb_if_writable(cpu_writer->mnt);
->  		cpu_writer->mnt = NULL;
->  	}
->  }
-> 
->  /*
-> + * This is just an external interface.  I want
-> + * to use the long names in here, but leave the
-> + * simpler names for external users.
-> + */
-> +void lock_mnt_writers()
-> +{
-> +	lock_and_coalesce_cpu_mnt_writer_counts();
-> +}
-> +void unlock_mnt_writers()
-> +{
-> +	mnt_unlock_cpus();
-> +}
-> +
-> +/*
->   * These per-cpu write counts are not guaranteed to have
->   * matched increments and decrements on any given cpu.
->   * A file open()ed for write on one cpu and close()d on
-> @@ -262,23 +338,40 @@ static void handle_write_count_underflow
->   * performing writes to it.  Must be matched with
->   * mnt_want_write() call above.
->   */
-> +#define MNT_WRITERS_UNDERFLOW_LIMIT 1024
->  void mnt_drop_write(struct vfsmount *mnt)
->  {
->  	int must_check_underflow = 0;
->  	struct mnt_writer *cpu_writer;
-> 
-> -	cpu_writer = &get_cpu_var(mnt_writers);
-> -	spin_lock(&cpu_writer->lock);
-> +retry:
-> +	cpu_writer = &__get_cpu_var(mnt_writers);
-> +	mutex_lock(&cpu_writer->lock);
-> 
->  	use_cpu_writer_for_mount(cpu_writer, mnt);
->  	if (cpu_writer->count > 0) {
->  		cpu_writer->count--;
->  	} else {
-> -		must_check_underflow = 1;
-> +		/*
-> +		 * Without this check, it is theoretically
-> +		 * possible for large number of processes
-> +		 * to atomic_dec(__mnt_writers) and cause
-> +		 * it to underflow.  Because we are under
-> +		 * the mutex (and there are NR_CPUS
-> +		 * mutexes), this limits the number of
-> +		 * concurrent decrements and underflow
-> +		 * level to NR_CPUS.
-> +		 */
-> +		if (atomic_read(&mnt->__mnt_writers) <
-> +			MNT_WRITER_UNDERFLOW_LIMIT) {
-> +			mutex_unlock(&cpu_writer->lock);
-> +			goto retry;
-> +		}
->  		atomic_dec(&mnt->__mnt_writers);
-> +		must_check_underflow = 1;
->  	}
-> 
-> -	spin_unlock(&cpu_writer->lock);
-> +	mutex_unlock(&cpu_writer->lock);
->  	/*
->  	 * Logically, we could call this each time,
->  	 * but the __mnt_writers cacheline tends to
-> @@ -286,15 +379,6 @@ void mnt_drop_write(struct vfsmount *mnt
->  	 */
->  	if (must_check_underflow)
->  		handle_write_count_underflow(mnt);
-> -	/*
-> -	 * This could be done right after the spinlock
-> -	 * is taken because the spinlock keeps us on
-> -	 * the cpu, and disables preemption.  However,
-> -	 * putting it here bounds the amount that
-> -	 * __mnt_writers can underflow.  Without it,
-> -	 * we could theoretically wrap __mnt_writers.
-> -	 */
-> -	put_cpu_var(mnt_writers);
->  }
->  EXPORT_SYMBOL_GPL(mnt_drop_write);
-> 
-> diff -puN fs/namespace.c.orig~track_sb_mnt_writers fs/namespace.c.orig
-> diff -puN include/linux/fs.h~track_sb_mnt_writers include/linux/fs.h
-> --- linux-2.6.git/include/linux/fs.h~track_sb_mnt_writers	2008-01-02 10:49:11.000000000 -0800
-> +++ linux-2.6.git-dave/include/linux/fs.h	2008-01-02 10:49:11.000000000 -0800
-> @@ -1005,6 +1005,9 @@ struct super_block {
->  #ifdef CONFIG_SECURITY
->  	void                    *s_security;
->  #endif
-> +	atomic_t		__s_mnt_writers;/* how many mounts of this sb
-> +						 * might have writers.  Only
-> +						 * stable with lock_mnt_writers() */
->  	struct xattr_handler	**s_xattr;
-> 
->  	struct list_head	s_inodes;	/* all inodes */
-> @@ -1650,8 +1653,6 @@ extern const struct file_operations read
->  extern const struct file_operations write_fifo_fops;
->  extern const struct file_operations rdwr_fifo_fops;
-> 
-> -extern int fs_may_remount_ro(struct super_block *);
-> -
->  #ifdef CONFIG_BLOCK
->  /*
->   * return READ, READA, or WRITE
-> diff -puN include/linux/fs.h.orig~track_sb_mnt_writers include/linux/fs.h.orig
-> diff -puN include/linux/mount.h~track_sb_mnt_writers include/linux/mount.h
-> --- linux-2.6.git/include/linux/mount.h~track_sb_mnt_writers	2008-01-02 10:49:11.000000000 -0800
-> +++ linux-2.6.git-dave/include/linux/mount.h	2008-01-02 10:49:11.000000000 -0800
-> @@ -33,6 +33,7 @@ struct mnt_namespace;
-> 
->  #define MNT_SHRINKABLE	0x100
->  #define MNT_IMBALANCED_WRITE_COUNT	0x200 /* just for debugging */
-> +#define MNT_MAY_HAVE_WRITERS		0x400 /* did this ever have a writer? */
-> 
->  #define MNT_SHARED	0x1000	/* if the vfsmount is a shared mount */
->  #define MNT_UNBINDABLE	0x2000	/* if the vfsmount is a unbindable mount */
-> @@ -80,6 +81,8 @@ static inline struct vfsmount *mntget(st
-> 
->  extern int mnt_want_write(struct vfsmount *mnt);
->  extern void mnt_drop_write(struct vfsmount *mnt);
-> +extern void lock_mnt_writers(void);
-> +extern void unlock_mnt_writers(void);
->  extern void mntput_no_expire(struct vfsmount *mnt);
->  extern void mnt_pin(struct vfsmount *mnt);
->  extern void mnt_unpin(struct vfsmount *mnt);
-> diff -puN include/linux/mount.h.orig~track_sb_mnt_writers include/linux/mount.h.orig
-> diff -puN fs/super.c~track_sb_mnt_writers fs/super.c
-> --- linux-2.6.git/fs/super.c~track_sb_mnt_writers	2008-01-02 10:49:11.000000000 -0800
-> +++ linux-2.6.git-dave/fs/super.c	2008-01-02 13:38:15.000000000 -0800
-> @@ -574,6 +574,41 @@ static void mark_files_ro(struct super_b
->  	file_list_unlock();
->  }
-> 
-> +static inline int fs_may_remount_ro(struct super_block *sb)
-> +{
-> +	int ret = 1;
-> +	lock_mnt_writers();
-> +	if (atomic_read(&sb->__s_mnt_writers))
-> +		ret = 0;
-> +	unlock_mnt_writers();
-> +	return ret;
-> +}
-> +
-> +/*
-> + * This unconditionally acquires the sb lock,
-> + * even if it returns an error code, and should
-> + * not be used generally.
-> + *
-> + * This must be done to ensure that no new
-> + * writers come in on the mounts after the
-> + * check is performed.
-> + */
-> +static int __try_to_make_sb_ro(struct super_block *sb, int force)
-> +{
-> +	int retval = 0;
-> +
-> +	if (force) {
-> +		mark_files_ro(sb);
-> +		lock_super(sb);
-> +	} else {
-> +		lock_super(sb);
-> +		/* Make sure there are no mounts that have writers */
-> +		if (!fs_may_remount_ro(sb))
-> +			retval = -EBUSY;
-> +	}
-> +	return retval;
-> +}
-> +
->  /**
->   *	do_remount_sb - asks filesystem to change mount options.
->   *	@sb:	superblock in question
-> @@ -585,7 +620,7 @@ static void mark_files_ro(struct super_b
->   */
->  int do_remount_sb(struct super_block *sb, int flags, void *data, int force)
->  {
-> -	int retval;
-> +	int retval = 0;
->  	
->  #ifdef CONFIG_BLOCK
->  	if (!(flags & MS_RDONLY) && bdev_read_only(sb->s_bdev))
-> @@ -596,23 +631,23 @@ int do_remount_sb(struct super_block *sb
->  	shrink_dcache_sb(sb);
->  	fsync_super(sb);
-> 
-> -	/* If we are remounting RDONLY and current sb is read/write,
-> -	   make sure there are no rw files opened */
-> -	if ((flags & MS_RDONLY) && !(sb->s_flags & MS_RDONLY)) {
-> -		if (force)
-> -			mark_files_ro(sb);
-> -		else if (!fs_may_remount_ro(sb))
-> -			return -EBUSY;
-> -	}
-> -
-> -	if (sb->s_op->remount_fs) {
-> +	/* Are we remounting RDONLY when current sb is read/write? */
-> +	if ((flags & MS_RDONLY) && !(sb->s_flags & MS_RDONLY))
-> +		retval = __try_to_make_sb_ro(sb, force);
-> +	else
->  		lock_super(sb);
-> +
-> +	if (retval)
-> +		goto out;
-> +	if (sb->s_op->remount_fs)
->  		retval = sb->s_op->remount_fs(sb, &flags, data);
-> +out:
-> +	if (retval) {
->  		unlock_super(sb);
-> -		if (retval)
-> -			return retval;
-> +		return retval;
->  	}
->  	sb->s_flags = (sb->s_flags & ~MS_RMT_MASK) | (flags & MS_RMT_MASK);
-> +	unlock_super(sb);
->  	return 0;
->  }
-> 
-> diff -puN block/cfq-iosched.c~track_sb_mnt_writers block/cfq-iosched.c
-> diff -puN fs/namei.c~track_sb_mnt_writers fs/namei.c
-> diff -puN fs/buffer.c~track_sb_mnt_writers fs/buffer.c
-> diff -puN kernel/Makefile~track_sb_mnt_writers kernel/Makefile
-> _
