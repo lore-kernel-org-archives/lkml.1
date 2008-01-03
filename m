@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760254AbYACH0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbYACH1M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760254AbYACH0u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 02:26:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758951AbYACHYc
+	id S1754300AbYACH1M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 02:27:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759100AbYACHYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 02:24:32 -0500
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:42078 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753887AbYACHYU (ORCPT
+	Thu, 3 Jan 2008 02:24:34 -0500
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:40032 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754332AbYACHYU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 3 Jan 2008 02:24:20 -0500
-Message-Id: <20080103072226.934978594@goodmis.org>
+Message-Id: <20080103072227.894547203@goodmis.org>
 References: <20080103071609.478486470@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 03 Jan 2008 02:16:11 -0500
+Date: Thu, 03 Jan 2008 02:16:17 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -26,49 +26,148 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
        "William L. Irwin" <sparclinux@vger.kernel.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [RFC PATCH 02/11] Add fastcall to do_IRQ for i386
-Content-Disposition: inline; filename=mcount-fix-i386-do_irq.patch
+Subject: [RFC PATCH 08/11] tracer add debugfs interface
+Content-Disposition: inline; filename=mcount-tracer-debugfs.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MCOUNT will disable the regparm parameters of the i386 compile
-options. When doing so, this breaks the prototype of do_IRQ
-where the fastcall must be explicitly called.
+This patch adds an interface into debugfs.
 
-Also fixed some whitespace damage in the call to do_IRQ.
+  /debugfs/mctracer/ctrl
+
+echoing 1 into the ctrl file turns on the tracer,
+and echoing 0 turns it off.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/x86/kernel/irq_32.c |    2 +-
- include/asm-x86/irq_32.h |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ lib/mcount/tracer.c |   87 +++++++++++++++++++++++++++++++++++++++++++++++++++-
+ lib/mcount/tracer.h |    1 
+ 2 files changed, 87 insertions(+), 1 deletion(-)
 
-Index: linux-compile.git/arch/x86/kernel/irq_32.c
+Index: linux-compile.git/lib/mcount/tracer.c
 ===================================================================
---- linux-compile.git.orig/arch/x86/kernel/irq_32.c	2007-12-20 00:20:29.000000000 -0500
-+++ linux-compile.git/arch/x86/kernel/irq_32.c	2007-12-20 00:21:55.000000000 -0500
-@@ -67,7 +67,7 @@ static union irq_ctx *softirq_ctx[NR_CPU
-  * handlers).
-  */
- fastcall unsigned int do_IRQ(struct pt_regs *regs)
--{	
+--- linux-compile.git.orig/lib/mcount/tracer.c	2008-01-02 23:07:23.000000000 -0500
++++ linux-compile.git/lib/mcount/tracer.c	2008-01-02 23:12:50.000000000 -0500
+@@ -15,6 +15,8 @@
+ #include <linux/init.h>
+ #include <linux/linkage.h>
+ #include <linux/seq_file.h>
++#include <linux/debugfs.h>
++#include <linux/uaccess.h>
+ #include <linux/mcount.h>
+ 
+ #include "tracer.h"
+@@ -71,6 +73,89 @@ static inline notrace void trace_functio
+ 	raw_local_irq_restore(flags);
+ }
+ 
++#ifdef CONFIG_DEBUG_FS
++static int mctracer_open_generic(struct inode *inode, struct file *filp)
 +{
- 	struct pt_regs *old_regs;
- 	/* high bit used in ret_from_ code */
- 	int irq = ~regs->orig_eax;
-Index: linux-compile.git/include/asm-x86/irq_32.h
++	filp->private_data = inode->i_private;
++	return 0;
++}
++
++
++static ssize_t mctracer_ctrl_read(struct file *filp, char __user *ubuf,
++				  size_t cnt, loff_t *ppos)
++{
++	struct mctracer_trace *tr = filp->private_data;
++	char buf[16];
++	int r;
++
++	r = sprintf(buf, "%ld\n", tr->ctrl);
++	return simple_read_from_buffer(ubuf, cnt, ppos,
++				       buf, r);
++}
++
++static ssize_t mctracer_ctrl_write(struct file *filp,
++				   const char __user *ubuf,
++				   size_t cnt, loff_t *ppos)
++{
++	struct mctracer_trace *tr = filp->private_data;
++	int val;
++	char buf[16];
++
++	if (cnt > 15)
++		cnt = 15;
++
++	if (copy_from_user(&buf, ubuf, cnt))
++		return -EFAULT;
++
++	buf[cnt] = 0;
++
++	val = !!simple_strtoul(buf, NULL, 10);
++
++	if (tr->ctrl ^ val) {
++		if (val)
++			register_mcount_function(trace_function);
++		else
++			clear_mcount_function();
++		tr->ctrl = val;
++	}
++
++	filp->f_pos += cnt;
++
++	return cnt;
++}
++
++static struct file_operations mctracer_ctrl_fops = {
++	.open = mctracer_open_generic,
++	.read = mctracer_ctrl_read,
++	.write = mctracer_ctrl_write,
++};
++
++static void mctrace_init_debugfs(void)
++{
++	struct dentry *d_mctracer;
++	struct dentry *entry;
++
++	d_mctracer = debugfs_create_dir("mctracer", NULL);
++	if (!d_mctracer) {
++		pr_warning("Could not create debugfs directory mctracer\n");
++		return;
++	}
++
++	entry = debugfs_create_file("ctrl", 0644, d_mctracer,
++				    &mctracer_trace, &mctracer_ctrl_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs 'ctrl' entry\n");
++}
++#else /* CONFIG_DEBUG_FS */
++static void mctrace_init_debugfs(void)
++{
++	/*
++	 * No way to turn on or off the trace function
++	 * without debugfs, so we just turn it on.
++	 */
++	register_mcount_function(trace_function);
++}
++#endif /* CONFIG_DEBUG_FS */
+ 
+ static inline notrace int page_order(const unsigned long size)
+ {
+@@ -107,7 +192,7 @@ static inline notrace int mctracer_alloc
+ 		size, MCTRACER_NR_ENTRIES, MCTRACER_ENTRY_SIZE);
+ 	pr_info("   actual entries %ld\n", mctracer_trace.entries);
+ 
+-	register_mcount_function(trace_function);
++	mctrace_init_debugfs();
+ 
+ 	return 0;
+ 
+Index: linux-compile.git/lib/mcount/tracer.h
 ===================================================================
---- linux-compile.git.orig/include/asm-x86/irq_32.h	2007-12-20 00:20:29.000000000 -0500
-+++ linux-compile.git/include/asm-x86/irq_32.h	2007-12-20 00:21:55.000000000 -0500
-@@ -41,7 +41,7 @@ extern int irqbalance_disable(char *str)
- extern void fixup_irqs(cpumask_t map);
- #endif
- 
--unsigned int do_IRQ(struct pt_regs *regs);
-+fastcall unsigned int do_IRQ(struct pt_regs *regs);
- void init_IRQ(void);
- void __init native_init_IRQ(void);
- 
+--- linux-compile.git.orig/lib/mcount/tracer.h	2008-01-02 23:04:34.000000000 -0500
++++ linux-compile.git/lib/mcount/tracer.h	2008-01-02 23:11:39.000000000 -0500
+@@ -13,6 +13,7 @@ struct mctracer_trace {
+ 	void	      *trace[NR_CPUS];
+ 	unsigned long trace_idx[NR_CPUS];
+ 	unsigned long entries;
++	long	      ctrl;
+ 	atomic_t      cnt;
+ 	atomic_t      disabled[NR_CPUS];
+ 	atomic_t      underrun[NR_CPUS];
 
 -- 
