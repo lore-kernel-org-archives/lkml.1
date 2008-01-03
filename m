@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754178AbYACSw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754967AbYACS5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754178AbYACSw4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 13:52:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYACSwq
+	id S1754967AbYACS5Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 13:57:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbYACS5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 13:52:46 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:56936 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751435AbYACSwp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 13:52:45 -0500
-Date: Thu, 3 Jan 2008 13:52:37 -0500
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Neil Brown <neilb@suse.de>, netdev@vger.kernel.org,
-       Tom Tucker <tom@opengridcomputing.com>
-Subject: Re: 2.6.24-rc6-mm1
-Message-ID: <20080103185237.GC15354@fieldses.org>
-References: <20071228150746.42b3bbc0.akpm@linux-foundation.org> <64bb37e0712290851r6d41768dk270e47884713a3de@mail.gmail.com> <20071230013021.GA13603@gondor.apana.org.au> <64bb37e0712291934o77a3d365h56c9c31ac8437469@mail.gmail.com> <64bb37e0712311215x519b10e9kd51eb745b3b7290a@mail.gmail.com> <20080101120406.GA27209@gondor.apana.org.au> <64bb37e0801021029u1735bb9eta53906b123abf577@mail.gmail.com> <20080102215154.GA13911@gondor.apana.org.au> <20080102215706.GB6480@fieldses.org> <64bb37e0801030737r435ff2b1r6632ab98c2286f46@mail.gmail.com>
+	Thu, 3 Jan 2008 13:57:04 -0500
+Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:25494 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752206AbYACS5D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 13:57:03 -0500
+X-IronPort-AV: E=Sophos;i="4.24,240,1196668800"; 
+   d="scan'208";a="9596522"
+To: David Dillow <dillowda@ornl.gov>
+Cc: torvalds@linux-foundation.org, general@lists.openfabrics.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] please pull infiniband.git for-linus
+X-Message-Flag: Warning: May contain useful information
+References: <adak5mqu5i8.fsf@cisco.com>
+	<1199385590.7561.11.camel@lap75545.ornl.gov>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 03 Jan 2008 10:56:54 -0800
+In-Reply-To: <1199385590.7561.11.camel@lap75545.ornl.gov> (David Dillow's message of "Thu, 03 Jan 2008 13:39:50 -0500")
+Message-ID: <adafxxeu495.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <64bb37e0801030737r435ff2b1r6632ab98c2286f46@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+X-OriginalArrivalTime: 03 Jan 2008 18:56:54.0820 (UTC) FILETIME=[687DBE40:01C84E3A]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 03, 2008 at 04:37:46PM +0100, Torsten Kaiser wrote:
-> On Jan 2, 2008 10:57 PM, J. Bruce Fields <bfields@fieldses.org> wrote:
-> > On Thu, Jan 03, 2008 at 08:51:54AM +1100, Herbert Xu wrote:
-> > > The two specific trees of interest would be git-nfsd and git-net.
-> >
-> > Also, if it's git-nfsd, it'd be useful to test with the current git-nfsd
-> > from the for-mm branch at:
-> >
-> >         git://linux-nfs.org/~bfields/linus.git for-mm
-> >
-> > and then any bisection results (even partial) from that tree would help
-> > immensely....
-> 
-> Wrong URL, its (now?) at git://git.linux-nfs.org/projects/bfields/linux.git
+ > If we've got time before 2.6.24 final, I'd wait on this a bit.
+ > ib_srp:srp_remove_work() has them reversed as well, and I'm currently
+ > tracking down why it oopses when the srp_remove_host() happens before
+ > the scsi_remove_host(), which is the documented call sequence.
 
-Whoops, apologies.  Actually, the only change required should have been
-to change "linus" to "linux".  I should cut-n-paste and not relying on
-typing it right each time....
+I think the best thing to do is to merge this (assuming that Linus
+gets to it), since it looks quite safe and definitely fixes a crash.
+Then if we get to the root cause we can change the order of the calls
+if it turns out a different fix is required.
 
-> Using "HEAD is now at cd7e1c9... Merge commit 'server-xprt-switch^' into for-mm"
-> I was able to compile&install 54 packages, so this seems to be working.
-
-Hm, OK, thanks again for all this followup.
-
---b.
-
-> 
-> Now git-fetch'ing
-> git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6.25.git
+ - R.
