@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756352AbYACDuv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754404AbYACDvL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756352AbYACDuv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 22:50:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753574AbYACDun
+	id S1754404AbYACDvL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 22:51:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbYACDuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 22:50:43 -0500
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:46492 "HELO
+	Wed, 2 Jan 2008 22:50:44 -0500
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:46493 "HELO
 	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752904AbYACDum (ORCPT
+	by vger.kernel.org with SMTP id S1753378AbYACDun (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 22:50:42 -0500
+	Wed, 2 Jan 2008 22:50:43 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Javfm89VsHurDzNIBndxm3gSBL4eC+KbfB4TOo2sWyrSfdorHgDgO6HFwSY6dZ05F6Zb6+T1nONWUgzq6EW+NMgjcsf+RYpUuyLo8K5IcRJMXJOtODSDmI1MOBS4rsWNchmF1VbQKvwiu2M38cQ8GPt5193Qq/Skwal4ryNHQRc=  ;
-X-YMail-OSG: c9iggvIVM1l9K5kEEiL8BdNp4ez4uijxeSq0NmE9JMfPlpsnu9hqtMmT4qQSl24.vrzFN71BQw--
+  b=BS3U2cpziTYaKM5LI4xJOM7xd2lfkY/G9XaiS0nmrGmMimebTIJtl+6eztQ4x3d+v5DrDYxkTVihfQeyyfeZ2NW2HKU31sd0LVCTxHhU5+sTKCln3hUrx0zYXQ8F4xJYyByMndGrK7mFo6YRuXeI9L+qVBpFxpQ5TLkiUdd9Cew=  ;
+X-YMail-OSG: g9DAvNgVM1n560m00hZ8hVDaSJQgTq3aBu_GJlpIetqFK9ChX4O3Qbecj7Lbq6VPJ4XLZN7P1A--
 From: David Brownell <david-b@pacbell.net>
-To: Robin Getz <rgetz@blackfin.uclinux.org>
+To: linux-usb-devel@lists.sourceforge.net
 Subject: Re: [linux-usb-devel] [PATCH] : Allow embedded developers USB options normally reserved for OTG
-Date: Wed, 2 Jan 2008 19:43:38 -0800
+Date: Wed, 2 Jan 2008 19:50:36 -0800
 User-Agent: KMail/1.9.6
-Cc: linux-usb-devel@lists.sourceforge.net, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-References: <200801020948.51310.rgetz@blackfin.uclinux.org> <200801021047.16036.david-b@pacbell.net> <200801022203.04991.rgetz@blackfin.uclinux.org>
-In-Reply-To: <200801022203.04991.rgetz@blackfin.uclinux.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       gregkh@suse.de, Mike Frysinger <vapier.adi@gmail.com>,
+       Robin Getz <rgetz@blackfin.uclinux.org>
+References: <Pine.LNX.4.44L0.0801021556070.2990-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0801021556070.2990-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Message-Id: <200801021943.38716.david-b@pacbell.net>
+Message-Id: <200801021950.36677.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 January 2008, Robin Getz wrote:
-> On Wed 2 Jan 2008 13:47, David Brownell pondered:
-> > On Wednesday 02 January 2008, Robin Getz wrote:
-> > > From: Robin Getz <rgetz@blackfin.uclinux.org>
-> > > 
-> > > Allow embedded developers to turn support for USB Hubs off even if
-> > > they have a full root hub. This saves the overhead (RAM and Flash size).
-> > 
-> > ISTR that it won't save very much code though ... the Linux USB
-> > stack structures all its enumeration logic around hubs.
+On Wednesday 02 January 2008, Alan Stern wrote:
 > 
-> Today, there is an USB (Host), USB_GADGET and USB_OTG (which depends on USB && 
-> USB_GADGET).
+> > The transaction translators in external high speed hubs require
+> > hosts to issue particular USB transactions.  If the host controller
+> > doesn't implement the that split transaction support, then it won't
+> > be supporting external hubs.
 > 
-> This just enables cutting more code out, with out having to have USB_GADGET & 
-> USB_OTG enabled. When I checked - that is where most of the savings came 
-> from.
+> So in theory one could connect a high-speed hub to such a host
+> controller and expect it to communicate with high-speed devices.  So
+> long as no full- or low-speed devices are added there wouldn't be any
+> split transactions.  It wouldn't be USB-2.0 compliant but it should
+> still work.
 
-Right.  I'm not objecting to this at all.  Just pointing
-out that usbcore will still end up including quite a lot
-of hub functionality, because there's still going to be
-a root hub in the system and a khubd managing it.
+Yes ...
 
-This patch might be improved slightly -- in ways that, as I
-understand things, could save some RAM on Blackfin! -- by
-having the BLACKLIST_HUB option get rid of the transaction
-translator support (changing C code not just Kconfig).
-It's pretty minimal, but won't be used...
+But that would be a nightmare in terms of support calls.  Take
+two USB trees, and swap the hub ... suddenly one of the downstream
+devices (the full speed one) starts (or stops!) working!  That's
+not the sort of issue any support line wants to cope with on a
+day-to-day basis.
 
-Also, as you point out, it's no longer OTG specific, so
-renaming the option would improve clarity.   Maybe to
-something along the lines of USB_HOST_NO_EXTERNAL_HUBS.
-No big deal, at least now.
+The accounting for those products is often along the lines of:
+if you got a support call, you didn't profit from that sale.
+(And from the user perspective it's just a PITA and waste of
+time.)  So *every* confusion like that one gets removed.
 
 - Dave
-
