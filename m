@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbYACKj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594AbYACKmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753388AbYACKj3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 05:39:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbYACKjW
+	id S1754594AbYACKmY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 05:42:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbYACKmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 05:39:22 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33400 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750939AbYACKjV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 05:39:21 -0500
-Date: Thu, 3 Jan 2008 11:39:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [9/20] x86: Don't use oops_begin in 64bit mce code
-Message-ID: <20080103103912.GA29194@elte.hu>
-References: <20080103149.088038000@suse.de> <20080103005004.A171C14D40@wotan.suse.de>
+	Thu, 3 Jan 2008 05:42:15 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:58346 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751141AbYACKmO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 05:42:14 -0500
+Date: Thu, 3 Jan 2008 11:42:20 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Carlos Corbacho <carlos@strangeworlds.co.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       Alexey Starikovskiy <aystarik@gmail.com>,
+       "Moore, Robert" <robert.moore@intel.com>
+Subject: Re: [RFC][PATCH 2/7] ACPI: Separate invocations of _GTS and _BFS
+	from _PTS and _WAK
+Message-ID: <20080103104220.GA1732@elf.ucw.cz>
+References: <200712271903.53961.rjw@sisk.pl> <200712271915.17174.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080103005004.A171C14D40@wotan.suse.de>
+In-Reply-To: <200712271915.17174.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0429]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu 2007-12-27 19:15:16, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> The execution of ACPI global control methods _GTS and _BFS is
+> currently tied to the preparation to enter a sleep state and to the
+> leaving of the sleep state, respectively.  However, these functions
+> are called before disabling the nonboot CPUs and after enabling
+> them, respectively (in fact, on ACPI 1.0x systems the first of them
+> ought to be called before suspending devices), while according to the
+> ACPI specification, _GTS is to be executed right prior to entering
+> the system sleep state and _BFS is to be executed right after the
+> platfor firmware has returned control to the OS on wake up.
+> 
+> Move the execution of _GTS and _BFS to the right places.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-* Andi Kleen <ak@suse.de> wrote:
+Seems ok to me, but it is 2.6.25 material earliest, right?
 
-> It is not really useful to lock machine checks against oopses. And 
-> machine checks normally don't nest, so they don't need their own 
-> locking. Just call bust_spinlock/console_verbose directly.
-
-is this in response to any particular incident you've seen?
-
-	Ingo
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
