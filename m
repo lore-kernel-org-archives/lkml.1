@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757320AbYACJi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758016AbYACJoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757320AbYACJi5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 04:38:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754164AbYACJit
+	id S1758016AbYACJoZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 04:44:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbYACJoQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 04:38:49 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55243 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754161AbYACJis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 04:38:48 -0500
-Date: Thu, 3 Jan 2008 10:38:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: qbarnes <qbarnes@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86: Use is_kprobe_fault to better match usage
-Message-ID: <20080103093837.GA18355@elte.hu>
-References: <1199322323.6323.76.camel@brick>
+	Thu, 3 Jan 2008 04:44:16 -0500
+Received: from smtp-out002.kontent.com ([81.88.40.216]:47488 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754403AbYACJoQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 04:44:16 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: nigel@nigel.suspend2.net
+Subject: Re: freeze vs freezer
+Date: Thu, 3 Jan 2008 10:47:57 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, David Chinner <dgc@sgi.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, xfs-masters@oss.sgi.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <4744FD87.7010301@goop.org> <200801022304.19279.rjw@sisk.pl> <477CA8A8.2090201@nigel.suspend2.net>
+In-Reply-To: <477CA8A8.2090201@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1199322323.6323.76.camel@brick>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200801031047.58559.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Donnerstag 03 Januar 2008 schrieb Nigel Cunningham:
+> On top of this, I made a (too simple at the moment) freeze_filesystems
+> function which iterates through &super_blocks in reverse order, freezing
+> fuse filesystems or ordinary ones. I say 'too simple' because it doesn't
+> currently allow for the possibility of someone mounting (say) ext3 on
+> fuse, but that would just be an extension of what's already done.
 
-* Harvey Harrison <harvey.harrison@gmail.com> wrote:
+How do you deal with fuse server tasks using other fuse filesystems?
+How does freeze_filesystems() look?
 
-> Currently the notify_page_fault helper is used to test it the page 
-> fault was caused by a kprobe causing an early return from 
-> do_page_fault.
-> 
-> Change the name of the helper to is_kprobe_fault to match the usage 
-> and remove the preempt_disable/enable pair around kprobe_running() 
-> with an explicit test for preemption.  The idea for this comes from a 
-> patch by Quentin Barnes to kprobes.c
-> 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+	Regards
+		Oliver
 
-hm, this doesnt apply:
-
- Hunk #3 FAILED at 426.
- Hunk #4 succeeded at 413 (offset -22 lines).
- 1 out of 4 hunks FAILED -- rejects in file arch/x86/mm/fault_32.c
- patching file arch/x86/mm/fault_64.c
- Hunk #3 FAILED at 476.
- Hunk #4 succeeded at 475 (offset -10 lines).
- 1 out of 4 hunks FAILED -- rejects in file arch/x86/mm/fault_64.c
-
-could you double-check x86.git#mm, perhaps we are out of sync with a 
-patch somewhere?
-
-	Ingo
