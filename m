@@ -1,70 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753719AbYACXtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbYACXvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753719AbYACXtk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 18:49:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbYACXtb
+	id S1755339AbYACXvZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 18:51:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbYACXvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 18:49:31 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:32756 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752073AbYACXta (ORCPT
+	Thu, 3 Jan 2008 18:51:17 -0500
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:21236 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752450AbYACXvP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 18:49:30 -0500
-Date: Thu, 3 Jan 2008 15:47:40 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, bunk@kernel.org
-Subject: Re: [PATCH] This patch to printk.c fixes a few errors reported by
- checkpatch.pl
-Message-Id: <20080103154740.9a815703.randy.dunlap@oracle.com>
-In-Reply-To: <20080104001446.66f0c110@paolo-desktop>
-References: <20080104001446.66f0c110@paolo-desktop>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Thu, 3 Jan 2008 18:51:15 -0500
+Subject: Re: Error returns not handled
+	correctly	by	sysfs.c:subsys_attr_store()
+From: Andrew Patterson <andrew.patterson@hp.com>
+To: Tejun Heo <teheo@suse.de>
+Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-hotplug@vger.kernel.org,
+       bjorn.helgaas@hp.com
+In-Reply-To: <1196716558.20124.179.camel@bluto.andrew>
+References: <1195683419.16019.225.camel@grinch>
+	 <20071126203116.0c93cdb9.akpm@linux-foundation.org>
+	 <20071127053321.GA975@kroah.com>  <474D1BD4.2050805@suse.de>
+	 <1196278300.5431.9.camel@grinch>  <474E10CF.7050009@suse.de>
+	 <1196716558.20124.179.camel@bluto.andrew>
+Content-Type: text/plain
+Date: Thu, 03 Jan 2008 16:51:13 -0700
+Message-Id: <1199404273.7025.21.camel@bluto.andrew>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Jan 2008 00:14:46 +0100 Paolo Ciarrocchi wrote:
+On Mon, 2007-12-03 at 14:15 -0700, Andrew Patterson wrote:
+> On Thu, 2007-11-29 at 10:07 +0900, Tejun Heo wrote:
+> > Andrew Patterson wrote:
+> > > I tried with clean 2.6.24-rc3 and get the same bad behavior.  This is on
+> > > an ia64 box, so maybe that is an issue. I can try on an x86 box as well.
+> > > Oh, one other thing.  I tried a "uname -r" to make sure I had the
+> > > correct kernel booted and got:
+> > > 
+> > > # uname -r
+> > > 2.6.24-rc3
+> > > x
+> > > y
+> > > z
+> > > #
+> > 
+> > Yeah, please try it on another machine from clean tree.  sysfs code is
+> > definitely not endian dependent and is 64 bit clean.  Heck, all my test
+> > machines run 64 bit these days.  I would be surprised if it's something
+> > architecture dependent but please try on a different machine with
+> > different userland with kernel built from fresh source tree.
+> > 
+> > Thanks.
+> 
+> I tried this on a AMD system running an i386 kernel. I get the same bad
+> behavior.  This is from a 2.6.24-rc3 kernel downloaded from kernel.org.
+> I ran "make mrproper" followed by "make oldconfig" and accepted all the
+> defaults for the config.
+> 
+> There is one slight change with this experiment.  Other nodes are not
+> getting corrupted, i.e., uname -r is getting the correct value.
 
-> This patch to printk.c fixes a few errors reported by checkpatch.pl
-> 
-> Before:
-> total: 18 errors, 17 warnings, 1306 lines checked
-> 
-> After:
-> total: 1 errors, 17 warnings, 1305 lines checked
-> 
-> 
-> Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-> ---
-> 
-> Adrian, I'm sending this patch to you because according to git shortlog -e
-> you are the most active modifier of this file.
-> 
-> 
->  kernel/printk.c |   25 ++++++++++++-------------
->  1 files changed, 12 insertions(+), 13 deletions(-)
-> 
-> diff --git a/kernel/printk.c b/kernel/printk.c
-> index 89011bf..00f784f 100644
-> --- a/kernel/printk.c
-> +++ b/kernel/printk.c
+It looks like this is a shell issue.  After looking through the sysfs
+code, I realized that this problem seems to be driven from user-land.
+So I performed some experiments:
 
-Hi,
+     1. Wrote a simple program that just used write(2) to write to the
+        sysfs entry. This works fine.
+     2. Used /bin/echo instead of the built-in echo command.  This too
+        works fine.
+     3. Tried several shells.  Zsh and Bash both fail.  Csh works fine.
 
-Please read Andrew's "The Perfect Patch," especially the section
-about Subject: lines.
+I then ran strace on the following shell-script:
 
-http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt
+#!/bin/bash
 
----
-~Randy
-desserts:  http://www.xenotime.net/linux/recipes/
+echo x > allow_restart
+echo y > allow_restart
+echo z > allow_restart
+
+and got:
+
+# strace -e trace=write ~/tmp/tester.sh 
+write(1, "x\n", 2)                      = -1 EINVAL (Invalid argument)
+write(1, "x\n", 2)                      = -1 EINVAL (Invalid argument)
+write(2, "/home/andrew/tmp/tester.sh: line"..., 72/home/andrew/tmp/tester.sh: line 4: echo: write error: Invalid argument
+) = 72
+write(1, "x\ny\n", 4)                   = -1 EINVAL (Invalid argument)
+write(1, "x\ny\n", 4)                   = -1 EINVAL (Invalid argument)
+write(2, "/home/andrew/tmp/tester.sh: line"..., 72/home/andrew/tmp/tester.sh: line 5: echo: write error: Invalid argument
+) = 72
+write(1, "x\ny\nz\n", 6)                = -1 EINVAL (Invalid argument)
+write(1, "x\ny\nz\n", 6)                = -1 EINVAL (Invalid argument)
+write(2, "/home/andrew/tmp/tester.sh: line"..., 72/home/andrew/tmp/tester.sh: line 6: echo: write error: Invalid argument
+) = 72
+write(1, "x\ny\nz\n", 6x
+y
+z
+)                = 6
+Process 3800 detached
+
+As you can see, subsequent echo commands have their arguments appended
+to the previous command. So it seems that the shell is not resetting the
+buffer between failed echo commands.  
+
+-- 
+Andrew Patterson
+Hewlett-Packard Company
+
