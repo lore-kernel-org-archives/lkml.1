@@ -1,82 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755976AbYACWZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbYACW2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755976AbYACWZn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 17:25:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbYACWZR
+	id S1755180AbYACW2S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 17:28:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbYACW2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 17:25:17 -0500
-Received: from mail-out.m-online.net ([212.18.0.9]:38022 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752856AbYACWZO (ORCPT
+	Thu, 3 Jan 2008 17:28:09 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:51927 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752036AbYACW2I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 17:25:14 -0500
-Date: Thu, 3 Jan 2008 23:00:39 +0100
-From: Matthias Goebl <matthias@goebl.net>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: kkeil@suse.de, kai.germaschewski@gmx.de
-Subject: [PATCH] isdn/i4l: 'NO CARRIER' message lost after ldisc flush
-Message-ID: <20080103220039.GV19071@night.goebl.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1178571957.3665.8.camel@amdx2.microgate.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 3 Jan 2008 17:28:08 -0500
+Date: Thu, 3 Jan 2008 16:26:13 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Cc: sam@ravnborg.org, paulus@samba.org, linux-kernel@vger.kernel.org,
+       wd@denx.de
+Subject: Re: [PATCH 1/3] Merge mkubootimg tool for building U-Boot images
+Message-ID: <20080103162613.09674907@zod.rchland.ibm.com>
+In-Reply-To: <8bd0f97a0801031415g66e6b6f1o8a64dddc98c29399@mail.gmail.com>
+References: <20080103160104.171f9aaa@zod.rchland.ibm.com>
+	<20080103160244.6a28519b@zod.rchland.ibm.com>
+	<8bd0f97a0801031415g66e6b6f1o8a64dddc98c29399@mail.gmail.com>
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ISDN tty layer doesn't produce a 'NO CARRIER' message after hangup.
+On Thu, 3 Jan 2008 17:15:48 -0500
+"Mike Frysinger" <vapier.adi@gmail.com> wrote:
 
-I suppose it broke when tty_buffer_flush() has been added to
-tty_ldisc_flush() in the commit below.
-
-For isdn_tty_modem_result(RESULT_NO_CARRIER..) the
-message inserted via isdn_tty_at_cout() -> tty_insert_flip_char()
-is flushed immediately by tty_ldisc_flush() -> tty_buffer_flush().
-More annoyingly, the audio abort sequence DLE-ETX is also lost.
-
-This patch fixes only active audio connections, because I assume that nobody
-changes the line discipline for audio.
-
-For non-audio connections the problem remains.
-Maybe we can remove the tty_ldisc_flush() in isdn_tty_modem_result()
-at all because it's done at tty_close?
-
-
-On Mon, May 07, 2007 at 04:05:57PM -0500, Paul Fulghum wrote:
-> Flush the tty flip buffer when the line discipline
-> input queue is flushed, including the user call
-> tcflush(TCIFLUSH/TCIOFLUSH). This prevents unexpected
-> stale data after a user application calls tcflush().
+> On Jan 3, 2008 5:02 PM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+> > Several platforms require the mkimage tool to generate a uImage file that is
+> > used with U-Boot.  This brings the mkimage tool in-kernel to enable building
+> > those platforms without having mkimage externally provided.  The tool is named
+> > mkubootimg for better clarity.
+> >
+> > This is currently based off of the version found in U-Boot 1.3.1.
+> >
+> > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> >
+> > ---
+> >  scripts/Makefile             |    1
+> >  scripts/mkubootimg/Makefile  |    6
+> >  scripts/mkubootimg/crc32.c   |  199 +++++++++++
+> >  scripts/mkubootimg/mkimage.c |  728 +++++++++++++++++++++++++++++++++++++++++++
+> >  scripts/mkubootimg/sha1.c    |  413 ++++++++++++++++++++++++
+> >  scripts/mkubootimg/sha1.h    |  115 ++++++
+> >  scripts/mkubootimg/uimage.h  |  161 +++++++++
+> >  7 files changed, 1623 insertions(+)
 > 
-> Cc: Alan Cox <alan@lxorguk.org.uk>
-> Cc: Antonino Ingargiola <tritemio@gmail.com>
-> Signed-off-by: Paul Fulghum <paulkf@microgate.com>
-> 
-> --- a/drivers/char/tty_io.c	2007-05-04 05:46:55.000000000 -0500
-> +++ b/drivers/char/tty_io.c	2007-05-05 03:23:46.000000000 -0500
-> @@ -1240,6 +1263,7 @@ void tty_ldisc_flush(struct tty_struct *
->  			ld->flush_buffer(tty);
->  		tty_ldisc_deref(ld);
->  	}
-> +	tty_buffer_flush(tty);
-[..]
+> i'm fairly certain sha1 is not needed.  the u-boot makefile has a bug
+> in the 1.3.1 release where mkimage depends on sha1.o but doesnt
+> actually use sha1 functions.  i posted a patch to u-boot mailing list
+> to get this dropped.  regardless, no need for the kernel to import it.
 
+No need to yet anyway.  There are discussions on-going to make a new
+image format that can do sha1 sums instead of crc32.  Either way is
+fine with me, I just opted to include it now to keep it the same as
+U-Boot and avoid having to include it in the future.
 
-Signed-off-by: Matthias Goebl <matthias.goebl@goebl.net>
+If you want an updated patch with the sha1 code removed, I can do
+that.  Sam, Wolfgang?
 
---- linux-2.6.23.12.orig/drivers/isdn/i4l/isdn_tty.c	
-+++ linux-2.6.23.12/drivers/isdn/i4l/isdn_tty.c	
-@@ -2645,7 +2649,12 @@
- 		if ((info->flags & ISDN_ASYNC_CLOSING) || (!info->tty)) {
- 			return;
- 		}
-+#ifdef CONFIG_ISDN_AUDIO
-+		if ( !info->vonline )
-+			tty_ldisc_flush(info->tty);
-+#else
- 		tty_ldisc_flush(info->tty);
-+#endif
- 		if ((info->flags & ISDN_ASYNC_CHECK_CD) &&
- 		    (!((info->flags & ISDN_ASYNC_CALLOUT_ACTIVE) &&
- 		       (info->flags & ISDN_ASYNC_CALLOUT_NOHUP)))) {
+josh
