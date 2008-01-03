@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757525AbYADFj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757988AbYADFkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757525AbYADFj5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 00:39:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbYADFjd
+	id S1757988AbYADFkZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 00:40:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbYADFje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 00:39:33 -0500
-Received: from gw.goop.org ([64.81.55.164]:48754 "EHLO mail.goop.org"
+	Fri, 4 Jan 2008 00:39:34 -0500
+Received: from gw.goop.org ([64.81.55.164]:48757 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752650AbYADFjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752728AbYADFjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Jan 2008 00:39:31 -0500
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 2 of 8] x86: page.h: unify page copying and clearing
-X-Mercurial-Node: 4d9a413a0f4c1d98dbea704f0366457b5117045d
-Message-Id: <4d9a413a0f4c1d98dbea.1199391059@localhost>
+Subject: [PATCH 5 of 8] x86: page.h: move pa and va related things
+X-Mercurial-Node: d617b72a0cc9d14bde2087d065c36d4ed3265761
+Message-Id: <d617b72a0cc9d14bde20.1199391062@localhost>
 In-Reply-To: <patchbomb.1199391057@localhost>
-Date: Thu, 03 Jan 2008 12:10:59 -0800
+Date: Thu, 03 Jan 2008 12:11:02 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
@@ -28,194 +28,115 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 # HG changeset patch
 # User Jeremy Fitzhardinge <jeremy@xensource.com>
-# Date 1199317362 28800
-# Node ID 4d9a413a0f4c1d98dbea704f0366457b5117045d
-# Parent  ba0ec40a50a7aef1a3153cea124c35e261f5a2df
-x86: page.h: unify page copying and clearing
+# Date 1199319656 28800
+# Node ID d617b72a0cc9d14bde2087d065c36d4ed3265761
+# Parent  3bd7db6e85e66e7f3362874802df26a82fcb2d92
+x86: page.h: move pa and va related things
 
-Move, and to some extent unify, the various page copying and clearing
-functions.  The only unification here is that both architectures use
-the same function for copying/clearing user and kernel pages.
+Move and unify the virtual<->physical address space conversion
+functions.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
 ---
- include/asm-x86/page.h    |   55 +++++++++++++++++++++++++++++++++++++++++++++
- include/asm-x86/page_32.h |   53 -------------------------------------------
- include/asm-x86/page_64.h |   20 ----------------
- 3 files changed, 55 insertions(+), 73 deletions(-)
+ include/asm-x86/page.h    |   24 ++++++++++++++++++++++++
+ include/asm-x86/page_32.h |   11 -----------
+ include/asm-x86/page_64.h |   13 -------------
+ 3 files changed, 24 insertions(+), 24 deletions(-)
 
 diff --git a/include/asm-x86/page.h b/include/asm-x86/page.h
 --- a/include/asm-x86/page.h
 +++ b/include/asm-x86/page.h
-@@ -70,6 +70,11 @@
- #define KERNEL_TEXT_SIZE  (40*1024*1024)
- #define KERNEL_TEXT_START _AC(0xffffffff80000000, UL)
- 
-+#ifndef __ASSEMBLY__
-+void clear_page(void *page);
-+void copy_page(void *to, void *from);
-+#endif	/* !__ASSEMBLY__ */
+@@ -79,6 +79,9 @@
+ #ifndef __ASSEMBLY__
+ void clear_page(void *page);
+ void copy_page(void *to, void *from);
 +
- #endif	/* CONFIG_X86_64 */
++extern unsigned long __phys_addr(unsigned long);
++#define __phys_reloc_hide(x)	(x)
  
- #ifdef CONFIG_X86_32
-@@ -98,6 +103,34 @@
- #define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+ /*
+  * These are used to make use of C type-checking..
+@@ -174,6 +177,13 @@ static inline pte_t native_make_pte(unsi
  #endif
  
-+#ifndef __ASSEMBLY__
-+#ifdef CONFIG_X86_USE_3DNOW
-+#include <asm/mmx.h>
+ #ifndef __ASSEMBLY__
++#define __phys_addr(x)		((x)-PAGE_OFFSET)
++#define __phys_reloc_hide(x)	RELOC_HIDE((x), 0)
 +
-+static inline void clear_page(void *page)
-+{
-+	mmx_clear_page(page);
-+}
++#ifdef CONFIG_FLATMEM
++#define pfn_valid(pfn)		((pfn) < max_mapnr)
++#endif /* CONFIG_FLATMEM */
 +
-+static inline void copy_page(void *to, void *from)
-+{
-+	mmx_copy_page(to, from);
-+}
-+#else  /* !CONFIG_X86_USE_3DNOW */
-+#include <linux/string.h>
-+
-+static inline void clear_page(void *page)
-+{
-+	memset(page, 0, PAGE_SIZE);
-+}
-+
-+static inline void copy_page(void *to, void *from)
-+{
-+	memcpy(to, from, PAGE_SIZE);
-+}
-+#endif	/* CONFIG_X86_3DNOW */
-+#endif	/* !__ASSEMBLY__ */
-+
- #endif	/* CONFIG_X86_32 */
+ #ifdef CONFIG_X86_USE_3DNOW
+ #include <asm/mmx.h>
  
- #define PAGE_OFFSET		((unsigned long)__PAGE_OFFSET)
-@@ -107,6 +140,28 @@
- 	 VM_READ | VM_WRITE | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
+@@ -299,6 +309,20 @@ static inline pmdval_t native_pmd_val(pm
+ 
+ #endif	/* CONFIG_PARAVIRT */
+ 
++#define __pa(x)		__phys_addr((unsigned long)(x))
++/* __pa_symbol should be used for C visible symbols.
++   This seems to be the official gcc blessed way to do such arithmetic. */
++#define __pa_symbol(x)	__pa(__phys_reloc_hide((unsigned long)(x)))
++
++#define __va(x)			((void *)((unsigned long)(x)+PAGE_OFFSET))
++
++#define __boot_va(x)		__va(x)
++#define __boot_pa(x)		__pa(x)
++
++#define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
++#define pfn_to_kaddr(pfn)      __va((pfn) << PAGE_SHIFT)
++#define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
++
+ #endif	/* __ASSEMBLY__ */
  
  
-+#ifndef __ASSEMBLY__
-+struct page;
-+
-+static void inline clear_user_page(void *page, unsigned long vaddr,
-+				struct page *pg)
-+{
-+	clear_page(page);
-+}
-+
-+static void inline copy_user_page(void *to, void *from, unsigned long vaddr,
-+				struct page *topage)
-+{
-+	copy_page(to, from);
-+}
-+
-+#define __alloc_zeroed_user_highpage(movableflags, vma, vaddr) \
-+	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
-+#define __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
-+
-+#endif	/* __ASSEMBLY__ */
-+
-+
- #ifdef CONFIG_X86_32
- # include "page_32.h"
- #else
 diff --git a/include/asm-x86/page_32.h b/include/asm-x86/page_32.h
 --- a/include/asm-x86/page_32.h
 +++ b/include/asm-x86/page_32.h
-@@ -3,59 +3,6 @@
+@@ -29,18 +29,7 @@ extern int page_is_ram(unsigned long pag
  
- #ifdef __KERNEL__
- #ifndef __ASSEMBLY__
--
--#include <linux/string.h>
--
--#ifdef CONFIG_X86_USE_3DNOW
--
--#include <asm/mmx.h>
--
--static inline void clear_page(void *page)
--{
--	mmx_clear_page(page);
--}
--
--static inline void copy_page(void *to, void *from)
--{
--	mmx_copy_page(to, from);
--}
--
--#else
--
--/*
-- *	On older X86 processors it's not a win to use MMX here it seems.
-- *	Maybe the K6-III ?
-- */
-- 
--static inline void clear_page(void *page)
--{
--	memset(page, 0, PAGE_SIZE);
--}
--
--static inline void copy_page(void *to, void *from)
--{
--	memcpy(to, from, PAGE_SIZE);
--}
--
--#endif
--
--struct page;
--
--static void inline clear_user_page(void *page, unsigned long vaddr,
--				struct page *pg)
--{
--	clear_page(page);
--}
--
--static void inline copy_user_page(void *to, void *from, unsigned long vaddr,
--				struct page *topage)
--{
--	copy_page(to, from);
--}
--
--#define __alloc_zeroed_user_highpage(movableflags, vma, vaddr) \
--	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
--#define __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
+ #define VMALLOC_RESERVE		((unsigned long)__VMALLOC_RESERVE)
+ #define MAXMEM			(-__PAGE_OFFSET-__VMALLOC_RESERVE)
+-#define __pa(x)			((unsigned long)(x)-PAGE_OFFSET)
+-/* __pa_symbol should be used for C visible symbols.
+-   This seems to be the official gcc blessed way to do such arithmetic. */
+-#define __pa_symbol(x)          __pa(RELOC_HIDE((unsigned long)(x),0))
+-#define __va(x)			((void *)((unsigned long)(x)+PAGE_OFFSET))
+-#define pfn_to_kaddr(pfn)      __va((pfn) << PAGE_SHIFT)
+-#ifdef CONFIG_FLATMEM
+-#define pfn_valid(pfn)		((pfn) < max_mapnr)
+-#endif /* CONFIG_FLATMEM */
+-#define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
  
- /*
-  * These are used to make use of C type-checking..
+-#define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
+ 
+ #include <asm-generic/memory_model.h>
+ #include <asm-generic/page.h>
 diff --git a/include/asm-x86/page_64.h b/include/asm-x86/page_64.h
 --- a/include/asm-x86/page_64.h
 +++ b/include/asm-x86/page_64.h
-@@ -7,26 +7,6 @@ extern unsigned long end_pfn;
- extern unsigned long end_pfn;
- extern unsigned long end_pfn_map;
+@@ -16,20 +16,7 @@ extern unsigned long phys_base;
  
--void clear_page(void *page);
--void copy_page(void *to, void *from);
+ #include <asm/bug.h>
+ 
+-extern unsigned long __phys_addr(unsigned long);
 -
--struct page;
+ #endif /* __ASSEMBLY__ */
 -
--static void inline clear_user_page(void *page, unsigned long vaddr,
--				struct page *pg)
--{
--	clear_page(page);
--}
+-#define __pa(x)		__phys_addr((unsigned long)(x))
+-#define __pa_symbol(x)	__phys_addr((unsigned long)(x))
 -
--static void inline copy_user_page(void *to, void *from, unsigned long vaddr,
--				struct page *topage)
--{
--	copy_page(to, from);
--}
+-#define __va(x)			((void *)((unsigned long)(x)+PAGE_OFFSET))
+-#define __boot_va(x)		__va(x)
+-#define __boot_pa(x)		__pa(x)
 -
--#define __alloc_zeroed_user_highpage(movableflags, vma, vaddr) \
--	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
--#define __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
- /*
-  * These are used to make use of C type-checking..
-  */
+-#define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
+-#define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
+-#define pfn_to_kaddr(pfn)      __va((pfn) << PAGE_SHIFT)
+ 
+ #define __HAVE_ARCH_GATE_AREA 1	
+ #define vmemmap ((struct page *)VMEMMAP_START)
 
 
