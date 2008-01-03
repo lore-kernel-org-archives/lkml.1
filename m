@@ -1,121 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760728AbYACAxi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760784AbYACAx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760728AbYACAxi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 19:53:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759803AbYACAuM
+	id S1760784AbYACAx5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 19:53:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759840AbYACAuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 19:50:12 -0500
-Received: from ns2.suse.de ([195.135.220.15]:58345 "EHLO mx2.suse.de"
+	Wed, 2 Jan 2008 19:50:13 -0500
+Received: from mx1.suse.de ([195.135.220.2]:51781 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759607AbYACAuH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 19:50:07 -0500
+	id S1759646AbYACAuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 19:50:09 -0500
 From: Andi Kleen <ak@suse.de>
 References: <20080103149.088038000@suse.de>
 In-Reply-To: <20080103149.088038000@suse.de>
-To: andreas.herrmann3@amd.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] [11/20] x86: Use the correct cpuid method to detect MWAIT support for C states
-Message-Id: <20080103005006.BE79A14D40@wotan.suse.de>
-Date: Thu,  3 Jan 2008 01:50:06 +0100 (CET)
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] [12/20] x86: Use a per cpu timer for correctable machine check checking
+Message-Id: <20080103005007.CE13A14D40@wotan.suse.de>
+Date: Thu,  3 Jan 2008 01:50:07 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Previously there was a AMD specific quirk to handle the case of
-AMD Fam10h MWAIT not supporting any C states. But it turns out
-that CPUID already has ways to detectly detect that without
-using special quirks. 
+Previously the code used a single timer that then used smp_call_function
+to interrupt all CPUs while the original CPU was waiting for them. 
 
-The new code simply checks if MWAIT supports at least C1 and doesn't
-use it if it doesn't. No more vendor specific code.
+But it is better / more real time and more power friendly to simply run 
+individual timers on each CPU so they all do this independently.
 
-Credit goes to Ben Serebrin for pointing out the (nearly) obvious.
-
-Cc: "Andreas Herrmann" <andreas.herrmann3@amd.com>
+This way no single CPU has to wait for all others.
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86/kernel/cpu/amd.c    |    3 ---
- arch/x86/kernel/process_32.c |   10 +++++++++-
- arch/x86/kernel/process_64.c |   11 ++++++++++-
- arch/x86/kernel/setup_64.c   |    4 ----
- 4 files changed, 19 insertions(+), 9 deletions(-)
+ arch/x86/kernel/cpu/mcheck/mce_64.c |   68 +++++++++++++++++++++++++-----------
+ 1 file changed, 48 insertions(+), 20 deletions(-)
 
-Index: linux/arch/x86/kernel/cpu/amd.c
+Index: linux/arch/x86/kernel/cpu/mcheck/mce_64.c
 ===================================================================
---- linux.orig/arch/x86/kernel/cpu/amd.c
-+++ linux/arch/x86/kernel/cpu/amd.c
-@@ -295,9 +295,6 @@ static void __cpuinit init_amd(struct cp
- 		local_apic_timer_disabled = 1;
+--- linux.orig/arch/x86/kernel/cpu/mcheck/mce_64.c
++++ linux/arch/x86/kernel/cpu/mcheck/mce_64.c
+@@ -363,17 +363,14 @@ void mce_log_therm_throt_event(unsigned 
+ static int check_interval = 5 * 60; /* 5 minutes */
+ static int next_interval; /* in jiffies */
+ static void mcheck_timer(struct work_struct *work);
+-static DECLARE_DELAYED_WORK(mcheck_work, mcheck_timer);
++static DEFINE_PER_CPU(struct delayed_work, mcheck_work);
+ 
+-static void mcheck_check_cpu(void *info)
++static void mcheck_timer(struct work_struct *work)
+ {
++	int cpu;
++
+ 	if (mce_available(&current_cpu_data))
+ 		do_machine_check(NULL, 0);
+-}
+-
+-static void mcheck_timer(struct work_struct *work)
+-{
+-	on_each_cpu(mcheck_check_cpu, NULL, 1, 1);
+ 
+ 	/*
+ 	 * Alert userspace if needed.  If we logged an MCE, reduce the
+@@ -386,7 +383,8 @@ static void mcheck_timer(struct work_str
+ 				(int)round_jiffies_relative(check_interval*HZ));
+ 	}
+ 
+-	schedule_delayed_work(&mcheck_work, next_interval);
++	cpu = smp_processor_id();
++	schedule_delayed_work_on(cpu, &per_cpu(mcheck_work, cpu), next_interval);
+ }
+ 
+ /*
+@@ -436,12 +434,44 @@ static struct notifier_block mce_idle_no
+ };
  #endif
  
--	if (c->x86 == 0x10 && !force_mwait)
--		clear_bit(X86_FEATURE_MWAIT, c->x86_capability);
--
- 	/* K6s reports MCEs but don't actually have all the MSRs */
- 	if (c->x86 < 6)
- 		clear_bit(X86_FEATURE_MCE, c->x86_capability);
-Index: linux/arch/x86/kernel/process_32.c
-===================================================================
---- linux.orig/arch/x86/kernel/process_32.c
-+++ linux/arch/x86/kernel/process_32.c
-@@ -271,9 +271,17 @@ static void mwait_idle(void)
- 	mwait_idle_with_hints(0, 0);
- }
- 
-+static int mwait_usable(const struct cpuinfo_x86 *c)
++static void mce_timers(int restart)
 +{
-+	if (force_mwait)
-+		return 1;
-+	/* Any C1 states supported? */
-+	return c->cpuid_level >= 5 && ((cpuid_edx(5) >> 4) & 0xf) > 0;
++	int i;
++	next_interval = restart ? check_interval * HZ : 0;
++	for_each_online_cpu (i) {
++		struct delayed_work *w = &per_cpu(mcheck_work, i);
++		cancel_delayed_work_sync(w);
++		if (restart)
++			schedule_delayed_work_on(i, w,
++					round_jiffies_relative(next_interval));
++	}
 +}
 +
- void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
- {
--	if (cpu_has(c, X86_FEATURE_MWAIT)) {
-+	if (cpu_has(c, X86_FEATURE_MWAIT) && mwait_usable(c)) {
- 		printk("monitor/mwait feature present.\n");
- 		/*
- 		 * Skip, if setup has overridden idle.
-Index: linux/arch/x86/kernel/process_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/process_64.c
-+++ linux/arch/x86/kernel/process_64.c
-@@ -270,10 +270,19 @@ static void mwait_idle(void)
- 	}
- }
- 
-+
-+static int mwait_usable(const struct cpuinfo_x86 *c)
++static int __cpuinit
++mce_periodic_cpu_cb(struct notifier_block *b, unsigned long action, void *arg)
 +{
-+	if (force_mwait)
-+		return 1;
-+	/* Any C1 states supported? */
-+	return c->cpuid_level >= 5 && ((cpuid_edx(5) >> 4) & 0xf) > 0;
++	long cpu = (long)arg;
++	struct delayed_work *w = &per_cpu(mcheck_work, cpu);
++	switch (action) {
++	case CPU_DOWN_PREPARE:
++		cancel_delayed_work_sync(w);
++		break;
++	case CPU_ONLINE:
++	case CPU_DOWN_FAILED:
++		schedule_delayed_work_on(cpu, w, next_interval);
++		break;
++	}
++	return NOTIFY_DONE;
 +}
 +
- void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
+ static __init int periodic_mcheck_init(void)
  {
- 	static int printed;
--	if (cpu_has(c, X86_FEATURE_MWAIT)) {
-+	if (cpu_has(c, X86_FEATURE_MWAIT) && mwait_usable(c)) {
- 		/*
- 		 * Skip, if setup has overridden idle.
- 		 * One CPU supports mwait => All CPUs supports mwait
-Index: linux/arch/x86/kernel/setup_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/setup_64.c
-+++ linux/arch/x86/kernel/setup_64.c
-@@ -760,10 +760,6 @@ static void __cpuinit init_amd(struct cp
- 	/* MFENCE stops RDTSC speculation */
- 	set_cpu_cap(c, X86_FEATURE_MFENCE_RDTSC);
+-	next_interval = check_interval * HZ;
+-	if (next_interval)
+-		schedule_delayed_work(&mcheck_work,
+-				      round_jiffies_relative(next_interval));
++	/* RED-PEN: race here with CPU getting added in parallel. But
++	 * if the hotplug lock is aquired here we run into lock ordering
++	 * problems with the scheduler code.
++ 	 */
++	hotcpu_notifier(mce_periodic_cpu_cb, 0);
++	mce_timers(1);
+ #ifdef CONFIG_MCE_NOTIFY
+ 	idle_notifier_register(&mce_idle_notifier);
+ #endif
+@@ -520,12 +550,15 @@ static void __cpuinit mce_cpu_features(s
+  */
+ void __cpuinit mcheck_init(struct cpuinfo_x86 *c)
+ {
++	int cpu = smp_processor_id();
+ 	static cpumask_t mce_cpus = CPU_MASK_NONE;
  
--	/* Family 10 doesn't support C states in MWAIT so don't use it */
--	if (c->x86 == 0x10 && !force_mwait)
--		clear_cpu_cap(c, X86_FEATURE_MWAIT);
--
- 	if (amd_apic_timer_broken())
- 		disable_apic_timer = 1;
++	INIT_DELAYED_WORK(&per_cpu(mcheck_work, cpu), mcheck_timer);
++
+ 	mce_cpu_quirks(c);
+ 
+ 	if (mce_dont_init ||
+-	    cpu_test_and_set(smp_processor_id(), mce_cpus) ||
++	    cpu_test_and_set(cpu, mce_cpus) ||
+ 	    !mce_available(c))
+ 		return;
+ 
+@@ -751,14 +784,9 @@ static int mce_resume(struct sys_device 
+ /* Reinit MCEs after user configuration changes */
+ static void mce_restart(void)
+ {
+-	if (next_interval)
+-		cancel_delayed_work(&mcheck_work);
+-	/* Timer race is harmless here */
++	mce_timers(0);
+ 	on_each_cpu(mce_init, NULL, 1, 1);
+-	next_interval = check_interval * HZ;
+-	if (next_interval)
+-		schedule_delayed_work(&mcheck_work,
+-				      round_jiffies_relative(next_interval));
++	mce_timers(1);
  }
+ 
+ static struct sysdev_class mce_sysclass = {
