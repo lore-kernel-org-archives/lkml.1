@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbYACVmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbYACVrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755542AbYACVmc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 16:42:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbYACVmZ
+	id S1754627AbYACVrW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 16:47:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbYACVrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 16:42:25 -0500
-Received: from mailrelay005.isp.belgacom.be ([195.238.6.171]:45321 "EHLO
-	mailrelay005.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752159AbYACVmY (ORCPT
+	Thu, 3 Jan 2008 16:47:13 -0500
+Received: from qb-out-0506.google.com ([72.14.204.225]:26377 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752729AbYACVrL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 16:42:24 -0500
-X-Belgacom-Dynamic: yes
-Date: Thu, 3 Jan 2008 22:42:22 +0100
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Andrew Dyer <amdyer@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: watchdog behaviour on close? (watchdog-api.txt)
-Message-ID: <20080103214222.GB2930@infomag.infomag.iguana.be>
-References: <c166aa9f0712180941o765cba7fxf31705560a51a06c@mail.gmail.com>
+	Thu, 3 Jan 2008 16:47:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=G0Ky+ZIo5ynfNYonWFRt8G0ROokzgP8h2rQ5r51UBN9VPx++MwGjP1OBjrWKCJhedcjcAZPNjraY3oVidXZGEDuCRXLnrnTvtuNCe/v4WbPEWaQAbKJbEHQ2iZl7PMp6KnfOxPlyLxHjXB8YpaMA5LJyk9fg7sMf7dEIyhKdHRI=
+Date: Thu, 3 Jan 2008 15:46:55 -0600
+From: Josh Boyer <jwboyer@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Kbuild update
+Message-ID: <20080103154655.46feb4a1@vader.jdub.homelinux.org>
+In-Reply-To: <20080103213255.GA21811@uranus.ravnborg.org>
+References: <20080103213255.GA21811@uranus.ravnborg.org>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <c166aa9f0712180941o765cba7fxf31705560a51a06c@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On Thu, 3 Jan 2008 22:32:55 +0100
+Sam Ravnborg <sam@ravnborg.org> wrote:
 
-Sorry for the late response.
-
-> Hi, I am trying to implement a watchdog driver in 2.6.23 for the i.MXL
-> cpu (based off of drivers/char/watchdog/s3c2410_wdt.c).
+> kbuild.git contains at the moment 36 patches which is all for the upcoming merge window.
+> It has been rebased to latest -linus git tree.
+> See shortlog below.
 > 
-> I had a question about the api doc for the watchdog
-> (Documentation/watchdog-api.txt).  Line 37 says "When the device is
-> closed, the watchdog is disabled."  Later on (Line 56) it says
-> "Drivers will not disable the watchdog, unless a specific magic
-> character 'V' has been sent /dev/watchdog just before closing the
-> file."
-> 
-> I would assume that from reading L37 that the driver would
-> unconditionally shut down the watchdog when closing (unless
-> CONFIG_WATCHDOG_NOWAYOUT or the nowayout module param is specified),
-> but line 56 seems to contradict that.
-> 
-> Can you clarify the intended behaviour?
+> Pending patches
+> ===============
+> kbuild:
+[snip]
 
-Line 56 describes the Magic Close feature that has been introduced by
-(I believe) Jakob Oestergaard. This feature is an extra safety that was
-added to make sure that if the watchdog daemon crashes the system is not
-left "uncontrolled".
+> - merge uboot mkimage (Josh Boyer)
+>   await an update with a renamed script, maybe I already got it
 
-So what should the behaviour be:
-1) when the watchdog driver is initialized it should make sure that
-the watchdog driver is not running for userspace.
-2) when /dev/watchdog is opened the watchdog device should start
-3) the watchdog is being kept alive by pinging it
-4) when /dev/watchdog is closed and the driver received the magic char "V"
-(this is when you support the magic-close feature off-course) then the
-watchdog device should stop.
-5) if you unload the watchdog driver module then you normally stop
-the watchdog device also (unless CONFIG_WATCHDOG_NOWAYOUT or the nowayout
-module param is specified).
+I'm reworking right now actually.  Will post an updated version with
+the binary renamed shortly.  I'll be sure to CC you when I do.
 
-Hope this makes it clear now,
-Greetings,
-Wim.
-
+josh
