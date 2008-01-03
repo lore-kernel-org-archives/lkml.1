@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754412AbYACVIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753986AbYACVOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754412AbYACVIq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 16:08:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbYACVIj
+	id S1753986AbYACVOV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 16:14:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbYACVOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 16:08:39 -0500
-Received: from mga07.intel.com ([143.182.124.22]:37730 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752024AbYACVIi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 16:08:38 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,240,1196668800"; 
-   d="scan'208";a="356951298"
-Message-ID: <477D4E50.4020004@linux.intel.com>
-Date: Thu, 03 Jan 2008 22:06:24 +0100
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5 (Windows/20051201)
-MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 1/3] move WARN_ON() out of line
-References: <477C32DA.5060905@linux.intel.com> <1199325569.4497.116.camel@cinder.waste.org>
-In-Reply-To: <1199325569.4497.116.camel@cinder.waste.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 3 Jan 2008 16:14:11 -0500
+Received: from gate.crashing.org ([63.228.1.57]:53806 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752554AbYACVOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 16:14:09 -0500
+Subject: Re: sata_nv + ADMA + Samsung disk problem
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Mark Lord <liml@rtr.ca>
+Cc: Robert Hancock <hancockr@shaw.ca>, Mark Lord <lkml@rtr.ca>,
+       Allen Martin <AMartin@nvidia.com>, Jeff Garzik <jeff@garzik.org>,
+       Tejun Heo <htejun@gmail.com>, Gabor Gombas <gombasg@sztaki.hu>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Kuan Luo <kluo@nvidia.com>, Peer Chen <pchen@nvidia.com>
+In-Reply-To: <477D039F.6000206@rtr.ca>
+References: <20070808120804.GB5257@boogie.lpds.sztaki.hu>
+	 <20080101164416.GA29574@boogie.lpds.sztaki.hu> <477B0429.7040909@gmail.com>
+	 <477B0CFD.1030603@shaw.ca>
+	 <F72FA20C31DD4F4C997B91C5B3690A09505577@hqemmail07.nvidia.com>
+	 <477BDEA5.8040701@garzik.org>
+	 <F72FA20C31DD4F4C997B91C5B3690A0950557D@hqemmail07.nvidia.com>
+	 <477C2A99.9010208@shaw.ca> <477C61D3.30009@rtr.ca>
+	 <477C6A85.9020607@shaw.ca> <477D02E0.5040301@rtr.ca>
+	 <477D039F.6000206@rtr.ca>
+Content-Type: text/plain
+Date: Fri, 04 Jan 2008 08:13:06 +1100
+Message-Id: <1199394786.7291.21.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> 
-> I hate the do_foo naming scheme (how about __warn_on?), but otherwise:
-> 
-> Acked-by: Matt Mackall <mpm@selenic.com>
 
-after I moved it around based on Olof's work, I've now ended up with
-
-warn_on_slowpath()
-
+> Another thing about the PacDigi core:  one has to be very careful
+> to avoid sequential accesses to sequential PCI locations when
+> programming the chip -- it cannot handle merged register writes.
 > 
->> +		printk(KERN_WARNING "WARNING: at %s:%d %s()\n",
->> +			__FILE__, __LINE__, __FUNCTION__);
->> +		dump_stack();
-> 
-> While we're here, I'll mention that dump_stack probably ought to take a
-> severity level argument.
+> So for any group of sequentially laid out registers, the code has
+> to ensure it never writes two adjacent registers in sequence..
 
-125 files changed, 202 insertions(+), 199 deletions(-)
-just to get the api change done.
-I can hear akpm cringe from here...
+Ugh ? Write combining isn't permitted on normal registers afaik...
 
-> 
+Ben.
+
 
