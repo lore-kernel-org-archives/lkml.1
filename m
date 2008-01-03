@@ -1,83 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756248AbYACRCl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755394AbYACREW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756248AbYACRCl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 12:02:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbYACRCd
+	id S1755394AbYACREW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 12:04:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbYACREO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 12:02:33 -0500
-Received: from krynn.se.axis.com ([193.13.178.10]:49123 "EHLO
-	krynn.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751861AbYACRCd (ORCPT
+	Thu, 3 Jan 2008 12:04:14 -0500
+Received: from miranda.se.axis.com ([193.13.178.8]:60274 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752120AbYACREL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 12:02:33 -0500
-Date: Thu, 3 Jan 2008 18:02:18 +0100
+	Thu, 3 Jan 2008 12:04:11 -0500
+Date: Thu, 3 Jan 2008 18:03:22 +0100
 From: Jesper Nilsson <jesper.nilsson@axis.com>
 To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Yuusei KUWANA <kuwana@nyanyan.to>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       mikael.starvik@axis.com
-Subject: Re: [PATCH] arch/cris/arch-v10/vmlinux.lds.S fix boot problem
-Message-ID: <20080103170218.GB9512@axis.com>
-References: <47636D45.6010006@nyanyan.to> <20071221151404.GM10888@axis.com> <20071221155446.GN10888@axis.com> <20071221160718.GO10888@axis.com> <20071222083717.GB22653@uranus.ravnborg.org>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>,
+       Mikael Starvik <mikael.starvik@axis.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, dev-etrax@axis.com,
+       Andreas Schwab <schwab@suse.de>
+Subject: Re: (Try #3) [Patch 4/8] CRIS: Remove 'TOPDIR' from Makefiles
+Message-ID: <20080103170322.GC9512@axis.com>
+References: <20080101071311.GA2496@hacking> <20080101072922.GE2496@hacking> <20080101102010.GD28913@uranus.ravnborg.org> <20080101133421.GD2499@hacking> <20080102062759.GF2493@hacking> <20080102192535.GC11217@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071222083717.GB22653@uranus.ravnborg.org>
+In-Reply-To: <20080102192535.GC11217@uranus.ravnborg.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 22, 2007 at 09:37:17AM +0100, Sam Ravnborg wrote:
-> Hi Jesper.
+On Wed, Jan 02, 2008 at 08:25:35PM +0100, Sam Ravnborg wrote:
+> On Wed, Jan 02, 2008 at 02:27:59PM +0800, WANG Cong wrote:
+> > 
+> > Refine it as suggested by Andreas.
+> > 
+> > -------->
+> > 
+> > This patch removes TOPDIR from Cris Makefiles.
+
+We had the TOPDIR replaced with $(srcdir) already, but this looks better.
+
+Compiles OK for both EtraxFS and ARTPEC-3 cpus in our tree.
+
+> > Cc: Mikael Starvik <starvik@axis.com>
+> > Cc: Sam Ravnborg <sam@ravnborg.org>
+> > Cc: Andreas Schwab <schwab@suse.de>
+> > Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
 > 
-> >  		__initramfs_end = .;
-> > -		/* We fill to the next page, so we can discard all init
-> > -		   pages without needing to consider what payload might be
-> > -		   appended to the kernel image.  */
-> > -		FILL (0); 
-> > -		. = ALIGN (8192);
-> >  	}
-> >  #endif
-> > -	
-> >  	__vmlinux_end = .;            /* last address of the physical file */
-> > -  	__init_end = .;
-> > +
-> > +	/*
-> > +	 * We fill to the next page, so we can discard all init
-> > +	 * pages without needing to consider what payload might be
-> > +	 * appended to the kernel image.
-> > +	 */
-> > +	.init.fill : {
-> > +		FILL (0);
-> > +		. = ALIGN (8192);
-> > +	}
-> > +
-> > +	__init_end = .;
-> 
-> Can we please have the hardcoded 8192 replaced with a proper constant.
-> I assume this is PAGESIZE?
+> Added Jesper to Cc and applied.
 
-Yes, quite so.
-
-> See hwat other archs does to make PAGESIZE available for assembly
-> files and ldscripts. The macro AC is the key point here.
-
-Ok, will do.
-
-> And then please explain why it make a diffrence to put the
-> alignment in a section like you do.
-> I do not see it used in the other archs.
-
-I'm not an expert on ld-scripts, so I only know that the linker didn't
-respect the other way of doing the alignment, but did when added in a
-section.
-
-Perhaps Mikael has a better explanation when he's back from vacation.
+Thanks!
 
 > 	Sam
-
-Best regards,
 
 /^JN - Jesper Nilsson
 --
