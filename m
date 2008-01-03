@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761069AbYACBBM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761406AbYACBB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761069AbYACBBM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 20:01:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754927AbYACBA5
+	id S1761406AbYACBB2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 20:01:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760430AbYACBBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 20:00:57 -0500
-Received: from mga10.intel.com ([192.55.52.92]:41390 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754638AbYACBA5 (ORCPT
+	Wed, 2 Jan 2008 20:01:04 -0500
+Received: from hs-out-0708.google.com ([64.233.178.240]:46946 "EHLO
+	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760267AbYACBBC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 20:00:57 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,237,1196668800"; 
-   d="scan'208";a="268515900"
-Message-ID: <477C332D.20809@linux.intel.com>
-Date: Thu, 03 Jan 2008 01:58:21 +0100
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5 (Windows/20051201)
+	Wed, 2 Jan 2008 20:01:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OhrO2fTXxA1wyRU0O9FptMajVMFYIqf6PPQ/+btNnH61g1RMK8H0oi7ndJAtsZtAt2x8JrfZEPZyMOLfjVOOxtnXegy4bxs+5GZWeBkE4bIQr4fXNo2oYOGWVmAeGVTeiOEVS2PcyGLBEIu9rKlFlCIAuJb3rM0GxJcqlLVs0ek=
+Message-ID: <a8e1da0801021700s7aab56d4gc4c68aa6db5efce@mail.gmail.com>
+Date: Thu, 3 Jan 2008 09:00:58 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Alan Stern" <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 01/12] Use mutex instead of semaphore in driver core
+Cc: "Greg KH" <gregkh@suse.de>, "David Miller" <davem@davemloft.net>,
+       "Greg KH" <greg@kroah.com>, peterz@infradead.org,
+       "Kernel development list" <linux-kernel@vger.kernel.org>,
+       "USB list" <linux-usb@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.0801021057020.4861-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 2/3] Add the end-of-trace marker and the module list to WARN_ON()
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080102070008.GA31343@suse.de>
+	 <Pine.LNX.4.44L0.0801021057020.4861-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: Add the end-of-trace marker and the module list to WARN_ON()
-From: Arjan van de Ven <arjan@linux.intel.com>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>
+On Jan 3, 2008 12:08 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Tue, 1 Jan 2008, Greg KH wrote:
+>
+> > For most cases, yes, I agree with this, but due to the lockdep issues
+> > that occur here, and the whole mess with the suspend path and locking
+> > the device tree, that has been hashed out many times in the past, I am
+> > interested in trying to see if there is any real reason why this is
+> > absolutely necessary to convert.
+> >
+> > If no one has noticed any issues in this area, I think the complexity
+> > that will be involved in any such conversion will strongly outweigh any
+> > simplicity that might be expected.
+> >
+> > I'm very open to potential patches to do this, just don't ignore the
+> > issues that others have run into in the past when attempting this.
+>
+> There are two separate things to consider here.  One is struct device
+> and the other is struct class.
+>
+> We know that replacing semaphores with mutexes in struct device doesn't
+> sit well with lockdep.  However the replacement may work perfectly
+> smoothly for struct class.  It would be worthwhile for Dave Young to
+> separate out just that part and try it.
+>
+Ok, let me try a new patch only for struct class.
 
-Unlike oopses, WARN_ON() currently does't print the loaded modules list.
-This makes it harder to take action on certain bug reports. For example,
-recently there were a set of WARN_ON()s reported in the mac80211 stack,
-which were just signalling a driver bug. It takes then anther round trip
-to the bug reporter (if he responds at all) to find out which driver
-is at fault.
-
-Another issue is that, unlike oopses, WARN_ON() doesn't currently printk
-the helpful "cut here" line, nor the "end of trace" marker.
-Now that WARN_ON() is out of line, the size increase due to this is
-minimal and it's worth adding.
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-
----
-  kernel/panic.c |    5 +++++
-  1 file changed, 5 insertions(+)
-
-Index: linux-2.6.24-rc6/kernel/panic.c
-===================================================================
---- linux-2.6.24-rc6.orig/kernel/panic.c
-+++ linux-2.6.24-rc6/kernel/panic.c
-@@ -297,9 +297,14 @@ int do_warn_on(const unsigned long condi
-  			const int line, const char *function)
-  {
-  	if (unlikely(condition)) {
-+		printk(KERN_WARNING "------------[ cut here ]------------\n");
-  		printk(KERN_WARNING "WARNING: at %s:%d %s()\n",
-  			__FILE__, __LINE__, __FUNCTION__);
-+		print_modules();
-  		dump_stack();
-+		init_oops_id();
-+		printk(KERN_WARNING "---[ end trace %016llx ]---\n",
-+			(unsigned long long)oops_id);
-  	}
-  	return !!condition;
-  }
+Regards
+dave
