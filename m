@@ -1,59 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbYACSeF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbYACSe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754627AbYACSeF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 13:34:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbYACSdy
+	id S1755514AbYACSe7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 13:34:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbYACSeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 13:33:54 -0500
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:45445 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752209AbYACSdx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 13:33:53 -0500
-X-Greylist: delayed 871 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Jan 2008 13:33:52 EST
-Date: Thu, 3 Jan 2008 10:16:51 -0800
-From: Chris Wright <chrisw@redhat.com>
+	Thu, 3 Jan 2008 13:34:50 -0500
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:34158 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752106AbYACSet (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 13:34:49 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAJm5fEdMROHU/2dsb2JhbACBV6hv
+Date: Thu, 3 Jan 2008 13:34:46 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Christoph Hellwig <hch@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Gregory Haskins <ghaskins@novell.com>,
        Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
        "William L. Irwin" <sparclinux@vger.kernel.org>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       virtualization@lists.linux-foundation.org
-Subject: Re: [RFC PATCH 01/11] Add basic support for gcc profiler
-	instrumentation
-Message-ID: <20080103181651.GC3627@sequoia.sous-sol.org>
-References: <20080103071609.478486470@goodmis.org> <20080103072226.776141236@goodmis.org> <20080103092104.GE10813@elte.hu> <Pine.LNX.4.58.0801030849180.1468@gandalf.stny.rr.com>
-MIME-Version: 1.0
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 03/11] Annotate core code that should not be traced
+Message-ID: <20080103183446.GA2030@Krystal>
+References: <20080103071609.478486470@goodmis.org> <20080103072227.087067007@goodmis.org> <20080103174250.GC30582@Krystal> <Pine.LNX.4.58.0801031256240.4826@gandalf.stny.rr.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0801030849180.1468@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <Pine.LNX.4.58.0801031256240.4826@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:23:44 up 60 days, 23:29,  5 users,  load average: 1.12, 0.71,
+	0.42
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Steven Rostedt (rostedt@goodmis.org) wrote:
-> Hmm, I know paravirt-ops had an issue with mcount in the RT tree. I can't
-> remember the exact issues, but it did have something to do with the way
-> parameters were passed in.
 > 
-> Chris, do you remember what the issues were?
+> 
+ ....
+> >
+> > >  {
+> > >  	struct irq_desc *desc = irq_desc + irq;
+> > >  	struct irqaction *action;
+> > > Index: linux-compile.git/kernel/lockdep.c
+> > > ===================================================================
+> > > --- linux-compile.git.orig/kernel/lockdep.c	2007-12-20 01:00:29.000000000 -0500
+> > > +++ linux-compile.git/kernel/lockdep.c	2007-12-20 01:00:48.000000000 -0500
+> > > @@ -270,14 +270,14 @@ static struct list_head chainhash_table[
+> > >  	((key1) >> (64-MAX_LOCKDEP_KEYS_BITS)) ^ \
+> > >  	(key2))
+> > >
+> > > -void lockdep_off(void)
+> > > +notrace void lockdep_off(void)
+> > >  {
+> > >  	current->lockdep_recursion++;
+> > >  }
+> > >
+> >
+> > Due to interrupt disabling in your tracing code I suppose.
+> 
+> probably. Again, this came from the RT patch. And this stuff has been in
+> the patch for ages. So some of it was just plain paranoia. Others were
+> needed for some kind of tracing.
+> 
+> BTW, I'm curious? How do you handle NMIs and tracing. Do you use a
+> separate buffer for storing your data on NMIs or do you have some kind of
+> cmpxchg that can atomically reserve parts of the trace buffer?
+> 
 
-Yes, paravirt ops have a well-specified calling convention (register
-based).  There was a cleanup that Andi did that caused the problem
-because it removed all the "fastcall" annotations since -mregparm=3
-is now always on for i386.  Since MCOUNT disables REGPARM the calling
-convention changes (caller pushes to stack, callee expects register)
-chaos ensues.  I sent a patch to fix that quite some months back, but
-it went stale and I neglected to update it.  Would you like me to dig
-it up refresh and resend?
+Because I want to deal with weird cases like :
 
-thanks,
--chris
+kernel calling tracing code, causing a user-space page fault, which
+calls the tracer, which could be interrupted by an NMI, it would become
+tricky to find out how many contexts could be stacked in the worse case
+for each architecture. Therefore, using a cmpxchg-based algorithm is the
+solution I used. However, in order to make this fast, I extented the
+"local atomic operations" to offer a local_cmpxchg.
+
+Mathieu
+
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
