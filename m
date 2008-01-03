@@ -1,948 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759804AbYACGPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759312AbYACGYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759804AbYACGPk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 01:15:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569AbYACGPc
+	id S1759312AbYACGYg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 01:24:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754031AbYACGY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 01:15:32 -0500
-Received: from mga03.intel.com ([143.182.124.21]:64504 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755519AbYACGPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 01:15:30 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,237,1196668800"; 
-   d="scan'208";a="356398064"
-Subject: [RFC] PCIE ASPM support
-From: Shaohua Li <shaohua.li@intel.com>
-To: lkml <linux-kernel@vger.kernel.org>,
-       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>
-Cc: Greg KH <greg@kroah.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Content-Type: text/plain
-Date: Thu, 03 Jan 2008 14:15:44 +0800
-Message-Id: <1199340944.1642.26.camel@sli10-desk.sh.intel.com>
+	Thu, 3 Jan 2008 01:24:29 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:48552 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752918AbYACGY2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 01:24:28 -0500
+Date: Thu, 3 Jan 2008 11:54:25 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: akpm@linux-foundation.org
+Cc: mingo@elte.hu, lkml <linux-kernel@vger.kernel.org>,
+       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
+       davem@davemloft.net, mathieu.desnoyers@polymtl.ca,
+       hskinnemoen@atmel.com, mhiramat@redhat.com, sam@ravnborg.org
+Subject: [PATCH 1/2] Kprobes: Indicate kretprobe support in Kconfig
+Message-ID: <20080103062425.GA22781@in.ibm.com>
+Reply-To: ananth@in.ibm.com
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PCI Express ASPM defines a protocol for PCI Express components in the D0
-state to reduce Link power by placing their Links into a low power state
-and instructing the other end of the Link to do likewise. This
-capability allows hardware-autonomous, dynamic Link power reduction
-beyond what is achievable by software-only controlled power management.
-However, The device should be configured by software appropriately.
-Enabling ASPM will save power, but will introduce device latency.
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
-This patch adds ASPM support in Linux. It introduces a global policy for
-ASPM, a sysfs file /sys/module/pcie_aspm/parameters/policy can control
-it. The interface can be used as a boot option too. Currently we have
-below setting:
-	-default, BIOS default setting
-	-powersave, highest power saving mode, enable all available ASPM state
-and clock power management
-	-performance, highest performance, disable ASPM and clock power
-management
-By default, the 'default' policy is used currently.
+This patch adds CONFIG_HAVE_KRETPROBES to the arch/<arch>/Kconfig file
+for relevant architectures with kprobes support. This facilitates easy
+handling of in-kernel modules (like samples/kprobes/kretprobe_example.c)
+that depend on kretprobes being present in the kernel.
 
-In my test, power difference between powersave mode and performance mode
-is about 1.3w in a system with 3 PCIE links.
+Updated to apply on 2.6.24-rc6-mm1. Thanks to Sam Ravnborg for helping
+make the patch more lean.
 
-please review, any comments will be appreciated.
+Per Mathieu's suggestion, added CONFIG_KRETPROBES and fixed up
+dependencies.
 
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- drivers/pci/pci-acpi.c    |    9 
- drivers/pci/pci.c         |    4 
- drivers/pci/pcie/Kconfig  |   13 
- drivers/pci/pcie/Makefile |    3 
- drivers/pci/pcie/aspm.c   |  673 ++++++++++++++++++++++++++++++++++++++++++++++
- drivers/pci/probe.c       |    5 
- drivers/pci/remove.c      |    4 
- include/linux/aspm.h      |   33 ++
- include/linux/pci.h       |    4 
- include/linux/pci_regs.h  |    8 
- 10 files changed, 756 insertions(+)
+ arch/Kconfig                  |    7 +++++++
+ arch/ia64/Kconfig             |    1 +
+ arch/powerpc/Kconfig          |    1 +
+ arch/s390/Kconfig             |    1 +
+ arch/x86/Kconfig              |    1 +
+ include/asm-ia64/kprobes.h    |    1 -
+ include/asm-powerpc/kprobes.h |    1 -
+ include/asm-x86/kprobes.h     |    1 -
+ include/linux/kprobes.h       |    6 +++---
+ kernel/kprobes.c              |    9 +++------
+ 10 files changed, 17 insertions(+), 12 deletions(-)
 
-Index: linux/drivers/pci/pcie/Makefile
+Index: linux-2.6.24-rc6/arch/Kconfig
 ===================================================================
---- linux.orig/drivers/pci/pcie/Makefile	2008-01-03 13:16:52.000000000 +0800
-+++ linux/drivers/pci/pcie/Makefile	2008-01-03 13:47:34.000000000 +0800
-@@ -2,6 +2,9 @@
- # Makefile for PCI-Express PORT Driver
- #
+--- linux-2.6.24-rc6.orig/arch/Kconfig
++++ linux-2.6.24-rc6/arch/Kconfig
+@@ -27,5 +27,12 @@ config KPROBES
+ 	  for kernel debugging, non-intrusive instrumentation and testing.
+ 	  If in doubt, say "N".
  
-+# Build PCI Express ASPM if needed
-+obj-$(CONFIG_PCIEASPM)		+= aspm.o
++config KRETPROBES
++	def_bool y
++	depends on KPROBES && HAVE_KRETPROBES
 +
- pcieportdrv-y			:= portdrv_core.o portdrv_pci.o portdrv_bus.o
- 
- obj-$(CONFIG_PCIEPORTBUS)	+= pcieportdrv.o
-Index: linux/drivers/pci/pcie/aspm.c
+ config HAVE_KPROBES
+ 	def_bool n
++
++config HAVE_KRETPROBES
++	def_bool n
+Index: linux-2.6.24-rc6/arch/ia64/Kconfig
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux/drivers/pci/pcie/aspm.c	2008-01-03 13:47:34.000000000 +0800
-@@ -0,0 +1,673 @@
-+/*
-+ * File:	drivers/pci/pcie/aspm.c
-+ * Enabling PCIE link L0s/L1 state and Clock Power Management
-+ *
-+ * Copyright (C) 2007 Intel
-+ * Copyright (C) Zhang Yanmin (yanmin.zhang@intel.com)
-+ * Copyright (C) Shaohua Li (shaohua.li@intel.com)
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/pci.h>
-+#include <linux/pci_regs.h>
-+#include <linux/errno.h>
-+#include <linux/pm.h>
-+#include <linux/init.h>
-+#include <linux/slab.h>
-+#include <linux/aspm.h>
-+#include <acpi/acpi_bus.h>
-+#include <linux/pci-acpi.h>
-+#include "../pci.h"
-+
-+#ifdef MODULE_PARAM_PREFIX
-+#undef MODULE_PARAM_PREFIX
-+#endif
-+#define MODULE_PARAM_PREFIX "pcie_aspm."
-+
-+#define	PCIE_ASPM_L0S	(1U)
-+#define	PCIE_ASPM_L1	(2U)
-+
-+/* only for downstream port */
-+struct link_state {
-+	struct list_head sibiling;
-+	struct pci_dev *pdev;
-+
-+	/* ASPM state */
-+	unsigned int support_state;
-+	unsigned int enabled_state;
-+	unsigned int bios_aspm_state;
-+	/* upstream component */
-+	unsigned int l0s_upper_latency;
-+	unsigned int l1_upper_latency;
-+	/* downstream component */
-+	unsigned int l0s_down_latency;
-+	unsigned int l1_down_latency;
-+	/* Clock PM state*/
-+	unsigned int clk_pm_capable:1;
-+	unsigned int clk_pm_enabled:1;
-+	unsigned int bios_clk_state:1;
-+
-+};
-+
-+/* Only for endpoint */
-+struct endpoint_state {
-+	unsigned int l0s_acceptable_latency;
-+	unsigned int l1_acceptable_latency;
-+};
-+
-+static int aspm_disabled;
-+static DEFINE_MUTEX(aspm_lock);
-+static LIST_HEAD(link_list);
-+
-+#define POLICY_DEFAULT 0	/* BIOS default setting */
-+#define POLICY_PERFORMANCE 1	/* high performance */
-+#define POLICY_POWERSAVE 2	/* high power saving */
-+static int aspm_policy;
-+static const char* policy_str[] = {
-+	[POLICY_DEFAULT] = "default",
-+	[POLICY_PERFORMANCE] = "performance",
-+	[POLICY_POWERSAVE] = "powersave"
-+};
-+
-+static int policy_to_aspm_state(struct pci_dev *pdev)
-+{
-+	switch (aspm_policy) {
-+	case POLICY_PERFORMANCE:
-+		/* Disable ASPM and Clock PM */
-+		return 0;
-+	case POLICY_POWERSAVE:
-+		/* Enable ASPM L0s/L1 */
-+		return 3;
-+	case POLICY_DEFAULT:
-+		return ((struct link_state *)pdev->link_state)->bios_aspm_state;
-+	}
-+	return 0;
-+}
-+
-+static int policy_to_clkpm_state(struct pci_dev *pdev)
-+{
-+	switch (aspm_policy) {
-+	case POLICY_PERFORMANCE:
-+		/* Disable ASPM and Clock PM */
-+		return 0;
-+	case POLICY_POWERSAVE:
-+		/* Disable Clock PM */
-+		return 1;
-+	case POLICY_DEFAULT:
-+		return ((struct link_state *)pdev->link_state)->bios_clk_state;
-+	}
-+	return 0;
-+}
-+
-+static void pcie_set_clock_pm(struct pci_dev *pdev, int enable)
-+{
-+	struct pci_dev *child_dev;
-+	int pos;
-+	u16 reg16;
-+
-+	list_for_each_entry(child_dev, &pdev->subordinate->devices, bus_list) {
-+		pos = pci_find_capability(child_dev, PCI_CAP_ID_EXP);
-+		if (!pos)
-+			return;
-+		pci_read_config_word(child_dev, pos + PCI_EXP_LNKCTL, &reg16);
-+		if (enable)
-+			reg16 |= PCI_EXP_LNKCTL_CLKREQ_EN;
-+		else
-+			reg16 &= ~PCI_EXP_LNKCTL_CLKREQ_EN;
-+		pci_write_config_word(child_dev, pos + PCI_EXP_LNKCTL, reg16);
-+	}
-+	((struct link_state*)pdev->link_state)->clk_pm_enabled = !!enable;
-+}
-+
-+static void pcie_check_clock_pm(struct pci_dev *pdev)
-+{
-+	int pos;
-+	u32 reg32;
-+	u16 reg16;
-+	int capable = 1, enabled = 1;
-+	struct pci_dev *child_dev;
-+
-+	/* All functions should have the same cap and state, take the worst */
-+	list_for_each_entry(child_dev, &pdev->subordinate->devices, bus_list) {
-+		pos = pci_find_capability(child_dev, PCI_CAP_ID_EXP);
-+		if (!pos)
-+			return;
-+		pci_read_config_dword(child_dev, pos + PCI_EXP_LNKCAP, &reg32);
-+		if (!(reg32 & PCI_EXP_LNKCAP_CLKPM)) {
-+			capable = 0;
-+			enabled = 0;
-+			break;
-+		}
-+		pci_read_config_word(child_dev, pos + PCI_EXP_LNKCTL, &reg16);
-+		if (!(reg16 & PCI_EXP_LNKCTL_CLKREQ_EN))
-+			enabled = 0;
-+	}
-+	((struct link_state*)pdev->link_state)->clk_pm_capable = capable;
-+	((struct link_state*)pdev->link_state)->clk_pm_enabled = enabled;
-+	((struct link_state*)pdev->link_state)->bios_clk_state = enabled;
-+	pcie_set_clock_pm(pdev, policy_to_clkpm_state(pdev));
-+}
-+
-+/*
-+ * pcie_aspm_configure_common_clock: check if the 2 ends of a link
-+ *   could use common clock. If they are, configure them to use the
-+ *   common clock. That will reduce the ASPM state exit latency.
-+ */
-+static void pcie_aspm_configure_common_clock(struct pci_dev *pdev)
-+{
-+	int pos, child_pos;
-+	u16 reg16 = 0;
-+	struct pci_dev *child_dev;
-+	int same_clock = 0;
-+
-+	/*
-+	 * all functions of a slot should have the same Slot Clock
-+	 * Configuration, so just check one function
-+	 * */
-+	child_dev = list_entry(pdev->subordinate->devices.next, struct pci_dev,
-+		bus_list);
-+	BUG_ON(!child_dev->is_pcie);
-+
-+	/* Check downstream component if bit Slot Clock Configuration is 1 */
-+	child_pos = pci_find_capability(child_dev, PCI_CAP_ID_EXP);
-+	pci_read_config_word(child_dev, child_pos + PCI_EXP_LNKSTA, &reg16);
-+	if (reg16 & PCI_EXP_LNKSTA_SLC)
-+		same_clock = 1;
-+
-+	/* Check upstream component if bit Slot Clock Configuration is 1 */
-+	pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
-+	pci_read_config_word(pdev, pos + PCI_EXP_LNKSTA, &reg16);
-+	if (reg16 & PCI_EXP_LNKSTA_SLC)
-+		same_clock &= 1;
-+	else
-+		same_clock = 0;
-+
-+	/* Configure downstream component, all functions */
-+	list_for_each_entry(child_dev, &pdev->subordinate->devices, bus_list) {
-+		child_pos = pci_find_capability(child_dev, PCI_CAP_ID_EXP);
-+		pci_read_config_word(child_dev, child_pos + PCI_EXP_LNKCTL, &reg16);
-+		if (same_clock)
-+			reg16 |= PCI_EXP_LNKCTL_CCC;
-+		else
-+			reg16 &= ~PCI_EXP_LNKCTL_CCC;
-+		pci_write_config_word(child_dev, child_pos + PCI_EXP_LNKCTL, reg16);
-+	}
-+
-+	/* Configure upstream component */
-+	pci_read_config_word(pdev, pos + PCI_EXP_LNKCTL, &reg16);
-+	if (same_clock)
-+		reg16 |= PCI_EXP_LNKCTL_CCC;
-+	else
-+		reg16 &= ~PCI_EXP_LNKCTL_CCC;
-+	pci_write_config_word(pdev, pos + PCI_EXP_LNKCTL, reg16);
-+
-+	/* retrain link */
-+	reg16 |= PCI_EXP_LNKCTL_RL;
-+	pci_write_config_word(pdev, pos + PCI_EXP_LNKCTL, reg16);
-+
-+	/* Wait for link training end */
-+	while (1) {
-+		pci_read_config_word(pdev, pos + PCI_EXP_LNKSTA, &reg16);
-+		if (!(reg16 & PCI_EXP_LNKSTA_LT))
-+			break;
-+		cpu_relax();
-+	}
-+}
-+
-+/*
-+ * calc_L0S_latency: Convert L0s latency encoding to ns
-+ */
-+static unsigned int calc_L0S_latency(unsigned int latency_encoding, int ac)
-+{
-+	unsigned int ns = 64;
-+
-+	if (latency_encoding == 0x7) {
-+		if (ac)
-+			ns = -1U;
-+		else
-+			ns = 5*1000; /* > 4us */
-+	} else
-+		ns *= (1 << latency_encoding);
-+	return ns;
-+}
-+
-+/*
-+ * calc_L1_latency: Convert L1 latency encoding to ns
-+ */
-+static unsigned int calc_L1_latency(unsigned int latency_encoding, int ac)
-+{
-+	unsigned int ns = 1000;
-+
-+	if (latency_encoding == 0x7) {
-+		if (ac)
-+			ns = -1U;
-+		else
-+			ns = 65*1000; /* > 64us */
-+	} else
-+		ns *= (1 << latency_encoding);
-+	return ns;
-+}
-+
-+static void pcie_aspm_get_cap_device(struct pci_dev *pdev, u32 *state,
-+	unsigned int *l0s, unsigned int *l1, unsigned int *enabled)
-+{
-+	int pos;
-+	u16 reg16;
-+	u32 reg32;
-+	unsigned int latency;
-+
-+	pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
-+	pci_read_config_dword(pdev, pos + PCI_EXP_LNKCAP, &reg32);
-+	*state = (reg32 & PCI_EXP_LNKCAP_ASPMS) >> 10;
-+	if (*state != PCIE_ASPM_L0S && *state != (PCIE_ASPM_L1|PCIE_ASPM_L0S))
-+		*state = 0;
-+	if (*state == 0)
-+		return;
-+
-+	latency = (reg32 & PCI_EXP_LNKCAP_L0SEL) >> 12;
-+	*l0s = calc_L0S_latency(latency, 0);
-+	if (*state & PCIE_ASPM_L1) {
-+		latency = (reg32 & PCI_EXP_LNKCAP_L1EL) >> 15;
-+		*l1 = calc_L1_latency(latency, 0);
-+	}
-+	pci_read_config_word(pdev, pos + PCI_EXP_LNKCTL, &reg16);
-+	*enabled = reg16 & 3;
-+}
-+
-+static void pcie_aspm_cap_init(struct pci_dev *pdev)
-+{
-+	struct pci_dev *child_dev;
-+	u32 state, tmp;
-+	struct link_state *link_state = pdev->link_state;
-+
-+	/* upstream component states */
-+	pcie_aspm_get_cap_device(pdev, &link_state->support_state,
-+		&link_state->l0s_upper_latency,
-+		&link_state->l1_upper_latency,
-+		&link_state->enabled_state);
-+	/* downstream component states, all functions have the same setting */
-+	child_dev = list_entry(pdev->subordinate->devices.next, struct pci_dev,
-+		bus_list);
-+	pcie_aspm_get_cap_device(child_dev, &state,
-+		&link_state->l0s_down_latency,
-+		&link_state->l1_down_latency,
-+		&tmp);
-+	link_state->support_state &= state;
-+	if (!link_state->support_state)
-+		return;
-+	link_state->enabled_state &= link_state->support_state;
-+	link_state->bios_aspm_state = link_state->enabled_state;
-+
-+	/* ENDPOINT states*/
-+	list_for_each_entry(child_dev, &pdev->subordinate->devices, bus_list) {
-+		int pos;
-+		u32 reg32;
-+		unsigned int latency;
-+		struct endpoint_state *ep_state;
-+
-+		if (child_dev->pcie_type != PCI_EXP_TYPE_ENDPOINT &&
-+			child_dev->pcie_type != PCI_EXP_TYPE_LEG_END)
-+			continue;
-+
-+		ep_state = child_dev->link_state;
-+		pos = pci_find_capability(child_dev, PCI_CAP_ID_EXP);
-+		pci_read_config_dword(child_dev, pos + PCI_EXP_DEVCAP, &reg32);
-+		latency = (reg32 & PCI_EXP_DEVCAP_L0S) >> 6;
-+		latency = calc_L0S_latency(latency, 1);
-+		ep_state->l0s_acceptable_latency = latency;
-+		if (link_state->support_state & PCIE_ASPM_L1) {
-+			latency = (reg32 & PCI_EXP_DEVCAP_L1) >> 9;
-+			latency = calc_L1_latency(latency, 1);
-+			ep_state->l1_acceptable_latency = latency;
-+		}
-+	}
-+}
-+
-+static unsigned int __pcie_aspm_check_state_one(struct pci_dev *pdev,
-+	unsigned int state)
-+{
-+	struct pci_dev *parent_dev, *tmp_dev;
-+	unsigned int latency, l1_latency = 0;
-+	struct link_state *link_state;
-+	struct endpoint_state *ep_state = pdev->link_state;
-+
-+	parent_dev = pdev->bus->self;
-+	link_state = parent_dev->link_state;
-+	state &= link_state->support_state;
-+	if (state == 0)
-+		return 0;
-+
-+	/*
-+	 * Check latency for endpoint device.
-+	 * TBD: The latency from the endpoint to root complex vary per
-+	 * switch's upstream link state above the device. Here we just do a
-+	 * simple check which assumes all links above the device can be in L1
-+	 * state, that is we just consider the worst case. If switch's upstream
-+	 * link can't be put into L0S/L1, then our check is too strictly.
-+	 */
-+	tmp_dev = pdev;
-+	while (state & (PCIE_ASPM_L0S | PCIE_ASPM_L1)) {
-+		parent_dev = tmp_dev->bus->self;
-+		link_state = parent_dev->link_state;
-+		if (state & PCIE_ASPM_L0S) {
-+			latency = max_t(unsigned int,
-+					link_state->l0s_upper_latency,
-+					link_state->l0s_down_latency);
-+			if (latency > ep_state->l0s_acceptable_latency)
-+				state &= ~PCIE_ASPM_L0S;
-+		}
-+		if (state & PCIE_ASPM_L1) {
-+			latency = max_t(unsigned int,
-+					link_state->l1_upper_latency,
-+					link_state->l1_down_latency);
-+			if (latency + l1_latency >
-+					ep_state->l1_acceptable_latency)
-+				state &= ~PCIE_ASPM_L1;
-+		}
-+		if (!parent_dev->bus->self) /* parent_dev is a root port */
-+			break;
-+		else {
-+			/*
-+			 * parent_dev is the downstream port of a switch, make
-+			 * tmp_dev the upstream port of the switch
-+			 */
-+			tmp_dev = parent_dev->bus->self;
-+			/*
-+			 * every switch on the path to root complex need 1 more
-+			 * microsecond for L1. Spec doesn't mention L0S.
-+			 */
-+			if (state & PCIE_ASPM_L1)
-+				l1_latency += 1000;
-+		}
-+	}
-+	return state;
-+}
-+
-+static unsigned int pcie_aspm_check_state(struct pci_dev *pdev,
-+	unsigned int state)
-+{
-+	struct pci_dev *child_dev;
-+
-+	/* If no child, disable the link */
-+	if (list_empty(&pdev->subordinate->devices))
-+		return 0;
-+	list_for_each_entry(child_dev, &pdev->subordinate->devices, bus_list) {
-+		if (child_dev->pcie_type == PCI_EXP_TYPE_PCI_BRIDGE) {
-+			/*
-+			 * If downstream component of a link is pci bridge, we
-+			 * disable ASPM for now for the link
-+			 * */
-+			state = 0;
-+			break;
-+		}
-+		if ((child_dev->pcie_type != PCI_EXP_TYPE_ENDPOINT &&
-+			child_dev->pcie_type != PCI_EXP_TYPE_LEG_END) ||
-+			!child_dev->link_state)
-+			continue;
-+		/* Device not in D0 doesn't need check latency */
-+		if (child_dev->current_state == PCI_D1 ||
-+			child_dev->current_state == PCI_D2 ||
-+			child_dev->current_state == PCI_D3hot ||
-+			child_dev->current_state == PCI_D3cold)
-+			continue;
-+		state = __pcie_aspm_check_state_one(child_dev, state);
-+	}
-+	return state;
-+}
-+
-+static void __pcie_aspm_config_one_dev(struct pci_dev *pdev, unsigned int state)
-+{
-+	u16 reg16;
-+	int pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
-+
-+	pci_read_config_word(pdev, pos + PCI_EXP_LNKCTL, &reg16);
-+	reg16 &= ~0x3;
-+	reg16 |= state;
-+	pci_write_config_word(pdev, pos + PCI_EXP_LNKCTL, reg16);
-+}
-+
-+static void __pcie_aspm_config_link(struct pci_dev *pdev, unsigned int state)
-+{
-+	struct pci_dev *child_dev;
-+	int valid = 1;
-+
-+	/*
-+	 * if the downstream component has pci bridge function, don't do ASPM
-+	 * now
-+	 */
-+	list_for_each_entry(child_dev, &pdev->subordinate->devices, bus_list) {
-+		if (child_dev->pcie_type == PCI_EXP_TYPE_PCI_BRIDGE){
-+			valid = 0;
-+			break;
-+		}
-+	}
-+	if (!valid)
-+		return;
-+
-+	/*
-+	 * spec 2.0 suggests all functions should be configured the same
-+	 * setting for ASPM. Enabling ASPM L1 should be done in upstream
-+	 * component first and then downstream, and vice versa for disabling
-+	 * ASPM L1. Spec doesn't mention L0S.
-+	 */
-+	if (state & PCIE_ASPM_L1)
-+		__pcie_aspm_config_one_dev(pdev, state);
-+
-+	list_for_each_entry(child_dev, &pdev->subordinate->devices, bus_list)
-+		__pcie_aspm_config_one_dev(child_dev, state);
-+
-+	if (!(state & PCIE_ASPM_L1))
-+		__pcie_aspm_config_one_dev(pdev, state);
-+
-+	((struct link_state *)pdev->link_state)->enabled_state = state;
-+}
-+
-+static void __pcie_aspm_configure_link_state(struct pci_dev *pdev, unsigned int state)
-+{
-+	if (((struct link_state *)pdev->link_state)->support_state == 0)
-+		return;
-+	state &= 3;
-+
-+	/* state 0 means disabling aspm */
-+	state = pcie_aspm_check_state(pdev, state);
-+	if (((struct link_state *)pdev->link_state)->enabled_state == state)
-+		return;
-+	__pcie_aspm_config_link(pdev, state);
-+}
-+
-+/*
-+ * pcie_aspm_configure_link_state: enable/disable PCI express link state
-+ * @pdev: the root port or switch downstream port
-+ */
-+void pcie_aspm_configure_link_state(struct pci_dev *pdev, unsigned int state)
-+{
-+	down_read(&pci_bus_sem);
-+	mutex_lock(&aspm_lock);
-+	__pcie_aspm_configure_link_state(pdev, state);
-+	mutex_unlock(&aspm_lock);
-+	up_read(&pci_bus_sem);
-+}
-+
-+static void free_link_state(struct pci_dev *pdev)
-+{
-+	struct pci_dev *child_dev;
-+
-+	list_for_each_entry(child_dev, &pdev->subordinate->devices, bus_list) {
-+		kfree(child_dev->link_state);
-+		child_dev->link_state = NULL;
-+	}
-+	kfree(pdev->link_state);
-+	pdev->link_state = NULL;
-+}
-+
-+/*
-+ * pcie_aspm_init_link_state: Initiate PCI express link state.
-+ * It is called after the pcie and its children devices are scaned.
-+ * @pdev: the root port or switch downstream port
-+ */
-+void pcie_aspm_init_link_state(struct pci_dev *pdev)
-+{
-+	unsigned int state;
-+	struct link_state *link_state;
-+	struct pci_dev *child_dev;
-+	struct endpoint_state *ep_state;
-+	int error = 0;
-+
-+	if (aspm_disabled || !pdev->is_pcie || pdev->link_state)
-+		return;
-+	if (pdev->pcie_type != PCI_EXP_TYPE_ROOT_PORT &&
-+		pdev->pcie_type != PCI_EXP_TYPE_DOWNSTREAM)
-+		return;
-+	down_read(&pci_bus_sem);
-+	if (list_empty(&pdev->subordinate->devices))
-+		goto out;
-+
-+	mutex_lock(&aspm_lock);
-+
-+	link_state = kzalloc(sizeof(*link_state), GFP_KERNEL);
-+	if (!link_state)
-+		goto unlock_out;
-+	pdev->link_state = link_state;
-+	list_for_each_entry(child_dev, &pdev->subordinate->devices, bus_list) {
-+		ep_state = kzalloc(sizeof(*ep_state), GFP_KERNEL);
-+		if (!ep_state) {
-+			error = 1;
-+			goto unlock_out;
-+		}
-+		child_dev->link_state = ep_state;
-+	}
-+
-+	pcie_aspm_configure_common_clock(pdev);
-+
-+	pcie_aspm_cap_init(pdev);
-+
-+	/* config link state to avoid BIOS error */
-+	state = pcie_aspm_check_state(pdev, policy_to_aspm_state(pdev));
-+	__pcie_aspm_config_link(pdev, state);
-+
-+	pcie_check_clock_pm(pdev);
-+
-+	link_state->pdev = pdev;
-+	list_add(&link_state->sibiling, &link_list);
-+
-+unlock_out:
-+	if (error)
-+		free_link_state(pdev);
-+	mutex_unlock(&aspm_lock);
-+out:
-+	up_read(&pci_bus_sem);
-+}
-+
-+/* @pdev: the endpoint device */
-+void pcie_aspm_exit_link_state(struct pci_dev *pdev)
-+{
-+	struct pci_dev *parent = pdev->bus->self;
-+
-+	if (aspm_disabled || !pdev->is_pcie || !parent || !parent->link_state)
-+		return;
-+	if (parent->pcie_type != PCI_EXP_TYPE_ROOT_PORT &&
-+		parent->pcie_type != PCI_EXP_TYPE_DOWNSTREAM)
-+		return;
-+	down_read(&pci_bus_sem);
-+	mutex_lock(&aspm_lock);
-+
-+	/*
-+	 * All PCIe functions are in one slot, remove one function will remove
-+	 * the the whole slot, so just wait
-+	 */
-+	if (!list_empty(&parent->subordinate->devices)) {
-+		kfree(pdev->link_state);
-+		pdev->link_state = NULL;
-+		goto out;
-+	}
-+
-+	/* All functions are removed, so just disable ASPM for the link */
-+	__pcie_aspm_config_one_dev(parent, 0);
-+	list_del(&((struct link_state *)parent->link_state)->sibiling);
-+	/* Clock PM is for endpoint device */
-+
-+	free_link_state(parent);
-+out:
-+	mutex_unlock(&aspm_lock);
-+	up_read(&pci_bus_sem);
-+}
-+
-+/* @pdev: the root port or switch downstream port */
-+void pcie_aspm_pm_state_change(struct pci_dev *pdev)
-+{
-+	if (aspm_disabled || !pdev->is_pcie || !pdev->link_state)
-+		return;
-+	if (pdev->pcie_type != PCI_EXP_TYPE_ROOT_PORT &&
-+		pdev->pcie_type != PCI_EXP_TYPE_DOWNSTREAM)
-+		return;
-+	/*
-+	 * devices changed PM state, we should recheck if latency meets all
-+	 * functions' requirement
-+	 */
-+	pcie_aspm_configure_link_state(pdev,
-+		((struct link_state *)pdev->link_state)->enabled_state);
-+}
-+
-+static int pcie_aspm_set_policy(const char *val, struct kernel_param *kp)
-+{
-+	int i;
-+	struct pci_dev *pdev;
-+	struct link_state *link_state;
-+
-+	for (i = 0; i < ARRAY_SIZE(policy_str); i++)
-+		if (!strncmp(val, policy_str[i], strlen(policy_str[i])))
-+			break;
-+	if (i >= ARRAY_SIZE(policy_str))
-+		return -EINVAL;
-+	if (i == aspm_policy)
-+		return 0;
-+
-+	down_read(&pci_bus_sem);
-+	mutex_lock(&aspm_lock);
-+	aspm_policy = i;
-+	list_for_each_entry(link_state, &link_list, sibiling) {
-+		pdev = link_state->pdev;
-+		__pcie_aspm_configure_link_state(pdev,
-+			policy_to_aspm_state(pdev));
-+		if (link_state->clk_pm_capable &&
-+		    link_state->clk_pm_enabled != policy_to_clkpm_state(pdev))
-+			pcie_set_clock_pm(pdev, policy_to_clkpm_state(pdev));
-+
-+	}
-+	mutex_unlock(&aspm_lock);
-+	up_read(&pci_bus_sem);
-+	return 0;
-+}
-+
-+static int pcie_aspm_get_policy(char *buffer, struct kernel_param *kp)
-+{
-+	int i, cnt = 0;
-+	for (i = 0; i < ARRAY_SIZE(policy_str); i++)
-+		if (i == aspm_policy)
-+			cnt += sprintf(buffer + cnt, "[%s] ", policy_str[i]);
-+		else
-+			cnt += sprintf(buffer + cnt, "%s ", policy_str[i]);
-+	return cnt;
-+}
-+
-+module_param_call(policy, pcie_aspm_set_policy, pcie_aspm_get_policy,
-+	NULL, 0644);
-+
-+static int __init pcie_aspm_disable(char *str)
-+{
-+	aspm_disabled = 1;
-+	return 1;
-+}
-+
-+__setup("pcie_noaspm", pcie_aspm_disable);
-+
-+int __init pcie_aspm_init(void)
-+{
-+	if (aspm_disabled)
-+		return 0;
-+	pci_osc_support_set(OSC_ACTIVE_STATE_PWR_SUPPORT|
-+		OSC_CLOCK_PWR_CAPABILITY_SUPPORT);
-+	return 0;
-+}
-Index: linux/include/linux/aspm.h
+--- linux-2.6.24-rc6.orig/arch/ia64/Kconfig
++++ linux-2.6.24-rc6/arch/ia64/Kconfig
+@@ -17,6 +17,7 @@ config IA64
+ 	select ARCH_SUPPORTS_MSI
+ 	select HAVE_OPROFILE
+ 	select HAVE_KPROBES
++	select HAVE_KRETPROBES
+ 	default y
+ 	help
+ 	  The Itanium Processor Family is Intel's 64-bit successor to
+Index: linux-2.6.24-rc6/arch/powerpc/Kconfig
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux/include/linux/aspm.h	2008-01-03 13:47:34.000000000 +0800
-@@ -0,0 +1,33 @@
-+/*
-+ *	aspm.h
-+ *
-+ *	PCI Express ASPM defines and function prototypes
-+ *
-+ *	Copyright (C) 2007 Intel Corp.
-+ *		Zhang Yanmin (yanmin.zhang@intel.com)
-+ *		Shaohua Li (shaohua.li@intel.com)
-+ *
-+ *	For more information, please consult the following manuals (look at
-+ *	http://www.pcisig.com/ for how to get them):
-+ *
-+ *	PCI Express Specification
-+ */
-+
-+#ifndef LINUX_ASPM_H
-+#define LINUX_ASPM_H
-+
-+#include <linux/pci.h>
-+
-+#ifdef CONFIG_PCIEASPM
-+extern void pcie_aspm_init_link_state(struct pci_dev *pdev);
-+extern void pcie_aspm_exit_link_state(struct pci_dev *pdev);
-+extern void pcie_aspm_pm_state_change(struct pci_dev *pdev);
-+extern int pcie_aspm_init(void);
-+#else
-+#define pcie_aspm_init_link_state(pdev)		do {} while (0)
-+#define pcie_aspm_exit_link_state(pdev)		do {} while (0)
-+#define pcie_aspm_pm_state_change(pdev)		do {} while (0)
-+#define pcie_aspm_init() do {} while (0)
-+#endif
-+
-+#endif /* LINUX_ASPM_H */
-Index: linux/drivers/pci/pcie/Kconfig
+--- linux-2.6.24-rc6.orig/arch/powerpc/Kconfig
++++ linux-2.6.24-rc6/arch/powerpc/Kconfig
+@@ -81,6 +81,7 @@ config PPC
+ 	default y
+ 	select HAVE_OPROFILE
+ 	select HAVE_KPROBES
++	select HAVE_KRETPROBES
+ 
+ config EARLY_PRINTK
+ 	bool
+Index: linux-2.6.24-rc6/arch/x86/Kconfig
 ===================================================================
---- linux.orig/drivers/pci/pcie/Kconfig	2008-01-03 13:16:52.000000000 +0800
-+++ linux/drivers/pci/pcie/Kconfig	2008-01-03 13:47:34.000000000 +0800
-@@ -26,3 +26,16 @@ config HOTPLUG_PCI_PCIE
- 	  When in doubt, say N.
+--- linux-2.6.24-rc6.orig/arch/x86/Kconfig
++++ linux-2.6.24-rc6/arch/x86/Kconfig
+@@ -20,6 +20,7 @@ config X86
+ 	def_bool y
+ 	select HAVE_OPROFILE
+ 	select HAVE_KPROBES
++	select HAVE_KRETPROBES
  
- source "drivers/pci/pcie/aer/Kconfig"
-+
-+#
-+# PCI Express ASPM
-+#
-+config PCIEASPM
-+	bool "PCI Express ASPM support(Experimental)"
-+	depends on PCI && EXPERIMENTAL
-+	default y
-+	help
-+	  This enables PCI Express ASPM (Active State Power Management) and
-+	  Clock Power Management. ASPM supports state L0/L0s/L1.
-+
-+	  When in doubt, say N.
-Index: linux/include/linux/pci.h
+ config GENERIC_LOCKBREAK
+ 	def_bool n
+Index: linux-2.6.24-rc6/include/asm-ia64/kprobes.h
 ===================================================================
---- linux.orig/include/linux/pci.h	2008-01-03 13:16:52.000000000 +0800
-+++ linux/include/linux/pci.h	2008-01-03 13:47:34.000000000 +0800
-@@ -164,6 +164,10 @@ struct pci_dev {
- 					   this is D0-D3, D0 being fully functional,
- 					   and D3 being off. */
+--- linux-2.6.24-rc6.orig/include/asm-ia64/kprobes.h
++++ linux-2.6.24-rc6/include/asm-ia64/kprobes.h
+@@ -82,7 +82,6 @@ struct kprobe_ctlblk {
+ 	struct prev_kprobe prev_kprobe[ARCH_PREV_KPROBE_SZ];
+ };
  
-+#ifdef CONFIG_PCIEASPM
-+	void		*link_state;	/* ASPM link state. */
-+#endif
-+
- 	pci_channel_state_t error_state;	/* current connectivity state */
- 	struct	device	dev;		/* Generic device interface */
+-#define ARCH_SUPPORTS_KRETPROBES
+ #define kretprobe_blacklist_size 0
  
-Index: linux/include/linux/pci_regs.h
+ #define SLOT0_OPCODE_SHIFT	(37)
+Index: linux-2.6.24-rc6/include/asm-powerpc/kprobes.h
 ===================================================================
---- linux.orig/include/linux/pci_regs.h	2008-01-03 13:16:52.000000000 +0800
-+++ linux/include/linux/pci_regs.h	2008-01-03 13:47:34.000000000 +0800
-@@ -395,9 +395,17 @@
- #define  PCI_EXP_DEVSTA_AUXPD	0x10	/* AUX Power Detected */
- #define  PCI_EXP_DEVSTA_TRPND	0x20	/* Transactions Pending */
- #define PCI_EXP_LNKCAP		12	/* Link Capabilities */
-+#define  PCI_EXP_LNKCAP_ASPMS	0xc00	/* ASPM Support */
-+#define  PCI_EXP_LNKCAP_L0SEL	0x7000	/* L0s Exit Latency */
-+#define  PCI_EXP_LNKCAP_L1EL	0x38000	/* L1 Exit Latency */
-+#define  PCI_EXP_LNKCAP_CLKPM	0x40000	/* L1 Clock Power Management */
- #define PCI_EXP_LNKCTL		16	/* Link Control */
-+#define  PCI_EXP_LNKCTL_RL	0x20	/* Retrain Link */
-+#define  PCI_EXP_LNKCTL_CCC	0x40	/* Common Clock COnfiguration */
- #define  PCI_EXP_LNKCTL_CLKREQ_EN 0x100	/* Enable clkreq */
- #define PCI_EXP_LNKSTA		18	/* Link Status */
-+#define  PCI_EXP_LNKSTA_LT	0x800	/* Link Training */
-+#define  PCI_EXP_LNKSTA_SLC	0x1000	/* Slot Clock Configuration */
- #define PCI_EXP_SLTCAP		20	/* Slot Capabilities */
- #define PCI_EXP_SLTCTL		24	/* Slot Control */
- #define PCI_EXP_SLTSTA		26	/* Slot Status */
-Index: linux/drivers/pci/probe.c
+--- linux-2.6.24-rc6.orig/include/asm-powerpc/kprobes.h
++++ linux-2.6.24-rc6/include/asm-powerpc/kprobes.h
+@@ -80,7 +80,6 @@ typedef unsigned int kprobe_opcode_t;
+ #define is_trap(instr)	(IS_TW(instr) || IS_TWI(instr))
+ #endif
+ 
+-#define ARCH_SUPPORTS_KRETPROBES
+ #define flush_insn_slot(p)	do { } while (0)
+ #define kretprobe_blacklist_size 0
+ 
+Index: linux-2.6.24-rc6/include/asm-x86/kprobes.h
 ===================================================================
---- linux.orig/drivers/pci/probe.c	2008-01-03 13:16:52.000000000 +0800
-+++ linux/drivers/pci/probe.c	2008-01-03 13:47:34.000000000 +0800
-@@ -9,6 +9,7 @@
- #include <linux/slab.h>
- #include <linux/module.h>
- #include <linux/cpumask.h>
-+#include <linux/aspm.h>
- #include "pci.h"
+--- linux-2.6.24-rc6.orig/include/asm-x86/kprobes.h
++++ linux-2.6.24-rc6/include/asm-x86/kprobes.h
+@@ -42,7 +42,6 @@ typedef u8 kprobe_opcode_t;
+ 	: (((unsigned long)current_thread_info()) + THREAD_SIZE \
+ 	   - (unsigned long)(ADDR)))
  
- #define CARDBUS_LATENCY_TIMER	176	/* secondary latency timer */
-@@ -1011,6 +1012,10 @@ int pci_scan_slot(struct pci_bus *bus, i
- 				break;
- 		}
- 	}
-+
-+	if (bus->self)
-+		pcie_aspm_init_link_state(bus->self);
-+
- 	return nr;
- }
+-#define ARCH_SUPPORTS_KRETPROBES
+ #define flush_insn_slot(p)	do { } while (0)
  
-Index: linux/drivers/pci/pci-acpi.c
+ extern const int kretprobe_blacklist_size;
+Index: linux-2.6.24-rc6/include/linux/kprobes.h
 ===================================================================
---- linux.orig/drivers/pci/pci-acpi.c	2008-01-03 13:16:52.000000000 +0800
-+++ linux/drivers/pci/pci-acpi.c	2008-01-03 13:47:34.000000000 +0800
-@@ -15,6 +15,7 @@
- #include <acpi/acnamesp.h>
- #include <acpi/acresrc.h>
- #include <acpi/acpi_bus.h>
-+#include <linux/aspm.h>
+--- linux-2.6.24-rc6.orig/include/linux/kprobes.h
++++ linux-2.6.24-rc6/include/linux/kprobes.h
+@@ -125,11 +125,11 @@ struct jprobe {
+ DECLARE_PER_CPU(struct kprobe *, current_kprobe);
+ DECLARE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
  
- #include <linux/pci-acpi.h>
- #include "pci.h"
-@@ -349,3 +350,11 @@ static int __init acpi_pci_init(void)
+-#ifdef ARCH_SUPPORTS_KRETPROBES
++#ifdef CONFIG_KRETPROBES
+ extern void arch_prepare_kretprobe(struct kretprobe_instance *ri,
+ 				   struct pt_regs *regs);
+ extern int arch_trampoline_kprobe(struct kprobe *p);
+-#else /* ARCH_SUPPORTS_KRETPROBES */
++#else /* CONFIG_KRETPROBES */
+ static inline void arch_prepare_kretprobe(struct kretprobe *rp,
+ 					struct pt_regs *regs)
+ {
+@@ -138,7 +138,7 @@ static inline int arch_trampoline_kprobe
+ {
  	return 0;
  }
- arch_initcall(acpi_pci_init);
-+
-+/* Called after ACPI is enabled */
-+static int __init acpi_pcie_support_init(void)
-+{
-+	pcie_aspm_init();
-+	return 0;
-+}
-+fs_initcall(acpi_pcie_support_init);
-Index: linux/drivers/pci/remove.c
+-#endif /* ARCH_SUPPORTS_KRETPROBES */
++#endif /* CONFIG_KRETPROBES */
+ /*
+  * Function-return probe -
+  * Note:
+Index: linux-2.6.24-rc6/kernel/kprobes.c
 ===================================================================
---- linux.orig/drivers/pci/remove.c	2008-01-03 13:16:52.000000000 +0800
-+++ linux/drivers/pci/remove.c	2008-01-03 13:47:34.000000000 +0800
-@@ -1,5 +1,6 @@
- #include <linux/pci.h>
- #include <linux/module.h>
-+#include <linux/aspm.h>
- #include "pci.h"
- 
- static void pci_free_resources(struct pci_dev *dev)
-@@ -30,6 +31,9 @@ static void pci_stop_dev(struct pci_dev 
- 		dev->global_list.next = dev->global_list.prev = NULL;
- 		up_write(&pci_bus_sem);
- 	}
-+
-+	if (dev->bus->self)
-+		pcie_aspm_exit_link_state(dev);
+--- linux-2.6.24-rc6.orig/kernel/kprobes.c
++++ linux-2.6.24-rc6/kernel/kprobes.c
+@@ -678,8 +678,7 @@ void __kprobes unregister_jprobe(struct 
+ 	unregister_kprobe(&jp->kp);
  }
  
- static void pci_destroy_dev(struct pci_dev *dev)
-Index: linux/drivers/pci/pci.c
-===================================================================
---- linux.orig/drivers/pci/pci.c	2008-01-03 13:47:31.000000000 +0800
-+++ linux/drivers/pci/pci.c	2008-01-03 13:47:34.000000000 +0800
-@@ -18,6 +18,7 @@
- #include <linux/spinlock.h>
- #include <linux/string.h>
- #include <linux/log2.h>
-+#include <linux/aspm.h>
- #include <asm/dma.h>	/* isa_dma_bridge_buggy */
- #include "pci.h"
+-#ifdef ARCH_SUPPORTS_KRETPROBES
+-
++#ifdef CONFIG_KRETPROBES
+ /*
+  * This kprobe pre_handler is registered with every kretprobe. When probe
+  * hits it will set up the return probe.
+@@ -762,8 +761,7 @@ int __kprobes register_kretprobe(struct 
+ 	return ret;
+ }
  
-@@ -501,6 +502,9 @@ pci_set_power_state(struct pci_dev *dev,
- 	if (need_restore)
- 		pci_restore_bars(dev);
- 
-+	if (dev->bus->self)
-+		pcie_aspm_pm_state_change(dev->bus->self);
-+
+-#else /* ARCH_SUPPORTS_KRETPROBES */
+-
++#else /* CONFIG_KRETPROBES */
+ int __kprobes register_kretprobe(struct kretprobe *rp)
+ {
+ 	return -ENOSYS;
+@@ -774,8 +772,7 @@ static int __kprobes pre_handler_kretpro
+ {
  	return 0;
  }
+-
+-#endif /* ARCH_SUPPORTS_KRETPROBES */
++#endif /* CONFIG_KRETPROBES */
  
-
-
+ void __kprobes unregister_kretprobe(struct kretprobe *rp)
+ {
+Index: linux-2.6.24-rc6/arch/s390/Kconfig
+===================================================================
+--- linux-2.6.24-rc6.orig/arch/s390/Kconfig
++++ linux-2.6.24-rc6/arch/s390/Kconfig
+@@ -53,6 +53,7 @@ config S390
+ 	def_bool y
+ 	select HAVE_OPROFILE
+ 	select HAVE_KPROBES
++	select HAVE_KRETPROBES
+ 
+ source "init/Kconfig"
+ 
