@@ -1,184 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754334AbYACPth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760410AbYACPtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754334AbYACPth (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 10:49:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758421AbYACPqb
+	id S1760410AbYACPtz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 10:49:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760188AbYACPrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 10:46:31 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:44965 "EHLO mx2.suse.de"
+	Thu, 3 Jan 2008 10:47:46 -0500
+Received: from rtr.ca ([76.10.145.34]:4390 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759943AbYACPq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 10:46:28 -0500
-From: Andi Kleen <ak@suse.de>
-References: <20080103446.461669000@suse.de>
-In-Reply-To: <20080103446.461669000@suse.de>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] [2/2] X86: Print which shared library/executable faulted in segfault etc. messages v2
-Message-Id: <20080103154627.8D3F414E25@wotan.suse.de>
-Date: Thu,  3 Jan 2008 16:46:27 +0100 (CET)
+	id S1756095AbYACPrp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 10:47:45 -0500
+Message-ID: <477D039F.6000206@rtr.ca>
+Date: Thu, 03 Jan 2008 10:47:43 -0500
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Mark Lord <lkml@rtr.ca>, Allen Martin <AMartin@nvidia.com>,
+       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       Gabor Gombas <gombasg@sztaki.hu>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Kuan Luo <kluo@nvidia.com>,
+       Peer Chen <pchen@nvidia.com>
+Subject: Re: sata_nv + ADMA + Samsung disk problem
+References: <20070808120804.GB5257@boogie.lpds.sztaki.hu> <20080101164416.GA29574@boogie.lpds.sztaki.hu> <477B0429.7040909@gmail.com> <477B0CFD.1030603@shaw.ca> <F72FA20C31DD4F4C997B91C5B3690A09505577@hqemmail07.nvidia.com> <477BDEA5.8040701@garzik.org> <F72FA20C31DD4F4C997B91C5B3690A0950557D@hqemmail07.nvidia.com> <477C2A99.9010208@shaw.ca> <477C61D3.30009@rtr.ca> <477C6A85.9020607@shaw.ca> <477D02E0.5040301@rtr.ca>
+In-Reply-To: <477D02E0.5040301@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mark Lord wrote:
+> Robert Hancock wrote:
+>> Mark Lord wrote:
+>>> Robert Hancock wrote:
+>>> ..
+>>>>  From some of the traces I took previously (posted on LKML as "sata_nv ADMA controller lockup investigation" way back in Feb 07), what seems to occur is that when the second command is issued very rapidly (within less than 20 microseconds, or potentially longer) after the previous command's completion, the ADMA status changes from 0x500 (STOPPED and IDLE) to 0x400 (just IDLE) as it typically does, but then it sticks there, no interrupt is ever raised, and CPB response flags remain at 0.
+>>> ..
+>>>
+>>> Assuming that NVidia got their ADMA core logic from Pacific Digital
+>>> (the inventors), then it may have some of the same bugs as the original.
+>>>
+>>> One of those bugs is that the aGO trigger is sampled in a "racey" way,
+>>> such that it sometimes may miss a recent addition to the ring.
+>>>
+>>> The *only* way to guarantee things with the original Pacific Digital core
+>>> was to (1) always retrigger aGO for a full ring scan with each new addition,
+>>> and (2) poll periodically (every half second or so) rather than relying
+>>> exclusively on the IRQ actually working..
+>>>
+>>> Dunno about the NVidia version.
+>>
+>> Theirs works rather differently - the GO bit is there, but there's another append register which is used to tell the controller that a new tag has been added to the CPB list.
+> ..
+> 
+> The PacDigi core uses a "search count" register for that purpose,
+> but the buggy nature of the core required that it always be set
+> to "2 * ring_size" to ensure nothing got missed.
+> 
+> Here's some comments from the original ADMA driver.
+> Maybe something from here might help with the NV stuff, too.
+> 
+>       // There is a chance that the chip will skip over a CPB if a SERVICE interrupt
+>        // occurs while it's reading the CPB header.  This won't cause us to get
+>        // stuck anywhere, but it might slow down execution of the new CPB if
+>        // it has to wait for the next time we hit aGO.  So.. Dxxx/Dxxx suggest
+>        // that all we need to do is tell the chip to do two passes around the ring
+>        // from an aGO instead of one pass, so that it will find the "missed" CPB
+>        // on the second pass.  This isn't as bad as it first looks.
+>        //
+>        writew(channel->num_cpbs * 2, &adma_regs->cpb_search_count);
+> 
+> Or again, the NV stuff may be completely different (?).
+..
 
-They now look like
+Another thing about the PacDigi core:  one has to be very careful
+to avoid sequential accesses to sequential PCI locations when
+programming the chip -- it cannot handle merged register writes.
 
-hal-resmgr[13791]: segfault at 3c rip 2b9c8caec182 rsp 7fff1e825d30 error 4 in libacl.so.1.1.0[2b9c8caea000+6000]
+So for any group of sequentially laid out registers, the code has
+to ensure it never writes two adjacent registers in sequence..
 
-This makes it easier to pinpoint bugs to specific libraries. 
-
-And printing the offset into a mapping also always allows to find the 
-correct fault point in a library even with randomized mappings. Previously
-there was no way to actually find the correct code address inside
-the randomized mapping.
-
-Relies on earlier patch to shorten the printk formats.
-
-They are often now longer than 80 characters, but I think that's worth it.
-
-Patch for i386 and x86-64.
-
-[includes fix from Eric Dumazet to check d_path error value]
-
-Signed-off-by: Andi Kleen <ak@suse.de>
-
----
- arch/x86/kernel/signal_32.c |    7 +++++--
- arch/x86/kernel/signal_64.c |    7 +++++--
- arch/x86/kernel/traps_32.c  |    7 +++++--
- arch/x86/mm/fault_32.c      |    4 +++-
- include/linux/mm.h          |    1 +
- mm/memory.c                 |   31 +++++++++++++++++++++++++++++++
- 6 files changed, 50 insertions(+), 7 deletions(-)
-
-Index: linux/include/linux/mm.h
-===================================================================
---- linux.orig/include/linux/mm.h
-+++ linux/include/linux/mm.h
-@@ -1145,6 +1145,7 @@ extern int randomize_va_space;
- #endif
- 
- const char * arch_vma_name(struct vm_area_struct *vma);
-+void print_vma_addr(char *prefix, unsigned long rip);
- 
- struct page *sparse_mem_map_populate(unsigned long pnum, int nid);
- pgd_t *vmemmap_pgd_populate(unsigned long addr, int node);
-Index: linux/mm/memory.c
-===================================================================
---- linux.orig/mm/memory.c
-+++ linux/mm/memory.c
-@@ -2746,3 +2746,34 @@ int access_process_vm(struct task_struct
- 
- 	return buf - old_buf;
- }
-+
-+/*
-+ * Print the name of a VMA.
-+ */
-+void print_vma_addr(char *prefix, unsigned long ip)
-+{
-+	struct mm_struct *mm = current->mm;
-+	struct vm_area_struct *vma;
-+
-+	down_read(&mm->mmap_sem);
-+	vma = find_vma(mm, ip);
-+	if (vma && vma->vm_file) {
-+		struct file *f = vma->vm_file;
-+		char *buf = (char *)__get_free_page(GFP_KERNEL);
-+		if (buf) {
-+			char *p, *s;
-+
-+			p = d_path(f->f_dentry, f->f_vfsmnt, buf, PAGE_SIZE);
-+			if (IS_ERR(p))
-+				p = "?";
-+			s = strrchr(p, '/');
-+			if (s)
-+				p = s+1;
-+			printk("%s%s[%lx+%lx]", prefix, p,
-+					vma->vm_start,
-+					vma->vm_end - vma->vm_start);
-+			free_page((unsigned long)buf);
-+		}
-+	}
-+	up_read(&current->mm->mmap_sem);
-+}
-Index: linux/arch/x86/kernel/signal_32.c
-===================================================================
---- linux.orig/arch/x86/kernel/signal_32.c
-+++ linux/arch/x86/kernel/signal_32.c
-@@ -198,12 +198,15 @@ asmlinkage int sys_sigreturn(unsigned lo
- 	return ax;
- 
- badframe:
--	if (show_unhandled_signals && printk_ratelimit())
-+	if (show_unhandled_signals && printk_ratelimit()) {
- 		printk("%s%s[%d] bad frame in sigreturn frame:%p ip:%lx"
--		       " sp:%lx oeax:%lx\n",
-+		       " sp:%lx oeax:%lx",
- 		    task_pid_nr(current) > 1 ? KERN_INFO : KERN_EMERG,
- 		    current->comm, task_pid_nr(current), frame, regs->ip,
- 		    regs->sp, regs->orig_ax);
-+		print_vma_addr(" in ", regs->ip);
-+		printk("\n");
-+	}
- 
- 	force_sig(SIGSEGV, current);
- 	return 0;
-Index: linux/arch/x86/kernel/signal_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/signal_64.c
-+++ linux/arch/x86/kernel/signal_64.c
-@@ -481,9 +481,12 @@ do_notify_resume(struct pt_regs *regs, v
- void signal_fault(struct pt_regs *regs, void __user *frame, char *where)
- { 
- 	struct task_struct *me = current; 
--	if (show_unhandled_signals && printk_ratelimit())
--		printk("%s[%d] bad frame in %s frame:%p ip:%lx sp:%lx orax:%lx\n",
-+	if (show_unhandled_signals && printk_ratelimit()) {
-+		printk("%s[%d] bad frame in %s frame:%p ip:%lx sp:%lx orax:%lx",
- 	       me->comm,me->pid,where,frame,regs->ip,regs->sp,regs->orig_ax);
-+		print_vma_addr(" in ", regs->ip);
-+		printk("\n");
-+	}
- 
- 	force_sig(SIGSEGV, me); 
- } 
-Index: linux/arch/x86/kernel/traps_32.c
-===================================================================
---- linux.orig/arch/x86/kernel/traps_32.c
-+++ linux/arch/x86/kernel/traps_32.c
-@@ -605,11 +605,14 @@ void __kprobes do_general_protection(str
- 	current->thread.error_code = error_code;
- 	current->thread.trap_no = 13;
- 	if (show_unhandled_signals && unhandled_signal(current, SIGSEGV) &&
--	    printk_ratelimit())
-+	    printk_ratelimit()) {
- 		printk(KERN_INFO
--		    "%s[%d] general protection ip:%lx sp:%lx error:%lx\n",
-+		    "%s[%d] general protection ip:%lx sp:%lx error:%lx",
- 		    current->comm, task_pid_nr(current),
- 		    regs->ip, regs->sp, error_code);
-+		print_vma_addr(" in ", regs->ip);
-+		printk("\n");
-+	}
- 
- 	force_sig(SIGSEGV, current);
- 	return;
-Index: linux/arch/x86/mm/fault_32.c
-===================================================================
---- linux.orig/arch/x86/mm/fault_32.c
-+++ linux/arch/x86/mm/fault_32.c
-@@ -550,10 +550,12 @@ bad_area_nosemaphore:
- 		if (show_unhandled_signals && unhandled_signal(tsk, SIGSEGV) &&
- 		    printk_ratelimit()) {
- 			printk("%s%s[%d]: segfault at %lx ip %08lx "
--			    "sp %08lx error %lx\n",
-+			    "sp %08lx error %lx",
- 			    task_pid_nr(tsk) > 1 ? KERN_INFO : KERN_EMERG,
- 			    tsk->comm, task_pid_nr(tsk), address, regs->ip,
- 			    regs->sp, error_code);
-+			print_vma_addr(" in ", regs->ip);
-+			printk("\n");
- 		}
- 		tsk->thread.cr2 = address;
- 		/* Kernel addresses are always protection faults */
+-ml
