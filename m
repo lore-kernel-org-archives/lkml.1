@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757296AbYACNY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755212AbYACNZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757296AbYACNY7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 08:24:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656AbYACNX0
+	id S1755212AbYACNZo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 08:25:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbYACNX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 08:23:26 -0500
-Received: from smtp113.plus.mail.re1.yahoo.com ([69.147.102.76]:35631 "HELO
-	smtp113.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752816AbYACNXL (ORCPT
+	Thu, 3 Jan 2008 08:23:28 -0500
+Received: from smtp110.plus.mail.re1.yahoo.com ([69.147.102.73]:24653 "HELO
+	smtp110.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752853AbYACNXN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 08:23:11 -0500
+	Thu, 3 Jan 2008 08:23:13 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.de;
   h=Received:X-YMail-OSG:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:In-Reply-To:References;
-  b=HthyRpD2ufOMZYf31X0R2nhnDCflsCuyNxQ9hj9h2JPY50Z5Xomu8HpbqKJtX+EuwXC+5QqyzRKRKP9dl3PdhtsHoiQ6GNu7qZmNcVjsDS1UFFTJe4IiKi9M7GWnxPr/DrbNTMhQzo9PClurZ0s6msGujpL0Prm7ur/7kB9EyLE=  ;
-X-YMail-OSG: G_gJ9rMVM1k4SUryRAPY9z9VYZL4NlEGjiCX4aGoPdFgX5lzlsOW1TxdOPrTqO6uojbFda3nEA--
+  b=YqpOALXzTiNxR0CEvnid22r6QuhUgk4UU+LGRDwq2xjeVRqj/8r518P6w9efggw8ezxqwz3uX6U75wiBLUsAHxOScLaXE2tokBRruZ70uWu1UX4jMUnfwUbPCCMx6cfXgbjN0goiZyEiADai3uy5jakbypI/SdTDPUK4596/Ero=  ;
+X-YMail-OSG: qfaiv5AVM1kTT9srP95nskzhN0CaLz_Qi8J48K.gqHUOCUF00dKnIjw8sQfSO9xdTID4wRmzYg--
 From: Borislav Petkov <bbpetkov@yahoo.de>
 To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: bzolnier@gmail.com, Borislav Petkov <bbpetkov@yahoo.de>
-Subject: [RESEND PATCH 08/10] ide-floppy: mv idefloppy_{should_,}report_error
-Date: Thu,  3 Jan 2008 14:20:07 +0100
-Message-Id: <1199366409-26016-9-git-send-email-bbpetkov@yahoo.de>
+Subject: [RESEND PATCH 07/10] ide-floppy: remove unnecessary ->handler != NULL check
+Date: Thu,  3 Jan 2008 14:20:06 +0100
+Message-Id: <1199366409-26016-8-git-send-email-bbpetkov@yahoo.de>
 X-Mailer: git-send-email debian.1.5.3.7.1-dirty
-In-Reply-To: <1199366409-26016-8-git-send-email-bbpetkov@yahoo.de>
+In-Reply-To: <1199366409-26016-7-git-send-email-bbpetkov@yahoo.de>
 References: <1199366409-26016-1-git-send-email-bbpetkov@yahoo.de>
  <1199366409-26016-2-git-send-email-bbpetkov@yahoo.de>
  <1199366409-26016-3-git-send-email-bbpetkov@yahoo.de>
@@ -30,47 +30,58 @@ References: <1199366409-26016-1-git-send-email-bbpetkov@yahoo.de>
  <1199366409-26016-5-git-send-email-bbpetkov@yahoo.de>
  <1199366409-26016-6-git-send-email-bbpetkov@yahoo.de>
  <1199366409-26016-7-git-send-email-bbpetkov@yahoo.de>
- <1199366409-26016-8-git-send-email-bbpetkov@yahoo.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This BUG_ON is unneeded since the ->handler != NULL check is performed in
+ide_set_handler().
+
 Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
 ---
- drivers/ide/ide-floppy.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/ide/ide-floppy.c |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/ide/ide-floppy.c b/drivers/ide/ide-floppy.c
-index 2c139e7..fd5fe7b 100644
+index 5d0fd1f..2c139e7 100644
 --- a/drivers/ide/ide-floppy.c
 +++ b/drivers/ide/ide-floppy.c
-@@ -544,7 +544,7 @@ static ide_startstop_t idefloppy_transfer_pc1(ide_drive_t *drive)
- }
+@@ -421,7 +421,7 @@ static ide_startstop_t idefloppy_pc_intr(ide_drive_t *drive)
+ 					"to send us more data than expected "
+ 					"- discarding data\n");
+ 				idefloppy_discard_data(drive,bcount.all);
+-				BUG_ON(HWGROUP(drive)->handler != NULL);
++
+ 				ide_set_handler(drive,
+ 						&idefloppy_pc_intr,
+ 						IDEFLOPPY_WAIT_CMD,
+@@ -453,8 +453,6 @@ static ide_startstop_t idefloppy_pc_intr(ide_drive_t *drive)
+ 	pc->actually_transferred += bcount.all;
+ 	pc->current_position += bcount.all;
  
- /* Supresses error messages resulting from Medium not present */
--static inline int idefloppy_should_report_error(idefloppy_t *floppy)
-+static inline int idefloppy_report_error(idefloppy_t *floppy)
- {
- 	if (floppy->sense_key == 0x02 &&
- 	    floppy->asc       == 0x3a &&
-@@ -587,7 +587,7 @@ static ide_startstop_t idefloppy_issue_pc(ide_drive_t *drive, idefloppy_pc_t *pc
- 		 */
- 		if (!test_bit(PC_ABORT, &pc->flags)) {
- 			if (!test_bit(PC_SUPPRESS_ERROR, &pc->flags)) {
--				if (idefloppy_should_report_error(floppy))
-+				if (idefloppy_report_error(floppy))
- 					printk(KERN_ERR "ide-floppy: %s: I/O error, "
- 					       "pc = %2x, key = %2x, "
- 					       "asc = %2x, ascq = %2x\n",
-@@ -809,7 +809,7 @@ static ide_startstop_t idefloppy_do_request(ide_drive_t *drive,
- 
- 	if (rq->errors >= ERROR_MAX) {
- 		if (floppy->failed_pc != NULL) {
--			if (idefloppy_should_report_error(floppy))
-+			if (idefloppy_report_error(floppy))
- 				printk(KERN_ERR "ide-floppy: %s: I/O error,"
- 					" pc = %2x, key = %2x, asc = %2x,"
- 					" ascq = %2x\n",
+-	BUG_ON(HWGROUP(drive)->handler != NULL);
+-
+ 	/* And set the interrupt handler again */
+ 	ide_set_handler(drive, &idefloppy_pc_intr, IDEFLOPPY_WAIT_CMD, NULL);
+ 	return ide_started;
+@@ -482,7 +480,7 @@ static ide_startstop_t idefloppy_transfer_pc(ide_drive_t *drive)
+ 				"issuing a packet command\n");
+ 		return ide_do_reset(drive);
+ 	}
+-	BUG_ON(HWGROUP(drive)->handler != NULL);
++
+ 	/* Set the interrupt routine */
+ 	ide_set_handler(drive, &idefloppy_pc_intr, IDEFLOPPY_WAIT_CMD, NULL);
+ 	/* Send the actual packet */
+@@ -537,7 +535,7 @@ static ide_startstop_t idefloppy_transfer_pc1(ide_drive_t *drive)
+ 	 * 40 and 50msec work well. idefloppy_pc_intr will not be actually
+ 	 * used until after the packet is moved in about 50 msec.
+ 	 */
+-	BUG_ON(HWGROUP(drive)->handler != NULL);
++
+ 	ide_set_handler(drive,
+ 	  &idefloppy_pc_intr,		/* service routine for packet command */
+ 	  floppy->ticks,		/* wait this long before "failing" */
 -- 
 1.5.3.7
 
