@@ -1,77 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756300AbYACXwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752877AbYACXww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756300AbYACXwh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 18:52:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbYACXw3
+	id S1752877AbYACXww (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 18:52:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbYACXwm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 18:52:29 -0500
-Received: from smtp3-g19.free.fr ([212.27.42.29]:45920 "EHLO smtp3-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751579AbYACXw2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 18:52:28 -0500
-From: Guillaume Chazarain <guichaz@yahoo.fr>
-Subject: [PATCH] proc: advertise new restrictions on /proc/*/maps &
-	/proc/*/smaps
-To: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org
-Date: Fri, 04 Jan 2008 00:51:50 +0100
-Message-ID: <20080103235150.2870.31703.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.1
+	Thu, 3 Jan 2008 18:52:42 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:52082 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756622AbYACXwl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 18:52:41 -0500
+Message-ID: <477D7548.9070400@vmware.com>
+Date: Thu, 03 Jan 2008 15:52:40 -0800
+From: Dan Hecht <dhecht@vmware.com>
+User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       john stultz <johnstul@us.ibm.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dan Hecht <dhecht@vmware.com>
+Subject: PIT clocksource makes invalid assumptions
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that strangers are kept out of /proc/<pid>/maps, let's welcome them
-with -EPERM instead of a blank file.
+Looking at pit_read() in arch/x86/kernel/i8253.c, it seems that the PIT 
+clocksource code assumes that the PIT CH0 is in periodic mode.  With 
+clockevents, this assumption is no longer valid.  There are at least two 
+places that make this assumption:
 
-Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
----
+1) The calculation at the end of pit_read() assumes that the PIT is in 
+periodic mode.  This isn't true unless the PIT is the current clockevent 
+and nohz is inactive.  (Though #2 can end up forcing the PIT to be 
+reprogrammed).
 
- fs/proc/base.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+2) The PIT clockevent is shutdown by using PIT mode 0 (interrupt on 
+terminal count) -- doesn't the PIT counter continue to count (even 
+though it won't be raising an interrupt)?  If so, the test in pit_read() 
+under the VIA686a comment can succeed after the PIT clockevent has been 
+shutdown, and the PIT hardware may be reprogrammed to start firing 
+interrupts again.  This doesn't seem intentional, and can defeat nohz 
+since now the PIT is firing periodically.
 
+Seems these problems can happen when the PIT is used as the clocksource 
+or even just the clocksource watchdog.  It looks like there is some code 
+in clocksource.c that checks for CLOCK_SOURCE_IS_CONTINUOUS, which is 
+not set for the PIT clocksource, but it doesn't seem to be strong enough 
+to prevent these problematic scenarios (and it's not clear if that is 
+the intent of IS_CONTINUOUS anyway).
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 7411bfb..c824b23 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -2207,7 +2207,7 @@ static const struct pid_entry tgid_base_stuff[] = {
- 	INF("cmdline",    S_IRUGO, pid_cmdline),
- 	INF("stat",       S_IRUGO, tgid_stat),
- 	INF("statm",      S_IRUGO, pid_statm),
--	REG("maps",       S_IRUGO, maps),
-+	REG("maps",       S_IRUSR, maps),
- #ifdef CONFIG_NUMA
- 	REG("numa_maps",  S_IRUGO, numa_maps),
- #endif
-@@ -2219,7 +2219,7 @@ static const struct pid_entry tgid_base_stuff[] = {
- 	REG("mountstats", S_IRUSR, mountstats),
- #ifdef CONFIG_MMU
- 	REG("clear_refs", S_IWUSR, clear_refs),
--	REG("smaps",      S_IRUGO, smaps),
-+	REG("smaps",      S_IRUSR, smaps),
- #endif
- #ifdef CONFIG_SECURITY
- 	DIR("attr",       S_IRUGO|S_IXUGO, attr_dir),
-@@ -2533,7 +2533,7 @@ static const struct pid_entry tid_base_stuff[] = {
- 	INF("cmdline",   S_IRUGO, pid_cmdline),
- 	INF("stat",      S_IRUGO, tid_stat),
- 	INF("statm",     S_IRUGO, pid_statm),
--	REG("maps",      S_IRUGO, maps),
-+	REG("maps",      S_IRUSR, maps),
- #ifdef CONFIG_NUMA
- 	REG("numa_maps", S_IRUGO, numa_maps),
- #endif
-@@ -2544,7 +2544,7 @@ static const struct pid_entry tid_base_stuff[] = {
- 	REG("mounts",    S_IRUGO, mounts),
- #ifdef CONFIG_MMU
- 	REG("clear_refs", S_IWUSR, clear_refs),
--	REG("smaps",     S_IRUGO, smaps),
-+	REG("smaps",     S_IRUSR, smaps),
- #endif
- #ifdef CONFIG_SECURITY
- 	DIR("attr",      S_IRUGO|S_IXUGO, attr_dir),
+To verify this really can happen, when I boot a kernel, I can see this 
+sequence:
+
+   init_pit_timer (with mode==CLOCK_EVT_MODE_PERIODIC)
+   init_pit_timer (with mode==CLOCK_EVT_MODE_UNUSED)
+   init_pit_timer (with mode==CLOCK_EVT_MODE_SHUTDOWN)
+   pit_read() and count > LATCH (I believe the PIT is the watchdog at 
+this point), which causes the PIT to raise periodic interrupts.
+
+(Shortly after, the acpi pm clocksource is registered and replaces the 
+PIT as the watchdog.  Later, the PIT clockevent is used as the broadcast 
+clockevent and reprogrammed into one-shot mode, stopping the PIT 
+interrupts.)
+
+Also, the user could force the PIT clocksource to be current_clocksource 
+even though the PIT is in one-shot mode (and therefore the calculation 
+in pit_read is bogus).
+
+Of course, all this can only happen for 32-bit UP.  I'm not sure what 
+the preferred fix for this is...
+
+Dan
 
