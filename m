@@ -1,85 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756274AbYACLAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758173AbYACLB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756274AbYACLAv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 06:00:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYACLAo
+	id S1758173AbYACLB6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 06:01:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbYACLBu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 06:00:44 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37504 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752161AbYACLAn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 06:00:43 -0500
-Date: Thu, 3 Jan 2008 12:00:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [20/20] x86: Print which shared library/executable
-	faulted in segfault etc. messages
-Message-ID: <20080103110034.GG29194@elte.hu>
-References: <20080103149.088038000@suse.de> <20080103005016.4DA4C14D40@wotan.suse.de>
+	Thu, 3 Jan 2008 06:01:50 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:38679 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752638AbYACLBu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 06:01:50 -0500
+Date: Thu, 3 Jan 2008 12:01:54 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: malattia@linux.it, kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Cc: trivial@kernel.org
+Subject: struct should not be named same way as function in sony-laptop
+Message-ID: <20080103110154.GA2376@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080103005016.4DA4C14D40@wotan.suse.de>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Naming struct and function by same name is evil. Rename the struct.
 
-* Andi Kleen <ak@suse.de> wrote:
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-> They now look like
-> 
-> hal-resmgr[13791]: segfault at 3c rip 2b9c8caec182 rsp 7fff1e825d30 
-> error 4 in libacl.so.1.1.0[2b9c8caea000+6000]
-> 
-> This makes it easier to pinpoint bugs to specific libraries.
+diff --git a/drivers/misc/sony-laptop.c b/drivers/misc/sony-laptop.c
+index b0f6803..31ce39d 100644
+--- a/drivers/misc/sony-laptop.c
++++ b/drivers/misc/sony-laptop.c
+@@ -1180,7 +1180,7 @@ struct sony_pic_ioport {
+ 	struct list_head	list;
+ };
+ 
+-struct sony_pic_irq {
++struct sony_pic_irqdesc {
+ 	struct acpi_resource_irq	irq;
+ 	struct list_head		list;
+ };
+@@ -1192,7 +1192,7 @@ struct sony_pic_dev {
+ 	u8			bluetooth_power;
+ 	u8			wwan_power;
+ 	struct acpi_device	*acpi_dev;
+-	struct sony_pic_irq	*cur_irq;
++	struct sony_pic_irqdesc	*cur_irq;
+ 	struct sony_pic_ioport	*cur_ioport;
+ 	struct list_head	interrupts;
+ 	struct list_head	ioports;
+@@ -2094,7 +2094,7 @@ sony_pic_read_possible_resource(struct a
+ 	case ACPI_RESOURCE_TYPE_IRQ:
+ 		{
+ 			struct acpi_resource_irq *p = &resource->data.irq;
+-			struct sony_pic_irq *interrupt = NULL;
++			struct sony_pic_irqdesc *interrupt = NULL;
+ 			if (!p || !p->interrupt_count) {
+ 				/*
+ 				 * IRQ descriptors may have no IRQ# bits set,
+@@ -2218,7 +2218,7 @@ static int sony_pic_disable(struct acpi_
+  *  Call _SRS to set current resources
+  */
+ static int sony_pic_enable(struct acpi_device *device,
+-		struct sony_pic_ioport *ioport, struct sony_pic_irq *irq)
++		struct sony_pic_ioport *ioport, struct sony_pic_irqdesc *irq)
+ {
+ 	acpi_status status;
+ 	int result = 0;
+@@ -2381,7 +2381,7 @@ found:
+ static int sony_pic_remove(struct acpi_device *device, int type)
+ {
+ 	struct sony_pic_ioport *io, *tmp_io;
+-	struct sony_pic_irq *irq, *tmp_irq;
++	struct sony_pic_irqdesc *irq, *tmp_irq;
+ 
+ 	if (sony_pic_disable(device)) {
+ 		printk(KERN_ERR DRV_PFX "Couldn't disable device.\n");
+@@ -2422,7 +2422,7 @@ static int sony_pic_add(struct acpi_devi
+ {
+ 	int result;
+ 	struct sony_pic_ioport *io, *tmp_io;
+-	struct sony_pic_irq *irq, *tmp_irq;
++	struct sony_pic_irqdesc *irq, *tmp_irq;
+ 
+ 	printk(KERN_INFO DRV_PFX "%s v%s.\n",
+ 		SONY_PIC_DRIVER_NAME, SONY_LAPTOP_DRIVER_VERSION);
 
-yep, that's really useful.
-
-I think the patch needs one more iteration though:
-
-> And printing the offset into a mapping also always allows to find the 
-> correct fault point in a library even with randomized mappings. Previously
-> there was no way to actually find the correct code address inside
-> the randomized mapping.
-> 
-> Relies on earlier patch to shorten the printk formats.
-> 
-> They are often now longer than 80 characters, but I think that's worth 
-> it.
-
-why not make it multi-line? that way the %lx hack wouldnt be needed 
-either.
-
-> +void print_vma_addr(char *prefix, unsigned long ip)
-> +{
-> +	struct mm_struct *mm = current->mm;
-> +	struct vm_area_struct *vma;
-> +	down_read(&mm->mmap_sem);
-> +	vma = find_vma(mm, ip);
-
-grumble. Proper CodingStyle please.
-
-> +		if (buf) {
-> +			char *p, *s;
-> +			p = d_path(f->f_dentry, f->f_vfsmnt, buf, PAGE_SIZE);
-
-this one too.
-
-> +	if (show_unhandled_signals && printk_ratelimit()) {
-> +		printk("%s[%d] bad frame in %s frame:%p ip:%lx sp:%lx orax:%lx",
->  	       me->comm,me->pid,where,frame,regs->ip,regs->sp,regs->orig_ax);
-
-and this.
-
-	Ingo
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
