@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755158AbYACSPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbYACSPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755158AbYACSPU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 13:15:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbYACSPA
+	id S1755987AbYACSPj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 13:15:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754741AbYACSPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 13:15:00 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:41892 "EHLO smtp5.pp.htv.fi"
+	Thu, 3 Jan 2008 13:15:11 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:46068 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752036AbYACSO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 13:14:59 -0500
-Date: Thu, 3 Jan 2008 20:14:38 +0200
+	id S1754753AbYACSPJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 13:15:09 -0500
+Date: Thu, 3 Jan 2008 20:14:48 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Andi Kleen <ak@suse.de>
-Cc: rjw@sisk.pl, pavel@suse.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without
-	HOTPLUG_CPU
-Message-ID: <20080103181438.GA7141@does.not.exist>
-References: <20080103442.621670000@suse.de> <20080103154229.9723F14DDD@wotan.suse.de>
+To: Avi Kivity <avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
+Subject: Re: [PATCH 20/52] KVM: Add missing #include <asm/pgtable.h>
+Message-ID: <20080103181448.GB7141@does.not.exist>
+References: <1198998638-22713-1-git-send-email-avi@qumranet.com> <1198998638-22713-21-git-send-email-avi@qumranet.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080103154229.9723F14DDD@wotan.suse.de>
+In-Reply-To: <1198998638-22713-21-git-send-email-avi@qumranet.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 03, 2008 at 04:42:29PM +0100, Andi Kleen wrote:
+On Sun, Dec 30, 2007 at 09:10:06AM +0200, Avi Kivity wrote:
+> Needed for empty_zero_page.
 > 
-> This avoids the requirement to mark a lot of initialization functions not 
-> __cpuinit just for resume from RAM.
+> Signed-off-by: Avi Kivity <avi@qumranet.com>
+> ---
+>  drivers/kvm/kvm_main.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
 > 
-> More functions could be converted now, didn't do all.
->...
+> diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
+> index 469e6b4..d6c5191 100644
+> --- a/drivers/kvm/kvm_main.c
+> +++ b/drivers/kvm/kvm_main.c
+> @@ -46,6 +46,7 @@
+>  #include <asm/io.h>
+>  #include <asm/uaccess.h>
+>  #include <asm/desc.h>
+> +#include <asm/pgtable.h>
+>  
+>  MODULE_AUTHOR("Qumranet");
+>  MODULE_LICENSE("GPL");
 
-Shouldn't this aready be handled by the following?
+Can you merge this patch into the previous one for the final submission?
 
-config PM_SLEEP_SMP
-        bool
-        depends on SUSPEND_SMP_POSSIBLE || HIBERNATION_SMP_POSSIBLE
-        depends on PM_SLEEP
-        select HOTPLUG_CPU
-        default y
-
+For being able to bisect (which has proven to be a very valuable help) 
+we aim at having the tree between any two commits both compiling and 
+working.
 
 cu
 Adrian
