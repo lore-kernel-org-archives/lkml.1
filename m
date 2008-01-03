@@ -1,78 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753250AbYACOKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbYACOLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753250AbYACOKn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 09:10:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbYACOKf
+	id S1754027AbYACOLj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 09:11:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYACOLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 09:10:35 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:37143 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750939AbYACOKf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 09:10:35 -0500
-Date: Thu, 3 Jan 2008 14:10:33 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Thu, 3 Jan 2008 09:11:31 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36071 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751408AbYACOLa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 09:11:30 -0500
+Date: Thu, 3 Jan 2008 15:11:20 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: isofs oops - d_splice_alias+0x1f (2.6.24-rc5-mm1)
-Message-ID: <20080103141033.GT27894@ZenIV.linux.org.uk>
-References: <477CE1E0.4010504@gmail.com>
-Mime-Version: 1.0
+Message-ID: <20080103141120.GC19363@elte.hu>
+References: <477CE1E0.4010504@gmail.com> <Pine.LNX.4.64.0801031550160.2076@sbz-30.cs.Helsinki.FI>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <477CE1E0.4010504@gmail.com>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <Pine.LNX.4.64.0801031550160.2076@sbz-30.cs.Helsinki.FI>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 03, 2008 at 02:23:44PM +0100, Jiri Slaby wrote:
 
-> ISOFS: unable to read i-node block
+* Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
 
-isofs_read_inode() failing, about to do make_bad_inode()
+>  			return ERR_PTR(-EACCES);
+>  		}
+> +		if (is_bad_inode(inode)) {
+> +			unlock_kernel();
+> +			iput(inode);
+> +			return ERR_PTR(-ENOENT);
+> +		}
 
-> Unable to handle kernel NULL pointer dereference at 00000000000000ad RIP:
->  [<ffffffff802a679f>] d_splice_alias+0x1f/0x100
+fs/isofs/rock.c:474 parse_rock_ridge_inode_internal() seems buggy too:
 
-struct dentry *d_splice_alias(struct inode *inode, struct dentry *dentry)
-{
-        struct dentry *new = NULL;
+                        reloc =
+                            isofs_iget(inode->i_sb,
+                                       ISOFS_I(inode)->i_first_extent,
+                                       0);
+                        if (!reloc)
+                                goto out;
 
-        if (inode && S_ISDIR(inode->i_mode)) {
-	                     ^^^^^^^^^^^^^
+it should probably do "!reloc || is_bad_inode(inode)" as well.
 
-> RIP: 0010:[<ffffffff802a679f>]  [<ffffffff802a679f>] d_splice_alias+0x1f/0x100
-> RSP: 0000:ffff810061543b08  EFLAGS: 00010282
-> RAX: 00000000ffffffff RBX: fffffffffffffffb RCX: ffffffff880d3454
-> RDX: ffff810048542750 RSI: ffff81005e114e10 RDI: fffffffffffffffb
+and there are about 5 other callsites as well that only check for a NULL 
+return.
 
-with inode equal to (struct inode *)-5.  Which is ERR_PTR(-EIO)...
-
->  [<ffffffff880d2395>] :isofs:isofs_lookup+0x395/0x4a0
-
-        inode = NULL;
-        if (found) {
-                inode = isofs_iget(dir->i_sb, block, offset);
-                if (!inode) {
-                        unlock_kernel();
-                        return ERR_PTR(-EACCES);
-                }
-        }
-        unlock_kernel();
-        return d_splice_alias(inode, dentry);
-
-So we've got ERR_PTR(-EIO) from isofs_iget().  Bloody odd, seeing that
-isofs_iget() either explicitly returns NULL or does
+perhaps the better fix would be to add this to inode.c:isofs_iget():
 
         if (inode && (inode->i_state & I_NEW)) {
                 sb->s_op->read_inode(inode);
                 unlock_new_inode(inode);
+                if (s_bad_inode(inode))
+			inode = NULL;
         }
 
-        return inode;
+?
 
-which would not manage to return ERR_PTR(-EIO), no matter what - it would
-die on access to inode->i_state.  I don't have -mm tree at hand, check if
-there's anything affected in these areas.  Perhaps somebody tried to pass
-error values from isofs_iget() and forgot to update callers?
+	Ingo
