@@ -1,50 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbYACUNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755510AbYACUNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754694AbYACUNS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 15:13:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbYACUNK
+	id S1755510AbYACUNl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 15:13:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbYACUNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 15:13:10 -0500
-Received: from emroute3.ornl.gov ([160.91.4.110]:63751 "EHLO emroute3.ornl.gov"
+	Thu, 3 Jan 2008 15:13:32 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:32995 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752630AbYACUNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 15:13:09 -0500
-Date: Thu, 03 Jan 2008 15:13:07 -0500
-From: David Dillow <dillowda@ornl.gov>
-Subject: Re: [GIT PULL] please pull infiniband.git for-linus
-In-reply-to: <adafxxeu495.fsf@cisco.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: torvalds@linux-foundation.org, general@lists.openfabrics.org,
-       linux-kernel@vger.kernel.org
-Message-id: <1199391187.7561.38.camel@lap75545.ornl.gov>
-Organization: Oak Ridge National Laboratory
-MIME-version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8)
-Content-type: text/plain
-Content-transfer-encoding: 7bit
-References: <adak5mqu5i8.fsf@cisco.com>
- <1199385590.7561.11.camel@lap75545.ornl.gov> <adafxxeu495.fsf@cisco.com>
+	id S1752040AbYACUNb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 15:13:31 -0500
+Message-ID: <477D4183.60909@redhat.com>
+Date: Thu, 03 Jan 2008 15:11:47 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Abhishek Sagar <sagar.abhishek@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Harvey Harrison <harvey.harrison@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, qbarnes@gmail.com,
+       ananth@in.ibm.com, jkenisto@us.ibm.com
+Subject: Re: [PATCH] x86: kprobes change kprobe_handler flow
+References: <1198806265.6323.34.camel@brick> <4778E8B0.6010400@gmail.com>	 <20080101153558.GJ4434@elte.hu> <477A971A.8030006@gmail.com>	 <477BD366.1060504@redhat.com> <863e9df20801021131j3a4d655dgd00fa60e39a97ec@mail.gmail.com> <477C08A0.503@redhat.com> <477D2595.4060102@gmail.com>
+In-Reply-To: <477D2595.4060102@gmail.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Abhishek Sagar wrote:
+> Masami Hiramatsu wrote:
+...
+> Done. You should find the desired changed in this patch.
 
-On Thu, 2008-01-03 at 10:56 -0800, Roland Dreier wrote:
-> > If we've got time before 2.6.24 final, I'd wait on this a bit.
->  > ib_srp:srp_remove_work() has them reversed as well, and I'm currently
->  > tracking down why it oopses when the srp_remove_host() happens before
->  > the scsi_remove_host(), which is the documented call sequence.
-> 
-> I think the best thing to do is to merge this (assuming that Linus
-> gets to it), since it looks quite safe and definitely fixes a crash.
-> Then if we get to the root cause we can change the order of the calls
-> if it turns out a different fix is required.
+Well done!
+This cleans it up very well.
+I have just one more comment.
 
-I've made progress on the root cause (posted in another thread), but we
-need to fix ib_srp.c:srp_remove_work() as well, as I think it will have
-the same issue. It will only be hit if we cannot reconnect to the
-target, so it probably doesn't see a lot of use.
+> @@ -463,14 +487,26 @@ static int __kprobes reenter_kprobe(struct kprobe *p, struct pt_regs *regs,
+>  		arch_disarm_kprobe(p);
+>  		regs->ip = (unsigned long)p->addr;
+>  		reset_current_kprobe();
+> -		return 1;
+> +		preempt_enable_no_resched();
+> +		break;
+>  #endif
+> +	case KPROBE_HIT_ACTIVE:
+> +		recursive_singlestep(p, regs, kcb);
+> +		break;
+> +	case KPROBE_HIT_SS:
+> +		if (*p->ainsn.insn == BREAKPOINT_INSTRUCTION) {
+> +			regs->flags &= ~TF_MASK;
+> +			regs->flags |= kcb->kprobe_saved_flags;
+> +			return 0;
+> +		} else {
+> +			recursive_singlestep(p, regs, kcb);
+> +		}
+> +		break;
+> +	default:
+> +		/* impossible cases */
+> +		WARN_ON(1);
 
-I'll send a new patch to you for just the ib_srp.c side.
-Dave
+WARN_ON() does not call panic(). Since the kernel doesn't stop,
+we need to prepare singlestep after that.
+
+How about this?
+---
++	case KPROBE_HIT_ACTIVE:
++		break;
++	case KPROBE_HIT_SS:
++		if (*p->ainsn.insn == BREAKPOINT_INSTRUCTION) {
++			regs->flags &= ~TF_MASK;
++			regs->flags |= kcb->kprobe_saved_flags;
++			return 0;
++		}
++		break;
++	default:
++		/* impossible cases */
++		WARN_ON(1);
+ 	}
+ 	save_previous_kprobe(kcb);
+ 	set_current_kprobe(p, regs, kcb);
+ 	kprobes_inc_nmissed_count(p);
+ 	prepare_singlestep(p, regs);
+ 	kcb->kprobe_status = KPROBE_REENTER;
+ 	return 1;
+ }
+---
+
+
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
 
