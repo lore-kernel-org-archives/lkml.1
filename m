@@ -1,47 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbYACXBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbYACXE6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756695AbYACXBS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 18:01:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbYACXBE
+	id S1755992AbYACXE6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 18:04:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYACXEu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 18:01:04 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:45272 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752707AbYACXBB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 18:01:01 -0500
-Date: Thu, 3 Jan 2008 16:58:54 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Ben Dooks <ben@fluff.org>
-Cc: linux-kernel@vger.kernel.org, rmk@arm.linux.org.uk, hskinnemoen@amtel.com,
-       bryan.wu@analog.com, lethal@linux-sh.org
-Subject: Re: [PATCH 2/3] Rework arch specific Makefiles to use mkubootimg
-Message-ID: <20080103165854.0d6accef@zod.rchland.ibm.com>
-In-Reply-To: <20080103224139.GA4178@fluff.org.uk>
-References: <20080103160104.171f9aaa@zod.rchland.ibm.com>
-	<20080103160406.7ef5ecfe@zod.rchland.ibm.com>
-	<20080103224139.GA4178@fluff.org.uk>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 3 Jan 2008 18:04:50 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:49672 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752920AbYACXEt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 18:04:49 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Christian Kujau <lists@nerdbynature.de>
+Subject: Re: 2.6.24-rc6: possible recursive locking detected
+Date: Fri, 4 Jan 2008 00:06:47 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, jfs-discussion@lists.sourceforge.net,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+References: <alpine.DEB.0.999999.0801032349190.4821@sheep.housecafe.de>
+In-Reply-To: <alpine.DEB.0.999999.0801032349190.4821@sheep.housecafe.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801040006.47979.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Jan 2008 22:41:40 +0000
-Ben Dooks <ben@fluff.org> wrote:
+[Added some CCs]
 
-> On Thu, Jan 03, 2008 at 04:04:06PM -0600, Josh Boyer wrote:
-> > Rework the architecture specific Makefiles to use the in-kernel version of
-> > the mkubootimg tool.
-> > 
-> > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+On Thursday, 3 of January 2008, Christian Kujau wrote:
+> hi,
 > 
-> A CC: to RMK and any other arch maintainers being touched by this
-> would have useful too.
-
-D'oh.  I thought I had fixed that in this round.  Bit late now, but
-CC'd.
-
-josh
+> a few minutes after upgrading from -rc5 to -rc6 I got:
+> 
+> [ 1310.670986] =============================================
+> [ 1310.671690] [ INFO: possible recursive locking detected ]
+> [ 1310.672097] 2.6.24-rc6 #1
+> [ 1310.672421] ---------------------------------------------
+> [ 1310.672828] FahCore_a0.exe/3692 is trying to acquire lock:
+> [ 1310.673238]  (&q->lock){++..}, at: [<c011544b>] __wake_up+0x1b/0x50
+> [ 1310.673869]
+> [ 1310.673870] but task is already holding lock:
+> [ 1310.674567]  (&q->lock){++..}, at: [<c011544b>] __wake_up+0x1b/0x50
+> [ 1310.675267]
+> [ 1310.675268] other info that might help us debug this:
+> [ 1310.675952] 5 locks held by FahCore_a0.exe/3692:
+> [ 1310.676334]  #0:  (rcu_read_lock){..--}, at: [<c038b620>] net_rx_action+0x60/0x1b0
+> [ 1310.677251]  #1:  (rcu_read_lock){..--}, at: [<c0388d60>] netif_receive_skb+0x100/0x470
+> [ 1310.677924]  #2:  (rcu_read_lock){..--}, at: [<c03a7fb2>] ip_local_deliver_finish+0x32/0x210
+> [ 1310.678460]  #3:  (clock-AF_INET){-.-?}, at: [<c038164e>] sock_def_readable+0x1e/0x80
+> [ 1310.679250]  #4:  (&q->lock){++..}, at: [<c011544b>] __wake_up+0x1b/0x50
+> [ 1310.680151]
+> [ 1310.680152] stack backtrace:
+> [ 1310.680772] Pid: 3692, comm: FahCore_a0.exe Not tainted 2.6.24-rc6 #1
+> [ 1310.681209]  [<c01038aa>] show_trace_log_lvl+0x1a/0x30
+> [ 1310.681659]  [<c0104322>] show_trace+0x12/0x20
+> [ 1310.682085]  [<c0104cba>] dump_stack+0x6a/0x70
+> [ 1310.682512]  [<c0138ec1>] __lock_acquire+0x971/0x10c0
+> [ 1310.682961]  [<c013966e>] lock_acquire+0x5e/0x80
+> [ 1310.683392]  [<c0419b78>] _spin_lock_irqsave+0x38/0x50
+> [ 1310.683914]  [<c011544b>] __wake_up+0x1b/0x50
+> [ 1310.684337]  [<c018e2ba>] ep_poll_safewake+0x9a/0xc0
+> [ 1310.684822]  [<c018f11b>] ep_poll_callback+0x8b/0xe0
+> [ 1310.685265]  [<c0114418>] __wake_up_common+0x48/0x70
+> [ 1310.685712]  [<c0115467>] __wake_up+0x37/0x50
+> [ 1310.686136]  [<c03816aa>] sock_def_readable+0x7a/0x80
+> [ 1310.686579]  [<c0381c2b>] sock_queue_rcv_skb+0xeb/0x150
+> [ 1310.687028]  [<c03c7d99>] udp_queue_rcv_skb+0x139/0x2a0
+> [ 1310.687554]  [<c03c81f1>] __udp4_lib_rcv+0x2f1/0x7e0
+> [ 1310.687996]  [<c03c86f2>] udp_rcv+0x12/0x20
+> [ 1310.688415]  [<c03a80a5>] ip_local_deliver_finish+0x125/0x210
+> [ 1310.688881]  [<c03a84ed>] ip_local_deliver+0x2d/0x90
+> [ 1310.689323]  [<c03a7d6b>] ip_rcv_finish+0xeb/0x300
+> [ 1310.689760]  [<c03a8425>] ip_rcv+0x195/0x230
+> [ 1310.690182]  [<c0388fdc>] netif_receive_skb+0x37c/0x470
+> [ 1310.690632]  [<c038ba39>] process_backlog+0x69/0xc0
+> [ 1310.691175]  [<c038b6f7>] net_rx_action+0x137/0x1b0
+> [ 1310.691681]  [<c011e5c2>] __do_softirq+0x52/0xb0
+> [ 1310.692006]  [<c0104e94>] do_softirq+0x94/0xe0
+> [ 1310.692301]  =======================
+> 
+> 
+> This is a single CPU machine, and the box was quite busy due to disk I/O 
+> (load 6-8). The machine continues to run and all is well now. Even the 
+> application mentioned above (FahCore_a0.exe) is running fine 
+> ("Folding@Home", cpu bound). The binary is located on an jfs filesystem, 
+> which was also under heavy I/O. Can someone tell me why the backtrace 
+> shows so much net* stuff? There was not much net I/O...
+> 
+> more details and .config: http://nerdbynature.de/bits/2.6.24-rc6
+> 
+> Thanks,
+> Christian.
