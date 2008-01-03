@@ -1,44 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752164AbYACM4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752491AbYACNGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752164AbYACM4X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 07:56:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750770AbYACM4O
+	id S1752491AbYACNGh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 08:06:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbYACNG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 07:56:14 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:59268 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750765AbYACM4O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 07:56:14 -0500
-To: jdike@addtoit.com
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net
-In-reply-to: <20080102220519.GA10137@c2.user-mode-linux.org> (message from
-	Jeff Dike on Wed, 2 Jan 2008 17:05:19 -0500)
-Subject: Re: [uml-devel] UML woes in 2.6.24-rc6-mm1
-References: <E1JA7m0-0007nP-Fi@pomaz-ex.szeredi.hu> <20080102200621.GB8847@c2.user-mode-linux.org> <E1JAAZt-0008F8-An@pomaz-ex.szeredi.hu> <20080102220519.GA10137@c2.user-mode-linux.org>
-Message-Id: <E1JAPc5-00011g-JJ@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 03 Jan 2008 13:55:57 +0100
+	Thu, 3 Jan 2008 08:06:28 -0500
+Received: from ns1.suse.de ([195.135.220.2]:56742 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750939AbYACNG1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 08:06:27 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] [9/20] x86: Don't use oops_begin in 64bit mce code
+Date: Thu, 3 Jan 2008 13:52:42 +0100
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+References: <20080103149.088038000@suse.de> <20080103005004.A171C14D40@wotan.suse.de> <20080103103912.GA29194@elte.hu>
+In-Reply-To: <20080103103912.GA29194@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801031352.42111.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 32bit UML, 64bit host, config attached.
+On Thursday 03 January 2008 11:39:12 Ingo Molnar wrote:
 > 
-> Hadn't tried that, but that works here too.
+> * Andi Kleen <ak@suse.de> wrote:
 > 
-> I'll see if your config reproduces it.
+> > It is not really useful to lock machine checks against oopses. And 
+> > machine checks normally don't nest, so they don't need their own 
+> > locking. Just call bust_spinlock/console_verbose directly.
 > 
-> > Can't reproduce with plain -rc6.
-> 
-> Feel like bisecting -mm1?
+> is this in response to any particular incident you've seen?
 
-This is the one: uml-runtime-detection-of-host-vmsplit-on-i386.patch
 
-The relevant log line (both for successful and failed boots):
+No, that was a preparatory patch for the "use 64bit machine check code
+for 32bit kernels" because 32bit doesn't have oops_begin(), but it is
+useful on its own.
 
-Locating the top of the address space ... 0xffc00000
-
-Miklos
-
+-Andi
