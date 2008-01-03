@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758283AbYACF7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760358AbYACF7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758283AbYACF7W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 00:59:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756118AbYACF6P
+	id S1760358AbYACF7i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 00:59:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760266AbYACF6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 00:58:15 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50710 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756078AbYACF6M (ORCPT
+	Thu, 3 Jan 2008 00:58:35 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:52615 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760250AbYACF6d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 00:58:12 -0500
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       viro@ftp.linux.org.uk, hch@infradead.org,
-       Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 3/3] Unionfs: use VFS helpers to manipulate i_nlink
-Date: Thu,  3 Jan 2008 00:57:40 -0500
-Message-Id: <11993398631394-git-send-email-ezk@cs.sunysb.edu>
-X-Mailer: git-send-email 1.5.2.2
-X-MailKey: Erez_Zadok
-In-Reply-To: <11993398601-git-send-email-ezk@cs.sunysb.edu>
-References: <11993398601-git-send-email-ezk@cs.sunysb.edu>
+	Thu, 3 Jan 2008 00:58:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=ifyjamcy93ZG1Mx7lKlzi0Xm92zYz5btK+z/RhsjcjcB0orZpyW4qUud6ftV1x4+NWnqoXRpsL1m9rQ07H9JeyHV3Dj/ikHBevkgBvMXhq/jBmrIiCfSw8Txlk3BlwFgbFSb8tanOSk9FMCPJuoZyGfx5sER1PToCAnZPmvQmHs=
+Date: Thu, 3 Jan 2008 14:02:10 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: dbrownell@users.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
+Subject: [PATCH 7/7] spi : convert semaphore to mutex in struct class
+Message-ID: <20080103060210.GH4885@darkstar.te-china.tietoenator.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
+Use mutex instead of semaphore in struct class.
+
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
 ---
- fs/unionfs/unlink.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+drivers/spi/spi.c |    4 ++--
+1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/fs/unionfs/unlink.c b/fs/unionfs/unlink.c
-index a1c82b6..1e370a1 100644
---- a/fs/unionfs/unlink.c
-+++ b/fs/unionfs/unlink.c
-@@ -79,7 +79,7 @@ static int unionfs_unlink_whiteout(struct inode *dir, struct dentry *dentry)
+diff -upr linux/drivers/spi/spi.c linux.new/drivers/spi/spi.c
+--- linux/drivers/spi/spi.c	2007-12-28 10:47:38.000000000 +0800
++++ linux.new/drivers/spi/spi.c	2007-12-28 10:48:22.000000000 +0800
+@@ -494,7 +494,7 @@ struct spi_master *spi_busnum_to_master(
+ 	struct spi_master	*master = NULL;
+ 	struct spi_master	*m;
  
- out:
- 	if (!err)
--		dentry->d_inode->i_nlink--;
-+		inode_dec_link_count(dentry->d_inode);
- 
- 	/* We don't want to leave negative leftover dentries for revalidate. */
- 	if (!err && (dbopaque(dentry) != -1))
--- 
-1.5.2.2
-
+-	down(&spi_master_class.sem);
++	mutex_lock(&spi_master_class.mutex);
+ 	list_for_each_entry(dev, &spi_master_class.children, node) {
+ 		m = container_of(dev, struct spi_master, dev);
+ 		if (m->bus_num == bus_num) {
+@@ -502,7 +502,7 @@ struct spi_master *spi_busnum_to_master(
+ 			break;
+ 		}
+ 	}
+-	up(&spi_master_class.sem);
++	mutex_unlock(&spi_master_class.mutex);
+ 	return master;
+ }
+ EXPORT_SYMBOL_GPL(spi_busnum_to_master);
