@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755151AbYACNI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754240AbYACNKF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755151AbYACNI6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 08:08:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbYACNIr
+	id S1754240AbYACNKF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 08:10:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751331AbYACNJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 08:08:47 -0500
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:34828 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751445AbYACNIp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 08:08:45 -0500
-Date: Thu, 3 Jan 2008 13:09:29 +0000
-From: Andy Whitcroft <andyw@uk.ibm.com>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Make checkpatch.pl's quiet option not print the summary on no errors
-Message-ID: <20080103130929.GF10861@shadowen.org>
-References: <477C3252.1080001@linux.intel.com>
+	Thu, 3 Jan 2008 08:09:54 -0500
+Received: from ns2.suse.de ([195.135.220.15]:56370 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750823AbYACNJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 08:09:53 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: git-x86 broken on 32bit
+Date: Thu, 3 Jan 2008 14:09:49 +0100
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com
+References: <200801030111.40061.ak@suse.de> <20080103075758.GA2351@elte.hu> <20080103081025.GA3239@elte.hu>
+In-Reply-To: <20080103081025.GA3239@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <477C3252.1080001@linux.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200801031409.49467.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 03, 2008 at 01:54:42AM +0100, Arjan van de Ven wrote:
-> Subject: Make checkpatch.pl's quiet option not print the summary on no 
-> errors
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> CC: apw@uk.ibm.com
+On Thursday 03 January 2008 09:10:25 Ingo Molnar wrote:
 > 
-> Right now, in quiet mode, checkpatch.pl still prints a summary line even
-> if the patch is 100% clean. IMO, "quiet mode" should mean "no output if 
-> clean",
-> the patch below makes that so. (This also makes the quilt integration
-> on my system work nicer :)
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> > * Andi Kleen <ak@suse.de> wrote:
+> > 
+> > > Current git-x86 seems to be totally broken on i386
+> > > 
+> > > commit a6f08929f0566f9d309ef5f6651371d8e20fc833
+> > > Author: Russell Leidich <rml@google.com>
+> > > Date:   Wed Jan 2 22:46:22 2008 +0100
+> > 
+> > that patch was not included in x86.git anymore at the time you wrote 
+> > your email. You probably picked up an interim version of the queue 
+> > that had the breakage - i noticed it and pulled it a few minutes 
+> > later.
+> 
+> correction: i had fixed it but did not push it out - pushed it out now. 
+> Please check that it works for you.
 
-I think that sounds reasonable.  Should people want the summary
-regardless it makes more sense to provice an option for that, perhaps a
-doubling of the --summary flag.
+I'll check once git.kernel.org unbreaks itself
 
-Will be in 0.13.
+% git pull -u
+fatal: The remote end hung up unexpectedly
+Cannot get the repository state from git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
 
--apw
+-Andi
+
