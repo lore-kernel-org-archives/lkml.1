@@ -1,54 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753365AbYACU4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753718AbYACVEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753365AbYACU4c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 15:56:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbYACU4X
+	id S1753718AbYACVEz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 16:04:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbYACVEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 15:56:23 -0500
-Received: from lap75545.ornl.gov ([160.91.210.54]:36474 "EHLO
-	lap75545.ornl.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751657AbYACU4X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 15:56:23 -0500
-Subject: Re: [ofa-general] Re: list corruption on ib_srp load in v2.6.24-rc5
-From: David Dillow <dave@thedillows.org>
-To: FUJITA Tomonori <tomof@acm.org>
-Cc: fujita.tomonori@lab.ntt.co.jp, rdreier@cisco.com,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-In-Reply-To: <1199390957.7561.33.camel@lap75545.ornl.gov>
-References: <20071223014407L.tomof@acm.org>
-	 <1198689251.25003.2.camel@lap75545.ornl.gov> <adaprwkundh.fsf@cisco.com>
-	 <20080103173330T.tomof@acm.org>
-	 <1199390957.7561.33.camel@lap75545.ornl.gov>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 03 Jan 2008 15:51:25 -0500
-Message-Id: <1199393485.7561.51.camel@lap75545.ornl.gov>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+	Thu, 3 Jan 2008 16:04:47 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:45507 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752159AbYACVEq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 16:04:46 -0500
+Date: Thu, 3 Jan 2008 13:04:43 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, htejun@gmail.com,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, maneesh@linux.vnet.ibm.com,
+       lkml <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: 2.6.22-stable causes oomkiller to be invoked
+In-Reply-To: <20080103041606.GC26166@linux.vnet.ibm.com>
+Message-ID: <Pine.LNX.4.64.0801031258400.30856@schroedinger.engr.sgi.com>
+References: <20071217045904.GB31386@linux.vnet.ibm.com>
+ <Pine.LNX.4.64.0712171143280.12871@schroedinger.engr.sgi.com>
+ <20071217120720.e078194b.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0712171222470.29500@schroedinger.engr.sgi.com>
+ <20071221044508.GA11996@linux.vnet.ibm.com>
+ <Pine.LNX.4.64.0712261258050.16862@schroedinger.engr.sgi.com>
+ <20071228101109.GB5083@linux.vnet.ibm.com> <Pine.LNX.4.64.0801021237330.21526@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0801021346580.3778@schroedinger.engr.sgi.com>
+ <20080103035942.GB26166@linux.vnet.ibm.com> <20080103041606.GC26166@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 3 Jan 2008, Dhaval Giani wrote:
 
-On Thu, 2008-01-03 at 15:09 -0500, David Dillow wrote:
-> As for a better fix, I'm not sure.
+> Yes, no oom even after 20 mins of running (which is double the normal
+> time for the oom to occur), also no changes in free lowmem.
 
-Here's a better way than the strncmp. If this meets everyone's approval,
-then I can roll up a proper commit.
+Ahhh.. Good then lets redo the patchset the right way (the patch so far 
+does not address the ZONE_MOVABLE issues) . Does this patch 
+also do the trick?
 
-diff --git a/drivers/scsi/scsi_transport_srp.c b/drivers/scsi/scsi_transport_srp.c
-index 44a340b..65c584d 100644
---- a/drivers/scsi/scsi_transport_srp.c
-+++ b/drivers/scsi/scsi_transport_srp.c
-@@ -265,7 +265,8 @@ EXPORT_SYMBOL_GPL(srp_rport_del);
- 
- static int do_srp_rport_del(struct device *dev, void *data)
+
+
+Quicklists: Only consider memory that can be allocated via GFP_KERNEL
+
+Quicklists calculates the size of the quicklists based on the number
+of free pages. This must be the number of free pages that can be
+allocated with GFP_KERNEL. node_page_state() includes the pages in
+ZONE_HIGHMEM and ZONE_MOVABLE. These should not be considered for the 
+size calculation.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+Index: linux-2.6/mm/quicklist.c
+===================================================================
+--- linux-2.6.orig/mm/quicklist.c	2008-01-03 12:22:55.000000000 -0800
++++ linux-2.6/mm/quicklist.c	2008-01-03 13:00:30.000000000 -0800
+@@ -26,9 +26,17 @@ DEFINE_PER_CPU(struct quicklist, quickli
+ static unsigned long max_pages(unsigned long min_pages)
  {
--	srp_rport_del(dev_to_rport(dev));
-+	if (scsi_is_srp_rport(dev))
-+		srp_rport_del(dev_to_rport(dev));
- 	return 0;
- }
+ 	unsigned long node_free_pages, max;
++	struct zone *zones = NODE_DATA(node)->node_zones;
++
++	node_free_pages =
++#ifdef CONFIG_ZONE_DMA
++		zone_page_state(&zones[ZONE_DMA], NR_FREE_PAGES) +
++#endif
++#ifdef CONFIG_ZONE_DMA32
++		zone_page_state(&zones[ZONE_DMA32], NR_FREE_PAGES) +
++#endif
++		zone_page_state(&zones[ZONE_NORMAL], NR_FREE_PAGES);
  
-
+-	node_free_pages = node_page_state(numa_node_id(),
+-			NR_FREE_PAGES);
+ 	max = node_free_pages / FRACTION_OF_NODE_MEM;
+ 	return max(max, min_pages);
+ }
