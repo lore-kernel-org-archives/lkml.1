@@ -1,32 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757341AbYACTOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757076AbYACTPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757341AbYACTOo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 14:14:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753181AbYACTOW
+	id S1757076AbYACTPc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 14:15:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbYACTPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 14:14:22 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:47884 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753180AbYACTOV (ORCPT
+	Thu, 3 Jan 2008 14:15:21 -0500
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:50511 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751408AbYACTPT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 14:14:21 -0500
-Message-Id: <20080103191300.658221000@chello.nl>
-User-Agent: quilt/0.45-1
-Date: Thu, 03 Jan 2008 20:13:00 +0100
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       dmitry.adamushko@gmail.com,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
+	Thu, 3 Jan 2008 14:15:19 -0500
+Date: Thu, 3 Jan 2008 14:15:13 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Chris Wright <chrisw@redhat.com>
+cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Gregory Haskins <ghaskins@novell.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 0/2] rt group sched updates
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       "William L. Irwin" <sparclinux@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization@lists.linux-foundation.org
+Subject: Re: [RFC PATCH 01/11] Add basic support for gcc profiler instrumentation
+In-Reply-To: <20080103181651.GC3627@sequoia.sous-sol.org>
+Message-ID: <Pine.LNX.4.58.0801031413410.5746@gandalf.stny.rr.com>
+References: <20080103071609.478486470@goodmis.org> <20080103072226.776141236@goodmis.org>
+ <20080103092104.GE10813@elte.hu> <Pine.LNX.4.58.0801030849180.1468@gandalf.stny.rr.com>
+ <20080103181651.GC3627@sequoia.sous-sol.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-against sched-devel
 
---
+On Thu, 3 Jan 2008, Chris Wright wrote:
+
+>
+> Yes, paravirt ops have a well-specified calling convention (register
+> based).  There was a cleanup that Andi did that caused the problem
+> because it removed all the "fastcall" annotations since -mregparm=3
+> is now always on for i386.  Since MCOUNT disables REGPARM the calling
+> convention changes (caller pushes to stack, callee expects register)
+> chaos ensues.  I sent a patch to fix that quite some months back, but
+> it went stale and I neglected to update it.  Would you like me to dig
+> it up refresh and resend?
+
+Chris, thanks for the refresher.
+
+I'm going to see if we can remove the REGPARM hack and change the way
+mcount does its calls. Maybe this will fix things for us.
+
+-- Steve
 
