@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756773AbYACN3J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752739AbYACNsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756773AbYACN3J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 08:29:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751829AbYACN24
+	id S1752739AbYACNsr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 08:48:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbYACNsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 08:28:56 -0500
-Received: from po-out-1718.google.com ([72.14.252.158]:9192 "EHLO
-	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751799AbYACN2z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 08:28:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=uhGnXdn0bNCveB6wHBtRFVAo3B2jwwWlhFsSwrU25KJ56LHYi9eod8oDLm6snoPHxATghpkc8o3WKG2dt1Q17vmLcU4ScxSSWoG6Lh3qwMIGQk6t7VhXNIDCWolCQ6y5r0dwtSkaG3b3jComHI7abF5y2R3Zd0LjhrQrtilDsbQ=
-Message-ID: <e7cf679e0801030528i628c9de3p7e91fca6fa878ab9@mail.gmail.com>
-Date: Thu, 3 Jan 2008 20:28:54 +0700
-From: "NHA DAT SAI GON" <nhadepus07@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Ban can ho cao cap V-Star (Korea) Quan 7, TP.HCM Gia Dac Biet Dau nam 2008
+	Thu, 3 Jan 2008 08:48:38 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:49626 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751000AbYACNsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 08:48:37 -0500
+Date: Thu, 3 Jan 2008 15:48:35 +0200
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] w1-gpio: Add GPIO w1 bus master driver
+Message-ID: <20080103134835.GM15861@sci.fi>
+References: <1198222441690-git-send-email-syrjala@sci.fi> <20071226232454.039372b8@siona>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071226232454.039372b8@siona>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chao cac ban,
+On Wed, Dec 26, 2007 at 11:24:54PM +0100, Haavard Skinnemoen wrote:
+> On Fri, 21 Dec 2007 09:34:01 +0200
+> Ville Syrjala <syrjala@sci.fi> wrote:
+> 
+> > +static struct platform_device foo_w1_device = {
+> > +	.name			= "w1-gpio",
+> > +	.id			= -1,
+> 
+> Assigning -1 to a u32 member isn't a very nice example. What does it
+> mean anyway?
 
-Ban nhan duoc email nay la do ban hoac mot ai do da dang ky dia chi
-email cua ban tai trang web: www.nhaban.net.tf, www.nhaban.vnn.bz,
-www.nhadep.us de nhan cac thong tin nha dat moi nhat cua chung toi.
+id is 'int'. The bus_name won't include the id when -1 is used.
 
-Nay chung toi han hanh thong bao voi cac ban cac can ho cao cap chung
-toi dang chao ban (CHI CON CO 2 CAN- DEP NHAT -GIA TOT NHAT).
+> > +static int __init w1_gpio_probe(struct platform_device *pdev)
+> 
+> This must be __devinit, or if you want to save a bit of memory...
+> 
+> > +	.probe	= w1_gpio_probe,
+> 
+> ...remove this line, and...
+> 
+> > +static int __init w1_gpio_init(void)
+> > +{
+> > +	return platform_driver_register(&w1_gpio_driver);
+> 
+> ...call platform_driver_probe(&w1_gpio_driver, w1_gpio_probe) here.
 
-Chung toi can ban mot so can ho cao cap V-Star cua Han Quoc xay dung o
-quan 7 (RAT GAN PHU MY HUNG), TP.HCM
+I was wondering what platform_driver_probe() was for but never bothered
+to read the code. I'll change the code to use it.
 
-Vi tri tuyet voi, cac can ho thiet ke rat dep, hien dai, tien nghi, an
-ninh...va rat nhieu cac tien ich khac.
+I already sent an updated patch but forgot to send this reply.
 
-Ban co the xem bai viet cua BAO SAI GON GIAI PHONG (20/05/2007) o Website:
-
-http://www.canhocaocap.net/page.asp?nha=21
-
-Can ho rat thich hop voi moi doi tuong, co the dung de o hoac dau tu...
-
-TOA NHA V-STAR DA HOAN THIEN PHAN MONG VA TANG HAM
-
-Moi quy khach vao xem chi tiet cu the o website:
-
-http://www.canhocaocap.net
-
-Ban co the xem cac hinh anh toa nha, phong oc, cac tien ich, ban do...
-
-email: bannha@gmail.com
-
-Ngoai ra ban co the xem cac hinh kien truc nha dep o Sai Gon (
-http://nhadep.us )
-
-Xin cam on da xem tin
-
-***********************
-V-Star- Vstar- vstar - vsta - vta - korea
+-- 
+Ville Syrjälä
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
