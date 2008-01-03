@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759632AbYACETM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758233AbYACEZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759632AbYACETM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 23:19:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbYACES5
+	id S1758233AbYACEZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 23:25:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbYACEZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 23:18:57 -0500
-Received: from rtr.ca ([76.10.145.34]:4273 "EHLO mail.rtr.ca"
+	Wed, 2 Jan 2008 23:25:13 -0500
+Received: from rtr.ca ([76.10.145.34]:2193 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752108AbYACES4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 23:18:56 -0500
-Message-ID: <477C622F.6010304@rtr.ca>
-Date: Wed, 02 Jan 2008 23:18:55 -0500
+	id S1754461AbYACEZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 23:25:10 -0500
+Message-ID: <477C63A3.70406@rtr.ca>
+Date: Wed, 02 Jan 2008 23:25:07 -0500
 From: Mark Lord <lkml@rtr.ca>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
 To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, abelay@novell.com,
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, abelay@novell.com,
        lenb@kernel.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 Subject: Re: + restore-missing-sysfs-max_cstate-attr.patch added to -mm tree
-References: <200711302153.lAULrZ7n026255@imap1.linux-foundation.org>	<924EFEDD5F540B4284297C4DC59F3DEE2FAE6A@orsmsx423.amr.corp.intel.com>	<20071130142058.816d1693.akpm@linux-foundation.org>	<924EFEDD5F540B4284297C4DC59F3DEE2FAEAF@orsmsx423.amr.corp.intel.com>	<4750CC78.9070105@rtr.ca>	<20071130190227.1976e682@laptopd505.fenrus.org>	<4750D180.6080001@rtr.ca> <20071130191816.3e744205@laptopd505.fenrus.org> <4750D585.1030200@rtr.ca> <477C2143.8090406@rtr.ca> <924EFEDD5F540B4284297C4DC59F3DEE4FC485@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE4FC485@orsmsx423.amr.corp.intel.com>
+References: <200711302153.lAULrZ7n026255@imap1.linux-foundation.org><924EFEDD5F540B4284297C4DC59F3DEE2FAE6A@orsmsx423.amr.corp.intel.com><20071130142058.816d1693.akpm@linux-foundation.org><924EFEDD5F540B4284297C4DC59F3DEE2FAEAF@orsmsx423.amr.corp.intel.com><4750CC78.9070105@rtr.ca><20071130190227.1976e682@laptopd505.fenrus.org><4750D180.6080001@rtr.ca><20071130191816.3e744205@laptopd505.fenrus.org><4750D585.1030200@rtr.ca><477C2143.8090406@rtr.ca><924EFEDD5F540B4284297C4DC59F3DEE4FC485@orsmsx423.amr.corp.intel.com> <20080102165157.2150f2d2.akpm@linux-foundation.org> <924EFEDD5F540B4284297C4DC59F3DEE4FC4E4@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE4FC4E4@orsmsx423.amr.corp.intel.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -32,76 +32,128 @@ Pallipadi, Venkatesh wrote:
 >  
 > 
 >> -----Original Message-----
->> From: Mark Lord [mailto:lkml@rtr.ca] 
->> Sent: Wednesday, January 02, 2008 3:42 PM
->> To: Arjan van de Ven
->> Cc: Pallipadi, Venkatesh; Andrew Morton; abelay@novell.com; 
+>> From: Andrew Morton [mailto:akpm@linux-foundation.org] 
+>> Sent: Wednesday, January 02, 2008 4:52 PM
+>> To: Pallipadi, Venkatesh
+>> Cc: Mark Lord; Arjan van de Ven; abelay@novell.com; 
 >> lenb@kernel.org; Ingo Molnar; linux-kernel@vger.kernel.org; 
 >> linux-acpi@vger.kernel.org
 >> Subject: Re: + restore-missing-sysfs-max_cstate-attr.patch 
 >> added to -mm tree
 >>
->> Arjan van de Ven wrote:
->>> On Fri, 30 Nov 2007 22:31:17 -0500
->>> Mark Lord <lkml@rtr.ca> wrote:
+>> On Wed, 2 Jan 2008 16:06:20 -0800 "Pallipadi, Venkatesh" 
+>> <venkatesh.pallipadi@intel.com> wrote:
+>>
+>>>  
 >>>
+>>>> -----Original Message-----
+>>>> From: Mark Lord [mailto:lkml@rtr.ca] 
+>>>> Sent: Wednesday, January 02, 2008 3:42 PM
+>>>> To: Arjan van de Ven
+>>>> Cc: Pallipadi, Venkatesh; Andrew Morton; abelay@novell.com; 
+>>>> lenb@kernel.org; Ingo Molnar; linux-kernel@vger.kernel.org; 
+>>>> linux-acpi@vger.kernel.org
+>>>> Subject: Re: + restore-missing-sysfs-max_cstate-attr.patch 
+>>>> added to -mm tree
+>>>>
 >>>> Arjan van de Ven wrote:
->>>>> On Fri, 30 Nov 2007 22:14:08 -0500
+>>>>> On Fri, 30 Nov 2007 22:31:17 -0500
 >>>>> Mark Lord <lkml@rtr.ca> wrote:
 >>>>>
->>>>>>> in -mm there is.. the QoS stuff allows you to set maximum
->>>>>>> tolerable
+>>>>>> Arjan van de Ven wrote:
+>>>>>>> On Fri, 30 Nov 2007 22:14:08 -0500
+>>>>>>> Mark Lord <lkml@rtr.ca> wrote:
+>>>>>>>
+>>>>>>>>> in -mm there is.. the QoS stuff allows you to set maximum
+>>>>>>>>> tolerable
+>>>>>>>> ..
+>>>>>>>>
+>>>>>>>> That's encouraging, I think, but not for 2.6.24.
+>>>>>>>>
+>>>>>>>>> latency. If your app cant take any latency, you should set
+>>>>>>>>> those... and the side effect is that the kernel will not do
+>>>>>>>>> long-latency C-states or P-state transitions..
+>>>>>>>> ..
+>>>>>>>>
+>>>>>>>> I don't mind the cpufreq changing (actually, I want it 
+>> to drop in
+>>>>>>>> cpugfreq to save power and keep the fan off), but the 
+>>>> C-states just
+>>>>>>>> kill this app.
+>>>>>>>>
+>>>>>>>> The app is VMware.  I force the max_state=1 when launching,
+>>>>>>> ah but then its' even easier... and can be done in 
+>> 2.6.24 already.
+>>>>>>> VMWare after all has a kernel module, and the latency 
+>> stuff is in
+>>>>>>> 2.6.23 and 2.6.24 available inside the kernel already.
 >>>>>> ..
 >>>>>>
->>>>>> That's encouraging, I think, but not for 2.6.24.
->>>>>>
->>>>>>> latency. If your app cant take any latency, you should set
->>>>>>> those... and the side effect is that the kernel will not do
->>>>>>> long-latency C-states or P-state transitions..
->>>>>> ..
->>>>>>
->>>>>> I don't mind the cpufreq changing (actually, I want it to drop in
->>>>>> cpugfreq to save power and keep the fan off), but the 
->> C-states just
->>>>>> kill this app.
->>>>>>
->>>>>> The app is VMware.  I force the max_state=1 when launching,
->>>>> ah but then its' even easier... and can be done in 2.6.24 already.
->>>>> VMWare after all has a kernel module, and the latency stuff is in
->>>>> 2.6.23 and 2.6.24 available inside the kernel already.
+>>>>>> Oh, I'm perfectly happy to write my own kernel module if 
+>> that's what
+>>>>> all you need to do in your kernel module is call
+>>>>>
+>>>>> add_latency_constraint("mark_wants_his_mouse", 5);
+>>>>>
+>>>>> or so
 >>>> ..
 >>>>
->>>> Oh, I'm perfectly happy to write my own kernel module if that's what
->>> all you need to do in your kernel module is call
->>>
->>> add_latency_constraint("mark_wants_his_mouse", 5);
->>>
->>> or so
->> ..
+>>>> Dredging up an old regression again now:
+>>>>
+>>>> The "make my own module to replace /sys/.../max_cstate" doesn't work
+>>>> for the single-core machine we use a lot around here.
+>>>>
+>>>> VMware is totally sluggish unless I go to another text window 
+>>>> and do this:
+>>>>
+>>>>    while ( true ); do echo -n ; done
+>>>>
+>>>> At which point VMware performs well again,
+>>>> the same as with "echo 1 > max_cstate" in 2.6.23.
+>>>>
+>>>> Anyone got any suggestions on how to fix this regression
+>>>> or work around it for 2.6.24 ?
+>>>>
+>>> Easiest and clean way to do it is to have a driver with
+>>> set_acceptable_latency() for 1uS or so in init and
+>>> remove_acceptable_latency() at exit.
+>> err, you appear to be suggesting that Mark patch his kernel to 
+>> make it work
+>> as well as 2.6.23?  That would be a wrong answer.
 >>
->> Dredging up an old regression again now:
->>
->> The "make my own module to replace /sys/.../max_cstate" doesn't work
->> for the single-core machine we use a lot around here.
->>
->> VMware is totally sluggish unless I go to another text window 
->> and do this:
->>
->>    while ( true ); do echo -n ; done
->>
->> At which point VMware performs well again,
->> the same as with "echo 1 > max_cstate" in 2.6.23.
->>
->> Anyone got any suggestions on how to fix this regression
->> or work around it for 2.6.24 ?
+>> This regression was known six weeks ago.  What do we need to 
+>> do (or revert)
+>> to fix it in 2.6.24?
 >>
 > 
-> Easiest and clean way to do it is to have a driver with
-> set_acceptable_latency() for 1uS or so in init and
-> remove_acceptable_latency() at exit.
+> As I responded earlier here
+> http://www.ussg.iu.edu/hypermail/linux/kernel/0711.3/2348.html
+> 
+> This interface cannot be supported cleanly with cpuidle. The cleanest
+> way to do this is to go through latency interfaces. We have changed all
+> in kernel drivers to use this new interface. The issue here is, I
+> removed this sysfs interface without depracting it. We can call it a
+> regression and we can add it back for the moment. But, this will go from
+> sysfs sooner or later and latency interface has to be used in future.
+> And Mark earlier responded in this thread saying he is OK with adding
+> something in the kernel to get this working, That is the reason I
+> suggested the above option.
 ..
 
-As noted, I already do that.  It helps with my Core2Duo machine,
-but not with the single-core case.  Bummer.
+I'm fine with switching to a new interface, and even supplying my own
+kernel module to do so.  But it doesn't produce the required effect
+on the single-core machine we just switched over to 2.6.24
+(and then promptly switched back again!).
 
--ml
+There should be some way to get it to work with similar minimal latency
+to the old "echo 1 > max_cstate" logic, but I've yet to discover it.
+
+I wonder if the "new" latency interfaces actually work ?
+
+> As I saw it 6 weeks back, max_cstate option works as a boot parameter.
+..
+
+That's no good.  It has to be changeable on the fly, rather than requiring
+the machine be rebooted each time.
+
+Cheers
