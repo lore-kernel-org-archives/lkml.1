@@ -1,138 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756246AbYACWGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756746AbYACWGm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756246AbYACWGU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 17:06:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbYACWGM
+	id S1756746AbYACWGm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 17:06:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754491AbYACWGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 17:06:12 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:54979 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753090AbYACWGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 17:06:11 -0500
-Date: Thu, 3 Jan 2008 16:04:06 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: sam@ravnborg.org
-Cc: paulus@samba.org, linux-kernel@vger.kernel.org, wd@denx.de
-Subject: [PATCH 2/3] Rework arch specific Makefiles to use mkubootimg
-Message-ID: <20080103160406.7ef5ecfe@zod.rchland.ibm.com>
-In-Reply-To: <20080103160104.171f9aaa@zod.rchland.ibm.com>
-References: <20080103160104.171f9aaa@zod.rchland.ibm.com>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 3 Jan 2008 17:06:33 -0500
+Received: from home.nigel.suspend2.net ([203.171.70.205]:34672 "EHLO
+	server1.example.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753990AbYACWGb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 17:06:31 -0500
+Message-ID: <477D5C4F.8050800@nigel.suspend2.net>
+Date: Fri, 04 Jan 2008 09:06:07 +1100
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Oliver Neukum <oliver@neukum.org>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, David Chinner <dgc@sgi.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, xfs-masters@oss.sgi.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: freeze vs freezer
+References: <4744FD87.7010301@goop.org> <200801031047.58559.oliver@neukum.org> <477CB075.5080507@nigel.suspend2.net> <200801031215.07145.oliver@neukum.org>
+In-Reply-To: <200801031215.07145.oliver@neukum.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rework the architecture specific Makefiles to use the in-kernel version of
-the mkubootimg tool.
+Hi.
 
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Oliver Neukum wrote:
+> Am Donnerstag, 3. Januar 2008 10:52:53 schrieb Nigel Cunningham:
+>> Hi.
+>>
+>> Oliver Neukum wrote:
+>>> Am Donnerstag 03 Januar 2008 schrieb Nigel Cunningham:
+>>>> On top of this, I made a (too simple at the moment) freeze_filesystems
+>>>> function which iterates through &super_blocks in reverse order, freezing
+>>>> fuse filesystems or ordinary ones. I say 'too simple' because it doesn't
+>>>> currently allow for the possibility of someone mounting (say) ext3 on
+>>>> fuse, but that would just be an extension of what's already done.
+>>> How do you deal with fuse server tasks using other fuse filesystems?
+>> Since they're frozen in reverse order, the dependant one would be frozen
+>> first.
+> 
+> Say I do:
+> 
+> a) mount fuse on /tmp/first
+> b) mount fuse on /tmp/second
+> 
+> Then the server task for (a) does "ls /tmp/second". So it will be frozen,
+> right? How do you then freeze (a)? And keep in mind that the server task
+> may have forked.
 
----
- arch/arm/boot/Makefile          |    4 ++--
- arch/avr32/boot/images/Makefile |    4 ++--
- arch/blackfin/boot/Makefile     |    4 ++--
- arch/ppc/boot/images/Makefile   |    4 ++--
- arch/sh/boot/Makefile           |    4 ++--
- 5 files changed, 10 insertions(+), 10 deletions(-)
+I guess I should first ask, is this a real life problem or a
+hypothetical twisted web? I don't see why you would want to make two
+filesystems interdependent - it sounds like the way to create livelock
+and deadlocks in normal use, before we even begin to think about
+hibernating.
 
---- linux-2.6.orig/arch/arm/boot/Makefile
-+++ linux-2.6/arch/arm/boot/Makefile
-@@ -11,7 +11,7 @@
- # Copyright (C) 1995-2002 Russell King
- #
- 
--MKIMAGE         := $(srctree)/scripts/mkuboot.sh
-+MKIMAGE         := $(srctree)/scripts/mkubootimg/mkubootimg
- 
- ifneq ($(MACHINE),)
- include $(srctree)/$(MACHINE)/Makefile.boot
-@@ -60,7 +60,7 @@ $(obj)/zImage:	$(obj)/compressed/vmlinux
- endif
- 
- quiet_cmd_uimage = UIMAGE  $@
--      cmd_uimage = $(CONFIG_SHELL) $(MKIMAGE) -A arm -O linux -T kernel \
-+      cmd_uimage = $(MKIMAGE) -A arm -O linux -T kernel \
- 		   -C none -a $(ZRELADDR) -e $(ZRELADDR) \
- 		   -n 'Linux-$(KERNELRELEASE)' -d $< $@
- 
---- linux-2.6.orig/arch/avr32/boot/images/Makefile
-+++ linux-2.6/arch/avr32/boot/images/Makefile
-@@ -6,7 +6,7 @@
- # for more details.
- #
- 
--MKIMAGE		:= $(srctree)/scripts/mkuboot.sh
-+MKIMAGE		:= $(srctree)/scripts/mkubootimg/mkubootimg
- 
- extra-y		:= vmlinux.bin vmlinux.gz
- 
-@@ -18,7 +18,7 @@ $(obj)/vmlinux.gz: $(obj)/vmlinux.bin FO
- 	$(call if_changed,gzip)
- 
- quiet_cmd_uimage = UIMAGE $@
--      cmd_uimage = $(CONFIG_SHELL) $(MKIMAGE) -A avr32 -O linux -T kernel	\
-+      cmd_uimage = $(MKIMAGE) -A avr32 -O linux -T kernel	\
- 		-C gzip -a $(CONFIG_LOAD_ADDRESS) -e $(CONFIG_ENTRY_ADDRESS)	\
- 		-n 'Linux-$(KERNELRELEASE)' -d $< $@
- 
---- linux-2.6.orig/arch/blackfin/boot/Makefile
-+++ linux-2.6/arch/blackfin/boot/Makefile
-@@ -6,13 +6,13 @@
- # for more details.
- #
- 
--MKIMAGE := $(srctree)/scripts/mkuboot.sh
-+MKIMAGE := $(srctree)/scripts/mkubootimg/mkubootimg
- 
- targets := vmImage
- extra-y += vmlinux.bin vmlinux.gz
- 
- quiet_cmd_uimage = UIMAGE  $@
--      cmd_uimage = $(CONFIG_SHELL) $(MKIMAGE) -A $(ARCH) -O linux -T kernel \
-+      cmd_uimage = $(MKIMAGE) -A $(ARCH) -O linux -T kernel \
-                    -C gzip -n 'Linux-$(KERNELRELEASE)' -a $(CONFIG_BOOT_LOAD) \
-                    -e $(shell $(NM) vmlinux | awk '$$NF == "__start" {print $$1}') \
-                    -d $< $@
---- linux-2.6.orig/arch/ppc/boot/images/Makefile
-+++ linux-2.6/arch/ppc/boot/images/Makefile
-@@ -2,7 +2,7 @@
- # This dir holds all of the images for PPC machines.
- # Tom Rini	January 2001
- 
--MKIMAGE		:= $(srctree)/scripts/mkuboot.sh
-+MKIMAGE		:= $(srctree)/scripts/mkubootimg/mkubootimg
- 
- extra-y		:= vmlinux.bin vmlinux.gz
- 
-@@ -19,7 +19,7 @@ $(obj)/vmlinux.gz: $(obj)/vmlinux.bin FO
- 	$(call if_changed,mygzip)
- 
- quiet_cmd_uimage = UIMAGE  $@
--      cmd_uimage = $(CONFIG_SHELL) $(MKIMAGE) -A ppc -O linux -T kernel \
-+      cmd_uimage = $(MKIMAGE) -A ppc -O linux -T kernel \
-                -C gzip -a 00000000 -e 00000000 -n 'Linux-$(KERNELRELEASE)' \
-                -d $< $@
- 
---- linux-2.6.orig/arch/sh/boot/Makefile
-+++ linux-2.6/arch/sh/boot/Makefile
-@@ -8,7 +8,7 @@
- # Copyright (C) 1999 Stuart Menefy
- #
- 
--MKIMAGE := $(srctree)/scripts/mkuboot.sh
-+MKIMAGE := $(srctree)/scripts/mkubootimg/mkubootimg
- 
- #
- # Assign safe dummy values if these variables are not defined,
-@@ -38,7 +38,7 @@ KERNEL_LOAD	:= $(shell /bin/bash -c 'pri
- 			$(CONFIG_ZERO_PAGE_OFFSET)+0x1000]')
- 
- quiet_cmd_uimage = UIMAGE  $@
--      cmd_uimage = $(CONFIG_SHELL) $(MKIMAGE) -A sh -O linux -T kernel \
-+      cmd_uimage = $(MKIMAGE) -A sh -O linux -T kernel \
- 		   -C none -a $(KERNEL_LOAD) -e $(KERNEL_LOAD) \
- 		   -n 'Linux-$(KERNELRELEASE)' -d $< $@
- 
+Regards,
+
+Nigel
