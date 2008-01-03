@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754967AbYACS5Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754166AbYACTDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754967AbYACS5Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 13:57:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbYACS5E
+	id S1754166AbYACTDu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 14:03:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbYACTDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 13:57:04 -0500
-Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:25494 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752206AbYACS5D (ORCPT
+	Thu, 3 Jan 2008 14:03:42 -0500
+Received: from fk-out-0910.google.com ([209.85.128.190]:47309 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752217AbYACTDl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 13:57:03 -0500
-X-IronPort-AV: E=Sophos;i="4.24,240,1196668800"; 
-   d="scan'208";a="9596522"
-To: David Dillow <dillowda@ornl.gov>
-Cc: torvalds@linux-foundation.org, general@lists.openfabrics.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] please pull infiniband.git for-linus
-X-Message-Flag: Warning: May contain useful information
-References: <adak5mqu5i8.fsf@cisco.com>
-	<1199385590.7561.11.camel@lap75545.ornl.gov>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 03 Jan 2008 10:56:54 -0800
-In-Reply-To: <1199385590.7561.11.camel@lap75545.ornl.gov> (David Dillow's message of "Thu, 03 Jan 2008 13:39:50 -0500")
-Message-ID: <adafxxeu495.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Thu, 3 Jan 2008 14:03:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=sHgp+Q70H4FEOn4FMmptDM2iCNhs/RVAy9Y/q+KdsVKyWdZVxskt84x5/2aj0XAqvS/rQkh6XegY/HWPijXQ4WTafH3HiLP8fRMQB0pIbuYn0NLcryYQfrILC1/MKal5p2Xisnj4CzuXN2/lP6sXBqQuP+csyVZvRXHQf3cQayo=
+Message-ID: <29495f1d0801031103v6c1d76a8meabeab61d0cda2a7@mail.gmail.com>
+Date: Thu, 3 Jan 2008 11:03:35 -0800
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: [PATCH] [6/8] GBPAGES: Add an option to disable direct mapping gbpages and a global variable
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080103172703.100C014DDD@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 03 Jan 2008 18:56:54.0820 (UTC) FILETIME=[687DBE40:01C84E3A]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080103626.635376000@suse.de>
+	 <20080103172703.100C014DDD@wotan.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > If we've got time before 2.6.24 final, I'd wait on this a bit.
- > ib_srp:srp_remove_work() has them reversed as well, and I'm currently
- > tracking down why it oopses when the srp_remove_host() happens before
- > the scsi_remove_host(), which is the documented call sequence.
+On 1/3/08, Andi Kleen <ak@suse.de> wrote:
+>
+> Signed-off-by: Andi Kleen <ak@suse.de>
 
-I think the best thing to do is to merge this (assuming that Linus
-gets to it), since it looks quite safe and definitely fixes a crash.
-Then if we get to the root cause we can change the order of the calls
-if it turns out a different fix is required.
+<snip>
 
- - R.
+> Index: linux/Documentation/x86_64/boot-options.txt
+> ===================================================================
+> --- linux.orig/Documentation/x86_64/boot-options.txt
+> +++ linux/Documentation/x86_64/boot-options.txt
+> @@ -307,3 +307,6 @@ Debugging
+>                         stuck (default)
+>
+>  Miscellaneous
+> +
+> +       direct_gbpages=off
+> +               Do not use GB pages for kernel direct mapping.
+
+Sorry if this is a FAQ, but why do we have this file in addition to
+kernel-parameters.txt? I see that kernel-parameters.txt refers to this
+file, so I guess it's ok, but shouldn't we try to consolidate?
+
+Thanks,
+Nish
