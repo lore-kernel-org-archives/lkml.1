@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759147AbYACEQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759489AbYACERe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759147AbYACEQX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 23:16:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbYACEQQ
+	id S1759489AbYACERe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 23:17:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbYACER0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 23:16:16 -0500
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:43696 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754137AbYACEQP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 23:16:15 -0500
-Date: Thu, 3 Jan 2008 09:46:06 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, htejun@gmail.com,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, maneesh@linux.vnet.ibm.com,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: 2.6.22-stable causes oomkiller to be invoked
-Message-ID: <20080103041606.GC26166@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20071217045904.GB31386@linux.vnet.ibm.com> <Pine.LNX.4.64.0712171143280.12871@schroedinger.engr.sgi.com> <20071217120720.e078194b.akpm@linux-foundation.org> <Pine.LNX.4.64.0712171222470.29500@schroedinger.engr.sgi.com> <20071221044508.GA11996@linux.vnet.ibm.com> <Pine.LNX.4.64.0712261258050.16862@schroedinger.engr.sgi.com> <20071228101109.GB5083@linux.vnet.ibm.com> <Pine.LNX.4.64.0801021237330.21526@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0801021346580.3778@schroedinger.engr.sgi.com> <20080103035942.GB26166@linux.vnet.ibm.com>
+	Wed, 2 Jan 2008 23:17:26 -0500
+Received: from rtr.ca ([76.10.145.34]:1189 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753744AbYACERZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Jan 2008 23:17:25 -0500
+Message-ID: <477C61D3.30009@rtr.ca>
+Date: Wed, 02 Jan 2008 23:17:23 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080103035942.GB26166@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Allen Martin <AMartin@nvidia.com>, Jeff Garzik <jeff@garzik.org>,
+       Tejun Heo <htejun@gmail.com>, Gabor Gombas <gombasg@sztaki.hu>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Kuan Luo <kluo@nvidia.com>, Peer Chen <pchen@nvidia.com>
+Subject: Re: sata_nv + ADMA + Samsung disk problem
+References: <20070808120804.GB5257@boogie.lpds.sztaki.hu> <20080101164416.GA29574@boogie.lpds.sztaki.hu> <477B0429.7040909@gmail.com> <477B0CFD.1030603@shaw.ca> <F72FA20C31DD4F4C997B91C5B3690A09505577@hqemmail07.nvidia.com> <477BDEA5.8040701@garzik.org> <F72FA20C31DD4F4C997B91C5B3690A0950557D@hqemmail07.nvidia.com> <477C2A99.9010208@shaw.ca>
+In-Reply-To: <477C2A99.9010208@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 03, 2008 at 09:29:42AM +0530, Dhaval Giani wrote:
-> On Wed, Jan 02, 2008 at 01:54:12PM -0800, Christoph Lameter wrote:
-> > Just traced it again on my system: It is okay for the number of pages on 
-> > the quicklist to reach the high count that we see (although the 16 bit 
-> > limits are weird. You have around 4GB of memory in the system?). Up to 
-> > 1/16th of free memory of a node can be allocated for quicklists (this 
-> > allows the effective shutting down and restarting of large amounts of 
-> > processes)
-> > 
-> > The problem may be that this is run on a HIGHMEM system and the 
-> > calculation of allowable pages on the quicklists does not take into 
-> > account that highmem pages are not usable for quicklists (not sure about 
-> > ZONE_MOVABLE on i386. Maybe we need to take that into account as well?)
-> > 
-> > Here is a patch that removes the HIGHMEM portion from the calculation. 
-> > Does this change anything:
-> > 
-> 
-> Yep. This one hits it. I don't see the obvious signs of the oom
-> happening in the 5 mins I have run the script. I will let it run for
-> some more time.
-> 
+Robert Hancock wrote:
+..
+>  From some of the traces I took previously (posted on LKML as "sata_nv 
+> ADMA controller lockup investigation" way back in Feb 07), what seems to 
+> occur is that when the second command is issued very rapidly (within 
+> less than 20 microseconds, or potentially longer) after the previous 
+> command's completion, the ADMA status changes from 0x500 (STOPPED and 
+> IDLE) to 0x400 (just IDLE) as it typically does, but then it sticks 
+> there, no interrupt is ever raised, and CPB response flags remain at 0.
+..
 
-Yes, no oom even after 20 mins of running (which is double the normal
-time for the oom to occur), also no changes in free lowmem.
+Assuming that NVidia got their ADMA core logic from Pacific Digital
+(the inventors), then it may have some of the same bugs as the original.
 
-Thanks for the fix. Feel free to add a 
+One of those bugs is that the aGO trigger is sampled in a "racey" way,
+such that it sometimes may miss a recent addition to the ring.
 
-Tested-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+The *only* way to guarantee things with the original Pacific Digital core
+was to (1) always retrigger aGO for a full ring scan with each new addition,
+and (2) poll periodically (every half second or so) rather than relying
+exclusively on the IRQ actually working..
 
--- 
-regards,
-Dhaval
+Dunno about the NVidia version.
+
+Cheers
+ 
+
