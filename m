@@ -1,67 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759678AbYACPsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760475AbYACPsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759678AbYACPsi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 10:48:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759182AbYACPoU
+	id S1760475AbYACPsy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 10:48:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759404AbYACPog
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 10:44:20 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:36190 "EHLO e5.ny.us.ibm.com"
+	Thu, 3 Jan 2008 10:44:36 -0500
+Received: from rtr.ca ([76.10.145.34]:2520 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754303AbYACPoS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 10:44:18 -0500
-Date: Thu, 3 Jan 2008 21:14:23 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
-       davem@davemloft.net, hskinnemoen@atmel.com, mhiramat@redhat.com,
-       sam@ravnborg.org, randy.dunlap@oracle.com
-Subject: Re: [PATCH 2/2] Kprobes: Move kprobes examples to samples/
-Message-ID: <20080103154423.GA5273@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20080103062425.GA22781@in.ibm.com> <20080103062825.GB22781@in.ibm.com> <20080103093303.GB16803@elte.hu> <20080103102233.GB28934@in.ibm.com> <20080103110459.GI29194@elte.hu> <20080103151806.GA23967@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080103151806.GA23967@Krystal>
-User-Agent: Mutt/1.5.11
+	id S1759372AbYACPod (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 10:44:33 -0500
+Message-ID: <477D02E0.5040301@rtr.ca>
+Date: Thu, 03 Jan 2008 10:44:32 -0500
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Mark Lord <lkml@rtr.ca>, Allen Martin <AMartin@nvidia.com>,
+       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       Gabor Gombas <gombasg@sztaki.hu>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Kuan Luo <kluo@nvidia.com>,
+       Peer Chen <pchen@nvidia.com>
+Subject: Re: sata_nv + ADMA + Samsung disk problem
+References: <20070808120804.GB5257@boogie.lpds.sztaki.hu> <20080101164416.GA29574@boogie.lpds.sztaki.hu> <477B0429.7040909@gmail.com> <477B0CFD.1030603@shaw.ca> <F72FA20C31DD4F4C997B91C5B3690A09505577@hqemmail07.nvidia.com> <477BDEA5.8040701@garzik.org> <F72FA20C31DD4F4C997B91C5B3690A0950557D@hqemmail07.nvidia.com> <477C2A99.9010208@shaw.ca> <477C61D3.30009@rtr.ca> <477C6A85.9020607@shaw.ca>
+In-Reply-To: <477C6A85.9020607@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 03, 2008 at 10:18:06AM -0500, Mathieu Desnoyers wrote:
-> * Ingo Molnar (mingo@elte.hu) wrote:
-> > 
-> > * Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
-> > 
-> > > > feature request: please make this work in the !modular case as well 
-> > > > - if built-in then it should just run sometime during bootup and run 
-> > > > the tests and report success/failure. This way automated testing can 
-> > > > pick up any regressions much easier.
-> > > 
-> > > Will try cook up something along those lines. It'll be easy to verify 
-> > > if the probes inserted and removed properly, but verifying handlers 
-> > > run correctly will need some work.
-> > > 
-> > > We have a sort of regression test bucket that uses expect to parse the 
-> > > dmesg to verify handlers did run correctly; that isn't a totally 
-> > > in-kernel solution anyway. I have a couple of ideas in mind to make it 
-> > > easier.
-> > 
-> > Great. Would be really nice to have something along the lines of 
-> > CONFIG_DEBUG_LOCKING_API_SELFTESTS. Those unit tests took time to 
-> > develop, but they caught more than 90% (!) of the internal lockdep 
-> > engine bugs before they ever hit mainline.
-> > 
+Robert Hancock wrote:
+> Mark Lord wrote:
+>> Robert Hancock wrote:
+>> ..
+>>>  From some of the traces I took previously (posted on LKML as 
+>>> "sata_nv ADMA controller lockup investigation" way back in Feb 07), 
+>>> what seems to occur is that when the second command is issued very 
+>>> rapidly (within less than 20 microseconds, or potentially longer) 
+>>> after the previous command's completion, the ADMA status changes from 
+>>> 0x500 (STOPPED and IDLE) to 0x400 (just IDLE) as it typically does, 
+>>> but then it sticks there, no interrupt is ever raised, and CPB 
+>>> response flags remain at 0.
+>> ..
+>>
+>> Assuming that NVidia got their ADMA core logic from Pacific Digital
+>> (the inventors), then it may have some of the same bugs as the original.
+>>
+>> One of those bugs is that the aGO trigger is sampled in a "racey" way,
+>> such that it sometimes may miss a recent addition to the ring.
+>>
+>> The *only* way to guarantee things with the original Pacific Digital core
+>> was to (1) always retrigger aGO for a full ring scan with each new 
+>> addition,
+>> and (2) poll periodically (every half second or so) rather than relying
+>> exclusively on the IRQ actually working..
+>>
+>> Dunno about the NVidia version.
 > 
-> I would just like to point out that the samples/ directory should keep
-> files as easy to read and understand for newcomers (it is meant to be
-> compiled Documentation examples). I see the interest in turning it into
-> a regression test too, but I would recommend leaving the "test" code out
-> of the sample module itself to improve readability.
+> Theirs works rather differently - the GO bit is there, but there's 
+> another append register which is used to tell the controller that a new 
+> tag has been added to the CPB list.
+..
 
-Agreed. I am working on a test bucket that doesn't touch the samples.
-It'll live on its own, helping with boot time smoke tests.
+The PacDigi core uses a "search count" register for that purpose,
+but the buggy nature of the core required that it always be set
+to "2 * ring_size" to ensure nothing got missed.
 
-Ananth
+Here's some comments from the original ADMA driver.
+Maybe something from here might help with the NV stuff, too.
+
+       // There is a chance that the chip will skip over a CPB if a SERVICE interrupt
+        // occurs while it's reading the CPB header.  This won't cause us to get
+        // stuck anywhere, but it might slow down execution of the new CPB if
+        // it has to wait for the next time we hit aGO.  So.. Dxxx/Dxxx suggest
+        // that all we need to do is tell the chip to do two passes around the ring
+        // from an aGO instead of one pass, so that it will find the "missed" CPB
+        // on the second pass.  This isn't as bad as it first looks.
+        //
+        writew(channel->num_cpbs * 2, &adma_regs->cpb_search_count);
+
+Or again, the NV stuff may be completely different (?).
