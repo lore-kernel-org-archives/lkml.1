@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbYACV7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754246AbYACV7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756020AbYACV7S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 16:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752877AbYACV6c
+	id S1754246AbYACV7e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 16:59:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbYACV6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 16:58:32 -0500
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:11151 "EHLO
+	Thu, 3 Jan 2008 16:58:33 -0500
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:11150 "EHLO
 	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752649AbYACV6a (ORCPT
+	by vger.kernel.org with ESMTP id S1752739AbYACV6a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 3 Jan 2008 16:58:30 -0500
-Date: Thu, 03 Jan 2008 14:30:00 -0700
+Date: Thu, 03 Jan 2008 14:29:20 -0700
 From: dougthompson@xmission.com
 To: dougthompson@xmission.com, alan@lxorguk.ukuu.org.uk,
        linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 2/4] drivers-edac-i3000-64bit-build
-Message-ID: <477d53d8.RaZRbWvnGE5mdJUI%dougthompson@xmission.com>
+Subject: [PATCH 0/4] EDAC code tyding and fixes
+Message-ID: <477d53b0.Lr5g0bmce0sqZVxd%dougthompson@xmission.com>
 User-Agent: Heirloom mailx 12.1 6/15/06
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -24,28 +24,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jason Uhlenkott <juhlenko@akamai.com>
+From:	Doug Thompson <dougthompson@xmission.com>
 
-Modified to run on x86_64 as well as x86
+This EDAC patch set was applied against: 2.6.24-rc6-mm1
 
-i3000_edac builds (and runs) fine on x86_64.
+1) Fixed a pci parity regression
+2) enabled i3000 building under x86_64 as well as for x86
+3) limit scope of variable by adding static to mpc85xx
+4) added missing initialization code to i3000
 
-Signed-off-by: Jason Uhlenkott <juhlenko@akamai.com>
-Signed-off-by: Doug Thompson <dougthompson@xmission.com>
----
- Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6.23.8/drivers/edac/Kconfig
-===================================================================
---- linux-2.6.23.8.orig/drivers/edac/Kconfig
-+++ linux-2.6.23.8/drivers/edac/Kconfig
-@@ -97,7 +97,7 @@ config EDAC_I82975X
- 
- config EDAC_I3000
- 	tristate "Intel 3000/3010"
--	depends on EDAC_MM_EDAC && PCI && X86_32
-+	depends on EDAC_MM_EDAC && PCI && X86
- 	help
- 	  Support for error detection and correction on the Intel
- 	  3000 and 3010 server chipsets.
+Signed-off-by:  Doug Thompson <dougthompson@xmission.com>
