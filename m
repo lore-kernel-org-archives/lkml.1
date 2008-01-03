@@ -1,58 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760021AbYACF5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760167AbYACF6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760021AbYACF5f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 00:57:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754364AbYACF50
+	id S1760167AbYACF6Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 00:58:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754694AbYACF6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 00:57:26 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:50840 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752306AbYACF50 (ORCPT
+	Thu, 3 Jan 2008 00:58:06 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50692 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754357AbYACF6E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 00:57:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=jdKvmWLRD17Oyp3Beh6Av7PK/IDGPi/ZWdhLGKV19gP4VrbXXD2IiUoOo/VCAf+0eWZ5wToAsu9i0Pf3OfrhAF7+G8Lb3wpGJV5VXNCSdpGFDEIaPkgsPkt4fEL8rEHFZyXPkyPGyYZL+WlUrnxh/TgP9bfecIo0WYTWoB4DWjQ=
-Date: Thu, 3 Jan 2008 14:01:00 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: James.Bottomley@hansenpartnership.com
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: [PATCH 6/7] scsi : convert semaphore to mutex in struct class
-Message-ID: <20080103060100.GG4885@darkstar.te-china.tietoenator.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 3 Jan 2008 00:58:04 -0500
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@ftp.linux.org.uk, hch@infradead.org,
+       Erez Zadok <ezk@cs.sunysb.edu>
+Subject: [PATCH 1/3] Unionfs: use printk KERN_CONT for debugging messages
+Date: Thu,  3 Jan 2008 00:57:38 -0500
+Message-Id: <1199339862303-git-send-email-ezk@cs.sunysb.edu>
+X-Mailer: git-send-email 1.5.2.2
+X-MailKey: Erez_Zadok
+In-Reply-To: <11993398601-git-send-email-ezk@cs.sunysb.edu>
+References: <11993398601-git-send-email-ezk@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use mutex instead of semaphore in struct class.
-
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
-drivers/scsi/hosts.c |    4 ++--
-1 file changed, 2 insertions(+), 2 deletions(-)
+ fs/unionfs/debug.c |   50 ++++++++++++++++++++++++++------------------------
+ 1 files changed, 26 insertions(+), 24 deletions(-)
 
-diff -upr linux/drivers/scsi/hosts.c linux.new/drivers/scsi/hosts.c
---- linux/drivers/scsi/hosts.c	2007-12-28 10:45:46.000000000 +0800
-+++ linux.new/drivers/scsi/hosts.c	2007-12-28 10:46:19.000000000 +0800
-@@ -441,7 +441,7 @@ struct Scsi_Host *scsi_host_lookup(unsig
- 	struct class_device *cdev;
- 	struct Scsi_Host *shost = ERR_PTR(-ENXIO), *p;
- 
--	down(&class->sem);
-+	mutex_lock(&class->mutex);
- 	list_for_each_entry(cdev, &class->children, node) {
- 		p = class_to_shost(cdev);
- 		if (p->host_no == hostnum) {
-@@ -449,7 +449,7 @@ struct Scsi_Host *scsi_host_lookup(unsig
- 			break;
- 		}
+diff --git a/fs/unionfs/debug.c b/fs/unionfs/debug.c
+index c2b8b58..5f1d887 100644
+--- a/fs/unionfs/debug.c
++++ b/fs/unionfs/debug.c
+@@ -456,9 +456,10 @@ void __show_branch_counts(const struct super_block *sb,
+ 			mnt = UNIONFS_D(sb->s_root)->lower_paths[i].mnt;
+ 		else
+ 			mnt = NULL;
+-		pr_debug("%d:", (mnt ? atomic_read(&mnt->mnt_count) : -99));
++		printk(KERN_CONT "%d:",
++		       (mnt ? atomic_read(&mnt->mnt_count) : -99));
  	}
--	up(&class->sem);
-+	mutex_unlock(&class->mutex);
- 
- 	return shost;
+-	pr_debug("%s:%s:%d\n", file, fxn, line);
++	printk(KERN_CONT "%s:%s:%d\n", file, fxn, line);
  }
+ 
+ void __show_inode_times(const struct inode *inode,
+@@ -472,15 +473,15 @@ void __show_inode_times(const struct inode *inode,
+ 		if (unlikely(!lower_inode))
+ 			continue;
+ 		pr_debug("IT(%lu:%d): ", inode->i_ino, bindex);
+-		pr_debug("%s:%s:%d ", file, fxn, line);
+-		pr_debug("um=%lu/%lu lm=%lu/%lu ",
+-			 inode->i_mtime.tv_sec, inode->i_mtime.tv_nsec,
+-			 lower_inode->i_mtime.tv_sec,
+-			 lower_inode->i_mtime.tv_nsec);
+-		pr_debug("uc=%lu/%lu lc=%lu/%lu\n",
+-			 inode->i_ctime.tv_sec, inode->i_ctime.tv_nsec,
+-			 lower_inode->i_ctime.tv_sec,
+-			 lower_inode->i_ctime.tv_nsec);
++		printk(KERN_CONT "%s:%s:%d ", file, fxn, line);
++		printk(KERN_CONT "um=%lu/%lu lm=%lu/%lu ",
++		       inode->i_mtime.tv_sec, inode->i_mtime.tv_nsec,
++		       lower_inode->i_mtime.tv_sec,
++		       lower_inode->i_mtime.tv_nsec);
++		printk(KERN_CONT "uc=%lu/%lu lc=%lu/%lu\n",
++		       inode->i_ctime.tv_sec, inode->i_ctime.tv_nsec,
++		       lower_inode->i_ctime.tv_sec,
++		       lower_inode->i_ctime.tv_nsec);
+ 	}
+ }
+ 
+@@ -497,15 +498,15 @@ void __show_dinode_times(const struct dentry *dentry,
+ 			continue;
+ 		pr_debug("DT(%s:%lu:%d): ", dentry->d_name.name, inode->i_ino,
+ 			 bindex);
+-		pr_debug("%s:%s:%d ", file, fxn, line);
+-		pr_debug("um=%lu/%lu lm=%lu/%lu ",
+-			 inode->i_mtime.tv_sec, inode->i_mtime.tv_nsec,
+-			 lower_inode->i_mtime.tv_sec,
+-			 lower_inode->i_mtime.tv_nsec);
+-		pr_debug("uc=%lu/%lu lc=%lu/%lu\n",
+-			 inode->i_ctime.tv_sec, inode->i_ctime.tv_nsec,
+-			 lower_inode->i_ctime.tv_sec,
+-			 lower_inode->i_ctime.tv_nsec);
++		printk(KERN_CONT "%s:%s:%d ", file, fxn, line);
++		printk(KERN_CONT "um=%lu/%lu lm=%lu/%lu ",
++		       inode->i_mtime.tv_sec, inode->i_mtime.tv_nsec,
++		       lower_inode->i_mtime.tv_sec,
++		       lower_inode->i_mtime.tv_nsec);
++		printk(KERN_CONT "uc=%lu/%lu lc=%lu/%lu\n",
++		       inode->i_ctime.tv_sec, inode->i_ctime.tv_nsec,
++		       lower_inode->i_ctime.tv_sec,
++		       lower_inode->i_ctime.tv_nsec);
+ 	}
+ }
+ 
+@@ -524,9 +525,10 @@ void __show_inode_counts(const struct inode *inode,
+ 		lower_inode = unionfs_lower_inode_idx(inode, bindex);
+ 		if (unlikely(!lower_inode))
+ 			continue;
+-		pr_debug("SIC(%lu:%d:%d): ", inode->i_ino, bindex,
+-			 atomic_read(&(inode)->i_count));
+-		pr_debug("lc=%d ", atomic_read(&(lower_inode)->i_count));
+-		pr_debug("%s:%s:%d\n", file, fxn, line);
++		printk(KERN_CONT "SIC(%lu:%d:%d): ", inode->i_ino, bindex,
++		       atomic_read(&(inode)->i_count));
++		printk(KERN_CONT "lc=%d ",
++		       atomic_read(&(lower_inode)->i_count));
++		printk(KERN_CONT "%s:%s:%d\n", file, fxn, line);
+ 	}
+ }
+-- 
+1.5.2.2
+
