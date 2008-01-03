@@ -1,67 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbYACHg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbYACH5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756670AbYACHg0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 02:36:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbYACHgS
+	id S1755045AbYACH5U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 02:57:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbYACH5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 02:36:18 -0500
-Received: from smtp114.sbc.mail.mud.yahoo.com ([68.142.198.213]:27476 "HELO
-	smtp114.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750770AbYACHgR (ORCPT
+	Thu, 3 Jan 2008 02:57:12 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:60183 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750770AbYACH5L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 02:36:17 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=4RNN2Z4D0oXeMRfdqSU9vtkmYgDOJOeSwkKqYhl6HhrW7WNuurpihJR9eYhdxiwoUMg9TArKOUzM2lNv76igv8UjPFhjD5+2zoi6KzrWLA1wz11utRVupUx5BWmsDEgLyJNgwOdHiav53X+KrECfvPiViZZ3oMAFYKSL+esmXPA=  ;
-X-YMail-OSG: p_78m_UVM1mAy36dMaDT7SAxVmapl6.L4zdLgUSSzRpm32Ya
-From: David Brownell <david-b@pacbell.net>
-To: "Bryan Wu" <cooloney.lkml@gmail.com>
+	Thu, 3 Jan 2008 02:57:11 -0500
+X-IronPort-AV: E=Sophos;i="4.24,238,1196658000"; 
+   d="scan'208";a="46111425"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "David Brownell" <david-b@pacbell.net>
 Subject: Re: [linux-usb-devel] [PATCH] : Allow embedded developers USB options normally reserved for OTG
-Date: Wed, 2 Jan 2008 23:36:09 -0800
-User-Agent: KMail/1.9.6
-Cc: "Robin Getz" <rgetz@blackfin.uclinux.org>,
-       linux-usb-devel@lists.sourceforge.net, gregkh@suse.de,
+Date: Thu, 3 Jan 2008 02:58:09 -0500
+User-Agent: KMail/1.9.5
+Cc: linux-usb-devel@lists.sourceforge.net, gregkh@suse.de,
        linux-kernel@vger.kernel.org
-References: <200801020948.51310.rgetz@blackfin.uclinux.org> <200801021943.38716.david-b@pacbell.net> <386072610801022040ja4919bapa8a0712c1246c3f3@mail.gmail.com>
-In-Reply-To: <386072610801022040ja4919bapa8a0712c1246c3f3@mail.gmail.com>
+References: <200801020948.51310.rgetz@blackfin.uclinux.org> <200801022203.04991.rgetz@blackfin.uclinux.org> <200801021943.38716.david-b@pacbell.net>
+In-Reply-To: <200801021943.38716.david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801022336.10355.david-b@pacbell.net>
+Message-Id: <200801030258.09185.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 03 Jan 2008 07:57:10.0124 (UTC) FILETIME=[3E2C7AC0:01C84DDE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 January 2008, Bryan Wu wrote:
-> B.T.W, 2 questions about the MUSB driver:
-> 1. What's the plan for mainline merge of the whole MUSB driver? maybe
-> I can cleanup current Blackfin ports to you guys.
+On Wed 2 Jan 2008 22:43, David Brownell pondered:
+> This patch might be improved slightly -- in ways that, as I
+> understand things, could save some RAM on Blackfin! -- by
+> having the BLACKLIST_HUB option get rid of the transaction
+> translator support (changing C code not just Kconfig).
+> It's pretty minimal, but won't be used...
+>
+> Also, as you point out, it's no longer OTG specific, so
+> renaming the option would improve clarity.   Maybe to
+> something along the lines of USB_HOST_NO_EXTERNAL_HUBS.
+> No big deal, at least now.
 
-It might as well merge in 2.6.25-early.  It'll be easier to integrate
-patches that way.  Including your Blackfin port.  When I asked before,
-nobody hugely objected to "one big patch".
+Are these two things something that you want me to have a stab at, or since 
+you are more familiar with it - you want to do it.
 
-
-> 2. Do you remember the PING issue I reported in OMAP list? How do you
-> think of that?
-
-Yes, something needs to be done.  EHCI might benefit from the same
-kind of patch, to cope with ill-behaved usb thumb drives.
-
-
-> > I have an idea: the USB_NAKLIMIT0 should be set to some value, when we
-> > got NAK timeout interrupt, we can disable PING. When enumerating normal
-> > USB stick, there is no NAK timeout, because PING is efficient for
-> > handshaking. While problem USB stick will generate NAK timeout
-> > interrupt, we disable PING for this kind of USB device enumeration.
- 
-That sounds much better than your original patch, which disabled it
-always.  It might even be worth allocating a flag somewhere in the
-usb_device structure to record when ep0 pings seem to misbehave.
-
-- Dave
-
-
+Thanks
+-Robin
