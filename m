@@ -1,105 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756514AbYACRUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbYACRWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756514AbYACRUK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 12:20:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYACRT7
+	id S1754781AbYACRWt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 12:22:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbYACRWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 12:19:59 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:48415 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751450AbYACRT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 12:19:58 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without HOTPLUG_CPU
-Date: Thu, 3 Jan 2008 18:22:02 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: pavel@suse.cz, linux-kernel@vger.kernel.org
-References: <20080103442.621670000@suse.de> <20080103154229.9723F14DDD@wotan.suse.de>
-In-Reply-To: <20080103154229.9723F14DDD@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Thu, 3 Jan 2008 12:22:42 -0500
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:41523 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752006AbYACRWl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 12:22:41 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAAupfEdMROHU/2dsb2JhbACBV6hg
+Date: Thu, 3 Jan 2008 12:22:38 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       "William L. Irwin" <sparclinux@vger.kernel.org>,
+       Tim Bird <tim.bird@am.sony.com>
+Subject: Re: [RFC PATCH 00/11] mcount tracing utility
+Message-ID: <20080103172238.GD27651@Krystal>
+References: <20080103071609.478486470@goodmis.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801031822.02668.rjw@sisk.pl>
+In-Reply-To: <20080103071609.478486470@goodmis.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:06:33 up 60 days, 22:11,  6 users,  load average: 0.19, 0.42,
+	0.29
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 3 of January 2008, Andi Kleen wrote:
-> 
-> This avoids the requirement to mark a lot of initialization functions not 
-> __cpuinit just for resume from RAM.
-> 
-> More functions could be converted now, didn't do all.
-> 
-> Cc: rjw@sisk.pl
-> Cc: pavel@suse.cz
-> 
-> Signed-off-by: Andi Kleen <ak@suse.de>
-> 
-> ---
->  arch/x86/Kconfig                |    5 +++++
->  arch/x86/kernel/cpu/mtrr/main.c |    2 +-
->  arch/x86/kernel/trampoline_64.S |    2 +-
->  include/linux/init.h            |    2 +-
->  4 files changed, 8 insertions(+), 3 deletions(-)
-> 
-> Index: linux/arch/x86/kernel/trampoline_64.S
-> ===================================================================
-> --- linux.orig/arch/x86/kernel/trampoline_64.S
-> +++ linux/arch/x86/kernel/trampoline_64.S
-> @@ -34,7 +34,7 @@
->  #include <asm/segment.h>
->  
->  /* We can free up trampoline after bootup if cpu hotplug is not supported. */
-> -#ifndef CONFIG_HOTPLUG_CPU
-> +#if !defined(CONFIG_HOTPLUG_CPU) && !defined(CONFIG_PM_CPUINIT)
->  .section .init.data, "aw", @progbits
->  #else
->  .section .rodata, "a", @progbits
-> Index: linux/include/linux/init.h
-> ===================================================================
-> --- linux.orig/include/linux/init.h
-> +++ linux/include/linux/init.h
-> @@ -266,7 +266,7 @@ void __init parse_early_param(void);
->  #define __devexitdata __exitdata
->  #endif
->  
-> -#ifdef CONFIG_HOTPLUG_CPU
-> +#if defined(CONFIG_HOTPLUG_CPU) || defined(CONFIG_PM_CPUINIT)
->  #define __cpuinit
->  #define __cpuinitdata
->  #define __cpuexit
-> Index: linux/arch/x86/Kconfig
-> ===================================================================
-> --- linux.orig/arch/x86/Kconfig
-> +++ linux/arch/x86/Kconfig
-> @@ -130,6 +130,11 @@ config GENERIC_PENDING_IRQ
->  	depends on GENERIC_HARDIRQS && SMP
->  	default y
->  
-> +config PM_CPUINIT
-> +	bool
-> +	depends on PM
+Hi Steven,
 
-Please make it PM_SLEEP (PM is more than suspend/hibernation).
+Great work!
 
-> +	default y
-> +
->  config X86_SMP
->  	bool
->  	depends on SMP && ((X86_32 && !X86_VOYAGER) || X86_64)
-> Index: linux/arch/x86/kernel/cpu/mtrr/main.c
-> ===================================================================
-> --- linux.orig/arch/x86/kernel/cpu/mtrr/main.c
-> +++ linux/arch/x86/kernel/cpu/mtrr/main.c
-> @@ -712,7 +712,7 @@ void __init mtrr_bp_init(void)
->  	}
->  }
->  
-> -void mtrr_ap_init(void)
-> +void __cpuinit mtrr_ap_init(void)
->  {
->  	unsigned long flags;
+(added Tim Bird, author of KFT/KFI to the CC list)
+
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+>
+...
+> 
+> Future:
+> -------
+> The way the mcount hook is done here, other utilities can easily add their
+> own functions. Just care needs to be made not to call anything that is not
+> marked with notrace, or you will crash the box with recursion. But
+> even the simple tracer adds a "disabled" feature so in case it happens
+> to call something that is not marked with notrace, it is a safety net
+> not to kill the box.
+> 
+> I was originally going to use the relay system to record the data, but
+> that had a chance of calling functions not marked with notrace. But, if
+> for example LTTng wanted to use this, it could disable tracing on a CPU
+> when doing the calls, and this will protect from recusion.
+> 
+
+Yes, I'd love to add this information source to LTTng. It simply boils
+down to adding a "notrace" flag to LTTng tracing functions. Since I
+don't use relay code _at all_ in the tracing path, there is no problem
+with this (I only disable preemption and do "local" atomic operations on
+per-cpu variables). Then I would have to do the glue code that registers
+the LTTng handler to your mcount mechanism.
+
+One interesting aspect of LTTng is that is would be very lightweight.
+You seem to use interrupt disabling with your simple tracer and do a
+_lot_ of cacheline bouncing (trace_idx[NR_CPUS] is a very good exemple).
+
+LTTng would write the information to a per-cpu memory buffer in binary
+format. I see that it would be especially useful in flight recorder
+mode, where we overwrite the buffers without writing them to disk : when
+a problematic condition is reached, (a kernel oops would be a good one),
+then we just stop tracing and dump the last buffers to disk. In this
+case, we would have the last function calls that led to an OOPS.
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
