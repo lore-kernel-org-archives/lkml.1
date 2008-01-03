@@ -1,64 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbYACQdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754828AbYACQgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755339AbYACQdh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 11:33:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbYACQd3
+	id S1754828AbYACQgS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 11:36:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbYACQgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 11:33:29 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50747 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751005AbYACQd3 (ORCPT
+	Thu, 3 Jan 2008 11:36:09 -0500
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:48379 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751580AbYACQgI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 11:33:29 -0500
-Date: Thu, 3 Jan 2008 16:31:42 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: lenb@kernel.org, akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] acpi: its a directory not a folder....
-Message-ID: <20080103163142.55f3a0ab@lxorguk.ukuu.org.uk>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 3 Jan 2008 11:36:08 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAL+dfEdMROHU/2dsb2JhbACBV6ha
+Date: Thu, 3 Jan 2008 11:30:55 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "K. Prasad" <prasad@linux.vnet.ibm.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, dipankar@in.ibm.com, ego@in.ibm.com,
+       paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH 2/2] Markers Implementation for Preempt RCU Boost
+	Tracing
+Message-ID: <20080103163055.GB27651@Krystal>
+References: <20071231060911.GB6461@in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20071231060911.GB6461@in.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:26:58 up 60 days, 21:32,  5 users,  load average: 0.00, 0.13,
+	0.37
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Noticed this while fixing some other stuff. The kernel help consistently
-uses 'directory', except for ACPI
+* K. Prasad (prasad@linux.vnet.ibm.com) wrote:
+> This patch converts the tracing mechanism of Preempt RCU boosting into
+> markers. The handler functions for these markers are included inside
+> rcupreempt_trace.c and will be included only when PREEMPT_RCU_BOOST is
+> chosen.
+>  
+> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> ---
+>  include/linux/rcupreempt_trace.h |   46 ++++++++
+>  kernel/rcupreempt-boost.c        |  211 ++++-----------------------------------
+>  kernel/rcupreempt_trace.c        |  183 +++++++++++++++++++++++++++++++++
+>  3 files changed, 251 insertions(+), 189 deletions(-)
+>  
+> Index: linux-2.6.24-rc2-rt1.MARKER_PATCHES_NEW/include/linux/rcupreempt_trace.h
+> ===================================================================
+> --- linux-2.6.24-rc2-rt1.MARKER_PATCHES_NEW.orig/include/linux/rcupreempt_trace.h
+> +++ linux-2.6.24-rc2-rt1.MARKER_PATCHES_NEW/include/linux/rcupreempt_trace.h
+> @@ -102,5 +102,51 @@ extern int rcupreempt_flip_flag(int cpu)
+>  extern int rcupreempt_mb_flag(int cpu);
+>  extern char *rcupreempt_try_flip_state_name(void);
+>  
+> +#ifdef CONFIG_PREEMPT_RCU_BOOST
+> +struct preempt_rcu_boost_trace {
+> +	unsigned long rbs_stat_task_boost_called;
+> +	unsigned long rbs_stat_task_boosted;
+> +	unsigned long rbs_stat_boost_called;
+> +	unsigned long rbs_stat_try_boost;
+> +	unsigned long rbs_stat_boosted;
+> +	unsigned long rbs_stat_unboost_called;
+> +	unsigned long rbs_stat_unboosted;
+> +	unsigned long rbs_stat_try_boost_readers;
+> +	unsigned long rbs_stat_boost_readers;
+> +	unsigned long rbs_stat_try_unboost_readers;
+> +	unsigned long rbs_stat_unboost_readers;
+> +	unsigned long rbs_stat_over_taken;
+> +};
+> +
+> +#define DEFINE_PREEMPT_RCU_BOOST_MARKER_HANDLER(preempt_rcu_boost_var) \
+> +void preempt_rcu_boost_var##_callback(const struct marker *mdata, \
+> +				void *private_data, const char *format, ...) \
+> +{ \
+> +	va_list ap; \
+> +	int cpu; \
+> +	struct preempt_rcu_boost_trace *boost_trace; \
+> +	va_start(ap, format); \
+> +	cpu = va_arg(ap, typeof(unsigned int)); \
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+(sorry for late response, I just came back from vacation)
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.24-rc6-mm1/drivers/acpi/Kconfig linux-2.6.24-rc6-mm1/drivers/acpi/Kconfig
---- linux.vanilla-2.6.24-rc6-mm1/drivers/acpi/Kconfig	2008-01-02 16:03:58.000000000 +0000
-+++ linux-2.6.24-rc6-mm1/drivers/acpi/Kconfig	2008-01-02 16:12:08.000000000 +0000
-@@ -68,20 +68,20 @@
- 
- 	  Say N to delete /proc/acpi/ files that have moved to /sys/
- config ACPI_PROCFS_POWER
--	bool "Deprecated power /proc/acpi folders"
-+	bool "Deprecated power /proc/acpi directories"
- 	depends on PROC_FS
- 	default y
- 	---help---
- 	  For backwards compatibility, this option allows
--          deprecated power /proc/acpi/ folders to exist, even when
-+          deprecated power /proc/acpi/ directories to exist, even when
-           they have been replaced by functions in /sys.
--          The deprecated folders (and their replacements) include:
-+          The deprecated directories (and their replacements) include:
- 	  /proc/acpi/battery/* (/sys/class/power_supply/*)
- 	  /proc/acpi/ac_adapter/* (sys/class/power_supply/*)
--	  This option has no effect on /proc/acpi/ folders
-+	  This option has no effect on /proc/acpi/ directories
- 	  and functions, which do not yet exist in /sys
- 
--	  Say N to delete power /proc/acpi/ folders that have moved to /sys/
-+	  Say N to delete power /proc/acpi/ directories that have moved to /sys/
- config ACPI_PROC_EVENT
- 	bool "Deprecated /proc/acpi/event support"
- 	depends on PROC_FS
+Instead of passing the cpu id as a marker parameter, why don't you
+simply use smp_processor_id() right here ?
 
-
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
