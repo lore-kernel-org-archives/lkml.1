@@ -1,197 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbYACTiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753130AbYACTw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753388AbYACTiV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 14:38:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751030AbYACTiN
+	id S1753130AbYACTw0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 14:52:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbYACTwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 14:38:13 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:44351 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750790AbYACTiM (ORCPT
+	Thu, 3 Jan 2008 14:52:16 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:41764 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751211AbYACTwP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 14:38:12 -0500
-Subject: Re: [PATCH] track number of mnts writing to superblocks
-From: Dave Hansen <haveblue@us.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       hch@infradead.org
-In-Reply-To: <20080103040258.GB14117@sergelap.austin.ibm.com>
-References: <20080102215110.F3A0B1DC@kernel>
-	 <20080103040258.GB14117@sergelap.austin.ibm.com>
-Content-Type: text/plain
-Date: Thu, 03 Jan 2008 11:37:49 -0800
-Message-Id: <1199389069.13731.72.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Jan 2008 14:52:15 -0500
+Date: Fri, 4 Jan 2008 01:22:01 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: hbabu@us.ibm.com, lkml <linux-kernel@vger.kernel.org>,
+       kexec@lists.infradead.org, rjw@sisk.pl
+Subject: Re: kexec refuses to boot latest -mm
+Message-ID: <20080103195201.GC6392@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20071228124532.GB32643@linux.vnet.ibm.com> <20071228142739.GA4560@redhat.com> <20071229054113.GB17426@linux.vnet.ibm.com> <20071231150843.GB27060@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071231150843.GB27060@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-01-02 at 22:02 -0600, Serge E. Hallyn wrote:
-> Ok I'm blabbing quite a bit here while trying to figure out
-> the patch, and maybe there are some useful hints for where more
-> comments would be useful.  But other than the fact that
-> mark_mnt_has_writer() needs to the atomic_inc() even if
-> cpu_writer was passed in as NULL, the patch seems good.
-
-Yeah, I screwed that up.  Should be fixed now.
-
-> > Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
-> > ---
+On Mon, Dec 31, 2007 at 10:08:43AM -0500, Vivek Goyal wrote:
+> On Sat, Dec 29, 2007 at 11:11:13AM +0530, Dhaval Giani wrote:
+> > On Fri, Dec 28, 2007 at 09:27:39AM -0500, Vivek Goyal wrote:
+> > > On Fri, Dec 28, 2007 at 06:15:32PM +0530, Dhaval Giani wrote:
+> > > > Hi Vivek,
+> > > > 
+> > > > I can't seem to get the latest -mm (2.6.24-rc6-mm1) to boot with
+> > > > kexec. It just gets stuck at "Starting new kernel".
+> > > > 
+> > > > It does boot normally when booted as the first kernel.
+> > > > 
+> > > > Any hints debugging? (x86 architecture)
+> > > 
+> > > I generally try few things.
+> > > 
+> > > - Specify earlyprintk= parameter for second kernel and see if control
+> > >   is reaching to second kernel.
+> > > 
+> > > - Otherwise specify --console-serial parameter on "kexec -l" commandline
+> > >   and it should display a message "I am in purgatory" on serial console.
+> > >   This will just mean that control has reached at least till purgatory.
+> > > 
 > > 
-> >  linux-2.6.git-dave/fs/file_table.c       |   24 -----
-> >  linux-2.6.git-dave/fs/namespace.c        |  134 +++++++++++++++++++++++++------
-> >  linux-2.6.git-dave/fs/super.c            |   61 +++++++++++---
-> >  linux-2.6.git-dave/include/linux/fs.h    |    5 -
-> >  linux-2.6.git-dave/include/linux/mount.h |    3 
-> >  5 files changed, 163 insertions(+), 64 deletions(-)
-> > 
-> > diff -puN fs/file_table.c~track_sb_mnt_writers fs/file_table.c
-> > --- linux-2.6.git/fs/file_table.c~track_sb_mnt_writers	2008-01-02 10:49:11.000000000 -0800
-> > +++ linux-2.6.git-dave/fs/file_table.c	2008-01-02 10:49:11.000000000 -0800
-> > @@ -374,30 +374,6 @@ void file_kill(struct file *file)
-> >  	}
-> >  }
-> > 
-> > -int fs_may_remount_ro(struct super_block *sb)
-> > -{
-> > -	struct file *file;
-> > -
-> > -	/* Check that no files are currently opened for writing. */
-> > -	file_list_lock();
-> > -	list_for_each_entry(file, &sb->s_files, f_u.fu_list) {
-> > -		struct inode *inode = file->f_path.dentry->d_inode;
-> > -
-> > -		/* File with pending delete? */
-> > -		if (inode->i_nlink == 0)
-> > -			goto too_bad;
-> > -
-> > -		/* Writeable file? */
-> > -		if (S_ISREG(inode->i_mode) && (file->f_mode & FMODE_WRITE))
+> > Ok, so it reaches till here. I get "I'm in purgatory" on the console.
 > 
-> (why did this originally skip directories?)
-
-I think it's more to skip device files and named pipes than directories.
-I don't even know what happens offhand if you try a plain write() to an
-open directory.
-
-> > diff -puN fs/file_table.c.orig~track_sb_mnt_writers fs/file_table.c.orig
-> > diff -puN fs/namespace.c~track_sb_mnt_writers fs/namespace.c
-> > --- linux-2.6.git/fs/namespace.c~track_sb_mnt_writers	2008-01-02 10:49:11.000000000 -0800
-> > +++ linux-2.6.git-dave/fs/namespace.c	2008-01-02 13:39:52.000000000 -0800
-> > @@ -118,7 +118,7 @@ struct mnt_writer {
-> >  	 * If holding multiple instances of this lock, they
-> >  	 * must be ordered by cpu number.
-> >  	 */
-> > -	spinlock_t lock;
-> > +	struct mutex lock;
-> >  	struct lock_class_key lock_class; /* compiles out with !lockdep */
-> >  	unsigned long count;
-> >  	struct vfsmount *mnt;
-> > @@ -130,7 +130,7 @@ static int __init init_mnt_writers(void)
-> >  	int cpu;
-> >  	for_each_possible_cpu(cpu) {
-> >  		struct mnt_writer *writer = &per_cpu(mnt_writers, cpu);
-> > -		spin_lock_init(&writer->lock);
-> > +		mutex_init(&writer->lock);
-> >  		lockdep_set_class(&writer->lock, &writer->lock_class);
-> >  		writer->count = 0;
-> >  	}
-> > @@ -145,11 +145,52 @@ static void mnt_unlock_cpus(void)
-> > 
-> >  	for_each_possible_cpu(cpu) {
-> >  		cpu_writer = &per_cpu(mnt_writers, cpu);
-> > -		spin_unlock(&cpu_writer->lock);
-> > +		mutex_unlock(&cpu_writer->lock);
-> >  	}
-> >  }
-> > 
-> > -static inline void __clear_mnt_count(struct mnt_writer *cpu_writer)
-> > +static int mark_mnt_has_writer(struct vfsmount *mnt,
-> > +			       struct mnt_writer *cpu_writer)
-> > +{
-> > +	/*
-> > +	 * Ensure that if there are people racing to set
-> > +	 * the bit that only one of them succeeds and can
-> > +	 * increment the sb count.
-> > +	 */
-> > +	if (test_and_set_bit(ilog2(MNT_MAY_HAVE_WRITERS), &mnt->mnt_flags))
-> > +		return 0;
+> One more thing. Is 2.6.24-rc6 working properly?
 > 
-> Comment isn't entirely clear, but you're returning 0 here because
-> someone else has already set the flag and incremented
-> sb->__s_mnt_writers so you don't have to and you're all set to go on
-> with writing?
 
-Yeah.  This function is all about making sure that the sb is marked
-properly because the mnt is writable.  If it's already marked, then
-we're good to go.
+2.6.24-rc5 boots, so does 2.6.24-rc5-mm1. 2.6.24-rc6 does not boot, nor
+does 2.6.24-rc6-mm1. Its a regression.
 
-> > +	if (cpu_writer == NULL)
-> > +		return 0;
-> > +
-> > +	/*
-> > +	 * Our goal here is to get exclusion from a superblock
-> > +	 * remount operation (fs_may_remount_ro()).  This is
-> > +	 * effectively a slow path that we must go through the
-> > +	 * first time we set the bit on each mount, but never
-> > +	 * again unless the writer counts get coalesced.
-> > +	 */
-> > +
-> > +	mutex_unlock(&cpu_writer->lock);
-> > +	lock_super(mnt->mnt_sb);
-> > +
-> > +	atomic_inc(&mnt->mnt_sb->__s_mnt_writers);
-> 
-> The atomic_inc of course should be done even if cpu_writer was passed
-> in as NULL, you just don't need to do the locking then, and can
-> return 0 in that case?
+i will add more outbs and respond back and try a bisect if that does not
+help.
 
-Yep.  I'll fix that.
-
-> > +
-> > +	unlock_super(mnt->mnt_sb);
-> > +	mutex_lock(&cpu_writer->lock);
-> > +	return -EAGAIN;
-> > +}
-> > +
-> > +static void __mark_sb_if_writable(struct vfsmount *mnt)
-> 
-> This function is taking the writable state from a mnt and marking it in
-> the sb.  So the name should be a shorter verison of something like
-> "commit_mnt_writable_state_to_sb"
-
-Here's what I have now:
-
-static void __sync_mnt_writable_to_sb(struct vfsmount *mnt)
-
-> > +{
-> > +	int bitnr = ilog2(MNT_MAY_HAVE_WRITERS);
-> > +
-> > +	if (atomic_read(&mnt->__mnt_writers))
-> > +		mark_mnt_has_writer(mnt, NULL);
-> > +	else if (test_and_clear_bit(bitnr, &mnt->mnt_flags))
-> > +		atomic_dec(&mnt->mnt_sb->__s_mnt_writers);
-> 
-> And after staring at this code for awhile it did make sense, but a
-> comment above it would help saying that
-> 
-> 	/* If mnt has writers, mark_mnt_has_writer() will make
-> 	   sure that is marked in the sb.  If mnt has no writers,
-> 	   then if mnt->mnt_flags was previously set, that means
-> 	   that mnt->mnt_sb->__s_mnt_writers reflects our having
-> 	   writers, so we decrement it
-> 	 */
-> 
-> Ok, maybe it's clearer to other people and the comment isn't needed...
-
-You couldn't figure it out at first glance, and I tend to think that
-most people will have the same experience.  I'll see if I can add a
-better comment.
-
-I'll send out an updated patch in a bit along with a simpler alternative
-patch.
-
--- Dave
-
+Thanks
+-- 
+regards,
+Dhaval
