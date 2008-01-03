@@ -1,65 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbYACKWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbYACKhM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755390AbYACKWf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 05:22:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468AbYACKWZ
+	id S1754422AbYACKhM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 05:37:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbYACKhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 05:22:25 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:35613 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752774AbYACKWY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 05:22:24 -0500
-Date: Thu, 3 Jan 2008 15:52:33 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: akpm@linux-foundation.org, lkml <linux-kernel@vger.kernel.org>,
-       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
-       davem@davemloft.net, mathieu.desnoyers@polymtl.ca,
-       hskinnemoen@atmel.com, mhiramat@redhat.com, sam@ravnborg.org,
-       randy.dunlap@oracle.com
-Subject: Re: [PATCH 2/2] Kprobes: Move kprobes examples to samples/
-Message-ID: <20080103102233.GB28934@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20080103062425.GA22781@in.ibm.com> <20080103062825.GB22781@in.ibm.com> <20080103093303.GB16803@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 3 Jan 2008 05:37:00 -0500
+Received: from mail.bmlv.gv.at ([193.171.152.37]:33128 "EHLO mail.bmlv.gv.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750993AbYACKg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 05:36:59 -0500
+X-Greylist: delayed 1261 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Jan 2008 05:36:58 EST
+From: "Ph. Marek" <philipp.marek@bmlv.gv.at>
+To: zippel@linux-m68k.org
+Subject: "mconf" and help texts
+Date: Thu, 3 Jan 2008 11:15:48 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080103093303.GB16803@elte.hu>
-User-Agent: Mutt/1.5.11
+Message-Id: <200801031115.48859.philipp.marek@bmlv.gv.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 03, 2008 at 10:33:03AM +0100, Ingo Molnar wrote:
-> 
-> * Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
-> 
-> > From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> > 
-> > Move kprobes examples from Documentation/kprobes.txt to under 
-> > samples/. Patch originally by Randy Dunlap.
-> 
-> nice!
-> 
-> > +config SAMPLE_KPROBES
-> > +	tristate "Build kprobes examples -- loadable modules only"
-> > +	depends on KPROBES && m
-> > +	help
-> > +	  This build several kprobes example modules.
-> 
-> feature request: please make this work in the !modular case as well - if 
-> built-in then it should just run sometime during bootup and run the 
-> tests and report success/failure. This way automated testing can pick up 
-> any regressions much easier.
+Hello everybody!
 
-Will try cook up something along those lines. It'll be easy to verify if
-the probes inserted and removed properly, but verifying handlers run
-correctly will need some work.
+[[ Please keep me CC'ed. Thank you. ]]
 
-We have a sort of regression test bucket that uses expect to parse the
-dmesg to verify handlers did run correctly; that isn't a totally
-in-kernel solution anyway. I have a couple of ideas in mind to make it
-easier.
 
-Ananth
+I just tried looking at NF_CONNTRACK_MARK (menuconfig, in 2.6.23.12), and 
+found it disallowed.
+
+So I took a look at "Help", and saw that blob:
+
+  Selected by: NETFILTER_XT_TARGET_CONNMARK && NET && INET && NETFILTER &&
+     NETFILTER_XTABLES && (IP_NF_MANGLE || IP6_NF_MANGLE) && NF_CONNTRACK ||
+     NETFILTER_XT_MATCH_CONNMARK && NET && INET && NETFILTER &&
+     NETFILTER_XTABLES && NF_CONNTRACK || IP_NF_TARGET_CLUSTERIP && NET &&
+     INET && NETFILTER && IP_NF_MANGLE && EXPERIMENTAL && NF_CONNTRACK_IPV4
+
+That is a _bit_ unreadable.
+
+
+Now breaking that into multiple lines would show me this:
+  NETFILTER_XT_TARGET_CONNMARK && NET && INET && NETFILTER &&
+     NETFILTER_XTABLES && (IP_NF_MANGLE || IP6_NF_MANGLE) && NF_CONNTRACK ||
+  NETFILTER_XT_MATCH_CONNMARK && NET && INET && NETFILTER &&
+     NETFILTER_XTABLES && NF_CONNTRACK || 
+  IP_NF_TARGET_CLUSTERIP && NET && INET && NETFILTER && IP_NF_MANGLE &&
+     EXPERIMENTAL && NF_CONNTRACK_IPV4
+
+Is that correct? If yes, how about putting such line-breaks in the shown text?
+
+Furthermore ... how about removing duplicate symbols from there?
+A bit of editing shows me
+
+      1 EXPERIMENTAL
+      3 INET
+      1 IP6_NF_MANGLE
+      2 IP_NF_MANGLE
+      1 IP_NF_TARGET_CLUSTERIP
+      3 NET
+      3 NETFILTER
+      2 NETFILTER_XTABLES
+      1 NETFILTER_XT_MATCH_CONNMARK
+      1 NETFILTER_XT_TARGET_CONNMARK
+      2 NF_CONNTRACK
+      1 NF_CONNTRACK_IPV4
+
+Now I wonder ... complete reductions of this might be a bit awful, but 
+repeated 
+	INET && ... ||
+	INET && ... ||
+	INET && ...
+could surely be made shorter.
+
+It would be nice (depending on your value of "nice", of course :-))
+to see 
+  NET && INET && NETFILTER &&
+    NETFILTER_XT_TARGET_CONNMARK && NETFILTER_XTABLES && 
+      (IP_NF_MANGLE || IP6_NF_MANGLE) && NF_CONNTRACK ||
+  NETFILTER_XT_MATCH_CONNMARK && NETFILTER_XTABLES && NF_CONNTRACK || 
+  IP_NF_TARGET_CLUSTERIP && IP_NF_MANGLE && EXPERIMENTAL && NF_CONNTRACK_IPV4
+
+I'm not sure whether it would be worth the additional work to get
+  NET && INET && NETFILTER &&
+    ( NETFILTER_XTABLES && NF_CONNTRACK &&
+      ( NETFILTER_XT_MATCH_CONNMARK && NETFILTER_XTABLES ) ||
+      ( NETFILTER_XT_TARGET_CONNMARK && NF_CONNTRACK &&
+        (IP_NF_MANGLE || IP6_NF_MANGLE)                     ) ||
+    IP_NF_TARGET_CLUSTERIP && IP_NF_MANGLE && EXPERIMENTAL &&
+      NF_CONNTRACK_IPV4
+
+(if I translated that correctly, manually)
+
+
+Would there be interest if I supplied some script (perl would be easiest for 
+me) that tried to simplify such strings? Calling that from C wouldn't be 
+nice, but acceptable for the occasional help text showing.
+
+There has to be some expression parser for that ... could that be used? Where 
+gets this string built?
+
+
+As a side-node - I cannot get xconfig to work (pkg-config); is there some way 
+in menuconfig to see why some config option is disallowed? The location tree 
+shows some data ("-> Networking support (NET [=y])"), but not for all 
+dependencies. [Does xconfig allow enabling them while seeing this option?]
+
+
+
+Regards,
+
+Phil
