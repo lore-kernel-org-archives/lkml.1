@@ -1,91 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756880AbYACJxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757909AbYACJzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756880AbYACJxR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 04:53:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbYACJxA
+	id S1757909AbYACJzQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 04:55:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbYACJzF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 04:53:00 -0500
-Received: from home.nigel.suspend2.net ([203.171.70.205]:33094 "EHLO
-	server1.example.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754494AbYACJxA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 04:53:00 -0500
-Message-ID: <477CB075.5080507@nigel.suspend2.net>
-Date: Thu, 03 Jan 2008 20:52:53 +1100
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Thu, 3 Jan 2008 04:55:05 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48258 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752951AbYACJzC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 04:55:02 -0500
+Date: Thu, 3 Jan 2008 10:54:52 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [1/20] x86: Make ptrace.h safe to include from
+	assembler code
+Message-ID: <20080103095452.GA21003@elte.hu>
+References: <20080103149.088038000@suse.de>
 MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, David Chinner <dgc@sgi.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, xfs-masters@oss.sgi.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: freeze vs freezer
-References: <4744FD87.7010301@goop.org> <200801022304.19279.rjw@sisk.pl> <477CA8A8.2090201@nigel.suspend2.net> <200801031047.58559.oliver@neukum.org>
-In-Reply-To: <200801031047.58559.oliver@neukum.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080103149.088038000@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
 
-Oliver Neukum wrote:
-> Am Donnerstag 03 Januar 2008 schrieb Nigel Cunningham:
->> On top of this, I made a (too simple at the moment) freeze_filesystems
->> function which iterates through &super_blocks in reverse order, freezing
->> fuse filesystems or ordinary ones. I say 'too simple' because it doesn't
->> currently allow for the possibility of someone mounting (say) ext3 on
->> fuse, but that would just be an extension of what's already done.
-> 
-> How do you deal with fuse server tasks using other fuse filesystems?
+* Andi Kleen <ak@suse.de> wrote:
 
-Since they're frozen in reverse order, the dependant one would be frozen
-first.
+> Index: linux/include/asm-x86/ptrace-abi.h
+> ===================================================================
+> --- linux.orig/include/asm-x86/ptrace-abi.h
+> +++ linux/include/asm-x86/ptrace-abi.h
+> @@ -80,6 +80,7 @@
+>  
+>  #define PTRACE_SINGLEBLOCK	33	/* resume execution until next branch */
+>  
+> +#ifndef __ASSEMBLY__
 
-> How does freeze_filesystems() look?
+hm, this patch misses a rationale - what assembly code includes 
+ptrace-abi.h directly or indirectly? Did you see any build breakage with 
+x86.git that requires this? (if yes then please send me the .config)
 
-Removing my ugly debugging statements, it's currently:
-
-/**
- * freeze_filesystems - lock all filesystems and force them into a
-consistent
- * state
- */
-void freeze_filesystems(int which)
-{
-        struct super_block *sb;
-
-        lockdep_off();
-
-        /*
-         * Freeze in reverse order so filesystems dependant upon others are
-         * frozen in the right order (eg. loopback on ext3).
-         */
-        list_for_each_entry_reverse(sb, &super_blocks, s_list) {
-                if (sb->s_type->fs_flags & FS_IS_FUSE &&
-                    sb->s_frozen == SB_UNFROZEN &&
-                    which & FS_FREEZER_FUSE) {
-                        sb->s_frozen = SB_FREEZE_TRANS;
-                        sb->s_flags |= MS_FROZEN;
-                        continue;
-                }
-
-                if (!sb->s_root || !sb->s_bdev ||
-                    (sb->s_frozen == SB_FREEZE_TRANS) ||
-                    (sb->s_flags & MS_RDONLY) ||
-                    (sb->s_flags & MS_FROZEN) ||
-                    !(which & FS_FREEZER_NORMAL))
-                        continue;
-                freeze_bdev(sb->s_bdev);
-                sb->s_flags |= MS_FROZEN;
-        }
-
-        lockdep_on();
-}
-
-Nigel
+	Ingo
