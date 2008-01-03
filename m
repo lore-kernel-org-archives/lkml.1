@@ -1,47 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbYACNQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbYACNXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753446AbYACNQa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 08:16:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751608AbYACNQX
+	id S1753308AbYACNXS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 08:23:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbYACNW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 08:16:23 -0500
-Received: from boogie.lpds.sztaki.hu ([193.224.70.237]:35088 "EHLO
-	boogie.lpds.sztaki.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751527AbYACNQX (ORCPT
+	Thu, 3 Jan 2008 08:22:58 -0500
+Received: from smtp107.plus.mail.re1.yahoo.com ([69.147.102.70]:20990 "HELO
+	smtp107.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750939AbYACNW5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 08:16:23 -0500
-Date: Thu, 3 Jan 2008 14:16:21 +0100
-From: Gabor Gombas <gombasg@sztaki.hu>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: linux-kernel@vger.kernel.org, bluez-devel@lists.sourceforge.net
-Subject: Re: [Bluez-devel] Oops involving RFCOMM and sysfs
-Message-ID: <20080103131620.GA16307@boogie.lpds.sztaki.hu>
-References: <20071228173203.GA20690@boogie.lpds.sztaki.hu> <a8e1da0712290007o168a730cw923055ad2c265d84@mail.gmail.com> <20080102151642.GA7273@boogie.lpds.sztaki.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080102151642.GA7273@boogie.lpds.sztaki.hu>
-X-Copyright: Forwarding or publishing without permission is prohibited.
+	Thu, 3 Jan 2008 08:22:57 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer;
+  b=boRD0YY1taVPHPXfWz34qvG6+owq+PA40xX+xB57iW4tyuuhAOoTnnZAK2ukd9pTau8FZovgAJAyCcBvU4m28z9+e5qdqYvgK7/5dDWtwp63B8mNU6yBqgPqSKTOHySEo8PLmX+LQGKvxqWj65os2dzyXwOHbYLG7Zzwn1UajYw=  ;
+X-YMail-OSG: QHf6CaoVM1k1pzB6vs9kByp5wAsM58GmouWjxuzg3asXPQlX
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: bzolnier@gmail.com
+Subject: [RESEND PATCH 0/10] ide-floppy redux p1
+Date: Thu,  3 Jan 2008 14:19:59 +0100
+Message-Id: <1199366409-26016-1-git-send-email-bbpetkov@yahoo.de>
+X-Mailer: git-send-email debian.1.5.3.7.1-dirty
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 02, 2008 at 04:16:42PM +0100, Gabor Gombas wrote:
 
-> So the patch referenced above does not help. But I've found a very easy
-> way to trigger the bug:
-> 
-> - do a "cat /dev/zero > /dev/rfcomm0"
-> - switch the phone off
-> - switch the phone on, and the kernel oopses
+Hi Bart,
 
-FYI I also remember having oopses with 2.6.22.<something> but I do not
-have those logs anymore. Also I now booted 2.6.20.7 and it did not oops.
+here's the unfinished redux of ide-floppy which i'm REsending now so that we could
+sinchronize trees. The original send got busted in vger's filters due to syntax
+error in the Message-ID tag.
 
-Gabor
+ Documentation/ide/ChangeLog.ide-floppy.1996-2002 |   64 ++
+ drivers/ide/ide-floppy.c                         | 1248 +++++++---------------
+ drivers/ide/ide-floppy.h                         |  351 ++++++
+ include/linux/cdrom.h                            |    1 +
+ 4 files changed, 819 insertions(+), 845 deletions(-)
 
--- 
-     ---------------------------------------------------------
-     MTA SZTAKI Computer and Automation Research Institute
-                Hungarian Academy of Sciences
-     ---------------------------------------------------------
