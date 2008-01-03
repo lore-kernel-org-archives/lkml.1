@@ -1,78 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbYACOCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752567AbYACOGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753394AbYACOCS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 09:02:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751207AbYACOCG
+	id S1752567AbYACOGR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 09:06:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbYACOGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 09:02:06 -0500
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:15434 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751006AbYACOCF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 09:02:05 -0500
-Message-ID: <477CEAAB.4030200@panasas.com>
-Date: Thu, 03 Jan 2008 16:01:15 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 3 Jan 2008 09:06:04 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47207 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751109AbYACOGC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 09:06:02 -0500
+Date: Thu, 3 Jan 2008 15:05:49 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [x86] kernel/audit.c cleanup according to checkpatch.pl
+Message-ID: <20080103140549.GA19363@elte.hu>
+References: <20080103111925.GC8046@cvg> <20080103112957.GA14693@lazybastard.org>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Christoph Hellwig <hch@infradead.org>, schwidefsky@de.ibm.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch 2/3] CONFIG_HIGHPTE vs. sub-page page tables.
-References: <20071112143009.425807965@de.ibm.com> <20071112144009.831296895@de.ibm.com> <20080102204435.GB15460@infradead.org> <200801031412.26806.ak@suse.de>
-In-Reply-To: <200801031412.26806.ak@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Jan 2008 14:01:18.0196 (UTC) FILETIME=[1CA3B340:01C84E11]
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080103112957.GA14693@lazybastard.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 03 2008 at 15:12 +0200, Andi Kleen <ak@suse.de> wrote:
->> Can we please just nuke CONFIG_HIGHPTE?  There's only been a small
->> amount of 32bit machines 
+
+* Jörn Engel <joern@logfs.org> wrote:
+
+> > -		       "audit: audit_lost=%d audit_rate_limit=%d audit_backlog_limit=%d\n",
+> > +		       "audit: audit_lost=%d audit_rate_limit=%d "
+> > +		       "audit_backlog_limit=%d\n",
+> >  		       atomic_read(&audit_lost),
+> >  		       audit_rate_limit,
+> >  		       audit_backlog_limit);
 > 
-> It's unfortunately a larger amount :/ And for unknown reasons a lot of
-> people still install 32bit kernels on new perfectly capable 64bit systems
-> even if they have a lot of memory.
-> 
-Yes I've seen that too many times. When I comment about it, people say:
-"What this 'core 2' supports AMD64 ??!!"
+> This hunk is a bit questionable.  It can easily deceive a reader to 
+> assume two seperate lines printed out and sometimes defeats grepping 
+> for printk output to find the code generating the message.
 
-I think this is the distros fault.
-1. Most call it AMD64 and not, i don't know what it should be called.
+not to make a big issue out of this, but when was the last time you 
+tried to grep this way:
 
-2. They put the first and default installation as i386 and not the x64,
-   the later is only farther down or on a different link.
+  grep -E "audit_rate_limit=[0-9]+ audit_backlog" */*.c
 
-3. My Fedora x86_64 installation has a full blown 32bit installation inside.
-   In fact, every time I yum install this or that, I get installed by default
-   both the 64bit and 32bit libraries. I don't even know how to turn the 32bit
-   off. This means that Distros can supply one x86 installation for both
-   flavors and decide at setup time what to install. By this, follow the Kernel
-   in observing that it is the same-ARCH same-INSTALL.
+?
 
-4. Some binary modules like Flash, media-codecs acrobat-reader etc... think
-   (That snow ball effect here) that 32bit is much more common and only provide
-   that. So people think that for best compatibility they should stick with 
-   32bit. But this is not true. They all work perfectly here in 64bit land.
-   Distros should both confirm on that publicly. And also make extensive tests 
-   for 32bit compatibility on 64bit machines, even for these binary only bad
-   guys.
+That's pretty much the only grep pattern that would break. People 
+usually grep on the constant portion of the string, so breaking up a 
+line along a variable boundary is perfectly okay.
 
-5. Distros should jump on the 64bit bang-wagon, to stand it-self apart from
-   Window 32bit-ness. It has bin proven more than once that a Huge Linux 64bit 
-   machine, with lots of CPUs and memory, can be the best Windows 32bit performer 
-   in existence. Both under KVM/VMWARE or Wine. 64bit Vista can never get close,
-   not to speak of the "none-existent" 64bit XP.
-
-Just my $0.02
-Boaz
-
-> I don't think removing CONFIG_HIGHPTE will be an option any time soon.
-> 
-> -Andi
-> --
-
+	Ingo
