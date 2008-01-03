@@ -1,82 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbYACR13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbYACR1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756590AbYACR13 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 12:27:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbYACR1A
+	id S1754027AbYACR1n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 12:27:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbYACR1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 3 Jan 2008 12:27:00 -0500
-Received: from ns.suse.de ([195.135.220.2]:59038 "EHLO mx1.suse.de"
+Received: from mx2.suse.de ([195.135.220.15]:54711 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752272AbYACR06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 12:26:58 -0500
+	id S1752567AbYACR07 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 12:26:59 -0500
 From: Andi Kleen <ak@suse.de>
 References: <20080103626.635376000@suse.de>
 In-Reply-To: <20080103626.635376000@suse.de>
-To: ebiederm@xmission.com, vgoyal@redhat.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] [1/8] GBPAGES: Handle kernel near memory hole in clear_kernel_mapping
-Message-Id: <20080103172657.B5CFA14DDD@wotan.suse.de>
-Date: Thu,  3 Jan 2008 18:26:57 +0100 (CET)
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] [2/8] GBPAGES: Add feature macros for the gbpages cpuid bit
+Message-Id: <20080103172658.C5BA614DDD@wotan.suse.de>
+Date: Thu,  3 Jan 2008 18:26:58 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This was a long standing obscure problem in the relocatable kernel. The
-AMD GART driver needs to unmap part of the GART in the kernel direct mapping to 
-prevent cache corruption. With the relocatable kernel it is in theory possible 
-that the separate kernel text mapping straddles that area too. 
-
-Normally it should not happen because GART tends to be >= 2GB, and the kernel 
-is normally not loaded that high, but it is possible in theory. 
-
-Teach clear_kernel_mapping() about this case.
-
-This will become more important once the kernel mapping uses 1GB pages.
-
-Cc: ebiederm@xmission.com
-Cc: vgoyal@redhat.com
-
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86/mm/init_64.c |   20 +++++++++++++++++++-
- 1 file changed, 19 insertions(+), 1 deletion(-)
+ include/asm-x86/cpufeature.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Index: linux/arch/x86/mm/init_64.c
+Index: linux/include/asm-x86/cpufeature.h
 ===================================================================
---- linux.orig/arch/x86/mm/init_64.c
-+++ linux/arch/x86/mm/init_64.c
-@@ -411,7 +411,8 @@ void __init paging_init(void)
-    from the CPU leading to inconsistent cache lines. address and size
-    must be aligned to 2MB boundaries. 
-    Does nothing when the mapping doesn't exist. */
--void __init clear_kernel_mapping(unsigned long address, unsigned long size) 
-+static void __init
-+__clear_kernel_mapping(unsigned long address, unsigned long size)
- {
- 	unsigned long end = address + size;
+--- linux.orig/include/asm-x86/cpufeature.h
++++ linux/include/asm-x86/cpufeature.h
+@@ -49,6 +49,7 @@
+ #define X86_FEATURE_MP		(1*32+19) /* MP Capable. */
+ #define X86_FEATURE_NX		(1*32+20) /* Execute Disable */
+ #define X86_FEATURE_MMXEXT	(1*32+22) /* AMD MMX extensions */
++#define X86_FEATURE_GBPAGES	(1*32+26) /* GB pages */
+ #define X86_FEATURE_RDTSCP	(1*32+27) /* RDTSCP */
+ #define X86_FEATURE_LM		(1*32+29) /* Long Mode (x86-64) */
+ #define X86_FEATURE_3DNOWEXT	(1*32+30) /* AMD 3DNow! extensions */
+@@ -168,6 +169,7 @@
+ #define cpu_has_clflush		boot_cpu_has(X86_FEATURE_CLFLSH)
+ #define cpu_has_bts		boot_cpu_has(X86_FEATURE_BTS)
+ #define cpu_has_ss 		boot_cpu_has(X86_FEATURE_SELFSNOOP)
++#define cpu_has_gbpages 	boot_cpu_has(X86_FEATURE_GBPAGES)
  
-@@ -441,6 +442,23 @@ void __init clear_kernel_mapping(unsigne
- 	__flush_tlb_all();
- } 
- 
-+#define overlaps(as,ae,bs,be) ((ae) >= (bs) && (as) <= (be))
-+
-+void __init clear_kernel_mapping(unsigned long address, unsigned long size)
-+{
-+	int sh = PMD_SHIFT;
-+	unsigned long kernel = __pa(__START_KERNEL_map);
-+
-+	if (overlaps(kernel>>sh, (kernel + KERNEL_TEXT_SIZE)>>sh,
-+			__pa(address)>>sh, __pa(address + size)>>sh)) {
-+		printk(KERN_INFO
-+			"Kernel at %lx overlaps memory hole at %lx-%lx\n",
-+				kernel, __pa(address), __pa(address+size));
-+		__clear_kernel_mapping(__START_KERNEL_map+__pa(address), size);
-+	}
-+	__clear_kernel_mapping(address, size);
-+}
-+
- /*
-  * Memory hotplug specific functions
-  */
+ #if defined(CONFIG_X86_INVLPG) || defined(CONFIG_X86_64)
+ # define cpu_has_invlpg		1
