@@ -1,69 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756746AbYACWGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756876AbYACWHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756746AbYACWGm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 17:06:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754491AbYACWGd
+	id S1756876AbYACWHh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 17:07:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYACWHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 17:06:33 -0500
-Received: from home.nigel.suspend2.net ([203.171.70.205]:34672 "EHLO
-	server1.example.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753990AbYACWGb (ORCPT
+	Thu, 3 Jan 2008 17:07:30 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:34884 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752691AbYACWH3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 17:06:31 -0500
-Message-ID: <477D5C4F.8050800@nigel.suspend2.net>
-Date: Fri, 04 Jan 2008 09:06:07 +1100
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, David Chinner <dgc@sgi.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, xfs-masters@oss.sgi.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: freeze vs freezer
-References: <4744FD87.7010301@goop.org> <200801031047.58559.oliver@neukum.org> <477CB075.5080507@nigel.suspend2.net> <200801031215.07145.oliver@neukum.org>
-In-Reply-To: <200801031215.07145.oliver@neukum.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 3 Jan 2008 17:07:29 -0500
+Date: Thu, 3 Jan 2008 16:05:30 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: sam@ravnborg.org
+Cc: paulus@samba.org, linux-kernel@vger.kernel.org, wd@denx.de
+Subject: [PATCH 3/3] Remove mkuboot.sh script
+Message-ID: <20080103160530.5eb87f0c@zod.rchland.ibm.com>
+In-Reply-To: <20080103160104.171f9aaa@zod.rchland.ibm.com>
+References: <20080103160104.171f9aaa@zod.rchland.ibm.com>
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Now that the mkubootimg tool is merged into the kernel, we can remove the unused
+mkuboot.sh script.
 
-Oliver Neukum wrote:
-> Am Donnerstag, 3. Januar 2008 10:52:53 schrieb Nigel Cunningham:
->> Hi.
->>
->> Oliver Neukum wrote:
->>> Am Donnerstag 03 Januar 2008 schrieb Nigel Cunningham:
->>>> On top of this, I made a (too simple at the moment) freeze_filesystems
->>>> function which iterates through &super_blocks in reverse order, freezing
->>>> fuse filesystems or ordinary ones. I say 'too simple' because it doesn't
->>>> currently allow for the possibility of someone mounting (say) ext3 on
->>>> fuse, but that would just be an extension of what's already done.
->>> How do you deal with fuse server tasks using other fuse filesystems?
->> Since they're frozen in reverse order, the dependant one would be frozen
->> first.
-> 
-> Say I do:
-> 
-> a) mount fuse on /tmp/first
-> b) mount fuse on /tmp/second
-> 
-> Then the server task for (a) does "ls /tmp/second". So it will be frozen,
-> right? How do you then freeze (a)? And keep in mind that the server task
-> may have forked.
+Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-I guess I should first ask, is this a real life problem or a
-hypothetical twisted web? I don't see why you would want to make two
-filesystems interdependent - it sounds like the way to create livelock
-and deadlocks in normal use, before we even begin to think about
-hibernating.
+---
+ scripts/mkuboot.sh |   19 -------------------
+ 1 file changed, 19 deletions(-)
 
-Regards,
-
-Nigel
+--- linux-2.6.orig/scripts/mkuboot.sh
++++ /dev/null
+@@ -1,19 +0,0 @@
+-#!/bin/bash
+-
+-#
+-# Build U-Boot image when `mkimage' tool is available.
+-#
+-
+-MKIMAGE=$(type -path "${CROSS_COMPILE}mkimage")
+-
+-if [ -z "${MKIMAGE}" ]; then
+-	MKIMAGE=$(type -path mkimage)
+-	if [ -z "${MKIMAGE}" ]; then
+-		# Doesn't exist
+-		echo '"mkimage" command not found - U-Boot images will not be built' >&2
+-		exit 0;
+-	fi
+-fi
+-
+-# Call "mkimage" to create U-Boot image
+-${MKIMAGE} "$@"
