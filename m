@@ -1,90 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753657AbYACS3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755757AbYACSaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753657AbYACS3q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 13:29:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbYACS3i
+	id S1755757AbYACSaT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 13:30:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbYACSaE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 13:29:38 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50009 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752024AbYACS3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 13:29:37 -0500
-Date: Thu, 3 Jan 2008 13:29:31 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Andi Kleen <ak@suse.de>
-Cc: ebiederm@xmission.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [1/8] GBPAGES: Handle kernel near memory hole in
-	clear_kernel_mapping
-Message-ID: <20080103182928.GC3028@redhat.com>
-References: <20080103626.635376000@suse.de> <20080103172657.B5CFA14DDD@wotan.suse.de>
+	Thu, 3 Jan 2008 13:30:04 -0500
+Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:27169 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752555AbYACSaB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 13:30:01 -0500
+X-IronPort-AV: E=Sophos;i="4.24,240,1196668800"; 
+   d="scan'208";a="5659496"
+To: torvalds@linux-foundation.org
+Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] please pull infiniband.git for-linus
+X-Message-Flag: Warning: May contain useful information
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 03 Jan 2008 10:29:51 -0800
+Message-ID: <adak5mqu5i8.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080103172657.B5CFA14DDD@wotan.suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-OriginalArrivalTime: 03 Jan 2008 18:29:51.0956 (UTC) FILETIME=[A1305940:01C84E36]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 03, 2008 at 06:26:57PM +0100, Andi Kleen wrote:
-> 
-> This was a long standing obscure problem in the relocatable kernel. The
-> AMD GART driver needs to unmap part of the GART in the kernel direct mapping to 
-> prevent cache corruption. With the relocatable kernel it is in theory possible 
-> that the separate kernel text mapping straddles that area too. 
-> 
-> Normally it should not happen because GART tends to be >= 2GB, and the kernel 
-> is normally not loaded that high, but it is possible in theory. 
-> 
-> Teach clear_kernel_mapping() about this case.
-> 
-> This will become more important once the kernel mapping uses 1GB pages.
-> 
-> Cc: ebiederm@xmission.com
-> Cc: vgoyal@redhat.com
-> 
-> Signed-off-by: Andi Kleen <ak@suse.de>
-> 
-> ---
->  arch/x86/mm/init_64.c |   20 +++++++++++++++++++-
->  1 file changed, 19 insertions(+), 1 deletion(-)
-> 
-> Index: linux/arch/x86/mm/init_64.c
-> ===================================================================
-> --- linux.orig/arch/x86/mm/init_64.c
-> +++ linux/arch/x86/mm/init_64.c
-> @@ -411,7 +411,8 @@ void __init paging_init(void)
->     from the CPU leading to inconsistent cache lines. address and size
->     must be aligned to 2MB boundaries. 
->     Does nothing when the mapping doesn't exist. */
-> -void __init clear_kernel_mapping(unsigned long address, unsigned long size) 
-> +static void __init
-> +__clear_kernel_mapping(unsigned long address, unsigned long size)
->  {
->  	unsigned long end = address + size;
->  
-> @@ -441,6 +442,23 @@ void __init clear_kernel_mapping(unsigne
->  	__flush_tlb_all();
->  } 
->  
-> +#define overlaps(as,ae,bs,be) ((ae) >= (bs) && (as) <= (be))
-> +
-> +void __init clear_kernel_mapping(unsigned long address, unsigned long size)
-> +{
-> +	int sh = PMD_SHIFT;
-> +	unsigned long kernel = __pa(__START_KERNEL_map);
-> +
-> +	if (overlaps(kernel>>sh, (kernel + KERNEL_TEXT_SIZE)>>sh,
-> +			__pa(address)>>sh, __pa(address + size)>>sh)) {
-> +		printk(KERN_INFO
-> +			"Kernel at %lx overlaps memory hole at %lx-%lx\n",
-> +				kernel, __pa(address), __pa(address+size));
-> +		__clear_kernel_mapping(__START_KERNEL_map+__pa(address), size);
+Linus, please pull from
 
-Hi Andi,
+    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-Got a question. How will kernel continue to run if we unmap the kernel
-text/data region mappings?
+This tree is also available from kernel.org mirrors at:
 
-Thanks
-Vivek
+    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+
+This will pull one fix for an oops caused by reloading the ib_srp module:
+
+David Dillow (1):
+      IB/srp: Fix list corruption/oops on module reload
+
+ drivers/infiniband/ulp/srp/ib_srp.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+
+diff --git a/drivers/infiniband/ulp/srp/ib_srp.c b/drivers/infiniband/ulp/srp/ib_srp.c
+index 950228f..77e8b90 100644
+--- a/drivers/infiniband/ulp/srp/ib_srp.c
++++ b/drivers/infiniband/ulp/srp/ib_srp.c
+@@ -2054,6 +2054,7 @@ static void srp_remove_one(struct ib_device *device)
+ 		list_for_each_entry_safe(target, tmp_target,
+ 					 &host->target_list, list) {
+ 			scsi_remove_host(target->scsi_host);
++			srp_remove_host(target->scsi_host);
+ 			srp_disconnect_target(target);
+ 			ib_destroy_cm_id(target->cm_id);
+ 			srp_free_target_ib(target);
