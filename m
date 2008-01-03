@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757076AbYACTPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbYACTSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757076AbYACTPc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 14:15:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbYACTPV
+	id S1756702AbYACTSt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 14:18:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbYACTSk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 14:15:21 -0500
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:50511 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751408AbYACTPT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 14:15:19 -0500
-Date: Thu, 3 Jan 2008 14:15:13 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Chris Wright <chrisw@redhat.com>
-cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+	Thu, 3 Jan 2008 14:18:40 -0500
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:53510 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751959AbYACTSj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 14:18:39 -0500
+Date: Thu, 3 Jan 2008 11:17:36 -0800
+From: Chris Wright <chrisw@sous-sol.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Chris Wright <chrisw@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -27,35 +26,37 @@ cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
        Chris Wright <chrisw@sous-sol.org>,
        Rusty Russell <rusty@rustcorp.com.au>,
        virtualization@lists.linux-foundation.org
-Subject: Re: [RFC PATCH 01/11] Add basic support for gcc profiler instrumentation
-In-Reply-To: <20080103181651.GC3627@sequoia.sous-sol.org>
-Message-ID: <Pine.LNX.4.58.0801031413410.5746@gandalf.stny.rr.com>
-References: <20080103071609.478486470@goodmis.org> <20080103072226.776141236@goodmis.org>
- <20080103092104.GE10813@elte.hu> <Pine.LNX.4.58.0801030849180.1468@gandalf.stny.rr.com>
- <20080103181651.GC3627@sequoia.sous-sol.org>
+Subject: Re: [RFC PATCH 01/11] Add basic support for gcc profiler
+	instrumentation
+Message-ID: <20080103191736.GD3627@sequoia.sous-sol.org>
+References: <20080103071609.478486470@goodmis.org> <20080103072226.776141236@goodmis.org> <20080103092104.GE10813@elte.hu> <Pine.LNX.4.58.0801030849180.1468@gandalf.stny.rr.com> <20080103181651.GC3627@sequoia.sous-sol.org> <Pine.LNX.4.58.0801031413410.5746@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0801031413410.5746@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> On Thu, 3 Jan 2008, Chris Wright wrote:
+> > Yes, paravirt ops have a well-specified calling convention (register
+> > based).  There was a cleanup that Andi did that caused the problem
+> > because it removed all the "fastcall" annotations since -mregparm=3
+> > is now always on for i386.  Since MCOUNT disables REGPARM the calling
+> > convention changes (caller pushes to stack, callee expects register)
+> > chaos ensues.  I sent a patch to fix that quite some months back, but
+> > it went stale and I neglected to update it.  Would you like me to dig
+> > it up refresh and resend?
+> 
+> Chris, thanks for the refresher.
+> 
+> I'm going to see if we can remove the REGPARM hack and change the way
+> mcount does its calls. Maybe this will fix things for us.
 
-On Thu, 3 Jan 2008, Chris Wright wrote:
+I don't recall why mcount disables regparm, but I think you're on the
+right path to remove that dependency.
 
->
-> Yes, paravirt ops have a well-specified calling convention (register
-> based).  There was a cleanup that Andi did that caused the problem
-> because it removed all the "fastcall" annotations since -mregparm=3
-> is now always on for i386.  Since MCOUNT disables REGPARM the calling
-> convention changes (caller pushes to stack, callee expects register)
-> chaos ensues.  I sent a patch to fix that quite some months back, but
-> it went stale and I neglected to update it.  Would you like me to dig
-> it up refresh and resend?
-
-Chris, thanks for the refresher.
-
-I'm going to see if we can remove the REGPARM hack and change the way
-mcount does its calls. Maybe this will fix things for us.
-
--- Steve
-
+thanks,
+-chris
