@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758276AbYACRs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbYACRvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758276AbYACRs6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 12:48:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbYACRsu
+	id S1756081AbYACRvr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 12:51:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbYACRvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 12:48:50 -0500
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:53095 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751527AbYACRss (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 12:48:48 -0500
-Date: Thu, 3 Jan 2008 12:47:07 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       "William L. Irwin" <sparclinux@vger.kernel.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 02/11] Add fastcall to do_IRQ for i386
-In-Reply-To: <20080103173639.GB30582@Krystal>
-Message-ID: <Pine.LNX.4.58.0801031246220.4826@gandalf.stny.rr.com>
-References: <20080103071609.478486470@goodmis.org> <20080103072226.934978594@goodmis.org>
- <20080103173639.GB30582@Krystal>
+	Thu, 3 Jan 2008 12:51:40 -0500
+Received: from ns2.suse.de ([195.135.220.15]:56954 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752781AbYACRvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 12:51:39 -0500
+To: Bernd Prager <bernd@prager.ws>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: kernel config for AMD Athlon 64 X2 4200+ Manchester
+From: Andi Kleen <andi@firstfloor.org>
+References: <bb078b9bc5a6138dc7ac78609713efdd@prager.ws>
+Date: Thu, 03 Jan 2008 18:51:37 +0100
+In-Reply-To: <bb078b9bc5a6138dc7ac78609713efdd@prager.ws> (Bernd Prager's message of "Thu\, 3 Jan 2008 09\:05\:28 -0700")
+Message-ID: <p738x36hk5y.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Bernd Prager <bernd@prager.ws> writes:
+> $  cat /proc/cpuinfo 
+> processor       : 0
+> vendor_id       : AuthenticAMD
+> cpu family      : 15
+> model           : 43
+> model name      : AMD Hammer Family processor - Model Unknown
 
+This means your BIOS does not know your specific CPU. This could to all kinds
+of subtle problems. Try to find a BIOS upgrade.
 
-On Thu, 3 Jan 2008, Mathieu Desnoyers wrote:
->
-> I would propose to try to see how we can #ifdef two different __mcount
-> assembly functions that would prepare the stack appropriately for each
-> REGPARM cases.
->
+> Any ideas how I can configure the kernel to fix that?
 
-I have to confess that I've been testing this mostly on x86_64, which
-doesn't have the troubles with REGPARM as i386 does. I'll need to
-investigate this a bit deeper on i386 alone.
+The usual mistake is to not enable CONFIG_ACPI, although if the BIOS 
+is really old and doesn't detect the dualcoreness of your CPU then that
+might also not help.
 
--- Steve
-
+-Andi
