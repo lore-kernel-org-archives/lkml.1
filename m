@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbYACH5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbYACH6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755045AbYACH5U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 02:57:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbYACH5M
+	id S1755958AbYACH6S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 02:58:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbYACH6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 02:57:12 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:60183 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750770AbYACH5L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 02:57:11 -0500
-X-IronPort-AV: E=Sophos;i="4.24,238,1196658000"; 
-   d="scan'208";a="46111425"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: [linux-usb-devel] [PATCH] : Allow embedded developers USB options normally reserved for OTG
-Date: Thu, 3 Jan 2008 02:58:09 -0500
-User-Agent: KMail/1.9.5
-Cc: linux-usb-devel@lists.sourceforge.net, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-References: <200801020948.51310.rgetz@blackfin.uclinux.org> <200801022203.04991.rgetz@blackfin.uclinux.org> <200801021943.38716.david-b@pacbell.net>
-In-Reply-To: <200801021943.38716.david-b@pacbell.net>
+	Thu, 3 Jan 2008 02:58:09 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59878 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753213AbYACH6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 02:58:08 -0500
+Date: Thu, 3 Jan 2008 08:57:58 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com
+Subject: Re: git-x86 broken on 32bit
+Message-ID: <20080103075758.GA2351@elte.hu>
+References: <200801030111.40061.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801030258.09185.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 03 Jan 2008 07:57:10.0124 (UTC) FILETIME=[3E2C7AC0:01C84DDE]
+In-Reply-To: <200801030111.40061.ak@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2 Jan 2008 22:43, David Brownell pondered:
-> This patch might be improved slightly -- in ways that, as I
-> understand things, could save some RAM on Blackfin! -- by
-> having the BLACKLIST_HUB option get rid of the transaction
-> translator support (changing C code not just Kconfig).
-> It's pretty minimal, but won't be used...
->
-> Also, as you point out, it's no longer OTG specific, so
-> renaming the option would improve clarity.   Maybe to
-> something along the lines of USB_HOST_NO_EXTERNAL_HUBS.
-> No big deal, at least now.
 
-Are these two things something that you want me to have a stab at, or since 
-you are more familiar with it - you want to do it.
+* Andi Kleen <ak@suse.de> wrote:
 
-Thanks
--Robin
+> Current git-x86 seems to be totally broken on i386 
+> 
+> commit a6f08929f0566f9d309ef5f6651371d8e20fc833
+> Author: Russell Leidich <rml@google.com>
+> Date:   Wed Jan 2 22:46:22 2008 +0100
+
+that patch was not included in x86.git anymore at the time you wrote 
+your email. You probably picked up an interim version of the queue that 
+had the breakage - i noticed it and pulled it a few minutes later.
+
+	Ingo
