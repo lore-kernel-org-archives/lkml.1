@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbYACKnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756967AbYACKnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755988AbYACKnS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 05:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbYACKnH
+	id S1756967AbYACKnt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 05:43:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbYACKnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 05:43:07 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34275 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751540AbYACKnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 05:43:05 -0500
-Date: Thu, 3 Jan 2008 11:42:53 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] [10/20] i386: Move MWAIT idle check to generic CPU
-	initialization
-Message-ID: <20080103104253.GB29194@elte.hu>
-References: <20080103149.088038000@suse.de> <20080103005005.B13C714D40@wotan.suse.de>
+	Thu, 3 Jan 2008 05:43:41 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:58394 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751435AbYACKnk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 05:43:40 -0500
+Date: Thu, 3 Jan 2008 11:43:46 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Carlos Corbacho <carlos@strangeworlds.co.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       Alexey Starikovskiy <aystarik@gmail.com>,
+       "Moore, Robert" <robert.moore@intel.com>
+Subject: Re: [RFC][PATCH 3/7] ACPI: Separate disabling of GPEs from _PTS
+Message-ID: <20080103104345.GB1732@elf.ucw.cz>
+References: <200712271903.53961.rjw@sisk.pl> <200712271916.28675.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080103005005.B13C714D40@wotan.suse.de>
+In-Reply-To: <200712271916.28675.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-* Andi Kleen <ak@suse.de> wrote:
-
-> Previously it was only run for Intel CPUs, but AMD Fam10h implements 
-> MWAIT too.
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> This matches 64bit behaviour.
+> The preparation to enter an ACPI system sleep state is now tied to
+> the disabling of GPEs, but the GPEs should not be disabled before
+> suspending devices.  Since on ACPI 1.0x systems the _PTS global
+> control method should be executed before suspending devices, we
+> need to disable GPEs separately.
 > 
-> Signed-off-by: Andi Kleen <ak@suse.de>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-thanks, applied.
+Looks ok to me... as does rest of the series.
 
-	Ingo
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
