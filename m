@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758318AbYACHX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758826AbYACHYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758318AbYACHX4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 02:23:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756973AbYACHXp
+	id S1758826AbYACHYa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 02:24:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbYACHYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 02:23:45 -0500
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:57239 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752893AbYACHXo (ORCPT
+	Thu, 3 Jan 2008 02:24:14 -0500
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:60155 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752330AbYACHYL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 02:23:44 -0500
-Message-Id: <20080103071609.478486470@goodmis.org>
+	Thu, 3 Jan 2008 02:24:11 -0500
+Message-Id: <20080103072227.737052372@goodmis.org>
+References: <20080103071609.478486470@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 03 Jan 2008 02:16:09 -0500
+Date: Thu, 03 Jan 2008 02:16:16 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -23,179 +24,239 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Gregory Haskins <ghaskins@novell.com>,
        Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       "William L. Irwin" <sparclinux@vger.kernel.org>
-Subject: [RFC PATCH 00/11] mcount tracing utility
+       "William L. Irwin" <sparclinux@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [RFC PATCH 07/11] mcount based trace in the form of a header file library
+Content-Disposition: inline; filename=mcount-simple-tracer.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The design is for mcount based tracers to be added thru the
+lib/mcount/tracer_interface.h file, just like mcount users should add
+themselves to lib/mcount/mcount.h. A Kconfig rule chooses the right MCOUNT and
+MCOUNT_TRACER user.
 
-The following patch series brings to vanilla Linux a bit of the RT kernel
-trace facility. This incorporates the "-pg" profiling option of gcc
-that will call the "mcount" function for all functions called in
-the kernel.
+This is to avoid function call costs for something that is supposed to be used
+only in a debug kernel and that has to reduce to the bare minimum the per
+function call overhead of mcount based tracing.
 
-This patch series implements the code for x86 (32 and 64 bit), but
-other archs can easily be implemented as well.
+Signed-off-by: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ lib/mcount/Kconfig            |   11 +++
+ lib/mcount/Makefile           |    2 
+ lib/mcount/tracer.c           |  125 ++++++++++++++++++++++++++++++++++++++++++
+ lib/mcount/tracer.h           |   21 +++++++
+ lib/mcount/tracer_interface.h |   14 ++++
+ 5 files changed, 173 insertions(+)
+ create mode 100644 lib/mcount/tracer.c
+ create mode 100644 lib/mcount/tracer.h
+ create mode 100644 lib/mcount/tracer_interface.h
 
-Some Background:
-----------------
+Index: linux-compile.git/lib/mcount/Kconfig
+===================================================================
+--- linux-compile.git.orig/lib/mcount/Kconfig	2008-01-02 23:24:53.000000000 -0500
++++ linux-compile.git/lib/mcount/Kconfig	2008-01-02 23:28:06.000000000 -0500
+@@ -4,3 +4,14 @@
+ config MCOUNT
+ 	bool
+ 	depends on DEBUG_KERNEL
++
++config MCOUNT_TRACER
++	bool "Profiler instrumentation based tracer"
++	depends on DEBUG_KERNEL
++	default n
++	select MCOUNT
++	help
++	  Use profiler instrumentation, adding -pg to CFLAGS. This will
++	  insert a call to an architecture specific __mcount routine,
++	  that the debugging mechanism using this facility will hook by
++	  providing a set of inline routines.
+Index: linux-compile.git/lib/mcount/tracer.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-compile.git/lib/mcount/tracer.c	2008-01-02 23:28:06.000000000 -0500
+@@ -0,0 +1,125 @@
++/*
++ * ring buffer based mcount tracer
++ *
++ * Copyright (C) 2007 Arnaldo Carvalho de Melo <acme@redhat.com>
++ * 		      Steven Rostedt <srostedt@redhat.com>
++ *
++ * From code in the latency_tracer, that is:
++ *
++ *  Copyright (C) 2004-2006 Ingo Molnar
++ *  Copyright (C) 2004 William Lee Irwin III
++ */
++
++#include <linux/fs.h>
++#include <linux/gfp.h>
++#include <linux/init.h>
++#include <linux/linkage.h>
++#include <linux/seq_file.h>
++#include <linux/mcount.h>
++
++#include "tracer.h"
++#include "tracer_interface.h"
++
++static struct mctracer_trace mctracer_trace;
++
++static inline notrace void
++mctracer_add_trace_entry(struct mctracer_trace *tr,
++			 int cpu,
++			 const unsigned long ip,
++			 const unsigned long parent_ip)
++{
++	unsigned long idx, idx_next;
++	struct mctracer_entry *entry;
++
++	idx = tr->trace_idx[cpu];
++	idx_next = idx + 1;
++
++	if (unlikely(idx_next >= tr->entries)) {
++		atomic_inc(&tr->underrun[cpu]);
++		idx_next = 0;
++	}
++
++	tr->trace_idx[cpu] = idx_next;
++
++	if (unlikely(idx_next != 0 && atomic_read(&tr->underrun[cpu])))
++		atomic_inc(&tr->underrun[cpu]);
++
++	entry = tr->trace[cpu] + idx * MCTRACER_ENTRY_SIZE;
++	entry->idx	 = atomic_inc_return(&tr->cnt);
++	entry->ip	 = ip;
++	entry->parent_ip = parent_ip;
++}
++
++static inline notrace void trace_function(const unsigned long ip,
++					  const unsigned long parent_ip)
++{
++	unsigned long flags;
++	struct mctracer_trace *tr;
++	int cpu;
++
++	raw_local_irq_save(flags);
++	cpu = raw_smp_processor_id();
++
++	tr = &mctracer_trace;
++
++	atomic_inc(&tr->disabled[cpu]);
++	if (likely(atomic_read(&tr->disabled[cpu]) == 1))
++		mctracer_add_trace_entry(tr, cpu, ip, parent_ip);
++
++	atomic_dec(&tr->disabled[cpu]);
++
++	raw_local_irq_restore(flags);
++}
++
++
++static inline notrace int page_order(const unsigned long size)
++{
++	const unsigned long nr_pages = DIV_ROUND_UP(size, PAGE_SIZE);
++	return ilog2(roundup_pow_of_two(nr_pages));
++}
++
++static inline notrace int mctracer_alloc_buffers(void)
++{
++	const int order = page_order(MCTRACER_NR_ENTRIES * MCTRACER_ENTRY_SIZE);
++	const unsigned long size = (1UL << order) << PAGE_SHIFT;
++	struct mctracer_entry *array;
++	int i;
++
++	for_each_possible_cpu(i) {
++		array = (struct mctracer_entry *)
++			  __get_free_pages(GFP_KERNEL, order);
++		if (array == NULL) {
++			printk(KERN_ERR "mctracer: failed to allocate"
++			       " %ld bytes for trace buffer!\n", size);
++			goto free_buffers;
++		}
++		mctracer_trace.trace[i] = array;
++	}
++
++	/*
++	 * Since we allocate by orders of pages, we may be able to
++	 * round up a bit.
++	 */
++	mctracer_trace.entries = size / MCTRACER_ENTRY_SIZE;
++
++
++	pr_info("mctracer: %ld bytes allocated for %ld entries of %ld bytes\n",
++		size, MCTRACER_NR_ENTRIES, MCTRACER_ENTRY_SIZE);
++	pr_info("   actual entries %ld\n", mctracer_trace.entries);
++
++	register_mcount_function(trace_function);
++
++	return 0;
++
++ free_buffers:
++	for (i-- ; i >= 0; i--) {
++		if (mctracer_trace.trace[i]) {
++			free_pages((unsigned long)mctracer_trace.trace[i],
++				   order);
++			mctracer_trace.trace[i] = NULL;
++		}
++	}
++	return -ENOMEM;
++}
++
++device_initcall(mctracer_alloc_buffers);
+Index: linux-compile.git/lib/mcount/tracer.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-compile.git/lib/mcount/tracer.h	2008-01-02 23:28:06.000000000 -0500
+@@ -0,0 +1,21 @@
++#ifndef _LINUX_MCOUNT_TRACER_H
++#define _LINUX_MCOUNT_TRACER_H
++
++#include <asm/atomic.h>
++
++struct mctracer_entry {
++	unsigned long idx;
++	unsigned long ip;
++	unsigned long parent_ip;
++};
++
++struct mctracer_trace {
++	void	      *trace[NR_CPUS];
++	unsigned long trace_idx[NR_CPUS];
++	unsigned long entries;
++	atomic_t      cnt;
++	atomic_t      disabled[NR_CPUS];
++	atomic_t      underrun[NR_CPUS];
++};
++
++#endif /* _LINUX_MCOUNT_TRACER_H */
+Index: linux-compile.git/lib/mcount/tracer_interface.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-compile.git/lib/mcount/tracer_interface.h	2008-01-02 23:28:06.000000000 -0500
+@@ -0,0 +1,14 @@
++#ifndef _LINUX_MCTRACER_INTERFACE_H
++#define _LINUX_MCTRACER_INTERFACE_H
++
++#include "tracer.h"
++
++/*
++ * Will be at least sizeof(struct mctracer_entry), but callers can request more
++ * space for private stuff, such as a timestamp, preempt_count, etc.
++ */
++#define MCTRACER_ENTRY_SIZE sizeof(struct mctracer_entry)
++
++#define MCTRACER_NR_ENTRIES (65536UL)
++
++#endif /* _LINUX_MCTRACER_INTERFACE_H */
+Index: linux-compile.git/lib/mcount/Makefile
+===================================================================
+--- linux-compile.git.orig/lib/mcount/Makefile	2008-01-02 23:24:53.000000000 -0500
++++ linux-compile.git/lib/mcount/Makefile	2008-01-02 23:28:06.000000000 -0500
+@@ -1,3 +1,5 @@
+ obj-$(CONFIG_MCOUNT) += libmcount.o
+ 
++obj-$(CONFIG_MCOUNT_TRACER) += tracer.o
++
+ libmcount-objs := mcount.o
 
-A while back, Ingo Molnar and William Lee Irwin III created a latency tracer
-to find problem latency areas in the kernel for the RT patch.  This tracer
-became a very integral part of the RT kernel in solving where latency hot
-spots were.  One of the features that the latency tracer added was a
-function trace.  This function tracer would record all functions that
-were called (implemented by the gcc "-pg" option) and would show what was
-called when interrupts or preemption was turned off.
-
-This feature is also very helpful in normal debugging. So it's been talked
-about taking bits and pieces from the RT latency tracer and bring them
-to LKML. But no one had the time to do it.
-
-Arnaldo Carvalho de Melo took a crack at it. He pulled out the mcount
-as well as part of the tracing code and made it generic from the point
-of the tracing code.  I'm not sure why this stopped. Probably because
-Arnaldo is a very busy man, and his efforts had to be utilized elsewhere.
-
-While I still maintain my own Logdev utility:
-
-  http://rostedt.homelinux.com/logdev
-
-I came across a need to do the mcount with logdev too. I was successful
-but found that it became very dependent on a lot of code. One thing that
-I liked about my logdev utility was that it was very non-intrusive, and has
-been easy to port from the Linux 2.0 days. I did not want to burden the
-logdev patch with the intrusiveness of mcount (not really that intrusive,
-it just needs to add a "notrace" annotation to functions in the kernel
-that will cause more conflicts in applying patches for me).
-
-Being close to the holidays, I grabbed Arnaldos old patches and started
-massaging them into something that could be useful for logdev, and what
-I found out (and talking this over with Arnaldo too) that this can
-be much more useful for others as well.
-
-The main thing I changed, was that I made the mcount function itself
-generic, and not the dependency on the tracing code.  That is I added
-
-register_mcount_function()
- and
-clear_mcount_function()
-
-So when ever mcount is enabled and a function is registered that function
-is called for all functions in the kernel that is not labeled with the
-"notrace" annotation.
-
-The key thing here is that *any* utility can now hook its own function into
-mcount!
-
-The Simple Tracer:
-------------------
-
-To show the power of this I also massaged the tracer code that Arnaldo pulled
-from the RT patch and made it be a nice example of what can be done
-with this.
-
-The function that is registered to mcount has the prototype:
-
- void func(unsigned long ip, unsigned long parent_ip);
-
-The ip is the address of the function and parent_ip is the address of
-the parent function that called it.
-
-The x86_64 version has the assembly call the registered function directly
-to save having to do a double function call.
-
-To enable mcount, a sysctl is added:
-
-   /proc/sys/kernel/mcount_enabled
-
-Once mcount is enabled, when a function is registed, it will be called by
-all functions. The tracer in this patch series shows how this is done.
-It adds a directory in the debugfs, called mctracer. With a ctrl file that
-will allow the user have the tracer register its function.  Note, the order
-of enabling mcount and registering a function is not important, but both
-must be done to initiate the tracing. That is, you can disable tracing
-by either disabling mcount or by clearing the registered function.
-
-Only one function may be registered at a time. If another function is
-registered, it will simply override what ever was there previously.
-
-Here's a simple example of the tracer output:
-
-CPU 2: hackbench:11867 preempt_schedule+0xc/0x84 <-- avc_has_perm_noaudit+0x45d/0x52c
-CPU 1: hackbench:12052 selinux_file_permission+0x10/0x11c <-- security_file_permission+0x16/0x18
-CPU 3: hackbench:12017 update_curr+0xe/0x8b <-- put_prev_task_fair+0x24/0x4c
-CPU 2: hackbench:11867 avc_audit+0x16/0x9e3 <-- avc_has_perm+0x51/0x63
-CPU 0: hackbench:12019 socket_has_perm+0x16/0x7c <-- selinux_socket_sendmsg+0x27/0x3e
-CPU 1: hackbench:12052 file_has_perm+0x16/0xbb <-- selinux_file_permission+0x104/0x11c
-
-This is formated like:
-
- CPU <CPU#>: <task-comm>:<task-pid> <function> <-- <parent-function>
-
-
-Overhead:
----------
-
-Note that having mcount compiled in seems to show a little overhead.
-
-Here's 3 runs of hackbench 50 without the patches:
-Time: 2.137
-Time: 2.283
-Time: 2.245
-
- Avg: 2.221
-
-and here's 3 runs with the patches (without tracing on):
-Time: 2.738
-Time: 2.469
-Time: 2.388
-
-  Avg: 2.531
-
-So it is a 13% overhead when enabled (according to hackbench).
-
-But full tracing can cause a bit more problems:
-
-# hackbench 50
-Time: 113.350
-
-  113.350!!!!!
-
-But this is tracing *every* function call!
-
-
-Future:
--------
-The way the mcount hook is done here, other utilities can easily add their
-own functions. Just care needs to be made not to call anything that is not
-marked with notrace, or you will crash the box with recursion. But
-even the simple tracer adds a "disabled" feature so in case it happens
-to call something that is not marked with notrace, it is a safety net
-not to kill the box.
-
-I was originally going to use the relay system to record the data, but
-that had a chance of calling functions not marked with notrace. But, if
-for example LTTng wanted to use this, it could disable tracing on a CPU
-when doing the calls, and this will protect from recusion.
-
-SystemTap:
-----------
-One thing that Arnaldo and I discussed last year was using systemtap to
-add hooks into the kernel to start and stop tracing.  kprobes is too
-heavy to do on all funtion calls, but it would be perfect to add to
-non hot paths to start the tracer and stop the tracer.
-
-So when debugging the kernel, instead of recompiling with printks
-or other markers, you could simply use systemtap to place a trace start
-and stop locations and trace the problem areas to see what is happening.
-
-
-These are just some of the ideas we have with this. And we are sure others
-could come up with more.
-
-
-
-
-
+-- 
