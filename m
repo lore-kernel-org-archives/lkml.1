@@ -1,77 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758274AbYACAZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759061AbYACA1D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758274AbYACAZb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Jan 2008 19:25:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbYACAZX
+	id S1759061AbYACA1D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Jan 2008 19:27:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbYACA0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Jan 2008 19:25:23 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56904 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753230AbYACAZX (ORCPT
+	Wed, 2 Jan 2008 19:26:53 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:16222 "EHLO
+	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753231AbYACA0w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Jan 2008 19:25:23 -0500
-Date: Wed, 2 Jan 2008 16:23:38 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jonathan Lim <jlim@sgi.com>
-Cc: linux-kernel@vger.kernel.org, jlan@sgi.com,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] Provide u64 version of jiffies_to_usecs() in
- kernel/tsacct.c
-Message-Id: <20080102162338.c67769af.akpm@linux-foundation.org>
-In-Reply-To: <200801022103.m02L3oL1051764@sabah.engr.sgi.com>
-References: <200801022103.m02L3oL1051764@sabah.engr.sgi.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Jan 2008 19:26:52 -0500
+Date: Wed, 02 Jan 2008 18:25:21 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: SATA kernel-buffered read VERY slow (not raid,
+ Promise TX300 card); 2.6.23.1(vanilla)
+In-reply-to: <477BEF8D.8090307@tlinx.org>
+To: Linda Walsh <lkml@tlinx.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+Message-id: <477C2B71.7040504@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.6TIOCGhBpW0r4XW9rqR+Ad8P+Js@ifi.uio.no>
+ <4777E08C.4000603@shaw.ca> <4779870E.5070507@tlinx.org>
+ <20080101015812.59e9ebf0@the-village.bc.nu> <477BEF8D.8090307@tlinx.org>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Dec 2007 13:26:07 -0800 (PST) Jonathan Lim <jlim@sgi.com> wrote:
+Linda Walsh wrote:
+> Alan Cox wrote:
+>>> rate began falling; at 128k block-reads-at-a-time or larger, it drops 
+>>> below
+>>> 20MB/s (only on buffered SATA).
+>>
+>> Try disabling NCQ - see if you've got a drive with the 'NCQ = no
+>> readahead' flaw.
+> ---
+>   I'm not aware, off hand, how to disable NCQ.  I haven't had any
+> NCQ- or SATA- capable disks before a few weeks ago.
 
-> It's possible that the values used in and returned from jiffies_to_usecs() are
-> incorrect because of truncation when variables of type u64 are involved.  So a
-> function specific to that type is used instead.
-> 
-> Diff'd against: linux/kernel/git/stable/linux-2.6.23.y.git
-> 
-> Signed-off-by: Jonathan Lim <jlim@sgi.com>
-> 
-> --- a/kernel/tsacct.c	2007-12-28 11:58:05.182065029 -0800
-> +++ b/kernel/tsacct.c	2007-12-28 11:57:37.949013675 -0800
-> @@ -71,6 +71,17 @@ void bacct_add_tsk(struct taskstats *sta
->  
->  #ifdef CONFIG_TASK_XACCT
->  
-> +static inline u64 jiffies_to_usecs_u64(const u64 j)
-> +{
-> +#if HZ <= USEC_PER_SEC && !(USEC_PER_SEC % HZ)
-> +	return (USEC_PER_SEC / HZ) * j;
-> +#elif HZ > USEC_PER_SEC && !(HZ % USEC_PER_SEC)
-> +	return (j + (HZ / USEC_PER_SEC) - 1)/(HZ / USEC_PER_SEC);
-> +#else
-> +	return (j * USEC_PER_SEC) / HZ;
-> +#endif
-> +}
-> +
->  #define KB 1024
->  #define MB (1024*KB)
->  /*
-> @@ -81,8 +92,8 @@ void xacct_add_tsk(struct taskstats *sta
->  	struct mm_struct *mm;
->  
->  	/* convert pages-jiffies to Mbyte-usec */
-> -	stats->coremem = jiffies_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
-> -	stats->virtmem = jiffies_to_usecs(p->acct_vm_mem1) * PAGE_SIZE / MB;
-> +	stats->coremem = jiffies_to_usecs_u64(p->acct_rss_mem1) * PAGE_SIZE / MB;
-> +	stats->virtmem = jiffies_to_usecs_u64(p->acct_vm_mem1) * PAGE_SIZE / MB;
->  	mm = get_task_mm(p);
->  	if (mm) {
->  		/* adjust to KB unit */
+See here:
 
-Fair enough.  But I guess that new function should be a kernel-wide thing
-because surely other users will turn up.
+http://linux-ata.org/faq.html#ncq
 
-Peter has been working on the accuracy of some of these conversion
-functions and might need to know about this change?
+> 
+>>>     The only way I could tell before was using hdparm to read the 
+>>> parameters. Since that doesn't work, it's hard to tell if they
+>>> are set correctly...
+>>
+>> hdparm supports identify to read modes on drives with libata. The one
+>> thing you cannot do is force modes right now.
+>>
+>>>     More importantly, how does one set parameters for acoustic and power
+>>> saving parameters?  Some of my disks are used as 'backup' devices for my
+>>
+>> hdparm or blktool
+> ----
+> 
+>  I have hdparm-v7.7. There are some areas where it shows information, 
+> but areas where it
+> does not work jump out and lead me to suspect whether or not areas
+> that don't give explicit "ERROR" messages are presenting valid info.
+> 
+> Problem areas (using hdparm, disk=Seagate Barracuda 16MB cache, model=
+> ST3750640AS):
+> 1) The drives current 'multicount' setting isn't readable or settable.
+> param "-i" shows "?16?" (with question marks around 16) and "-I" simply
+> shows "?" for the current setting.  Attempting to <read|set> it:
+> "HDIO_<GET|SET>_MULTCOUNT failed: Inappropriate ioctl for device"
+
+I don't think you can get or get the multi count currently, it just uses 
+the best supported value.
+
+> 2) Drive Advanced Power Management setting("-B") (write-only):
+> "HDIO_DRIVE_CMD failed: Input/output error"
+> 3) Drive Acoustic ("-M"), read = " acoustic      = not supported",
+> write = " HDIO_DRIVE_CMD:ACOUSTIC failed: Input/output error"
+>   Note: drive detailed info from "-I" says:
+>        "Recommended acoustic management value: 254, current value: 0"
+>   (i.e. - there seems to be no way to set recommended value)
+
+Not sure about these ones.. Does anything show up in dmesg when you do this?
+
+> 4) 32-bit IO setting ("-c") (don't know if this important given the disk's
+> raw-read speed, it may be meaningless for SATA)
+> "IO_support    =  0 (default 16-bit)"*
+> *
+
+This setting is not meaningful for anything using DMA.
+
+> FWIW -- the spindown/standby timeout ("S") does seem to work.
+> 
+>>> other computers.  With the ATA disks, they were kept "spun down" when 
+>>> not
+>>> being used (only used, 'normally', in early AM hours).
+>>
+>> Well for backup devices you can use the fact SATA is hot/warm plug.
+> ---
+>    I don't follow. It is an internal drive.  Are their software "logically
+> unplug" commands that automatically re-"plug-in" the drive on access
+> and spin it back up like the spindown/standby timeout does?  Or were
+> you referring to SATA's general hot/warm plug ability (if my hardware
+> setup, drive-slots, etc, permitted removability)?
+
+I think they were referring to physically hotplugging the drive. This is 
+more practical if you have a removable drive caddy, or if the drive is 
+hooked up through eSATA.
+
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
