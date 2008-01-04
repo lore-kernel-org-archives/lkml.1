@@ -1,146 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754376AbYADOsB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbYADOwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754376AbYADOsB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 09:48:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbYADOrx
+	id S1753907AbYADOwr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 09:52:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbYADOwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 09:47:53 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:52767 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752015AbYADOrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 09:47:52 -0500
-Date: Fri, 4 Jan 2008 15:47:24 +0100 (MET)
-From: Julia Lawall <julia@diku.dk>
-To: per.liden@ericsson.com, jon.maloy@ericsson.com,
-       allan.stephens@windriver.com, tipc-discussion@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: /net/tipc/port.c: Use tipc_port_unlock
-Message-ID: <Pine.LNX.4.58.0801041546220.1184@pc-041.diku.dk>
+	Fri, 4 Jan 2008 09:52:40 -0500
+Received: from mga10.intel.com ([192.55.52.92]:34991 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752335AbYADOwj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 09:52:39 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,245,1196668800"; 
+   d="scan'208";a="271087380"
+Message-ID: <477E47C2.3050700@linux.intel.com>
+Date: Fri, 04 Jan 2008 06:50:42 -0800
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
+       olof@lixom.net
+Subject: Re: [patch 2/2] Add the end-of-trace marker and the module list to
+ WARN_ON()
+References: <477D5340.9090809@linux.intel.com> <20080104104818.GA8198@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20080104104818.GA8198@osiris.boeblingen.de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+Heiko Carstens wrote:
+> On Thu, Jan 03, 2008 at 10:27:28PM +0100, Arjan van de Ven wrote:
+>> Another issue is that, unlike oopses, WARN_ON() doesn't currently printk
+>> the helpful "cut here" line, nor the "end of trace" marker.
+>> Now that WARN_ON() is out of line, the size increase due to this is
+>> minimal and it's worth adding.
+>>
+>> +static void print_oops_end_marker(void)
+>> +{
+>> +	init_oops_id();
+>> +	printk(KERN_WARNING "---[ end trace %016llx ]---\n",
+>> +		(unsigned long long)oops_id);
+>> +}
+> 
+> There is also lib/bug.c which prints the "cut here" line but not the
+> "end of trace" line. 
 
-The file net/tipc/port.c takes a lock using the function tipc_port_lock and
-then releases the lock sometimes using tipc_port_unlock and sometimes using
-spin_unlock_bh(p_ptr->publ.lock).  tipc_port_unlock simply does the
-spin_unlock_bh, but it seems cleaner to use it everywhere.
+it ends up printing the "end of trace" line as part of the oops_exit() call
+ >
 
+> Also it prints whatever it prints with a different
+> printk level.
 
-The problem was fixed using the following semantic patch.
-(http://www.emn.fr/x-info/coccinelle/)
+as it should.. WARN_ON()'s are warnings so get KERN_WARNING ;-)
 
-// <smpl>
-@@
-struct port *p_ptr;
-@@
+> Quite a few architectures use lib/bug.c also for WARN_ONs.
 
-   p_ptr = tipc_port_lock(...)
-   ...
-(
-   p_ptr = tipc_port_lock(...);
-|
-?- spin_unlock_bh(p_ptr->publ.lock);
-+  tipc_port_unlock(p_ptr);
-)
-// </smpl>
+is this still the case after Olof's patch?
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
----
+> Maybe all the code should be in one place so it doesn't diverge all the
+> time?
 
-diff -u -p a/net/tipc/port.c b/net/tipc/port.c
---- a/net/tipc/port.c 2008-01-01 10:43:55.000000000 +0100
-+++ b/net/tipc/port.c 2008-01-04 10:51:05.000000000 +0100
-@@ -340,7 +340,7 @@ int tipc_portunreliable(u32 ref, unsigne
- 	if (!p_ptr)
- 		return -EINVAL;
- 	*isunreliable = port_unreliable(p_ptr);
--	spin_unlock_bh(p_ptr->publ.lock);
-+	tipc_port_unlock(p_ptr);
- 	return TIPC_OK;
- }
-
-@@ -369,7 +369,7 @@ int tipc_portunreturnable(u32 ref, unsig
- 	if (!p_ptr)
- 		return -EINVAL;
- 	*isunrejectable = port_unreturnable(p_ptr);
--	spin_unlock_bh(p_ptr->publ.lock);
-+	tipc_port_unlock(p_ptr);
- 	return TIPC_OK;
- }
-
-@@ -843,7 +843,7 @@ static void port_dispatcher_sigh(void *d
- 				u32 peer_port = port_peerport(p_ptr);
- 				u32 peer_node = port_peernode(p_ptr);
-
--				spin_unlock_bh(p_ptr->publ.lock);
-+				tipc_port_unlock(p_ptr);
- 				if (unlikely(!connected)) {
- 					if (unlikely(published))
- 						goto reject;
-@@ -867,7 +867,7 @@ static void port_dispatcher_sigh(void *d
- 		case TIPC_DIRECT_MSG:{
- 				tipc_msg_event cb = up_ptr->msg_cb;
-
--				spin_unlock_bh(p_ptr->publ.lock);
-+				tipc_port_unlock(p_ptr);
- 				if (unlikely(connected))
- 					goto reject;
- 				if (unlikely(!cb))
-@@ -882,7 +882,7 @@ static void port_dispatcher_sigh(void *d
- 		case TIPC_NAMED_MSG:{
- 				tipc_named_msg_event cb = up_ptr->named_msg_cb;
-
--				spin_unlock_bh(p_ptr->publ.lock);
-+				tipc_port_unlock(p_ptr);
- 				if (unlikely(connected))
- 					goto reject;
- 				if (unlikely(!cb))
-@@ -913,7 +913,7 @@ err:
- 				u32 peer_port = port_peerport(p_ptr);
- 				u32 peer_node = port_peernode(p_ptr);
-
--				spin_unlock_bh(p_ptr->publ.lock);
-+				tipc_port_unlock(p_ptr);
- 				if (!connected || !cb)
- 					break;
- 				if (msg_origport(msg) != peer_port)
-@@ -929,7 +929,7 @@ err:
- 		case TIPC_DIRECT_MSG:{
- 				tipc_msg_err_event cb = up_ptr->err_cb;
-
--				spin_unlock_bh(p_ptr->publ.lock);
-+				tipc_port_unlock(p_ptr);
- 				if (connected || !cb)
- 					break;
- 				skb_pull(buf, msg_hdr_sz(msg));
-@@ -942,7 +942,7 @@ err:
- 				tipc_named_msg_err_event cb =
- 					up_ptr->named_err_cb;
-
--				spin_unlock_bh(p_ptr->publ.lock);
-+				tipc_port_unlock(p_ptr);
- 				if (connected || !cb)
- 					break;
- 				dseq.type =  msg_nametype(msg);
-@@ -1107,7 +1107,7 @@ int tipc_portimportance(u32 ref, unsigne
- 	if (!p_ptr)
- 		return -EINVAL;
- 	*importance = (unsigned int)msg_importance(&p_ptr->publ.phdr);
--	spin_unlock_bh(p_ptr->publ.lock);
-+	tipc_port_unlock(p_ptr);
- 	return TIPC_OK;
- }
-
-@@ -1122,7 +1122,7 @@ int tipc_set_portimportance(u32 ref, uns
- 	if (!p_ptr)
- 		return -EINVAL;
- 	msg_set_importance(&p_ptr->publ.phdr, (u32)imp);
--	spin_unlock_bh(p_ptr->publ.lock);
-+	tipc_port_unlock(p_ptr);
- 	return TIPC_OK;
- }
-
+it's actually ok as is.. the core tracing code lives in panic.c; lib/bug.c is just a few helpers
+for BUG().. for WARN_ON() there is a lot less to help
