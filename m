@@ -1,101 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755406AbYADVN6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbYADVO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755406AbYADVN6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 16:13:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754937AbYADVNM
+	id S1755318AbYADVO0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 16:14:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755033AbYADVNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 16:13:12 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:37216 "EHLO
+	Fri, 4 Jan 2008 16:13:19 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:38027 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754869AbYADVNK (ORCPT
+	with ESMTP id S1755003AbYADVNS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 16:13:10 -0500
+	Fri, 4 Jan 2008 16:13:18 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=TMjbevhzx0cPweixsPehTqPtxQa+702+v7aVG/0LmDXV4H7X2c8TZyBqzfkTGge+QbCgKt025tvtyURbMnKiGPmIcfSbb1YqiqhkNQvsapivInPHvAoZyNEqT4E2Zu7yQOSf/3CWKg8UpURfTRu06pF+ADqtapDTi9jeA4CFv5M=
+        b=kvuQ9aq3edOQW46G0vcwZ7juQAPnI5/+OZPBke8CQY5Ala1otPEkc2zxe8MV2nXbi97PNt5Wh3nS9nGQbdz/5Fuu+6N5aZwcyjtObmZvQR4OybH3MOrKTYEcO3nlQ8LyV+kvjbtxGO1u8ixXAGamli7uGnmcPVvBJX2HtR3WYNA=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Fri, 04 Jan 2008 22:24:46 +0100
-Message-Id: <20080104212446.6978.63773.sendpatchset@localhost.localdomain>
+Date: Fri, 04 Jan 2008 22:24:54 +0100
+Message-Id: <20080104212454.6978.66772.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080104212424.6978.93646.sendpatchset@localhost.localdomain>
 References: <20080104212424.6978.93646.sendpatchset@localhost.localdomain>
-Subject: [PATCH 3/15] ide: remove hwif->present manipulations from hwif_init()
+Subject: [PATCH 4/15] ide_platform: remove struct hwif_prop
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Call hwif_init() only if hwif->present is set.
+* Remove 'if (hwif != hwif_prop.hwif)' check from plat_ide_remove()
+  (pdev->dev.driver_data and hwif_prop.hwif are set at the same time
+   in plat_ide_probe() and are identical).
 
-* If hwif_init() fails clear hwif->present.
+* Use hwif->index for ide_unregister() in plat_ide_remove().
 
-* Remove hwif->present manipulations from hwif_init().
+* Use local variables instead of hwif_prop.plat_ide[_alt]_mapbase in
+  plat_ide_probe() and remove no longer needed struct hwif_prop.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
--24 bytes
- drivers/ide/ide-probe.c |   18 ++++++------------
- 1 file changed, 6 insertions(+), 12 deletions(-)
+-150 bytes
+ drivers/ide/legacy/ide_platform.c |   34 ++++++++--------------------------
+ 1 file changed, 8 insertions(+), 26 deletions(-)
 
-Index: b/drivers/ide/ide-probe.c
+Index: b/drivers/ide/legacy/ide_platform.c
 ===================================================================
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -1245,28 +1245,21 @@ static int hwif_init(ide_hwif_t *hwif)
+--- a/drivers/ide/legacy/ide_platform.c
++++ b/drivers/ide/legacy/ide_platform.c
+@@ -21,13 +21,6 @@
+ #include <linux/platform_device.h>
+ #include <linux/io.h>
+ 
+-static struct {
+-	void __iomem *plat_ide_mapbase;
+-	void __iomem *plat_ide_alt_mapbase;
+-	ide_hwif_t *hwif;
+-	int index;
+-} hwif_prop;
+-
+ static void __devinit plat_ide_setup_ports(hw_regs_t *hw,
+ 					   void __iomem *base,
+ 					   void __iomem *ctrl,
+@@ -54,6 +47,7 @@ static void __devinit plat_ide_setup_por
+ static int __devinit plat_ide_probe(struct platform_device *pdev)
  {
- 	int old_irq;
- 
--	/* Return success if no device is connected */
--	if (!hwif->present)
--		return 1;
--
- 	if (!hwif->irq) {
- 		if (!(hwif->irq = ide_default_irq(hwif->io_ports[IDE_DATA_OFFSET])))
- 		{
- 			printk("%s: DISABLED, NO IRQ\n", hwif->name);
--			return (hwif->present = 0);
-+			return 0;
- 		}
+ 	struct resource *res_base, *res_alt, *res_irq;
++	void __iomem *base, *alt_base;
+ 	ide_hwif_t *hwif;
+ 	struct pata_platform_info *pdata;
+ 	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
+@@ -84,27 +78,25 @@ static int __devinit plat_ide_probe(stru
  	}
- #ifdef CONFIG_BLK_DEV_HD
- 	if (hwif->irq == HD_IRQ && hwif->io_ports[IDE_DATA_OFFSET] != HD_DATA) {
- 		printk("%s: CANNOT SHARE IRQ WITH OLD "
- 			"HARDDISK DRIVER (hd.c)\n", hwif->name);
--		return (hwif->present = 0);
-+		return 0;
+ 
+ 	if (mmio) {
+-		hwif_prop.plat_ide_mapbase = devm_ioremap(&pdev->dev,
++		base = devm_ioremap(&pdev->dev,
+ 			res_base->start, res_base->end - res_base->start + 1);
+-		hwif_prop.plat_ide_alt_mapbase = devm_ioremap(&pdev->dev,
++		alt_base = devm_ioremap(&pdev->dev,
+ 			res_alt->start, res_alt->end - res_alt->start + 1);
+ 	} else {
+-		hwif_prop.plat_ide_mapbase = devm_ioport_map(&pdev->dev,
++		base = devm_ioport_map(&pdev->dev,
+ 			res_base->start, res_base->end - res_base->start + 1);
+-		hwif_prop.plat_ide_alt_mapbase = devm_ioport_map(&pdev->dev,
++		alt_base = devm_ioport_map(&pdev->dev,
+ 			res_alt->start, res_alt->end - res_alt->start + 1);
  	}
- #endif /* CONFIG_BLK_DEV_HD */
  
--	/* we set it back to 1 if all is ok below */	
--	hwif->present = 0;
+-	hwif = ide_find_port((unsigned long)hwif_prop.plat_ide_mapbase);
++	hwif = ide_find_port((unsigned long)base);
+ 	if (!hwif) {
+ 		ret = -ENODEV;
+ 		goto out;
+ 	}
+ 
+ 	memset(&hw, 0, sizeof(hw));
+-	plat_ide_setup_ports(&hw, hwif_prop.plat_ide_mapbase,
+-			     hwif_prop.plat_ide_alt_mapbase,
+-			     pdata, res_irq->start);
++	plat_ide_setup_ports(&hw, base, alt_base, pdata, res_irq->start);
+ 	hw.dev = &pdev->dev;
+ 
+ 	ide_init_port_hw(hwif, &hw);
+@@ -114,9 +106,6 @@ static int __devinit plat_ide_probe(stru
+ 		default_hwif_mmiops(hwif);
+ 	}
+ 
+-	hwif_prop.hwif = hwif;
+-	hwif_prop.index = hwif->index;
 -
- 	if (register_blkdev(hwif->major, hwif->name))
- 		return 0;
+ 	idx[0] = hwif->index;
  
-@@ -1305,10 +1298,7 @@ static int hwif_init(ide_hwif_t *hwif)
+ 	ide_device_add(idx);
+@@ -133,14 +122,7 @@ static int __devexit plat_ide_remove(str
+ {
+ 	ide_hwif_t *hwif = pdev->dev.driver_data;
  
- done:
- 	init_gendisk(hwif);
--
- 	ide_acpi_init(hwif);
--
--	hwif->present = 1;	/* success */
- 	return 1;
+-	if (hwif != hwif_prop.hwif) {
+-		dev_printk(KERN_DEBUG, &pdev->dev, "%s: hwif value error",
+-		           pdev->name);
+-	} else {
+-		ide_unregister(hwif_prop.index);
+-		hwif_prop.index = 0;
+-		hwif_prop.hwif = NULL;
+-	}
++	ide_unregister(hwif->index);
  
- out:
-@@ -1352,9 +1342,13 @@ int ide_device_add_all(u8 *idx)
- 
- 		hwif = &ide_hwifs[idx[i]];
- 
-+		if (!hwif->present)
-+			continue;
-+
- 		if (hwif_init(hwif) == 0) {
- 			printk(KERN_INFO "%s: failed to initialize IDE "
- 					 "interface\n", hwif->name);
-+			hwif->present = 0;
- 			rc = -1;
- 			continue;
- 		}
+ 	return 0;
+ }
