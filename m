@@ -1,144 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbYADAXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbYADA1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754632AbYADAXl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 19:23:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbYADAXe
+	id S1755987AbYADA1R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 19:27:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbYADA1F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 19:23:34 -0500
-Received: from hu-out-0506.google.com ([72.14.214.239]:21600 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751660AbYADAXd (ORCPT
+	Thu, 3 Jan 2008 19:27:05 -0500
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:30500 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751675AbYADA1E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 19:23:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=HygbiUZZ0OZXbQtDBlycfr61oQvZSKOiVwb+AXerFhhqRl2cD+8Qrs7fx8+2QSLfVWQGBgGU3B3onW0cylixMVItc9tdt+jEX1cXQbgM/XvOOxgwY0LQ3R3srYJVlMvDOUbYF7cKkEz9KIbEGdasdhfQQLjcLfeImYrQABSoXn0=
-Date: Fri, 4 Jan 2008 01:23:28 +0100
-From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>, bunk@kernel.org,
-       jesper.juhl@gmail.com
-Subject: [PATCH] printk: Coding style fixes
-Message-ID: <20080104012328.0192f8c9@paolo-desktop>
-X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
+	Thu, 3 Jan 2008 19:27:04 -0500
+X-Greylist: delayed 591 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Jan 2008 19:27:03 EST
+Subject: Re: Error returns not
+	handled	correctly	by	sysfs.c:subsys_attr_store()
+From: Andrew Patterson <andrew.patterson@hp.com>
+To: Tejun Heo <teheo@suse.de>
+Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-hotplug@vger.kernel.org,
+       bjorn.helgaas@hp.com
+In-Reply-To: <477D78BE.1060404@suse.de>
+References: <1195683419.16019.225.camel@grinch>
+	 <20071126203116.0c93cdb9.akpm@linux-foundation.org>
+	 <20071127053321.GA975@kroah.com>  <474D1BD4.2050805@suse.de>
+	 <1196278300.5431.9.camel@grinch>  <474E10CF.7050009@suse.de>
+	 <1196716558.20124.179.camel@bluto.andrew>
+	 <1199404273.7025.21.camel@bluto.andrew>  <477D78BE.1060404@suse.de>
+Content-Type: text/plain
+Date: Thu, 03 Jan 2008 17:17:10 -0700
+Message-Id: <1199405830.7025.33.camel@bluto.andrew>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch to printk.c fixes a few errors reported by checkpatch.pl
 
-Before:
-total: 18 errors, 17 warnings, 1306 lines checked
+On Fri, 2008-01-04 at 09:07 +0900, Tejun Heo wrote:
+> Hello,
+> 
+> Andrew Patterson wrote:
+> > It looks like this is a shell issue.  After looking through the sysfs
+> > code, I realized that this problem seems to be driven from user-land.
+> > So I performed some experiments:
+> > 
+> >      1. Wrote a simple program that just used write(2) to write to the
+> >         sysfs entry. This works fine.
+> >      2. Used /bin/echo instead of the built-in echo command.  This too
+> >         works fine.
+> >      3. Tried several shells.  Zsh and Bash both fail.  Csh works fine.
+> > 
+> > I then ran strace on the following shell-script:
+> > 
+> > #!/bin/bash
+> > 
+> > echo x > allow_restart
+> > echo y > allow_restart
+> > echo z > allow_restart
+> > 
+> > and got:
+> > 
+> > # strace -e trace=write ~/tmp/tester.sh 
+> > write(1, "x\n", 2)                      = -1 EINVAL (Invalid argument)
+> > write(1, "x\n", 2)                      = -1 EINVAL (Invalid argument)
+> > write(2, "/home/andrew/tmp/tester.sh: line"..., 72/home/andrew/tmp/tester.sh: line 4: echo: write error: Invalid argument
+> > ) = 72
+> > write(1, "x\ny\n", 4)                   = -1 EINVAL (Invalid argument)
+> > write(1, "x\ny\n", 4)                   = -1 EINVAL (Invalid argument)
+> > write(2, "/home/andrew/tmp/tester.sh: line"..., 72/home/andrew/tmp/tester.sh: line 5: echo: write error: Invalid argument
+> > ) = 72
+> > write(1, "x\ny\nz\n", 6)                = -1 EINVAL (Invalid argument)
+> > write(1, "x\ny\nz\n", 6)                = -1 EINVAL (Invalid argument)
+> > write(2, "/home/andrew/tmp/tester.sh: line"..., 72/home/andrew/tmp/tester.sh: line 6: echo: write error: Invalid argument
+> > ) = 72
+> > write(1, "x\ny\nz\n", 6x
+> > y
+> > z
+> > )                = 6
+> > Process 3800 detached
+> 
+> Eeeeeeeekkkk.... That's scary.  Which distro are you using and what does
+> 'bash --version' say?
 
-After:
-total: 1 errors, 17 warnings, 1305 lines checked
+IA64 Debian lenny.  
 
-This new version includes a fix suggested by Jesper Juhl
+# bash --version
+GNU bash, version 3.1.17(1)-release (ia64-unknown-linux-gnu)
 
-Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
----
+# zsh --version 
+zsh 4.3.4 (ia64-unknown-linux-gnu)
 
-Adrian, I'm sending this patch to you because according to git shortlog -e
-you are the most active modifier of this file.
+# csh --version
+tcsh 6.14.00 (Astron) 2005-03-25 (ia64-unknown-linux) options
+wide,nls,dl,al,kan,rh,nd,color,filec
 
+I suppose I should try this an ia32 box again, and perhaps with some
+other distros.  I am not sure what the kernel can do about this, but it
+might be nice to report it to the shell maintainers.
 
- kernel/printk.c |   25 ++++++++++++-------------
- 1 files changed, 12 insertions(+), 13 deletions(-)
-
-diff --git a/kernel/printk.c b/kernel/printk.c
-index 89011bf..8d131c6 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -100,8 +100,7 @@ static unsigned long log_end;	/* Index into log_buf: most-recently-written-char
- /*
-  *	Array of consoles built from command line options (console=)
-  */
--struct console_cmdline
--{
-+struct console_cmdline {
- 	char	name[8];			/* Name of the driver	    */
- 	int	index;				/* Minor dev. to use	    */
- 	char	*options;			/* Options for the driver   */
-@@ -323,7 +322,7 @@ int do_syslog(int type, char __user *buf, int len)
- 			c = LOG_BUF(log_start);
- 			log_start++;
- 			spin_unlock_irq(&logbuf_lock);
--			error = __put_user(c,buf);
-+			error = __put_user(c, buf);
- 			buf++;
- 			i++;
- 			cond_resched();
-@@ -368,7 +367,7 @@ int do_syslog(int type, char __user *buf, int len)
- 				break;
- 			c = LOG_BUF(j);
- 			spin_unlock_irq(&logbuf_lock);
--			error = __put_user(c,&buf[count-1-i]);
-+			error = __put_user(c, &buf[count-1-i]);
- 			cond_resched();
- 			spin_lock_irq(&logbuf_lock);
- 		}
-@@ -380,8 +379,8 @@ int do_syslog(int type, char __user *buf, int len)
- 			int offset = count-error;
- 			/* buffer overflow during copy, correct user buffer. */
- 			for (i = 0; i < error; i++) {
--				if (__get_user(c,&buf[i+offset]) ||
--				    __put_user(c,&buf[i])) {
-+				if (__get_user(c, &buf[i+offset]) ||
-+				    __put_user(c, &buf[i])) {
- 					error = -EFAULT;
- 					break;
- 				}
-@@ -556,7 +555,7 @@ static void zap_locks(void)
- #if defined(CONFIG_PRINTK_TIME)
- static int printk_time = 1;
- #else
--static int printk_time = 0;
-+static int printk_time ;
- #endif
- module_param_named(time, printk_time, bool, S_IRUGO | S_IWUSR);
- 
-@@ -659,7 +658,7 @@ asmlinkage int vprintk(const char *fmt, va_list args)
- 	 */
- 	for (p = printk_buf; *p; p++) {
- 		if (log_level_unknown) {
--                        /* log_level_unknown signals the start of a new line */
-+			/* log_level_unknown signals the start of a new line */
- 			if (printk_time) {
- 				int loglev_char;
- 				char tbuf[50], *tp;
-@@ -671,7 +670,7 @@ asmlinkage int vprintk(const char *fmt, va_list args)
- 				 * force the log level token to be
- 				 * before the time output.
- 				 */
--				if (p[0] == '<' && p[1] >='0' &&
-+				if (p[0] == '<' && p[1] >= '0' &&
- 				   p[1] <= '7' && p[2] == '>') {
- 					loglev_char = p[1];
- 					p += 3;
-@@ -1176,16 +1175,16 @@ EXPORT_SYMBOL(register_console);
- 
- int unregister_console(struct console *console)
- {
--        struct console *a, *b;
-+	struct console *a, *b;
- 	int res = 1;
- 
- 	acquire_console_sem();
- 	if (console_drivers == console) {
--		console_drivers=console->next;
-+		console_drivers = console->next;
- 		res = 0;
- 	} else if (console_drivers) {
--		for (a=console_drivers->next, b=console_drivers ;
--		     a; b=a, a=b->next) {
-+		for (a = console_drivers->next, b = console_drivers;
-+		     a; b = a, a = b->next) {
- 			if (a == console) {
- 				b->next = a->next;
- 				res = 0;
 -- 
-1.5.4.rc2.17.g257f
+Andrew Patterson
+Hewlett-Packard Company
 
