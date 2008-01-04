@@ -1,115 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752866AbYADLKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752547AbYADLPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752866AbYADLKm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 06:10:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbYADLKf
+	id S1752547AbYADLPo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 06:15:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751072AbYADLPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 06:10:35 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:63266 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751152AbYADLKd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 06:10:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=CR+4o1kr1QlH4S5W6/40x1plUsipbMQmQI5OKlZclYg/aPQq1Xv/135S6ChW1+1QcfYe+aKh2JCMOL0Vz/cYhOGgWGfSSXPlEtgh/7MK/I5zJZ9ow7Q0fH5uk1uWqwIEKS9ZUMjVxfYh4xuBLfrm/387ziL7APE4ynu0Y6OJ7/M=
-Date: Fri, 4 Jan 2008 19:13:57 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
+	Fri, 4 Jan 2008 06:15:37 -0500
+Received: from smtp3-g19.free.fr ([212.27.42.29]:60063 "EHLO smtp3-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751015AbYADLPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 06:15:36 -0500
+Date: Fri, 4 Jan 2008 12:15:02 +0100
+From: Guillaume Chazarain <guichaz@yahoo.fr>
 To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, dhowells@redhat.com
-Subject: Re: isofs oops - d_splice_alias+0x1f (2.6.24-rc5-mm1)
-Message-ID: <20080104111357.GA3429@darkstar.te-china.tietoenator.com>
-References: <477CE1E0.4010504@gmail.com> <Pine.LNX.4.64.0801031550160.2076@sbz-30.cs.Helsinki.FI> <477CEE1C.7020005@gmail.com> <20080104104755.GX27894@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080104104755.GX27894@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] proc: advertise new restrictions on /proc/*/maps &
+ /proc/*/smaps
+Message-ID: <20080104121502.2e6ccaa1@inria.fr>
+In-Reply-To: <20080103235736.GW27894@ZenIV.linux.org.uk>
+References: <20080103235150.2870.31703.stgit@localhost.localdomain>
+ <20080103235736.GW27894@ZenIV.linux.org.uk>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 04, 2008 at 10:47:55AM +0000, Al Viro wrote:
-> On Thu, Jan 03, 2008 at 03:15:56PM +0100, Jiri Slaby wrote:
-> 
-> > Can't say, the DVD seems to be OK, I don't know what was wrong (as I can say,
-> > this happened several times in the past yet and after reboot everything OK; I
-> > suspect gnome auto mounter -- multiple machines, several DVD ROMs, same disk
-> > with OS, similar errors, but that's too few to report).
-> 
-> It is -mm-specific, all right - fallout from
-> 	iget-stop-isofs-from-using-read_inode.patch
-> not covered in
-> 	iget-stop-isofs-from-using-read_inode-fix*
-> 
-> Callers in fs/isofs/namei.c are missed.
+Al Viro <viro@ZenIV.linux.org.uk> wrote:
 
-Yes, some isofs_iget return value should be handled, it is missed.
+> The whole point is that we have to reject it at read() time, not open()
+> time.
 
-Maybe this:
+Yes, my patch was a complement to yours to propagate the -EPERM in easy
+cases. As you noted it added restrictions on reading /proc/*/maps, even
+though I found them acceptable.
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+How about this instead?
 
+Maybe you'd prefer to propagate the actual -EPERM from
+__ptrace_may_attach but that would be more invasive.
+
+Sidenote: do you think a sparse annotation to check IS_ERR/PTR_ERR
+usage would make sense?
+
+proc: return -EPERM when preventing read of /proc/*/maps
+
+Return an error instead of successfully reading an empty file.
+
+Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
 ---
-fs/isofs/export.c |    8 ++++----
-fs/isofs/namei.c  |    4 ++--
-fs/isofs/rock.c   |    4 +++-
-3 files changed, 9 insertions(+), 7 deletions(-)
 
-diff -upr linux/fs/isofs/export.c linux.new/fs/isofs/export.c
---- linux/fs/isofs/export.c	2008-01-04 18:54:40.000000000 +0800
-+++ linux.new/fs/isofs/export.c	2008-01-04 19:04:31.000000000 +0800
-@@ -26,8 +26,8 @@ isofs_export_iget(struct super_block *sb
- 	if (block == 0)
- 		return ERR_PTR(-ESTALE);
- 	inode = isofs_iget(sb, block, offset);
--	if (inode == NULL)
--		return ERR_PTR(-ENOMEM);
-+	if (IS_ERR(inode))
-+		return inode;
- 	if (is_bad_inode(inode)
- 	    || (generation && inode->i_generation != generation))
- 	{
-@@ -110,8 +110,8 @@ static struct dentry *isofs_export_get_p
- 	parent_inode = isofs_iget(child_inode->i_sb,
- 				  parent_block,
- 				  parent_offset);
--	if (parent_inode == NULL) {
--		rv = ERR_PTR(-EACCES);
-+	if (IS_ERR(parent_inode)) {
-+		rv = parent_inode;
- 		goto out;
+ fs/proc/base.c       |    2 +-
+ fs/proc/task_mmu.c   |    8 +++++---
+ fs/proc/task_nommu.c |    4 ++--
+ 3 files changed, 8 insertions(+), 6 deletions(-)
+
+
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 7411bfb..3aebc85 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -219,7 +219,7 @@ out:
+ 	task_unlock(task);
+ 	up_read(&mm->mmap_sem);
+ 	mmput(mm);
+-	return NULL;
++	return ERR_PTR(-EPERM);
+ }
+ 
+ static int proc_pid_cmdline(struct task_struct *task, char * buffer)
+diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
+index 8043a3e..db57e65 100644
+--- a/fs/proc/task_mmu.c
++++ b/fs/proc/task_mmu.c
+@@ -398,8 +398,8 @@ static void *m_start(struct seq_file *m, loff_t
+*pos) return NULL;
+ 
+ 	mm = mm_for_maps(priv->task);
+-	if (!mm)
+-		return NULL;
++	if (IS_ERR(mm) || !mm)
++		return mm;
+ 
+ 	priv->tail_vma = tail_vma = get_gate_vma(priv->task);
+ 
+@@ -437,7 +437,7 @@ out:
+ 
+ static void vma_stop(struct proc_maps_private *priv, struct
+vm_area_struct *vma) {
+-	if (vma && vma != priv->tail_vma) {
++	if (vma && !IS_ERR(vma) && vma != priv->tail_vma) {
+ 		struct mm_struct *mm = vma->vm_mm;
+ 		up_read(&mm->mmap_sem);
+ 		mmput(mm);
+@@ -451,6 +451,8 @@ static void *m_next(struct seq_file *m, void *v,
+loff_t *pos) struct vm_area_struct *tail_vma = priv->tail_vma;
+ 
+ 	(*pos)++;
++	if (IS_ERR(vma))
++		return vma;
+ 	if (vma && (vma != tail_vma) && vma->vm_next)
+ 		return vma->vm_next;
+ 	vma_stop(priv, vma);
+diff --git a/fs/proc/task_nommu.c b/fs/proc/task_nommu.c
+index 1932c2c..53cb062 100644
+--- a/fs/proc/task_nommu.c
++++ b/fs/proc/task_nommu.c
+@@ -166,10 +166,10 @@ static void *m_start(struct seq_file *m, loff_t
+*pos) return NULL;
+ 
+ 	mm = mm_for_maps(priv->task);
+-	if (!mm) {
++	if (IS_ERR(mm) || !mm) {
+ 		put_task_struct(priv->task);
+ 		priv->task = NULL;
+-		return NULL;
++		return mm;
  	}
  
-diff -upr linux/fs/isofs/namei.c linux.new/fs/isofs/namei.c
---- linux/fs/isofs/namei.c	2008-01-04 18:54:40.000000000 +0800
-+++ linux.new/fs/isofs/namei.c	2008-01-04 18:57:27.000000000 +0800
-@@ -179,9 +179,9 @@ struct dentry *isofs_lookup(struct inode
- 	inode = NULL;
- 	if (found) {
- 		inode = isofs_iget(dir->i_sb, block, offset);
--		if (!inode) {
-+		if (IS_ERR(inode)) {
- 			unlock_kernel();
--			return ERR_PTR(-EACCES);
-+			return inode;
- 		}
- 	}
- 	unlock_kernel();
-diff -upr linux/fs/isofs/rock.c linux.new/fs/isofs/rock.c
---- linux/fs/isofs/rock.c	2008-01-04 18:54:40.000000000 +0800
-+++ linux.new/fs/isofs/rock.c	2008-01-04 19:01:10.000000000 +0800
-@@ -474,8 +474,10 @@ repeat:
- 			    isofs_iget(inode->i_sb,
- 				       ISOFS_I(inode)->i_first_extent,
- 				       0);
--			if (!reloc)
-+			if (IS_ERR(reloc)) {
-+				err = PTR_ERR(reloc);
- 				goto out;
-+			}
- 			inode->i_mode = reloc->i_mode;
- 			inode->i_nlink = reloc->i_nlink;
- 			inode->i_uid = reloc->i_uid;
+ 	/* start from the Nth VMA */
+
+
+-- 
+Guillaume
