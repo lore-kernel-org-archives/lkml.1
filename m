@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759232AbYADJW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758849AbYADJXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759232AbYADJW1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 04:22:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757815AbYADJWL
+	id S1758849AbYADJXm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 04:23:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054AbYADJXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 04:22:11 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39296 "EHLO mx2.mail.elte.hu"
+	Fri, 4 Jan 2008 04:23:35 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50972 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756315AbYADJWK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 04:22:10 -0500
-Date: Fri, 4 Jan 2008 10:22:00 +0100
+	id S1754603AbYADJXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 04:23:34 -0500
+Date: Fri, 4 Jan 2008 10:23:15 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH x86] [14/16] Enable RDC321X subarch only on 32bit
-Message-ID: <20080104092200.GK28740@elte.hu>
-References: <20080103442.621670000@suse.de> <20080103154228.875B814DDD@wotan.suse.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andi Kleen <ak@suse.de>, pavel@suse.cz, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without
+	HOTPLUG_CPU
+Message-ID: <20080104092315.GL28740@elte.hu>
+References: <20080103442.621670000@suse.de> <200801031822.02668.rjw@sisk.pl> <200801031842.49668.ak@suse.de> <200801032241.29218.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080103154228.875B814DDD@wotan.suse.de>
+In-Reply-To: <200801032241.29218.rjw@sisk.pl>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,18 +36,14 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andi Kleen <ak@suse.de> wrote:
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-> @@ -295,6 +295,7 @@ config X86_RDC321X
->  	select X86_REBOOTFIXUPS
->  	select GENERIC_GPIO
->  	select LEDS_GPIO
-> +	depends on X86_32
+> > So you would need to fix that first. Would be fine for me, but is 
+> > out of scope for my patch.
+> 
+> OK, I'll fix that up later.
 
-not applied - the RDC321X subarch already has that dependency:
-
-config X86_RDC321X
-        bool "RDC R-321x SoC"
-        depends on X86_32
+i'll apply Andi's patch to x86.git - or would like to maintain that 
+patch?
 
 	Ingo
