@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754499AbYADTBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754291AbYADTN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754499AbYADTBz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 14:01:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbYADTBr
+	id S1754291AbYADTN7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 14:13:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbYADTNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 14:01:47 -0500
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:44126 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753337AbYADTBq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 14:01:46 -0500
-Date: Fri, 4 Jan 2008 14:01:37 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Mathieu Segaud <mathieu.segaud@regala.cx>, akpm@linux-foundation.org,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [Coding Style]: misc fixes for fs/ext{3,4}/acl.{c,h}
-	from checkpatch.pl
-Message-ID: <20080104190137.GJ17436@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andi Kleen <andi@firstfloor.org>,
-	Mathieu Segaud <mathieu.segaud@regala.cx>,
-	akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <1199452896-20145-1-git-send-email-mathieu.segaud@regala.cx> <20080104134458.GE17436@mit.edu> <p73hcht8sfr.fsf@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p73hcht8sfr.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Fri, 4 Jan 2008 14:13:50 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:56278 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751599AbYADTNu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 14:13:50 -0500
+Date: Fri, 4 Jan 2008 13:13:40 -0600
+From: Paul Jackson <pj@sgi.com>
+To: "rae l" <crquan@gmail.com>
+Cc: akpm@linux-foundation.org, viro@zeniv.linux.org.uk,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       emdow@us.ibm.com
+Subject: Re: [PATCH] PROC_FS: get and set the smp affinity of tasks by
+ read-write /proc/<pid>/smp_affinity
+Message-Id: <20080104131340.6e2a26b6.pj@sgi.com>
+In-Reply-To: <91b13c310801040738h75465241wa1179d0e06131354@mail.gmail.com>
+References: <1199430221-28417-1-git-send-email-crquan@gmail.com>
+	<20080104015421.cc7a89f7.pj@sgi.com>
+	<91b13c310801040738h75465241wa1179d0e06131354@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 04, 2008 at 05:30:00PM +0100, Andi Kleen wrote:
-> 
-> Exactly. And looking at the patch the old code was already perfectly
-> readable anyways. Benefit about zero.
+rael wrote:
+> length check copied from kernel/irq/proc.c, now 'page' buffer couldn't
+> be overrun,
 
-File this under the "checkpatch.pl" considered harmful category....
-The problem is not with the tool, but that at least *some* people seem
-to think that making checkpatch.pl be completely silent is somehow
-this holy grail that will make kernel code bug-free(tm).  (And of
-course, people who want to encode nazi-like coding conventions and to
-force all of the kernel to use a single coding convention as if that
-somehow would improve the kernel's quality.  Some of that is OK, but
-as long as the code is readable, do we really care about whether or
-not the code is using exactly the same coding conventions everyplace?
-Or, pressuring maintainers not to ignore cleanup patches lest they be
-viewed as "bad" maintainers?)
+Thanks.
 
-Personally I find it annoying, but I'm willing to live with the
-cleanup patches.  I don't think they add anything, though.  Maybe I
-should be more cranky about such patches....
+> although Documentation/filesystems/proc.txt is heavily outdated,
+> I'll add introduction of smp_affinity.
 
-> The recent flurry of cleanup code patches on l-k causes far more
-> problems than it solves. I'm not even sure why people do this? Just
-> because it is en vogue recently? 
+Good - my usual benchmark for documentation is that at least one place
+in the code or associated documentation clearly describes things.
 
-I don't know, because people want to be able to say that they've
-contributed fixes to the Linux kernel?
+My main concern in this patch was that there were zero instances of
+documentation of this new /proc file.  The patch should include a text
+explanation of this feature, and put it somewhere.
 
-I will say that in past kernel summit program commitees, the
-perception that someone _only_ submitted trivial patches (i.e.,
-whitespace-only, spelling fixes in comments, etc.) has sometimes been
-perceived a negative factor towards whether the program committee
-might consider that person to be useful contributor to discussions at
-the kernel summit....  So people should be warned (I would have hoped
-that it would be obvious), that submitting vast number of trivial
-cleanup patches without contributing anything else will very likely
-not work, and possibly backfire if that is your goal.
+Documentation/filesystems/proc.txt looked like a reasonable place, but
+I don't really care where, nor do I lose as much sleep as I should when
+some documentation is incomplete or stale.  Just so long as everything
+is clearly explained somewhere.
 
-							- Ted
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
