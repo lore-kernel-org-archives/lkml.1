@@ -1,60 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755694AbYADWrM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755258AbYADWzX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755694AbYADWrM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 17:47:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754852AbYADWq7
+	id S1755258AbYADWzX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 17:55:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbYADWzL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 17:46:59 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:47279 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754840AbYADWq6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 17:46:58 -0500
-Date: Fri, 4 Jan 2008 17:46:41 -0500
-To: Andi Kleen <ak@suse.de>
-Cc: Joe Perches <joe@perches.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Ingo Molnar <mingo@elte.hu>, peterz@infradead.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH x86] [5/16] Replace hard coded reservations in x86-64
-	early boot code with dynamic table II
-Message-ID: <20080104224641.GE14827@fieldses.org>
-References: <20080103442.621670000@suse.de> <20080104180650.GA2998@bingen.suse.de> <1199472453.4888.19.camel@localhost> <200801042313.14551.ak@suse.de>
+	Fri, 4 Jan 2008 17:55:11 -0500
+Received: from fk-out-0910.google.com ([209.85.128.189]:17254 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753709AbYADWzJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 17:55:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=cCBHqzlUZBVrmyzDhbDsFsiy3qQBJN40Smwbc+VmBcetMkYbVt5rYIo0+/SMEJit4tm9NT3KbRcbNA/MGyMhGvhJcNq7LzzpQpPFSiU+FAbqF1Rwk86pWQt9vKhmrgIJHwIOd7Ul/e3C0tGIP970y+eEZztLfjVg5z+CFpqnP5g=
+Message-ID: <477EB949.5040409@gmail.com>
+Date: Fri, 04 Jan 2008 23:55:05 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200801042313.14551.ak@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+To: Phil Endecott <phil_wueww_endecott@chezphil.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: strace, accept(), ERESTARTSYS and EINTR
+References: <1199480498017@dmwebmail.japan.chezphil.org>
+In-Reply-To: <1199480498017@dmwebmail.japan.chezphil.org>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 04, 2008 at 11:13:14PM +0100, Andi Kleen wrote:
-> On Friday 04 January 2008 19:47:33 Joe Perches wrote:
-> > On Fri, 2008-01-04 at 19:06 +0100, Andi Kleen wrote:
-> > > But the problem with your "rule" is that every of the hundreds
-> > > of Linux kernel contributors will need to do the same. And that's just 
-> > > ineffecient, waste of valuable human work and just doesn't make much sense.
-> > > 
-> > > It certainly won't improve Linux in any way.
-> > 
-> > What I would prefer is a git option that supports
-> > check-in/outs in a coding style of a user choice.
+On 01/04/2008 10:01 PM, Phil Endecott wrote:
+> Dear Experts,
 > 
-> I'm not very deep into git specifics, but for the spaces<->tab problem
-> I suspect some kind of commit hook script would be the correct solution.
-> i.e. always convert them in newly changed lines as comitted.
+> I have some code like this:
+> 
+> struct sockaddr_in client_addr;
+> socklen_t client_size=sizeof(client_addr);
+> int connfd = accept(fd,(struct sockaddr*)(&client_addr),&client_size);
+> if (connfd==-1) {
+>   // [1]
+>   .....report error and terminate......
+> }
+> int rc = fcntl(connfd,F_SETFD,FD_CLOEXEC);
 
-If you've got the very latest git, after
+show socket() call please to see what proto and type you have there.
 
-	cd linux-2.6/
-	echo "* whitespace" >.gitattributes
+> I believe that I should be checking for errno==EINTR at [1] and retrying
+> the accept(); currently I'm not doing so.
+> 
+> When I strace -f this application - which is multi-threaded - I see this:
+> 
+> [pid 11079] accept(3,  <unfinished ...>
+> [pid 11093] restart_syscall(<... resuming interrupted call ...>
+> <unfinished ...>
+> [pid  8799] --- SIGSTOP (Stopped (signal)) @ 0 (0) ---
+> [pid 11079] <... accept resumed> 0xbfdaa73c, [16]) = ? ERESTARTSYS (To
+> be restarted)
+> [pid  8799] read(6,  <unfinished ...>
+> [pid 11079] fcntl64(-512, F_SETFD, FD_CLOEXEC) = -1 EBADF (Bad file
+> descriptor)
+> 
+> This shows accept() "returning" ERESTARTSYS; as I understand it this is
+> an artefact of how strace works, and my code will not have seen accept
+> return at all at that point.  However, the strace output does not show
+> any other return from the call to accept() before reporting that
+> thread's call to fcntl().  And the first parameter to fcntl, -512, is
+> the return value from accept() which should be -1 or >0.  What is going
+> on here???
+> 
+> Google found a couple of related reports:
+> 
+> http://lkml.org/lkml/2001/11/22/65 - Phil Howard reports getting
+> ERESTARTSYS returned from accept(), not only in the strace output, and
+> fixed his problem by treating it like EINTR.  He looked at errno if
+> accept() returned <0, not ==-1.
+> 
+> http://lkml.org/lkml/2005/9/20/135 - Peter Duellings reports seeing
+> accept() return -512 with errno==0.
 
-it'll treat any spaces in initial whitespace that could have been tabs
-as bad whitespace, for the purposes of commands like git-am.  (So e.g.
+ERESTARTSYS might be returned from system calls only when signal is pending.
+Signal handler will change ERESTARTSYS to proper userspace error, i.e.
+ERESTARTSYS (512) must not leak to userspace.
 
-	git-am --whitespace=fix mbox
-
-will rewrite such stuff with tabs.)  For details search for whitespace
-in the gitattributes, git-config, and git-apply man pages....
-
---b.
+Some fail paths returns ERESTARTSYS even if no signal is pending and that used
+to be the point.
