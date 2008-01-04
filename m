@@ -1,87 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754336AbYADUTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbYADU0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754336AbYADUTR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 15:19:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbYADUTB
+	id S1754272AbYADU0c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 15:26:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYADU0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 15:19:01 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:54189 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752599AbYADUTA (ORCPT
+	Fri, 4 Jan 2008 15:26:23 -0500
+Received: from os.inf.tu-dresden.de ([141.76.48.99]:36361 "EHLO
+	os.inf.tu-dresden.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752565AbYADU0W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 15:19:00 -0500
-Subject: Re: PIT clocksource makes invalid assumptions
-From: john stultz <johnstul@us.ibm.com>
-To: Dan Hecht <dhecht@vmware.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <477D7548.9070400@vmware.com>
-References: <477D7548.9070400@vmware.com>
-Content-Type: text/plain
-Date: Fri, 04 Jan 2008 12:18:58 -0800
-Message-Id: <1199477938.6327.18.camel@localhost.localdomain>
+	Fri, 4 Jan 2008 15:26:22 -0500
+X-Greylist: delayed 3019 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Jan 2008 15:26:22 EST
+Date: Fri, 4 Jan 2008 20:35:58 +0100
+From: "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: memory remapping, 4gb memory on 945gt
+Message-ID: <20080104203558.73dd04a4@laptop.hypervisor.org>
+In-Reply-To: <p73lk758sri.fsf@bingen.suse.de>
+References: <20080104154914.GA589@codeblau.de>
+	<p73lk758sri.fsf@bingen.suse.de>
+X-Mailer: X-Mailer 5.0 Gold
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; boundary="Sig_/Ex7QAu_JoH+Pa0/=dKCyhGP";
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Sig_/Ex7QAu_JoH+Pa0/=dKCyhGP
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2008-01-03 at 15:52 -0800, Dan Hecht wrote:
-> Looking at pit_read() in arch/x86/kernel/i8253.c, it seems that the PIT 
-> clocksource code assumes that the PIT CH0 is in periodic mode.  With 
-> clockevents, this assumption is no longer valid.  There are at least two 
-> places that make this assumption:
-> 
-> 1) The calculation at the end of pit_read() assumes that the PIT is in 
-> periodic mode.  This isn't true unless the PIT is the current clockevent 
-> and nohz is inactive.  (Though #2 can end up forcing the PIT to be 
-> reprogrammed).
-> 
-> 2) The PIT clockevent is shutdown by using PIT mode 0 (interrupt on 
-> terminal count) -- doesn't the PIT counter continue to count (even 
-> though it won't be raising an interrupt)?  If so, the test in pit_read() 
-> under the VIA686a comment can succeed after the PIT clockevent has been 
-> shutdown, and the PIT hardware may be reprogrammed to start firing 
-> interrupts again.  This doesn't seem intentional, and can defeat nohz 
-> since now the PIT is firing periodically.
-> 
-> Seems these problems can happen when the PIT is used as the clocksource 
-> or even just the clocksource watchdog.  It looks like there is some code 
-> in clocksource.c that checks for CLOCK_SOURCE_IS_CONTINUOUS, which is 
-> not set for the PIT clocksource, but it doesn't seem to be strong enough 
-> to prevent these problematic scenarios (and it's not clear if that is 
-> the intent of IS_CONTINUOUS anyway).
+On Fri, 04 Jan 2008 17:22:57 +0100 Andi Kleen (AK) wrote:
 
-The clocksource in use must have IS_CONTINUOUS set before we go into
-HRT/no_hz mode, so I think the situations above should not be possible
-(although I've not had a chance to check the current code).
+AK> felix-linuxkernel@fefe.de writes:
+AK>=20
+AK> > I recently put 4 GB of memory in my Acer Travelmate 8210 series
+AK> > notebook.  The BIOS only detects 3 GB.
+AK>=20
+AK> Actually it will detect 4GB, but put the PCI hole over the last GB.
+AK> One way to get more usable memory is to configure the BIOS to use a
+AK> smaller PCI hole (e.g. use smaller frame buffer/aperture etc.)
+AK>=20
+AK> > I googled around a little.  It appears to be a chipset limitation of
+AK> > the 945gt, which uses the fourth gig for devices.
+AK> >
+AK> > Now I can understand this explanation for 32-bit mode, but I'm running
+AK> > in 64-bit mode.  There should be a way to use the fourth gig under
+AK> > Linux.  Is there?
+AK>=20
+AK> The chipset limitation applies to 64bit mode as well as to 32bit mode
+AK> (which actually does not have a 4GB limitation with PAE)
 
-> To verify this really can happen, when I boot a kernel, I can see this 
-> sequence:
-> 
->    init_pit_timer (with mode==CLOCK_EVT_MODE_PERIODIC)
->    init_pit_timer (with mode==CLOCK_EVT_MODE_UNUSED)
->    init_pit_timer (with mode==CLOCK_EVT_MODE_SHUTDOWN)
->    pit_read() and count > LATCH (I believe the PIT is the watchdog at 
-> this point), which causes the PIT to raise periodic interrupts.
-> 
-> (Shortly after, the acpi pm clocksource is registered and replaces the 
-> PIT as the watchdog.  Later, the PIT clockevent is used as the broadcast 
-> clockevent and reprogrammed into one-shot mode, stopping the PIT 
-> interrupts.)
-> 
-> Also, the user could force the PIT clocksource to be current_clocksource 
-> even though the PIT is in one-shot mode (and therefore the calculation 
-> in pit_read is bogus).
+Using a 64-bit or PAE kernel won't give access to more than 4GB of RAM
+because that only increases the linear address space of the CPU to 48 or
+36 bits respectively. The limitation with 945GT is that the chipset only
+supports 32-bit physical addresses. As Andi already pointed out, parts of
+that 4GB physical address space are used by devices and their apertures,
+so you can only try to shrink those devices ranges, if configurable, but
+you won't be able to use the full 4GB RAM.
 
-Does this actually happen and cause problems? I thought there was some
-code to make sure we disable HRT/no_hz if we install a clocksource that
-does not have IS_CONTINUOUS set.
+Cheers,
 
-thanks
--john
+	- Udo
 
+--Sig_/Ex7QAu_JoH+Pa0/=dKCyhGP
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
+iD8DBQFHfoqenhRzXSM7nSkRAvnTAJ4n69TFPwF8kAHel/PdG7ZTM1pJ8QCfZ504
+DofO1GiYXpNL31I6y2+XsH0=
+=hcLQ
+-----END PGP SIGNATURE-----
+
+--Sig_/Ex7QAu_JoH+Pa0/=dKCyhGP--
