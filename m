@@ -1,113 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755295AbYADVNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755406AbYADVN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755295AbYADVNk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 16:13:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753746AbYADVNG
+	id S1755406AbYADVN6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 16:13:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754937AbYADVNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 16:13:06 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:38027 "EHLO
+	Fri, 4 Jan 2008 16:13:12 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:37216 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754764AbYADVNC (ORCPT
+	with ESMTP id S1754869AbYADVNK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 16:13:02 -0500
+	Fri, 4 Jan 2008 16:13:10 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=fh9Ghm/Vy5yUYBQM+WTg7UuP3WVWE5ra/LSrUyWAuigxStXW2lne+vLagYxCOYOzj6gnIG9MLE07fvYMxXBNPYqJckeM4vhpYyj+O8V3wEdYtiRUU7pDBPmjsEho+GGxTfIyV4z0aLvP0SvMg58WvOyMkGu4IB3+qfymBKAyWm0=
+        b=TMjbevhzx0cPweixsPehTqPtxQa+702+v7aVG/0LmDXV4H7X2c8TZyBqzfkTGge+QbCgKt025tvtyURbMnKiGPmIcfSbb1YqiqhkNQvsapivInPHvAoZyNEqT4E2Zu7yQOSf/3CWKg8UpURfTRu06pF+ADqtapDTi9jeA4CFv5M=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Fri, 04 Jan 2008 22:24:39 +0100
-Message-Id: <20080104212439.6978.95269.sendpatchset@localhost.localdomain>
+Date: Fri, 04 Jan 2008 22:24:46 +0100
+Message-Id: <20080104212446.6978.63773.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080104212424.6978.93646.sendpatchset@localhost.localdomain>
 References: <20080104212424.6978.93646.sendpatchset@localhost.localdomain>
-Subject: [PATCH 2/15] ide: move wait_hwif_ready() documentation in the right place
+Subject: [PATCH 3/15] ide: remove hwif->present manipulations from hwif_init()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Move wait_hwif_ready() documentation before this function.
+* Call hwif_init() only if hwif->present is set.
 
-* Fix trailing whitespaces.
+* If hwif_init() fails clear hwif->present.
 
-* s/wait-for-busy/wait-for-non-busy/
-
-* Remove no longer valid comment about the current code behavior.
-
-* Docbook-ize it.
-
-* Rename wait_hwif_ready() to ide_port_wait_ready().
+* Remove hwif->present manipulations from hwif_init().
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-probe.c |   49 +++++++++++++++++++++++++++---------------------
- 1 file changed, 28 insertions(+), 21 deletions(-)
+-24 bytes
+ drivers/ide/ide-probe.c |   18 ++++++------------
+ 1 file changed, 6 insertions(+), 12 deletions(-)
 
 Index: b/drivers/ide/ide-probe.c
 ===================================================================
 --- a/drivers/ide/ide-probe.c
 +++ b/drivers/ide/ide-probe.c
-@@ -634,7 +634,33 @@ static void hwif_register (ide_hwif_t *h
- 			__FUNCTION__, ret);
- }
- 
--static int wait_hwif_ready(ide_hwif_t *hwif)
-+/**
-+ *	ide_port_wait_ready	-	wait for port to become ready
-+ *	@hwif: IDE port
-+ *
-+ *	This is needed on some PPCs and a bunch of BIOS-less embedded
-+ *	platforms.  Typical cases are:
-+ *
-+ *	- The firmware hard reset the disk before booting the kernel,
-+ *	  the drive is still doing it's poweron-reset sequence, that
-+ *	  can take up to 30 seconds.
-+ *
-+ *	- The firmware does nothing (or no firmware), the device is
-+ *	  still in POST state (same as above actually).
-+ *
-+ *	- Some CD/DVD/Writer combo drives tend to drive the bus during
-+ *	  their reset sequence even when they are non-selected slave
-+ *	  devices, thus preventing discovery of the main HD.
-+ *
-+ *	Doing this wait-for-non-busy should not harm any existing
-+ *	configuration and fix some issues like the above.
-+ *
-+ *	BenH.
-+ *
-+ *	Returns 0 on success, error code (< 0) otherwise.
-+ */
-+
-+static int ide_port_wait_ready(ide_hwif_t *hwif)
+@@ -1245,28 +1245,21 @@ static int hwif_init(ide_hwif_t *hwif)
  {
- 	int unit, rc;
+ 	int old_irq;
  
-@@ -742,26 +768,7 @@ static void probe_hwif(ide_hwif_t *hwif)
+-	/* Return success if no device is connected */
+-	if (!hwif->present)
+-		return 1;
+-
+ 	if (!hwif->irq) {
+ 		if (!(hwif->irq = ide_default_irq(hwif->io_ports[IDE_DATA_OFFSET])))
+ 		{
+ 			printk("%s: DISABLED, NO IRQ\n", hwif->name);
+-			return (hwif->present = 0);
++			return 0;
+ 		}
+ 	}
+ #ifdef CONFIG_BLK_DEV_HD
+ 	if (hwif->irq == HD_IRQ && hwif->io_ports[IDE_DATA_OFFSET] != HD_DATA) {
+ 		printk("%s: CANNOT SHARE IRQ WITH OLD "
+ 			"HARDDISK DRIVER (hd.c)\n", hwif->name);
+-		return (hwif->present = 0);
++		return 0;
+ 	}
+ #endif /* CONFIG_BLK_DEV_HD */
  
- 	local_irq_set(flags);
+-	/* we set it back to 1 if all is ok below */	
+-	hwif->present = 0;
+-
+ 	if (register_blkdev(hwif->major, hwif->name))
+ 		return 0;
  
--	/* This is needed on some PPCs and a bunch of BIOS-less embedded
--	 * platforms. Typical cases are:
--	 * 
--	 *  - The firmware hard reset the disk before booting the kernel,
--	 *    the drive is still doing it's poweron-reset sequence, that
--	 *    can take up to 30 seconds
--	 *  - The firmware does nothing (or no firmware), the device is
--	 *    still in POST state (same as above actually).
--	 *  - Some CD/DVD/Writer combo drives tend to drive the bus during
--	 *    their reset sequence even when they are non-selected slave
--	 *    devices, thus preventing discovery of the main HD
--	 *    
--	 *  Doing this wait-for-busy should not harm any existing configuration
--	 *  (at least things won't be worse than what current code does, that
--	 *  is blindly go & talk to the drive) and fix some issues like the
--	 *  above.
--	 *  
--	 *  BenH.
--	 */
--	if (wait_hwif_ready(hwif) == -EBUSY)
-+	if (ide_port_wait_ready(hwif) == -EBUSY)
- 		printk(KERN_DEBUG "%s: Wait for ready failed before probe !\n", hwif->name);
+@@ -1305,10 +1298,7 @@ static int hwif_init(ide_hwif_t *hwif)
  
- 	/*
+ done:
+ 	init_gendisk(hwif);
+-
+ 	ide_acpi_init(hwif);
+-
+-	hwif->present = 1;	/* success */
+ 	return 1;
+ 
+ out:
+@@ -1352,9 +1342,13 @@ int ide_device_add_all(u8 *idx)
+ 
+ 		hwif = &ide_hwifs[idx[i]];
+ 
++		if (!hwif->present)
++			continue;
++
+ 		if (hwif_init(hwif) == 0) {
+ 			printk(KERN_INFO "%s: failed to initialize IDE "
+ 					 "interface\n", hwif->name);
++			hwif->present = 0;
+ 			rc = -1;
+ 			continue;
+ 		}
