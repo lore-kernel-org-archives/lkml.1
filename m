@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758336AbYADCxE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758469AbYADCzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758336AbYADCxE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 21:53:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbYADCwx
+	id S1758469AbYADCzT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 21:55:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbYADCzF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 21:52:53 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:27195 "EHLO
-	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752255AbYADCww (ORCPT
+	Thu, 3 Jan 2008 21:55:05 -0500
+Received: from tama555.ecl.ntt.co.jp ([129.60.39.106]:59526 "EHLO
+	tama555.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752821AbYADCzE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 21:52:52 -0500
-Date: Thu, 03 Jan 2008 20:51:57 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: sata_nv + ADMA + Samsung disk problem
-In-reply-to: <F72FA20C31DD4F4C997B91C5B3690A09505598@hqemmail07.nvidia.com>
-To: Allen Martin <AMartin@nvidia.com>
-Cc: Mark Lord <lkml@rtr.ca>, Jeff Garzik <jeff@garzik.org>,
-       Tejun Heo <htejun@gmail.com>, Gabor Gombas <gombasg@sztaki.hu>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Kuan Luo <kluo@nvidia.com>, Peer Chen <pchen@nvidia.com>
-Message-id: <477D9F4D.5030807@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <20070808120804.GB5257@boogie.lpds.sztaki.hu>
- <20080101164416.GA29574@boogie.lpds.sztaki.hu> <477B0429.7040909@gmail.com>
- <477B0CFD.1030603@shaw.ca>
- <F72FA20C31DD4F4C997B91C5B3690A09505577@hqemmail07.nvidia.com>
- <477BDEA5.8040701@garzik.org>
- <F72FA20C31DD4F4C997B91C5B3690A0950557D@hqemmail07.nvidia.com>
- <477C2A99.9010208@shaw.ca> <477C61D3.30009@rtr.ca> <477C6A85.9020607@shaw.ca>
- <F72FA20C31DD4F4C997B91C5B3690A09505598@hqemmail07.nvidia.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Thu, 3 Jan 2008 21:55:04 -0500
+To: James.Bottomley@HansenPartnership.com, dillowda@ornl.gov
+Cc: linux-scsi@vger.kernel.org, tomof@acm.org, rdreier@cisco.com,
+       linux-kernel@vger.kernel.org, general@lists.openfabrics.org,
+       fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [2.6.24-rc BUGFIX] SRP transport: only remove our own entries
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1199414089.3636.7.camel@obelisk.thedillows.org>
+References: <1199393485.7561.51.camel@lap75545.ornl.gov>
+	<20080104094722F.fujita.tomonori@lab.ntt.co.jp>
+	<1199414089.3636.7.camel@obelisk.thedillows.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080104115417Q.fujita.tomonori@lab.ntt.co.jp>
+Date: Fri, 04 Jan 2008 11:54:17 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allen Martin wrote:
->  
->>> Dunno about the NVidia version.
->> Theirs works rather differently - the GO bit is there, but there's 
->> another append register which is used to tell the controller 
->> that a new 
->> tag has been added to the CPB list.
->>
->> The only thing we currently use the GO bit for is to switch 
->> between ADMA 
->> and port register mode. Could be there's something we need to 
->> do there, 
->> though, who knows..
->>
-> 
-> You shouldn't ever need to touch GO other than the ADMA / legacy mode
-> switch as you say.
-> 
-> The NVIDIA ADMA hw is not based on the Pacific Digital core.
+On Thu, 03 Jan 2008 21:34:49 -0500
+Dave Dillow <dillowda@ornl.gov> wrote:
 
-That answers that question, I guess. Still guessing at why the 
-controller would get stuck in IDLE state with no interrupt raised, then..
+> The SCSI SRP transport class currently iterates over all children
+> devices of the host that is being removed in srp_remove_host(). However,
+> not all of those children were created by the SRP transport, and
+> removing them will cause corruption and an oops when their creator tries
+> to remove them.
+> 
+> Signed-off-by: David Dillow <dillowda@ornl.gov>
+> Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> ---
+
+Thanks!
+
+James, please put this patch into scsi-rc-fixes.
+
+> On Fri, 2008-01-04 at 09:47 +0900, FUJITA Tomonori wrote:
+> > On Thu, 03 Jan 2008 15:51:25 -0500
+> > I think that this is the root problem and the patch fixes it in the
+> > right way. Please send this patch to linux-scsi@vger.kernel.org and a
+> > patch to move srp_remove_host before scsi_remove_host in
+> > srp_remove_one to Roland.
+> > 
+> > Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> 
+> diff --git a/drivers/scsi/scsi_transport_srp.c b/drivers/scsi/scsi_transport_srp.c
+> index 44a340b..65c584d 100644
+> --- a/drivers/scsi/scsi_transport_srp.c
+> +++ b/drivers/scsi/scsi_transport_srp.c
+> @@ -265,7 +265,8 @@ EXPORT_SYMBOL_GPL(srp_rport_del);
+>  
+>  static int do_srp_rport_del(struct device *dev, void *data)
+>  {
+> -	srp_rport_del(dev_to_rport(dev));
+> +	if (scsi_is_srp_rport(dev))
+> +		srp_rport_del(dev_to_rport(dev));
+>  	return 0;
+>  }
+>  
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
