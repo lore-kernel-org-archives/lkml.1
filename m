@@ -1,69 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757437AbYADJxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752091AbYADKOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757437AbYADJxx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 04:53:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753808AbYADJxq
+	id S1752091AbYADKOo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 05:14:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750855AbYADKOj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 04:53:46 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49088 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752821AbYADJxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 04:53:45 -0500
-Date: Fri, 4 Jan 2008 10:53:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       John Stultz <johnstul@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH x86] [16/16] Mark memory_setup __init
-Message-ID: <20080104095324.GA6302@elte.hu>
-References: <20080103442.621670000@suse.de> <20080103154231.0856214EFF@wotan.suse.de> <20080104092501.GA2189@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080104092501.GA2189@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 4 Jan 2008 05:14:39 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54574
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750799AbYADKOi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 05:14:38 -0500
+Date: Fri, 04 Jan 2008 02:14:37 -0800 (PST)
+Message-Id: <20080104.021437.238302886.davem@davemloft.net>
+To: matthias@goebl.net
+Cc: linux-kernel@vger.kernel.org, kkeil@suse.de, kai.germaschewski@gmx.de
+Subject: Re: [PATCH] isdn/i4l: Fix DLE handling for i4l-audio
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080103220003.GU19071@night.goebl.net>
+References: <20080103220003.GU19071@night.goebl.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Matthias Goebl <matthias@goebl.net>
+Date: Thu, 3 Jan 2008 23:00:03 +0100
 
-btw., as a sidenote, all of your recent patches to lkml had one or two 
-missing Cc:s.
+> --- linux-2.6.23.12.orig/drivers/isdn/i4l/isdn_tty.c	2007-12-22 21:13:49.000000000 +0100
+> +++ linux-2.6.23.12/drivers/isdn/i4l/isdn_tty.c	2007-12-26 11:37:18.000000000 +0100
+> @@ -85,6 +85,8 @@
+>  								tty_insert_flip_char(tty, DLE, 0);
+>  							tty_insert_flip_char(tty, *dp++, 0);
+>  						}
+> +						if (*dp == DLE)
+> +							tty_insert_flip_char(tty, DLE, 0);
+>  						last = *dp;
+>  					} else {
+>  #endif
 
-for lockdep patches, please Cc:
+I'm not sure this part is correct.
 
-   Peter Zijlstra <a.p.zijlstra@chello.nl>
-   Ingo Molnar <mingo@elte.hu>
+Here, *dp will be assigned to 'last'.
 
-for genirq patches, please Cc:
+The rest of the code (after the else block) then reads:
 
-   Thomas Gleixner <tglx@linutronix.de>
-   Ingo Molnar <mingo@elte.hu>
+					if (info->emu.mdmreg[REG_CPPP] & BIT_CPPP)
+						tty_insert_flip_char(tty, last, 0xFF);
+					else
+						tty_insert_flip_char(tty, last, TTY_NORMAL);
 
-for timer/clocksource/clockevents patches please Cc:
+which should push that character out to the TTY.
 
-   Thomas Gleixner <tglx@linutronix.de>
-   John Stultz <johnstul@us.ibm.com>
-   Ingo Molnar <mingo@elte.hu>
+With your change we will push a DLE out twice in such a case,
+and that doesn't seem right.
 
-for x86 patches, please Cc:
-
-   Thomas Gleixner <tglx@linutronix.de>
-   "H. Peter Anvin" <hpa@zytor.com>
-   Ingo Molnar <mingo@elte.hu>
-
-having a complete Cc: line makes it easier to coordinate patches - 
-especially for larger patchbombs. Thanks,
-
-	Ingo
