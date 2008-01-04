@@ -1,54 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbYADILL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756414AbYADIZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755992AbYADILL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 03:11:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbYADIK5
+	id S1756414AbYADIZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 03:25:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbYADIZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 03:10:57 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60562 "EHLO mx3.mail.elte.hu"
+	Fri, 4 Jan 2008 03:25:18 -0500
+Received: from mga03.intel.com ([143.182.124.21]:50036 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752577AbYADIK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 03:10:56 -0500
-Date: Fri, 4 Jan 2008 09:10:43 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: Improve hackbench
-Message-ID: <20080104081043.GA23046@elte.hu>
-References: <1199426786.3298.64.camel@ymzhang>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1199426786.3298.64.camel@ymzhang>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0148]
+	id S1753356AbYADIZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 03:25:16 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,244,1196668800"; 
+   d="scan'208";a="357409001"
+Subject: [PATCH linux-acpi] fix acpi fan state set error
+From: Yi Yang <yi.y.yang@intel.com>
+Reply-To: yi.y.yang@intel.com
+To: linux-acpi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, lenb@kernel.org,
+       acpi-bugzilla@lists.sourceforge.net
+In-Reply-To: <1198916553.3806.2.camel@yangyi-dev.bj.intel.com>
+References: <1198738022.8950.3.camel@yangyi-dev.bj.intel.com>
+	 <1198744900.3640.4.camel@yangyi-dev.bj.intel.com>
+	 <1198916553.3806.2.camel@yangyi-dev.bj.intel.com>
+Content-Type: text/plain
+Organization: Intel
+Date: Fri, 04 Jan 2008 16:16:42 +0800
+Message-Id: <1199434602.19185.1.camel@yangyi-dev.bj.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Subject: ACPI: fix acpi fan state set error
+From: Yi Yang <yi.y.yang@intel.com>
 
-* Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
+Under /proc/acpi, there is a fan control interface, a user can
+set 0 or 3 to /proc/acpi/fan/*/state, 0 denotes D0 state, 3
+denotes D3 state, but in current implementation, a user can
+set a fan to D1 state by any char excluding '1', '2' and '3'.
 
-> hackbench is to test Linux scheduler. The original program is at 
-> http://devresources.linux-foundation.org/craiger/hackbench/src/hackbench.c 
-> Based on this multi-process version, a nice person created a 
-> multi-thread version. Pls. see 
-> http://www.bullopensource.org/posix/pi-futex/hackbench_pth.c
+For example:
 
-great. I've uploaded your unified & improved version to:
+[root@localhost acpi]# cat /proc/acpi/fan/C31B/state
+status:                  off
+[root@localhost acpi]# echo "" > /proc/acpi/fan/C31B/state
+[root@localhost acpi]# cat /proc/acpi/fan/C31B/state
+status:                  on
+[root@localhost acpi]# echo "3" > /proc/acpi/fan/C31B/state
+[root@localhost acpi]# cat /proc/acpi/fan/C31B/state
+status:                  off
+[root@localhost acpi]# echo "xxxxx" > /proc/acpi/fan/C31B/state
+[root@localhost acpi]# cat /proc/acpi/fan/C31B/state
+status:                  on
 
-  http://redhat.com/~mingo/cfs-scheduler/tools/hackbench.c
+Obviously, such inputs as "" and "xxxxx" are invalid for fan state.
 
-(i made some small changes - two warning fixes on gcc 4.2 and a default 
-of 10 groups when hackbench is called without parameters, plus a 
-printout.)
+This patch fixes this issue, it strictly limits fan state only to
+accept 0, 1, 2 and 3, any other inputs are invalid.
 
-	Ingo
+Before applying this patch, the test result is:
+
+[root@localhost acpi]# cat /proc/acpi/fan/C31B/state
+status:                  off
+[root@localhost acpi]# echo "" > /proc/acpi/fan/C31B/state
+[root@localhost acpi]# cat /proc/acpi/fan/C31B/state
+status:                  on
+[root@localhost acpi]# echo "3" > /proc/acpi/fan/C31B/state
+[root@localhost acpi]# cat /proc/acpi/fan/C31B/state
+status:                  off
+[root@localhost acpi]# echo "xxxxx" > /proc/acpi/fan/C31B/state
+[root@localhost acpi]# cat /proc/acpi/fan/C31B/state
+status:                  on
+[root@localhost acpi]# echo "3" > /proc/acpi/fan/C31B/state
+[root@localhost acpi]# cat /proc/acpi/fan/C31B/state
+status:                  off
+[root@localhost acpi]# echo "3x" > /proc/acpi/fan/C31B/state
+[root@localhost acpi]# cat /proc/acpi/fan/C31B/state
+status:                  off
+[root@localhost acpi]# echo "-1x" > /proc/acpi/fan/C31B/state
+[root@localhost acpi]# cat /proc/acpi/fan/C31B/state
+status:                  on
+[root@localhost acpi]#
+
+
+After applying this patch, the test result is:
+
+[root@localhost ~]# cat /proc/acpi/fan/C31B/state
+status:                  off
+[root@localhost ~]# echo "" > /proc/acpi/fan/C31B/state
+-bash: echo: write error: Invalid argument
+[root@localhost ~]# cat /proc/acpi/fan/C31B/state
+status:                  off
+[root@localhost ~]# echo "3" > /proc/acpi/fan/C31B/state
+[root@localhost ~]# cat /proc/acpi/fan/C31B/state
+status:                  off
+[root@localhost ~]# echo "xxxxx" > /proc/acpi/fan/C31B/state
+-bash: echo: write error: Invalid argument
+[root@localhost ~]# cat /proc/acpi/fan/C31B/state
+status:                  off
+[root@localhost ~]# echo "-1x" > /proc/acpi/fan/C31B/state
+-bash: echo: write error: Invalid argument
+[root@localhost ~]# cat /proc/acpi/fan/C31B/state
+status:                  off
+[root@localhost ~]# echo "0" > //proc/acpi/fan/C31B/state
+[root@localhost ~]# cat /proc/acpi/fan/C31B/state
+status:                  on
+[root@localhost ~]# echo "4" > //proc/acpi/fan/C31B/state
+-bash: echo: write error: Invalid argument
+[root@localhost ~]# cat /proc/acpi/fan/C31B/state
+status:                  on
+[root@localhost ~]# echo "3" > //proc/acpi/fan/C31B/state
+[root@localhost ~]# cat /proc/acpi/fan/C31B/state
+status:                  off
+[root@localhost ~]# echo "0" > //proc/acpi/fan/C31B/state
+[root@localhost ~]# cat /proc/acpi/fan/C31B/state
+status:                  on
+[root@localhost ~]# echo "3x" > //proc/acpi/fan/C31B/state
+-bash: echo: write error: Invalid argument
+[root@localhost ~]#
+
+
+Signed-off-by: Yi Yang <yi.y.yang@intel.com>
+---
+ fan.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/acpi/fan.c b/drivers/acpi/fan.c
+index a5a5532..53f7c72 100644
+--- a/drivers/acpi/fan.c
++++ b/drivers/acpi/fan.c
+@@ -98,7 +98,7 @@ acpi_fan_write_state(struct file *file, const char __user * buffer,
+ 	int result = 0;
+ 	struct seq_file *m = file->private_data;
+ 	struct acpi_device *device = m->private;
+-	char state_string[12] = { '\0' };
++	char state_string[3] = { '\0' };
+ 
+ 	if (count > sizeof(state_string) - 1)
+ 		return -EINVAL;
+@@ -107,6 +107,12 @@ acpi_fan_write_state(struct file *file, const char __user * buffer,
+ 		return -EFAULT;
+ 
+ 	state_string[count] = '\0';
++	if ((state_string[0] < '0') || (state_string[0] > '3'))
++		return -EINVAL;
++	if (state_string[1] == '\n')
++		state_string[1] = '\0';
++	if (state_string[1] != '\0')
++		return -EINVAL;
+ 
+ 	result = acpi_bus_set_power(device->handle,
+ 				    simple_strtoul(state_string, NULL, 0));
+
+
