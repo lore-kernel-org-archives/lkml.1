@@ -1,1159 +1,967 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbYADR2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301AbYADRiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754148AbYADR2a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 12:28:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYADR2V
+	id S1754301AbYADRiG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 12:38:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbYADRhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 12:28:21 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:43831 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752129AbYADR2S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 12:28:18 -0500
-Date: Fri, 4 Jan 2008 11:26:09 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: paulus@samba.org, linux-kernel@vger.kernel.org, wd@denx.de
-Subject: [PATCH 1/3 v2] Merge mkubootimg tool for building U-Boot images
-Message-ID: <20080104112609.6b678ccc@zod.rchland.ibm.com>
-In-Reply-To: <20080104161336.GB31026@uranus.ravnborg.org>
-References: <20080103160104.171f9aaa@zod.rchland.ibm.com>
-	<20080103160244.6a28519b@zod.rchland.ibm.com>
-	<20080104161336.GB31026@uranus.ravnborg.org>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 4 Jan 2008 12:37:47 -0500
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3691 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751842AbYADRho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 12:37:44 -0500
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: David Miller <davem@davemloft.net>
+Subject: sparc oops in ip_fast_csum
+Date: Fri, 4 Jan 2008 18:37:36 +0100
+User-Agent: KMail/1.9.7
+Cc: sparclinux@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_h7mfH4maOFtMh16"
+Message-Id: <200801041837.37650.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Several platforms require the mkimage tool to generate a uImage file that is
-used with U-Boot.  This brings the mkimage tool in-kernel to enable building
-those platforms without having mkimage externally provided.  The tool is named
-mkubootimg for better clarity.
+--Boundary-00=_h7mfH4maOFtMh16
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-This is currently based off of the version found in U-Boot 1.3.1.
+Hello,
 
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+        This comes from the Linus latest linux-2.6 tree. Randomly happened.
+Can't reproduce that. More info below.
 
----
- scripts/Makefile             |    1 
- scripts/mkubootimg/Makefile  |    6 
- scripts/mkubootimg/crc32.c   |  196 +++++++++++
- scripts/mkubootimg/mkimage.c |  727 +++++++++++++++++++++++++++++++++++++++++++
- scripts/mkubootimg/uimage.h  |  161 +++++++++
- 5 files changed, 1091 insertions(+)
+Unable to handle kernel paging request at virtual address 00000000be286000
+tsk->{mm,active_mm}->context = 0000000000000eae
+tsk->{mm,active_mm}->pgd = fffff800be0e4000
+              \|/ ____ \|/
+              "@'/ .. \`@"
+              /_| \__/ |_\
+                 \__U_/
+isic(9009): Oops [#1]
+TSTATE: 0000008811009606 TPC: 0000000000572f00 TNPC: 0000000000572f04 Y: 00000000    Not tainted
+TPC: <ip_fast_csum+0x48/0x80>
+g0: fffff800bf729d40 g1: 0000000000000000 g2: 00000000624b9fd9 g3: 00000000017c0400
+g4: fffff800be664800 g5: fffff8007f96c000 g6: fffff800be0a0000 g7: ffffffffffffe12a
+o0: fffff800be285ff0 o1: 0000000000000002 o2: 0000098b7f1220bf o3: 0000000000000000
+o4: 0000000000004034 o5: 0000000000000000 sp: fffff800be0a30f1 ret_pc: 00000000006490e0
+RPC: <raw_sendmsg+0x4c8/0x780>
+l0: fffff800be7045a0 l1: fffff800be27e4a0 l2: fffff800be4c8000 l3: fffff800be27e490
+l4: 0000000000000000 l5: 0000000000000010 l6: 0000000000000000 l7: 00000000f7fa97e4
+i0: 0000000000000000 i1: fffff800bf0f8de0 i2: fffff800be0a3e78 i3: 0000000000000055
+i4: 0000000000000000 i5: 00ffffffffffffff i6: fffff800be0a3221 i7: 0000000000653910
+I7: <inet_sendmsg+0x38/0x60>
+Caller[0000000000653910]: inet_sendmsg+0x38/0x60
+Caller[00000000005f8d00]: sock_sendmsg+0x88/0xc0
+Caller[00000000005f90b0]: sys_sendto+0xb8/0x100
+Caller[00000000004062d4]: linux_sparc_syscall32+0x3c/0x40
+Caller[00000000000136cc]: 0x136d4
+Instruction DUMP: 8ea1e001  22480005  852aa010 <c6022010> 106ffff9  01000000  84828002  9530a010  94428000
 
---- linux-2.6.orig/scripts/Makefile
-+++ linux-2.6/scripts/Makefile
-@@ -20,6 +20,7 @@ hostprogs-y += unifdef
+(gdb) l *0x0000000000572f00 
+0x572f00 is at arch/sparc64/lib/ipcsum.S:24.
+19              addccc  %o2, %g0, %o2
+20              subcc   %g7, 1, %g7
+21              be,a,pt %icc, 2f
+22               sll    %o2, 16, %g2
+23      
+24              lduw    [%o0 + 0x10], %g3
+25              ba,pt   %xcc, 1b
+26               nop
+27      2:      addcc   %o2, %g2, %g2
+28              srl     %g2, 16, %o2
+
+The box is sparc64 - sun ultra 60.
+
+# cat /proc/cpuinfo
+cpu             : TI UltraSparc II  (BlackBird)
+fpu             : UltraSparc II integrated FPU
+prom            : OBP 3.17.0 1998/10/23 11:26
+type            : sun4u
+ncpus probed    : 2
+ncpus active    : 2
+D$ parity tl1   : 0
+I$ parity tl1   : 0
+Cpu0ClkTck      : 000000001ad21e13
+Cpu2ClkTck      : 000000001ad21e13
+MMU Type        : Spitfire
+State:
+CPU0:           online
+CPU2:           online
+
+Linux sparc64 2.6.24-rc6 #2 SMP PREEMPT Fri Jan 4 14:12:37 CET 2008 sparc64 sun4u TI UltraSparc II (BlackBird) GNU/Linux
  
- subdir-$(CONFIG_MODVERSIONS) += genksyms
- subdir-y                     += mod
-+subdir-y                     += mkubootimg
- 
- # Let clean descend into subdirs
- subdir-	+= basic kconfig package
---- /dev/null
-+++ linux-2.6/scripts/mkubootimg/Makefile
-@@ -0,0 +1,6 @@
-+hostprogs-y	:= mkubootimg
-+always		:= $(hostprogs-y)
-+
-+mkubootimg-objs	:= mkimage.o crc32.o
-+
-+HOSTCFLAGS_crc32.o := -DUSE_HOSTCC
---- /dev/null
-+++ linux-2.6/scripts/mkubootimg/crc32.c
-@@ -0,0 +1,196 @@
-+/*
-+ * This file is derived from crc32.c from the zlib-1.1.3 distribution
-+ * by Jean-loup Gailly and Mark Adler.
-+ */
-+
-+/* crc32.c -- compute the CRC-32 of a data stream
-+ * Copyright (C) 1995-1998 Mark Adler
-+ * For conditions of distribution and use, see copyright notice in zlib.h
-+ */
-+
-+#ifndef USE_HOSTCC	/* Shut down "ANSI does not permit..." warnings */
-+#include <common.h>
-+#endif
-+
-+#include "zlib.h"
-+
-+#define local static
-+#define ZEXPORT	/* empty */
-+unsigned long crc32 (unsigned long, const unsigned char *, unsigned int);
-+
-+#ifdef DYNAMIC_CRC_TABLE
-+
-+local int crc_table_empty = 1;
-+local uLongf crc_table[256];
-+local void make_crc_table OF((void));
-+
-+/*
-+  Generate a table for a byte-wise 32-bit CRC calculation on the polynomial:
-+  x^32+x^26+x^23+x^22+x^16+x^12+x^11+x^10+x^8+x^7+x^5+x^4+x^2+x+1.
-+
-+  Polynomials over GF(2) are represented in binary, one bit per coefficient,
-+  with the lowest powers in the most significant bit.  Then adding polynomials
-+  is just exclusive-or, and multiplying a polynomial by x is a right shift by
-+  one.  If we call the above polynomial p, and represent a byte as the
-+  polynomial q, also with the lowest power in the most significant bit (so the
-+  byte 0xb1 is the polynomial x^7+x^3+x+1), then the CRC is (q*x^32) mod p,
-+  where a mod b means the remainder after dividing a by b.
-+
-+  This calculation is done using the shift-register method of multiplying and
-+  taking the remainder.  The register is initialized to zero, and for each
-+  incoming bit, x^32 is added mod p to the register if the bit is a one (where
-+  x^32 mod p is p+x^32 = x^26+...+1), and the register is multiplied mod p by
-+  x (which is shifting right by one and adding x^32 mod p if the bit shifted
-+  out is a one).  We start with the highest power (least significant bit) of
-+  q and repeat for all eight bits of q.
-+
-+  The table is simply the CRC of all possible eight bit values.  This is all
-+  the information needed to generate CRC's on data a byte at a time for all
-+  combinations of CRC register values and incoming bytes.
-+*/
-+local void make_crc_table()
-+{
-+  uLong c;
-+  int n, k;
-+  uLong poly;            /* polynomial exclusive-or pattern */
-+  /* terms of polynomial defining this crc (except x^32): */
-+  static const Byte p[] = {0,1,2,4,5,7,8,10,11,12,16,22,23,26};
-+
-+  /* make exclusive-or pattern from polynomial (0xedb88320L) */
-+  poly = 0L;
-+  for (n = 0; n < sizeof(p)/sizeof(Byte); n++)
-+    poly |= 1L << (31 - p[n]);
-+
-+  for (n = 0; n < 256; n++)
-+  {
-+    c = (uLong)n;
-+    for (k = 0; k < 8; k++)
-+      c = c & 1 ? poly ^ (c >> 1) : c >> 1;
-+    crc_table[n] = c;
-+  }
-+  crc_table_empty = 0;
-+}
-+#else
-+/* ========================================================================
-+ * Table of CRC-32's of all single-byte values (made by make_crc_table)
-+ */
-+local const uLongf crc_table[256] = {
-+  0x00000000L, 0x77073096L, 0xee0e612cL, 0x990951baL, 0x076dc419L,
-+  0x706af48fL, 0xe963a535L, 0x9e6495a3L, 0x0edb8832L, 0x79dcb8a4L,
-+  0xe0d5e91eL, 0x97d2d988L, 0x09b64c2bL, 0x7eb17cbdL, 0xe7b82d07L,
-+  0x90bf1d91L, 0x1db71064L, 0x6ab020f2L, 0xf3b97148L, 0x84be41deL,
-+  0x1adad47dL, 0x6ddde4ebL, 0xf4d4b551L, 0x83d385c7L, 0x136c9856L,
-+  0x646ba8c0L, 0xfd62f97aL, 0x8a65c9ecL, 0x14015c4fL, 0x63066cd9L,
-+  0xfa0f3d63L, 0x8d080df5L, 0x3b6e20c8L, 0x4c69105eL, 0xd56041e4L,
-+  0xa2677172L, 0x3c03e4d1L, 0x4b04d447L, 0xd20d85fdL, 0xa50ab56bL,
-+  0x35b5a8faL, 0x42b2986cL, 0xdbbbc9d6L, 0xacbcf940L, 0x32d86ce3L,
-+  0x45df5c75L, 0xdcd60dcfL, 0xabd13d59L, 0x26d930acL, 0x51de003aL,
-+  0xc8d75180L, 0xbfd06116L, 0x21b4f4b5L, 0x56b3c423L, 0xcfba9599L,
-+  0xb8bda50fL, 0x2802b89eL, 0x5f058808L, 0xc60cd9b2L, 0xb10be924L,
-+  0x2f6f7c87L, 0x58684c11L, 0xc1611dabL, 0xb6662d3dL, 0x76dc4190L,
-+  0x01db7106L, 0x98d220bcL, 0xefd5102aL, 0x71b18589L, 0x06b6b51fL,
-+  0x9fbfe4a5L, 0xe8b8d433L, 0x7807c9a2L, 0x0f00f934L, 0x9609a88eL,
-+  0xe10e9818L, 0x7f6a0dbbL, 0x086d3d2dL, 0x91646c97L, 0xe6635c01L,
-+  0x6b6b51f4L, 0x1c6c6162L, 0x856530d8L, 0xf262004eL, 0x6c0695edL,
-+  0x1b01a57bL, 0x8208f4c1L, 0xf50fc457L, 0x65b0d9c6L, 0x12b7e950L,
-+  0x8bbeb8eaL, 0xfcb9887cL, 0x62dd1ddfL, 0x15da2d49L, 0x8cd37cf3L,
-+  0xfbd44c65L, 0x4db26158L, 0x3ab551ceL, 0xa3bc0074L, 0xd4bb30e2L,
-+  0x4adfa541L, 0x3dd895d7L, 0xa4d1c46dL, 0xd3d6f4fbL, 0x4369e96aL,
-+  0x346ed9fcL, 0xad678846L, 0xda60b8d0L, 0x44042d73L, 0x33031de5L,
-+  0xaa0a4c5fL, 0xdd0d7cc9L, 0x5005713cL, 0x270241aaL, 0xbe0b1010L,
-+  0xc90c2086L, 0x5768b525L, 0x206f85b3L, 0xb966d409L, 0xce61e49fL,
-+  0x5edef90eL, 0x29d9c998L, 0xb0d09822L, 0xc7d7a8b4L, 0x59b33d17L,
-+  0x2eb40d81L, 0xb7bd5c3bL, 0xc0ba6cadL, 0xedb88320L, 0x9abfb3b6L,
-+  0x03b6e20cL, 0x74b1d29aL, 0xead54739L, 0x9dd277afL, 0x04db2615L,
-+  0x73dc1683L, 0xe3630b12L, 0x94643b84L, 0x0d6d6a3eL, 0x7a6a5aa8L,
-+  0xe40ecf0bL, 0x9309ff9dL, 0x0a00ae27L, 0x7d079eb1L, 0xf00f9344L,
-+  0x8708a3d2L, 0x1e01f268L, 0x6906c2feL, 0xf762575dL, 0x806567cbL,
-+  0x196c3671L, 0x6e6b06e7L, 0xfed41b76L, 0x89d32be0L, 0x10da7a5aL,
-+  0x67dd4accL, 0xf9b9df6fL, 0x8ebeeff9L, 0x17b7be43L, 0x60b08ed5L,
-+  0xd6d6a3e8L, 0xa1d1937eL, 0x38d8c2c4L, 0x4fdff252L, 0xd1bb67f1L,
-+  0xa6bc5767L, 0x3fb506ddL, 0x48b2364bL, 0xd80d2bdaL, 0xaf0a1b4cL,
-+  0x36034af6L, 0x41047a60L, 0xdf60efc3L, 0xa867df55L, 0x316e8eefL,
-+  0x4669be79L, 0xcb61b38cL, 0xbc66831aL, 0x256fd2a0L, 0x5268e236L,
-+  0xcc0c7795L, 0xbb0b4703L, 0x220216b9L, 0x5505262fL, 0xc5ba3bbeL,
-+  0xb2bd0b28L, 0x2bb45a92L, 0x5cb36a04L, 0xc2d7ffa7L, 0xb5d0cf31L,
-+  0x2cd99e8bL, 0x5bdeae1dL, 0x9b64c2b0L, 0xec63f226L, 0x756aa39cL,
-+  0x026d930aL, 0x9c0906a9L, 0xeb0e363fL, 0x72076785L, 0x05005713L,
-+  0x95bf4a82L, 0xe2b87a14L, 0x7bb12baeL, 0x0cb61b38L, 0x92d28e9bL,
-+  0xe5d5be0dL, 0x7cdcefb7L, 0x0bdbdf21L, 0x86d3d2d4L, 0xf1d4e242L,
-+  0x68ddb3f8L, 0x1fda836eL, 0x81be16cdL, 0xf6b9265bL, 0x6fb077e1L,
-+  0x18b74777L, 0x88085ae6L, 0xff0f6a70L, 0x66063bcaL, 0x11010b5cL,
-+  0x8f659effL, 0xf862ae69L, 0x616bffd3L, 0x166ccf45L, 0xa00ae278L,
-+  0xd70dd2eeL, 0x4e048354L, 0x3903b3c2L, 0xa7672661L, 0xd06016f7L,
-+  0x4969474dL, 0x3e6e77dbL, 0xaed16a4aL, 0xd9d65adcL, 0x40df0b66L,
-+  0x37d83bf0L, 0xa9bcae53L, 0xdebb9ec5L, 0x47b2cf7fL, 0x30b5ffe9L,
-+  0xbdbdf21cL, 0xcabac28aL, 0x53b39330L, 0x24b4a3a6L, 0xbad03605L,
-+  0xcdd70693L, 0x54de5729L, 0x23d967bfL, 0xb3667a2eL, 0xc4614ab8L,
-+  0x5d681b02L, 0x2a6f2b94L, 0xb40bbe37L, 0xc30c8ea1L, 0x5a05df1bL,
-+  0x2d02ef8dL
-+};
-+#endif
-+
-+#if 0
-+/* =========================================================================
-+ * This function can be used by asm versions of crc32()
-+ */
-+const uLongf * ZEXPORT get_crc_table()
-+{
-+#ifdef DYNAMIC_CRC_TABLE
-+  if (crc_table_empty) make_crc_table();
-+#endif
-+  return (const uLongf *)crc_table;
-+}
-+#endif
-+
-+/* ========================================================================= */
-+#define DO1(buf) crc = crc_table[((int)crc ^ (*buf++)) & 0xff] ^ (crc >> 8);
-+#define DO2(buf)  DO1(buf); DO1(buf);
-+#define DO4(buf)  DO2(buf); DO2(buf);
-+#define DO8(buf)  DO4(buf); DO4(buf);
-+
-+/* ========================================================================= */
-+uLong ZEXPORT crc32(uLong crc, const Bytef *buf, uInt len)
-+{
-+#ifdef DYNAMIC_CRC_TABLE
-+    if (crc_table_empty)
-+      make_crc_table();
-+#endif
-+    crc = crc ^ 0xffffffffL;
-+    while (len >= 8)
-+    {
-+      DO8(buf);
-+      len -= 8;
-+    }
-+    if (len) do {
-+      DO1(buf);
-+    } while (--len);
-+    return crc ^ 0xffffffffL;
-+}
-+
-+#if defined(CONFIG_CMD_JFFS2) || \
-+	(defined(CONFIG_CMD_NAND) \
-+	&& !defined(CFG_NAND_LEGACY))
-+
-+/* No ones complement version. JFFS2 (and other things ?)
-+ * don't use ones compliment in their CRC calculations.
-+ */
-+uLong ZEXPORT crc32_no_comp(uLong crc, const Bytef *buf, uInt len)
-+{
-+#ifdef DYNAMIC_CRC_TABLE
-+    if (crc_table_empty)
-+      make_crc_table();
-+#endif
-+    while (len >= 8)
-+    {
-+      DO8(buf);
-+      len -= 8;
-+    }
-+    if (len) do {
-+      DO1(buf);
-+    } while (--len);
-+
-+    return crc;
-+}
-+
-+#endif
---- /dev/null
-+++ linux-2.6/scripts/mkubootimg/mkimage.c
-@@ -0,0 +1,727 @@
-+/*
-+ * (C) Copyright 2000-2004
-+ * DENX Software Engineering
-+ * Wolfgang Denk, wd@denx.de
-+ * All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation; either version 2 of
-+ * the License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-+ * MA 02111-1307 USA
-+ */
-+
-+#include <errno.h>
-+#include <fcntl.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <netinet/in.h>		/* for host / network byte order conversions	*/
-+#include <sys/mman.h>
-+#include <sys/stat.h>
-+#include <time.h>
-+#include <unistd.h>
-+
-+#ifndef	O_BINARY		/* should be define'd on __WIN32__ */
-+#define O_BINARY	0
-+#endif
-+
-+#include "uimage.h"
-+
-+#ifndef MAP_FAILED
-+#define MAP_FAILED (-1)
-+#endif
-+
-+static char *cmdname;
-+
-+extern unsigned long crc32 (unsigned long crc, const char *buf, unsigned int len);
-+
-+typedef struct table_entry {
-+	int	val;		/* as defined in image.h	*/
-+	char	*sname;		/* short (input) name		*/
-+	char	*lname;		/* long (output) name		*/
-+} table_entry_t;
-+
-+static table_entry_t arch_name[] = {
-+    {	IH_CPU_INVALID,		NULL,		"Invalid CPU",	},
-+    {	IH_CPU_ALPHA,		"alpha",	"Alpha",	},
-+    {	IH_CPU_ARM,		"arm",		"ARM",		},
-+    {	IH_CPU_I386,		"x86",		"Intel x86",	},
-+    {	IH_CPU_IA64,		"ia64",		"IA64",		},
-+    {	IH_CPU_M68K,		"m68k",		"MC68000",	},
-+    {	IH_CPU_MICROBLAZE,	"microblaze",	"MicroBlaze",	},
-+    {	IH_CPU_MIPS,		"mips",		"MIPS",		},
-+    {	IH_CPU_MIPS64,		"mips64",	"MIPS 64 Bit",	},
-+    {	IH_CPU_NIOS,		"nios",		"NIOS",		},
-+    {	IH_CPU_NIOS2,		"nios2",	"NIOS II",	},
-+    {	IH_CPU_PPC,		"ppc",		"PowerPC",	},
-+    {	IH_CPU_S390,		"s390",		"IBM S390",	},
-+    {	IH_CPU_SH,		"sh",		"SuperH",	},
-+    {	IH_CPU_SPARC,		"sparc",	"SPARC",	},
-+    {	IH_CPU_SPARC64,		"sparc64",	"SPARC 64 Bit",	},
-+    {	IH_CPU_BLACKFIN,	"blackfin",	"Blackfin",	},
-+    {	IH_CPU_AVR32,		"avr32",	"AVR32",	},
-+    {	-1,			"",		"",		},
-+};
-+
-+static table_entry_t os_name[] = {
-+    {	IH_OS_INVALID,	NULL,		"Invalid OS",		},
-+    {	IH_OS_4_4BSD,	"4_4bsd",	"4_4BSD",		},
-+    {	IH_OS_ARTOS,	"artos",	"ARTOS",		},
-+    {	IH_OS_DELL,	"dell",		"Dell",			},
-+    {	IH_OS_ESIX,	"esix",		"Esix",			},
-+    {	IH_OS_FREEBSD,	"freebsd",	"FreeBSD",		},
-+    {	IH_OS_IRIX,	"irix",		"Irix",			},
-+    {	IH_OS_LINUX,	"linux",	"Linux",		},
-+    {	IH_OS_LYNXOS,	"lynxos",	"LynxOS",		},
-+    {	IH_OS_NCR,	"ncr",		"NCR",			},
-+    {	IH_OS_NETBSD,	"netbsd",	"NetBSD",		},
-+    {	IH_OS_OPENBSD,	"openbsd",	"OpenBSD",		},
-+    {	IH_OS_PSOS,	"psos",		"pSOS",			},
-+    {	IH_OS_QNX,	"qnx",		"QNX",			},
-+    {	IH_OS_RTEMS,	"rtems",	"RTEMS",		},
-+    {	IH_OS_SCO,	"sco",		"SCO",			},
-+    {	IH_OS_SOLARIS,	"solaris",	"Solaris",		},
-+    {	IH_OS_SVR4,	"svr4",		"SVR4",			},
-+    {	IH_OS_U_BOOT,	"u-boot",	"U-Boot",		},
-+    {	IH_OS_VXWORKS,	"vxworks",	"VxWorks",		},
-+    {	-1,		"",		"",			},
-+};
-+
-+static table_entry_t type_name[] = {
-+    {	IH_TYPE_INVALID,    NULL,	  "Invalid Image",	},
-+    {	IH_TYPE_FILESYSTEM, "filesystem", "Filesystem Image",	},
-+    {	IH_TYPE_FIRMWARE,   "firmware",	  "Firmware",		},
-+    {	IH_TYPE_KERNEL,	    "kernel",	  "Kernel Image",	},
-+    {	IH_TYPE_MULTI,	    "multi",	  "Multi-File Image",	},
-+    {	IH_TYPE_RAMDISK,    "ramdisk",	  "RAMDisk Image",	},
-+    {	IH_TYPE_SCRIPT,     "script",	  "Script",		},
-+    {	IH_TYPE_STANDALONE, "standalone", "Standalone Program", },
-+    {	IH_TYPE_FLATDT,     "flat_dt",    "Flat Device Tree",	},
-+    {	-1,		    "",		  "",			},
-+};
-+
-+static table_entry_t comp_name[] = {
-+    {	IH_COMP_NONE,	"none",		"uncompressed",		},
-+    {	IH_COMP_BZIP2,	"bzip2",	"bzip2 compressed",	},
-+    {	IH_COMP_GZIP,	"gzip",		"gzip compressed",	},
-+    {	-1,		"",		"",			},
-+};
-+
-+static	void	copy_file (int, const char *, int);
-+static	void	usage	(void);
-+static	void	print_header (image_header_t *);
-+static	void	print_type (image_header_t *);
-+static	char	*put_table_entry (table_entry_t *, char *, int);
-+static	char	*put_arch (int);
-+static	char	*put_type (int);
-+static	char	*put_os   (int);
-+static	char	*put_comp (int);
-+static	int	get_table_entry (table_entry_t *, char *, char *);
-+static	int	get_arch(char *);
-+static	int	get_comp(char *);
-+static	int	get_os  (char *);
-+static	int	get_type(char *);
-+
-+
-+static char	*datafile;
-+static char	*imagefile;
-+
-+static int dflag    = 0;
-+static int eflag    = 0;
-+static int lflag    = 0;
-+static int vflag    = 0;
-+static int xflag    = 0;
-+static int opt_os   = IH_OS_LINUX;
-+static int opt_arch = IH_CPU_PPC;
-+static int opt_type = IH_TYPE_KERNEL;
-+static int opt_comp = IH_COMP_GZIP;
-+
-+static image_header_t header;
-+static image_header_t *hdr = &header;
-+
-+int
-+main (int argc, char **argv)
-+{
-+	int ifd;
-+	uint32_t checksum;
-+	uint32_t addr;
-+	uint32_t ep;
-+	struct stat sbuf;
-+	unsigned char *ptr;
-+	char *endptr;
-+	char *name = "";
-+
-+	cmdname = *argv;
-+
-+	addr = ep = 0;
-+
-+	while (--argc > 0 && **++argv == '-') {
-+		while (*++*argv) {
-+			switch (**argv) {
-+			case 'l':
-+				lflag = 1;
-+				break;
-+			case 'A':
-+				if ((--argc <= 0) ||
-+				    (opt_arch = get_arch(*++argv)) < 0)
-+					usage ();
-+				goto NXTARG;
-+			case 'C':
-+				if ((--argc <= 0) ||
-+				    (opt_comp = get_comp(*++argv)) < 0)
-+					usage ();
-+				goto NXTARG;
-+			case 'O':
-+				if ((--argc <= 0) ||
-+				    (opt_os = get_os(*++argv)) < 0)
-+					usage ();
-+				goto NXTARG;
-+			case 'T':
-+				if ((--argc <= 0) ||
-+				    (opt_type = get_type(*++argv)) < 0)
-+					usage ();
-+				goto NXTARG;
-+
-+			case 'a':
-+				if (--argc <= 0)
-+					usage ();
-+				addr = strtoul ((char *) *++argv, &endptr, 16);
-+				if (*endptr) {
-+					fprintf (stderr,
-+						"%s: invalid load address %s\n",
-+						cmdname, *argv);
-+					exit (EXIT_FAILURE);
-+				}
-+				goto NXTARG;
-+			case 'd':
-+				if (--argc <= 0)
-+					usage ();
-+				datafile = *++argv;
-+				dflag = 1;
-+				goto NXTARG;
-+			case 'e':
-+				if (--argc <= 0)
-+					usage ();
-+				ep = strtoul (*++argv, &endptr, 16);
-+				if (*endptr) {
-+					fprintf (stderr,
-+						"%s: invalid entry point %s\n",
-+						cmdname, *argv);
-+					exit (EXIT_FAILURE);
-+				}
-+				eflag = 1;
-+				goto NXTARG;
-+			case 'n':
-+				if (--argc <= 0)
-+					usage ();
-+				name = *++argv;
-+				goto NXTARG;
-+			case 'v':
-+				vflag++;
-+				break;
-+			case 'x':
-+				xflag++;
-+				break;
-+			default:
-+				usage ();
-+			}
-+		}
-+NXTARG:		;
-+	}
-+
-+	if ((argc != 1) || ((lflag ^ dflag) == 0))
-+		usage();
-+
-+	if (!eflag) {
-+		ep = addr;
-+		/* If XIP, entry point must be after the U-Boot header */
-+		if (xflag)
-+			ep += sizeof(image_header_t);
-+	}
-+
-+	/*
-+	 * If XIP, ensure the entry point is equal to the load address plus
-+	 * the size of the U-Boot header.
-+	 */
-+	if (xflag) {
-+		if (ep != addr + sizeof(image_header_t)) {
-+			fprintf (stderr,
-+				"%s: For XIP, the entry point must be the load addr + %lu\n",
-+				cmdname,
-+				(unsigned long)sizeof(image_header_t));
-+			exit (EXIT_FAILURE);
-+		}
-+	}
-+
-+	imagefile = *argv;
-+
-+	if (lflag) {
-+		ifd = open(imagefile, O_RDONLY|O_BINARY);
-+	} else {
-+		ifd = open(imagefile, O_RDWR|O_CREAT|O_TRUNC|O_BINARY, 0666);
-+	}
-+
-+	if (ifd < 0) {
-+		fprintf (stderr, "%s: Can't open %s: %s\n",
-+			cmdname, imagefile, strerror(errno));
-+		exit (EXIT_FAILURE);
-+	}
-+
-+	if (lflag) {
-+		int len;
-+		char *data;
-+		/*
-+		 * list header information of existing image
-+		 */
-+		if (fstat(ifd, &sbuf) < 0) {
-+			fprintf (stderr, "%s: Can't stat %s: %s\n",
-+				cmdname, imagefile, strerror(errno));
-+			exit (EXIT_FAILURE);
-+		}
-+
-+		if ((unsigned)sbuf.st_size < sizeof(image_header_t)) {
-+			fprintf (stderr,
-+				"%s: Bad size: \"%s\" is no valid image\n",
-+				cmdname, imagefile);
-+			exit (EXIT_FAILURE);
-+		}
-+
-+		ptr = (unsigned char *)mmap(NULL, sbuf.st_size,
-+					    PROT_READ, MAP_SHARED, ifd, 0);
-+		if ((caddr_t)ptr == (caddr_t)-1) {
-+			fprintf (stderr, "%s: Can't read %s: %s\n",
-+				cmdname, imagefile, strerror(errno));
-+			exit (EXIT_FAILURE);
-+		}
-+
-+		/*
-+		 * create copy of header so that we can blank out the
-+		 * checksum field for checking - this can't be done
-+		 * on the PROT_READ mapped data.
-+		 */
-+		memcpy (hdr, ptr, sizeof(image_header_t));
-+
-+		if (ntohl(hdr->ih_magic) != IH_MAGIC) {
-+			fprintf (stderr,
-+				"%s: Bad Magic Number: \"%s\" is no valid image\n",
-+				cmdname, imagefile);
-+			exit (EXIT_FAILURE);
-+		}
-+
-+		data = (char *)hdr;
-+		len  = sizeof(image_header_t);
-+
-+		checksum = ntohl(hdr->ih_hcrc);
-+		hdr->ih_hcrc = htonl(0);	/* clear for re-calculation */
-+
-+		if (crc32 (0, data, len) != checksum) {
-+			fprintf (stderr,
-+				"%s: ERROR: \"%s\" has bad header checksum!\n",
-+				cmdname, imagefile);
-+			exit (EXIT_FAILURE);
-+		}
-+
-+		data = (char *)(ptr + sizeof(image_header_t));
-+		len  = sbuf.st_size - sizeof(image_header_t) ;
-+
-+		if (crc32 (0, data, len) != ntohl(hdr->ih_dcrc)) {
-+			fprintf (stderr,
-+				"%s: ERROR: \"%s\" has corrupted data!\n",
-+				cmdname, imagefile);
-+			exit (EXIT_FAILURE);
-+		}
-+
-+		/* for multi-file images we need the data part, too */
-+		print_header ((image_header_t *)ptr);
-+
-+		(void) munmap((void *)ptr, sbuf.st_size);
-+		(void) close (ifd);
-+
-+		exit (EXIT_SUCCESS);
-+	}
-+
-+	/*
-+	 * Must be -w then:
-+	 *
-+	 * write dummy header, to be fixed later
-+	 */
-+	memset (hdr, 0, sizeof(image_header_t));
-+
-+	if (write(ifd, hdr, sizeof(image_header_t)) != sizeof(image_header_t)) {
-+		fprintf (stderr, "%s: Write error on %s: %s\n",
-+			cmdname, imagefile, strerror(errno));
-+		exit (EXIT_FAILURE);
-+	}
-+
-+	if (opt_type == IH_TYPE_MULTI || opt_type == IH_TYPE_SCRIPT) {
-+		char *file = datafile;
-+		uint32_t size;
-+
-+		for (;;) {
-+			char *sep = NULL;
-+
-+			if (file) {
-+				if ((sep = strchr(file, ':')) != NULL) {
-+					*sep = '\0';
-+				}
-+
-+				if (stat (file, &sbuf) < 0) {
-+					fprintf (stderr, "%s: Can't stat %s: %s\n",
-+						cmdname, file, strerror(errno));
-+					exit (EXIT_FAILURE);
-+				}
-+				size = htonl(sbuf.st_size);
-+			} else {
-+				size = 0;
-+			}
-+
-+			if (write(ifd, (char *)&size, sizeof(size)) != sizeof(size)) {
-+				fprintf (stderr, "%s: Write error on %s: %s\n",
-+					cmdname, imagefile, strerror(errno));
-+				exit (EXIT_FAILURE);
-+			}
-+
-+			if (!file) {
-+				break;
-+			}
-+
-+			if (sep) {
-+				*sep = ':';
-+				file = sep + 1;
-+			} else {
-+				file = NULL;
-+			}
-+		}
-+
-+		file = datafile;
-+
-+		for (;;) {
-+			char *sep = strchr(file, ':');
-+			if (sep) {
-+				*sep = '\0';
-+				copy_file (ifd, file, 1);
-+				*sep++ = ':';
-+				file = sep;
-+			} else {
-+				copy_file (ifd, file, 0);
-+				break;
-+			}
-+		}
-+	} else {
-+		copy_file (ifd, datafile, 0);
-+	}
-+
-+	/* We're a bit of paranoid */
-+#if defined(_POSIX_SYNCHRONIZED_IO) && !defined(__sun__) && !defined(__FreeBSD__) && !defined(__APPLE__)
-+	(void) fdatasync (ifd);
-+#else
-+	(void) fsync (ifd);
-+#endif
-+
-+	if (fstat(ifd, &sbuf) < 0) {
-+		fprintf (stderr, "%s: Can't stat %s: %s\n",
-+			cmdname, imagefile, strerror(errno));
-+		exit (EXIT_FAILURE);
-+	}
-+
-+	ptr = (unsigned char *)mmap(NULL, sbuf.st_size,
-+				    PROT_READ|PROT_WRITE, MAP_SHARED, ifd, 0);
-+	if (ptr == (unsigned char *)MAP_FAILED) {
-+		fprintf (stderr, "%s: Can't map %s: %s\n",
-+			cmdname, imagefile, strerror(errno));
-+		exit (EXIT_FAILURE);
-+	}
-+
-+	hdr = (image_header_t *)ptr;
-+
-+	checksum = crc32 (0,
-+			  (const char *)(ptr + sizeof(image_header_t)),
-+			  sbuf.st_size - sizeof(image_header_t)
-+			 );
-+
-+	/* Build new header */
-+	hdr->ih_magic = htonl(IH_MAGIC);
-+	hdr->ih_time  = htonl(sbuf.st_mtime);
-+	hdr->ih_size  = htonl(sbuf.st_size - sizeof(image_header_t));
-+	hdr->ih_load  = htonl(addr);
-+	hdr->ih_ep    = htonl(ep);
-+	hdr->ih_dcrc  = htonl(checksum);
-+	hdr->ih_os    = opt_os;
-+	hdr->ih_arch  = opt_arch;
-+	hdr->ih_type  = opt_type;
-+	hdr->ih_comp  = opt_comp;
-+
-+	strncpy((char *)hdr->ih_name, name, IH_NMLEN);
-+
-+	checksum = crc32(0,(const char *)hdr,sizeof(image_header_t));
-+
-+	hdr->ih_hcrc = htonl(checksum);
-+
-+	print_header (hdr);
-+
-+	(void) munmap((void *)ptr, sbuf.st_size);
-+
-+	/* We're a bit of paranoid */
-+#if defined(_POSIX_SYNCHRONIZED_IO) && !defined(__sun__) && !defined(__FreeBSD__) && !defined(__APPLE__)
-+	(void) fdatasync (ifd);
-+#else
-+	(void) fsync (ifd);
-+#endif
-+
-+	if (close(ifd)) {
-+		fprintf (stderr, "%s: Write error on %s: %s\n",
-+			cmdname, imagefile, strerror(errno));
-+		exit (EXIT_FAILURE);
-+	}
-+
-+	exit (EXIT_SUCCESS);
-+}
-+
-+static void
-+copy_file (int ifd, const char *datafile, int pad)
-+{
-+	int dfd;
-+	struct stat sbuf;
-+	unsigned char *ptr;
-+	int tail;
-+	int zero = 0;
-+	int offset = 0;
-+	int size;
-+
-+	if (vflag) {
-+		fprintf (stderr, "Adding Image %s\n", datafile);
-+	}
-+
-+	if ((dfd = open(datafile, O_RDONLY|O_BINARY)) < 0) {
-+		fprintf (stderr, "%s: Can't open %s: %s\n",
-+			cmdname, datafile, strerror(errno));
-+		exit (EXIT_FAILURE);
-+	}
-+
-+	if (fstat(dfd, &sbuf) < 0) {
-+		fprintf (stderr, "%s: Can't stat %s: %s\n",
-+			cmdname, datafile, strerror(errno));
-+		exit (EXIT_FAILURE);
-+	}
-+
-+	ptr = (unsigned char *)mmap(NULL, sbuf.st_size,
-+				    PROT_READ, MAP_SHARED, dfd, 0);
-+	if (ptr == (unsigned char *)MAP_FAILED) {
-+		fprintf (stderr, "%s: Can't read %s: %s\n",
-+			cmdname, datafile, strerror(errno));
-+		exit (EXIT_FAILURE);
-+	}
-+
-+	if (xflag) {
-+		unsigned char *p = NULL;
-+		/*
-+		 * XIP: do not append the image_header_t at the
-+		 * beginning of the file, but consume the space
-+		 * reserved for it.
-+		 */
-+
-+		if ((unsigned)sbuf.st_size < sizeof(image_header_t)) {
-+			fprintf (stderr,
-+				"%s: Bad size: \"%s\" is too small for XIP\n",
-+				cmdname, datafile);
-+			exit (EXIT_FAILURE);
-+		}
-+
-+		for (p=ptr; p < ptr+sizeof(image_header_t); p++) {
-+			if ( *p != 0xff ) {
-+				fprintf (stderr,
-+					"%s: Bad file: \"%s\" has invalid buffer for XIP\n",
-+					cmdname, datafile);
-+				exit (EXIT_FAILURE);
-+			}
-+		}
-+
-+		offset = sizeof(image_header_t);
-+	}
-+
-+	size = sbuf.st_size - offset;
-+	if (write(ifd, ptr + offset, size) != size) {
-+		fprintf (stderr, "%s: Write error on %s: %s\n",
-+			cmdname, imagefile, strerror(errno));
-+		exit (EXIT_FAILURE);
-+	}
-+
-+	if (pad && ((tail = size % 4) != 0)) {
-+
-+		if (write(ifd, (char *)&zero, 4-tail) != 4-tail) {
-+			fprintf (stderr, "%s: Write error on %s: %s\n",
-+				cmdname, imagefile, strerror(errno));
-+			exit (EXIT_FAILURE);
-+		}
-+	}
-+
-+	(void) munmap((void *)ptr, sbuf.st_size);
-+	(void) close (dfd);
-+}
-+
-+static void
-+usage (void)
-+{
-+	fprintf (stderr, "Usage: %s -l image\n"
-+			 "          -l ==> list image header information\n"
-+			 "       %s [-x] -A arch -O os -T type -C comp "
-+			 "-a addr -e ep -n name -d data_file[:data_file...] image\n",
-+		cmdname, cmdname);
-+	fprintf (stderr, "          -A ==> set architecture to 'arch'\n"
-+			 "          -O ==> set operating system to 'os'\n"
-+			 "          -T ==> set image type to 'type'\n"
-+			 "          -C ==> set compression type 'comp'\n"
-+			 "          -a ==> set load address to 'addr' (hex)\n"
-+			 "          -e ==> set entry point to 'ep' (hex)\n"
-+			 "          -n ==> set image name to 'name'\n"
-+			 "          -d ==> use image data from 'datafile'\n"
-+			 "          -x ==> set XIP (execute in place)\n"
-+		);
-+	exit (EXIT_FAILURE);
-+}
-+
-+static void
-+print_header (image_header_t *hdr)
-+{
-+	time_t timestamp;
-+	uint32_t size;
-+
-+	timestamp = (time_t)ntohl(hdr->ih_time);
-+	size = ntohl(hdr->ih_size);
-+
-+	printf ("Image Name:   %.*s\n", IH_NMLEN, hdr->ih_name);
-+	printf ("Created:      %s", ctime(&timestamp));
-+	printf ("Image Type:   "); print_type(hdr);
-+	printf ("Data Size:    %d Bytes = %.2f kB = %.2f MB\n",
-+		size, (double)size / 1.024e3, (double)size / 1.048576e6 );
-+	printf ("Load Address: 0x%08X\n", ntohl(hdr->ih_load));
-+	printf ("Entry Point:  0x%08X\n", ntohl(hdr->ih_ep));
-+
-+	if (hdr->ih_type == IH_TYPE_MULTI || hdr->ih_type == IH_TYPE_SCRIPT) {
-+		int i, ptrs;
-+		uint32_t pos;
-+		uint32_t *len_ptr = (uint32_t *) (
-+					(unsigned long)hdr + sizeof(image_header_t)
-+				);
-+
-+		/* determine number of images first (to calculate image offsets) */
-+		for (i=0; len_ptr[i]; ++i)	/* null pointer terminates list */
-+			;
-+		ptrs = i;		/* null pointer terminates list */
-+
-+		pos = sizeof(image_header_t) + ptrs * sizeof(long);
-+		printf ("Contents:\n");
-+		for (i=0; len_ptr[i]; ++i) {
-+			size = ntohl(len_ptr[i]);
-+
-+			printf ("   Image %d: %8d Bytes = %4d kB = %d MB\n",
-+				i, size, size>>10, size>>20);
-+			if (hdr->ih_type == IH_TYPE_SCRIPT && i > 0) {
-+				/*
-+				 * the user may need to know offsets
-+				 * if planning to do something with
-+				 * multiple files
-+				 */
-+				printf ("    Offset = %08X\n", pos);
-+			}
-+			/* copy_file() will pad the first files to even word align */
-+			size += 3;
-+			size &= ~3;
-+			pos += size;
-+		}
-+	}
-+}
-+
-+
-+static void
-+print_type (image_header_t *hdr)
-+{
-+	printf ("%s %s %s (%s)\n",
-+		put_arch (hdr->ih_arch),
-+		put_os   (hdr->ih_os  ),
-+		put_type (hdr->ih_type),
-+		put_comp (hdr->ih_comp)
-+	);
-+}
-+
-+static char *put_arch (int arch)
-+{
-+	return (put_table_entry(arch_name, "Unknown Architecture", arch));
-+}
-+
-+static char *put_os (int os)
-+{
-+	return (put_table_entry(os_name, "Unknown OS", os));
-+}
-+
-+static char *put_type (int type)
-+{
-+	return (put_table_entry(type_name, "Unknown Image", type));
-+}
-+
-+static char *put_comp (int comp)
-+{
-+	return (put_table_entry(comp_name, "Unknown Compression", comp));
-+}
-+
-+static char *put_table_entry (table_entry_t *table, char *msg, int type)
-+{
-+	for (; table->val>=0; ++table) {
-+		if (table->val == type)
-+			return (table->lname);
-+	}
-+	return (msg);
-+}
-+
-+static int get_arch(char *name)
-+{
-+	return (get_table_entry(arch_name, "CPU", name));
-+}
-+
-+
-+static int get_comp(char *name)
-+{
-+	return (get_table_entry(comp_name, "Compression", name));
-+}
-+
-+
-+static int get_os (char *name)
-+{
-+	return (get_table_entry(os_name, "OS", name));
-+}
-+
-+
-+static int get_type(char *name)
-+{
-+	return (get_table_entry(type_name, "Image", name));
-+}
-+
-+static int get_table_entry (table_entry_t *table, char *msg, char *name)
-+{
-+	table_entry_t *t;
-+	int first = 1;
-+
-+	for (t=table; t->val>=0; ++t) {
-+		if (t->sname && strcasecmp(t->sname, name)==0)
-+			return (t->val);
-+	}
-+	fprintf (stderr, "\nInvalid %s Type - valid names are", msg);
-+	for (t=table; t->val>=0; ++t) {
-+		if (t->sname == NULL)
-+			continue;
-+		fprintf (stderr, "%c %s", (first) ? ':' : ',', t->sname);
-+		first = 0;
-+	}
-+	fprintf (stderr, "\n");
-+	return (-1);
-+}
---- /dev/null
-+++ linux-2.6/scripts/mkubootimg/uimage.h
-@@ -0,0 +1,161 @@
-+/*
-+ * (C) Copyright 2000-2005
-+ * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
-+ *
-+ * See file CREDITS for list of people who contributed to this
-+ * project.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation; either version 2 of
-+ * the License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-+ * MA 02111-1307 USA
-+ *
-+ ********************************************************************
-+ * NOTE: This header file defines an interface to U-Boot. Including
-+ * this (unmodified) header file in another file is considered normal
-+ * use of U-Boot, and does *not* fall under the heading of "derived
-+ * work".
-+ ********************************************************************
-+ */
-+
-+#ifndef __IMAGE_H__
-+#define __IMAGE_H__
-+
-+/*
-+ * Operating System Codes
-+ */
-+#define IH_OS_INVALID		0	/* Invalid OS	*/
-+#define IH_OS_OPENBSD		1	/* OpenBSD	*/
-+#define IH_OS_NETBSD		2	/* NetBSD	*/
-+#define IH_OS_FREEBSD		3	/* FreeBSD	*/
-+#define IH_OS_4_4BSD		4	/* 4.4BSD	*/
-+#define IH_OS_LINUX		5	/* Linux	*/
-+#define IH_OS_SVR4		6	/* SVR4		*/
-+#define IH_OS_ESIX		7	/* Esix		*/
-+#define IH_OS_SOLARIS		8	/* Solaris	*/
-+#define IH_OS_IRIX		9	/* Irix		*/
-+#define IH_OS_SCO		10	/* SCO		*/
-+#define IH_OS_DELL		11	/* Dell		*/
-+#define IH_OS_NCR		12	/* NCR		*/
-+#define IH_OS_LYNXOS		13	/* LynxOS	*/
-+#define IH_OS_VXWORKS		14	/* VxWorks	*/
-+#define IH_OS_PSOS		15	/* pSOS		*/
-+#define IH_OS_QNX		16	/* QNX		*/
-+#define IH_OS_U_BOOT		17	/* Firmware	*/
-+#define IH_OS_RTEMS		18	/* RTEMS	*/
-+#define IH_OS_ARTOS		19	/* ARTOS	*/
-+#define IH_OS_UNITY		20	/* Unity OS	*/
-+
-+/*
-+ * CPU Architecture Codes (supported by Linux)
-+ */
-+#define IH_CPU_INVALID		0	/* Invalid CPU	*/
-+#define IH_CPU_ALPHA		1	/* Alpha	*/
-+#define IH_CPU_ARM		2	/* ARM		*/
-+#define IH_CPU_I386		3	/* Intel x86	*/
-+#define IH_CPU_IA64		4	/* IA64		*/
-+#define IH_CPU_MIPS		5	/* MIPS		*/
-+#define IH_CPU_MIPS64		6	/* MIPS	 64 Bit */
-+#define IH_CPU_PPC		7	/* PowerPC	*/
-+#define IH_CPU_S390		8	/* IBM S390	*/
-+#define IH_CPU_SH		9	/* SuperH	*/
-+#define IH_CPU_SPARC		10	/* Sparc	*/
-+#define IH_CPU_SPARC64		11	/* Sparc 64 Bit */
-+#define IH_CPU_M68K		12	/* M68K		*/
-+#define IH_CPU_NIOS		13	/* Nios-32	*/
-+#define IH_CPU_MICROBLAZE	14	/* MicroBlaze   */
-+#define IH_CPU_NIOS2		15	/* Nios-II	*/
-+#define IH_CPU_BLACKFIN		16	/* Blackfin	*/
-+#define IH_CPU_AVR32		17	/* AVR32	*/
-+#define IH_CPU_ST200	        18	/* STMicroelectronics ST200  */
-+
-+/*
-+ * Image Types
-+ *
-+ * "Standalone Programs" are directly runnable in the environment
-+ *	provided by U-Boot; it is expected that (if they behave
-+ *	well) you can continue to work in U-Boot after return from
-+ *	the Standalone Program.
-+ * "OS Kernel Images" are usually images of some Embedded OS which
-+ *	will take over control completely. Usually these programs
-+ *	will install their own set of exception handlers, device
-+ *	drivers, set up the MMU, etc. - this means, that you cannot
-+ *	expect to re-enter U-Boot except by resetting the CPU.
-+ * "RAMDisk Images" are more or less just data blocks, and their
-+ *	parameters (address, size) are passed to an OS kernel that is
-+ *	being started.
-+ * "Multi-File Images" contain several images, typically an OS
-+ *	(Linux) kernel image and one or more data images like
-+ *	RAMDisks. This construct is useful for instance when you want
-+ *	to boot over the network using BOOTP etc., where the boot
-+ *	server provides just a single image file, but you want to get
-+ *	for instance an OS kernel and a RAMDisk image.
-+ *
-+ *	"Multi-File Images" start with a list of image sizes, each
-+ *	image size (in bytes) specified by an "uint32_t" in network
-+ *	byte order. This list is terminated by an "(uint32_t)0".
-+ *	Immediately after the terminating 0 follow the images, one by
-+ *	one, all aligned on "uint32_t" boundaries (size rounded up to
-+ *	a multiple of 4 bytes - except for the last file).
-+ *
-+ * "Firmware Images" are binary images containing firmware (like
-+ *	U-Boot or FPGA images) which usually will be programmed to
-+ *	flash memory.
-+ *
-+ * "Script files" are command sequences that will be executed by
-+ *	U-Boot's command interpreter; this feature is especially
-+ *	useful when you configure U-Boot to use a real shell (hush)
-+ *	as command interpreter (=> Shell Scripts).
-+ */
-+
-+#define IH_TYPE_INVALID		0	/* Invalid Image		*/
-+#define IH_TYPE_STANDALONE	1	/* Standalone Program		*/
-+#define IH_TYPE_KERNEL		2	/* OS Kernel Image		*/
-+#define IH_TYPE_RAMDISK		3	/* RAMDisk Image		*/
-+#define IH_TYPE_MULTI		4	/* Multi-File Image		*/
-+#define IH_TYPE_FIRMWARE	5	/* Firmware Image		*/
-+#define IH_TYPE_SCRIPT		6	/* Script file			*/
-+#define IH_TYPE_FILESYSTEM	7	/* Filesystem Image (any type)	*/
-+#define IH_TYPE_FLATDT		8	/* Binary Flat Device Tree Blob	*/
-+
-+/*
-+ * Compression Types
-+ */
-+#define IH_COMP_NONE		0	/*  No	 Compression Used	*/
-+#define IH_COMP_GZIP		1	/* gzip	 Compression Used	*/
-+#define IH_COMP_BZIP2		2	/* bzip2 Compression Used	*/
-+
-+#define IH_MAGIC	0x27051956	/* Image Magic Number		*/
-+#define IH_NMLEN		32	/* Image Name Length		*/
-+
-+/*
-+ * all data in network byte order (aka natural aka bigendian)
-+ */
-+
-+typedef struct image_header {
-+	uint32_t	ih_magic;	/* Image Header Magic Number	*/
-+	uint32_t	ih_hcrc;	/* Image Header CRC Checksum	*/
-+	uint32_t	ih_time;	/* Image Creation Timestamp	*/
-+	uint32_t	ih_size;	/* Image Data Size		*/
-+	uint32_t	ih_load;	/* Data	 Load  Address		*/
-+	uint32_t	ih_ep;		/* Entry Point Address		*/
-+	uint32_t	ih_dcrc;	/* Image Data CRC Checksum	*/
-+	uint8_t		ih_os;		/* Operating System		*/
-+	uint8_t		ih_arch;	/* CPU architecture		*/
-+	uint8_t		ih_type;	/* Image Type			*/
-+	uint8_t		ih_comp;	/* Compression Type		*/
-+	uint8_t		ih_name[IH_NMLEN];	/* Image Name		*/
-+} image_header_t;
-+
-+
-+#endif	/* __IMAGE_H__ */
+Gnu C                  4.1.2
+Gnu make               3.81
+binutils               Binutils
+util-linux             2.12r
+mount                  2.12r
+module-init-tools      3.4
+e2fsprogs              1.40.3
+Linux C Library        6.1
+Dynamic linker (ldd)   2.6.1
+Procps                 3.2.7
+Net-tools              1.60
+Kbd                    1.13
+Sh-utils               6.9
+udev                   115
+Modules Loaded         sg sr_mod cdrom
+
+Regards,
+
+        Mariusz
+
+--Boundary-00=_h7mfH4maOFtMh16
+Content-Type: text/plain;
+  charset="iso-8859-2";
+  name=".config"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename=".config"
+
+#
+# Automatically generated make config: don't edit
+# Linux kernel version: 2.6.24-rc6
+# Fri Jan  4 13:56:01 2008
+#
+CONFIG_SPARC=y
+CONFIG_SPARC64=y
+CONFIG_GENERIC_TIME=y
+CONFIG_GENERIC_CMOS_UPDATE=y
+CONFIG_GENERIC_CLOCKEVENTS=y
+CONFIG_64BIT=y
+CONFIG_MMU=y
+CONFIG_QUICKLIST=y
+CONFIG_STACKTRACE_SUPPORT=y
+CONFIG_LOCKDEP_SUPPORT=y
+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+# CONFIG_ARCH_HAS_ILOG2_U32 is not set
+# CONFIG_ARCH_HAS_ILOG2_U64 is not set
+CONFIG_AUDIT_ARCH=y
+CONFIG_ARCH_NO_VIRT_TO_BUS=y
+CONFIG_OF=y
+CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ=y
+CONFIG_SPARC64_PAGE_SIZE_8KB=y
+# CONFIG_SPARC64_PAGE_SIZE_64KB is not set
+# CONFIG_SPARC64_PAGE_SIZE_512KB is not set
+# CONFIG_SPARC64_PAGE_SIZE_4MB is not set
+CONFIG_SECCOMP=y
+# CONFIG_HZ_100 is not set
+CONFIG_HZ_250=y
+# CONFIG_HZ_300 is not set
+# CONFIG_HZ_1000 is not set
+CONFIG_HZ=250
+# CONFIG_HOTPLUG_CPU is not set
+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+
+#
+# General setup
+#
+CONFIG_EXPERIMENTAL=y
+CONFIG_LOCK_KERNEL=y
+CONFIG_INIT_ENV_ARG_LIMIT=32
+CONFIG_LOCALVERSION=""
+# CONFIG_LOCALVERSION_AUTO is not set
+CONFIG_SWAP=y
+CONFIG_SYSVIPC=y
+CONFIG_SYSVIPC_SYSCTL=y
+CONFIG_POSIX_MQUEUE=y
+# CONFIG_BSD_PROCESS_ACCT is not set
+# CONFIG_TASKSTATS is not set
+# CONFIG_USER_NS is not set
+# CONFIG_PID_NS is not set
+# CONFIG_AUDIT is not set
+CONFIG_IKCONFIG=y
+CONFIG_IKCONFIG_PROC=y
+CONFIG_LOG_BUF_SHIFT=18
+# CONFIG_CGROUPS is not set
+CONFIG_FAIR_GROUP_SCHED=y
+CONFIG_FAIR_USER_SCHED=y
+# CONFIG_FAIR_CGROUP_SCHED is not set
+CONFIG_SYSFS_DEPRECATED=y
+CONFIG_RELAY=y
+# CONFIG_BLK_DEV_INITRD is not set
+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
+CONFIG_SYSCTL=y
+# CONFIG_EMBEDDED is not set
+CONFIG_UID16=y
+CONFIG_SYSCTL_SYSCALL=y
+CONFIG_KALLSYMS=y
+CONFIG_KALLSYMS_ALL=y
+# CONFIG_KALLSYMS_EXTRA_PASS is not set
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_ANON_INODES=y
+CONFIG_EPOLL=y
+CONFIG_SIGNALFD=y
+CONFIG_EVENTFD=y
+CONFIG_SHMEM=y
+CONFIG_VM_EVENT_COUNTERS=y
+CONFIG_SLUB_DEBUG=y
+# CONFIG_SLAB is not set
+CONFIG_SLUB=y
+# CONFIG_SLOB is not set
+CONFIG_SLABINFO=y
+CONFIG_RT_MUTEXES=y
+# CONFIG_TINY_SHMEM is not set
+CONFIG_BASE_SMALL=0
+CONFIG_MODULES=y
+CONFIG_MODULE_UNLOAD=y
+# CONFIG_MODULE_FORCE_UNLOAD is not set
+# CONFIG_MODVERSIONS is not set
+# CONFIG_MODULE_SRCVERSION_ALL is not set
+CONFIG_KMOD=y
+CONFIG_STOP_MACHINE=y
+CONFIG_BLOCK=y
+# CONFIG_BLK_DEV_IO_TRACE is not set
+# CONFIG_BLK_DEV_BSG is not set
+CONFIG_BLOCK_COMPAT=y
+
+#
+# IO Schedulers
+#
+CONFIG_IOSCHED_NOOP=y
+# CONFIG_IOSCHED_AS is not set
+# CONFIG_IOSCHED_DEADLINE is not set
+CONFIG_IOSCHED_CFQ=y
+# CONFIG_DEFAULT_AS is not set
+# CONFIG_DEFAULT_DEADLINE is not set
+CONFIG_DEFAULT_CFQ=y
+# CONFIG_DEFAULT_NOOP is not set
+CONFIG_DEFAULT_IOSCHED="cfq"
+CONFIG_SYSVIPC_COMPAT=y
+CONFIG_GENERIC_HARDIRQS=y
+
+#
+# General machine setup
+#
+CONFIG_TICK_ONESHOT=y
+CONFIG_NO_HZ=y
+CONFIG_HIGH_RES_TIMERS=y
+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+CONFIG_SMP=y
+CONFIG_NR_CPUS=4
+# CONFIG_CPU_FREQ is not set
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+CONFIG_GENERIC_FIND_NEXT_BIT=y
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+CONFIG_ARCH_SELECT_MEMORY_MODEL=y
+CONFIG_ARCH_SPARSEMEM_ENABLE=y
+CONFIG_ARCH_SPARSEMEM_DEFAULT=y
+CONFIG_SELECT_MEMORY_MODEL=y
+# CONFIG_FLATMEM_MANUAL is not set
+# CONFIG_DISCONTIGMEM_MANUAL is not set
+CONFIG_SPARSEMEM_MANUAL=y
+CONFIG_SPARSEMEM=y
+CONFIG_HAVE_MEMORY_PRESENT=y
+# CONFIG_SPARSEMEM_STATIC is not set
+CONFIG_SPARSEMEM_EXTREME=y
+CONFIG_SPARSEMEM_VMEMMAP_ENABLE=y
+CONFIG_SPARSEMEM_VMEMMAP=y
+CONFIG_SPLIT_PTLOCK_CPUS=4
+CONFIG_RESOURCES_64BIT=y
+CONFIG_ZONE_DMA_FLAG=0
+CONFIG_NR_QUICK=1
+CONFIG_SBUS=y
+CONFIG_SBUSCHAR=y
+CONFIG_SUN_AUXIO=y
+CONFIG_SUN_IO=y
+# CONFIG_SUN_LDOMS is not set
+CONFIG_PCI=y
+CONFIG_PCI_DOMAINS=y
+CONFIG_PCI_SYSCALL=y
+CONFIG_ARCH_SUPPORTS_MSI=y
+# CONFIG_PCI_MSI is not set
+CONFIG_PCI_LEGACY=y
+# CONFIG_PCI_DEBUG is not set
+CONFIG_SUN_OPENPROMFS=m
+CONFIG_SPARC32_COMPAT=y
+CONFIG_COMPAT=y
+CONFIG_BINFMT_ELF32=y
+# CONFIG_BINFMT_AOUT32 is not set
+
+#
+# Executable file formats
+#
+CONFIG_BINFMT_ELF=y
+CONFIG_BINFMT_MISC=m
+CONFIG_SOLARIS_EMUL=y
+CONFIG_SCHED_SMT=y
+CONFIG_SCHED_MC=y
+# CONFIG_PREEMPT_NONE is not set
+# CONFIG_PREEMPT_VOLUNTARY is not set
+CONFIG_PREEMPT=y
+CONFIG_PREEMPT_BKL=y
+# CONFIG_CMDLINE_BOOL is not set
+
+#
+# Networking
+#
+CONFIG_NET=y
+
+#
+# Networking options
+#
+CONFIG_PACKET=y
+CONFIG_PACKET_MMAP=y
+CONFIG_UNIX=y
+CONFIG_XFRM=y
+CONFIG_XFRM_USER=m
+# CONFIG_XFRM_SUB_POLICY is not set
+# CONFIG_XFRM_MIGRATE is not set
+CONFIG_NET_KEY=m
+# CONFIG_NET_KEY_MIGRATE is not set
+CONFIG_INET=y
+# CONFIG_IP_MULTICAST is not set
+# CONFIG_IP_ADVANCED_ROUTER is not set
+CONFIG_IP_FIB_HASH=y
+# CONFIG_IP_PNP is not set
+# CONFIG_NET_IPIP is not set
+# CONFIG_NET_IPGRE is not set
+# CONFIG_ARPD is not set
+# CONFIG_SYN_COOKIES is not set
+# CONFIG_INET_AH is not set
+# CONFIG_INET_ESP is not set
+# CONFIG_INET_IPCOMP is not set
+# CONFIG_INET_XFRM_TUNNEL is not set
+# CONFIG_INET_TUNNEL is not set
+# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
+# CONFIG_INET_XFRM_MODE_TUNNEL is not set
+# CONFIG_INET_XFRM_MODE_BEET is not set
+# CONFIG_INET_LRO is not set
+CONFIG_INET_DIAG=y
+CONFIG_INET_TCP_DIAG=y
+# CONFIG_TCP_CONG_ADVANCED is not set
+CONFIG_TCP_CONG_CUBIC=y
+CONFIG_DEFAULT_TCP_CONG="cubic"
+# CONFIG_TCP_MD5SIG is not set
+# CONFIG_IPV6 is not set
+# CONFIG_INET6_XFRM_TUNNEL is not set
+# CONFIG_INET6_TUNNEL is not set
+# CONFIG_NETWORK_SECMARK is not set
+# CONFIG_NETFILTER is not set
+# CONFIG_IP_DCCP is not set
+# CONFIG_IP_SCTP is not set
+# CONFIG_TIPC is not set
+# CONFIG_ATM is not set
+# CONFIG_BRIDGE is not set
+# CONFIG_VLAN_8021Q is not set
+# CONFIG_DECNET is not set
+# CONFIG_LLC2 is not set
+# CONFIG_IPX is not set
+# CONFIG_ATALK is not set
+# CONFIG_X25 is not set
+# CONFIG_LAPB is not set
+# CONFIG_ECONET is not set
+# CONFIG_WAN_ROUTER is not set
+# CONFIG_NET_SCHED is not set
+
+#
+# Network testing
+#
+# CONFIG_NET_PKTGEN is not set
+# CONFIG_HAMRADIO is not set
+# CONFIG_IRDA is not set
+# CONFIG_BT is not set
+# CONFIG_AF_RXRPC is not set
+
+#
+# Wireless
+#
+# CONFIG_CFG80211 is not set
+# CONFIG_WIRELESS_EXT is not set
+# CONFIG_MAC80211 is not set
+# CONFIG_IEEE80211 is not set
+# CONFIG_RFKILL is not set
+# CONFIG_NET_9P is not set
+
+#
+# Device Drivers
+#
+
+#
+# Generic Driver Options
+#
+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+CONFIG_STANDALONE=y
+# CONFIG_PREVENT_FIRMWARE_BUILD is not set
+CONFIG_FW_LOADER=y
+# CONFIG_DEBUG_DRIVER is not set
+# CONFIG_DEBUG_DEVRES is not set
+# CONFIG_SYS_HYPERVISOR is not set
+CONFIG_CONNECTOR=m
+# CONFIG_MTD is not set
+CONFIG_OF_DEVICE=y
+# CONFIG_PARPORT is not set
+# CONFIG_BLK_DEV is not set
+# CONFIG_MISC_DEVICES is not set
+# CONFIG_IDE is not set
+
+#
+# SCSI device support
+#
+# CONFIG_RAID_ATTRS is not set
+CONFIG_SCSI=y
+CONFIG_SCSI_DMA=y
+# CONFIG_SCSI_TGT is not set
+# CONFIG_SCSI_NETLINK is not set
+CONFIG_SCSI_PROC_FS=y
+
+#
+# SCSI support type (disk, tape, CD-ROM)
+#
+CONFIG_BLK_DEV_SD=y
+# CONFIG_CHR_DEV_ST is not set
+# CONFIG_CHR_DEV_OSST is not set
+CONFIG_BLK_DEV_SR=m
+CONFIG_BLK_DEV_SR_VENDOR=y
+CONFIG_CHR_DEV_SG=m
+# CONFIG_CHR_DEV_SCH is not set
+
+#
+# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
+#
+CONFIG_SCSI_MULTI_LUN=y
+# CONFIG_SCSI_CONSTANTS is not set
+# CONFIG_SCSI_LOGGING is not set
+# CONFIG_SCSI_SCAN_ASYNC is not set
+CONFIG_SCSI_WAIT_SCAN=m
+
+#
+# SCSI Transports
+#
+CONFIG_SCSI_SPI_ATTRS=y
+# CONFIG_SCSI_FC_ATTRS is not set
+CONFIG_SCSI_ISCSI_ATTRS=y
+# CONFIG_SCSI_SAS_LIBSAS is not set
+# CONFIG_SCSI_SRP_ATTRS is not set
+CONFIG_SCSI_LOWLEVEL=y
+# CONFIG_ISCSI_TCP is not set
+# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
+# CONFIG_SCSI_3W_9XXX is not set
+# CONFIG_SCSI_ACARD is not set
+# CONFIG_SCSI_AACRAID is not set
+# CONFIG_SCSI_AIC7XXX is not set
+# CONFIG_SCSI_AIC7XXX_OLD is not set
+# CONFIG_SCSI_AIC79XX is not set
+# CONFIG_SCSI_AIC94XX is not set
+# CONFIG_SCSI_ARCMSR is not set
+# CONFIG_MEGARAID_NEWGEN is not set
+# CONFIG_MEGARAID_LEGACY is not set
+# CONFIG_MEGARAID_SAS is not set
+# CONFIG_SCSI_HPTIOP is not set
+# CONFIG_SCSI_DMX3191D is not set
+# CONFIG_SCSI_FUTURE_DOMAIN is not set
+# CONFIG_SCSI_IPS is not set
+# CONFIG_SCSI_INITIO is not set
+# CONFIG_SCSI_INIA100 is not set
+# CONFIG_SCSI_STEX is not set
+CONFIG_SCSI_SYM53C8XX_2=y
+CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=1
+CONFIG_SCSI_SYM53C8XX_DEFAULT_TAGS=16
+CONFIG_SCSI_SYM53C8XX_MAX_TAGS=64
+CONFIG_SCSI_SYM53C8XX_MMIO=y
+# CONFIG_SCSI_QLOGIC_1280 is not set
+# CONFIG_SCSI_QLOGICPTI is not set
+# CONFIG_SCSI_QLA_FC is not set
+# CONFIG_SCSI_QLA_ISCSI is not set
+# CONFIG_SCSI_LPFC is not set
+# CONFIG_SCSI_DC395x is not set
+# CONFIG_SCSI_DC390T is not set
+# CONFIG_SCSI_DEBUG is not set
+# CONFIG_SCSI_SUNESP is not set
+# CONFIG_SCSI_SRP is not set
+# CONFIG_ATA is not set
+# CONFIG_MD is not set
+# CONFIG_FUSION is not set
+
+#
+# IEEE 1394 (FireWire) support
+#
+# CONFIG_FIREWIRE is not set
+# CONFIG_IEEE1394 is not set
+# CONFIG_I2O is not set
+CONFIG_NETDEVICES=y
+# CONFIG_NETDEVICES_MULTIQUEUE is not set
+# CONFIG_DUMMY is not set
+# CONFIG_BONDING is not set
+# CONFIG_MACVLAN is not set
+# CONFIG_EQUALIZER is not set
+# CONFIG_TUN is not set
+# CONFIG_VETH is not set
+# CONFIG_IP1000 is not set
+# CONFIG_ARCNET is not set
+# CONFIG_PHYLIB is not set
+CONFIG_NET_ETHERNET=y
+CONFIG_MII=y
+# CONFIG_SUNLANCE is not set
+CONFIG_HAPPYMEAL=y
+# CONFIG_SUNBMAC is not set
+# CONFIG_SUNQE is not set
+# CONFIG_SUNGEM is not set
+# CONFIG_CASSINI is not set
+# CONFIG_NET_VENDOR_3COM is not set
+# CONFIG_NET_TULIP is not set
+# CONFIG_HP100 is not set
+# CONFIG_IBM_NEW_EMAC_ZMII is not set
+# CONFIG_IBM_NEW_EMAC_RGMII is not set
+# CONFIG_IBM_NEW_EMAC_TAH is not set
+# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
+# CONFIG_NET_PCI is not set
+# CONFIG_B44 is not set
+# CONFIG_NETDEV_1000 is not set
+# CONFIG_NETDEV_10000 is not set
+# CONFIG_TR is not set
+
+#
+# Wireless LAN
+#
+# CONFIG_WLAN_PRE80211 is not set
+# CONFIG_WLAN_80211 is not set
+# CONFIG_WAN is not set
+# CONFIG_FDDI is not set
+# CONFIG_HIPPI is not set
+# CONFIG_PPP is not set
+# CONFIG_SLIP is not set
+# CONFIG_NET_FC is not set
+# CONFIG_SHAPER is not set
+# CONFIG_NETCONSOLE is not set
+# CONFIG_NETPOLL is not set
+# CONFIG_NET_POLL_CONTROLLER is not set
+# CONFIG_ISDN is not set
+# CONFIG_PHONE is not set
+
+#
+# Input device support
+#
+CONFIG_INPUT=y
+# CONFIG_INPUT_FF_MEMLESS is not set
+# CONFIG_INPUT_POLLDEV is not set
+
+#
+# Userland interfaces
+#
+CONFIG_INPUT_MOUSEDEV=y
+# CONFIG_INPUT_MOUSEDEV_PSAUX is not set
+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+# CONFIG_INPUT_JOYDEV is not set
+# CONFIG_INPUT_EVDEV is not set
+# CONFIG_INPUT_EVBUG is not set
+
+#
+# Input Device Drivers
+#
+CONFIG_INPUT_KEYBOARD=y
+CONFIG_KEYBOARD_ATKBD=y
+CONFIG_KEYBOARD_SUNKBD=y
+# CONFIG_KEYBOARD_LKKBD is not set
+# CONFIG_KEYBOARD_XTKBD is not set
+# CONFIG_KEYBOARD_NEWTON is not set
+# CONFIG_KEYBOARD_STOWAWAY is not set
+# CONFIG_INPUT_MOUSE is not set
+# CONFIG_INPUT_JOYSTICK is not set
+# CONFIG_INPUT_TABLET is not set
+# CONFIG_INPUT_TOUCHSCREEN is not set
+# CONFIG_INPUT_MISC is not set
+
+#
+# Hardware I/O ports
+#
+CONFIG_SERIO=y
+CONFIG_SERIO_I8042=y
+# CONFIG_SERIO_SERPORT is not set
+CONFIG_SERIO_PCIPS2=m
+CONFIG_SERIO_LIBPS2=y
+CONFIG_SERIO_RAW=m
+# CONFIG_GAMEPORT is not set
+
+#
+# Character devices
+#
+CONFIG_VT=y
+CONFIG_VT_CONSOLE=y
+CONFIG_HW_CONSOLE=y
+# CONFIG_VT_HW_CONSOLE_BINDING is not set
+# CONFIG_SERIAL_NONSTANDARD is not set
+
+#
+# Serial drivers
+#
+
+#
+# Non-8250 serial port support
+#
+CONFIG_SERIAL_SUNCORE=y
+# CONFIG_SERIAL_SUNZILOG is not set
+CONFIG_SERIAL_SUNSU=y
+CONFIG_SERIAL_SUNSU_CONSOLE=y
+CONFIG_SERIAL_SUNSAB=m
+CONFIG_SERIAL_SUNHV=y
+CONFIG_SERIAL_CORE=y
+CONFIG_SERIAL_CORE_CONSOLE=y
+# CONFIG_SERIAL_JSM is not set
+CONFIG_UNIX98_PTYS=y
+# CONFIG_LEGACY_PTYS is not set
+# CONFIG_IPMI_HANDLER is not set
+# CONFIG_HW_RANDOM is not set
+# CONFIG_R3964 is not set
+# CONFIG_APPLICOM is not set
+# CONFIG_RAW_DRIVER is not set
+# CONFIG_TCG_TPM is not set
+CONFIG_DEVPORT=y
+# CONFIG_I2C is not set
+
+#
+# SPI support
+#
+# CONFIG_SPI is not set
+# CONFIG_SPI_MASTER is not set
+# CONFIG_W1 is not set
+# CONFIG_POWER_SUPPLY is not set
+# CONFIG_HWMON is not set
+# CONFIG_WATCHDOG is not set
+
+#
+# Sonics Silicon Backplane
+#
+CONFIG_SSB_POSSIBLE=y
+# CONFIG_SSB is not set
+
+#
+# Multifunction device drivers
+#
+# CONFIG_MFD_SM501 is not set
+
+#
+# Multimedia devices
+#
+# CONFIG_VIDEO_DEV is not set
+# CONFIG_DVB_CORE is not set
+# CONFIG_DAB is not set
+
+#
+# Graphics support
+#
+# CONFIG_DRM is not set
+# CONFIG_VGASTATE is not set
+CONFIG_VIDEO_OUTPUT_CONTROL=m
+CONFIG_FB=y
+# CONFIG_FIRMWARE_EDID is not set
+# CONFIG_FB_DDC is not set
+# CONFIG_FB_CFB_FILLRECT is not set
+CONFIG_FB_CFB_COPYAREA=y
+CONFIG_FB_CFB_IMAGEBLIT=y
+# CONFIG_FB_CFB_REV_PIXELS_IN_BYTE is not set
+# CONFIG_FB_SYS_FILLRECT is not set
+# CONFIG_FB_SYS_COPYAREA is not set
+# CONFIG_FB_SYS_IMAGEBLIT is not set
+# CONFIG_FB_SYS_FOPS is not set
+CONFIG_FB_DEFERRED_IO=y
+# CONFIG_FB_SVGALIB is not set
+# CONFIG_FB_MACMODES is not set
+# CONFIG_FB_BACKLIGHT is not set
+CONFIG_FB_MODE_HELPERS=y
+CONFIG_FB_TILEBLITTING=y
+
+#
+# Frame buffer hardware drivers
+#
+# CONFIG_FB_CIRRUS is not set
+# CONFIG_FB_PM2 is not set
+# CONFIG_FB_ASILIANT is not set
+# CONFIG_FB_IMSTT is not set
+# CONFIG_FB_UVESA is not set
+CONFIG_FB_SBUS=y
+# CONFIG_FB_BW2 is not set
+# CONFIG_FB_CG3 is not set
+# CONFIG_FB_CG6 is not set
+CONFIG_FB_FFB=y
+# CONFIG_FB_TCX is not set
+# CONFIG_FB_CG14 is not set
+# CONFIG_FB_P9100 is not set
+# CONFIG_FB_LEO is not set
+# CONFIG_FB_XVR500 is not set
+# CONFIG_FB_XVR2500 is not set
+# CONFIG_FB_S1D13XXX is not set
+# CONFIG_FB_NVIDIA is not set
+# CONFIG_FB_RIVA is not set
+# CONFIG_FB_MATROX is not set
+# CONFIG_FB_RADEON is not set
+# CONFIG_FB_ATY128 is not set
+# CONFIG_FB_ATY is not set
+# CONFIG_FB_S3 is not set
+# CONFIG_FB_SAVAGE is not set
+# CONFIG_FB_SIS is not set
+# CONFIG_FB_NEOMAGIC is not set
+# CONFIG_FB_KYRO is not set
+# CONFIG_FB_3DFX is not set
+# CONFIG_FB_VOODOO1 is not set
+# CONFIG_FB_VT8623 is not set
+# CONFIG_FB_TRIDENT is not set
+# CONFIG_FB_ARK is not set
+# CONFIG_FB_PM3 is not set
+# CONFIG_FB_VIRTUAL is not set
+# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+
+#
+# Display device support
+#
+# CONFIG_DISPLAY_SUPPORT is not set
+
+#
+# Console display driver support
+#
+# CONFIG_PROM_CONSOLE is not set
+CONFIG_DUMMY_CONSOLE=y
+CONFIG_FRAMEBUFFER_CONSOLE=y
+# CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY is not set
+# CONFIG_FRAMEBUFFER_CONSOLE_ROTATION is not set
+CONFIG_FONTS=y
+# CONFIG_FONT_8x8 is not set
+# CONFIG_FONT_8x16 is not set
+# CONFIG_FONT_6x11 is not set
+# CONFIG_FONT_7x14 is not set
+# CONFIG_FONT_PEARL_8x8 is not set
+# CONFIG_FONT_ACORN_8x8 is not set
+CONFIG_FONT_SUN8x16=y
+# CONFIG_FONT_SUN12x22 is not set
+# CONFIG_FONT_10x18 is not set
+CONFIG_LOGO=y
+# CONFIG_LOGO_LINUX_MONO is not set
+# CONFIG_LOGO_LINUX_VGA16 is not set
+# CONFIG_LOGO_LINUX_CLUT224 is not set
+CONFIG_LOGO_SUN_CLUT224=y
+
+#
+# Sound
+#
+# CONFIG_SOUND is not set
+# CONFIG_HID_SUPPORT is not set
+# CONFIG_USB_SUPPORT is not set
+# CONFIG_MMC is not set
+# CONFIG_NEW_LEDS is not set
+# CONFIG_INFINIBAND is not set
+# CONFIG_RTC_CLASS is not set
+
+#
+# Userspace I/O
+#
+# CONFIG_UIO is not set
+
+#
+# Misc Linux/SPARC drivers
+#
+CONFIG_SUN_OPENPROMIO=y
+# CONFIG_OBP_FLASH is not set
+# CONFIG_SUN_BPP is not set
+# CONFIG_BBC_I2C is not set
+# CONFIG_ENVCTRL is not set
+# CONFIG_DISPLAY7SEG is not set
+
+#
+# File systems
+#
+CONFIG_EXT2_FS=y
+# CONFIG_EXT2_FS_XATTR is not set
+# CONFIG_EXT2_FS_XIP is not set
+CONFIG_EXT3_FS=y
+# CONFIG_EXT3_FS_XATTR is not set
+# CONFIG_EXT4DEV_FS is not set
+CONFIG_JBD=y
+# CONFIG_JBD_DEBUG is not set
+# CONFIG_REISERFS_FS is not set
+# CONFIG_JFS_FS is not set
+# CONFIG_FS_POSIX_ACL is not set
+# CONFIG_XFS_FS is not set
+# CONFIG_GFS2_FS is not set
+# CONFIG_OCFS2_FS is not set
+# CONFIG_MINIX_FS is not set
+# CONFIG_ROMFS_FS is not set
+CONFIG_INOTIFY=y
+CONFIG_INOTIFY_USER=y
+# CONFIG_QUOTA is not set
+CONFIG_DNOTIFY=y
+# CONFIG_AUTOFS_FS is not set
+# CONFIG_AUTOFS4_FS is not set
+# CONFIG_FUSE_FS is not set
+
+#
+# CD-ROM/DVD Filesystems
+#
+CONFIG_ISO9660_FS=m
+# CONFIG_JOLIET is not set
+# CONFIG_ZISOFS is not set
+CONFIG_UDF_FS=m
+
+#
+# DOS/FAT/NT Filesystems
+#
+# CONFIG_MSDOS_FS is not set
+# CONFIG_VFAT_FS is not set
+# CONFIG_NTFS_FS is not set
+
+#
+# Pseudo filesystems
+#
+CONFIG_PROC_FS=y
+CONFIG_PROC_KCORE=y
+CONFIG_PROC_SYSCTL=y
+CONFIG_SYSFS=y
+CONFIG_TMPFS=y
+# CONFIG_TMPFS_POSIX_ACL is not set
+# CONFIG_HUGETLBFS is not set
+# CONFIG_HUGETLB_PAGE is not set
+# CONFIG_CONFIGFS_FS is not set
+
+#
+# Miscellaneous filesystems
+#
+# CONFIG_ADFS_FS is not set
+# CONFIG_AFFS_FS is not set
+# CONFIG_HFS_FS is not set
+# CONFIG_HFSPLUS_FS is not set
+# CONFIG_BEFS_FS is not set
+# CONFIG_BFS_FS is not set
+# CONFIG_EFS_FS is not set
+# CONFIG_CRAMFS is not set
+# CONFIG_VXFS_FS is not set
+# CONFIG_HPFS_FS is not set
+# CONFIG_QNX4FS_FS is not set
+# CONFIG_SYSV_FS is not set
+# CONFIG_UFS_FS is not set
+# CONFIG_NETWORK_FILESYSTEMS is not set
+
+#
+# Partition Types
+#
+# CONFIG_PARTITION_ADVANCED is not set
+CONFIG_MSDOS_PARTITION=y
+CONFIG_SUN_PARTITION=y
+# CONFIG_NLS is not set
+# CONFIG_DLM is not set
+# CONFIG_INSTRUMENTATION is not set
+
+#
+# Kernel hacking
+#
+CONFIG_TRACE_IRQFLAGS_SUPPORT=y
+# CONFIG_PRINTK_TIME is not set
+CONFIG_ENABLE_WARN_DEPRECATED=y
+CONFIG_ENABLE_MUST_CHECK=y
+CONFIG_MAGIC_SYSRQ=y
+# CONFIG_UNUSED_SYMBOLS is not set
+CONFIG_DEBUG_FS=y
+# CONFIG_HEADERS_CHECK is not set
+CONFIG_DEBUG_KERNEL=y
+CONFIG_DEBUG_SHIRQ=y
+CONFIG_DETECT_SOFTLOCKUP=y
+# CONFIG_SCHED_DEBUG is not set
+# CONFIG_SCHEDSTATS is not set
+# CONFIG_TIMER_STATS is not set
+CONFIG_SLUB_DEBUG_ON=y
+# CONFIG_DEBUG_PREEMPT is not set
+CONFIG_DEBUG_RT_MUTEXES=y
+CONFIG_DEBUG_PI_LIST=y
+# CONFIG_RT_MUTEX_TESTER is not set
+CONFIG_DEBUG_SPINLOCK=y
+CONFIG_DEBUG_MUTEXES=y
+CONFIG_DEBUG_LOCK_ALLOC=y
+# CONFIG_PROVE_LOCKING is not set
+CONFIG_LOCKDEP=y
+# CONFIG_LOCK_STAT is not set
+# CONFIG_DEBUG_LOCKDEP is not set
+# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
+CONFIG_STACKTRACE=y
+# CONFIG_DEBUG_KOBJECT is not set
+CONFIG_DEBUG_BUGVERBOSE=y
+CONFIG_DEBUG_INFO=y
+# CONFIG_DEBUG_VM is not set
+# CONFIG_DEBUG_LIST is not set
+# CONFIG_DEBUG_SG is not set
+CONFIG_FRAME_POINTER=y
+# CONFIG_FORCED_INLINING is not set
+# CONFIG_BOOT_PRINTK_DELAY is not set
+# CONFIG_RCU_TORTURE_TEST is not set
+# CONFIG_FAULT_INJECTION is not set
+# CONFIG_SAMPLES is not set
+# CONFIG_DEBUG_STACK_USAGE is not set
+# CONFIG_DEBUG_DCFLUSH is not set
+# CONFIG_STACK_DEBUG is not set
+# CONFIG_DEBUG_BOOTMEM is not set
+CONFIG_DEBUG_PAGEALLOC=y
+
+#
+# Security options
+#
+# CONFIG_KEYS is not set
+# CONFIG_SECURITY is not set
+# CONFIG_SECURITY_FILE_CAPABILITIES is not set
+CONFIG_CRYPTO=y
+CONFIG_CRYPTO_ALGAPI=y
+CONFIG_CRYPTO_BLKCIPHER=y
+CONFIG_CRYPTO_MANAGER=y
+# CONFIG_CRYPTO_HMAC is not set
+# CONFIG_CRYPTO_XCBC is not set
+# CONFIG_CRYPTO_NULL is not set
+# CONFIG_CRYPTO_MD4 is not set
+CONFIG_CRYPTO_MD5=y
+CONFIG_CRYPTO_SHA1=m
+# CONFIG_CRYPTO_SHA256 is not set
+# CONFIG_CRYPTO_SHA512 is not set
+# CONFIG_CRYPTO_WP512 is not set
+# CONFIG_CRYPTO_TGR192 is not set
+CONFIG_CRYPTO_GF128MUL=y
+# CONFIG_CRYPTO_ECB is not set
+CONFIG_CRYPTO_CBC=y
+# CONFIG_CRYPTO_PCBC is not set
+# CONFIG_CRYPTO_LRW is not set
+# CONFIG_CRYPTO_XTS is not set
+# CONFIG_CRYPTO_CRYPTD is not set
+CONFIG_CRYPTO_DES=y
+# CONFIG_CRYPTO_FCRYPT is not set
+# CONFIG_CRYPTO_BLOWFISH is not set
+# CONFIG_CRYPTO_TWOFISH is not set
+# CONFIG_CRYPTO_SERPENT is not set
+# CONFIG_CRYPTO_AES is not set
+# CONFIG_CRYPTO_CAST5 is not set
+# CONFIG_CRYPTO_CAST6 is not set
+# CONFIG_CRYPTO_TEA is not set
+# CONFIG_CRYPTO_ARC4 is not set
+# CONFIG_CRYPTO_KHAZAD is not set
+# CONFIG_CRYPTO_ANUBIS is not set
+# CONFIG_CRYPTO_SEED is not set
+# CONFIG_CRYPTO_DEFLATE is not set
+# CONFIG_CRYPTO_MICHAEL_MIC is not set
+CONFIG_CRYPTO_CRC32C=m
+# CONFIG_CRYPTO_CAMELLIA is not set
+# CONFIG_CRYPTO_TEST is not set
+# CONFIG_CRYPTO_AUTHENC is not set
+CONFIG_CRYPTO_HW=y
+
+#
+# Library routines
+#
+CONFIG_BITREVERSE=y
+# CONFIG_CRC_CCITT is not set
+# CONFIG_CRC16 is not set
+# CONFIG_CRC_ITU_T is not set
+CONFIG_CRC32=y
+# CONFIG_CRC7 is not set
+CONFIG_LIBCRC32C=m
+CONFIG_PLIST=y
+CONFIG_HAS_IOMEM=y
+CONFIG_HAS_IOPORT=y
+CONFIG_HAS_DMA=y
+
+--Boundary-00=_h7mfH4maOFtMh16--
