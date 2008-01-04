@@ -1,94 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbYADUEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754938AbYADUEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754750AbYADUEM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 15:04:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbYADUD5
+	id S1754938AbYADUEZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 15:04:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754765AbYADUEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 15:03:57 -0500
-Received: from hs-out-0708.google.com ([64.233.178.243]:13052 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753304AbYADUD4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 15:03:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jDnkTaa2rmnu3eo/G3eAOaIhFDELADg5l+ZOK0Mfu0+EhBElhVL0uLd/CzOBj3wV1N8S2CZUrRomxCCGzmzxMr/QXrtpABJTLHAYYL1dlIzehNHG8b0+oxoAvWrwPdRSJHaSdiZ45KoeGb7w9lhqrLdiPe96C1MYUpA6Ql+F94I=
-Message-ID: <4d8e3fd30801041203s2f017f20ld9fcbc82912468fe@mail.gmail.com>
-Date: Fri, 4 Jan 2008 21:03:53 +0100
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [PATCH] [Coding Style]: misc fixes for fs/ext{3,4}/acl.{c,h} from checkpatch.pl
-Cc: "Theodore Tso" <tytso@mit.edu>,
-       "Mathieu Segaud" <mathieu.segaud@regala.cx>, akpm@linux-foundation.org,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080104194129.GA16962@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 4 Jan 2008 15:04:13 -0500
+Received: from mail.gmx.net ([213.165.64.20]:42460 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754738AbYADUEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 15:04:12 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/7zphDLLH7jgWmVBtaa0KHpVvFQUGdrYTNMsFw1M
+	j4+ns8nrVjRXKj
+Subject: Re: [patch?] s2ram + P4 + tsc = annoyance
+From: Mike Galbraith <efault@gmx.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080104163914.GA27447@elf.ucw.cz>
+References: <1198745736.4235.23.camel@homer.simson.net>
+	 <1198779574.4425.50.camel@homer.simson.net>
+	 <20071230140456.GJ16946@elte.hu> <20071230140815.GA27858@elte.hu>
+	 <20080104163914.GA27447@elf.ucw.cz>
+Content-Type: text/plain
+Date: Fri, 04 Jan 2008 23:04:03 +0100
+Message-Id: <1199484243.4240.38.camel@homer.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1199452896-20145-1-git-send-email-mathieu.segaud@regala.cx>
-	 <20080104134458.GE17436@mit.edu> <p73hcht8sfr.fsf@bingen.suse.de>
-	 <20080104190137.GJ17436@mit.edu>
-	 <20080104194129.GA16962@one.firstfloor.org>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 4, 2008 8:41 PM, Andi Kleen <andi@firstfloor.org> wrote:
-[...]
-> > I don't know, because people want to be able to say that they've
-> > contributed fixes to the Linux kernel?
->
-> My pet theory is that it is similar to the "unsubscribe me"
-> cascade effect you sometimes see on mailing lists. One person
-> sends a "unsubscribe me" to everybody and then suddenly a lot of
-> people think that is the right way to unsubscribe and reply
-> with lots of "unsubscribe me too".
->
-> So one person sends a cleanup and it gets accepted and suddenly
-> other people realize it is very easy to do these cleanups
-> (not realizing the hidden costs they have) and then they go on...
 
-Since I'm one of those people that sent "Codying style fixes" patches
-I give my contribution to this discussion as well.
+On Fri, 2008-01-04 at 17:39 +0100, Pavel Machek wrote:
 
-I think that _one_ of the reasons that made a few people sent this kind of
-patches to the list is because checkpatch.pl is far better then any other
- kerneljanitor scripts/easy task and _seems_ to be an easy way to start
-understanding the code, creation of patches and process in general.
+> If it is too dangerous for -final, I guess it is bad idea to push it
+> into -stable.
+> 
+> Plus it does not fix really bad bug.
 
-> I thought we had the janitor project to steer these people into
-> more useful directions, but apparently that is not well known
-> enough anymore. Perhaps it just needs to be more regularly announced?
->
-> Although I must admit I am not 100% happy with kernel-janitors
-> either -- e.g. a few times I sent suggestions about easy things
-> someone could do to that list, but never heard anything back.
->
-> Anyways there are lots of ways to do trivial cleanups in a useful
-> way and if people want to do this perhaps they should just
-> ask on linux-kernel and people suggest something?
+The furthest back burner is fine.  It's only an annoyance.
+ 
+	-Mike
 
-Yes please do that.
-Even if fixing errors reported by checkpatch.pl still sounds like a
-useful way to spent a couple of hours.
-Maybe our mistake was to send the patches to lkml instead of to
-trivial@kernel.org
-or to kerneljanitors?
-
-I mean, I now understand the rationales behind your complaints but I
-don't think it's
- good idea to discourage people willing to perform easy task.
-They just need guidance in order to be useful.
-
-> My hope here is of course that these trivial changes are primarily
-> used as a way to get "the feet wet" to understand the procedures
-> for contribuing larger not quite as trivial changes
-
-Agreed.
-
-ciao,
--- 
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
