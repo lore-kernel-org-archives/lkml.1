@@ -1,76 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758863AbYADCzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758769AbYADC5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758863AbYADCzj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 21:55:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbYADCzI
+	id S1758769AbYADC5f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 21:57:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbYADC50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 21:55:08 -0500
-Received: from tama555.ecl.ntt.co.jp ([129.60.39.106]:59533 "EHLO
-	tama555.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754025AbYADCzF (ORCPT
+	Thu, 3 Jan 2008 21:57:26 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:32502 "EHLO
+	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754015AbYADC5Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 21:55:05 -0500
-To: dillowda@ornl.gov
-Cc: fujita.tomonori@lab.ntt.co.jp, tomof@acm.org, rdreier@cisco.com,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: [2.6.24-rc BUGFIX] IB/srp: release transport when removing host
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1199414359.3636.13.camel@obelisk.thedillows.org>
-References: <1199393485.7561.51.camel@lap75545.ornl.gov>
-	<20080104094722F.fujita.tomonori@lab.ntt.co.jp>
-	<1199414359.3636.13.camel@obelisk.thedillows.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080104115427F.fujita.tomonori@lab.ntt.co.jp>
-Date: Fri, 04 Jan 2008 11:54:27 +0900
-X-Dispatcher: imput version 20040704(IM147)
+	Thu, 3 Jan 2008 21:57:25 -0500
+Date: Thu, 03 Jan 2008 20:56:31 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: SATA kernel-buffered read VERY slow (not raid,
+ Promise TX300 card); 2.6.23.1(vanilla)
+In-reply-to: <477D9D66.3080502@tlinx.org>
+To: Linda Walsh <lkml@tlinx.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Message-id: <477DA05F.4080503@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.o9uy6Qaq3PtHs2Z9lAKGUKvD85I@ifi.uio.no>
+ <fa.1kDEq2SPE3FqpM5Mfw9CVGbvVdY@ifi.uio.no>
+ <fa.hIZ5+XhGRugySB/HuLxr5qd6gAY@ifi.uio.no>
+ <fa.iefWPg3R6g5Pnm/ktSCK9XWVFVw@ifi.uio.no>
+ <fa.FhpaleM/osLTMJ85/PuxjxyJeGI@ifi.uio.no>
+ <fa.MP5rgMp4TS2+Cfemd/uFOQOuquQ@ifi.uio.no> <477D9B6E.7060000@shaw.ca>
+ <477D9D66.3080502@tlinx.org>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 03 Jan 2008 21:39:19 -0500
-Dave Dillow <dillowda@ornl.gov> wrote:
-
-> When removing the ib_srp module, srp_remove_one() does not release the
-> SRP transport class when it is releasing the SCSI host. This leads to
-> dangling references to kfree()'d memory, and an eventual oops.
-> 
-> Signed-off-by: David Dillow <dillowda@ornl.gov>
-
-Thanks again!
-
-Linus has already merged your previous patch:
-
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b0e47c8b79154772a436f25bf7646733e1d6194c
-
-So please resend a patch to move srp_remove_host before
-scsi_remove_host instead of adding srp_remove_host.
-
-
+Linda Walsh wrote:
+> Robert Hancock wrote:
+>>
+>> Looks like the drive reports ERR/ABRT (command aborted), meaning it 
+>> likely doesn't support those commands.
+>>
 > ---
-> On Fri, 2008-01-04 at 09:47 +0900, FUJITA Tomonori wrote:
-> > I think that this is the root problem and the patch fixes it in the
-> > right way. Please send this patch to linux-scsi@vger.kernel.org and a
-> > patch to move srp_remove_host before scsi_remove_host in
-> > srp_remove_one to Roland.
-> > 
-> > Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> 
-> Not sure if your Acked-by was for this one as well, so I left it off.
+>    Except the PATA version of the drive does (same capacity, & other 
+> specs).  Seagate would
+> disable "advanced" features for SATA but leave them for the older 
+> technology?  Possible,
+> but doesn't seem likely.
 
-Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-
-> diff --git a/drivers/infiniband/ulp/srp/ib_srp.c b/drivers/infiniband/ulp/srp/ib_srp.c
-> index 950228f..bdb6f85 100644
-> --- a/drivers/infiniband/ulp/srp/ib_srp.c
-> +++ b/drivers/infiniband/ulp/srp/ib_srp.c
-> @@ -2053,6 +2053,7 @@ static void srp_remove_one(struct ib_device *device)
->  
->  		list_for_each_entry_safe(target, tmp_target,
->  					 &host->target_list, list) {
-> +			srp_remove_host(target->scsi_host);
->  			scsi_remove_host(target->scsi_host);
->  			srp_disconnect_target(target);
->  			ib_destroy_cm_id(target->cm_id);
-> 
+If this is a Seagate, I believe that they don't have AAM enabled on any 
+of their newer drives (something about a lawsuit for patent infringement 
+on that feature, or something). Quite likely they don't support that 
+power management command, either.
