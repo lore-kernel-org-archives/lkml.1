@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbYADSJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753750AbYADSTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754611AbYADSJW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 13:09:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbYADSJP
+	id S1753750AbYADSTe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 13:19:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751599AbYADSTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 13:09:15 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:51760 "EHLO mx1.redhat.com"
+	Fri, 4 Jan 2008 13:19:25 -0500
+Received: from mx.treblig.org ([80.68.94.177]:2801 "EHLO mx.treblig.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752327AbYADSJP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 13:09:15 -0500
-Message-ID: <477E75CF.8070608@redhat.com>
-Date: Fri, 04 Jan 2008 13:07:11 -0500
-From: Larry Woodman <lwoodman@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.4.2) Gecko/20040301
-X-Accept-Language: en-us, en
+	id S1751607AbYADSTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 13:19:24 -0500
+Date: Fri, 4 Jan 2008 18:19:18 +0000
+From: "Dr. David Alan Gilbert" <linux@treblig.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: felix-linuxkernel@fefe.de, linux-kernel@vger.kernel.org
+Subject: Re: memory remapping, 4gb memory on 945gt
+Message-ID: <20080104181918.GA21797@gallifrey>
+References: <20080104154914.GA589@codeblau.de> <p73lk758sri.fsf@bingen.suse.de>
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Andi Kleen <andi@firstfloor.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Eric Whitney <eric.whitney@hp.com>, Nick Dokos <nicholas.dokos@hp.com>
-Subject: Re: [patch 00/19] VM pageout scalability improvements
-References: <20080102224144.885671949@redhat.com>	<1199379128.5295.21.camel@localhost>	<20080103120000.1768f220@cuia.boston.redhat.com>	<1199380412.5295.29.camel@localhost>	<20080103170035.105d22c8@cuia.boston.redhat.com>	<1199463934.5290.20.camel@localhost>	<p73d4sh8s93.fsf@bingen.suse.de> <20080104115524.7d906f94@bree.surriel.com>
-In-Reply-To: <20080104115524.7d906f94@bree.surriel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <p73lk758sri.fsf@bingen.suse.de>
+X-Chocolate: 70 percent or better cocoa solids preferably
+X-Operating-System: Linux/2.6.20.3-bytemark-uml-2 (i686)
+X-Uptime: 18:15:34 up 45 days, 17:28,  1 user,  load average: 0.44, 0.39, 0.34
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
+* Andi Kleen (andi@firstfloor.org) wrote:
+> felix-linuxkernel@fefe.de writes:
+> 
+> > I recently put 4 GB of memory in my Acer Travelmate 8210 series
+> > notebook.  The BIOS only detects 3 GB.
+> 
+> Actually it will detect 4GB, but put the PCI hole over the last GB.
+> One way to get more usable memory is to configure the BIOS to use a smaller
+> PCI hole (e.g. use smaller frame buffer/aperture etc.)
 
->On Fri, 04 Jan 2008 17:34:00 +0100
->Andi Kleen <andi@firstfloor.org> wrote:
->  
->
->>Lee Schermerhorn <Lee.Schermerhorn@hp.com> writes:
->>
->>    
->>
->>>We can easily [he says, glibly] reproduce the hang on the anon_vma lock
->>>      
->>>
->>Is that a NUMA platform? On non x86? Perhaps you just need queued spinlocks?
->>    
->>
->
->I really think that the anon_vma and i_mmap_lock spinlock hangs are
->due to the lack of queued spinlocks.  Not because I have seen your
->system hang, but because I've seen one of Larry's test systems here
->hang in scary/amusing ways :)
->
-Changing the anon_vma->lock into a rwlock_t helps because 
-page_lock_anon_vma()
-can take it for read and thats where the contention is.  However its the 
-fact that under
-some tests, most of the pages are in vmas queued to one anon_vma that 
-causes so much
-lock contention.
+Unfortunately there are certainly some that don't make many options
+for configuration and also use a vast amount; my Toshiba A100-306
+uses an entire 1GB for the PCI space and has very little in the
+way of configuration.
 
+> > I googled around a little.  It appears to be a chipset limitation of the
+> > 945gt, which uses the fourth gig for devices.
+> >
+> > Now I can understand this explanation for 32-bit mode, but I'm running
+> > in 64-bit mode.  There should be a way to use the fourth gig under
+> > Linux.  Is there?
+> 
+> The chipset limitation applies to 64bit mode as well as to 32bit mode
+> (which actually does not have a 4GB limitation with PAE)
 
->
->With queued spinlocks the system should just slow down, not hang.
->
->  
->
+Note that some system and memory vendors have incorrect statements
+stating that the 3.xGB limit is a 32bit OS issue on these machines
+and it'll all just work fine on 64bit OSs.
 
-
+Dave
+-- 
+ -----Open up your eyes, open up your mind, open up your code -------   
+/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
+\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
+ \ _________________________|_____ http://www.treblig.org   |_______/
