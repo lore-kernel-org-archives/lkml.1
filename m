@@ -1,104 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754873AbYADCV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756417AbYADC1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754873AbYADCV6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 21:21:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbYADCVs
+	id S1756417AbYADC1v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 21:27:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYADC1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 21:21:48 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:60859 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752441AbYADCVr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 21:21:47 -0500
-Date: Thu, 3 Jan 2008 18:21:43 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Matt Mackall <mpm@selenic.com>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Hugh Dickins <hugh@veritas.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] procfs: provide slub's /proc/slabinfo
-In-Reply-To: <1199378818.8274.25.camel@cinder.waste.org>
-Message-ID: <Pine.LNX.4.64.0801031808470.7244@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com> 
- <84144f020801021109v78e06c6k10d26af0e330fc85@mail.gmail.com> 
- <alpine.LFD.1.00.0801021130210.32517@woody.linux-foundation.org> 
- <1199314218.4497.109.camel@cinder.waste.org>  <20080103085239.GA10813@elte.hu>
- <1199378818.8274.25.camel@cinder.waste.org>
+	Thu, 3 Jan 2008 21:27:43 -0500
+Received: from mail1.asahi-net.or.jp ([202.224.39.197]:64901 "EHLO
+	mail.asahi-net.or.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752545AbYADC1m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 21:27:42 -0500
+Message-ID: <477D99B4.8010805@ak.jp.nec.com>
+Date: Fri, 04 Jan 2008 11:28:04 +0900
+From: KaiGai Kohei <kaigai@ak.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: James Morris <jmorris@namei.org>
+CC: KaiGai Kohei <kaigai@kaigai.gr.jp>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       akpm@osdl.org, morgan@kernel.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Exporting capability code/name pairs
+References: <477321C8.3070004@ak.jp.nec.com> <20071227161435.GB9677@sergelap.austin.ibm.com> <477455A0.7060603@ak.jp.nec.com> <477494C3.2040301@ak.jp.nec.com> <Xine.LNX.4.64.0712281957520.23510@us.intercode.com.au> <477B457E.6000802@kaigai.gr.jp> <Xine.LNX.4.64.0801022100550.30212@us.intercode.com.au>
+In-Reply-To: <Xine.LNX.4.64.0801022100550.30212@us.intercode.com.au>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Jan 2008, Matt Mackall wrote:
-
-> There are three downsides with the slab-like approach: internal
-> fragmentation, under-utilized slabs, and pinning.
+James Morris wrote:
+> On Wed, 2 Jan 2008, KaiGai Kohei wrote:
 > 
-> The first is the situation where we ask for a kmalloc of 33 bytes and
-> get 64. I think the average kmalloc wastes about 30% trying to fit into
-> power-of-two buckets. We can tune our buckets a bit, but I think in
-> general trying to back kmalloc with slabs is problematic. SLOB has a
-> 2-byte granularity up to the point where it just hands things off to the
-> page allocator.
-
-The 2 byte overhead of SLOB becomes a liability when it comes to correctly 
-aligning power of two sized object. SLOB has to add two bytes and then 
-align the combined object (argh!). SLUB can align these without a 2 byte 
-overhead. In some configurations this results in SLUB using even less 
-memory than SLOB. See f.e. Pekka's test at 
-http://marc.info/?l=linux-kernel&m=118405559214029&w=2
-
-> If we tried to add more slabs to fill the gaps, we'd exacerbate the
-> second problem: because only one type of object can go on a slab, a lot
-> of slabs are half-full. SLUB's automerging of slabs helps some here, but
-> is still restricted to objects of the same size.
-
-The advantage of SLOB is to be able to put objects of multiple sizes into 
-the same slab page. That advantage goes away once we have more than a few 
-objects per slab because SLUB can store object in a denser way than SLOB.
- 
-> And finally, there's the whole pinning problem: we can have a cache like
-> the dcache grow very large and then contract, but still have most of its
-> slabs used by pinned dentries. Christoph has some rather hairy patches
-> to address this, but SLOB doesn't have much of a problem here - those
-> pages are still available to allocate other objects on.
-
-Well if you just have a few dentries then they are likely all pinned. A 
-large number of dentries will typically result in reclaimable slabs.
-The slab defrag patchset not only deals with the dcache issue but provides 
-similar solutions for inode and buffer_heads. Support for other slabs that
-defragment can be added by providing two hooks per slab.
-
- > By comparison, SLOB's big downsides are that it's not O(1) and it has a
-> single lock. But it's currently fast enough to keep up with SLUB on
-> kernel compiles on my 2G box and Nick had an allocator benchmark where
-> scalability didn't fall off until beyond 4 CPUs.
-
-Both SLOB and SLAB suffer from the single lock problem. SLOB does it for 
-every item allocated. SLAB does it for every nth item allocated. Given 
-a fast allocation from multiple processors both will generate a bouncing 
-cacheline. SLUB can take pages from the page allocator pools and allocate 
-all objects from it without taking a lock.
-
-> > right now we are far away from it - SLUB has an order of magnitude 
-> > larger .o than SLOB, even on UP. I'm wondering why that is so - SLUB's 
-> > data structures _are_ quite compact and could in theory be used in a 
-> > SLOB-alike way. Perhaps one problem is that much of SLUB's debugging 
-> > code is always built in?
+>>> Another issue is that securityfs depends on CONFIG_SECURITY, which might be
+>>> undesirable, given that capabilities are a standard feature.
+>> We can implement this feature on another pseudo filesystems.
+>> Do you think what filesystem is the best candidate?
+>> I prefer procfs or sysfs instead.
 > 
-> I think we should probably just accept that it makes sense to have more
-> than one allocator. A 64MB single CPU machine is very, very different
-> than a 64TB 4096-CPU machine. On one of those, it probably makes some
-> sense to burn some memory for maximum scalability.
+> Sysfs makes more sense, as this information is system-wide and does not 
+> relate to specific processes.
 
-I still have trouble to see that SLOB still has much to offer. An embedded 
-allocator that in many cases has more allocation overhead than the default 
-one? Ok you still have advantages if allocations are rounded up to the 
-next power of two for a kmalloc and because of the combining of different 
-types of allocations in a single slab if there are an overall small number 
-of allocations. If one would create a custom slab for the worst problems 
-there then this may also go away.
+The following patch enables to export any capabilities which are supported
+on the working kernel, under the /sys/kernel/capability.
+You can obtain the code/name pairs of capabilities with scanning this directory.
+
+Signed-off-by: KaiGai Kohei <kaigai@ak.jp.nec.com>
+--
+ kernel/Makefile       |    9 +++++++++
+ kernel/capability.c   |   36 ++++++++++++++++++++++++++++++++++++
+ scripts/mkcapnames.sh |   45 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 90 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/Makefile b/kernel/Makefile
+index dfa9695..29cd3ac 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -80,3 +80,12 @@ quiet_cmd_ikconfiggz = IKCFG   $@
+ targets += config_data.h
+ $(obj)/config_data.h: $(obj)/config_data.gz FORCE
+ 	$(call if_changed,ikconfiggz)
++
++# cap_names.h contains the code/name pair of capabilities.
++# It is generated using include/linux/capability.h automatically.
++$(obj)/capability.o: $(obj)/cap_names.h
++quiet_cmd_cap_names  = CAPS    $@
++      cmd_cap_names  = /bin/sh $(src)/../scripts/mkcapnames.sh > $@
++targets += cap_names.h
++$(obj)/cap_names.h: $(src)/../scripts/mkcapnames.sh $(src)/../include/linux/capability.h FORCE
++	$(call if_changed,cap_names)
+diff --git a/kernel/capability.c b/kernel/capability.c
+index efbd9cd..14b4f4b 100644
+--- a/kernel/capability.c
++++ b/kernel/capability.c
+@@ -245,3 +245,39 @@ int capable(int cap)
+ 	return __capable(current, cap);
+ }
+ EXPORT_SYMBOL(capable);
++
++/*
++ * Export the list of capabilities on /sys/kernel/capability
++ */
++#define SYSFS_CAPABILITY_ENTRY(_name, _fmt, ...)			\
++	static ssize_t _name##_show(struct kset *kset, char *buffer)	\
++	{								\
++		return scnprintf(buffer, PAGE_SIZE, _fmt, __VA_ARGS__);	\
++	}								\
++	static struct subsys_attribute _name##_attr = __ATTR_RO(_name)
++
++/*
++ * capability_attrs[] is generated automatically by scripts/mkcapnames.sh
++ * This script parses include/linux/capability.h
++ */
++#include "cap_names.h"
++
++static struct attribute_group capability_attr_group = {
++	.name = "capability",
++	.attrs = capability_attrs,
++};
++
++static int __init capability_export_names(void)
++{
++	int rc;
++
++	rc = sysfs_create_group(&kernel_subsys.kobj,
++				&capability_attr_group);
++	if (rc) {
++		printk(KERN_ERR "Unable to export capabilities\n");
++		return rc;
++	}
++
++	return 0;
++}
++__initcall(capability_export_names);
+diff --git a/scripts/mkcapnames.sh b/scripts/mkcapnames.sh
+index e69de29..c1c8b1f 100644
+--- a/scripts/mkcapnames.sh
++++ b/scripts/mkcapnames.sh
+@@ -0,0 +1,45 @@
++#!/bin/sh
++
++#
++# generate a cap_names.h file from include/linux/capability.h
++#
++
++BASEDIR=`dirname $0`
++
++echo '#ifndef CAP_NAMES_H'
++echo '#define CAP_NAMES_H'
++echo
++echo '#ifndef SYSFS_CAPABILITY_ENTRY'
++echo '#error cap_names.h should be included from kernel/capability.c'
++echo '#else'
++
++echo 'SYSFS_CAPABILITY_ENTRY(version, "0x%08x\n", _LINUX_CAPABILITY_VERSION);'
++
++cat ${BASEDIR}/../include/linux/capability.h	\
++    | egrep '^#define CAP_[A-Z_]+[ ]+[0-9]+$'	\
++    | awk 'BEGIN {
++            max_code = -1;
++        }
++        {
++            if ($3 > max_code)
++                max_code = $3;
++            printf("\tSYSFS_CAPABILITY_ENTRY(%s, \"%%u\\n\", %s);\n", tolower($2), $2);
++        }
++        END {
++            printf("\tSYSFS_CAPABILITY_ENTRY(index, \"%%u\\n\", %u);\n", max_code);
++        }'
++
++echo
++echo 'static struct attribute *capability_attrs[] = {'
++echo '        &version_attr.attr,'
++echo '        &index_attr.attr,'
++
++cat ${BASEDIR}/../include/linux/capability.h    \
++    | egrep '^#define CAP_[A-Z_]+[ ]+[0-9]+$'   \
++    | awk '{ printf ("        &%s_attr.attr,\n", tolower($2)); }'
++
++echo '        NULL,'
++echo '};'
++
++echo '#endif	/* SYSFS_CAPABILITY_ENTRY */'
++echo '#endif	/* CAP_NAMES_H */'
