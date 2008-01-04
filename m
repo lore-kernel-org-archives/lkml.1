@@ -1,41 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbYADQwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbYADQyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754112AbYADQwf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 11:52:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbYADQw0
+	id S1754508AbYADQyk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 11:54:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYADQyc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 11:52:26 -0500
-Received: from dspnet.fr.eu.org ([213.186.44.138]:3007 "EHLO dspnet.fr.eu.org"
+	Fri, 4 Jan 2008 11:54:32 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:53176 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751943AbYADQwZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 11:52:25 -0500
-Date: Fri, 4 Jan 2008 17:52:14 +0100
-From: Olivier Galibert <galibert@pobox.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: David Brownell <david-b@pacbell.net>, yi.y.yang@intel.com, pavel@ucw.cz,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [linux-pm][PATCH] base: Change power/wakeup output from "" to "unsupported" if wakeup feature isn't supported by a device
-Message-ID: <20080104165214.GA30672@dspnet.fr.eu.org>
-Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	David Brownell <david-b@pacbell.net>, yi.y.yang@intel.com,
-	pavel@ucw.cz, linux-pm@lists.linux-foundation.org,
-	linux-kernel@vger.kernel.org
-References: <20080104160933.B01D81FBAB5@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <Pine.LNX.4.44L0.0801041136490.4078-100000@iolanthe.rowland.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752715AbYADQyb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 11:54:31 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Michel Lespinasse <walken@zoy.org>
+Subject: Re: Asus P1-AH2 won't suspend (regression)
+Date: Fri, 4 Jan 2008 17:56:33 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+References: <20080104144238.GA5176@zoy.org>
+In-Reply-To: <20080104144238.GA5176@zoy.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0801041136490.4078-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.4.2.3i
+Message-Id: <200801041756.33733.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 04, 2008 at 11:38:29AM -0500, Alan Stern wrote:
-> How about changing it to say "unavailable"?  That doesn't imply 
-> permanence.
+On Friday, 4 of January 2008, Michel Lespinasse wrote:
+> Hi,
+> 
+> I'm unable to get an asus P1-AH2 system to suspend (to ram). The issue
+> occurs at suspend time: the system displays "Suspending console(s)" but
+> does not turn off the screen and system fans.
+> 
+> I used to have suspend/resume working fine on this system using a
+> 2.6.20.x kernel. Yes, I know this is a huge range... suspend has
+> been broken on this sytem since at least 2.6.22.x
+> 
+> I tried running 2.6.24-rc6 with verbose PM debugging and suspend/resume
+> event tracing. Still no luck, the last message I see is still
+> "Suspending console(s)". The information from event tracing seems to be:
+>   Magic number: 8:471:282
+>   hash matches device tty19
+> 
+> I'm not sure if that's any help. Is there any way to help figure out the
+> problem besides a git bisect ? would extra event traces during/after the
+> suspend console stage help ???
+> 
+> This is with an x86_64 kernel. .config file can be found at
+> http://lespinasse.org/config-2.6.24-rc6 if that's any help.
 
-How about not changing a userland-visible interface gratuitously?
+Please try the patch series from:
+http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.24-rc6/patches/
+on top of 2.6.24-rc6 (patches 28-34 are relevant in particular) and see if that
+helps.
 
-  OG.
-
+Thanks,
+Rafael
