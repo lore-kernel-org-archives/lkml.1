@@ -1,82 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755054AbYADU45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbYADU5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755054AbYADU45 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 15:56:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbYADU4t
+	id S1755237AbYADU5U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 15:57:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbYADU5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 15:56:49 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:35199 "EHLO pasmtpB.tele.dk"
+	Fri, 4 Jan 2008 15:57:06 -0500
+Received: from waste.org ([66.93.16.53]:56477 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752617AbYADU4s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 15:56:48 -0500
-Date: Fri, 4 Jan 2008 21:56:44 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andi Kleen <ak@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>, peterz@infradead.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH x86] [5/16] Replace hard coded reservations in x86-64 early boot code with dynamic table II
-Message-ID: <20080104205644.GC32174@uranus.ravnborg.org>
-References: <20080103442.621670000@suse.de> <200801041338.08093.ak@suse.de> <20080104144140.GA4203@elte.hu> <200801041603.58358.ak@suse.de> <20080104175128.GB31382@uranus.ravnborg.org> <20080104180650.GA2998@bingen.suse.de>
+	id S1754303AbYADU5E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 15:57:04 -0500
+Subject: Re: [PATCH] procfs: provide slub's /proc/slabinfo
+From: Matt Mackall <mpm@selenic.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Hugh Dickins <hugh@veritas.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0801041223250.11479@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com>
+	 <84144f020801021109v78e06c6k10d26af0e330fc85@mail.gmail.com>
+	 <alpine.LFD.1.00.0801021130210.32517@woody.linux-foundation.org>
+	 <1199314218.4497.109.camel@cinder.waste.org>
+	 <20080103085239.GA10813@elte.hu>
+	 <1199378818.8274.25.camel@cinder.waste.org>
+	 <Pine.LNX.4.64.0801031808470.7244@schroedinger.engr.sgi.com>
+	 <1199419890.4608.77.camel@cinder.waste.org>
+	 <Pine.LNX.4.64.0801041223250.11479@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Fri, 04 Jan 2008 14:55:50 -0600
+Message-Id: <1199480150.3821.23.camel@cinder.waste.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080104180650.GA2998@bingen.suse.de>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 04, 2008 at 07:06:50PM +0100, Andi Kleen wrote:
-> > What is then considered "obvious style issues" are today implemented
-> > as errors / warnings in checkpatch for the most part. Not everyone
+
+On Fri, 2008-01-04 at 12:34 -0800, Christoph Lameter wrote:
+> On Thu, 3 Jan 2008, Matt Mackall wrote:
 > 
-> In my experience checkpatch has a lot of false positives. e.g. when 
-> I run it over my pile 20+% of the warnings are just bogus. And in
-> a lot of other cases it is that the rules of thumbs it applies
-> do not apply to that specific case. 
-
-Tried it on my pile of patches here.
-ERROR: "foo * bar" should be "foo *bar"
-#33: FILE: scripts/basic/docproc.c:61:
-+FILELINE * docsection;
-
-Legitimate error.
-
-And a bunch of > 80 chars WARNINGS.
-The warnings I ignore because I prefer readability on my 22" widescreen
-but the ERROR should never had hit me.
-
-But thats me that does not adhere to CodingStyle and checkpatch is correct.
-
-> > No-one should submit patches with white-space errors - thank you.
+> > > The advantage of SLOB is to be able to put objects of multiple sizes into 
+> > > the same slab page. That advantage goes away once we have more than a few 
+> > > objects per slab because SLUB can store object in a denser way than SLOB.
+> > 
+> > Ugh, Christoph. Can you please stop repeating this falsehood? I'm sick
+> > and tired of debunking it. There is no overhead for any objects with
+> > externally-known size. So unless SLUB actually has negative overhead,
+> > this just isn't true.
 > 
-> No I disagree. If white space is suddenly that important -- it is still
-> unclear to me why that should be -- then the right way to handle that is 
-> at the maintainer level while merging patches. But rejecting patches
-> for reasons that a trivial script can fix up is just unnecessary friction
-> in the merging process and unnecessary bureaucracy.
+> Hmmm.. Seems that I still do not understand how it is possible then to mix 
+> objects of different sizes in the same slab page. Somehow the allocator 
+> needs to know the size. So it is not possible in SLOB to use 
+> kmem_cache_alloc on an object and then free it using kfree?
 
-Disagree. This is about a distributed model where the individual
-submitters shall make life as easy as possible for the maintainer.
-And the maintainer shall not be distracted by imporlerly formatted source
-code that looks wird. It simple does not scale.
-And no tool will help here because first review happens at the diff level
-before applying any patch to any code base and the diff has thus never
-seen a tool on the maintainer side.
+Indeed. Mismatching allocator and deallocator is bug, even if it happens
+to work for SLAB/SLUB.
 
-> Unnecessary bureaucracy defined as in rituals that do not 
-> actually improve any code or prevent bugs (or even style). I must say I find 
-> it a little sad that Linux is dissolving into that now. Ok perhaps
-> it is the eventual fate of anything that has been around for quite a long time,
-> but it seems to get worse much quicker recently.
-Several reasons why it has accelerated:
-1) Ingo cares about checkpatch compliance
-2) Ingo accepts patches fixing checkpatch compliance
-3) We have a codebase that has lower quality than we usually praise us to have
+> > > Well if you just have a few dentries then they are likely all pinned. A 
+> > > large number of dentries will typically result in reclaimable slabs.
+> > > The slab defrag patchset not only deals with the dcache issue but provides 
+> > > similar solutions for inode and buffer_heads. Support for other slabs that
+> > > defragment can be added by providing two hooks per slab.
+> > 
+> > What's your point? Slabs have a inherent pinning problem that's ugly to
+> > combat. SLOB doesn't.
+> 
+> I thought we were talking about pinning problems of dentries. How are 
+> slabs pinned and why does it matter?
 
-I think it is fine to fix style issue when we do some major surgery in a file,
-like unification.
-But starting to randomly attack files all over the kernel is IMO to overdue it
-and this is happening at the moment. And only carefull reviewing prevents bugs.
+If a slab contains a dentry that is pinned, it can only be used for
+other dentries and cannot be recycled for other allocations. If updatedb
+comes along and fills memory with dentry slabs, many of which get
+permanently pinned, then you have wasted memory.
 
-	Sam
+>  If slabs are pineed by a dentry that 
+> is pinned then the slab page will be filled up with other dentries that 
+> are not pinned. The slab defrag approach causes a coalescing of objects 
+> around slabs that have pinned objects.
+
+Yes. You've got (most of) a fix. It's overly-complicated and SLOB
+doesn't need it. How many ways do I need to say this?
+
+
+> > SLOB:
+> > - internal overhead for kmalloc is 2 bytes (or 3 for odd-sized objects)
+> 
+> Well that increase if you need to align the object. For kmalloc this 
+> usually means cache line align a power of two object right? So we have a 
+> cacheline size of overhead?
+
+a) alignment doesn't increase memory use because the memory before the
+object is still allocatable
+b) kmallocs aren't aligned!
+
+> > - internal overhead for kmem_cache_alloc is 0 bytes (or 1 for odd-sized
+> > objects)
+> 
+> You are not aligning to a double word boundary? This will create issues on 
+> certain platforms.
+
+The alignment minimum varies per arch. SLOB can go down to 2 bytes.
+
+> > SLAB/SLUB
+> > - internal overhead for kmalloc averages about 30%
+> 
+> I think that is valid for a random object size distribution?
+
+It's a measurement from memory. But it roughly agrees with what you'd
+expect from a random distribution.
+
+> > The only time SLAB/SLUB can win in efficiency (assuming they're using
+> > the same page size) is when all your kmallocs just happen to be powers
+> > of two. Which, assuming any likely distribution of string or other
+> > object sizes, isn't often.
+> 
+> In case of SLAB that is true. In case of SLUB we could convert the 
+> kmallocs to kmem_cache_alloc. The newly created slab would in all 
+> likelyhood be an alias of an already existing structure and thus be 
+> essentially free. In that fashion SLUB can (in a limited way) put objects 
+> for different slab caches into the same slab page too.
+
+Uh, no. You'd need a new slab for every multiple of 2 bytes. And then
+you'd just be making the underused and pinned slab problems worse.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
+
