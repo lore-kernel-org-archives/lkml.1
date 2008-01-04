@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbYADF5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759428AbYADF6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755045AbYADF5q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 00:57:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754769AbYADF5M
+	id S1759428AbYADF6A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 00:58:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757963AbYADF5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 00:57:12 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:57267 "EHLO song.cn.fujitsu.com"
+	Fri, 4 Jan 2008 00:57:20 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:62624 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754243AbYADF5K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 00:57:10 -0500
-Message-ID: <477DC9B6.8050108@cn.fujitsu.com>
-Date: Fri, 04 Jan 2008 13:52:54 +0800
+	id S1757880AbYADF5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 00:57:18 -0500
+Message-ID: <477DC9BC.1070006@cn.fujitsu.com>
+Date: Fri, 04 Jan 2008 13:53:00 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
 CC: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/5] CONNECTOR: cleanup struct cn_queue_dev
+Subject: [PATCH 4/5] CONNECTOR: cleanup struct cn_callback_entry
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -25,40 +25,56 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Struct member netlink_groups is never used, and I don't see how it
-can be useful.
+- 'cb' is a fake struct member. In a previous patch struct cn_callback
+was renamed to cn_callback_id, so 'cb' should have been deleted at that
+time.
+
+- 'nls' isn't used and is redundant, we can retrieve this data through
+cn_callback_entry.pdev->nls.
+
+- 'seq' and 'group' should be u32, as they are declared to be u32 in
+other places.
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
 ---
  drivers/connector/cn_queue.c |    1 -
- include/linux/connector.h    |    1 -
- 2 files changed, 0 insertions(+), 2 deletions(-)
+ include/linux/connector.h    |    4 +---
+ 2 files changed, 1 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/connector/cn_queue.c b/drivers/connector/cn_queue.c
-index 296f510..75122cb 100644
+index 75122cb..23cc87a 100644
 --- a/drivers/connector/cn_queue.c
 +++ b/drivers/connector/cn_queue.c
-@@ -146,7 +146,6 @@ struct cn_queue_dev *cn_queue_alloc_dev(char *name, struct sock *nls)
- 	spin_lock_init(&dev->queue_lock);
+@@ -104,7 +104,6 @@ int cn_queue_add_callback(struct cn_queue_dev *dev, char *name, struct cb_id *id
+ 		return -EINVAL;
+ 	}
  
- 	dev->nls = nls;
--	dev->netlink_groups = 0;
+-	cbq->nls = dev->nls;
+ 	cbq->seq = 0;
+ 	cbq->group = cbq->id.id.idx;
  
- 	dev->cn_queue = create_workqueue(dev->name);
- 	if (!dev->cn_queue) {
 diff --git a/include/linux/connector.h b/include/linux/connector.h
-index 13fc454..7e18311 100644
+index 7e18311..da6dd95 100644
 --- a/include/linux/connector.h
 +++ b/include/linux/connector.h
-@@ -112,7 +112,6 @@ struct cn_queue_dev {
- 	struct list_head queue_list;
- 	spinlock_t queue_lock;
+@@ -132,15 +132,13 @@ struct cn_callback_data {
  
--	int netlink_groups;
- 	struct sock *nls;
+ struct cn_callback_entry {
+ 	struct list_head callback_entry;
+-	struct cn_callback *cb;
+ 	struct work_struct work;
+ 	struct cn_queue_dev *pdev;
+ 
+ 	struct cn_callback_id id;
+ 	struct cn_callback_data data;
+ 
+-	int seq, group;
+-	struct sock *nls;
++	u32 seq, group;
  };
  
+ struct cn_ctl_entry {
 -- 
 1.5.3.rc7
 
