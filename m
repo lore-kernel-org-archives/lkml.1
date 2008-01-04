@@ -1,231 +1,252 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbYADPTp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754137AbYADPVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036AbYADPTp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 10:19:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbYADPTh
+	id S1754137AbYADPVm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 10:21:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbYADPVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 10:19:37 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:59992 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751825AbYADPTg (ORCPT
+	Fri, 4 Jan 2008 10:21:32 -0500
+Received: from py-out-1112.google.com ([64.233.166.179]:64666 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbYADPVa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 10:19:36 -0500
-Date: Fri, 4 Jan 2008 15:19:31 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Guillaume Chazarain <guichaz@yahoo.fr>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] proc: return -EPERM when preventing read of /proc/*/maps
-Message-ID: <20080104151931.GC27894@ZenIV.linux.org.uk>
-References: <20080104135731.2908.90012.stgit@localhost.localdomain> <20080104141443.GB27894@ZenIV.linux.org.uk> <20080104153557.13e24970@inria.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 4 Jan 2008 10:21:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=iZA0x53bStq89a+or9FtiDdYoKxUfLazk8+9Pd9LZelXO1Zp8h3hQSDNiVYuX06DQ/yrbcwSmUXbdObQ6cItvezp8Lr5je4bDn5LXzycuMZK1oV+Pov8aAF6Q7mv/xoxqlDEy9YwI8ps8WX3TBEHjdAsDgSCcrt01WXd+YVT3LQ=
+Message-ID: <64bb37e0801040721p57ff3d54wc3de00546d1d2ff1@mail.gmail.com>
+Date: Fri, 4 Jan 2008 16:21:26 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Jarek Poplawski" <jarkao2@gmail.com>
+Subject: Re: 2.6.24-rc6-mm1
+Cc: "Herbert Xu" <herbert@gondor.apana.org.au>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "Neil Brown" <neilb@suse.de>,
+       "J. Bruce Fields" <bfields@fieldses.org>, netdev@vger.kernel.org,
+       "Tom Tucker" <tom@opengridcomputing.com>
+In-Reply-To: <20080104133031.GA3329@ff.dom.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080104153557.13e24970@inria.fr>
-User-Agent: Mutt/1.4.2.3i
+References: <64bb37e0801040223q17a76565k3c7667a197403ce5@mail.gmail.com>
+	 <20080104133031.GA3329@ff.dom.local>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 04, 2008 at 03:35:57PM +0100, Guillaume Chazarain wrote:
-> Al Viro <viro@ZenIV.linux.org.uk> wrote:
-> 
-> > vma_stop() doesn't need changes either...
-> 
-> Hmmm, not sure ;-)
+On Jan 4, 2008 2:30 PM, Jarek Poplawski <jarkao2@gmail.com> wrote:
+> On 04-01-2008 11:23, Torsten Kaiser wrote:
+> > On Jan 2, 2008 10:51 PM, Herbert Xu <herbert@gondor.apana.org.au> wrote:
+> >> On Wed, Jan 02, 2008 at 07:29:59PM +0100, Torsten Kaiser wrote:
+> >>> Vanilla 2.6.24-rc6 seems stable. I did not see any crash or warnings.
+> >> OK that's great.  The next step would be to try excluding specific git
+> >> trees from mm to see if they make a difference.
+> >>
+> >> The two specific trees of interest would be git-nfsd and git-net.
+> >
+> > git-nfsd from git://git.linux-nfs.org/projects/bfields/linux.git#for-mm
+> > -> compiling and installing 54 packages worked without crashes.
+> >
+> > git-net from git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6.25.git
+> > -> compiling and installing 95 packages worked without crashes.
+> ...
+> > I will enable CONFIG_IOMMU_DEBUG in -rc6-mm1 and see, as otherwise I
+> > have no clue where to look...
+>
+> Hi,
+>
+> A few questions/suggestions:
 
-Umm...  Actually, m_next() and m_stop() both appear to be too convoluted.
+I'm open for any suggestions and will try to answer any questions.
+The only thing that is sadly not practical is bisecting the borkenout
+mm-patches, as triggering this error is to unreliable /
+time-consuming.
 
-* m_next() never gets v == NULL
-* the only reason why we do that mmput et.al. both from ->next() and
-  ->stop() is that we try to avoid having priv->mm; why bother?
-* why the _hell_ is proc_maps_private defined in include/linux/proc_fs.h,
-  of all places?
-* while we are at it, why is it in any header at all?  Having that sucker
-  in task_mmu.c and task_nommu.c would be more than enough (and we'd avoid
-  that ifdef in definition, while we are at it).
+> - is it still vanilla -rc6-mm1; I've seen on kernel list you tried
+> some fixes around raid?
 
-How about this:
+Yes, without these fixes I can't boot.
+But they should only be run during starting the arrays, so I doubt
+that this is that cause.
+(Also -rc3-mm2 did not need this fix)
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 7411bfb..3aebc85 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -219,7 +219,7 @@ out:
- 	task_unlock(task);
- 	up_read(&mm->mmap_sem);
- 	mmput(mm);
--	return NULL;
-+	return ERR_PTR(-EPERM);
- }
- 
- static int proc_pid_cmdline(struct task_struct *task, char * buffer)
-diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-index 8043a3e..75bef20 100644
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -131,12 +131,19 @@ struct pmd_walker {
- 		       unsigned long, void *);
- };
- 
-+struct proc_maps_private {
-+	struct pid *pid;
-+	struct task_struct *task;
-+	struct vm_area_struct *tail_vma;
-+	struct mm_struct *mm;
-+};
-+
- static int show_map_internal(struct seq_file *m, void *v, struct mem_size_stats *mss)
- {
- 	struct proc_maps_private *priv = m->private;
- 	struct task_struct *task = priv->task;
-+	struct mm_struct *mm = priv->mm;
- 	struct vm_area_struct *vma = v;
--	struct mm_struct *mm = vma->vm_mm;
- 	struct file *file = vma->vm_file;
- 	int flags = vma->vm_flags;
- 	unsigned long ino = 0;
-@@ -381,6 +388,7 @@ static void *m_start(struct seq_file *m, loff_t *pos)
- 
- 	/* Clear the per syscall fields in priv */
- 	priv->task = NULL;
-+	priv->mm = NULL;
- 	priv->tail_vma = NULL;
- 
- 	/*
-@@ -398,10 +406,11 @@ static void *m_start(struct seq_file *m, loff_t *pos)
- 		return NULL;
- 
- 	mm = mm_for_maps(priv->task);
--	if (!mm)
--		return NULL;
-+	if (!mm || IS_ERR(mm))
-+		return ERR_CAST(mm);
- 
- 	priv->tail_vma = tail_vma = get_gate_vma(priv->task);
-+	priv->mm = mm;
- 
- 	/* Start with last addr hint */
- 	if (last_addr && (vma = find_vma(mm, last_addr))) {
-@@ -430,20 +439,9 @@ out:
- 
- 	/* End of vmas has been reached */
- 	m->version = (tail_vma != NULL)? 0: -1UL;
--	up_read(&mm->mmap_sem);
--	mmput(mm);
- 	return tail_vma;
- }
- 
--static void vma_stop(struct proc_maps_private *priv, struct vm_area_struct *vma)
--{
--	if (vma && vma != priv->tail_vma) {
--		struct mm_struct *mm = vma->vm_mm;
--		up_read(&mm->mmap_sem);
--		mmput(mm);
--	}
--}
--
- static void *m_next(struct seq_file *m, void *v, loff_t *pos)
- {
- 	struct proc_maps_private *priv = m->private;
-@@ -451,18 +449,22 @@ static void *m_next(struct seq_file *m, void *v, loff_t *pos)
- 	struct vm_area_struct *tail_vma = priv->tail_vma;
- 
- 	(*pos)++;
--	if (vma && (vma != tail_vma) && vma->vm_next)
-+	if (vma == tail_vma)
-+		return NULL;
-+	else if (vma->vm_next)
- 		return vma->vm_next;
--	vma_stop(priv, vma);
--	return (vma != tail_vma)? tail_vma: NULL;
-+	else
-+		return tail_vma;
- }
- 
- static void m_stop(struct seq_file *m, void *v)
- {
- 	struct proc_maps_private *priv = m->private;
--	struct vm_area_struct *vma = v;
- 
--	vma_stop(priv, vma);
-+	if (priv->mm) {
-+		up_read(&priv->mm->mmap_sem);
-+		mmput(priv->mm);
-+	}
- 	if (priv->task)
- 		put_task_struct(priv->task);
- }
-diff --git a/fs/proc/task_nommu.c b/fs/proc/task_nommu.c
-index 1932c2c..a156b62 100644
---- a/fs/proc/task_nommu.c
-+++ b/fs/proc/task_nommu.c
-@@ -138,6 +138,12 @@ out:
- 	return result;
- }
- 
-+struct proc_maps_private {
-+	struct pid *pid;
-+	struct task_struct *task;
-+	struct mm_struct *mm;
-+};
-+
- /*
-  * display mapping lines for a particular process's /proc/pid/maps
-  */
-@@ -161,16 +167,16 @@ static void *m_start(struct seq_file *m, loff_t *pos)
- 	loff_t n = *pos;
- 
- 	/* pin the task and mm whilst we play with them */
-+	priv->mm = NULL;
- 	priv->task = get_pid_task(priv->pid, PIDTYPE_PID);
- 	if (!priv->task)
- 		return NULL;
- 
- 	mm = mm_for_maps(priv->task);
--	if (!mm) {
--		put_task_struct(priv->task);
--		priv->task = NULL;
--		return NULL;
--	}
-+	if (!mm || IS_ERR(mm))
-+		return ERR_CAST(mm);
-+
-+	priv->mm = mm;
- 
- 	/* start from the Nth VMA */
- 	for (vml = mm->context.vmlist; vml; vml = vml->next)
-@@ -183,12 +189,12 @@ static void m_stop(struct seq_file *m, void *_vml)
- {
- 	struct proc_maps_private *priv = m->private;
- 
--	if (priv->task) {
--		struct mm_struct *mm = priv->task->mm;
--		up_read(&mm->mmap_sem);
--		mmput(mm);
--		put_task_struct(priv->task);
-+	if (priv->mm) {
-+		up_read(&priv->mm->mmap_sem);
-+		mmput(priv->mm);
- 	}
-+	if (priv->task)
-+		put_task_struct(priv->task);
- }
- 
- static void *m_next(struct seq_file *m, void *_vml, loff_t *pos)
-diff --git a/include/linux/proc_fs.h b/include/linux/proc_fs.h
-index a531682..192a5c4 100644
---- a/include/linux/proc_fs.h
-+++ b/include/linux/proc_fs.h
-@@ -286,12 +286,4 @@ static inline struct net *PDE_NET(struct proc_dir_entry *pde)
- 
- struct net *get_proc_net(const struct inode *inode);
- 
--struct proc_maps_private {
--	struct pid *pid;
--	struct task_struct *task;
--#ifdef CONFIG_MMU
--	struct vm_area_struct *tail_vma;
--#endif
--};
--
- #endif /* _LINUX_PROC_FS_H */
+My skbuff-double-free-detector is still in there, but was never triggered.
+
+> - could you remind this lockdep warning; is it always and the same,
+> always before crash, or no rules?
+
+???
+I see no lockdep warning before the crashes.
+I have seen a warning about the dst->__refcnt in dst_release and
+different warnings about list operations.
+
+I think I have always posted everything I have seen before the
+crashes. (captured via serial console)
+
+(If you mean the lockdep-problem in -rc6: That is more or less a
+missing annotation during early bootup. The only problem with that is,
+that it will causes lockdep to be turned off and so it can not be used
+to find any real problem. A fix for that is in -mm so I do have
+lockdep on the mm-kernels)
+
+> - I've seen you looked after double freeing, but this last debug list
+> warning could suggest locking problems during list modification too.
+
+Yes, but Herbert mentioned double freeing a skb explicit and so I
+tried to catch this.
+I do not know enough about the network core to verify the locking of
+the involved lists.
+
+> - above git-nfsd and git-net tests should be probably repeated with
+> -rc6-mm1 git versions: so vanilla rc6 plus both these -mm patches
+> only, and if bug triggers, with one reversed; btw., since in previous
+> message you mentioned that 50 packages could be not enough to trigger
+> this, these 54 above could make too little margin yet.
+
+Yes, I think I really need to redo the git-nfsd-test.
+With IOMMU_DEBUG enabled rc6-mm1worked for 52 packages, only a secound
+run of kde-packages triggered it after only 5 packages.
+I don't know what this bug hates about kdeartwork-wallpaper (triggered
+it this time) or kdeartwork-styles.
+
+Output from the crash with IOMMU_DEBUG (lockdep was enabled, but did
+not trigger):
+[15593.236374] Unable to handle kernel NULL pointer
+dereference<3>list_add corruption. prev->next should be next
+(ffffffff8078a410), but was ffff81011ec01e68. (prev=ffff81011ec01e68).
+[15593.236374]  at 0000000000000000 RIP:
+[15593.236374]  [<0000000000000000>]
+[15593.236374] PGD 79d22067 PUD 7acd7067 PMD 0
+[15593.236374] Oops: 0010 [1] SMP
+[15593.236374] last sysfs file:
+/sys/devices/system/cpu/cpu3/cache/index2/shared_cpu_map
+[15593.236374] CPU 2
+[15593.236374] Modules linked in: radeon drm w83792d ipv6 tuner
+tea5767 tda8290 tuner_xc2028 tda9887 tuner_simple mt20xx tea5761
+tvaudio msp3400 bttv ir_common compat_ioctl32 videobuf_dma_sg
+videobuf_core btcx_risc tveeprom videodev usbhid v4l2_common
+v4l1_compat sg hid pata_amd i2c_nforce2
+[15593.236374] Pid: 510, comm: khpsbpkt Not tainted 2.6.24-rc6-mm1 #15
+[15593.236374] RIP: 0010:[<0000000000000000>]  [<0000000000000000>]
+[15593.236374] RSP: 0018:ffff81007eed3ee8  EFLAGS: 00010206
+[15593.236374] RAX: ffff81007eed3ef0 RBX: ffff81011ec01e40 RCX: ffff81011ec01e40
+[15593.236374] RDX: ffff81011ec01e68 RSI: ffff81011ec01e68 RDI: 0000000000000000
+[15593.236374] RBP: ffff81007eed3f10 R08: 0000000000000000 R09: 0000000000000001
+[15593.236374] R10: 0000000000000001 R11: 0000000000000058 R12: ffff81007eed3ef0
+[15593.236374] R13: ffffffff80470e50 R14: 0000000000000000 R15: 0000000000000000
+[15593.236374] FS:  00007f76e6c98700(0000) GS:ffff81011ff1f000(0000)
+knlGS:00000000556f46c0
+[15593.236374] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+[15593.236374] CR2: 0000000000000000 CR3: 0000000079d29000 CR4: 00000000000006e0
+[15593.236374] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[15593.236374] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[15593.236374] Process khpsbpkt (pid: 510, threadinfo
+ffff81007eed2000, task ffff81007eed0000)
+[15593.236374] Stack:  ffffffff80470f0b ffff81011ec01e68
+ffff81011ec014a8 00000000fffffffc
+[15593.236374]  0000000000000000 ffff81007eed3f40 ffffffff8024d72d
+00000000000001fb
+[15593.236374]  ffff81007ff2bd98 00000000000001fb ffff81007ff2bcf0
+ffff81007ff2df40
+[15593.236374] Call Trace:
+[15593.236374]  [<ffffffff80470f0b>] hpsbpkt_thread+0xbb/0x140
+[15593.236374]  [<ffffffff8024d72d>] kthread+0x4d/0x80
+[15593.236374]  [<ffffffff8020c4b8>] child_rip+0xa/0x12
+[15593.236374]  [<ffffffff8020bbcf>] restore_args+0x0/0x30
+[15593.236374]  [<ffffffff8024d6e0>] kthread+0x0/0x80
+[15593.236374]  [<ffffffff8020c4ae>] child_rip+0x0/0x12
+[15593.236374]
+[15593.236374]
+[15593.236374] Code:  Bad RIP value.
+[15593.236374] RIP  [<0000000000000000>]
+[15593.236374]  RSP <ffff81007eed3ee8>
+[15593.236374] CR2: 0000000000000000
+[15593.236377] ---[ end trace 11d2dc0fdbe1651f ]---
+[15627.875963] ------------[ cut here ]------------
+[15627.875963] kernel BUG at lib/list_debug.c:33!
+[15627.875963] invalid opcode: 0000 [2] SMP
+[15627.875963] last sysfs file:
+/sys/devices/system/cpu/cpu3/cache/index2/shared_cpu_map
+[15627.875963] CPU 3
+[15627.875963] Modules linked in: radeon drm w83792d ipv6 tuner
+tea5767 tda8290 tuner_xc2028 tda9887 tuner_simple mt20xx tea5761
+tvaudio msp3400 bttv ir_common compat_ioctl32 videobuf_dma_sg
+videobuf_core btcx_risc tveeprom videodev usbhid v4l2_common
+v4l1_compat sg hid pata_amd i2c_nforce2
+[15627.875963] Pid: 6258, comm: nxssh Tainted: G      D 2.6.24-rc6-mm1 #15
+[15627.875963] RIP: 0010:[<ffffffff803bd954>]  [<ffffffff803bd954>]
+__list_add+0x54/0x60
+[15627.875963] RSP: 0000:ffff81007ffb3c80  EFLAGS: 00010082
+[15627.875963] RAX: 0000000000000079 RBX: 0000000000000082 RCX: 000000000000b9f1
+[15627.875963] RDX: 0000000000001514 RSI: 0000000000000001 RDI: ffffffff807641c0
+[15627.875963] RBP: ffff81007ffb3c80 R08: 0000000000000001 R09: 0000000000000010
+[15627.875963] R10: 0000000000000000 R11: 0000000000000020 R12: ffff81011ec01e40
+[15627.875963] R13: ffff81011ec01e68 R14: 0000000000000002 R15: ffff81007eee2000
+[15627.875963] FS:  00007f3531da2700(0000) GS:ffff81011ff1f280(0000)
+knlGS:00000000556f46c0
+[15627.875963] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[15627.875963] CR2: 00007ff643d49fe0 CR3: 0000000079c37000 CR4: 00000000000006e0
+[15627.875963] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[15627.875963] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[15627.875963] Process nxssh (pid: 6258, threadinfo ffff810079d50000,
+task ffff810079d4e000)
+[15627.875963] Stack:  ffff81007ffb3ca0 ffffffff8046f9e8
+ffff81011ec01e40 000000000000000c
+[15627.875963]  ffff81007ffb3d40 ffffffff8047027c ffff81007ddd8000
+ffff81007ddd8048
+[15627.875963]  ffff81007ffb3ce0 ffffffff805d4366 ffff81007ddd8000
+000000000000000c
+[15627.875963] Call Trace:
+[15627.875963]  <IRQ>  [<ffffffff8046f9e8>] queue_packet_complete+0x48/0x80
+[15627.875963]  [<ffffffff8047027c>] hpsb_packet_received+0x51c/0x6d0
+[15627.875963]  [<ffffffff805d4366>] _spin_unlock+0x26/0x30
+[15627.875963]  [<ffffffff8047cc3d>] dma_rcv_tasklet+0x22d/0x430
+[15627.875963]  [<ffffffff8021273e>] read_hpet+0xe/0x10
+[15627.875963]  [<ffffffff805d48f2>] _spin_unlock_irqrestore+0x42/0x60
+[15627.875963]  [<ffffffff8023d8b3>] tasklet_action+0x53/0xd0
+[15627.875963]  [<ffffffff8023d754>] __do_softirq+0x84/0x110
+[15627.875963]  [<ffffffff8020c82c>] call_softirq+0x1c/0x30
+[15627.875963]  [<ffffffff8020eaa5>] do_softirq+0x65/0xc0
+[15627.875963]  [<ffffffff8023d6c5>] irq_exit+0x95/0xa0
+[15627.875963]  [<ffffffff8020ebbf>] do_IRQ+0x8f/0x100
+[15627.875963]  [<ffffffff8020bb26>] ret_from_intr+0x0/0xf
+[15627.875963]  <EOI>
+[15627.875963]
+[15627.875963] Code: 0f 0b eb fe 0f 1f 84 00 00 00 00 00 55 48 8b 16
+48 89 e5 e8
+[15627.875963] RIP  [<ffffffff803bd954>] __list_add+0x54/0x60
+[15627.875963]  RSP <ffff81007ffb3c80>
+[15627.875963] ---[ end trace 11d2dc0fdbe1651f ]---
+[15627.875963] Kernel panic - not syncing: Aiee, killing interrupt handler!
+
+first oops:
+(gdb) list *0xffffffff80470f0b
+0xffffffff80470f0b is in hpsbpkt_thread (drivers/ieee1394/ieee1394_core.c:1139).
+1134                    INIT_LIST_HEAD(&tmp);
+1135                    spin_lock_irq(&pending_packets_lock);
+1136                    list_splice_init(&hpsbpkt_queue, &tmp);
+1137                    spin_unlock_irq(&pending_packets_lock);
+1138
+1139                    list_for_each_entry_safe(packet, p, &tmp, queue) {
+1140                            list_del_init(&packet->queue);
+1141                            packet->complete_routine(packet->complete_data);
+1142                    }
+1143
+
+second oops:
+(gdb) list *0xffffffff8046f9e8
+0xffffffff8046f9e8 is in queue_packet_complete
+(drivers/ieee1394/ieee1394_core.c:1115).
+1110                    return;
+1111            }
+1112            if (packet->complete_routine != NULL) {
+1113                    spin_lock_irqsave(&pending_packets_lock, flags);
+1114                    list_add_tail(&packet->queue, &hpsbpkt_queue);
+1115                    spin_unlock_irqrestore(&pending_packets_lock, flags);
+1116                    wake_up_process(khpsbpkt_thread);
+1117            }
+1118            return;
+1119    }
+
+Torsten
