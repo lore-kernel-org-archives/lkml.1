@@ -1,374 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758085AbYADGJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbYADGeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758085AbYADGJU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 01:09:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbYADGJK
+	id S1754067AbYADGeq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 01:34:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbYADGei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 01:09:10 -0500
-Received: from mga10.intel.com ([192.55.52.92]:35171 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752936AbYADGJI (ORCPT
+	Fri, 4 Jan 2008 01:34:38 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:8582 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751426AbYADGeh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 01:09:08 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,243,1196668800"; 
-   d="scan'208";a="481262779"
-Subject: Improve hackbench
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 04 Jan 2008 14:06:26 +0800
-Message-Id: <1199426786.3298.64.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+	Fri, 4 Jan 2008 01:34:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=V5tz61zevc1Nyf9RiAGkqurtTd2iyGfvJUANHk4/UYLnKm/vRJ3rAuAcl+EKS3miqPcMcj5XD2y2cOdvVJDbm5m1ZrnhfEk26OtPhL+mXj5abRftvuc0VGeaxHSwqyPv/xgSSORMrCfSG0+tAMcjjUafPZwHEDJqaO2UodW9IBo=
+Message-ID: <863e9df20801032234v1a0eba9arfc71098a100bb145@mail.gmail.com>
+Date: Fri, 4 Jan 2008 12:04:35 +0530
+From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
+To: "Masami Hiramatsu" <mhiramat@redhat.com>
+Subject: Re: [PATCH] x86: kprobes change kprobe_handler flow
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Harvey Harrison" <harvey.harrison@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>, qbarnes@gmail.com,
+       ananth@in.ibm.com, jkenisto@us.ibm.com
+In-Reply-To: <477D5447.6090804@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1198806265.6323.34.camel@brick> <4778E8B0.6010400@gmail.com>
+	 <20080101153558.GJ4434@elte.hu> <477A971A.8030006@gmail.com>
+	 <477BD366.1060504@redhat.com>
+	 <863e9df20801021131j3a4d655dgd00fa60e39a97ec@mail.gmail.com>
+	 <477C08A0.503@redhat.com> <477D184A.8090009@redhat.com>
+	 <477D5447.6090804@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hackbench is to test Linux scheduler. The original program is at 
-http://devresources.linux-foundation.org/craiger/hackbench/src/hackbench.c
-Based on this multi-process version, a nice person created a multi-thread
-version. Pls. see
-http://www.bullopensource.org/posix/pi-futex/hackbench_pth.c
-
-When I integrated them into my automation testing system, I found
-a couple of issues and did some improvements.
-
-1) Merge hackbench: I integrated hackbench_pth.c into hackbench and added a
-new parameter which can be used to choose process mode or thread mode. The
-default mode is process.
-
-2) It runs too fast and ends in a couple of seconds. Sometimes it's too hard to debug
-the issues. On my ia64 Montecito machines, the result looks weird when comparing
-process mode and thread mode.
-I want a stable result and hope the testing could run for a stable longer time, so I
-might use performance tools to debug issues.
-I added another new parameter,`loops`, which can be used to change variable loops,
-so more messages will be passed from writers to receivers. Parameter 'loops' is equal to
-100 by default.
-
-For example on my 8-core x86_64:
-[ymzhang@lkp-st01-x8664 hackbench]$ uname -a
-Linux lkp-st01-x8664 2.6.24-rc6 #1 SMP Fri Dec 21 08:32:31 CST 2007 x86_64 x86_64 x86_64 GNU/Linux
-[ymzhang@lkp-st01-x8664 hackbench]$ ./hackbench 
-Usage: hackbench [-pipe] <num groups> [process|thread] [loops]
-[ymzhang@lkp-st01-x8664 hackbench]$ ./hackbench 150 process 1000
-Time: 151.533
-[ymzhang@lkp-st01-x8664 hackbench]$ ./hackbench 150 thread 1000
-Time: 153.666
-
-
-With the same new parameters, I did captured the SLUB issue discussed on LKML recently.
-
-3) hackbench_pth.c will fail on ia64 machine because pthread_attr_setstacksize always
-fails if the stack size is less than 196*1024. I moved this statement within a __ia64__ check.
-
-
-This new program could be compiled with command line:
-#gcc -g -Wall  -o hackbench hackbench.c -lpthread
-
-
-Thank Ingo for his great comments!
-
--yanmin
-
----
-
-/* Test groups of 20 processes spraying to 20 receivers */
-#include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/wait.h>
-#include <sys/time.h>
-#include <sys/poll.h>
-
-#define DATASIZE 100
-static unsigned int loops = 100;
-/*
- * 0 means thread mode and others mean process (default)
- */
-static unsigned int process_mode = 1;
-
-static int use_pipes = 0;
-
-struct sender_context {
-	unsigned int num_fds;
-	int ready_out;
-	int wakefd;
-	int out_fds[0];
-};
-
-struct receiver_context {
-	unsigned int num_packets;
-	int in_fds[2];
-	int ready_out;
-	int wakefd;
-};
-
-
-static void barf(const char *msg)
-{
-	fprintf(stderr, "%s (error: %s)\n", msg, strerror(errno));
-	exit(1);
-}
-
-static void print_usage_exit()
-{
-	printf("Usage: hackbench [-pipe] <num groups> [process|thread] [loops]\n");
-	exit(1);
-}
-
-static void fdpair(int fds[2])
-{
-	if (use_pipes) {
-		if (pipe(fds) == 0)
-			return;
-	} else {
-		if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0)
-			return;
-	}
-	barf("Creating fdpair");
-}
-
-/* Block until we're ready to go */
-static void ready(int ready_out, int wakefd)
-{
-	char dummy;
-	struct pollfd pollfd = { .fd = wakefd, .events = POLLIN };
-
-	/* Tell them we're ready. */
-	if (write(ready_out, &dummy, 1) != 1)
-		barf("CLIENT: ready write");
-
-	/* Wait for "GO" signal */
-	if (poll(&pollfd, 1, -1) != 1)
-		barf("poll");
-}
-
-/* Sender sprays loops messages down each file descriptor */
-static void *sender(struct sender_context *ctx)
-{
-	char data[DATASIZE];
-	unsigned int i, j;
-
-	ready(ctx->ready_out, ctx->wakefd);
-
-	/* Now pump to every receiver. */
-	for (i = 0; i < loops; i++) {
-		for (j = 0; j < ctx->num_fds; j++) {
-			int ret, done = 0;
-
-again:
-			ret = write(ctx->out_fds[j], data + done, sizeof(data)-done);
-			if (ret < 0)
-				barf("SENDER: write");
-			done += ret;
-			if (done < sizeof(data))
-				goto again;
-		}
-	}
-
-	return NULL;
-}
-
-
-/* One receiver per fd */
-static void *receiver(struct receiver_context* ctx)
-{
-	unsigned int i;
-
-	if (process_mode)
-		close(ctx->in_fds[1]);
-
-	/* Wait for start... */
-	ready(ctx->ready_out, ctx->wakefd);
-
-	/* Receive them all */
-	for (i = 0; i < ctx->num_packets; i++) {
-		char data[DATASIZE];
-		int ret, done = 0;
-
-again:
-		ret = read(ctx->in_fds[0], data + done, DATASIZE - done);
-		if (ret < 0)
-			barf("SERVER: read");
-		done += ret;
-		if (done < DATASIZE)
-			goto again;
-	}
-
-	return NULL;
-}
-
-pthread_t create_worker(void *ctx, void *(*func)(void *))
-{
-	pthread_attr_t attr;
-	pthread_t childid;
-	int err;
-
-	if (process_mode) {
-		/* process mode */
-		/* Fork the receiver. */
-		switch (fork()) {
-			case -1: barf("fork()");
-			case 0:
-				(*func) (ctx);
-				exit(0);
-		}
-
-		return (pthread_t) 0;
-	}
-
-	if (pthread_attr_init(&attr) != 0)
-		barf("pthread_attr_init:");
-
-#ifndef __ia64__
-	if (pthread_attr_setstacksize(&attr, (size_t)(16*1024)) != 0)
-		barf("pthread_attr_setstacksize");
-#endif
-
-	if ((err=pthread_create(&childid, &attr, func, ctx)) != 0) {
-		fprintf(stderr, "pthread_create failed: %s (%d)\n", strerror(err), err);
-		exit(-1);
-	}
-	return (childid);
-}
-
-void reap_worker(pthread_t id)
-{
-	int status;
-	if (process_mode) {
-		/* process mode */
-		wait(&status);
-		if (!WIFEXITED(status))
-			exit(1);
-	} else
-		pthread_join(id, (void**)&status);
-}
-
-/* One group of senders and receivers */
-static unsigned int group(pthread_t *pth,
-		unsigned int num_fds,
-		int ready_out,
-		int wakefd)
-{
-	unsigned int i;
-	struct sender_context* snd_ctx = malloc (sizeof(struct sender_context)
-			+num_fds*sizeof(int));
-
-	for (i = 0; i < num_fds; i++) {
-		int fds[2];
-		struct receiver_context* ctx = malloc (sizeof(*ctx));
-
-		if (!ctx)
-			barf("malloc()");
-
-
-		/* Create the pipe between client and server */
-		fdpair(fds);
-
-		ctx->num_packets = num_fds*loops;
-		ctx->in_fds[0] = fds[0];
-		ctx->in_fds[1] = fds[1];
-		ctx->ready_out = ready_out;
-		ctx->wakefd = wakefd;
-
-		pth[i] = create_worker(ctx, (void *)(void *)receiver);
-
-		snd_ctx->out_fds[i] = fds[1];
-		if (process_mode)
-			close(fds[0]);
-	}
-
-	/* Now we have all the fds, fork the senders */
-	for (i = 0; i < num_fds; i++) {
-		snd_ctx->ready_out = ready_out;
-		snd_ctx->wakefd = wakefd;
-		snd_ctx->num_fds = num_fds;
-
-		pth[num_fds+i] = create_worker(snd_ctx, (void *)(void *)sender);
-	}
-
-	/* Close the fds we have left */
-	if (process_mode)
-		for (i = 0; i < num_fds; i++)
-			close(snd_ctx->out_fds[i]);
-
-	/* Return number of children to reap */
-	return num_fds * 2;
-}
-
-int main(int argc, char *argv[])
-{
-	unsigned int i, num_groups, total_children;
-	struct timeval start, stop, diff;
-	unsigned int num_fds = 20;
-	int readyfds[2], wakefds[2];
-	char dummy;
-	pthread_t *pth_tab;
-
-	if (argv[1] && strcmp(argv[1], "-pipe") == 0) {
-		use_pipes = 1;
-		argc--;
-		argv++;
-	}
-
-	if (argc < 2 || (num_groups = atoi(argv[1])) == 0)
-		print_usage_exit();
-
-	if (argc > 2) {
-		if ( !strcmp(argv[2], "process") )
-			process_mode = 1;
-		else if ( !strcmp(argv[2], "thread") )
-			process_mode = 0;
-		else
-			print_usage_exit();
-	}
-
-	if (argc > 3)
-		loops = atoi(argv[3]);
-
-	pth_tab = malloc(num_fds * 2 * num_groups * sizeof(pthread_t));
-
-	if (!pth_tab)
-		barf("main:malloc()");
-
-	fdpair(readyfds);
-	fdpair(wakefds);
-
-	total_children = 0;
-	for (i = 0; i < num_groups; i++)
-		total_children += group(pth_tab+total_children, num_fds, readyfds[1], wakefds[0]);
-
-	/* Wait for everyone to be ready */
-	for (i = 0; i < total_children; i++)
-		if (read(readyfds[0], &dummy, 1) != 1)
-			barf("Reading for readyfds");
-
-	gettimeofday(&start, NULL);
-
-	/* Kick them off */
-	if (write(wakefds[1], &dummy, 1) != 1)
-		barf("Writing to start them");
-
-	/* Reap them all */
-	for (i = 0; i < total_children; i++)
-		reap_worker(pth_tab[i]);
-
-	gettimeofday(&stop, NULL);
-
-	/* Print time... */
-	timersub(&stop, &start, &diff);
-	printf("Time: %lu.%03lu\n", diff.tv_sec, diff.tv_usec/1000);
-	exit(0);
-}
-
-
-
+On 1/4/08, Masami Hiramatsu <mhiramat@redhat.com> wrote:
+> I could understand what the original code did at last.
+> If a kprobe is inserted on a breakpoint which other debugger inserts,
+> it single step inline instead of out-of-line.(this is done in prepare_singlestep)
+> In this case, (p && kprobe_running() && kcb->kprobe_status==KPROBE_HIT_SS)
+> is true and we need pass the control to the debugger.
+> And if (*p->ainsn.insn != BREAKPOINT_INSTRUCTION) (or (p != kprobe_running())) in
+> that case, there may be some bugs.
+
+Yes, we can only fault while singlestepping for a unique case, which
+is when we're singlestepping (in-line) a breakpoint because a probe
+was installed on it. All other scenarios are a BUG . That's also
+assuming that no exception will preempt singlestepping, whose codepath
+has a probe on it.
+
+> Now I think your original suggestion is correct.
+> Please fix it in another patch.
+
+Ok.
+
+> --
+> Masami Hiramatsu
+>
+> Software Engineer
+> Hitachi Computer Products (America) Inc.
+> Software Solutions Division
+>
+> e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
+
+Thanks,
+Abhishek Sagar
