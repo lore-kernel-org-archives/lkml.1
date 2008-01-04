@@ -1,101 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbYADUz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755054AbYADU45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754833AbYADUz7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 15:55:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbYADUzv
+	id S1755054AbYADU45 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 15:56:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbYADU4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 15:55:51 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:42048 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753089AbYADUzu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 15:55:50 -0500
-Message-ID: <477E9D56.9090603@vmware.com>
-Date: Fri, 04 Jan 2008 12:55:50 -0800
-From: Dan Hecht <dhecht@vmware.com>
-User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
-MIME-Version: 1.0
-To: john stultz <johnstul@us.ibm.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: PIT clocksource makes invalid assumptions
-References: <477D7548.9070400@vmware.com> <1199477938.6327.18.camel@localhost.localdomain>
-In-Reply-To: <1199477938.6327.18.camel@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 4 Jan 2008 15:56:49 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:35199 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752617AbYADU4s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 15:56:48 -0500
+Date: Fri, 4 Jan 2008 21:56:44 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>, peterz@infradead.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH x86] [5/16] Replace hard coded reservations in x86-64 early boot code with dynamic table II
+Message-ID: <20080104205644.GC32174@uranus.ravnborg.org>
+References: <20080103442.621670000@suse.de> <200801041338.08093.ak@suse.de> <20080104144140.GA4203@elte.hu> <200801041603.58358.ak@suse.de> <20080104175128.GB31382@uranus.ravnborg.org> <20080104180650.GA2998@bingen.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080104180650.GA2998@bingen.suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/04/2008 12:18 PM, john stultz wrote:
-> On Thu, 2008-01-03 at 15:52 -0800, Dan Hecht wrote:
->> Looking at pit_read() in arch/x86/kernel/i8253.c, it seems that the PIT 
->> clocksource code assumes that the PIT CH0 is in periodic mode.  With 
->> clockevents, this assumption is no longer valid.  There are at least two 
->> places that make this assumption:
->>
->> 1) The calculation at the end of pit_read() assumes that the PIT is in 
->> periodic mode.  This isn't true unless the PIT is the current clockevent 
->> and nohz is inactive.  (Though #2 can end up forcing the PIT to be 
->> reprogrammed).
->>
->> 2) The PIT clockevent is shutdown by using PIT mode 0 (interrupt on 
->> terminal count) -- doesn't the PIT counter continue to count (even 
->> though it won't be raising an interrupt)?  If so, the test in pit_read() 
->> under the VIA686a comment can succeed after the PIT clockevent has been 
->> shutdown, and the PIT hardware may be reprogrammed to start firing 
->> interrupts again.  This doesn't seem intentional, and can defeat nohz 
->> since now the PIT is firing periodically.
->>
->> Seems these problems can happen when the PIT is used as the clocksource 
->> or even just the clocksource watchdog.  It looks like there is some code 
->> in clocksource.c that checks for CLOCK_SOURCE_IS_CONTINUOUS, which is 
->> not set for the PIT clocksource, but it doesn't seem to be strong enough 
->> to prevent these problematic scenarios (and it's not clear if that is 
->> the intent of IS_CONTINUOUS anyway).
+On Fri, Jan 04, 2008 at 07:06:50PM +0100, Andi Kleen wrote:
+> > What is then considered "obvious style issues" are today implemented
+> > as errors / warnings in checkpatch for the most part. Not everyone
 > 
-> The clocksource in use must have IS_CONTINUOUS set before we go into
-> HRT/no_hz mode, so I think the situations above should not be possible
-> (although I've not had a chance to check the current code).
+> In my experience checkpatch has a lot of false positives. e.g. when 
+> I run it over my pile 20+% of the warnings are just bogus. And in
+> a lot of other cases it is that the rules of thumbs it applies
+> do not apply to that specific case. 
+
+Tried it on my pile of patches here.
+ERROR: "foo * bar" should be "foo *bar"
+#33: FILE: scripts/basic/docproc.c:61:
++FILELINE * docsection;
+
+Legitimate error.
+
+And a bunch of > 80 chars WARNINGS.
+The warnings I ignore because I prefer readability on my 22" widescreen
+but the ERROR should never had hit me.
+
+But thats me that does not adhere to CodingStyle and checkpatch is correct.
+
+> > No-one should submit patches with white-space errors - thank you.
 > 
+> No I disagree. If white space is suddenly that important -- it is still
+> unclear to me why that should be -- then the right way to handle that is 
+> at the maintainer level while merging patches. But rejecting patches
+> for reasons that a trivial script can fix up is just unnecessary friction
+> in the merging process and unnecessary bureaucracy.
 
-Yes, I think that is correct.  But, I don't think the code (always) 
-prevents nohz mode when the clocksource *watchdog* is !IS_CONTINUOUS.
+Disagree. This is about a distributed model where the individual
+submitters shall make life as easy as possible for the maintainer.
+And the maintainer shall not be distracted by imporlerly formatted source
+code that looks wird. It simple does not scale.
+And no tool will help here because first review happens at the diff level
+before applying any patch to any code base and the diff has thus never
+seen a tool on the maintainer side.
 
-Anyway, the bug doesn't require that nohz mode is enabled, it just 
-requires that the PIT clockevent is shutdown (or otherwise not 
-programmed in periodic mode).
+> Unnecessary bureaucracy defined as in rituals that do not 
+> actually improve any code or prevent bugs (or even style). I must say I find 
+> it a little sad that Linux is dissolving into that now. Ok perhaps
+> it is the eventual fate of anything that has been around for quite a long time,
+> but it seems to get worse much quicker recently.
+Several reasons why it has accelerated:
+1) Ingo cares about checkpatch compliance
+2) Ingo accepts patches fixing checkpatch compliance
+3) We have a codebase that has lower quality than we usually praise us to have
 
->> To verify this really can happen, when I boot a kernel, I can see this 
->> sequence:
->>
->>    init_pit_timer (with mode==CLOCK_EVT_MODE_PERIODIC)
->>    init_pit_timer (with mode==CLOCK_EVT_MODE_UNUSED)
->>    init_pit_timer (with mode==CLOCK_EVT_MODE_SHUTDOWN)
->>    pit_read() and count > LATCH (I believe the PIT is the watchdog at 
->> this point), which causes the PIT to raise periodic interrupts.
->>
->> (Shortly after, the acpi pm clocksource is registered and replaces the 
->> PIT as the watchdog.  Later, the PIT clockevent is used as the broadcast 
->> clockevent and reprogrammed into one-shot mode, stopping the PIT 
->> interrupts.)
->>
->> Also, the user could force the PIT clocksource to be current_clocksource 
->> even though the PIT is in one-shot mode (and therefore the calculation 
->> in pit_read is bogus).
-> 
-> Does this actually happen and cause problems? I thought there was some
-> code to make sure we disable HRT/no_hz if we install a clocksource that
-> does not have IS_CONTINUOUS set.
-> 
+I think it is fine to fix style issue when we do some major surgery in a file,
+like unification.
+But starting to randomly attack files all over the kernel is IMO to overdue it
+and this is happening at the moment. And only carefull reviewing prevents bugs.
 
-I didn't check if nohz was disabled when the PIT clocksource is switched 
-to, but I did check that the PIT was not the active clockevent, which is 
-enough for this bug.
-
-I also didn't do a whole lot of digging to see what the problems this 
-bug can cause in practice, but after the PIT clocksource was installed, 
-I tried 'sleep 1' and this did not wake up.
-
-Thanks,
-Dan
+	Sam
