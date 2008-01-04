@@ -1,122 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbYADQSK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754601AbYADQS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754478AbYADQSK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 11:18:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbYADQR4
+	id S1754601AbYADQS5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 11:18:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752877AbYADQSt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 11:17:56 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:63552 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752593AbYADQRz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 11:17:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:x-x-sender:to:cc:subject:message-id:mime-version:content-type:from;
-        b=HD9R6PhTNtb3skN0bV0U8Q9l7eaSSzqO2w5Yutr6B0r9zav6XQICfJ8AQZxjdUpXcvnsxmmNMKzjMWZcKXOk6JkBhc+mEweCmSqqKJHL8xoiAcbc12t7QAR0NLZZde04wg3G/Fvpb87eaJjnuvdQMQhI6qR10tQlpY0R2HMsx/E=
-Date: Fri, 4 Jan 2008 21:47:34 +0530 (IST)
-X-X-Sender: madhul@localhost
-To: linux-scsi@vger.kernel.org
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] bsg : Add support for io vectors in bsg
-Message-ID: <Pine.LNX.4.64.0801042137350.7836@localhost>
+	Fri, 4 Jan 2008 11:18:49 -0500
+Received: from lixom.net ([66.141.50.11]:45504 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752593AbYADQSt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 11:18:49 -0500
+Date: Fri, 4 Jan 2008 10:27:29 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
+       mpm@selenic.com
+Subject: Re: [patch 1/2] move WARN_ON() out of line
+Message-ID: <20080104162729.GB29770@lixom.net>
+References: <477D52ED.7000403@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-From: Deepak Colluru <deepakrc@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <477D52ED.7000403@linux.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Deepak Colluru <deepakrc@gmail.com>
+Hi,
 
-Add support for io vectors in bsg.
+On Thu, Jan 03, 2008 at 10:26:05PM +0100, Arjan van de Ven wrote:
 
-Signed-off-by: Deepak Colluru <deepakrc@gmail.com>
----
-  bsg.c |   52 +++++++++++++++++++++++++++++++++++++++++++++++++---
-  1 file changed, 49 insertions(+), 3 deletions(-)
+> This patch build on top of Olof's patch that introduces __WARN,
+> and places the slowpath out of line. It also uses Ingo's suggestion
+> to not use __FUNCTION__ but to use kallsyms to do the lookup;
+> this saves a ton of extra space since gcc doesn't need to store the function
+> string twice now:
+>
+> 3936367  833603  624736 5394706  525112 vmlinux.before
+> 3917508  833603  624736 5375847  520767 vmlinux-slowpath
+>
+> 15Kb savings...
 
-diff --git a/block/bsg.c b/block/bsg.c
-index 8e181ab..78f47ed 100644
---- a/block/bsg.c
-+++ b/block/bsg.c
-@@ -245,7 +245,7 @@ bsg_map_hdr(struct bsg_device *bd, struct sg_io_v4 *hdr)
-  	struct request_queue *q = bd->queue;
-  	struct request *rq, *next_rq = NULL;
-  	int ret, rw;
--	unsigned int dxfer_len;
-+	unsigned int dxfer_len, iovec_count = 0;
-  	void *dxferp = NULL;
+This patch actually resulted in a slight size increase on PPC, most
+likely because of the new warn_on_slowpath() that isn't used:
 
-  	dprintk("map hdr %llx/%u %llx/%u\n", (unsigned long long) hdr->dout_xferp,
-@@ -281,7 +281,31 @@ bsg_map_hdr(struct bsg_device *bd, struct sg_io_v4 *hdr)
-  		rq->next_rq = next_rq;
+   text    data     bss     dec     hex filename
+8059224 1820584  529064 10408872 9ed3a8 vmlinux.mainline
+8058268 1820592  529064 10407924 9ecff4 vmlinux.mm
+8058324 1820648  529064 10408036 9ed064 vmlinux.mm+arjanpatch
 
-  		dxferp = (void*)(unsigned long)hdr->din_xferp;
--		ret =  blk_rq_map_user(q, next_rq, dxferp, hdr->din_xfer_len);
-+		iovec_count = hdr->din_iovec_count;
-+		dxfer_len = hdr->din_xfer_len;
-+
-+		if (iovec_count) {
-+			const int size = sizeof(struct sg_iovec) * iovec_count;
-+			struct sg_iovec *iov;
-+
-+			iov = kmalloc(size, GFP_KERNEL);
-+			if (!iov) {
-+				ret = -ENOMEM;
-+				goto out;
-+			}
-+
-+			if (copy_from_user(iov, dxferp, size)) {
-+				kfree(iov);
-+				ret = -EFAULT;
-+				goto out;
-+			}
-+			ret = blk_rq_map_user_iov(q, rq, iov, iovec_count,
-+								dxfer_len);
-+			kfree(iov);
-+		} else {
-+			ret = blk_rq_map_user(q, rq, dxferp, dxfer_len);
-+		}
-+
-  		if (ret)
-  			goto out;
-  	}
-@@ -289,14 +313,36 @@ bsg_map_hdr(struct bsg_device *bd, struct sg_io_v4 *hdr)
-  	if (hdr->dout_xfer_len) {
-  		dxfer_len = hdr->dout_xfer_len;
-  		dxferp = (void*)(unsigned long)hdr->dout_xferp;
-+		iovec_count = hdr->dout_iovec_count;
-  	} else if (hdr->din_xfer_len) {
-  		dxfer_len = hdr->din_xfer_len;
-  		dxferp = (void*)(unsigned long)hdr->din_xferp;
-+		iovec_count = hdr->din_iovec_count;
-  	} else
-  		dxfer_len = 0;
+Also:
 
-  	if (dxfer_len) {
--		ret = blk_rq_map_user(q, rq, dxferp, dxfer_len);
-+		if (iovec_count) {
-+			const int size = sizeof(struct sg_iovec) * iovec_count;
-+			struct sg_iovec *iov;
-+
-+			iov = kmalloc(size, GFP_KERNEL);
-+			if (!iov) {
-+				ret = -ENOMEM;
-+				goto out;
-+			}
-+
-+			if (copy_from_user(iov, dxferp, size)) {
-+				kfree(iov);
-+				ret = -EFAULT;
-+				goto out;
-+			}
-+			ret = blk_rq_map_user_iov(q, rq, iov, iovec_count,
-+								dxfer_len);
-+			kfree(iov);
-+		} else {
-+			ret = blk_rq_map_user(q, rq, dxferp, dxfer_len);
-+		}
-  		if (ret)
-  			goto out;
-  	}
+> Index: linux-2.6.24-rc6/include/asm-generic/bug.h
+> ===================================================================
+> --- linux-2.6.24-rc6.orig/include/asm-generic/bug.h
+> +++ linux-2.6.24-rc6/include/asm-generic/bug.h
+> @@ -32,11 +32,8 @@ struct bug_entry {
+>  #endif
+>
+>  #ifndef __WARN
+> -#define __WARN() do {							\
+> -	printk("WARNING: at %s:%d %s()\n", __FILE__,			\
+> -		__LINE__, __FUNCTION__);				\
+> -	dump_stack();							\
+> -} while (0)
+> +extern void warn_on_slowpath(const char *file, const int line);
+> +#define __WARN() warn_on_slowpath(__FILE__, __LINE__)
+>  #endif
+>
+
+This caused problems on powerpc, since bug.h ends up being pulled into
+some assembly files. The #defines in there have been fine, but the
+external declaration threw it off. (They need them to get to some of the
+include/asm-powerpc/bug.h contents, but it pulls in the generic one as
+well).
+
+Easiest is probably to encapsulate the whole file in #ifndef __ASSEMBLY__.
+
+
+-Olof
