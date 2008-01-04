@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755557AbYADVOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737AbYADVPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755557AbYADVOn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 16:14:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755154AbYADVN0
+	id S1755737AbYADVPA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 16:15:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755236AbYADVNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 16:13:26 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:37216 "EHLO
+	Fri, 4 Jan 2008 16:13:33 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:38027 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755116AbYADVNZ (ORCPT
+	with ESMTP id S1754759AbYADVNc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 16:13:25 -0500
+	Fri, 4 Jan 2008 16:13:32 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=fsIPwx23qhPwWb9i1/Id/VaT/YwXZm2p1pKOW1W60vxFZFs/i/nHBreZOCXmJqlg3+G0mEbVl8CMGSKMiK5V++JmPiWGlJ5AAn4iNsFlmS3JrdDN4Z14Tuyu6HbunHhBiux2jGbJXEGuPyhI+lDQ+wX8aeLlDgcOY/aRGHUC06o=
+        b=gt0qLEATMCMmem1gSa1mTWnUHLtPDEPQVg/nuF1qM06FgzoWhEL7CKDI4ttsO/iIPxfKH/+k2AkjM4qxxa8EHcUC4S+p2TYW+VQ2RKLPTYNWQXTHD7xjglqq+YuOjN+3SAz+WkqKaC8+lQDW+FKPLLAcodgHJ2Hkqd71ZHwXWG4=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Fri, 04 Jan 2008 22:25:01 +0100
-Message-Id: <20080104212501.6978.42272.sendpatchset@localhost.localdomain>
+Date: Fri, 04 Jan 2008 22:25:08 +0100
+Message-Id: <20080104212508.6978.62680.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080104212424.6978.93646.sendpatchset@localhost.localdomain>
 References: <20080104212424.6978.93646.sendpatchset@localhost.localdomain>
-Subject: [PATCH 5/15] ide: remove unused ide_hwgroup_t fields
+Subject: [PATCH 6/15] ide: remove needless zeroing of hwgroup fields from init_irq()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Since kmalloc_node() is called with __GFP_ZERO flag there is no need to
+explicitly zero hwgroup fields.
+
+While at it:
+
+* Use 'hwif' instead of 'hwif->drives[0].hwif' for kmalloc_node() call.
+
+* Fix whitespace damage.
+
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- include/linux/ide.h |   14 +++-----------
- 1 file changed, 3 insertions(+), 11 deletions(-)
+-27 bytes
+ drivers/ide/ide-probe.c |   15 +++++----------
+ 1 file changed, 5 insertions(+), 10 deletions(-)
 
-Index: b/include/linux/ide.h
+Index: b/drivers/ide/ide-probe.c
 ===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -628,8 +628,7 @@ typedef int (ide_expiry_t)(ide_drive_t *
- typedef struct hwgroup_s {
- 		/* irq handler, if active */
- 	ide_startstop_t	(*handler)(ide_drive_t *);
--		/* irq handler, suspended if active */
--	ide_startstop_t	(*handler_save)(ide_drive_t *);
-+
- 		/* BOOL: protects all fields below */
- 	volatile int busy;
- 		/* BOOL: wake us up on timer expiry */
-@@ -644,25 +643,18 @@ typedef struct hwgroup_s {
- 		/* ptr to current hwif in linked-list */
- 	ide_hwif_t *hwif;
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -998,19 +998,14 @@ static int init_irq (ide_hwif_t *hwif)
+ 		hwgroup->hwif->next = hwif;
+ 		spin_unlock_irq(&ide_lock);
+ 	} else {
+-		hwgroup = kmalloc_node(sizeof(ide_hwgroup_t),
+-					GFP_KERNEL | __GFP_ZERO,
+-					hwif_to_node(hwif->drives[0].hwif));
+-		if (!hwgroup)
+-	       		goto out_up;
++		hwgroup = kmalloc_node(sizeof(*hwgroup), GFP_KERNEL|__GFP_ZERO,
++				       hwif_to_node(hwif));
++		if (hwgroup == NULL)
++			goto out_up;
  
--		/* for pci chipsets */
--	struct pci_dev *pci_dev;
--
- 		/* current request */
- 	struct request *rq;
-+
- 		/* failsafe timer */
- 	struct timer_list timer;
--		/* local copy of current write rq */
--	struct request wrq;
- 		/* timeout value during long polls */
- 	unsigned long poll_timeout;
- 		/* queried upon timeouts */
- 	int (*expiry)(ide_drive_t *);
--		/* ide_system_bus_speed */
--	int pio_clock;
-+
- 	int req_gen;
- 	int req_gen_timer;
--
--	unsigned char cmd_buf[4];
- } ide_hwgroup_t;
+ 		hwif->hwgroup = hwgroup;
++		hwgroup->hwif = hwif->next = hwif;
  
- typedef struct ide_driver_s ide_driver_t;
+-		hwgroup->hwif     = hwif->next = hwif;
+-		hwgroup->rq       = NULL;
+-		hwgroup->handler  = NULL;
+-		hwgroup->drive    = NULL;
+-		hwgroup->busy     = 0;
+ 		init_timer(&hwgroup->timer);
+ 		hwgroup->timer.function = &ide_timer_expiry;
+ 		hwgroup->timer.data = (unsigned long) hwgroup;
