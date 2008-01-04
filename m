@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbYADOpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbYADOqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754504AbYADOpx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 09:45:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753190AbYADOpo
+	id S1754573AbYADOqm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 09:46:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbYADOqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 09:45:44 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:37079 "EHLO mgw1.diku.dk"
+	Fri, 4 Jan 2008 09:46:33 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:37178 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754075AbYADOpn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 09:45:43 -0500
-Date: Fri, 4 Jan 2008 15:45:33 +0100 (MET)
+	id S1752327AbYADOqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 09:46:32 -0500
+Date: Fri, 4 Jan 2008 15:46:19 +0100 (MET)
 From: Julia Lawall <julia@diku.dk>
-To: benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
+To: adaplas@gmail.com, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/macintosh: Add missing pci_dev_get
-Message-ID: <Pine.LNX.4.58.0801041545020.1184@pc-041.diku.dk>
+Subject: [PATCH] drivers/video: Add missing pci_dev_get
+Message-ID: <Pine.LNX.4.58.0801041545340.1184@pc-041.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,8 +23,8 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-pci_get_bus_and_slot does a pci_dev_get, so pci_dev_put needs to be called
-in an error case.
+pci_get_device does a pci_dev_get, so pci_dev_put needs to be called in an
+error case
 
 The problem was fixed using the following semantic patch.
 (http://www.emn.fr/x-info/coccinelle/)
@@ -84,15 +84,45 @@ int ret != 0;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
+diff -u -p a/drivers/video/igafb.c b/drivers/video/igafb.c
+--- a/drivers/video/igafb.c 2007-07-23 11:27:17.000000000 +0200
++++ b/drivers/video/igafb.c 2008-01-04 14:01:30.000000000 +0100
+@@ -400,6 +400,7 @@ int __init igafb_init(void)
+         info = kzalloc(size, GFP_ATOMIC);
+         if (!info) {
+                 printk("igafb_init: can't alloc fb_info\n");
++		 pci_dev_put(pdev);
+                 return -ENOMEM;
+         }
 
-diff -u -p a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
---- a/drivers/macintosh/via-pmu.c 2007-12-21 06:57:19.000000000 +0100
-+++ b/drivers/macintosh/via-pmu.c 2008-01-04 14:00:03.000000000 +0100
-@@ -2142,6 +2142,7 @@ static int powerbook_sleep_grackle(void)
- 	ret = pmac_suspend_devices();
- 	if (ret) {
- 		printk(KERN_ERR "Sleep rejected by devices\n");
-+		pci_dev_put(grackle);
- 		return ret;
+@@ -409,12 +410,14 @@ int __init igafb_init(void)
+ 	if ((addr = pdev->resource[0].start) == 0) {
+                 printk("igafb_init: no memory start\n");
+ 		kfree(info);
++		pci_dev_put(pdev);
+ 		return -ENXIO;
+ 	}
+
+ 	if ((info->screen_base = ioremap(addr, 1024*1024*2)) == 0) {
+                 printk("igafb_init: can't remap %lx[2M]\n", addr);
+ 		kfree(info);
++		pci_dev_put(pdev);
+ 		return -ENXIO;
+ 	}
+
+@@ -449,6 +452,7 @@ int __init igafb_init(void)
+                 printk("igafb_init: can't remap %lx[4K]\n", igafb_fix.mmio_start);
+ 		iounmap((void *)info->screen_base);
+ 		kfree(info);
++		pci_dev_put(pdev);
+ 		return -ENXIO;
+ 	}
+
+@@ -466,6 +470,7 @@ int __init igafb_init(void)
+ 		iounmap((void *)par->io_base);
+ 		iounmap(info->screen_base);
+ 		kfree(info);
++		pci_dev_put(pdev);
+ 		return -ENOMEM;
  	}
 
