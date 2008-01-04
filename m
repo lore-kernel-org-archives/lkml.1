@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752652AbYADLhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753218AbYADLi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752652AbYADLhp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 06:37:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751015AbYADLhh
+	id S1753218AbYADLi6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 06:38:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbYADLiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 06:37:37 -0500
-Received: from kuber.nabble.com ([216.139.236.158]:54426 "EHLO
-	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750855AbYADLhg (ORCPT
+	Fri, 4 Jan 2008 06:38:51 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:57572 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751207AbYADLiu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 06:37:36 -0500
-Message-ID: <14614652.post@talk.nabble.com>
-Date: Fri, 4 Jan 2008 03:37:35 -0800 (PST)
-From: rohithvjp2006 <rohithvjp2006@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: kernel compilation
-MIME-Version: 1.0
+	Fri, 4 Jan 2008 06:38:50 -0500
+Date: Fri, 4 Jan 2008 11:38:47 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Guillaume Chazarain <guichaz@yahoo.fr>
+Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] proc: advertise new restrictions on /proc/*/maps & /proc/*/smaps
+Message-ID: <20080104113847.GZ27894@ZenIV.linux.org.uk>
+References: <20080103235150.2870.31703.stgit@localhost.localdomain> <20080103235736.GW27894@ZenIV.linux.org.uk> <20080104121502.2e6ccaa1@inria.fr>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Nabble-From: rohithvjp2006@gmail.com
+Content-Disposition: inline
+In-Reply-To: <20080104121502.2e6ccaa1@inria.fr>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jan 04, 2008 at 12:15:02PM +0100, Guillaume Chazarain wrote:
+> Al Viro <viro@ZenIV.linux.org.uk> wrote:
+> 
+> > The whole point is that we have to reject it at read() time, not open()
+> > time.
+> 
+> Yes, my patch was a complement to yours to propagate the -EPERM in easy
+> cases. As you noted it added restrictions on reading /proc/*/maps, even
+> though I found them acceptable.
+> 
+> How about this instead?
+> 
+> Maybe you'd prefer to propagate the actual -EPERM from
+> __ptrace_may_attach but that would be more invasive.
+> 
+> Sidenote: do you think a sparse annotation to check IS_ERR/PTR_ERR
+> usage would make sense?
+> 
+> proc: return -EPERM when preventing read of /proc/*/maps
+> 
+> Return an error instead of successfully reading an empty file.
 
-              
-hi this is rohith
-                    i am doing project such as porting an linux 2.4 fedora
-to some target say x86 when i modified the kernel by make menuconfig command
-and after doin make dep there is no error but when i given make bzImage  i
-am getting this error please reply me what it means and i am very new to
-this linux field can any body help
-                    and if the target as arm 9 what i should do where i
-should change
-
-
-regards rohith
-
-
-   from base.c:635:
-/usr/src/linux-2.4.22-1.2115.nptl/include/asm/processor.h:257:1: warning:
-this is the location of the previous definition
-base.c: In function `is_devfsd_or_child':
-base.c:1417: structure has no member named `p_opptr'
-base.c:1417: structure has no member named `p_opptr'
-make[3]: *** [base.o] Error 1
-make[3]: Leaving directory `/usr/src/linux-2.4.22-1.2115.nptl/fs/devfs'
-make[2]: *** [first_rule] Error 2
-make[2]: Leaving directory `/usr/src/linux-2.4.22-1.2115.nptl/fs/devfs'
-make[1]: *** [_subdir_devfs] Error 2
-make[1]: Leaving directory `/usr/src/linux-2.4.22-1.2115.nptl/fs'
-make: *** [_dir_fs] Error 2
-[root@rohit linux-2.4]#
-
-
--- 
-View this message in context: http://www.nabble.com/kernel-compilation-tp14614652p14614652.html
-Sent from the linux-kernel mailing list archive at Nabble.com.
-
+You are overcomplicating it - if ->start() returns ERR_PTR(), it's over;
+read() will fail with that error and that's it.  No need to mess with
+->next(), etc. - it'll never see that ERR_PTR(-EPERM).  Drop these chunks
+and you've got an ACK...
