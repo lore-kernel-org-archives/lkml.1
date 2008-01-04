@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753455AbYADOZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbYADO3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753455AbYADOZf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 09:25:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbYADOZ1
+	id S1753861AbYADO3R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 09:29:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbYADO3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 09:25:27 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:35325 "EHLO
+	Fri, 4 Jan 2008 09:29:05 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:40848 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751842AbYADOZ0 (ORCPT
+	with ESMTP id S1752272AbYADO3E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 09:25:26 -0500
+	Fri, 4 Jan 2008 09:29:04 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=wpblUNlysiQb2fcSJPeLJAkPNOD2dYKHMIi6ddM+YWclbxP66YVHsOeWlol/QRK1TcABIhYnROG2NCVNlqaXOJrB1GRHc1+NFbXINNpYIGMRqqAjA4Y1FAhXdZAi7mHNeSBU4FffhCpqkSntI872532yqXdFzGol0+34fbE6tpQ=
-Date: Fri, 4 Jan 2008 15:25:21 +0100
+        b=ihH7+OqxcAAFn+NtZG/ZTxYHR85JQ+N0FK/TBLRZx2b3bZj7KoRJUXOFJ6wCJ5WF4FdpTTGpV61cBmX288ZpoVInqmwqbKXR5xmO6ncdB9+kWzI+ErKQyKVZljPJXcuGSwYa7M/kyWu5GgGaitqS9MHNlWtLnJRA7JkP7S/63EM=
+Date: Fri, 4 Jan 2008 15:28:58 +0100
 From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-To: mingo@helte.hu, Linux Kernel <linux-kernel@vger.kernel.org>
+To: mingo@elte.hu, Linux Kernel <linux-kernel@vger.kernel.org>
 Subject: [PATCH] profile: further Codying Style fixes
-Message-ID: <20080104152521.620e4e80@paolo-desktop>
+Message-ID: <20080104152858.1fb9b868@paolo-desktop>
 X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,6 +27,10 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Apologize for the duplicated message, 
+in my previous email I mistyped Ingo's email address.
+
+------>
 Further codying style fixes on top of:
 http://marc.info/?l=linux-kernel&m=119940325306693&w=2
 
