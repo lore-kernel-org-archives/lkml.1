@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbYADWFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754641AbYADWFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755454AbYADWFA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 17:05:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbYADWEx
+	id S1754641AbYADWFW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 17:05:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755496AbYADWFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 17:04:53 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:57117 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754089AbYADWEw (ORCPT
+	Fri, 4 Jan 2008 17:05:03 -0500
+Received: from mu-out-0910.google.com ([209.85.134.189]:54152 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755472AbYADWFB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 17:04:52 -0500
-Message-ID: <477EAD37.4070903@zytor.com>
-Date: Fri, 04 Jan 2008 14:03:35 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 4 Jan 2008 17:05:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=rGK2kV7K0fVlNGz91oDncfUlDJycriGxJ7C+tJFEGydNV5/JDCs7NBT+VVjT7aquJALwkoXs/62nzWqku0aklgPzpxfFXOXfPpl4AAvbPPYzTrjCiPpKaNwpvwcNzBHKzvsgi315d3flyhHr2qBbVADl1bP3ysQl5oGMT8FC8nU=
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: little fix in 'include/asm-x86/topology.h'
+Date: Fri, 4 Jan 2008 23:04:57 +0100
+User-Agent: KMail/1.9.7
+Cc: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de
 MIME-Version: 1.0
-To: "Dr. David Alan Gilbert" <linux@treblig.org>
-CC: Andi Kleen <andi@firstfloor.org>, felix-linuxkernel@fefe.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: memory remapping, 4gb memory on 945gt
-References: <20080104154914.GA589@codeblau.de> <p73lk758sri.fsf@bingen.suse.de> <20080104181918.GA21797@gallifrey>
-In-Reply-To: <20080104181918.GA21797@gallifrey>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200801042304.58071.mboton@gmail.com>
+From: Miguel =?utf-8?q?Bot=C3=B3n?= <mboton.lkml@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dr. David Alan Gilbert wrote:
->>>
->>> Now I can understand this explanation for 32-bit mode, but I'm running
->>> in 64-bit mode.  There should be a way to use the fourth gig under
->>> Linux.  Is there?
->> The chipset limitation applies to 64bit mode as well as to 32bit mode
->> (which actually does not have a 4GB limitation with PAE)
-> 
-> Note that some system and memory vendors have incorrect statements
-> stating that the 3.xGB limit is a 32bit OS issue on these machines
-> and it'll all just work fine on 64bit OSs.
-> 
+Before 'topology_32.h' and 'topology_64.h' were unified, topology defines in a
+X86_64 kernel were declared if CONFIG_SMP was enabled.
+Now, post unification, these same defines in a X86_64 kernel are only being
+declared if CONFIG_NUMA and CONFIG_SMP are enabled.
 
-Supposedly WinXP-32 doesn't use memory over 4 GB even if it is available 
-(a market-segmentation decision of the part of Microsoft, to force 
-people to buy WinServer 2003; WinXP SP2 does PAE so there is no 
-technical reason.)  This probably has disincentivized hardware vendors 
-from providing support for remapping the memory from the aperture above 
-the 4 GB mark.  The logic isn't all that trivial, especially if the 
-aperture size is configurable, so I can understand why they would punt.
+This, for example, breaks 'perfmon_amd64.c' compilation.
 
-	-hpa
+This patch defines ENABLE_TOPO_DEFINE if this is a X86_64 kernel and we
+have SMP support enabled.
+
+Signed-off-by: Miguel Botón <mboton@gmail.com>
+
+diff --git a/include/asm-x86/topology.h b/include/asm-x86/topology.h
+index 9c25160..f95b3cc 100644
+--- a/include/asm-x86/topology.h
++++ b/include/asm-x86/topology.h
+@@ -79,10 +79,6 @@ extern unsigned long node_remap_size[];
+ 
+ #else
+ 
+-# ifdef CONFIG_SMP
+-#  define ENABLE_TOPO_DEFINES
+-# endif
+-
+ # define SD_CACHE_NICE_TRIES	2
+ # define SD_IDLE_IDX		2
+ # define SD_NEWIDLE_IDX		0
+@@ -129,6 +125,10 @@ extern int __node_distance(int, int);
+ 
+ extern cpumask_t cpu_coregroup_map(int cpu);
+ 
++#if defined(CONFIG_X86_64) && defined(CONFIG_SMP)
++# define ENABLE_TOPO_DEFINES
++#endif
++
+ #ifdef ENABLE_TOPO_DEFINES
+ #define topology_physical_package_id(cpu)	(cpu_data(cpu).phys_proc_id)
+ #define topology_core_id(cpu)			(cpu_data(cpu).cpu_core_id)
+
+-- 
+	Miguel Botón
