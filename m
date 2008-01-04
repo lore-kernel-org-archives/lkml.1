@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757705AbYADCuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758336AbYADCxE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757705AbYADCuU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 21:50:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753742AbYADCuI
+	id S1758336AbYADCxE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 21:53:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbYADCwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 21:50:08 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:40666 "EHLO
-	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753554AbYADCuG (ORCPT
+	Thu, 3 Jan 2008 21:52:53 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:27195 "EHLO
+	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752255AbYADCww (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 21:50:06 -0500
-Date: Thu, 03 Jan 2008 20:49:15 -0600
+	Thu, 3 Jan 2008 21:52:52 -0500
+Date: Thu, 03 Jan 2008 20:51:57 -0600
 From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Believed resolved: SATA kern-buffRd read slow: based on promise
- driver bug
-In-reply-to: <477D9C00.8060600@tlinx.org>
-To: Linda Walsh <lkml@tlinx.org>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org
-Message-id: <477D9EAB.7090202@shaw.ca>
+Subject: Re: sata_nv + ADMA + Samsung disk problem
+In-reply-to: <F72FA20C31DD4F4C997B91C5B3690A09505598@hqemmail07.nvidia.com>
+To: Allen Martin <AMartin@nvidia.com>
+Cc: Mark Lord <lkml@rtr.ca>, Jeff Garzik <jeff@garzik.org>,
+       Tejun Heo <htejun@gmail.com>, Gabor Gombas <gombasg@sztaki.hu>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Kuan Luo <kluo@nvidia.com>, Peer Chen <pchen@nvidia.com>
+Message-id: <477D9F4D.5030807@shaw.ca>
 MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
 Content-transfer-encoding: 7bit
-References: <fa.6TIOCGhBpW0r4XW9rqR+Ad8P+Js@ifi.uio.no>
- <4777E08C.4000603@shaw.ca> <4779870E.5070507@tlinx.org>
- <20080101015812.59e9ebf0@the-village.bc.nu> <477BEF8D.8090307@tlinx.org>
- <477C2B71.7040504@shaw.ca> <477C63AA.8080006@tlinx.org>
- <18300.40661.199761.488061@harpo.it.uu.se> <477D9C00.8060600@tlinx.org>
+References: <20070808120804.GB5257@boogie.lpds.sztaki.hu>
+ <20080101164416.GA29574@boogie.lpds.sztaki.hu> <477B0429.7040909@gmail.com>
+ <477B0CFD.1030603@shaw.ca>
+ <F72FA20C31DD4F4C997B91C5B3690A09505577@hqemmail07.nvidia.com>
+ <477BDEA5.8040701@garzik.org>
+ <F72FA20C31DD4F4C997B91C5B3690A0950557D@hqemmail07.nvidia.com>
+ <477C2A99.9010208@shaw.ca> <477C61D3.30009@rtr.ca> <477C6A85.9020607@shaw.ca>
+ <F72FA20C31DD4F4C997B91C5B3690A09505598@hqemmail07.nvidia.com>
 User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linda Walsh wrote:
->    I seem to remember reading about some problems with Promise SATA & ACPI.
-> Does this address that or is that a separate issue?  (Am using no-acpi for
-> now, but would like to try acpi again if it may be fixed (last time I tried
-> it with this card, "sdb" went "offline" (once it unmounted itself and
-> refused to be remounted (no error...just nothing), and another it stayed
-> mounted, but gave an I/O Error...so have been using no-acpi since).
-> An ACPI error in bootup said:
-> ACPI Exception (utmutex-0263): AE_BAD_PARAMETER, Thread EFFC2000 could 
-> not acquire Mutex [3] [20070126]
-
-Have you tried 2.6.24-rc6? If the problem still occurs there, you should 
-post the full bootup log.
-
+Allen Martin wrote:
+>  
+>>> Dunno about the NVidia version.
+>> Theirs works rather differently - the GO bit is there, but there's 
+>> another append register which is used to tell the controller 
+>> that a new 
+>> tag has been added to the CPB list.
+>>
+>> The only thing we currently use the GO bit for is to switch 
+>> between ADMA 
+>> and port register mode. Could be there's something we need to 
+>> do there, 
+>> though, who knows..
+>>
 > 
->    Is the above bug mentioned/discussed in the linux-ide archives?  That
-> and I'd like to find out why TCQ/NCQ doesn't work with the Seagate 
-> drives --
-> my guess, since they say queuedepth of 0/32, is that they are blacklisted
-> as being drives that don't follow normal protocol or implement their
-> own proprietary extensions?  Sigh.  Really a lame move (if that's the case)
-> for Seagate, considering they usage they could likely get in server
-> configs.  Maybe they want to push their SCSI/SAS drives?
+> You shouldn't ever need to touch GO other than the ADMA / legacy mode
+> switch as you say.
+> 
+> The NVIDIA ADMA hw is not based on the Pacific Digital core.
 
-Queue depth 0/32 means the drive supports a queue depth of 32 but the 
-controller/driver don't support NCQ.
-
->    BTW, can SATA have DPO or FUA or are those limited to SCSI?
-> Would it be a desirable future addition to remove the
-> "doesn't support DPO or FUA" error message" on SATA drives if they are
-> specific to SCSI?
-
-ATA disks can have FUA support, but the support is disabled in libata by 
-default. (There's a fua parameter on libata module to enable it I believe.)
+That answers that question, I guess. Still guessing at why the 
+controller would get stuck in IDLE state with no interrupt raised, then..
