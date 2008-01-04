@@ -1,122 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbYADA40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbYADBCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755339AbYADA40 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 19:56:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbYADA4Q
+	id S1754745AbYADBCT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 20:02:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbYADBCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 19:56:16 -0500
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:47055 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752036AbYADA4P (ORCPT
+	Thu, 3 Jan 2008 20:02:07 -0500
+Received: from hu-out-0506.google.com ([72.14.214.232]:34357 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751579AbYADBCG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 19:56:15 -0500
-Subject: Re: Error returns not
-	handled	correctly	by	sysfs.c:subsys_attr_store()
-From: Andrew Patterson <andrew.patterson@hp.com>
-To: Tejun Heo <teheo@suse.de>
-Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-hotplug@vger.kernel.org,
-       bjorn.helgaas@hp.com
-In-Reply-To: <1199405830.7025.33.camel@bluto.andrew>
-References: <1195683419.16019.225.camel@grinch>
-	 <20071126203116.0c93cdb9.akpm@linux-foundation.org>
-	 <20071127053321.GA975@kroah.com>  <474D1BD4.2050805@suse.de>
-	 <1196278300.5431.9.camel@grinch>  <474E10CF.7050009@suse.de>
-	 <1196716558.20124.179.camel@bluto.andrew>
-	 <1199404273.7025.21.camel@bluto.andrew>  <477D78BE.1060404@suse.de>
-	 <1199405830.7025.33.camel@bluto.andrew>
-Content-Type: text/plain
-Date: Thu, 03 Jan 2008 17:56:13 -0700
-Message-Id: <1199408174.7025.40.camel@bluto.andrew>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Jan 2008 20:02:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=F1bdZhhHXzN2SATlTtv3nT42MWeRfZkF6v+DL5Y77Vsui/n4SdPofIwbRA6JhwanJWmztXMV8ZR8z+OVW466nmBdPj1VWaFg3xgAPla6fObfEl8TXRWnh8E+rH9tzg1VybLhCUSAtO4MD8h075atNEDf4DDAFqtD9AXOsrdy4Hg=
+Date: Fri, 4 Jan 2008 09:05:42 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Gabor Gombas <gombasg@sztaki.hu>
+Cc: linux-kernel@vger.kernel.org, bluez-devel@lists.sourceforge.net
+Subject: Re: [Bluez-devel] Oops involving RFCOMM and sysfs
+Message-ID: <20080104010542.GA2860@darkstar.te-china.tietoenator.com>
+References: <20071228173203.GA20690@boogie.lpds.sztaki.hu> <a8e1da0712290007o168a730cw923055ad2c265d84@mail.gmail.com> <20080102151642.GA7273@boogie.lpds.sztaki.hu> <20080103131620.GA16307@boogie.lpds.sztaki.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080103131620.GA16307@boogie.lpds.sztaki.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-01-03 at 17:17 -0700, Andrew Patterson wrote:
-> On Fri, 2008-01-04 at 09:07 +0900, Tejun Heo wrote:
-> > Hello,
+On Thu, Jan 03, 2008 at 02:16:21PM +0100, Gabor Gombas wrote:
+> On Wed, Jan 02, 2008 at 04:16:42PM +0100, Gabor Gombas wrote:
+> 
+> > So the patch referenced above does not help. But I've found a very easy
+> > way to trigger the bug:
 > > 
-> > Andrew Patterson wrote:
-> > > It looks like this is a shell issue.  After looking through the sysfs
-> > > code, I realized that this problem seems to be driven from user-land.
-> > > So I performed some experiments:
-> > > 
-> > >      1. Wrote a simple program that just used write(2) to write to the
-> > >         sysfs entry. This works fine.
-> > >      2. Used /bin/echo instead of the built-in echo command.  This too
-> > >         works fine.
-> > >      3. Tried several shells.  Zsh and Bash both fail.  Csh works fine.
-> > > 
-> > > I then ran strace on the following shell-script:
-> > > 
-> > > #!/bin/bash
-> > > 
-> > > echo x > allow_restart
-> > > echo y > allow_restart
-> > > echo z > allow_restart
-> > > 
-> > > and got:
-> > > 
-> > > # strace -e trace=write ~/tmp/tester.sh 
-> > > write(1, "x\n", 2)                      = -1 EINVAL (Invalid argument)
-> > > write(1, "x\n", 2)                      = -1 EINVAL (Invalid argument)
-> > > write(2, "/home/andrew/tmp/tester.sh: line"..., 72/home/andrew/tmp/tester.sh: line 4: echo: write error: Invalid argument
-> > > ) = 72
-> > > write(1, "x\ny\n", 4)                   = -1 EINVAL (Invalid argument)
-> > > write(1, "x\ny\n", 4)                   = -1 EINVAL (Invalid argument)
-> > > write(2, "/home/andrew/tmp/tester.sh: line"..., 72/home/andrew/tmp/tester.sh: line 5: echo: write error: Invalid argument
-> > > ) = 72
-> > > write(1, "x\ny\nz\n", 6)                = -1 EINVAL (Invalid argument)
-> > > write(1, "x\ny\nz\n", 6)                = -1 EINVAL (Invalid argument)
-> > > write(2, "/home/andrew/tmp/tester.sh: line"..., 72/home/andrew/tmp/tester.sh: line 6: echo: write error: Invalid argument
-> > > ) = 72
-> > > write(1, "x\ny\nz\n", 6x
-> > > y
-> > > z
-> > > )                = 6
-> > > Process 3800 detached
-> > 
-> > Eeeeeeeekkkk.... That's scary.  Which distro are you using and what does
-> > 'bash --version' say?
+> > - do a "cat /dev/zero > /dev/rfcomm0"
+> > - switch the phone off
+> > - switch the phone on, and the kernel oopses
 > 
-> IA64 Debian lenny.  
-> 
-> # bash --version
-> GNU bash, version 3.1.17(1)-release (ia64-unknown-linux-gnu)
-> 
-> # zsh --version 
-> zsh 4.3.4 (ia64-unknown-linux-gnu)
-> 
-> # csh --version
-> tcsh 6.14.00 (Astron) 2005-03-25 (ia64-unknown-linux) options
-> wide,nls,dl,al,kan,rh,nd,color,filec
-> 
-> I suppose I should try this an ia32 box again, and perhaps with some
-> other distros.  I am not sure what the kernel can do about this, but it
-> might be nice to report it to the shell maintainers.
+> FYI I also remember having oopses with 2.6.22.<something> but I do not
+> have those logs anymore. Also I now booted 2.6.20.7 and it did not oops.
 
-Some further tests:
+Could you try the patch (on 2.6.24-rc6) following and check the debug messages? 
 
-AMD running Debian lenny with i686 kernel -- fails.  
-Bash version = 3.1.17(1)
-
-Intel running Ubuntu/gutsy with i686 kernel -- fails.
-Bash version = 3.2.25(1)
-
-Itanium running SLES10 with ia64 kernel -- succeeds.
-Bash version = 3.1.17(1)
-
-BTW, I found a way to reproduce this without modifying the kernel.
-The /sys/class/scsi_host/*/state sysfs store routine returns EINVAL if
-an invalid state is written. So just echo 2 bad values to the the state
-sysfs entry while running strace.
-
-Andrew
-
--- 
-Andrew Patterson
-Hewlett-Packard Company
-
+diff -upr linux/net/bluetooth/rfcomm/tty.c linux.new/net/bluetooth/rfcomm/tty.c
+--- linux/net/bluetooth/rfcomm/tty.c	2008-01-04 08:58:48.000000000 +0800
++++ linux.new/net/bluetooth/rfcomm/tty.c	2008-01-04 09:01:01.000000000 +0800
+@@ -313,6 +313,7 @@ static void rfcomm_dev_del(struct rfcomm
+ {
+ 	BT_DBG("dev %p", dev);
+ 
++	dump_stack();
+ 	set_bit(RFCOMM_TTY_RELEASED, &dev->flags);
+ 	rfcomm_dev_put(dev);
+ }
