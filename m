@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757068AbYADFmh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757341AbYADFwi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757068AbYADFmh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 00:42:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759003AbYADFmS
+	id S1757341AbYADFwi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 00:52:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbYADFw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 00:42:18 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:48028 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759529AbYADFmQ (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 00:42:16 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Eric Anopolsky <erpo41@gmail.com>
-Cc: Adrian Bunk <bunk@kernel.org>, sct@redhat.com, akpm@linux-foundation.org,
-       adilger@clusterfs.com, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6.24 patch] let EXT4DEV_FS depend on BROKEN
-In-Reply-To: Your message of "Wed, 02 Jan 2008 13:51:32 PST."
-             <1199310692.5786.53.camel@dione>
-From: Valdis.Kletnieks@vt.edu
-References: <20080102013218.GO27566@does.not.exist> <20080102174157.GD3351@webber.adilger.int> <20080102195146.GB15898@does.not.exist>
-            <1199310692.5786.53.camel@dione>
+	Fri, 4 Jan 2008 00:52:27 -0500
+Received: from gate.crashing.org ([63.228.1.57]:56232 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752909AbYADFw0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 00:52:26 -0500
+Subject: Re: sata_nv + ADMA + Samsung disk problem
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Mark Lord <liml@rtr.ca>, Allen Martin <AMartin@nvidia.com>,
+       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       Gabor Gombas <gombasg@sztaki.hu>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Kuan Luo <kluo@nvidia.com>,
+       Peer Chen <pchen@nvidia.com>
+In-Reply-To: <477D8F4B.6000601@shaw.ca>
+References: <20070808120804.GB5257@boogie.lpds.sztaki.hu>
+	 <20080101164416.GA29574@boogie.lpds.sztaki.hu> <477B0429.7040909@gmail.com>
+	 <477B0CFD.1030603@shaw.ca>
+	 <F72FA20C31DD4F4C997B91C5B3690A09505577@hqemmail07.nvidia.com>
+	 <477BDEA5.8040701@garzik.org>
+	 <F72FA20C31DD4F4C997B91C5B3690A0950557D@hqemmail07.nvidia.com>
+	 <477C2A99.9010208@shaw.ca> <477C61D3.30009@rtr.ca>
+	 <477C6A85.9020607@shaw.ca> <477D02E0.5040301@rtr.ca>
+	 <477D039F.6000206@rtr.ca> <1199394786.7291.21.camel@pasglop>
+	 <477D8F4B.6000601@shaw.ca>
+Content-Type: text/plain
+Date: Fri, 04 Jan 2008 16:51:38 +1100
+Message-Id: <1199425898.7291.30.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1199425297_4991P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Date: Fri, 04 Jan 2008 00:41:37 -0500
-Message-ID: <11223.1199425297@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1199425297_4991P
-Content-Type: text/plain; charset=us-ascii
 
-On Wed, 02 Jan 2008 13:51:32 PST, Eric Anopolsky said:
+On Thu, 2008-01-03 at 19:43 -0600, Robert Hancock wrote:
+> Benjamin Herrenschmidt wrote:
+> >> Another thing about the PacDigi core:  one has to be very careful
+> >> to avoid sequential accesses to sequential PCI locations when
+> >> programming the chip -- it cannot handle merged register writes.
+> >>
+> >> So for any group of sequentially laid out registers, the code has
+> >> to ensure it never writes two adjacent registers in sequence..
+> > 
+> > Ugh ? Write combining isn't permitted on normal registers afaik...
+> > 
+> > Ben.
+> 
+> Byte merging can be done by the chipset on MMIO writes (merging multiple 
+> 8 or 16-bit writes into a single 32-bit cycle).
 
-> their own kernels in the first place. IMHO, it's reasonable to expect
-> the small minority of Linux users who want to compile their own kernels
-> to learn that "EXPERIMENTAL" means something.
+That is true, if they are consecutive. You mean that this HW is f*cked
+up enough to actually have separate 8/16 bits registers that are
+contiguous ? Yuck... I'm afraid you -have- to add reads in between to
+guarantee that no merging will occur.
 
-And what, exactly, does it mean, given that there's a bunch of stuff that's
-tagged EXPERIMENTAL that's more solid/tested than a lot of stuff that *isn't*
-marked with it?
+Cheers,
 
---==_Exmh_1199425297_4991P
-Content-Type: application/pgp-signature
+Ben.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQFHfccRcC3lWbTT17ARAtmXAKDs4mqrhvnW+ht3dOT5lSNu+ZazIACfbZDG
-3Zmkfv0FztJybw/6GZo6rko=
-=vhof
------END PGP SIGNATURE-----
-
---==_Exmh_1199425297_4991P--
