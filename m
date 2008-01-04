@@ -1,69 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752381AbYADLJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752866AbYADLKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752381AbYADLJs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 06:09:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbYADLJk
+	id S1752866AbYADLKm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 06:10:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbYADLKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 06:09:40 -0500
-Received: from www.tglx.de ([62.245.132.106]:53228 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751146AbYADLJj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 06:09:39 -0500
-Date: Fri, 4 Jan 2008 12:09:12 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Dan Hecht <dhecht@vmware.com>
-cc: Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: PIT clocksource makes invalid assumptions
-In-Reply-To: <477D7548.9070400@vmware.com>
-Message-ID: <alpine.LFD.0.99999.0801041127570.4042@localhost.localdomain>
-References: <477D7548.9070400@vmware.com>
-User-Agent: Alpine 0.99999 (LFD 796 2007-11-08)
+	Fri, 4 Jan 2008 06:10:35 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:63266 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751152AbYADLKd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 06:10:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=CR+4o1kr1QlH4S5W6/40x1plUsipbMQmQI5OKlZclYg/aPQq1Xv/135S6ChW1+1QcfYe+aKh2JCMOL0Vz/cYhOGgWGfSSXPlEtgh/7MK/I5zJZ9ow7Q0fH5uk1uWqwIEKS9ZUMjVxfYh4xuBLfrm/387ziL7APE4ynu0Y6OJ7/M=
+Date: Fri, 4 Jan 2008 19:13:57 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, dhowells@redhat.com
+Subject: Re: isofs oops - d_splice_alias+0x1f (2.6.24-rc5-mm1)
+Message-ID: <20080104111357.GA3429@darkstar.te-china.tietoenator.com>
+References: <477CE1E0.4010504@gmail.com> <Pine.LNX.4.64.0801031550160.2076@sbz-30.cs.Helsinki.FI> <477CEE1C.7020005@gmail.com> <20080104104755.GX27894@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080104104755.GX27894@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Jan 2008, Dan Hecht wrote:
-> Seems these problems can happen when the PIT is used as the clocksource or
-> even just the clocksource watchdog.  It looks like there is some code in
-> clocksource.c that checks for CLOCK_SOURCE_IS_CONTINUOUS, which is not set for
-> the PIT clocksource, but it doesn't seem to be strong enough to prevent these
-> problematic scenarios (and it's not clear if that is the intent of
-> IS_CONTINUOUS anyway).
->
-> To verify this really can happen, when I boot a kernel, I can see this
-> sequence:
+On Fri, Jan 04, 2008 at 10:47:55AM +0000, Al Viro wrote:
+> On Thu, Jan 03, 2008 at 03:15:56PM +0100, Jiri Slaby wrote:
 > 
->   init_pit_timer (with mode==CLOCK_EVT_MODE_PERIODIC)
->   init_pit_timer (with mode==CLOCK_EVT_MODE_UNUSED)
->   init_pit_timer (with mode==CLOCK_EVT_MODE_SHUTDOWN)
->   pit_read() and count > LATCH (I believe the PIT is the watchdog at this
-> point), which causes the PIT to raise periodic interrupts.
-
-Darn, yes. This might happen on UP when we have local apic timer
-available.
-
-There is another caveat, when we have HPET and enable it.
-
-> (Shortly after, the acpi pm clocksource is registered and replaces the PIT as
-> the watchdog.  Later, the PIT clockevent is used as the broadcast clockevent
-> and reprogrammed into one-shot mode, stopping the PIT interrupts.)
+> > Can't say, the DVD seems to be OK, I don't know what was wrong (as I can say,
+> > this happened several times in the past yet and after reboot everything OK; I
+> > suspect gnome auto mounter -- multiple machines, several DVD ROMs, same disk
+> > with OS, similar errors, but that's too few to report).
 > 
-> Also, the user could force the PIT clocksource to be current_clocksource even
-> though the PIT is in one-shot mode (and therefore the calculation in pit_read
-> is bogus).
+> It is -mm-specific, all right - fallout from
+> 	iget-stop-isofs-from-using-read_inode.patch
+> not covered in
+> 	iget-stop-isofs-from-using-read_inode-fix*
+> 
+> Callers in fs/isofs/namei.c are missed.
 
-Yup, we need to prevent that.
+Yes, some isofs_iget return value should be handled, it is missed.
 
-> Of course, all this can only happen for 32-bit UP.  I'm not sure what the
-> preferred fix for this is...
+Maybe this:
 
-I guess disabling PIT clocksource there is the way to go. Not sure
-yet, need to look into all the odds and ends.
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
 
-Thanks for pointing this out,
+---
+fs/isofs/export.c |    8 ++++----
+fs/isofs/namei.c  |    4 ++--
+fs/isofs/rock.c   |    4 +++-
+3 files changed, 9 insertions(+), 7 deletions(-)
 
-	tglx
+diff -upr linux/fs/isofs/export.c linux.new/fs/isofs/export.c
+--- linux/fs/isofs/export.c	2008-01-04 18:54:40.000000000 +0800
++++ linux.new/fs/isofs/export.c	2008-01-04 19:04:31.000000000 +0800
+@@ -26,8 +26,8 @@ isofs_export_iget(struct super_block *sb
+ 	if (block == 0)
+ 		return ERR_PTR(-ESTALE);
+ 	inode = isofs_iget(sb, block, offset);
+-	if (inode == NULL)
+-		return ERR_PTR(-ENOMEM);
++	if (IS_ERR(inode))
++		return inode;
+ 	if (is_bad_inode(inode)
+ 	    || (generation && inode->i_generation != generation))
+ 	{
+@@ -110,8 +110,8 @@ static struct dentry *isofs_export_get_p
+ 	parent_inode = isofs_iget(child_inode->i_sb,
+ 				  parent_block,
+ 				  parent_offset);
+-	if (parent_inode == NULL) {
+-		rv = ERR_PTR(-EACCES);
++	if (IS_ERR(parent_inode)) {
++		rv = parent_inode;
+ 		goto out;
+ 	}
+ 
+diff -upr linux/fs/isofs/namei.c linux.new/fs/isofs/namei.c
+--- linux/fs/isofs/namei.c	2008-01-04 18:54:40.000000000 +0800
++++ linux.new/fs/isofs/namei.c	2008-01-04 18:57:27.000000000 +0800
+@@ -179,9 +179,9 @@ struct dentry *isofs_lookup(struct inode
+ 	inode = NULL;
+ 	if (found) {
+ 		inode = isofs_iget(dir->i_sb, block, offset);
+-		if (!inode) {
++		if (IS_ERR(inode)) {
+ 			unlock_kernel();
+-			return ERR_PTR(-EACCES);
++			return inode;
+ 		}
+ 	}
+ 	unlock_kernel();
+diff -upr linux/fs/isofs/rock.c linux.new/fs/isofs/rock.c
+--- linux/fs/isofs/rock.c	2008-01-04 18:54:40.000000000 +0800
++++ linux.new/fs/isofs/rock.c	2008-01-04 19:01:10.000000000 +0800
+@@ -474,8 +474,10 @@ repeat:
+ 			    isofs_iget(inode->i_sb,
+ 				       ISOFS_I(inode)->i_first_extent,
+ 				       0);
+-			if (!reloc)
++			if (IS_ERR(reloc)) {
++				err = PTR_ERR(reloc);
+ 				goto out;
++			}
+ 			inode->i_mode = reloc->i_mode;
+ 			inode->i_nlink = reloc->i_nlink;
+ 			inode->i_uid = reloc->i_uid;
