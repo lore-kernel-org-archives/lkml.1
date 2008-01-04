@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758294AbYADIfE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756217AbYADIiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758294AbYADIfE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 03:35:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbYADIez
+	id S1756217AbYADIiz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 03:38:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbYADIis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 03:34:55 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44596 "EHLO mx2.mail.elte.hu"
+	Fri, 4 Jan 2008 03:38:48 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45589 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753460AbYADIey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 03:34:54 -0500
-Date: Fri, 4 Jan 2008 09:34:42 +0100
+	id S1752391AbYADIir (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 03:38:47 -0500
+Date: Fri, 4 Jan 2008 09:38:18 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] This patch to profile.c fixes a few errors reported by
-	checkpatch.pl
-Message-ID: <20080104083442.GD22803@elte.hu>
-References: <20080104003253.7a7309d8@paolo-desktop>
+To: Andi Kleen <ak@suse.de>
+Cc: lenb@kernel.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] [16/20] x86: Allow TSC clock source on AMD Fam10h and
+	some cleanup
+Message-ID: <20080104083818.GA26921@elte.hu>
+References: <20080103149.088038000@suse.de> <20080103005012.124DE14D40@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080104003253.7a7309d8@paolo-desktop>
+In-Reply-To: <20080103005012.124DE14D40@wotan.suse.de>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,17 +36,15 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
+* Andi Kleen <ak@suse.de> wrote:
 
-> Before:
-> total: 25 errors, 13 warnings, 602 lines checked
+> After a lot of discussions with AMD it turns out that TSC on Fam10h 
+> CPUs is synchronized when the CONSTANT_TSC cpuid bit is set. Or rather 
+> that if there are ever systems where that is not true it would be 
+> their BIOS' task to disable the bit.
 > 
-> After:
-> total: 3 errors, 13 warnings, 602 lines checked
+> So finally use TSC gettimeofday on Fam10h by default.
 
-thanks, applied. Would you be interested in fixing the other errors and 
-warnings too? (Feel free to ask how to resolve certain types of 
-warnings. I just took a quick look and all the current checkpatch.pl 
-output on profile.c shows genuine style issues.)
+thanks, applied.
 
 	Ingo
