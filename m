@@ -1,202 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbYADWjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755565AbYADWoJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755494AbYADWjo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 17:39:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbYADWjf
+	id S1755565AbYADWoJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 17:44:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754744AbYADWny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 17:39:35 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:8647 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754375AbYADWje (ORCPT
+	Fri, 4 Jan 2008 17:43:54 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:39976 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754149AbYADWnx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 17:39:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=vvCpyhpYBnnjEywegvzVX+AWGdGOkEqV0bW1AY2q+IedMJ5gPJ/B2tnw9r2REmwB3/nr5vgk7broSe9gdKdwJ7XEXwKP19l2dhQBLcvMyrKQhW1d5Gou7K8VeyZi6xE8KEUAe9ZbCwhCNr5x51QQeqRCCfGgQMiTmpBwom3nx90=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Borislav Petkov <bbpetkov@yahoo.de>
-Subject: Re: [RESEND PATCH 02/10] ide-floppy: move ide-floppy struct and macro defs into its own header. While at it
-Date: Fri, 4 Jan 2008 23:49:09 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <1199366409-26016-1-git-send-email-bbpetkov@yahoo.de> <1199366409-26016-2-git-send-email-bbpetkov@yahoo.de> <1199366409-26016-3-git-send-email-bbpetkov@yahoo.de>
-In-Reply-To: <1199366409-26016-3-git-send-email-bbpetkov@yahoo.de>
+	Fri, 4 Jan 2008 17:43:53 -0500
+Date: Fri, 4 Jan 2008 23:43:52 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+Cc: Andreas Mohr <andi@lisas.de>, Adrian Bunk <bunk@kernel.org>,
+       Richard Jonsson <richie@coderworld.net>, linux-kernel@vger.kernel.org,
+       Ayaz Abdulla <aabdulla@nvidia.com>, jgarzik@pobox.com,
+       netdev@vger.kernel.org
+Subject: Re: forcedeth: MAC-address reversed on resume from suspend
+Message-ID: <20080104224352.GA7853@rhlx01.hs-esslingen.de>
+References: <477BFC71.7090002@coderworld.net> <20080102214843.GA19224@rhlx01.hs-esslingen.de> <20080102234209.GA10831@does.not.exist> <20080104034357.GA2113@atjola.homenet> <20080104084517.GA21628@rhlx01.hs-esslingen.de> <20080104101740.GA4406@atjola.homenet>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200801042349.09964.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080104101740.GA4406@atjola.homenet>
+X-Priority: none
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi,
-
-Hmm, contrary to ide-cd.c case there doesn't seem to be a need currently for
-moving code out of ide-floppy.c (and this patch series doesn't change that).
-
-Besides it would be better to just remove some structs like it has been done
-with i.e. struct atapi_capabilities_page in ide-cd.c case [1] because:
-
-* it is easier to audit/debug the code if you don't have to look at typedefs
-  all the time just to see which bytes/bits the code is really accessing
-
-* not using typedefs will make the source code significantly smaller
-
-* documentation is publically available
-
-* these structs are not memory mapped
-
-[1] http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg242747.html
-
-On Thursday 03 January 2008, Borislav Petkov wrote:
-> - do a white-space cleanup
-> - remove old crufty code untouched since at least 2005
-
-Please try to not mix things like moving code around and doing actual
-changes because it makes patch review difficult (i.e. it took me quite a
-while to find "old crufty code" that has been removed)...
-
-Sometimes having more "trivial" patches is better...
-
-> - shorten lines longer than 80ish columns
-> - shorten some LAAARGE typenames.
-
-typedefs are evil (exceptions are rare) and should die :)
-
-> There should be no functional changes resulting from this patch.
+On Fri, Jan 04, 2008 at 11:17:40AM +0100, Björn Steinbrink wrote:
+> On 2008.01.04 09:45:17 +0100, Andreas Mohr wrote:
+> > And then it needs these card I/O functions wrapped into two functions which
+> > interface with driver- and OS-related MAC variables
+> > (struct variables ALWAYS stored in usual system order, NOT H/W order!!!!!!)
+> > which optionally reverse the address (if needed for a particular card).
 > 
-> Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
-> ---
->  drivers/ide/ide-floppy.c |  763 ++++++++++++----------------------------------
->  drivers/ide/ide-floppy.h |  382 +++++++++++++++++++++++
->  2 files changed, 581 insertions(+), 564 deletions(-)
+> Hu? The MAC address is only ever reversed when the card is not in use,
+> why the hell would you want to reverse anything when the rest of the OS
+> is involved? This whole reversing stuff is purely before and after the
+> card is actually used. It's not that you need to reverse the address to
+> communicate with the card, it's just initially wrong on the card.
+
+Huhrmm? OK, let me ask this then:
+So what you're saying is that the address is only initially wrong
+(e.g. due to card EEPROM content somehow initializing the registers
+in wrong order on power-on), it's not _always_ supposed to be stored
+in wrong order during operation.
+
+IOW, the default card state after power-on is _unusable_ (due to
+invalidly ordered MAC address) and has to be _corrected_ by the driver,
+_initially_ only?
+
+OTOH I know that at least acx100 has a _permanently_ wrong-ordered
+MAC address setup, i.e. it's required to have it in "wrong" order
+_during operation_. And I wouldn't be surprised to see several examples
+of other hardware having a permanently wrongly-ordered address
+requirement, given the amount of MAC reversal in Linux drivers.
+
+
+Couldn't it be by chance that it's _believed_ to be reversed-on-power-on only,
+whereas those cards should _actually_ have it reversed-during-lifetime
+instead? Such a misunderstanding might explain a lot of trouble...
+
+Obviously I was expecting the latter case, which my code layout proposal
+was supposed to support in a clean way.
+
+> > And then there will never be any confusion about any MAC address format
+> > anywhere any more, right?
 > 
-> diff --git a/drivers/ide/ide-floppy.c b/drivers/ide/ide-floppy.c
-> index 785fbde..52d09c1 100644
-> --- a/drivers/ide/ide-floppy.c
-> +++ b/drivers/ide/ide-floppy.c
+> At probing time, you'll have to know whether the address you read from
+> the hardware is reversed or not. Unless you write it back in reversed
+> order when you release the card, you need a flag that at least survives
+> until nv_probe is called the next time. kexec does not write it back, so
+> you do need such a flag. But the flag apparently doesn't survive a
+> suspend/resume cycle, so you need to write back the reversed address
+> then. But the flag will survive a rmmod + modprobe cycle, so you need to
+> reset it when writing back the reversed address.
 
-[...]
+If it's indeed reversed-on-power-on only, then one probably cannot do
+much about it, thus I'd give up and simply check the MAC address for
+validity (should be very easy to check for a simple reversal by
+checking for the manufacturer-specific fingerprint in reverse order).
+Keeping _any_ sort of state to record the fact that it used to be reversed
+or now is reversed is futile (or rather: catastrophic) given the complexity of
+suspend / virtualisation or whichever other nice operations Linux may invent
+in the future ;)
 
-> -} idefloppy_capabilities_page_t;
+> Well, let's see if my analysis was correct and the patch works, first. I
+> saw the forcedeth code before, but kexec and suspend is totally new to
+> me and I just made some assumptions based on the reported behaviour and
+> the commit messages... ;-)
 
-[...]
+You most likely did more analysis than me, I just said
+"this very obviously must be the problem" and replied ;)
 
-> -} idefloppy_flexible_disk_page_t;
-
-[...]
-
-> -} idefloppy_capacity_descriptor_t;
-
-as mentioned earlier it would be best to just remove these structs/typedefs
-
-[ respective structures are described in SFF-8070i spec, it is useful to audit
-  the final code against the spec to catch potential coding mistakes early ]
-
-[...]
-
-> -#if 0
-> -/*
-> - *	Special requests for our block device strategy routine.
-> - */
-> -#define	IDEFLOPPY_FIRST_RQ	90
-> -
-> -/*
-> - * 	IDEFLOPPY_PC_RQ is used to queue a packet command in the request queue.
-> - */
-> -#define	IDEFLOPPY_PC_RQ		90
-> -
-> -#define IDEFLOPPY_LAST_RQ	90
-> -
-> -/*
-> - *	A macro which can be used to check if a given request command
-> - *	originated in the driver or in the buffer cache layer.
-> - */
-> -#define IDEFLOPPY_RQ_CMD(cmd) 	((cmd >= IDEFLOPPY_FIRST_RQ) && (cmd <= IDEFLOPPY_LAST_RQ))
-> -
-> -#endif
-
-Well, it was already removed, the patch is in IDE tree (and thus in -mm).
-
-http://kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc6/2.6.24-rc6-mm1/broken-out/ide-mm-ide-floppy-remove-dead-code.patch
-
-If possible please base your patches against IDE tree or the latest -mm patch.
-
-[...]
-
-> -} idefloppy_inquiry_result_t;
-
-[...]
-
-> -} idefloppy_request_sense_result_t;
-
-[...]
-
-> -} idefloppy_mode_parameter_header_t;
-
-more structs/typedefs heading for /dev/null
-
-[...]
-
-> @@ -1689,9 +1304,12 @@ static int idefloppy_identify_device (ide_drive_t *drive,struct hd_driveid *id)
->  	printk(KERN_INFO "Write buffer size(?): %d bytes\n",id->buf_size*512);
->  	printk(KERN_INFO "DMA: %s",id->capability & 0x01 ? "Yes\n":"No\n");
->  	printk(KERN_INFO "LBA: %s",id->capability & 0x02 ? "Yes\n":"No\n");
-> -	printk(KERN_INFO "IORDY can be disabled: %s",id->capability & 0x04 ? "Yes\n":"No\n");
-> -	printk(KERN_INFO "IORDY supported: %s",id->capability & 0x08 ? "Yes\n":"Unknown\n");
-> -	printk(KERN_INFO "ATAPI overlap supported: %s",id->capability & 0x20 ? "Yes\n":"No\n");
-> +	printk(KERN_INFO "IORDY can be disabled: %s",
-> +			id->capability & 0x04 ? "Yes\n":"No\n");
-> +	printk(KERN_INFO "IORDY supported: %s",
-> +			id->capability & 0x08 ? "Yes\n":"Unknown\n");
-> +	printk(KERN_INFO "ATAPI overlap supported: %s",
-> +			id->capability & 0x20 ? "Yes\n":"No\n");
->  	printk(KERN_INFO "PIO Cycle Timing Category: %d\n",id->tPIO);
->  	printk(KERN_INFO "DMA Cycle Timing Category: %d\n",id->tDMA);
->  	printk(KERN_INFO "Single Word DMA supported modes:\n");
-> @@ -1713,12 +1331,16 @@ static int idefloppy_identify_device (ide_drive_t *drive,struct hd_driveid *id)
->  			sprintf(buffer, "Not supported");
->  		else
->  			sprintf(buffer, "%d ns",id->eide_dma_min);
-> -		printk(KERN_INFO "Minimum Multi-word DMA cycle per word: %s\n", buffer);
-> +		printk(KERN_INFO "Minimum Multi-word DMA cycle per word: %s\n",
-> +				buffer);
-> +
->  		if (id->eide_dma_time == 0)
->  			sprintf(buffer, "Not supported");
->  		else
->  			sprintf(buffer, "%d ns",id->eide_dma_time);
-> -		printk(KERN_INFO "Manufacturer\'s Recommended Multi-word cycle: %s\n", buffer);
-> +		printk(KERN_INFO "Manufacturer\'s Recommended Multi-word"
-> +				" cycle: %s\n", buffer);
-> +
->  		if (id->eide_pio == 0)
->  			sprintf(buffer, "Not supported");
->  		else
-> @@ -1731,7 +1353,8 @@ static int idefloppy_identify_device (ide_drive_t *drive,struct hd_driveid *id)
->  			sprintf(buffer, "%d ns",id->eide_pio_iordy);
->  		printk(KERN_INFO "Minimum PIO cycle with IORDY: %s\n", buffer);
->  	} else
-> -		printk(KERN_INFO "According to the device, fields 64-70 are not valid.\n");
-> +		printk(KERN_INFO "According to the device, fields 64-70 are not"
-> +				" valid.\n");
->  #endif /* IDEFLOPPY_DEBUG_INFO */
->  
->  	if (gcw.protocol != 2)
-
-identify dumping has been removed by:
-
-http://kernel.org/pub/linux/kernel/people/bart/pata-2.6/patches/ide-floppy-tape-remove-debug-code-for-dumping-identify-data.patch
-
-[ not in -mm yet ]
-
-Please rework/resubmit this patch (preferably splitted on few smaller ones).
-
-Thanks,
-Bart
-
-PS please also check your patches with scripts/checkpatch.pl before posting
+Andreas Mohr
