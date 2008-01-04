@@ -1,123 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349AbYADL1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753008AbYADLaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753349AbYADL1A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 06:27:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbYADL0p
+	id S1753008AbYADLaI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 06:30:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbYADL34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 06:26:45 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:43794 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752205AbYADL0o (ORCPT
+	Fri, 4 Jan 2008 06:29:56 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:45268 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751146AbYADL3z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 06:26:44 -0500
-Date: Fri, 4 Jan 2008 11:26:42 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, dhowells@redhat.com
-Subject: Re: isofs oops - d_splice_alias+0x1f (2.6.24-rc5-mm1)
-Message-ID: <20080104112642.GY27894@ZenIV.linux.org.uk>
-References: <477CE1E0.4010504@gmail.com> <Pine.LNX.4.64.0801031550160.2076@sbz-30.cs.Helsinki.FI> <477CEE1C.7020005@gmail.com> <20080104104755.GX27894@ZenIV.linux.org.uk> <20080104111357.GA3429@darkstar.te-china.tietoenator.com>
-Mime-Version: 1.0
+	Fri, 4 Jan 2008 06:29:55 -0500
+Date: Fri, 4 Jan 2008 16:28:58 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: "K. Prasad" <prasad@linux.vnet.ibm.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       dipankar@in.ibm.com, paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH 2/2] Markers Implementation for Preempt RCU Boost
+	Tracing
+Message-ID: <20080104105858.GA13865@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20071231060911.GB6461@in.ibm.com> <20080103163055.GB27651@Krystal>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080104111357.GA3429@darkstar.te-china.tietoenator.com>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <20080103163055.GB27651@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 04, 2008 at 07:13:57PM +0800, Dave Young wrote:
-> > 	iget-stop-isofs-from-using-read_inode-fix*
-> > 
-> > Callers in fs/isofs/namei.c are missed.
+On Thu, Jan 03, 2008 at 11:30:55AM -0500, Mathieu Desnoyers wrote:
+> * K. Prasad (prasad@linux.vnet.ibm.com) wrote:
+> > This patch converts the tracing mechanism of Preempt RCU boosting into
+> > markers. The handler functions for these markers are included inside
+> > rcupreempt_trace.c and will be included only when PREEMPT_RCU_BOOST is
+> > chosen.
+> >  
+> > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> > ---
+> >  include/linux/rcupreempt_trace.h |   46 ++++++++
+> >  kernel/rcupreempt-boost.c        |  211 ++++-----------------------------------
+> >  kernel/rcupreempt_trace.c        |  183 +++++++++++++++++++++++++++++++++
+> >  3 files changed, 251 insertions(+), 189 deletions(-)
+> >  
+> > Index: linux-2.6.24-rc2-rt1.MARKER_PATCHES_NEW/include/linux/rcupreempt_trace.h
+> > ===================================================================
+> > --- linux-2.6.24-rc2-rt1.MARKER_PATCHES_NEW.orig/include/linux/rcupreempt_trace.h
+> > +++ linux-2.6.24-rc2-rt1.MARKER_PATCHES_NEW/include/linux/rcupreempt_trace.h
+> > @@ -102,5 +102,51 @@ extern int rcupreempt_flip_flag(int cpu)
+> >  extern int rcupreempt_mb_flag(int cpu);
+> >  extern char *rcupreempt_try_flip_state_name(void);
+> >  
+> > +#ifdef CONFIG_PREEMPT_RCU_BOOST
+> > +struct preempt_rcu_boost_trace {
+> > +	unsigned long rbs_stat_task_boost_called;
+> > +	unsigned long rbs_stat_task_boosted;
+> > +	unsigned long rbs_stat_boost_called;
+> > +	unsigned long rbs_stat_try_boost;
+> > +	unsigned long rbs_stat_boosted;
+> > +	unsigned long rbs_stat_unboost_called;
+> > +	unsigned long rbs_stat_unboosted;
+> > +	unsigned long rbs_stat_try_boost_readers;
+> > +	unsigned long rbs_stat_boost_readers;
+> > +	unsigned long rbs_stat_try_unboost_readers;
+> > +	unsigned long rbs_stat_unboost_readers;
+> > +	unsigned long rbs_stat_over_taken;
+> > +};
+> > +
+> > +#define DEFINE_PREEMPT_RCU_BOOST_MARKER_HANDLER(preempt_rcu_boost_var) \
+> > +void preempt_rcu_boost_var##_callback(const struct marker *mdata, \
+> > +				void *private_data, const char *format, ...) \
+> > +{ \
+> > +	va_list ap; \
+> > +	int cpu; \
+> > +	struct preempt_rcu_boost_trace *boost_trace; \
+> > +	va_start(ap, format); \
+> > +	cpu = va_arg(ap, typeof(unsigned int)); \
 > 
-> Yes, some isofs_iget return value should be handled, it is missed.
+> (sorry for late response, I just came back from vacation)
 > 
-> Maybe this:
+> Instead of passing the cpu id as a marker parameter, why don't you
+> simply use smp_processor_id() right here ?
+> 
 
-Not enough.  isofs_iget() still can return NULL; that needs to be converted to
-ERR_PTR().
+Agreed. 
 
-BTW, ERR_CAST is there for purpose...
+Also in patch 1, in cases where we're using markers in place of RCU_TRACE_ME(), 
+we need not pass the parameter and simply use smp_processor_id().
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
-diff -urN foo1/fs/isofs/export.c foo2/fs/isofs/export.c
---- foo1/fs/isofs/export.c	2008-01-04 06:23:10.000000000 -0500
-+++ foo2/fs/isofs/export.c	2008-01-04 06:18:52.000000000 -0500
-@@ -26,11 +26,9 @@
- 	if (block == 0)
- 		return ERR_PTR(-ESTALE);
- 	inode = isofs_iget(sb, block, offset);
--	if (inode == NULL)
--		return ERR_PTR(-ENOMEM);
--	if (is_bad_inode(inode)
--	    || (generation && inode->i_generation != generation))
--	{
-+	if (ERR_PTR(inode))
-+		return ERR_CAST(inode);
-+	if (generation && inode->i_generation != generation) {
- 		iput(inode);
- 		return ERR_PTR(-ESTALE);
- 	}
-@@ -110,7 +108,7 @@
- 	parent_inode = isofs_iget(child_inode->i_sb,
- 				  parent_block,
- 				  parent_offset);
--	if (parent_inode == NULL) {
-+	if (ERR_PTR(parent_inode)) {
- 		rv = ERR_PTR(-EACCES);
- 		goto out;
- 	}
-diff -urN foo1/fs/isofs/inode.c foo2/fs/isofs/inode.c
---- foo1/fs/isofs/inode.c	2008-01-04 06:23:33.000000000 -0500
-+++ foo2/fs/isofs/inode.c	2008-01-04 06:15:43.000000000 -0500
-@@ -1408,7 +1408,7 @@
- 	long ret;
- 
- 	if (offset >= 1ul << sb->s_blocksize_bits)
--		return NULL;
-+		return ERR_PTR(-EINVAL);
- 
- 	data.block = block;
- 	data.offset = offset;
-@@ -1418,7 +1418,10 @@
- 	inode = iget5_locked(sb, hashval, &isofs_iget5_test,
- 				&isofs_iget5_set, &data);
- 
--	if (inode && (inode->i_state & I_NEW)) {
-+	if (!inode)
-+		return ERR_PTR(-ENOMEM);
-+
-+	if (inode->i_state & I_NEW) {
- 		ret = isofs_read_inode(inode);
- 		if (ret < 0) {
- 			iget_failed(inode);
-diff -urN foo1/fs/isofs/namei.c foo2/fs/isofs/namei.c
---- foo1/fs/isofs/namei.c	2008-01-04 06:23:10.000000000 -0500
-+++ foo2/fs/isofs/namei.c	2008-01-04 06:19:20.000000000 -0500
-@@ -179,9 +179,9 @@
- 	inode = NULL;
- 	if (found) {
- 		inode = isofs_iget(dir->i_sb, block, offset);
--		if (!inode) {
-+		if (ERR_PTR(inode)) {
- 			unlock_kernel();
--			return ERR_PTR(-EACCES);
-+			return ERR_CAST(inode);
- 		}
- 	}
- 	unlock_kernel();
-diff -urN foo1/fs/isofs/rock.c foo2/fs/isofs/rock.c
---- foo1/fs/isofs/rock.c	2008-01-04 06:23:10.000000000 -0500
-+++ foo2/fs/isofs/rock.c	2008-01-04 06:20:41.000000000 -0500
-@@ -474,7 +474,7 @@
- 			    isofs_iget(inode->i_sb,
- 				       ISOFS_I(inode)->i_first_extent,
- 				       0);
--			if (!reloc)
-+			if (ERR_PTR(reloc))
- 				goto out;
- 			inode->i_mode = reloc->i_mode;
- 			inode->i_nlink = reloc->i_nlink;
+It's only the RCU_TRACE_RDP() that requires cpuid to be passed.
+
+
+Thanks and Regards
+gautham.
+
+
+> -- 
+> Mathieu Desnoyers
+> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+
+-- 
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
