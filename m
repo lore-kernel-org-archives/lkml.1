@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753176AbYADMJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752619AbYADMOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753176AbYADMJe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 07:09:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbYADMJZ
+	id S1752619AbYADMOW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 07:14:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbYADMOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 07:09:25 -0500
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:45613 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751225AbYADMJY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 07:09:24 -0500
-Date: Fri, 4 Jan 2008 17:39:05 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Paul E McKenney <paulmck@us.ibm.com>, Steven Rostedt <rostedt@goodmis.org>
-Cc: "K. Prasad" <prasad@linux.vnet.ibm.com>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       dipankar@in.ibm.com, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: __get_cpu_var() called from a preempt-unsafe context in
-	__rcu_preempt_unboost() ?
-Message-ID: <20080104120905.GA15640@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20071231060911.GB6461@in.ibm.com> <20080103163055.GB27651@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080103163055.GB27651@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Fri, 4 Jan 2008 07:14:14 -0500
+Received: from main.gmane.org ([80.91.229.2]:58133 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751195AbYADMOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 07:14:14 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Manuel Reimer <Manuel.Spam@nurfuerspam.de>
+Subject: Do people exaggerate in security advisories?
+Date: Fri, 04 Jan 2008 13:21:32 +0100
+Message-ID: <fll7u3$p02$1@ger.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: p4fd4c0ad.dip0.t-ipconnect.de
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; de-AT; rv:1.8.1.11) Gecko/20071129 SeaMonkey/1.1.7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paul, Steve,  
+Hi,
 
-This is with reference to the preemptible rcu implementation in
-2.6.24-rc5-rt1.
+I found this one today:
 
-In __rcu_read_unlock(), we call __rcu_preempt_unboost() to unboost a
-task's priority which had been bumped up when it was preempted out
-while the rcu_read section.
+http://securitytracker.com/alerts/2007/Oct/1018782.html
 
-The code path is as follows
+In the git changelog:
 
-__rcu_read_unlock()
-	|
-	|--> local_irq_restore(oldirq);
-	|
-	|--> __rcu_preempt_unboost();
-		|
-		|--> rcu_trace_boost_unboost_called(RCU_BOOST_ME)
+http://git.kernel.org/?p=utils/util-linux-ng/util-linux-ng.git;a=commit;h=ebbeb2c7ac1b00b608390595783
+7a271e80b187e
 
+noone leaves any word about privilege escalation.
 
-where RCU_BOOST_ME is #defined as &__get_cpu_var(rcu_boost_data).
+Is it really possible to get root privileges with this bug or are there 
+people who just write "may be used to escalate privileges" near any bug 
+which has something to do with "setuid" or "setgid"?
 
-Is calling __get_cpu_var() safe in this context, since we've already
-enabled the local interrupts and we're not in a preempt_disabled() ?
+Thanks in advance
 
-Thanks and Regards
-gautham.
+CU
 
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+Manuel
+
