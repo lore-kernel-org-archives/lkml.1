@@ -1,79 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbYADU0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbYADU2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754272AbYADU0c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 15:26:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYADU0X
+	id S1754705AbYADU2U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 15:28:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbYADU2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 15:26:23 -0500
-Received: from os.inf.tu-dresden.de ([141.76.48.99]:36361 "EHLO
-	os.inf.tu-dresden.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752565AbYADU0W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 15:26:22 -0500
-X-Greylist: delayed 3019 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Jan 2008 15:26:22 EST
-Date: Fri, 4 Jan 2008 20:35:58 +0100
-From: "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: memory remapping, 4gb memory on 945gt
-Message-ID: <20080104203558.73dd04a4@laptop.hypervisor.org>
-In-Reply-To: <p73lk758sri.fsf@bingen.suse.de>
-References: <20080104154914.GA589@codeblau.de>
-	<p73lk758sri.fsf@bingen.suse.de>
-X-Mailer: X-Mailer 5.0 Gold
+	Fri, 4 Jan 2008 15:28:12 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:38312 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752593AbYADU2L (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 15:28:11 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Manuel Reimer <Manuel.Spam@nurfuerspam.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Do people exaggerate in security advisories?
+In-Reply-To: Your message of "Fri, 04 Jan 2008 13:21:32 +0100."
+             <fll7u3$p02$1@ger.gmane.org>
+From: Valdis.Kletnieks@vt.edu
+References: <fll7u3$p02$1@ger.gmane.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/Ex7QAu_JoH+Pa0/=dKCyhGP";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+Content-Type: multipart/signed; boundary="==_Exmh_1199478488_8220P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Fri, 04 Jan 2008 15:28:08 -0500
+Message-ID: <20820.1199478488@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/Ex7QAu_JoH+Pa0/=dKCyhGP
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+--==_Exmh_1199478488_8220P
+Content-Type: text/plain; charset=us-ascii
 
-On Fri, 04 Jan 2008 17:22:57 +0100 Andi Kleen (AK) wrote:
+On Fri, 04 Jan 2008 13:21:32 +0100, Manuel Reimer said:
 
-AK> felix-linuxkernel@fefe.de writes:
-AK>=20
-AK> > I recently put 4 GB of memory in my Acer Travelmate 8210 series
-AK> > notebook.  The BIOS only detects 3 GB.
-AK>=20
-AK> Actually it will detect 4GB, but put the PCI hole over the last GB.
-AK> One way to get more usable memory is to configure the BIOS to use a
-AK> smaller PCI hole (e.g. use smaller frame buffer/aperture etc.)
-AK>=20
-AK> > I googled around a little.  It appears to be a chipset limitation of
-AK> > the 945gt, which uses the fourth gig for devices.
-AK> >
-AK> > Now I can understand this explanation for 32-bit mode, but I'm running
-AK> > in 64-bit mode.  There should be a way to use the fourth gig under
-AK> > Linux.  Is there?
-AK>=20
-AK> The chipset limitation applies to 64bit mode as well as to 32bit mode
-AK> (which actually does not have a 4GB limitation with PAE)
+> Is it really possible to get root privileges with this bug or are there 
+> people who just write "may be used to escalate privileges" near any bug 
+> which has something to do with "setuid" or "setgid"?
 
-Using a 64-bit or PAE kernel won't give access to more than 4GB of RAM
-because that only increases the linear address space of the CPU to 48 or
-36 bits respectively. The limitation with 945GT is that the chipset only
-supports 32-bit physical addresses. As Andi already pointed out, parts of
-that 4GB physical address space are used by devices and their apertures,
-so you can only try to shrink those devices ranges, if configurable, but
-you won't be able to use the full 4GB RAM.
+It looks like it really *is* possible to do some damage, if you can make
+several things happen:
 
-Cheers,
+1) Cause set[ug]id() to fail, possibly using a crafted 'capabilities' list.
+2) Get it to invoke a helper that's now running with different permissions than
+it was designed to, and feed said helper some carefully crafted malicious or
+bogus data.
 
-	- Udo
+Given that it is semantically almost identical to the Sendmail-capabilities
+bug from a few years ago, which was *certainly* abusable to get root, it would
+be foolish to think anything *except* "this sucker should be assumed to be
+a root exploit until *proven* otherwise".  Anybody who thinks "I don't see
+how to exploit it, so it can't be done" is in for a rude surprise....
 
---Sig_/Ex7QAu_JoH+Pa0/=dKCyhGP
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+--==_Exmh_1199478488_8220P
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+Version: GnuPG v1.4.8 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQFHfoqenhRzXSM7nSkRAvnTAJ4n69TFPwF8kAHel/PdG7ZTM1pJ8QCfZ504
-DofO1GiYXpNL31I6y2+XsH0=
-=hcLQ
+iD8DBQFHfpbYcC3lWbTT17ARAs/RAKCvR9UtXwxGG0tXJM248dEZA7BkJgCfZ9Hl
+b3xf0K2WY3BXpyKk17cLWHs=
+=Hgbd
 -----END PGP SIGNATURE-----
 
---Sig_/Ex7QAu_JoH+Pa0/=dKCyhGP--
+--==_Exmh_1199478488_8220P--
