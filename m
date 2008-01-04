@@ -1,57 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbYADPyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754099AbYADP4I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753976AbYADPyt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 10:54:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYADPyl
+	id S1754099AbYADP4I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 10:56:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbYADPz4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 10:54:41 -0500
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:34599 "EHLO
-	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752593AbYADPyl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 10:54:41 -0500
-Date: Fri, 4 Jan 2008 21:24:15 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Vivek Goyal <vgoyal@redhat.com>, hbabu@us.ibm.com,
-       lkml <linux-kernel@vger.kernel.org>, kexec@lists.infradead.org,
-       Ingo Molnar <mingo@elte.hu>, maneesh@linux.vnet.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de
-Subject: Re: kexec refuses to boot latest -mm
-Message-ID: <20080104155415.GC6007@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20071228124532.GB32643@linux.vnet.ibm.com> <20071231150843.GB27060@redhat.com> <20080103195201.GC6392@linux.vnet.ibm.com> <200801032242.01425.rjw@sisk.pl> <20080104122816.GF4514@linux.vnet.ibm.com>
+	Fri, 4 Jan 2008 10:55:56 -0500
+Received: from ioctl.codeblau.de ([80.190.240.67]:45415 "EHLO codeblau.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752609AbYADPz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 10:55:56 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Jan 2008 10:55:55 EST
+Date: Fri, 4 Jan 2008 16:49:14 +0100
+From: felix-linuxkernel@fefe.de
+To: linux-kernel@vger.kernel.org
+Subject: memory remapping, 4gb memory on 945gt
+Message-ID: <20080104154914.GA589@codeblau.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080104122816.GF4514@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 04, 2008 at 05:58:16PM +0530, Dhaval Giani wrote:
-> On Thu, Jan 03, 2008 at 10:42:00PM +0100, Rafael J. Wysocki wrote:
-> > On Thursday, 3 of January 2008, Dhaval Giani wrote:
-> > > On Mon, Dec 31, 2007 at 10:08:43AM -0500, Vivek Goyal wrote:
-> > > > On Sat, Dec 29, 2007 at 11:11:13AM +0530, Dhaval Giani wrote:
-> > > > > On Fri, Dec 28, 2007 at 09:27:39AM -0500, Vivek Goyal wrote:
-> > > > > > On Fri, Dec 28, 2007 at 06:15:32PM +0530, Dhaval Giani wrote:
-> > > > > > > Hi Vivek,
-> > > > > > > 
-> 
-> I've no clue what I managed to do wrong last night, probably tried to boot
-> 2.6.24-rc6-mm1 thinking it was 2.6.24-rc6. 2.6.24-rc6 boots, but -mm
-> does not. Sorry for the noise.
-> 
+I recently put 4 GB of memory in my Acer Travelmate 8210 series
+notebook.  The BIOS only detects 3 GB.
 
-So I went ahead and bisected -mm, and the culprit is git-x86. It boots
-fine before it, but with git-x86 applied, it fails to boot.
+I googled around a little.  It appears to be a chipset limitation of the
+945gt, which uses the fourth gig for devices.
 
-Ingo/Thomas, could you please point me to the git-x86 tree so that I can
-bisect it? (with instructions on how to pull the -mm branch, I managed
-to pull the master branch, but not the -mm branch)
+Now I can understand this explanation for 32-bit mode, but I'm running
+in 64-bit mode.  There should be a way to use the fourth gig under
+Linux.  Is there?
 
--- 
-regards,
-Dhaval
+Has anyone else solved this problem?  What happens if you just use the
+mem= option to tell the kernel you have 4 GB?  I'd just try it but I
+don't want to corrupt my buffer cache and get crap writte over my data
+on disk.
+
+Any advice?
+
+Felix
