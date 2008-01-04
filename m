@@ -1,45 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754328AbYADQih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754748AbYADQjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754328AbYADQih (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 11:38:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbYADQia
+	id S1754748AbYADQjT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 11:39:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbYADQjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 11:38:30 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:50975 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752554AbYADQia (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 11:38:30 -0500
-Date: Fri, 4 Jan 2008 11:38:29 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: David Brownell <david-b@pacbell.net>
-cc: yi.y.yang@intel.com, <pavel@ucw.cz>, <linux-pm@lists.linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm][PATCH] base: Change power/wakeup output from "" to 
- "unsupported" if wakeup feature isn't supported by a device
-In-Reply-To: <20080104160933.B01D81FBAB5@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-Message-ID: <Pine.LNX.4.44L0.0801041136490.4078-100000@iolanthe.rowland.org>
+	Fri, 4 Jan 2008 11:39:12 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35175 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752864AbYADQjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 11:39:11 -0500
+Date: Fri, 4 Jan 2008 17:39:14 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch?] s2ram + P4 + tsc = annoyance
+Message-ID: <20080104163914.GA27447@elf.ucw.cz>
+References: <1198745736.4235.23.camel@homer.simson.net> <1198779574.4425.50.camel@homer.simson.net> <20071230140456.GJ16946@elte.hu> <20071230140815.GA27858@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071230140815.GA27858@elte.hu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Jan 2008, David Brownell wrote:
-
-> > > This patch changes empty output to "unsupported" in order that a user knows
-> > > wakeup feature isn't supported by this device when he/she
-> > > 'cat /sys/devices/.../power/wakeup', please consider to apply,
-> > > thanks.
-> >
-> > What about simply removing "wakuep" file if wakeup is not supported?
+On Sun 2007-12-30 15:08:15, Ingo Molnar wrote:
 > 
-> It may not *stay* unsupported, so I think changing it in either
-> of those permanent ways would be confusing/misleading.
+> > ok, i prefer this fix a bit more. (we dont want to set last_tsc 
+> > outside of the sync_lock - which your initial patch does)
+> 
+> i've added your patch to x86.git - thanks Mike! (patch below) I think 
+> this would be too dangerous for v2.6.24 though - we can put it back into 
+> -stable for 2.6.24.1, once it had more testing?
 
-How about changing it to say "unavailable"?  That doesn't imply 
-permanence.
+If it is too dangerous for -final, I guess it is bad idea to push it
+into -stable.
 
-Alan Stern
-
+Plus it does not fix really bad bug.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
