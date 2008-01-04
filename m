@@ -1,57 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756763AbYADHjM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757873AbYADHjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756763AbYADHjM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 02:39:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbYADHi6
+	id S1757873AbYADHjl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 02:39:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbYADHjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 02:38:58 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50753 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751426AbYADHi5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 02:38:57 -0500
-Date: Fri, 4 Jan 2008 08:38:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jan Beulich <jbeulich@novell.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 0 of 8] x86: unify asm/page.h
-Message-ID: <20080104073837.GB17447@elte.hu>
-References: <patchbomb.1199391057@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <patchbomb.1199391057@localhost>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 4 Jan 2008 02:39:31 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:35188 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753109AbYADHja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 02:39:30 -0500
+Date: Fri, 4 Jan 2008 01:39:26 -0600
+From: Paul Jackson <pj@sgi.com>
+To: Denis Cheng <crquan@gmail.com>
+Cc: akpm@linux-foundation.org, viro@zeniv.linux.org.uk,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       emdow@us.ibm.com
+Subject: Re: [PATCH] PROC_FS: get and set the smp affinity of tasks by
+ read-write /proc/<pid>/smp_affinity
+Message-Id: <20080104013926.b09e00b2.pj@sgi.com>
+In-Reply-To: <1199430221-28417-1-git-send-email-crquan@gmail.com>
+References: <1199430221-28417-1-git-send-email-crquan@gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Could you also update the file 'Documentation/filesystems/proc.txt' as
+part of this patch?  It should document /proc/<pid>/* files.  Thanks.
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+(Don't tell anyone that this file doesn't mention /proc/<pid>/cpuset ;).
 
-> Hi Ingo,
-> 
-> Here's a series which concentrates on unifying and cleaning up 
-> asm-86/page*.h.  Each patch in the series restricts itself to doing 
-> one thing fairly simply, so it should be fairly low-risk and easy to 
-> bisect.
-
-thanks Jeremy, i have applied your patches to x86.git.
-
-> The early version of this patch got rid of asm/page_32|64.h entirely, 
-> but I decided the resulting #ifdef hell was too hard to deal with, so 
-> I moved purely 32/64-bit specific stuff into their own files.
-
-agreed - and the result certainly looks clean.
-
-	Ingo
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
