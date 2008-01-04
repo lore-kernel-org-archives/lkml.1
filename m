@@ -1,95 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbYADOT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753455AbYADOZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753383AbYADOT3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 09:19:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbYADOTV
+	id S1753455AbYADOZf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 09:25:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbYADOZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 09:19:21 -0500
-Received: from www.tglx.de ([62.245.132.106]:50088 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751847AbYADOTV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 09:19:21 -0500
-Date: Fri, 4 Jan 2008 15:19:02 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <ak@suse.de>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH x86] [12/16] Optimize lock prefix switching to run less
- frequently
-In-Reply-To: <200801041317.30404.ak@suse.de>
-Message-ID: <alpine.LFD.0.99999.0801041449460.4042@localhost.localdomain>
-References: <20080103442.621670000@suse.de> <20080103154226.67D6414DDB@wotan.suse.de> <alpine.LFD.0.99999.0801041032430.4042@localhost.localdomain> <200801041317.30404.ak@suse.de>
-User-Agent: Alpine 0.99999 (LFD 796 2007-11-08)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 4 Jan 2008 09:25:27 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:35325 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751842AbYADOZ0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 09:25:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=wpblUNlysiQb2fcSJPeLJAkPNOD2dYKHMIi6ddM+YWclbxP66YVHsOeWlol/QRK1TcABIhYnROG2NCVNlqaXOJrB1GRHc1+NFbXINNpYIGMRqqAjA4Y1FAhXdZAi7mHNeSBU4FffhCpqkSntI872532yqXdFzGol0+34fbE6tpQ=
+Date: Fri, 4 Jan 2008 15:25:21 +0100
+From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+To: mingo@helte.hu, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] profile: further Codying Style fixes
+Message-ID: <20080104152521.620e4e80@paolo-desktop>
+X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Jan 2008, Andi Kleen wrote:
-> On Friday 04 January 2008 10:42:17 Thomas Gleixner wrote:
-> > On Thu, 3 Jan 2008, Andi Kleen wrote:
-> > > This makes a significant difference in boot up performance on AMD SimNow!
-> > > Also I expect it to be a little faster on native systems too because a smp 
-> > > switch does a lot of text_poke()s which each synchronize the pipeline.
-> > 
-> > Please run your patches through checkpatch.pl.
-> > 
-> > ERROR: use tabs not spaces
-> > #48: FILE: arch/x86/kernel/alternative.c:360:
-> 
-> 
-> I saw a lot of these warnings, but disregarded them as obviously silly. I don't
-> have plans to redo all the patches for that.
+Further codying style fixes on top of:
+http://marc.info/?l=linux-kernel&m=119940325306693&w=2
 
-Andi, this behaviour is obviously silly. 
+Checkpatch before the patch:
 
-I know that you do not care about white space and consistent coding
-style, but others do.
+	total: 3 errors, 13 warnings, 602 lines checked
 
-The kernel process request that _all_ contributors run their patches
-through checkpath.pl and fix the problems. The review process is the
-same for _all_ contributors and I'm not going to add an extra Andi
-attitude mode to it.
+Checkpatch after the patch:
 
-> > > +
-> > > +		/* Only switch to UP mode if we don't immediately boot others */
-> > > +		if (num_possible_cpus() == 1 || max_cpus == 0)
-> > 
-> > Shouldn't this be max_cpus <= 1 ?
-> 
-> Don't think so, smp_init() seems to use it one off.
+	total: 0 errors, 1 warnings, 601 lines checked
 
-It's not a question of what you think. It's a question of what the
-code does and what the meaning of the command line parameter is:
 
-/*
- * Setup routine for controlling SMP activation
- *
- * Command-line option of "nosmp" or "maxcpus=0" will disable SMP
- * activation entirely (the MPS table probe still happens, though).
- *
- * Command-line option of "maxcpus=<NUM>", where <NUM> is an integer
- * greater than 0, limits the maximum number of CPUs activated in
- * SMP mode to <NUM>.
- */
+1 Warning is still not killed:
+WARNING: externs should be avoided in .c files
+#509: FILE: profile.c:509:
++       extern int setup_profiling_timer(unsigned int multiplier);
 
-There is no "one off" use in smp_init():
+I don't know how to fix it :-/
 
-	for_each_present_cpu(cpu) {
-		if (num_online_cpus() >= max_cpus)
-			break;
 
-so the above check needs to be "max_cpus <= 1".
+Compile tested.
 
-> > > +extern unsigned int max_cpus;
-> > 
-> > I'm a bit wary about making max_cpus global. max_cpus is used all over
-> > the place as a local variable name. Can we please rename it to
-> > setup_max_cpus or something like that?
-> 
-> Hmm, I didn't see any warnings from this so surely it's not a big issue?
+Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+---
 
-It's not about warnings. It's about name spaces and it makes the
-purpose of the global variable clear to the reader.
+Dunno whether the size change means that the patch is doing
+something wrong but here it is the report, before and after 
+the patch:
 
-     tglx
+paolo@paolo-desktop:/tmp$ size profile.o
+  text    data     bss     dec     hex filename
+  3718     144      12    3874     f22 profile.o
+paolo@paolo-desktop:/tmp$ size profile.o.after
+  text    data     bss     dec     hex filename
+  3693     144      12    3849     f09 profile.o.after
+
+ kernel/profile.c |   33 ++++++++++++++++-----------------
+ 1 files changed, 16 insertions(+), 17 deletions(-)
+
+diff --git a/kernel/profile.c b/kernel/profile.c
+index c99153b..9a1c4b4 100644
+--- a/kernel/profile.c
++++ b/kernel/profile.c
+@@ -125,7 +125,7 @@ void profile_task_exit(struct task_struct *task)
+ 	blocking_notifier_call_chain(&task_exit_notifier, 0, task);
+ }
+ 
+-int profile_handoff_task(struct task_struct * task)
++int profile_handoff_task(struct task_struct *task)
+ {
+ 	int ret;
+ 	ret = atomic_notifier_call_chain(&task_free_notifier, 0, task);
+@@ -141,11 +141,13 @@ int task_handoff_register(struct notifier_block *n)
+ {
+ 	return atomic_notifier_chain_register(&task_free_notifier, n);
+ }
++EXPORT_SYMBOL_GPL(task_handoff_register);
+ 
+ int task_handoff_unregister(struct notifier_block *n)
+ {
+ 	return atomic_notifier_chain_unregister(&task_free_notifier, n);
+ }
++EXPORT_SYMBOL_GPL(task_handoff_unregister);
+ 
+ int profile_event_register(enum profile_type type, struct notifier_block *n)
+ {
+@@ -164,7 +166,7 @@ int profile_event_register(enum profile_type type, struct notifier_block *n)
+ 
+ 	return err;
+ }
+-
++EXPORT_SYMBOL_GPL(profile_event_register);
+ 
+ int profile_event_unregister(enum profile_type type, struct notifier_block *n)
+ {
+@@ -183,6 +185,7 @@ int profile_event_unregister(enum profile_type type, struct notifier_block *n)
+ 
+ 	return err;
+ }
++EXPORT_SYMBOL_GPL(profile_event_unregister);
+ 
+ int register_timer_hook(int (*hook)(struct pt_regs *))
+ {
+@@ -191,6 +194,7 @@ int register_timer_hook(int (*hook)(struct pt_regs *))
+ 	timer_hook = hook;
+ 	return 0;
+ }
++EXPORT_SYMBOL_GPL(register_timer_hook);
+ 
+ void unregister_timer_hook(int (*hook)(struct pt_regs *))
+ {
+@@ -199,13 +203,7 @@ void unregister_timer_hook(int (*hook)(struct pt_regs *))
+ 	/* make sure all CPUs see the NULL hook */
+ 	synchronize_sched();  /* Allow ongoing interrupts to complete. */
+ }
+-
+-EXPORT_SYMBOL_GPL(register_timer_hook);
+ EXPORT_SYMBOL_GPL(unregister_timer_hook);
+-EXPORT_SYMBOL_GPL(task_handoff_register);
+-EXPORT_SYMBOL_GPL(task_handoff_unregister);
+-EXPORT_SYMBOL_GPL(profile_event_register);
+-EXPORT_SYMBOL_GPL(profile_event_unregister);
+ 
+ #endif /* CONFIG_PROFILING */
+ 
+@@ -366,7 +364,7 @@ static int __devinit profile_cpu_callback(struct notifier_block *info,
+ 			per_cpu(cpu_profile_hits, cpu)[0] = page_address(page);
+ 		}
+ 		break;
+-	out_free:
++out_free:
+ 		page = virt_to_page(per_cpu(cpu_profile_hits, cpu)[1]);
+ 		per_cpu(cpu_profile_hits, cpu)[1] = NULL;
+ 		__free_page(page);
+@@ -408,9 +406,8 @@ void profile_hits(int type, void *__pc, unsigned int nr_hits)
+ 	pc = ((unsigned long)__pc - (unsigned long)_stext) >> prof_shift;
+ 	atomic_add(nr_hits, &prof_buffer[min(pc, prof_len - 1)]);
+ }
+-#endif /* !CONFIG_SMP */
+-
+ EXPORT_SYMBOL_GPL(profile_hits);
++#endif /* !CONFIG_SMP */
+ 
+ void profile_tick(int type)
+ {
+@@ -427,7 +424,7 @@ void profile_tick(int type)
+ #include <asm/uaccess.h>
+ #include <asm/ptrace.h>
+ 
+-static int prof_cpu_mask_read_proc (char *page, char **start, off_t off,
++static int prof_cpu_mask_read_proc(char *page, char **start, off_t off,
+ 			int count, int *eof, void *data)
+ {
+ 	int len = cpumask_scnprintf(page, count, *(cpumask_t *)data);
+@@ -437,8 +434,8 @@ static int prof_cpu_mask_read_proc (char *page, char **start, off_t off,
+ 	return len;
+ }
+ 
+-static int prof_cpu_mask_write_proc (struct file *file, const char __user *buffer,
+-					unsigned long count, void *data)
++static int prof_cpu_mask_write_proc(struct file *file,
++	const char __user *buffer,  unsigned long count, void *data)
+ {
+ 	cpumask_t *mask = (cpumask_t *)data;
+ 	unsigned long full_count = count, err;
+@@ -457,7 +454,8 @@ void create_prof_cpu_mask(struct proc_dir_entry *root_irq_dir)
+ 	struct proc_dir_entry *entry;
+ 
+ 	/* create /proc/irq/prof_cpu_mask */
+-	if (!(entry = create_proc_entry("prof_cpu_mask", 0600, root_irq_dir)))
++	entry = create_proc_entry("prof_cpu_mask", 0600, root_irq_dir);
++	if (!entry)
+ 		return;
+ 	entry->data = (void *)&prof_cpu_mask;
+ 	entry->read_proc = prof_cpu_mask_read_proc;
+@@ -508,7 +506,7 @@ static ssize_t write_profile(struct file *file, const char __user *buf,
+ 			     size_t count, loff_t *ppos)
+ {
+ #ifdef CONFIG_SMP
+-	extern int setup_profiling_timer (unsigned int multiplier);
++	extern int setup_profiling_timer(unsigned int multiplier);
+ 
+ 	if (count == sizeof(int)) {
+ 		unsigned int multiplier;
+@@ -591,7 +589,8 @@ static int __init create_proc_profile(void)
+ 		return 0;
+ 	if (create_hash_tables())
+ 		return -1;
+-	if (!(entry = create_proc_entry("profile", S_IWUSR | S_IRUGO, NULL)))
++	entry = create_proc_entry("profile", S_IWUSR | S_IRUGO, NULL);
++	if (!entry)
+ 		return 0;
+ 	entry->proc_fops = &proc_profile_operations;
+ 	entry->size = (1+prof_len) * sizeof(atomic_t);
+-- 
+1.5.4.rc2.17.g257f
+
