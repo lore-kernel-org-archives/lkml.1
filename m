@@ -1,115 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbYADVSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160AbYADVYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754754AbYADVSV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 16:18:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755576AbYADVOq
+	id S1755160AbYADVYx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 16:24:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753029AbYADVYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 16:14:46 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:38027 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755559AbYADVOo (ORCPT
+	Fri, 4 Jan 2008 16:24:41 -0500
+Received: from py-out-1112.google.com ([64.233.166.178]:42267 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752854AbYADVYk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 16:14:44 -0500
+	Fri, 4 Jan 2008 16:24:40 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=AdB0jlezZjsNSl0f7gvFdCuXZabHMyQu3IexoXEM17f4ctRO4h4aQSazDZL0gaJxhvXEf5gLXZ6khs6qWAqQCrcBfkXHSi66270Jkp+8LJZepDAIPJBZg8+uus23EE2PM/hPYfrsz7TEZcf1ae+1xz5fMjUBOMHeD7P4iI/ony8=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org
-Date: Fri, 04 Jan 2008 22:26:21 +0100
-Message-Id: <20080104212621.6978.60873.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080104212424.6978.93646.sendpatchset@localhost.localdomain>
-References: <20080104212424.6978.93646.sendpatchset@localhost.localdomain>
-Subject: [PATCH 15/15] ide: move hwif_register() call out of ide_probe_port()
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LgTgq2attXEzyJPxeqZeCI1jgCWsEih0rNvK5OC/tt86BiOD5R0zK/eDaKjKrKlrDW1fPvTbx4In5gK+De8nlLgHZ8cEe7Z7VGFaK//ljZlCJOpYcvzcD8vv/RcpxC77W6G8/FbRZ/bshXUmni5m/hP4+DNsPA28FHfabb5LClk=
+Message-ID: <64bb37e0801041324j12184660m3c3be34e23dfd957@mail.gmail.com>
+Date: Fri, 4 Jan 2008 22:24:37 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Jarek Poplawski" <jarkao2@gmail.com>
+Subject: Re: 2.6.24-rc6-mm1
+Cc: "Herbert Xu" <herbert@gondor.apana.org.au>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "Neil Brown" <neilb@suse.de>,
+       "J. Bruce Fields" <bfields@fieldses.org>, netdev@vger.kernel.org,
+       "Tom Tucker" <tom@opengridcomputing.com>
+In-Reply-To: <64bb37e0801040721p57ff3d54wc3de00546d1d2ff1@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <64bb37e0801040223q17a76565k3c7667a197403ce5@mail.gmail.com>
+	 <20080104133031.GA3329@ff.dom.local>
+	 <64bb37e0801040721p57ff3d54wc3de00546d1d2ff1@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Add BUG_ON(hwif->present) at the start of ide_probe_port().
+On Jan 4, 2008 4:21 PM, Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
+> On Jan 4, 2008 2:30 PM, Jarek Poplawski <jarkao2@gmail.com> wrote:
+> > - above git-nfsd and git-net tests should be probably repeated with
+> > -rc6-mm1 git versions: so vanilla rc6 plus both these -mm patches
+> > only, and if bug triggers, with one reversed; btw., since in previous
+> > message you mentioned that 50 packages could be not enough to trigger
+> > this, these 54 above could make too little margin yet.
+>
+> Yes, I think I really need to redo the git-nfsd-test.
+> With IOMMU_DEBUG enabled rc6-mm1worked for 52 packages, only a secound
+> run of kde-packages triggered it after only 5 packages.
+> I don't know what this bug hates about kdeartwork-wallpaper (triggered
+> it this time) or kdeartwork-styles.
 
-* Move hwif_register() call (along with setting hwif->present) from
-  ide_probe_port() to ide_device_add_all().
+49 more (kde-)packages did work too. Still looks like it is only in -mm.
 
-  As a result the port will be registered with the device tree _after_:
-  - probing both devices (if both are present)
-  - port reset (if hwif->reset is set)
-  - restoring local IRQs state and re-enabling port IRQ
-
-While at it:
-
-* Rename hwif_register() to ide_register_port().
-
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
-+17 bytes
- drivers/ide/ide-probe.c |   27 +++++++++++++--------------
- 1 file changed, 13 insertions(+), 14 deletions(-)
-
-Index: b/drivers/ide/ide-probe.c
-===================================================================
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -613,7 +613,7 @@ static void hwif_release_dev (struct dev
- 	complete(&hwif->gendev_rel_comp);
- }
- 
--static void hwif_register (ide_hwif_t *hwif)
-+static void ide_register_port(ide_hwif_t *hwif)
- {
- 	int ret;
- 
-@@ -742,7 +742,9 @@ static int ide_probe_port(ide_hwif_t *hw
- {
- 	unsigned long flags;
- 	unsigned int irqd;
--	int unit;
-+	int unit, rc = -ENODEV;
-+
-+	BUG_ON(hwif->present);
- 
- 	if (hwif->noprobe)
- 		return -EACCES;
-@@ -767,14 +769,8 @@ static int ide_probe_port(ide_hwif_t *hw
- 		ide_drive_t *drive = &hwif->drives[unit];
- 		drive->dn = (hwif->channel ? 2 : 0) + unit;
- 		(void) probe_for_drive(drive);
--		if (drive->present && !hwif->present) {
--			hwif->present = 1;
--			if (hwif->chipset != ide_4drives ||
--			    !hwif->mate || 
--			    !hwif->mate->present) {
--				hwif_register(hwif);
--			}
--		}
-+		if (drive->present)
-+			rc = 0;
- 	}
- 	if (hwif->io_ports[IDE_CONTROL_OFFSET] && hwif->reset) {
- 		printk(KERN_WARNING "%s: reset\n", hwif->name);
-@@ -791,10 +787,7 @@ static int ide_probe_port(ide_hwif_t *hw
- 	if (irqd)
- 		enable_irq(irqd);
- 
--	if (!hwif->present)
--		return -ENODEV;
--
--	return 0;
-+	return rc;
- }
- 
- static void ide_port_tune_devices(ide_hwif_t *hwif)
-@@ -1319,6 +1312,12 @@ int ide_device_add_all(u8 *idx)
- 			continue;
- 		}
- 
-+		hwif->present = 1;
-+
-+		if (hwif->chipset != ide_4drives || !hwif->mate ||
-+		    !hwif->mate->present)
-+			ide_register_port(hwif);
-+
- 		ide_port_tune_devices(hwif);
- 	}
- 
+Torsten
