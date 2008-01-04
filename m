@@ -1,58 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754291AbYADTN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbYADTjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754291AbYADTN7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 14:13:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbYADTNu
+	id S1753976AbYADTjf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 14:39:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbYADTj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 14:13:50 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:56278 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751599AbYADTNu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 14:13:50 -0500
-Date: Fri, 4 Jan 2008 13:13:40 -0600
-From: Paul Jackson <pj@sgi.com>
-To: "rae l" <crquan@gmail.com>
-Cc: akpm@linux-foundation.org, viro@zeniv.linux.org.uk,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       emdow@us.ibm.com
-Subject: Re: [PATCH] PROC_FS: get and set the smp affinity of tasks by
- read-write /proc/<pid>/smp_affinity
-Message-Id: <20080104131340.6e2a26b6.pj@sgi.com>
-In-Reply-To: <91b13c310801040738h75465241wa1179d0e06131354@mail.gmail.com>
-References: <1199430221-28417-1-git-send-email-crquan@gmail.com>
-	<20080104015421.cc7a89f7.pj@sgi.com>
-	<91b13c310801040738h75465241wa1179d0e06131354@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Fri, 4 Jan 2008 14:39:26 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:47207 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753110AbYADTjZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 14:39:25 -0500
+Date: Fri, 4 Jan 2008 20:41:29 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
+       Mathieu Segaud <mathieu.segaud@regala.cx>, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [Coding Style]: misc fixes for fs/ext{3,4}/acl.{c,h} from checkpatch.pl
+Message-ID: <20080104194129.GA16962@one.firstfloor.org>
+References: <1199452896-20145-1-git-send-email-mathieu.segaud@regala.cx> <20080104134458.GE17436@mit.edu> <p73hcht8sfr.fsf@bingen.suse.de> <20080104190137.GJ17436@mit.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080104190137.GJ17436@mit.edu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-rael wrote:
-> length check copied from kernel/irq/proc.c, now 'page' buffer couldn't
-> be overrun,
+> Personally I find it annoying, but I'm willing to live with the
+> cleanup patches.  I don't think they add anything, though.  Maybe I
 
-Thanks.
+The problem I see is that if someone has a more involved outstanding
+patch series against the code that is being cleaned up (and more complicated
+features tend to require some time to stabilize so "just merge early"
+is not always the solution) then it is a serious mess to readapt 
+a patch series to the cleanups.  Yes it can be all done but it wastes
+time that would be more constructively used e.g. for better testing.
 
-> although Documentation/filesystems/proc.txt is heavily outdated,
-> I'll add introduction of smp_affinity.
+Now if some area is changed anyways then they're usually ok because
+all outstanding patches will need to be adapted anyways.
 
-Good - my usual benchmark for documentation is that at least one place
-in the code or associated documentation clearly describes things.
+So I guess a useful rule for cleanup patches would be "only if that
+code changed recently" 
 
-My main concern in this patch was that there were zero instances of
-documentation of this new /proc file.  The patch should include a text
-explanation of this feature, and put it somewhere.
+> > The recent flurry of cleanup code patches on l-k causes far more
+> > problems than it solves. I'm not even sure why people do this? Just
+> > because it is en vogue recently? 
+> 
+> I don't know, because people want to be able to say that they've
+> contributed fixes to the Linux kernel?
 
-Documentation/filesystems/proc.txt looked like a reasonable place, but
-I don't really care where, nor do I lose as much sleep as I should when
-some documentation is incomplete or stale.  Just so long as everything
-is clearly explained somewhere.
+My pet theory is that it is similar to the "unsubscribe me" 
+cascade effect you sometimes see on mailing lists. One person
+sends a "unsubscribe me" to everybody and then suddenly a lot of 
+people think that is the right way to unsubscribe and reply
+with lots of "unsubscribe me too".
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+So one person sends a cleanup and it gets accepted and suddenly
+other people realize it is very easy to do these cleanups
+(not realizing the hidden costs they have) and then they go on...
+
+I thought we had the janitor project to steer these people into
+more useful directions, but apparently that is not well known
+enough anymore. Perhaps it just needs to be more regularly announced?
+
+Although I must admit I am not 100% happy with kernel-janitors 
+either -- e.g. a few times I sent suggestions about easy things
+someone could do to that list, but never heard anything back.
+
+Anyways there are lots of ways to do trivial cleanups in a useful
+way and if people want to do this perhaps they should just
+ask on linux-kernel and people suggest something?  
+
+My hope here is of course that these trivial changes are primarily
+used as a way to get "the feet wet" to understand the procedures
+for contribuing larger not quite as trivial changes
+
+-Andi
+
+P.S.: Mathieu, this is not against you personally; you just happened
+to be a convenient example of a larger problem in this case. Sorry.
+
