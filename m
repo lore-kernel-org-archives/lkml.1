@@ -1,54 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758041AbYADCnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757864AbYADCnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758041AbYADCnS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Jan 2008 21:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbYADCnH
+	id S1757864AbYADCnu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Jan 2008 21:43:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbYADCnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Jan 2008 21:43:07 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:39073 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753387AbYADCnG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Jan 2008 21:43:06 -0500
-Date: Fri, 4 Jan 2008 03:45:06 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Matt Mackall <mpm@selenic.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Hugh Dickins <hugh@veritas.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] procfs: provide slub's /proc/slabinfo
-Message-ID: <20080104024506.GA4665@one.firstfloor.org>
-References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com> <84144f020801021109v78e06c6k10d26af0e330fc85@mail.gmail.com> <alpine.LFD.1.00.0801021130210.32517@woody.linux-foundation.org> <1199314218.4497.109.camel@cinder.waste.org> <20080103085239.GA10813@elte.hu> <1199378818.8274.25.camel@cinder.waste.org> <Pine.LNX.4.64.0801031808470.7244@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801031808470.7244@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 3 Jan 2008 21:43:41 -0500
+Received: from ishtar.tlinx.org ([64.81.245.74]:38723 "EHLO ishtar.tlinx.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753115AbYADCnk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Jan 2008 21:43:40 -0500
+Message-ID: <477D9D66.3080502@tlinx.org>
+Date: Thu, 03 Jan 2008 18:43:50 -0800
+From: Linda Walsh <lkml@tlinx.org>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: Robert Hancock <hancockr@shaw.ca>
+CC: LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: SATA kernel-buffered read VERY slow (not raid, Promise TX300
+ card); 2.6.23.1(vanilla)
+References: <fa.o9uy6Qaq3PtHs2Z9lAKGUKvD85I@ifi.uio.no> <fa.1kDEq2SPE3FqpM5Mfw9CVGbvVdY@ifi.uio.no> <fa.hIZ5+XhGRugySB/HuLxr5qd6gAY@ifi.uio.no> <fa.iefWPg3R6g5Pnm/ktSCK9XWVFVw@ifi.uio.no> <fa.FhpaleM/osLTMJ85/PuxjxyJeGI@ifi.uio.no> <fa.MP5rgMp4TS2+Cfemd/uFOQOuquQ@ifi.uio.no> <477D9B6E.7060000@shaw.ca>
+In-Reply-To: <477D9B6E.7060000@shaw.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I still have trouble to see that SLOB still has much to offer. An embedded 
-> allocator that in many cases has more allocation overhead than the default 
-> one? Ok you still have advantages if allocations are rounded up to the 
-> next power of two for a kmalloc and because of the combining of different 
-> types of allocations in a single slab if there are an overall small number 
-> of allocations. If one would create a custom slab for the worst problems 
-> there then this may also go away.
+Robert Hancock wrote:
+>
+> Looks like the drive reports ERR/ABRT (command aborted), meaning it 
+> likely doesn't support those commands.
+>
+---
+    Except the PATA version of the drive does (same capacity, & other 
+specs).  Seagate would
+disable "advanced" features for SATA but leave them for the older 
+technology?  Possible,
+but doesn't seem likely.
 
-I suspect it would be a good idea anyways to reevaluate the power of two
-slabs. Perhaps a better distribution can be found based on some profiling?
-I did profile kmalloc using a systemtap script some time ago but don't
-remember the results exactly, but iirc it looked like it could be improved.
 
-A long time ago i also had some code to let the network stack give hints
-about its MMUs to slab to create fitting slabs for packets. But that
-was never really pushed forward because it turned out it didn't help
-much for the most common 1.5K MTU -- always only two packets fit into
-a page.
-
--Andi
-> 
