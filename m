@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbYADOqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754376AbYADOsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754573AbYADOqm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 09:46:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbYADOqd
+	id S1754376AbYADOsB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 09:48:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbYADOrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 09:46:33 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:37178 "EHLO mgw1.diku.dk"
+	Fri, 4 Jan 2008 09:47:53 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:52767 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752327AbYADOqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 09:46:32 -0500
-Date: Fri, 4 Jan 2008 15:46:19 +0100 (MET)
+	id S1752015AbYADOrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 09:47:52 -0500
+Date: Fri, 4 Jan 2008 15:47:24 +0100 (MET)
 From: Julia Lawall <julia@diku.dk>
-To: adaplas@gmail.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/video: Add missing pci_dev_get
-Message-ID: <Pine.LNX.4.58.0801041545340.1184@pc-041.diku.dk>
+To: per.liden@ericsson.com, jon.maloy@ericsson.com,
+       allan.stephens@windriver.com, tipc-discussion@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: /net/tipc/port.c: Use tipc_port_unlock
+Message-ID: <Pine.LNX.4.58.0801041546220.1184@pc-041.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,106 +24,123 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-pci_get_device does a pci_dev_get, so pci_dev_put needs to be called in an
-error case
+The file net/tipc/port.c takes a lock using the function tipc_port_lock and
+then releases the lock sometimes using tipc_port_unlock and sometimes using
+spin_unlock_bh(p_ptr->publ.lock).  tipc_port_unlock simply does the
+spin_unlock_bh, but it seems cleaner to use it everywhere.
+
 
 The problem was fixed using the following semantic patch.
 (http://www.emn.fr/x-info/coccinelle/)
 
 // <smpl>
-@exists@
-type T1,T2;
-identifier E;
-statement S,S1;
-expression x1,x2,x3;
-expression test;
-int ret != 0;
+@@
+struct port *p_ptr;
 @@
 
-  struct pci_dev *E;
-  ...
+   p_ptr = tipc_port_lock(...)
+   ...
 (
-  E = \(pci_get_slot\|pci_get_device\|pci_get_bus_and_slot\)(...);
-  if (E == NULL) S
+   p_ptr = tipc_port_lock(...);
 |
-  if ((E = \(pci_get_slot\|pci_get_device\|pci_get_bus_and_slot\)(...)) == NULL) S
-)
-  ... when != pci_dev_put(...,(T1)E,...)
-      when != if (E != NULL) { ... pci_dev_put(...,(T1)E,...); ...}
-      when != x1 = (T1)E
-      when != E = x3;
-      when any
-(
-  if (E == NULL) S1
-|
-  if (test)
-+   {
-(
-+   pci_dev_put(E);
-    return;
-|
-+   pci_dev_put(E);
-    return ret;
-)
-+   }
-|
-  if (test) {
-    ... when != pci_dev_put(...,(T2)E,...)
-        when != if (E != NULL) { ... pci_dev_put(...,(T2)E,...); ...}
-        when != x2 = (T2)E
-(
-+   pci_dev_put(E);
-    return;
-|
-+   pci_dev_put(E);
-    return ret;
-)
-  }
+?- spin_unlock_bh(p_ptr->publ.lock);
++  tipc_port_unlock(p_ptr);
 )
 // </smpl>
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
-diff -u -p a/drivers/video/igafb.c b/drivers/video/igafb.c
---- a/drivers/video/igafb.c 2007-07-23 11:27:17.000000000 +0200
-+++ b/drivers/video/igafb.c 2008-01-04 14:01:30.000000000 +0100
-@@ -400,6 +400,7 @@ int __init igafb_init(void)
-         info = kzalloc(size, GFP_ATOMIC);
-         if (!info) {
-                 printk("igafb_init: can't alloc fb_info\n");
-+		 pci_dev_put(pdev);
-                 return -ENOMEM;
-         }
+diff -u -p a/net/tipc/port.c b/net/tipc/port.c
+--- a/net/tipc/port.c 2008-01-01 10:43:55.000000000 +0100
++++ b/net/tipc/port.c 2008-01-04 10:51:05.000000000 +0100
+@@ -340,7 +340,7 @@ int tipc_portunreliable(u32 ref, unsigne
+ 	if (!p_ptr)
+ 		return -EINVAL;
+ 	*isunreliable = port_unreliable(p_ptr);
+-	spin_unlock_bh(p_ptr->publ.lock);
++	tipc_port_unlock(p_ptr);
+ 	return TIPC_OK;
+ }
 
-@@ -409,12 +410,14 @@ int __init igafb_init(void)
- 	if ((addr = pdev->resource[0].start) == 0) {
-                 printk("igafb_init: no memory start\n");
- 		kfree(info);
-+		pci_dev_put(pdev);
- 		return -ENXIO;
- 	}
+@@ -369,7 +369,7 @@ int tipc_portunreturnable(u32 ref, unsig
+ 	if (!p_ptr)
+ 		return -EINVAL;
+ 	*isunrejectable = port_unreturnable(p_ptr);
+-	spin_unlock_bh(p_ptr->publ.lock);
++	tipc_port_unlock(p_ptr);
+ 	return TIPC_OK;
+ }
 
- 	if ((info->screen_base = ioremap(addr, 1024*1024*2)) == 0) {
-                 printk("igafb_init: can't remap %lx[2M]\n", addr);
- 		kfree(info);
-+		pci_dev_put(pdev);
- 		return -ENXIO;
- 	}
+@@ -843,7 +843,7 @@ static void port_dispatcher_sigh(void *d
+ 				u32 peer_port = port_peerport(p_ptr);
+ 				u32 peer_node = port_peernode(p_ptr);
 
-@@ -449,6 +452,7 @@ int __init igafb_init(void)
-                 printk("igafb_init: can't remap %lx[4K]\n", igafb_fix.mmio_start);
- 		iounmap((void *)info->screen_base);
- 		kfree(info);
-+		pci_dev_put(pdev);
- 		return -ENXIO;
- 	}
+-				spin_unlock_bh(p_ptr->publ.lock);
++				tipc_port_unlock(p_ptr);
+ 				if (unlikely(!connected)) {
+ 					if (unlikely(published))
+ 						goto reject;
+@@ -867,7 +867,7 @@ static void port_dispatcher_sigh(void *d
+ 		case TIPC_DIRECT_MSG:{
+ 				tipc_msg_event cb = up_ptr->msg_cb;
 
-@@ -466,6 +470,7 @@ int __init igafb_init(void)
- 		iounmap((void *)par->io_base);
- 		iounmap(info->screen_base);
- 		kfree(info);
-+		pci_dev_put(pdev);
- 		return -ENOMEM;
- 	}
+-				spin_unlock_bh(p_ptr->publ.lock);
++				tipc_port_unlock(p_ptr);
+ 				if (unlikely(connected))
+ 					goto reject;
+ 				if (unlikely(!cb))
+@@ -882,7 +882,7 @@ static void port_dispatcher_sigh(void *d
+ 		case TIPC_NAMED_MSG:{
+ 				tipc_named_msg_event cb = up_ptr->named_msg_cb;
+
+-				spin_unlock_bh(p_ptr->publ.lock);
++				tipc_port_unlock(p_ptr);
+ 				if (unlikely(connected))
+ 					goto reject;
+ 				if (unlikely(!cb))
+@@ -913,7 +913,7 @@ err:
+ 				u32 peer_port = port_peerport(p_ptr);
+ 				u32 peer_node = port_peernode(p_ptr);
+
+-				spin_unlock_bh(p_ptr->publ.lock);
++				tipc_port_unlock(p_ptr);
+ 				if (!connected || !cb)
+ 					break;
+ 				if (msg_origport(msg) != peer_port)
+@@ -929,7 +929,7 @@ err:
+ 		case TIPC_DIRECT_MSG:{
+ 				tipc_msg_err_event cb = up_ptr->err_cb;
+
+-				spin_unlock_bh(p_ptr->publ.lock);
++				tipc_port_unlock(p_ptr);
+ 				if (connected || !cb)
+ 					break;
+ 				skb_pull(buf, msg_hdr_sz(msg));
+@@ -942,7 +942,7 @@ err:
+ 				tipc_named_msg_err_event cb =
+ 					up_ptr->named_err_cb;
+
+-				spin_unlock_bh(p_ptr->publ.lock);
++				tipc_port_unlock(p_ptr);
+ 				if (connected || !cb)
+ 					break;
+ 				dseq.type =  msg_nametype(msg);
+@@ -1107,7 +1107,7 @@ int tipc_portimportance(u32 ref, unsigne
+ 	if (!p_ptr)
+ 		return -EINVAL;
+ 	*importance = (unsigned int)msg_importance(&p_ptr->publ.phdr);
+-	spin_unlock_bh(p_ptr->publ.lock);
++	tipc_port_unlock(p_ptr);
+ 	return TIPC_OK;
+ }
+
+@@ -1122,7 +1122,7 @@ int tipc_set_portimportance(u32 ref, uns
+ 	if (!p_ptr)
+ 		return -EINVAL;
+ 	msg_set_importance(&p_ptr->publ.phdr, (u32)imp);
+-	spin_unlock_bh(p_ptr->publ.lock);
++	tipc_port_unlock(p_ptr);
+ 	return TIPC_OK;
+ }
 
