@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757369AbYADIjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758540AbYADIlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757369AbYADIjR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 03:39:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758043AbYADIjA
+	id S1758540AbYADIlT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 03:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbYADIlK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 03:39:00 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53135 "EHLO mx2.mail.elte.hu"
+	Fri, 4 Jan 2008 03:41:10 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60937 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752391AbYADIi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 03:38:59 -0500
-Date: Fri, 4 Jan 2008 09:38:42 +0100
+	id S1753206AbYADIlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 03:41:09 -0500
+Date: Fri, 4 Jan 2008 09:40:43 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Andi Kleen <ak@suse.de>
 Cc: lenb@kernel.org, linux-kernel@vger.kernel.org,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] [17/20] x86: Remove explicit C3 TSC check on 64bit
-Message-ID: <20080104083842.GB26921@elte.hu>
-References: <20080103149.088038000@suse.de> <20080103005013.2060014D40@wotan.suse.de>
+Subject: Re: [PATCH] [18/20] x86: Don't disable TSC in any C states on AMD
+	Fam10h
+Message-ID: <20080104084043.GA27278@elte.hu>
+References: <20080103149.088038000@suse.de> <20080103005014.2F86314D40@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080103005013.2060014D40@wotan.suse.de>
+In-Reply-To: <20080103005014.2F86314D40@wotan.suse.de>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,8 +38,19 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Andi Kleen <ak@suse.de> wrote:
 
-> Trust the ACPI code to disable TSC instead when C3 is used.
+> The ACPI code currently disables TSC use in any C2 and C3 states. But 
+> the AMD Fam10h BKDG documents that the TSC will never stop in any C 
+> states when the CONSTANT_TSC bit is set. Make this disabling 
+> conditional on CONSTANT_TSC not set on AMD.
+> 
+> I actually think this is true on Intel too for C2 states on CPUs with 
+> p-state invariant TSC, but this needs further discussions with Len to 
+> really confirm :-)
+> 
+> So far it is only enabled on AMD.
 
-thanks, applied.
+thanks Andi - i've picked this up for x86.git, to get it tested. Len, 
+what do you think? If/when you pick it up into the ACPI tree i'll drop 
+it from x86.git.
 
 	Ingo
