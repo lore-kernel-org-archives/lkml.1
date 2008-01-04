@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbYADOjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754166AbYADOkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754002AbYADOjj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 09:39:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYADOjb
+	id S1754166AbYADOkH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 09:40:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYADOjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 09:39:31 -0500
-Received: from mx1.suse.de ([195.135.220.2]:41223 "EHLO mx1.suse.de"
+	Fri, 4 Jan 2008 09:39:54 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:34552 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752394AbYADOja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 09:39:30 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH x86] [12/16] Optimize lock prefix switching to run less frequently
-Date: Fri, 4 Jan 2008 15:39:27 +0100
-User-Agent: KMail/1.9.6
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-References: <20080103442.621670000@suse.de> <200801041317.30404.ak@suse.de> <alpine.LFD.0.99999.0801041449460.4042@localhost.localdomain>
-In-Reply-To: <alpine.LFD.0.99999.0801041449460.4042@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1751842AbYADOjx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 09:39:53 -0500
+Date: Fri, 4 Jan 2008 15:39:53 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Kbuild update
+Message-ID: <20080104143953.GA30536@uranus.ravnborg.org>
+References: <20080103213255.GA21811@uranus.ravnborg.org> <20080104132316.GA2485@hacking>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801041539.27370.ak@suse.de>
+In-Reply-To: <20080104132316.GA2485@hacking>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jan 04, 2008 at 09:23:16PM +0800, WANG Cong wrote:
+> 
+> {snip}
+> 
+> >TODO items (from my mailbox - I have plenty more)
+> >=================================================
+> >- asm-offset useable from modules (Oleg had a half backed solution)
+> >- modpost should use err(), warn() etc (suggestyed by Rusty)
+> >- less kernel hardcoding in kconfig (Rob Landley)
+> >- emit dependencies from "depends" (Bernhard Fischer)
+> >- fix select (whatever that means)
+> >- allow kconfig to accept overrides (Jan Engelhart)
+> >  maybe there is a patch, needs followup
+> >- document kernel build better (Andreas Hermann)
+> >  just a start, more is needed
+> >- save ARCH and CROSSCOMPILE
+> >  requires major surgery to do correct - we use CC too early
+> >- i18n patch for mconf and friends (from Kernel Translator project)
+> >  is old but several bits of it needs to be applied to better support i18n
+> 
+> Hmm, I glanced at that project. It's old and seems freezed now.
+> I don't know if people still have interests in the i18n of kconfig.
+> If so, I think I can help with the Chinese part. ;)
 
-> The kernel process request that _all_ contributors run their patches 
-> through checkpath.pl and fix the problems.
+>From the off-list communication I have had there is indeed an interest.
+It sort of stopped at one point due to missing integration in mainline.
+What I refer to is mostly the mconf.c bits, but I would also like to
+see what lkml says to a sample of .po files included in the kernel
+for a number of languages.
 
-That's new. When and by whom was that rule been introduced? And with what
-rationale?
+One criteria to get a .po file integrated could be at least 10% of the
+strings translated or similar.
 
-Even checkpatch.pl itself says to only fix the warnings that make sense.
-This one didn't. And it has so many false positives in my experiences
-that a lot of its warnings are useless.
-
-So even if you require checkpatch.pl compliance it will be always
-subjective because checkpatch.pl is not always correct.
-
-Anyways if you care so much about space<->tabs why don't you just write
-a filter that converts spaces to tabs for incoming patches? Like it is
-traditionally done for trailing white spaces? Would be a trivial perl script.
-
-Bothering humans with such a silly mindless thing is beyond ridiculous.
-
-> The review process is the 
-> same for _all_ contributors and I'm not going to add an extra Andi
-> attitude mode to it.
- 
-I wish you guys would care more about actually broken logic in patches than just 
-checkpatch.pl output. When I occasionally check git-x86 I always tend to find some 
-obviously broken patch that should have been caught during review before
-merge.
-
--Andi
+	Sam
