@@ -1,79 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbYADUhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbYADUl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755165AbYADUhy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 15:37:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754914AbYADUho
+	id S1754830AbYADUl7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 15:41:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbYADUlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 15:37:44 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:55688 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754907AbYADUho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 15:37:44 -0500
-Date: Fri, 4 Jan 2008 21:37:45 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu
-Subject: Re: [PATCH] profile: further Codying Style fixes, take 2
-Message-ID: <20080104203745.GB32174@uranus.ravnborg.org>
-References: <20080104185209.111adeed@paolo-desktop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 4 Jan 2008 15:41:49 -0500
+Received: from wx-out-0506.google.com ([66.249.82.234]:61756 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752593AbYADUls (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 15:41:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Z46Q4pDlSa7VHibtuxg+5in2GGhq986PhPYk3v911Zp75SlQEiIh/+55tZr0YpAkbvsrXBhIRpIyTZTeIvJk5huW506ZJe8ew0iE1Wccyk8H04fr4ikjBOnef5kco7LB+Raa7oH387N6USU8JBKe3zfTKtMoc25/wA/y8nylQMc=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH 2/2] <linux/hdsmart.h> is not used by kernel code
+Date: Fri, 4 Jan 2008 21:53:02 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080104185209.111adeed@paolo-desktop>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200801042153.02889.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 04, 2008 at 06:52:09PM +0100, Paolo Ciarrocchi wrote:
-> Further fixes to profile.c, checkpatch.pl now reports:
-> 
-> 	total: 0 errors, 2 warnings, 601 lines checked
-> 
->   WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
->   #410: FILE: profile.c:410:
->   +EXPORT_SYMBOL_GPL(profile_hits);
-> I cannot fix this without changing the funtionality in case of non-SMP build.
 
-If you look a bit more you will see two functions named
-profile_hits.
-So you just add the export twice - like this:
-diff --git a/kernel/profile.c b/kernel/profile.c
-index 5e95330..fc4570d 100644
---- a/kernel/profile.c
-+++ b/kernel/profile.c
-@@ -337,6 +337,7 @@ out:
-        local_irq_restore(flags);
-        put_cpu();
- }
-+EXPORT_SYMBOL_GPL(profile_hits);
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ include/linux/hdsmart.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
- static int __devinit profile_cpu_callback(struct notifier_block *info,
-                                        unsigned long action, void *__cpu)
-@@ -408,9 +409,8 @@ void profile_hits(int type, void *__pc, unsigned int nr_hits)
-        pc = ((unsigned long)__pc - (unsigned long)_stext) >> prof_shift;
-        atomic_add(nr_hits, &prof_buffer[min(pc, prof_len - 1)]);
- }
--#endif /* !CONFIG_SMP */
--
- EXPORT_SYMBOL_GPL(profile_hits);
-+#endif /* !CONFIG_SMP */
-
- void profile_tick(int type)
- {
-
-Which has the added benefit that it is now documented for
-both implementations that they are exported.
-
-> 
-> 
->   WARNING: externs should be avoided in .c files
->   #509: FILE: profile.c:509:
->   +       extern int setup_profiling_timer(unsigned int multiplier);
-> I don't know what to do with this warning.
-
-Stick the prototype in profile.h maybe?
-I can see that not all implementers of this function
-includes profile.h so it is not foolproof.
-
-	Sam
+Index: b/include/linux/hdsmart.h
+===================================================================
+--- a/include/linux/hdsmart.h
++++ b/include/linux/hdsmart.h
+@@ -17,6 +17,7 @@
+ #ifndef _LINUX_HDSMART_H
+ #define _LINUX_HDSMART_H
+ 
++#ifndef __KERNEL
+ #define OFFLINE_FULL_SCAN		0
+ #define SHORT_SELF_TEST			1
+ #define EXTEND_SELF_TEST		2
+@@ -120,5 +121,6 @@ typedef struct ata_smart_selftestlog_s {
+ 	unsigned char			resevered[2];
+ 	unsigned char			chksum;
+ } __attribute__ ((packed)) ata_smart_selftestlog_t;
++#endif /* __KERNEL__ *
+ 
+ #endif	/* _LINUX_HDSMART_H */
