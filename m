@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbYADQyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbYADQzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754508AbYADQyk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 11:54:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYADQyc
+	id S1754713AbYADQzn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 11:55:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbYADQzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 11:54:32 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:53176 "EHLO ogre.sisk.pl"
+	Fri, 4 Jan 2008 11:55:36 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36843 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752715AbYADQyb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 11:54:31 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Michel Lespinasse <walken@zoy.org>
-Subject: Re: Asus P1-AH2 won't suspend (regression)
-Date: Fri, 4 Jan 2008 17:56:33 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <20080104144238.GA5176@zoy.org>
-In-Reply-To: <20080104144238.GA5176@zoy.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1753337AbYADQzf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 11:55:35 -0500
+Date: Fri, 4 Jan 2008 11:55:24 -0500
+From: Rik van Riel <riel@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Eric Whitney <eric.whitney@hp.com>,
+       Nick Dokos <nicholas.dokos@hp.com>
+Subject: Re: [patch 00/19] VM pageout scalability improvements
+Message-ID: <20080104115524.7d906f94@bree.surriel.com>
+In-Reply-To: <p73d4sh8s93.fsf@bingen.suse.de>
+References: <20080102224144.885671949@redhat.com>
+	<1199379128.5295.21.camel@localhost>
+	<20080103120000.1768f220@cuia.boston.redhat.com>
+	<1199380412.5295.29.camel@localhost>
+	<20080103170035.105d22c8@cuia.boston.redhat.com>
+	<1199463934.5290.20.camel@localhost>
+	<p73d4sh8s93.fsf@bingen.suse.de>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801041756.33733.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 4 of January 2008, Michel Lespinasse wrote:
-> Hi,
+On Fri, 04 Jan 2008 17:34:00 +0100
+Andi Kleen <andi@firstfloor.org> wrote:
+> Lee Schermerhorn <Lee.Schermerhorn@hp.com> writes:
 > 
-> I'm unable to get an asus P1-AH2 system to suspend (to ram). The issue
-> occurs at suspend time: the system displays "Suspending console(s)" but
-> does not turn off the screen and system fans.
+> > We can easily [he says, glibly] reproduce the hang on the anon_vma lock
 > 
-> I used to have suspend/resume working fine on this system using a
-> 2.6.20.x kernel. Yes, I know this is a huge range... suspend has
-> been broken on this sytem since at least 2.6.22.x
-> 
-> I tried running 2.6.24-rc6 with verbose PM debugging and suspend/resume
-> event tracing. Still no luck, the last message I see is still
-> "Suspending console(s)". The information from event tracing seems to be:
->   Magic number: 8:471:282
->   hash matches device tty19
-> 
-> I'm not sure if that's any help. Is there any way to help figure out the
-> problem besides a git bisect ? would extra event traces during/after the
-> suspend console stage help ???
-> 
-> This is with an x86_64 kernel. .config file can be found at
-> http://lespinasse.org/config-2.6.24-rc6 if that's any help.
+> Is that a NUMA platform? On non x86? Perhaps you just need queued spinlocks?
 
-Please try the patch series from:
-http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.24-rc6/patches/
-on top of 2.6.24-rc6 (patches 28-34 are relevant in particular) and see if that
-helps.
+I really think that the anon_vma and i_mmap_lock spinlock hangs are
+due to the lack of queued spinlocks.  Not because I have seen your
+system hang, but because I've seen one of Larry's test systems here
+hang in scary/amusing ways :)
 
-Thanks,
-Rafael
+With queued spinlocks the system should just slow down, not hang.
+
+-- 
+All rights reversed.
