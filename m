@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbYADO3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753597AbYADOgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753861AbYADO3R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 09:29:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbYADO3F
+	id S1753597AbYADOgm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 09:36:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbYADOge
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 09:29:05 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:40848 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752272AbYADO3E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 09:29:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=ihH7+OqxcAAFn+NtZG/ZTxYHR85JQ+N0FK/TBLRZx2b3bZj7KoRJUXOFJ6wCJ5WF4FdpTTGpV61cBmX288ZpoVInqmwqbKXR5xmO6ncdB9+kWzI+ErKQyKVZljPJXcuGSwYa7M/kyWu5GgGaitqS9MHNlWtLnJRA7JkP7S/63EM=
-Date: Fri, 4 Jan 2008 15:28:58 +0100
-From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-To: mingo@elte.hu, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] profile: further Codying Style fixes
-Message-ID: <20080104152858.1fb9b868@paolo-desktop>
-X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
+	Fri, 4 Jan 2008 09:36:34 -0500
+Received: from smtp3-g19.free.fr ([212.27.42.29]:34025 "EHLO smtp3-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752081AbYADOgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 09:36:33 -0500
+Date: Fri, 4 Jan 2008 15:35:57 +0100
+From: Guillaume Chazarain <guichaz@yahoo.fr>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] proc: return -EPERM when preventing read of
+ /proc/*/maps
+Message-ID: <20080104153557.13e24970@inria.fr>
+In-Reply-To: <20080104141443.GB27894@ZenIV.linux.org.uk>
+References: <20080104135731.2908.90012.stgit@localhost.localdomain>
+	<20080104141443.GB27894@ZenIV.linux.org.uk>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -27,184 +27,55 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Apologize for the duplicated message, 
-in my previous email I mistyped Ingo's email address.
+Al Viro <viro@ZenIV.linux.org.uk> wrote:
 
------->
-Further codying style fixes on top of:
-http://marc.info/?l=linux-kernel&m=119940325306693&w=2
+> vma_stop() doesn't need changes either...
 
-Checkpatch before the patch:
+Hmmm, not sure ;-)
 
-	total: 3 errors, 13 warnings, 602 lines checked
+$ cat /proc/1/maps
+Pid: 2282, comm: cat Not tainted (2.6.24-rc6-gc2 #185)
+EIP: 0060:[<c01a4080>] EFLAGS: 00010286 CPU: 0
+EIP is at vma_stop+0xd/0x21
+EAX: f7c90360 EBX: f7c90360 ECX: c042b5f0 EDX: ffffffff
+ESI: f62aa240 EDI: ffffffff EBP: f62daf24 ESP: f62daf20
+ DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+Process cat (pid: 2282, ti=f62da000 task=f6264d20 task.ti=f62da000)
+Stack: f7c90360 f62daf30 c01a40dc f62d0080 f62daf70 c018bdf1 00000400 0804f000 
+       f62d0080 f62aa260 00000000 ffffffff 00000400 f62cc000 f62dafb0 00000000 
+       00000000 f62d0080 c018bc9e 0804f000 f62daf90 c01751c5 f62daf9c 00000000 
+Call Trace:
+ [<c0104e4a>] show_trace_log_lvl+0x1a/0x2f
+ [<c0104efc>] show_stack_log_lvl+0x9d/0xa5
+ [<c0104fa6>] show_registers+0xa2/0x1b8
+ [<c01051d9>] die+0x11d/0x202
+ [<c03319f9>] do_general_protection+0x1f7/0x1ff
+ [<c0331172>] error_code+0x6a/0x70
+ [<c01a40dc>] m_stop+0xe/0x29
+ [<c018bdf1>] seq_read+0x153/0x25a
+ [<c01751c5>] vfs_read+0xa6/0x158
+ [<c0175583>] sys_read+0x3d/0x61
+ [<c0103ea2>] sysenter_past_esp+0x6b/0xa1
+ =======================
+Code: 89 50 18 31 d2 89 48 1c 83 c4 5c 89 d0 5b 5e 5f 5d c3 55 31 c9 89 e5 e8 80 fd ff ff 5d c3 55 85 d2 89 e5 53 74 16 3b 50 08 74 11 <8b> 1a 8d 43 34 e8 80 ea f8 ff 89 d8 e8 16 89 f7 ff 5b 5d c3 55 
+EIP: [<c01a4080>] vma_stop+0xd/0x21 SS:ESP 0068:f62daf20
+---[ end trace 297d07fbbfc82b7b ]---
 
-Checkpatch after the patch:
+This is an inconsistency in the handling of errors in m_start() between
+fs/proc/task_mmu.c and fs/proc/task_nommu.c.
 
-	total: 0 errors, 1 warnings, 601 lines checked
+task_mmu.c:
+        if (IS_ERR(mm) || !mm)
+                return mm;
 
+task_nommu.c:
+        if (IS_ERR(mm) || !mm) {
+                put_task_struct(priv->task);
+                priv->task = NULL;
+                return mm;
+        }
 
-1 Warning is still not killed:
-WARNING: externs should be avoided in .c files
-#509: FILE: profile.c:509:
-+       extern int setup_profiling_timer(unsigned int multiplier);
+task_nommu.c does the cleanup while task_mmu.c defers it to m_stop.
 
-I don't know how to fix it :-/
-
-
-Compile tested.
-
-Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
----
-
-Dunno whether the size change means that the patch is doing
-something wrong but here it is the report, before and after 
-the patch:
-
-paolo@paolo-desktop:/tmp$ size profile.o
-  text    data     bss     dec     hex filename
-  3718     144      12    3874     f22 profile.o
-paolo@paolo-desktop:/tmp$ size profile.o.after
-  text    data     bss     dec     hex filename
-  3693     144      12    3849     f09 profile.o.after
-
- kernel/profile.c |   33 ++++++++++++++++-----------------
- 1 files changed, 16 insertions(+), 17 deletions(-)
-
-diff --git a/kernel/profile.c b/kernel/profile.c
-index c99153b..9a1c4b4 100644
---- a/kernel/profile.c
-+++ b/kernel/profile.c
-@@ -125,7 +125,7 @@ void profile_task_exit(struct task_struct *task)
- 	blocking_notifier_call_chain(&task_exit_notifier, 0, task);
- }
- 
--int profile_handoff_task(struct task_struct * task)
-+int profile_handoff_task(struct task_struct *task)
- {
- 	int ret;
- 	ret = atomic_notifier_call_chain(&task_free_notifier, 0, task);
-@@ -141,11 +141,13 @@ int task_handoff_register(struct notifier_block *n)
- {
- 	return atomic_notifier_chain_register(&task_free_notifier, n);
- }
-+EXPORT_SYMBOL_GPL(task_handoff_register);
- 
- int task_handoff_unregister(struct notifier_block *n)
- {
- 	return atomic_notifier_chain_unregister(&task_free_notifier, n);
- }
-+EXPORT_SYMBOL_GPL(task_handoff_unregister);
- 
- int profile_event_register(enum profile_type type, struct notifier_block *n)
- {
-@@ -164,7 +166,7 @@ int profile_event_register(enum profile_type type, struct notifier_block *n)
- 
- 	return err;
- }
--
-+EXPORT_SYMBOL_GPL(profile_event_register);
- 
- int profile_event_unregister(enum profile_type type, struct notifier_block *n)
- {
-@@ -183,6 +185,7 @@ int profile_event_unregister(enum profile_type type, struct notifier_block *n)
- 
- 	return err;
- }
-+EXPORT_SYMBOL_GPL(profile_event_unregister);
- 
- int register_timer_hook(int (*hook)(struct pt_regs *))
- {
-@@ -191,6 +194,7 @@ int register_timer_hook(int (*hook)(struct pt_regs *))
- 	timer_hook = hook;
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(register_timer_hook);
- 
- void unregister_timer_hook(int (*hook)(struct pt_regs *))
- {
-@@ -199,13 +203,7 @@ void unregister_timer_hook(int (*hook)(struct pt_regs *))
- 	/* make sure all CPUs see the NULL hook */
- 	synchronize_sched();  /* Allow ongoing interrupts to complete. */
- }
--
--EXPORT_SYMBOL_GPL(register_timer_hook);
- EXPORT_SYMBOL_GPL(unregister_timer_hook);
--EXPORT_SYMBOL_GPL(task_handoff_register);
--EXPORT_SYMBOL_GPL(task_handoff_unregister);
--EXPORT_SYMBOL_GPL(profile_event_register);
--EXPORT_SYMBOL_GPL(profile_event_unregister);
- 
- #endif /* CONFIG_PROFILING */
- 
-@@ -366,7 +364,7 @@ static int __devinit profile_cpu_callback(struct notifier_block *info,
- 			per_cpu(cpu_profile_hits, cpu)[0] = page_address(page);
- 		}
- 		break;
--	out_free:
-+out_free:
- 		page = virt_to_page(per_cpu(cpu_profile_hits, cpu)[1]);
- 		per_cpu(cpu_profile_hits, cpu)[1] = NULL;
- 		__free_page(page);
-@@ -408,9 +406,8 @@ void profile_hits(int type, void *__pc, unsigned int nr_hits)
- 	pc = ((unsigned long)__pc - (unsigned long)_stext) >> prof_shift;
- 	atomic_add(nr_hits, &prof_buffer[min(pc, prof_len - 1)]);
- }
--#endif /* !CONFIG_SMP */
--
- EXPORT_SYMBOL_GPL(profile_hits);
-+#endif /* !CONFIG_SMP */
- 
- void profile_tick(int type)
- {
-@@ -427,7 +424,7 @@ void profile_tick(int type)
- #include <asm/uaccess.h>
- #include <asm/ptrace.h>
- 
--static int prof_cpu_mask_read_proc (char *page, char **start, off_t off,
-+static int prof_cpu_mask_read_proc(char *page, char **start, off_t off,
- 			int count, int *eof, void *data)
- {
- 	int len = cpumask_scnprintf(page, count, *(cpumask_t *)data);
-@@ -437,8 +434,8 @@ static int prof_cpu_mask_read_proc (char *page, char **start, off_t off,
- 	return len;
- }
- 
--static int prof_cpu_mask_write_proc (struct file *file, const char __user *buffer,
--					unsigned long count, void *data)
-+static int prof_cpu_mask_write_proc(struct file *file,
-+	const char __user *buffer,  unsigned long count, void *data)
- {
- 	cpumask_t *mask = (cpumask_t *)data;
- 	unsigned long full_count = count, err;
-@@ -457,7 +454,8 @@ void create_prof_cpu_mask(struct proc_dir_entry *root_irq_dir)
- 	struct proc_dir_entry *entry;
- 
- 	/* create /proc/irq/prof_cpu_mask */
--	if (!(entry = create_proc_entry("prof_cpu_mask", 0600, root_irq_dir)))
-+	entry = create_proc_entry("prof_cpu_mask", 0600, root_irq_dir);
-+	if (!entry)
- 		return;
- 	entry->data = (void *)&prof_cpu_mask;
- 	entry->read_proc = prof_cpu_mask_read_proc;
-@@ -508,7 +506,7 @@ static ssize_t write_profile(struct file *file, const char __user *buf,
- 			     size_t count, loff_t *ppos)
- {
- #ifdef CONFIG_SMP
--	extern int setup_profiling_timer (unsigned int multiplier);
-+	extern int setup_profiling_timer(unsigned int multiplier);
- 
- 	if (count == sizeof(int)) {
- 		unsigned int multiplier;
-@@ -591,7 +589,8 @@ static int __init create_proc_profile(void)
- 		return 0;
- 	if (create_hash_tables())
- 		return -1;
--	if (!(entry = create_proc_entry("profile", S_IWUSR | S_IRUGO, NULL)))
-+	entry = create_proc_entry("profile", S_IWUSR | S_IRUGO, NULL);
-+	if (!entry)
- 		return 0;
- 	entry->proc_fops = &proc_profile_operations;
- 	entry->size = (1+prof_len) * sizeof(atomic_t);
 -- 
-1.5.4.rc2.17.g257f
-
+Guillaume
