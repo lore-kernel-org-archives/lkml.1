@@ -1,51 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbYADQG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbYADQIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753836AbYADQG2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 11:06:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbYADQGW
+	id S1754148AbYADQIA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 11:08:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbYADQHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 11:06:22 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:38691 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752015AbYADQGV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 11:06:21 -0500
-Date: Fri, 4 Jan 2008 16:04:45 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
+	Fri, 4 Jan 2008 11:07:53 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:50277 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751750AbYADQHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 11:07:52 -0500
+Date: Fri, 4 Jan 2008 17:07:52 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
 To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: Paul Mundt <lethal@linux-sh.org>, Ben Dooks <ben@fluff.org>,
-       linux-kernel@vger.kernel.org, hskinnemoen@atmel.com,
-       bryan.wu@analog.com
-Subject: Re: [PATCH 2/3] Rework arch specific Makefiles to use mkubootimg
-Message-ID: <20080104160445.GA27269@flint.arm.linux.org.uk>
-References: <20080103160104.171f9aaa@zod.rchland.ibm.com> <20080103160406.7ef5ecfe@zod.rchland.ibm.com> <20080103224139.GA4178@fluff.org.uk> <20080103165854.0d6accef@zod.rchland.ibm.com> <20080104040119.GA10268@linux-sh.org> <20080104091928.GA28547@flint.arm.linux.org.uk> <20080104103345.GA15184@linux-sh.org> <20080104054802.40325b15@zod.rchland.ibm.com>
+Cc: Mike Frysinger <vapier.adi@gmail.com>, paulus@samba.org,
+       linux-kernel@vger.kernel.org, wd@denx.de
+Subject: Re: [PATCH 1/3] Merge mkubootimg tool for building U-Boot images
+Message-ID: <20080104160752.GA31026@uranus.ravnborg.org>
+References: <20080103160104.171f9aaa@zod.rchland.ibm.com> <20080103160244.6a28519b@zod.rchland.ibm.com> <8bd0f97a0801031415g66e6b6f1o8a64dddc98c29399@mail.gmail.com> <20080103162613.09674907@zod.rchland.ibm.com> <8bd0f97a0801031433mdaff6d9j5ed4e3cb49ea2007@mail.gmail.com> <20080103163536.316a6c58@zod.rchland.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080104054802.40325b15@zod.rchland.ibm.com>
+In-Reply-To: <20080103163536.316a6c58@zod.rchland.ibm.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 04, 2008 at 05:48:02AM -0600, Josh Boyer wrote:
-> Rework the architecture specific Makefiles to use the in-kernel version of
-> the mkubootimg tool.
+On Thu, Jan 03, 2008 at 04:35:36PM -0600, Josh Boyer wrote:
+> On Thu, 3 Jan 2008 17:33:20 -0500
+> "Mike Frysinger" <vapier.adi@gmail.com> wrote:
 > 
-> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> > On Jan 3, 2008 5:26 PM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+> > > On Thu, 3 Jan 2008 17:15:48 -0500 "Mike Frysinger" <vapier.adi@gmail.com> wrote:
+> > > > On Jan 3, 2008 5:02 PM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+> > > > > Several platforms require the mkimage tool to generate a uImage file that is
+> > > > > used with U-Boot.  This brings the mkimage tool in-kernel to enable building
+> > > > > those platforms without having mkimage externally provided.  The tool is named
+> > > > > mkubootimg for better clarity.
+> > > > >
+> > > > > This is currently based off of the version found in U-Boot 1.3.1.
+> > > > >
+> > > > > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> > > > >
+> > > > > ---
+> > > > >  scripts/Makefile             |    1
+> > > > >  scripts/mkubootimg/Makefile  |    6
+> > > > >  scripts/mkubootimg/crc32.c   |  199 +++++++++++
+> > > > >  scripts/mkubootimg/mkimage.c |  728 +++++++++++++++++++++++++++++++++++++++++++
+> > > > >  scripts/mkubootimg/sha1.c    |  413 ++++++++++++++++++++++++
+> > > > >  scripts/mkubootimg/sha1.h    |  115 ++++++
+> > > > >  scripts/mkubootimg/uimage.h  |  161 +++++++++
+> > > > >  7 files changed, 1623 insertions(+)
+> > > >
+> > > > i'm fairly certain sha1 is not needed.  the u-boot makefile has a bug
+> > > > in the 1.3.1 release where mkimage depends on sha1.o but doesnt
+> > > > actually use sha1 functions.  i posted a patch to u-boot mailing list
+> > > > to get this dropped.  regardless, no need for the kernel to import it.
+> > >
+> > > No need to yet anyway.  There are discussions on-going to make a new
+> > > image format that can do sha1 sums instead of crc32.  Either way is
+> > > fine with me, I just opted to include it now to keep it the same as
+> > > U-Boot and avoid having to include it in the future.
+> > >
+> > > If you want an updated patch with the sha1 code removed, I can do
+> > > that.  Sam, Wolfgang?
+> > 
+> > yes, but i think the next image format is going to require quite a bit
+> > of changes in the build system anyways, especially since with the
+> > kernel you will want the option to produce either format, so simply
+> > dropping the sha1 makes sense to me.  but i dont really care either
+> > way, just making sure you're aware of the issue (and it sounds like
+> > you are).
+> 
+> Yep, I am.  I plan on maintaining the in-kernel version too, as most
+> of the PPC 44x boards these days use U-Boot.  So I'll be sure to keep on
+> top of things.
 
->From the point of view of no overall change: Ack.
+We do not want sha1.* files around because we expect them to be used. So I 
+dropped those.
+Otherwise I applied all three patches.
+I will await one day for ack's from Russell and Paulus before
+I push out the tree.
 
->From the point of view of whether we should have this in the kernel:
-probably not.
-
-See http://lists.arm.linux.org.uk/lurker/thread/20071203.131631.85e7a1a5.en.html#20071203.131631.85e7a1a5
-
-for a recent discussion on the ins and outs, multiple formats, options
-and so forth passed to mk(u)image.  It looks like we're heading for 5 or
-6 different kernel image formats for the ARM architecture. ;(
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+	Sam
