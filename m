@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbYADN6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754315AbYADN6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754709AbYADN6c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 08:58:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbYADN4f
+	id S1754315AbYADN6q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 08:58:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbYADN4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 08:56:35 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:57427 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753862AbYADN4d (ORCPT
+	Fri, 4 Jan 2008 08:56:36 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:8601 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753868AbYADN4d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Jan 2008 08:56:33 -0500
-Message-Id: <20080104135653.410531000@chello.nl>
+X-SourceIP: 80.56.237.116
+Message-Id: <20080104135651.880568000@chello.nl>
 References: <20080104135457.336761000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 04 Jan 2008 14:55:04 +0100
+Date: Fri, 04 Jan 2008 14:54:58 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
@@ -23,170 +24,171 @@ Cc: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
        Gregory Haskins <ghaskins@novell.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 7/7] sched: rt-group: deal with PI
-Content-Disposition: inline; filename=sched-rt-group-pi.patch
+Subject: [PATCH 1/7] sched: rt throttling vs no_hz
+Content-Disposition: inline; filename=sched-rt-group-update.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven mentioned the fun case where a lock holding task will be throttled.
-
-Simple fix: allow groups that have boosted tasks to run anyway.
-This is ofcourse not quite correct. Needs more tricks.
+We need to teach no_hz about the rt throttling because its tick driven.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- kernel/sched.c    |    3 +++
- kernel/sched_rt.c |   50 ++++++++++++++++++++++++++++++++++++++++++--------
- 2 files changed, 45 insertions(+), 8 deletions(-)
+ include/linux/sched.h    |    2 ++
+ kernel/sched.c           |   23 ++++++++++++++++++++++-
+ kernel/sched_rt.c        |   30 ++++++++++++++++--------------
+ kernel/time/tick-sched.c |    5 +++++
+ 4 files changed, 45 insertions(+), 15 deletions(-)
 
+Index: linux-2.6/include/linux/sched.h
+===================================================================
+--- linux-2.6.orig/include/linux/sched.h
++++ linux-2.6/include/linux/sched.h
+@@ -230,6 +230,8 @@ static inline int select_nohz_load_balan
+ }
+ #endif
+ 
++extern unsigned long rt_needs_cpu(int cpu);
++
+ /*
+  * Only dump TASK_* tasks. (0 for all tasks)
+  */
 Index: linux-2.6/kernel/sched.c
 ===================================================================
 --- linux-2.6.orig/kernel/sched.c
 +++ linux-2.6/kernel/sched.c
-@@ -376,6 +376,8 @@ struct rt_rq {
- 	struct hrtimer rt_period_timer;
+@@ -442,6 +442,7 @@ struct rq {
+ 	struct cfs_rq cfs;
+ 	struct rt_rq rt;
+ 	u64 rt_period_expire;
++	int rt_throttled;
  
  #ifdef CONFIG_FAIR_GROUP_SCHED
-+	unsigned long rt_nr_boosted;
+ 	/* list of leaf cfs_rq on this cpu: */
+@@ -594,6 +595,23 @@ static void update_rq_clock(struct rq *r
+ #define task_rq(p)		cpu_rq(task_cpu(p))
+ #define cpu_curr(cpu)		(cpu_rq(cpu)->curr)
+ 
++unsigned long rt_needs_cpu(int cpu)
++{
++	struct rq *rq = cpu_rq(cpu);
++	u64 delta;
 +
- 	struct rq *rq;
- 	struct list_head leaf_rt_rq_list;
- 	struct task_group *tg;
-@@ -7273,6 +7275,7 @@ static void init_rt_rq(struct rt_rq *rt_
- 	rt_rq->rt_period_timer.cb_mode = HRTIMER_CB_IRQSAFE_NO_SOFTIRQ;
++	if (!rq->rt_throttled)
++		return 0;
++
++	if (rq->clock > rq->rt_period_expire)
++		return 1;
++
++	delta = rq->rt_period_expire - rq->clock;
++	do_div(delta, NSEC_PER_SEC / HZ);
++
++	return (unsigned long)delta;
++}
++
+ /*
+  * Tunables that become constants when CONFIG_SCHED_DEBUG is off:
+  */
+@@ -7099,9 +7117,11 @@ static void init_rt_rq(struct rt_rq *rt_
+ 	/* delimiter for bitsearch: */
+ 	__set_bit(MAX_RT_PRIO, array->bitmap);
  
- #ifdef CONFIG_FAIR_GROUP_SCHED
-+	rt_rq->rt_nr_boosted = 0;
- 	rt_rq->rq = rq;
++#if defined CONFIG_SMP || defined CONFIG_FAIR_GROUP_SCHED
++	rt_rq->highest_prio = MAX_RT_PRIO;
++#endif
+ #ifdef CONFIG_SMP
+ 	rt_rq->rt_nr_migratory = 0;
+-	rt_rq->highest_prio = MAX_RT_PRIO;
+ 	rt_rq->overloaded = 0;
  #endif
- }
+ 
+@@ -7186,6 +7206,7 @@ void __init sched_init(void)
+ 		list_add(&init_task_group.list, &task_groups);
+ #endif
+ 		rq->rt_period_expire = 0;
++		rq->rt_throttled = 0;
+ 
+ 		for (j = 0; j < CPU_LOAD_IDX_MAX; j++)
+ 			rq->cpu_load[j] = 0;
 Index: linux-2.6/kernel/sched_rt.c
 ===================================================================
 --- linux-2.6.orig/kernel/sched_rt.c
 +++ linux-2.6/kernel/sched_rt.c
-@@ -121,6 +121,11 @@ static void sched_rt_ratio_dequeue(struc
- 		dequeue_rt_entity(rt_se);
- }
- 
-+static inline int rt_rq_throttled(struct rt_rq *rt_rq)
-+{
-+	return rt_rq->rt_throttled && !rt_rq->rt_nr_boosted;
-+}
-+
- #else
- 
- static inline unsigned int sched_rt_ratio(struct rt_rq *rt_rq)
-@@ -170,6 +175,10 @@ static inline void sched_rt_ratio_dequeu
- {
- }
- 
-+static inline int rt_rq_throttled(struct rt_rq *rt_rq)
-+{
-+	return rt_rq->rt_throttled;
-+}
- #endif
- 
- static inline int rt_se_prio(struct sched_rt_entity *rt_se)
-@@ -184,27 +193,42 @@ static inline int rt_se_prio(struct sche
- 	return rt_task_of(rt_se)->prio;
- }
- 
-+static int rt_se_boosted(struct sched_rt_entity *rt_se)
-+{
-+	struct task_struct *p;
-+#ifdef CONFIG_FAIR_GROUP_SCHED
-+	struct rt_rq *rt_rq = group_rt_rq(rt_se);
-+
-+	if (rt_rq)
-+		return !!rt_rq->rt_nr_boosted;
-+#endif
-+
-+	p = rt_task_of(rt_se);
-+	return p->prio != p->normal_prio;
-+}
-+
- static int sched_rt_ratio_exceeded(struct rt_rq *rt_rq)
- {
- 	unsigned int rt_ratio = sched_rt_ratio(rt_rq);
- 	u64 period, ratio;
- 
- 	if (rt_ratio == SCHED_RT_FRAC)
--		return 0;
-+		goto out;
- 
- 	if (rt_rq->rt_throttled)
--		return 1;
-+		goto out;
- 
- 	period = sched_rt_period_ns(rt_rq);
+@@ -175,7 +175,11 @@ static int sched_rt_ratio_exceeded(struc
  	ratio = (period * rt_ratio) >> SCHED_RT_FRAC_SHIFT;
  
  	if (rt_rq->rt_time > ratio) {
- 		rt_rq->rt_throttled = 1;
--		sched_rt_ratio_dequeue(rt_rq);
--		return 1;
-+		if (rt_rq_throttled(rt_rq))
-+			sched_rt_ratio_dequeue(rt_rq);
- 	}
- 
--	return 0;
-+out:
-+	return rt_rq_throttled(rt_rq);
- }
- 
- static void update_sched_rt_period(struct rt_rq *rt_rq)
-@@ -265,6 +289,10 @@ void inc_rt_tasks(struct sched_rt_entity
- 
- 	update_rt_migration(rq_of_rt_rq(rt_rq));
- #endif
-+#ifdef CONFIG_FAIR_GROUP_SCHED
-+	if (rt_se_boosted(rt_se))
-+		rt_rq->rt_nr_boosted++;
-+#endif
- }
- 
- static inline
-@@ -295,6 +323,12 @@ void dec_rt_tasks(struct sched_rt_entity
- 
- 	update_rt_migration(rq_of_rt_rq(rt_rq));
- #endif /* CONFIG_SMP */
-+#ifdef CONFIG_FAIR_GROUP_SCHED
-+	if (rt_se_boosted(rt_se))
-+		rt_rq->rt_nr_boosted--;
++		struct rq *rq = rq_of_rt_rq(rt_rq);
 +
-+	WARN_ON(!rt_rq->rt_nr_running && rt_rq->rt_nr_boosted);
-+#endif
++		rq->rt_throttled = 1;
+ 		rt_rq->rt_throttled = 1;
++
+ 		sched_rt_ratio_dequeue(rt_rq);
+ 		return 1;
+ 	}
+@@ -183,18 +187,6 @@ static int sched_rt_ratio_exceeded(struc
+ 	return 0;
  }
  
- static void enqueue_rt_entity(struct sched_rt_entity *rt_se)
-@@ -303,7 +337,7 @@ static void enqueue_rt_entity(struct sch
- 	struct rt_prio_array *array = &rt_rq->active;
- 	struct rt_rq *group_rq = group_rt_rq(rt_se);
+-static void __update_sched_rt_period(struct rt_rq *rt_rq, u64 period)
+-{
+-	unsigned long rt_ratio = sched_rt_ratio(rt_rq);
+-	u64 ratio = (period * rt_ratio) >> SCHED_RT_FRAC_SHIFT;
+-
+-	rt_rq->rt_time -= min(rt_rq->rt_time, ratio);
+-	if (rt_rq->rt_throttled) {
+-		rt_rq->rt_throttled = 0;
+-		sched_rt_ratio_enqueue(rt_rq);
+-	}
+-}
+-
+ static void update_sched_rt_period(struct rq *rq)
+ {
+ 	struct rt_rq *rt_rq;
+@@ -204,8 +196,18 @@ static void update_sched_rt_period(struc
+ 		period = (u64)sysctl_sched_rt_period * NSEC_PER_MSEC;
+ 		rq->rt_period_expire += period;
  
--	if (group_rq && group_rq->rt_throttled)
-+	if (group_rq && rt_rq_throttled(group_rq))
- 		return;
+-		for_each_leaf_rt_rq(rt_rq, rq)
+-			__update_sched_rt_period(rt_rq, period);
++		for_each_leaf_rt_rq(rt_rq, rq) {
++			unsigned long rt_ratio = sched_rt_ratio(rt_rq);
++			u64 ratio = (period * rt_ratio) >> SCHED_RT_FRAC_SHIFT;
++
++			rt_rq->rt_time -= min(rt_rq->rt_time, ratio);
++			if (rt_rq->rt_throttled) {
++				rt_rq->rt_throttled = 0;
++				sched_rt_ratio_enqueue(rt_rq);
++			}
++		}
++
++		rq->rt_throttled = 0;
+ 	}
+ }
  
- 	list_add_tail(&rt_se->run_list, array->queue + rt_se_prio(rt_se));
-@@ -476,7 +510,7 @@ static struct sched_rt_entity *pick_next
- 	struct list_head *queue;
- 	int idx;
+Index: linux-2.6/kernel/time/tick-sched.c
+===================================================================
+--- linux-2.6.orig/kernel/time/tick-sched.c
++++ linux-2.6/kernel/time/tick-sched.c
+@@ -153,6 +153,7 @@ void tick_nohz_update_jiffies(void)
+ void tick_nohz_stop_sched_tick(void)
+ {
+ 	unsigned long seq, last_jiffies, next_jiffies, delta_jiffies, flags;
++	unsigned long rt_jiffies;
+ 	struct tick_sched *ts;
+ 	ktime_t last_update, expires, now, delta;
+ 	struct clock_event_device *dev = __get_cpu_var(tick_cpu_device).evtdev;
+@@ -216,6 +217,10 @@ void tick_nohz_stop_sched_tick(void)
+ 	next_jiffies = get_next_timer_interrupt(last_jiffies);
+ 	delta_jiffies = next_jiffies - last_jiffies;
  
--	if (sched_rt_ratio_exceeded(rt_rq))
-+	if (rt_rq_throttled(rt_rq))
- 		goto out;
- 
- 	idx = sched_find_first_bit(array->bitmap);
-@@ -500,7 +534,7 @@ static struct task_struct *pick_next_tas
- 	if (unlikely(!rt_rq->rt_nr_running))
- 		return NULL;
- 
--	if (sched_rt_ratio_exceeded(rt_rq))
-+	if (rt_rq_throttled(rt_rq))
- 		return NULL;
- 
- 	do {
++	rt_jiffies = rt_needs_cpu(cpu);
++	if (rt_jiffies && rt_jiffies < delta_jiffies)
++		delta_jiffies = rt_jiffies;
++
+ 	if (rcu_needs_cpu(cpu))
+ 		delta_jiffies = 1;
+ 	/*
 
 --
 
