@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbYADX3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbYADXoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755291AbYADX3o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 18:29:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbYADX3h
+	id S1754763AbYADXoS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 18:44:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbYADXoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 18:29:37 -0500
-Received: from smtprelay10.ispgateway.de ([80.67.29.24]:56597 "EHLO
-	smtprelay10.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754138AbYADX3g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 18:29:36 -0500
-Message-ID: <477EC158.102@selhorst.net>
-Date: Sat, 05 Jan 2008 00:29:28 +0100
-From: Marcel Selhorst <tpm@selhorst.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071117)
-MIME-Version: 1.0
-To: Kent Yoder <shpedoikal@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       David Smith <davidsmith@acm.org>
-CC: Andrew Morton <akpm@osdl.org>,
+	Fri, 4 Jan 2008 18:44:08 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37437 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752877AbYADXoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 18:44:07 -0500
+Date: Sat, 5 Jan 2008 00:44:13 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Kent Yoder <shpedoikal@gmail.com>
+Cc: Marcel Selhorst <tpm@selhorst.net>, Andrew Morton <akpm@osdl.org>,
        TPM Device Driver List <tpmdd-devel@lists.sourceforge.net>,
-       linux-kernel@vger.kernel.org
+       linux-kernel@vger.kernel.org, David Smith <davidsmith@acm.org>
 Subject: Re: [tpmdd-devel] [PATCH] - TPM save state before suspending to ram
+Message-ID: <20080104234413.GB800@elf.ucw.cz>
 References: <477D491F.1060001@selhorst.net> <20080104163917.GB27447@elf.ucw.cz> <499d6ed30801041209o4da54b3bw39335f3342e528f0@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <499d6ed30801041209o4da54b3bw39335f3342e528f0@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.1-5; AVE: 7.6.0.46; VDF: 7.0.1.194; host: mail)
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kent is right, the solution from David is way better. I wanted to be consistent
-with the other functions in tpm.c, but it definitely makes more sense in Davids
-way. So please consider my patch as reverted and his patch as
-
-Signed-off-by: Marcel Selhorst <tpm@selhorst.net>
-
-Thanks,
-Marcel
-
-Kent Yoder schrieb:
+On Fri 2008-01-04 14:09:01, Kent Yoder wrote:
 > On Jan 4, 2008 10:39 AM, Pavel Machek <pavel@ucw.cz> wrote:
->> On Thu 2008-01-03 21:44:15, Marcel Selhorst wrote:
->>> Dear list,
->>>
->>> this patch fixes a bug, that prevents the TPM chip to resume correctly from a
->>> suspended state.
->>>
->>> Signed-off-by: Marcel Selhorst <tpm@selhorst.net>
+> >
+> > On Thu 2008-01-03 21:44:15, Marcel Selhorst wrote:
+> > > Dear list,
+> > >
+> > > this patch fixes a bug, that prevents the TPM chip to resume correctly from a
+> > > suspended state.
+> > >
+> > > Signed-off-by: Marcel Selhorst <tpm@selhorst.net>
 > [cut]
->> I'm not sure if we want to use variable-size array on stack. What
->> hacks are you doing with max_t/max?
->>                                                                         Pavel
+> >
+> > I'm not sure if we want to use variable-size array on stack. What
+> > hacks are you doing with max_t/max?
+> >                                                                         Pavel
 > 
 > Hi Pavel,
 > 
@@ -97,3 +88,8 @@ Kent Yoder schrieb:
 >  	tpm_transmit(chip, savestate, sizeof(savestate));
 >  	return 0;
 
+Yep, but please fix the whitespace.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
