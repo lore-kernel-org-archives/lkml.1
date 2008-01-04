@@ -1,85 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbYADQIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbYADQJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754148AbYADQIA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 11:08:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbYADQHx
+	id S1754220AbYADQJo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 11:09:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbYADQJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 11:07:53 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:50277 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751750AbYADQHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 11:07:52 -0500
-Date: Fri, 4 Jan 2008 17:07:52 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: Mike Frysinger <vapier.adi@gmail.com>, paulus@samba.org,
-       linux-kernel@vger.kernel.org, wd@denx.de
-Subject: Re: [PATCH 1/3] Merge mkubootimg tool for building U-Boot images
-Message-ID: <20080104160752.GA31026@uranus.ravnborg.org>
-References: <20080103160104.171f9aaa@zod.rchland.ibm.com> <20080103160244.6a28519b@zod.rchland.ibm.com> <8bd0f97a0801031415g66e6b6f1o8a64dddc98c29399@mail.gmail.com> <20080103162613.09674907@zod.rchland.ibm.com> <8bd0f97a0801031433mdaff6d9j5ed4e3cb49ea2007@mail.gmail.com> <20080103163536.316a6c58@zod.rchland.ibm.com>
-Mime-Version: 1.0
+	Fri, 4 Jan 2008 11:09:37 -0500
+Received: from smtp108.sbc.mail.mud.yahoo.com ([68.142.198.207]:26854 "HELO
+	smtp108.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751847AbYADQJg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 11:09:36 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=xqe9nezDNVtP6Ij3bmI/Sw9SsjwFovYEjcQAgLUvUJNi0RTOMDxT1sADe9l/qK6ky/c2rDikRqDjdHTnZeHanloHiw2e9Lh1g9P5cxFm6wfRw8upDEfCS6tozWx28G9k/O73MyZGyiy2+glmwpjuv4Q8a3gK2cGXGgCQOlKBKig=  ;
+X-YMail-OSG: gF2tul8VM1ndAKRaUnV48W8gCsnlNs22A2g17TOwEtuVLul9K6F0oxMDFzkIXhSxCDcS3rKNoA--
+Date: Fri, 04 Jan 2008 08:09:33 -0800
+From: David Brownell <david-b@pacbell.net>
+To: yi.y.yang@intel.com, pavel@ucw.cz
+Subject: Re: [linux-pm][PATCH] base: Change power/wakeup output from "" to 
+ "unsupported" if wakeup feature isn't supported by a device
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com>
+ <20080104114832.GA4114@elf.ucw.cz>
+In-Reply-To: <20080104114832.GA4114@elf.ucw.cz>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080103163536.316a6c58@zod.rchland.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080104160933.B01D81FBAB5@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 03, 2008 at 04:35:36PM -0600, Josh Boyer wrote:
-> On Thu, 3 Jan 2008 17:33:20 -0500
-> "Mike Frysinger" <vapier.adi@gmail.com> wrote:
-> 
-> > On Jan 3, 2008 5:26 PM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
-> > > On Thu, 3 Jan 2008 17:15:48 -0500 "Mike Frysinger" <vapier.adi@gmail.com> wrote:
-> > > > On Jan 3, 2008 5:02 PM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
-> > > > > Several platforms require the mkimage tool to generate a uImage file that is
-> > > > > used with U-Boot.  This brings the mkimage tool in-kernel to enable building
-> > > > > those platforms without having mkimage externally provided.  The tool is named
-> > > > > mkubootimg for better clarity.
-> > > > >
-> > > > > This is currently based off of the version found in U-Boot 1.3.1.
-> > > > >
-> > > > > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> > > > >
-> > > > > ---
-> > > > >  scripts/Makefile             |    1
-> > > > >  scripts/mkubootimg/Makefile  |    6
-> > > > >  scripts/mkubootimg/crc32.c   |  199 +++++++++++
-> > > > >  scripts/mkubootimg/mkimage.c |  728 +++++++++++++++++++++++++++++++++++++++++++
-> > > > >  scripts/mkubootimg/sha1.c    |  413 ++++++++++++++++++++++++
-> > > > >  scripts/mkubootimg/sha1.h    |  115 ++++++
-> > > > >  scripts/mkubootimg/uimage.h  |  161 +++++++++
-> > > > >  7 files changed, 1623 insertions(+)
-> > > >
-> > > > i'm fairly certain sha1 is not needed.  the u-boot makefile has a bug
-> > > > in the 1.3.1 release where mkimage depends on sha1.o but doesnt
-> > > > actually use sha1 functions.  i posted a patch to u-boot mailing list
-> > > > to get this dropped.  regardless, no need for the kernel to import it.
-> > >
-> > > No need to yet anyway.  There are discussions on-going to make a new
-> > > image format that can do sha1 sums instead of crc32.  Either way is
-> > > fine with me, I just opted to include it now to keep it the same as
-> > > U-Boot and avoid having to include it in the future.
-> > >
-> > > If you want an updated patch with the sha1 code removed, I can do
-> > > that.  Sam, Wolfgang?
-> > 
-> > yes, but i think the next image format is going to require quite a bit
-> > of changes in the build system anyways, especially since with the
-> > kernel you will want the option to produce either format, so simply
-> > dropping the sha1 makes sense to me.  but i dont really care either
-> > way, just making sure you're aware of the issue (and it sounds like
-> > you are).
-> 
-> Yep, I am.  I plan on maintaining the in-kernel version too, as most
-> of the PPC 44x boards these days use U-Boot.  So I'll be sure to keep on
-> top of things.
+> > This patch changes empty output to "unsupported" in order that a user knows
+> > wakeup feature isn't supported by this device when he/she
+> > 'cat /sys/devices/.../power/wakeup', please consider to apply,
+> > thanks.
+>
+> What about simply removing "wakuep" file if wakeup is not supported?
 
-We do not want sha1.* files around because we expect them to be used. So I 
-dropped those.
-Otherwise I applied all three patches.
-I will await one day for ack's from Russell and Paulus before
-I push out the tree.
+It may not *stay* unsupported, so I think changing it in either
+of those permanent ways would be confusing/misleading.
 
-	Sam
+For example, USB devices have multiple states ... minimally, an
+unconfigured state, and a configured state.  Some have multiple
+configurations.  Only configured states can be wakeup-capable.
+So a given device might have three states, but support wakeup
+except in one of them...
+
+- Dave
+
