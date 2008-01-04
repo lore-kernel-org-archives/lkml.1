@@ -1,72 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752681AbYADKmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752894AbYADKnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752681AbYADKmZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 05:42:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750855AbYADKmS
+	id S1752894AbYADKnq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 05:43:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbYADKnj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 05:42:18 -0500
-Received: from mail-out.m-online.net ([212.18.0.9]:47163 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751036AbYADKmR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 05:42:17 -0500
-Date: Fri, 4 Jan 2008 11:42:28 +0100
-From: Matthias Goebl <matthias@goebl.net>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, kkeil@suse.de, kai.germaschewski@gmx.de
-Subject: Re: [PATCH] isdn/i4l: Fix DLE handling for i4l-audio
-Message-ID: <20080104104228.GX19071@night.goebl.net>
-References: <20080103220003.GU19071@night.goebl.net> <20080104.021437.238302886.davem@davemloft.net>
+	Fri, 4 Jan 2008 05:43:39 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49223 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750855AbYADKni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 05:43:38 -0500
+Date: Fri, 4 Jan 2008 11:43:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, olof@lixom.net
+Subject: Re: [patch 2/2] Add the end-of-trace marker and the module list to
+	WARN_ON()
+Message-ID: <20080104104322.GA18199@elte.hu>
+References: <477D5340.9090809@linux.intel.com> <20080104074523.GD17447@elte.hu> <477E0CAB.2040402@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080104.021437.238302886.davem@davemloft.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <477E0CAB.2040402@linux.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 04, 2008 at 02:14:37AM -0800, David Miller wrote:
-> From: Matthias Goebl <matthias@goebl.net>
-> Date: Thu, 3 Jan 2008 23:00:03 +0100
-> 
-> > --- linux-2.6.23.12.orig/drivers/isdn/i4l/isdn_tty.c	2007-12-22 21:13:49.000000000 +0100
-> > +++ linux-2.6.23.12/drivers/isdn/i4l/isdn_tty.c	2007-12-26 11:37:18.000000000 +0100
-> > @@ -85,6 +85,8 @@
-> >  								tty_insert_flip_char(tty, DLE, 0);
-> >  							tty_insert_flip_char(tty, *dp++, 0);
-> >  						}
-> > +						if (*dp == DLE)
-> > +							tty_insert_flip_char(tty, DLE, 0);
-> >  						last = *dp;
-> >  					} else {
-> >  #endif
-> 
-> I'm not sure this part is correct.
-> 
-> Here, *dp will be assigned to 'last'.
 
-The while (--l) {...} pushes+adds DLE for len-1 characters.
-( while (l--) would process all len characters)
-The last charater is assigned to "last" and pushed after the else block:
+* Arjan van de Ven <arjan@linux.intel.com> wrote:
 
-> The rest of the code (after the else block) then reads:
-> 
-> 					if (info->emu.mdmreg[REG_CPPP] & BIT_CPPP)
-> 						tty_insert_flip_char(tty, last, 0xFF);
-> 					else
-> 						tty_insert_flip_char(tty, last, TTY_NORMAL);
-> 
-> which should push that character out to the TTY.
+> Ingo Molnar wrote:
+>> * Arjan van de Ven <arjan@linux.intel.com> wrote:
+>>
+>>> +	printk(KERN_WARNING "------------[ cut here ]------------\n");
+>>>  	printk(KERN_WARNING "WARNING: at %s:%d %s()\n", file,
+>>>  		line, function);
+>>> +	print_modules();
+>>>  	dump_stack();
+>>> +	print_oops_end_marker();
+>>
+>> another thing: could we also put the marker into dump_stack(), and attach 
+>> the marker to the Call Trace line?
+>
+> I have a preliminary patch for that already but I'm not happy with it 
+> yet; I need to redo it properly. It's neither depending nor 
+> incremental to these 2 patches though..
 
-But this does not care about a DLE and doesn't escape that with another DLE.
+yeah, it was a sidenote - it should be separate to these two patches.
 
-> With your change we will push a DLE out twice in such a case,
-> and that doesn't seem right.
-
-For an audio data stream we have to escape DLE (ascii 16) by another DLE,
-otherwise it is interpreted as command, as in Documentation/isdn/README.audio:
-...  escape sequences defined, all using DLE (0x10) as Escape char:...
-    <DLE><DLE>              Escape sequence for DLE in data stream.
-    <DLE>0                  Touchtone "0" received.
-...
+	Ingo
