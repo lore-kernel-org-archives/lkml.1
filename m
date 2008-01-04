@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753561AbYADPvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbYADPyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753561AbYADPvn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 10:51:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbYADPvf
+	id S1753976AbYADPyt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 10:54:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYADPyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 10:51:35 -0500
-Received: from lixom.net ([66.141.50.11]:36081 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752113AbYADPvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 10:51:35 -0500
-Date: Fri, 4 Jan 2008 10:00:15 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mpm@selenic.com, paulus@samba.org
-Subject: Re: [patch 1/2] move WARN_ON() out of line
-Message-ID: <20080104160015.GA29770@lixom.net>
-References: <477D52ED.7000403@linux.intel.com> <20080104074149.GC17447@elte.hu>
+	Fri, 4 Jan 2008 10:54:41 -0500
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:34599 "EHLO
+	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752593AbYADPyl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 10:54:41 -0500
+Date: Fri, 4 Jan 2008 21:24:15 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Vivek Goyal <vgoyal@redhat.com>, hbabu@us.ibm.com,
+       lkml <linux-kernel@vger.kernel.org>, kexec@lists.infradead.org,
+       Ingo Molnar <mingo@elte.hu>, maneesh@linux.vnet.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de
+Subject: Re: kexec refuses to boot latest -mm
+Message-ID: <20080104155415.GC6007@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20071228124532.GB32643@linux.vnet.ibm.com> <20071231150843.GB27060@redhat.com> <20080103195201.GC6392@linux.vnet.ibm.com> <200801032242.01425.rjw@sisk.pl> <20080104122816.GF4514@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080104074149.GC17447@elte.hu>
+In-Reply-To: <20080104122816.GF4514@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 04, 2008 at 08:41:49AM +0100, Ingo Molnar wrote:
+On Fri, Jan 04, 2008 at 05:58:16PM +0530, Dhaval Giani wrote:
+> On Thu, Jan 03, 2008 at 10:42:00PM +0100, Rafael J. Wysocki wrote:
+> > On Thursday, 3 of January 2008, Dhaval Giani wrote:
+> > > On Mon, Dec 31, 2007 at 10:08:43AM -0500, Vivek Goyal wrote:
+> > > > On Sat, Dec 29, 2007 at 11:11:13AM +0530, Dhaval Giani wrote:
+> > > > > On Fri, Dec 28, 2007 at 09:27:39AM -0500, Vivek Goyal wrote:
+> > > > > > On Fri, Dec 28, 2007 at 06:15:32PM +0530, Dhaval Giani wrote:
+> > > > > > > Hi Vivek,
+> > > > > > > 
 > 
-> * Arjan van de Ven <arjan@linux.intel.com> wrote:
+> I've no clue what I managed to do wrong last night, probably tried to boot
+> 2.6.24-rc6-mm1 thinking it was 2.6.24-rc6. 2.6.24-rc6 boots, but -mm
+> does not. Sorry for the noise.
 > 
-> > This patch build on top of Olof's patch that introduces __WARN, and 
-> > places the slowpath out of line. It also uses Ingo's suggestion to not 
-> > use __FUNCTION__ but to use kallsyms to do the lookup; this saves a 
-> > ton of extra space since gcc doesn't need to store the function string 
-> > twice now:
-> >
-> > 3936367  833603  624736 5394706  525112 vmlinux.before
-> > 3917508  833603  624736 5375847  520767 vmlinux-slowpath
-> >
-> > 15Kb savings...
-> 
-> hey, cool!
-> 
-> Acked-by: Ingo Molnar <mingo@elte.hu>
-> 
-> i'm wondering how we could put this into x86.git to get it tested some 
-> more. Olof's patch touches other architectures so it's not really 
-> appropriate. Maybe a portion of Olof's patch could be applied to make 
-> your patch apply cleanly?
 
-My base patch only touches other architectures to remove the no longer
-needed HAVE_ARCH_BUG. Given the new ifdef in bug.h, there's nothing
-functional that breaks if they're left in (i.e. split up in two
-patches).
+So I went ahead and bisected -mm, and the culprit is git-x86. It boots
+fine before it, but with git-x86 applied, it fails to boot.
 
-The only problem with merging it up the x86 path is that the powerpc
-patch that builds on it would need to be ordered after the x86 merge
-(in mm etc), or it'll cause build breaks. Keeping it in -mm is nice in
-that way since Andrew could sequence them right when sending to Linus.
+Ingo/Thomas, could you please point me to the git-x86 tree so that I can
+bisect it? (with instructions on how to pull the -mm branch, I managed
+to pull the master branch, but not the -mm branch)
 
-Easiest of all might be to get an Acked-by from Paul on the powerpc patch,
-and merge it all up through x86.git?
-
-(Paul: This is powerpc-switch-to-generic-warn_on-bug_on.patch in -mm
-I'm talking about).
-
-
--Olof
-
+-- 
+regards,
+Dhaval
