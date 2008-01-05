@@ -1,47 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754400AbYAELeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614AbYAELyH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754400AbYAELeW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 06:34:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbYAELeN
+	id S1754614AbYAELyH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 06:54:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753540AbYAELxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 06:34:13 -0500
-Received: from fk-out-0910.google.com ([209.85.128.186]:47360 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753050AbYAELeM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 06:34:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=JMeEVVrONO9kvneWHejblRmUxE+Eas8IThsU5fdSyIy3Pc7hwa57OWIL20mU5UbUFD/v8sAPq8/gyl4T8Z+ingJz29yLCDOU2wugZ9cG4jNQ2n1Il63GaEStuvIdBxcKeORMv91s6vSsIZan5Ib8tUu2ihYSd8utlN0G6hSXcw4=
-Message-ID: <477F6B23.3050108@gmail.com>
-Date: Sat, 05 Jan 2008 12:33:55 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sat, 5 Jan 2008 06:53:54 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:56034 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753408AbYAELxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 06:53:53 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/4] PM: Introduce destroy_suspended_device()
+Date: Sat, 5 Jan 2008 12:55:50 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
+       Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>
+References: <Pine.LNX.4.44L0.0801042202070.22169-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0801042202070.22169-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: Phil Endecott <phil_wueww_endecott@chezphil.org>
-CC: linux-kernel@vger.kernel.org, Frederik Deweerdt <deweerdt@free.fr>
-Subject: Re: strace, accept(), ERESTARTSYS and EINTR
-References: <20080105010639.GA8417@slug> <1199497133856@dmwebmail.japan.chezphil.org> <477F5C72.2070304@gmail.com>
-In-Reply-To: <477F5C72.2070304@gmail.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-2
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801051255.51144.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/05/2008 11:31 AM, Jiri Slaby wrote:
-> Do not remove CCed people.
+On Saturday, 5 of January 2008, Alan Stern wrote:
+> On Fri, 4 Jan 2008, Rafael J. Wysocki wrote:
 > 
-> On 01/05/2008 02:38 AM, Phil Endecott wrote:
->> timezone go and play with http://demos.anyterm.org/bastet/anyterm.html
->> while I sleep....
+> > I have rebased gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch
+> > on top of the $subject series, the result is appended.  It has only been
+> > compilation tested for now, but I'll be testing it for the next couple of days.
+> > 
+> > Please review.
 > 
-> Service Temporarily Unavailable
+> I would prefer it if you could also merge in this patch at the same 
+> time:
+> 
+> https://lists.linux-foundation.org/pipermail/linux-pm/2007-December/015921.html
 
-bastet? the tetris in which you always get the worst block you can get at the
-moment :)? Do you serve the pages by the code which causes the problems?
+Makes sense, I will.
 
-Could we see more of the server's code, even with multi-threading, which you
-mentioned etc.
+> > +void device_resume(void)
+> >  {
+> > -	sysdev_resume();
+> > -	dpm_power_up();
+> > +	might_sleep();
+> > +	dpm_resume();
+> > +	unlock_all_devices();
+> > +	unregister_dropped_devices();
+> > +	up_write(&pm_sleep_rwsem);
+> >  }
+> 
+> With the aforementioned patch merged in, this will generate a 
+> warning for each dropped device.  The call to 
+> unregister_dropped_devices() should come after the up_write().
+> 
+> You might also consider adding a call to unregister_dropped_devices()  
+> in the error path of device_suspend() -- in theory even an aborted 
+> suspend might cause a device to malfunction.
+
+In fact it already works like this, since device_suspend() now calls the entire
+device_resume() on error.
+
+> Otherwise this looks okay.
+
+However, I think we don't need to wait with unregistering suspended devices
+until after the other ones are resumed.  We only need a special function for
+unregistering suspended devices that will make the PM core release the device's
+semaphore before unregistering it.
+
+I have already sent a replacemet for
+gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch that includes
+some code from the $subject patch and implements the above idea:
+
+http://lkml.org/lkml/2008/1/4/278
+
+I'm going to merge it with your patch at:
+https://lists.linux-foundation.org/pipermail/linux-pm/2007-December/015921.html
+and with patches [2/4] and [4/4] from the $subject series.  I'll post the
+result for a review later today.
+
+Thanks,
+Rafael
