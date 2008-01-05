@@ -1,57 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756831AbYAERC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756445AbYAERMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756831AbYAERC4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 12:02:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755992AbYAERCr
+	id S1756445AbYAERMp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 12:12:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbYAERMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 12:02:47 -0500
-Received: from fk-out-0910.google.com ([209.85.128.185]:32970 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755580AbYAERCq (ORCPT
+	Sat, 5 Jan 2008 12:12:36 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:57800 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752997AbYAERMf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 12:02:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=sDUKtA6nV6yR1z3LYhlesrlq2vfAztITixn9rwQO3h6nP82MlXhoaWT765V2DFrQkt99SU3O5nW7JoRLAGiu0fJlmkAzwaXeverJGMTkYnJMFT3/u9HDg9+aiwdgM9inQw4zd/BDlApEtXOBYRD3LH7u/PYVQ+4o+IoClm92Arg=
-Message-ID: <477FB82F.1070501@gmail.com>
-Date: Sat, 05 Jan 2008 18:02:39 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Phil Endecott <phil_wueww_endecott@chezphil.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: strace, accept(), ERESTARTSYS and EINTR
-References: <1199480498017@dmwebmail.japan.chezphil.org> <p731w8w8gcw.fsf@bingen.suse.de>
-In-Reply-To: <p731w8w8gcw.fsf@bingen.suse.de>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 5 Jan 2008 12:12:35 -0500
+Date: Sat, 5 Jan 2008 18:14:40 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Matt Mackall <mpm@selenic.com>, Christoph Lameter <clameter@sgi.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>, Andi Kleen <andi@firstfloor.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       zanussi@us.ibm.com
+Subject: Re: [PATCH] procfs: provide slub's /proc/slabinfo
+Message-ID: <20080105171440.GA4137@one.firstfloor.org>
+References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com> <84144f020801021109v78e06c6k10d26af0e330fc85@mail.gmail.com> <alpine.LFD.1.00.0801021130210.32517@woody.linux-foundation.org> <1199314218.4497.109.camel@cinder.waste.org> <20080103085239.GA10813@elte.hu> <1199378818.8274.25.camel@cinder.waste.org> <Pine.LNX.4.64.0801031808470.7244@schroedinger.engr.sgi.com> <1199419890.4608.77.camel@cinder.waste.org> <Pine.LNX.4.64.0801051816490.22821@sbz-30.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0801051816490.22821@sbz-30.cs.Helsinki.FI>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/05/2008 04:03 PM, Andi Kleen wrote:
->    if (!strcmp(current->comm, "yourprogramwithoutpath"))
->             printk("%s:%d ERESTART\n", __FILE__, __LINE__);
-> 
-> [the later two might need adding linux/string.h and/or linux/sched.h includes
-> to the files if they don't compile]
-> 
-> to all of them. Then recompile and boot that kernel.
+> So, I have this silly memory profiler derived from the kleak patches by 
+> the relayfs people and would love to try it out on an embedded workload 
+> where SLUB memory footprint is terrible. Any suggestions?
 
-If I'm not completely blind, there is no suspicous ERESTARTSYS in
-PF_INET:SOCK_STREAM path.
+FWIW this can be all done in a few lines of systemtap. The only
+change needed to the kernel is to not inline kmalloc().
 
-Anyway even if it was returned by kernel syscall, glibc should put it in errno
-and return -1 (since it is >= -4095 and < 0). He sees it in the accept retval.
-Something rotten, probably broken/racy ?ntpl? implementation of syscalls or
-somewhat?
-
-regards,
--- 
-Jiri Slaby
-Faculty of Informatics, Masaryk University
-Suse Labs
-
+-Andi
