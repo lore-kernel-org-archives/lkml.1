@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758412AbYAEVvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758526AbYAEVwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758412AbYAEVvW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 16:51:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757525AbYAEVvP
+	id S1758526AbYAEVwQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 16:52:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757568AbYAEVwB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 16:51:15 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37662 "EHLO amd.ucw.cz"
+	Sat, 5 Jan 2008 16:52:01 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37668 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757518AbYAEVvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 16:51:14 -0500
-Date: Sat, 5 Jan 2008 22:51:23 +0100
+	id S1757566AbYAEVwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 16:52:00 -0500
+Date: Sat, 5 Jan 2008 22:52:09 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC] sleepy linux
-Message-ID: <20080105215123.GA21565@elf.ucw.cz>
-References: <20071225230731.GA29030@elf.ucw.cz> <20071230111552.GA8578@elte.hu>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Oliver Neukum <oliver@neukum.org>, Raymano Garibaldi <raymano@faunos.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] [FEATURE REQUEST] Transparent hot plugging
+	of root file system on portable storage devices.
+Message-ID: <20080105215209.GB21565@elf.ucw.cz>
+References: <200801021119.22104.oliver@neukum.org> <Pine.LNX.4.44L0.0801021521291.2990-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071230111552.GA8578@elte.hu>
+In-Reply-To: <Pine.LNX.4.44L0.0801021521291.2990-100000@iolanthe.rowland.org>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2007-12-30 12:15:52, Ingo Molnar wrote:
+On Wed 2008-01-02 15:23:30, Alan Stern wrote:
+> On Wed, 2 Jan 2008, Oliver Neukum wrote:
 > 
-> * Pavel Machek <pavel@ucw.cz> wrote:
-> 
-> > Todays hardware is mostly capable of doing better: with correctly set 
-> > up wakeups, machine can sleep and successfully pretend it is not 
-> > sleeping -- by waking up whenever something interesting happens. Of 
-> > course, it is easier on machines not connected to the network, and on 
-> > notebook computers.
+> > Am Dienstag 01 Januar 2008 schrieb Pavel Machek:
+> > > Hi1
+> > > 
+> > > > I would like to request a feature in the Linux kernel that would allow
+> > > > a user to unplug a live read-only root file system which exists on a
+> > > > detachable storage device such as a USB key drive. The desired
+> > > > behavior is that once the same device is reattached to the computer
+> > > > the user can continue work transparently without having to reboot.
+> > > > 
+> > > > Having such a feature is becoming more important with advances in
+> > > > detachable solid state drive technology.
+> > > 
+> > > Yep, that would be nice.... In fact, patch would be very welcome :-).
 > > 
-> > Requirements:
-> > 
-> > 0) Working suspend-to-RAM, with kernel being able to bring video back.
-> > 
-> > 1) RTC clock that can wake up system
+> > Use the USB persist feature and hibernate. It should work. If you modify
+> > the fs in any way, you'll crash and burn. Unmounting / is harder which you
+> > need if you want to do this safely.
 > 
-> very nice approach! It might require smarter hardware to be really 
-> efficient, but the generic ability for Linux to utilize S3 automatically 
-> would _quickly_ drive the creation of smarter hardware i'm sure - so i'd 
-> propose to include this even if it wastes power in some cases.
-> 
-> a quick feature request: could you please make the wake-on-RTC 
-> capability generic and add a CONFIG_DEBUG_SUSPEND_ON_RAM=y config option 
-> (disabled by default) that does a short 1-second suspend-to-RAM sequence 
-> upon bootup? That way we could test s2ram automatically (which is a MUCH 
-> needed feature for automated regression testing and automatic 
-> bisection). In addition, some sort of 'suspend for N seconds' /sys or 
-> /dev/rtc capability would be nice as well.
+> What about people who prefer (for reasons of restart latency or
+> non-availability of swap space) to suspend rather than hibernate?
 
-Hmm, are you sure it is good idea to do this from kernel? I guess this
-is better done from script... 
-
-> btw., how far are you from having a working prototype?
-
-SCSI/SATA issues stop me just now, but even if I get that to work, it
-will be extremely disgusting hack... and it is unclear how to do it
-nicely :-(.
+For suspend to RAM, we can keep the power session, and be _sure_ noone
+unplugged our USB disks, right? So that one should work nicely.
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
