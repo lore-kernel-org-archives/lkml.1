@@ -1,86 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756825AbYAESq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbYAETTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756825AbYAESq3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 13:46:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756175AbYAESqV
+	id S1756691AbYAETTU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 14:19:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756200AbYAETTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 13:46:21 -0500
-Received: from gw.goop.org ([64.81.55.164]:55318 "EHLO mail.goop.org"
+	Sat, 5 Jan 2008 14:19:11 -0500
+Received: from cantor.suse.de ([195.135.220.2]:59062 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756137AbYAESqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 13:46:21 -0500
-Message-ID: <477FD045.50703@goop.org>
-Date: Sat, 05 Jan 2008 10:45:25 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1756170AbYAETTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 14:19:10 -0500
+From: Andreas Schwab <schwab@suse.de>
+To: "Phil Endecott" <phil_wueww_endecott@chezphil.org>
+Cc: "Jiri Slaby" <jirislaby@gmail.com>, <linux-kernel@vger.kernel.org>,
+       "Frederik Deweerdt" <deweerdt@free.fr>
+Subject: Re: strace, accept(), ERESTARTSYS and EINTR
+References: <jed4sgjkhh.fsf@sykes.suse.de>
+	<1199557105493@dmwebmail.japan.chezphil.org>
+X-Yow: When this load is DONE I think I'll wash it AGAIN..
+Date: Sat, 05 Jan 2008 20:19:08 +0100
+In-Reply-To: <1199557105493@dmwebmail.japan.chezphil.org> (Phil Endecott's
+	message of "Sat\, 05 Jan 2008 18\:18\:25 +0000")
+Message-ID: <je3atcjd1v.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@linux.intel.com>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 1/3] move WARN_ON() out of line
-References: <477C32DA.5060905@linux.intel.com> <477F2697.5050407@goop.org> <477FC613.7020807@linux.intel.com>
-In-Reply-To: <477FC613.7020807@linux.intel.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> Jeremy Fitzhardinge wrote:
->> Arjan van de Ven wrote:
->>> This patch moves WARN_ON() out of line entirely. I've considered
->>> keeping
->>> the test inline and moving only the slowpath out of line, but I decided
->>> against that: an out of line test reduces the pressure on the CPUs
->>> branch predictor logic and gives smaller code, while a function call
->>> to a fixed location is quite fast. Likewise I've considered doing
->>> something
->>> similar to BUG() (eg use a trapping instruction) but that's not really
->>> better (it needs the test inline again and recovering from an invalid
->>> instruction isn't quite fun).
+"Phil Endecott" <phil_wueww_endecott@chezphil.org> writes:
+
+> Andreas Schwab wrote:
+>> "Phil Endecott" <phil_wueww_endecott@chezphil.org> writes:
 >>
->> Power implements WARN_ON this way, and all the machinery is in place to
->> generically implement WARN_ON that way if you want.  It does generate
->> denser code than the call (since its just a single trapping instruction
->> with no need for argument setup), and the performance cost of the trap
->> shouldn't matter if warnings are rare (which one would hope).
+>>> However, there's a lot of code and I know that there are bugs in it.  I
+>>> just want to focus on the kernel-related issue that the strace fragment
+>>> that I posted brings up:  even if my user code gets completely screwed up
+>>> (corrupts its stack, runs out of FDs/VM/threads etc), I don't think that I
+>>> should see in the strace output that accept() has returned
+>>> ERESTARTSYS.
+>>
+>> strace always sees the raw return value, before the signal handler is
+>> executed and before the check for syscall restart is done.
 >
-> I just did an experiment with this to see how much is on the table. I
-> made
-> a file with 1024 WARN_ON()'s (new style, eg the out of line call) and
-> 1024 BUG_ON()'s,
-> which on i386 already use the trap.
-> This shows that the BUG_ON() case is 2Kb shorter in generated code.
-> From this 2Kb you
-> need to subtract all the code size that is needed to deal with the
-> trap and the module
-> merging/unmerging of trap points etc etc, so lets say that a total of
-> 1Kb is left on the table.
-> HOWEVER, if you have a module with, say, only 4 WARN_ON()/BUG_ON()'s,
-> you actually LOOSE
-> 48 bytes, because of the extra overhead of how the trap data is stored.
->
-> So... call me unconvinced for now. There's 30 Kb on the table with the
-> easy, obviously safe
-> transform, and maybe another 1Kb with the much more tricky trapping
-> scenario, but only
-> for the vmlinux case; the module case seems to be a loss instead. 
+> Yes, but I should see the real final return value in another strace output
+> line before I see that thread doing something else.  Correct?
 
-Yeah, that seems reasonable if you're optimising for overall size.  Did
-you count the difference of including the function name?  We decided not
-to include it for BUG because its usefulness/size tradeoff didn't seem
-terribly important.
+No.  As far as strace is concerned the syscall has finished.  Since it
+isn't restarted, you won't see it again in the trace.
 
-But my goal was actually to reduce icache pollution, so by my reckoning
-code bytes were much more expensive than data ones, so putting all BUG
-information in a separate section makes those bytes much less
-significant than putting anything inline in code.  Also, the trap for
-WARN_ON would be smaller than BUG, because it wouldn't need the spurious
-infinite loop needed to make gcc understand the control flow of a BUG.
+Andreas.
 
-On the other hand, you could put the call to out of line warning
-function in a separate section to achieve the same effect.
-
-    J
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
