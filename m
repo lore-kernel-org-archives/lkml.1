@@ -1,60 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756836AbYAET0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756904AbYAETcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756836AbYAET0S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 14:26:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756331AbYAET0F
+	id S1756904AbYAETcW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 14:32:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756376AbYAETcN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 14:26:05 -0500
-Received: from mu-out-0910.google.com ([209.85.134.186]:2093 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756254AbYAET0C convert rfc822-to-8bit (ORCPT
+	Sat, 5 Jan 2008 14:32:13 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:23442 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756364AbYAETcM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 14:26:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=IxyokiSoHx+WuAmmMz/wgjVh492EoxM4AzPgmRvSoxC9Ui0NMatwONraXw7JiMR8mejyYvXHsOVeb/MxAKZBWOI6TVYbejaCAa/2czNqpeqYgXeIOSnN/epWyZy9Sn+iYQu4jPmtKI/lRF6FZs7Q4gSVEhBntS14E4LM3Q1128M=
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86: little fix in 'include/asm-x86/topology.h'
-Date: Sat, 5 Jan 2008 21:25:59 +0100
-User-Agent: KMail/1.9.7
-Cc: Miguel =?iso-8859-1?q?Bot=F3n?= <mboton.lkml@gmail.com>,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de
-References: <200801042304.58071.mboton@gmail.com> <20080105150944.GA9595@elte.hu>
-In-Reply-To: <20080105150944.GA9595@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200801052126.00016.mboton@gmail.com>
-From: Miguel =?iso-8859-1?q?Bot=F3n?= <mboton.lkml@gmail.com>
+	Sat, 5 Jan 2008 14:32:12 -0500
+Date: Sat, 5 Jan 2008 11:30:24 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Al Boldi <a1426z@gawab.com>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/5] USB Kconfig: Select SCSI for USB Mass Storage
+ support
+Message-Id: <20080105113024.209485f5.randy.dunlap@oracle.com>
+In-Reply-To: <200801051546.SAA08947@raad.intranet>
+References: <200801051546.SAA08947@raad.intranet>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 05 January 2008 16:09:44 Ingo Molnar wrote:
-> * Miguel Botón <mboton.lkml@gmail.com> wrote:
-> > Before 'topology_32.h' and 'topology_64.h' were unified, topology
-> > defines in a X86_64 kernel were declared if CONFIG_SMP was enabled.
-> > Now, post unification, these same defines in a X86_64 kernel are only
-> > being declared if CONFIG_NUMA and CONFIG_SMP are enabled.
-> >
-> > This, for example, breaks 'perfmon_amd64.c' compilation.
-> >
-> > This patch defines ENABLE_TOPO_DEFINE if this is a X86_64 kernel and
-> > we have SMP support enabled.
->
-> hm, do you have a .config that fails to build?
->
-> 	Ingo
+On Sat, 5 Jan 2008 18:41:39 +0300 Al Boldi wrote:
 
-I had a .config (I deleted it) that fails to build *but* using the tree from 
-http://git.kernel.org/?p=linux/kernel/git/eranian/linux-2.6.git;a=summary
+> 
+> Select SCSI for USB Mass Storage support.
+> 
+> 
+> Cc: David Brownell <david-b@pacbell.net>
+> Cc: Greg KH <greg@kroah.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Al Boldi <a1426z@gawab.com>
+> 
+> ---
+> 
+> --- 23.a/drivers/usb/storage/Kconfig
+> +++ 23.b/drivers/usb/storage/Kconfig
+> @@ -2,14 +2,10 @@
+>  # USB Storage driver configuration
+>  #
+>  
+> -comment "NOTE: USB_STORAGE needs SCSI, and 'SCSI disk support' may"
+> -	depends on USB
+> -comment "also be needed; see USB_STORAGE Help for more information"
+> -	depends on USB
+> -
+>  menuconfig USB_STORAGE
+>  	tristate "USB Mass Storage support"
+> -	depends on USB && SCSI
+> +	depends on USB
+> +	select SCSI
 
-The problem was that CONFIG_NUMA wasn't defined so ENABLE_TOPO_DEFINE wasn't 
-defined too and then we get an error about an implicit declaration 
-of 'topology_physical_package_id'.
+We try not to use 'select' on subsystems and try to limit its use
+to library-like code that is relatively small.  Selecting SCSI
+breaks both of those efforts.
+Furthermore, we try to give the user help here in both the
+comments and help text.
 
--- 
-	Miguel Botón
+NAK as far as I am concerned.
+
+>  	---help---
+>  	  Say Y here if you want to connect USB mass storage devices to your
+>  	  computer's USB port. This is the driver you need for USB
+> @@ -18,13 +14,17 @@ menuconfig USB_STORAGE
+>  	  similar devices. This driver may also be used for some cameras
+>  	  and card readers.
+>  
+> -	  This option depends on 'SCSI' support being enabled, but you
+> -	  probably also need 'SCSI device support: SCSI disk support'
+> +	  This option selects 'SCSI' support , but you probably
+> +	  also need 'SCSI device support: SCSI disk support'
+>  	  (BLK_DEV_SD) for most USB storage devices.
+>  
+>  	  To compile this driver as a module, choose M here: the
+>  	  module will be called usb-storage.
+>  
+> +if USB_STORAGE
+> +comment "NOTE: USB_STORAGE selects SCSI, but 'SCSI disk support' may"
+> +comment "also be needed; see USB_STORAGE Help for more information"
+> +
+>  config USB_STORAGE_DEBUG
+>  	bool "USB Mass Storage verbose debug"
+>  	depends on USB_STORAGE
+> @@ -147,6 +147,8 @@ config USB_STORAGE_KARMA
+>  	  on the resulting scsi device node returns the Karma to normal
+>  	  operation.
+>  
+> +endif # USB_STORAGE
+> +
+>  config USB_LIBUSUAL
+>  	bool "The shared table of common (or usual) storage devices"
+>  	depends on USB
+
+
+
+---
+~Randy
+desserts:  http://www.xenotime.net/linux/recipes/
