@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755022AbYAEJqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755436AbYAEJqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755022AbYAEJqR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 04:46:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753527AbYAEJqF
+	id S1755436AbYAEJqz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 04:46:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbYAEJqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 04:46:05 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:40500 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752926AbYAEJqE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 04:46:04 -0500
-Date: Sat, 5 Jan 2008 09:46:02 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
+	Sat, 5 Jan 2008 04:46:47 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:44841 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753527AbYAEJqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 04:46:46 -0500
+Date: Sat, 5 Jan 2008 11:46:18 +0200
+From: Adrian Bunk <bunk@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
        David Howells <dhowells@redhat.com>
-Subject: Re: isofs oops - d_splice_alias+0x1f (2.6.24-rc5-mm1)
-Message-ID: <20080105094602.GI27894@ZenIV.linux.org.uk>
-References: <477CE1E0.4010504@gmail.com> <20080103141033.GT27894@ZenIV.linux.org.uk> <20080105013126.d90c4e09.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: [2.6.25 patch] remove a.out interpreter for ELF executables
+Message-ID: <20080105094618.GA2304@does.not.exist>
+References: <20080101134749.GJ2360@does.not.exist> <200801011536.32598.ak@suse.de> <20080105013053.b46cd28b.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080105013126.d90c4e09.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <20080105013053.b46cd28b.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 05, 2008 at 01:31:26AM -0800, Andrew Morton wrote:
-> On Thu, 3 Jan 2008 14:10:33 +0000 Al Viro <viro@ZenIV.linux.org.uk> wrote:
+On Sat, Jan 05, 2008 at 01:30:53AM -0800, Andrew Morton wrote:
+> On Tue, 1 Jan 2008 15:36:32 +0100 Andi Kleen <ak@suse.de> wrote:
 > 
+> > On Tuesday 01 January 2008 14:47:49 Adrian Bunk wrote:
+> > > This patch contains the scheduled removal of the a.out interpreter 
+> > > support for ELF executables.
 > > 
-> > which would not manage to return ERR_PTR(-EIO), no matter what - it would
-> > die on access to inode->i_state.  I don't have -mm tree at hand, check if
-> > there's anything affected in these areas.  Perhaps somebody tried to pass
-> > error values from isofs_iget() and forgot to update callers?
+> > I already have a similar patch queued
+> > 
+> > ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/remove-aout-interpreter
+> > 
+> > Also removal of the old unused iBCS hooks while I was on it
+> > 
+> > ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/remove-ibcs-support
+> > 
 > 
-> Yep.  Unlike 2.6.24-rc5-mm1, 2.6.24-rc6-mm1 has
-> 
-> iget-stop-isofs-from-using-read_inode-fix-2.patch
-> iget-stop-isofs-from-using-read_inode-fix-2-update.patch
-> 
-> so hopefully this was all fixed.
+> Guys, please take a look at similar patches from David in -mm before even
+> vaguely thinking of breathing anywhere in the remote vicinity of
+> fs/binfmt_elf.c (sob).
 
-Nope; missed by both; fix (and fix to fix) had been posted, but IMO it's
-better to replace the entire sorry pile with new variant of patch dhowells
-had posted - it has all fixes folded in.
+What David's patch does in fs/binfmt_elf.c is to make code conditional - 
+exactly the code Andi removes as scheduled in 2.6.25. You should be able 
+to simply drop the fs/binfmt_elf.c parts from
+aout-suppress-aout-library-support-if-config_arch_supports_aout.patch.
+
+cu
+Adrian
+
+BTW: There are also patch conflicts with git-x86, but since they are not 
+     from David you have yet to ask us to look at them.  ;-)
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
