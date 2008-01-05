@@ -1,47 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758211AbYAEVjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758274AbYAEVlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758211AbYAEVjr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 16:39:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757235AbYAEVjh
+	id S1758274AbYAEVlV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 16:41:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757516AbYAEVlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 16:39:37 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:34167 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756878AbYAEVjg (ORCPT
+	Sat, 5 Jan 2008 16:41:12 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:1411 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757246AbYAEVlL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 16:39:36 -0500
-Date: Sat, 5 Jan 2008 21:39:35 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       NetDev <netdev@vger.kernel.org>
-Subject: Re: Top 10 kernel oopses for the week ending January 5th, 2008
-Message-ID: <20080105213935.GN27894@ZenIV.linux.org.uk>
-References: <477FF149.4070609@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <477FF149.4070609@linux.intel.com>
-User-Agent: Mutt/1.4.2.3i
+	Sat, 5 Jan 2008 16:41:11 -0500
+Date: Sat, 5 Jan 2008 16:41:09 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] PM: Acquire device locks on suspend
+In-Reply-To: <200801052213.39891.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0801051634500.29588-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 05, 2008 at 01:06:17PM -0800, Arjan van de Ven wrote:
-> The http://www.kerneloops.org website collects kernel oops and
-> warning reports from various mailing lists and bugzillas as well as
-> with a client users can install to auto-submit oopses.
-> Below is a top 10 list of the oopses collected in the last 7 days.
-> (Reports prior to 2.6.23 have been omitted in collecting the top 10)
-> 
-> This week, a total of 49 oopses and warnings have been reported,
-> compared to 53 reports in the previous week.
+On Sat, 5 Jan 2008, Rafael J. Wysocki wrote:
 
-FWIW, people moaning about the lack of entry-level kernel work would
-do well by decoding those to the level of "this place in this function,
-called from <here>, with so-and-so variable being <this>" and posting
-the results.  As skills go, it's far more useful than "how to trim
-the trailing whitespace" and the rest of checkpatch.pl-inspired crap
-that got so popular lately...
+> On Saturday, 5 of January 2008, Alan Stern wrote:
+> > On Sat, 5 Jan 2008, Rafael J. Wysocki wrote:
+> > 
+> > > > Another thing to watch out for: Just in case somebody ends up calling
+> > > > destroy_suspended_device(dev) from within dev's own resume method, you 
+> > > > should interchange the resume_device() and the list_move_tail() 
+> > > > calls in dpm_resume().
+> > > 
+> > > However, if we unregister them all at once after releasing pm_sleep_rwsem,
+> > > that shouldn't be necessary, right?
+> > 
+> > It's still necessary, because destroy_suspended_device() still has to
+> > move the device from one list to another.  You don't want it to end up 
+> > on the dpm_locked list.
+> 
+> Hmm.  That means we'd have to do the same thing in dpm_power_up() in case
+> someone calls destroy_suspended_device() from resume_device_early(dev).
+
+Yes.
+
+> Still, even doing that is not enough, since someone can call
+> destroy_suspended_device() from a .suspend() routine and then the device
+> will end up on a wrong list just as well.
+
+That should never happen.  The whole idea of destroy_suspended_device()
+is that the device couldn't be resumed and in fact should be
+unregistered because it is no longer working or no longer present.  A
+suspend routine won't detect this sort of thing since it doesn't try to
+resume the device.
+
+But it wouldn't hurt to mention in the kerneldoc that 
+destroy_suspended_device() is meant to be called only during a system 
+resume.
+
+Alan Stern
+
