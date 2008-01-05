@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbYAEUF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757017AbYAEUGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756798AbYAEUF2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 15:05:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbYAEUFT
+	id S1757017AbYAEUGV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 15:06:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755993AbYAEUGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 15:05:19 -0500
-Received: from mga07.intel.com ([143.182.124.22]:16156 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755901AbYAEUFR (ORCPT
+	Sat, 5 Jan 2008 15:06:06 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43734 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755932AbYAEUGE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 15:05:17 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,249,1196668800"; 
-   d="scan'208";a="359002836"
-Message-ID: <477FE25D.5070406@linux.intel.com>
-Date: Sat, 05 Jan 2008 12:02:37 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5 (Windows/20051201)
+	Sat, 5 Jan 2008 15:06:04 -0500
+Date: Sat, 5 Jan 2008 12:05:58 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+cc: Matt Mackall <mpm@selenic.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>, Andi Kleen <andi@firstfloor.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       zanussi@us.ibm.com
+Subject: Re: [PATCH] procfs: provide slub's /proc/slabinfo
+In-Reply-To: <Pine.LNX.4.64.0801051816490.22821@sbz-30.cs.Helsinki.FI>
+Message-ID: <Pine.LNX.4.64.0801051202480.14866@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com> 
+ <84144f020801021109v78e06c6k10d26af0e330fc85@mail.gmail.com> 
+ <alpine.LFD.1.00.0801021130210.32517@woody.linux-foundation.org> 
+ <1199314218.4497.109.camel@cinder.waste.org>  <20080103085239.GA10813@elte.hu>
+  <1199378818.8274.25.camel@cinder.waste.org> 
+ <Pine.LNX.4.64.0801031808470.7244@schroedinger.engr.sgi.com>
+ <1199419890.4608.77.camel@cinder.waste.org> <Pine.LNX.4.64.0801051816490.22821@sbz-30.cs.Helsinki.FI>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 1/3] move WARN_ON() out of line
-References: <477C32DA.5060905@linux.intel.com> <477F2697.5050407@goop.org> <477FC613.7020807@linux.intel.com> <477FD045.50703@goop.org>
-In-Reply-To: <477FD045.50703@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> 
-> Yeah, that seems reasonable if you're optimising for overall size.  Did
-> you count the difference of including the function name?  We decided not
-> to include it for BUG because its usefulness/size tradeoff didn't seem
-> terribly important.
+On Sat, 5 Jan 2008, Pekka J Enberg wrote:
 
-in the WARN_ON case it's not there either, based on Ingo's idea we do a kallsyms lookup
-of __builtin_return_address(0) .. same data, less memory.
+> So, I have this silly memory profiler derived from the kleak patches by 
+> the relayfs people and would love to try it out on an embedded workload 
+> where SLUB memory footprint is terrible. Any suggestions?
 
+Good idea. But have you tried to look at slabinfo?
 
-> But my goal was actually to reduce icache pollution, so by my reckoning
-> code bytes were much more expensive than data ones, so putting all BUG
-> information in a separate section makes those bytes much less
-> significant than putting anything inline in code.  Also, the trap for
-> WARN_ON would be smaller than BUG, because it wouldn't need the spurious
-> infinite loop needed to make gcc understand the control flow of a BUG.
-> 
-> On the other hand, you could put the call to out of line warning
-> function in a separate section to achieve the same effect.
+Try to run
 
-yeah and gcc even has a compiler option for that. Doubt it's really worth it,
-we're still talking a few bytes here ;)
+	slabinfo -t
 
-> 
->     J
+which will calculate the allocation overhead of the currently allocated 
+objects in all slab caches.
+
+One problem: The actual size of kmalloc'ed objects is not available so it 
+does not calculate the overhead that comes about because of rounding. Your 
+approach would cover that as well but I think we could also add a debug 
+mode in which we store the actual size of a kmalloc object and export the 
+information via sysfs. Would be nicer than adding this whole additional 
+layer.
 
