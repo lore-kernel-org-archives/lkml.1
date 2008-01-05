@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757960AbYAEVq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbYAEVte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757960AbYAEVq5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 16:46:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756799AbYAEVqs
+	id S1758242AbYAEVte (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 16:49:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757235AbYAEVt1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 16:46:48 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:48905 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756667AbYAEVqr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 16:46:47 -0500
-Date: Sat, 5 Jan 2008 23:46:16 +0200
-From: Adrian Bunk <adrian.bunk@movial.fi>
-To: Jeff Garzik <jeff@garzik.org>, "David S. Miller" <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [2.6.24 patch] fix netx-eth.c compilation
-Message-ID: <20080105214616.GE22232@does.not.exist>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sat, 5 Jan 2008 16:49:27 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:59888 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757128AbYAEVt0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 16:49:26 -0500
+Date: Sat, 5 Jan 2008 21:49:16 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2.6.24-rc6-mm 4/9] gpiolib: avr32 at32ap platform
+ support
+Message-ID: <20080105214916.7c67a522@siona>
+In-Reply-To: <200801051210.56567.david-b@pacbell.net>
+References: <200712281927.32575.david-b@pacbell.net>
+	<200712281956.33051.david-b@pacbell.net>
+	<200801051210.56567.david-b@pacbell.net>
+Organization: Atmel
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This was missed when commit e2ac455a18806b31c2d0da0a51d8740af5010b7a 
-fixed the compile errors in drivers/net/netx-eth.c caused by
-commit 09f75cd7bf13720738e6a196cc0107ce9a5bd5a0.
+On Sat, 5 Jan 2008 12:10:56 -0800
+David Brownell <david-b@pacbell.net> wrote:
 
-Signed-off-by: Adrian Bunk <adrian.bunk@movial.fi>
+> From: David Brownell <dbrownell@users.sourceforge.net>
+> 
+> Teach AVR32 to use the "GPIO Library" when exposing its GPIOs, so that
+> signals on external chips (like GPIO expanders) can easily be used.
+> 
+> This mostly reorganizes some existing logic, with two minor changes
+> in behavior:
+> 
+>  - The PSR registers are used instead of the previous "gpio_mask"
+> values, matching AT91 behavior and removing some duplication between
+> that role and that of "pinmux_mask".
+> 
+>  - NR_IRQs grew to acommodate a bank of external GPIOs.  Eventually
+> this number should probably become a board-specific config option.
+> 
+> There's a debugfs dump of status for the built-in GPIOs, showing which
+> pins have deglitching, pullups, or open drain drive enabled, as well
+> as the ID string used when requesting each IRQ.
+> 
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
 
----
-15e5efb728c61333ca10648334185efba86c4815 
-diff --git a/drivers/net/netx-eth.c b/drivers/net/netx-eth.c
-index 5267e03..78d34af 100644
---- a/drivers/net/netx-eth.c
-+++ b/drivers/net/netx-eth.c
-@@ -169,8 +169,8 @@ static void netx_eth_receive(struct net_device *ndev)
- 	ndev->last_rx = jiffies;
- 	skb->protocol = eth_type_trans(skb, ndev);
- 	netif_rx(skb);
--	dev->stats.rx_packets++;
--	dev->stats.rx_bytes += len;
-+	ndev->stats.rx_packets++;
-+	ndev->stats.rx_bytes += len;
- }
- 
- static irqreturn_t
+Acked-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
 
+I'm not going to merge it since the rest of gpiolib isn't in mainline
+yet.
+
+Haavard
