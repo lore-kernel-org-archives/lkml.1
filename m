@@ -1,216 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbYAENRA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbYAENWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383AbYAENRA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 08:17:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754188AbYAENQx
+	id S1755433AbYAENWR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 08:22:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754277AbYAENWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 08:16:53 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:2220 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754129AbYAENQw (ORCPT
+	Sat, 5 Jan 2008 08:22:03 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:48083 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754400AbYAENWB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 08:16:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=gryuAG0SagaQMibHycV/mP2wifc2UNaaNGKQREh6PntwYRBkjZ9Rb3rhzGSh9vXbiYujt7dV69y5EHe3RUn7wkiPekb1a9hTv3dch9ZijYLag1M0PY68NWY7qwNHnwfXTP59C0uX07ttxSGpjcpdDuYfORN/xza6GbjPNnSxrck=
-Message-ID: <477F833F.2030607@gmail.com>
-Date: Sat, 05 Jan 2008 16:16:47 +0300
-From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-Organization: DmVo Home
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@linux.intel.com>
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
-       olof@lixom.net, mpm@selenic.com
-Subject: Re: [patch 1/2] move WARN_ON() out of line
-References: <477D52ED.7000403@linux.intel.com>
-In-Reply-To: <477D52ED.7000403@linux.intel.com>
-Content-Type: text/plain; charset=KOI8-R
-Content-Transfer-Encoding: 8bit
+	Sat, 5 Jan 2008 08:22:01 -0500
+Date: Sat, 5 Jan 2008 14:24:02 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Russell Leidich <rml@google.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Torsten Kaiser <just.for.lkml@googlemail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       valdis.kletnieks@vt.edu, thockin@google.com
+Subject: Re: [PATCH] AMD Thermal Interrupt Support
+Message-ID: <20080105132402.GA705@one.firstfloor.org>
+References: <p731w9410yc.fsf@bingen.suse.de> <3f1a065b0801021143y5fc15e29r4201ac19bc7c1daa@mail.gmail.com> <20080102200039.GA13784@one.firstfloor.org> <3f1a065b0801021312w6f823cbeh9ea6b73d2b0c46c8@mail.gmail.com> <64bb37e0801021333g3cccff81k68df75463e4a21d0@mail.gmail.com> <3f1a065b0801021350x7fd065fbj9680ce1a4f3c6538@mail.gmail.com> <20080102215433.GB13784@one.firstfloor.org> <3f1a065b0801041333x579d0a8fs9c5535f95dd56015@mail.gmail.com> <20080104222637.GA19248@one.firstfloor.org> <3f1a065b0801041653y77c27a8cvce703cb7d13e10a0@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3f1a065b0801041653y77c27a8cvce703cb7d13e10a0@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven пишет:
-> Subject: move WARN_ON() out of line
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> CC: Ingo Molnar <mingo@elte.hu>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: Olof Johansson <olof@lixom.net>
-> CC: Matt Meckall <mpm@selenic.com>
 > 
-> A quick grep shows that there are currently 1145 instances of WARN_ON
-> in the kernel. Currently, WARN_ON is pretty much entirely inlined,
-> which makes it hard to enhance it without growing the size of the kernel
-> (and getting Andrew rightfully unhappy).
-> 
-> This patch build on top of Olof's patch that introduces __WARN,
-> and places the slowpath out of line. It also uses Ingo's suggestion
-> to not use __FUNCTION__ but to use kallsyms to do the lookup;
-> this saves a ton of extra space since gcc doesn't need to store the
-> function
-> string twice now:
-> 
-> 3936367  833603  624736 5394706  525112 vmlinux.before
-> 3917508  833603  624736 5375847  520767 vmlinux-slowpath
-> 
-> 15Kb savings...
-> 
+> But if PCI locks are spinlocks, then how can one access config space
+> in an interrupt handler, as it might be locked by the foreground?  (No
 
-This looks twice as good for one of MIPS configs:
+They disable interrupts
 
-   text    data     bss     dec     hex filename
-4908276  204104 2846304 7958684  79709c vmlinux.after
-4941596  204104 2846304 7992004  79f2c4 vmlinux.before
-$ file vmlinux
-vmlinux: ELF 32-bit MSB executable, MIPS, version 1 (SYSV), statically linked, not stripped
+> locks would be required at all, if everyone just saved 0xCF8 and
+> 0xCFC, but I digress.)  
 
-More than 30Kb gone, thanks a lot!
+Not sure what you mean? Since it is two non atomic accesses even
+saving restoring the registers would not make the accesses safe for lockless.
+If someone changes 0xcf8 before you can access 0xcfc you always have
+a problem.
 
-Tested-by: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+In fact we had (or still have) races with some older user land accessing these
+ports directly.
 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> 
-> 
-> ---
->  include/asm-generic/bug.h |    7 ++-----
->  kernel/panic.c            |   14 ++++++++++++++
->  2 files changed, 16 insertions(+), 5 deletions(-)
-> 
-> Index: linux-2.6.24-rc6/include/asm-generic/bug.h
-> ===================================================================
-> --- linux-2.6.24-rc6.orig/include/asm-generic/bug.h
-> +++ linux-2.6.24-rc6/include/asm-generic/bug.h
-> @@ -32,11 +32,8 @@ struct bug_entry {
->  #endif
-> 
->  #ifndef __WARN
-> -#define __WARN() do {                            \
-> -    printk("WARNING: at %s:%d %s()\n", __FILE__,            \
-> -        __LINE__, __FUNCTION__);                \
-> -    dump_stack();                            \
-> -} while (0)
-> +extern void warn_on_slowpath(const char *file, const int line);
-> +#define __WARN() warn_on_slowpath(__FILE__, __LINE__)
->  #endif
-> 
->  #ifndef WARN_ON
-> Index: linux-2.6.24-rc6/kernel/panic.c
-> ===================================================================
-> --- linux-2.6.24-rc6.orig/kernel/panic.c
-> +++ linux-2.6.24-rc6/kernel/panic.c
-> @@ -20,6 +20,7 @@
->  #include <linux/kexec.h>
->  #include <linux/debug_locks.h>
->  #include <linux/random.h>
-> +#include <linux/kallsyms.h>
-> 
->  int panic_on_oops;
->  int tainted;
-> @@ -292,6 +293,19 @@ void oops_exit(void)
->          (unsigned long long)oops_id);
->  }
-> 
-> +
-> +void warn_on_slowpath(const char *file, int line)
-> +{
-> +    char function[KSYM_SYMBOL_LEN];
-> +    unsigned long caller = (unsigned long) __builtin_return_address(0);
-> +
-> +    sprint_symbol(function, caller);
-> +    printk(KERN_WARNING "WARNING: at %s:%d %s()\n", file,
-> +        line, function);
-> +    dump_stack();
-> +}
-> +EXPORT_SYMBOL(warn_on_slowpath);
-> +
->  #ifdef CONFIG_CC_STACKPROTECTOR
->  /*
->   * Called when gcc's -fstack-protector feature is used, and
-> 
-> 
-> ------------------------------------------------------------------------
-> 
-> Subject: move WARN_ON() out of line
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> CC: Ingo Molnar <mingo@elte.hu>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: Olof Johansson <olof@lixom.net>
-> CC: Matt Meckall <mpm@selenic.com>
-> 
-> A quick grep shows that there are currently 1145 instances of WARN_ON
-> in the kernel. Currently, WARN_ON is pretty much entirely inlined,
-> which makes it hard to enhance it without growing the size of the kernel
-> (and getting Andrew unhappy).
-> 
-> This patch build on top of Olof's patch that introduces __WARN,
-> and places the slowpath out of line. It also uses Ingo's suggestion
-> to not use __FUNCTION__ but to use kallsyms to do the lookup;
-> this saves a ton of extra space since gcc doesn't need to store the function
-> string twice now:
-> 
-> 3936367  833603  624736 5394706  525112 vmlinux.before
-> 3917508  833603  624736 5375847  520767 vmlinux-slowpath
-> 
-> 15Kb savings...
-> 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> 
-> 
-> ---
->  include/asm-generic/bug.h |    7 ++-----
->  kernel/panic.c            |   14 ++++++++++++++
->  2 files changed, 16 insertions(+), 5 deletions(-)
-> 
-> Index: linux-2.6.24-rc6/include/asm-generic/bug.h
-> ===================================================================
-> --- linux-2.6.24-rc6.orig/include/asm-generic/bug.h
-> +++ linux-2.6.24-rc6/include/asm-generic/bug.h
-> @@ -32,11 +32,8 @@ struct bug_entry {
->  #endif
->  
->  #ifndef __WARN
-> -#define __WARN() do {							\
-> -	printk("WARNING: at %s:%d %s()\n", __FILE__,			\
-> -		__LINE__, __FUNCTION__);				\
-> -	dump_stack();							\
-> -} while (0)
-> +extern void warn_on_slowpath(const char *file, const int line);
-> +#define __WARN() warn_on_slowpath(__FILE__, __LINE__)
->  #endif
->  
->  #ifndef WARN_ON
-> Index: linux-2.6.24-rc6/kernel/panic.c
-> ===================================================================
-> --- linux-2.6.24-rc6.orig/kernel/panic.c
-> +++ linux-2.6.24-rc6/kernel/panic.c
-> @@ -20,6 +20,7 @@
->  #include <linux/kexec.h>
->  #include <linux/debug_locks.h>
->  #include <linux/random.h>
-> +#include <linux/kallsyms.h>
->  
->  int panic_on_oops;
->  int tainted;
-> @@ -292,6 +293,19 @@ void oops_exit(void)
->  		(unsigned long long)oops_id);
->  }
->  
-> +
-> +void warn_on_slowpath(const char *file, int line)
-> +{
-> +	char function[KSYM_SYMBOL_LEN];
-> +	unsigned long caller = (unsigned long) __builtin_return_address(0);
-> +
-> +	sprint_symbol(function, caller);
-> +	printk(KERN_WARNING "WARNING: at %s:%d %s()\n", file,
-> +		line, function);
-> +	dump_stack();
-> +}
-> +EXPORT_SYMBOL(warn_on_slowpath);
-> +
->  #ifdef CONFIG_CC_STACKPROTECTOR
->  /*
->   * Called when gcc's -fstack-protector feature is used, and
+The only access method that is lockless is mmconfig, which will work
+on most (but not all) Fam10h systems.
 
+> And it's one thing to be "likely" already in a
+> thread, and another to be sure.  If you can address these issues, I'll
+> change or remove the comment.  I just want to prevent a
+> reasonable-looking but bad coding change from happening in the future.
+
+Well at least as written the comment is not quite correct.
+> 
+> 
+> Agreed.  I had it at the top of the function, but now I've worked it
+> into both places.
+> 
+> >
+> > Anyways I'm unsure about the blacklist here -- white list would
+> > probably have been better. k8_northbridges[] will certainly include
+> > Griffin northtbridges and who knows if TT will work there or not.
+> > [sorry for mentioning that not earlier]
+> 
+> Ideally, every ID in the k8_northbridges[] whitelist would have
+
+k8_northbridges[] is used by various subsystems, most of them
+do not care at all about thermal throttling.
+
+> functional thermal throttling.  If more IDs than 0x1103 turn out to
+> have this feature broken, then we may need to add a blacklist as well.
+
+? you already got a blacklist ? 
+
+>  But I expect that most future IDs will function correctly, hence my
+> reliance on the whitelist. 
+
+? but you don't have a whitelist, you have a black list.
+
+> In my view, anyone who adds an ID to a
+> whitelist (or just a list, for that matter) is obligated to perform a
+> static analysis (i.e. grep for "k8_northbridges") of the implications
+> of such act; 
+
+That view would require the whitelist.
+
+-Andi
