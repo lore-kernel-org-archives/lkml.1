@@ -1,98 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755048AbYAEAS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754934AbYAEAcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755048AbYAEAS1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 19:18:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753911AbYAEAST
+	id S1754934AbYAEAcT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 19:32:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754081AbYAEAcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 19:18:19 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:58609 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753674AbYAEASS (ORCPT
+	Fri, 4 Jan 2008 19:32:06 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:43955 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754079AbYAEAcE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 19:18:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AnYLl4Xscbn+y4Le4HlFZt7AsEVEDqhZwaJTu+VhZAxBC7PTczX6eEl5nqe4sZ/sQrEUXKpuTYwnCwRtGqI7zTfPsTFN+cdvpj4n8jJWHVhh0L6NqzXej3bKJdbk2L84AF69NiH4Nz0Xo1FUkJgONcM15Kz9tKGwXkYw4Bw5p5I=
-Message-ID: <4d8e3fd30801041618p1afad989w494461671cca14ac@mail.gmail.com>
-Date: Sat, 5 Jan 2008 01:18:17 +0100
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-Subject: Re: [PATCH] profile: further Codying Style fixes, take 2
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>, mingo@elte.hu
-In-Reply-To: <20080104203745.GB32174@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 4 Jan 2008 19:32:04 -0500
+Date: Fri, 4 Jan 2008 16:27:05 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
+       Christoph Lameter <clameter@sgi.com>, Willy Tarreau <w@1wt.eu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch] slub: provide /proc/slabinfo
+Message-ID: <20080104162705.44b61e9a@laptopd505.fenrus.org>
+In-Reply-To: <20080101162328.GC20426@elte.hu>
+References: <alpine.LFD.0.9999.0712221251110.21557@woody.linux-foundation.org>
+	<20071222221050.GA20753@1wt.eu>
+	<Pine.LNX.4.58.0712221954530.19187@gandalf.stny.rr.com>
+	<20071223051241.GA4449@1wt.eu>
+	<20071223141500.GB6430@one.firstfloor.org>
+	<20071224034530.GB16658@thunk.org>
+	<Pine.LNX.4.64.0712241120230.8849@schroedinger.engr.sgi.com>
+	<20071224233701.GB9784@kernel.org>
+	<20071225033418.GA29199@one.firstfloor.org>
+	<20080101124741.GH11776@mit.edu>
+	<20080101162328.GC20426@elte.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080104185209.111adeed@paolo-desktop>
-	 <20080104203745.GB32174@uranus.ravnborg.org>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 4, 2008 9:37 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
-> On Fri, Jan 04, 2008 at 06:52:09PM +0100, Paolo Ciarrocchi wrote:
-> > Further fixes to profile.c, checkpatch.pl now reports:
-> >
-> >       total: 0 errors, 2 warnings, 601 lines checked
-> >
-> >   WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
-> >   #410: FILE: profile.c:410:
-> >   +EXPORT_SYMBOL_GPL(profile_hits);
-> > I cannot fix this without changing the funtionality in case of non-SMP build.
->
-> If you look a bit more you will see two functions named
-> profile_hits.
-> So you just add the export twice - like this:
-> diff --git a/kernel/profile.c b/kernel/profile.c
-> index 5e95330..fc4570d 100644
-> --- a/kernel/profile.c
-> +++ b/kernel/profile.c
-> @@ -337,6 +337,7 @@ out:
->         local_irq_restore(flags);
->         put_cpu();
->  }
-> +EXPORT_SYMBOL_GPL(profile_hits);
->
->  static int __devinit profile_cpu_callback(struct notifier_block *info,
->                                         unsigned long action, void *__cpu)
-> @@ -408,9 +409,8 @@ void profile_hits(int type, void *__pc, unsigned int nr_hits)
->         pc = ((unsigned long)__pc - (unsigned long)_stext) >> prof_shift;
->         atomic_add(nr_hits, &prof_buffer[min(pc, prof_len - 1)]);
->  }
-> -#endif /* !CONFIG_SMP */
-> -
->  EXPORT_SYMBOL_GPL(profile_hits);
-> +#endif /* !CONFIG_SMP */
->
->  void profile_tick(int type)
->  {
->
-> Which has the added benefit that it is now documented for
-> both implementations that they are exported.
+On Tue, 1 Jan 2008 17:23:28 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Nice, thanks for the explanation Sam.
-
-> >
-> >
-> >   WARNING: externs should be avoided in .c files
-> >   #509: FILE: profile.c:509:
-> >   +       extern int setup_profiling_timer(unsigned int multiplier);
-> > I don't know what to do with this warning.
->
-> Stick the prototype in profile.h maybe?
-> I can see that not all implementers of this function
-> includes profile.h so it is not foolproof.
-
-That would not be an easy fix for me (I'm almost new to these things),
-I can try to that but I would appreciated if Ingo could apply the patch
-as it is now and wait a bit for the further fix.
-
-Ingo, do you agree?
+> 
+> * Theodore Tso <tytso@MIT.EDU> wrote:
+> 
+> > [...] doesn't a patch to provide /proc/slabinfo for SLUB already 
+> > exist?
+> 
+> yes, the complete (and tested) patch is below. It has been through a
+> few thousand random-bootup tests on x86 32-bit and 64-bit so it's
+> v2.6.24 material i think.
 
 
-Ciao,
--- 
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
+> +static void *s_start(struct seq_file *m, loff_t *pos)
+> +{
+> +	loff_t n = *pos;
+> +
+> +	down_read(&slub_lock);
+> +	if (!n)
+> +		print_slabinfo_header(m);
+> +
+> +	return seq_list_start(&slab_caches, *pos);
+> +}
+> +
+
+
+this is the part I'm not very thrilled about... at least on first sight
+it looks like a user can now hold the read sem over system calls, and for as long as it wants.
+Either that's no problem (but then we wouldn't need the lock in the first place) or it
+is a problem that then wants to be fixed
