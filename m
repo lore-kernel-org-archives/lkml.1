@@ -1,48 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757411AbYAEUI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757523AbYAEUJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757411AbYAEUI4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 15:08:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756212AbYAEUIr
+	id S1757523AbYAEUJU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 15:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756520AbYAEUIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 15:08:47 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39643 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756189AbYAEUIq (ORCPT
+	Sat, 5 Jan 2008 15:08:49 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:1088 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756189AbYAEUIr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 15:08:46 -0500
-Date: Sat, 5 Jan 2008 20:06:15 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Sat, 5 Jan 2008 15:08:47 -0500
+Date: Sat, 5 Jan 2008 15:08:46 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>
-Subject: Re: 2.6.24-rc6-git12: Reported regressions from 2.6.23
-Message-ID: <20080105200615.45236ffb@lxorguk.ukuu.org.uk>
-In-Reply-To: <200801052042.56042.rjw@sisk.pl>
-References: <200801052042.56042.rjw@sisk.pl>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] PM: Acquire device locks on suspend
+In-Reply-To: <200801051936.22307.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0801051455320.26040-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Subject		: PATA_HPT37X embezzles two ports
-> Submitter	: "Bjoern Olausson" <lkmlist@gmail.com>
-> Date		: 2007-12-12 11:05
-> References	: http://lkml.org/lkml/2007/12/12/161
-> 		  http://bugzilla.kernel.org/show_bug.cgi?id=9551
+On Sat, 5 Jan 2008, Rafael J. Wysocki wrote:
 
-HPT374 patch was posted.
+> Greg, Andrew,
+> 
+> The appended patch is a replacement for
+> gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch that deadlocked
+> suspend and hibernation on some systems.
+> 
+> Please consider for applying.
 
-We also have a newly reported regression in USB pl2303
+This warning message:
 
-See [pl2303 regression] Linux 2.6.23 breaks gpsbabel's DG-100 support on
-linux-usb@vger.kernel.org
+> @@ -905,6 +915,13 @@ void device_del(struct device * dev)
+>  	struct device * parent = dev->parent;
+>  	struct class_interface *class_intf;
+>  
+> +	if (pm_sleep_lock()) {
+> +		dev_warn(dev, "Illegal %s during suspend\n", __FUNCTION__);
+> +		dump_stack();
+> +	} else {
 
-No bug # yet but will try and sort a patch out next week.
+will unavoidably be triggered by this code:
+
+> +void device_pm_destroy_suspended(struct device *dev)
+> +{
+> +	pr_debug("PM: Removing suspended device %s:%s\n",
+> +		 dev->bus ? dev->bus->name : "No Bus",
+> +		 kobject_name(&dev->kobj));
+> +	mutex_lock(&dpm_list_mtx);
+> +	list_del_init(&dev->power.entry);
+> +	mutex_unlock(&dpm_list_mtx);
+> +	up(&dev->sem);
+> +	device_unregister(dev);
+> +}
+
+since the call to device_del() will occur while the pm_sleep_rwsem is
+still locked for writing.  That's why I suggested not unregistering
+these devices until after everything else has been resumed and the
+rwsem has been dropped.
+
+Another thing to watch out for: Just in case somebody ends up calling
+destroy_suspended_device(dev) from within dev's own resume method, you 
+should interchange the resume_device() and the list_move_tail() 
+calls in dpm_resume().
+
+Alan Stern
+
+
+
