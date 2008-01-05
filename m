@@ -1,217 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755730AbYAEMFC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754964AbYAEMqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755730AbYAEMFC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 07:05:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbYAEMDO
+	id S1754964AbYAEMqr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 07:46:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079AbYAEMqi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 07:03:14 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:38379 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754081AbYAEMDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 07:03:04 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: akpm@linux-foundation.org
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 5/6] NLM: Convert lockd to use kthreads
-Date: Sat,  5 Jan 2008 07:02:21 -0500
-Message-Id: <1199534542-3384-6-git-send-email-jlayton@redhat.com>
-X-Mailer: git-send-email 1.5.3.3
-In-Reply-To: <1199534542-3384-5-git-send-email-jlayton@redhat.com>
-References: <1199534542-3384-1-git-send-email-jlayton@redhat.com>
- <1199534542-3384-2-git-send-email-jlayton@redhat.com>
- <1199534542-3384-3-git-send-email-jlayton@redhat.com>
- <1199534542-3384-4-git-send-email-jlayton@redhat.com>
- <1199534542-3384-5-git-send-email-jlayton@redhat.com>
+	Sat, 5 Jan 2008 07:46:38 -0500
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:63410 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753969AbYAEMqh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 07:46:37 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HACIKf0dMROHU/2dsb2JhbACBV6hR
+Date: Sat, 5 Jan 2008 07:46:32 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: "K. Prasad" <prasad@linux.vnet.ibm.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       dipankar@in.ibm.com, paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH 2/2] Markers Implementation for Preempt RCU Boost
+	Tracing
+Message-ID: <20080105124632.GA16576@Krystal>
+References: <20071231060911.GB6461@in.ibm.com> <20080103163055.GB27651@Krystal> <20080104105858.GA13865@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080104105858.GA13865@in.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 07:34:51 up 62 days, 17:40,  3 users,  load average: 0.19, 0.40,
+	0.35
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Have lockd_up start lockd using kthread_run. With this change,
-lockd_down now blocks until lockd actually exits, so there's no longer
-need for the waitqueue code at the end of lockd_down. This also means
-that only one lockd can be running at a time which simplifies the code
-within lockd's main loop.
+* Gautham R Shenoy (ego@in.ibm.com) wrote:
+> On Thu, Jan 03, 2008 at 11:30:55AM -0500, Mathieu Desnoyers wrote:
+> > * K. Prasad (prasad@linux.vnet.ibm.com) wrote:
+> > > This patch converts the tracing mechanism of Preempt RCU boosting into
+> > > markers. The handler functions for these markers are included inside
+> > > rcupreempt_trace.c and will be included only when PREEMPT_RCU_BOOST is
+> > > chosen.
+> > >  
+> > > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> > > ---
+> > >  include/linux/rcupreempt_trace.h |   46 ++++++++
+> > >  kernel/rcupreempt-boost.c        |  211 ++++-----------------------------------
+> > >  kernel/rcupreempt_trace.c        |  183 +++++++++++++++++++++++++++++++++
+> > >  3 files changed, 251 insertions(+), 189 deletions(-)
+> > >  
+> > > Index: linux-2.6.24-rc2-rt1.MARKER_PATCHES_NEW/include/linux/rcupreempt_trace.h
+> > > ===================================================================
+> > > --- linux-2.6.24-rc2-rt1.MARKER_PATCHES_NEW.orig/include/linux/rcupreempt_trace.h
+> > > +++ linux-2.6.24-rc2-rt1.MARKER_PATCHES_NEW/include/linux/rcupreempt_trace.h
+> > > @@ -102,5 +102,51 @@ extern int rcupreempt_flip_flag(int cpu)
+> > >  extern int rcupreempt_mb_flag(int cpu);
+> > >  extern char *rcupreempt_try_flip_state_name(void);
+> > >  
+> > > +#ifdef CONFIG_PREEMPT_RCU_BOOST
+> > > +struct preempt_rcu_boost_trace {
+> > > +	unsigned long rbs_stat_task_boost_called;
+> > > +	unsigned long rbs_stat_task_boosted;
+> > > +	unsigned long rbs_stat_boost_called;
+> > > +	unsigned long rbs_stat_try_boost;
+> > > +	unsigned long rbs_stat_boosted;
+> > > +	unsigned long rbs_stat_unboost_called;
+> > > +	unsigned long rbs_stat_unboosted;
+> > > +	unsigned long rbs_stat_try_boost_readers;
+> > > +	unsigned long rbs_stat_boost_readers;
+> > > +	unsigned long rbs_stat_try_unboost_readers;
+> > > +	unsigned long rbs_stat_unboost_readers;
+> > > +	unsigned long rbs_stat_over_taken;
+> > > +};
+> > > +
+> > > +#define DEFINE_PREEMPT_RCU_BOOST_MARKER_HANDLER(preempt_rcu_boost_var) \
+> > > +void preempt_rcu_boost_var##_callback(const struct marker *mdata, \
+> > > +				void *private_data, const char *format, ...) \
+> > > +{ \
+> > > +	va_list ap; \
+> > > +	int cpu; \
+> > > +	struct preempt_rcu_boost_trace *boost_trace; \
+> > > +	va_start(ap, format); \
+> > > +	cpu = va_arg(ap, typeof(unsigned int)); \
+> > 
+> > (sorry for late response, I just came back from vacation)
+> > 
+> > Instead of passing the cpu id as a marker parameter, why don't you
+> > simply use smp_processor_id() right here ?
+> > 
+> 
+> Agreed. 
+> 
+> Also in patch 1, in cases where we're using markers in place of RCU_TRACE_ME(), 
+> we need not pass the parameter and simply use smp_processor_id().
+> 
+> It's only the RCU_TRACE_RDP() that requires cpuid to be passed.
+> 
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
- fs/lockd/svc.c |   79 ++++++++++++++++++++++++++-----------------------------
- 1 files changed, 37 insertions(+), 42 deletions(-)
 
-diff --git a/fs/lockd/svc.c b/fs/lockd/svc.c
-index 03a83a0..d7209ea 100644
---- a/fs/lockd/svc.c
-+++ b/fs/lockd/svc.c
-@@ -25,6 +25,7 @@
- #include <linux/smp.h>
- #include <linux/smp_lock.h>
- #include <linux/mutex.h>
-+#include <linux/kthread.h>
- #include <linux/freezer.h>
- 
- #include <linux/sunrpc/types.h>
-@@ -48,13 +49,12 @@ EXPORT_SYMBOL(nlmsvc_ops);
- 
- static DEFINE_MUTEX(nlmsvc_mutex);
- static unsigned int		nlmsvc_users;
--static pid_t			nlmsvc_pid;
-+static struct task_struct	*nlmsvc_task;
- static struct svc_serv		*nlmsvc_serv;
- int				nlmsvc_grace_period;
- unsigned long			nlmsvc_timeout;
- 
- static DECLARE_COMPLETION(lockd_start_done);
--static DECLARE_WAIT_QUEUE_HEAD(lockd_exit);
- 
- /*
-  * These can be set at insmod time (useful for NFS as root filesystem),
-@@ -111,10 +111,11 @@ static inline void clear_grace_period(void)
- /*
-  * This is the lockd kernel thread
-  */
--static void
--lockd(struct svc_rqst *rqstp)
-+static int
-+lockd(void *vrqstp)
- {
- 	int		err = 0;
-+	struct svc_rqst *rqstp = vrqstp;
- 	unsigned long grace_period_expire;
- 
- 	/* Lock module and set up kernel thread */
-@@ -128,11 +129,9 @@ lockd(struct svc_rqst *rqstp)
- 	/*
- 	 * Let our maker know we're running.
- 	 */
--	nlmsvc_pid = current->pid;
- 	nlmsvc_serv = rqstp->rq_server;
- 	complete(&lockd_start_done);
- 
--	daemonize("lockd");
- 	set_freezable();
- 
- 	/* Process request with signals blocked, but allow SIGKILL.  */
-@@ -151,7 +150,7 @@ lockd(struct svc_rqst *rqstp)
- 	 * NFS mount or NFS daemon has gone away, and we've been sent a
- 	 * signal, or else another process has taken over our job.
- 	 */
--	while ((nlmsvc_users || !signalled()) && nlmsvc_pid == current->pid) {
-+	while (!kthread_should_stop()) {
- 		long timeout = MAX_SCHEDULE_TIMEOUT;
- 		char buf[RPC_MAX_ADDRBUFLEN];
- 
-@@ -203,23 +202,19 @@ lockd(struct svc_rqst *rqstp)
- 	 * Check whether there's a new lockd process before
- 	 * shutting down the hosts and clearing the slot.
- 	 */
--	if (!nlmsvc_pid || current->pid == nlmsvc_pid) {
--		if (nlmsvc_ops)
--			nlmsvc_invalidate_all();
--		nlm_shutdown_hosts();
--		nlmsvc_pid = 0;
--		nlmsvc_serv = NULL;
--	} else
--		printk(KERN_DEBUG
--			"lockd: new process, skipping host shutdown\n");
--	wake_up(&lockd_exit);
-+	if (nlmsvc_ops)
-+		nlmsvc_invalidate_all();
-+	nlm_shutdown_hosts();
-+	nlmsvc_task = NULL;
-+	nlmsvc_serv = NULL;
- 
- 	/* Exit the RPC thread */
- 	svc_exit_thread(rqstp);
- 
- 	/* Release module */
- 	unlock_kernel();
--	module_put_and_exit(0);
-+	module_put(THIS_MODULE);
-+	return 0;
- }
- 
- 
-@@ -269,14 +264,15 @@ static int make_socks(struct svc_serv *serv, int proto)
- int
- lockd_up(int proto) /* Maybe add a 'family' option when IPv6 is supported ?? */
- {
--	struct svc_serv *	serv;
--	int			error = 0;
-+	struct svc_serv *serv;
-+	struct svc_rqst *rqstp;
-+	int		error = 0;
- 
- 	mutex_lock(&nlmsvc_mutex);
- 	/*
- 	 * Check whether we're already up and running.
- 	 */
--	if (nlmsvc_pid) {
-+	if (nlmsvc_task) {
- 		if (proto)
- 			error = make_socks(nlmsvc_serv, proto);
- 		goto out;
-@@ -303,11 +299,24 @@ lockd_up(int proto) /* Maybe add a 'family' option when IPv6 is supported ?? */
- 	/*
- 	 * Create the kernel thread and wait for it to start.
- 	 */
-+	rqstp = svc_prepare_thread(serv, &serv->sv_pools[0]);
-+	if (IS_ERR(rqstp)) {
-+		error = PTR_ERR(rqstp);
-+		printk(KERN_WARNING
-+			"lockd_up: svc_rqst allocation failed, error=%d\n",
-+			error);
-+		goto destroy_and_out;
-+	}
-+
-+	svc_sock_update_bufs(serv);
- 	init_completion(&lockd_start_done);
--	error = svc_create_thread(lockd, serv);
--	if (error) {
-+	nlmsvc_task = kthread_run(lockd, rqstp, serv->sv_name);
-+	if (IS_ERR(nlmsvc_task)) {
-+		error = PTR_ERR(nlmsvc_task);
-+		nlmsvc_task = NULL;
- 		printk(KERN_WARNING
--			"lockd_up: create thread failed, error=%d\n", error);
-+			"lockd_up: kthread_run failed, error=%d\n", error);
-+		svc_exit_thread(rqstp);
- 		goto destroy_and_out;
- 	}
- 	wait_for_completion(&lockd_start_done);
-@@ -339,30 +348,16 @@ lockd_down(void)
- 		if (--nlmsvc_users)
- 			goto out;
- 	} else
--		printk(KERN_WARNING "lockd_down: no users! pid=%d\n", nlmsvc_pid);
-+		printk(KERN_WARNING "lockd_down: no users! task=%p\n",
-+			nlmsvc_task);
- 
--	if (!nlmsvc_pid) {
-+	if (!nlmsvc_task) {
- 		if (warned++ == 0)
- 			printk(KERN_WARNING "lockd_down: no lockd running.\n"); 
- 		goto out;
- 	}
- 	warned = 0;
--
--	kill_proc(nlmsvc_pid, SIGKILL, 1);
--	/*
--	 * Wait for the lockd process to exit, but since we're holding
--	 * the lockd semaphore, we can't wait around forever ...
--	 */
--	clear_thread_flag(TIF_SIGPENDING);
--	interruptible_sleep_on_timeout(&lockd_exit, HZ);
--	if (nlmsvc_pid) {
--		printk(KERN_WARNING 
--			"lockd_down: lockd failed to exit, clearing pid\n");
--		nlmsvc_pid = 0;
--	}
--	spin_lock_irq(&current->sighand->siglock);
--	recalc_sigpending();
--	spin_unlock_irq(&current->sighand->siglock);
-+	kthread_stop(nlmsvc_task);
- out:
- 	mutex_unlock(&nlmsvc_mutex);
- }
+And it would help if you declare the format string with something like :
+
+"cpuid %u" instead of "%u"
+
+This way, if a generic tracer like LTTng dumps the traces and later a
+plugin in an analysis tool like LTTV have to hook on a specific field of
+your event, it can access it by specifying the marker name and field
+name. And even if fields are added to this event, it won't break
+compatibility as long as this field is there and have the same name.
+
+Mathieu
+
+> 
+> Thanks and Regards
+> gautham.
+> 
+> 
+> > -- 
+> > Mathieu Desnoyers
+> > Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> 
+> -- 
+> Gautham R Shenoy
+> Linux Technology Center
+> IBM India.
+> "Freedom comes with a price tag of responsibility, which is still a bargain,
+> because Freedom is priceless!"
+
 -- 
-1.5.3.6
-
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
