@@ -1,126 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758058AbYAEWKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758589AbYAEWKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758058AbYAEWKc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 17:10:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756878AbYAEWKV
+	id S1758589AbYAEWKx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 17:10:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758177AbYAEWKl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 17:10:21 -0500
-Received: from py-out-1112.google.com ([64.233.166.182]:31564 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755161AbYAEWKT (ORCPT
+	Sat, 5 Jan 2008 17:10:41 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:51545 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757500AbYAEWKY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 17:10:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OaXRMIxqnx2Qj3gXh6J+JCOV1mWa2Pffrew2LgoTpl0/L7ypBpEDgQJYB67Os2q/UwJELLj1m19AIaVHiZzuz3hnZeVYJEpJ6bySa5IXGeqV3O6osNAhJwkpjQ2lirr5Pxn76VVOnlcyn6XzX7aJRcQK/WqSxVSQfkNZsx+8GaM=
-Message-ID: <64bb37e0801051410p39746295oab4dad438943372@mail.gmail.com>
-Date: Sat, 5 Jan 2008 23:10:17 +0100
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Jarek Poplawski" <jarkao2@gmail.com>
-Subject: Re: 2.6.24-rc6-mm1
-Cc: "Herbert Xu" <herbert@gondor.apana.org.au>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "Neil Brown" <neilb@suse.de>,
-       "J. Bruce Fields" <bfields@fieldses.org>, netdev@vger.kernel.org,
-       "Tom Tucker" <tom@opengridcomputing.com>
-In-Reply-To: <64bb37e0801050652t7568e438uf93208601df84ef6@mail.gmail.com>
+	Sat, 5 Jan 2008 17:10:24 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: Can ARM use drivers/Kconfig [Was: Kconfig: Source "drivers/usb/gadget/Kconfig" for ARCH=arm]
+Date: Sat, 5 Jan 2008 23:09:24 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: Sam Ravnborg <sam@ravnborg.org>, Al Boldi <a1426z@gawab.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
+       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
+References: <200801051546.SAA08953@raad.intranet> <20080105192000.GA9553@uranus.ravnborg.org> <20080105203123.GA7797@flint.arm.linux.org.uk>
+In-Reply-To: <20080105203123.GA7797@flint.arm.linux.org.uk>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <64bb37e0801040223q17a76565k3c7667a197403ce5@mail.gmail.com>
-	 <20080104133031.GA3329@ff.dom.local>
-	 <64bb37e0801040721p57ff3d54wc3de00546d1d2ff1@mail.gmail.com>
-	 <20080105000700.GA3224@ami.dom.local>
-	 <64bb37e0801050001x65b104bdl5a68c731b3656d17@mail.gmail.com>
-	 <20080105101327.GA3103@ami.dom.local>
-	 <64bb37e0801050652t7568e438uf93208601df84ef6@mail.gmail.com>
+Message-Id: <200801052309.25027.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19SFDOiz80Y0496E0B3Fe1rUozPbX1i4YSsAaI
+ wUw1InTSBpqxhV9e2Qk3e+TjzOVupOPQTKuU9nGkrIvtyz1yvz
+ p59Ul27aOE8WfRDRg4Ztw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 5, 2008 3:52 PM, Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
-> On Jan 5, 2008 11:13 AM, Jarek Poplawski <jarkao2@gmail.com> wrote:
-> > On Sat, Jan 05, 2008 at 09:01:02AM +0100, Torsten Kaiser wrote:
-> > > On Jan 5, 2008 1:07 AM, Jarek Poplawski <jarkao2@gmail.com> wrote:
-> > > > I think it would be easier just to start with this working -rc6 and
-> > > > simply check if we have 'right' suspects, so: git-net.patch and
-> > > > git-nfsd.patch from -mm1-broken-out, as suggested by Herbert (I hope,
-> > > > can compile - otherwise you could try the other way: add the whole -mm
-> > > > and revert these two). Using current gits could complicate this
-> > > > "investigation".
-> > >
-> > > OK, I will try this...
->
-> still on the todo-list, I had no time to try this yet...
+On Saturday 05 January 2008, Russell King wrote:
+> Not everything in drivers/ is suitable for every ARM configuration.  It
+> was felt at the time better for ARM to remain separate because people
+> didn't want to pollute drivers/Kconfig with the ARM specific conditionals.
 
-working on it...
-2.6.24-rc6 + mm-patches up to git.battery (includes git-net and
-git-netdev-all) worked for 110 packages, then I proclaimed it good.
-2.6.24-rc6 + mm-patches up to (including) git.nfsd is currently
-getting testet (9 packages done...)
+We made drivers/Kconfig work for s390 in the meantime, which is far more
+special than arm in this regard, so I think you should try to give it
+another go.
 
-But the cause of my mail is the following question:
-Regarding my "iommu-sg-merging-patches are new in -rc3-mm and could be
-the cause"-suspicion I looked at these patches and came across these
-hunks:
+What are the main obstacles on arm that prevent you from building these
+drivers?
 
-This is removed from arch/x86/lib/bitstr_64.c:
--/* Find string of zero bits in a bitmap */
--unsigned long
--find_next_zero_string(unsigned long *bitmap, long start, long nbits, int len)
--{
--       unsigned long n, end, i;
--
-- again:
--       n = find_next_zero_bit(bitmap, nbits, start);
--       if (n == -1)
--               return -1;
--
--       /* could test bitsliced, but it's hardly worth it */
--       end = n+len;
--       if (end > nbits)
--               return -1;
--       for (i = n+1; i < end; i++) {
--               if (test_bit(i, bitmap)) {
--                       start = i+1;
--                       goto again;
--               }
--       }
--       return n;
--}
-
-This is added to lib/iommu-helper.c:
-+static unsigned long find_next_zero_area(unsigned long *map,
-+                                        unsigned long size,
-+                                        unsigned long start,
-+                                        unsigned int nr)
-+{
-+       unsigned long index, end, i;
-+again:
-+       index = find_next_zero_bit(map, size, start);
-+       end = index + nr;
-+       if (end > size)
-+               return -1;
-+       for (i = index + 1; i < end; i++) {
-+               if (test_bit(i, map)) {
-+                       start = i+1;
-+                       goto again;
-+               }
-+       }
-+       return index;
-+}
-
-The old version checks, if find_next_zero_bit returns -1, the new
-version doesn't do this.
-Is this intended and can find_next_zero_bit never fail?
-Hmm... but in the worst case it should only loop forever if I'm
-reading this right (index = -1 => for-loop counts from 0 to nr, if any
-bit is set it will jump to "again:" and if the next call to
-find_next_zero_bit also fails, its an endless loop)
-
-So even if this can not explain my bug, could somebody check if this
-is a real bug or not?
-
-Torsten
+	Arnd <><
