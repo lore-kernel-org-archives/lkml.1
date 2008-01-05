@@ -1,103 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbYAEKFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755025AbYAEKKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754919AbYAEKFQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 05:05:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbYAEKFD
+	id S1755025AbYAEKKm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 05:10:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbYAEKKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 05:05:03 -0500
-Received: from mail.isohunt.com ([208.71.112.20]:42273 "EHLO mail.isohunt.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753060AbYAEKFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 05:05:00 -0500
-Date: Sat, 5 Jan 2008 02:04:55 -0800
-From: "Robin H. Johnson" <robbat2@gentoo.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Robin H. Johnson" <robbat2@gentoo.org>, linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: Idle loadavg of ~1, maybe MD related
-Message-ID: <20080105100455.GB911@curie-int.orbis-terrarum.net>
-References: <20071230100614.GX17327@curie-int.orbis-terrarum.net> <20080105013037.a354b33a.akpm@linux-foundation.org>
+	Sat, 5 Jan 2008 05:10:34 -0500
+Received: from fmmailgate04.web.de ([217.72.192.242]:54961 "EHLO
+	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753309AbYAEKKc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 05:10:32 -0500
+Date: Sat, 05 Jan 2008 11:10:29 +0100
+Message-Id: <87242428@web.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="pvezYHf7grwyp3Bc"
-Content-Disposition: inline
-In-Reply-To: <20080105013037.a354b33a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+From: devzero@web.de
+To: linux-kernel@vger.kernel.org
+Cc: dhecht@vmware.com
+Subject: Re: PIT clocksource makes invalid assumptions
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX198JJr018bxi3+kdpm06iLMK8sKq/RgPycpSJbs4wviWWp/n
+ G8yxfm4wZzg87bi26mau/f/s4VGSOQxGDeONUlNyHQkTCr4mls=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>I also didn't do a whole lot of digging to see what the problems this 
+>bug can cause in practice, but after the PIT clocksource was installed, 
+>I tried 'sleep 1' and this did not wake up.
 
---pvezYHf7grwyp3Bc
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+i`m using clock=pit on many of our virtual servers for accurate time syncronization. (as recommended by vmware and even by microsoft  - see: http://support.microsoft.com/?scid=kb%3Ben-us%3B918461&x=11&y=18 )
 
-On Sat, Jan 05, 2008 at 01:30:37AM -0800, Andrew Morton wrote:
-> >From that I'd suspect that kwindfarm is being a bad citizen.
-> If a process is consistently stuck in D state, run
-Windfarm.
+so this means i need "clock=pit nohz=off" now on those systems, if this won`t get fixed? 
 
-> 	echo w > /proc/sysrq-trigger
-> then record the resulting dmesg output so we can see where it got stuck.
 
-Traceback:
-[552710.416174] SysRq : Show Blocked State
-[552710.417876]   task                        PC stack   pid father
-[552710.417888] kwindfarm     D 0000000000000000     0   829      2
-[552710.417892] Call Trace:
-[552710.417895] [c00000036c9835f0] [c000000000528b90] 0xc000000000528b90 (u=
-nreliable)
-[552710.417908] [c00000036c9837c0] [c00000000000f4a8] .__switch_to+0xd8/0x1=
-10
-[552710.417985] [c00000036c983850] [c0000000003bb2a0] .schedule+0x62c/0x6c8
-[552710.417992] [c00000036c983940] [c0000000003bb8c4] .schedule_timeout+0x3=
-c/0xe8
-[552710.417997] [c00000036c983a10] [c0000000003bb51c] .wait_for_common+0x10=
-0/0x1bc
-[552710.418002] [c00000036c983ae0] [c000000000285300] .smu_fan_set+0x17c/0x=
-1e4
-[552710.418009] [c00000036c983c30] [c000000000284078] .pm112_wf_notify+0xc5=
-0/0x12d0
-[552710.418015] [c00000036c983d20] [c0000000003bfb84] .notifier_call_chain+=
-0x5c/0xcc
-[552710.418021] [c00000036c983dc0] [c00000000006f4b4] .__blocking_notifier_=
-call_chain+0x70/0xb0
-[552710.418027] [c00000036c983e70] [c000000000282d9c] .wf_thread_func+0x78/=
-0x11c
-[552710.418032] [c00000036c983f00] [c000000000069b00] .kthread+0x78/0xc4
-[552710.418039] [c00000036c983f90] [c000000000023d0c] .kernel_thread+0x4c/0=
-x68
-[552710.418064] Sched Debug Version: v0.07, 2.6.24-rc6-prod-g6f0f5304 #10
-[552710.418067] now at 552723945.170635 msecs
-[552710.418070]   .sysctl_sched_latency                    : 60.000000
-[552710.418073]   .sysctl_sched_min_granularity            : 12.000000
-[552710.418076]   .sysctl_sched_wakeup_granularity         : 30.000000
-[552710.418079]   .sysctl_sched_batch_wakeup_granularity   : 30.000000
-[552710.418082]   .sysctl_sched_child_runs_first           : 0.000001
-[552710.418085]   .sysctl_sched_features                   : 7
 
-Full output at
-http://dev.gentoo.org/~robbat2/20080105_windfarm_sysrq_w.txt
+On 01/04/2008 12:18 PM, john stultz wrote:
+> On Thu, 2008-01-03 at 15:52 -0800, Dan Hecht wrote:
+>> Looking at pit_read() in arch/x86/kernel/i8253.c, it seems that the PIT 
+>> clocksource code assumes that the PIT CH0 is in periodic mode.  With 
+>> clockevents, this assumption is no longer valid.  There are at least two 
+>> places that make this assumption:
+>>
+>> 1) The calculation at the end of pit_read() assumes that the PIT is in 
+>> periodic mode.  This isn't true unless the PIT is the current clockevent 
+>> and nohz is inactive.  (Though #2 can end up forcing the PIT to be 
+>> reprogrammed).
+>>
+>> 2) The PIT clockevent is shutdown by using PIT mode 0 (interrupt on 
+>> terminal count) -- doesn't the PIT counter continue to count (even 
+>> though it won't be raising an interrupt)?  If so, the test in pit_read() 
+>> under the VIA686a comment can succeed after the PIT clockevent has been 
+>> shutdown, and the PIT hardware may be reprogrammed to start firing 
+>> interrupts again.  This doesn't seem intentional, and can defeat nohz 
+>> since now the PIT is firing periodically.
+>>
+>> Seems these problems can happen when the PIT is used as the clocksource 
+>> or even just the clocksource watchdog.  It looks like there is some code 
+>> in clocksource.c that checks for CLOCK_SOURCE_IS_CONTINUOUS, which is 
+>> not set for the PIT clocksource, but it doesn't seem to be strong enough 
+>> to prevent these problematic scenarios (and it's not clear if that is 
+>> the intent of IS_CONTINUOUS anyway).
+> 
+> The clocksource in use must have IS_CONTINUOUS set before we go into
+> HRT/no_hz mode, so I think the situations above should not be possible
+> (although I've not had a chance to check the current code).
+> 
 
---=20
-Robin Hugh Johnson
-Gentoo Linux Developer & Infra Guy
-E-Mail     : robbat2@gentoo.org
-GnuPG FP   : 11AC BA4F 4778 E3F6 E4ED  F38E B27B 944E 3488 4E85
+Yes, I think that is correct.  But, I don't think the code (always) 
+prevents nohz mode when the clocksource *watchdog* is !IS_CONTINUOUS.
 
---pvezYHf7grwyp3Bc
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+Anyway, the bug doesn't require that nohz mode is enabled, it just 
+requires that the PIT clockevent is shutdown (or otherwise not 
+programmed in periodic mode).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.8 (GNU/Linux)
-Comment: Robbat2 @ Orbis-Terrarum Networks - The text below is a digital signature. If it doesn't make any sense to you, ignore it.
+>> To verify this really can happen, when I boot a kernel, I can see this 
+>> sequence:
+>>
+>>    init_pit_timer (with mode==CLOCK_EVT_MODE_PERIODIC)
+>>    init_pit_timer (with mode==CLOCK_EVT_MODE_UNUSED)
+>>    init_pit_timer (with mode==CLOCK_EVT_MODE_SHUTDOWN)
+>>    pit_read() and count > LATCH (I believe the PIT is the watchdog at 
+>> this point), which causes the PIT to raise periodic interrupts.
+>>
+>> (Shortly after, the acpi pm clocksource is registered and replaces the 
+>> PIT as the watchdog.  Later, the PIT clockevent is used as the broadcast 
+>> clockevent and reprogrammed into one-shot mode, stopping the PIT 
+>> interrupts.)
+>>
+>> Also, the user could force the PIT clocksource to be current_clocksource 
+>> even though the PIT is in one-shot mode (and therefore the calculation 
+>> in pit_read is bogus).
+> 
+> Does this actually happen and cause problems? I thought there was some
+> code to make sure we disable HRT/no_hz if we install a clocksource that
+> does not have IS_CONTINUOUS set.
+> 
 
-iEYEARECAAYFAkd/VkcACgkQPpIsIjIzwiwMSACfWkMzPWiWGlwwcQU5XMd5PbAB
-zmMAn351fJtiNnbsoRVi2aUv10Rau7M1
-=oZqf
------END PGP SIGNATURE-----
+I didn't check if nohz was disabled when the PIT clocksource is switched 
+to, but I did check that the PIT was not the active clockevent, which is 
+enough for this bug.
 
---pvezYHf7grwyp3Bc--
+I also didn't do a whole lot of digging to see what the problems this 
+bug can cause in practice, but after the PIT clocksource was installed, 
+I tried 'sleep 1' and this did not wake up.
+
+Thanks,
+Dan
+_________________________________________________________________________
+In 5 Schritten zur eigenen Homepage. Jetzt Domain sichern und gestalten! 
+Nur 3,99 EUR/Monat! http://www.maildomain.web.de/?mc=021114
+
