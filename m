@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757412AbYAETvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbYAEUF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757412AbYAETvv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 14:51:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbYAETvo
+	id S1756798AbYAEUF2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 15:05:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbYAEUFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 14:51:44 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:37556 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754166AbYAETvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 14:51:43 -0500
-Date: Sat, 5 Jan 2008 20:51:45 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: paulus@samba.org, linux-kernel@vger.kernel.org, wd@denx.de
-Subject: Re: [PATCH 1/3 v2] Merge mkubootimg tool for building U-Boot images
-Message-ID: <20080105195145.GA9814@uranus.ravnborg.org>
-References: <20080103160104.171f9aaa@zod.rchland.ibm.com> <20080103160244.6a28519b@zod.rchland.ibm.com> <20080104161336.GB31026@uranus.ravnborg.org> <20080104112609.6b678ccc@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080104112609.6b678ccc@zod.rchland.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 5 Jan 2008 15:05:19 -0500
+Received: from mga07.intel.com ([143.182.124.22]:16156 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755901AbYAEUFR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 15:05:17 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,249,1196668800"; 
+   d="scan'208";a="359002836"
+Message-ID: <477FE25D.5070406@linux.intel.com>
+Date: Sat, 05 Jan 2008 12:02:37 -0800
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 1/3] move WARN_ON() out of line
+References: <477C32DA.5060905@linux.intel.com> <477F2697.5050407@goop.org> <477FC613.7020807@linux.intel.com> <477FD045.50703@goop.org>
+In-Reply-To: <477FD045.50703@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 04, 2008 at 11:26:09AM -0600, Josh Boyer wrote:
-> Several platforms require the mkimage tool to generate a uImage file that is
-> used with U-Boot.  This brings the mkimage tool in-kernel to enable building
-> those platforms without having mkimage externally provided.  The tool is named
-> mkubootimg for better clarity.
+Jeremy Fitzhardinge wrote:
 > 
-> This is currently based off of the version found in U-Boot 1.3.1.
+> Yeah, that seems reasonable if you're optimising for overall size.  Did
+> you count the difference of including the function name?  We decided not
+> to include it for BUG because its usefulness/size tradeoff didn't seem
+> terribly important.
+
+in the WARN_ON case it's not there either, based on Ingo's idea we do a kallsyms lookup
+of __builtin_return_address(0) .. same data, less memory.
+
+
+> But my goal was actually to reduce icache pollution, so by my reckoning
+> code bytes were much more expensive than data ones, so putting all BUG
+> information in a separate section makes those bytes much less
+> significant than putting anything inline in code.  Also, the trap for
+> WARN_ON would be smaller than BUG, because it wouldn't need the spurious
+> infinite loop needed to make gcc understand the control flow of a BUG.
 > 
-> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> On the other hand, you could put the call to out of line warning
+> function in a separate section to achieve the same effect.
 
-I added following comment to the changelog:
-======
-Note: This patchs trigger followings output from checkpatch.pl:
-total: 45 errors, 144 warnings, 1097 lines checked
+yeah and gcc even has a compiler option for that. Doubt it's really worth it,
+we're still talking a few bytes here ;)
 
-As this is based on a copy of SW from U-boot this is accepted as an
-exception.
-======
-
-Next time please indicate result of checkpatch.pl run.
-Usually I does not accept errors from checkpatch.pl (unless
-checkpatch.pl has become utterly confused).
-
-And I added Wolfgang as Cc:
-
-	Sam
+> 
+>     J
 
