@@ -1,114 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755025AbYAEKKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbYAEKLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755025AbYAEKKm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 05:10:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbYAEKKe
+	id S1753842AbYAEKLU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 05:11:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbYAEKLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 05:10:34 -0500
-Received: from fmmailgate04.web.de ([217.72.192.242]:54961 "EHLO
-	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753309AbYAEKKc (ORCPT
+	Sat, 5 Jan 2008 05:11:06 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:41961 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753821AbYAEKLD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 05:10:32 -0500
-Date: Sat, 05 Jan 2008 11:10:29 +0100
-Message-Id: <87242428@web.de>
+	Sat, 5 Jan 2008 05:11:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=QbEpyO5qgOenieUsDR6EWQAfjZINNCD+jPuYTdhdx5iUrQmPp3WBs15yudJ5ixt128PmMKcbGWA/lAV74ul6wt3Tw883aUw+Iia926zlMuI/50Y9i6vMoCFlyS1/BN4v4eoCjJwt7R2bxy4fft6ENZPphl85Z4beAqiw9vE7ioI=
+Date: Sat, 5 Jan 2008 11:13:27 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Torsten Kaiser <just.for.lkml@googlemail.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Neil Brown <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>,
+       netdev@vger.kernel.org, Tom Tucker <tom@opengridcomputing.com>
+Subject: Re: 2.6.24-rc6-mm1
+Message-ID: <20080105101327.GA3103@ami.dom.local>
+References: <64bb37e0801040223q17a76565k3c7667a197403ce5@mail.gmail.com> <20080104133031.GA3329@ff.dom.local> <64bb37e0801040721p57ff3d54wc3de00546d1d2ff1@mail.gmail.com> <20080105000700.GA3224@ami.dom.local> <64bb37e0801050001x65b104bdl5a68c731b3656d17@mail.gmail.com>
 MIME-Version: 1.0
-From: devzero@web.de
-To: linux-kernel@vger.kernel.org
-Cc: dhecht@vmware.com
-Subject: Re: PIT clocksource makes invalid assumptions
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX198JJr018bxi3+kdpm06iLMK8sKq/RgPycpSJbs4wviWWp/n
- G8yxfm4wZzg87bi26mau/f/s4VGSOQxGDeONUlNyHQkTCr4mls=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <64bb37e0801050001x65b104bdl5a68c731b3656d17@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->I also didn't do a whole lot of digging to see what the problems this 
->bug can cause in practice, but after the PIT clocksource was installed, 
->I tried 'sleep 1' and this did not wake up.
-
-i`m using clock=pit on many of our virtual servers for accurate time syncronization. (as recommended by vmware and even by microsoft  - see: http://support.microsoft.com/?scid=kb%3Ben-us%3B918461&x=11&y=18 )
-
-so this means i need "clock=pit nohz=off" now on those systems, if this won`t get fixed? 
-
-
-
-On 01/04/2008 12:18 PM, john stultz wrote:
-> On Thu, 2008-01-03 at 15:52 -0800, Dan Hecht wrote:
->> Looking at pit_read() in arch/x86/kernel/i8253.c, it seems that the PIT 
->> clocksource code assumes that the PIT CH0 is in periodic mode.  With 
->> clockevents, this assumption is no longer valid.  There are at least two 
->> places that make this assumption:
->>
->> 1) The calculation at the end of pit_read() assumes that the PIT is in 
->> periodic mode.  This isn't true unless the PIT is the current clockevent 
->> and nohz is inactive.  (Though #2 can end up forcing the PIT to be 
->> reprogrammed).
->>
->> 2) The PIT clockevent is shutdown by using PIT mode 0 (interrupt on 
->> terminal count) -- doesn't the PIT counter continue to count (even 
->> though it won't be raising an interrupt)?  If so, the test in pit_read() 
->> under the VIA686a comment can succeed after the PIT clockevent has been 
->> shutdown, and the PIT hardware may be reprogrammed to start firing 
->> interrupts again.  This doesn't seem intentional, and can defeat nohz 
->> since now the PIT is firing periodically.
->>
->> Seems these problems can happen when the PIT is used as the clocksource 
->> or even just the clocksource watchdog.  It looks like there is some code 
->> in clocksource.c that checks for CLOCK_SOURCE_IS_CONTINUOUS, which is 
->> not set for the PIT clocksource, but it doesn't seem to be strong enough 
->> to prevent these problematic scenarios (and it's not clear if that is 
->> the intent of IS_CONTINUOUS anyway).
+On Sat, Jan 05, 2008 at 09:01:02AM +0100, Torsten Kaiser wrote:
+> On Jan 5, 2008 1:07 AM, Jarek Poplawski <jarkao2@gmail.com> wrote:
+> > On Fri, Jan 04, 2008 at 04:21:26PM +0100, Torsten Kaiser wrote:
+> > > On Jan 4, 2008 2:30 PM, Jarek Poplawski <jarkao2@gmail.com> wrote:
+> > > The only thing that is sadly not practical is bisecting the borkenout
+> > > mm-patches, as triggering this error is to unreliable /
+> > > time-consuming.
+> >
+> > Right, but it seems there are these 2 main suspects here...
+> >
+> > > > - is it still vanilla -rc6-mm1; I've seen on kernel list you tried
+> > > > some fixes around raid?
+> > >
+> > > Yes, without these fixes I can't boot.
+> > > But they should only be run during starting the arrays, so I doubt
+> > > that this is that cause.
+> > > (Also -rc3-mm2 did not need this fix)
+> >
+> > You've written vanilla -rc6 is OK. Does it mean -rc6 with these fixes?
 > 
-> The clocksource in use must have IS_CONTINUOUS set before we go into
-> HRT/no_hz mode, so I think the situations above should not be possible
-> (although I've not had a chance to check the current code).
+> vanilla -rc6 is fine without these fixes.
+> The raid-bugs from -rc6-mm1 are probably introduced by
+> md-allow-devices-to-be-shared-between-md-arrays.patch and that patch
+> is new in this mm-release.
 > 
-
-Yes, I think that is correct.  But, I don't think the code (always) 
-prevents nohz mode when the clocksource *watchdog* is !IS_CONTINUOUS.
-
-Anyway, the bug doesn't require that nohz mode is enabled, it just 
-requires that the PIT clockevent is shutdown (or otherwise not 
-programmed in periodic mode).
-
->> To verify this really can happen, when I boot a kernel, I can see this 
->> sequence:
->>
->>    init_pit_timer (with mode==CLOCK_EVT_MODE_PERIODIC)
->>    init_pit_timer (with mode==CLOCK_EVT_MODE_UNUSED)
->>    init_pit_timer (with mode==CLOCK_EVT_MODE_SHUTDOWN)
->>    pit_read() and count > LATCH (I believe the PIT is the watchdog at 
->> this point), which causes the PIT to raise periodic interrupts.
->>
->> (Shortly after, the acpi pm clocksource is registered and replaces the 
->> PIT as the watchdog.  Later, the PIT clockevent is used as the broadcast 
->> clockevent and reprogrammed into one-shot mode, stopping the PIT 
->> interrupts.)
->>
->> Also, the user could force the PIT clocksource to be current_clocksource 
->> even though the PIT is in one-shot mode (and therefore the calculation 
->> in pit_read is bogus).
+> > I think it would be easier just to start with this working -rc6 and
+> > simply check if we have 'right' suspects, so: git-net.patch and
+> > git-nfsd.patch from -mm1-broken-out, as suggested by Herbert (I hope,
+> > can compile - otherwise you could try the other way: add the whole -mm
+> > and revert these two). Using current gits could complicate this
+> > "investigation".
 > 
-> Does this actually happen and cause problems? I thought there was some
-> code to make sure we disable HRT/no_hz if we install a clocksource that
-> does not have IS_CONTINUOUS set.
+> OK, I will try this...
+
+It seems that this last report gives the third one: ieee1394 to the pack,
+so probably, you can hold on a "minute" - this all needs some rethinking.
+(But, if you've begun with this already, let it be clear at last too.)
+
+> > I didn't read all this thread, so probably I miss many points, but are
+> > you sure there are no problems with filesystem corruption around these
+> > packets or where you compile(?) them (e.g. after these raid problems)?
 > 
+> For my setup: It's a gentoo system, so compiling packages is the
+> normal way of installing something.
+> The compile itself is done on a tmpfs so a filesystem corruption there
+> should be rather impossible. ;)
+> (The system has 4Gb RAM, so it doesn't even need to swap)
+> The sources are taken from a nfsv4 share that is served from a
+> different system. Also gentoo checksums all sources it will use.
 
-I didn't check if nohz was disabled when the PIT clocksource is switched 
-to, but I did check that the PIT was not the active clockevent, which is 
-enough for this bug.
+Yes, since this was no problem with vanilla 2.6.24-rc6, I've probably
+gone astray...
 
-I also didn't do a whole lot of digging to see what the problems this 
-bug can cause in practice, but after the PIT clocksource was installed, 
-I tried 'sleep 1' and this did not wake up.
+> If you think some other slub_debug might catch it, I would try this...
 
-Thanks,
-Dan
-_________________________________________________________________________
-In 5 Schritten zur eigenen Homepage. Jetzt Domain sichern und gestalten! 
-Nur 3,99 EUR/Monat! http://www.maildomain.web.de/?mc=021114
-
+OK! But, in the meantime could you send your current .config? I wonder
+e.g. if there could be used this new ieee1394 code from
+init_ohci1394_dma.c?
+ 
+You are really helpful, thanks,
+Jarek P.
