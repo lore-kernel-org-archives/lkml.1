@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbYAEBjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbYAECQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755469AbYAEBjO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 20:39:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753412AbYAEBi7
+	id S1755252AbYAECQk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 21:16:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754641AbYAECQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 20:38:59 -0500
-Received: from japan.chezphil.org ([77.240.5.4]:2318 "EHLO japan.chezphil.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754518AbYAEBi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 20:38:58 -0500
-To: <linux-kernel@vger.kernel.org>
-Date: Sat, 05 Jan 2008 01:38:53 +0000
-Subject: Re: strace, accept(), ERESTARTSYS and EINTR
-Message-ID: <1199497133856@dmwebmail.japan.chezphil.org>
-In-Reply-To: <20080105010639.GA8417@slug>
-References: <20080105010639.GA8417@slug>
-X-Mailer: Decimail Webmail 3alpha16
-MIME-Version: 1.0
-Content-Type: text/plain; format="flowed"
-From: "Phil Endecott" <phil_wueww_endecott@chezphil.org>
-X-SPF-Guess: pass
+	Fri, 4 Jan 2008 21:16:31 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60944 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754624AbYAECQa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 21:16:30 -0500
+Date: Sat, 5 Jan 2008 02:14:49 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Gene Heskett <gene.heskett@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Querying the bios from booted linux kernel?
+Message-ID: <20080105021449.2af7a429@lxorguk.ukuu.org.uk>
+In-Reply-To: <477ED3B5.7070009@zytor.com>
+References: <200801041913.54030.gene.heskett@gmail.com>
+	<477ED3B5.7070009@zytor.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederik Deweerdt wrote:
-> On Fri, Jan 04, 2008 at 09:01:38PM +0000, Phil Endecott wrote:
->> struct sockaddr_in client_addr;
->> socklen_t client_size=sizeof(client_addr);
->> int connfd = accept(fd,(struct sockaddr*)(&client_addr),&client_size);
->> if (connfd==-1) {
->>   // [1]
->>   .....report error and terminate......
-> Replacing the (connfd == -1) check with (connfd < 0),
-> could you try printf'ing connfd and errno here?
-> Just to confirm strace's output.
+> Unfortunately, it is not trivial to produce a mapping from EDD data to 
+> real-life disks.  Your best bet is if the disks have an MBR signature, 
 
-Yes, I've already added something like that.  Now we just need to wait 
-for it to crash again, which will happen faster if people in a 
-different timezone go and play with 
-http://demos.anyterm.org/bastet/anyterm.html while I sleep....
+Untrue for all but the very earliest EDD. True for our kernel support
+which wants improving some day
 
-Phil.
+> in which case the EDD code will capture those; you can then correlate 
+> them to real disks.
 
-(Your are welcome to Cc: me in any replies)
+EDD 1 provides the I/O base of each BIOS device so you can cross corelate
+at least each IDE device with the BIOS identifier. EDD 3 provides paths
+in multiple forms including PCI identifiers which serve the same purpose.
 
-
-
-
+Unfortunately our EDD boot code doesn't capture the right bits in all
+these cases.
