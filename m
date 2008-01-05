@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756642AbYAESSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756565AbYAESYJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756642AbYAESSk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 13:18:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755888AbYAESSb
+	id S1756565AbYAESYJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 13:24:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756033AbYAESX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 13:18:31 -0500
-Received: from japan.chezphil.org ([77.240.5.4]:3677 "EHLO japan.chezphil.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755587AbYAESSa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 13:18:30 -0500
-To: "Andreas Schwab" <schwab@suse.de>
-Cc: "Jiri Slaby" <jirislaby@gmail.com>, <linux-kernel@vger.kernel.org>,
-       "Frederik Deweerdt" <deweerdt@free.fr>
-Date: Sat, 05 Jan 2008 18:18:25 +0000
-Subject: Re: strace, accept(), ERESTARTSYS and EINTR
-Message-ID: <1199557105493@dmwebmail.japan.chezphil.org>
-In-Reply-To: <jed4sgjkhh.fsf@sykes.suse.de>
-References: <jed4sgjkhh.fsf@sykes.suse.de>
-X-Mailer: Decimail Webmail 3alpha16
-MIME-Version: 1.0
-Content-Type: text/plain; format="flowed"
-From: "Phil Endecott" <phil_wueww_endecott@chezphil.org>
-X-SPF-Guess: pass
+	Sat, 5 Jan 2008 13:23:56 -0500
+Received: from py-out-1112.google.com ([64.233.166.181]:22686 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755843AbYAESXz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 13:23:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=PAXe+9dgy9nKX30yiMIVsX4T3r1ICU5DHiOEEGxNlpJeugdOkpKsG6gjlaFrpvqAV4zcA+Mut5fIS7AM8tGs1MYl9I/V+nLDLpjvnZHadOXPFPKkCJL+UnzdP/4qC4gFa/jJNfvGbtG31Qn0TATPNT+N78yGNAVM9NzIwrHcfXc=
+Date: Sat, 5 Jan 2008 12:23:38 -0600
+From: Josh Boyer <jwboyer@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Karel Zak <kzak@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
+Subject: Re: [ANNOUNCE] util-linux-ng 2.13.1-rc2
+Message-ID: <20080105122338.7c526c8a@vader.jdub.homelinux.org>
+In-Reply-To: <20080105013121.c8bf01ed.akpm@linux-foundation.org>
+References: <20080102211052.GC23824@petra.dvoda.cz>
+	<20080105013121.c8bf01ed.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Schwab wrote:
-> "Phil Endecott" <phil_wueww_endecott@chezphil.org> writes:
->
->> However, there's a lot of code and I know that there are bugs in it.  I
->> just want to focus on the kernel-related issue that the strace fragment
->> that I posted brings up:  even if my user code gets completely screwed up
->> (corrupts its stack, runs out of FDs/VM/threads etc), I don't think that I
->> should see in the strace output that accept() has returned
->> ERESTARTSYS.
->
-> strace always sees the raw return value, before the signal handler is
-> executed and before the check for syscall restart is done.
+On Sat, 5 Jan 2008 01:31:21 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Yes, but I should see the real final return value in another strace 
-output line before I see that thread doing something else.  Correct?  
-Here's the strace output again.  Look at what thread 11079 does:
+> On Wed, 2 Jan 2008 22:10:52 +0100 Karel Zak <kzak@redhat.com> wrote:
+> 
+> > 
+> > 
+> >  The second util-linux-ng 2.13.1 release candidate is available at
+> > 
+> >     ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/
+> > 
+> 
+> Interesting.  Thanks.  Which distros are using this, or plan to do so?
 
-[pid 11079] accept(3,  <unfinished ...>
-[pid 11093] restart_syscall(<... resuming interrupted call ...>
-<unfinished ...>
-[pid  8799] --- SIGSTOP (Stopped (signal)) @ 0 (0) ---
-[pid 11079] <... accept resumed> 0xbfdaa73c, [16]) = ? ERESTARTSYS (To
-be restarted)
-[pid  8799] read(6,  <unfinished ...>
-[pid 11079] fcntl64(-512, F_SETFD, FD_CLOEXEC) = -1 EBADF (Bad file descriptor)
+Fedora switched quite a bit ago.  That shouldn't be a surprise given
+the maintainer's affiliation :)
 
-strace reports accept() returning ERESTARTSYS, and the next thing we 
-see from that thread is the call to fcntl(), which is the next thing 
-that my code does.
-
-Phil.
-
-
-
-
+josh
