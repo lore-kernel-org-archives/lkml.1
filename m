@@ -1,81 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756671AbYAEQ7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756751AbYAERB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756671AbYAEQ7A (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 11:59:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755107AbYAEQ6w
+	id S1756751AbYAERB5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 12:01:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755580AbYAERBu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 11:58:52 -0500
-Received: from enyo.dsw2k3.info ([195.71.86.239]:40108 "EHLO enyo.dsw2k3.info"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754839AbYAEQ6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 11:58:52 -0500
-Date: Sat, 5 Jan 2008 17:58:44 +0100
-From: Matthias Schniedermeyer <ms@citd.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, David Chinner <dgc@sgi.com>,
-       Timothy Shimmin <tes@sgi.com>
-Subject: Re: Why is deleting (or reading) files not counted as IO-Wait in
-	top?
-Message-ID: <20080105165844.GA8874@citd.de>
-References: <20080102193503.GA31414@citd.de> <20080105013115.217a5ab1.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080105013115.217a5ab1.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sat, 5 Jan 2008 12:01:50 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:43467 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754987AbYAERBt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 12:01:49 -0500
+Subject: Re: 2.6.24-rc6: possible recursive locking detected
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Christian Kujau <lists@nerdbynature.de>, linux-kernel@vger.kernel.org,
+       jfs-discussion@lists.sourceforge.net,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+In-Reply-To: <1199552016.31975.41.camel@lappy>
+References: <alpine.DEB.0.999999.0801032349190.4821@sheep.housecafe.de>
+	 <200801040006.47979.rjw@sisk.pl> <20080104083049.GC22803@elte.hu>
+	 <20080105071205.GA28936@gondor.apana.org.au>
+	 <1199552016.31975.41.camel@lappy>
+Content-Type: text/plain
+Date: Sat, 05 Jan 2008 18:01:16 +0100
+Message-Id: <1199552476.31975.45.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05.01.2008 01:31, Andrew Morton wrote:
-> On Wed, 2 Jan 2008 20:35:03 +0100 Matthias Schniedermeyer <ms@citd.de> wrote:
+
+On Sat, 2008-01-05 at 17:53 +0100, Peter Zijlstra wrote:
+> On Sat, 2008-01-05 at 18:12 +1100, Herbert Xu wrote:
+> > On Fri, Jan 04, 2008 at 09:30:49AM +0100, Ingo Molnar wrote:
+> > >
+> > > > > [ 1310.670986] =============================================
+> > > > > [ 1310.671690] [ INFO: possible recursive locking detected ]
+> > > > > [ 1310.672097] 2.6.24-rc6 #1
+> > > > > [ 1310.672421] ---------------------------------------------
+> > > > > [ 1310.672828] FahCore_a0.exe/3692 is trying to acquire lock:
+> > > > > [ 1310.673238]  (&q->lock){++..}, at: [<c011544b>] __wake_up+0x1b/0x50
+> > > > > [ 1310.673869]
+> > > > > [ 1310.673870] but task is already holding lock:
+> > > > > [ 1310.674567]  (&q->lock){++..}, at: [<c011544b>] __wake_up+0x1b/0x50
+> > > > > [ 1310.675267]
+> > > > > [ 1310.675268] other info that might help us debug this:
+> > > > > [ 1310.675952] 5 locks held by FahCore_a0.exe/3692:
+> > > > > [ 1310.676334]  #0:  (rcu_read_lock){..--}, at: [<c038b620>] net_rx_action+0x60/0x1b0
+> > > > > [ 1310.677251]  #1:  (rcu_read_lock){..--}, at: [<c0388d60>] netif_receive_skb+0x100/0x470
+> > > > > [ 1310.677924]  #2:  (rcu_read_lock){..--}, at: [<c03a7fb2>] ip_local_deliver_finish+0x32/0x210
+> > > > > [ 1310.678460]  #3:  (clock-AF_INET){-.-?}, at: [<c038164e>] sock_def_readable+0x1e/0x80
+> > > > > [ 1310.679250]  #4:  (&q->lock){++..}, at: [<c011544b>] __wake_up+0x1b/0x50
+> > 
+> > The net part might just be a red herring, since the problem is that
+> > __wake_up is somehow reentering itself.
 > 
-> > Hi
-> > 
-> > 
-> > Currently i'm deleting about 500.000 files on a XFS-filesystem which 
-> > takes a few minutes, as i had a top open i saw that 'wa' is shown as 
-> > 0.0% (Nothing else running currently) and everything except 'id' is near 
-> > the bottom too. Kernel is 2.6.23.11.
-> > 
-> > So, as 'rm -rf' is essentially a IO (or seek, to be more correct)-bound 
-> > task, shouldn't that count as "Waiting for IO"?
-> > 
-> > The man-page of top says:
-> > 'Amount of time the CPU has been waiting for I/O to complete.'
-> > 
-> > But AFAICT wa only seams to be (ac)counted for writing and not for 
-> > reading. I come to that conclusion because, when i fire 'sync' i can see 
-> > some percent wa for a few seconds.
-> > 
+> /*
+>  * Perform a safe wake up of the poll wait list. The problem is that
+>  * with the new callback'd wake up system, it is possible that the
+>  * poll callback is reentered from inside the call to wake_up() done
+>  * on the poll wait queue head. The rule is that we cannot reenter the
+>  * wake up code from the same task more than EP_MAX_POLLWAKE_NESTS times,
+>  * and we cannot reenter the same wait queue head at all. This will
+>  * enable to have a hierarchy of epoll file descriptor of no more than
+>  * EP_MAX_POLLWAKE_NESTS deep. We need the irq version of the spin lock
+>  * because this one gets called by the poll callback, that in turn is called
+>  * from inside a wake_up(), that might be called from irq context.
+>  */
 > 
-> Yes, you would absolutely expect `rm' to be stuck in D state and
-> contributing to both load average and io-wait in this situation.
+> Seems to suggest that the epoll code can indeed recurse into wakeup.
 > 
-> I'd think that either XFS is playing games (and it'd take some pretty
-> inventive games to do this) or your observations are in error.
+> Davide, Johannes, any ideas?
 
-I don't think that i could do much wrong(tm).
+Since EP_MAX_POLLWAKE_NESTS < MAX_LOCKDEP_SUBCLASSES we could perhaps do
+something like:
 
-rm -rf <big dir> (Took >30 minutes to delete)
-Everything else was sleeping at the time.
+  wake_up_nested(..., wake_nests);
 
-The sleeping processes are the usual handful of about 200 processes, you 
-have laying around today. 47 kernel threads, another about 40 or so 
-demons, and the rest >100 processes was my KDE-Session (mostly 
-'konsole's with bashes inside) with Iceweasel (Firefox) as sugar on top. 
-But as i said, there weren't doing anything at all, 'us' peaked at about 
-1-1.4 when i watched top.
-
-
-
-
-
-Bis denn
-
--- 
-Real Programmers consider "what you see is what you get" to be just as 
-bad a concept in Text Editors as it is in women. No, the Real Programmer
-wants a "you asked for it, you got it" text editor -- complicated, 
-cryptic, powerful, unforgiving, dangerous.
+although I'm not quite sure that is correct, my understanding of this
+code is still fragile at best.
 
