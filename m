@@ -1,142 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756641AbYAEQkO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756558AbYAEQoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756641AbYAEQkO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 11:40:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755981AbYAEQj7
+	id S1756558AbYAEQoj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 11:44:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbYAEQob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 11:39:59 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:52840 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755766AbYAEQj5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 11:39:57 -0500
-Subject: [PATCH] sr: update to follow tray status correctly
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Maarten Bressers <mbres@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, axboe@kernel.dk,
-       tasio@hierro.tasio.net, dsd@gentoo.org
-In-Reply-To: <1193801523.3321.138.camel@localhost.localdomain>
-References: <20071027225830.585C8657DB@smtp.gentoo.org>
-	 <1193801523.3321.138.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Sat, 05 Jan 2008 10:39:51 -0600
-Message-Id: <1199551191.3399.29.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
-Content-Transfer-Encoding: 7bit
+	Sat, 5 Jan 2008 11:44:31 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:36307 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755449AbYAEQoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 11:44:30 -0500
+Date: Sat, 5 Jan 2008 11:44:03 -0500
+To: Tomasz =?utf-8?Q?K=C5=82oczko?= <kloczek@rudy.mif.pg.gda.pl>
+Cc: Jeff Layton <jlayton@redhat.com>, linux-nfs@vger.kernel.org,
+       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       richterd@citi.umich.edu
+Subject: Re: [PATCH 0/7] Intro: convert lockd to kthread and fix
+	use-after-free (try #3)
+Message-ID: <20080105164403.GA12928@fieldses.org>
+References: <1198009182-27895-1-git-send-email-jlayton@redhat.com> <Pine.BSO.4.63.0712192004140.3875@rudy.mif.pg.gda.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.BSO.4.63.0712192004140.3875@rudy.mif.pg.gda.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's been a while with no status on this one, so I corrected the patch
-based on my original input.  The attached is what I think is the best
-way of doing this (I've replaced the home grown test_unit_ready routine
-with the SCSI one and updated some of the sense check conditions).
+On Wed, Dec 19, 2007 at 08:15:43PM +0100, Tomasz Kłoczko wrote:
+> On Tue, 18 Dec 2007, Jeff Layton wrote:
+>
+>> This is the third patchset to fix the use-after-free problem in lockd,
+>> and to convert lockd to use the kthread API instead of kernel_thread.
+>> The main change from the last patchset is the elimination of the
+>> svc_create_kthread helper function, and having lockd_up call kthread_run
+>> directly. I've also made some changes to the function prototype for
+>> the lockd function to eliminate the need for casting the function
+>> pointer.
+>
+> BTW kernel, NFS and lockd: SuSE kernel IIRC is distributed with patch which 
+> adds kernel-based status monitor (statd).
+>
+> Q to NFS people: any plans about merge this in main kernel tree ?
 
-It seems to work for me.
+No.  There was opposition to the idea.  I can't remember the argument,
+though, and a quick google search isn't turning it up.
 
-James
+> And another question related to NFS: any progress on add clear NFS 
+> statistics in kernel (nfsstat -z) ?
 
----
+No.  We do have some patches that add roughly equivalent functionality
+in userspace.
 
-diff --git a/drivers/scsi/sr.c b/drivers/scsi/sr.c
-index 57b5263..8f31b41 100644
---- a/drivers/scsi/sr.c
-+++ b/drivers/scsi/sr.c
-@@ -67,8 +67,6 @@ MODULE_ALIAS_SCSI_DEVICE(TYPE_WORM);
- 
- #define SR_DISKS	256
- 
--#define MAX_RETRIES	3
--#define SR_TIMEOUT	(30 * HZ)
- #define SR_CAPABILITIES \
- 	(CDC_CLOSE_TRAY|CDC_OPEN_TRAY|CDC_LOCK|CDC_SELECT_SPEED| \
- 	 CDC_SELECT_DISC|CDC_MULTI_SESSION|CDC_MCN|CDC_MEDIA_CHANGED| \
-diff --git a/drivers/scsi/sr.h b/drivers/scsi/sr.h
-index 0d04e28..81fbc0b 100644
---- a/drivers/scsi/sr.h
-+++ b/drivers/scsi/sr.h
-@@ -20,6 +20,9 @@
- #include <linux/genhd.h>
- #include <linux/kref.h>
- 
-+#define MAX_RETRIES	3
-+#define SR_TIMEOUT	(30 * HZ)
-+
- struct scsi_device;
- 
- /* The CDROM is fairly slow, so we need a little extra time */
-diff --git a/drivers/scsi/sr_ioctl.c b/drivers/scsi/sr_ioctl.c
-index e1589f9..d5cebff 100644
---- a/drivers/scsi/sr_ioctl.c
-+++ b/drivers/scsi/sr_ioctl.c
-@@ -275,18 +275,6 @@ int sr_do_ioctl(Scsi_CD *cd, struct packet_command *cgc)
- /* ---------------------------------------------------------------------- */
- /* interface to cdrom.c                                                   */
- 
--static int test_unit_ready(Scsi_CD *cd)
--{
--	struct packet_command cgc;
--
--	memset(&cgc, 0, sizeof(struct packet_command));
--	cgc.cmd[0] = GPCMD_TEST_UNIT_READY;
--	cgc.quiet = 1;
--	cgc.data_direction = DMA_NONE;
--	cgc.timeout = IOCTL_TIMEOUT;
--	return sr_do_ioctl(cd, &cgc);
--}
--
- int sr_tray_move(struct cdrom_device_info *cdi, int pos)
- {
- 	Scsi_CD *cd = cdi->handle;
-@@ -310,14 +298,46 @@ int sr_lock_door(struct cdrom_device_info *cdi, int lock)
- 
- int sr_drive_status(struct cdrom_device_info *cdi, int slot)
- {
-+	struct scsi_cd *cd = cdi->handle;
-+	struct scsi_sense_hdr sshdr;
-+	struct media_event_desc med;
-+
- 	if (CDSL_CURRENT != slot) {
- 		/* we have no changer support */
- 		return -EINVAL;
- 	}
--	if (0 == test_unit_ready(cdi->handle))
-+	if (0 == scsi_test_unit_ready(cd->device, SR_TIMEOUT, MAX_RETRIES,
-+				      &sshdr))
- 		return CDS_DISC_OK;
- 
--	return CDS_TRAY_OPEN;
-+	if (!cdrom_get_media_event(cdi, &med)) {
-+		if (med.media_present)
-+			return CDS_DISC_OK;
-+		else if (med.door_open)
-+			return CDS_TRAY_OPEN;
-+		else
-+			return CDS_NO_DISC;
-+	}
-+
-+	/*
-+	 * 0x04 is format in progress .. but there must be a disc present!
-+	 */
-+	if (sshdr.sense_key == NOT_READY && sshdr.asc == 0x04)
-+		return CDS_DISC_OK;
-+
-+	/*
-+	 * If not using Mt Fuji extended media tray reports,
-+	 * just return TRAY_OPEN since ATAPI doesn't provide
-+	 * any other way to detect this...
-+	 */
-+	if (scsi_sense_valid(&sshdr) &&
-+	    /* 0x3a is medium not present */
-+	    sshdr.asc == 0x3a)
-+		return CDS_NO_DISC;
-+	else
-+		return CDS_TRAY_OPEN;
-+
-+	return CDS_DRIVE_NOT_READY;
- }
- 
- int sr_disk_status(struct cdrom_device_info *cdi)
-
-
+--b.
