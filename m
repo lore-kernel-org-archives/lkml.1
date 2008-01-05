@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756790AbYAESj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756875AbYAESmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756790AbYAESj7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 13:39:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756116AbYAESjw
+	id S1756875AbYAESmg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 13:42:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756137AbYAESm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 13:39:52 -0500
-Received: from mga10.intel.com ([192.55.52.92]:32829 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756098AbYAESjv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 13:39:51 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,249,1196668800"; 
-   d="scan'208";a="273435176"
-Message-ID: <477FCE61.5080606@linux.intel.com>
-Date: Sat, 05 Jan 2008 10:37:21 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5 (Windows/20051201)
+	Sat, 5 Jan 2008 13:42:28 -0500
+Received: from japan.chezphil.org ([77.240.5.4]:1874 "EHLO japan.chezphil.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756135AbYAESm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 13:42:28 -0500
+To: "Andi Kleen" <andi@firstfloor.org>
+Cc: <linux-kernel@vger.kernel.org>
+Date: Sat, 05 Jan 2008 18:42:24 +0000
+Subject: Re: strace, accept(), ERESTARTSYS and EINTR
+Message-ID: <1199558544071@dmwebmail.japan.chezphil.org>
+In-Reply-To: <p731w8w8gcw.fsf@bingen.suse.de>
+References: <p731w8w8gcw.fsf@bingen.suse.de>
+X-Mailer: Decimail Webmail 3alpha16
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@linux.intel.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 1/3] move WARN_ON() out of line
-References: <477C32DA.5060905@linux.intel.com> <477F2697.5050407@goop.org> <477FC613.7020807@linux.intel.com> <477FC78F.6060109@linux.intel.com>
-In-Reply-To: <477FC78F.6060109@linux.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; format="flowed"
+From: "Phil Endecott" <phil_wueww_endecott@chezphil.org>
+X-SPF-Guess: pass
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
->> So... call me unconvinced for now. There's 30 Kb on the table with the 
->> easy, obviously safe
->> transform, and maybe another 1Kb with the much more tricky trapping 
->> scenario, but only
->> for the vmlinux case; the module case seems to be a loss instead.
+Andi Kleen wrote:
+> "Phil Endecott" <phil_wueww_endecott@chezphil.org> writes:
 >>
->>
-> Eh I have to retract my math here; I used a slightly older version of 
-> the WARN_ON patch series.
-> (before Ingo's suggestion)
-> In the new model, even at 1024 the out of line WARN_ON function call is 
-> smaller than the BUG_ON method.
-> 
-> So I think that at least for x86, it's a loss to do what you suggest....
-> 
+>> Many thanks for any suggestions.
+>
+> It's a long standing bug reported regularly
+
+Thanks for the re-assurance.
+
+> but so far nobody has tracked 
+> it down. That's mostly because most people cannot really reproduce it.
+
+I'm pretty sure that it's triggered by some earlier problem, most 
+likely reaching a threads-per-process limit (or an associated total VM 
+per process limit due to large default thread stack sizes).  There's a 
+good chance that I will find and fix that problem, and this one will 
+then go away unsolved...
+
+> If you can reproduce it reliably
+[snip]
+> definitely don't do it on a production machine
+
+Unfortunately, it happens on the production machine but I've not been 
+able to reproduce it otherwise.  I'll keep trying.  FWIW my assumption 
+is that the ERESTARTSYS comes from the sock_intr_errno() call from inet_csk_wait_for_connect().
 
 
-if people wonder where this comes from:
-the BUG_ON code sequence is 13 bytes, the WARN_ON sequence
-is 24 bytes, so 11 bytes longer. HOWEVER, the BUG_ON approach
-also needs 12 bytes of data (20 on 64 bit) per bug, a nett loss
-of 1 byte on 32 bit x86. (plus some general overhead for storing
-sections as such, but that scales per ELF file, not per BUG_ON instance)
+Thanks,  Phil.
+
+
+
 
