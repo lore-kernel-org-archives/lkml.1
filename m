@@ -1,45 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbYAEJcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbYAEJoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754834AbYAEJcv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 04:32:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755469AbYAEJbs
+	id S1754835AbYAEJoQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 04:44:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbYAEJoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 04:31:48 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54634 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755436AbYAEJbp (ORCPT
+	Sat, 5 Jan 2008 04:44:05 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:44363 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752240AbYAEJoC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 04:31:45 -0500
-Date: Sat, 5 Jan 2008 01:31:26 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: isofs oops - d_splice_alias+0x1f (2.6.24-rc5-mm1)
-Message-Id: <20080105013126.d90c4e09.akpm@linux-foundation.org>
-In-Reply-To: <20080103141033.GT27894@ZenIV.linux.org.uk>
-References: <477CE1E0.4010504@gmail.com>
-	<20080103141033.GT27894@ZenIV.linux.org.uk>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sat, 5 Jan 2008 04:44:02 -0500
+Date: Sat, 5 Jan 2008 09:44:00 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: sparc oops in ip_fast_csum
+Message-ID: <20080105094400.GH27894@ZenIV.linux.org.uk>
+References: <200801041837.37650.m.kozlowski@tuxland.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200801041837.37650.m.kozlowski@tuxland.pl>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Jan 2008 14:10:33 +0000 Al Viro <viro@ZenIV.linux.org.uk> wrote:
-
+On Fri, Jan 04, 2008 at 06:37:36PM +0100, Mariusz Kozlowski wrote:
+> Hello,
 > 
-> which would not manage to return ERR_PTR(-EIO), no matter what - it would
-> die on access to inode->i_state.  I don't have -mm tree at hand, check if
-> there's anything affected in these areas.  Perhaps somebody tried to pass
-> error values from isofs_iget() and forgot to update callers?
+>         This comes from the Linus latest linux-2.6 tree. Randomly happened.
+> Can't reproduce that. More info below.
 
-Yep.  Unlike 2.6.24-rc5-mm1, 2.6.24-rc6-mm1 has
-
-iget-stop-isofs-from-using-read_inode-fix-2.patch
-iget-stop-isofs-from-using-read_inode-fix-2-update.patch
-
-so hopefully this was all fixed.
+ip_fast_csum() called from raw_send_hdrinc() from raw_sendmsg() ran through
+the page boundary into unmapped page...  Bloody odd, that, seeing that
+we have checked iph->ihl * 4U <= length and had done
+        err = memcpy_fromiovecend((void *)iph, from, 0, length);
+before the
+                iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
+that had triggered that crap..
