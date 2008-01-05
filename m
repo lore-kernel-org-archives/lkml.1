@@ -1,87 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756751AbYAERB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756831AbYAERC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756751AbYAERB5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 12:01:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755580AbYAERBu
+	id S1756831AbYAERC4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 12:02:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755992AbYAERCr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 12:01:50 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:43467 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754987AbYAERBt (ORCPT
+	Sat, 5 Jan 2008 12:02:47 -0500
+Received: from fk-out-0910.google.com ([209.85.128.185]:32970 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755580AbYAERCq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 12:01:49 -0500
-Subject: Re: 2.6.24-rc6: possible recursive locking detected
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Christian Kujau <lists@nerdbynature.de>, linux-kernel@vger.kernel.org,
-       jfs-discussion@lists.sourceforge.net,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-In-Reply-To: <1199552016.31975.41.camel@lappy>
-References: <alpine.DEB.0.999999.0801032349190.4821@sheep.housecafe.de>
-	 <200801040006.47979.rjw@sisk.pl> <20080104083049.GC22803@elte.hu>
-	 <20080105071205.GA28936@gondor.apana.org.au>
-	 <1199552016.31975.41.camel@lappy>
-Content-Type: text/plain
-Date: Sat, 05 Jan 2008 18:01:16 +0100
-Message-Id: <1199552476.31975.45.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Sat, 5 Jan 2008 12:02:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=sDUKtA6nV6yR1z3LYhlesrlq2vfAztITixn9rwQO3h6nP82MlXhoaWT765V2DFrQkt99SU3O5nW7JoRLAGiu0fJlmkAzwaXeverJGMTkYnJMFT3/u9HDg9+aiwdgM9inQw4zd/BDlApEtXOBYRD3LH7u/PYVQ+4o+IoClm92Arg=
+Message-ID: <477FB82F.1070501@gmail.com>
+Date: Sat, 05 Jan 2008 18:02:39 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Phil Endecott <phil_wueww_endecott@chezphil.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: strace, accept(), ERESTARTSYS and EINTR
+References: <1199480498017@dmwebmail.japan.chezphil.org> <p731w8w8gcw.fsf@bingen.suse.de>
+In-Reply-To: <p731w8w8gcw.fsf@bingen.suse.de>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 2008-01-05 at 17:53 +0100, Peter Zijlstra wrote:
-> On Sat, 2008-01-05 at 18:12 +1100, Herbert Xu wrote:
-> > On Fri, Jan 04, 2008 at 09:30:49AM +0100, Ingo Molnar wrote:
-> > >
-> > > > > [ 1310.670986] =============================================
-> > > > > [ 1310.671690] [ INFO: possible recursive locking detected ]
-> > > > > [ 1310.672097] 2.6.24-rc6 #1
-> > > > > [ 1310.672421] ---------------------------------------------
-> > > > > [ 1310.672828] FahCore_a0.exe/3692 is trying to acquire lock:
-> > > > > [ 1310.673238]  (&q->lock){++..}, at: [<c011544b>] __wake_up+0x1b/0x50
-> > > > > [ 1310.673869]
-> > > > > [ 1310.673870] but task is already holding lock:
-> > > > > [ 1310.674567]  (&q->lock){++..}, at: [<c011544b>] __wake_up+0x1b/0x50
-> > > > > [ 1310.675267]
-> > > > > [ 1310.675268] other info that might help us debug this:
-> > > > > [ 1310.675952] 5 locks held by FahCore_a0.exe/3692:
-> > > > > [ 1310.676334]  #0:  (rcu_read_lock){..--}, at: [<c038b620>] net_rx_action+0x60/0x1b0
-> > > > > [ 1310.677251]  #1:  (rcu_read_lock){..--}, at: [<c0388d60>] netif_receive_skb+0x100/0x470
-> > > > > [ 1310.677924]  #2:  (rcu_read_lock){..--}, at: [<c03a7fb2>] ip_local_deliver_finish+0x32/0x210
-> > > > > [ 1310.678460]  #3:  (clock-AF_INET){-.-?}, at: [<c038164e>] sock_def_readable+0x1e/0x80
-> > > > > [ 1310.679250]  #4:  (&q->lock){++..}, at: [<c011544b>] __wake_up+0x1b/0x50
-> > 
-> > The net part might just be a red herring, since the problem is that
-> > __wake_up is somehow reentering itself.
+On 01/05/2008 04:03 PM, Andi Kleen wrote:
+>    if (!strcmp(current->comm, "yourprogramwithoutpath"))
+>             printk("%s:%d ERESTART\n", __FILE__, __LINE__);
 > 
-> /*
->  * Perform a safe wake up of the poll wait list. The problem is that
->  * with the new callback'd wake up system, it is possible that the
->  * poll callback is reentered from inside the call to wake_up() done
->  * on the poll wait queue head. The rule is that we cannot reenter the
->  * wake up code from the same task more than EP_MAX_POLLWAKE_NESTS times,
->  * and we cannot reenter the same wait queue head at all. This will
->  * enable to have a hierarchy of epoll file descriptor of no more than
->  * EP_MAX_POLLWAKE_NESTS deep. We need the irq version of the spin lock
->  * because this one gets called by the poll callback, that in turn is called
->  * from inside a wake_up(), that might be called from irq context.
->  */
+> [the later two might need adding linux/string.h and/or linux/sched.h includes
+> to the files if they don't compile]
 > 
-> Seems to suggest that the epoll code can indeed recurse into wakeup.
-> 
-> Davide, Johannes, any ideas?
+> to all of them. Then recompile and boot that kernel.
 
-Since EP_MAX_POLLWAKE_NESTS < MAX_LOCKDEP_SUBCLASSES we could perhaps do
-something like:
+If I'm not completely blind, there is no suspicous ERESTARTSYS in
+PF_INET:SOCK_STREAM path.
 
-  wake_up_nested(..., wake_nests);
+Anyway even if it was returned by kernel syscall, glibc should put it in errno
+and return -1 (since it is >= -4095 and < 0). He sees it in the accept retval.
+Something rotten, probably broken/racy ?ntpl? implementation of syscalls or
+somewhat?
 
-although I'm not quite sure that is correct, my understanding of this
-code is still fragile at best.
+regards,
+-- 
+Jiri Slaby
+Faculty of Informatics, Masaryk University
+Suse Labs
 
