@@ -1,56 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757717AbYAEUSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758331AbYAEUTF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757717AbYAEUSt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 15:18:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757837AbYAEUR3
+	id S1758331AbYAEUTF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 15:19:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758027AbYAEUSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 15:17:29 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:39791 "EHLO pasmtpB.tele.dk"
+	Sat, 5 Jan 2008 15:18:14 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:57597 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757825AbYAEUR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 15:17:28 -0500
-Date: Sat, 5 Jan 2008 21:17:28 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org
-Subject: Re: [RFC] [PATCH 2/3] Rework arch specific Makefiles to use mkimage
-Message-ID: <20080105201728.GA9985@uranus.ravnborg.org>
-References: <20071220101643.48b427ef@zod.rchland.ibm.com> <20071220101829.44ca59da@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1757543AbYAEUSL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 15:18:11 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM: Acquire device locks on suspend
+Date: Sat, 5 Jan 2008 21:19:47 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0801051455320.26040-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0801051455320.26040-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071220101829.44ca59da@zod.rchland.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200801052119.48542.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 20, 2007 at 10:18:29AM -0600, Josh Boyer wrote:
-> Rework the architecture specific Makefiles to use the in-kernel version
-> of the mkimage tool.
+On Saturday, 5 of January 2008, Alan Stern wrote:
+> On Sat, 5 Jan 2008, Rafael J. Wysocki wrote:
 > 
-> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> > Greg, Andrew,
+> > 
+> > The appended patch is a replacement for
+> > gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch that deadlocked
+> > suspend and hibernation on some systems.
+> > 
+> > Please consider for applying.
 > 
-> ---
->  arch/arm/boot/Makefile          |    4 ++--
->  arch/avr32/boot/images/Makefile |    4 ++--
->  arch/blackfin/boot/Makefile     |    4 ++--
->  arch/powerpc/boot/Makefile      |    8 ++++++--
->  arch/powerpc/boot/wrapper       |    2 +-
->  arch/ppc/boot/images/Makefile   |    4 ++--
->  arch/sh/boot/Makefile           |    4 ++--
->  7 files changed, 17 insertions(+), 13 deletions(-)
+> This warning message:
 > 
-> --- linux-2.6.orig/arch/arm/boot/Makefile
-> +++ linux-2.6/arch/arm/boot/Makefile
-> @@ -11,7 +11,7 @@
->  # Copyright (C) 1995-2002 Russell King
->  #
->  
-> -MKIMAGE         := $(srctree)/scripts/mkuboot.sh
-> +MKIMAGE         := $(srctree)/scripts/mkimage/mkimage
-I did s/srctree/objtree/ for all these assignments - as mkimage
-is a generated file which is not present in $(srctree) for
-make O=... builds.
+> > @@ -905,6 +915,13 @@ void device_del(struct device * dev)
+> >  	struct device * parent = dev->parent;
+> >  	struct class_interface *class_intf;
+> >  
+> > +	if (pm_sleep_lock()) {
+> > +		dev_warn(dev, "Illegal %s during suspend\n", __FUNCTION__);
+> > +		dump_stack();
+> > +	} else {
+> 
+> will unavoidably be triggered by this code:
 
-	Sam
+Ah, my fault, sorry.
+
+> > +void device_pm_destroy_suspended(struct device *dev)
+> > +{
+> > +	pr_debug("PM: Removing suspended device %s:%s\n",
+> > +		 dev->bus ? dev->bus->name : "No Bus",
+> > +		 kobject_name(&dev->kobj));
+> > +	mutex_lock(&dpm_list_mtx);
+> > +	list_del_init(&dev->power.entry);
+> > +	mutex_unlock(&dpm_list_mtx);
+> > +	up(&dev->sem);
+> > +	device_unregister(dev);
+> > +}
+> 
+> since the call to device_del() will occur while the pm_sleep_rwsem is
+> still locked for writing.  That's why I suggested not unregistering
+> these devices until after everything else has been resumed and the
+> rwsem has been dropped.
+
+Hmm, well.  I'll go back to the previous version, then.  Sorry for the mess.
+
+> Another thing to watch out for: Just in case somebody ends up calling
+> destroy_suspended_device(dev) from within dev's own resume method, you 
+> should interchange the resume_device() and the list_move_tail() 
+> calls in dpm_resume().
+
+However, if we unregister them all at once after releasing pm_sleep_rwsem,
+that shouldn't be necessary, right?
+
+Rafael
