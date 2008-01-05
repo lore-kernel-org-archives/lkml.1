@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbYAEXpe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbYAEXqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755242AbYAEXpe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 18:45:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbYAEXp0
+	id S1755849AbYAEXqU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 18:46:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbYAEXqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 18:45:26 -0500
-Received: from rtr.ca ([76.10.145.34]:1072 "EHLO mail.rtr.ca"
+	Sat, 5 Jan 2008 18:46:12 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:53503 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752558AbYAEXpZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 18:45:25 -0500
-Message-ID: <47801690.3090106@rtr.ca>
-Date: Sat, 05 Jan 2008 18:45:20 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	id S1753087AbYAEXqL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 18:46:11 -0500
+Date: Sun, 6 Jan 2008 01:45:41 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Adrian Bunk <bunk@kernel.org>,
+       Al Boldi <a1426z@gawab.com>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
+       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/5] USB Kconfig: Select SCSI for USB Mass Storage
+	support
+Message-ID: <20080105234540.GG22232@does.not.exist>
+References: <200801051546.SAA08947@raad.intranet> <20080105113024.209485f5.randy.dunlap@oracle.com> <20080105210330.GC22232@does.not.exist> <20080105210940.GA10302@uranus.ravnborg.org> <47801126.7020807@oracle.com>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>
-Subject: Re: 2.6.24-rc6-git12: Reported regressions from 2.6.23
-References: <200801052042.56042.rjw@sisk.pl>
-In-Reply-To: <200801052042.56042.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <47801126.7020807@oracle.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> This message contains a list of some regressions from 2.6.23 reported since
-> 2.6.24-rc1 was released, for which there are no fixes in the mainline I know
-> of.  If any of them have been fixed already, please let me know.
-..
-> Subject		: 20000+ wake-ups/second in 2.6.24
-> Submitter	: Mark Lord <lkml@rtr.ca>
-> Date		: 2007-12-02 04:23
-> References	: http://lkml.org/lkml/2007/12/1/141
-> 		  http://bugzilla.kernel.org/show_bug.cgi?id=9489
-> Handled-By	: Arjan van de Ven <arjan@infradead.org>
-> 
-..
+On Sat, Jan 05, 2008 at 03:22:14PM -0800, Randy Dunlap wrote:
+>...
+> For Aunt Tillie cases, "select" makes sense.  For other cases,
+> I'd argue that it makes sense for config users to know when they
+> do something that causes an entire subsystem to be added to their
+> kernel (like SCSI or NET).
 
-I have only seen that one once, and I think it was Arjan who said
-that it has been observed rarely by other people as well.
-The bugzilla entry is mostly just to track the darned thing,
-but it seems unlikely that anyone will find/fix it for 2.6.24.
-No big deal, but it would be good to have somebody knowledgeable
-in clocks/interrupts try and track it down.
+We are not talking about Aunt Tillie [1] since she anyway does not build 
+her own kernel.
 
-I wonder if it's just a babbling IRQ on resume, before the driver
-has run it's resume code or something ?
+The vast majority of kconfig users should be covered by the
+"system administrator" use case. And for them it's a lot easier if they 
+simply find the options for their hardware in the logical places without 
+additional hassle.
 
-Cheers
+Whether or not an option requires an additional subsystem like e.g. SCSI 
+or SSB are hardware and implementation details we shouldn't bother 
+kconfig users with.
+
+cu
+Adrian
+
+[1] kconfig version of Godwin's law
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
