@@ -1,77 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756513AbYAEQyK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756632AbYAEQ4b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756513AbYAEQyK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 11:54:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755573AbYAEQx5
+	id S1756632AbYAEQ4b (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 11:56:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbYAEQ4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 11:53:57 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:53122 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755512AbYAEQx4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 11:53:56 -0500
-Subject: Re: 2.6.24-rc6: possible recursive locking detected
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Christian Kujau <lists@nerdbynature.de>, linux-kernel@vger.kernel.org,
-       jfs-discussion@lists.sourceforge.net,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-In-Reply-To: <20080105071205.GA28936@gondor.apana.org.au>
-References: <alpine.DEB.0.999999.0801032349190.4821@sheep.housecafe.de>
-	 <200801040006.47979.rjw@sisk.pl> <20080104083049.GC22803@elte.hu>
-	 <20080105071205.GA28936@gondor.apana.org.au>
-Content-Type: text/plain
-Date: Sat, 05 Jan 2008 17:53:36 +0100
-Message-Id: <1199552016.31975.41.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 5 Jan 2008 11:56:25 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:37704 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754986AbYAEQ4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 11:56:24 -0500
+Date: Sat, 5 Jan 2008 18:56:23 +0200
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+To: linux-kernel@vger.kernel.org
+Cc: Simon Horman <horms@verge.net.au>, "David S. Miller" <davem@davemloft.net>
+Subject: Problems with nfsroot due to ip= cmdline changes
+Message-ID: <20080105165623.GA30987@sci.fi>
+Mail-Followup-To: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>,
+	linux-kernel@vger.kernel.org, Simon Horman <horms@verge.net.au>,
+	"David S. Miller" <davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I recently rebased my kernel tree and discovered that my nfsroot setup
+no longer worked. Here's the relevat part of my cmdline:
 
-On Sat, 2008-01-05 at 18:12 +1100, Herbert Xu wrote:
-> On Fri, Jan 04, 2008 at 09:30:49AM +0100, Ingo Molnar wrote:
-> >
-> > > > [ 1310.670986] =============================================
-> > > > [ 1310.671690] [ INFO: possible recursive locking detected ]
-> > > > [ 1310.672097] 2.6.24-rc6 #1
-> > > > [ 1310.672421] ---------------------------------------------
-> > > > [ 1310.672828] FahCore_a0.exe/3692 is trying to acquire lock:
-> > > > [ 1310.673238]  (&q->lock){++..}, at: [<c011544b>] __wake_up+0x1b/0x50
-> > > > [ 1310.673869]
-> > > > [ 1310.673870] but task is already holding lock:
-> > > > [ 1310.674567]  (&q->lock){++..}, at: [<c011544b>] __wake_up+0x1b/0x50
-> > > > [ 1310.675267]
-> > > > [ 1310.675268] other info that might help us debug this:
-> > > > [ 1310.675952] 5 locks held by FahCore_a0.exe/3692:
-> > > > [ 1310.676334]  #0:  (rcu_read_lock){..--}, at: [<c038b620>] net_rx_action+0x60/0x1b0
-> > > > [ 1310.677251]  #1:  (rcu_read_lock){..--}, at: [<c0388d60>] netif_receive_skb+0x100/0x470
-> > > > [ 1310.677924]  #2:  (rcu_read_lock){..--}, at: [<c03a7fb2>] ip_local_deliver_finish+0x32/0x210
-> > > > [ 1310.678460]  #3:  (clock-AF_INET){-.-?}, at: [<c038164e>] sock_def_readable+0x1e/0x80
-> > > > [ 1310.679250]  #4:  (&q->lock){++..}, at: [<c011544b>] __wake_up+0x1b/0x50
-> 
-> The net part might just be a red herring, since the problem is that
-> __wake_up is somehow reentering itself.
+ip=192.168.2.200:192.168.2.185:192.168.2.1:255.255.255.0::eth0:off nfsroot=192.168.2.185:/my_nfsroot,v3,tcp root=/dev/nfs
 
-/*
- * Perform a safe wake up of the poll wait list. The problem is that
- * with the new callback'd wake up system, it is possible that the
- * poll callback is reentered from inside the call to wake_up() done
- * on the poll wait queue head. The rule is that we cannot reenter the
- * wake up code from the same task more than EP_MAX_POLLWAKE_NESTS times,
- * and we cannot reenter the same wait queue head at all. This will
- * enable to have a hierarchy of epoll file descriptor of no more than
- * EP_MAX_POLLWAKE_NESTS deep. We need the irq version of the spin lock
- * because this one gets called by the poll callback, that in turn is called
- * from inside a wake_up(), that might be called from irq context.
- */
+I discovered that now I had to change the autoconfiguration option to
+"on" in order to make nfsroot work. I only want to specify the IP
+address manually so I don't really want autoconfiguration. The current
+code works since it will not try autoconfiguration when all options are
+specified manually but the current behaviour does not really match the
+documentation ie. now the autoconf parameter can disable the whole IP
+configuration step even though the documentation says it will only
+disable autoconfiguration.
 
-Seems to suggest that the epoll code can indeed recurse into wakeup.
+Looks like these are the relevant commits:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a6c05c3d064dbb83be88cba3189beb5db9d2dfc3
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9cecd07c3f7a818a5865daad8cb5be408508dc99
 
-Davide, Johannes, any ideas?
-
+-- 
+Ville Syrjälä
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
