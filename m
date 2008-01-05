@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbYAEDL0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755434AbYAEDZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755431AbYAEDL0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 22:11:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbYAEDLS
+	id S1755434AbYAEDZb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 22:25:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYAEDZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 22:11:18 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:1404 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754804AbYAEDLR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 22:11:17 -0500
-Date: Fri, 4 Jan 2008 22:11:15 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
-       Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH 1/4] PM: Introduce destroy_suspended_device()
-In-Reply-To: <200801042305.35089.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0801042202070.22169-100000@netrider.rowland.org>
+	Fri, 4 Jan 2008 22:25:22 -0500
+Received: from ishtar.tlinx.org ([64.81.245.74]:55170 "EHLO ishtar.tlinx.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752558AbYAEDZW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Jan 2008 22:25:22 -0500
+Message-ID: <477EF8A4.7010507@tlinx.org>
+Date: Fri, 04 Jan 2008 19:25:24 -0800
+From: Linda Walsh <lkml@tlinx.org>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: general config preemption Q: preempt-model and Big-Lock Preemption
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Jan 2008, Rafael J. Wysocki wrote:
+A question that comes to mind every time I go through the settings
+for "Preemption Model" and "Preempt The Big Kernel Lock".
 
-> I have rebased gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch
-> on top of the $subject series, the result is appended.  It has only been
-> compilation tested for now, but I'll be testing it for the next couple of days.
-> 
-> Please review.
+Do each of the combinations "make sense", or are some "no-ops"?
+For model, we have 1) no forced (server), 2) Voluntary (Desktop)
+3) preemptible (low-latency Desktop), and for Big Lock Preemption (BLP),
+we have "yes" or "no".
 
-I would prefer it if you could also merge in this patch at the same 
-time:
+Questions:
 
-https://lists.linux-foundation.org/pipermail/linux-pm/2007-December/015921.html
+1) What is the difference between "no forced" and "voluntary"?  Doesn't
+  voluntary normally mean "not forced"?
 
-> +void device_resume(void)
->  {
-> -	sysdev_resume();
-> -	dpm_power_up();
-> +	might_sleep();
-> +	dpm_resume();
-> +	unlock_all_devices();
-> +	unregister_dropped_devices();
-> +	up_write(&pm_sleep_rwsem);
->  }
+2) If a process is not preemptible, then it seems this would be "doubly
+  so" in the kernel when the big-lock is held.  So does the big-lock
+  preemption question have any effect (when preempt-model="no forced").
 
-With the aforementioned patch merged in, this will generate a 
-warning for each dropped device.  The call to 
-unregister_dropped_devices() should come after the up_write().
+3) If a process is "fully preemptible" but "BLP=false", is that
+  much different than "voluntary preemption" & BLP=false?  I.e. --
+  should 'preemptible kernel' also imply "BLP=true"...i.e.
 
-You might also consider adding a call to unregister_dropped_devices()  
-in the error path of device_suspend() -- in theory even an aborted 
-suspend might cause a device to malfunction.
+_Should_ (would?) the following change be "somewhat" identical to
+current config options:
 
-Otherwise this looks okay.
+  O1) "Preempt Model"="no-forced preemption" (would set
+  preempt-big-kern-lock to FALSE and doesn't display that question).
 
-Alan Stern
+  O2) "Voluntary Preemption" (presuming there are voluntary preemption
+  points in the kernel in places where the big-K-lock is held), then
+  configuration would still ask whether to  "Preempt The Big Kernel Lock".
+
+  O3) "Preemptible model"="allow-kernel-preemption" (would set
+  preempt-big-kern-lock to TRUE and doesn't display that question).
+
 
