@@ -1,61 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753597AbYAEESu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753389AbYAEEtB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753597AbYAEESu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 23:18:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751829AbYAEESl
+	id S1753389AbYAEEtB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 23:49:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYAEEsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 23:18:41 -0500
-Received: from ausc60pc101.us.dell.com ([143.166.85.206]:13206 "EHLO
-	ausc60pc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751791AbYAEESk (ORCPT
+	Fri, 4 Jan 2008 23:48:51 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:49040 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751743AbYAEEsu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 23:18:40 -0500
-X-IronPort-AV: E=Sophos;i="4.24,247,1196661600"; 
-   d="scan'208";a="518452169"
-Date: Fri, 4 Jan 2008 22:18:28 -0600
-From: Matt Domsch <Matt_Domsch@dell.com>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Querying the bios from booted linux kernel?
-Message-ID: <20080105041828.GB6011@auslistsprd01.us.dell.com>
-References: <200801041913.54030.gene.heskett@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200801041913.54030.gene.heskett@gmail.com>
-User-Agent: Mutt/1.5.11
+	Fri, 4 Jan 2008 23:48:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:organization:user-agent:mime-version:to:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=TmB3dl1l3UFaoUkpguJCTfo/c1nJZuoTAW6jhfcQ+VnPCJgpQ680P8d4xdreQzXyXJ7Xduae/2MhWaIy1PwqQQJGLBJPYW12HadcAK7wZ2x5oknzkKGLmGigN3Q7qW4RfVchnLkvBJdPlDO0l/aPF++Odshc0ltkgzJot6vjc0c=
+Message-ID: <477F0C2A.3070301@gmail.com>
+Date: Sat, 05 Jan 2008 07:48:42 +0300
+From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Organization: DmVo Home
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
+MIME-Version: 1.0
+To: Richard Knutsson <ricknu-0@student.ltu.se>,
+       Mathieu Segaud <mathieu.segaud@regala.cx>, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [Coding Style]: fs/ext{3,4}/ext{3,4}_jbd{,2}.c
+References: <1199452896-20145-1-git-send-email-mathieu.segaud@regala.cx> <1199452896-20145-2-git-send-email-mathieu.segaud@regala.cx> <1199452896-20145-3-git-send-email-mathieu.segaud@regala.cx> <1199452896-20145-4-git-send-email-mathieu.segaud@regala.cx> <1199452896-20145-5-git-send-email-mathieu.segaud@regala.cx> <477E379F.4000103@student.ltu.se> <20080105041228.GP3351@webber.adilger.int>
+In-Reply-To: <20080105041228.GP3351@webber.adilger.int>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 04, 2008 at 07:13:53PM -0500, Gene Heskett wrote:
-> Greetings;
+Andreas Dilger пишет:
+> On Jan 04, 2008  14:41 +0100, Richard Knutsson wrote:
+>>>  @@ -54,6 +54,6 @@ int __ext4_journal_dirty_metadata(const char *where,
+>>>  {
+>>>  	int err = jbd2_journal_dirty_metadata(handle, bh);
+>>>  	if (err)
+>>> -		ext4_journal_abort_handle(where, __FUNCTION__, bh, handle,err);
+>>> +		ext4_journal_abort_handle(where, __FUNCTION__, bh, handle, err);
+>>>  	return err;
+>>>  }
+>> What about changing the __FUNCTION__ to __func__, while you are at it?
 > 
-> Is there a utility that can query the motherboard bios and get a list of the 
-> drives it can see?
+> What's wrong with __FUNCTION__?  I thought that was ANSI C?
+
+No, it was not. The ANSI C 1990 Standard defines the following so-called
+"predefined macros": __LINE__, __FILE__, __DATE__, __TIME__, and __STDC__.
+The ISO/IEC 9899 Standard commonly referred to as the C99, defines a few
+additional predefined macros, as well as an additional predefined
+identifier __func__. For more information please refer to the ISO/IEC 9899
+document itself, which is freely available for download at the time of
+me writing this.
+
+Although seemingly "natural", the __FUNCTION__ macro has never been part
+of the C Standard.
+
+Dmitri
+
 > 
-> Likewise, for the bios extension contained on a pny sata card with a Silicon 
-> Image chipset on it?
+> Cheers, Andreas
+> --
+> Andreas Dilger
+> Sr. Staff Engineer, Lustre Group
+> Sun Microsystems of Canada, Inc.
 > 
-> I'm trying to cobble up a way for linux to boot from the drive on this sata 
-> card, so that the F8 install is completely separated from the FC6 install on 
-> a pata drive connected to the mainboard.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-parted and fdisk both write into the MBR signature space, so your
-disks should have unique MBR values in them.
-
-Then, F8 anaconda / kickstart can be told on which disk to write its
-bits.  http://linux.dell.com/installermagic.shtml  describes this.
-
-
-I've given up trusting any BIOS to get EDD 3.0 device paths right,
-there are just too many broken implementations out there, and
-seemingly no real desire on the part of the component vendors to fix
-it.  MBR signatures work pretty well - Dell uses this method for every
-one of our factory installed Linux systems we ship, so I _know_ it works.
-
-
--- 
-Matt Domsch
-Linux Technology Strategist, Dell Office of the CTO
-linux.dell.com & www.dell.com/linux
