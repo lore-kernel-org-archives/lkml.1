@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755089AbYAEOrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbYAEOwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755089AbYAEOrT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 09:47:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbYAEOrH
+	id S1755281AbYAEOwW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 09:52:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbYAEOwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 09:47:07 -0500
-Received: from fk-out-0910.google.com ([209.85.128.188]:25848 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753549AbYAEOrG (ORCPT
+	Sat, 5 Jan 2008 09:52:10 -0500
+Received: from moutng.kundenserver.de ([212.227.126.188]:58913 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754476AbYAEOwI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 09:47:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=xTH20pvtr3CUPdXI8OZOnkVqrkxNSVPjlH9dTH5StNosSAR42b0QsB3Fp3+AXSJFXJSvw8x9KVpdFak/vzTCAVWH1m66sDGsQgddNh5mUYf4YKgv+F4xPxGrkV7fQBwIlCzXlMvodEKqqvXwOcWhVnUaCP7f6xZr9M2qEHwmKBo=
-Date: Sat, 5 Jan 2008 18:46:56 +0400
-From: Alexander Shaduri <ashaduri@gmail.com>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: BUG: unable to handle kernel paging request at virtual address
-Message-ID: <20080105184656.52b1f7d3@linux.localdomain>
-In-Reply-To: <18303.38257.850625.70108@harpo.it.uu.se>
-References: <20080104213812.20268840@linux.localdomain>
-	<20080105091012.GG27894@ZenIV.linux.org.uk>
-	<20080105173601.75370546@linux.localdomain>
-	<18303.38257.850625.70108@harpo.it.uu.se>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.0; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 5 Jan 2008 09:52:08 -0500
+Message-ID: <477F998D.7050800@anagramm.de>
+Date: Sat, 05 Jan 2008 15:51:57 +0100
+From: Clemens Koller <clemens.koller@anagramm.de>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Karel Zak <kzak@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
+Subject: Re: [ANNOUNCE] util-linux-ng 2.13.1-rc2
+References: <20080102211052.GC23824@petra.dvoda.cz> <20080105013121.c8bf01ed.akpm@linux-foundation.org>
+In-Reply-To: <20080105013121.c8bf01ed.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19WFie/r2G6Pdy411pQaQ5N8hfwqub5G0lKVgA
+ ZXGYJO6B7GvwQ6Qqd3kmV58tSsu3Zb0X2tepNfIUgx660FHjrY
+ bzGvbU6GU3KtI7guU4zuQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 5 Jan 2008 15:34:25 +0100
-Mikael Pettersson <mikpe@it.uu.se> wrote:
+Andrew Morton schrieb:
+> On Wed, 2 Jan 2008 22:10:52 +0100 Karel Zak <kzak@redhat.com> wrote:
+> 
+>>
+>>  The second util-linux-ng 2.13.1 release candidate is available at
+>>
+>>     ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/
+>>
+> 
+> Interesting.  Thanks.  Which distros are using this, or plan to do so?
 
-> This kernel is tainted by the nvidia module...
+We (CRUX community, http://crux.nu ) just switched to the -ng.
+The old non -ng version doesn't seem to be maintained well.
 
-I know that, but as I wrote in the original message, the hangs occur
-without it too.
-I just tested it today. Had to leave it running
-(in vesa framebuffer mode), without any nvidia modules.
-Crash occurred after 4 hours of tv capturing, and didn't leave
-any traces in dmesg logs (logged every second).
-Unfortunately, I couldn't save any messages.
+Regards,
+-- 
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
 
-All I'm saying is that the problem is reproduceable without
-nvidia module and without any X server running.
-
-Thanks,
-Alexander
+http://www.anagramm-technology.com
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
