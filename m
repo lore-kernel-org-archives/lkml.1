@@ -1,107 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755851AbYAEPSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755511AbYAEP0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755851AbYAEPSs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 10:18:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbYAEPSk
+	id S1755511AbYAEP0M (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 10:26:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbYAEPZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 10:18:40 -0500
-Received: from server19320154104.serverpool.info ([193.201.54.104]:50335 "EHLO
-	hauke-m.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753738AbYAEPSj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 10:18:39 -0500
-X-Greylist: delayed 1842 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 Jan 2008 10:18:38 EST
-Message-ID: <477F9890.5050107@hauke-m.de>
-Date: Sat, 05 Jan 2008 15:47:44 +0100
-From: Hauke Mehrtens <hauke@hauke-m.de>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Michael Wu <flamingice@sourmilk.net>
-CC: linux-kernel@vger.kernel.org,
-       "Luis R. Rodriguez" <mcgrof@winlab.rutgers.edu>
-Subject: rtl8187 rate control doesn't work
-X-Enigmail-Version: 0.95.2
-OpenPGP: id=95C58E7B;
-	url=http://www.hauke-m.de/pgp-pubkey.asc
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Sat, 5 Jan 2008 10:25:58 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:56739 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753549AbYAEPZ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 10:25:57 -0500
+Date: Sat, 5 Jan 2008 18:24:49 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: David Miller <davem@davemloft.net>
+Cc: lizf@cn.fujitsu.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/5] CONNECTOR: return proper error code in cn_call_callback()
+Message-ID: <20080105152449.GA12982@2ka.mipt.ru>
+References: <477DC9C1.2000209@cn.fujitsu.com> <20080104.015125.103222890.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080104.015125.103222890.davem@davemloft.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Hi.
 
-Now the compat-wireless-2.6 package is working and I get an Internet
-connection with my rtl8187 based card. (It's on an ASUS P5B Deluxe)
+Sorry for long reply.
 
-I used the compat-wireless-2.6 package for this log, but I have the same
-problem with the version integrated in kernel 2.6.24-rc6
+On Fri, Jan 04, 2008 at 01:51:25AM -0800, David Miller (davem@davemloft.net) wrote:
+> > Error code should be set to EINVAL instead of ENODEV if !queue_work().
+> > There's another call of queue_work() which may set err to EINVAL.
+> > 
+> > Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> 
+> This one is a bug fix so I'll apply it to net-2.6 and push
+> to Linus.
+> 
+> The rest are cleanups which I'll queue up for 2.6.25
 
-The Access Point is some rooms away so the signal is not the best at my
-location. When starting the device with no fixed rate it wants to
-connect with 54MBit/s and as iwconfig says it was successful but I can't
-ping any device in the wireless LAN. (it's the first part of the log)
-The rate will not be slowed down it stays fixed at 54MBit/s.
+Although I'm not sure changing error from nodev to inval is a bug fix :),
+I have no problem with pushing it first.
+Loop above will break out after first matched id, so it will never call
+the path, which can change error, again.
 
-After starting the device with rate fixed to 11M I get a connection to
-the Access Point and iwconfig's output looks the same as without fixed
-rate, but I'm able to ping the all devices in the network. (second part
-of the log)
-Now it slows down the rate to 1MBit/s
-
-iwconfig looks like this (fixed rate to 11M):
-wlan0 IEEE 802.11g  ESSID:"mehrtenswlan"
-      Mode:Managed  Frequency:2.412 GHz  Access Point: 00:1A:XX:XX:XX:XX
-      Bit Rate=1 Mb/s   Tx-Power=27 dBm
-      Retry min limit:7   RTS thr:off   Fragment thr=2352 B
-      Link Quality=50/64  Signal level=16/65
-      Rx invalid nwid:0  Rx invalid crypt:0  Rx invalid frag:0
-      Tx excessive retries:0  Invalid misc:0   Missed beacon:0
-
-With no fixed rate there is an Bit Rate=54 Mb/s instead of 1Mb/s.
-
-
-With rate fixed to 18MBit/s I have the same problem as with no fixed rate.
-
-dmesg log:
-
-phy0: Selected rate control algorithm 'pid'
-phy0: hwaddr 00:15:af:03:ab:79, rtl8187 V1 + rtl8225z2
-usbcore: registered new interface driver rtl8187
-
-wlan0: Initial auth_alg=0
-wlan0: authenticate with AP 00:1a:92:ea:73:12
-wlan0: authenticate with AP 00:1a:92:ea:73:12
-wlan0: authenticate with AP 00:1a:92:ea:73:12
-wlan0: authentication with AP 00:1a:92:ea:73:12 timed out
-
-wlan0: Initial auth_alg=0
-wlan0: authenticate with AP 00:1a:92:ea:73:12
-wlan0: RX authentication from 00:1a:92:ea:73:12 (alg=0 transaction=2
-status=0)
-wlan0: authenticated
-wlan0: associate with AP 00:1a:92:ea:73:12
-wlan0: RX AssocResp from 00:1a:92:ea:73:12 (capab=0x411 status=0 aid=1)
-wlan0: associated
-wlan0: switched to short barker preamble (BSSID=00:1a:92:ea:73:12)
-ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
-
->>restarting connection with fixed rate 11M
-
-wlan0: deauthenticate(reason=3)
-ADDRCONF(NETDEV_UP): wlan0: link is not ready
-
-wlan0: Initial auth_alg=0
-wlan0: authenticate with AP 00:1a:92:ea:73:12
-wlan0: RX authentication from 00:1a:92:ea:73:12 (alg=0 transaction=2
-status=0)
-wlan0: authenticated
-wlan0: associate with AP 00:1a:92:ea:73:12
-wlan0: RX AssocResp from 00:1a:92:ea:73:12 (capab=0x411 status=0 aid=1)
-wlan0: associated
-wlan0: switched to short barker preamble (BSSID=00:1a:92:ea:73:12)
-ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
-wlan0: no IPv6 routers present
+Thanks a lot for patches and quick merge!
 
 -- 
-
-Hauke Mehrtens
+	Evgeniy Polyakov
