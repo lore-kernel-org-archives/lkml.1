@@ -1,87 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758331AbYAEUTF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757329AbYAEU3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758331AbYAEUTF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 15:19:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758027AbYAEUSO
+	id S1757329AbYAEU3S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 15:29:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756696AbYAEU3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 15:18:14 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:57597 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757543AbYAEUSL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 15:18:11 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: Acquire device locks on suspend
-Date: Sat, 5 Jan 2008 21:19:47 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0801051455320.26040-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0801051455320.26040-100000@netrider.rowland.org>
+	Sat, 5 Jan 2008 15:29:05 -0500
+Received: from mailout01.sul.t-online.de ([194.25.134.80]:33063 "EHLO
+	mailout01.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756469AbYAEU3E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 15:29:04 -0500
+Message-ID: <477FE882.1030901@t-online.de>
+Date: Sat, 05 Jan 2008 21:28:50 +0100
+From: Harald Dunkel <harald.dunkel@t-online.de>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.24-rc6: ricoh_mmc woes
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801052119.48542.rjw@sisk.pl>
+X-ID: Zqwq7wZ1wh-2v3qtV+rUpAYZx1LXIOZJC-AgOhw+W1-Ymd-O-VO9Fao-sYYJHr+gsp
+X-TOI-MSGID: d7152acd-502f-4497-89b2-0de1d0e37a76
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 5 of January 2008, Alan Stern wrote:
-> On Sat, 5 Jan 2008, Rafael J. Wysocki wrote:
-> 
-> > Greg, Andrew,
-> > 
-> > The appended patch is a replacement for
-> > gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch that deadlocked
-> > suspend and hibernation on some systems.
-> > 
-> > Please consider for applying.
-> 
-> This warning message:
-> 
-> > @@ -905,6 +915,13 @@ void device_del(struct device * dev)
-> >  	struct device * parent = dev->parent;
-> >  	struct class_interface *class_intf;
-> >  
-> > +	if (pm_sleep_lock()) {
-> > +		dev_warn(dev, "Illegal %s during suspend\n", __FUNCTION__);
-> > +		dump_stack();
-> > +	} else {
-> 
-> will unavoidably be triggered by this code:
+Hi folks,
 
-Ah, my fault, sorry.
+I've got a problem with a Ricoh mmc reader. As soon as I insert a
+sd card I get tons of I/O errors. syslog says:
 
-> > +void device_pm_destroy_suspended(struct device *dev)
-> > +{
-> > +	pr_debug("PM: Removing suspended device %s:%s\n",
-> > +		 dev->bus ? dev->bus->name : "No Bus",
-> > +		 kobject_name(&dev->kobj));
-> > +	mutex_lock(&dpm_list_mtx);
-> > +	list_del_init(&dev->power.entry);
-> > +	mutex_unlock(&dpm_list_mtx);
-> > +	up(&dev->sem);
-> > +	device_unregister(dev);
-> > +}
-> 
-> since the call to device_del() will occur while the pm_sleep_rwsem is
-> still locked for writing.  That's why I suggested not unregistering
-> these devices until after everything else has been resumed and the
-> rwsem has been dropped.
+Jan  5 21:19:12 daffy kernel: ricoh-mmc: Ricoh MMC Controller disabling driver
+Jan  5 21:19:12 daffy kernel: ricoh-mmc: Copyright(c) Philip Langdale
+Jan  5 21:19:12 daffy kernel: ricoh-mmc: Ricoh MMC controller found at 0000:03:01.2 [1180:0843] (rev 12)
+Jan  5 21:19:12 daffy kernel: ricoh-mmc: Controller is now disabled.
+Jan  5 21:19:25 daffy kernel: mmc0: new high speed SD card at address 1234
+Jan  5 21:19:25 daffy kernel: mmcblk0: mmc0:1234 SD01G 995328KiB
+Jan  5 21:19:25 daffy kernel:  mmcblk0:<3>mmcblk0: error -84 transferring data
+Jan  5 21:19:25 daffy kernel: end_request: I/O error, dev mmcblk0, sector 0
+Jan  5 21:19:25 daffy kernel: printk: 32 messages suppressed.
+Jan  5 21:19:25 daffy kernel: Buffer I/O error on device mmcblk0, logical block 0
+Jan  5 21:19:25 daffy kernel: mmcblk0: error -84 transferring data
+Jan  5 21:19:25 daffy kernel: end_request: I/O error, dev mmcblk0, sector 0
+Jan  5 21:19:25 daffy kernel: Buffer I/O error on device mmcblk0, logical block 0
+Jan  5 21:19:25 daffy kernel: mmcblk0: error -84 transferring data
+Jan  5 21:19:25 daffy kernel: end_request: I/O error, dev mmcblk0, sector 0
+Jan  5 21:19:25 daffy kernel: Buffer I/O error on device mmcblk0, logical block 0
+Jan  5 21:19:25 daffy kernel: mmcblk0: error -84 transferring data
+Jan  5 21:19:25 daffy kernel: end_request: I/O error, dev mmcblk0, sector 0
+Jan  5 21:19:25 daffy kernel: Buffer I/O error on device mmcblk0, logical block 0
+Jan  5 21:19:26 daffy kernel: mmcblk0: error -84 transferring data
+Jan  5 21:19:26 daffy kernel: end_request: I/O error, dev mmcblk0, sector 0
+Jan  5 21:19:26 daffy kernel: Buffer I/O error on device mmcblk0, logical block 0
+Jan  5 21:19:26 daffy kernel: ldm_validate_partition_table(): Disk read failed.
+Jan  5 21:19:26 daffy kernel: mmcblk0: error -84 transferring data
+Jan  5 21:19:26 daffy kernel: end_request: I/O error, dev mmcblk0, sector 0
+:
+:
 
-Hmm, well.  I'll go back to the previous version, then.  Sorry for the mess.
+The ricoh_mmc disabler module is installed as a module. udev loads it
+at boot time. But AFAICS I get the same errors if ricoh_mmc is removed.
 
-> Another thing to watch out for: Just in case somebody ends up calling
-> destroy_suspended_device(dev) from within dev's own resume method, you 
-> should interchange the resume_device() and the list_move_tail() 
-> calls in dpm_resume().
 
-However, if we unregister them all at once after releasing pm_sleep_rwsem,
-that shouldn't be necessary, right?
+lspci says
 
-Rafael
+# lspci | grep -i ricoh
+03:01.0 FireWire (IEEE 1394): Ricoh Co Ltd Unknown device 0832 (rev 05)
+03:01.1 Generic system peripheral [0805]: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 22)
+03:01.2 System peripheral: Ricoh Co Ltd Unknown device 0843 (rev 12)
+03:01.3 System peripheral: Ricoh Co Ltd R5C592 Memory Stick Bus Host Adapter (rev 12)
+03:01.4 System peripheral: Ricoh Co Ltd xD-Picture Card Controller (rev ff)
+# lspci -n | grep 03:01
+03:01.0 0c00: 1180:0832 (rev 05)
+03:01.1 0805: 1180:0822 (rev 22)
+03:01.2 0880: 1180:0843 (rev 12)
+03:01.3 0880: 1180:0592 (rev 12)
+03:01.4 0880: 1180:0852 (rev ff)
+
+
+Of course the SD card works fine in another PC.
+
+Any idea how to track this down? Please mail
+
+
+Regards
+
+Harri
+
