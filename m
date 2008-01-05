@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754934AbYAEAcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755188AbYAEAk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754934AbYAEAcT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 19:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754081AbYAEAcG
+	id S1755188AbYAEAk2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 19:40:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754081AbYAEAkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 19:32:06 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:43955 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754079AbYAEAcE (ORCPT
+	Fri, 4 Jan 2008 19:40:18 -0500
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:55874 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753633AbYAEAkQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 19:32:04 -0500
-Date: Fri, 4 Jan 2008 16:27:05 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
-       Christoph Lameter <clameter@sgi.com>, Willy Tarreau <w@1wt.eu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch] slub: provide /proc/slabinfo
-Message-ID: <20080104162705.44b61e9a@laptopd505.fenrus.org>
-In-Reply-To: <20080101162328.GC20426@elte.hu>
-References: <alpine.LFD.0.9999.0712221251110.21557@woody.linux-foundation.org>
-	<20071222221050.GA20753@1wt.eu>
-	<Pine.LNX.4.58.0712221954530.19187@gandalf.stny.rr.com>
-	<20071223051241.GA4449@1wt.eu>
-	<20071223141500.GB6430@one.firstfloor.org>
-	<20071224034530.GB16658@thunk.org>
-	<Pine.LNX.4.64.0712241120230.8849@schroedinger.engr.sgi.com>
-	<20071224233701.GB9784@kernel.org>
-	<20071225033418.GA29199@one.firstfloor.org>
-	<20080101124741.GH11776@mit.edu>
-	<20080101162328.GC20426@elte.hu>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 4 Jan 2008 19:40:16 -0500
+Date: Fri, 4 Jan 2008 19:39:51 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Mathieu Segaud <mathieu.segaud@regala.cx>, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [Coding Style]: misc fixes for fs/ext{3,4}/acl.{c,h}
+	from checkpatch.pl
+Message-ID: <20080105003951.GM17436@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	Mathieu Segaud <mathieu.segaud@regala.cx>,
+	akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <1199452896-20145-1-git-send-email-mathieu.segaud@regala.cx> <20080104134458.GE17436@mit.edu> <p73hcht8sfr.fsf@bingen.suse.de> <20080104190137.GJ17436@mit.edu> <20080104194129.GA16962@one.firstfloor.org> <4d8e3fd30801041203s2f017f20ld9fcbc82912468fe@mail.gmail.com> <20080104223328.GB19248@one.firstfloor.org> <4d8e3fd30801041612k2b4aaab1yee2be5eec03e9f07@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4d8e3fd30801041612k2b4aaab1yee2be5eec03e9f07@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Jan 2008 17:23:28 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+On Sat, Jan 05, 2008 at 01:12:44AM +0100, Paolo Ciarrocchi wrote:
+> Isn't it a timing problem?
+> I mean, I guess that codying style fixes are OK if there is a good coordination
+> with the maintainer and patches are sent with the right timing in
+> order to not cause
+> problems in the process.
 
-> 
-> * Theodore Tso <tytso@MIT.EDU> wrote:
-> 
-> > [...] doesn't a patch to provide /proc/slabinfo for SLUB already 
-> > exist?
-> 
-> yes, the complete (and tested) patch is below. It has been through a
-> few thousand random-bootup tests on x86 32-bit and 64-bit so it's
-> v2.6.24 material i think.
+But because running some kind of mechanical script and fixing up the
+problems is relatively mindless, it doesn't *add* anything.  Only the
+maintainer knows when it is a reasonably convenient time to fix all of
+the problems, or when to fix portions of the code that is being
+reworked anyway --- and the maintainer can just run the script by
+himself, for himself.  The patch doesn't actually save him much work,
+and in some cases, is actually more work than simply regenerating the
+fixes *after* the other patches waiting in his patch queue have been
+applied (but of course, it screws up everyone else's patches that
+haven't been submitted to the maintainer yet).
 
+In some cases, it's worth it.  In other (most) cases, it really isn't.
 
-> +static void *s_start(struct seq_file *m, loff_t *pos)
-> +{
-> +	loff_t n = *pos;
-> +
-> +	down_read(&slub_lock);
-> +	if (!n)
-> +		print_slabinfo_header(m);
-> +
-> +	return seq_list_start(&slab_caches, *pos);
-> +}
-> +
-
-
-this is the part I'm not very thrilled about... at least on first sight
-it looks like a user can now hold the read sem over system calls, and for as long as it wants.
-Either that's no problem (but then we wouldn't need the lock in the first place) or it
-is a problem that then wants to be fixed
+   	       	    	       	  	       - Ted
