@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755436AbYAEJqz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbYAEJtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755436AbYAEJqz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 04:46:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbYAEJqr
+	id S1755267AbYAEJtR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 04:49:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbYAEJtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 04:46:47 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:44841 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753527AbYAEJqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 04:46:46 -0500
-Date: Sat, 5 Jan 2008 11:46:18 +0200
-From: Adrian Bunk <bunk@kernel.org>
+	Sat, 5 Jan 2008 04:49:06 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:40528 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753309AbYAEJtE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 04:49:04 -0500
+Date: Sat, 5 Jan 2008 09:48:59 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [2.6.25 patch] remove a.out interpreter for ELF executables
-Message-ID: <20080105094618.GA2304@does.not.exist>
-References: <20080101134749.GJ2360@does.not.exist> <200801011536.32598.ak@suse.de> <20080105013053.b46cd28b.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Matt Mackall <mpm@selenic.com>,
+       Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: [PATCH] restrict reading from /proc/<pid>/maps to those who share ->mm or can ptrace pid
+Message-ID: <20080105094859.GJ27894@ZenIV.linux.org.uk>
+References: <20080102140957.GR27894@ZenIV.linux.org.uk> <20080105013109.4b300cf5.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080105013053.b46cd28b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080105013109.4b300cf5.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 05, 2008 at 01:30:53AM -0800, Andrew Morton wrote:
-> On Tue, 1 Jan 2008 15:36:32 +0100 Andi Kleen <ak@suse.de> wrote:
+On Sat, Jan 05, 2008 at 01:31:09AM -0800, Andrew Morton wrote:
+> On Wed, 2 Jan 2008 14:09:57 +0000 Al Viro <viro@ZenIV.linux.org.uk> wrote:
 > 
-> > On Tuesday 01 January 2008 14:47:49 Adrian Bunk wrote:
-> > > This patch contains the scheduled removal of the a.out interpreter 
-> > > support for ELF executables.
-> > 
-> > I already have a similar patch queued
-> > 
-> > ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/remove-aout-interpreter
-> > 
-> > Also removal of the old unused iBCS hooks while I was on it
-> > 
-> > ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/remove-ibcs-support
+> > 	Contents of /proc/*/maps is sensitive and may become sensitive
+> > after open() (e.g. if target originally shares our ->mm and later
+> > does exec on suid-root binary).
+> 
+> um, which contents?
+
+Information about the addresses where libraries, etc. got mapped, to
+start with - if you have that randomized, you don't want it seen
+by attacker who tries to escalate...
+ 
+> > 	Check at read() (actually, ->start() of iterator) time that
+> > mm_struct we'd grabbed and locked is
+> > 	* still the ->mm of target
+> > 	* equal to reader's ->mm or the target is ptracable by reader.
 > > 
 > 
-> Guys, please take a look at similar patches from David in -mm before even
-> vaguely thinking of breathing anywhere in the remote vicinity of
-> fs/binfmt_elf.c (sob).
+> Specifically, do /proc/pid/smaps and the maps4 goodies in -mm need similar
+> treatment?
 
-What David's patch does in fs/binfmt_elf.c is to make code conditional - 
-exactly the code Andi removes as scheduled in 2.6.25. You should be able 
-to simply drop the fs/binfmt_elf.c parts from
-aout-suppress-aout-library-support-if-config_arch_supports_aout.patch.
-
-cu
-Adrian
-
-BTW: There are also patch conflicts with git-x86, but since they are not 
-     from David you have yet to ask us to look at them.  ;-)
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+They differ only in ->show(), so this patch takes care of them as well...
