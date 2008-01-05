@@ -1,51 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756632AbYAEQ4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756671AbYAEQ7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756632AbYAEQ4b (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 11:56:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbYAEQ4Z
+	id S1756671AbYAEQ7A (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 11:59:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755107AbYAEQ6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 11:56:25 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:37704 "EHLO smtp4.pp.htv.fi"
+	Sat, 5 Jan 2008 11:58:52 -0500
+Received: from enyo.dsw2k3.info ([195.71.86.239]:40108 "EHLO enyo.dsw2k3.info"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754986AbYAEQ4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 11:56:24 -0500
-Date: Sat, 5 Jan 2008 18:56:23 +0200
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-To: linux-kernel@vger.kernel.org
-Cc: Simon Horman <horms@verge.net.au>, "David S. Miller" <davem@davemloft.net>
-Subject: Problems with nfsroot due to ip= cmdline changes
-Message-ID: <20080105165623.GA30987@sci.fi>
-Mail-Followup-To: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>,
-	linux-kernel@vger.kernel.org, Simon Horman <horms@verge.net.au>,
-	"David S. Miller" <davem@davemloft.net>
+	id S1754839AbYAEQ6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 11:58:52 -0500
+Date: Sat, 5 Jan 2008 17:58:44 +0100
+From: Matthias Schniedermeyer <ms@citd.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, David Chinner <dgc@sgi.com>,
+       Timothy Shimmin <tes@sgi.com>
+Subject: Re: Why is deleting (or reading) files not counted as IO-Wait in
+	top?
+Message-ID: <20080105165844.GA8874@citd.de>
+References: <20080102193503.GA31414@citd.de> <20080105013115.217a5ab1.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080105013115.217a5ab1.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I recently rebased my kernel tree and discovered that my nfsroot setup
-no longer worked. Here's the relevat part of my cmdline:
+On 05.01.2008 01:31, Andrew Morton wrote:
+> On Wed, 2 Jan 2008 20:35:03 +0100 Matthias Schniedermeyer <ms@citd.de> wrote:
+> 
+> > Hi
+> > 
+> > 
+> > Currently i'm deleting about 500.000 files on a XFS-filesystem which 
+> > takes a few minutes, as i had a top open i saw that 'wa' is shown as 
+> > 0.0% (Nothing else running currently) and everything except 'id' is near 
+> > the bottom too. Kernel is 2.6.23.11.
+> > 
+> > So, as 'rm -rf' is essentially a IO (or seek, to be more correct)-bound 
+> > task, shouldn't that count as "Waiting for IO"?
+> > 
+> > The man-page of top says:
+> > 'Amount of time the CPU has been waiting for I/O to complete.'
+> > 
+> > But AFAICT wa only seams to be (ac)counted for writing and not for 
+> > reading. I come to that conclusion because, when i fire 'sync' i can see 
+> > some percent wa for a few seconds.
+> > 
+> 
+> Yes, you would absolutely expect `rm' to be stuck in D state and
+> contributing to both load average and io-wait in this situation.
+> 
+> I'd think that either XFS is playing games (and it'd take some pretty
+> inventive games to do this) or your observations are in error.
 
-ip=192.168.2.200:192.168.2.185:192.168.2.1:255.255.255.0::eth0:off nfsroot=192.168.2.185:/my_nfsroot,v3,tcp root=/dev/nfs
+I don't think that i could do much wrong(tm).
 
-I discovered that now I had to change the autoconfiguration option to
-"on" in order to make nfsroot work. I only want to specify the IP
-address manually so I don't really want autoconfiguration. The current
-code works since it will not try autoconfiguration when all options are
-specified manually but the current behaviour does not really match the
-documentation ie. now the autoconf parameter can disable the whole IP
-configuration step even though the documentation says it will only
-disable autoconfiguration.
+rm -rf <big dir> (Took >30 minutes to delete)
+Everything else was sleeping at the time.
 
-Looks like these are the relevant commits:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a6c05c3d064dbb83be88cba3189beb5db9d2dfc3
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9cecd07c3f7a818a5865daad8cb5be408508dc99
+The sleeping processes are the usual handful of about 200 processes, you 
+have laying around today. 47 kernel threads, another about 40 or so 
+demons, and the rest >100 processes was my KDE-Session (mostly 
+'konsole's with bashes inside) with Iceweasel (Firefox) as sugar on top. 
+But as i said, there weren't doing anything at all, 'us' peaked at about 
+1-1.4 when i watched top.
+
+
+
+
+
+Bis denn
 
 -- 
-Ville Syrjälä
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+Real Programmers consider "what you see is what you get" to be just as 
+bad a concept in Text Editors as it is in women. No, the Real Programmer
+wants a "you asked for it, you got it" text editor -- complicated, 
+cryptic, powerful, unforgiving, dangerous.
+
