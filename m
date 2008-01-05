@@ -1,63 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758526AbYAEVwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758470AbYAEVyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758526AbYAEVwQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 16:52:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757568AbYAEVwB
+	id S1758470AbYAEVyk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 16:54:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756882AbYAEVyc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 16:52:01 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37668 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757566AbYAEVwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 16:52:00 -0500
-Date: Sat, 5 Jan 2008 22:52:09 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oliver@neukum.org>, Raymano Garibaldi <raymano@faunos.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] [FEATURE REQUEST] Transparent hot plugging
-	of root file system on portable storage devices.
-Message-ID: <20080105215209.GB21565@elf.ucw.cz>
-References: <200801021119.22104.oliver@neukum.org> <Pine.LNX.4.44L0.0801021521291.2990-100000@iolanthe.rowland.org>
+	Sat, 5 Jan 2008 16:54:32 -0500
+Received: from py-out-1112.google.com ([64.233.166.183]:10355 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756804AbYAEVya (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 16:54:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=WZI/n9nZpCJcEHcBtPMpSB2/inkLoeAkNQDTueg/Pk8Ty7KveT/iie0hW11k/iK7blaSqLRP37HI09k+5jNIiU7us99MQX3f2Wg/K4UVJcf7M6drvF/aza4hdLSjpNFTRXH7fSfKWiUy6ZYNud4aghgGIozAwRF/FyexaBabQ7Q=
+Message-ID: <43e72e890801051354v280c0ceeo78790bb5f1f45314@mail.gmail.com>
+Date: Sat, 5 Jan 2008 16:54:29 -0500
+From: "Luis R. Rodriguez" <mcgrof@winlab.rutgers.edu>
+To: "Hauke Mehrtens" <hauke@hauke-m.de>
+Subject: Re: rtl8187 rate control doesn't work
+Cc: "Michael Wu" <flamingice@sourmilk.net>, linux-kernel@vger.kernel.org,
+       "Stefano Brivio" <stefano.brivio@polimi.it>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+In-Reply-To: <477F9890.5050107@hauke-m.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0801021521291.2990-100000@iolanthe.rowland.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <477F9890.5050107@hauke-m.de>
+X-Google-Sender-Auth: e11b6f6d7393cb10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-01-02 15:23:30, Alan Stern wrote:
-> On Wed, 2 Jan 2008, Oliver Neukum wrote:
-> 
-> > Am Dienstag 01 Januar 2008 schrieb Pavel Machek:
-> > > Hi1
-> > > 
-> > > > I would like to request a feature in the Linux kernel that would allow
-> > > > a user to unplug a live read-only root file system which exists on a
-> > > > detachable storage device such as a USB key drive. The desired
-> > > > behavior is that once the same device is reattached to the computer
-> > > > the user can continue work transparently without having to reboot.
-> > > > 
-> > > > Having such a feature is becoming more important with advances in
-> > > > detachable solid state drive technology.
-> > > 
-> > > Yep, that would be nice.... In fact, patch would be very welcome :-).
-> > 
-> > Use the USB persist feature and hibernate. It should work. If you modify
-> > the fs in any way, you'll crash and burn. Unmounting / is harder which you
-> > need if you want to do this safely.
-> 
-> What about people who prefer (for reasons of restart latency or
-> non-availability of swap space) to suspend rather than hibernate?
+On Jan 5, 2008 9:47 AM, Hauke Mehrtens <hauke@hauke-m.de> wrote:
+> Hi
+>
+> Now the compat-wireless-2.6 package is working and I get an Internet
+> connection with my rtl8187 based card. (It's on an ASUS P5B Deluxe)
+>
+> I used the compat-wireless-2.6 package for this log, but I have the same
+> problem with the version integrated in kernel 2.6.24-rc6
+>
+> The Access Point is some rooms away so the signal is not the best at my
+> location. When starting the device with no fixed rate it wants to
+> connect with 54MBit/s and as iwconfig says it was successful but I can't
+> ping any device in the wireless LAN. (it's the first part of the log)
+> The rate will not be slowed down it stays fixed at 54MBit/s.
+>
+> After starting the device with rate fixed to 11M I get a connection to
+> the Access Point and iwconfig's output looks the same as without fixed
+> rate, but I'm able to ping the all devices in the network. (second part
+> of the log)
+> Now it slows down the rate to 1MBit/s
 
-For suspend to RAM, we can keep the power session, and be _sure_ noone
-unplugged our USB disks, right? So that one should work nicely.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Seems to be the new PID rate control algorithm. I believe Stephano
+(CC'd) was sending some patches for this. Please try changing in
+config.mk
+
+>From this value:
+
+CONFIG_MAC80211_RC_DEFAULT=pid
+
+To this:
+
+CONFIG_MAC80211_RC_DEFAULT=simple
+
+and let us know how that goes. Oh and linux-kernel is the wrong list
+to use, please just use linux-wireless for future e-mails.
+
+  Luis
