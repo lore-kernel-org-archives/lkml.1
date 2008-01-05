@@ -1,80 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbYAERw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756360AbYAESAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756453AbYAERw1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 12:52:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755166AbYAERwT
+	id S1756360AbYAESAu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 13:00:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755859AbYAESAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 12:52:19 -0500
-Received: from smtp107.plus.mail.mud.yahoo.com ([68.142.206.240]:45326 "HELO
-	smtp107.plus.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754105AbYAERwS (ORCPT
+	Sat, 5 Jan 2008 13:00:42 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:56255 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755605AbYAESAl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 12:52:18 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.fr;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=ILm1ULRwitJvhwicwEvbMjUvFwtRj2PF+MTyxrlijz+/YdsZkRB+2fmtPXBsd4cdwQfFGN4CDbyIbVqdTp/5vunSITkMKBaK0CF1D4hJVuwSXvY47lrfRTvOL2qaNOcR/tVcIJBsVi4nIjSEhGSDUwwvM2I0Wsw0EH5ZT82LaUA=  ;
-X-YMail-OSG: FJ20BkgVM1lJ_mTTIeuX5Vc1PhWxQZrTUYcERqXW7egxyyqNEtF6gIud7w8oPiv7AQ76SWCYjg--
-Message-ID: <477FC3C6.8070607@yahoo.fr>
-Date: Sat, 05 Jan 2008 18:52:06 +0100
-From: =?ISO-8859-1?Q?R=E9mi_H=E9rilier?= <rherilier@yahoo.fr>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071212)
+	Sat, 5 Jan 2008 13:00:41 -0500
+From: Ismail =?utf-8?q?D=C3=B6nmez?= <ismail@pardus.org.tr>
+Organization: Pardus / KDE
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [ANNOUNCE] util-linux-ng 2.13.1-rc2
+Date: Sat, 5 Jan 2008 20:01:35 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+References: <20080102211052.GC23824@petra.dvoda.cz> <20080105013121.c8bf01ed.akpm@linux-foundation.org>
+In-Reply-To: <20080105013121.c8bf01ed.akpm@linux-foundation.org>
+Cc: Karel Zak <kzak@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: akpm@osdl.org, linux-kernel@vger.kernel.org, dtor@mail.ru,
-       linux-input@vger.kernel.org
-Subject: Re: wistron_btns-add-support-for-x86_64-systems.patch in -mm
-References: <20071223144756.GA4827@basil.nowhere.org>
-In-Reply-To: <20071223144756.GA4827@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200801052001.35189.ismail@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> While looking for something else I stumbled over
-> 
-> wistron_btns-add-support-for-x86_64-systems.patch
-> 
-> in -mm. The patch looks very dubious to me. It basically
-> calls a BIOS function in long mode. To work like implemented
-> the BIOS would need to know magically what it was called
-> from (32bit or 64bit) and then execute different code paths.
-> 
-> It's very unlikely that this works. Most likely 
-> it will crash and if it happens to currently work 
-> it will be extremly fragile and crash at some future
-> point.
-> 
-> If anything you would need to set up a compat mode segment
-> and call the BIOS from that, but there are other problems
-> like interrupts not working etc (compat mode is somewhat
-> limited). Early in the x86-64 port there was a decision
-> to not call any BIOS calls from long mode because of these
-> problems. 
-> 
-> The only sane way to call that code would be to do so
-> from user space using some kind of emulator (e.g. like
-> the x server does) 
-> 
-> So I think the patch should be dropped.
-> 
-> -Andi
-> 
-> 
+Saturday 05 January 2008 11:31:21 tarihinde şunları yazmıştınız:
+> On Wed, 2 Jan 2008 22:10:52 +0100 Karel Zak <kzak@redhat.com> wrote:
+> >  The second util-linux-ng 2.13.1 release candidate is available at
+> >
+> >     ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/
+>
+> Interesting.  Thanks.  Which distros are using this, or plan to do so?
 
-Thanks you for your reply and these informations.
+Pardus Linux switched to -ng for upcoming 2008 release.
 
-What about finding what does this BIOS function and writing
-an equivalent in C? There would be no BIOS call anymore and
-this module could be used in the x86-64 port.
+Regards,
+ismail
 
-But, is it a sane solution?
-
-
-Remi
-
-
-
-
+-- 
+Never learn by your mistakes, if you do you may never dare to try again.
