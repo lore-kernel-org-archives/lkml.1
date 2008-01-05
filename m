@@ -1,59 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbYAEOwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755626AbYAEOwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755281AbYAEOwW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 09:52:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbYAEOwK
+	id S1755626AbYAEOwf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 09:52:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbYAEOwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 09:52:10 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:58913 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754476AbYAEOwI (ORCPT
+	Sat, 5 Jan 2008 09:52:19 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:49691 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755048AbYAEOwS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 09:52:08 -0500
-Message-ID: <477F998D.7050800@anagramm.de>
-Date: Sat, 05 Jan 2008 15:51:57 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Karel Zak <kzak@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
-Subject: Re: [ANNOUNCE] util-linux-ng 2.13.1-rc2
-References: <20080102211052.GC23824@petra.dvoda.cz> <20080105013121.c8bf01ed.akpm@linux-foundation.org>
-In-Reply-To: <20080105013121.c8bf01ed.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 5 Jan 2008 09:52:18 -0500
+Subject: Re: [PATCH 6/7] sched: rt-group: per group period
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       dmitry.adamushko@gmail.com,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20080104135653.157876000@chello.nl>
+References: <20080104135457.336761000@chello.nl>
+	 <20080104135653.157876000@chello.nl>
+Content-Type: text/plain
+Date: Sat, 05 Jan 2008 15:51:59 +0100
+Message-Id: <1199544719.31975.34.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19WFie/r2G6Pdy411pQaQ5N8hfwqub5G0lKVgA
- ZXGYJO6B7GvwQ6Qqd3kmV58tSsu3Zb0X2tepNfIUgx660FHjrY
- bzGvbU6GU3KtI7guU4zuQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton schrieb:
-> On Wed, 2 Jan 2008 22:10:52 +0100 Karel Zak <kzak@redhat.com> wrote:
-> 
->>
->>  The second util-linux-ng 2.13.1 release candidate is available at
->>
->>     ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/
->>
-> 
-> Interesting.  Thanks.  Which distros are using this, or plan to do so?
+Could you please fold this into the 6/7 patch.
 
-We (CRUX community, http://crux.nu ) just switched to the -ng.
-The old non -ng version doesn't seem to be maintained well.
+It reverts a wandering chunk (the 32768 thing), but more importantly
+it fixes !FAIR_GROUP_SCHED compilation.
 
-Regards,
--- 
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/sched.c |   10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-http://www.anagramm-technology.com
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -647,7 +647,7 @@ const_debug unsigned int sysctl_sched_rt
+  * ratio of time -rt tasks may consume.
+  * default: 95%
+  */
+-const_debug unsigned int sysctl_sched_rt_ratio = 32768; //62259;
++const_debug unsigned int sysctl_sched_rt_ratio = 62259;
+ 
+ /*
+  * For kernel-internal use: high-speed (but slightly incorrect) per-cpu
+@@ -5379,6 +5379,7 @@ static void __init sched_rt_period_init(
+ 	hotcpu_notifier(sched_rt_period_hotplug, 0);
+ }
+ 
++#ifdef CONFIG_FAIR_GROUP_SCHED
+ static void __sched_rt_period_init_tg(void *arg)
+ {
+ 	struct task_group *tg = arg;
+@@ -5404,12 +5405,14 @@ static void sched_rt_period_destroy_tg(s
+ {
+ 	on_each_cpu(__sched_rt_period_destroy_tg, tg, 0, 1);
+ }
+-#else
++#endif /* CONFIG_FAIR_GROUP_SCHED */
++#else /* CONFIG_SMP */
+ static void __init sched_rt_period_init(void)
+ {
+ 	sched_rt_period_start_cpu(0);
+ }
+ 
++#ifdef CONFIG_FAIR_GROUP_SCHED
+ static void sched_rt_period_init_tg(struct task_group *tg)
+ {
+ 	sched_rt_period_start(tg->rt_rq[0]);
+@@ -5419,7 +5422,8 @@ static void sched_rt_period_destroy_tg(s
+ {
+ 	sched_rt_period_stop(tg->rt_rq[0]);
+ }
+-#endif
++#endif /* CONFIG_FAIR_GROUP_SCHED */
++#endif /* CONFIG_SMP */
+ 
+ #ifdef CONFIG_SMP
+ /*
+
+
