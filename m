@@ -1,66 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755675AbYAEQjH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbYAEQjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755675AbYAEQjH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 11:39:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755946AbYAEQin
+	id S1756717AbYAEQjY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 11:39:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756551AbYAEQi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 11:38:43 -0500
-Received: from ns.gsystems.sk ([62.176.172.50]:38280 "EHLO 192.168.0.33"
-	rhost-flags-OK-OK-FAIL-FAIL) by vger.kernel.org with ESMTP
-	id S1755847AbYAEQil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 11:38:41 -0500
-X-Greylist: delayed 3023 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 Jan 2008 11:38:41 EST
-From: Ondrej Zary <linux@rainbow-software.org>
-To: jgarzik@pobox.com
-Subject: [PATCH] libata and starting/stopping ATAPI floppy devices
-Date: Sat, 5 Jan 2008 16:47:57 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-ide@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
+	Sat, 5 Jan 2008 11:38:58 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:40572 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756515AbYAEQi5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 11:38:57 -0500
+Message-ID: <477FB2A5.5010005@davidnewall.com>
+Date: Sun, 06 Jan 2008 03:09:01 +1030
+From: David Newall <david@davidnewall.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 1564
-Content-Type: text/plain;
-  charset="us-ascii"
+CC: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [2.6.25 patch] remove a.out interpreter for ELF executables
+References: <20080101134749.GJ2360@does.not.exist> <200801011536.32598.ak@suse.de> <20080105013053.b46cd28b.akpm@linux-foundation.org> <20080105094618.GA2304@does.not.exist>
+In-Reply-To: <20080105094618.GA2304@does.not.exist>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200801051647.58866.linux@rainbow-software.org>
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-I switched to libata drivers for my onboard PATA controller (PIIX4) recently. 
-Everything works fine except that kernel tries to start not only my hard 
-drive (sda) but also LS-120 floppy drive (sdb) which does not like it:
+On Tue, 1 Jan 2008 15:36:32 +0100 Andi Kleen <ak@suse.de> wrote:
 
-sd 0:0:0:0: [sda] Starting disk
-ata1.00: configured for UDMA/33
-sd 0:0:0:0: [sda] 58633344 512-byte hardware sectors (30020 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support 
-DPO or FUA
-sd 1:0:1:0: [sdb] Starting disk
-ata2.00: configured for UDMA/33
-ata2.01: configured for PIO2
-sd 1:0:1:0: [sdb] Result: hostbyte=0x00 driverbyte=0x08
-sd 1:0:1:0: [sdb] Sense Key : 0x2 [current]
-sd 1:0:1:0: [sdb] ASC=0x3a ASCQ=0x0
+> ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/remove-aout-interpreter
+>
+> Also removal of the old unused iBCS hooks while I was on it
+>
+> ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/remove-ibcs-support
 
-
-The question is: is it correct? Or a patch like this should be applied?
-
---- linux-2.6.23-orig/drivers/ata/libata-scsi.c	2007-10-09 22:31:38.000000000 +0200
-+++ linux-2.6.23-pentium/drivers/ata/libata-scsi.c	2008-01-05 15:50:16.000000000 +0100
-@@ -802,7 +802,8 @@
- 
- 	blk_queue_max_phys_segments(sdev->request_queue, LIBATA_MAX_PRD);
- 
--	sdev->manage_start_stop = 1;
-+	if (dev->class == ATA_DEV_ATA)
-+		sdev->manage_start_stop = 1;
- 
- 	if (dev)
- 		ata_scsi_dev_config(sdev, dev);
-
-
--- 
-Ondrej Zary
+Is iBCS support the basis for SCO & SVr4 support?  (These both sound 
+useful.)
