@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbYAEUbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757463AbYAEUj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757710AbYAEUbs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 15:31:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756833AbYAEUbl
+	id S1757463AbYAEUj5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 15:39:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756880AbYAEUjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 15:31:41 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:36098 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756806AbYAEUbk (ORCPT
+	Sat, 5 Jan 2008 15:39:47 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:1189 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756854AbYAEUjq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 15:31:40 -0500
-Date: Sat, 5 Jan 2008 20:31:24 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Al Boldi <a1426z@gawab.com>, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Can ARM use drivers/Kconfig [Was: Kconfig: Source "drivers/usb/gadget/Kconfig" for ARCH=arm]
-Message-ID: <20080105203123.GA7797@flint.arm.linux.org.uk>
-References: <200801051546.SAA08953@raad.intranet> <20080105192000.GA9553@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080105192000.GA9553@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 5 Jan 2008 15:39:46 -0500
+Date: Sat, 5 Jan 2008 15:39:46 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] PM: Acquire device locks on suspend
+In-Reply-To: <200801052119.48542.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0801051537450.26040-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 05, 2008 at 08:20:00PM +0100, Sam Ravnborg wrote:
-> On Sat, Jan 05, 2008 at 06:42:52PM +0300, Al Boldi wrote:
-> > 
-> > From: David Brownell <david-b@pacbell.net>
-> > 
-> > Source "drivers/usb/gadget/Kconfig" for ARCH=arm.
-> > 
-> > 
-> > Cc: David Brownell <david-b@pacbell.net>
-> > Cc: Greg KH <greg@kroah.com>
-> > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > Signed-off-by: Al Boldi <a1426z@gawab.com>
-> > 
-> > ---
-> > 
-> > --- 23.a/arch/arm/Kconfig
-> > +++ 23.b/arch/arm/Kconfig
-> > @@ -1049,6 +1049,8 @@ source "drivers/hid/Kconfig"
-> >  
-> >  source "drivers/usb/Kconfig"
-> >  
-> > +source "drivers/usb/gadget/Kconfig"
-> > +
-> >  source "drivers/mmc/Kconfig"
-> >  
-> >  source "drivers/rtc/Kconfig"
+On Sat, 5 Jan 2008, Rafael J. Wysocki wrote:
+
+> > Another thing to watch out for: Just in case somebody ends up calling
+> > destroy_suspended_device(dev) from within dev's own resume method, you 
+> > should interchange the resume_device() and the list_move_tail() 
+> > calls in dpm_resume().
 > 
-> What is preventing ARM from using drivers/Kconfig?
-> That a better fix IMO.
+> However, if we unregister them all at once after releasing pm_sleep_rwsem,
+> that shouldn't be necessary, right?
 
-Not everything in drivers/ is suitable for every ARM configuration.  It
-was felt at the time better for ARM to remain separate because people
-didn't want to pollute drivers/Kconfig with the ARM specific conditionals.
+It's still necessary, because destroy_suspended_device() still has to
+move the device from one list to another.  You don't want it to end up 
+on the dpm_locked list.
 
-(mtd is conditional because it's not supported on ARM CPUs without
-alignment trap support.)
+Alan Stern
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
