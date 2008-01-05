@@ -1,49 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbYAEAOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755048AbYAEAS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755167AbYAEAOS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Jan 2008 19:14:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbYAEAOK
+	id S1755048AbYAEAS1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Jan 2008 19:18:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753911AbYAEAST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Jan 2008 19:14:10 -0500
-Received: from vms173003pub.verizon.net ([206.46.173.3]:62098 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753594AbYAEAOJ (ORCPT
+	Fri, 4 Jan 2008 19:18:19 -0500
+Received: from wa-out-1112.google.com ([209.85.146.179]:58609 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753674AbYAEASS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Jan 2008 19:14:09 -0500
-Date: Fri, 04 Jan 2008 19:13:53 -0500
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Querying the bios from booted linux kernel?
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <200801041913.54030.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-User-Agent: KMail/1.9.7
+	Fri, 4 Jan 2008 19:18:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=AnYLl4Xscbn+y4Le4HlFZt7AsEVEDqhZwaJTu+VhZAxBC7PTczX6eEl5nqe4sZ/sQrEUXKpuTYwnCwRtGqI7zTfPsTFN+cdvpj4n8jJWHVhh0L6NqzXej3bKJdbk2L84AF69NiH4Nz0Xo1FUkJgONcM15Kz9tKGwXkYw4Bw5p5I=
+Message-ID: <4d8e3fd30801041618p1afad989w494461671cca14ac@mail.gmail.com>
+Date: Sat, 5 Jan 2008 01:18:17 +0100
+From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: [PATCH] profile: further Codying Style fixes, take 2
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>, mingo@elte.hu
+In-Reply-To: <20080104203745.GB32174@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080104185209.111adeed@paolo-desktop>
+	 <20080104203745.GB32174@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings;
+On Jan 4, 2008 9:37 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
+> On Fri, Jan 04, 2008 at 06:52:09PM +0100, Paolo Ciarrocchi wrote:
+> > Further fixes to profile.c, checkpatch.pl now reports:
+> >
+> >       total: 0 errors, 2 warnings, 601 lines checked
+> >
+> >   WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
+> >   #410: FILE: profile.c:410:
+> >   +EXPORT_SYMBOL_GPL(profile_hits);
+> > I cannot fix this without changing the funtionality in case of non-SMP build.
+>
+> If you look a bit more you will see two functions named
+> profile_hits.
+> So you just add the export twice - like this:
+> diff --git a/kernel/profile.c b/kernel/profile.c
+> index 5e95330..fc4570d 100644
+> --- a/kernel/profile.c
+> +++ b/kernel/profile.c
+> @@ -337,6 +337,7 @@ out:
+>         local_irq_restore(flags);
+>         put_cpu();
+>  }
+> +EXPORT_SYMBOL_GPL(profile_hits);
+>
+>  static int __devinit profile_cpu_callback(struct notifier_block *info,
+>                                         unsigned long action, void *__cpu)
+> @@ -408,9 +409,8 @@ void profile_hits(int type, void *__pc, unsigned int nr_hits)
+>         pc = ((unsigned long)__pc - (unsigned long)_stext) >> prof_shift;
+>         atomic_add(nr_hits, &prof_buffer[min(pc, prof_len - 1)]);
+>  }
+> -#endif /* !CONFIG_SMP */
+> -
+>  EXPORT_SYMBOL_GPL(profile_hits);
+> +#endif /* !CONFIG_SMP */
+>
+>  void profile_tick(int type)
+>  {
+>
+> Which has the added benefit that it is now documented for
+> both implementations that they are exported.
 
-Is there a utility that can query the motherboard bios and get a list of the 
-drives it can see?
+Nice, thanks for the explanation Sam.
 
-Likewise, for the bios extension contained on a pny sata card with a Silicon 
-Image chipset on it?
+> >
+> >
+> >   WARNING: externs should be avoided in .c files
+> >   #509: FILE: profile.c:509:
+> >   +       extern int setup_profiling_timer(unsigned int multiplier);
+> > I don't know what to do with this warning.
+>
+> Stick the prototype in profile.h maybe?
+> I can see that not all implementers of this function
+> includes profile.h so it is not foolproof.
 
-I'm trying to cobble up a way for linux to boot from the drive on this sata 
-card, so that the F8 install is completely separated from the FC6 install on 
-a pata drive connected to the mainboard.
+That would not be an easy fix for me (I'm almost new to these things),
+I can try to that but I would appreciated if Ingo could apply the patch
+as it is now and wait a bit for the further fix.
 
-Thanks.
+Ingo, do you agree?
 
+
+Ciao,
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Alea iacta est.
-	[The die is cast]
-		-- Gaius Julius Caesar
+Paolo
+http://paolo.ciarrocchi.googlepages.com/
