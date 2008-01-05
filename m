@@ -1,57 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756558AbYAEQoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756513AbYAEQyK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756558AbYAEQoj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 11:44:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbYAEQob
+	id S1756513AbYAEQyK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 11:54:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755573AbYAEQx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 11:44:31 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:36307 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755449AbYAEQoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 11:44:30 -0500
-Date: Sat, 5 Jan 2008 11:44:03 -0500
-To: Tomasz =?utf-8?Q?K=C5=82oczko?= <kloczek@rudy.mif.pg.gda.pl>
-Cc: Jeff Layton <jlayton@redhat.com>, linux-nfs@vger.kernel.org,
-       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       richterd@citi.umich.edu
-Subject: Re: [PATCH 0/7] Intro: convert lockd to kthread and fix
-	use-after-free (try #3)
-Message-ID: <20080105164403.GA12928@fieldses.org>
-References: <1198009182-27895-1-git-send-email-jlayton@redhat.com> <Pine.BSO.4.63.0712192004140.3875@rudy.mif.pg.gda.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.BSO.4.63.0712192004140.3875@rudy.mif.pg.gda.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	Sat, 5 Jan 2008 11:53:57 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:53122 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755512AbYAEQx4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 11:53:56 -0500
+Subject: Re: 2.6.24-rc6: possible recursive locking detected
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Christian Kujau <lists@nerdbynature.de>, linux-kernel@vger.kernel.org,
+       jfs-discussion@lists.sourceforge.net,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+In-Reply-To: <20080105071205.GA28936@gondor.apana.org.au>
+References: <alpine.DEB.0.999999.0801032349190.4821@sheep.housecafe.de>
+	 <200801040006.47979.rjw@sisk.pl> <20080104083049.GC22803@elte.hu>
+	 <20080105071205.GA28936@gondor.apana.org.au>
+Content-Type: text/plain
+Date: Sat, 05 Jan 2008 17:53:36 +0100
+Message-Id: <1199552016.31975.41.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 19, 2007 at 08:15:43PM +0100, Tomasz Kłoczko wrote:
-> On Tue, 18 Dec 2007, Jeff Layton wrote:
->
->> This is the third patchset to fix the use-after-free problem in lockd,
->> and to convert lockd to use the kthread API instead of kernel_thread.
->> The main change from the last patchset is the elimination of the
->> svc_create_kthread helper function, and having lockd_up call kthread_run
->> directly. I've also made some changes to the function prototype for
->> the lockd function to eliminate the need for casting the function
->> pointer.
->
-> BTW kernel, NFS and lockd: SuSE kernel IIRC is distributed with patch which 
-> adds kernel-based status monitor (statd).
->
-> Q to NFS people: any plans about merge this in main kernel tree ?
 
-No.  There was opposition to the idea.  I can't remember the argument,
-though, and a quick google search isn't turning it up.
+On Sat, 2008-01-05 at 18:12 +1100, Herbert Xu wrote:
+> On Fri, Jan 04, 2008 at 09:30:49AM +0100, Ingo Molnar wrote:
+> >
+> > > > [ 1310.670986] =============================================
+> > > > [ 1310.671690] [ INFO: possible recursive locking detected ]
+> > > > [ 1310.672097] 2.6.24-rc6 #1
+> > > > [ 1310.672421] ---------------------------------------------
+> > > > [ 1310.672828] FahCore_a0.exe/3692 is trying to acquire lock:
+> > > > [ 1310.673238]  (&q->lock){++..}, at: [<c011544b>] __wake_up+0x1b/0x50
+> > > > [ 1310.673869]
+> > > > [ 1310.673870] but task is already holding lock:
+> > > > [ 1310.674567]  (&q->lock){++..}, at: [<c011544b>] __wake_up+0x1b/0x50
+> > > > [ 1310.675267]
+> > > > [ 1310.675268] other info that might help us debug this:
+> > > > [ 1310.675952] 5 locks held by FahCore_a0.exe/3692:
+> > > > [ 1310.676334]  #0:  (rcu_read_lock){..--}, at: [<c038b620>] net_rx_action+0x60/0x1b0
+> > > > [ 1310.677251]  #1:  (rcu_read_lock){..--}, at: [<c0388d60>] netif_receive_skb+0x100/0x470
+> > > > [ 1310.677924]  #2:  (rcu_read_lock){..--}, at: [<c03a7fb2>] ip_local_deliver_finish+0x32/0x210
+> > > > [ 1310.678460]  #3:  (clock-AF_INET){-.-?}, at: [<c038164e>] sock_def_readable+0x1e/0x80
+> > > > [ 1310.679250]  #4:  (&q->lock){++..}, at: [<c011544b>] __wake_up+0x1b/0x50
+> 
+> The net part might just be a red herring, since the problem is that
+> __wake_up is somehow reentering itself.
 
-> And another question related to NFS: any progress on add clear NFS 
-> statistics in kernel (nfsstat -z) ?
+/*
+ * Perform a safe wake up of the poll wait list. The problem is that
+ * with the new callback'd wake up system, it is possible that the
+ * poll callback is reentered from inside the call to wake_up() done
+ * on the poll wait queue head. The rule is that we cannot reenter the
+ * wake up code from the same task more than EP_MAX_POLLWAKE_NESTS times,
+ * and we cannot reenter the same wait queue head at all. This will
+ * enable to have a hierarchy of epoll file descriptor of no more than
+ * EP_MAX_POLLWAKE_NESTS deep. We need the irq version of the spin lock
+ * because this one gets called by the poll callback, that in turn is called
+ * from inside a wake_up(), that might be called from irq context.
+ */
 
-No.  We do have some patches that add roughly equivalent functionality
-in userspace.
+Seems to suggest that the epoll code can indeed recurse into wakeup.
 
---b.
+Davide, Johannes, any ideas?
+
