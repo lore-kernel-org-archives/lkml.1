@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbYAEGjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbYAEGm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753396AbYAEGjS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 01:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbYAEGjJ
+	id S1753909AbYAEGm1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 01:42:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbYAEGmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 01:39:09 -0500
-Received: from mail.gmx.net ([213.165.64.20]:35330 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751135AbYAEGjH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 01:39:07 -0500
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX189Wg4rPKg9ph72xUcXmbN47c5YaEmhdBGZ72H2ZQ
-	Raj2wC4oauO9yX
-Date: Sat, 5 Jan 2008 07:39:04 +0100
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Andreas Mohr <andi@lisas.de>
-Cc: Adrian Bunk <bunk@kernel.org>, Richard Jonsson <richie@coderworld.net>,
-       linux-kernel@vger.kernel.org, Ayaz Abdulla <aabdulla@nvidia.com>,
-       jgarzik@pobox.com, netdev@vger.kernel.org
-Subject: Re: forcedeth: MAC-address reversed on resume from suspend
-Message-ID: <20080105063904.GC22739@atjola.homenet>
-References: <477BFC71.7090002@coderworld.net> <20080102214843.GA19224@rhlx01.hs-esslingen.de> <20080102234209.GA10831@does.not.exist> <20080104034357.GA2113@atjola.homenet> <20080104084517.GA21628@rhlx01.hs-esslingen.de> <20080104101740.GA4406@atjola.homenet> <20080104224352.GA7853@rhlx01.hs-esslingen.de> <20080105061002.GA22739@atjola.homenet>
+	Sat, 5 Jan 2008 01:42:20 -0500
+Received: from gw.goop.org ([64.81.55.164]:52635 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751770AbYAEGmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 01:42:19 -0500
+Message-ID: <477F2697.5050407@goop.org>
+Date: Fri, 04 Jan 2008 22:41:27 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080105061002.GA22739@atjola.homenet>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-Y-GMX-Trusted: 0
+To: Arjan van de Ven <arjan@linux.intel.com>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 1/3] move WARN_ON() out of line
+References: <477C32DA.5060905@linux.intel.com>
+In-Reply-To: <477C32DA.5060905@linux.intel.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008.01.05 07:10:02 +0100, Björn Steinbrink wrote:
-> - nv_probe sees 00:11:22:00:00:01
-> - doesn't match the vendor stuff
-> - becomes 01:00:00:22:11:00
-> 
-> Oops, that's not quite the expected thing.
+Arjan van de Ven wrote:
+> This patch moves WARN_ON() out of line entirely. I've considered keeping
+> the test inline and moving only the slowpath out of line, but I decided
+> against that: an out of line test reduces the pressure on the CPUs
+> branch predictor logic and gives smaller code, while a function call
+> to a fixed location is quite fast. Likewise I've considered doing
+> something
+> similar to BUG() (eg use a trapping instruction) but that's not really
+> better (it needs the test inline again and recovering from an invalid
+> instruction isn't quite fun).
 
-Haha, I just noticed that that even is a multicast address, so you'd get
-a random MAC address in that case *lol.
+Power implements WARN_ON this way, and all the machinery is in place to
+generically implement WARN_ON that way if you want.  It does generate
+denser code than the call (since its just a single trapping instruction
+with no need for argument setup), and the performance cost of the trap
+shouldn't matter if warnings are rare (which one would hope).
 
-Björn
+    J
