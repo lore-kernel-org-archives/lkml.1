@@ -1,96 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbYAEKLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754964AbYAEKTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753842AbYAEKLU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 05:11:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbYAEKLG
+	id S1754964AbYAEKTm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 05:19:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbYAEKTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 05:11:06 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:41961 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753821AbYAEKLD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 05:11:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=QbEpyO5qgOenieUsDR6EWQAfjZINNCD+jPuYTdhdx5iUrQmPp3WBs15yudJ5ixt128PmMKcbGWA/lAV74ul6wt3Tw883aUw+Iia926zlMuI/50Y9i6vMoCFlyS1/BN4v4eoCjJwt7R2bxy4fft6ENZPphl85Z4beAqiw9vE7ioI=
-Date: Sat, 5 Jan 2008 11:13:27 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Neil Brown <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>,
-       netdev@vger.kernel.org, Tom Tucker <tom@opengridcomputing.com>
-Subject: Re: 2.6.24-rc6-mm1
-Message-ID: <20080105101327.GA3103@ami.dom.local>
-References: <64bb37e0801040223q17a76565k3c7667a197403ce5@mail.gmail.com> <20080104133031.GA3329@ff.dom.local> <64bb37e0801040721p57ff3d54wc3de00546d1d2ff1@mail.gmail.com> <20080105000700.GA3224@ami.dom.local> <64bb37e0801050001x65b104bdl5a68c731b3656d17@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <64bb37e0801050001x65b104bdl5a68c731b3656d17@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sat, 5 Jan 2008 05:19:32 -0500
+Received: from gate.crashing.org ([63.228.1.57]:35344 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752977AbYAEKTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 05:19:31 -0500
+Subject: Re: Idle loadavg of ~1, maybe MD related
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: "Robin H. Johnson" <robbat2@gentoo.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20080105100455.GB911@curie-int.orbis-terrarum.net>
+References: <20071230100614.GX17327@curie-int.orbis-terrarum.net>
+	 <20080105013037.a354b33a.akpm@linux-foundation.org>
+	 <20080105100455.GB911@curie-int.orbis-terrarum.net>
+Content-Type: text/plain
+Date: Sat, 05 Jan 2008 21:18:52 +1100
+Message-Id: <1199528332.7291.53.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 05, 2008 at 09:01:02AM +0100, Torsten Kaiser wrote:
-> On Jan 5, 2008 1:07 AM, Jarek Poplawski <jarkao2@gmail.com> wrote:
-> > On Fri, Jan 04, 2008 at 04:21:26PM +0100, Torsten Kaiser wrote:
-> > > On Jan 4, 2008 2:30 PM, Jarek Poplawski <jarkao2@gmail.com> wrote:
-> > > The only thing that is sadly not practical is bisecting the borkenout
-> > > mm-patches, as triggering this error is to unreliable /
-> > > time-consuming.
-> >
-> > Right, but it seems there are these 2 main suspects here...
-> >
-> > > > - is it still vanilla -rc6-mm1; I've seen on kernel list you tried
-> > > > some fixes around raid?
-> > >
-> > > Yes, without these fixes I can't boot.
-> > > But they should only be run during starting the arrays, so I doubt
-> > > that this is that cause.
-> > > (Also -rc3-mm2 did not need this fix)
-> >
-> > You've written vanilla -rc6 is OK. Does it mean -rc6 with these fixes?
+
+On Sat, 2008-01-05 at 02:04 -0800, Robin H. Johnson wrote:
+> On Sat, Jan 05, 2008 at 01:30:37AM -0800, Andrew Morton wrote:
+> > >From that I'd suspect that kwindfarm is being a bad citizen.
+> > If a process is consistently stuck in D state, run
+> Windfarm.
+
+It's an unfortunate artifact that kernel threads that do
+non-interruptible sleep are counted as load...
+
+In the case of windfarm, it does a lot (a _LOT_) of accesses to various
+i2c busses and the SMU (the system management unit which controls the
+fans). All those are done in the form of short requests during which the
+process is doing a wait_for_completion() or similar.
+
+I don't see a better way to do that, I think we could have good use of
+something that stops counting those in the load average...
+
+Ben.
+
+> > 	echo w > /proc/sysrq-trigger
+> > then record the resulting dmesg output so we can see where it got stuck.
 > 
-> vanilla -rc6 is fine without these fixes.
-> The raid-bugs from -rc6-mm1 are probably introduced by
-> md-allow-devices-to-be-shared-between-md-arrays.patch and that patch
-> is new in this mm-release.
+> Traceback:
+> [552710.416174] SysRq : Show Blocked State
+> [552710.417876]   task                        PC stack   pid father
+> [552710.417888] kwindfarm     D 0000000000000000     0   829      2
+> [552710.417892] Call Trace:
+> [552710.417895] [c00000036c9835f0] [c000000000528b90] 0xc000000000528b90 (unreliable)
+> [552710.417908] [c00000036c9837c0] [c00000000000f4a8] .__switch_to+0xd8/0x110
+> [552710.417985] [c00000036c983850] [c0000000003bb2a0] .schedule+0x62c/0x6c8
+> [552710.417992] [c00000036c983940] [c0000000003bb8c4] .schedule_timeout+0x3c/0xe8
+> [552710.417997] [c00000036c983a10] [c0000000003bb51c] .wait_for_common+0x100/0x1bc
+> [552710.418002] [c00000036c983ae0] [c000000000285300] .smu_fan_set+0x17c/0x1e4
+> [552710.418009] [c00000036c983c30] [c000000000284078] .pm112_wf_notify+0xc50/0x12d0
+> [552710.418015] [c00000036c983d20] [c0000000003bfb84] .notifier_call_chain+0x5c/0xcc
+> [552710.418021] [c00000036c983dc0] [c00000000006f4b4] .__blocking_notifier_call_chain+0x70/0xb0
+> [552710.418027] [c00000036c983e70] [c000000000282d9c] .wf_thread_func+0x78/0x11c
+> [552710.418032] [c00000036c983f00] [c000000000069b00] .kthread+0x78/0xc4
+> [552710.418039] [c00000036c983f90] [c000000000023d0c] .kernel_thread+0x4c/0x68
+> [552710.418064] Sched Debug Version: v0.07, 2.6.24-rc6-prod-g6f0f5304 #10
+> [552710.418067] now at 552723945.170635 msecs
+> [552710.418070]   .sysctl_sched_latency                    : 60.000000
+> [552710.418073]   .sysctl_sched_min_granularity            : 12.000000
+> [552710.418076]   .sysctl_sched_wakeup_granularity         : 30.000000
+> [552710.418079]   .sysctl_sched_batch_wakeup_granularity   : 30.000000
+> [552710.418082]   .sysctl_sched_child_runs_first           : 0.000001
+> [552710.418085]   .sysctl_sched_features                   : 7
 > 
-> > I think it would be easier just to start with this working -rc6 and
-> > simply check if we have 'right' suspects, so: git-net.patch and
-> > git-nfsd.patch from -mm1-broken-out, as suggested by Herbert (I hope,
-> > can compile - otherwise you could try the other way: add the whole -mm
-> > and revert these two). Using current gits could complicate this
-> > "investigation".
+> Full output at
+> http://dev.gentoo.org/~robbat2/20080105_windfarm_sysrq_w.txt
 > 
-> OK, I will try this...
 
-It seems that this last report gives the third one: ieee1394 to the pack,
-so probably, you can hold on a "minute" - this all needs some rethinking.
-(But, if you've begun with this already, let it be clear at last too.)
-
-> > I didn't read all this thread, so probably I miss many points, but are
-> > you sure there are no problems with filesystem corruption around these
-> > packets or where you compile(?) them (e.g. after these raid problems)?
-> 
-> For my setup: It's a gentoo system, so compiling packages is the
-> normal way of installing something.
-> The compile itself is done on a tmpfs so a filesystem corruption there
-> should be rather impossible. ;)
-> (The system has 4Gb RAM, so it doesn't even need to swap)
-> The sources are taken from a nfsv4 share that is served from a
-> different system. Also gentoo checksums all sources it will use.
-
-Yes, since this was no problem with vanilla 2.6.24-rc6, I've probably
-gone astray...
-
-> If you think some other slub_debug might catch it, I would try this...
-
-OK! But, in the meantime could you send your current .config? I wonder
-e.g. if there could be used this new ieee1394 code from
-init_ohci1394_dma.c?
- 
-You are really helpful, thanks,
-Jarek P.
