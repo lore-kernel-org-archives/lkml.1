@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbYAEJtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbYAEKAX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755267AbYAEJtR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 04:49:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbYAEJtG
+	id S1754838AbYAEKAX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 05:00:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYAEKAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 04:49:06 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:40528 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753309AbYAEJtE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 04:49:04 -0500
-Date: Sat, 5 Jan 2008 09:48:59 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Matt Mackall <mpm@selenic.com>,
-       Dave Hansen <haveblue@us.ibm.com>
-Subject: Re: [PATCH] restrict reading from /proc/<pid>/maps to those who share ->mm or can ptrace pid
-Message-ID: <20080105094859.GJ27894@ZenIV.linux.org.uk>
-References: <20080102140957.GR27894@ZenIV.linux.org.uk> <20080105013109.4b300cf5.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 5 Jan 2008 05:00:10 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:46629 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752503AbYAEKAJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 05:00:09 -0500
+Date: Sat, 5 Jan 2008 11:59:40 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, olof@lixom.net, mpm@selenic.com
+Subject: Re: [patch 1/2] move WARN_ON() out of line
+Message-ID: <20080105095940.GB2304@does.not.exist>
+References: <477D52ED.7000403@linux.intel.com> <20080104074149.GC17447@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080105013109.4b300cf5.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <20080104074149.GC17447@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 05, 2008 at 01:31:09AM -0800, Andrew Morton wrote:
-> On Wed, 2 Jan 2008 14:09:57 +0000 Al Viro <viro@ZenIV.linux.org.uk> wrote:
-> 
-> > 	Contents of /proc/*/maps is sensitive and may become sensitive
-> > after open() (e.g. if target originally shares our ->mm and later
-> > does exec on suid-root binary).
-> 
-> um, which contents?
+On Fri, Jan 04, 2008 at 08:41:49AM +0100, Ingo Molnar wrote:
+>...
+> i'm wondering how we could put this into x86.git to get it tested some 
+> more.
+>...
 
-Information about the addresses where libraries, etc. got mapped, to
-start with - if you have that randomized, you don't want it seen
-by attacker who tries to escalate...
- 
-> > 	Check at read() (actually, ->start() of iterator) time that
-> > mm_struct we'd grabbed and locked is
-> > 	* still the ->mm of target
-> > 	* equal to reader's ->mm or the target is ptracable by reader.
-> > 
-> 
-> Specifically, do /proc/pid/smaps and the maps4 goodies in -mm need similar
-> treatment?
+Please don't make x86.git a testing tree for not x86 specific stuff.
 
-They differ only in ->show(), so this patch takes care of them as well...
+The right place for getting stuff tested is -mm, and when looking at 
+git-x86.patch in -mm this tree already touches too many files outside
+of arch/x86/ and include/asm-x86/.
+
+> 	Ingo
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
