@@ -1,71 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbYAEPbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbYAEPe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756002AbYAEPbb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 10:31:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755048AbYAEPbU
+	id S1755962AbYAEPe4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 10:34:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755151AbYAEPes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 10:31:20 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:55084 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753738AbYAEPbT (ORCPT
+	Sat, 5 Jan 2008 10:34:48 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:13291 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754147AbYAEPeq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 10:31:19 -0500
-Subject: Re: [PATCH 0/7] sg_ring: a ring of scatterlist arrays
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org
-In-Reply-To: <200712191731.26512.rusty@rustcorp.com.au>
-References: <200712191731.26512.rusty@rustcorp.com.au>
-Content-Type: text/plain
-Date: Sat, 05 Jan 2008 09:31:12 -0600
-Message-Id: <1199547072.3399.15.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
-Content-Transfer-Encoding: 7bit
+	Sat, 5 Jan 2008 10:34:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:cc:subject:date:message-id:x-mailer:from;
+        b=fU7fAeZ7wAgXM5C1OYs6KuRqEJRY9gN70ed7ELdzlDUo1Z5zWorwJmcQ/CjjNvTJcAAE4zCIsw7fv0ieMERcWCmLIMO35NX98WFeERXLdpAFRCyXuS05g4MbxzRb6kFsbscxOh+P0FKHWO0l25/Cib+ps/e0Gytc5jmXi96pXU8=
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Mark Fasheh <mark.fasheh@oracle.com>,
+       OCFS2-devel <ocfs2-devel@oss.oracle.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       kernel-janitors <kernel-janitors@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
+       xfs-masters@oss.sgi.com, Marcin Slusarz <marcin.slusarz@gmail.com>
+Subject: [PATCH 0/3] byteorder: introduce le32_add_cpu & friends to core
+Date: Sat,  5 Jan 2008 16:36:19 +0100
+Message-Id: <1199547382-29969-1-git-send-email-marcin.slusarz@gmail.com>
+X-Mailer: git-send-email 1.5.3.7
+From: marcin.slusarz@gmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi
 
-On Wed, 2007-12-19 at 17:31 +1100, Rusty Russell wrote:
-> This patch series is the start of my attempt to simplify and make explicit
-> the chained scatterlist logic.
-> 
-> It's not complete: my SATA box boots and seems happy, but all the other
-> users of SCSI need to be updated and checked.  But I've gotten far enough
-> to believe it's worth persuing.
+This patchset moves le*_add_cpu and be*_add_cpu functions from OCFS2 to core
+header (1st), converts ext3 filesystem to this API (2nd) and replaces
+XFS different named functions with new ones (3rd).
 
-Sorry for the delay in looking at this, I was busy with Holidays and
-things.
+There are many places where these functions will be useful.
+Just look at: grep -r 'cpu_to_[ble12346]*([ble12346]*_to_cpu.*[-+]' linux-src/
+Patch for ext3 is an example how conversions will probably look like.
 
-When I compare sg_ring with the current sg_chain (and later sg_table)
-implementations, I'm actually struck by how similar they are.
+ps: this patchset depends on http://lkml.org/lkml/2007/12/25/35 (which is
+    in ocfs2 git tree, branches: trivial, ALL)
 
-The other thing I note is that the problem you're claiming to solve with
-sg_ring (the ability to add extra scatterlists to the front or the back
-of an existing one) is already solved with sg_chain, so the only real
-advantage of sg_ring was that it contains explicit counts, which
-sg_table (in -mm) also introduces.
-
-The other differences are that sg_ring only allows adding at the front
-or back of an existing sg_ring, it doesn't allow splicing at any point
-like sg_chain does, so I'd say it's less functional (not that I actually
-want anyone ever to do this, of course ...)
-
-The final point is that sg_ring requires a two level traversal:  ring
-list then scatterlist, whereas sg_chain only requires a single level
-traversal.  I grant that we can abstract out the traversal into
-something that would make users think they're only doing a single level,
-but I don't see what the extra level really buys us.
-
-The above analysis seems to suggest that sg_chain is simpler and has
-more functionality than sg_ring, unless I've missed anything?
-
-The only thing missing from sg_chain perhaps is an accessor function
-that does the splicing, which I can easily construct if you want to try
-it out in virtio.
-
-James
-
-
+Marcin Slusarz
