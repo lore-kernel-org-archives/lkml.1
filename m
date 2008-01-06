@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758945AbYAFXTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757313AbYAFXU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758945AbYAFXTd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 18:19:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757313AbYAFXT0
+	id S1757313AbYAFXU3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 18:20:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754166AbYAFXUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 18:19:26 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:46027 "EHLO
+	Sun, 6 Jan 2008 18:20:21 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46040 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756094AbYAFXTZ (ORCPT
+	with ESMTP id S1757532AbYAFXUU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 18:19:25 -0500
-Date: Sun, 6 Jan 2008 15:18:50 -0800
+	Sun, 6 Jan 2008 18:20:20 -0500
+Date: Sun, 6 Jan 2008 15:19:46 -0800
 From: Arjan van de Ven <arjan@infradead.org>
 To: linux-kernel@vger.kernel.org
 Cc: rusty@rustcorp.com.au, ak@suse.de, mingo@elte.hu
-Subject: [patch 1/2] show being-loaded/being-unloaded indicator for modules
- in oopses
-Message-ID: <20080106151850.3eab58b0@laptopd505.fenrus.org>
+Subject: [patch 2/2] track and print last unloaded module in the oops trace
+Message-ID: <20080106151946.50c3d8cc@laptopd505.fenrus.org>
 Organization: Intel
 X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -28,91 +27,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: show being-loaded/being-unloaded indicator for modules in oopses
+
+Subject: track and print last unloaded module in the oops trace
 From: Arjan van de Ven <arjan@linux.intel.com>
 CC: rusty@rustcorp.com.au
 CC: ak@suse.de
 CC: mingo@elte.hu
 
-It's rather common that an oops/WARN_ON/BUG happens during the load or
-unload of a module. Unfortunatly, it's not always easy to see directly
-which module is being loaded/unloaded from the oops itself. Worse,
-it's not even always possible to ask the bug reporter, since there
-are so many components (udev etc) that auto-load modules that there's
-a good chance that even the reporter doesn't know which module this is.
+Based on a suggestion from Andi: 
+In various cases, the unload of a module may leave some bad state around
+that causes a kernel crash AFTER a module is unloaded; and it's then hard
+to find which module caused that. 
 
-This patch extends the existing "show if it's tainting" print code,
-which is used as part of printing the modules in the oops/BUG/WARN_ON
-to include a "+" for "being loaded" and a "-" for "being unloaded".
+This patch tracks the last unloaded module, and prints this as part of the
+module list in the oops trace.
 
-As a result this extension, the "taint_flags()" function gets renamed to
-"module_flags()" (and takes a module struct as argument, not a taint
-flags int).
+Right now, only the last 1 module is tracked; I expect that this is enough
+for the vast majority of cases where this information matters; if it turns
+out that tracking more is important, we can always extend it to that.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 
 ---
- kernel/module.c |   21 +++++++++++++++------
- 1 file changed, 15 insertions(+), 6 deletions(-)
+ kernel/module.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
 Index: linux-2.6.24-rc6/kernel/module.c
 ===================================================================
 --- linux-2.6.24-rc6.orig/kernel/module.c
 +++ linux-2.6.24-rc6/kernel/module.c
-@@ -2355,21 +2355,30 @@ static void m_stop(struct seq_file *m, v
- 	mutex_unlock(&module_mutex);
+@@ -655,6 +655,8 @@ static void wait_for_zero_refcount(struc
+ 	mutex_lock(&module_mutex);
  }
  
--static char *taint_flags(unsigned int taints, char *buf)
-+static char *module_flags(struct module *mod, char *buf)
- {
- 	int bx = 0;
- 
--	if (taints) {
-+	if (mod->taints ||
-+	    mod->state == MODULE_STATE_GOING ||
-+	    mod->state == MODULE_STATE_COMING) {
- 		buf[bx++] = '(';
--		if (taints & TAINT_PROPRIETARY_MODULE)
-+		if (mod->taints & TAINT_PROPRIETARY_MODULE)
- 			buf[bx++] = 'P';
--		if (taints & TAINT_FORCED_MODULE)
-+		if (mod->taints & TAINT_FORCED_MODULE)
- 			buf[bx++] = 'F';
- 		/*
- 		 * TAINT_FORCED_RMMOD: could be added.
- 		 * TAINT_UNSAFE_SMP, TAINT_MACHINE_CHECK, TAINT_BAD_PAGE don't
- 		 * apply to modules.
- 		 */
++static char last_unloaded_module[MODULE_NAME_LEN+1];
 +
-+		/* Show a - for module-is-being-unloaded */
-+		if (mod->state == MODULE_STATE_GOING)
-+			buf[bx++] = '-';
-+		/* Show a + for module-is-being-loaded */
-+		if (mod->state == MODULE_STATE_COMING)
-+			buf[bx++] = '+';
- 		buf[bx++] = ')';
+ asmlinkage long
+ sys_delete_module(const char __user *name_user, unsigned int flags)
+ {
+@@ -721,6 +723,8 @@ sys_delete_module(const char __user *nam
+ 		mod->exit();
+ 		mutex_lock(&module_mutex);
  	}
- 	buf[bx] = '\0';
-@@ -2396,7 +2405,7 @@ static int m_show(struct seq_file *m, vo
++	/* Store the name of the last unloaded module for diagnostic purposes */
++	sprintf(last_unloaded_module, mod->name);
+ 	free_module(mod);
  
- 	/* Taints info */
- 	if (mod->taints)
--		seq_printf(m, " %s", taint_flags(mod->taints, buf));
-+		seq_printf(m, " %s", module_flags(mod, buf));
- 
- 	seq_printf(m, "\n");
- 	return 0;
-@@ -2491,7 +2500,7 @@ void print_modules(void)
- 
+  out:
+@@ -2501,6 +2505,8 @@ void print_modules(void)
  	printk("Modules linked in:");
  	list_for_each_entry(mod, &modules, list)
--		printk(" %s%s", mod->name, taint_flags(mod->taints, buf));
-+		printk(" %s%s", mod->name, module_flags(mod, buf));
+ 		printk(" %s%s", mod->name, module_flags(mod, buf));
++	if (last_unloaded_module[0])
++		printk(" [last unloaded: %s]", last_unloaded_module);
  	printk("\n");
  }
  
-
 
 -- 
 If you want to reach me at my work email, use arjan@linux.intel.com
