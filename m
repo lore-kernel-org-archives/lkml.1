@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760027AbYAFOqy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759931AbYAFOrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760027AbYAFOqy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 09:46:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758461AbYAFOkI
+	id S1759931AbYAFOrT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 09:47:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758474AbYAFOkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 09:40:08 -0500
-Received: from il.qumranet.com ([82.166.9.18]:46647 "EHLO il.qumranet.com"
+	Sun, 6 Jan 2008 09:40:09 -0500
+Received: from il.qumranet.com ([82.166.9.18]:46650 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755872AbYAFOjr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 09:39:47 -0500
+	id S1756047AbYAFOjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 09:39:48 -0500
 From: Avi Kivity <avi@qumranet.com>
 To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Subject: [PATCH 16/33] KVM: Move drivers/kvm/* to virt/kvm/
-Date: Sun,  6 Jan 2008 16:39:22 +0200
-Message-Id: <1199630379-28638-17-git-send-email-avi@qumranet.com>
+Subject: [PATCH 22/33] KVM: MMU: Add cache miss statistic
+Date: Sun,  6 Jan 2008 16:39:28 +0200
+Message-Id: <1199630379-28638-23-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1199630379-28638-1-git-send-email-avi@qumranet.com>
 References: <1199630379-28638-1-git-send-email-avi@qumranet.com>
@@ -23,37 +23,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/Makefile            |    4 ++--
- {drivers => virt}/kvm/iodev.h    |    0 
- {drivers => virt}/kvm/kvm_main.c |    0 
- 3 files changed, 2 insertions(+), 2 deletions(-)
- rename {drivers => virt}/kvm/iodev.h (100%)
- rename {drivers => virt}/kvm/kvm_main.c (100%)
+ arch/x86/kvm/mmu.c         |    1 +
+ arch/x86/kvm/x86.c         |    1 +
+ include/asm-x86/kvm_host.h |    1 +
+ 3 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kvm/Makefile b/arch/x86/kvm/Makefile
-index 880ffe4..af41534 100644
---- a/arch/x86/kvm/Makefile
-+++ b/arch/x86/kvm/Makefile
-@@ -2,9 +2,9 @@
- # Makefile for Kernel-based Virtual Machine module
- #
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index 9a57e1a..8f12ec5 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -715,6 +715,7 @@ static struct kvm_mmu_page *kvm_mmu_get_page(struct kvm_vcpu *vcpu,
+ 			pgprintk("%s: found\n", __FUNCTION__);
+ 			return sp;
+ 		}
++	++vcpu->kvm->stat.mmu_cache_miss;
+ 	sp = kvm_mmu_alloc_page(vcpu, parent_pte);
+ 	if (!sp)
+ 		return sp;
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 733bff6..fa9e42c 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -73,6 +73,7 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
+ 	{ "mmu_pde_zapped", VM_STAT(mmu_pde_zapped) },
+ 	{ "mmu_flooded", VM_STAT(mmu_flooded) },
+ 	{ "mmu_recycled", VM_STAT(mmu_recycled) },
++	{ "mmu_cache_miss", VM_STAT(mmu_cache_miss) },
+ 	{ "remote_tlb_flush", VM_STAT(remote_tlb_flush) },
+ 	{ NULL }
+ };
+diff --git a/include/asm-x86/kvm_host.h b/include/asm-x86/kvm_host.h
+index 28940e1..ced1beb 100644
+--- a/include/asm-x86/kvm_host.h
++++ b/include/asm-x86/kvm_host.h
+@@ -289,6 +289,7 @@ struct kvm_vm_stat {
+ 	u32 mmu_pde_zapped;
+ 	u32 mmu_flooded;
+ 	u32 mmu_recycled;
++	u32 mmu_cache_miss;
+ 	u32 remote_tlb_flush;
+ };
  
--common-objs = $(addprefix ../../../drivers/kvm/, kvm_main.o)
-+common-objs = $(addprefix ../../../virt/kvm/, kvm_main.o)
- 
--EXTRA_CFLAGS += -I drivers/kvm
-+EXTRA_CFLAGS += -I virt/kvm
- 
- kvm-objs := $(common-objs) x86.o mmu.o x86_emulate.o i8259.o irq.o lapic.o \
- 	ioapic.o
-diff --git a/drivers/kvm/iodev.h b/virt/kvm/iodev.h
-similarity index 100%
-rename from drivers/kvm/iodev.h
-rename to virt/kvm/iodev.h
-diff --git a/drivers/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-similarity index 100%
-rename from drivers/kvm/kvm_main.c
-rename to virt/kvm/kvm_main.c
 -- 
 1.5.3.7
 
