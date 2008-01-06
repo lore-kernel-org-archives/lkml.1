@@ -1,54 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758545AbYAFRah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758523AbYAFReK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758545AbYAFRah (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 12:30:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbYAFRa1
+	id S1758523AbYAFReK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 12:34:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756348AbYAFRd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 12:30:27 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:58831 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754698AbYAFRa0 (ORCPT
+	Sun, 6 Jan 2008 12:33:57 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:56535 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755919AbYAFRd4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 12:30:26 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <47811004.6070307@s5r6.in-berlin.de>
-Date: Sun, 06 Jan 2008 18:29:40 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
+	Sun, 6 Jan 2008 12:33:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qYWgwwv+10djWY6ufblvNb8xFhORII4L7WUOPK1AclbbudHXciqcEIKraJyTEtQCCbUeshVnTn+YFyV2Fdo/mfTWbzK2cwaaaa/L+SVHo5MB5/BqBVVdRRd59SJ62MC21i/6oypfVw/AUF+BExU49/UQqUruT2F7r4ZIo16Ae10=
+Message-ID: <5d6222a80801060933h7bc0d158h6e3b445c3db43291@mail.gmail.com>
+Date: Sun, 6 Jan 2008 15:33:53 -0200
+From: "Glauber de Oliveira Costa" <glommer@gmail.com>
+To: "Rusty Russell" <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 0/16] lguest: introduce vcpu structure
+Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>, lguest@ozlabs.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       rostedt@goodmis.org
+In-Reply-To: <200712261054.46261.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Peter Osterlund <petero2@telia.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
-References: <20080102162534.GA4041@elte.hu> <1199292381.3258.32.camel@localhost.localdomain> <alpine.LFD.1.00.0801021113150.32517@woody.linux-foundation.org> <20080102194030.GC11638@parisc-linux.org> <1199304735.3258.53.camel@localhost.localdomain> <alpine.LFD.1.00.0801021227140.32517@woody.linux-foundation.org> <1199316785.3258.85.camel@localhost.localdomain> <alpine.LFD.1.00.0801021756310.3010@woody.linux-foundation.org> <m3ir27oe7f.fsf@telia.com> <1199627875.5205.1.camel@localhost.localdomain> <20080106144706.GA25419@elte.hu>
-In-Reply-To: <20080106144706.GA25419@elte.hu>
-X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <11981576363806-git-send-email-gcosta@redhat.com>
+	 <200712261054.46261.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> If lkml traffic is too big then i'd suggest to set up email 
-> filters to separate out mails that have 'SCSI' in their subject line
+On Dec 25, 2007 9:54 PM, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> On Friday 21 December 2007 00:33:40 Glauber de Oliveira Costa wrote:
+> > this patch makes room for the vcpu structure in lguest, already used in
+> > this very same way at lguest64. It's the first part of our plan to
+> > have lguest and lguest64 unified too.
+>
+> Hi Glauber!
+>
+>     These patches look really solid, thanks!  A few minor things, then I'll
+> apply them and push them for 2.6.25.
 
-Good idea.  Minor flaw:  If somebody forgets to Cc LSML, he might also
-forget to put SCSI or scsi into the Subject.
+Thanks for all comments. I was in vacations until today, and I'll
+repost a new version that address all your comments
+soon (that's why I'm not answering each of them individually now, have
+to look carefully)
 
-> or body.
+>     My only question is whether we should go further and vpu-ify routines like
+> lgread and kill_guest, so that we can avoid more "lg" temporary variables...
+Essentially, they don't need it, because they only touch
+globally-visible variables (visible to the guest).
+So it's more of an stylish thing. Using the vcpu in the signature can
+have only one harm:
+It needs the caller to also have a pointer to a vcpu, so we may end up
+using it everywhere, like a domino fall.
 
-This yields false positives whenever a .config is posted.
+Alternatively, in such functions that don't currently receive a vcpu
+(nor they need to), we can convention to always pass
+lg->vcpus[0] to lgread, kill_guest, etc. Which one do you prefer?
 
-Also, filtering based on message body contents is costlier than
-filtering by headers.  I for one use Sieve to sort mails into different
-IMAP folders at my mail provider's server, and I think Sieve doesn't
-offer tests for patterns in message bodies at all.
+> > When two dogs hang out, you don't have new puppies right in the other day.
+> > Some time has to be elapsed. They have to grow first. In this same spirit,
+> > having these patches _do not_ mean smp guests can be launched (yet)
+> > Much more work is to come, but this is the basic infrastructure.
+>
+> OK, that made me laugh...
+\o/
+> Thanks!
+> Rusty.
+>
+>
+
+
+
 -- 
-Stefan Richter
--=====-==--- ---= --==-
-http://arcgraph.de/sr/
+Glauber de Oliveira Costa.
+"Free as in Freedom"
+http://glommer.net
+
+"The less confident you are, the more serious you have to act."
