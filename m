@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758854AbYAFQUF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759102AbYAFQVv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758854AbYAFQUF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 11:20:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbYAFQT4
+	id S1759102AbYAFQVv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 11:21:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756673AbYAFQVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 11:19:56 -0500
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:25626 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754209AbYAFQTz (ORCPT
+	Sun, 6 Jan 2008 11:21:44 -0500
+Received: from py-out-1112.google.com ([64.233.166.182]:53737 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754239AbYAFQVn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 11:19:55 -0500
-Message-ID: <4780FF85.4020501@panasas.com>
-Date: Sun, 06 Jan 2008 18:19:17 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sun, 6 Jan 2008 11:21:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OKeFJJ9MxH9bMOttjR11+bQ94R0lHd6xUHGatcqdtA2lfYP/hZEgI767vs9FSVZpcsNmnOBjlugwydd4VVqafgQCCjtVN/xBXoNf0JeQg9OoRIjSd9xACeX2Fr3z8cYB/XMSYrNov6ucNLktpSNgyPm8Krkzfw54ApWwO2w8Wqo=
+Message-ID: <82e4877d0801060821r2ec43a9em6b4b6a8f763af7c8@mail.gmail.com>
+Date: Sun, 6 Jan 2008 11:21:41 -0500
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.24-rc6-git12: Reported regressions from 2.6.23
+Cc: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Adrian Bunk" <bunk@kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <200801061357.36324.rjw@sisk.pl>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Matthew Wilcox <matthew@wil.cx>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Osterlund <petero2@telia.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
-References: <20080102162534.GA4041@elte.hu> <1199292381.3258.32.camel@localhost.localdomain> <alpine.LFD.1.00.0801021113150.32517@woody.linux-foundation.org> <20080102194030.GC11638@parisc-linux.org> <1199304735.3258.53.camel@localhost.localdomain> <alpine.LFD.1.00.0801021227140.32517@woody.linux-foundation.org> <1199316785.3258.85.camel@localhost.localdomain> <alpine.LFD.1.00.0801021756310.3010@woody.linux-foundation.org> <m3ir27oe7f.fsf@telia.com> <alpine.LFD.1.00.0801051900500.2811@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0801051900500.2811@woody.linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Jan 2008 16:19:22.0955 (UTC) FILETIME=[E5FAD9B0:01C8507F]
+Content-Disposition: inline
+References: <200801052042.56042.rjw@sisk.pl> <20080106094504.GE26291@elte.hu>
+	 <200801061357.36324.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 06 2008 at 5:43 +0200, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> 
-> This all still leaves the question unanswered why that commit 
-> 6f5391c283d7fdcf24bf40786ea79061919d1e1d changed any behaviour at all. 
-> Because the thing that Peter is describing has nothing to do with any 
-> low-level drivers what-so-ever.
-> 
-> 		Linus
-> 
+On Jan 6, 2008 7:57 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Sunday, 6 of January 2008, Ingo Molnar wrote:
+> >
+> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >
+> > > Subject             : soft lockup - CPU#1 stuck for 15s! [swapper:0]
+> > > Submitter   : "Parag Warudkar" <parag.warudkar@gmail.com>
+> > > Date                : 2007-12-07 18:14
+> > > References  : http://lkml.org/lkml/2007/12/7/299
+> > >               http://bugzilla.kernel.org/show_bug.cgi?id=9525
+> > > Handled-By  : "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+> > >               Thomas Gleixner <tglx@linutronix.de>
+> > >               Ingo Molnar <mingo@elte.hu>
+> >
+> > i think this only occurs with cpuidle, right? drivers/cpuidle/ and
+> > CPU_IDLE is new in 2.6.24 so this appears to be a bug in that code (or a
+> > bug elsewhere triggered by that code), not a regression from v2.6.23.
+>
+> OK, removed from the regressions list.
 
-James Matthew.
-I have a (very) wild guess at what maybe have changed with the cmnd->done
-patch:
+Nope - actually it did happen without CPU_IDLE so it is definitely a regression.
+(See http://lkml.org/lkml/2007/12/17/93 )
 
-Do you remember the effective loop in scsi_lib:scsi_end_request() where
-if bufflen was smaller then original request size, do to truncation
-of bufflen by ULD, then the remaining of the request is re-queued again
-as a new scsi-command. Well I think that the old system would call
-cmnd->done for every iteration, and the new system, since the done is
-called by the block-Q, does not see the resubmit of the new command.
+And it does happen with latest git which I believe has your patch Ingo.
 
-I have not followed all code path of the matter, but I know that sr does
-alters bufflen in some cases. 
-All this is not a bug in itself, but it is a change in behavior that might 
-cause the current sr hack to fail.
+So I would suggest to keep it on the list of regressions.
 
-Boaz
+Thanks
+
+Parag
