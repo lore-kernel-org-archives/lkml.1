@@ -1,105 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757212AbYAFDUF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755561AbYAFD2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757212AbYAFDUF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 22:20:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753920AbYAFDTz
+	id S1755561AbYAFD2h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 22:28:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753920AbYAFD23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 22:19:55 -0500
-Received: from queueout01-winn.ispmail.ntl.com ([81.103.221.31]:10451 "EHLO
-	queueout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754036AbYAFDTy convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 22:19:54 -0500
-Date: Sun, 6 Jan 2008 03:13:43 +0000
-From: Ken Moffat <zarniwhoop@ntlworld.com>
-To: mathewss <mathewss@mail.nutech.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: init wont start on VIA EPIA 5000 500mhz board and randomely wont start on VIA EPIA MII 10000
-Message-ID: <20080106031343.GB642@deepthought>
-References: <200801051714.AA13500470@mail.nutech.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <200801051714.AA13500470@mail.nutech.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-Content-Transfer-Encoding: 8BIT
+	Sat, 5 Jan 2008 22:28:29 -0500
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:42276 "EHLO mo11.iij4u.or.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753515AbYAFD22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 22:28:28 -0500
+Date: Sun, 6 Jan 2008 12:28:00 +0900
+To: akpm@linux-foundation.org
+Cc: just.for.lkml@googlemail.com, jarkao2@gmail.com,
+       herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org,
+       neilb@suse.de, bfields@fieldses.org, netdev@vger.kernel.org,
+       tom@opengridcomputing.com, tomof@acm.org
+Cc: fujita.tomonori@lab.ntt.co.jp
+Subject: Re: 2.6.24-rc6-mm1
+From: FUJITA Tomonori <tomof@acm.org>
+In-Reply-To: <20080105172524.fecb63bf.akpm@linux-foundation.org>
+References: <64bb37e0801050652t7568e438uf93208601df84ef6@mail.gmail.com>
+	<64bb37e0801051410p39746295oab4dad438943372@mail.gmail.com>
+	<20080105172524.fecb63bf.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080106123103K.tomof@acm.org>
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 05, 2008 at 05:14:08PM -0800, mathewss wrote:
-> I have been trying to figure this out a while now with printk's all over my kernel as well as adding kdb and tracing the int3 events.
-> 
-> I have tried various 2.6 kernels and so far all i have tried do this.
-> 
->  My current tests are on 2.6.22.10 
-> 
->  I have a simple init binary I compiled static that is my init that is loaded into an init file system. I am not using cpio but that did not seem to matter.
-> ---- begin testinit.c
-> #include <stdio.h>
-> #include <unistd.h>
-> int main(int argc, char *argv[])
-> {
->    printf("Hello world!\n");
->    sleep(999999999);
-> }
-> ---- end
-> 
->  I am using syslunux to start my kernel and appending the follwiing startup command most of this is specific to my true init script but again im using a "hello world" script to debug this for now.
-> 
-> append  debug kidb=early console=ttyS0,384008n initrd=ufoinit.img init=/testinit rw var_size=12M tmp_size=MAX log_size=16M root_size=64M root=/dev/ram0 boot=/dev/hda1,msdos rw pkgpath=/dev/hda1:msdos rw verbose DELAY=0 TEST=0 DEBUG=0 VERBOSE=0 UFO=root,etc,modules
-> 
->  On an intel CA810EEA 800mhz board or QEMU this runs fine but on the via boards it dies right after "Freeing unused kernel memory: 132k freed"
->  
- That will be where it invokes the init program, I think, so the
-kernel is probably not to blame.
+On Sat, 5 Jan 2008 17:25:24 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
->  on the 500mhz board it dies every time on the 800mhz it is random.
+> On Sat, 5 Jan 2008 23:10:17 +0100 "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
 > 
+> > On Jan 5, 2008 3:52 PM, Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
+> > > On Jan 5, 2008 11:13 AM, Jarek Poplawski <jarkao2@gmail.com> wrote:
+> > > > On Sat, Jan 05, 2008 at 09:01:02AM +0100, Torsten Kaiser wrote:
+> > > > > On Jan 5, 2008 1:07 AM, Jarek Poplawski <jarkao2@gmail.com> wrote:
+> > > > > > I think it would be easier just to start with this working -rc6 and
+> > > > > > simply check if we have 'right' suspects, so: git-net.patch and
+> > > > > > git-nfsd.patch from -mm1-broken-out, as suggested by Herbert (I hope,
+> > > > > > can compile - otherwise you could try the other way: add the whole -mm
+> > > > > > and revert these two). Using current gits could complicate this
+> > > > > > "investigation".
+> > > > >
+> > > > > OK, I will try this...
+> > >
+> > > still on the todo-list, I had no time to try this yet...
+> > 
+> > working on it...
+> > 2.6.24-rc6 + mm-patches up to git.battery (includes git-net and
+> > git-netdev-all) worked for 110 packages, then I proclaimed it good.
+> > 2.6.24-rc6 + mm-patches up to (including) git.nfsd is currently
+> > getting testet (9 packages done...)
+> > 
+> > But the cause of my mail is the following question:
+> > Regarding my "iommu-sg-merging-patches are new in -rc3-mm and could be
+> > the cause"-suspicion I looked at these patches and came across these
+> > hunks:
+> > 
+> > This is removed from arch/x86/lib/bitstr_64.c:
+> > -/* Find string of zero bits in a bitmap */
+> > -unsigned long
+> > -find_next_zero_string(unsigned long *bitmap, long start, long nbits, int len)
+> > -{
+> > -       unsigned long n, end, i;
+> > -
+> > - again:
+> > -       n = find_next_zero_bit(bitmap, nbits, start);
+> > -       if (n == -1)
+> > -               return -1;
+> > -
+> > -       /* could test bitsliced, but it's hardly worth it */
+> > -       end = n+len;
+> > -       if (end > nbits)
+> > -               return -1;
+> > -       for (i = n+1; i < end; i++) {
+> > -               if (test_bit(i, bitmap)) {
+> > -                       start = i+1;
+> > -                       goto again;
+> > -               }
+> > -       }
+> > -       return n;
+> > -}
+> > 
+> > This is added to lib/iommu-helper.c:
+> > +static unsigned long find_next_zero_area(unsigned long *map,
+> > +                                        unsigned long size,
+> > +                                        unsigned long start,
+> > +                                        unsigned int nr)
+> > +{
+> > +       unsigned long index, end, i;
+> > +again:
+> > +       index = find_next_zero_bit(map, size, start);
+> > +       end = index + nr;
+> > +       if (end > size)
+> > +               return -1;
+> > +       for (i = index + 1; i < end; i++) {
+> > +               if (test_bit(i, map)) {
+> > +                       start = i+1;
+> > +                       goto again;
+> > +               }
+> > +       }
+> > +       return index;
+> > +}
+> > 
+> > The old version checks, if find_next_zero_bit returns -1, the new
+> > version doesn't do this.
+> > Is this intended and can find_next_zero_bit never fail?
+> > Hmm... but in the worst case it should only loop forever if I'm
+> > reading this right (index = -1 => for-loop counts from 0 to nr, if any
+> > bit is set it will jump to "again:" and if the next call to
+> > find_next_zero_bit also fails, its an endless loop)
 
- For the 500MHz, this sounds like the "i686 implies cmov" problem -
-gcc thinks that all i686 CPUs understand a particular instruction
-('cmov', if my brain cells haven't totally given up), but early via
-processors didn't.  Haven't seen too many references to this
-recently, so perhaps recent versions of gcc have fixed this, or
-perhaps people know of a workaround.
+find_next_zero_bit returns -1?
 
- I suggest that your userspace (glibc and gcc, I suppose) is built
-for i686 and uses the instruction that your CPU doesn't understand.
+It seems that x86_64 doesn't. POWER and SPARC64 IOMMUs use
+find_next_zero_bit too but both doesn't check if find_next_zero_bit
+returns -1. If find_next_zero_bit fails, it returns size. So it
+doesn't leads to an endless loop.
 
- The 800MHz might be different, I thought those did provide the
-instruction.  Have you checked the memory with memtest86 ?  For the
-cases where it doesn't die, perhaps you should give it an init which
-is going to do something, and see if it actually manages to boot any
-of the time.  If so, that would confirm that the two CPUs are not
-identical in their capabilities.  It wouldn't explain the less than
-100% success, of course, so the usual suspects (crap hardware,
-failing memory, dodgy power supplies) would need to be investigated.
+But this patch has other bugs that break POWER IOMMUs.
 
- As always, this is intended to be helpful, but treat it with a
-grain of salt, I could well be talking out of a different orifice
-than my mouth.  My last experience with a via processor was a 1.2GHz
-beastie which certainly understood all i686 instructions, but
-managed to make snails look fast, and wasn't as power-frugal as
-expected, so I might be prejudiced.
+If you use the IOMMUs on POWER, please try the following patch:
 
->  I have noticed that i get the elf binarly loading into user space with some page_faults then I get blasted with do_notify_resume with 0x04 or TIF_SIGPENDING over and over as if its in an infinite loop.
+http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg12702.html
+
 > 
->  This begins shortly after load_elf_binary -> clear_user i think right after a page_fault during the clear_user. I dont even know why that signal is being sent on other hardware it never happens.
+> I susect these are doing different things. 
+> iommu-sg-kill-__clear_bit_string-and-find_next_zero_string.patch says:
 > 
->  I am not even sure what do try next.
+>   This kills unused __clear_bit_string and find_next_zero_string (they
+>   were used by only gart and calgary IOMMUs).
 > 
-
- Find a toolchain built for i586 ? (Or preferably i486, I think I
-remember comments that early via CPUs run better when optimised for
-i486).
-
- If you think your own toolchain is compiled for i586, you could try
-downloading one of the distros which definitely is built for i586 or
-i486 - if that works, it's a userspace compile problem.  Or, perhaps,
-the kernel actually needs to be built for i486 - I doubt that, but I
-don't have the hardware.
-
-Ken
--- 
-das eine Mal als Tragödie, das andere Mal als Farce
+> iommu-sg-add-iommu-helper-functions-for-the-free-area-management.patch says:
+> 
+>   This adds IOMMU helper functions for the free area management.  These
+>   functions take care of LLD's segment boundary limit for IOMMUs.  They
+>   would be useful for IOMMUs that use bitmap for the free area management.
+> 
+> > So even if this can not explain my bug, could somebody check if this
+> > is a real bug or not?
+> 
+> Let's cc the author of those changes.
+> 
+> Thanks for persisting with this bug.
