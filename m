@@ -1,54 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760056AbYAFRMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbYAFRSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760056AbYAFRMQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 12:12:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757622AbYAFRMA
+	id S1759337AbYAFRSr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 12:18:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754922AbYAFRSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 12:12:00 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:48944 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757679AbYAFRMA (ORCPT
+	Sun, 6 Jan 2008 12:18:38 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:1260 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754209AbYAFRSh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 12:12:00 -0500
-Date: Sun, 6 Jan 2008 10:11:58 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Osterlund <petero2@telia.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
-Message-ID: <20080106171158.GM20473@parisc-linux.org>
-References: <alpine.LFD.1.00.0801021113150.32517@woody.linux-foundation.org> <20080102194030.GC11638@parisc-linux.org> <1199304735.3258.53.camel@localhost.localdomain> <alpine.LFD.1.00.0801021227140.32517@woody.linux-foundation.org> <1199316785.3258.85.camel@localhost.localdomain> <alpine.LFD.1.00.0801021756310.3010@woody.linux-foundation.org> <m3ir27oe7f.fsf@telia.com> <1199627875.5205.1.camel@localhost.localdomain> <20080106144706.GA25419@elte.hu> <1199632845.5205.31.camel@localhost.localdomain>
+	Sun, 6 Jan 2008 12:18:37 -0500
+Date: Sun, 6 Jan 2008 12:18:35 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Pavel Machek <pavel@ucw.cz>
+cc: Oliver Neukum <oliver@neukum.org>, Raymano Garibaldi <raymano@faunos.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] [FEATURE REQUEST] Transparent hot plugging of
+ root file system on portable storage devices.
+In-Reply-To: <20080105215209.GB21565@elf.ucw.cz>
+Message-ID: <Pine.LNX.4.44L0.0801061213460.8070-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1199632845.5205.31.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 06, 2008 at 09:20:45AM -0600, James Bottomley wrote:
-> This bug was actually hidden in bugzilla for ages, where Matthew Wilcox
-> was trying to deal with it on his own.  The first I heard of it (apart
-> from a linux-scsi question on 13 November, when regrettably, I was busy
-> with other things) was on 18 Dec when Natalie added me to the bugzilla
-> cc list.  The first thing I did on that date was finger pktcdvd and add
-> Jens to the cc list ... however, since there was no mailing list thread
-> to follow he ended up asking for context which no-one provided.
+On Sat, 5 Jan 2008, Pavel Machek wrote:
 
-Not true.  I sent my response to the bug to linux-scsi and cc'd bugzilla.
-Unfortunately, the bug reporter sent the information requested to bugzilla
-instead of linux-scsi.  So it got lost and overlooked.
+> On Wed 2008-01-02 15:23:30, Alan Stern wrote:
+> > On Wed, 2 Jan 2008, Oliver Neukum wrote:
+> > 
+> > > Am Dienstag 01 Januar 2008 schrieb Pavel Machek:
+> > > > Hi1
+> > > > 
+> > > > > I would like to request a feature in the Linux kernel that would allow
+> > > > > a user to unplug a live read-only root file system which exists on a
+> > > > > detachable storage device such as a USB key drive. The desired
+> > > > > behavior is that once the same device is reattached to the computer
+> > > > > the user can continue work transparently without having to reboot.
+> > > > > 
+> > > > > Having such a feature is becoming more important with advances in
+> > > > > detachable solid state drive technology.
+> > > > 
+> > > > Yep, that would be nice.... In fact, patch would be very welcome :-).
+> > > 
+> > > Use the USB persist feature and hibernate. It should work. If you modify
+> > > the fs in any way, you'll crash and burn. Unmounting / is harder which you
+> > > need if you want to do this safely.
+> > 
+> > What about people who prefer (for reasons of restart latency or
+> > non-availability of swap space) to suspend rather than hibernate?
+> 
+> For suspend to RAM, we can keep the power session, and be _sure_ noone
+> unplugged our USB disks, right? So that one should work nicely.
 
-If there's willingness to change, I'm willing to put some effort into
-moving us to a bug tracking system that fits our workflow better than
-bugzilla.  But if that effort will be disregarded, then let me know now
-so I don't waste my time.
+No, no.  You didn't understand the question.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+What about people who want to suspend to RAM instead of hibernating and
+_do_ want to unplug the USB device containing their root filesystem
+while the machine is asleep?  In this case we will _know_ that the
+power session has been interrupted, but USB Persist won't activate
+because the host controller never lost power.
+
+Alan Stern
+
