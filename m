@@ -1,107 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbYAFSzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755895AbYAFS5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755277AbYAFSzT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 13:55:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbYAFSzI
+	id S1755895AbYAFS5N (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 13:57:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbYAFS47
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 13:55:08 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:34236 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751692AbYAFSzG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 13:55:06 -0500
+	Sun, 6 Jan 2008 13:56:59 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:42075 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751770AbYAFS46 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 13:56:58 -0500
+Date: Sun, 6 Jan 2008 20:56:25 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Willy Tarreau <w@1wt.eu>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Matthew Wilcox <matthew@wil.cx>, Ingo Molnar <mingo@elte.hu>,
+       Peter Osterlund <petero2@telia.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>
 Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Osterlund <petero2@telia.com>, Matthew Wilcox <matthew@wil.cx>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Al Viro <viro@ZenIV.linux.org.uk>
-In-Reply-To: <alpine.LFD.1.00.0801061034410.2811@woody.linux-foundation.org>
-References: <20080102162534.GA4041@elte.hu>
-	 <1199292381.3258.32.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0801021113150.32517@woody.linux-foundation.org>
-	 <20080102194030.GC11638@parisc-linux.org>
-	 <1199304735.3258.53.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0801021227140.32517@woody.linux-foundation.org>
-	 <1199316785.3258.85.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0801021756310.3010@woody.linux-foundation.org>
-	 <m3ir27oe7f.fsf@telia.com>
-	 <alpine.LFD.1.00.0801051900500.2811@woody.linux-foundation.org>
-	 <1199630574.5205.14.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0801060954010.2811@woody.linux-foundation.org>
-	 <alpine.LFD.1.00.0801061034410.2811@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Sun, 06 Jan 2008 12:54:56 -0600
-Message-Id: <1199645697.5205.80.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
-Content-Transfer-Encoding: 7bit
+Message-ID: <20080106185625.GM2082@does.not.exist>
+References: <alpine.LFD.1.00.0801021227140.32517@woody.linux-foundation.org> <1199316785.3258.85.camel@localhost.localdomain> <alpine.LFD.1.00.0801021756310.3010@woody.linux-foundation.org> <m3ir27oe7f.fsf@telia.com> <1199627875.5205.1.camel@localhost.localdomain> <20080106144706.GA25419@elte.hu> <1199632845.5205.31.camel@localhost.localdomain> <20080106171158.GM20473@parisc-linux.org> <1199640983.5205.65.camel@localhost.localdomain> <20080106183402.GA7906@1wt.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080106183402.GA7906@1wt.eu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Jan 06, 2008 at 07:34:02PM +0100, Willy Tarreau wrote:
+>...
+> As to using bugzilla for bug tracking... Well, I agree that bug
+> tracking is important when you work on multiple problems at once.
+> But bugzilla should be the developer's tool, not the end user's.
+> That means that it should only be our job to create entries there
+> if end users find it too difficult, and that we should just invite
+> them to *try* to report there to save us some time.
 
-On Sun, 2008-01-06 at 10:44 -0800, Linus Torvalds wrote:
-> 
-> On Sun, 6 Jan 2008, Linus Torvalds wrote:
-> > 
-> > That said:
-> > 
-> > > pktcdvd shouldn't be mucking with the size of the underlying CD/DVD ...
-> > 
-> > I'm not sure if it should be mucking with the size or not, but it 
-> > definitely shouldn't be mucking with the block-size, because that can 
-> > indeed cause huge problems. 
-> 
-> Hmm. Looking closer, it's probably ok in that case, because it does do a 
-> "bd_claim()" to make sure that it has exclusive access, so while there may 
-> be other openers around, at least those other openers won't be filesystem 
-> mounts or anything that opened with O_EXCL.
-> 
-> So changing the blocksize is probably ok in this case.
-> 
-> That still leaves the question whether pktcdvd *should* muck with the base 
-> device at all, and I'm not at all sure about that.  But I'm no longer sure 
-> that the pktcdvd code is necessarily *clearly* broken, now it's more of a 
-> "should it really do that?" thing.
-> 
-> So I still suspect that this:
-> 
-> > -	set_capacity(pd->disk, lba << 2);
-> > -	set_capacity(pd->bdev->bd_disk, lba << 2);
-> > -	bd_set_size(pd->bdev, (loff_t)lba << 11);
-> > +	set_capacity(pd->disk, get_capacity(pd->bdev->bd_disk));
-> 
-> is likely a good thing to do (in conjunction with my patch that made 
-> i_size be "reliable" after an open), but there may be some reason why 
-> pktcdvd really wants to control the size rather than be on the receiving 
-> end of the size.
-> 
-> Peter, this is your decision. Apparently my one-liner fixes the immediate 
-> bug (but it's not really a regression either - I think the i_size issue 
-> has been there since pretty much day #1), and what pktcdvd does is 
-> somewhat less critical an issue?
+Where does this opinion end users would find Bugzilla too difficult come 
+from? Many other projects use Bugzilla without big problems.
 
-I think perhaps the true bug lies in the way we handle layered devices
-like this.  pktcdvd holds the underlying device open, so its refcount
-never drops to zero.  This is what causes the gendisk/block layer never
-to update the sizes, and what lead to pktcdvd doing it instead.
+Is this just plain FUD or based on real reports from end users?
+In the latter case, please give pointers to them so that whatever 
+problems exist can be fixed.
 
-However, what perhaps really needs to happen is that pktcdvd needs to
-take over the media change events as well.  That way it could see the
-disk change and invalidate and reread its own setting of the block size
-(and possibly re set the size of the underlying device).
+And different to LKML, you don't run into problems like majordomo 
+silently dropping your email because it contains HTML or a vCard.
 
-I agree, though, this isn't a regression.  It's probably obscure enough
-in reproduction to warrant not holding up 2.6.24 --- especially as I
-think the true fix will do small perturbations to a lot of subsystems.
-If this were a product and I were the release manager, I'd be updating
-the release notes with a note about having to break pktcdvd binding
-across media changes to work around this bug and a promise to fix it in
-the next release.
+> Willy
 
-James
+cu
+Adrian
 
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
