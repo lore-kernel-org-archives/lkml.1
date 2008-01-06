@@ -1,90 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759330AbYAFQhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758728AbYAFQsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759330AbYAFQhB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 11:37:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756032AbYAFQgy
+	id S1758728AbYAFQsL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 11:48:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757210AbYAFQsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 11:36:54 -0500
-Received: from mail.dunaweb.hu ([81.17.184.3]:42590 "EHLO mail.dunaweb.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753923AbYAFQgy convert rfc822-to-8bit (ORCPT
+	Sun, 6 Jan 2008 11:48:00 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:53500 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754239AbYAFQr7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 11:36:54 -0500
-X-Greylist: delayed 1389 seconds by postgrey-1.27 at vger.kernel.org; Sun, 06 Jan 2008 11:36:53 EST
-Message-ID: <4780FE2F.60100@dunaweb.hu>
-Date: Sun, 06 Jan 2008 17:13:35 +0100
-From: Zoltan Boszormenyi <zboszor@dunaweb.hu>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: FD Cami <francois.cami@free.fr>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Re: Forcing modes in libata (was: SATA buffered read VERY
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8BIT
+	Sun, 6 Jan 2008 11:47:59 -0500
+Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Matthew Wilcox <matthew@wil.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Osterlund <petero2@telia.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Al Viro <viro@ZenIV.linux.org.uk>
+In-Reply-To: <4780FF85.4020501@panasas.com>
+References: <20080102162534.GA4041@elte.hu>
+	 <1199292381.3258.32.camel@localhost.localdomain>
+	 <alpine.LFD.1.00.0801021113150.32517@woody.linux-foundation.org>
+	 <20080102194030.GC11638@parisc-linux.org>
+	 <1199304735.3258.53.camel@localhost.localdomain>
+	 <alpine.LFD.1.00.0801021227140.32517@woody.linux-foundation.org>
+	 <1199316785.3258.85.camel@localhost.localdomain>
+	 <alpine.LFD.1.00.0801021756310.3010@woody.linux-foundation.org>
+	 <m3ir27oe7f.fsf@telia.com>
+	 <alpine.LFD.1.00.0801051900500.2811@woody.linux-foundation.org>
+	 <4780FF85.4020501@panasas.com>
+Content-Type: text/plain
+Date: Sun, 06 Jan 2008 10:47:51 -0600
+Message-Id: <1199638071.5205.40.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Once upon a time FD Cami wrote:
-> On Sun, 6 Jan 2008 13:36:09 +0000
-> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->
-> > On Sun, 6 Jan 2008 08:03:31 +0300
-> > > > For now you can boot with libata.dma=1 to select DMA on disks but
-> > > > not CD
-> > > 
-> > > Great, but why isn't this in the documentation?
+On Sun, 2008-01-06 at 18:19 +0200, Boaz Harrosh wrote:
+> On Sun, Jan 06 2008 at 5:43 +0200, Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > > 
-> > Send patches
->
-> patch attached.
->
-> Description : Add libata.dma= to Documentation/kernel-parameters.txt
->
-> Found documentation in :
-> http://www.mail-archive.com/linux-ide%40vger.kernel.org/msg09849.html
-> http://www.redhat.com/archives/fedora-extras-commits/2007-October/msg04568.html
->
-> Signed-off-by: François Cami <francois.cami@free.fr>
->
-> *["libata-doc-patch.txt" (text/plain)]* <http://marc.info/?l=linux-kernel&m=119963307018562&q=p3>
->
-> diff -rU2 linux-2.6.24-rc6/Documentation/kernel-parameters.txt \
->                 linux-2.6.24-rc6-mine/Documentation/kernel-parameters.txt
-> --- linux-2.6.24-rc6/Documentation/kernel-parameters.txt	2008-01-06 \
->                 15:58:54.000000000 +0100
-> +++ linux-2.6.24-rc6-mine/Documentation/kernel-parameters.txt	2008-01-06 \
-> 16:11:20.000000000 +0100 @@ -883,4 +883,11 @@
->  			C2 power state.
->  
-> +	libata.dma=	[LIBATA] DMA control
-> +			libata.dma=0	  Disable all PATA DMA like old IDE
-> +			libata.dma=1	  Disk DMA only
-> +			libata.dma=2	  ATAPI DMA only
-> +			libata.dma=3	  CF DMA only 
-> +			libata.dma=0,1,3  Combinations also work.
-> +
->   
+> > 
+> > This all still leaves the question unanswered why that commit 
+> > 6f5391c283d7fdcf24bf40786ea79061919d1e1d changed any behaviour at all. 
+> > Because the thing that Peter is describing has nothing to do with any 
+> > low-level drivers what-so-ever.
+> > 
+> > 		Linus
+> > 
+> 
+> James Matthew.
+> I have a (very) wild guess at what maybe have changed with the cmnd->done
+> patch:
+> 
+> Do you remember the effective loop in scsi_lib:scsi_end_request() where
+> if bufflen was smaller then original request size, do to truncation
+> of bufflen by ULD, then the remaining of the request is re-queued again
+> as a new scsi-command. Well I think that the old system would call
+> cmnd->done for every iteration, and the new system, since the done is
+> called by the block-Q, does not see the resubmit of the new command.
 
-The code patch you are looking at has little different semantics.
-(1 << 2) is 4 not 3... Values for different devices are:
+Actually, this is cmnd->done, not req->done we're removing.
+cmnd->done() isn't seen by the block layer; all its uses are in the SCSI
+mid-layer.
 
-1  - ATA
-2 - ATAPI
-4 - CF
+> I have not followed all code path of the matter, but I know that sr does
+> alters bufflen in some cases. 
+> All this is not a bug in itself, but it is a change in behavior that might 
+> cause the current sr hack to fail.
 
-The parameter is a bitmask of 1, 2, 4. Default is 7.
-2.6.24-rc3 also has this in libata-core.c which confirms
-the acceptance of a bitmask :
+It's a good thought.  You're right, the old code calls done for every
+iteration.  However, it calls it in scsi_finish_completion.  The new
+code will actually call drv->done() in that same spot for every
+iteration as well.
 
-static int libata_dma_mask = 
-ATA_DMA_MASK_ATA|ATA_DMA_MASK_ATAPI|ATA_DMA_MASK_CFA;
-module_param_named(dma, libata_dma_mask, int, 0444);
-MODULE_PARM_DESC(dma, "DMA enable/disable (0x1==ATA, 0x2==ATAPI, 0x4==CF)");
+The requeue is done via scsi_requeue_request which calls
+blk_requeue_request, which resets the START flag and sends the command
+right back through the system (including the prep function because
+scsi_requeue_request unpreps the command), so even with the new code
+we'll go back through all the same done paths.
 
-Best regards,
-Zoltán Böszörményi
+James
 
 
