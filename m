@@ -1,78 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757301AbYAFMdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757236AbYAFMiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757301AbYAFMdh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 07:33:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754263AbYAFMd3
+	id S1757236AbYAFMiS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 07:38:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbYAFMiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 07:33:29 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:45243 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754138AbYAFMd2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 07:33:28 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4780CA63.50703@s5r6.in-berlin.de>
-Date: Sun, 06 Jan 2008 13:32:35 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Randy Dunlap <randy.dunlap@oracle.com>, Sam Ravnborg <sam@ravnborg.org>,
+	Sun, 6 Jan 2008 07:38:03 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:48792 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751859AbYAFMiB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 07:38:01 -0500
+Date: Sun, 6 Jan 2008 14:37:29 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Sam Ravnborg <sam@ravnborg.org>,
        Al Boldi <a1426z@gawab.com>, linux-usb@vger.kernel.org,
        linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
        Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/5] USB Kconfig: Select SCSI for USB Mass Storage	support
-References: <200801051546.SAA08947@raad.intranet> <20080105113024.209485f5.randy.dunlap@oracle.com> <20080105210330.GC22232@does.not.exist> <20080105210940.GA10302@uranus.ravnborg.org> <47801126.7020807@oracle.com> <20080105234540.GG22232@does.not.exist> <47802249.9010107@s5r6.in-berlin.de> <20080106005807.GH22232@does.not.exist> <4780BBAA.7020908@s5r6.in-berlin.de> <20080106115941.GB2082@does.not.exist>
-In-Reply-To: <20080106115941.GB2082@does.not.exist>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 2/5] USB Kconfig: Select SCSI for USB Mass Storage
+	support
+Message-ID: <20080106123728.GD2082@does.not.exist>
+References: <200801051546.SAA08947@raad.intranet> <20080105113024.209485f5.randy.dunlap@oracle.com> <20080105210330.GC22232@does.not.exist> <20080105210940.GA10302@uranus.ravnborg.org> <47801126.7020807@oracle.com> <20080105234540.GG22232@does.not.exist> <47802249.9010107@s5r6.in-berlin.de> <20080106005807.GH22232@does.not.exist> <4780C728.1030806@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4780C728.1030806@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Sun, Jan 06, 2008 at 12:29:46PM +0100, Stefan Richter wrote:
->> Adrian Bunk wrote:
->>> Duplicating the structure in each UI should be an improvement?
->>>
->>> Hardly.
->> What do you mean?
-...
-> You said:
-> "The graphic UIs including menuconfig currently work best for tree-like 
->  dependencies"
+On Sun, Jan 06, 2008 at 01:18:48PM +0100, Stefan Richter wrote:
+> Adrian Bunk wrote:
+> > On Sun, Jan 06, 2008 at 01:35:21AM +0100, Stefan Richter wrote:
+> >> Adrian Bunk wrote:
+> >>> Whether or not an option requires an additional subsystem like e.g. SCSI 
+> >>> or SSB are hardware and implementation details we shouldn't bother 
+> >>> kconfig users with.
+> >> What is an implementation detail and what is not?  In the end,
+> >> everything that we configure in Kconfig is implementation details.
+> > 
+> > With the use case "system administrator" we can expect people to know 
+> > the name of their ethernet card and which filesystems they use, but we 
+> > should not bother them with the fact that their network card might 
+> > require the Sonics Silicon Backplane support.
 > 
-> That's true.
-> 
-> And the dependency graph can't be a tree.
-> 
-> Currently, defining the ordered tree the UIs present to the user is done 
-> _once_ in kconfig.
-> 
-> Our UIs either show this tree as a tree or go through the tree 
-> depth-first and present the options in this order to the user.
+> I'm afraid this can't be put into practice.  (User says which hardware
+> and protocols he needs to be supported, scripts magically assemble a
+> suitable configuration.)
 
-All correct.
+Distribution installers and live CDs like Knoppix even manage to 
+magically assemble a suitable configuration (e.g. autodetecting which 
+modules they should load) without asking the user any questions.
 
-> And I think your main misunderstanding is that you think the 
-> dependencies alone would carry enough information for allowing an UI to 
-> present the options in a way not worse than it's currently done - that's 
-> simply not true.
+The information the user has to give when configuring his kernel is 
+whether he wants to connects USB disks - whether or not the 
+implementation of the kernel driver uses the in-kernel SCSI layer we can 
+easily handle automatically without bothering the user.
 
-No, the dependency relationships alone do not carry enough information.
-  I am aware of that.
+> I think
+>   - sensibly modularize our software,
+>   - tell the user which software components there are,
+>   - what they are for,
+>   - how they depend on each other,
+>   - make it easy enough for the user to navigate in the dependency
+>     graph,
+>   - provide fundamental safeguards and checks for a proper software
+>     configuration
+> is the best we can do.
 
-For example, we certainly want groupings or tags such as "option is
-(directly) related to USB hardware", "filesystems related option",
-"option is for debugging purposes" etc..  We currently provide hints
-like this via the 'menu' keyword.  We also want help texts per option
-and per group of options.
+It sounds strange that what you call the "the best we can do" would be 
+much worse than what we are currently doing...
 
-However, there is ultimately not a single most logical way to group
-options.  There could be groups which would overlap.  The grouping per
-'menu' provides only one fixed non-overlapping grouping.
+The current status quo is that a user e.g. only has to know that his 
+ethernet controller is a "Broadcom 440x/47xx", the fact that a Sonics 
+Silicon Backplane bus is used on the card is handled automatically by 
+kconfig.
+
+> Stefan Richter
+
+cu
+Adrian
+
 -- 
-Stefan Richter
--=====-==--- ---= --==-
-http://arcgraph.de/sr/
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
