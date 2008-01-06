@@ -1,48 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757581AbYAFMm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbYAFM5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757581AbYAFMm4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 07:42:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753860AbYAFMms
+	id S1756348AbYAFM5o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 07:57:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753375AbYAFM5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 07:42:48 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:45622 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753440AbYAFMmr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 07:42:47 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4780CC6D.1090906@s5r6.in-berlin.de>
-Date: Sun, 06 Jan 2008 13:41:17 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
+	Sun, 6 Jan 2008 07:57:36 -0500
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2308 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753465AbYAFM5f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 07:57:35 -0500
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] drivers/dma/ioat_dma.c: inlining failed
+Date: Sun, 6 Jan 2008 13:57:23 +0100
+User-Agent: KMail/1.9.7
+Cc: "Nelson, Shannon" <shannon.nelson@intel.com>, caglar@pardus.org.tr,
+       linux-kernel@vger.kernel.org
+References: <200712142144.47310.caglar@pardus.org.tr> <BAE9DCEF64577A439B3A37F36F9B691C03A18730@orsmsx418.amr.corp.intel.com> <20071214151532.f79ec86e.akpm@linux-foundation.org>
+In-Reply-To: <20071214151532.f79ec86e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Randy Dunlap <randy.dunlap@oracle.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Al Boldi <a1426z@gawab.com>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/5] USB Kconfig: Select SCSI for USB Mass Storage	support
-References: <200801051546.SAA08947@raad.intranet> <20080105113024.209485f5.randy.dunlap@oracle.com> <20080105210330.GC22232@does.not.exist> <20080105210940.GA10302@uranus.ravnborg.org> <47801126.7020807@oracle.com> <4780C15C.2000904@s5r6.in-berlin.de> <20080106120527.GC2082@does.not.exist>
-In-Reply-To: <20080106120527.GC2082@does.not.exist>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801061357.24834.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Sun, Jan 06, 2008 at 12:54:04PM +0100, Stefan Richter wrote:
->> The user who wants to enable usb-storage /has/ to go into the SCSI menu
->> anyway to answer whether he needs sd, sr, st, sg, command logging...
-> 
-> That's a different UI problem that has to be fixed.
-> 
-> The "SCSI support type" menu has to move out of the SCSI menu.
+Hello,
 
-That's right, maybe create a "SCSI related I/O protocols" menu or
-something like that.  I seem to remember previous attempts to do this. :-)
--- 
-Stefan Richter
--=====-==--- ---= --==-
-http://arcgraph.de/sr/
+> > >After commit 7bb67c14fd3778504fb77da30ce11582336dfced, Linus's 
+> > >git tree gaves following compiliation error with gcc-3.4.6. 
+> > >Following patch solves this issue for me;
+> > >
+> > >
+> > >[...]
+> > >  CC [M]  drivers/dma/ioat.o
+> > >  CC [M]  drivers/dma/ioat_dma.o
+> > >drivers/dma/ioat_dma.c: In function `ioat1_tx_submit':
+> > >drivers/dma/ioat_dma.c:177: sorry, unimplemented: inlining 
+> > >failed in call to '__ioat1_dma_memcpy_issue_pending': function 
+> > >body not available
+> > >drivers/dma/ioat_dma.c:268: sorry, unimplemented: called from here
+> > >make[2]: *** [drivers/dma/ioat_dma.o] Hata 1
+> > >make[1]: *** [drivers/dma] Hata 2
+> > >make: *** [drivers] Hata 2
+> > >
+> > >Signed-off-by: S.__a__lar Onur <caglar@pardus.org.tr>
+> > [...]
+> > 
+> > Yep.  I posted a similar patch with a couple more tweaks after a month ago after Andrew's comments, which hasn't yet moved from -mm to Linus' tree.  See http://lkml.org/lkml/2007/11/16/336
+> > 
+> 
+> Nobody told me that it fixed anything serious so I had it scheduled for
+> 2.6.25.  I'll move it up.
+
+BTW. It's still not there. Latest Linus linux-2.6 git tree with gcc-3.4.6:
+
+  CC [M]  drivers/dma/ioat_dma.o
+drivers/dma/ioat_dma.c: In function `ioat1_tx_submit':
+drivers/dma/ioat_dma.c:177: sorry, unimplemented: inlining failed in call to '__ioat1_dma_memcpy_issue_pending': function body not available
+drivers/dma/ioat_dma.c:268: sorry, unimplemented: called from here
+make[2]: *** [drivers/dma/ioat_dma.o] Error 1
+make[1]: *** [drivers/dma] Error 2
+make: *** [drivers] Error 2
+
+Regards,
+
+	Mariusz
