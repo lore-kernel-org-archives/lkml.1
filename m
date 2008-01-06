@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757878AbYAFVb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757911AbYAFVe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757878AbYAFVb6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 16:31:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbYAFVbu
+	id S1757911AbYAFVe3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 16:34:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbYAFVeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 16:31:50 -0500
-Received: from lazybastard.de ([212.112.238.170]:36834 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753247AbYAFVbu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 16:31:50 -0500
-Date: Sun, 6 Jan 2008 22:25:42 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>, dwmw2@infradead.org,
-       linux-mtd@lists.infradead.org, peterz@infradead.org, mingo@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] block2mtd lockdep_init_map warning
-Message-ID: <20080106212542.GA5262@lazybastard.org>
-References: <20080106131343.GA3120@lazybastard.org> <200801061911.m06JBldW020012@agora.fsl.cs.sunysb.edu>
+	Sun, 6 Jan 2008 16:34:21 -0500
+Received: from rtr.ca ([76.10.145.34]:2422 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753029AbYAFVeU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 16:34:20 -0500
+Message-ID: <47814958.3070208@rtr.ca>
+Date: Sun, 06 Jan 2008 16:34:16 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200801061911.m06JBldW020012@agora.fsl.cs.sunysb.edu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, abelay@novell.com, lenb@kernel.org,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, rjw@sisk.pl
+Subject: Re: + restore-missing-sysfs-max_cstate-attr.patch added to -mm tree
+References: <20071130142058.816d1693.akpm@linux-foundation.org> <924EFEDD5F540B4284297C4DC59F3DEE2FAEAF@orsmsx423.amr.corp.intel.com> <4750CC78.9070105@rtr.ca> <20071130190227.1976e682@laptopd505.fenrus.org> <4750D180.6080001@rtr.ca> <20071130191816.3e744205@laptopd505.fenrus.org> <4750D585.1030200@rtr.ca> <477C2143.8090406@rtr.ca> <924EFEDD5F540B4284297C4DC59F3DEE4FC485@orsmsx423.amr.corp.intel.com> <477C622F.6010304@rtr.ca> <20080104021619.GA15409@linux-os.sc.intel.com>
+In-Reply-To: <20080104021619.GA15409@linux-os.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 6 January 2008 14:11:47 -0500, Erez Zadok wrote:
+Venki Pallipadi wrote:
+> Reintroduce run time configurable max_cstate for !CPU_IDLE case.
 > 
-> The problem appears to be an interaction of two components--module loading
-> and lockdep--that's perhaps why it wasn't given enough attention.
+> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> 
+> Index: linux-2.6.24-rc/drivers/acpi/processor_idle.c
+> ===================================================================
+> --- linux-2.6.24-rc.orig/drivers/acpi/processor_idle.c
+> +++ linux-2.6.24-rc/drivers/acpi/processor_idle.c
+> @@ -76,7 +76,11 @@ static void (*pm_idle_save) (void) __rea
+>  #define PM_TIMER_TICKS_TO_US(p)		(((p) * 1000)/(PM_TIMER_FREQUENCY/1000))
+>  
+>  static unsigned int max_cstate __read_mostly = ACPI_PROCESSOR_MAX_POWER;
+> +#ifdef CONFIG_CPU_IDLE
+>  module_param(max_cstate, uint, 0000);
+> +#else
+> +module_param(max_cstate, uint, 0644);
+> +#endif
+>  static unsigned int nocst __read_mostly;
+>  module_param(nocst, uint, 0000);
+>  
+..
 
-Correct.  For modules lockdep depends on initializations done after
-module_init has finished.  However block2mtd is an odd sod that can call
-into lockdep code during module_init, causing the bug you noticed.
+Can we get this patch upstream so that a stock 2.6.24 will work here?
 
-Several solutions are possible.  Modules could get two initcalls, one to
-decide whether module load should get aborted, the other run later,
-after the remaining module initializations are done.  Or the module
-loader could always do the initializations and revoke them later, if
-module_init failed.
-
-But I personally am too unfamiliar with the module code to trust my
-judgement and have yet to receive feedback.  Even you seem to ignore my
-mails and not even Cc: me later on.  I must have done something really
-horrible in my last life, it seems.
-
-Jörn
-
--- 
-A quarrel is quickly settled when deserted by one party; there is
-no battle unless there be two.
--- Seneca
+Thanks
