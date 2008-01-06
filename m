@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755485AbYAFTHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756366AbYAFTJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755485AbYAFTHZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 14:07:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbYAFTHP
+	id S1756366AbYAFTJV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 14:09:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbYAFTJO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 14:07:15 -0500
-Received: from smtprelay09.ispgateway.de ([80.67.29.23]:44068 "EHLO
-	smtprelay09.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752185AbYAFTHO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 14:07:14 -0500
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Sun, 06 Jan 2008 14:07:13 EST
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: Bernd Schubert <bernd-schubert@gmx.de>
-Subject: Re: sleep before boot panic
-Date: Sun, 6 Jan 2008 20:01:14 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-References: <200801061908.43010.bernd-schubert@gmx.de>
-In-Reply-To: <200801061908.43010.bernd-schubert@gmx.de>
-Cc: linux-kernel@vger.kernel.org
+	Sun, 6 Jan 2008 14:09:14 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:33215 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752577AbYAFTJO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 14:09:14 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Parag Warudkar" <parag.warudkar@gmail.com>
+Subject: Re: 2.6.24-rc6-git12: Reported regressions from 2.6.23
+Date: Sun, 6 Jan 2008 20:11:30 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Adrian Bunk" <bunk@kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+References: <200801052042.56042.rjw@sisk.pl> <200801061357.36324.rjw@sisk.pl> <82e4877d0801060821r2ec43a9em6b4b6a8f763af7c8@mail.gmail.com>
+In-Reply-To: <82e4877d0801060821r2ec43a9em6b4b6a8f763af7c8@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801062001.15220.ioe-lkml@rameria.de>
+Message-Id: <200801062011.31491.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bernd,
+On Sunday, 6 of January 2008, Parag Warudkar wrote:
+> On Jan 6, 2008 7:57 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Sunday, 6 of January 2008, Ingo Molnar wrote:
+> > >
+> > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > >
+> > > > Subject             : soft lockup - CPU#1 stuck for 15s! [swapper:0]
+> > > > Submitter   : "Parag Warudkar" <parag.warudkar@gmail.com>
+> > > > Date                : 2007-12-07 18:14
+> > > > References  : http://lkml.org/lkml/2007/12/7/299
+> > > >               http://bugzilla.kernel.org/show_bug.cgi?id=9525
+> > > > Handled-By  : "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+> > > >               Thomas Gleixner <tglx@linutronix.de>
+> > > >               Ingo Molnar <mingo@elte.hu>
+> > >
+> > > i think this only occurs with cpuidle, right? drivers/cpuidle/ and
+> > > CPU_IDLE is new in 2.6.24 so this appears to be a bug in that code (or a
+> > > bug elsewhere triggered by that code), not a regression from v2.6.23.
+> >
+> > OK, removed from the regressions list.
+> 
+> Nope - actually it did happen without CPU_IDLE so it is definitely a regression.
+> (See http://lkml.org/lkml/2007/12/17/93 )
+> 
+> And it does happen with latest git which I believe has your patch Ingo.
+> 
+> So I would suggest to keep it on the list of regressions.
 
-On Sunday 06 January 2008, you wrote:
-> Index: zd1211rw.git.beno/init/do_mounts.c
-> ===================================================================
-> --- zd1211rw.git.beno.orig/init/do_mounts.c	2008-01-06 18:44:23.000000000 
-> +0100
-> +++ zd1211rw.git.beno/init/do_mounts.c	2008-01-06 18:45:44.000000000 +0100
-> @@ -330,6 +330,7 @@
->  		printk("Please append a correct \"root=\" boot option; here are the 
-> available partitions:\n");
->  
->  		printk_all_partitions();
-> +		msleep(60 * 1000);
+OK
 
-ssleep(60);
+Thanks for the clarification.
 
->  		panic("VFS: Unable to mount root fs on %s", b);
->  	}
-
-Better would be for this and similiar panic()s
-(fatal user/admin errors on boot) to NOT print a stack trace+registers,
-since it is useless and actually hides useful information.
-
-
-Best Regards
-
-Ingo Oeser
+Greetings,
+Rafael
