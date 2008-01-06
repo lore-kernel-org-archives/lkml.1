@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbYAFTYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755613AbYAFTbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756133AbYAFTYQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 14:24:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbYAFTYE
+	id S1755613AbYAFTbS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 14:31:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbYAFTbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 14:24:04 -0500
-Received: from mail.gmx.net ([213.165.64.20]:39990 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752675AbYAFTYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 14:24:03 -0500
-X-Authenticated: #19095397
-X-Provags-ID: V01U2FsdGVkX19Y3Kwe7yxY+EGWgbuDdY+E62+TsKUivYbCq+AMDK
-	ctvEpmxDHyyKEc
-From: Bernd Schubert <bernd-schubert@gmx.de>
-To: Ingo Oeser <ioe-lkml@rameria.de>
-Subject: Re: sleep before boot panic
-Date: Sun, 6 Jan 2008 20:23:57 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
-References: <200801061908.43010.bernd-schubert@gmx.de> <200801062001.15220.ioe-lkml@rameria.de>
-In-Reply-To: <200801062001.15220.ioe-lkml@rameria.de>
+	Sun, 6 Jan 2008 14:31:07 -0500
+Received: from lixom.net ([66.141.50.11]:56480 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752024AbYAFTbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 14:31:06 -0500
+Date: Sun, 6 Jan 2008 13:40:05 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       heiko.carstens@de.ibm.com, mingo@elte.hu, mpm@selenic.com
+Subject: Re: [patch 2/5] move WARN_ON() out of line
+Message-ID: <20080106194005.GA7992@lixom.net>
+References: <20080105190713.73745ec6@laptopd505.fenrus.org> <20080105190959.1880f1c4@laptopd505.fenrus.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801062023.58089.bernd-schubert@gmx.de>
-X-Y-GMX-Trusted: 0
+In-Reply-To: <20080105190959.1880f1c4@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Ingo,
+On Sat, Jan 05, 2008 at 07:09:59PM -0800, Arjan van de Ven wrote:
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> CC: Ingo Molnar <mingo@elte.hu>
+> CC: Andrew Morton <akpm@linux-foundation.org>
+> CC: Olof Johansson <olof@lixom.net>
+> Acked-by: Matt Meckall <mpm@selenic.com>
+> 
+> A quick grep shows that there are currently 1145 instances of WARN_ON
+> in the kernel. Currently, WARN_ON is pretty much entirely inlined,
+> which makes it hard to enhance it without growing the size of the kernel
+> (and getting Andrew unhappy).
+> 
+> This patch build on top of Olof's patch that introduces __WARN,
+> and places the slowpath out of line. It also uses Ingo's suggestion
+> to not use __FUNCTION__ but to use kallsyms to do the lookup;
+> this saves a ton of extra space since gcc doesn't need to store the function
+> string twice now:
+> 
+> 3936367  833603  624736 5394706  525112 vmlinux.before
+> 3917508  833603  624736 5375847  520767 vmlinux-slowpath
+> 
+> 15Kb savings...
+> 
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 
-On Sunday 06 January 2008, Ingo Oeser wrote:
-> Hi Bernd,
->
-> On Sunday 06 January 2008, you wrote:
-> > Index: zd1211rw.git.beno/init/do_mounts.c
-> > ===================================================================
-> > --- zd1211rw.git.beno.orig/init/do_mounts.c	2008-01-06 18:44:23.000000000
-> > +0100
-> > +++ zd1211rw.git.beno/init/do_mounts.c	2008-01-06 18:45:44.000000000
-> > +0100 @@ -330,6 +330,7 @@
-> >  		printk("Please append a correct \"root=\" boot option; here are the
-> > available partitions:\n");
-> >
-> >  		printk_all_partitions();
-> > +		msleep(60 * 1000);
->
-> ssleep(60);
-
-feel free to replace it replace it :)
-
->
-> >  		panic("VFS: Unable to mount root fs on %s", b);
-> >  	}
->
-> Better would be for this and similiar panic()s
-> (fatal user/admin errors on boot) to NOT print a stack trace+registers,
-> since it is useless and actually hides useful information.
-
-There is no dump_stack() here, but disc detection is relatively early in boot 
-process and on all these information are already scrolled off screen when the 
-panic is done. For this and any other panic it would be optimal if scrolling 
-still would work, but scrolling also requires kernel code, so I see there's a 
-reason not to this for all panics. However, for this boot problem I tend to 
-say there's no need to panic at all...
-
-Btw, not all stack straces are useless, *most* of them are actually very 
-useful.
-
-Cheers,
-Bernd
+Acked-by: Olof Johansson <olof@lixom.net>
 
