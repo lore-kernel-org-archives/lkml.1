@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759015AbYAFRGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758770AbYAFRJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759015AbYAFRGv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 12:06:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755759AbYAFRGn
+	id S1758770AbYAFRJf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 12:09:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753941AbYAFRJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 12:06:43 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:1154 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754577AbYAFRGm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 12:06:42 -0500
-Date: Sun, 6 Jan 2008 12:06:38 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH] PM: Acquire device locks on suspend
-In-Reply-To: <200801061419.52277.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0801061203510.7367-100000@netrider.rowland.org>
+	Sun, 6 Jan 2008 12:09:27 -0500
+Received: from [212.12.190.12] ([212.12.190.12]:47444 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753375AbYAFRJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 12:09:26 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH 2/5] USB Kconfig: Select SCSI for USB Mass Storage support
+Date: Sun, 6 Jan 2008 20:07:31 +0300
+User-Agent: KMail/1.5
+Cc: Sam Ravnborg <sam@ravnborg.org>, Adrian Bunk <bunk@kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
+       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
+References: <200801051546.SAA08947@raad.intranet> <200801060803.27101.a1426z@gawab.com> <4780E814.4050405@s5r6.in-berlin.de>
+In-Reply-To: <4780E814.4050405@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801062007.31516.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 6 Jan 2008, Rafael J. Wysocki wrote:
+Stefan Richter wrote:
+> Al Boldi wrote:
+> > Sam Ravnborg wrote:
+> >> And that requires you to use select only to select symbols with
+> >> no dependencies.
+> >>
+> >> In this case we do not know if BLOCK is enabled or not.
+> >
+> > Good point!  How about we solve it like this:
+> >
+> >   	menuconfig USB_STORAGE
+> >   	tristate "USB Mass Storage support"
+> > -	depends on USB && SCSI
+> > +	depends on USB && BLOCK
+> > +	select SCSI
+>
+> Still wrong. SCSI also needs HAS_DMA and SCSI_DMA.
 
-> > If you can figure out a way to disable the warning in device_del() for 
-> > just the one device being unregistered by 
-> > device_pm_destroy_suspended(),
-> 
-> Something like this, perhaps:
-> 
-> @@ -905,6 +915,18 @@ void device_del(struct device * dev)
->  	struct device * parent = dev->parent;
->  	struct class_interface *class_intf;
->  
-> +	if (down_trylock(&dev->sem)) {
-> +		if (pm_sleep_lock()) {
-> +			dev_warn(dev, "Illegal %s during suspend\n",
-> +				__FUNCTION__);
-> +			dump_stack();
-> +		} else {
-> +			pm_sleep_unlock();
-> +		}
-> +	} else {
-> +		up(&dev->sem);
-> +	}
-> +
->  	if (parent)
->  		klist_del(&dev->knode_parent);
->  	if (MAJOR(dev->devt))
+I don't think so.  SCSI selects SCSI_DMA, it doesn't depend on it.  So it's 
+safe to select SCSI here, as libata does it the same way.
 
-Bizarre, but it should work.  Be sure to include plenty of explanatory 
-comments -- otherwise nobody will be able to figure it out!  :-)
 
-Alan Stern
+Thanks!
+
+--
+Al
 
