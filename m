@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758283AbYAFBVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758775AbYAFBVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758283AbYAFBVk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 20:21:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758508AbYAFBVL
+	id S1758775AbYAFBVz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 20:21:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758601AbYAFBV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 20:21:11 -0500
+	Sat, 5 Jan 2008 20:21:29 -0500
 Received: from fg-out-1718.google.com ([72.14.220.156]:49822 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753920AbYAFBVJ (ORCPT
+	with ESMTP id S1758589AbYAFBV2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 20:21:09 -0500
+	Sat, 5 Jan 2008 20:21:28 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=C9RjP/uDaGoXaAT4U3NiNbGWJuDY+c9QQsWsWoICyMPWpHFGK2NXZTX82sF5iZcS4LPQTjW4hP0h7JsZjVBmFwFFl+TBTkxhJYNuOSg5UNN7f6pa7wUahMTS14PxY1D1wh2OOw2Rnx7wjodZiNidIafPMM0srtzcbszvlohjQU0=
+        b=QGDZB0R2tizCR71osl27EUNAlQGxemsCUnoEzxWForL+wQko+9d5hCtks4kHlu3CCKqLSlUai4dOWkKKeUQghm7wus8NzYVxbJ4GBVwXVtGJSqYSlGdtpD/eEdlwZWrp5GT0KGRX1Hb1qGQFBcNLFHzw3+p/SjpJIgR7E2WTBwQ=
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ben Fennema <bfennema@falcon.csc.calpoly.edu>, Jan Kara <jack@suse.cz>,
        Christoph Hellwig <hch@infradead.org>,
        Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: [PATCH 4/7] udf: replace loops coded with goto to real loops
-Date: Sun,  6 Jan 2008 02:21:50 +0100
-Message-Id: <1199582513-7915-4-git-send-email-marcin.slusarz@gmail.com>
+Subject: [PATCH 5/7] udf: convert byte order of constant instead of variable
+Date: Sun,  6 Jan 2008 02:21:51 +0100
+Message-Id: <1199582513-7915-5-git-send-email-marcin.slusarz@gmail.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1199582513-7915-1-git-send-email-marcin.slusarz@gmail.com>
 References: <1199582513-7915-1-git-send-email-marcin.slusarz@gmail.com>
@@ -29,376 +29,178 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+convert byte order of constant instead of variable,
+which can be done at compile time (vs run time)
+
 Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
 ---
- fs/udf/balloc.c |  309 ++++++++++++++++++++++++++++---------------------------
- 1 files changed, 157 insertions(+), 152 deletions(-)
+ fs/udf/directory.c |    4 ++--
+ fs/udf/inode.c     |   16 ++++++++--------
+ fs/udf/misc.c      |   12 ++++++------
+ fs/udf/super.c     |   16 ++++++++--------
+ 4 files changed, 24 insertions(+), 24 deletions(-)
 
-diff --git a/fs/udf/balloc.c b/fs/udf/balloc.c
-index d1d4b8f..5ce7926 100644
---- a/fs/udf/balloc.c
-+++ b/fs/udf/balloc.c
-@@ -183,46 +183,46 @@ static void udf_bitmap_free_blocks(struct super_block *sb,
- 	block = bloc.logicalBlockNum + offset +
- 		(sizeof(struct spaceBitmapDesc) << 3);
+diff --git a/fs/udf/directory.c b/fs/udf/directory.c
+index d4ae723..598bcf7 100644
+--- a/fs/udf/directory.c
++++ b/fs/udf/directory.c
+@@ -225,7 +225,7 @@ struct fileIdentDesc *udf_get_fileident(void *buffer, int bufsize, int *offset)
+ 	if ((*offset > 0) && (*offset < bufsize))
+ 		ptr += *offset;
+ 	fi = (struct fileIdentDesc *)ptr;
+-	if (le16_to_cpu(fi->descTag.tagIdent) != TAG_IDENT_FID) {
++	if (fi->descTag.tagIdent != cpu_to_le16(TAG_IDENT_FID)) {
+ 		udf_debug("0x%x != TAG_IDENT_FID\n",
+ 			  le16_to_cpu(fi->descTag.tagIdent));
+ 		udf_debug("offset: %u sizeof: %lu bufsize: %u\n",
+@@ -262,7 +262,7 @@ static extent_ad *udf_get_fileextent(void *buffer, int bufsize, int *offset)
  
--do_more:
--	overflow = 0;
--	block_group = block >> (sb->s_blocksize_bits + 3);
--	bit = block % (sb->s_blocksize << 3);
-+	do {
-+		overflow = 0;
-+		block_group = block >> (sb->s_blocksize_bits + 3);
-+		bit = block % (sb->s_blocksize << 3);
+ 	fe = (struct fileEntry *)buffer;
  
--	/*
--	 * Check to see if we are freeing blocks across a group boundary.
--	 */
--	if (bit + count > (sb->s_blocksize << 3)) {
--		overflow = bit + count - (sb->s_blocksize << 3);
--		count -= overflow;
--	}
--	bitmap_nr = load_block_bitmap(sb, bitmap, block_group);
--	if (bitmap_nr < 0)
--		goto error_return;
-+		/*
-+		* Check to see if we are freeing blocks across a group boundary.
-+		*/
-+		if (bit + count > (sb->s_blocksize << 3)) {
-+			overflow = bit + count - (sb->s_blocksize << 3);
-+			count -= overflow;
-+		}
-+		bitmap_nr = load_block_bitmap(sb, bitmap, block_group);
-+		if (bitmap_nr < 0)
-+			goto error_return;
+-	if (le16_to_cpu(fe->descTag.tagIdent) != TAG_IDENT_FE) {
++	if (fe->descTag.tagIdent != cpu_to_le16(TAG_IDENT_FE)) {
+ 		udf_debug("0x%x != TAG_IDENT_FE\n",
+ 			  le16_to_cpu(fe->descTag.tagIdent));
+ 		return NULL;
+diff --git a/fs/udf/inode.c b/fs/udf/inode.c
+index 6751945..bb73635 100644
+--- a/fs/udf/inode.c
++++ b/fs/udf/inode.c
+@@ -1103,7 +1103,7 @@ static void __udf_read_inode(struct inode *inode)
  
--	bh = bitmap->s_block_bitmap[bitmap_nr];
--	for (i = 0; i < count; i++) {
--		if (udf_set_bit(bit + i, bh->b_data)) {
--			udf_debug("bit %ld already set\n", bit + i);
--			udf_debug("byte=%2x\n",
--				  ((char *)bh->b_data)[(bit + i) >> 3]);
--		} else {
--			if (inode)
--				DQUOT_FREE_BLOCK(inode, 1);
--			udf_inc_free_space(sbi, sbi->s_partition, 1);
-+		bh = bitmap->s_block_bitmap[bitmap_nr];
-+		for (i = 0; i < count; i++) {
-+			if (udf_set_bit(bit + i, bh->b_data)) {
-+				udf_debug("bit %ld already set\n", bit + i);
-+				udf_debug("byte=%2x\n",
-+					((char *)bh->b_data)[(bit + i) >> 3]);
-+			} else {
-+				if (inode)
-+					DQUOT_FREE_BLOCK(inode, 1);
-+				udf_inc_free_space(sbi, sbi->s_partition, 1);
-+			}
+ 	fe = (struct fileEntry *)bh->b_data;
+ 
+-	if (le16_to_cpu(fe->icbTag.strategyType) == 4096) {
++	if (fe->icbTag.strategyType == cpu_to_le16(4096)) {
+ 		struct buffer_head *ibh = NULL, *nbh = NULL;
+ 		struct indirectEntry *ie;
+ 
+@@ -1140,7 +1140,7 @@ static void __udf_read_inode(struct inode *inode)
+ 		} else {
+ 			brelse(ibh);
  		}
--	}
--	mark_buffer_dirty(bh);
--	if (overflow) {
--		block += count;
--		count = overflow;
--		goto do_more;
--	}
-+		mark_buffer_dirty(bh);
-+		if (overflow) {
-+			block += count;
-+			count = overflow;
-+		}
-+	} while (overflow);
-+
- error_return:
- 	sb->s_dirt = 1;
- 	if (sbi->s_lvid_bh)
- 		mark_buffer_dirty(sbi->s_lvid_bh);
- 	mutex_unlock(&sbi->s_alloc_mutex);
--	return;
- }
+-	} else if (le16_to_cpu(fe->icbTag.strategyType) != 4) {
++	} else if (fe->icbTag.strategyType != cpu_to_le16(4)) {
+ 		printk(KERN_ERR "udf: unsupported strategy type: %d\n",
+ 		       le16_to_cpu(fe->icbTag.strategyType));
+ 		brelse(bh);
+@@ -1164,9 +1164,9 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
+ 	fe = (struct fileEntry *)bh->b_data;
+ 	efe = (struct extendedFileEntry *)bh->b_data;
  
- static int udf_bitmap_prealloc_blocks(struct super_block *sb,
-@@ -246,39 +246,40 @@ static int udf_bitmap_prealloc_blocks(struct super_block *sb,
- 	if (first_block + block_count > part_len)
- 		block_count = part_len - first_block;
+-	if (le16_to_cpu(fe->icbTag.strategyType) == 4)
++	if (fe->icbTag.strategyType == cpu_to_le16(4))
+ 		UDF_I_STRAT4096(inode) = 0;
+-	else /* if (le16_to_cpu(fe->icbTag.strategyType) == 4096) */
++	else /* if (fe->icbTag.strategyType == cpu_to_le16(4096)) */
+ 		UDF_I_STRAT4096(inode) = 1;
  
--repeat:
--	nr_groups = (sbi->s_partmaps[partition].s_partition_len +
--		     (sizeof(struct spaceBitmapDesc) << 3) +
--		     (sb->s_blocksize * 8) - 1) / (sb->s_blocksize * 8);
--	block = first_block + (sizeof(struct spaceBitmapDesc) << 3);
--	block_group = block >> (sb->s_blocksize_bits + 3);
--	group_start = block_group ? 0 : sizeof(struct spaceBitmapDesc);
-+	do {
-+		nr_groups = (sbi->s_partmaps[partition].s_partition_len +
-+			(sizeof(struct spaceBitmapDesc) << 3) +
-+			(sb->s_blocksize * 8) - 1) / (sb->s_blocksize * 8);
-+		block = first_block + (sizeof(struct spaceBitmapDesc) << 3);
-+		block_group = block >> (sb->s_blocksize_bits + 3);
-+		group_start = block_group ? 0 : sizeof(struct spaceBitmapDesc);
- 
--	bitmap_nr = load_block_bitmap(sb, bitmap, block_group);
--	if (bitmap_nr < 0)
--		goto out;
--	bh = bitmap->s_block_bitmap[bitmap_nr];
-+		bitmap_nr = load_block_bitmap(sb, bitmap, block_group);
-+		if (bitmap_nr < 0)
-+			goto out;
-+		bh = bitmap->s_block_bitmap[bitmap_nr];
- 
--	bit = block % (sb->s_blocksize << 3);
-+		bit = block % (sb->s_blocksize << 3);
- 
--	while (bit < (sb->s_blocksize << 3) && block_count > 0) {
--		if (!udf_test_bit(bit, bh->b_data)) {
--			goto out;
--		} else if (DQUOT_PREALLOC_BLOCK(inode, 1)) {
--			goto out;
--		} else if (!udf_clear_bit(bit, bh->b_data)) {
--			udf_debug("bit already cleared for block %d\n", bit);
--			DQUOT_FREE_BLOCK(inode, 1);
--			goto out;
-+		while (bit < (sb->s_blocksize << 3) && block_count > 0) {
-+			if (!udf_test_bit(bit, bh->b_data))
-+				goto out;
-+			else if (DQUOT_PREALLOC_BLOCK(inode, 1))
-+				goto out;
-+			else if (!udf_clear_bit(bit, bh->b_data)) {
-+				udf_debug("bit already cleared for block %d\n",
-+					  bit);
-+				DQUOT_FREE_BLOCK(inode, 1);
-+				goto out;
-+			}
-+			block_count--;
-+			alloc_count++;
-+			bit++;
-+			block++;
+ 	UDF_I_ALLOCTYPE(inode) = le16_to_cpu(fe->icbTag.flags) &
+@@ -1177,7 +1177,7 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
+ 	UDF_I_LENALLOC(inode) = 0;
+ 	UDF_I_NEXT_ALLOC_BLOCK(inode) = 0;
+ 	UDF_I_NEXT_ALLOC_GOAL(inode) = 0;
+-	if (le16_to_cpu(fe->descTag.tagIdent) == TAG_IDENT_EFE) {
++	if (fe->descTag.tagIdent == cpu_to_le16(TAG_IDENT_EFE)) {
+ 		UDF_I_EFE(inode) = 1;
+ 		UDF_I_USE(inode) = 0;
+ 		if (udf_alloc_i_data(inode, inode->i_sb->s_blocksize -
+@@ -1189,7 +1189,7 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
+ 		       bh->b_data + sizeof(struct extendedFileEntry),
+ 		       inode->i_sb->s_blocksize -
+ 					sizeof(struct extendedFileEntry));
+-	} else if (le16_to_cpu(fe->descTag.tagIdent) == TAG_IDENT_FE) {
++	} else if (fe->descTag.tagIdent == cpu_to_le16(TAG_IDENT_FE)) {
+ 		UDF_I_EFE(inode) = 0;
+ 		UDF_I_USE(inode) = 0;
+ 		if (udf_alloc_i_data(inode, inode->i_sb->s_blocksize -
+@@ -1199,7 +1199,7 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
  		}
--		block_count--;
--		alloc_count++;
--		bit++;
--		block++;
--	}
--	mark_buffer_dirty(bh);
--	if (block_count > 0)
--		goto repeat;
-+		mark_buffer_dirty(bh);
-+	} while (block_count > 0);
-+
- out:
- 	if (udf_inc_free_space(sbi, partition, -alloc_count))
- 		mark_buffer_dirty(sbi->s_lvid_bh);
-@@ -298,117 +299,121 @@ static int udf_bitmap_new_block(struct super_block *sb,
- 	struct buffer_head *bh = NULL;
- 	char *ptr;
- 	int newblock = 0;
-+	bool bit_already_cleared;
+ 		memcpy(UDF_I_DATA(inode), bh->b_data + sizeof(struct fileEntry),
+ 		       inode->i_sb->s_blocksize - sizeof(struct fileEntry));
+-	} else if (le16_to_cpu(fe->descTag.tagIdent) == TAG_IDENT_USE) {
++	} else if (fe->descTag.tagIdent == cpu_to_le16(TAG_IDENT_USE)) {
+ 		UDF_I_EFE(inode) = 0;
+ 		UDF_I_USE(inode) = 1;
+ 		UDF_I_LENALLOC(inode) = le32_to_cpu(
+@@ -1458,7 +1458,7 @@ static int udf_update_inode(struct inode *inode, int do_sync)
+ 	fe = (struct fileEntry *)bh->b_data;
+ 	efe = (struct extendedFileEntry *)bh->b_data;
  
- 	*err = -ENOSPC;
- 	mutex_lock(&sbi->s_alloc_mutex);
+-	if (le16_to_cpu(fe->descTag.tagIdent) == TAG_IDENT_USE) {
++	if (fe->descTag.tagIdent == cpu_to_le16(TAG_IDENT_USE)) {
+ 		struct unallocSpaceEntry *use =
+ 			(struct unallocSpaceEntry *)bh->b_data;
  
--repeat:
--	if (goal < 0 || goal >= sbi->s_partmaps[partition].s_partition_len)
--		goal = 0;
--
--	nr_groups = bitmap->s_nr_groups;
--	block = goal + (sizeof(struct spaceBitmapDesc) << 3);
--	block_group = block >> (sb->s_blocksize_bits + 3);
--	group_start = block_group ? 0 : sizeof(struct spaceBitmapDesc);
--
--	bitmap_nr = load_block_bitmap(sb, bitmap, block_group);
--	if (bitmap_nr < 0)
--		goto error_return;
--	bh = bitmap->s_block_bitmap[bitmap_nr];
--	ptr = memscan((char *)bh->b_data + group_start, 0xFF,
--		      sb->s_blocksize - group_start);
--
--	if ((ptr - ((char *)bh->b_data)) < sb->s_blocksize) {
--		bit = block % (sb->s_blocksize << 3);
--		if (udf_test_bit(bit, bh->b_data))
--			goto got_block;
--
--		end_goal = (bit + 63) & ~63;
--		bit = udf_find_next_one_bit(bh->b_data, end_goal, bit);
--		if (bit < end_goal)
--			goto got_block;
--
--		ptr = memscan((char *)bh->b_data + (bit >> 3), 0xFF,
--			      sb->s_blocksize - ((bit + 7) >> 3));
--		newbit = (ptr - ((char *)bh->b_data)) << 3;
--		if (newbit < sb->s_blocksize << 3) {
--			bit = newbit;
--			goto search_back;
--		}
--
--		newbit = udf_find_next_one_bit(bh->b_data,
--					       sb->s_blocksize << 3, bit);
--		if (newbit < sb->s_blocksize << 3) {
--			bit = newbit;
--			goto got_block;
--		}
--	}
-+	do {
-+		if (goal < 0 ||
-+		    goal >= sbi->s_partmaps[partition].s_partition_len)
-+			goal = 0;
+diff --git a/fs/udf/misc.c b/fs/udf/misc.c
+index badc8de..54a380d 100644
+--- a/fs/udf/misc.c
++++ b/fs/udf/misc.c
+@@ -74,8 +74,8 @@ struct genericFormat *udf_add_extendedattr(struct inode *inode, uint32_t size,
  
--	for (i = 0; i < (nr_groups * 2); i++) {
--		block_group++;
--		if (block_group >= nr_groups)
--			block_group = 0;
-+		nr_groups = bitmap->s_nr_groups;
-+		block = goal + (sizeof(struct spaceBitmapDesc) << 3);
-+		block_group = block >> (sb->s_blocksize_bits + 3);
- 		group_start = block_group ? 0 : sizeof(struct spaceBitmapDesc);
+ 		if (UDF_I_LENEATTR(inode)) {
+ 			/* check checksum/crc */
+-			if (le16_to_cpu(eahd->descTag.tagIdent) !=
+-					TAG_IDENT_EAHD ||
++			if (eahd->descTag.tagIdent !=
++					cpu_to_le16(TAG_IDENT_EAHD) ||
+ 			    le32_to_cpu(eahd->descTag.tagLocation) !=
+ 					UDF_I_LOCATION(inode).logicalBlockNum)
+ 				return NULL;
+@@ -161,8 +161,8 @@ struct genericFormat *udf_get_extendedattr(struct inode *inode, uint32_t type,
+ 		eahd = (struct extendedAttrHeaderDesc *)ea;
  
- 		bitmap_nr = load_block_bitmap(sb, bitmap, block_group);
- 		if (bitmap_nr < 0)
- 			goto error_return;
- 		bh = bitmap->s_block_bitmap[bitmap_nr];
--		if (i < nr_groups) {
--			ptr = memscan((char *)bh->b_data + group_start, 0xFF,
--				      sb->s_blocksize - group_start);
--			if ((ptr - ((char *)bh->b_data)) < sb->s_blocksize) {
--				bit = (ptr - ((char *)bh->b_data)) << 3;
--				break;
-+		ptr = memscan(bh->b_data + group_start, 0xFF,
-+			sb->s_blocksize - group_start);
-+
-+		if ((ptr - bh->b_data) < sb->s_blocksize) {
-+			bit = block % (sb->s_blocksize << 3);
-+			if (udf_test_bit(bit, bh->b_data))
-+				goto got_block;
-+
-+			end_goal = (bit + 63) & ~63;
-+			bit = udf_find_next_one_bit(bh->b_data, end_goal, bit);
-+			if (bit < end_goal)
-+				goto got_block;
-+
-+			ptr = memscan(bh->b_data + (bit >> 3), 0xFF,
-+				sb->s_blocksize - ((bit + 7) >> 3));
-+			newbit = (ptr - bh->b_data) << 3;
-+			if (newbit < sb->s_blocksize << 3) {
-+				bit = newbit;
-+				goto search_back;
-+			}
-+
-+			newbit = udf_find_next_one_bit(bh->b_data,
-+						sb->s_blocksize << 3, bit);
-+			if (newbit < sb->s_blocksize << 3) {
-+				bit = newbit;
-+				goto got_block;
- 			}
--		} else {
--			bit = udf_find_next_one_bit((char *)bh->b_data,
--						    sb->s_blocksize << 3,
--						    group_start << 3);
--			if (bit < sb->s_blocksize << 3)
--				break;
- 		}
--	}
--	if (i >= (nr_groups * 2)) {
--		mutex_unlock(&sbi->s_alloc_mutex);
--		return newblock;
--	}
--	if (bit < sb->s_blocksize << 3)
--		goto search_back;
--	else
--		bit = udf_find_next_one_bit(bh->b_data, sb->s_blocksize << 3,
--					    group_start << 3);
--	if (bit >= sb->s_blocksize << 3) {
--		mutex_unlock(&sbi->s_alloc_mutex);
--		return 0;
--	}
-+
-+		for (i = 0; i < (nr_groups * 2); i++) {
-+			block_group++;
-+			if (block_group >= nr_groups)
-+				block_group = 0;
-+			group_start = block_group ?
-+					0 : sizeof(struct spaceBitmapDesc);
-+
-+			bitmap_nr = load_block_bitmap(sb, bitmap, block_group);
-+			if (bitmap_nr < 0)
-+				goto error_return;
-+			bh = bitmap->s_block_bitmap[bitmap_nr];
-+			if (i < nr_groups) {
-+				ptr = memscan(bh->b_data + group_start,
-+					0xFF, sb->s_blocksize - group_start);
-+				if ((ptr - bh->b_data) < sb->s_blocksize) {
-+					bit = (ptr - bh->b_data) << 3;
-+					break;
-+				}
-+			} else {
-+				bit = udf_find_next_one_bit(bh->b_data,
-+							sb->s_blocksize << 3,
-+							group_start << 3);
-+				if (bit < sb->s_blocksize << 3)
-+					break;
-+			}
-+		}
-+		if (i >= (nr_groups * 2)) {
-+			mutex_unlock(&sbi->s_alloc_mutex);
-+			return newblock;
-+		}
-+		if (bit < sb->s_blocksize << 3)
-+			goto search_back;
-+		else
-+			bit = udf_find_next_one_bit(bh->b_data,
-+							sb->s_blocksize << 3,
-+							group_start << 3);
-+		if (bit >= sb->s_blocksize << 3) {
-+			mutex_unlock(&sbi->s_alloc_mutex);
-+			return 0;
-+		}
+ 		/* check checksum/crc */
+-		if (le16_to_cpu(eahd->descTag.tagIdent) !=
+-				TAG_IDENT_EAHD ||
++		if (eahd->descTag.tagIdent !=
++				cpu_to_le16(TAG_IDENT_EAHD) ||
+ 		    le32_to_cpu(eahd->descTag.tagLocation) !=
+ 				UDF_I_LOCATION(inode).logicalBlockNum)
+ 			return NULL;
+@@ -233,8 +233,8 @@ struct buffer_head *udf_read_tagged(struct super_block *sb, uint32_t block,
+ 	}
  
- search_back:
--	i = 0;
--	while (i < 7 && bit > (group_start << 3) &&
--	       udf_test_bit(bit - 1, bh->b_data)) {
--		++i;
--		--bit;
--	}
-+		i = 0;
-+		while (i < 7 && bit > (group_start << 3) &&
-+				udf_test_bit(bit - 1, bh->b_data)) {
-+			++i;
-+			--bit;
-+		}
- 
- got_block:
- 
--	/*
--	 * Check quota for allocation of this block.
--	 */
--	if (inode && DQUOT_ALLOC_BLOCK(inode, 1)) {
--		mutex_unlock(&sbi->s_alloc_mutex);
--		*err = -EDQUOT;
--		return 0;
--	}
-+		/*
-+		* Check quota for allocation of this block.
-+		*/
-+		if (inode && DQUOT_ALLOC_BLOCK(inode, 1)) {
-+			mutex_unlock(&sbi->s_alloc_mutex);
-+			*err = -EDQUOT;
-+			return 0;
-+		}
- 
--	newblock = bit + (block_group << (sb->s_blocksize_bits + 3)) -
--		(sizeof(struct spaceBitmapDesc) << 3);
-+		newblock = bit + (block_group << (sb->s_blocksize_bits + 3)) -
-+			(sizeof(struct spaceBitmapDesc) << 3);
- 
--	if (!udf_clear_bit(bit, bh->b_data)) {
--		udf_debug("bit already cleared for block %d\n", bit);
--		goto repeat;
--	}
-+		bit_already_cleared = !udf_clear_bit(bit, bh->b_data);
-+		if (bit_already_cleared)
-+			udf_debug("bit already cleared for block %d\n", bit);
-+	} while (bit_already_cleared);
- 
- 	mark_buffer_dirty(bh);
+ 	/* Verify the tag version */
+-	if (le16_to_cpu(tag_p->descVersion) != 0x0002U &&
+-	    le16_to_cpu(tag_p->descVersion) != 0x0003U) {
++	if (tag_p->descVersion != cpu_to_le16(0x0002U) &&
++	    tag_p->descVersion != cpu_to_le16(0x0003U)) {
+ 		udf_debug("tag version 0x%04x != 0x0002 || 0x0003 block %d\n",
+ 			  le16_to_cpu(tag_p->descVersion), block);
+ 		goto error_out;
+diff --git a/fs/udf/super.c b/fs/udf/super.c
+index fadf5e7..a366d97 100644
+--- a/fs/udf/super.c
++++ b/fs/udf/super.c
+@@ -1002,20 +1002,20 @@ static int udf_load_partdesc(struct super_block *sb, struct buffer_head *bh)
+ 				le32_to_cpu(p->partitionLength); /* blocks */
+ 			map->s_partition_root =
+ 				le32_to_cpu(p->partitionStartingLocation);
+-			if (le32_to_cpu(p->accessType) ==
+-					PD_ACCESS_TYPE_READ_ONLY)
++			if (p->accessType ==
++					cpu_to_le32(PD_ACCESS_TYPE_READ_ONLY))
+ 				map->s_partition_flags |=
+ 						UDF_PART_FLAG_READ_ONLY;
+-			if (le32_to_cpu(p->accessType) ==
+-					PD_ACCESS_TYPE_WRITE_ONCE)
++			if (p->accessType ==
++					cpu_to_le32(PD_ACCESS_TYPE_WRITE_ONCE))
+ 				map->s_partition_flags |=
+ 						UDF_PART_FLAG_WRITE_ONCE;
+-			if (le32_to_cpu(p->accessType) ==
+-					PD_ACCESS_TYPE_REWRITABLE)
++			if (p->accessType ==
++					cpu_to_le32(PD_ACCESS_TYPE_REWRITABLE))
+ 				map->s_partition_flags |=
+ 						UDF_PART_FLAG_REWRITABLE;
+-			if (le32_to_cpu(p->accessType) ==
+-					PD_ACCESS_TYPE_OVERWRITABLE)
++			if (p->accessType ==
++				    cpu_to_le32(PD_ACCESS_TYPE_OVERWRITABLE))
+ 				map->s_partition_flags |=
+ 						UDF_PART_FLAG_OVERWRITABLE;
  
 -- 
 1.5.3.7
