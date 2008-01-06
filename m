@@ -1,81 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbYAFAWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbYAFAYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756806AbYAFAWx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 19:22:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbYAFAWl
+	id S1757228AbYAFAYY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 19:24:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228AbYAFAYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 19:22:41 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:2577 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753869AbYAFAWk (ORCPT
+	Sat, 5 Jan 2008 19:24:17 -0500
+Received: from hpsmtp-eml20.kpnxchange.com ([213.75.38.85]:22560 "EHLO
+	hpsmtp-eml20.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753126AbYAFAYQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 19:22:40 -0500
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: viro@ZenIV.linux.org.uk (Al Viro)
-Subject: Re: sparc oops in ip_fast_csum
-Cc: m.kozlowski@tuxland.pl, davem@davemloft.net, sparclinux@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Organization: Core
-In-Reply-To: <20080105094400.GH27894@ZenIV.linux.org.uk>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1JBJHA-0000hy-00@gondolin.me.apana.org.au>
-Date: Sun, 06 Jan 2008 11:22:04 +1100
+	Sat, 5 Jan 2008 19:24:16 -0500
+From: Frans Pop <elendil@planet.nl>
+To: linux-kernel@vger.kernel.org
+Subject: [BUG] 2.6.24-rc5: 'sysctl table check failed' when turning on printer
+User-Agent: KMail/1.9.7
+MIME-Version: 1.0
+Content-Disposition: inline
+X-Length: 2115
+Date: Sun, 6 Jan 2008 01:24:11 +0100
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200801060124.11782.elendil@planet.nl>
+X-OriginalArrivalTime: 06 Jan 2008 00:24:14.0157 (UTC) FILETIME=[77463FD0:01C84FFA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro <viro@zeniv.linux.org.uk> wrote:
-> 
-> ip_fast_csum() called from raw_send_hdrinc() from raw_sendmsg() ran through
-> the page boundary into unmapped page...  Bloody odd, that, seeing that
-> we have checked iph->ihl * 4U <= length and had done
->        err = memcpy_fromiovecend((void *)iph, from, 0, length);
-> before the
->                iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
-> that had triggered that crap..
+(Resending as there were no replies on my first post mid December; issue
+is still there with -rc6.)
 
-Actually if you read the code for ip_fast_csum it's obvious what has
-happened.  %o1 == iph->ihl contains the value 2 which is bogus.
+This is the first time I've seen this error. Last time I used the printer 
+was with 2.6.24-rc3 and that time this error did not occur.
+The error occurs when I start a print job, not when I turn the printer on.
 
-[IPV4] raw: Strengthen check on validity of iph->ihl 
+System is Pentium D x86_64 kernel running Debian unstable.
+Printer is a HP Photosmart P1100 connected via parallel port.
 
-We currently check that iph->ihl is bounded by the real length and that
-the real length is greater than the minimum IP header length.  However,
-we did not check the caes where iph->ihl is less than the minimum IP
-header length.
+Not sure who should be CCed on this.
 
-This breaks because some ip_fast_csum implementations assume that which
-is quite reasonable.
+ppdev0: registered pardevice
+sysctl table check failed: /dev/parport/parport0/devices/ppdev0/timeslice  Sysctl already exists
+Pid: 14491, comm: hpijs Not tainted 2.6.24-rc5 #1
 
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Call Trace:
+ [<ffffffff8024c0b0>] set_fail+0x3f/0x47
+ [<ffffffff8024c566>] sysctl_check_table+0x4ae/0x4fb
+ [<ffffffff8024c062>] sysctl_check_lookup+0xc1/0xd0
+ [<ffffffff8024c57c>] sysctl_check_table+0x4c4/0x4fb
+ [<ffffffff8024c062>] sysctl_check_lookup+0xc1/0xd0
+ [<ffffffff8024c57c>] sysctl_check_table+0x4c4/0x4fb
+ [<ffffffff8024c062>] sysctl_check_lookup+0xc1/0xd0
+ [<ffffffff8024c57c>] sysctl_check_table+0x4c4/0x4fb
+ [<ffffffff8024c062>] sysctl_check_lookup+0xc1/0xd0
+ [<ffffffff8024c57c>] sysctl_check_table+0x4c4/0x4fb
+ [<ffffffff8024c062>] sysctl_check_lookup+0xc1/0xd0
+ [<ffffffff8024c57c>] sysctl_check_table+0x4c4/0x4fb
+ [<ffffffff8023ca15>] register_sysctl_table+0x52/0x9d
+ [<ffffffff881d97cb>] :parport:parport_device_proc_register+0xc3/0xe3
+ [<ffffffff881d7da7>] :parport:parport_register_device+0x206/0x267
+ [<ffffffff884171ae>] :ppdev:pp_irq+0x0/0x40
+ [<ffffffff8841774f>] :ppdev:pp_ioctl+0x13f/0x77c
+ [<ffffffff80296a11>] do_ioctl+0x55/0x6b
+ [<ffffffff80296c6a>] vfs_ioctl+0x243/0x25c
+ [<ffffffff80296cd4>] sys_ioctl+0x51/0x71
+ [<ffffffff8020beee>] system_call+0x7e/0x83
 
 Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-diff --git a/net/ipv4/raw.c b/net/ipv4/raw.c
-index 66b42f5..e7050f8 100644
---- a/net/ipv4/raw.c
-+++ b/net/ipv4/raw.c
-@@ -271,6 +271,7 @@ static int raw_send_hdrinc(struct sock *sk, void *from, size_t length,
- 	int hh_len;
- 	struct iphdr *iph;
- 	struct sk_buff *skb;
-+	unsigned int iphlen;
- 	int err;
- 
- 	if (length > rt->u.dst.dev->mtu) {
-@@ -304,7 +305,8 @@ static int raw_send_hdrinc(struct sock *sk, void *from, size_t length,
- 		goto error_fault;
- 
- 	/* We don't modify invalid header */
--	if (length >= sizeof(*iph) && iph->ihl * 4U <= length) {
-+	iphlen = iph->ihl * 4;
-+	if (iphlen >= sizeof(*iph) && iphlen <= length) {
- 		if (!iph->saddr)
- 			iph->saddr = rt->rt_src;
- 		iph->check   = 0;
+FJP
