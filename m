@@ -1,94 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759111AbYAFWzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758410AbYAFXGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759111AbYAFWzi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 17:55:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756993AbYAFWzb
+	id S1758410AbYAFXGx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 18:06:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbYAFXGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 17:55:31 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:31417 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755600AbYAFWza (ORCPT
+	Sun, 6 Jan 2008 18:06:43 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:57875 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754740AbYAFXGm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 17:55:30 -0500
+	Sun, 6 Jan 2008 18:06:42 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SHj4556WeLu5mkKrpnVPzHgtP1XOzjsP/wMyocR3QQh9Zmi6lF52+HIG64bdi+QuhXnOinj+CCXbBbhQpbxsmtSIfn5b9Vi8BCC/p4NX3rSL6asVyJDc0TOIsF1cWTPS2VUgLt6xWQfuxAqb0nYt6A67uB7KgarG2I6cyazXm+I=
-Message-ID: <68cac7520801061455u3365644cp185664e5b095f920@mail.gmail.com>
-Date: Sun, 6 Jan 2008 20:55:29 -0200
-From: "Douglas Landgraf" <dougsland@gmail.com>
-To: "Gregor Jasny" <jasny@vidsoft.de>
-Subject: Re: [v4l-dvb-maintainer] [PATCH] Re: Regression: VIDIOCGMBUF ioctl hangs on bttv driver (2.6.24-rc6)
-Cc: linux-kernel@vger.kernel.org,
-       video4linux-list <video4linux-list@redhat.com>,
-       "Mauro Carvalho Chehab" <mchehab@infradead.org>,
-       v4l-dvb-maintainer@linuxtv.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <68cac7520801061453w6906e510o5d53449e0b28f400@mail.gmail.com>
+        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=lrnW/+X+1sAH/3Nkou4qoKynhWaVeJRP0PjrWS3rlTc+wIJphlMSA2GPlgTGvc56eDeht+zwnH+MquXrN2lBIhs3VNyboLR8Nh/b9LFf+tzdh+MSWRG5lSS6GyVsFYCfmH8K/lyIUAIV1hnoNMDFrrdCCNWzID9CjZfXbgoTsbM=
+Date: Mon, 7 Jan 2008 01:53:06 +0300
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, cbou@mail.ru, dwmw2@infradead.org
+Subject: Re: [PATCH 3/3]
+Message-ID: <20080106225306.GA22551@zarina>
+Reply-To: cbouatmailru@gmail.com
+References: <20080106123016.GA13324@doriath.ww600.siemens.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-References: <20080105223338.GA18690@vidsoft.de>
-	 <20080106141548.GB18690@vidsoft.de>
-	 <68cac7520801061453w6906e510o5d53449e0b28f400@mail.gmail.com>
+In-Reply-To: <20080106123016.GA13324@doriath.ww600.siemens.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I mean video_ioctl2 not vidioc_ioctl2, sorry.
+On Sun, Jan 06, 2008 at 03:30:16PM +0300, Dmitry Baryshkov wrote:
+> Support using VOLTAGE_* properties for apm calculations. It's pretty
+> dummy, but useful for batteries for which we can only get voltages.
 
-Cheers,
-Douglas
+Here Signed-off-by: line is missing, please provide one so I could
+apply the patch.
 
-On Jan 6, 2008 8:53 PM, Douglas Landgraf <dougsland@gmail.com> wrote:
-> Hi guys,
->
->     Gregor, we have converted bttv driver to use vidioc_ioctl2 some days ago.
-> Could you check and create your patch against v4l development tree?
-> Bttv driver does not have anymore bttv_do_ioctl().
->
-> Cheers,
-> Douglas
->
->
-> On Jan 6, 2008 12:15 PM, Gregor Jasny <jasny@vidsoft.de> wrote:
-> > From: Gregor Jasny <gjasny@web.de>
-> >
-> > Fix bttv VIDIOCGMBUF locking like done in commit
-> > 820eacd84cff23b76693f4be1e28feb672f4488f.
-> >
-> > Signed-off-by: Gregor Jasny <gjasny@web.de>
-> > ---
-> > diff --git a/drivers/media/video/bt8xx/bttv-driver.c b/drivers/media/video/bt8xx/bttv-driver.c
-> > index c02d92d..581a3c9 100644
-> > --- a/drivers/media/video/bt8xx/bttv-driver.c
-> > +++ b/drivers/media/video/bt8xx/bttv-driver.c
-> > @@ -3063,11 +3063,10 @@ static int bttv_do_ioctl(struct inode *inode, struct file *file,
-> >                 struct video_mbuf *mbuf = arg;
-> >                 unsigned int i;
-> >
-> > -               mutex_lock(&fh->cap.lock);
-> >                 retval = videobuf_mmap_setup(&fh->cap,gbuffers,gbufsize,
-> >                                              V4L2_MEMORY_MMAP);
-> >                 if (retval < 0)
-> > -                       goto fh_unlock_and_return;
-> > +                       return retval;
-> >
-> >                 gbuffers = retval;
-> >                 memset(mbuf,0,sizeof(*mbuf));
-> > @@ -3075,7 +3074,6 @@ static int bttv_do_ioctl(struct inode *inode, struct file *file,
-> >                 mbuf->size   = gbuffers * gbufsize;
-> >                 for (i = 0; i < gbuffers; i++)
-> >                         mbuf->offsets[i] = i * gbufsize;
-> > -               mutex_unlock(&fh->cap.lock);
-> >                 return 0;
-> >         }
-> >         case VIDIOCMCAPTURE:
-> >
-> >
-> > _______________________________________________
-> > v4l-dvb-maintainer mailing list
-> > v4l-dvb-maintainer@linuxtv.org
-> > http://www.linuxtv.org/cgi-bin/mailman/listinfo/v4l-dvb-maintainer
-> >
->
+Thanks!
+
+> diff --git a/drivers/power/apm_power.c b/drivers/power/apm_power.c
+> index bbf3ee1..526c96e 100644
+> --- a/drivers/power/apm_power.c
+> +++ b/drivers/power/apm_power.c
+> @@ -13,6 +13,12 @@
+>  #include <linux/power_supply.h>
+>  #include <linux/apm-emulation.h>
+>  
+> +typedef enum {
+> +	SOURCE_ENERGY,
+> +	SOURCE_CHARGE,
+> +	SOURCE_VOLTAGE,
+> +} apm_source;
+> +
+>  #define PSY_PROP(psy, prop, val) psy->get_property(psy, \
+>  			 POWER_SUPPLY_PROP_##prop, val)
+>  
+> @@ -87,7 +93,7 @@ static void find_main_battery(void)
+>  	}
+>  }
+>  
+> -static int calculate_time(int status, int using_charge)
+> +static int calculate_time(int status, apm_source source)
+>  {
+>  	union power_supply_propval full;
+>  	union power_supply_propval empty;
+> @@ -106,20 +112,34 @@ static int calculate_time(int status, int using_charge)
+>  			return -1;
+>  	}
+>  
+> -	if (using_charge) {
+> +	switch (source) {
+> +	case SOURCE_CHARGE:
+>  		full_prop = POWER_SUPPLY_PROP_CHARGE_FULL;
+>  		full_design_prop = POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN;
+>  		empty_prop = POWER_SUPPLY_PROP_CHARGE_EMPTY;
+>  		empty_design_prop = POWER_SUPPLY_PROP_CHARGE_EMPTY;
+>  		cur_avg_prop = POWER_SUPPLY_PROP_CHARGE_AVG;
+>  		cur_now_prop = POWER_SUPPLY_PROP_CHARGE_NOW;
+> -	} else {
+> +		break;
+> +	case SOURCE_ENERGY:
+>  		full_prop = POWER_SUPPLY_PROP_ENERGY_FULL;
+>  		full_design_prop = POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN;
+>  		empty_prop = POWER_SUPPLY_PROP_ENERGY_EMPTY;
+>  		empty_design_prop = POWER_SUPPLY_PROP_CHARGE_EMPTY;
+>  		cur_avg_prop = POWER_SUPPLY_PROP_ENERGY_AVG;
+>  		cur_now_prop = POWER_SUPPLY_PROP_ENERGY_NOW;
+> +		break;
+> +	case SOURCE_VOLTAGE:
+> +		full_prop = POWER_SUPPLY_PROP_VOLTAGE_MAX;
+> +		full_design_prop = POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN;
+> +		empty_prop = POWER_SUPPLY_PROP_VOLTAGE_MIN;
+> +		empty_design_prop = POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN;
+> +		cur_avg_prop = POWER_SUPPLY_PROP_VOLTAGE_AVG;
+> +		cur_now_prop = POWER_SUPPLY_PROP_VOLTAGE_NOW;
+> +		break;
+> +	default:
+> +		printk(KERN_ERR "Unsupported source: %d\n", source);
+> +		return -1;
+>  	}
+>  
+>  	if (_MPSY_PROP(full_prop, &full)) {
+> @@ -146,7 +166,7 @@ static int calculate_time(int status, int using_charge)
+>  		return -((cur.intval - empty.intval) * 60L) / I.intval;
+>  }
+>  
+> -static int calculate_capacity(int using_charge)
+> +static int calculate_capacity(apm_source source)
+>  {
+>  	enum power_supply_property full_prop, empty_prop;
+>  	enum power_supply_property full_design_prop, empty_design_prop;
+> @@ -154,20 +174,33 @@ static int calculate_capacity(int using_charge)
+>  	union power_supply_propval empty, full, cur;
+>  	int ret;
+>  
+> -	if (using_charge) {
+> +	switch (source) {
+> +	case SOURCE_CHARGE:
+>  		full_prop = POWER_SUPPLY_PROP_CHARGE_FULL;
+>  		empty_prop = POWER_SUPPLY_PROP_CHARGE_EMPTY;
+>  		full_design_prop = POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN;
+>  		empty_design_prop = POWER_SUPPLY_PROP_CHARGE_EMPTY_DESIGN;
+>  		now_prop = POWER_SUPPLY_PROP_CHARGE_NOW;
+>  		avg_prop = POWER_SUPPLY_PROP_CHARGE_AVG;
+> -	} else {
+> +		break;
+> +	case SOURCE_ENERGY:
+>  		full_prop = POWER_SUPPLY_PROP_ENERGY_FULL;
+>  		empty_prop = POWER_SUPPLY_PROP_ENERGY_EMPTY;
+>  		full_design_prop = POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN;
+>  		empty_design_prop = POWER_SUPPLY_PROP_ENERGY_EMPTY_DESIGN;
+>  		now_prop = POWER_SUPPLY_PROP_ENERGY_NOW;
+>  		avg_prop = POWER_SUPPLY_PROP_ENERGY_AVG;
+> +	case SOURCE_VOLTAGE:
+> +		full_prop = POWER_SUPPLY_PROP_VOLTAGE_MAX;
+> +		empty_prop = POWER_SUPPLY_PROP_VOLTAGE_MIN;
+> +		full_design_prop = POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN;
+> +		empty_design_prop = POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN;
+> +		now_prop = POWER_SUPPLY_PROP_VOLTAGE_NOW;
+> +		avg_prop = POWER_SUPPLY_PROP_VOLTAGE_AVG;
+> +		break;
+> +	default:
+> +		printk(KERN_ERR "Unsupported source: %d\n", source);
+> +		return -1;
+>  	}
+>  
+>  	if (_MPSY_PROP(full_prop, &full)) {
+> @@ -234,10 +267,12 @@ static void apm_battery_apm_get_power_status(struct apm_power_info *info)
+>  		info->battery_life = capacity.intval;
+>  	} else {
+>  		/* try calculate using energy */
+> -		info->battery_life = calculate_capacity(0);
+> +		info->battery_life = calculate_capacity(SOURCE_ENERGY);
+>  		/* if failed try calculate using charge instead */
+>  		if (info->battery_life == -1)
+> -			info->battery_life = calculate_capacity(1);
+> +			info->battery_life = calculate_capacity(SOURCE_CHARGE);
+> +		if (info->battery_life == -1)
+> +			info->battery_life = calculate_capacity(SOURCE_VOLTAGE);
+>  	}
+>  
+>  	/* charging status */
+> @@ -263,18 +298,22 @@ static void apm_battery_apm_get_power_status(struct apm_power_info *info)
+>  				!MPSY_PROP(TIME_TO_FULL_NOW, &time_to_full)) {
+>  			info->time = time_to_full.intval / 60;
+>  		} else {
+> -			info->time = calculate_time(status.intval, 0);
+> +			info->time = calculate_time(status.intval, SOURCE_ENERGY);
+>  			if (info->time == -1)
+> -				info->time = calculate_time(status.intval, 1);
+> +				info->time = calculate_time(status.intval, SOURCE_CHARGE);
+> +			if (info->time == -1)
+> +				info->time = calculate_time(status.intval, SOURCE_VOLTAGE);
+>  		}
+>  	} else {
+>  		if (!MPSY_PROP(TIME_TO_EMPTY_AVG, &time_to_empty) ||
+>  			      !MPSY_PROP(TIME_TO_EMPTY_NOW, &time_to_empty)) {
+>  			info->time = time_to_empty.intval / 60;
+>  		} else {
+> -			info->time = calculate_time(status.intval, 0);
+> +			info->time = calculate_time(status.intval, SOURCE_ENERGY);
+> +			if (info->time == -1)
+> +				info->time = calculate_time(status.intval, SOURCE_CHARGE);
+>  			if (info->time == -1)
+> -				info->time = calculate_time(status.intval, 1);
+> +				info->time = calculate_time(status.intval, SOURCE_VOLTAGE);
+>  		}
+>  	}
+>  
+> -- 
+> With best wishes
+> Dmitry
+> 
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
