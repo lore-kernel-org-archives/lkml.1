@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbYAFLfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755839AbYAFLqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756117AbYAFLfr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 06:35:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbYAFLfi
+	id S1755839AbYAFLqz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 06:46:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbYAFLqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 06:35:38 -0500
-Received: from py-out-1112.google.com ([64.233.166.177]:5977 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752660AbYAFLfh (ORCPT
+	Sun, 6 Jan 2008 06:46:46 -0500
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:62512 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752589AbYAFLqp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 06:35:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kP5q61hVUL+u8UEX6BPvj6/gclDuGY0hYOk1UCiiZ44TAUELiyoGr6x7qFpwF8BCzSEwrTNK7+H+igExWl3r2Qkbok/NowiL9Mifs9PFgDGLdqSIkWG1+A54iPnFQTDzGPa4ekLWB3a+IuJyiLt0g4vNtGkUbNnmoVEuOscl1HU=
-Message-ID: <64bb37e0801060335k4afb3134u9c6fadb57d525dc5@mail.gmail.com>
-Date: Sun, 6 Jan 2008 12:35:35 +0100
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "FUJITA Tomonori" <tomof@acm.org>
-Subject: Re: 2.6.24-rc6-mm1
-Cc: akpm@linux-foundation.org, jarkao2@gmail.com, herbert@gondor.apana.org.au,
-       linux-kernel@vger.kernel.org, neilb@suse.de, bfields@fieldses.org,
-       netdev@vger.kernel.org, tom@opengridcomputing.com,
-       fujita.tomonori@lab.ntt.co.jp
-In-Reply-To: <20080106202616Z.tomof@acm.org>
+	Sun, 6 Jan 2008 06:46:45 -0500
+Message-ID: <4780BF38.3010902@student.ltu.se>
+Date: Sun, 06 Jan 2008 12:44:56 +0100
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Arjan van de Ven <arjan@infradead.org>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       heiko.carstens@de.ibm.com, olof@lixom.net, mingo@elte.hu,
+       mpm@selenic.com
+Subject: Re: [patch 1/5] Introduce __WARN()
+References: <20080105190713.73745ec6@laptopd505.fenrus.org> <20080105190840.48a8c2c5@laptopd505.fenrus.org>
+In-Reply-To: <20080105190840.48a8c2c5@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080105172524.fecb63bf.akpm@linux-foundation.org>
-	 <20080106123103K.tomof@acm.org>
-	 <64bb37e0801060241o2c6d8172r73b69291fce76ce1@mail.gmail.com>
-	 <20080106202616Z.tomof@acm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 6, 2008 12:23 PM, FUJITA Tomonori <tomof@acm.org> wrote:
-> On Sun, 6 Jan 2008 11:41:10 +0100
-> "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
-> > I will applie your patch and see if this hunk from
-> > find_next_zero_area() makes a difference:
-> >
-> >        end = index + nr;
-> > -       if (end > size)
-> > +       if (end >= size)
-> >                 return -1;
-> > -       for (i = index + 1; i < end; i++) {
-> > +       for (i = index; i < end; i++) {
-> >                 if (test_bit(i, map)) {
+Arjan van de Ven wrote:
+> From: Olof Johansson <olof@lixom.net>
 >
-> The patch should not make a difference for X86_64.
-
-Hmm...
-arch/x86/kernel/pci-gart_64.c:
-alloc_iommu() calls iommu_area_alloc()
-lib/iommu-helper.c:
-iommu_area_alloc() calls find_next_zero_area()
--> so the above code should be called even on X86_64
-
-And the change in the for loop means that 'index' will now be tested,
-but with the old code it was not.
-
-And double using something does fit with the errors I'm seeing...
-
-> Can you try the patch to revert my IOMMU changes?
+> Introduce __WARN() in the generic case, so the generic WARN_ON()
+> can use arch-specific code for when the condition is true.
 >
-> http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg12694.html
+> Signed-off-by: Olof Johansson <olof@lixom.net>
+> Cc: <linux-arch@vger.kernel.org>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+>
+>  include/asm-generic/bug.h |   17 +++++++++++------
+>  1 file changed, 11 insertions(+), 6 deletions(-)
+>
+> Index: linux-2.6.24-rc6/include/asm-generic/bug.h
+> ===================================================================
+> --- linux-2.6.24-rc6.orig/include/asm-generic/bug.h
+> +++ linux-2.6.24-rc6/include/asm-generic/bug.h
+> @@ -31,14 +31,19 @@ struct bug_entry {
+>  #define BUG_ON(condition) do { if (unlikely(condition)) BUG(); } while(0)
+>  #endif
+>  
+> -#ifndef HAVE_ARCH_WARN_ON
+> +#ifndef __WARN
+> +#define __WARN() do {							\
+> +	printk("WARNING: at %s:%d %s()\n", __FILE__,			\
+> +		__LINE__, __FUNCTION__);				\
+> +	dump_stack();							\
+> +} while (0)
+> +#endif
+> +
+> +#ifndef WARN_ON
+>  #define WARN_ON(condition) ({						\
+>  	int __ret_warn_on = !!(condition);				\
+>   
+What about using a boolean for __ret_warn_on, which then let us remove 
+the '!!'?
+(btw, wouldn't 'var != 0' actually be the proper semantic instead of 
+playing with '!'s?)
+> -	if (unlikely(__ret_warn_on)) {					\
+> -		printk("WARNING: at %s:%d %s()\n", __FILE__,		\
+> -			__LINE__, __FUNCTION__);			\
+> -		dump_stack();						\
+> -	}								\
+> +	if (unlikely(__ret_warn_on))					\
+> +		__WARN();						\
+>  	unlikely(__ret_warn_on);					\
+>  })
+>  #endif
+>
+>   
 
-Testing for this bug is a little bit slow, as I'm compiling ~100
-packages trying to trigger it.
-If my current testrun with the patch from
-http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg12702.html
-crashes, I will revert the hole IOMMU changes with above patch and try again.
-
-Torsten
