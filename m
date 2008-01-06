@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbYAFIZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754996AbYAFJKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755521AbYAFIZT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 03:25:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbYAFIZG
+	id S1754996AbYAFJKH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 04:10:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbYAFJJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 03:25:06 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:64105 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752265AbYAFIZD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 03:25:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=q9Rl6pekciSC+5vH/OkuYvkWMIP7eZVb00hyeMz2tZz2TikPwuhui9ptXci4TUnM4NF7u+t0HBbIIN2RQl/KXrEEE5L+EhUOuhL2j7CGoikp1wGNBj35UzFjS2PDbJxsbFagH31WdYETGwOjkuWxIl2RPwtNS9c3t3PwmNwzhuA=
-Date: Sun, 6 Jan 2008 09:27:40 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Neil Brown <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>,
-       netdev@vger.kernel.org, Tom Tucker <tom@opengridcomputing.com>
-Subject: Re: 2.6.24-rc6-mm1
-Message-ID: <20080106082740.GA3117@ami.dom.local>
-References: <64bb37e0801040223q17a76565k3c7667a197403ce5@mail.gmail.com> <20080104133031.GA3329@ff.dom.local> <64bb37e0801040721p57ff3d54wc3de00546d1d2ff1@mail.gmail.com> <20080105000700.GA3224@ami.dom.local> <64bb37e0801050001x65b104bdl5a68c731b3656d17@mail.gmail.com> <20080105101327.GA3103@ami.dom.local> <64bb37e0801050652t7568e438uf93208601df84ef6@mail.gmail.com>
+	Sun, 6 Jan 2008 04:09:50 -0500
+Received: from il.qumranet.com ([82.166.9.18]:50949 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752686AbYAFJJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 04:09:49 -0500
+Message-ID: <47809ADC.2010403@qumranet.com>
+Date: Sun, 06 Jan 2008 11:09:48 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <64bb37e0801050652t7568e438uf93208601df84ef6@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Adrian Bunk <bunk@kernel.org>
+CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] [PATCH 20/52] KVM: Add missing #include	<asm/pgtable.h>
+References: <1198998638-22713-1-git-send-email-avi@qumranet.com>	<1198998638-22713-21-git-send-email-avi@qumranet.com> <20080103181448.GB7141@does.not.exist>
+In-Reply-To: <20080103181448.GB7141@does.not.exist>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 05, 2008 at 03:52:32PM +0100, Torsten Kaiser wrote:
-...
-> So my personal conclusion would be, that someone is writing to memory
-> that he no longer owns. Most probably 0-bytes. (the complete_routine
-> got NULLed and the warning about dst->__refcnt being 0).
-> 
-> Use-after-free or something else?
+Adrian Bunk wrote:
+> On Sun, Dec 30, 2007 at 09:10:06AM +0200, Avi Kivity wrote:
+>   
+>> Needed for empty_zero_page.
+>>
+>> Signed-off-by: Avi Kivity <avi@qumranet.com>
+>> ---
+>>  drivers/kvm/kvm_main.c |    1 +
+>>  1 files changed, 1 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
+>> index 469e6b4..d6c5191 100644
+>> --- a/drivers/kvm/kvm_main.c
+>> +++ b/drivers/kvm/kvm_main.c
+>> @@ -46,6 +46,7 @@
+>>  #include <asm/io.h>
+>>  #include <asm/uaccess.h>
+>>  #include <asm/desc.h>
+>> +#include <asm/pgtable.h>
+>>  
+>>  MODULE_AUTHOR("Qumranet");
+>>  MODULE_LICENSE("GPL");
+>>     
+>
+> Can you merge this patch into the previous one for the final submission?
+>
+> For being able to bisect (which has proven to be a very valuable help) 
+> we aim at having the tree between any two commits both compiling and 
+> working.
+>   
 
-I agree: your conclusion seems to be the most probable explanation for
-this. Then it could be really hard to solve this without bisection or
-something similar. But there is some probabability this something could
-try kfree later too, but simply this list debugging triggers earlier.
+Certainly, I'll do that.
 
-> > > If you think some other slub_debug might catch it, I would try this...
 
-You can try to add "U" to these other slub_debug options. As a matter
-of fact, if your above diagnose is right, it seems you risk to damage
-your system or even the box with these tests, so if you want to
-continue, you should probably turn any possible debugging on (not in
-mm only).
+-- 
+error compiling committee.c: too many arguments to function
 
-BTW, you've written that some debugging options seem to delay the bug.
-Since they often change sizes of some structures than such wrong
-writes could have some 'safer' offsets. So, this could really delay
-e.g. these list's bugs, but maybe this could also let to stay 'alive'
-to such wrong kfree?
-
-Cheers,
-Jarek P.
