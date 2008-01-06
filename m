@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758913AbYAFPKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757848AbYAFPSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758913AbYAFPKk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 10:10:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755919AbYAFPKb
+	id S1757848AbYAFPSN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 10:18:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbYAFPR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 10:10:31 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:41314 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755630AbYAFPK3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 10:10:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=Qacc9Rgyu4hCzXFulTAgmDx6dzTFsFyQ4e6yeXoR9Cg8Z4r5FvfQgHTAGZgMS269J19nECuhvX6rR4Tu78kQ5jeGHqWQokgbo9Ns9XFFJpGwsm282uq7klcuQFfq+a2irSa2PRHG9YL7yNXTXQrIy+2RrwiLYKH7/g2cQljEc2Q=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: bbpetkov@yahoo.de
-Subject: Re: [RESEND PATCH 06/10] ide-floppy: report DMA handling in idefloppy_pc_intr() properly
-Date: Sun, 6 Jan 2008 16:21:53 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <1199366409-26016-1-git-send-email-bbpetkov@yahoo.de> <200801051646.05131.bzolnier@gmail.com> <20080105214519.GA4470@gollum.tnic>
-In-Reply-To: <20080105214519.GA4470@gollum.tnic>
+	Sun, 6 Jan 2008 10:17:59 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35672 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752769AbYAFPR6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 10:17:58 -0500
+Date: Sun, 6 Jan 2008 16:17:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Gregor Jasny <jasny@vidsoft.de>
+Cc: linux-kernel@vger.kernel.org,
+       video4linux-list <video4linux-list@redhat.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       v4l-dvb-maintainer@linuxtv.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] Re: Regression: VIDIOCGMBUF ioctl hangs on bttv driver
+	(2.6.24-rc6)
+Message-ID: <20080106151730.GA17789@elte.hu>
+References: <20080105223338.GA18690@vidsoft.de> <20080106141548.GB18690@vidsoft.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801061621.53436.bzolnier@gmail.com>
+In-Reply-To: <20080106141548.GB18690@vidsoft.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 05 January 2008, Borislav Petkov wrote:
-> On Sat, Jan 05, 2008 at 04:46:05PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> > Hmm, no.  The driver is called ide-floppy (ide_floppy) and it is more
-> > readable this way.
-> > 
-> > >  {
-> > >  	idefloppy_t *floppy = drive->driver_data;
-> > >  	struct gendisk *g = floppy->disk;
-> > > @@ -1479,7 +1450,7 @@ static ide_proc_entry_t idefloppy_proc[] = {
-> > >  };
-> > >  #endif	/* CONFIG_IDE_PROC_FS */
-> > >  
-> > > -static int ide_floppy_probe(ide_drive_t *);
-> > > +static int idefloppy_probe(ide_drive_t *);
-> > 
-> > ditto
-> >  
-> > [...]
-> > 
-> > > @@ -1733,7 +1704,7 @@ static struct block_device_operations idefloppy_ops = {
-> > >  	.revalidate_disk= idefloppy_revalidate_disk
-> > >  };
-> > >  
-> > > -static int ide_floppy_probe(ide_drive_t *drive)
-> > > +static int idefloppy_probe(ide_drive_t *drive)
-> > 
-> > ditto
-> Shouldn't those also conform to the driver function format idefloppy_bla() -
-> after all, those function names are unambiguous for the whole file...?
 
-Why conform to something sub-optimal instead of changing it?
+* Gregor Jasny <jasny@vidsoft.de> wrote:
 
-+ I was using ide_floppy_* in the new code to tag the areas that were
-rewritten. Currently it doesn't look that optimistic since there are five
-ide_floppy_* functions and fifty idefloppy_* ones but I'm hoping that this
-statistics will improve after your patches. :)
+> From: Gregor Jasny <gjasny@web.de>
+> 
+> Fix bttv VIDIOCGMBUF locking like done in commit
+> 820eacd84cff23b76693f4be1e28feb672f4488f. 
 
-Thanks,
-Bart
+i've double-checked that there are no other video drivers affected by 
+this problem:
+
+ $ cd drivers/media/
+ $ grep -C 10 videobuf_mmap_setup `grep -l mutex_lock */*.c */*/*.c */*/*/*.c`
+
+ video/videobuf-core.c-  mutex_lock(&q->lock);
+ video/videobuf-core.c-  mutex_lock(&q->lock);
+ video/bt8xx/bttv-driver.c-              mutex_lock(&fh->cap.lock);
+
+so only bttv-driver.c was affected, at first sight.
+
+	Ingo
