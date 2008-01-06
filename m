@@ -1,91 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755895AbYAFM7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757645AbYAFM77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755895AbYAFM7a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 07:59:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbYAFM7W
+	id S1757645AbYAFM77 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 07:59:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbYAFM7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 07:59:22 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:57413 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750792AbYAFM7V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 07:59:21 -0500
-Date: Sun, 6 Jan 2008 14:58:49 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Al Boldi <a1426z@gawab.com>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/5] USB Kconfig: Select SCSI for USB Mass Storage
-	support
-Message-ID: <20080106125849.GE2082@does.not.exist>
-References: <20080105113024.209485f5.randy.dunlap@oracle.com> <20080105210330.GC22232@does.not.exist> <20080105210940.GA10302@uranus.ravnborg.org> <47801126.7020807@oracle.com> <20080105234540.GG22232@does.not.exist> <47802249.9010107@s5r6.in-berlin.de> <20080106005807.GH22232@does.not.exist> <4780BBAA.7020908@s5r6.in-berlin.de> <20080106115941.GB2082@does.not.exist> <4780CA63.50703@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4780CA63.50703@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sun, 6 Jan 2008 07:59:49 -0500
+Received: from smtp-100-sunday.noc.nerim.net ([62.4.17.100]:1965 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752621AbYAFM7s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 07:59:48 -0500
+Date: Sun, 6 Jan 2008 13:59:45 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       eric miao <eric.y.miao@gmail.com>
+Subject: Re: [patch 2.6.24-rc6-mm 8/9] gpiolib: pca9539 i2c gpio expander
+ support
+Message-ID: <20080106135945.2c21b8cd@hyperion.delvare>
+In-Reply-To: <200801051140.56797.david-b@pacbell.net>
+References: <200712281927.32575.david-b@pacbell.net>
+	<200712281958.53694.david-b@pacbell.net>
+	<200801051140.56797.david-b@pacbell.net>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 06, 2008 at 01:32:35PM +0100, Stefan Richter wrote:
-> Adrian Bunk wrote:
-> > On Sun, Jan 06, 2008 at 12:29:46PM +0100, Stefan Richter wrote:
-> >> Adrian Bunk wrote:
-> >>> Duplicating the structure in each UI should be an improvement?
-> >>>
-> >>> Hardly.
-> >> What do you mean?
-> ...
-> > You said:
-> > "The graphic UIs including menuconfig currently work best for tree-like 
-> >  dependencies"
-> > 
-> > That's true.
-> > 
-> > And the dependency graph can't be a tree.
-> > 
-> > Currently, defining the ordered tree the UIs present to the user is done 
-> > _once_ in kconfig.
-> > 
-> > Our UIs either show this tree as a tree or go through the tree 
-> > depth-first and present the options in this order to the user.
+On Sat, 5 Jan 2008 11:40:55 -0800, David Brownell wrote:
+> From: eric miao <eric.miao@marvell.com>
+> Subject: [PATCH] gpiolib: support PCA9539 GPIO expander
 > 
-> All correct.
+> This adds a new-style I2C driver with basic support for the sixteen
+> bit PCA9539 GPIO expanders.  These chips have multiple registers,
+> push-pull output drivers, and (not supported in this patch) pin
+> change interrupts.
 > 
-> > And I think your main misunderstanding is that you think the 
-> > dependencies alone would carry enough information for allowing an UI to 
-> > present the options in a way not worse than it's currently done - that's 
-> > simply not true.
+> Board-specific code must provide "pca9539_platform_data" with each
+> chip's "i2c_board_info".  That provides the GPIO numbers to be used
+> by that chip, and callbacks for board-specific setup/teardown logic.
 > 
-> No, the dependency relationships alone do not carry enough information.
->   I am aware of that.
+> Derived from drivers/i2c/chips/pca9539.c (which has no current known
+> users).  This is faster and simpler; it uses 16-bit register access,
+> and cache the OUTPUT and DIRECTION registers for fast access
 > 
-> For example, we certainly want groupings or tags such as "option is
-> (directly) related to USB hardware", "filesystems related option",
-> "option is for debugging purposes" etc..  We currently provide hints
-> like this via the 'menu' keyword.  We also want help texts per option
-> and per group of options.
+> Signed-off-by: eric miao <eric.miao@marvell.com>
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> ---
+> Incorporates cleanups noted by Jean Delvare.
 > 
-> However, there is ultimately not a single most logical way to group
-> options.  There could be groups which would overlap.  The grouping per
-> 'menu' provides only one fixed non-overlapping grouping.
+>  drivers/gpio/Kconfig        |   10 +
+>  drivers/gpio/Makefile       |    1 
+>  drivers/gpio/pca9539.c      |  271 ++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/i2c/pca9539.h |   18 ++
+>  4 files changed, 300 insertions(+)
 
-I don't think your implementation would result in a better UI.
-
-But I know that have a tendency of being overly pessimistic and ideas I 
-didn't like often turn out to be good, so feel free to prove me wrong.
-
-> Stefan Richter
-
-cu
-Adrian
+Acked-by: Jean Delvare <khali@linux-fr.org>
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Jean Delvare
