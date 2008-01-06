@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758415AbYAFApp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758058AbYAFAsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758415AbYAFApp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 19:45:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757471AbYAFAp0
+	id S1758058AbYAFAsW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 19:48:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754569AbYAFAsO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 19:45:26 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:60007 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757837AbYAFApX (ORCPT
+	Sat, 5 Jan 2008 19:48:14 -0500
+Received: from moutng.kundenserver.de ([212.227.126.183]:57950 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754530AbYAFAsO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 19:45:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=VPjbKYl/beR3RD+ZE/TKzDijUgP2OftLjIPMdyEQEK2ehz13wtiwvC2HlFAYkDgb7Y5G7edEOhWD5dSb9MdVA8qcfSJEvlMOsRliUHoZ6u5kHOy4m29WAPhxwjoFpj4j/kc61rQmGXqadHmdoNlfDLjvnCTDzf7WmCiVk1pf4qI=
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Ben Fennema <bfennema@falcon.csc.calpoly.edu>, Jan Kara <jack@suse.cz>,
-       Christoph Hellwig <hch@infradead.org>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: [PATCH] udf: fix sparse warnings (shadowing & mismatch between declaration and definition)
-Date: Sun,  6 Jan 2008 01:44:35 +0100
-Message-Id: <1199580275-2487-7-git-send-email-marcin.slusarz@gmail.com>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1199580275-2487-1-git-send-email-marcin.slusarz@gmail.com>
-References: <1199580275-2487-1-git-send-email-marcin.slusarz@gmail.com>
-From: marcin.slusarz@gmail.com
+	Sat, 5 Jan 2008 19:48:14 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Miguel =?utf-8?q?Bot=C3=B3n?= <mboton.lkml@gmail.com>
+Subject: Re: [PATCH] x86: ioport_{32|64}.c unification
+Date: Sun, 6 Jan 2008 01:47:47 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       tglx@linutronix.de
+References: <200801060059.48333.mboton@gmail.com>
+In-Reply-To: <200801060059.48333.mboton@gmail.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200801060147.48185.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18uoaOgi9EAqnQ6sNWznpnxOBQb2TCjO5YrmZR
+ 2X6UJ2OZw58lCxzdA02AISClU2qacFxVAzdMgscbTBsgIohH/V
+ Im/A3hkY09Z5vGvuodsJA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fix sparse warnings:
-fs/udf/super.c:1431:24: warning: symbol 'bh' shadows an earlier one
-fs/udf/super.c:1347:21: originally declared here
-fs/udf/super.c:472:6: warning: symbol 'udf_write_super' was not declared. Should it be static?
+On Sunday 06 January 2008, Miguel Botón wrote:
+> +#ifdef CONFIG_X86_32
+> +asmlinkage long sys_iopl(unsigned long regsp)
+> +#else
+> +asmlinkage long sys_iopl(unsigned int level, struct pt_regs *regs)
+> +#endif
+> +{
+> +#ifdef CONFIG_X86_32
+> +       volatile struct pt_regs *regs = (struct pt_regs *)&regsp;
+> +       unsigned int level = regs->bx;
+> +#endif
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-CC: Ben Fennema <bfennema@falcon.csc.calpoly.edu>
-CC: Jan Kara <jack@suse.cz>
-CC: Christoph Hellwig <hch@infradead.org>
----
- fs/udf/super.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+This #ifdef overload could probably be avoided if you just move
+the body of this function into an extra place and do
 
-diff --git a/fs/udf/super.c b/fs/udf/super.c
-index 5423d26..a5fb461 100644
---- a/fs/udf/super.c
-+++ b/fs/udf/super.c
-@@ -474,7 +474,7 @@ static int udf_parse_options(char *options, struct udf_options *uopt)
- 	return 1;
- }
- 
--void udf_write_super(struct super_block *sb)
-+static void udf_write_super(struct super_block *sb)
- {
- 	lock_kernel();
- 
-@@ -1433,7 +1433,6 @@ static int udf_load_partition(struct super_block *sb, kernel_lb_addr *fileset)
- 				map->s_type_specific.s_virtual.s_num_entries =
- 					(sbi->s_vat_inode->i_size - 36) >> 2;
- 			} else if (map->s_partition_type == UDF_VIRTUAL_MAP20) {
--				struct buffer_head *bh = NULL;
- 				uint32_t pos;
- 
- 				pos = udf_block_map(sbi->s_vat_inode, 0);
--- 
-1.5.3.7
+static int do_iopl(unsigned int level, unsigned long *flags)
+{
+        unsigned int old = (*flags >> 12) & 3;
+	...
+        *flags = (*flags & ~X86_EFLAGS_IOPL) | (level << 12);;
+}
 
+#ifdef CONFIG_X86_32
+asmlinkage long sys_iopl(unsigned long regsp)
+{
+	/* why is this volatle anyway? */
+	volatile struct pt_regs *regs = (struct pt_regs *)&regsp;
+	unsigned int level = regs->bx;
+	return do_iopl(regs->bx, &regs->flags);
+}
+#else
+asmlinkage long sys_iopl(unsigned int level, struct pt_regs *regs)
+{
+	return do_iopl(level, &regs->flags);
+}
+#endif
+
+	Arnd <><
