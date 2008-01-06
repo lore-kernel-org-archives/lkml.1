@@ -1,55 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758383AbYAFXpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759139AbYAFXs3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758383AbYAFXpj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 18:45:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754898AbYAFXpa
+	id S1759139AbYAFXs3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 18:48:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbYAFXsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 18:45:30 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:45706 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754667AbYAFXpa (ORCPT
+	Sun, 6 Jan 2008 18:48:22 -0500
+Received: from hpsmtp-eml18.kpnxchange.com ([213.75.38.118]:33838 "EHLO
+	hpsmtp-eml18.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754667AbYAFXsV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 18:45:30 -0500
-Date: Sun, 6 Jan 2008 23:45:28 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Berthold Cogel <cogel@uni-koeln.de>
-Cc: linux-kernel@vger.kernel.org, nigel@nigel.suspend2.net, dtor@mail.ru,
-       jikos@jikos.cz, akpm@linux-foundation.org,
-       linux-usb-owner@vger.kernel.org
-Subject: Re: Oops in evdev_disconnect for kernel 2.6.23.12
-Message-ID: <20080106234528.GV27894@ZenIV.linux.org.uk>
-References: <477A93CD.9030707@rrz.uni-koeln.de> <20080105065233.GE27894@ZenIV.linux.org.uk> <47801D70.8020504@uni-koeln.de> <20080106001756.GP27894@ZenIV.linux.org.uk> <47812E5B.6080000@uni-koeln.de> <20080106201559.GU27894@ZenIV.linux.org.uk> <478144E4.501@uni-koeln.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 6 Jan 2008 18:48:21 -0500
+From: Frans Pop <elendil@planet.nl>
+To: linux-kernel@vger.kernel.org
+Subject: Re: pnpacpi: exceeded the max number of IO resources: 24
+Date: Mon, 7 Jan 2008 00:48:19 +0100
+User-Agent: KMail/1.9.7
+Cc: Zhao Yakui <yakui.zhao@intel.com>
+References: <200712240612.46786.elendil@planet.nl> <1198803416.21142.7.camel@yakui_zhao.sh.intel.com>
+In-Reply-To: <1198803416.21142.7.camel@yakui_zhao.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <478144E4.501@uni-koeln.de>
-User-Agent: Mutt/1.4.2.3i
+Message-Id: <200801070048.19468.elendil@planet.nl>
+X-OriginalArrivalTime: 06 Jan 2008 23:48:19.0870 (UTC) FILETIME=[9DA1E3E0:01C850BE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 06, 2008 at 10:15:16PM +0100, Berthold Cogel wrote:
-> I did that and got this in 'make modules':
-> 
->   CC [M]  drivers/input/joydev.o
->   CC [M]  drivers/input/evdev.o
-> drivers/input/evdev.c: In function 'evdev_do_ioctl':
-> drivers/input/evdev.c:749: error: 'struct input_dev' has no member named 
-> 'event_lock'
-> drivers/input/evdev.c:757: error: 'struct input_dev' has no member named 
-> 'event_lock'
-> make[2]: *** [drivers/input/evdev.o] Fehler 1
-> make[1]: *** [drivers/input] Fehler 2
-> make: *** [drivers] Fehler 2
-> 
-> 
-> The next piece of the puzzle:
-> 
-> No oops with 2.6.24-rc6 vanilla and the same kernel patched with 
-> TuxOnIce 3.0-rc3 for kernel 2.6.24-rc3. A minor nit was that I had to 
-> rebuild the xorg driver for the tablet to get it working.
+(Adding the kernel list back. Any reason you did not send the reply there?)
 
-No puzzle at all - the changeset in question is present in -rc3.  As for
-the errors - looks like it does indeed depend on the previous changeset.
-After poking a bit in the archived thread, http://lkml.org/lkml/2007/7/24/19
-appears to contain the previous one.
+Sorry for the late reply: Christmas, New Year, the flue, etc.
+
+On Friday 28 December 2007, Zhao Yakui wrote:
+> On Mon, 2007-12-24 at 06:12 +0100, Frans Pop wrote:
+> > During boot with v2.6.24-rc6-125-g5356f66 on my Toshiba Satellite A40
+> > laptop, I suddenly get the following message (repeated 22 times!):
+> >    pnpacpi: exceeded the max number of IO resources: 24
+> >
+> > Last time I tested 2.6.24 on that box was after the initial merge, but
+> > before -rc1. Then those lines were not present.
+> >
+> > Looks like the messages originate from a7839e96 by Zhao Yakui and that
+> > patch just adds the kernel messages so it was probably a hidden issue
+> > before, but I cannot determine if I should be worried or not.
+>
+> Thanks for caring this problem.
+
+And thank you for the reply, although I must admit that I'm still confused.
+
+> In the patch of a7839e96 the predefined PNP constant is changed. For
+> example: IO is changed from 8 to 24, Mem is changed from 4 to 12.
+> That means that more resources will be obtained from the PNP device
+> defined in ACPI table. So the system will print more message.
+
+OK. The change for Mem from 4 to 12 could explain the extra "iomem range" 
+messages (although I don't quite understand why resources that "could not 
+be reserved" still use a slot).
+I do not yet see how the "ioport range" messages increased from 0 to 16 is 
+explained, but I'm not too worried about that.
+
+> At the same time another problem maybe happens. If the number of
+> resources defined in BIOS still exceeds the predefined PNP constant, it
+> will report that pnpacpi: exceeded the max number of IO resources: 24.
+> Although it can be fixed by changed the pnp constant bigger, it is
+> inappropriate because it will waste a lot of memory in most cases.
+>
+> Of course the above error message is harmless.
+
+Are the _errors_ really harmless?
+
+Your commit message was:
+"It brings that some resources can't be reserved and resource confilicts.  
+This will cause PCI resources are assigned wrongly in some systems, and 
+cause hang. This is a regression since we deleted ACPI motherboard driver 
+and use PNP system driver."
+
+That text seems to indicate that not reserving the remaining resources _can_ 
+cause real problems. Do we know what PCI resources are now not being 
+correctly reserved on my laptop (and other machines)? The fact that the 
+message is repeated 22 times seems to indicate that in my case quite a lot 
+of resources are being ignored.
+
+Should the memory allocation maybe be made dynamic instead of static if the 
+memory waste is really such a problem? Apparently the number of PCI 
+resources can vary wildly from one machine to another.
+
+If the error messages really are harmless, shouldn't they be changed from 
+ERR to DEBUG? As it is, the messages are extremely ugly and will probably 
+cause a lot of people to file bug reports as it _looks_ like there is an 
+error.
+
+Cheers,
+Frans Pop
