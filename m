@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbYAFUxJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756654AbYAFU4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756822AbYAFUxJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 15:53:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbYAFUw4
+	id S1756654AbYAFU4R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 15:56:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbYAFU4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 15:52:56 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:28527 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752677AbYAFUwy (ORCPT
+	Sun, 6 Jan 2008 15:56:04 -0500
+Received: from smtp-out001.kontent.com ([81.88.40.215]:58216 "EHLO
+	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752750AbYAFU4D convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 15:52:54 -0500
-Date: Sun, 6 Jan 2008 12:50:55 -0800
-From: Mark Fasheh <mark.fasheh@oracle.com>
-To: marcin.slusarz@gmail.com
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       OCFS2-devel <ocfs2-devel@oss.oracle.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       kernel-janitors <kernel-janitors@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
-       xfs-masters@oss.sgi.com
-Subject: Re: [PATCH 1/3] byteorder: move le32_add_cpu & friends from OCFS2
-	to core
-Message-ID: <20080106205055.GR23506@ca-server1.us.oracle.com>
-Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
-References: <1199547382-29969-1-git-send-email-marcin.slusarz@gmail.com> <1199547382-29969-2-git-send-email-marcin.slusarz@gmail.com>
+	Sun, 6 Jan 2008 15:56:03 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-usb-devel] [FEATURE REQUEST] Transparent hot plugging of root file system on portable storage devices.
+Date: Sun, 6 Jan 2008 21:59:45 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@ucw.cz>, Raymano Garibaldi <raymano@faunos.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+References: <Pine.LNX.4.44L0.0801061213460.8070-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0801061213460.8070-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <1199547382-29969-2-git-send-email-marcin.slusarz@gmail.com>
-Organization: Oracle Corporation
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Message-Id: <200801062159.46481.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 05, 2008 at 04:36:20PM +0100, marcin.slusarz@gmail.com wrote:
-> - move inline functions which add native byte order variable to
->   little/big endian variable to core header
->   * le16_add_cpu(__le16 *var, u16 val)
->   * le32_add_cpu(__le32 *var, u32 val)
->   * le64_add_cpu(__le64 *var, u64 val)
->   * be32_add_cpu(__be32 *var, u32 val)
-> - add for completeness:
->   * be16_add_cpu(__be16 *var, u16 val)
->   * be64_add_cpu(__be64 *var, u64 val)
-> 
-> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Acked-by: Mark Fasheh <mark.fasheh@oracle.com>
+Am Sonntag 06 Januar 2008 schrieb Alan Stern:
+> What about people who want to suspend to RAM instead of hibernating and
+> _do_ want to unplug the USB device containing their root filesystem
+> while the machine is asleep?  In this case we will _know_ that the
+> power session has been interrupted, but USB Persist won't activate
+> because the host controller never lost power.
 
---
-Mark Fasheh
-Principal Software Developer, Oracle
-mark.fasheh@oracle.com
+Would it be hard to force the persist feature on for a replugged device?
+
+	Regards
+		Oliver
+
