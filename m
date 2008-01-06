@@ -1,56 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758738AbYAFPte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758987AbYAFPwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758738AbYAFPte (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 10:49:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbYAFPt1
+	id S1758987AbYAFPwA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 10:52:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755511AbYAFPvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 10:49:27 -0500
-Received: from fk-out-0910.google.com ([209.85.128.187]:31613 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752769AbYAFPt0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 10:49:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=JAmy25VXzzt5SI1gKhNQ1ohSurv1xvF2lFr03jjfxjrLcoOYJqY1eUOCs+WSxF9uFN8Hrd/zQqjP+DmaVbIhXu+0AQkyPj4yCV08EKYQbZdR0cKuYkM3SfPJcJnH6ulb5r2aKWj5jXWPryq4F8ahR9bywJnTNfjGEyPnRA08UFM=
-Message-ID: <4780F880.8030903@gmail.com>
-Date: Sun, 06 Jan 2008 16:49:20 +0100
-From: =?ISO-8859-1?Q?Miguel_Bot=F3n?= <mboton@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sun, 6 Jan 2008 10:51:53 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:39775 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752577AbYAFPvw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 10:51:52 -0500
+Date: Sun, 6 Jan 2008 16:51:45 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: marcel@holtmann.org, maxk@qualcomm.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH] /net/bluetooth: Use sockfd_put
+Message-ID: <Pine.LNX.4.64.0801061650370.24950@ask.diku.dk>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, tglx@linutronix.de
-Subject: Re: [PATCH] x86: ioport_{32|64}.c unification -v2
-References: <4780EC61.4020007@gmail.com> <20080106150417.GA14146@elte.hu>
-In-Reply-To: <20080106150417.GA14146@elte.hu>
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Miguel Botón <mboton@gmail.com> wrote:
-> 
->> ioport_{32|64}.c unification.
->>
->> This patch unifies the code from the ioport_32.c and ioport_64.c 
->> files.
->>
->> Tested and working fine with i386 and x86_64 kernels.
-> 
-> in what way have you tested it? Have you tried iopl() and ioperm() 
-> syscalls to check whether they properly block/allow port IO?
-> 
-> 	Ingo
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+From: Julia Lawall <julia@diku.dk>
 
-I made a little app to check that iopl() and ioperm() were working properly.
+The function sockfd_lookup uses fget on the value that is stored in the
+file field of the returned structure, so fput should ultimately be applied
+to this value.  This can be done directly, but it seems better to use the
+specific macro sockfd_put, which does the same thing.
 
+
+The problem was fixed using the following semantic patch.
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@@
+expression s;
+@@
+
+   s = sockfd_lookup(...)
+   ...
++  sockfd_put(s);
+?- fput(s->file);
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
-	Miguel Botón
+
+diff -u -p a/net/bluetooth/bnep/sock.c b/net/bluetooth/bnep/sock.c
+--- a/net/bluetooth/bnep/sock.c 2007-11-08 08:00:52.000000000 +0100
++++ b/net/bluetooth/bnep/sock.c 2008-01-06 11:35:17.000000000 +0100
+@@ -94,7 +94,7 @@ static int bnep_sock_ioctl(struct socket
+ 			return err;
+ 
+ 		if (nsock->sk->sk_state != BT_CONNECTED) {
+-			fput(nsock->file);
++			sockfd_put(nsock);
+ 			return -EBADFD;
+ 		}
+ 
+@@ -103,7 +103,7 @@ static int bnep_sock_ioctl(struct socket
+ 			if (copy_to_user(argp, &ca, sizeof(ca)))
+ 				err = -EFAULT;
+ 		} else
+-			fput(nsock->file);
++			sockfd_put(nsock);
+ 
+ 		return err;
+ 
+diff -u -p a/net/bluetooth/cmtp/sock.c b/net/bluetooth/cmtp/sock.c
+--- a/net/bluetooth/cmtp/sock.c 2007-11-08 08:00:52.000000000 +0100
++++ b/net/bluetooth/cmtp/sock.c 2008-01-06 11:35:17.000000000 +0100
+@@ -88,7 +88,7 @@ static int cmtp_sock_ioctl(struct socket
+ 			return err;
+ 
+ 		if (nsock->sk->sk_state != BT_CONNECTED) {
+-			fput(nsock->file);
++			sockfd_put(nsock);
+ 			return -EBADFD;
+ 		}
+ 
+@@ -97,7 +97,7 @@ static int cmtp_sock_ioctl(struct socket
+ 			if (copy_to_user(argp, &ca, sizeof(ca)))
+ 				err = -EFAULT;
+ 		} else
+-			fput(nsock->file);
++			sockfd_put(nsock);
+ 
+ 		return err;
+ 
+diff -u -p a/net/bluetooth/hidp/sock.c b/net/bluetooth/hidp/sock.c
+--- a/net/bluetooth/hidp/sock.c 2007-11-08 08:00:52.000000000 +0100
++++ b/net/bluetooth/hidp/sock.c 2008-01-06 11:35:18.000000000 +0100
+@@ -86,13 +86,13 @@ static int hidp_sock_ioctl(struct socket
+ 
+ 		isock = sockfd_lookup(ca.intr_sock, &err);
+ 		if (!isock) {
+-			fput(csock->file);
++			sockfd_put(csock);
+ 			return err;
+ 		}
+ 
+ 		if (csock->sk->sk_state != BT_CONNECTED || isock->sk->sk_state != BT_CONNECTED) {
+-			fput(csock->file);
+-			fput(isock->file);
++			sockfd_put(csock);
++			sockfd_put(isock);
+ 			return -EBADFD;
+ 		}
+ 
+@@ -101,8 +101,8 @@ static int hidp_sock_ioctl(struct socket
+ 			if (copy_to_user(argp, &ca, sizeof(ca)))
+ 				err = -EFAULT;
+ 		} else {
+-			fput(csock->file);
+-			fput(isock->file);
++			sockfd_put(csock);
++			sockfd_put(isock);
+ 		}
+ 
+ 		return err;
