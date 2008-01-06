@@ -1,113 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbYAFNRA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758144AbYAFNRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757527AbYAFNRA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 08:17:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753465AbYAFNQx
+	id S1758144AbYAFNRd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 08:17:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbYAFNRY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 08:16:53 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:58359 "EHLO smtp4.pp.htv.fi"
+	Sun, 6 Jan 2008 08:17:24 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60269 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752748AbYAFNQw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 08:16:52 -0500
-Date: Sun, 6 Jan 2008 15:16:19 +0200
-From: Adrian Bunk <adrian.bunk@movial.fi>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.6.16.58-rc1
-Message-ID: <20080106131619.GG2082@does.not.exist>
+	id S1754275AbYAFNRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 08:17:23 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM: Acquire device locks on suspend
+Date: Sun, 6 Jan 2008 14:19:51 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0801052249060.8784-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0801052249060.8784-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200801061419.52277.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Security fixes since 2.6.16.57:
-- CVE-2007-2525: PPPOE: fix memory leak (local DoS)
-- CVE-2007-3731: Handle bogus %cs selector in single-step instruction decoding
-- CVE-2007-6417: tmpfs: restore missing clear_highpage
+On Sunday, 6 of January 2008, Alan Stern wrote:
+> On Sat, 5 Jan 2008, Rafael J. Wysocki wrote:
+> 
+> > On Saturday, 5 of January 2008, Alan Stern wrote:
+> > > On Sat, 5 Jan 2008, Rafael J. Wysocki wrote:
+> 
+> > > > Still, even doing that is not enough, since someone can call
+> > > > destroy_suspended_device() from a .suspend() routine and then the device
+> > > > will end up on a wrong list just as well.
+> > > 
+> > > That should never happen.  The whole idea of destroy_suspended_device()
+> > > is that the device couldn't be resumed and in fact should be
+> > > unregistered because it is no longer working or no longer present.  A
+> > > suspend routine won't detect this sort of thing since it doesn't try to
+> > > resume the device.
+> > > 
+> > > But it wouldn't hurt to mention in the kerneldoc that 
+> > > destroy_suspended_device() is meant to be called only during a system 
+> > > resume.
+> > 
+> > Hmm.  Please have a look at the appended patch.
+> > 
+> > I have removed the warning from device_del() and used list_empty() to detect
+> > removed devices in the .suspend() routines.  Is that viable?
+> 
+> It's not good.
+> 
+> The warning in device_del() is vital.  It's what will tell people where
+> the problem is when a deadlock occurs during system resume because some
+> driver has mistakenly tried to unregister a device at the wrong time.  
+> It would have pointed immediately to the msr driver in the case of the
+> bug Andrew found, for instance.
+> 
+> If you can figure out a way to disable the warning in device_del() for 
+> just the one device being unregistered by 
+> device_pm_destroy_suspended(),
 
+Something like this, perhaps:
 
-Location:
-ftp://ftp.kernel.org/pub/linux/kernel/people/bunk/linux-2.6.16.y/testing/
+@@ -905,6 +915,18 @@ void device_del(struct device * dev)
+ 	struct device * parent = dev->parent;
+ 	struct class_interface *class_intf;
+ 
++	if (down_trylock(&dev->sem)) {
++		if (pm_sleep_lock()) {
++			dev_warn(dev, "Illegal %s during suspend\n",
++				__FUNCTION__);
++			dump_stack();
++		} else {
++			pm_sleep_unlock();
++		}
++	} else {
++		up(&dev->sem);
++	}
++
+ 	if (parent)
+ 		klist_del(&dev->knode_parent);
+ 	if (MAJOR(dev->devt))
 
-git tree:
-git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
+> I suppose that would be okay. 
 
-RSS feed of the git tree:
-http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
-
-
-Changes since 2.6.16.57:
-
-Adrian Bunk (2):
-      ipv4/arp.c:arp_process(): remove bogus #ifdef mess
-      Linux 2.6.16.58-rc1
-
-Alan Cox (1):
-      [SCSI] aacraid: fix security weakness
-
-Ben Collins (1):
-      [ATM]: Add CPPFLAGS to byteorder.h check
-
-Charles Hardin (1):
-      [PFKEY]: Sending an SADB_GET responds with an SADB_GET
-
-Chas Williams (1):
-      [ATM]: [he] initialize lock and tasklet earlier
-
-Evgeniy Polyakov (1):
-      [PKT_SCHED]: Fix OOPS when removing devices from a teql queuing discipline
-
-Florian Zumbiehl (1):
-      PPPOE: fix memory leak (local DoS) (CVE-2007-2525)
-
-Hugh Dickins (1):
-      tmpfs: restore missing clear_highpage (CVE-2007-6417)
-
-Jean Delvare (2):
-      hwmon/lm87: Disable VID when it should be
-      hwmon/lm87: Fix a division by zero
-
-Michal Schmidt (1):
-      [PPP_MPPE]: Don't put InterimKey on the stack
-
-Patrick McHardy (2):
-      [INET_DIAG]: Fix oops in netlink_rcv_skb
-      [NETLINK]: Fix unicast timeouts
-
-Peter Zijlstra (1):
-      i386: fixup TRACE_IRQ breakage
-
-Radu Rendec (1):
-      [PKT_SCHED] CLS_U32: Fix endianness problem with u32 classifier hash masks.
-
-Roland McGrath (1):
-      Handle bogus %cs selector in single-step instruction decoding (CVE-2007-3731)
-
-YOSHIFUJI Hideaki (1):
-      [IPV6]: Fix unbalanced socket reference with MSG_CONFIRM.
-
-
- Makefile                     |    2 +-
- arch/i386/kernel/entry.S     |    1 -
- arch/i386/kernel/ptrace.c    |   22 +++++++++++++++-------
- arch/i386/kernel/traps.c     |   10 ++++++----
- arch/x86_64/kernel/ptrace.c  |   23 ++++++++++++++++-------
- drivers/atm/Makefile         |    2 +-
- drivers/atm/he.c             |   10 +++++-----
- drivers/hwmon/lm87.c         |    4 ++--
- drivers/net/ppp_mppe.c       |   14 ++++++--------
- drivers/net/pppox.c          |    2 +-
- drivers/scsi/aacraid/linit.c |    4 ++--
- include/linux/netlink.h      |    2 +-
- ipc/mqueue.c                 |    6 ++++--
- mm/shmem.c                   |    5 +++--
- net/ipv4/arp.c               |   19 -------------------
- net/ipv4/inet_diag.c         |   10 +++++++++-
- net/ipv6/raw.c               |    2 +-
- net/key/af_key.c             |    2 +-
- net/netlink/af_netlink.c     |   10 +++++-----
- net/sched/cls_u32.c          |    4 ++--
- net/sched/sch_teql.c         |    3 +++
- 21 files changed, 84 insertions(+), 73 deletions(-)
+Rafael
