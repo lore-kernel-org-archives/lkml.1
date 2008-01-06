@@ -1,44 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbYAFASJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756411AbYAFAUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755975AbYAFASJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 19:18:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753913AbYAFAR6
+	id S1756411AbYAFAUm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 19:20:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbYAFAUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 19:17:58 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:52582 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753816AbYAFAR5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 19:17:57 -0500
-Date: Sun, 6 Jan 2008 00:17:57 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Berthold Cogel <cogel@uni-koeln.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Oops in evdev_disconnect for kernel 2.6.23.12
-Message-ID: <20080106001756.GP27894@ZenIV.linux.org.uk>
-References: <477A93CD.9030707@rrz.uni-koeln.de> <20080105065233.GE27894@ZenIV.linux.org.uk> <47801D70.8020504@uni-koeln.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47801D70.8020504@uni-koeln.de>
-User-Agent: Mutt/1.4.2.3i
+	Sat, 5 Jan 2008 19:20:34 -0500
+Received: from ns2.g-housing.de ([81.169.133.75]:46444 "EHLO mail.g-house.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753317AbYAFAUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 19:20:34 -0500
+Date: Sun, 6 Jan 2008 01:20:17 +0100 (CET)
+From: Christian Kujau <lists@nerdbynature.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: Davide Libenzi <davidel@xmailserver.org>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Herbert Xu <herbert@gondor.apana.org.au>, Ingo Molnar <mingo@elte.hu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       jfs-discussion@lists.sourceforge.net,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: 2.6.24-rc6: possible recursive locking detected
+In-Reply-To: <Pine.LNX.4.64.0801051242070.3896@alien.or.mcafeemobile.com>
+Message-ID: <alpine.DEB.0.999999.0801060118290.4821@sheep.housecafe.de>
+References: <alpine.DEB.0.999999.0801032349190.4821@sheep.housecafe.de>  <200801040006.47979.rjw@sisk.pl> <20080104083049.GC22803@elte.hu>  <20080105071205.GA28936@gondor.apana.org.au>  <1199552016.31975.41.camel@lappy> <1199552476.31975.45.camel@lappy>
+ <Pine.LNX.4.64.0801051242070.3896@alien.or.mcafeemobile.com>
+User-Agent: Alpine 0.999999 (DEB 847 2007-12-06)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 06, 2008 at 01:14:40AM +0100, Berthold Cogel wrote:
+On Sat, 5 Jan 2008, Davide Libenzi wrote:
+> A solution may be to move the call to ep_poll_safewake() (that'd become a
+> simple wake_up()) inside a tasklet or whatever is today trendy for delayed
+> work. But his kinda scares me to be honest, since epoll has already a
+> bunch of places where it could be asynchronously hit (plus performance
+> regression will need to be verified).
 
-> >There are only 4 changesets between 2.6.23 and this one affecting 
-> >drivers/input
-> >and only
-> >8006479c9b75fb6594a7b746af3d7f1fbb68f18f and
-> >6addb1d6de1968b84852f54561cc9a999909b5a9
-> >appear to be relevant.  Apply to your kernel and see if it helps...
-> 
-> Looks as if I have to start using git ... I always feared that this day 
-> will come. ;-)
-> 
-> If I'm able to reproduce the oops with my patched kernel, I will gladly 
-> follow your advice.
+Although I'm not able to reproduce this one right now, I'm happy to test 
+any patches you guys come up with.
 
-AFAICS, lkml.org/lkml/2007/7/24/20 is the same patch...
+Thanks for your time,
+Christian.
+-- 
+BOFH excuse #78:
+
+Yes, yes, its called a design limitation
