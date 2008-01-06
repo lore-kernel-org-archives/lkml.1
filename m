@@ -1,351 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756499AbYAFVKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbYAFVQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756499AbYAFVKk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 16:10:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbYAFVK3
+	id S1756900AbYAFVQS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 16:16:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbYAFVQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 16:10:29 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:42663 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752704AbYAFVK2 (ORCPT
+	Sun, 6 Jan 2008 16:16:07 -0500
+Received: from smtp-out.rrz.uni-koeln.de ([134.95.19.53]:43710 "EHLO
+	smtp-out.rrz.uni-koeln.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753247AbYAFVQG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 16:10:28 -0500
-Message-ID: <1199653819.478143bba2038@portal.student.luth.se>
-Date: Sun,  6 Jan 2008 22:10:19 +0100
-From: ricknu-0@student.ltu.se
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: megaraidlinux@lsi.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH][SCSI] megaraid: Convert from "scsi.h" to <scsi.h> (and friends)
-References: <20080106190335.28212.90140.sendpatchset@thinktank.campus.ltu.se> <1199647863.5205.85.camel@localhost.localdomain>
-In-Reply-To: <1199647863.5205.85.camel@localhost.localdomain>
+	Sun, 6 Jan 2008 16:16:06 -0500
+Message-ID: <478144E4.501@uni-koeln.de>
+Date: Sun, 06 Jan 2008 22:15:16 +0100
+From: Berthold Cogel <cogel@uni-koeln.de>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) 3.1
-X-Originating-IP: 130.240.42.170
+To: Al Viro <viro@ZenIV.linux.org.uk>
+CC: linux-kernel@vger.kernel.org, nigel@nigel.suspend2.net, dtor@mail.ru,
+       jikos@jikos.cz, akpm@linux-foundation.org,
+       linux-usb-owner@vger.kernel.org
+Subject: Re: Oops in evdev_disconnect for kernel 2.6.23.12
+References: <477A93CD.9030707@rrz.uni-koeln.de> <20080105065233.GE27894@ZenIV.linux.org.uk> <47801D70.8020504@uni-koeln.de> <20080106001756.GP27894@ZenIV.linux.org.uk> <47812E5B.6080000@uni-koeln.de> <20080106201559.GU27894@ZenIV.linux.org.uk>
+In-Reply-To: <20080106201559.GU27894@ZenIV.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Citerar James Bottomley <James.Bottomley@HansenPartnership.com>:
-
+Al Viro schrieb:
+> On Sun, Jan 06, 2008 at 08:39:07PM +0100, Berthold Cogel wrote:
+>>>> If I'm able to reproduce the oops with my patched kernel, I will gladly 
+>>>> follow your advice.
+>>> AFAICS, lkml.org/lkml/2007/7/24/20 is the same patch...
+>> Ok! It happened again....
+>>
+>> I was able to reproduce the Oops twice. Once with my patched kernel
+>> (2.6.23.12 patched with tuxonice-3.0-rc3-for-2.6.23.9 on Debian
+>> stable/testing/unstable) and the second time with a vanilla 2.6.23.12
+>> kernel. So this isn't related to Tuxonice.
 > 
-> On Sun, 2008-01-06 at 20:03 +0100, Richard Knutsson wrote:
-> > Convert glue-include "scsi.h" to <scsi.h> (and friends).
-> > 
-> > (binary sizes)
-> > allyesconfig: before: 260132
-> >               after:  260048
-> > 
-> > allmodconfig: before: 261740
-> >               after:  261656
-> > 
-> > Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
-> > ---
-> > Do not have the hardware, but since it compiles I hope it is alright.
-> > 
-> > 
-> > diff --git a/drivers/scsi/megaraid.c b/drivers/scsi/megaraid.c
-> > index 66c6520..9f1e2c5 100644
-> > --- a/drivers/scsi/megaraid.c
-> > +++ b/drivers/scsi/megaraid.c
-> > @@ -48,8 +48,9 @@
-> >  #include <linux/dma-mapping.h>
-> >  #include <scsi/scsicam.h>
-> >  
-> > -#include "scsi.h"
-> > +#include <scsi/scsi_cmnd.h>
-> >  #include <scsi/scsi_host.h>
-> > +#include <scsi.h>
-> 
-> I'm afraid this is pretty much wrong.  The scsi.h being referred to here
-> is the local scsi.h in the build directory, so it should be included as
-> a string.  For #include, "..." means begin the search in the local
-> directory (what is wanted here) and <...> means begin the search
-> starting with the predefined include paths.
+> Apply the patch in aforementioned posting and see if it fixes the things?
 
-Oops, it were suppose to read "+#include <scsi/scsi.h>". I thought it always
-went to include/ if you used <...> (which then would had given an error). Oh
-well, it compiles again when also adding "#include <scsi/scsi_device.h>" (used,
-at least, in the scsi_cmnd-structure).
+I did that and got this in 'make modules':
 
-> 
-> The rest of the patch looks like a spurious (unrelated and undescribed)
-> downcasing of TRUE and FALSE.
-Since TRUE/FALSE are defined in "scsi.h", they were converted to the generic names.
+   CC [M]  drivers/input/joydev.o
+   CC [M]  drivers/input/evdev.o
+drivers/input/evdev.c: In function 'evdev_do_ioctl':
+drivers/input/evdev.c:749: error: 'struct input_dev' has no member named 
+'event_lock'
+drivers/input/evdev.c:757: error: 'struct input_dev' has no member named 
+'event_lock'
+make[2]: *** [drivers/input/evdev.o] Fehler 1
+make[1]: *** [drivers/input] Fehler 2
+make: *** [drivers] Fehler 2
 
 
-Do this looks alright? Forgot it were dependent on the patch-set who converted
-all "Scsi_Cmnd" to "struct scsi_cmnd".
+The next piece of the puzzle:
 
----
-Convert compatibility-glue-include "scsi.h" to <scsi/scsi.h> and friends.
+No oops with 2.6.24-rc6 vanilla and the same kernel patched with 
+TuxOnIce 3.0-rc3 for kernel 2.6.24-rc3. A minor nit was that I had to 
+rebuild the xorg driver for the tablet to get it working.
 
-Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
----
-Do not have the hardware, but since it compiles I hope it is alright.
+
+Berthold
 
 
 
-diff --git a/drivers/scsi/megaraid.c b/drivers/scsi/megaraid.c
-index 66c6520..5e9edfd 100644
---- a/drivers/scsi/megaraid.c
-+++ b/drivers/scsi/megaraid.c
-@@ -48,8 +48,10 @@
- #include <linux/dma-mapping.h>
- #include <scsi/scsicam.h>
- 
--#include "scsi.h"
-+#include <scsi/scsi_cmnd.h>
-+#include <scsi/scsi_device.h>
- #include <scsi/scsi_host.h>
-+#include <scsi/scsi.h>
- 
- #include "megaraid.h"
- 
-@@ -359,7 +361,7 @@ mega_runpendq(adapter_t *adapter)
-  * The command queuing entry point for the mid-layer.
-  */
- static int
--megaraid_queue(Scsi_Cmnd *scmd, void (*done)(Scsi_Cmnd *))
-+megaraid_queue(struct scsi_cmnd *scmd, void (*done)(struct scsi_cmnd *))
- {
- 	adapter_t	*adapter;
- 	scb_t	*scb;
-@@ -411,7 +413,7 @@ megaraid_queue(Scsi_Cmnd *scmd, void (*done)(Scsi_Cmnd *))
-  * commands.
-  */
- static inline scb_t *
--mega_allocate_scb(adapter_t *adapter, Scsi_Cmnd *cmd)
-+mega_allocate_scb(adapter_t *adapter, struct scsi_cmnd *cmd)
- {
- 	struct list_head *head = &adapter->free_list;
- 	scb_t	*scb;
-@@ -443,7 +445,7 @@ mega_allocate_scb(adapter_t *adapter, Scsi_Cmnd *cmd)
-  * and the channel number.
-  */
- static inline int
--mega_get_ldrv_num(adapter_t *adapter, Scsi_Cmnd *cmd, int channel)
-+mega_get_ldrv_num(adapter_t *adapter, struct scsi_cmnd *cmd, int channel)
- {
- 	int		tgt;
- 	int		ldrv_num;
-@@ -506,7 +508,7 @@ mega_get_ldrv_num(adapter_t *adapter, Scsi_Cmnd *cmd, int
-channel)
-  * boot settings.
-  */
- static scb_t *
--mega_build_cmd(adapter_t *adapter, Scsi_Cmnd *cmd, int *busy)
-+mega_build_cmd(adapter_t *adapter, struct scsi_cmnd *cmd, int *busy)
- {
- 	mega_ext_passthru	*epthru;
- 	mega_passthru	*pthru;
-@@ -944,7 +946,7 @@ mega_build_cmd(adapter_t *adapter, Scsi_Cmnd *cmd, int *busy)
-  * prepare a command for the scsi physical devices.
-  */
- static mega_passthru *
--mega_prepare_passthru(adapter_t *adapter, scb_t *scb, Scsi_Cmnd *cmd,
-+mega_prepare_passthru(adapter_t *adapter, scb_t *scb, struct scsi_cmnd *cmd,
- 		int channel, int target)
- {
- 	mega_passthru *pthru;
-@@ -1008,7 +1010,7 @@ mega_prepare_passthru(adapter_t *adapter, scb_t *scb,
-Scsi_Cmnd *cmd,
-  * commands for devices which can take extended CDBs (>10 bytes)
-  */
- static mega_ext_passthru *
--mega_prepare_extpassthru(adapter_t *adapter, scb_t *scb, Scsi_Cmnd *cmd,
-+mega_prepare_extpassthru(adapter_t *adapter, scb_t *scb, struct scsi_cmnd *cmd,
- 		int channel, int target)
- {
- 	mega_ext_passthru	*epthru;
-@@ -1410,7 +1412,7 @@ mega_cmd_done(adapter_t *adapter, u8 completed[], int
-nstatus, int status)
- {
- 	mega_ext_passthru	*epthru = NULL;
- 	struct scatterlist	*sgl;
--	Scsi_Cmnd	*cmd = NULL;
-+	struct scsi_cmnd	*cmd = NULL;
- 	mega_passthru	*pthru = NULL;
- 	mbox_t	*mbox = NULL;
- 	u8	c;
-@@ -1662,14 +1664,14 @@ mega_cmd_done(adapter_t *adapter, u8 completed[], int
-nstatus, int status)
- static void
- mega_rundoneq (adapter_t *adapter)
- {
--	Scsi_Cmnd *cmd;
-+	struct scsi_cmnd *cmd;
- 	struct list_head *pos;
- 
- 	list_for_each(pos, &adapter->completed_list) {
- 
- 		struct scsi_pointer* spos = (struct scsi_pointer *)pos;
- 
--		cmd = list_entry(spos, Scsi_Cmnd, SCp);
-+		cmd = list_entry(spos, struct scsi_cmnd, SCp);
- 		cmd->scsi_done(cmd);
- 	}
- 
-@@ -1732,7 +1734,7 @@ static int
- mega_build_sglist(adapter_t *adapter, scb_t *scb, u32 *buf, u32 *len)
- {
- 	struct scatterlist *sg;
--	Scsi_Cmnd	*cmd;
-+	struct scsi_cmnd	*cmd;
- 	int	sgcnt;
- 	int	idx;
- 
-@@ -1879,7 +1881,7 @@ megaraid_info(struct Scsi_Host *host)
-  * aborted. All the commands issued to the F/W must complete.
-  */
- static int
--megaraid_abort(Scsi_Cmnd *cmd)
-+megaraid_abort(struct scsi_cmnd *cmd)
- {
- 	adapter_t	*adapter;
- 	int		rval;
-@@ -1944,7 +1946,7 @@ megaraid_reset(struct scsi_cmnd *cmd)
-  * issued to the controller, abort/reset it. Otherwise return failure
-  */
- static int
--megaraid_abort_and_reset(adapter_t *adapter, Scsi_Cmnd *cmd, int aor)
-+megaraid_abort_and_reset(adapter_t *adapter, struct scsi_cmnd *cmd, int aor)
- {
- 	struct list_head	*pos, *next;
- 	scb_t			*scb;
-@@ -1955,7 +1957,7 @@ megaraid_abort_and_reset(adapter_t *adapter, Scsi_Cmnd
-*cmd, int aor)
- 	     cmd->device->id, cmd->device->lun);
- 
- 	if(list_empty(&adapter->pending_list))
--		return FALSE;
-+		return false;
- 
- 	list_for_each_safe(pos, next, &adapter->pending_list) {
- 
-@@ -1978,7 +1980,7 @@ megaraid_abort_and_reset(adapter_t *adapter, Scsi_Cmnd
-*cmd, int aor)
- 					(aor==SCB_ABORT) ? "ABORTING":"RESET",
- 					cmd->serial_number, scb->idx);
- 
--				return FALSE;
-+				return false;
- 			}
- 			else {
- 
-@@ -2003,12 +2005,12 @@ megaraid_abort_and_reset(adapter_t *adapter, Scsi_Cmnd
-*cmd, int aor)
- 				list_add_tail(SCSI_LIST(cmd),
- 						&adapter->completed_list);
- 
--				return TRUE;
-+				return true;
- 			}
- 		}
- 	}
- 
--	return FALSE;
-+	return false;
- }
- 
- static inline int
-@@ -4396,7 +4398,7 @@ mega_internal_dev_inquiry(adapter_t *adapter, u8 ch, u8 tgt,
- static int
- mega_internal_command(adapter_t *adapter, megacmd_t *mc, mega_passthru *pthru)
- {
--	Scsi_Cmnd	*scmd;
-+	struct scsi_cmnd	*scmd;
- 	struct	scsi_device *sdev;
- 	scb_t	*scb;
- 	int	rval;
-@@ -4412,7 +4414,7 @@ mega_internal_command(adapter_t *adapter, megacmd_t *mc,
-mega_passthru *pthru)
- 	memset(scb, 0, sizeof(scb_t));
- 
- 	scmd = &adapter->int_scmd;
--	memset(scmd, 0, sizeof(Scsi_Cmnd));
-+	memset(scmd, 0, sizeof(struct scsi_cmnd));
- 
- 	sdev = kzalloc(sizeof(struct scsi_device), GFP_KERNEL);
- 	scmd->device = sdev;
-@@ -4466,7 +4468,7 @@ mega_internal_command(adapter_t *adapter, megacmd_t *mc,
-mega_passthru *pthru)
-  * Callback routine for internal commands.
-  */
- static void
--mega_internal_done(Scsi_Cmnd *scmd)
-+mega_internal_done(struct scsi_cmnd *scmd)
- {
- 	adapter_t	*adapter;
- 
-diff --git a/drivers/scsi/megaraid.h b/drivers/scsi/megaraid.h
-index ee70bd4..cd462b9 100644
---- a/drivers/scsi/megaraid.h
-+++ b/drivers/scsi/megaraid.h
-@@ -225,7 +225,7 @@ typedef struct {
- 	u32	dma_type;
- 	u32	dma_direction;
- 
--	Scsi_Cmnd	*cmd;
-+	struct scsi_cmnd	*cmd;
- 	dma_addr_t	dma_h_bulkdata;
- 	dma_addr_t	dma_h_sgdata;
- 
-@@ -889,7 +889,7 @@ typedef struct {
- 	u8	sglen;	/* f/w supported scatter-gather list length */
- 
- 	scb_t			int_scb;
--	Scsi_Cmnd		int_scmd;
-+	struct scsi_cmnd	int_scmd;
- 	struct mutex		int_mtx;	/* To synchronize the internal
- 						commands */
- 	struct completion	int_waitq;	/* wait queue for internal
-@@ -987,8 +987,8 @@ static int mega_query_adapter(adapter_t *);
- static int issue_scb(adapter_t *, scb_t *);
- static int mega_setup_mailbox(adapter_t *);
- 
--static int megaraid_queue (Scsi_Cmnd *, void (*)(Scsi_Cmnd *));
--static scb_t * mega_build_cmd(adapter_t *, Scsi_Cmnd *, int *);
-+static int megaraid_queue (struct scsi_cmnd *, void (*)(struct scsi_cmnd *));
-+static scb_t *mega_build_cmd(adapter_t *, struct scsi_cmnd *, int *);
- static void __mega_runpendq(adapter_t *);
- static int issue_scb_block(adapter_t *, u_char *);
- 
-@@ -997,9 +997,9 @@ static irqreturn_t megaraid_isr_iomapped(int, void *);
- 
- static void mega_free_scb(adapter_t *, scb_t *);
- 
--static int megaraid_abort(Scsi_Cmnd *);
--static int megaraid_reset(Scsi_Cmnd *);
--static int megaraid_abort_and_reset(adapter_t *, Scsi_Cmnd *, int);
-+static int megaraid_abort(struct scsi_cmnd *);
-+static int megaraid_reset(struct scsi_cmnd *);
-+static int megaraid_abort_and_reset(adapter_t *, struct scsi_cmnd *, int);
- static int megaraid_biosparam(struct scsi_device *, struct block_device *,
- 		sector_t, int []);
- 
-@@ -1047,9 +1047,9 @@ static int mega_internal_dev_inquiry(adapter_t *, u8, u8,
-dma_addr_t);
- 
- static int mega_support_ext_cdb(adapter_t *);
- static mega_passthru* mega_prepare_passthru(adapter_t *, scb_t *,
--		Scsi_Cmnd *, int, int);
-+		struct scsi_cmnd *, int, int);
- static mega_ext_passthru* mega_prepare_extpassthru(adapter_t *,
--		scb_t *, Scsi_Cmnd *, int, int);
-+		scb_t *, struct scsi_cmnd *, int, int);
- static void mega_enum_raid_scsi(adapter_t *);
- static void mega_get_boot_drv(adapter_t *);
- static int mega_support_random_del(adapter_t *);
-@@ -1057,7 +1057,7 @@ static int mega_del_logdrv(adapter_t *, int);
- static int mega_do_del_logdrv(adapter_t *, int);
- static void mega_get_max_sgl(adapter_t *);
- static int mega_internal_command(adapter_t *, megacmd_t *, mega_passthru *);
--static void mega_internal_done(Scsi_Cmnd *);
-+static void mega_internal_done(struct scsi_cmnd *);
- static int mega_support_cluster(adapter_t *);
- #endif
- 
 
