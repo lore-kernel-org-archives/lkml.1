@@ -1,95 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758144AbYAFNRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757785AbYAFNUG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758144AbYAFNRd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 08:17:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbYAFNRY
+	id S1757785AbYAFNUG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 08:20:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549AbYAFNTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 08:17:24 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60269 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754275AbYAFNRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 08:17:23 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: Acquire device locks on suspend
-Date: Sun, 6 Jan 2008 14:19:51 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0801052249060.8784-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0801052249060.8784-100000@netrider.rowland.org>
+	Sun, 6 Jan 2008 08:19:55 -0500
+Received: from lazybastard.de ([212.112.238.170]:34650 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752215AbYAFNTy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 08:19:54 -0500
+Date: Sun, 6 Jan 2008 14:13:43 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org, peterz@infradead.org,
+       mingo@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] block2mtd lockdep_init_map warning
+Message-ID: <20080106131343.GA3120@lazybastard.org>
+References: <200801060717.m067HW6c030422@agora.fsl.cs.sunysb.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200801061419.52277.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200801060717.m067HW6c030422@agora.fsl.cs.sunysb.edu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 6 of January 2008, Alan Stern wrote:
-> On Sat, 5 Jan 2008, Rafael J. Wysocki wrote:
-> 
-> > On Saturday, 5 of January 2008, Alan Stern wrote:
-> > > On Sat, 5 Jan 2008, Rafael J. Wysocki wrote:
-> 
-> > > > Still, even doing that is not enough, since someone can call
-> > > > destroy_suspended_device() from a .suspend() routine and then the device
-> > > > will end up on a wrong list just as well.
-> > > 
-> > > That should never happen.  The whole idea of destroy_suspended_device()
-> > > is that the device couldn't be resumed and in fact should be
-> > > unregistered because it is no longer working or no longer present.  A
-> > > suspend routine won't detect this sort of thing since it doesn't try to
-> > > resume the device.
-> > > 
-> > > But it wouldn't hurt to mention in the kerneldoc that 
-> > > destroy_suspended_device() is meant to be called only during a system 
-> > > resume.
-> > 
-> > Hmm.  Please have a look at the appended patch.
-> > 
-> > I have removed the warning from device_del() and used list_empty() to detect
-> > removed devices in the .suspend() routines.  Is that viable?
-> 
-> It's not good.
-> 
-> The warning in device_del() is vital.  It's what will tell people where
-> the problem is when a deadlock occurs during system resume because some
-> driver has mistakenly tried to unregister a device at the wrong time.  
-> It would have pointed immediately to the msr driver in the case of the
-> bug Andrew found, for instance.
-> 
-> If you can figure out a way to disable the warning in device_del() for 
-> just the one device being unregistered by 
-> device_pm_destroy_suspended(),
+Maybe it is not obvious that I maintain this driver and would like to be
+kept on Cc:.  Will send a patch to fix that shortly.
 
-Something like this, perhaps:
+On Sun, 6 January 2008 02:17:32 -0500, Erez Zadok wrote:
+> 
+> Hi David,
+> 
+> I've reported before a lockdep warning when block2mtd is modloaded, and a
+> device is initialized, as in
+> 
+> 	modprobe block2mtd block2mtd=/dev/loop0
+> 
+> A typical warning looks like this:
+> 
+> BUG: key f88565c0 not in .data!
+> WARNING: at kernel/lockdep.c:2331 lockdep_init_map()
+> Pid: 1823, comm: modprobe Not tainted 2.6.24-rc6-unionfs2 #135
+>  [<c02038c0>] show_trace_log_lvl+0x1a/0x2f
+>  [<c02042bb>] show_trace+0x12/0x14
+>  [<c0204a01>] dump_stack+0x6c/0x72
+>  [<c022edf0>] lockdep_init_map+0x94/0x374
+>  [<c022e79d>] debug_mutex_init+0x2c/0x3c
+>  [<c0229bb0>] __mutex_init+0x38/0x40
+>  [<f885520d>] 0xf885520d
+>  [<c0226816>] parse_args+0x121/0x1fb
+>  [<c0237aaf>] sys_init_module+0x10e8/0x1576
+>  [<c0202836>] sysenter_past_esp+0x5f/0xa5
+>  =======================
+> 
+> This is a long-standing problem I've seen in several of the latest stable
+> kernels.  Once lockdep turns itself off, there's no easy way to turn it back
+> on short of a reboot.
+> 
+> I looked more closely at the mtd code.  I believe the problem is that
+> lockdep doesn't like a mutex_init to be called from a module_init code path,
+> possibly because the module's symbols aren't all initialized yet.  (This
+> could arguably be considered a limitation of lockdep.)
+> 
+> So I tried to defer the call to module_init until it's absolutely needed.  I
+> couldn't find a clean way to do that via the struct mtd_info ops (there's no
+> suitable ->init op), so instead I used an int to mark whether the mutex is
+> initialized or not.  Below is a patch.  It works, but it's not as clean as
+> it should be: a better way would be to probably add an mtd_info ->init op or
+> so.
+> 
+> At least with this patch, lockdep doesn't complain any longer, so I can run
+> a clean set of regression tests w/ unionfs on top of jffs2 and other file
+> systems.
+> 
+> In lieu of a better fix, is this patch acceptable?
 
-@@ -905,6 +915,18 @@ void device_del(struct device * dev)
- 	struct device * parent = dev->parent;
- 	struct class_interface *class_intf;
- 
-+	if (down_trylock(&dev->sem)) {
-+		if (pm_sleep_lock()) {
-+			dev_warn(dev, "Illegal %s during suspend\n",
-+				__FUNCTION__);
-+			dump_stack();
-+		} else {
-+			pm_sleep_unlock();
-+		}
-+	} else {
-+		up(&dev->sem);
-+	}
-+
- 	if (parent)
- 		klist_del(&dev->knode_parent);
- 	if (MAJOR(dev->devt))
+Not for me.  I don't mind if you keep such a hack until a proper
+solution if found in your private tree.  But it is a horrible solution
+to a problem introduced elsewhere.
 
-> I suppose that would be okay. 
+Ingo, Peter, does either of you actually care about this problem?  In
+the last round when I debugged this problem there was a notable lack of
+reaction from either of you.
 
-Rafael
+> block2mtd: defer mutex initialization to avoid a lockdep warning
+> 
+> Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
+> 
+> diff --git a/drivers/mtd/devices/block2mtd.c b/drivers/mtd/devices/block2mtd.c
+> index be4b994..2c6d3e7 100644
+> --- a/drivers/mtd/devices/block2mtd.c
+> +++ b/drivers/mtd/devices/block2mtd.c
+> @@ -32,6 +32,7 @@ struct block2mtd_dev {
+>  	struct list_head list;
+>  	struct block_device *blkdev;
+>  	struct mtd_info mtd;
+> +	int mutex_initialized;
+>  	struct mutex write_mutex;
+>  };
+>  
+> @@ -85,6 +86,11 @@ static int block2mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
+>  	size_t len = instr->len;
+>  	int err;
+>  
+> +	if (!dev->mutex_initialized) {
+> +		mutex_init(&dev->write_mutex);
+> +		dev->mutex_initialized = 1;
+> +	}
+> +
+>  	instr->state = MTD_ERASING;
+>  	mutex_lock(&dev->write_mutex);
+>  	err = _block2mtd_erase(dev, from, len);
+> @@ -194,6 +200,11 @@ static int block2mtd_write(struct mtd_info *mtd, loff_t to, size_t len,
+>  	struct block2mtd_dev *dev = mtd->priv;
+>  	int err;
+>  
+> +	if (!dev->mutex_initialized) {
+> +		mutex_init(&dev->write_mutex);
+> +		dev->mutex_initialized = 1;
+> +	}
+> +
+>  	if (!len)
+>  		return 0;
+>  	if (to >= mtd->size)
+> @@ -275,8 +286,6 @@ static struct block2mtd_dev *add_device(char *devname, int erase_size)
+>  		goto devinit_err;
+>  	}
+>  
+> -	mutex_init(&dev->write_mutex);
+> -
+>  	/* Setup the MTD structure */
+>  	/* make the name contain the block device in */
+>  	dev->mtd.name = kmalloc(sizeof("block2mtd: ") + strlen(devname),
+> 
+> ______________________________________________________
+> Linux MTD discussion mailing list
+> http://lists.infradead.org/mailman/listinfo/linux-mtd/
+
+Jörn
+
+-- 
+Joern's library part 13:
+http://www.chip-architect.com/
