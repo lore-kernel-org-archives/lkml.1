@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbYAFSI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757500AbYAFSJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756718AbYAFSI4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 13:08:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754352AbYAFSIr
+	id S1757500AbYAFSJZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 13:09:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbYAFSJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 13:08:47 -0500
-Received: from mail.gmx.net ([213.165.64.20]:48570 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753748AbYAFSIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 13:08:47 -0500
-X-Authenticated: #19095397
-X-Provags-ID: V01U2FsdGVkX1/BuhVXsADBzhxj8tAmX/W44WXx9ONnv/2fWZA2Pj
-	Bm/iWH999dELot
-From: Bernd Schubert <bernd-schubert@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: sleep before boot panic
-Date: Sun, 6 Jan 2008 19:08:42 +0100
-User-Agent: KMail/1.9.7
+	Sun, 6 Jan 2008 13:09:12 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:60556 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755424AbYAFSJL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 13:09:11 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <478118E1.1090804@s5r6.in-berlin.de>
+Date: Sun, 06 Jan 2008 19:07:29 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: david@lang.hm, Adrian Bunk <bunk@kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Al Boldi <a1426z@gawab.com>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
+       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/5] USB Kconfig: Select SCSI for USB Mass Storage support
+References: <Pine.LNX.4.44L0.0801061206500.7367-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0801061206500.7367-100000@netrider.rowland.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801061908.43010.bernd-schubert@gmx.de>
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Alan Stern wrote:
+> Another disadvantage appears when somebody tries by hand to remove a 
+> component (like SCSI) and finds that it magically reappears.  Evidently 
+> something is selecting it, but there's no way to find out what.
 
-I just switched to libata (pata) on my laptop and the immediate panic made it 
-impossible to figure out why my boot partition wasn't available.
-After applying this little patch I could check boot printk output and then saw 
-everything was properly recognized and only scsi-disk support was missing.
+xconfig's "Show Debug Info" and menuconfig's help screen show you
+whether an option was selected and by which option.  xconfig calls it
+"reverse dep:", menuconfig says "Selected by:".
 
-
-Signed-off-by: Bernd Schubert <bernd-schubert@gmx.de>
-
-Index: zd1211rw.git.beno/init/do_mounts.c
-===================================================================
---- zd1211rw.git.beno.orig/init/do_mounts.c	2008-01-06 18:44:23.000000000 
-+0100
-+++ zd1211rw.git.beno/init/do_mounts.c	2008-01-06 18:45:44.000000000 +0100
-@@ -330,6 +330,7 @@
- 		printk("Please append a correct \"root=\" boot option; here are the 
-available partitions:\n");
- 
- 		printk_all_partitions();
-+		msleep(60 * 1000);
- 		panic("VFS: Unable to mount root fs on %s", b);
- 	}
- 
-
-
-Cheers,
-Bernd
+Of course these features are merely there because 'select' creates this
+problem in the first place.
+-- 
+Stefan Richter
+-=====-==--- ---= --==-
+http://arcgraph.de/sr/
