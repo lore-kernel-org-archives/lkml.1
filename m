@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758041AbYAFApa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758415AbYAFApp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758041AbYAFApa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 19:45:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754680AbYAFApI
+	id S1758415AbYAFApp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 19:45:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757471AbYAFAp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 19:45:08 -0500
+	Sat, 5 Jan 2008 19:45:26 -0500
 Received: from fg-out-1718.google.com ([72.14.220.156]:60007 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753024AbYAFApF (ORCPT
+	with ESMTP id S1757837AbYAFApX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 19:45:05 -0500
+	Sat, 5 Jan 2008 19:45:23 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=mw9SbTFL9pJJ1eD5xA5BQ3TIRcmzYXHAq7WdO8AKYh0tfg+Dq06xwJQR8p7LrlJj5COrG4mktOmsRSZlaZsG5pda/uOX52qMLu8+E9wnm+hVlmtcAjuichL23wEWb3le+RK7sO5JgZ1PC5Tm8dhnHbxGmlt4P3mnIaQ46J0ZXLg=
+        b=VPjbKYl/beR3RD+ZE/TKzDijUgP2OftLjIPMdyEQEK2ehz13wtiwvC2HlFAYkDgb7Y5G7edEOhWD5dSb9MdVA8qcfSJEvlMOsRliUHoZ6u5kHOy4m29WAPhxwjoFpj4j/kc61rQmGXqadHmdoNlfDLjvnCTDzf7WmCiVk1pf4qI=
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        Ben Fennema <bfennema@falcon.csc.calpoly.edu>, Jan Kara <jack@suse.cz>,
        Christoph Hellwig <hch@infradead.org>,
        Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: [PATCH] udf: convert some macros to functions
-Date: Sun,  6 Jan 2008 01:44:34 +0100
-Message-Id: <1199580275-2487-6-git-send-email-marcin.slusarz@gmail.com>
+Subject: [PATCH] udf: fix sparse warnings (shadowing & mismatch between declaration and definition)
+Date: Sun,  6 Jan 2008 01:44:35 +0100
+Message-Id: <1199580275-2487-7-git-send-email-marcin.slusarz@gmail.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1199580275-2487-1-git-send-email-marcin.slusarz@gmail.com>
 References: <1199580275-2487-1-git-send-email-marcin.slusarz@gmail.com>
@@ -30,166 +30,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-convert UDF_SB_ALLOC_BITMAP macro to udf_sb_alloc_bitmap function
-convert UDF_SB_FREE_BITMAP macro to udf_sb_free_bitmap function
+fix sparse warnings:
+fs/udf/super.c:1431:24: warning: symbol 'bh' shadows an earlier one
+fs/udf/super.c:1347:21: originally declared here
+fs/udf/super.c:472:6: warning: symbol 'udf_write_super' was not declared. Should it be static?
 
 Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
 CC: Ben Fennema <bfennema@falcon.csc.calpoly.edu>
 CC: Jan Kara <jack@suse.cz>
 CC: Christoph Hellwig <hch@infradead.org>
 ---
- fs/udf/super.c  |   49 +++++++++++++++++++++++++++++++++++++++++++------
- fs/udf/udf_sb.h |   38 --------------------------------------
- 2 files changed, 43 insertions(+), 44 deletions(-)
+ fs/udf/super.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
 diff --git a/fs/udf/super.c b/fs/udf/super.c
-index c09e968..5423d26 100644
+index 5423d26..a5fb461 100644
 --- a/fs/udf/super.c
 +++ b/fs/udf/super.c
-@@ -937,6 +937,27 @@ static void udf_load_fileset(struct super_block *sb, struct buffer_head *bh,
- 		  root->logicalBlockNum, root->partitionReferenceNum);
+@@ -474,7 +474,7 @@ static int udf_parse_options(char *options, struct udf_options *uopt)
+ 	return 1;
  }
  
-+static struct udf_bitmap *udf_sb_alloc_bitmap(struct super_block *sb, __u32 index)
-+{
-+	struct udf_part_map *map = &UDF_SB(sb)->s_partmaps[index];
-+	int nr_groups = (map->s_partition_len + (sizeof(struct spaceBitmapDesc) << 3) +
-+		(sb->s_blocksize * 8) - 1) / (sb->s_blocksize * 8);
-+	int size = sizeof(struct udf_bitmap) + (sizeof(struct buffer_head *) * nr_groups);
-+	struct udf_bitmap *bitmap;
-+
-+	if (size <= PAGE_SIZE)
-+		bitmap = kmalloc(size, GFP_KERNEL);
-+	else
-+		bitmap = vmalloc(size);
-+	if (bitmap != NULL) {
-+		memset(bitmap, 0x00, size);
-+		bitmap->s_block_bitmap = (struct buffer_head **)(bitmap + 1);
-+		bitmap->s_nr_groups = nr_groups;
-+	} else
-+		udf_error(sb, __FUNCTION__, "Unable to allocate space for bitmap and %d buffer_head pointers", nr_groups);
-+	return bitmap;
-+}
-+
- static int udf_load_partdesc(struct super_block *sb, struct buffer_head *bh)
+-void udf_write_super(struct super_block *sb)
++static void udf_write_super(struct super_block *sb)
  {
- 	struct partitionDesc *p;
-@@ -987,7 +1008,7 @@ static int udf_load_partdesc(struct super_block *sb, struct buffer_head *bh)
- 						  i, map->s_uspace.s_table->i_ino);
- 				}
- 				if (phd->unallocSpaceBitmap.extLength) {
--					UDF_SB_ALLOC_BITMAP(sb, i, s_uspace);
-+					map->s_uspace.s_bitmap = udf_sb_alloc_bitmap(sb, i);
- 					if (map->s_uspace.s_bitmap != NULL) {
- 						map->s_uspace.s_bitmap->s_extLength =
- 							le32_to_cpu(phd->unallocSpaceBitmap.extLength);
-@@ -1017,7 +1038,7 @@ static int udf_load_partdesc(struct super_block *sb, struct buffer_head *bh)
- 						  i, map->s_fspace.s_table->i_ino);
- 				}
- 				if (phd->freedSpaceBitmap.extLength) {
--					UDF_SB_ALLOC_BITMAP(sb, i, s_fspace);
-+					map->s_fspace.s_bitmap = udf_sb_alloc_bitmap(sb, i);
- 					if (map->s_fspace.s_bitmap != NULL) {
- 						map->s_fspace.s_bitmap->s_extLength =
- 							le32_to_cpu(phd->freedSpaceBitmap.extLength);
-@@ -1506,6 +1527,22 @@ static void udf_close_lvid(struct super_block *sb)
- 	}
- }
+ 	lock_kernel();
  
-+static void udf_sb_free_bitmap(struct udf_bitmap *bitmap)
-+{
-+	int i;
-+	int nr_groups = bitmap->s_nr_groups;
-+	int size = sizeof(struct udf_bitmap) + (sizeof(struct buffer_head *) * nr_groups);
-+
-+	for (i = 0; i < nr_groups; i++)
-+		if (bitmap->s_block_bitmap[i])
-+			brelse(bitmap->s_block_bitmap[i]);
-+
-+	if (size <= PAGE_SIZE)
-+		kfree(bitmap);
-+	else
-+		vfree(bitmap);
-+}
-+
- /*
-  * udf_read_super
-  *
-@@ -1691,9 +1728,9 @@ error_out:
- 		if (map->s_partition_flags & UDF_PART_FLAG_FREED_TABLE)
- 			iput(map->s_fspace.s_table);
- 		if (map->s_partition_flags & UDF_PART_FLAG_UNALLOC_BITMAP)
--			UDF_SB_FREE_BITMAP(sb, sbi->s_partition, s_uspace);
-+			udf_sb_free_bitmap(map->s_uspace.s_bitmap);
- 		if (map->s_partition_flags & UDF_PART_FLAG_FREED_BITMAP)
--			UDF_SB_FREE_BITMAP(sb, sbi->s_partition, s_fspace);
-+			udf_sb_free_bitmap(map->s_fspace.s_bitmap);
- 		if (map->s_partition_type == UDF_SPARABLE_MAP15)
- 			for (i = 0; i < 4; i++)
- 				brelse(map->s_type_specific.s_sparing.s_spar_map[i]);
-@@ -1769,9 +1806,9 @@ static void udf_put_super(struct super_block *sb)
- 		if (map->s_partition_flags & UDF_PART_FLAG_FREED_TABLE)
- 			iput(map->s_fspace.s_table);
- 		if (map->s_partition_flags & UDF_PART_FLAG_UNALLOC_BITMAP)
--			UDF_SB_FREE_BITMAP(sb, sbi->s_partition, s_uspace);
-+			udf_sb_free_bitmap(map->s_uspace.s_bitmap);
- 		if (map->s_partition_flags & UDF_PART_FLAG_FREED_BITMAP)
--			UDF_SB_FREE_BITMAP(sb, sbi->s_partition, s_fspace);
-+			udf_sb_free_bitmap(map->s_fspace.s_bitmap);
- 		if (map->s_partition_type == UDF_SPARABLE_MAP15)
- 			for (i = 0; i < 4; i++)
- 				brelse(map->s_type_specific.s_sparing.s_spar_map[i]);
-diff --git a/fs/udf/udf_sb.h b/fs/udf/udf_sb.h
-index 4d3bd77..2c05f82 100644
---- a/fs/udf/udf_sb.h
-+++ b/fs/udf/udf_sb.h
-@@ -43,46 +43,8 @@ static inline struct udf_sb_info *UDF_SB(struct super_block *sb)
+@@ -1433,7 +1433,6 @@ static int udf_load_partition(struct super_block *sb, kernel_lb_addr *fileset)
+ 				map->s_type_specific.s_virtual.s_num_entries =
+ 					(sbi->s_vat_inode->i_size - 36) >> 2;
+ 			} else if (map->s_partition_type == UDF_VIRTUAL_MAP20) {
+-				struct buffer_head *bh = NULL;
+ 				uint32_t pos;
  
- struct logicalVolIntegrityDescImpUse *udf_sb_lvidiu(struct udf_sb_info *sbi);
- 
--#define UDF_SB_ALLOC_BITMAP(X,Y,Z)\
--{\
--	struct udf_sb_info *sbi = UDF_SB(X);\
--	int nr_groups = ((sbi->s_partmaps[(Y)].s_partition_len + (sizeof(struct spaceBitmapDesc) << 3) +\
--		((X)->s_blocksize * 8) - 1) / ((X)->s_blocksize * 8));\
--	int size = sizeof(struct udf_bitmap) + (sizeof(struct buffer_head *) * nr_groups);\
--	if (size <= PAGE_SIZE)\
--		sbi->s_partmaps[(Y)].Z.s_bitmap = kmalloc(size, GFP_KERNEL);\
--	else\
--		sbi->s_partmaps[(Y)].Z.s_bitmap = vmalloc(size);\
--	if (sbi->s_partmaps[(Y)].Z.s_bitmap != NULL) {\
--		memset(sbi->s_partmaps[(Y)].Z.s_bitmap, 0x00, size);\
--		sbi->s_partmaps[(Y)].Z.s_bitmap->s_block_bitmap =\
--			(struct buffer_head **)(sbi->s_partmaps[(Y)].Z.s_bitmap + 1);\
--		sbi->s_partmaps[(Y)].Z.s_bitmap->s_nr_groups = nr_groups;\
--	} else {\
--		udf_error(X, __FUNCTION__, "Unable to allocate space for bitmap and %d buffer_head pointers", nr_groups);\
--	}\
--}
--
--#define UDF_SB_FREE_BITMAP(X,Y,Z)\
--{\
--	int i;\
--	int nr_groups = UDF_SB_BITMAP_NR_GROUPS(X,Y,Z);\
--	int size = sizeof(struct udf_bitmap) + (sizeof(struct buffer_head *) * nr_groups);\
--	for (i = 0; i < nr_groups; i++) {\
--		if (UDF_SB_BITMAP(X,Y,Z,i))\
--			brelse(UDF_SB_BITMAP(X,Y,Z,i));\
--	}\
--	if (size <= PAGE_SIZE)\
--		kfree(UDF_SB(X)->s_partmaps[Y].Z.s_bitmap);\
--	else\
--		vfree(UDF_SB(X)->s_partmaps[Y].Z.s_bitmap);\
--}
--
- #define UDF_QUERY_FLAG(X,Y)			( UDF_SB(X)->s_flags & ( 1 << (Y) ) )
- #define UDF_SET_FLAG(X,Y)			( UDF_SB(X)->s_flags |= ( 1 << (Y) ) )
- #define UDF_CLEAR_FLAG(X,Y)			( UDF_SB(X)->s_flags &= ~( 1 << (Y) ) )
- 
--#define UDF_SB_BITMAP(X,Y,Z,I)			( UDF_SB(X)->s_partmaps[(Y)].Z.s_bitmap->s_block_bitmap[I] )
--#define UDF_SB_BITMAP_NR_GROUPS(X,Y,Z)		( UDF_SB(X)->s_partmaps[(Y)].Z.s_bitmap->s_nr_groups )
--
- #endif /* __LINUX_UDF_SB_H */
+ 				pos = udf_block_map(sbi->s_vat_inode, 0);
 -- 
 1.5.3.7
 
