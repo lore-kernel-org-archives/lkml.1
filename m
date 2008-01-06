@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758890AbYAFXXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759268AbYAFXYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758890AbYAFXXV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 18:23:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbYAFXXO
+	id S1759268AbYAFXYm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 18:24:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757026AbYAFXYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 18:23:14 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52275 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754740AbYAFXXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 18:23:13 -0500
-Date: Mon, 7 Jan 2008 00:22:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Douglas Landgraf <dougsland@gmail.com>
-Cc: Gregor Jasny <jasny@vidsoft.de>, linux-kernel@vger.kernel.org,
-       video4linux-list <video4linux-list@redhat.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       v4l-dvb-maintainer@linuxtv.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [v4l-dvb-maintainer] [PATCH] Re: Regression: VIDIOCGMBUF ioctl
-	hangs on bttv driver (2.6.24-rc6)
-Message-ID: <20080106232234.GA12783@elte.hu>
-References: <20080105223338.GA18690@vidsoft.de> <20080106141548.GB18690@vidsoft.de> <68cac7520801061453w6906e510o5d53449e0b28f400@mail.gmail.com>
+	Sun, 6 Jan 2008 18:24:35 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:13328 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754911AbYAFXYe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 18:24:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=XJArAfU47o2o9CzxamnOntZH5DoZ85ESnu/SlxSBv/NiNTReTcY8Okvgif658ljb7p+lGVL1ExrH4kvegXKotGJIZqtVqIlId/48kyslw71YTOEUSdyGgjK0ncVaB57j2idXqXhVNlmXDUNBvSdqFMFRS/CnQ5PMGi5u0ByuGxg=
+Date: Mon, 7 Jan 2008 02:11:00 +0300
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Dmitry <dbaryshkov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, cbou@mail.ru, dwmw2@infradead.org
+Subject: Re: [PATCH 1/3] power_supply: add few more values and props
+Message-ID: <20080106231100.GA30506@zarina>
+Reply-To: cbouatmailru@gmail.com
+References: <20080106122659.GA13106@doriath.ww600.siemens.net> <20080106140903.GA23333@zarina> <bc64b4640801061415m61c9fd9fr81d6ca03c2a5d626@mail.gmail.com> <20080106223049.GA13655@zarina> <bc64b4640801061513q4254fb2djf3b7203ab98773c6@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-In-Reply-To: <68cac7520801061453w6906e510o5d53449e0b28f400@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <bc64b4640801061513q4254fb2djf3b7203ab98773c6@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Douglas Landgraf <dougsland@gmail.com> wrote:
-
-> Hi guys,
+On Mon, Jan 07, 2008 at 02:13:07AM +0300, Dmitry wrote:
+> Hi,
 > 
->     Gregor, we have converted bttv driver to use vidioc_ioctl2 some 
-> days ago. Could you check and create your patch against v4l 
-> development tree? Bttv driver does not have anymore bttv_do_ioctl().
+> 2008/1/7, Anton Vorontsov <cbouatmailru@gmail.com>:
+> > On Mon, Jan 07, 2008 at 01:15:32AM +0300, Dmitry wrote:
+> > [...]
+> > > > > +     POWER_SUPPLY_ATTR(voltage_max),
+> > > > > +     POWER_SUPPLY_ATTR(voltage_min),
+> > > >
+> > > > I'd suggest keep Documentation/power_supply_class.txt in sync
+> > > > wrt new properties, to distinct their meanings and usage.
+> > > >
+> > > > I assume you're using these new properties for non-rechargeable
+> > > > LiMn batteries. So, why new properties, aren't voltage_*_design
+> > > > ones suits that purpose? If battery is non-rechargeable it is
+> > > > having only design values, no?
+> > >
+> > > No, I used it for the battery driver for Sharp Zaurus SL-6000 (tosa).
+> > > It's connected via simple ADC so I can get only voltages. I don't know
+> > > max_design value for the battery, but I have 'FULL' signal which I use
+> > > to detect 'voltage_max' and use it for power estimations.
+> >
+> > Ah, I see. In that case the value is empiric and voltage_max is
+> > appropriate name indeed.
+> 
+> :) Documentation patch should be pretty trivial, could you please just
+> make it w/o another resent cycle?
 
-this is about the bttv driver in 2.6.24-rc6/(rc7?) hanging. So whatever 
-the devel tree does, this fix (if it's a correct fix) needs to be 
-commited upstream ASAP.
+Sure thing, will do.
 
-	Ingo
+Thanks,
 
-ps. http://www.zip.com.au/~akpm/linux/patches/stuff/top-posting.txt
-
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
