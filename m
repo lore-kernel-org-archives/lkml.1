@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756720AbYAFUZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757500AbYAFU1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756720AbYAFUZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 15:25:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753877AbYAFUZP
+	id S1757500AbYAFU1i (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 15:27:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753877AbYAFU1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 15:25:15 -0500
-Received: from ishtar.tlinx.org ([64.81.245.74]:33484 "EHLO ishtar.tlinx.org"
+	Sun, 6 Jan 2008 15:27:31 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54037 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753088AbYAFUZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 15:25:13 -0500
-Message-ID: <47813926.6010908@tlinx.org>
-Date: Sun, 06 Jan 2008 12:25:10 -0800
-From: Linda Walsh <lkml@tlinx.org>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	id S1752692AbYAFU1a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 15:27:30 -0500
+Date: Sun, 6 Jan 2008 21:26:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Peter Osterlund <petero2@telia.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
+Message-ID: <20080106202643.GB10688@elte.hu>
+References: <alpine.LFD.1.00.0801021113150.32517@woody.linux-foundation.org> <20080102194030.GC11638@parisc-linux.org> <1199304735.3258.53.camel@localhost.localdomain> <alpine.LFD.1.00.0801021227140.32517@woody.linux-foundation.org> <1199316785.3258.85.camel@localhost.localdomain> <alpine.LFD.1.00.0801021756310.3010@woody.linux-foundation.org> <m3ir27oe7f.fsf@telia.com> <1199627875.5205.1.camel@localhost.localdomain> <20080106144706.GA25419@elte.hu> <47811004.6070307@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-Subject: Re: SATA kernel-buffered read VERY slow (not raid, Promise TX300
- card); 2.6.23.1(vanilla)
-References: <fa.o9uy6Qaq3PtHs2Z9lAKGUKvD85I@ifi.uio.no> <fa.1kDEq2SPE3FqpM5Mfw9CVGbvVdY@ifi.uio.no> <fa.hIZ5+XhGRugySB/HuLxr5qd6gAY@ifi.uio.no> <fa.iefWPg3R6g5Pnm/ktSCK9XWVFVw@ifi.uio.no> <fa.FhpaleM/osLTMJ85/PuxjxyJeGI@ifi.uio.no> <fa.MP5rgMp4TS2+Cfemd/uFOQOuquQ@ifi.uio.no> <477D9B6E.7060000@shaw.ca> <477D9D66.3080502@tlinx.org> <477DA05F.4080503@shaw.ca>
-In-Reply-To: <477DA05F.4080503@shaw.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47811004.6070307@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
->
-> If this is a Seagate, I believe that they don't have AAM enabled on 
-> any of their newer drives (something about a lawsuit for patent 
-> infringement on that feature, or something). Quite likely they don't 
-> support that power management command, either.
---
-    Do you have a source for this -- haven't heard of such a conflict -- 
-besides, doesn't
-ATA-7 require some of those functions?  Given the trend toward 
-power-saving and
-quieter (also usually less vibration)  hard disks, I strongly disbelieve 
-Seagate would
-remove those features -- especially since they are mentioned on 
-Seagate's drive
-information page as being supported features.
 
+* Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
+> Ingo Molnar wrote:
+> > If lkml traffic is too big then i'd suggest to set up email 
+> > filters to separate out mails that have 'SCSI' in their subject line
+> 
+> Good idea.  Minor flaw: If somebody forgets to Cc LSML, he might also 
+> forget to put SCSI or scsi into the Subject.
 
+yeah, that's very frequent, but i dont think it's a big issue:
+
+> > or body.
+> 
+> This yields false positives whenever a .config is posted.
+
+these two patterns:
+
+  "^CONFIG_"
+  "^# "
+
+will exclude .config-ish lines.
+
+	Ingo
