@@ -1,115 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756086AbYAFUDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756074AbYAFUNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756086AbYAFUDz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 15:03:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbYAFUDp
+	id S1756074AbYAFUNd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 15:13:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbYAFUNZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 15:03:45 -0500
-Received: from py-out-1112.google.com ([64.233.166.179]:41479 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752677AbYAFUDo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 15:03:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=imqGe7hCJx5TmpmIbK2sfeje+fA2w5XHHouSetI+EgrDpRfS60ZfLBVmrQkZfKrIYB9U593I33IklbDKyGzqBp8aQPGHuqwNskhfgXdb3sARsoLbSweY2TlobobCAsYC9rVMA3hi+jV6OA4PpU0ldqQFNshNr+wcFvfivu6pXKQ=
-Message-ID: <64bb37e0801061203l503f29f0hd922a1347f8169ac@mail.gmail.com>
-Date: Sun, 6 Jan 2008 21:03:42 +0100
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "FUJITA Tomonori" <tomof@acm.org>
-Subject: Re: 2.6.24-rc6-mm1
-Cc: akpm@linux-foundation.org, jarkao2@gmail.com, herbert@gondor.apana.org.au,
-       linux-kernel@vger.kernel.org, neilb@suse.de, bfields@fieldses.org,
-       netdev@vger.kernel.org, tom@opengridcomputing.com,
-       fujita.tomonori@lab.ntt.co.jp
-In-Reply-To: <20080106223650E.tomof@acm.org>
+	Sun, 6 Jan 2008 15:13:25 -0500
+Received: from lixom.net ([66.141.50.11]:32962 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753081AbYAFUNY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 15:13:24 -0500
+Date: Sun, 6 Jan 2008 14:22:23 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       heiko.carstens@de.ibm.com, mingo@elte.hu, mpm@selenic.com
+Subject: [PATCH] Add bug/warn marker to generic report_bug()
+Message-ID: <20080106202223.GA12640@lixom.net>
+References: <20080105190713.73745ec6@laptopd505.fenrus.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <64bb37e0801060241o2c6d8172r73b69291fce76ce1@mail.gmail.com>
-	 <20080106202616Z.tomof@acm.org>
-	 <64bb37e0801060335k4afb3134u9c6fadb57d525dc5@mail.gmail.com>
-	 <20080106223650E.tomof@acm.org>
+In-Reply-To: <20080105190713.73745ec6@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 6, 2008 2:33 PM, FUJITA Tomonori <tomof@acm.org> wrote:
-> On Sun, 6 Jan 2008 12:35:35 +0100
-> "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
-> > On Jan 6, 2008 12:23 PM, FUJITA Tomonori <tomof@acm.org> wrote:
-> > > On Sun, 6 Jan 2008 11:41:10 +0100
-> > > "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
-> > > > I will applie your patch and see if this hunk from
-> > > > find_next_zero_area() makes a difference:
-> > > >
-> > > >        end = index + nr;
-> > > > -       if (end > size)
-> > > > +       if (end >= size)
-> > > >                 return -1;
+Powerpc uses the generic report_bug() from lib/bug.c to report warnings,
+and I'm guessing other arches do as well.
 
--> that might still have made a difference, but ...
+Add the module list as well as the end-of-trace marker to the output. This
+required making print_oops_end_marker() nonstatic.
 
-> > > > -       for (i = index + 1; i < end; i++) {
-> > > > +       for (i = index; i < end; i++) {
 
-... as you say below, the test for the index position is only needed
-if index is modified after find_next_zero_bit().
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-> > > >                 if (test_bit(i, map)) {
-> > >
-> > > The patch should not make a difference for X86_64.
-> >
-> > Hmm...
-> > arch/x86/kernel/pci-gart_64.c:
-> > alloc_iommu() calls iommu_area_alloc()
-> > lib/iommu-helper.c:
-> > iommu_area_alloc() calls find_next_zero_area()
-> > -> so the above code should be called even on X86_64
->
-> Oops, I meant that the patch fixes the align allocation (non zero
-> align_mask case). X86_64 doesn't use the align allocation.
->
->
-> > And the change in the for loop means that 'index' will now be tested,
-> > but with the old code it was not.
->
-> With the old code, 'index' is tested by find_next_zero_bit.
->
-> With the new code and non zero align_mask case, 'index' is not tested
-> by find_next_zero_bit. So test_bit needs to start with 'index'.
->
-> So If I understand the correctly, this patch should not make a
-> difference for x86_64 though I might miss something.
 
-You did not miss anything.
-After 18 packages my system crashed again.
+---
 
-> > And double using something does fit with the errors I'm seeing...
-> >
-> > > Can you try the patch to revert my IOMMU changes?
-> > >
-> > > http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg12694.html
-> >
-> > Testing for this bug is a little bit slow, as I'm compiling ~100
-> > packages trying to trigger it.
-> > If my current testrun with the patch from
-> > http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg12702.html
-> > crashes, I will revert the hole IOMMU changes with above patch and try again.
->
-> Thanks for testing,
+On Sat, Jan 05, 2008 at 07:07:13PM -0800, Arjan van de Ven wrote:
+> 3rd try for this patch series; now with a split up patch for __WARN_ON
+> 
+> This series has the goal of extending the usefulness of the WARN_ON() information,
+> at least on architectures that use the generic WARN_ON() infrastructure. (Those who
+> do their own thing either already have the extra information, or could consider
+> switching to the generic code). In order to do that, WARN_ON() first needs to 
+> be uninlined since there's like 1200 callsites and adding code to each of those
+> isn't pretty.
+> 
+> As part of this, I had to split the __WARN_ON patch in -mm into 2 pieces, one to 
+> introduce __WARN_ON, and a separate one to do the ifdef cleanup. 
 
-OK, I'm still testing this, but after 95 completed packages I'm rather
-certain that reverting the IOMMU changes with this patch fixes my
-problem.
-I didn't have time to look more into this, so I can't offer any
-concrete ideas where the bug is.
+Looks good. The following patch takes care of the warning printout from
+powerpc as well. Unfortunately I had to non-staticfy
+print_oops_end_marker().
 
-If you send more patches, I'm willing to test them, but it might take
-some more time during the next week.
 
-Thanks for looking into this.
+-Olof
 
-Torsten
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 94bc996..88d1aa3 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -133,6 +133,7 @@ NORET_TYPE void panic(const char * fmt, ...)
+ extern void oops_enter(void);
+ extern void oops_exit(void);
+ extern int oops_may_print(void);
++extern void print_oops_end_marker(void);
+ fastcall NORET_TYPE void do_exit(long error_code)
+ 	ATTRIB_NORET;
+ NORET_TYPE void complete_and_exit(struct completion *, long)
+diff --git a/kernel/panic.c b/kernel/panic.c
+index d9e90cf..0269a7f 100644
+--- a/kernel/panic.c
++++ b/kernel/panic.c
+@@ -281,7 +281,7 @@ static int init_oops_id(void)
+ }
+ late_initcall(init_oops_id);
+ 
+-static void print_oops_end_marker(void)
++void print_oops_end_marker(void)
+ {
+ 	init_oops_id();
+ 	printk(KERN_WARNING "---[ end trace %016llx ]---\n",
+diff --git a/lib/bug.c b/lib/bug.c
+index 530f38f..3aa60a5 100644
+--- a/lib/bug.c
++++ b/lib/bug.c
+@@ -148,7 +148,9 @@ enum bug_trap_type report_bug(unsigned long bugaddr, struct pt_regs *regs)
+ 			       "[verbose debug info unavailable]\n",
+ 			       (void *)bugaddr);
+ 
++		print_modules();
+ 		show_regs(regs);
++		print_oops_end_marker();
+ 		return BUG_TRAP_TYPE_WARN;
+ 	}
+ 
