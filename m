@@ -1,62 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758401AbYAFBVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758587AbYAFBVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758401AbYAFBVB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 20:21:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755692AbYAFBUv
+	id S1758587AbYAFBVZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 20:21:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755410AbYAFBUw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 20:20:51 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:32247 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753920AbYAFBUu convert rfc822-to-8bit (ORCPT
+	Sat, 5 Jan 2008 20:20:52 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:49822 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754272AbYAFBUu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 5 Jan 2008 20:20:50 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=VwTZ+JIUhutDzedc33StqFw2QYlqfAlizQJcttOfRWEqi0XnuI9hUR/0UgpBW6lLT4OHT+a4u5YXnf+LrbC2mXDJCgnzwq69YFLVLzVpx4sMDHAviIbcWu1R9V57J8qJgtB8lhhwWkSr8MZd2ICt9ErgW00gJuJbn5jwSyxTMmk=
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] x86: ioport_{32|64}.c unification
-Date: Sun, 6 Jan 2008 02:20:45 +0100
-User-Agent: KMail/1.9.7
-Cc: Miguel =?utf-8?q?Bot=C3=B3n?= <mboton.lkml@gmail.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       tglx@linutronix.de
-References: <200801060059.48333.mboton@gmail.com> <200801060147.48185.arnd@arndb.de>
-In-Reply-To: <200801060147.48185.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200801060220.45669.mboton@gmail.com>
-From: Miguel =?utf-8?q?Bot=C3=B3n?= <mboton.lkml@gmail.com>
+        h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
+        b=VZPq+L1yWZOjz1VdIx8S0ITMy7Mt6kjJUKtmtFqUv0+4tY7ALjJODy/O3REaJa1q/ukUkIaGf3w6qCxgR4X80lIBkO6v4Ml5YLyA+v8UxweF8laCffUHtK3R7tkHddZ8zwPREqQJHT7aBax5vf1Vq9WKuDU+SBxNVGMU2wRUKok=
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ben Fennema <bfennema@falcon.csc.calpoly.edu>, Jan Kara <jack@suse.cz>,
+       Christoph Hellwig <hch@infradead.org>,
+       Marcin Slusarz <marcin.slusarz@gmail.com>
+Subject: [PATCH 3/7] udf: create common function for changing free space counter
+Date: Sun,  6 Jan 2008 02:21:49 +0100
+Message-Id: <1199582513-7915-3-git-send-email-marcin.slusarz@gmail.com>
+X-Mailer: git-send-email 1.5.3.7
+In-Reply-To: <1199582513-7915-1-git-send-email-marcin.slusarz@gmail.com>
+References: <1199582513-7915-1-git-send-email-marcin.slusarz@gmail.com>
+From: marcin.slusarz@gmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just realize that in some cases 'regs->flags' is a long instead of an 
-unsigned long so... this would be a proper solution?
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+---
+ fs/udf/balloc.c |   49 ++++++++++++++++++++-----------------------------
+ 1 files changed, 20 insertions(+), 29 deletions(-)
 
-static long do_iopl(unsigned int level, long *flags)
-{
-	...
-}
-
-#ifdef CONFIG_X86_32
-asmlinkage long sys_iopl(unsigned long regsp)
-{
-	volatile struct pt_regs *regs = (struct pt_regs *)&regsp;
-	unsigned int level = regs->bx;
-#else
-asmlinkage long sys_iopl(unsigned int level, struct pt_regs *regs)
-{
-#endif
-	return do_iopl(level, (long *)&regs->flags);
-}
-
-Or maybe would be better if 'do_iopl' prototype is:
-
-static long do_iopl(unsigned int level, struct pt_regs *regs);
-
+diff --git a/fs/udf/balloc.c b/fs/udf/balloc.c
+index 17b67dc..d1d4b8f 100644
+--- a/fs/udf/balloc.c
++++ b/fs/udf/balloc.c
+@@ -140,6 +140,20 @@ static inline int load_block_bitmap(struct super_block *sb,
+ 	return slot;
+ }
+ 
++static inline bool udf_inc_free_space(struct udf_sb_info *sbi,
++				      u16 partition, u32 cnt)
++{
++	if (sbi->s_lvid_bh) {
++		struct logicalVolIntegrityDesc *lvid =
++					(struct logicalVolIntegrityDesc *)
++							sbi->s_lvid_bh->b_data;
++		lvid->freeSpaceTable[partition] =
++			cpu_to_le32(le32_to_cpu(
++					lvid->freeSpaceTable[partition]) + cnt);
++	}
++	return sbi->s_lvid_bh != NULL;
++}
++
+ static void udf_bitmap_free_blocks(struct super_block *sb,
+ 				   struct inode *inode,
+ 				   struct udf_bitmap *bitmap,
+@@ -194,11 +208,7 @@ do_more:
+ 		} else {
+ 			if (inode)
+ 				DQUOT_FREE_BLOCK(inode, 1);
+-			if (sbi->s_lvid_bh) {
+-				struct logicalVolIntegrityDesc *lvid = (struct logicalVolIntegrityDesc *)sbi->s_lvid_bh->b_data;
+-				lvid->freeSpaceTable[sbi->s_partition] =
+-					cpu_to_le32(le32_to_cpu(lvid->freeSpaceTable[sbi->s_partition]) + 1);
+-			}
++			udf_inc_free_space(sbi, sbi->s_partition, 1);
+ 		}
+ 	}
+ 	mark_buffer_dirty(bh);
+@@ -270,12 +280,8 @@ repeat:
+ 	if (block_count > 0)
+ 		goto repeat;
+ out:
+-	if (sbi->s_lvid_bh) {
+-		struct logicalVolIntegrityDesc *lvid = (struct logicalVolIntegrityDesc *)sbi->s_lvid_bh->b_data;
+-		lvid->freeSpaceTable[partition] =
+-			cpu_to_le32(le32_to_cpu(lvid->freeSpaceTable[partition]) - alloc_count);
++	if (udf_inc_free_space(sbi, partition, -alloc_count))
+ 		mark_buffer_dirty(sbi->s_lvid_bh);
+-	}
+ 	sb->s_dirt = 1;
+ 	mutex_unlock(&sbi->s_alloc_mutex);
+ 	return alloc_count;
+@@ -406,12 +412,8 @@ got_block:
+ 
+ 	mark_buffer_dirty(bh);
+ 
+-	if (sbi->s_lvid_bh) {
+-		struct logicalVolIntegrityDesc *lvid = (struct logicalVolIntegrityDesc *)sbi->s_lvid_bh->b_data;
+-		lvid->freeSpaceTable[partition] =
+-			cpu_to_le32(le32_to_cpu(lvid->freeSpaceTable[partition]) - 1);
++	if (udf_inc_free_space(sbi, partition, -1))
+ 		mark_buffer_dirty(sbi->s_lvid_bh);
+-	}
+ 	sb->s_dirt = 1;
+ 	mutex_unlock(&sbi->s_alloc_mutex);
+ 	*err = 0;
+@@ -452,12 +454,8 @@ static void udf_table_free_blocks(struct super_block *sb,
+ 	   could occure, but.. oh well */
+ 	if (inode)
+ 		DQUOT_FREE_BLOCK(inode, count);
+-	if (sbi->s_lvid_bh) {
+-		struct logicalVolIntegrityDesc *lvid = (struct logicalVolIntegrityDesc *)sbi->s_lvid_bh->b_data;
+-		lvid->freeSpaceTable[sbi->s_partition] =
+-			cpu_to_le32(le32_to_cpu(lvid->freeSpaceTable[sbi->s_partition]) + count);
++	if (udf_inc_free_space(sbi, sbi->s_partition, count))
+ 		mark_buffer_dirty(sbi->s_lvid_bh);
+-	}
+ 
+ 	start = bloc.logicalBlockNum + offset;
+ 	end = bloc.logicalBlockNum + offset + count - 1;
+@@ -721,10 +719,7 @@ static int udf_table_prealloc_blocks(struct super_block *sb,
+ 
+ 	brelse(epos.bh);
+ 
+-	if (alloc_count && sbi->s_lvid_bh) {
+-		struct logicalVolIntegrityDesc *lvid = (struct logicalVolIntegrityDesc *)sbi->s_lvid_bh->b_data;
+-		lvid->freeSpaceTable[partition] =
+-			cpu_to_le32(le32_to_cpu(lvid->freeSpaceTable[partition]) - alloc_count);
++	if (alloc_count && udf_inc_free_space(sbi, partition, -alloc_count)) {
+ 		mark_buffer_dirty(sbi->s_lvid_bh);
+ 		sb->s_dirt = 1;
+ 	}
+@@ -824,12 +819,8 @@ static int udf_table_new_block(struct super_block *sb,
+ 		udf_delete_aext(table, goal_epos, goal_eloc, goal_elen);
+ 	brelse(goal_epos.bh);
+ 
+-	if (sbi->s_lvid_bh) {
+-		struct logicalVolIntegrityDesc *lvid = (struct logicalVolIntegrityDesc *)sbi->s_lvid_bh->b_data;
+-		lvid->freeSpaceTable[partition] =
+-			cpu_to_le32(le32_to_cpu(lvid->freeSpaceTable[partition]) - 1);
++	if (udf_inc_free_space(sbi, partition, -1))
+ 		mark_buffer_dirty(sbi->s_lvid_bh);
+-	}
+ 
+ 	sb->s_dirt = 1;
+ 	mutex_unlock(&sbi->s_alloc_mutex);
 -- 
-	Miguel Botón
+1.5.3.7
+
