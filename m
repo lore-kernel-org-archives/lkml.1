@@ -1,84 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753472AbYAFCzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbYAFCzr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753472AbYAFCzA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 21:55:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbYAFCyv
+	id S1754036AbYAFCzr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 21:55:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbYAFCzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 21:54:51 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:19531 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752215AbYAFCyu (ORCPT
+	Sat, 5 Jan 2008 21:55:39 -0500
+Received: from pne-smtpout1-sn1.fre.skanova.net ([81.228.11.98]:33056 "EHLO
+	pne-smtpout1-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752248AbYAFCzi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 21:54:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=aoVW/BY7mxCaRk7gx4yq9XjGyJd3Q4KXbvQb+DDQKIPNHDDYaV3YSRi5Y7Lp3da+UY1lm8jj5dDx/lV4HgXqXB6FjN+wkqPpjmyvlqLXuBAqjmfV/bkBVvzf8NqtHwcsod9aT+NfjDJviBJxnyCY698hcOoQf/y8cbd+hp1SaDE=
-Message-ID: <478042F3.7010002@gmail.com>
-Date: Sun, 06 Jan 2008 11:54:43 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sat, 5 Jan 2008 21:55:38 -0500
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Matthew Wilcox <matthew@wil.cx>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
+References: <20080102162534.GA4041@elte.hu>
+	<1199292381.3258.32.camel@localhost.localdomain>
+	<alpine.LFD.1.00.0801021113150.32517@woody.linux-foundation.org>
+	<20080102194030.GC11638@parisc-linux.org>
+	<1199304735.3258.53.camel@localhost.localdomain>
+	<alpine.LFD.1.00.0801021227140.32517@woody.linux-foundation.org>
+	<1199316785.3258.85.camel@localhost.localdomain>
+	<alpine.LFD.1.00.0801021756310.3010@woody.linux-foundation.org>
+From: Peter Osterlund <petero2@telia.com>
+Date: 06 Jan 2008 03:55:16 +0100
+In-Reply-To: <alpine.LFD.1.00.0801021756310.3010@woody.linux-foundation.org>
+Message-ID: <m3ir27oe7f.fsf@telia.com>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
 MIME-Version: 1.0
-To: Al Viro <viro@ZenIV.linux.org.uk>
-CC: Gabor Gombas <gombasg@sztaki.hu>, Dave Young <hidave.darkstar@gmail.com>,
-       linux-kernel@vger.kernel.org, bluez-devel@lists.sourceforge.net,
-       Greg KH <greg@kroah.com>, ebiederm@xmission.com
-Subject: Re: [Bluez-devel] Oops involving RFCOMM and sysfs
-References: <20071228173203.GA20690@boogie.lpds.sztaki.hu> <a8e1da0712290007o168a730cw923055ad2c265d84@mail.gmail.com> <20080102151642.GA7273@boogie.lpds.sztaki.hu> <20080105075039.GF27894@ZenIV.linux.org.uk> <477F9481.2040505@gmail.com> <20080105194510.GK27894@ZenIV.linux.org.uk> <478037F8.8020103@gmail.com> <20080106021826.GR27894@ZenIV.linux.org.uk>
-In-Reply-To: <20080106021826.GR27894@ZenIV.linux.org.uk>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Al Viro.
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-Al Viro wrote:
-> On Sun, Jan 06, 2008 at 11:07:52AM +0900, Tejun Heo wrote:
+> On Wed, 2 Jan 2008, James Bottomley wrote:
 > 
->> Right, I haven't thought about that.  When sysfs_get_dentry() is called,
->> @sd is always valid so unless there was existing negative dentry, lookup
->> is guaranteed to return positive dentry, but by populating dcache with
->> negative dentry before a node is created, things can go wrong.  I don't
->> think that's what's going on here tho.  If that was the case, the
->> while() loop looking up the next sd to lookup (@cur) should have blown
->> up as negative dentry will have NULL d_fsdata which doesn't match any sd.
-> 
-> No.  What happens if sd gets unlinked while we are on the way to
-> sysfs_get_dentry() and so does its parent?
+> > Look at the taxonomy of the bug.  This is the form of the error:
+> > 
+> > buffer I/O error on device sr0, logical block 20304
+> > attempt to access beyond end of device
+> > sr0: rw=0, want=81224, limit=40944
+> > 
+> > The last limit is the most suggestive, that comes straight from
+> > bdev->bd_inode->i_size>>9 and is supposed to be the size of the block
+> > device in 512 byte blocks. For a 4.7GB DVD, it's a little small.
+> > Nothing in the sr code sets this directly (although it does come from
+> > get_blkdev() for the first opener).  pktcdvd does set it, though ... and
+> > probably wrongly if the drive in question isn't UDF formatted.
 
-That means sysfs_remove_dir() is called on parent while other operations
-are in progress on children, right?  sysfs has never allowed such things
-&& AFAIK no one does that.  It's somewhat implied in the interface (such
-as recursive removing) but I fully agree it's problematic.  Things like
-these are why I think we need to unify/simplify locking as I wrote
-previously.
+pktcdvd sets it when opening the /dev/pktcdvd device, but when the
+drive is later opened as /dev/scd0, there is nothing that sets it
+back. (Btw, 40944 is possible if the disk is a CDRW that was formatted
+with "cdrwtool -m 10236".)
 
-> The parent is off the
-> sibling list, we get negative dentry from lookup.  It's not hashed,
-> so won't stick around in dcache (which is apparently what you are
-> thinking about).  However, _THIS_ lookup has returned you a dentry
-> with NULL ->d_inode and you are well and truly buggered.
+The problem is that pktcdvd opens the cd device in non-blocking mode
+when pktsetup is run, and doesn't close it again until pktsetup -d
+is run. The effect is that if you meanwhile open the cd device,
+blkdev.c:do_open() doesn't call bd_set_size() because bdev->bd_openers
+is non-zero.
 
-So, the assumption is that while @sd is held and being operated on its
-ancestry can never change except for rename and move and those are
-protected with sysfs_rename_mutex.
+I don't know the correct way to fix this. Maybe adding bd_set_size()
+to sr.c:get_sectorsize() which already does set_capacity() would
+work.
 
-I agree that the locking is awkward but sysfs's internal implementation
-has completely changed over last six or so months and the conversion
-still isn't complete.  It isn't pretty at all but is at least
-understandable now, IMHO.  :-)
+> .. but you're ignoring the fact that if pktcdvd sets it wrong, then it 
+> should be visible with the pre-commit kernel *also*.
 
-The last pending change is separating out kobject from sysfs and
-simplifying locking.  I had some disagreement with Greg about the future
-of kobject and then there was tsunami of ATA bugs because most major
-distros converted to libata from IDE in the second half of the last year
-and I'm still buried under it.  I'll get back to sysfs once these ATA
-bugs subside a bit.
+I can repeat this bug, both with and without the scsi patch that is
+claimed to make a difference, both with an external USB drive and an
+internal IDE drive.
 
-Thanks.
+To repeat:
+
+  1. Start with an empty drive.
+  2. pktsetup 0 /dev/scd0 
+  3. Insert a CD containing an isofs filesystem.
+  4. mount /dev/pktcdvd/0 /mnt/tmp
+  5. umount /mnt/tmp
+  6. Press the eject button.
+  7. Insert a DVD containing a non-writable filesystem.
+  8. mount /dev/scd0 /mnt/tmp
+  9. find /mnt/tmp -type f -print0 | xargs -0 sha1sum >/dev/null
+  10. If the DVD contains data beyond the physical size of a CD, you
+      get I/O errors in the terminal, and dmesg reports lots of
+      "attempt to access beyond end of device" errors.
 
 -- 
-tejun
+Peter Osterlund - petero2@telia.com
+http://web.telia.com/~u89404340
