@@ -1,54 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbYAFK0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755328AbYAFKbB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755843AbYAFK0Q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 05:26:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbYAFK0B
+	id S1755328AbYAFKbB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 05:31:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbYAFKav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 05:26:01 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49017 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752889AbYAFK0A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 05:26:00 -0500
-Date: Sun, 6 Jan 2008 11:25:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] profile: further Codying Style fixes
-Message-ID: <20080106102544.GB11765@elte.hu>
-References: <20080104152858.1fb9b868@paolo-desktop>
+	Sun, 6 Jan 2008 05:30:51 -0500
+Received: from py-out-1112.google.com ([64.233.166.182]:59585 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752589AbYAFKat (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 05:30:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XjoG2rBwgsBD+AUE1nO/Xqst+xPvPWKTpMftZcUaxS9jKRtuUiqUsiXQ+QTjRPAnVESDartlnosW3TkWp4rI/w64mqMT3bFf0EEE7IKPaqjj3Tz6YT737cvaR8zYFZheNZ9Xs01kq0U5GS6YDdfdH3How27VyP9qJX/h2h+RgFQ=
+Message-ID: <64bb37e0801060230x6b392542la9556d72a184f306@mail.gmail.com>
+Date: Sun, 6 Jan 2008 11:30:48 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Jarek Poplawski" <jarkao2@gmail.com>
+Subject: Re: 2.6.24-rc6-mm1
+Cc: "Herbert Xu" <herbert@gondor.apana.org.au>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "Neil Brown" <neilb@suse.de>,
+       "J. Bruce Fields" <bfields@fieldses.org>, netdev@vger.kernel.org,
+       "Tom Tucker" <tom@opengridcomputing.com>
+In-Reply-To: <20080106082740.GA3117@ami.dom.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080104152858.1fb9b868@paolo-desktop>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <64bb37e0801040223q17a76565k3c7667a197403ce5@mail.gmail.com>
+	 <20080104133031.GA3329@ff.dom.local>
+	 <64bb37e0801040721p57ff3d54wc3de00546d1d2ff1@mail.gmail.com>
+	 <20080105000700.GA3224@ami.dom.local>
+	 <64bb37e0801050001x65b104bdl5a68c731b3656d17@mail.gmail.com>
+	 <20080105101327.GA3103@ami.dom.local>
+	 <64bb37e0801050652t7568e438uf93208601df84ef6@mail.gmail.com>
+	 <20080106082740.GA3117@ami.dom.local>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jan 6, 2008 9:27 AM, Jarek Poplawski <jarkao2@gmail.com> wrote:
+> On Sat, Jan 05, 2008 at 03:52:32PM +0100, Torsten Kaiser wrote:
+> ...
+> > So my personal conclusion would be, that someone is writing to memory
+> > that he no longer owns. Most probably 0-bytes. (the complete_routine
+> > got NULLed and the warning about dst->__refcnt being 0).
+> >
+> > Use-after-free or something else?
+>
+> I agree: your conclusion seems to be the most probable explanation for
+> this. Then it could be really hard to solve this without bisection or
+> something similar. But there is some probabability this something could
+> try kfree later too, but simply this list debugging triggers earlier.
 
-* Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
+As for example in the case when it dies in ieee1394-thread the list is
+so corrupted that it will die anyway.
 
-> Further codying style fixes on top of:
-> http://marc.info/?l=linux-kernel&m=119940325306693&w=2
+But I might try this anyway, as I don't really have a better idee.
 
-thanks, applied.
+> > > > If you think some other slub_debug might catch it, I would try this...
+>
+> You can try to add "U" to these other slub_debug options. As a matter
+> of fact, if your above diagnose is right, it seems you risk to damage
+> your system or even the box with these tests, so if you want to
+> continue, you should probably turn any possible debugging on (not in
+> mm only).
 
-> 1 Warning is still not killed:
-> WARNING: externs should be avoided in .c files
-> #509: FILE: profile.c:509:
-> +       extern int setup_profiling_timer(unsigned int multiplier);
-> 
-> I don't know how to fix it :-/
+I did not add U, because I thought that would only needed to trace memory leaks.
+And I hoped that using P (poison) would catch any later use (after free).
 
-simply move that line to include/linux/profile.h. (no need to preserve 
-the CONFIG_SMP - on !SMP the function prototype line will not be used)
+> BTW, you've written that some debugging options seem to delay the bug.
+> Since they often change sizes of some structures than such wrong
+> writes could have some 'safer' offsets. So, this could really delay
+> e.g. these list's bugs, but maybe this could also let to stay 'alive'
+> to such wrong kfree?
 
-	Ingo
+I think this bug is highly timing dependent. Its not always the same
+package that dies and as this is a SMP system I would guess two CPUs
+using the same data will trigger this.
+And using the poison-option will definitily slow the system down and
+mess up the timings.
+
+What also speaks against the 'safer' offsets is, that after adding my
+notfreed-byte to skbuff the bug still triggered in the same way.
+
+I'm currently looking at
+http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg12702.html
+,trying to understand if this is relevant for me on x86_64.
+
+Torsten
