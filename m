@@ -1,140 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758514AbYAFB0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757827AbYAFBoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758514AbYAFB0T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 20:26:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbYAFB0G
+	id S1757827AbYAFBoq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 20:44:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755183AbYAFBoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 20:26:06 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50169 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752366AbYAFB0E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 20:26:04 -0500
-Date: Sat, 5 Jan 2008 17:25:24 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-Cc: "Jarek Poplawski" <jarkao2@gmail.com>,
-       "Herbert Xu" <herbert@gondor.apana.org.au>,
-       linux-kernel@vger.kernel.org, "Neil Brown" <neilb@suse.de>,
-       "J. Bruce Fields" <bfields@fieldses.org>, netdev@vger.kernel.org,
-       "Tom Tucker" <tom@opengridcomputing.com>,
-       FUJITA Tomonori <tomof@acm.org>
-Subject: Re: 2.6.24-rc6-mm1
-Message-Id: <20080105172524.fecb63bf.akpm@linux-foundation.org>
-In-Reply-To: <64bb37e0801051410p39746295oab4dad438943372@mail.gmail.com>
-References: <64bb37e0801040223q17a76565k3c7667a197403ce5@mail.gmail.com>
-	<20080104133031.GA3329@ff.dom.local>
-	<64bb37e0801040721p57ff3d54wc3de00546d1d2ff1@mail.gmail.com>
-	<20080105000700.GA3224@ami.dom.local>
-	<64bb37e0801050001x65b104bdl5a68c731b3656d17@mail.gmail.com>
-	<20080105101327.GA3103@ami.dom.local>
-	<64bb37e0801050652t7568e438uf93208601df84ef6@mail.gmail.com>
-	<64bb37e0801051410p39746295oab4dad438943372@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sat, 5 Jan 2008 20:44:37 -0500
+Received: from mail.nutech.com ([204.10.18.136]:2002 "EHLO mail.nutech.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753041AbYAFBog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 20:44:36 -0500
+X-Greylist: delayed 1826 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 Jan 2008 20:44:36 EST
+Date: Sat,  5 Jan 2008 17:14:08 -0800
+Message-Id: <200801051714.AA13500470@mail.nutech.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+From: "mathewss" <mathewss@mail.nutech.com>
+Reply-To: <mathewss@mail.nutech.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: init wont start on VIA EPIA 5000 500mhz board and randomely wont start on VIA EPIA MII 10000
+X-Mailer: <IMail v8.22>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 5 Jan 2008 23:10:17 +0100 "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
+I have been trying to figure this out a while now with printk's all over my kernel as well as adding kdb and tracing the int3 events.
 
-> On Jan 5, 2008 3:52 PM, Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
-> > On Jan 5, 2008 11:13 AM, Jarek Poplawski <jarkao2@gmail.com> wrote:
-> > > On Sat, Jan 05, 2008 at 09:01:02AM +0100, Torsten Kaiser wrote:
-> > > > On Jan 5, 2008 1:07 AM, Jarek Poplawski <jarkao2@gmail.com> wrote:
-> > > > > I think it would be easier just to start with this working -rc6 and
-> > > > > simply check if we have 'right' suspects, so: git-net.patch and
-> > > > > git-nfsd.patch from -mm1-broken-out, as suggested by Herbert (I hope,
-> > > > > can compile - otherwise you could try the other way: add the whole -mm
-> > > > > and revert these two). Using current gits could complicate this
-> > > > > "investigation".
-> > > >
-> > > > OK, I will try this...
-> >
-> > still on the todo-list, I had no time to try this yet...
-> 
-> working on it...
-> 2.6.24-rc6 + mm-patches up to git.battery (includes git-net and
-> git-netdev-all) worked for 110 packages, then I proclaimed it good.
-> 2.6.24-rc6 + mm-patches up to (including) git.nfsd is currently
-> getting testet (9 packages done...)
-> 
-> But the cause of my mail is the following question:
-> Regarding my "iommu-sg-merging-patches are new in -rc3-mm and could be
-> the cause"-suspicion I looked at these patches and came across these
-> hunks:
-> 
-> This is removed from arch/x86/lib/bitstr_64.c:
-> -/* Find string of zero bits in a bitmap */
-> -unsigned long
-> -find_next_zero_string(unsigned long *bitmap, long start, long nbits, int len)
-> -{
-> -       unsigned long n, end, i;
-> -
-> - again:
-> -       n = find_next_zero_bit(bitmap, nbits, start);
-> -       if (n == -1)
-> -               return -1;
-> -
-> -       /* could test bitsliced, but it's hardly worth it */
-> -       end = n+len;
-> -       if (end > nbits)
-> -               return -1;
-> -       for (i = n+1; i < end; i++) {
-> -               if (test_bit(i, bitmap)) {
-> -                       start = i+1;
-> -                       goto again;
-> -               }
-> -       }
-> -       return n;
-> -}
-> 
-> This is added to lib/iommu-helper.c:
-> +static unsigned long find_next_zero_area(unsigned long *map,
-> +                                        unsigned long size,
-> +                                        unsigned long start,
-> +                                        unsigned int nr)
-> +{
-> +       unsigned long index, end, i;
-> +again:
-> +       index = find_next_zero_bit(map, size, start);
-> +       end = index + nr;
-> +       if (end > size)
-> +               return -1;
-> +       for (i = index + 1; i < end; i++) {
-> +               if (test_bit(i, map)) {
-> +                       start = i+1;
-> +                       goto again;
-> +               }
-> +       }
-> +       return index;
-> +}
-> 
-> The old version checks, if find_next_zero_bit returns -1, the new
-> version doesn't do this.
-> Is this intended and can find_next_zero_bit never fail?
-> Hmm... but in the worst case it should only loop forever if I'm
-> reading this right (index = -1 => for-loop counts from 0 to nr, if any
-> bit is set it will jump to "again:" and if the next call to
-> find_next_zero_bit also fails, its an endless loop)
+I have tried various 2.6 kernels and so far all i have tried do this.
 
-I susect these are doing different things. 
-iommu-sg-kill-__clear_bit_string-and-find_next_zero_string.patch says:
+ My current tests are on 2.6.22.10 
 
-  This kills unused __clear_bit_string and find_next_zero_string (they
-  were used by only gart and calgary IOMMUs).
+ I have a simple init binary I compiled static that is my init that is loaded into an init file system. I am not using cpio but that did not seem to matter.
+---- begin testinit.c
+#include <stdio.h>
+#include <unistd.h>
+int main(int argc, char *argv[])
+{
+   printf("Hello world!\n");
+   sleep(999999999);
+}
+---- end
 
-iommu-sg-add-iommu-helper-functions-for-the-free-area-management.patch says:
+ I am using syslunux to start my kernel and appending the follwiing startup command most of this is specific to my true init script but again im using a "hello world" script to debug this for now.
 
-  This adds IOMMU helper functions for the free area management.  These
-  functions take care of LLD's segment boundary limit for IOMMUs.  They
-  would be useful for IOMMUs that use bitmap for the free area management.
+append  debug kidb=early console=ttyS0,384008n initrd=ufoinit.img init=/testinit rw var_size=12M tmp_size=MAX log_size=16M root_size=64M root=/dev/ram0 boot=/dev/hda1,msdos rw pkgpath=/dev/hda1:msdos rw verbose DELAY=0 TEST=0 DEBUG=0 VERBOSE=0 UFO=root,etc,modules
 
-> So even if this can not explain my bug, could somebody check if this
-> is a real bug or not?
+ On an intel CA810EEA 800mhz board or QEMU this runs fine but on the via boards it dies right after "Freeing unused kernel memory: 132k freed"
+ 
+ on the 500mhz board it dies every time on the 800mhz it is random.
 
-Let's cc the author of those changes.
+ I have noticed that i get the elf binarly loading into user space with some page_faults then I get blasted with do_notify_resume with 0x04 or TIF_SIGPENDING over and over as if its in an infinite loop.
 
-Thanks for persisting with this bug.
+ This begins shortly after load_elf_binary -> clear_user i think right after a page_fault during the clear_user. I dont even know why that signal is being sent on other hardware it never happens.
+
+ I am not even sure what do try next.
+
+ I have been trying to get my distro up on 2.6 for a while now and away from 2.4 but im currently stuck here.
+
+ Any and all suggestions and help welcome..
+
+my kernel config is here
+
+http://pastebin.cross-lfs.org/4561
+
+ Thanks in advance..
+
+ Regards
+  Sean Mathews
+
+struct SoftwareProfessional {
+   double salary;
+   long   lunches;
+   float  jobs;
+   char   unstable;
+   void   work;
+   short  tempers;
+}; 
+
+
+
+
+________________________________________________________________
+Sent via the WebMail system at mail.nutech.com
+
+
+ 
+                   
