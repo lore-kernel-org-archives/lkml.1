@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbYAFHUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbYAFHgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755252AbYAFHUp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 02:20:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbYAFHUf
+	id S1754827AbYAFHgU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 02:36:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174AbYAFHgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 02:20:35 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44693
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751718AbYAFHUe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 02:20:34 -0500
-Date: Sat, 05 Jan 2008 23:20:33 -0800 (PST)
-Message-Id: <20080105.232033.240181112.davem@davemloft.net>
-To: apw@us.ibm.com
-Cc: horms@verge.net.au, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       akpm@osdl.org
-Subject: Re: [PATCH] Fix regression in ip command line processing
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080106035816.GA16459@us.ibm.com>
-References: <20071226025903.GB14422@verge.net.au>
-	<20080106035816.GA16459@us.ibm.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Sun, 6 Jan 2008 02:36:11 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:60014 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750728AbYAFHgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 02:36:10 -0500
+To: w@1wt.eu
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       serue@us.ibm.com
+Subject: Re: [PATCH][RFC] Simple tamper-proof device filesystem.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <200712232344.JBJ90661.FQOFtFOVLJHSOM@I-love.SAKURA.ne.jp>
+	<20071231200247.GA30373@sergelap.austin.ibm.com>
+	<200801011116.AFH73928.MHFLtOSOOVJFQF@I-love.SAKURA.ne.jp>
+	<200801061520.JEF52626.LFHMtSQJOOVFFO@I-love.SAKURA.ne.jp>
+	<20080106062609.GC20753@1wt.eu>
+In-Reply-To: <20080106062609.GC20753@1wt.eu>
+Message-Id: <200801061636.GFE34382.FLtOMSOFHVOFJQ@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Sun, 6 Jan 2008 16:36:06 +0900
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Amos Waterland <apw@us.ibm.com>
-Date: Sat, 5 Jan 2008 22:58:16 -0500
+Hello.
 
-> ADDRESS ASSIGNED
+Willy Tarreau wrote:
+> Your patch is very confusing. In your description, as well as in the
+> comments you talk about tmpfs, but your patch does not touch even one
+> line of tmpfs and only changes ramfs. Even your variables and arguments
+> refer to tmpfs. The Kconfig entry indicates that the feature depends
+> on TMPFS too.
 > 
-> qemu -kernel x86/arch/i386/boot/bzImage /dev/zero -append "ip=on"
-> qemu -kernel x86/arch/i386/boot/bzImage /dev/zero -append "ip=dhcp"
-> qemu -kernel x86/arch/i386/boot/bzImage /dev/zero -append "ip=both"
-> qemu -kernel x86/arch/i386/boot/bzImage /dev/zero -append "ip=any"
-> qemu -kernel x86/arch/i386/boot/bzImage /dev/zero -append "ip=::::::on"
-> qemu -kernel x86/arch/i386/boot/bzImage /dev/zero -append "ip=::::::dhcp"
-> qemu -kernel x86/arch/i386/boot/bzImage /dev/zero -append "ip=10.0.2.15::10.0.2.2:255.255.255.0::eth0:off"
-> qemu -kernel x86/arch/i386/boot/bzImage /dev/zero -append "ip=10.0.2.15::10.0.2.2:255.255.255.0::eth0:on"
+> Judging from the following comment :
+>   * Original tmpfs doesn't set ramfs_dir_inode_operations.setattr field.
 > 
-> ADDRESS NOT ASSIGNED
+> I suspect that you confuse both filesystems.
+>   - ramfs is in fs/ramfs and is always compiled in, you cannot disable it
+>   - tmpfs is in mm/shmem.c and is optional. It also supports options that
+>     ramfs does not (eg: size) and data may be swapped.
 > 
-> qemu -kernel x86/arch/i386/boot/bzImage /dev/zero -append "ip="
-> qemu -kernel x86/arch/i386/boot/bzImage /dev/zero -append "ip=off"
-> qemu -kernel x86/arch/i386/boot/bzImage /dev/zero -append "ip=::::::off"
+> Please understand that I'm not discussing the usefulness of your patch,
+> I'm just trying to avoid a huge confusion.
 
-I really wish Simon had tested his original patch as extensively
-as you have, this is the second major regression it has caused.
-:-/
+Oh, I thought the filesystem mounted by "mount -t tmpfs none /tmp" is "tmpfs"
+and the source code of "tmpfs" is located in fs/ramfs directory.
+So, I should write the description as "an extension to ramfs" rather than
+"an extension to tmpfs".
+I'll fix it in next posting.
 
-I'll apply your fix, although I'll break up some super long lines
-you've added, thanks a lot.
+Thank you.
