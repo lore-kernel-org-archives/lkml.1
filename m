@@ -1,108 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbYAFNPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbYAFNRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756853AbYAFNPY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 08:15:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbYAFNPL
+	id S1757527AbYAFNRA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 08:17:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753465AbYAFNQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 08:15:11 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:46977 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753664AbYAFNPJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 08:15:09 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4780D3E5.20908@s5r6.in-berlin.de>
-Date: Sun, 06 Jan 2008 14:13:09 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
+	Sun, 6 Jan 2008 08:16:53 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:58359 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752748AbYAFNQw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 08:16:52 -0500
+Date: Sun, 6 Jan 2008 15:16:19 +0200
+From: Adrian Bunk <adrian.bunk@movial.fi>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.16.58-rc1
+Message-ID: <20080106131619.GG2082@does.not.exist>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Randy Dunlap <randy.dunlap@oracle.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Al Boldi <a1426z@gawab.com>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/5] USB Kconfig: Select SCSI for USB Mass Storage	support
-References: <200801051546.SAA08947@raad.intranet> <20080105113024.209485f5.randy.dunlap@oracle.com> <20080105210330.GC22232@does.not.exist> <20080105210940.GA10302@uranus.ravnborg.org> <47801126.7020807@oracle.com> <20080105234540.GG22232@does.not.exist> <47802249.9010107@s5r6.in-berlin.de> <20080106005807.GH22232@does.not.exist> <4780C728.1030806@s5r6.in-berlin.de> <20080106123728.GD2082@does.not.exist>
-In-Reply-To: <20080106123728.GD2082@does.not.exist>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Sun, Jan 06, 2008 at 01:18:48PM +0100, Stefan Richter wrote:
->> I'm afraid this can't be put into practice.  (User says which hardware
->> and protocols he needs to be supported, scripts magically assemble a
->> suitable configuration.)
-> 
-> Distribution installers and live CDs like Knoppix even manage to 
-> magically assemble a suitable configuration (e.g. autodetecting which 
-> modules they should load) without asking the user any questions.
+Security fixes since 2.6.16.57:
+- CVE-2007-2525: PPPOE: fix memory leak (local DoS)
+- CVE-2007-3731: Handle bogus %cs selector in single-step instruction decoding
+- CVE-2007-6417: tmpfs: restore missing clear_highpage
 
-Module autoloading is quite different.
 
-> The information the user has to give when configuring his kernel is 
-> whether he wants to connects USB disks - whether or not the 
-> implementation of the kernel driver uses the in-kernel SCSI layer we can 
-> easily handle automatically without bothering the user.
-> 
->> I think
->>   - sensibly modularize our software,
->>   - tell the user which software components there are,
->>   - what they are for,
->>   - how they depend on each other,
->>   - make it easy enough for the user to navigate in the dependency
->>     graph,
->>   - provide fundamental safeguards and checks for a proper software
->>     configuration
->> is the best we can do.
-> 
-> It sounds strange that what you call the "the best we can do" would be 
-> much worse than what we are currently doing...
-> 
-> The current status quo is that a user e.g. only has to know that his 
-> ethernet controller is a "Broadcom 440x/47xx", the fact that a Sonics 
-> Silicon Backplane bus is used on the card is handled automatically by 
-> kconfig.
+Location:
+ftp://ftp.kernel.org/pub/linux/kernel/people/bunk/linux-2.6.16.y/testing/
 
-if NET_ETHERNET
-...
-config B44
-	tristate "Broadcom 440x/47xx ethernet support"
-	depends on SSB_POSSIBLE
-	select SSB
-	select MII
-...
-endif # NET_ETHERNET
+git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
 
-There is a B44 option.  The prompt string (in other cases the help text)
-tells what it is for.  Furthermore, four dependencies are encoded; one
-in the direct form, one by if/endif, two in reverse form.  There are no
-further hints how to satisfy SSB_POSSIBLE, NET_ETHERNET, SSB, MII.  The
-kconfig system is told to enable SSB and MII no matter what, as long as
-SSB_POSSIBLE, NET_ETHERNET, and B44 are != n.
+RSS feed of the git tree:
+http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
 
-This /is/ what we are currently doing, not "worse than what we are
-currently doing".  We
-  - sensibly modularize our software,
-  - tell the user which software components there are,
-  - what they are for,
-  - how they depend on each other,
-  - make it easy enough for the user to navigate in the dependency
-    graph,
-  - provide fundamental safeguards and checks for a proper software
-    configuration.  (Well, we actually walk on thin ice whenever we
-    use the 'select' keyword.)
 
-(Now, after the b44.ko has been built and installed, the object file
-should contain aliases which let modern userland automatically load this
-kernel object if respective hardware has been detected and the module
-wasn't blacklisted.  So, run-time configuration is more comfortable than
-build-time configuration, except that help texts aren't as easily
-accessible at run-time as they are at build-time.)
--- 
-Stefan Richter
--=====-==--- ---= --==-
-http://arcgraph.de/sr/
+Changes since 2.6.16.57:
+
+Adrian Bunk (2):
+      ipv4/arp.c:arp_process(): remove bogus #ifdef mess
+      Linux 2.6.16.58-rc1
+
+Alan Cox (1):
+      [SCSI] aacraid: fix security weakness
+
+Ben Collins (1):
+      [ATM]: Add CPPFLAGS to byteorder.h check
+
+Charles Hardin (1):
+      [PFKEY]: Sending an SADB_GET responds with an SADB_GET
+
+Chas Williams (1):
+      [ATM]: [he] initialize lock and tasklet earlier
+
+Evgeniy Polyakov (1):
+      [PKT_SCHED]: Fix OOPS when removing devices from a teql queuing discipline
+
+Florian Zumbiehl (1):
+      PPPOE: fix memory leak (local DoS) (CVE-2007-2525)
+
+Hugh Dickins (1):
+      tmpfs: restore missing clear_highpage (CVE-2007-6417)
+
+Jean Delvare (2):
+      hwmon/lm87: Disable VID when it should be
+      hwmon/lm87: Fix a division by zero
+
+Michal Schmidt (1):
+      [PPP_MPPE]: Don't put InterimKey on the stack
+
+Patrick McHardy (2):
+      [INET_DIAG]: Fix oops in netlink_rcv_skb
+      [NETLINK]: Fix unicast timeouts
+
+Peter Zijlstra (1):
+      i386: fixup TRACE_IRQ breakage
+
+Radu Rendec (1):
+      [PKT_SCHED] CLS_U32: Fix endianness problem with u32 classifier hash masks.
+
+Roland McGrath (1):
+      Handle bogus %cs selector in single-step instruction decoding (CVE-2007-3731)
+
+YOSHIFUJI Hideaki (1):
+      [IPV6]: Fix unbalanced socket reference with MSG_CONFIRM.
+
+
+ Makefile                     |    2 +-
+ arch/i386/kernel/entry.S     |    1 -
+ arch/i386/kernel/ptrace.c    |   22 +++++++++++++++-------
+ arch/i386/kernel/traps.c     |   10 ++++++----
+ arch/x86_64/kernel/ptrace.c  |   23 ++++++++++++++++-------
+ drivers/atm/Makefile         |    2 +-
+ drivers/atm/he.c             |   10 +++++-----
+ drivers/hwmon/lm87.c         |    4 ++--
+ drivers/net/ppp_mppe.c       |   14 ++++++--------
+ drivers/net/pppox.c          |    2 +-
+ drivers/scsi/aacraid/linit.c |    4 ++--
+ include/linux/netlink.h      |    2 +-
+ ipc/mqueue.c                 |    6 ++++--
+ mm/shmem.c                   |    5 +++--
+ net/ipv4/arp.c               |   19 -------------------
+ net/ipv4/inet_diag.c         |   10 +++++++++-
+ net/ipv6/raw.c               |    2 +-
+ net/key/af_key.c             |    2 +-
+ net/netlink/af_netlink.c     |   10 +++++-----
+ net/sched/cls_u32.c          |    4 ++--
+ net/sched/sch_teql.c         |    3 +++
+ 21 files changed, 84 insertions(+), 73 deletions(-)
