@@ -1,104 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757500AbYAFN6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758006AbYAFN7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757500AbYAFN6S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 08:58:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbYAFN6G
+	id S1758006AbYAFN7U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 08:59:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbYAFN7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 08:58:06 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:48686 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751050AbYAFN6F (ORCPT
+	Sun, 6 Jan 2008 08:59:12 -0500
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:50341
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753375AbYAFN7K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 08:58:05 -0500
-Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Peter Osterlund <petero2@telia.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>
-In-Reply-To: <m3ir27oe7f.fsf@telia.com>
-References: <20080102162534.GA4041@elte.hu>
-	 <1199292381.3258.32.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0801021113150.32517@woody.linux-foundation.org>
-	 <20080102194030.GC11638@parisc-linux.org>
-	 <1199304735.3258.53.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0801021227140.32517@woody.linux-foundation.org>
-	 <1199316785.3258.85.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0801021756310.3010@woody.linux-foundation.org>
-	 <m3ir27oe7f.fsf@telia.com>
-Content-Type: text/plain
-Date: Sun, 06 Jan 2008 07:57:55 -0600
-Message-Id: <1199627875.5205.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
-Content-Transfer-Encoding: 7bit
+	Sun, 6 Jan 2008 08:59:10 -0500
+Date: Sun, 6 Jan 2008 07:05:36 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Adrian Bunk <bunk@kernel.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Al Boldi <a1426z@gawab.com>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/5] USB Kconfig: Select SCSI for USB Mass Storage	support
+In-Reply-To: <4780DA92.6050403@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.64.0801060652390.16883@asgard.lang.hm>
+References: <200801051546.SAA08947@raad.intranet> <20080105113024.209485f5.randy.dunlap@oracle.com>
+ <20080105210330.GC22232@does.not.exist> <20080105210940.GA10302@uranus.ravnborg.org>
+ <47801126.7020807@oracle.com> <20080105234540.GG22232@does.not.exist>
+ <47802249.9010107@s5r6.in-berlin.de> <20080106005807.GH22232@does.not.exist>
+ <4780C728.1030806@s5r6.in-berlin.de> <20080106123728.GD2082@does.not.exist>
+ <4780D3E5.20908@s5r6.in-berlin.de> <Pine.LNX.4.64.0801060643370.16883@asgard.lang.hm>
+ <4780DA92.6050403@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 6 Jan 2008, Stefan Richter wrote:
 
-On Sun, 2008-01-06 at 03:55 +0100, Peter Osterlund wrote:
-> Linus Torvalds <torvalds@linux-foundation.org> writes:
-> 
-> > On Wed, 2 Jan 2008, James Bottomley wrote:
-> > 
-> > > Look at the taxonomy of the bug.  This is the form of the error:
-> > > 
-> > > buffer I/O error on device sr0, logical block 20304
-> > > attempt to access beyond end of device
-> > > sr0: rw=0, want=81224, limit=40944
-> > > 
-> > > The last limit is the most suggestive, that comes straight from
-> > > bdev->bd_inode->i_size>>9 and is supposed to be the size of the block
-> > > device in 512 byte blocks. For a 4.7GB DVD, it's a little small.
-> > > Nothing in the sr code sets this directly (although it does come from
-> > > get_blkdev() for the first opener).  pktcdvd does set it, though ... and
-> > > probably wrongly if the drive in question isn't UDF formatted.
-> 
-> pktcdvd sets it when opening the /dev/pktcdvd device, but when the
-> drive is later opened as /dev/scd0, there is nothing that sets it
-> back. (Btw, 40944 is possible if the disk is a CDRW that was formatted
-> with "cdrwtool -m 10236".)
-> 
-> The problem is that pktcdvd opens the cd device in non-blocking mode
-> when pktsetup is run, and doesn't close it again until pktsetup -d
-> is run. The effect is that if you meanwhile open the cd device,
-> blkdev.c:do_open() doesn't call bd_set_size() because bdev->bd_openers
-> is non-zero.
-> 
-> I don't know the correct way to fix this. Maybe adding bd_set_size()
-> to sr.c:get_sectorsize() which already does set_capacity() would
-> work.
+> David Lang wrote:
+>> On Sun, 6 Jan 2008, Stefan Richter wrote:
+>>> Module autoloading is quite different.
+>>
+>> but if boot scripts can figure out what modules to autoload, why can't
+>> scripts be written to figure out what drives to build into a system?
+>
+> Because build-time configuration has to deal with different, more
+> complex questions than run-time configuration.  For starters, build-time
+> configuration narrows down the options for run-time configuration.
 
-Could be ... this is deep viro magic, though; I've added him to the Cc
-list to get his input.
+Ok, I'll bite.
 
-> > .. but you're ignoring the fact that if pktcdvd sets it wrong, then it 
-> > should be visible with the pre-commit kernel *also*.
-> 
-> I can repeat this bug, both with and without the scsi patch that is
-> claimed to make a difference, both with an external USB drive and an
-> internal IDE drive.
-> 
-> To repeat:
-> 
->   1. Start with an empty drive.
->   2. pktsetup 0 /dev/scd0 
->   3. Insert a CD containing an isofs filesystem.
->   4. mount /dev/pktcdvd/0 /mnt/tmp
->   5. umount /mnt/tmp
->   6. Press the eject button.
->   7. Insert a DVD containing a non-writable filesystem.
->   8. mount /dev/scd0 /mnt/tmp
->   9. find /mnt/tmp -type f -print0 | xargs -0 sha1sum >/dev/null
->   10. If the DVD contains data beyond the physical size of a CD, you
->       get I/O errors in the terminal, and dmesg reports lots of
->       "attempt to access beyond end of device" errors.
+what config options must be selected by the user at build time? (i.e. no 
+sane default can possibly be deduced from the hardware)
 
-Brilliant!  I can confirm the reproduction of the bug too (that's with
-the originally fingered commit reverted).
+there are a lot of options that, if selected, will affect the final result 
+significantly. but I can't think of any that can't have a reasonable 
+default.
 
-James
+what sysadmins like me would really like is a set of scripts that could 
+generate a .config from an existing system. After we have one that covers 
+the hardware for the system we will then have a much better starting point 
+to work from. We may disable some drivers (sound drivers on a server for 
+example). We may enable other drivers (or combine the results of runs on 
+seperate hardware to make a slightly more general kernel config). And we 
+will make many other selections that are not hardware dependant (SLAB vs 
+SLUB vs SLOB, IO schedulers, etc) but just figuring out what drivers are 
+needed to support a particular piece of hardware would be a huge help. 
+It's frequently hard to figure out which drivers are needed for a Vendor X 
+model 12345 motherboard (major things are easy, it gets hard when you want 
+to do power monitoring and things like that) it is even harder when you 
+have to figure out what needs to be enabled so that you can see the help 
+text of other options to see if they are the right ones.
 
+I started toying with Linux (on my home systems) in the 0.99 days and have 
+been makeing my living with it starting in the 1.3 days, so it's not that 
+I am a newcomer to kernel configuration, but even with my experiance it's 
+sometimes hard to figure out what I need to enable when I start needing a 
+new set of functionality on a system.
 
+David Lang
