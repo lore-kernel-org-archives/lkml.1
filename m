@@ -1,82 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbYAFTDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbYAFTDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754737AbYAFTDE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 14:03:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbYAFTCy
+	id S1755962AbYAFTDv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 14:03:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbYAFTDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 14:02:54 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:33187 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752558AbYAFTCw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 14:02:52 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: Acquire device locks on suspend
-Date: Sun, 6 Jan 2008 20:05:11 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0801061203510.7367-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0801061203510.7367-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801062005.12097.rjw@sisk.pl>
+	Sun, 6 Jan 2008 14:03:42 -0500
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:39830 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752677AbYAFTDl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 14:03:41 -0500
+Date: Sun, 6 Jan 2008 20:03:35 +0100 (MET)
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+To: megaraidlinux@lsi.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Richard Knutsson <ricknu-0@student.ltu.se>
+Message-Id: <20080106190335.28212.90140.sendpatchset@thinktank.campus.ltu.se>
+Subject: [PATCH][SCSI] megaraid: Convert from "scsi.h" to <scsi.h> (and friends)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 6 of January 2008, Alan Stern wrote:
-> On Sun, 6 Jan 2008, Rafael J. Wysocki wrote:
-> 
-> > > If you can figure out a way to disable the warning in device_del() for 
-> > > just the one device being unregistered by 
-> > > device_pm_destroy_suspended(),
-> > 
-> > Something like this, perhaps:
-> > 
-> > @@ -905,6 +915,18 @@ void device_del(struct device * dev)
-> >  	struct device * parent = dev->parent;
-> >  	struct class_interface *class_intf;
-> >  
-> > +	if (down_trylock(&dev->sem)) {
-> > +		if (pm_sleep_lock()) {
-> > +			dev_warn(dev, "Illegal %s during suspend\n",
-> > +				__FUNCTION__);
-> > +			dump_stack();
-> > +		} else {
-> > +			pm_sleep_unlock();
-> > +		}
-> > +	} else {
-> > +		up(&dev->sem);
-> > +	}
-> > +
-> >  	if (parent)
-> >  		klist_del(&dev->knode_parent);
-> >  	if (MAJOR(dev->devt))
-> 
-> Bizarre, but it should work.
+Convert glue-include "scsi.h" to <scsi.h> (and friends).
 
-OK
+(binary sizes)
+allyesconfig: before: 260132
+              after:  260048
 
-Still, shouldn't we fail the removal of the device apart from giving the
-warning?
+allmodconfig: before: 261740
+              after:  261656
 
-> Be sure to include plenty of explanatory comments
+Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
+---
+Do not have the hardware, but since it compiles I hope it is alright.
 
-I will.
 
-I think that code can be moved to its own function in
-drivers/base/power/main.c, btw.
-
-> -- otherwise nobody will be able to figure it out!  :-) 
-
-Well, I guess so. :-)
-
-Thanks,
-Rafael
+diff --git a/drivers/scsi/megaraid.c b/drivers/scsi/megaraid.c
+index 66c6520..9f1e2c5 100644
+--- a/drivers/scsi/megaraid.c
++++ b/drivers/scsi/megaraid.c
+@@ -48,8 +48,9 @@
+ #include <linux/dma-mapping.h>
+ #include <scsi/scsicam.h>
+ 
+-#include "scsi.h"
++#include <scsi/scsi_cmnd.h>
+ #include <scsi/scsi_host.h>
++#include <scsi.h>
+ 
+ #include "megaraid.h"
+ 
+@@ -1955,7 +1956,7 @@ megaraid_abort_and_reset(adapter_t *adapter, Scsi_Cmnd *cmd, int aor)
+ 	     cmd->device->id, cmd->device->lun);
+ 
+ 	if(list_empty(&adapter->pending_list))
+-		return FALSE;
++		return false;
+ 
+ 	list_for_each_safe(pos, next, &adapter->pending_list) {
+ 
+@@ -1978,7 +1979,7 @@ megaraid_abort_and_reset(adapter_t *adapter, Scsi_Cmnd *cmd, int aor)
+ 					(aor==SCB_ABORT) ? "ABORTING":"RESET",
+ 					cmd->serial_number, scb->idx);
+ 
+-				return FALSE;
++				return false;
+ 			}
+ 			else {
+ 
+@@ -2003,12 +2004,12 @@ megaraid_abort_and_reset(adapter_t *adapter, Scsi_Cmnd *cmd, int aor)
+ 				list_add_tail(SCSI_LIST(cmd),
+ 						&adapter->completed_list);
+ 
+-				return TRUE;
++				return true;
+ 			}
+ 		}
+ 	}
+ 
+-	return FALSE;
++	return false;
+ }
+ 
+ static inline int
