@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759163AbYAFW0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758687AbYAFWbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759163AbYAFW0a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 17:26:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758800AbYAFW0T
+	id S1758687AbYAFWbl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 17:31:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755597AbYAFWbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 17:26:19 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:2404 "HELO
+	Sun, 6 Jan 2008 17:31:33 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:2432 "HELO
 	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758741AbYAFW0S (ORCPT
+	with SMTP id S1755523AbYAFWbc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 17:26:18 -0500
-Date: Sun, 6 Jan 2008 17:26:17 -0500 (EST)
+	Sun, 6 Jan 2008 17:31:32 -0500
+Date: Sun, 6 Jan 2008 17:31:32 -0500 (EST)
 From: Alan Stern <stern@rowland.harvard.edu>
 X-X-Sender: stern@netrider.rowland.org
-To: Oliver Neukum <oliver@neukum.org>
-cc: Pavel Machek <pavel@ucw.cz>, Raymano Garibaldi <raymano@faunos.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] [FEATURE REQUEST] Transparent hot plugging of
- root file system on portable storage devices.
-In-Reply-To: <200801062159.46481.oliver@neukum.org>
-Message-ID: <Pine.LNX.4.44L0.0801061722400.19222-100000@netrider.rowland.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] PM: Acquire device locks on suspend
+In-Reply-To: <200801062324.15960.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0801061729080.19222-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 6 Jan 2008, Oliver Neukum wrote:
+On Sun, 6 Jan 2008, Rafael J. Wysocki wrote:
 
-> Am Sonntag 06 Januar 2008 schrieb Alan Stern:
-> > What about people who want to suspend to RAM instead of hibernating and
-> > _do_ want to unplug the USB device containing their root filesystem
-> > while the machine is asleep?  In this case we will _know_ that the
-> > power session has been interrupted, but USB Persist won't activate
-> > because the host controller never lost power.
-> 
-> Would it be hard to force the persist feature on for a replugged device?
+> Still, our present approach doesn't seem to be correct overall.  For example,
+> I think we should prevent a suspend from happening while a device is being
+> removed.
 
-Right now the persist feature is enabled by a per-device boolean flag.  
-In theory the flag could accept 3 values: off, on if power was lost,
-or on for any resume transition.  This would not be a hard change.
+We could, however I don't think it's dangerous to allow it.  The two
+problems to avoid are (1) messing up the PM device list pointers, and
+(2) calling a driver's suspend/resume methods while its remove method
+is running.  (1) is handled by the pm_list_mutex and (2) is handled by
+locking dev->sem.
 
 Alan Stern
 
