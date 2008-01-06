@@ -1,99 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbYAFVyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756984AbYAFWDO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757233AbYAFVyW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 16:54:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754436AbYAFVyP
+	id S1756984AbYAFWDO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 17:03:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754606AbYAFWC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 16:54:15 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:41052 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753764AbYAFVyO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 16:54:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=J9D3NE4lTJeRks+kxEV8kXRJXsiiJkp3eEvedJs6ntU5cnUuJuSaE+INwCjTPQerGfKBTXKoJZfRjzdB0VFGM7t6BbjKDVWmnuUEsEv5amCC6fmUBxOHB6SaSailnezxfNcxYKARcC28Blr9EeH89sYQzzWQg4h4mlk8TgVBinU=
-Date: Mon, 7 Jan 2008 00:53:56 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Davide Libenzi <davidel@xmailserver.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Herbert Xu <herbert@gondor.apana.org.au>, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Christian Kujau <lists@nerdbynature.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jfs-discussion@lists.sourceforge.net,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: 2.6.24-rc6: possible recursive locking detected
-Message-ID: <20080106215356.GB32187@cvg>
-References: <alpine.DEB.0.999999.0801032349190.4821@sheep.housecafe.de> <200801040006.47979.rjw@sisk.pl> <20080104083049.GC22803@elte.hu> <20080105071205.GA28936@gondor.apana.org.au> <1199552016.31975.41.camel@lappy> <1199552476.31975.45.camel@lappy> <Pine.LNX.4.64.0801051242070.3896@alien.or.mcafeemobile.com> <20080106214442.GA32187@cvg>
-MIME-Version: 1.0
+	Sun, 6 Jan 2008 17:02:59 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:50632 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753642AbYAFWC6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 17:02:58 -0500
+Date: Sun, 6 Jan 2008 23:03:01 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, Adrian Bunk <bunk@kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: translations (Re: Kbuild update)
+Message-ID: <20080106220301.GA6196@uranus.ravnborg.org>
+References: <20080103213255.GA21811@uranus.ravnborg.org> <20080104132316.GA2485@hacking> <20080104143953.GA30536@uranus.ravnborg.org> <20080105054840.GB9976@does.not.exist> <20080106142606.GB2528@hacking> <20080106214136.GA24008@flower.upol.cz>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080106214442.GA32187@cvg>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080106214136.GA24008@flower.upol.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Mon, Jan 07, 2008 at 12:44:42AM +0300]
-| [Davide Libenzi - Sat, Jan 05, 2008 at 01:35:25PM -0800]
-| | On Sat, 5 Jan 2008, Peter Zijlstra wrote:
-| | 
-| [...snip...] 
-| | I remember I talked with Arjan about this time ago. Basically, since 1) 
-| | you can drop an epoll fd inside another epoll fd 2) callback-based wakeups 
-| | are used, you can see a wake_up() from inside another wake_up(), but they 
-| | will never refer to the same lock instance.
-| | Think about:
-| | 
-| | 	dfd = socket(...);
-| | 	efd1 = epoll_create();
-| | 	efd2 = epoll_create();
-| | 	epoll_ctl(efd1, EPOLL_CTL_ADD, dfd, ...);
-| | 	epoll_ctl(efd2, EPOLL_CTL_ADD, efd1, ...);
-| | 
-| | When a packet arrives to the device underneath "dfd", the net code will 
-| | issue a wake_up() on its poll wake list. Epoll (efd1) has installed a 
-| | callback wakeup entry on that queue, and the wake_up() performed by the 
-| | "dfd" net code will end up in ep_poll_callback(). At this point epoll 
-| | (efd1) notices that it may have some event ready, so it needs to wake up 
-| | the waiters on its poll wait list (efd2). So it calls ep_poll_safewake() 
-| | that ends up in another wake_up(), after having checked about the 
-| | recursion constraints. That are, no more than EP_MAX_POLLWAKE_NESTS, to 
-| | avoid stack blasting. Never hit the same queue, to avoid loops like:
-| | 
-| | 	epoll_ctl(efd2, EPOLL_CTL_ADD, efd1, ...);
-| | 	epoll_ctl(efd3, EPOLL_CTL_ADD, efd2, ...);
-| | 	epoll_ctl(efd4, EPOLL_CTL_ADD, efd3, ...);
-| | 	epoll_ctl(efd1, EPOLL_CTL_ADD, efd4, ...);
-| | 
-| | The code "if (tncur->wq == wq || ..." prevents re-entering the same 
-| | queue/lock.
-| | I don't know how the lockdep code works, so I can't say about 
-| | wake_up_nested(). Although I have a feeling is not enough in this case.
-| | A solution may be to move the call to ep_poll_safewake() (that'd become a 
-| | simple wake_up()) inside a tasklet or whatever is today trendy for delayed 
-| | work. But his kinda scares me to be honest, since epoll has already a 
-| | bunch of places where it could be asynchronously hit (plus performance 
-| | regression will need to be verified).
-| | 
-| | 
-| | 
-| | - Davide
-| | 
-| | 
-| 
-| it's quite possible that i'm wrong but just interested...
-| why in ep_poll_safewake() the assignment
-| 
-| 	struct list_head *lsthead = &psw->wake_task_list;
-| 
-| is not protected by spinlock?
-| 
-| 		- Cyrill -
+> 
+> Also, future of the linux codebase with Chinese comments in C or in
+> ASM is kind of wired nightmare. Those, who cannot read actual source
+> code (i.e. C) will not go too far.
+$subject is purely about the kernel configuration - if that was not clear.
 
-it was a completely stupid question... please drop ;)
-
-		- Cyrill -
+	Sam
