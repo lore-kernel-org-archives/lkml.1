@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759553AbYAFOsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760342AbYAFOs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759553AbYAFOsP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 09:48:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758520AbYAFOkO
+	id S1760342AbYAFOs2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 09:48:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758533AbYAFOkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 09:40:14 -0500
-Received: from il.qumranet.com ([82.166.9.18]:46605 "EHLO il.qumranet.com"
+	Sun, 6 Jan 2008 09:40:16 -0500
+Received: from il.qumranet.com ([82.166.9.18]:46651 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756904AbYAFOjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756216AbYAFOjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 6 Jan 2008 09:39:48 -0500
 From: Avi Kivity <avi@qumranet.com>
 To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Subject: [PATCH 31/33] KVM: MMU: Move kvm_free_some_pages() into critical section
-Date: Sun,  6 Jan 2008 16:39:37 +0200
-Message-Id: <1199630379-28638-32-git-send-email-avi@qumranet.com>
+Subject: [PATCH 24/33] KVM: local APIC TPR access reporting facility
+Date: Sun,  6 Jan 2008 16:39:30 +0200
+Message-Id: <1199630379-28638-25-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1199630379-28638-1-git-send-email-avi@qumranet.com>
 References: <1199630379-28638-1-git-send-email-avi@qumranet.com>
@@ -21,90 +21,195 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If some other cpu steals mmu pages between our check and an attempt to
-allocate, we can run out of mmu pages.  Fix by moving the check into the
-same critical section as the allocation.
+Add a facility to report on accesses to the local apic tpr even if the
+local apic is emulated in the kernel.  This is basically a hack that
+allows userspace to patch Windows which tends to bang on the tpr a lot.
 
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/mmu.c         |    9 +++------
- arch/x86/kvm/paging_tmpl.h |    1 +
- 2 files changed, 4 insertions(+), 6 deletions(-)
+ arch/x86/kvm/lapic.c       |   21 +++++++++++++++++++++
+ arch/x86/kvm/x86.c         |   25 +++++++++++++++++++++++++
+ include/asm-x86/kvm_host.h |    1 +
+ include/linux/kvm.h        |   17 +++++++++++++++++
+ include/linux/kvm_host.h   |    2 +-
+ 5 files changed, 65 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index 834698d..c478ee2 100644
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -291,7 +291,6 @@ static int mmu_topup_memory_caches(struct kvm_vcpu *vcpu)
- {
- 	int r;
- 
--	kvm_mmu_free_some_pages(vcpu);
- 	r = mmu_topup_memory_cache(&vcpu->arch.mmu_pte_chain_cache,
- 				   pte_chain_cache, 4);
- 	if (r)
-@@ -569,9 +568,6 @@ static struct kvm_mmu_page *kvm_mmu_alloc_page(struct kvm_vcpu *vcpu,
- {
- 	struct kvm_mmu_page *sp;
- 
--	if (!vcpu->kvm->arch.n_free_mmu_pages)
--		return NULL;
--
- 	sp = mmu_memory_cache_alloc(&vcpu->arch.mmu_page_header_cache, sizeof *sp);
- 	sp->spt = mmu_memory_cache_alloc(&vcpu->arch.mmu_page_cache, PAGE_SIZE);
- 	sp->gfns = mmu_memory_cache_alloc(&vcpu->arch.mmu_page_cache, PAGE_SIZE);
-@@ -1024,6 +1020,7 @@ static int nonpaging_map(struct kvm_vcpu *vcpu, gva_t v, int write, gfn_t gfn)
- 	page = gfn_to_page(vcpu->kvm, gfn);
- 
- 	spin_lock(&vcpu->kvm->mmu_lock);
-+	kvm_mmu_free_some_pages(vcpu);
- 	r = __nonpaging_map(vcpu, v, write, gfn, page);
- 	spin_unlock(&vcpu->kvm->mmu_lock);
- 
-@@ -1275,6 +1272,7 @@ int kvm_mmu_load(struct kvm_vcpu *vcpu)
- 	if (r)
- 		goto out;
- 	spin_lock(&vcpu->kvm->mmu_lock);
-+	kvm_mmu_free_some_pages(vcpu);
- 	mmu_alloc_roots(vcpu);
- 	spin_unlock(&vcpu->kvm->mmu_lock);
- 	kvm_x86_ops->set_cr3(vcpu, vcpu->arch.mmu.root_hpa);
-@@ -1413,6 +1411,7 @@ void kvm_mmu_pte_write(struct kvm_vcpu *vcpu, gpa_t gpa,
- 	pgprintk("%s: gpa %llx bytes %d\n", __FUNCTION__, gpa, bytes);
- 	mmu_guess_page_from_pte_write(vcpu, gpa, new, bytes);
- 	spin_lock(&vcpu->kvm->mmu_lock);
-+	kvm_mmu_free_some_pages(vcpu);
- 	++vcpu->kvm->stat.mmu_pte_write;
- 	kvm_mmu_audit(vcpu, "pre pte write");
- 	if (gfn == vcpu->arch.last_pt_write_gfn
-@@ -1505,7 +1504,6 @@ int kvm_mmu_unprotect_page_virt(struct kvm_vcpu *vcpu, gva_t gva)
- 
- void __kvm_mmu_free_some_pages(struct kvm_vcpu *vcpu)
- {
--	spin_lock(&vcpu->kvm->mmu_lock);
- 	while (vcpu->kvm->arch.n_free_mmu_pages < KVM_REFILL_PAGES) {
- 		struct kvm_mmu_page *sp;
- 
-@@ -1514,7 +1512,6 @@ void __kvm_mmu_free_some_pages(struct kvm_vcpu *vcpu)
- 		kvm_mmu_zap_page(vcpu->kvm, sp);
- 		++vcpu->kvm->stat.mmu_recycled;
- 	}
--	spin_unlock(&vcpu->kvm->mmu_lock);
+diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
+index 4076331..50c3f3a 100644
+--- a/arch/x86/kvm/lapic.c
++++ b/arch/x86/kvm/lapic.c
+@@ -551,6 +551,23 @@ static u32 apic_get_tmcct(struct kvm_lapic *apic)
+ 	return tmcct;
  }
  
- int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gva_t cr2, u32 error_code)
-diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
-index a35b83a..3499205 100644
---- a/arch/x86/kvm/paging_tmpl.h
-+++ b/arch/x86/kvm/paging_tmpl.h
-@@ -402,6 +402,7 @@ static int FNAME(page_fault)(struct kvm_vcpu *vcpu, gva_t addr,
- 	page = gfn_to_page(vcpu->kvm, walker.gfn);
++static void __report_tpr_access(struct kvm_lapic *apic, bool write)
++{
++	struct kvm_vcpu *vcpu = apic->vcpu;
++	struct kvm_run *run = vcpu->run;
++
++	set_bit(KVM_REQ_REPORT_TPR_ACCESS, &vcpu->requests);
++	kvm_x86_ops->cache_regs(vcpu);
++	run->tpr_access.rip = vcpu->arch.rip;
++	run->tpr_access.is_write = write;
++}
++
++static inline void report_tpr_access(struct kvm_lapic *apic, bool write)
++{
++	if (apic->vcpu->arch.tpr_access_reporting)
++		__report_tpr_access(apic, write);
++}
++
+ static u32 __apic_read(struct kvm_lapic *apic, unsigned int offset)
+ {
+ 	u32 val = 0;
+@@ -568,6 +585,9 @@ static u32 __apic_read(struct kvm_lapic *apic, unsigned int offset)
+ 		val = apic_get_tmcct(apic);
+ 		break;
  
- 	spin_lock(&vcpu->kvm->mmu_lock);
-+	kvm_mmu_free_some_pages(vcpu);
- 	shadow_pte = FNAME(fetch)(vcpu, addr, &walker, user_fault, write_fault,
- 				  &write_pt, page);
- 	pgprintk("%s: shadow pte %p %llx ptwrite %d\n", __FUNCTION__,
++	case APIC_TASKPRI:
++		report_tpr_access(apic, false);
++		/* fall thru */
+ 	default:
+ 		apic_update_ppr(apic);
+ 		val = apic_get_reg(apic, offset);
+@@ -677,6 +697,7 @@ static void apic_mmio_write(struct kvm_io_device *this,
+ 		break;
+ 
+ 	case APIC_TASKPRI:
++		report_tpr_access(apic, true);
+ 		apic_set_tpr(apic, val & 0xff);
+ 		break;
+ 
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 513258c..c2b8088 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -684,6 +684,7 @@ int kvm_dev_ioctl_check_extension(long ext)
+ 	case KVM_CAP_USER_MEMORY:
+ 	case KVM_CAP_SET_TSS_ADDR:
+ 	case KVM_CAP_EXT_CPUID:
++	case KVM_CAP_VAPIC:
+ 		r = 1;
+ 		break;
+ 	default:
+@@ -1055,6 +1056,15 @@ static int kvm_vcpu_ioctl_interrupt(struct kvm_vcpu *vcpu,
+ 	return 0;
+ }
+ 
++static int vcpu_ioctl_tpr_access_reporting(struct kvm_vcpu *vcpu,
++					   struct kvm_tpr_access_ctl *tac)
++{
++	if (tac->flags)
++		return -EINVAL;
++	vcpu->arch.tpr_access_reporting = !!tac->enabled;
++	return 0;
++}
++
+ long kvm_arch_vcpu_ioctl(struct file *filp,
+ 			 unsigned int ioctl, unsigned long arg)
+ {
+@@ -1148,6 +1158,21 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
+ 	case KVM_SET_MSRS:
+ 		r = msr_io(vcpu, argp, do_set_msr, 0);
+ 		break;
++	case KVM_TPR_ACCESS_REPORTING: {
++		struct kvm_tpr_access_ctl tac;
++
++		r = -EFAULT;
++		if (copy_from_user(&tac, argp, sizeof tac))
++			goto out;
++		r = vcpu_ioctl_tpr_access_reporting(vcpu, &tac);
++		if (r)
++			goto out;
++		r = -EFAULT;
++		if (copy_to_user(argp, &tac, sizeof tac))
++			goto out;
++		r = 0;
++		break;
++	};
+ 	default:
+ 		r = -EINVAL;
+ 	}
+diff --git a/include/asm-x86/kvm_host.h b/include/asm-x86/kvm_host.h
+index ced1beb..6e649af 100644
+--- a/include/asm-x86/kvm_host.h
++++ b/include/asm-x86/kvm_host.h
+@@ -211,6 +211,7 @@ struct kvm_vcpu_arch {
+ 	int mp_state;
+ 	int sipi_vector;
+ 	u64 ia32_misc_enable_msr;
++	bool tpr_access_reporting;
+ 
+ 	struct kvm_mmu mmu;
+ 
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index de9f28d..850f5ef 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -72,6 +72,7 @@ struct kvm_irqchip {
+ #define KVM_EXIT_FAIL_ENTRY       9
+ #define KVM_EXIT_INTR             10
+ #define KVM_EXIT_SET_TPR          11
++#define KVM_EXIT_TPR_ACCESS       12
+ 
+ /* for KVM_RUN, returned by mmap(vcpu_fd, offset=0) */
+ struct kvm_run {
+@@ -130,6 +131,12 @@ struct kvm_run {
+ 			__u32 longmode;
+ 			__u32 pad;
+ 		} hypercall;
++		/* KVM_EXIT_TPR_ACCESS */
++		struct {
++			__u64 rip;
++			__u32 is_write;
++			__u32 pad;
++		} tpr_access;
+ 		/* Fix the size of the union. */
+ 		char padding[256];
+ 	};
+@@ -202,6 +209,13 @@ struct kvm_signal_mask {
+ 	__u8  sigset[0];
+ };
+ 
++/* for KVM_TPR_ACCESS_REPORTING */
++struct kvm_tpr_access_ctl {
++	__u32 enabled;
++	__u32 flags;
++	__u32 reserved[8];
++};
++
+ #define KVMIO 0xAE
+ 
+ /*
+@@ -229,6 +243,7 @@ struct kvm_signal_mask {
+ #define KVM_CAP_USER_MEMORY 3
+ #define KVM_CAP_SET_TSS_ADDR 4
+ #define KVM_CAP_EXT_CPUID 5
++#define KVM_CAP_VAPIC 6
+ 
+ /*
+  * ioctls for VM fds
+@@ -274,5 +289,7 @@ struct kvm_signal_mask {
+ #define KVM_SET_LAPIC             _IOW(KVMIO,  0x8f, struct kvm_lapic_state)
+ #define KVM_SET_CPUID2            _IOW(KVMIO,  0x90, struct kvm_cpuid2)
+ #define KVM_GET_CPUID2            _IOWR(KVMIO, 0x91, struct kvm_cpuid2)
++/* Available with KVM_CAP_VAPIC */
++#define KVM_TPR_ACCESS_REPORTING  _IOWR(KVMIO,  0x92, struct kvm_tpr_access_ctl)
+ 
+ #endif
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 953b50a..9ff5904 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -35,7 +35,7 @@
+  * vcpu->requests bit members
+  */
+ #define KVM_REQ_TLB_FLUSH          0
+-
++#define KVM_REQ_REPORT_TPR_ACCESS  2
+ 
+ struct kvm_vcpu;
+ extern struct kmem_cache *kvm_vcpu_cache;
 -- 
 1.5.3.7
 
