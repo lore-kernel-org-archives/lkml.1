@@ -1,60 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758403AbYAFQAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758216AbYAFQGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758403AbYAFQAs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 11:00:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbYAFQAl
+	id S1758216AbYAFQGA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 11:06:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbYAFQFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 11:00:41 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:41983 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754045AbYAFQAk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 11:00:40 -0500
-Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Osterlund <petero2@telia.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>
-In-Reply-To: <20080106154557.GK2082@does.not.exist>
-References: <alpine.LFD.1.00.0801021113150.32517@woody.linux-foundation.org>
-	 <20080102194030.GC11638@parisc-linux.org>
-	 <1199304735.3258.53.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0801021227140.32517@woody.linux-foundation.org>
-	 <1199316785.3258.85.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0801021756310.3010@woody.linux-foundation.org>
-	 <m3ir27oe7f.fsf@telia.com> <1199627875.5205.1.camel@localhost.localdomain>
-	 <20080106144706.GA25419@elte.hu>
-	 <1199632845.5205.31.camel@localhost.localdomain>
-	 <20080106154557.GK2082@does.not.exist>
-Content-Type: text/plain
-Date: Sun, 06 Jan 2008 10:00:33 -0600
-Message-Id: <1199635234.5205.34.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
-Content-Transfer-Encoding: 7bit
+	Sun, 6 Jan 2008 11:05:52 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:54273 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752769AbYAFQFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 11:05:51 -0500
+Date: Sun, 6 Jan 2008 17:05:48 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/cpufreq: Add calls to cpufreq_cpu_put
+Message-ID: <Pine.LNX.4.64.0801061704500.24950@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-01-06 at 17:45 +0200, Adrian Bunk wrote:
-> Bugzilla for tracking and mailing lists for discussing are not mutually 
-> exclusive.
+From: Julia Lawall <julia@diku.dk>
 
-I didn't ever say they were.  What I said was we needed the work flow on
-the mailing lists.
-
-> What about asking the Bugzilla admins to set the default owner of new 
-> SCSI bugs to linux-scsi@vger.kernel.org?
-> 
-> This way all SCSI bugs submitted in Bugzilla will automatically be 
-> forwarded to the linux-scsi mailing list.
-
-Well, I've only been asking for this for the last two years.  If you can
-actually make it happen, I'd be eternally grateful.
-
-James
+A call to cpufreq_cpu_get should be matched by a call to cpufreq_cpu_put.
 
 
+The problem was fixed using the following semantic patch.
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@@
+type T;
+identifier E;
+expression E1, E2;
+int ret;
+statement S;
+@@
+
+  T E;
+  ... when any
+(
+  E = cpufreq_cpu_get(...);
+  if (E == NULL) S
+|
+  if ((E = cpufreq_cpu_get(...)) == NULL) S
+)
+  ... when != E2 = E
+      when strict
+(
+  cpufreq_cpu_put(E);
+|
+  E1 = E;
+|
++ cpufreq_cpu_put(E);
+  return;
+|
++ cpufreq_cpu_put(E);
+  return ret;
+)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+---
+
+diff -u -p a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+--- a/drivers/cpufreq/cpufreq.c 2008-01-06 11:51:40.000000000 +0100
++++ b/drivers/cpufreq/cpufreq.c 2008-01-06 12:01:47.000000000 +0100
+@@ -649,8 +649,10 @@ static ssize_t show(struct kobject * kob
+ 	if (!policy)
+ 		return -EINVAL;
+ 
+-	if (lock_policy_rwsem_read(policy->cpu) < 0)
++	if (lock_policy_rwsem_read(policy->cpu) < 0) {
++		cpufreq_cpu_put(policy);
+ 		return -EINVAL;
++	}
+ 
+ 	if (fattr->show)
+ 		ret = fattr->show(policy, buf);
+@@ -673,8 +675,10 @@ static ssize_t store(struct kobject * ko
+ 	if (!policy)
+ 		return -EINVAL;
+ 
+-	if (lock_policy_rwsem_write(policy->cpu) < 0)
++	if (lock_policy_rwsem_write(policy->cpu) < 0) {
++		cpufreq_cpu_put(policy);
+ 		return -EINVAL;
++	}
+ 
+ 	if (fattr->store)
+ 		ret = fattr->store(policy, buf, count);
