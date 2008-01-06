@@ -1,87 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757827AbYAFBoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbYAFB6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757827AbYAFBoq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 20:44:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755183AbYAFBoh
+	id S1757527AbYAFB6U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 20:58:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbYAFB6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 20:44:37 -0500
-Received: from mail.nutech.com ([204.10.18.136]:2002 "EHLO mail.nutech.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753041AbYAFBog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 20:44:36 -0500
-X-Greylist: delayed 1826 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 Jan 2008 20:44:36 EST
-Date: Sat,  5 Jan 2008 17:14:08 -0800
-Message-Id: <200801051714.AA13500470@mail.nutech.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: "mathewss" <mathewss@mail.nutech.com>
-Reply-To: <mathewss@mail.nutech.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: init wont start on VIA EPIA 5000 500mhz board and randomely wont start on VIA EPIA MII 10000
-X-Mailer: <IMail v8.22>
+	Sat, 5 Jan 2008 20:58:08 -0500
+Received: from home.nigel.suspend2.net ([203.171.70.205]:40922 "EHLO
+	server1.example.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754570AbYAFB6H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Jan 2008 20:58:07 -0500
+Message-ID: <478033ED.7050907@nigel.suspend2.net>
+Date: Sun, 06 Jan 2008 12:50:37 +1100
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Berthold Cogel <cogel@uni-koeln.de>
+CC: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: Oops in evdev_disconnect for kernel 2.6.23.12
+References: <477A93CD.9030707@rrz.uni-koeln.de> <20080105065233.GE27894@ZenIV.linux.org.uk> <47801D70.8020504@uni-koeln.de>
+In-Reply-To: <47801D70.8020504@uni-koeln.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have been trying to figure this out a while now with printk's all over my kernel as well as adding kdb and tracing the int3 events.
+Hi.
 
-I have tried various 2.6 kernels and so far all i have tried do this.
+Berthold Cogel wrote:
+> Al Viro schrieb:
+>> On Tue, Jan 01, 2008 at 08:26:05PM +0100, Berthold Cogel wrote:
+>>
+>>> Jan  1 17:34:39 wonderland kernel: BUG: unable to handle kernel
+>>> paging request at virtual address 00100100
+>>
+>> LIST_POISON1
+>>
+>>> Jan  1 17:34:39 wonderland kernel: EIP is at evdev_disconnect+0x65/0x9e 
+>>
+>> and by the look of code, it's a bit before the call of something that
+>> gets
+>> 0x20006 as one of its arguments.  Which, by the look of evdev.s, gets
+>> passed only to kill_fasync().  So it's POLL_HUP, so this code could be
+>> these days:
+>>     spin_lock(&evdev->client_lock);
+>>     list_for_each_entry(client, &evdev->client_list, node)
+>>         kill_fasync(&client->fasync, SIGIO, POLL_HUP);
+>>     spin_unlock(&evdev->client_lock);
+>> in evdev_hangup()
+>> prior to commit 6addb1d6de1968b84852f54561cc9a999909b5a9:
+>>         list_for_each_entry(client, &evdev->client_list, node)
+>>             kill_fasync(&client->fasync, SIGIO, POLL_HUP);
+>> in evdev_disconnect()
+>>
+>>
+>>> I'm using Debian stable/testing/unstable with homemade kernel
+>>> 2.6.23.12 (patched with tuxonice-3.0-rc3-for-2.6.23.9).
+>>
+>> ... and seeing that this changeset postdates 2.6.23 *and* adds locking to
+>> the lists we are traversing in either variant, I'd bet that the kernel
+>> you
+>> have does *NOT* have the changeset in question, that you have list
+>> corruption
+>> from race and that your oops is list_for_each_entry() trying to walk
+>> forward from entry that just had list_del() poisoning its ->next.
+>>
+>> There are only 4 changesets between 2.6.23 and this one affecting
+>> drivers/input
+>> and only
+>> 8006479c9b75fb6594a7b746af3d7f1fbb68f18f and
+>> 6addb1d6de1968b84852f54561cc9a999909b5a9
+>> appear to be relevant.  Apply to your kernel and see if it helps...
+> 
+> Looks as if I have to start using git ... I always feared that this day
+> will come. ;-)
+> 
+> If I'm able to reproduce the oops with my patched kernel, I will gladly
+> follow your advice.
+> 
+> Regards,
+> 
+> Berthold
 
- My current tests are on 2.6.22.10 
+I can't do it immediately but I'll send you the patches to try a later
+in the day if you like.
 
- I have a simple init binary I compiled static that is my init that is loaded into an init file system. I am not using cpio but that did not seem to matter.
----- begin testinit.c
-#include <stdio.h>
-#include <unistd.h>
-int main(int argc, char *argv[])
-{
-   printf("Hello world!\n");
-   sleep(999999999);
-}
----- end
-
- I am using syslunux to start my kernel and appending the follwiing startup command most of this is specific to my true init script but again im using a "hello world" script to debug this for now.
-
-append  debug kidb=early console=ttyS0,384008n initrd=ufoinit.img init=/testinit rw var_size=12M tmp_size=MAX log_size=16M root_size=64M root=/dev/ram0 boot=/dev/hda1,msdos rw pkgpath=/dev/hda1:msdos rw verbose DELAY=0 TEST=0 DEBUG=0 VERBOSE=0 UFO=root,etc,modules
-
- On an intel CA810EEA 800mhz board or QEMU this runs fine but on the via boards it dies right after "Freeing unused kernel memory: 132k freed"
- 
- on the 500mhz board it dies every time on the 800mhz it is random.
-
- I have noticed that i get the elf binarly loading into user space with some page_faults then I get blasted with do_notify_resume with 0x04 or TIF_SIGPENDING over and over as if its in an infinite loop.
-
- This begins shortly after load_elf_binary -> clear_user i think right after a page_fault during the clear_user. I dont even know why that signal is being sent on other hardware it never happens.
-
- I am not even sure what do try next.
-
- I have been trying to get my distro up on 2.6 for a while now and away from 2.4 but im currently stuck here.
-
- Any and all suggestions and help welcome..
-
-my kernel config is here
-
-http://pastebin.cross-lfs.org/4561
-
- Thanks in advance..
-
- Regards
-  Sean Mathews
-
-struct SoftwareProfessional {
-   double salary;
-   long   lunches;
-   float  jobs;
-   char   unstable;
-   void   work;
-   short  tempers;
-}; 
-
-
-
-
-________________________________________________________________
-Sent via the WebMail system at mail.nutech.com
-
-
- 
-                   
+Nigel
