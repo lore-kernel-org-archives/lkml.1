@@ -1,48 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757463AbYAFNmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbYAFNq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757463AbYAFNmk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 08:42:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbYAFNmc
+	id S1756156AbYAFNq3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 08:46:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbYAFNqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 08:42:32 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:48866 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752577AbYAFNmb (ORCPT
+	Sun, 6 Jan 2008 08:46:22 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:38712 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753375AbYAFNqV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 08:42:31 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4780DA92.6050403@s5r6.in-berlin.de>
-Date: Sun, 06 Jan 2008 14:41:38 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
-MIME-Version: 1.0
-To: david@lang.hm
-CC: Adrian Bunk <bunk@kernel.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Al Boldi <a1426z@gawab.com>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/5] USB Kconfig: Select SCSI for USB Mass Storage	support
-References: <200801051546.SAA08947@raad.intranet> <20080105113024.209485f5.randy.dunlap@oracle.com> <20080105210330.GC22232@does.not.exist> <20080105210940.GA10302@uranus.ravnborg.org> <47801126.7020807@oracle.com> <20080105234540.GG22232@does.not.exist> <47802249.9010107@s5r6.in-berlin.de> <20080106005807.GH22232@does.not.exist> <4780C728.1030806@s5r6.in-berlin.de> <20080106123728.GD2082@does.not.exist> <4780D3E5.20908@s5r6.in-berlin.de> <Pine.LNX.4.64.0801060643370.16883@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0801060643370.16883@asgard.lang.hm>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 6 Jan 2008 08:46:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=dQ9nKMwoKC/G4galtT8akDAputLOUe5qFT17NbBLOvwvE3tOrCXxLDkJutGQsdmaOwwJ6uKzaDkrLsgqyGFdvCGmZ1D//FCfVtkxtdIPl5xdmaa17X1I9bkJe/C4V5AvpS392bjz9EH5BBPmx8iMbbkx/K2BtHGwvn4TWCFxSV8=
+Subject: [PATCH] DS1WM: decouple host IRQ and INTR active state settings.
+From: Philipp Zabel <philipp.zabel@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Matt Reimer <mreimer@vpop.net>,
+       Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
+Content-Type: text/plain
+Date: Sun, 06 Jan 2008 14:46:14 +0100
+Message-Id: <1199627174.28826.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Lang wrote:
-> On Sun, 6 Jan 2008, Stefan Richter wrote:
->> Module autoloading is quite different.
-> 
-> but if boot scripts can figure out what modules to autoload, why can't
-> scripts be written to figure out what drives to build into a system?
+The DS1WM driver incorrectly infers the IAS bit (1-wire interrupt active
+high) from IRQ settings. There are devices that have IAS=0 but still need
+the IRQ to trigger on a rising edge. With this patch, machines with DS1WM
+that need IAS=1 have to set .active_high=1 in the ds1wm_platform_data.
 
-Because build-time configuration has to deal with different, more
-complex questions than run-time configuration.  For starters, build-time
-configuration narrows down the options for run-time configuration.
+Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
+---
+ drivers/w1/masters/ds1wm.c |    9 +++++----
+ include/linux/ds1wm.h      |    1 +
+ 2 files changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/w1/masters/ds1wm.c b/drivers/w1/masters/ds1wm.c
+index 5747997..688e435 100644
+--- a/drivers/w1/masters/ds1wm.c
++++ b/drivers/w1/masters/ds1wm.c
+@@ -361,11 +361,12 @@ static int ds1wm_probe(struct platform_device *pdev)
+ 		goto err1;
+ 	}
+ 	ds1wm_data->irq = res->start;
+-	ds1wm_data->active_high = (res->flags & IORESOURCE_IRQ_HIGHEDGE) ?
+-		1 : 0;
++	ds1wm_data->active_high = plat->active_high;
+ 
+-	set_irq_type(ds1wm_data->irq, ds1wm_data->active_high ?
+-			IRQ_TYPE_EDGE_RISING : IRQ_TYPE_EDGE_FALLING);
++	if (res->flags & IORESOURCE_IRQ_HIGHEDGE)
++		set_irq_type(ds1wm_data->irq, IRQ_TYPE_EDGE_RISING);
++	if (res->flags & IORESOURCE_IRQ_LOWEDGE)
++		set_irq_type(ds1wm_data->irq, IRQ_TYPE_EDGE_FALLING);
+ 
+ 	ret = request_irq(ds1wm_data->irq, ds1wm_isr, IRQF_DISABLED,
+ 			  "ds1wm", ds1wm_data);
+diff --git a/include/linux/ds1wm.h b/include/linux/ds1wm.h
+index 31f6e3c..d3c65e4 100644
+--- a/include/linux/ds1wm.h
++++ b/include/linux/ds1wm.h
+@@ -6,6 +6,7 @@ struct ds1wm_platform_data {
+ 			     * e.g. on h5xxx and h2200 this is 2
+ 			     * (registers aligned to 4-byte boundaries),
+ 			     * while on hx4700 this is 1 */
++	int active_high;
+ 	void (*enable)(struct platform_device *pdev);
+ 	void (*disable)(struct platform_device *pdev);
+ };
 -- 
-Stefan Richter
--=====-==--- ---= --==-
-http://arcgraph.de/sr/
+1.5.3.7
+
+
