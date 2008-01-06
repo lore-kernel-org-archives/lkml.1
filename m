@@ -1,87 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758333AbYAFN7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbYAFOCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758333AbYAFN7m (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 08:59:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755036AbYAFN7d
+	id S1757471AbYAFOCP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 09:02:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752748AbYAFOCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 08:59:33 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:49542 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753706AbYAFN7c (ORCPT
+	Sun, 6 Jan 2008 09:02:00 -0500
+Received: from lazybastard.de ([212.112.238.170]:55655 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752577AbYAFOCA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 08:59:32 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4780DE52.1090402@s5r6.in-berlin.de>
-Date: Sun, 06 Jan 2008 14:57:38 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
+	Sun, 6 Jan 2008 09:02:00 -0500
+Date: Sun, 6 Jan 2008 14:56:01 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] Claim maintainership for block2mtd and update email addresses
+Message-ID: <20080106135600.GB3120@lazybastard.org>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Randy Dunlap <randy.dunlap@oracle.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Al Boldi <a1426z@gawab.com>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/5] USB Kconfig: Select SCSI for USB Mass Storage	support
-References: <20080105113024.209485f5.randy.dunlap@oracle.com> <20080105210330.GC22232@does.not.exist> <20080105210940.GA10302@uranus.ravnborg.org> <47801126.7020807@oracle.com> <20080105234540.GG22232@does.not.exist> <47802249.9010107@s5r6.in-berlin.de> <20080106005807.GH22232@does.not.exist> <4780C728.1030806@s5r6.in-berlin.de> <20080106123728.GD2082@does.not.exist> <4780D3E5.20908@s5r6.in-berlin.de> <20080106133854.GH2082@does.not.exist>
-In-Reply-To: <20080106133854.GH2082@does.not.exist>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Sun, Jan 06, 2008 at 02:13:09PM +0100, Stefan Richter wrote:
->> Module autoloading is quite different.
-> 
-> Both are "hardware -> required kernel support" mappings.
-> 
-> I know that people don't like this idea since the CML2 discussions, but 
-> there even don't seem to be any big problems if anyone wants to put all 
-> the pieces together and assemble a suitable .config only based on the 
-> autodetection tools of some distribution and without asking the user 
-> any questions.
+I have been prime author and maintainer of block2mtd from day one, but
+neither MAINTAINERS nor the module source makes this fact clear.  And while
+I'm at it, update my email addresses tree-wide, as the old address currently
+bounces and change my name to "joern" as unicode will likely continue to
+cause trouble until the end of this century.
 
-How to autodetect that the user is going to buy gadget xyz next week?
-(OK, he can re-run autodetection then, although that's not a
-particularly economic strategy.)
+Signed-off-by: Jörn Engel <joern@lazybastard.org>
+---
 
-How to autodetect POSIX_MQUEUE, HZ_250, HOTPLUG_PCI, ...?
+ MAINTAINERS                     |   10 ++++++++--
+ drivers/mtd/devices/block2mtd.c |    4 ++--
+ drivers/mtd/devices/phram.c     |    4 ++--
+ drivers/mtd/maps/mtx-1_flash.c  |    2 +-
+ scripts/checkstack.pl           |    2 +-
+ 5 files changed, 14 insertions(+), 8 deletions(-)
 
-[...]
->> This /is/ what we are currently doing, not "worse than what we are
->> currently doing".  We
->>   - sensibly modularize our software,
->>   - tell the user which software components there are,
->>   - what they are for,
->>   - how they depend on each other,
->>   - make it easy enough for the user to navigate in the dependency
->>     graph,
->>   - provide fundamental safeguards and checks for a proper software
->>     configuration.  (Well, we actually walk on thin ice whenever we
->>     use the 'select' keyword.)
->> ...
-> 
-> You miss the fundamental point:
-> 
-> The vast majority of kconfig users are _not_ kernel hackers, and they 
-> neither know nor want to know anything about kernel internals - they 
-> just want to build a kernel suitable for their system.
-
-I don't miss the point.  I just say what we realistically can do.  And I
-might add, we should try hard to achieve good results in each of the
-points I listed.
-
-> You want to make an UI easier to use for the developers but harder to 
-> use for the users, and that's a bad deal.
-
-No, I don't.
-
-(I have "worked" long enough in enduser support, and still am doing
-support, to not have completely lost an eye for enduser needs.  Or so I
-believe.)
--- 
-Stefan Richter
--=====-==--- ---= --==-
-http://arcgraph.de/sr/
+--- linux-2.6.24-rc3logfs/drivers/mtd/devices/block2mtd.c~block2mtd_maintainer	2007-08-08 19:30:04.000000000 +0200
++++ linux-2.6.24-rc3logfs/drivers/mtd/devices/block2mtd.c	2008-01-06 14:22:57.000000000 +0100
+@@ -4,7 +4,7 @@
+  * block2mtd.c - create an mtd from a block device
+  *
+  * Copyright (C) 2001,2002	Simon Evans <spse@secret.org.uk>
+- * Copyright (C) 2004-2006	JÃ¶rn Engel <joern@wh.fh-wedel.de>
++ * Copyright (C) 2004-2006	Joern Engel <joern@lazybastard.org>
+  *
+  * Licence: GPL
+  */
+@@ -485,5 +485,5 @@ module_init(block2mtd_init);
+ module_exit(block2mtd_exit);
+ 
+ MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("Simon Evans <spse@secret.org.uk> and others");
++MODULE_AUTHOR("Joern Engel <joern@lazybastard.org>");
+ MODULE_DESCRIPTION("Emulate an MTD using a block device");
+--- linux-2.6.24-rc3logfs/MAINTAINERS~block2mtd_maintainer	2007-11-30 13:59:51.000000000 +0100
++++ linux-2.6.24-rc3logfs/MAINTAINERS	2008-01-06 14:21:49.000000000 +0100
+@@ -835,6 +835,12 @@ L:	linux-kernel@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/axboe/linux-2.6-block.git
+ S:	Maintained
+ 
++BLOCK2MTD DRIVER
++P:	Joern Engel
++M:	joern@lazybastard.org
++L:	linux-mtd@lists.infradead.org
++S:	Maintained
++
+ BLUETOOTH SUBSYSTEM
+ P:	Marcel Holtmann
+ M:	marcel@holtmann.org
+@@ -2985,8 +2991,8 @@ L:	linux-abi-devel@lists.sourceforge.net
+ S:	Maintained
+ 
+ PHRAM MTD DRIVER
+-P:	JÃ¶rn Engel
+-M:	joern@wh.fh-wedel.de
++P:	Joern Engel
++M:	joern@lazybastard.org
+ L:	linux-mtd@lists.infradead.org
+ S:	Maintained
+ 
+--- linux-2.6.24-rc3logfs/drivers/mtd/devices/phram.c~block2mtd_maintainer	2007-08-08 19:30:04.000000000 +0200
++++ linux-2.6.24-rc3logfs/drivers/mtd/devices/phram.c	2008-01-06 14:22:30.000000000 +0100
+@@ -2,7 +2,7 @@
+  * $Id: phram.c,v 1.16 2005/11/07 11:14:25 gleixner Exp $
+  *
+  * Copyright (c) ????		Jochen SchÃ¤uble <psionic@psionic.de>
+- * Copyright (c) 2003-2004	JÃ¶rn Engel <joern@wh.fh-wedel.de>
++ * Copyright (c) 2003-2004	Joern Engel <joern@lazybastard.org>
+  *
+  * Usage:
+  *
+@@ -299,5 +299,5 @@ module_init(init_phram);
+ module_exit(cleanup_phram);
+ 
+ MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("JÃ¶rn Engel <joern@wh.fh-wedel.de>");
++MODULE_AUTHOR("Joern Engel <joern@lazybastard.org>");
+ MODULE_DESCRIPTION("MTD driver for physical RAM");
+--- linux-2.6.24-rc3logfs/scripts/checkstack.pl~block2mtd_maintainer	2007-11-15 20:52:00.000000000 +0100
++++ linux-2.6.24-rc3logfs/scripts/checkstack.pl	2008-01-06 14:28:14.000000000 +0100
+@@ -2,7 +2,7 @@
+ 
+ #	Check the stack usage of functions
+ #
+-#	Copyright Joern Engel <joern@wh.fh-wedel.de>
++#	Copyright Joern Engel <joern@lazybastard.org>
+ #	Inspired by Linus Torvalds
+ #	Original idea maybe from Keith Owens
+ #	s390 port and big speedup by Arnd Bergmann <arnd@bergmann-dalldorf.de>
+--- linux-2.6.24-rc3logfs/drivers/mtd/maps/mtx-1_flash.c~block2mtd_maintainer	2007-08-08 19:30:04.000000000 +0200
++++ linux-2.6.24-rc3logfs/drivers/mtd/maps/mtx-1_flash.c	2008-01-06 14:28:44.000000000 +0100
+@@ -4,7 +4,7 @@
+  * $Id: mtx-1_flash.c,v 1.2 2005/11/07 11:14:27 gleixner Exp $
+  *
+  * (C) 2005 Bruno Randolf <bruno.randolf@4g-systems.biz>
+- * (C) 2005 JÃ¶rn Engel <joern@wohnheim.fh-wedel.de>
++ * (C) 2005 Joern Engel <joern@lazybastard.org>
+  *
+  */
+ 
