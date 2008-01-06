@@ -1,140 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbYAFSJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756993AbYAFSXF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755277AbYAFSJj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 13:09:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754997AbYAFSJO
+	id S1756993AbYAFSXF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 13:23:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754768AbYAFSWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 13:09:14 -0500
-Received: from smtp5-g19.free.fr ([212.27.42.35]:53756 "EHLO smtp5-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757210AbYAFSJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 13:09:11 -0500
-Date: Sun, 6 Jan 2008 19:08:56 +0100
-From: FD Cami <francois.cami@free.fr>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Al Boldi <a1426z@gawab.com>, Jeff Garzik <jeff@garzik.org>,
-       Zoltan Boszormenyi <zboszor@dunaweb.hu>
-Subject: Re: [PATCH] Re: Forcing modes in libata (was: SATA buffered read
- VERY slow)
-Message-ID: <20080106190856.510ab90e@dimension.stilgar.hd.free.fr>
-In-Reply-To: <200801061727.38206.bzolnier@gmail.com>
-References: <200801051641.03927.a1426z@gawab.com>
-	<20080106133609.51203eed@lxorguk.ukuu.org.uk>
-	<20080106162100.05096d60@dimension.stilgar.hd.free.fr>
-	<200801061727.38206.bzolnier@gmail.com>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="MP_/8oe1rEqhMlsdQZa/6y1D2sY"
+	Sun, 6 Jan 2008 13:22:52 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36019 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754395AbYAFSWv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 13:22:51 -0500
+Date: Sun, 6 Jan 2008 10:14:19 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Peter Osterlund <petero2@telia.com>, Matthew Wilcox <matthew@wil.cx>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
+In-Reply-To: <1199630574.5205.14.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.1.00.0801060954010.2811@woody.linux-foundation.org>
+References: <20080102162534.GA4041@elte.hu>  <1199292381.3258.32.camel@localhost.localdomain>  <alpine.LFD.1.00.0801021113150.32517@woody.linux-foundation.org>  <20080102194030.GC11638@parisc-linux.org>  <1199304735.3258.53.camel@localhost.localdomain> 
+ <alpine.LFD.1.00.0801021227140.32517@woody.linux-foundation.org>  <1199316785.3258.85.camel@localhost.localdomain>  <alpine.LFD.1.00.0801021756310.3010@woody.linux-foundation.org>  <m3ir27oe7f.fsf@telia.com>  <alpine.LFD.1.00.0801051900500.2811@woody.linux-foundation.org>
+ <1199630574.5205.14.camel@localhost.localdomain>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---MP_/8oe1rEqhMlsdQZa/6y1D2sY
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-On Sun, 6 Jan 2008 17:27:38 +0100
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 
-> On Sunday 06 January 2008, FD Cami wrote:
-> > On Sun, 6 Jan 2008 13:36:09 +0000
-> > Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> >=20
-> > > On Sun, 6 Jan 2008 08:03:31 +0300
-> > > > > For now you can boot with libata.dma=3D1 to select DMA on disks
-> > > > > but not CD
-> > > >=20
-> > > > Great, but why isn't this in the documentation?
-> > >=20
-> > > Send patches
-> >=20
-> > patch attached.
-> >=20
-> > Description : Add libata.dma=3D to Documentation/kernel-parameters.txt
-> >=20
-> > Found documentation in :
-> > http://www.mail-archive.com/linux-ide%40vger.kernel.org/msg09849.html
-> > http://www.redhat.com/archives/fedora-extras-commits/2007-October/msg04=
-568.html
-> >=20
-> > Signed-off-by: Fran=C3=A7ois Cami <francois.cami@free.fr>
->=20
-> diff -rU2 linux-2.6.24-rc6/Documentation/kernel-parameters.txt=20
-> linux-2.6.24-rc6-mine/Documentation/kernel-parameters.txt
-> ---
-> linux-2.6.24-rc6/Documentation/kernel-parameters.txt=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A02008-01-06
-> 15:58:54.000000000 +0100 +++
-> linux-2.6.24-rc6-mine/Documentation/kernel-parameters.txt=C2=A0=C2=A0=C2=
-=A02008-01-06
-> 16:11:20.000000000 +0100 @@ -883,4 +883,11 @@ C2 power state.=20
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0libata.dma=3D=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0[LIBATA] DMA control
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0libata.dm=
-a=3D0=C2=A0=C2=A0=C2=A0=C2=A0 =C2=A0Disable all PATA DMA like
-> old IDE
->=20
-> this doesn't seem entirely correct:
->=20
-> * IDE has "hdx=3Dnodma" so you can disable DMA on per-device basis
+On Sun, 6 Jan 2008, James Bottomley wrote:
+> > index 993f78c..6a20da9 100644
+> > --- a/fs/block_dev.c
+> > +++ b/fs/block_dev.c
+> > @@ -1191,6 +1191,7 @@ static int do_open(struct block_device *bdev, struct file *file, int for_part)
+> >  			}
+> >  			if (bdev->bd_invalidated)
+> >  				rescan_partitions(bdev->bd_disk, bdev);
+> > +			bd_inode->i_size = (loff_t)get_capacity(disk)<<9;
+> >  		}
+> >  	}
+> >  	bdev->bd_openers++;
+> 
+> Actually, I think that code is fine ... the block size shouldn't change
+> across positive values of bd_openers.
 
-I think that libata.dma=3D1 is designed to behave like=20
-CONFIG_IDEDMA_ONLYDISK used to. "hdx=3Dnodma" is more fine-grained than
-this.
+The block size should indeed not change, and that's why we must *not* do 
+bd_set_size() there (because that changes the block size too, not just the 
+size of the device).
 
-> * is this really limited to PATA?
+But I would argue that if we have had a device invalidation event (ie 
+media change), then we should indeed change the actual *size* of the block 
+device as seen by anybody who opens the file again.
 
-Alan's original patch took care of PATA. SATA support was added
-later by Jeff Garzik. Corrected documentation patch attached.
+And yes, it will affect old openers of the same inode too (since the size 
+is in the inode, not the file descriptor), but considering that this 
+really should only happen for media change events, I think that's better 
+than what we used to have.
 
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0libata.dm=
-a=3D1=C2=A0=C2=A0=C2=A0=C2=A0 =C2=A0Disk DMA only
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0libata.dm=
-a=3D2=C2=A0=C2=A0=C2=A0=C2=A0 =C2=A0ATAPI DMA only
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0libata.dm=
-a=3D3=C2=A0=C2=A0=C2=A0=C2=A0 =C2=A0CF DMA only=20
+Now, we could have made it even more clear by moving the "i_size" setting 
+into the same "if (dbev->bd_invalidated)" conditional, but the thing is, 
+we only set bd_invalidated for devices that have minors, so things like 
+floppies etc that don't have partition support also don't have 
+bd_invalidated set (in effect, bd_invalidated really *is* just a flag for 
+the partitioning code, not for disk change in general).
 
-This is also wrong, it should be "libata.dma=3D4=C2=A0=C2=A0=C2=A0=C2=A0 =
-=C2=A0CF DMA only"
-Thanks to Zoltan Boszormenyi <zboszor@dunaweb.hu> for catching this
-mistake.
+That said:
 
-Revised patch attached.
+> pktcdvd shouldn't be mucking with the size of the underlying CD/DVD ...
 
-Best,
+I'm not sure if it should be mucking with the size or not, but it 
+definitely shouldn't be mucking with the block-size, because that can 
+indeed cause huge problems. 
 
-Fran=C3=A7ois
+So removing the  bd_set_size() is almost certainly the right thing to do 
+(because it's always incorrect to do at an "inner" open), and the real 
+size should have already been set by the regular open.
 
---MP_/8oe1rEqhMlsdQZa/6y1D2sY
-Content-Type: text/plain; name=libata-doc-patch2.txt
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=libata-doc-patch2.txt
+But this should be tested by somebody who uses the dang thing. My personal 
+favourite for a real fix would actually be to always make the capacity of 
+the pktcdvd device match the capacity of the underlying device, ie the 
+diff would look something like the appended (untested as usual), but that 
+may be a bit too extensive a change.
 
-diff -rU4 linux-2.6.24-rc6/Documentation/kernel-parameters.txt linux-2.6.24-rc6-mine/Documentation/kernel-parameters.txt
---- linux-2.6.24-rc6/Documentation/kernel-parameters.txt	2008-01-06 15:58:54.000000000 +0100
-+++ linux-2.6.24-rc6-mine/Documentation/kernel-parameters.txt	2008-01-06 18:46:49.000000000 +0100
-@@ -881,8 +881,16 @@
+But regardless, I think the i_size change makes sense - at least in some 
+form. It doesn't necessarily have to be the explicit i_size setting: I 
+also considered just changing the block_dev.c do_open() make bd_set_size() 
+_unconditionally_, and then move the "if (!bdev->bd_openers)" test into 
+bd_set_size(), so that people couldn't even change the blocksize by 
+mistake!
+
+I'd still like to hear comments from Al in particular, if he has something 
+to say. 
+
+			Linus
+---
+ drivers/block/pktcdvd.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
+index 3535ef8..1b23681 100644
+--- a/drivers/block/pktcdvd.c
++++ b/drivers/block/pktcdvd.c
+@@ -2342,9 +2342,7 @@ static int pkt_open_dev(struct pktcdvd_device *pd, int write)
+ 		goto out_unclaim;
+ 	}
  
- 	lapic_timer_c2_ok	[X86-32,x86-64,APIC] trust the local apic timer in
- 			C2 power state.
+-	set_capacity(pd->disk, lba << 2);
+-	set_capacity(pd->bdev->bd_disk, lba << 2);
+-	bd_set_size(pd->bdev, (loff_t)lba << 11);
++	set_capacity(pd->disk, get_capacity(pd->bdev->bd_disk));
  
-+	libata.dma=	[LIBATA] DMA control
-+			libata.dma=0	  Disable all PATA and SATA DMA
-+			libata.dma=1	  PATA and SATA Disk DMA only
-+			libata.dma=2	  ATAPI (CDROM) DMA only
-+			libata.dma=4	  Compact Flash DMA only 
-+			Combinations also work, so libata.dma=3 enables DMA
-+			for disks and CDROMs, but not CFs.
-+
- 	libata.noacpi	[LIBATA] Disables use of ACPI in libata suspend/resume
- 			when set.
- 			Format: <int>
- 
-
---MP_/8oe1rEqhMlsdQZa/6y1D2sY--
+ 	q = bdev_get_queue(pd->bdev);
+ 	if (write) {
