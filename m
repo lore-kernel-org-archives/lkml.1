@@ -1,45 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759330AbYAFQ4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758712AbYAFRET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759330AbYAFQ4u (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 11:56:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbYAFQ4m
+	id S1758712AbYAFRET (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 12:04:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756775AbYAFREL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 11:56:42 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:57335 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753831AbYAFQ4m (ORCPT
+	Sun, 6 Jan 2008 12:04:11 -0500
+Received: from anchor-post-37.mail.demon.net ([194.217.242.87]:54473 "EHLO
+	anchor-post-37.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755067AbYAFREK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 11:56:42 -0500
-Date: Sun, 6 Jan 2008 09:56:40 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Thomas Meyer <thomas@m3y3r.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Osterlund <petero2@telia.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, James.Bottomley@HansenPartnership.com
-Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
-Message-ID: <20080106165640.GL20473@parisc-linux.org>
-References: <4780DDBB.7090807@m3y3r.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4780DDBB.7090807@m3y3r.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 6 Jan 2008 12:04:10 -0500
+Subject: [PATCH] Documentation. add hint about call traces & module symbols
+	to BUG-HUNTING
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Sun, 06 Jan 2008 17:04:05 +0000
+Message-Id: <1199639045.2900.22.camel@castor.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 06, 2008 at 02:55:07PM +0100, Thomas Meyer wrote:
-> This is the correct setup to trigger the bug. And the commit
-> 6f5391c283d7fdcf24bf40786ea79061919d1e1d has nothing to do with this
-> bug. It was bad luck that i couldn't trigger the bug with said commit
-> reverted (in my tests, the second boot with the reverted commit missed
-> the first mount/umount smaller cd step, so...)
+Here's a couple of small additions to BUG-HUNTING.
 
-Great.  Linus, can you revert the revert now?
+1. point out that you can list code in gdb with only one command
+	(gdb) l *(<symbol> + offset)
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+2. give a very brief hint how to decode module symbols in call traces 
+
+Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+
+----
+It would have saved me some time if I'd known both of these things
+earlier, so I thought it might just be of help to anyone else new to the
+kernel.
+
+Richard
+
+diff --git a/Documentation/BUG-HUNTING b/Documentation/BUG-HUNTING
+index 35f5bd2..aa3e424 100644
+--- a/Documentation/BUG-HUNTING
++++ b/Documentation/BUG-HUNTING
+@@ -214,7 +214,24 @@ And recompile the kernel with CONFIG_DEBUG_INFO enabled:
+   gdb vmlinux
+   (gdb) p vt_ioctl
+   (gdb) l *(0x<address of vt_ioctl> + 0xda8)
+-
++or, as one command
++  (gdb) l *(vt_ioctl + 0xda8)
++
++If you have a call trace, such as :-
++>Call Trace:
++> [<ffffffff8802c8e9>] :jbd:log_wait_commit+0xa3/0xf5
++> [<ffffffff810482d9>] autoremove_wake_function+0x0/0x2e
++> [<ffffffff8802770b>] :jbd:journal_stop+0x1be/0x1ee
++> ... 
++this shows the problem in the :jbd: module. You can load that module in gdb
++and list the relevant code.
++  gdb fs/jbd/jbd.ko
++  (gdb) p log_wait_commit
++  (gdb) l *(0x<address> + 0xa3)
++or
++  (gdb) l *(log_wait_commit + 0xa3)  
++
++ 
+ Another very useful option of the Kernel Hacking section in menuconfig is
+ Debug memory allocations. This will help you see whether data has been
+ initialised and not set before use etc. To see the values that get assigned
+
+
