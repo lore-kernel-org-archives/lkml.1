@@ -1,77 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754265AbYAFCYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753472AbYAFCzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754265AbYAFCYV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 21:24:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbYAFCYL
+	id S1753472AbYAFCzA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 21:55:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbYAFCyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 21:24:11 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39758 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751643AbYAFCYJ (ORCPT
+	Sat, 5 Jan 2008 21:54:51 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:19531 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752215AbYAFCyu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 21:24:09 -0500
-Date: Sat, 5 Jan 2008 18:17:42 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Vivek Goyal <vgoyal@redhat.com>,
-       hbabu@us.ibm.com, lkml <linux-kernel@vger.kernel.org>,
-       kexec@lists.infradead.org, Ingo Molnar <mingo@elte.hu>,
-       maneesh@linux.vnet.ibm.com, tglx@linutronix.de
-Subject: Re: kexec refuses to boot latest -mm
-Message-Id: <20080105181742.7525fec6.akpm@linux-foundation.org>
-In-Reply-To: <20080104155415.GC6007@linux.vnet.ibm.com>
-References: <20071228124532.GB32643@linux.vnet.ibm.com>
-	<20071231150843.GB27060@redhat.com>
-	<20080103195201.GC6392@linux.vnet.ibm.com>
-	<200801032242.01425.rjw@sisk.pl>
-	<20080104122816.GF4514@linux.vnet.ibm.com>
-	<20080104155415.GC6007@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 5 Jan 2008 21:54:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=aoVW/BY7mxCaRk7gx4yq9XjGyJd3Q4KXbvQb+DDQKIPNHDDYaV3YSRi5Y7Lp3da+UY1lm8jj5dDx/lV4HgXqXB6FjN+wkqPpjmyvlqLXuBAqjmfV/bkBVvzf8NqtHwcsod9aT+NfjDJviBJxnyCY698hcOoQf/y8cbd+hp1SaDE=
+Message-ID: <478042F3.7010002@gmail.com>
+Date: Sun, 06 Jan 2008 11:54:43 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Al Viro <viro@ZenIV.linux.org.uk>
+CC: Gabor Gombas <gombasg@sztaki.hu>, Dave Young <hidave.darkstar@gmail.com>,
+       linux-kernel@vger.kernel.org, bluez-devel@lists.sourceforge.net,
+       Greg KH <greg@kroah.com>, ebiederm@xmission.com
+Subject: Re: [Bluez-devel] Oops involving RFCOMM and sysfs
+References: <20071228173203.GA20690@boogie.lpds.sztaki.hu> <a8e1da0712290007o168a730cw923055ad2c265d84@mail.gmail.com> <20080102151642.GA7273@boogie.lpds.sztaki.hu> <20080105075039.GF27894@ZenIV.linux.org.uk> <477F9481.2040505@gmail.com> <20080105194510.GK27894@ZenIV.linux.org.uk> <478037F8.8020103@gmail.com> <20080106021826.GR27894@ZenIV.linux.org.uk>
+In-Reply-To: <20080106021826.GR27894@ZenIV.linux.org.uk>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Jan 2008 21:24:15 +0530 Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+Hello, Al Viro.
 
-> On Fri, Jan 04, 2008 at 05:58:16PM +0530, Dhaval Giani wrote:
-> > On Thu, Jan 03, 2008 at 10:42:00PM +0100, Rafael J. Wysocki wrote:
-> > > On Thursday, 3 of January 2008, Dhaval Giani wrote:
-> > > > On Mon, Dec 31, 2007 at 10:08:43AM -0500, Vivek Goyal wrote:
-> > > > > On Sat, Dec 29, 2007 at 11:11:13AM +0530, Dhaval Giani wrote:
-> > > > > > On Fri, Dec 28, 2007 at 09:27:39AM -0500, Vivek Goyal wrote:
-> > > > > > > On Fri, Dec 28, 2007 at 06:15:32PM +0530, Dhaval Giani wrote:
-> > > > > > > > Hi Vivek,
-> > > > > > > > 
-> > 
-> > I've no clue what I managed to do wrong last night, probably tried to boot
-> > 2.6.24-rc6-mm1 thinking it was 2.6.24-rc6. 2.6.24-rc6 boots, but -mm
-> > does not. Sorry for the noise.
-> > 
+Al Viro wrote:
+> On Sun, Jan 06, 2008 at 11:07:52AM +0900, Tejun Heo wrote:
 > 
-> So I went ahead and bisected -mm, and the culprit is git-x86. It boots
-> fine before it, but with git-x86 applied, it fails to boot.
+>> Right, I haven't thought about that.  When sysfs_get_dentry() is called,
+>> @sd is always valid so unless there was existing negative dentry, lookup
+>> is guaranteed to return positive dentry, but by populating dcache with
+>> negative dentry before a node is created, things can go wrong.  I don't
+>> think that's what's going on here tho.  If that was the case, the
+>> while() loop looking up the next sd to lookup (@cur) should have blown
+>> up as negative dentry will have NULL d_fsdata which doesn't match any sd.
 > 
-> Ingo/Thomas, could you please point me to the git-x86 tree so that I can
-> bisect it?
+> No.  What happens if sd gets unlinked while we are on the way to
+> sysfs_get_dentry() and so does its parent?
 
-Every git-foo.patch in -mm identifies where it came from in its changelog.
+That means sysfs_remove_dir() is called on parent while other operations
+are in progress on children, right?  sysfs has never allowed such things
+&& AFAIK no one does that.  It's somewhat implied in the interface (such
+as recursive removing) but I fully agree it's problematic.  Things like
+these are why I think we need to unify/simplify locking as I wrote
+previously.
 
-The first few lines of
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc6/2.6.24-rc6-mm1/broken-out/git-x86.patch
-are:
+> The parent is off the
+> sibling list, we get negative dentry from lookup.  It's not hashed,
+> so won't stick around in dcache (which is apparently what you are
+> thinking about).  However, _THIS_ lookup has returned you a dentry
+> with NULL ->d_inode and you are well and truly buggered.
 
-GIT 27197ba67cbaa0e22598a10c82b10dacb1309ed8 irqs_disabled
+So, the assumption is that while @sd is held and being operated on its
+ancestry can never change except for rename and move and those are
+protected with sysfs_rename_mutex.
 
-git+ssh://master.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git#mm
+I agree that the locking is awkward but sysfs's internal implementation
+has completely changed over last six or so months and the conversion
+still isn't complete.  It isn't pretty at all but is at least
+understandable now, IMHO.  :-)
 
+The last pending change is separating out kobject from sysfs and
+simplifying locking.  I had some disagreement with Greg about the future
+of kobject and then there was tsunami of ATA bugs because most major
+distros converted to libata from IDE in the second half of the last year
+and I'm still buried under it.  I'll get back to sysfs once these ATA
+bugs subside a bit.
 
+Thanks.
 
-I'm not sure what the "irqs_disabled\n\n" is doing there: maybe I added it
-by mistake.  2.6.24-rc5-mm1 correctly had
-
-GIT b668e28b74558b3a8277b5fde363ae5f803b36f0 git+ssh://master.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git#mm
-
-But still.  The git URL is always there.
+-- 
+tejun
