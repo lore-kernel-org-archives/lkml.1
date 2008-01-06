@@ -1,102 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbYAFS6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbYAFTDE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756257AbYAFS6R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 13:58:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbYAFS6H
+	id S1754737AbYAFTDE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 14:03:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbYAFTCy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 13:58:07 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:31950 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752209AbYAFS6F convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 13:58:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=M3I3un1gF7vraoKlHflRh23H0EsWvjyaHD/MNBr5BzuHykB92FF8yRB/1jHwkPqf1itong8hburOmgs+OnVCihvjYCKVhWxkvUHzMyah8hXXk2Q7Wts8o5w19h4AzxPmsWYKWk/LwgJMr8Wob4QhvhSFs6fMa3LPOQ5cVZ9j5FQ=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: FD Cami <francois.cami@free.fr>
-Subject: Re: [PATCH] Re: Forcing modes in libata (was: SATA buffered read VERY slow)
-Date: Sun, 6 Jan 2008 20:09:39 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Al Boldi <a1426z@gawab.com>, Jeff Garzik <jeff@garzik.org>,
-       Zoltan Boszormenyi <zboszor@dunaweb.hu>
-References: <200801051641.03927.a1426z@gawab.com> <200801061727.38206.bzolnier@gmail.com> <20080106190856.510ab90e@dimension.stilgar.hd.free.fr>
-In-Reply-To: <20080106190856.510ab90e@dimension.stilgar.hd.free.fr>
+	Sun, 6 Jan 2008 14:02:54 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:33187 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752558AbYAFTCw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 14:02:52 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM: Acquire device locks on suspend
+Date: Sun, 6 Jan 2008 20:05:11 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0801061203510.7367-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0801061203510.7367-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200801062009.39162.bzolnier@gmail.com>
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801062005.12097.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 06 January 2008, FD Cami wrote:
-> On Sun, 6 Jan 2008 17:27:38 +0100
-> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+On Sunday, 6 of January 2008, Alan Stern wrote:
+> On Sun, 6 Jan 2008, Rafael J. Wysocki wrote:
 > 
-> > On Sunday 06 January 2008, FD Cami wrote:
-> > > On Sun, 6 Jan 2008 13:36:09 +0000
-> > > Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > > 
-> > > > On Sun, 6 Jan 2008 08:03:31 +0300
-> > > > > > For now you can boot with libata.dma=1 to select DMA on disks
-> > > > > > but not CD
-> > > > > 
-> > > > > Great, but why isn't this in the documentation?
-> > > > 
-> > > > Send patches
-> > > 
-> > > patch attached.
-> > > 
-> > > Description : Add libata.dma= to Documentation/kernel-parameters.txt
-> > > 
-> > > Found documentation in :
-> > > http://www.mail-archive.com/linux-ide%40vger.kernel.org/msg09849.html
-> > > http://www.redhat.com/archives/fedora-extras-commits/2007-October/msg04568.html
-> > > 
-> > > Signed-off-by: François Cami <francois.cami@free.fr>
+> > > If you can figure out a way to disable the warning in device_del() for 
+> > > just the one device being unregistered by 
+> > > device_pm_destroy_suspended(),
 > > 
-> > diff -rU2 linux-2.6.24-rc6/Documentation/kernel-parameters.txt 
-> > linux-2.6.24-rc6-mine/Documentation/kernel-parameters.txt
-> > ---
-> > linux-2.6.24-rc6/Documentation/kernel-parameters.txt        2008-01-06
-> > 15:58:54.000000000 +0100 +++
-> > linux-2.6.24-rc6-mine/Documentation/kernel-parameters.txt   2008-01-06
-> > 16:11:20.000000000 +0100 @@ -883,4 +883,11 @@ C2 power state. 
-> > +       libata.dma=     [LIBATA] DMA control
-> > +                       libata.dma=0      Disable all PATA DMA like
-> > old IDE
+> > Something like this, perhaps:
 > > 
-> > this doesn't seem entirely correct:
-> > 
-> > * IDE has "hdx=nodma" so you can disable DMA on per-device basis
+> > @@ -905,6 +915,18 @@ void device_del(struct device * dev)
+> >  	struct device * parent = dev->parent;
+> >  	struct class_interface *class_intf;
+> >  
+> > +	if (down_trylock(&dev->sem)) {
+> > +		if (pm_sleep_lock()) {
+> > +			dev_warn(dev, "Illegal %s during suspend\n",
+> > +				__FUNCTION__);
+> > +			dump_stack();
+> > +		} else {
+> > +			pm_sleep_unlock();
+> > +		}
+> > +	} else {
+> > +		up(&dev->sem);
+> > +	}
+> > +
+> >  	if (parent)
+> >  		klist_del(&dev->knode_parent);
+> >  	if (MAJOR(dev->devt))
 > 
-> I think that libata.dma=1 is designed to behave like 
-> CONFIG_IDEDMA_ONLYDISK used to. "hdx=nodma" is more fine-grained than
-> this.
+> Bizarre, but it should work.
 
-Seems so but CONFIG_IDEDMA_ONLYDISK was removed on the same day
-that "hdx=nodma" was introduced (Oct 16 2007)...
+OK
 
-> > * is this really limited to PATA?
-> 
-> Alan's original patch took care of PATA. SATA support was added
-> later by Jeff Garzik. Corrected documentation patch attached.
-> 
-> > +                       libata.dma=1      Disk DMA only
-> > +                       libata.dma=2      ATAPI DMA only
-> > +                       libata.dma=3      CF DMA only 
-> 
-> This is also wrong, it should be "libata.dma=4      CF DMA only"
-> Thanks to Zoltan Boszormenyi <zboszor@dunaweb.hu> for catching this
-> mistake.
-> 
-> Revised patch attached.
+Still, shouldn't we fail the removal of the device apart from giving the
+warning?
 
-Thanks, looks good to me.
+> Be sure to include plenty of explanatory comments
 
-Bart
+I will.
+
+I think that code can be moved to its own function in
+drivers/base/power/main.c, btw.
+
+> -- otherwise nobody will be able to figure it out!  :-) 
+
+Well, I guess so. :-)
+
+Thanks,
+Rafael
