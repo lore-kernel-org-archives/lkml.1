@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757856AbYAFAvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757515AbYAFA5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757856AbYAFAvR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Jan 2008 19:51:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754569AbYAFAvF
+	id S1757515AbYAFA5Z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Jan 2008 19:57:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbYAFA5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Jan 2008 19:51:05 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:6310 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753816AbYAFAvC (ORCPT
+	Sat, 5 Jan 2008 19:57:15 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:55562 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753857AbYAFA5O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Jan 2008 19:51:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=iHejZNn0Mn0T19iX/qBQbag9xJhVaG/c1S5IieAGWUceSA8yrHQBDLh+jC6d/flCzEJFX44IeylhpudOourX+rOhtj7jfDbC2OoZLnNzRRmByg5Y5MIs9mNdzwVhbVxaa32ZmE7xrWMaDRyq+xlwhmZ0rCtLugfzECJtA8nGRcs=
-Date: Sun, 6 Jan 2008 01:52:29 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Ben Fennema <bfennema@falcon.csc.calpoly.edu>, Jan Kara <jack@suse.cz>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 0/6] udf: improve code related to super_block v3
-Message-ID: <20080106005224.GA4522@joi>
-References: <1199580275-2487-1-git-send-email-marcin.slusarz@gmail.com>
+	Sat, 5 Jan 2008 19:57:14 -0500
+Date: Sun, 6 Jan 2008 01:57:13 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+cc: Al Viro <viro@ZenIV.linux.org.uk>, m.kozlowski@tuxland.pl,
+       davem@davemloft.net, sparclinux@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: sparc oops in ip_fast_csum
+In-Reply-To: <E1JBJHA-0000hy-00@gondolin.me.apana.org.au>
+Message-ID: <Pine.LNX.4.64.0801060156410.14194@fbirervta.pbzchgretzou.qr>
+References: <E1JBJHA-0000hy-00@gondolin.me.apana.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1199580275-2487-1-git-send-email-marcin.slusarz@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ehh, forgot to add patching order :(
 
-Should be:
-[PATCH 1/6] udf: fix coding style of super.c
-[PATCH 2/6] udf: remove some ugly macros
-[PATCH 3/6] udf: convert UDF_SB_ALLOC_PARTMAPS macro to udf_sb_alloc_partition_maps function
-[PATCH 4/6] udf: check if udf_load_logicalvol failed
-[PATCH 5/6] udf: convert some macros to functions
-[PATCH 6/6] udf: fix sparse warnings (shadowing & mismatch between declaration and definition)
+On Jan 6 2008 11:22, Herbert Xu wrote:
+>@@ -271,6 +271,7 @@ static int raw_send_hdrinc(struct sock *sk, void *from, size_t length,
+> 	int hh_len;
+> 	struct iphdr *iph;
+> 	struct sk_buff *skb;
+>+	unsigned int iphlen;
+> 	int err;
+> 
+> 	if (length > rt->u.dst.dev->mtu) {
+>@@ -304,7 +305,8 @@ static int raw_send_hdrinc(struct sock *sk, void *from, size_t length,
+> 		goto error_fault;
+> 
+> 	/* We don't modify invalid header */
+>-	if (length >= sizeof(*iph) && iph->ihl * 4U <= length) {
+>+	iphlen = iph->ihl * 4;
+>+	if (iphlen >= sizeof(*iph) && iphlen <= length) {
+
+Humm, this could use ip_hdrlen(skb) :-)
