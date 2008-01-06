@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759748AbYAFQYd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759919AbYAFQYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759748AbYAFQYd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 11:24:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757471AbYAFQXU
+	id S1759919AbYAFQYs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 11:24:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757536AbYAFQXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 11:23:20 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:38390 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756780AbYAFQXP (ORCPT
+	Sun, 6 Jan 2008 11:23:21 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:7915 "EHLO
+	viefep34-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756541AbYAFQXP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 6 Jan 2008 11:23:15 -0500
-Message-Id: <20080106162122.589865000@chello.nl>
-References: <20080106161128.152634000@chello.nl>
+Message-Id: <20080106161128.152634000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Sun, 06 Jan 2008 17:11:29 +0100
+Date: Sun, 06 Jan 2008 17:11:28 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
@@ -23,171 +22,18 @@ Cc: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
        Gregory Haskins <ghaskins@novell.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 01/11] sched: rt throttling vs no_hz
-Content-Disposition: inline; filename=sched-rt-group-update.patch
+Subject: [PATCH 00/11] another rt group sched update
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We need to teach no_hz about the rt throttling because its tick driven.
+this time compile tested on all 16 combinations of:
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- include/linux/sched.h    |    2 ++
- kernel/sched.c           |   23 ++++++++++++++++++++++-
- kernel/sched_rt.c        |   30 ++++++++++++++++--------------
- kernel/time/tick-sched.c |    5 +++++
- 4 files changed, 45 insertions(+), 15 deletions(-)
+  CONFIG_SMP
+  CONFIG_FAIR_GROUP_SCHED
+  CONFIG_HIGH_RES_TIMERS
+  CONFIG_NO_HZ
 
-Index: linux-2.6/include/linux/sched.h
-===================================================================
---- linux-2.6.orig/include/linux/sched.h
-+++ linux-2.6/include/linux/sched.h
-@@ -230,6 +230,8 @@ static inline int select_nohz_load_balan
- }
- #endif
- 
-+extern unsigned long rt_needs_cpu(int cpu);
-+
- /*
-  * Only dump TASK_* tasks. (0 for all tasks)
-  */
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -442,6 +442,7 @@ struct rq {
- 	struct cfs_rq cfs;
- 	struct rt_rq rt;
- 	u64 rt_period_expire;
-+	int rt_throttled;
- 
- #ifdef CONFIG_FAIR_GROUP_SCHED
- 	/* list of leaf cfs_rq on this cpu: */
-@@ -594,6 +595,23 @@ static void update_rq_clock(struct rq *r
- #define task_rq(p)		cpu_rq(task_cpu(p))
- #define cpu_curr(cpu)		(cpu_rq(cpu)->curr)
- 
-+unsigned long rt_needs_cpu(int cpu)
-+{
-+	struct rq *rq = cpu_rq(cpu);
-+	u64 delta;
-+
-+	if (!rq->rt_throttled)
-+		return 0;
-+
-+	if (rq->clock > rq->rt_period_expire)
-+		return 1;
-+
-+	delta = rq->rt_period_expire - rq->clock;
-+	do_div(delta, NSEC_PER_SEC / HZ);
-+
-+	return (unsigned long)delta;
-+}
-+
- /*
-  * Tunables that become constants when CONFIG_SCHED_DEBUG is off:
-  */
-@@ -7099,9 +7117,11 @@ static void init_rt_rq(struct rt_rq *rt_
- 	/* delimiter for bitsearch: */
- 	__set_bit(MAX_RT_PRIO, array->bitmap);
- 
-+#if defined CONFIG_SMP || defined CONFIG_FAIR_GROUP_SCHED
-+	rt_rq->highest_prio = MAX_RT_PRIO;
-+#endif
- #ifdef CONFIG_SMP
- 	rt_rq->rt_nr_migratory = 0;
--	rt_rq->highest_prio = MAX_RT_PRIO;
- 	rt_rq->overloaded = 0;
- #endif
- 
-@@ -7186,6 +7206,7 @@ void __init sched_init(void)
- 		list_add(&init_task_group.list, &task_groups);
- #endif
- 		rq->rt_period_expire = 0;
-+		rq->rt_throttled = 0;
- 
- 		for (j = 0; j < CPU_LOAD_IDX_MAX; j++)
- 			rq->cpu_load[j] = 0;
-Index: linux-2.6/kernel/sched_rt.c
-===================================================================
---- linux-2.6.orig/kernel/sched_rt.c
-+++ linux-2.6/kernel/sched_rt.c
-@@ -175,7 +175,11 @@ static int sched_rt_ratio_exceeded(struc
- 	ratio = (period * rt_ratio) >> SCHED_RT_FRAC_SHIFT;
- 
- 	if (rt_rq->rt_time > ratio) {
-+		struct rq *rq = rq_of_rt_rq(rt_rq);
-+
-+		rq->rt_throttled = 1;
- 		rt_rq->rt_throttled = 1;
-+
- 		sched_rt_ratio_dequeue(rt_rq);
- 		return 1;
- 	}
-@@ -183,18 +187,6 @@ static int sched_rt_ratio_exceeded(struc
- 	return 0;
- }
- 
--static void __update_sched_rt_period(struct rt_rq *rt_rq, u64 period)
--{
--	unsigned long rt_ratio = sched_rt_ratio(rt_rq);
--	u64 ratio = (period * rt_ratio) >> SCHED_RT_FRAC_SHIFT;
--
--	rt_rq->rt_time -= min(rt_rq->rt_time, ratio);
--	if (rt_rq->rt_throttled) {
--		rt_rq->rt_throttled = 0;
--		sched_rt_ratio_enqueue(rt_rq);
--	}
--}
--
- static void update_sched_rt_period(struct rq *rq)
- {
- 	struct rt_rq *rt_rq;
-@@ -204,8 +196,18 @@ static void update_sched_rt_period(struc
- 		period = (u64)sysctl_sched_rt_period * NSEC_PER_MSEC;
- 		rq->rt_period_expire += period;
- 
--		for_each_leaf_rt_rq(rt_rq, rq)
--			__update_sched_rt_period(rt_rq, period);
-+		for_each_leaf_rt_rq(rt_rq, rq) {
-+			unsigned long rt_ratio = sched_rt_ratio(rt_rq);
-+			u64 ratio = (period * rt_ratio) >> SCHED_RT_FRAC_SHIFT;
-+
-+			rt_rq->rt_time -= min(rt_rq->rt_time, ratio);
-+			if (rt_rq->rt_throttled) {
-+				rt_rq->rt_throttled = 0;
-+				sched_rt_ratio_enqueue(rt_rq);
-+			}
-+		}
-+
-+		rq->rt_throttled = 0;
- 	}
- }
- 
-Index: linux-2.6/kernel/time/tick-sched.c
-===================================================================
---- linux-2.6.orig/kernel/time/tick-sched.c
-+++ linux-2.6/kernel/time/tick-sched.c
-@@ -153,6 +153,7 @@ void tick_nohz_update_jiffies(void)
- void tick_nohz_stop_sched_tick(void)
- {
- 	unsigned long seq, last_jiffies, next_jiffies, delta_jiffies, flags;
-+	unsigned long rt_jiffies;
- 	struct tick_sched *ts;
- 	ktime_t last_update, expires, now, delta;
- 	struct clock_event_device *dev = __get_cpu_var(tick_cpu_device).evtdev;
-@@ -216,6 +217,10 @@ void tick_nohz_stop_sched_tick(void)
- 	next_jiffies = get_next_timer_interrupt(last_jiffies);
- 	delta_jiffies = next_jiffies - last_jiffies;
- 
-+	rt_jiffies = rt_needs_cpu(cpu);
-+	if (rt_jiffies && rt_jiffies < delta_jiffies)
-+		delta_jiffies = rt_jiffies;
-+
- 	if (rcu_needs_cpu(cpu))
- 		delta_jiffies = 1;
- 	/*
-
+ran some but not all combinations
 --
 
