@@ -1,566 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758774AbYAFXQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758945AbYAFXTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758774AbYAFXQQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 18:16:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757184AbYAFXQB
+	id S1758945AbYAFXTd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 18:19:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757313AbYAFXT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 18:16:01 -0500
-Received: from science.horizon.com ([192.35.100.1]:19516 "HELO
-	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757309AbYAFXP7 (ORCPT
+	Sun, 6 Jan 2008 18:19:26 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46027 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756094AbYAFXTZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 18:15:59 -0500
-Date: 6 Jan 2008 17:29:42 -0500
-Message-ID: <20080106222942.26950.qmail@science.horizon.com>
-From: linux@horizon.com
-To: linux-netdev@vger.kernel.org
-Subject: 2.6.24-rc6 oops in net_tx_action
-Cc: linux@horizon.com, linux-kernel@vger.kernel.org,
-       shemminger@linux-foundation.org
+	Sun, 6 Jan 2008 18:19:25 -0500
+Date: Sun, 6 Jan 2008 15:18:50 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: rusty@rustcorp.com.au, ak@suse.de, mingo@elte.hu
+Subject: [patch 1/2] show being-loaded/being-unloaded indicator for modules
+ in oopses
+Message-ID: <20080106151850.3eab58b0@laptopd505.fenrus.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kernel is 2.6.24-rc6 + linuxpps patches, which are all to the serial
-port driver.
+Subject: show being-loaded/being-unloaded indicator for modules in oopses
+From: Arjan van de Ven <arjan@linux.intel.com>
+CC: rusty@rustcorp.com.au
+CC: ak@suse.de
+CC: mingo@elte.hu
 
-2.6.23 was known stable.  I haven't tested earlier 2.6.24 releases.
-I think it happened once before; I got a black-screen lockup with
-keyboard LEDs blinking, but that was with X running so I couldn't see a
-console oops.  But given that I installed 2.6.24-rc6 about 24 hours ago,
-that's a disturbing pattern.
+It's rather common that an oops/WARN_ON/BUG happens during the load or
+unload of a module. Unfortunatly, it's not always easy to see directly
+which module is being loaded/unloaded from the oops itself. Worse,
+it's not even always possible to ask the bug reporter, since there
+are so many components (udev etc) that auto-load modules that there's
+a good chance that even the reporter doesn't know which module this is.
 
-(N.B. I was pretty careful, but the following was transcribed by hand.)
+This patch extends the existing "show if it's tainting" print code,
+which is used as part of printing the modules in the oops/BUG/WARN_ON
+to include a "+" for "being loaded" and a "-" for "being unloaded".
 
-BUG: unable to handle kernel paging request at virtual address 00100104
-printing eip: b02b3d6a *pde=00000000
-Oops: 0002 [#1]
+As a result this extension, the "taint_flags()" function gets renamed to
+"module_flags()" (and takes a module struct as argument, not a taint
+flags int).
 
-Pid 3162, comm: ntop Not tainted (2.6.24-rc6 #36)
-EIP: 0060[<b02b3d6a>] EFLAGS: 00210046 CPU: 0
-EIP is at net_tx_action+0x8b/0xec
-EAX: 00100100 EBX: efa63924 ECX: 0801fbff EDX: 00200200
-ESI: 00000010 EDI: 00000010 EBP: 0000012c ESP: b0444fc8
- DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
- Process ntop (pid: 3162, ti=b0444000 task=e9122f90 task.ti=e92ec000)
- Stack: 00000000 0000000a b02b3a84 b044007b 000a7ac5 00000001 b0457a44 00000009
-        00000000 b0118016 e92ecf74 e92ec000 00200046 b0103c3c
-Call Trace:
- [<b02b3a84>] net_tx_action+0x5a/0xa8
- [<b0118016>] __do_softirq+0x35/0x75
- [<b0103c3c>] do_softirq+0x3e/0x8f
- [<b012504d>] do_gettimeofday+0x2c/0xc6
- [<b012c8d3>] handle_level_irq+0x0/0x8d
- [<b0117f55>] irq_exit+0x29/0x58
- [<b0103d3c>] do_IRQ+0xaf/0xc2
- [<b0117b52>] sys_gettimeofday+0x27/0x53
- [<b0102577>] common_interrupt+0x23/0x28
- =======================
-Code: 24 04 ec 61 3d b0 c7 04 24 87 01 3a b0 e8 ad 10 e6 ff e8 44 fd e4 ff c7 05 1c b9 46 b0 01 00 00 00 fa 39 fe 75 20 8b 03 8b 53 04 <89> 50 04 89 02 a1 fc b8 46 b0 c7 03 f8 b8 46 b0 89 1d fc b8 46
-EIP: [<b02b3d6a>] at net_tx_action+0x8b/0xec SS:ESP 0068:b0444fc8
-Kernel panic - not syncing: Fatal exception in interrupt
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+
+---
+ kernel/module.c |   21 +++++++++++++++------
+ 1 file changed, 15 insertions(+), 6 deletions(-)
+
+Index: linux-2.6.24-rc6/kernel/module.c
+===================================================================
+--- linux-2.6.24-rc6.orig/kernel/module.c
++++ linux-2.6.24-rc6/kernel/module.c
+@@ -2355,21 +2355,30 @@ static void m_stop(struct seq_file *m, v
+ 	mutex_unlock(&module_mutex);
+ }
+ 
+-static char *taint_flags(unsigned int taints, char *buf)
++static char *module_flags(struct module *mod, char *buf)
+ {
+ 	int bx = 0;
+ 
+-	if (taints) {
++	if (mod->taints ||
++	    mod->state == MODULE_STATE_GOING ||
++	    mod->state == MODULE_STATE_COMING) {
+ 		buf[bx++] = '(';
+-		if (taints & TAINT_PROPRIETARY_MODULE)
++		if (mod->taints & TAINT_PROPRIETARY_MODULE)
+ 			buf[bx++] = 'P';
+-		if (taints & TAINT_FORCED_MODULE)
++		if (mod->taints & TAINT_FORCED_MODULE)
+ 			buf[bx++] = 'F';
+ 		/*
+ 		 * TAINT_FORCED_RMMOD: could be added.
+ 		 * TAINT_UNSAFE_SMP, TAINT_MACHINE_CHECK, TAINT_BAD_PAGE don't
+ 		 * apply to modules.
+ 		 */
++
++		/* Show a - for module-is-being-unloaded */
++		if (mod->state == MODULE_STATE_GOING)
++			buf[bx++] = '-';
++		/* Show a + for module-is-being-loaded */
++		if (mod->state == MODULE_STATE_COMING)
++			buf[bx++] = '+';
+ 		buf[bx++] = ')';
+ 	}
+ 	buf[bx] = '\0';
+@@ -2396,7 +2405,7 @@ static int m_show(struct seq_file *m, vo
+ 
+ 	/* Taints info */
+ 	if (mod->taints)
+-		seq_printf(m, " %s", taint_flags(mod->taints, buf));
++		seq_printf(m, " %s", module_flags(mod, buf));
+ 
+ 	seq_printf(m, "\n");
+ 	return 0;
+@@ -2491,7 +2500,7 @@ void print_modules(void)
+ 
+ 	printk("Modules linked in:");
+ 	list_for_each_entry(mod, &modules, list)
+-		printk(" %s%s", mod->name, taint_flags(mod->taints, buf));
++		printk(" %s%s", mod->name, module_flags(mod, buf));
+ 	printk("\n");
+ }
+ 
 
 
-Network config is a little complex; there are 5 physical network
-interfaces and a bunch of netfilter rules.  A quad-port 100baseT Tulip
-card which provides "outside-facing" interfaces (two uplinks, a DMZ,
-and a spare), and a gigabit VIA velocity card for the internal network.
-
-The hardware has ECC memory (1 GB, kernel starts at 2.75G) and mirrored
-drives, and has generally been very stable for a long time, modulo some
-disk hiccups.
-
-$ lspci
-00:00.0 Host bridge: Intel Corporation 440BX/ZX/DX - 82443BX/ZX/DX Host bridge (rev 03)
-00:01.0 PCI bridge: Intel Corporation 440BX/ZX/DX - 82443BX/ZX/DX AGP bridge (rev 03)
-00:04.0 ISA bridge: Intel Corporation 82371AB/EB/MB PIIX4 ISA (rev 02)
-00:04.1 IDE interface: Intel Corporation 82371AB/EB/MB PIIX4 IDE (rev 01)
-00:04.2 USB Controller: Intel Corporation 82371AB/EB/MB PIIX4 USB (rev 01)
-00:04.3 Bridge: Intel Corporation 82371AB/EB/MB PIIX4 ACPI (rev 02)
-00:09.0 Ethernet controller: VIA Technologies, Inc. VT6120/VT6121/VT6122 Gigabit Ethernet Adapter (rev 11)
-00:0a.0 Mass storage controller: Promise Technology, Inc. PDC20268 (Ultra100 TX2) (rev 01)
-00:0b.0 Mass storage controller: Promise Technology, Inc. PDC20268 (Ultra100 TX2) (rev 01)
-00:0c.0 Mass storage controller: Promise Technology, Inc. 20269 (rev 02)
-00:0d.0 PCI bridge: Digital Equipment Corporation DECchip 21152 (rev 03)
-01:00.0 VGA compatible controller: nVidia Corporation NV6 [Vanta/Vanta LT] (rev 15)
-02:04.0 Ethernet controller: Digital Equipment Corporation DECchip 21142/43 (rev 41)
-02:05.0 Ethernet controller: Digital Equipment Corporation DECchip 21142/43 (rev 41)
-02:06.0 Ethernet controller: Digital Equipment Corporation DECchip 21142/43 (rev 41)
-02:07.0 Ethernet controller: Digital Equipment Corporation DECchip 21142/43 (rev 41)
-
-The tulip drivers have been solid forever.  The VIA velocity driver is more
-suspect; I made an effort a while ago to get tagged VLANs working on it,
-which was a notable failure.  Still, this oops is in core network code.
-
-As you might guess, it makes people somewhat grumpy when the main
-firewall/router takes a dive, but I can experiment after hours.
-
-Here's the kernel config:
-
-$ grep ^CONFIG /usr/src/linux/.config
-CONFIG_X86_32=y
-CONFIG_X86=y
-CONFIG_GENERIC_TIME=y
-CONFIG_GENERIC_CMOS_UPDATE=y
-CONFIG_CLOCKSOURCE_WATCHDOG=y
-CONFIG_GENERIC_CLOCKEVENTS=y
-CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
-CONFIG_LOCKDEP_SUPPORT=y
-CONFIG_STACKTRACE_SUPPORT=y
-CONFIG_SEMAPHORE_SLEEPERS=y
-CONFIG_MMU=y
-CONFIG_ZONE_DMA=y
-CONFIG_QUICKLIST=y
-CONFIG_GENERIC_ISA_DMA=y
-CONFIG_GENERIC_IOMAP=y
-CONFIG_GENERIC_BUG=y
-CONFIG_GENERIC_HWEIGHT=y
-CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-CONFIG_DMI=y
-CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_ARCH_SUPPORTS_OPROFILE=y
-CONFIG_ARCH_POPULATES_NODE_MAP=y
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_GENERIC_IRQ_PROBE=y
-CONFIG_X86_BIOS_REBOOT=y
-CONFIG_KTIME_SCALAR=y
-CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-CONFIG_EXPERIMENTAL=y
-CONFIG_BROKEN_ON_SMP=y
-CONFIG_INIT_ENV_ARG_LIMIT=32
-CONFIG_LOCALVERSION=""
-CONFIG_SWAP=y
-CONFIG_SYSVIPC=y
-CONFIG_SYSVIPC_SYSCTL=y
-CONFIG_IKCONFIG=y
-CONFIG_LOG_BUF_SHIFT=15
-CONFIG_FAIR_GROUP_SCHED=y
-CONFIG_FAIR_USER_SCHED=y
-CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-CONFIG_SYSCTL=y
-CONFIG_EMBEDDED=y
-CONFIG_UID16=y
-CONFIG_SYSCTL_SYSCALL=y
-CONFIG_KALLSYMS=y
-CONFIG_HOTPLUG=y
-CONFIG_PRINTK=y
-CONFIG_BUG=y
-CONFIG_ELF_CORE=y
-CONFIG_BASE_FULL=y
-CONFIG_FUTEX=y
-CONFIG_ANON_INODES=y
-CONFIG_EPOLL=y
-CONFIG_SIGNALFD=y
-CONFIG_EVENTFD=y
-CONFIG_SHMEM=y
-CONFIG_VM_EVENT_COUNTERS=y
-CONFIG_SLUB=y
-CONFIG_RT_MUTEXES=y
-CONFIG_BASE_SMALL=0
-CONFIG_BLOCK=y
-CONFIG_IOSCHED_NOOP=y
-CONFIG_IOSCHED_AS=y
-CONFIG_IOSCHED_DEADLINE=y
-CONFIG_IOSCHED_CFQ=y
-CONFIG_DEFAULT_CFQ=y
-CONFIG_DEFAULT_IOSCHED="cfq"
-CONFIG_TICK_ONESHOT=y
-CONFIG_NO_HZ=y
-CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
-CONFIG_X86_PC=y
-CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
-CONFIG_MPENTIUMIII=y
-CONFIG_X86_CMPXCHG=y
-CONFIG_X86_L1_CACHE_SHIFT=5
-CONFIG_X86_XADD=y
-CONFIG_X86_WP_WORKS_OK=y
-CONFIG_X86_INVLPG=y
-CONFIG_X86_BSWAP=y
-CONFIG_X86_POPAD_OK=y
-CONFIG_X86_GOOD_APIC=y
-CONFIG_X86_INTEL_USERCOPY=y
-CONFIG_X86_USE_PPRO_CHECKSUM=y
-CONFIG_X86_TSC=y
-CONFIG_X86_CMOV=y
-CONFIG_X86_MINIMUM_CPU_FAMILY=4
-CONFIG_PREEMPT_NONE=y
-CONFIG_X86_UP_APIC=y
-CONFIG_X86_LOCAL_APIC=y
-CONFIG_X86_MCE=y
-CONFIG_VM86=y
-CONFIG_X86_MSR=y
-CONFIG_X86_CPUID=y
-CONFIG_NOHIGHMEM=y
-CONFIG_VMSPLIT_3G_OPT=y
-CONFIG_PAGE_OFFSET=0xB0000000
-CONFIG_ARCH_FLATMEM_ENABLE=y
-CONFIG_ARCH_SPARSEMEM_ENABLE=y
-CONFIG_ARCH_SELECT_MEMORY_MODEL=y
-CONFIG_SELECT_MEMORY_MODEL=y
-CONFIG_FLATMEM_MANUAL=y
-CONFIG_FLATMEM=y
-CONFIG_FLAT_NODE_MEM_MAP=y
-CONFIG_SPARSEMEM_STATIC=y
-CONFIG_SPLIT_PTLOCK_CPUS=4
-CONFIG_ZONE_DMA_FLAG=1
-CONFIG_BOUNCE=y
-CONFIG_NR_QUICK=1
-CONFIG_VIRT_TO_BUS=y
-CONFIG_MTRR=y
-CONFIG_HZ_250=y
-CONFIG_HZ=250
-CONFIG_PHYSICAL_START=0x100000
-CONFIG_PHYSICAL_ALIGN=0x100000
-CONFIG_PM=y
-CONFIG_SUSPEND_UP_POSSIBLE=y
-CONFIG_HIBERNATION_UP_POSSIBLE=y
-CONFIG_ACPI=y
-CONFIG_ACPI_PROC_EVENT=y
-CONFIG_ACPI_PROCESSOR=y
-CONFIG_ACPI_THERMAL=y
-CONFIG_ACPI_BLACKLIST_YEAR=0
-CONFIG_ACPI_EC=y
-CONFIG_ACPI_POWER=y
-CONFIG_ACPI_SYSTEM=y
-CONFIG_X86_PM_TIMER=y
-CONFIG_PCI=y
-CONFIG_PCI_GOANY=y
-CONFIG_PCI_BIOS=y
-CONFIG_PCI_DIRECT=y
-CONFIG_PCI_MMCONFIG=y
-CONFIG_PCI_DOMAINS=y
-CONFIG_ISA_DMA_API=y
-CONFIG_ISA=y
-CONFIG_BINFMT_ELF=y
-CONFIG_NET=y
-CONFIG_PACKET=y
-CONFIG_PACKET_MMAP=y
-CONFIG_UNIX=y
-CONFIG_XFRM=y
-CONFIG_XFRM_USER=y
-CONFIG_NET_KEY=y
-CONFIG_INET=y
-CONFIG_IP_ADVANCED_ROUTER=y
-CONFIG_ASK_IP_FIB_HASH=y
-CONFIG_IP_FIB_HASH=y
-CONFIG_IP_MULTIPLE_TABLES=y
-CONFIG_IP_ROUTE_MULTIPATH=y
-CONFIG_IP_ROUTE_VERBOSE=y
-CONFIG_NET_IPIP=y
-CONFIG_NET_IPGRE=y
-CONFIG_SYN_COOKIES=y
-CONFIG_INET_AH=y
-CONFIG_INET_ESP=y
-CONFIG_INET_IPCOMP=y
-CONFIG_INET_XFRM_TUNNEL=y
-CONFIG_INET_TUNNEL=y
-CONFIG_INET_XFRM_MODE_TRANSPORT=y
-CONFIG_INET_XFRM_MODE_TUNNEL=y
-CONFIG_INET_XFRM_MODE_BEET=y
-CONFIG_INET_LRO=y
-CONFIG_INET_DIAG=y
-CONFIG_INET_TCP_DIAG=y
-CONFIG_TCP_CONG_ADVANCED=y
-CONFIG_TCP_CONG_BIC=y
-CONFIG_TCP_CONG_CUBIC=y
-CONFIG_TCP_CONG_WESTWOOD=y
-CONFIG_TCP_CONG_HTCP=y
-CONFIG_TCP_CONG_HSTCP=y
-CONFIG_TCP_CONG_HYBLA=y
-CONFIG_TCP_CONG_VEGAS=y
-CONFIG_TCP_CONG_SCALABLE=y
-CONFIG_TCP_CONG_LP=y
-CONFIG_TCP_CONG_VENO=y
-CONFIG_TCP_CONG_YEAH=y
-CONFIG_TCP_CONG_ILLINOIS=y
-CONFIG_DEFAULT_CUBIC=y
-CONFIG_DEFAULT_TCP_CONG="cubic"
-CONFIG_TCP_MD5SIG=y
-CONFIG_NETFILTER=y
-CONFIG_BRIDGE_NETFILTER=y
-CONFIG_NETFILTER_NETLINK=y
-CONFIG_NETFILTER_NETLINK_QUEUE=y
-CONFIG_NETFILTER_NETLINK_LOG=y
-CONFIG_NF_CONNTRACK_ENABLED=y
-CONFIG_NF_CONNTRACK=y
-CONFIG_NF_CONNTRACK_MARK=y
-CONFIG_NF_CONNTRACK_FTP=y
-CONFIG_NF_CONNTRACK_H323=y
-CONFIG_NF_CONNTRACK_IRC=y
-CONFIG_NF_CONNTRACK_SIP=y
-CONFIG_NF_CT_NETLINK=y
-CONFIG_NETFILTER_XTABLES=y
-CONFIG_NETFILTER_XT_TARGET_CLASSIFY=y
-CONFIG_NETFILTER_XT_TARGET_CONNMARK=y
-CONFIG_NETFILTER_XT_TARGET_MARK=y
-CONFIG_NETFILTER_XT_TARGET_NFQUEUE=y
-CONFIG_NETFILTER_XT_TARGET_NFLOG=y
-CONFIG_NETFILTER_XT_TARGET_NOTRACK=y
-CONFIG_NETFILTER_XT_TARGET_TRACE=y
-CONFIG_NETFILTER_XT_MATCH_CONNLIMIT=y
-CONFIG_NETFILTER_XT_MATCH_CONNMARK=y
-CONFIG_NETFILTER_XT_MATCH_CONNTRACK=y
-CONFIG_NETFILTER_XT_MATCH_HELPER=y
-CONFIG_NETFILTER_XT_MATCH_LENGTH=y
-CONFIG_NETFILTER_XT_MATCH_LIMIT=y
-CONFIG_NETFILTER_XT_MATCH_MAC=y
-CONFIG_NETFILTER_XT_MATCH_MARK=y
-CONFIG_NETFILTER_XT_MATCH_POLICY=y
-CONFIG_NETFILTER_XT_MATCH_PHYSDEV=y
-CONFIG_NETFILTER_XT_MATCH_PKTTYPE=y
-CONFIG_NETFILTER_XT_MATCH_STATE=y
-CONFIG_NETFILTER_XT_MATCH_STATISTIC=y
-CONFIG_NETFILTER_XT_MATCH_HASHLIMIT=y
-CONFIG_NF_CONNTRACK_IPV4=y
-CONFIG_IP_NF_IPTABLES=y
-CONFIG_IP_NF_MATCH_RECENT=y
-CONFIG_IP_NF_MATCH_ECN=y
-CONFIG_IP_NF_MATCH_TTL=y
-CONFIG_IP_NF_MATCH_ADDRTYPE=y
-CONFIG_IP_NF_FILTER=y
-CONFIG_IP_NF_TARGET_REJECT=y
-CONFIG_IP_NF_TARGET_LOG=y
-CONFIG_IP_NF_TARGET_ULOG=y
-CONFIG_NF_NAT=y
-CONFIG_NF_NAT_NEEDED=y
-CONFIG_IP_NF_TARGET_REDIRECT=y
-CONFIG_IP_NF_TARGET_NETMAP=y
-CONFIG_IP_NF_TARGET_SAME=y
-CONFIG_NF_NAT_FTP=y
-CONFIG_NF_NAT_IRC=y
-CONFIG_NF_NAT_H323=y
-CONFIG_NF_NAT_SIP=y
-CONFIG_IP_NF_MANGLE=y
-CONFIG_IP_NF_TARGET_TOS=y
-CONFIG_IP_NF_TARGET_ECN=y
-CONFIG_IP_NF_TARGET_TTL=y
-CONFIG_IP_NF_RAW=y
-CONFIG_BRIDGE=y
-CONFIG_VLAN_8021Q=y
-CONFIG_LLC=y
-CONFIG_NET_SCHED=y
-CONFIG_NET_SCH_CBQ=y
-CONFIG_NET_SCH_HTB=y
-CONFIG_NET_SCH_HFSC=y
-CONFIG_NET_SCH_PRIO=y
-CONFIG_NET_SCH_RR=y
-CONFIG_NET_SCH_RED=y
-CONFIG_NET_SCH_TBF=y
-CONFIG_NET_SCH_NETEM=y
-CONFIG_NET_SCH_INGRESS=y
-CONFIG_NET_CLS=y
-CONFIG_NET_CLS_BASIC=y
-CONFIG_NET_CLS_TCINDEX=y
-CONFIG_NET_CLS_ROUTE4=y
-CONFIG_NET_CLS_ROUTE=y
-CONFIG_NET_CLS_FW=y
-CONFIG_NET_CLS_U32=y
-CONFIG_CLS_U32_MARK=y
-CONFIG_NET_EMATCH=y
-CONFIG_NET_EMATCH_STACK=32
-CONFIG_NET_EMATCH_CMP=y
-CONFIG_NET_EMATCH_U32=y
-CONFIG_NET_EMATCH_META=y
-CONFIG_NET_CLS_ACT=y
-CONFIG_NET_ACT_POLICE=y
-CONFIG_NET_ACT_GACT=y
-CONFIG_GACT_PROB=y
-CONFIG_NET_ACT_IPT=y
-CONFIG_NET_CLS_POLICE=y
-CONFIG_NET_SCH_FIFO=y
-CONFIG_FIB_RULES=y
-CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-CONFIG_STANDALONE=y
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-CONFIG_PARPORT=y
-CONFIG_PARPORT_PC=y
-CONFIG_PARPORT_PC_FIFO=y
-CONFIG_PARPORT_PC_SUPERIO=y
-CONFIG_PARPORT_1284=y
-CONFIG_PNP=y
-CONFIG_ISAPNP=y
-CONFIG_PNPACPI=y
-CONFIG_BLK_DEV=y
-CONFIG_BLK_DEV_FD=y
-CONFIG_BLK_DEV_LOOP=y
-CONFIG_BLK_DEV_CRYPTOLOOP=y
-CONFIG_IDE=y
-CONFIG_IDE_MAX_HWIFS=8
-CONFIG_BLK_DEV_IDE=y
-CONFIG_BLK_DEV_IDEDISK=y
-CONFIG_IDEDISK_MULTI_MODE=y
-CONFIG_BLK_DEV_IDECD=y
-CONFIG_IDE_GENERIC=y
-CONFIG_BLK_DEV_IDEPCI=y
-CONFIG_IDEPCI_SHARE_IRQ=y
-CONFIG_IDEPCI_PCIBUS_ORDER=y
-CONFIG_BLK_DEV_GENERIC=y
-CONFIG_BLK_DEV_IDEDMA_PCI=y
-CONFIG_BLK_DEV_PIIX=y
-CONFIG_BLK_DEV_PDC202XX_NEW=y
-CONFIG_BLK_DEV_IDEDMA=y
-CONFIG_IDE_ARCH_OBSOLETE_INIT=y
-CONFIG_MD=y
-CONFIG_BLK_DEV_MD=y
-CONFIG_MD_RAID0=y
-CONFIG_MD_RAID1=y
-CONFIG_MD_RAID10=y
-CONFIG_NETDEVICES=y
-CONFIG_DUMMY=y
-CONFIG_PHYLIB=y
-CONFIG_NET_ETHERNET=y
-CONFIG_MII=y
-CONFIG_NET_TULIP=y
-CONFIG_TULIP=y
-CONFIG_TULIP_MWI=y
-CONFIG_TULIP_MMIO=y
-CONFIG_TULIP_NAPI=y
-CONFIG_TULIP_NAPI_HW_MITIGATION=y
-CONFIG_NET_PCI=y
-CONFIG_NETDEV_1000=y
-CONFIG_VIA_VELOCITY=y
-CONFIG_PPP=y
-CONFIG_PPP_FILTER=y
-CONFIG_PPP_ASYNC=y
-CONFIG_PPP_DEFLATE=y
-CONFIG_PPP_BSDCOMP=y
-CONFIG_SLHC=y
-CONFIG_INPUT=y
-CONFIG_INPUT_MOUSEDEV=y
-CONFIG_INPUT_MOUSEDEV_PSAUX=y
-CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
-CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
-CONFIG_INPUT_KEYBOARD=y
-CONFIG_KEYBOARD_ATKBD=y
-CONFIG_INPUT_MOUSE=y
-CONFIG_MOUSE_PS2=y
-CONFIG_MOUSE_PS2_ALPS=y
-CONFIG_MOUSE_PS2_SYNAPTICS=y
-CONFIG_SERIO=y
-CONFIG_SERIO_I8042=y
-CONFIG_SERIO_LIBPS2=y
-CONFIG_VT=y
-CONFIG_VT_CONSOLE=y
-CONFIG_HW_CONSOLE=y
-CONFIG_SERIAL_8250=y
-CONFIG_FIX_EARLYCON_MEM=y
-CONFIG_SERIAL_8250_PCI=y
-CONFIG_SERIAL_8250_PNP=y
-CONFIG_SERIAL_8250_NR_UARTS=4
-CONFIG_SERIAL_8250_RUNTIME_UARTS=4
-CONFIG_SERIAL_CORE=y
-CONFIG_UNIX98_PTYS=y
-CONFIG_PRINTER=y
-CONFIG_RTC=y
-CONFIG_HPET=y
-CONFIG_HPET_MMAP=y
-CONFIG_DEVPORT=y
-CONFIG_I2C=y
-CONFIG_I2C_BOARDINFO=y
-CONFIG_I2C_CHARDEV=y
-CONFIG_I2C_PIIX4=y
-CONFIG_SENSORS_EEPROM=y
-CONFIG_PPS=y
-CONFIG_PPS_CLIENT_UART=y
-CONFIG_HWMON=y
-CONFIG_HWMON_VID=y
-CONFIG_SENSORS_W83781D=y
-CONFIG_SSB_POSSIBLE=y
-CONFIG_AGP=y
-CONFIG_AGP_INTEL=y
-CONFIG_VGA_CONSOLE=y
-CONFIG_VIDEO_SELECT=y
-CONFIG_DUMMY_CONSOLE=y
-CONFIG_HID_SUPPORT=y
-CONFIG_HID=y
-CONFIG_USB_HID=y
-CONFIG_USB_SUPPORT=y
-CONFIG_USB_ARCH_HAS_HCD=y
-CONFIG_USB_ARCH_HAS_OHCI=y
-CONFIG_USB_ARCH_HAS_EHCI=y
-CONFIG_USB=y
-CONFIG_USB_DEVICEFS=y
-CONFIG_USB_UHCI_HCD=y
-CONFIG_USB_MON=y
-CONFIG_USB_SERIAL=y
-CONFIG_USB_SERIAL_PL2303=y
-CONFIG_EDAC=y
-CONFIG_EDAC_MM_EDAC=y
-CONFIG_DMIID=y
-CONFIG_EXT2_FS=y
-CONFIG_EXT3_FS=y
-CONFIG_JBD=y
-CONFIG_INOTIFY=y
-CONFIG_INOTIFY_USER=y
-CONFIG_DNOTIFY=y
-CONFIG_ISO9660_FS=y
-CONFIG_JOLIET=y
-CONFIG_FAT_FS=y
-CONFIG_MSDOS_FS=y
-CONFIG_VFAT_FS=y
-CONFIG_FAT_DEFAULT_CODEPAGE=437
-CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
-CONFIG_PROC_FS=y
-CONFIG_PROC_KCORE=y
-CONFIG_PROC_SYSCTL=y
-CONFIG_SYSFS=y
-CONFIG_TMPFS=y
-CONFIG_NETWORK_FILESYSTEMS=y
-CONFIG_NFS_FS=y
-CONFIG_NFS_V3=y
-CONFIG_NFSD=y
-CONFIG_NFSD_V3=y
-CONFIG_NFSD_TCP=y
-CONFIG_LOCKD=y
-CONFIG_LOCKD_V4=y
-CONFIG_EXPORTFS=y
-CONFIG_NFS_COMMON=y
-CONFIG_SUNRPC=y
-CONFIG_SMB_FS=y
-CONFIG_MSDOS_PARTITION=y
-CONFIG_NLS=y
-CONFIG_NLS_DEFAULT="cp437"
-CONFIG_NLS_CODEPAGE_437=y
-CONFIG_NLS_ISO8859_1=y
-CONFIG_NLS_ISO8859_15=y
-CONFIG_INSTRUMENTATION=y
-CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-CONFIG_ENABLE_WARN_DEPRECATED=y
-CONFIG_MAGIC_SYSRQ=y
-CONFIG_DEBUG_KERNEL=y
-CONFIG_DETECT_SOFTLOCKUP=y
-CONFIG_EARLY_PRINTK=y
-CONFIG_DEBUG_STACKOVERFLOW=y
-CONFIG_4KSTACKS=y
-CONFIG_X86_FIND_SMP_CONFIG=y
-CONFIG_X86_MPPARSE=y
-CONFIG_DOUBLEFAULT=y
-CONFIG_CRYPTO=y
-CONFIG_CRYPTO_ALGAPI=y
-CONFIG_CRYPTO_BLKCIPHER=y
-CONFIG_CRYPTO_HASH=y
-CONFIG_CRYPTO_MANAGER=y
-CONFIG_CRYPTO_HMAC=y
-CONFIG_CRYPTO_XCBC=y
-CONFIG_CRYPTO_MD5=y
-CONFIG_CRYPTO_SHA1=y
-CONFIG_CRYPTO_CBC=y
-CONFIG_CRYPTO_PCBC=y
-CONFIG_CRYPTO_DES=y
-CONFIG_CRYPTO_TWOFISH=y
-CONFIG_CRYPTO_TWOFISH_COMMON=y
-CONFIG_CRYPTO_TWOFISH_586=y
-CONFIG_CRYPTO_AES=y
-CONFIG_CRYPTO_AES_586=y
-CONFIG_CRYPTO_TEA=y
-CONFIG_CRYPTO_DEFLATE=y
-CONFIG_BITREVERSE=y
-CONFIG_CRC_CCITT=y
-CONFIG_CRC32=y
-CONFIG_ZLIB_INFLATE=y
-CONFIG_ZLIB_DEFLATE=y
-CONFIG_PLIST=y
-CONFIG_HAS_IOMEM=y
-CONFIG_HAS_IOPORT=y
-CONFIG_HAS_DMA=y
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
