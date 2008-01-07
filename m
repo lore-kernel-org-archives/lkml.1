@@ -1,200 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbYAGTDQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756633AbYAGTER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756218AbYAGTDQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 14:03:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbYAGTDB
+	id S1756633AbYAGTER (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 14:04:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbYAGTEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 14:03:01 -0500
-Received: from smtp3-g19.free.fr ([212.27.42.29]:46180 "EHLO smtp3-g19.free.fr"
+	Mon, 7 Jan 2008 14:04:07 -0500
+Received: from waste.org ([66.93.16.53]:42024 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751517AbYAGTDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 14:03:00 -0500
-From: Guillaume Chazarain <guichaz@yahoo.fr>
-Subject: [PATCH] fs-writeback: handle errors in sync_sb_inodes()
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Wu Fengguang <wfg@mail.ustc.edu.cn>, Michael Rubin <mrubin@google.com>,
-       linux-kernel@vger.kernel.org
-Date: Mon, 07 Jan 2008 20:02:00 +0100
-Message-ID: <20080107190200.25141.16251.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	id S1753244AbYAGTEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 14:04:06 -0500
+Subject: Re: [PATCH] procfs: provide slub's /proc/slabinfo
+From: Matt Mackall <mpm@selenic.com>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>, Andi Kleen <andi@firstfloor.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0801072005380.23932@sbz-30.cs.Helsinki.FI>
+References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com>
+	 <84144f020801021109v78e06c6k10d26af0e330fc85@mail.gmail.com>
+	 <alpine.LFD.1.00.0801021130210.32517@woody.linux-foundation.org>
+	 <1199314218.4497.109.camel@cinder.waste.org>
+	 <20080103085239.GA10813@elte.hu>
+	 <1199378818.8274.25.camel@cinder.waste.org>
+	 <Pine.LNX.4.64.0801031808470.7244@schroedinger.engr.sgi.com>
+	 <1199419890.4608.77.camel@cinder.waste.org>
+	 <Pine.LNX.4.64.0801051816490.22821@sbz-30.cs.Helsinki.FI>
+	 <1199641910.8215.28.camel@cinder.waste.org>
+	 <Pine.LNX.4.64.0801072005380.23932@sbz-30.cs.Helsinki.FI>
+Content-Type: text/plain
+Date: Mon, 07 Jan 2008 13:03:15 -0600
+Message-Id: <1199732595.4110.30.camel@cinder.waste.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently it is possible for some errors to be detected at write-back
-time but not reported to the program as shown by the following script
-using the included make_file.c.
 
----------8<---------8<---------8<---------8<---------8<---------8<---------
-#!/bin/sh
+On Mon, 2008-01-07 at 20:06 +0200, Pekka J Enberg wrote:
+> Hi Matt,
+> 
+> On Sun, 6 Jan 2008, Matt Mackall wrote:
+> > I don't have any particular "terrible" workloads for SLUB. But my
+> > attempts to simply boot with all three allocators to init=/bin/bash in,
+> > say, lguest show a fair margin for SLOB.
+> 
+> Sorry, I once again have bad news ;-). I did some testing with
+> 
+>   lguest --block=<rootfile> 32 /boot/vmlinuz-2.6.24-rc6 root=/dev/vda init=doit
+> 
+> where rootfile is
+> 
+>   http://uml.nagafix.co.uk/BusyBox-1.5.0/BusyBox-1.5.0-x86-root_fs.bz2
+> 
+> and the "doit" script in the guest passed as init= is just
+> 
+>   #!/bin/sh
+>   mount -t proc proc /proc
+>   cat /proc/meminfo | grep MemTotal
+>   cat /proc/meminfo | grep MemFree
+>   cat /proc/meminfo | grep Slab
+> 
+> and the results are:
+> 
+> [ the minimum, maximum, and average are of captured from 10 individual runs ]
+> 
+>                                  Free (kB)             Used (kB)
+>                     Total (kB)   min   max   average   min  max  average
+>   SLUB (no debug)   26536        23868 23892 23877.6   2644 2668 2658.4
+>   SLOB              26548        23472 23640 23579.6   2908 3076 2968.4
+>   SLAB (no debug)   26544        23316 23364 23343.2   3180 3228 3200.8
+>   SLUB (with debug) 26484        23120 23136 23127.2   3348 3364 3356.8
+> 
+> So it seems that on average SLUB uses 300 kilobytes *less memory* (!) (which is
+> roughly 1% of total memory available) after boot than SLOB for my
+> configuration.
 
-# We binary search the size of a file in 40M filesystem that can cause
-# the missed error.
-MIN=5000000
-MAX=50000000
-rm fs.40M
-dd if=/dev/zero of=fs.40M bs=40M count=0 seek=1 status=noxfer
-#mkfs.ext2 -F fs.40M
-mkfs.ext3 -F fs.40M
-#mkfs.jfs -q fs.40M
-#mkfs.reiserfs -fq fs.40M
-#mkfs.xfs fs.40M
+Fascinating. Which kernel version are you using? This patch doesn't seem
+to have made it to mainline:
 
-attempt()
-{
-	SIZE=$1
-	RES=0
-	./make_file valid_file $SIZE
-	mount fs.40M /mnt -o loop
-	if ! ./make_file /mnt/not_enough_space $SIZE; then
-		# We could not create the file as the requested size
-		# was clearly too big
-		RES=1
-	fi
-	umount /mnt
-
-	if [ $RES -eq 0 ]; then
-		mount fs.40M /mnt -o loop
-		if cmp valid_file /mnt/not_enough_space; then
-			# The file was too small, it fitted in the filesystem
-			RES=-1
-		fi
-		umount /mnt
-	fi
-
-	if [ $RES -eq 0 ]; then
-		echo "Undetected ENOSPC with SIZE=$SIZE"
-		exit
-	fi
-
-	return $RES
-}
-while [ $((MAX - MIN)) -gt 1 ]; do
-	SIZE=$(((MIN + MAX) / 2))
-	attempt $SIZE
-	RES=$?
-	if [ $RES -eq 1 ]; then
-		MAX=$SIZE
-	else
-		MIN=$SIZE
-	fi
-done
-
-echo "Could not reproduce the problem"
-
----------8<---------8<---------8<---------8<---------8<---------8<---------
-/* make_file.c */
-#include <unistd.h>
-#include <sys/fcntl.h>
-#include <sys/mman.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-int main(int argc, char **argv)
-{
-	int size, fd;
-	char *mapping;
-	if (argc != 3) {
-		fprintf(stderr, "Usage: %s FILE SIZE\n", argv[0]);
-		return 1;
-	}
-	size = atoi(argv[2]);
-
-	fd = open(argv[1], O_RDWR | O_CREAT, 0600);
-	if (fd < 0) {
-		perror(argv[1]);
-		return 1;
-	}
-	if (ftruncate(fd, size) < 0) {
-		perror("ftruncate");
-		return 1;
-	}
-	mapping = mmap(NULL, size, PROT_WRITE, MAP_SHARED, fd, 0);
-	if (mapping == MAP_FAILED) {
-		perror("mmap");
-		return 1;
-	}
-	memset(mapping, 0xFF, size);
-
-	/* Force a write-back */
-	sync();
-
-	if (msync(mapping, size, MS_SYNC) < 0) {
-		perror("msync");
-		return 1;
-	}
-	if (close(fd) < 0) {
-		perror("close");
-		return 1;
-	}
-	printf("%s: successfully written %d bytes\n", argv[1], size);
-	return 0;
-}
----------8<---------8<---------8<---------8<---------8<---------8<---------
-make_file.c mmaps a hole, performs some writeback (memset + sync) and
-then expects to find some error code in msync(). The script mounts a
-40M loopback filesystem and does a binary search to find the size of
-a file big enough to provoke a ENOSPC, but small enough to show the
-error not being detected at msync() time.
-
-The error window is large enough for such a size to be quickly found, but with
-this patch, no such file size can be found.
-
-All mmap capable filesystems I tested are affected (ext2, ext3,
-jfs, reiserfs, xfs). XFS is special in that it survives the test thanks
-to the page_mkwrite() work, i.e. it SIGBUS during memset. Anyway, this
-behavious solves ENOSPC but does nothing for EIO.
-
-The offending code is in fs/fs-writeback.c:
-
-sync_sb_inodes(...) ()
-{
-	...
-	__writeback_single_inode(inode, wbc);
-	...
-}
-__writeback_single_inode() gets the error from mapping->flags, clears it
-and returns it. But sync_sb_inodes() ignores this return value. In -mm
-there is sync_sb_inodes-propagate-errors.patch that propagates the
-error from __writeback_single_inode upwards in the call stack. IMHO,
-this propagation is useless because:
-
-- the error is combined from the errors in all the synced inodes, so it
-just tells that some inode in a specific fs got an error,
-- nobody in the call stack is interested in this error: certainly not
-pdflush, or 'void sync(2)'.
-
-Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
 ---
 
- fs/fs-writeback.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+slob: fix free block merging at head of subpage
 
+We weren't merging freed blocks at the beginning of the free list.
+Fixing this showed a 2.5% efficiency improvement in a userspace test
+harness.
 
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index 0fca820..88bb3c4 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -417,6 +417,7 @@ sync_sb_inodes(struct super_block *sb, struct writeback_control *wbc)
- 		struct address_space *mapping = inode->i_mapping;
- 		struct backing_dev_info *bdi = mapping->backing_dev_info;
- 		long pages_skipped;
-+		int err;
+Signed-off-by: Matt Mackall <mpm@selenic.com>
+
+diff -r 5374012889d6 mm/slob.c
+--- a/mm/slob.c	Wed Dec 05 09:27:46 2007 -0800
++++ b/mm/slob.c	Wed Dec 05 16:10:37 2007 -0600
+@@ -398,6 +398,10 @@ static void slob_free(void *block, int s
+ 	sp->units += units;
  
- 		if (!bdi_cap_writeback_dirty(bdi)) {
- 			redirty_tail(inode);
-@@ -461,7 +462,8 @@ sync_sb_inodes(struct super_block *sb, struct writeback_control *wbc)
- 		BUG_ON(inode->i_state & I_FREEING);
- 		__iget(inode);
- 		pages_skipped = wbc->pages_skipped;
--		__writeback_single_inode(inode, wbc);
-+		err = __writeback_single_inode(inode, wbc);
-+		mapping_set_error(mapping, err);
- 		if (wbc->sync_mode == WB_SYNC_HOLD) {
- 			inode->dirtied_when = jiffies;
- 			list_move(&inode->i_list, &sb->s_dirty);
+ 	if (b < sp->free) {
++		if (b + units == sp->free) {
++			units += slob_units(sp->free);
++			sp->free = slob_next(sp->free);
++		}
+ 		set_slob(b, units, sp->free);
+ 		sp->free = b;
+ 	} else {
+
+---
+
+> One possible explanation is that the high internal fragmentation (space
+> allocated but not used) of SLUB kmalloc() only affects short-lived allocations
+> and thus does not show up in the more permanent memory footprint.  Likewise, it
+> could be that SLOB has higher external fragmentation (small blocks that are
+> unavailable for allocation) of which SLUB does not suffer from.  Dunno, haven't
+> investigated as my results are contradictory to yours.
+
+I suppose that's possible.
+
+> I am beginning to think this is highly dependent on .config so would you mind
+> sending me one you're using for testing, Matt?
+
+I'm sure I don't have it any more, as that was back in July or so. How
+about you send me your config and I'll try to figure out what's going
+on?
+
+-- 
+Mathematics is the supreme nostalgia of our time.
 
