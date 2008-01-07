@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbYAGTcl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbYAGTig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755555AbYAGTcl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 14:32:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbYAGTce
+	id S1755252AbYAGTig (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 14:38:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbYAGTi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 14:32:34 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:41814 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751517AbYAGTcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 14:32:33 -0500
-Date: Mon, 7 Jan 2008 14:32:17 -0500
-From: Rik van Riel <riel@redhat.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Eric Whitney <eric.whitney@hp.com>,
-       Nick Dokos <nicholas.dokos@hp.com>
-Subject: Re: [patch 00/19] VM pageout scalability improvements
-Message-ID: <20080107143217.11b0fce1@bree.surriel.com>
-In-Reply-To: <Pine.LNX.4.64.0801071107440.23617@schroedinger.engr.sgi.com>
-References: <20080102224144.885671949@redhat.com>
-	<1199379128.5295.21.camel@localhost>
-	<20080103120000.1768f220@cuia.boston.redhat.com>
-	<1199380412.5295.29.camel@localhost>
-	<20080103170035.105d22c8@cuia.boston.redhat.com>
-	<1199463934.5290.20.camel@localhost>
-	<p73d4sh8s93.fsf@bingen.suse.de>
-	<1199466372.5290.37.camel@localhost>
-	<Pine.LNX.4.64.0801071107440.23617@schroedinger.engr.sgi.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Jan 2008 14:38:28 -0500
+Received: from moutng.kundenserver.de ([212.227.126.183]:56359 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751517AbYAGTi1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 14:38:27 -0500
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
+To: Christer Weinigel <christer@weinigel.se>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, "David P. Reed" <dpreed@reed.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Rene Herman <rene.herman@gmail.com>,
+       Paul Rolland <rol@as2917.net>, Pavel Machek <pavel@ucw.cz>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, rol@witbe.net
+Reply-To: 7eggert@gmx.de
+Date: Mon, 07 Jan 2008 20:38:09 +0100
+References: <9BdU5-1YW-9@gated-at.bofh.it> <9BeZN-3Gf-5@gated-at.bofh.it> <9BnTB-1As-31@gated-at.bofh.it> <9BrX4-8go-1@gated-at.bofh.it> <9BuBG-4eR-51@gated-at.bofh.it> <9BvRd-6aL-71@gated-at.bofh.it> <9GRQW-1DX-13@gated-at.bofh.it> <9GSah-23W-1@gated-at.bofh.it> <9GSDy-2GD-23@gated-at.bofh.it> <9GTpK-40d-15@gated-at.bofh.it> <9GUvy-5H2-11@gated-at.bofh.it> <9GVKU-7SS-25@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1JBxnV-00046d-CS@be1.7eggert.dyndns.org>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX182eHdjjE751gCBrEZonaw3oI/cAesi+XMj1Ey
+ Ymxtub4F3HF4qo7XkPJo1+pETDAtDSj+9hQEBSxVOOrkTwOyv9
+ 6ZtAKWManf7+TewFFE2nQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Jan 2008 11:07:54 -0800 (PST)
-Christoph Lameter <clameter@sgi.com> wrote:
-> On Fri, 4 Jan 2008, Lee Schermerhorn wrote:
-> 
-> > We see this on both NUMA and non-NUMA. x86_64 and ia64.  The basic
-> > criteria to reproduce is to be able to run thousands [or low 10s of
-> > thousands] of tasks, continually increasing the number until the system
-> > just goes into reclaim.  Instead of swapping, the system seems to
-> > hang--unresponsive from the console, but with "soft lockup" messages
-> > spitting out every few seconds...
-> 
-> Ditto here.
+Christer Weinigel <christer@weinigel.se> wrote:
 
-I have some suspicions on what could be causing this.
+> How do you find out the speed of the ISA bus?  AFAIK there is no
+> standardized way to do that.  On the Geode SC2200 the ISA bus speed is
+> usually the PCI clock divided by 4 giving 33MHz/4=8.3MHz or
+> 30/4=7.5MHz, but with no external ISA devices it's possible to
+> overclock the ISA bus to /3 to run it at 11MHz or so.  But without
+> poking at some CPU and southbridge specific registers to find out the
+> PCI bus speed and the ISA bus divisor you can't really tell.
 
-The most obvious suspect is get_scan_ratio() continuing to return
-100 file reclaim, 0 anon reclaim when the file LRUs have already
-been reduced to something very small, because reclaiming up to that
-point was easy.
+If you overclock, you are on your own. IIRC I've used 13,3 MHz for some time
+and used a lower PIO mode to compensate.
 
-I plan to add some code to automatically set the anon reclaim to
-100% if (free + file_active + file_inactive <= zone->pages_high),
-meaning that reclaiming just file pages will not be able to free
-enough pages.
+> So if you do udelay based on a 6MHz clock (I think you can safely
+> assume that any 386 based system runs the ISA bus at least that fast)
+> you'll waste at least 30% and maybe even 100% more time for the delay
+> after every _p call.
 
--- 
-All rights reversed.
+Defaulting to 8 MHz and offering an option to set another clock speed
+(like idebus=) should be OK.
+
