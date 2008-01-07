@@ -1,63 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753822AbYAGBa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753553AbYAGBoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753822AbYAGBa3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 20:30:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYAGBaV
+	id S1753553AbYAGBoA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 20:44:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbYAGBnv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 20:30:21 -0500
-Received: from mga10.intel.com ([192.55.52.92]:23401 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752042AbYAGBaU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 20:30:20 -0500
+	Sun, 6 Jan 2008 20:43:51 -0500
+Received: from mga09.intel.com ([134.134.136.24]:13386 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751291AbYAGBnu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 20:43:50 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.24,251,1196668800"; 
-   d="scan'208";a="276178945"
-Subject: Re: Improve hackbench
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Lee Revell <rlrevell@joe-job.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <75b66ecd0801040444y4d698d7fh9caf52955b2b6aad@mail.gmail.com>
-References: <1199426786.3298.64.camel@ymzhang>
-	 <20080104081043.GA23046@elte.hu>
-	 <75b66ecd0801040444y4d698d7fh9caf52955b2b6aad@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 07 Jan 2008 09:27:39 +0800
-Message-Id: <1199669259.3298.80.camel@ymzhang>
+   d="scan'208";a="276215287"
+Date: Mon, 7 Jan 2008 09:25:33 +0800
+From: Zhenyu Wang <zhenyu.z.wang@intel.com>
+To: Dave Airlie <airlied@linux.ie>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH][intel_agp] fix name for G35 chipset
+Message-ID: <20080107012533.GA471@zhen-devel.sh.intel.com>
+Mail-Followup-To: Dave Airlie <airlied@linux.ie>,
+	LKML <linux-kernel@vger.kernel.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
+X-Mailer: mutt
+X-Operating-System: Linux 2.6.23 i686
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-01-04 at 07:44 -0500, Lee Revell wrote:
-> On Jan 4, 2008 3:10 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> >   http://redhat.com/~mingo/cfs-scheduler/tools/hackbench.c
-> >
-> 
-> Why not lose the #ifdef and just use PTHREAD_STACK_MIN?
-That's a good idea.
 
-Thanks,
--yanmin
 
+Change origin chipset name i965G_1 to market name G35.
+
+Signed-off-by: Zhenyu Wang <zhenyu.z.wang@intel.com>
 ---
+ drivers/char/agp/intel-agp.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
---- hackbench.c.orig	2008-01-10 08:24:36.000000000 +0800
-+++ hackbench.c	2008-01-10 08:25:12.000000000 +0800
-@@ -151,10 +151,8 @@ pthread_t create_worker(void *ctx, void 
- 	if (pthread_attr_init(&attr) != 0)
- 		barf("pthread_attr_init:");
+diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+index d879619..7f8b06c 100644
+--- a/drivers/char/agp/intel-agp.c
++++ b/drivers/char/agp/intel-agp.c
+@@ -12,8 +12,8 @@
  
--#ifndef __ia64__
--	if (pthread_attr_setstacksize(&attr, (size_t)(16*1024)) != 0)
-+	if (pthread_attr_setstacksize(&attr, PTHREAD_STACK_MIN) != 0)
- 		barf("pthread_attr_setstacksize");
--#endif
+ #define PCI_DEVICE_ID_INTEL_82946GZ_HB      0x2970
+ #define PCI_DEVICE_ID_INTEL_82946GZ_IG      0x2972
+-#define PCI_DEVICE_ID_INTEL_82965G_1_HB     0x2980
+-#define PCI_DEVICE_ID_INTEL_82965G_1_IG     0x2982
++#define PCI_DEVICE_ID_INTEL_82G35_HB        0x2980
++#define PCI_DEVICE_ID_INTEL_82G35_IG        0x2982
+ #define PCI_DEVICE_ID_INTEL_82965Q_HB       0x2990
+ #define PCI_DEVICE_ID_INTEL_82965Q_IG       0x2992
+ #define PCI_DEVICE_ID_INTEL_82965G_HB       0x29A0
+@@ -32,7 +32,7 @@
+ #define PCI_DEVICE_ID_INTEL_Q33_IG          0x29D2
  
- 	if ((err=pthread_create(&childid, &attr, func, ctx)) != 0) {
- 		fprintf(stderr, "pthread_create failed: %s (%d)\n", strerror(err), err);
-
+ #define IS_I965 (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82946GZ_HB || \
+-                 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965G_1_HB || \
++                 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82G35_HB || \
+                  agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965Q_HB || \
+                  agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965G_HB || \
+                  agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965GM_HB || \
+@@ -1866,7 +1866,7 @@ static const struct intel_driver_description {
+ 		NULL, &intel_915_driver },
+ 	{ PCI_DEVICE_ID_INTEL_82946GZ_HB, PCI_DEVICE_ID_INTEL_82946GZ_IG, 0, "946GZ",
+ 		NULL, &intel_i965_driver },
+-	{ PCI_DEVICE_ID_INTEL_82965G_1_HB, PCI_DEVICE_ID_INTEL_82965G_1_IG, 0, "965G",
++	{ PCI_DEVICE_ID_INTEL_82G35_HB, PCI_DEVICE_ID_INTEL_82G35_IG, 0, "G35",
+ 		NULL, &intel_i965_driver },
+ 	{ PCI_DEVICE_ID_INTEL_82965Q_HB, PCI_DEVICE_ID_INTEL_82965Q_IG, 0, "965Q",
+ 		NULL, &intel_i965_driver },
+@@ -2065,7 +2065,7 @@ static struct pci_device_id agp_intel_pci_table[] = {
+ 	ID(PCI_DEVICE_ID_INTEL_82945GM_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_82945GME_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_82946GZ_HB),
+-	ID(PCI_DEVICE_ID_INTEL_82965G_1_HB),
++	ID(PCI_DEVICE_ID_INTEL_82G35_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_82965Q_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_82965G_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_82965GM_HB),
+-- 
+1.5.3.4
 
