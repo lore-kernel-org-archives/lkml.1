@@ -1,137 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756290AbYAGOAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756501AbYAGOFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756290AbYAGOAa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 09:00:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbYAGOAR
+	id S1756501AbYAGOFz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 09:05:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbYAGOFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 09:00:17 -0500
-Received: from iona.labri.fr ([147.210.8.143]:50087 "EHLO iona.labri.fr"
+	Mon, 7 Jan 2008 09:05:46 -0500
+Received: from ns2.suse.de ([195.135.220.15]:55814 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751184AbYAGOAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 09:00:14 -0500
-X-Greylist: delayed 1597 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Jan 2008 09:00:14 EST
-Message-ID: <47822A2C.4020303@inria.fr>
-Date: Mon, 07 Jan 2008 14:33:32 +0100
-From: Brice Goglin <Brice.Goglin@inria.fr>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+	id S1751364AbYAGOFp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 09:05:45 -0500
+Message-ID: <478231B7.7080508@suse.de>
+Date: Mon, 07 Jan 2008 15:05:43 +0100
+From: Hannes Reinecke <hare@suse.de>
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-To: "David S. Miller" <davem@davemloft.net>
-CC: "Andrew J. Gallatin" <gallatin@myri.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       Linus Torvalds <torvalds@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: [PATCH][LRO] Fix lro_mgr->features checks
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Multipath failover handling (Was: Re: 2.6.24-rc3-mm1)
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org>	 <47462F3C.3040700@googlemail.com>	 <20071122201250.f957e280.akpm@linux-foundation.org>	 <47466B5D.90607@googlemail.com>	 <20071126221509.8f437b61.akpm@linux-foundation.org>	 <1197390783.3812.19.camel@localhost.localdomain> <47624649.3040209@suse.de> <1197642405.3154.71.camel@localhost.localdomain>
+In-Reply-To: <1197642405.3154.71.camel@localhost.localdomain>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+James Bottomley wrote:
+> On Fri, 2007-12-14 at 10:00 +0100, Hannes Reinecke wrote:
+>> James Bottomley wrote:
+>>> On Mon, 2007-11-26 at 22:15 -0800, Andrew Morton wrote:
+>>>> OK, thanks.  I'll assume that James and Hannes have this in hand (or will
+>>>> have, by mid-week) and I won't do anything here.
+>>> Just to confirm what I think I'm going to be doing:  rebasing the
+>>> scsi-misc tree to remove this commit:
+>>>
+>>> commit 8655a546c83fc43f0a73416bbd126d02de7ad6c0
+>>> Author: Hannes Reinecke <hare@suse.de>
+>>> Date:   Tue Nov 6 09:23:40 2007 +0100
+>>>
+>>>     [SCSI] Do not requeue requests if REQ_FAILFAST is set
+>>>
+>>> And its allied fix ups:
+>>>
+>>> commit 983289045faa96fba8841d3c51b98bb8623d9504
+>>> Author: James Bottomley <James.Bottomley@HansenPartnership.com>
+>>> Date:   Sat Nov 24 19:47:25 2007 +0200
+>>>
+>>>     [SCSI] fix up REQ_FASTFAIL not to fail when state is QUIESCE
+>>>
+>>> commit 9dd15a13b332e9f5c8ee752b1ccd9b84cb5bdf17
+>>> Author: James Bottomley <James.Bottomley@HansenPartnership.com>
+>>> Date:   Sat Nov 24 19:55:53 2007 +0200
+>>>
+>>>     [SCSI] fix domain validation to work again
+>>>
+>>> James
+>>>
+>>>
+>> Or just apply my latest patch (cf Undo __scsi_kill_request).
+>> The main point is that we shouldn't retry requests
+>> with FAILFAST set when the queue is blocked. AFAICS
+>> only FC and iSCSI transports set the queue to blocked,
+>> and use this to indicate a loss of connection. So any
+>> retry with queue blocked is futile.
+> 
+> I still don't think this is the right approach.
+> 
+> For link up/down events, those are direct pathing events and should be
+> signalled along a kernel notifier, not by mucking with the SCSI state
+> machine.
+Of course they will be signalled. And eventually we should patch up
+mutltipath-tools to read the exising events from the uevent socket.
+But even with that patch there is a quite largish window during
+which IOs will be sent to the blocked device, and hence will be
+stuck in the request queue until the timer expires.
 
-The LRO_F_* checks in inet_lro.c are buggy, the following patch
-is needed to check lro_mgr->features correctly.
+> However, there's still devloss_tmo to consider ... even in
+> multipath, I don't think you want to signal path failure until
+> devloss_tmo has fired otherwise you'll get too many transient up/down
+> events which damage performance if the array has an expensive failover
+> model.
+> 
+Yes. But currently we have a very high failover latency as we always have
+to wait for the requeued commands to time-out.
+Hence we're damaging performance on arrays with inexpensive failover.
 
-I decided to follow the NETIF_F_* convention and thus removed
-test_bit. Some people might like it better if we keep using
-test_bit and just set lro_mgr->features to 1<<LRO_F_NAPI instead
-of just LRO_F_NAPI. I don't know what's the best.
+> The other problem is what to do with in-flight commands at the time the
+> link went down.  With your current patch, they're still stuck until they
+> time out ... surely there needs to be some type of recovery mechanism
+> for these?
+> 
+Well, the in-flight commands are owned by the HBA driver, which should
+have the proper code to terminate / return those commands with the
+appriopriate codes. They will then be rescheduled and will be caught
+like 'normal' IO requests.
 
-Without this patch, we noticed several problems with myri10ge,
-at least when using non-IP packets. I guess the ehea driver did
-not expose any big problem because test_bit(NAPI) returns true
-thanks to lro_mgr->features containing LRO_F_EXTRACT_VLAN_ID.
+Cheers,
 
-Please apply for 2.6.24.
-
-Brice
-
-
-
-[PATCH][LRO] Fix lro_mgr->features checks
-
-lro_mgr->features contains a bitmask of LRO_F_* values which are
-defined as power of two, not as bit indexes.
-They must be checked with x&LRO_F_FOO, not with test_bit(LRO_F_FOO,&x).
-
-Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
-Acked-by: Andrew Gallatin <gallatin@myri.com>
----
-diff --git a/net/ipv4/inet_lro.c b/net/ipv4/inet_lro.c
-index 9a96c27..4a4d49f 100644
---- a/net/ipv4/inet_lro.c
-+++ b/net/ipv4/inet_lro.c
-@@ -310,7 +310,7 @@ static void lro_flush(struct net_lro_mgr *lro_mgr,
- 	skb_shinfo(lro_desc->parent)->gso_size = lro_desc->mss;
- 
- 	if (lro_desc->vgrp) {
--		if (test_bit(LRO_F_NAPI, &lro_mgr->features))
-+		if (lro_mgr->features & LRO_F_NAPI)
- 			vlan_hwaccel_receive_skb(lro_desc->parent,
- 						 lro_desc->vgrp,
- 						 lro_desc->vlan_tag);
-@@ -320,7 +320,7 @@ static void lro_flush(struct net_lro_mgr *lro_mgr,
- 					lro_desc->vlan_tag);
- 
- 	} else {
--		if (test_bit(LRO_F_NAPI, &lro_mgr->features))
-+		if (lro_mgr->features & LRO_F_NAPI)
- 			netif_receive_skb(lro_desc->parent);
- 		else
- 			netif_rx(lro_desc->parent);
-@@ -352,7 +352,7 @@ static int __lro_proc_skb(struct net_lro_mgr *lro_mgr, struct sk_buff *skb,
- 		goto out;
- 
- 	if ((skb->protocol == htons(ETH_P_8021Q))
--	    && !test_bit(LRO_F_EXTRACT_VLAN_ID, &lro_mgr->features))
-+	    && !(lro_mgr->features & LRO_F_EXTRACT_VLAN_ID))
- 		vlan_hdr_len = VLAN_HLEN;
- 
- 	if (!lro_desc->active) { /* start new lro session */
-@@ -474,7 +474,7 @@ static struct sk_buff *__lro_proc_segment(struct net_lro_mgr *lro_mgr,
- 			goto out;
- 
- 		if ((skb->protocol == htons(ETH_P_8021Q))
--		    && !test_bit(LRO_F_EXTRACT_VLAN_ID, &lro_mgr->features))
-+		    && !(lro_mgr->features & LRO_F_EXTRACT_VLAN_ID))
- 			vlan_hdr_len = VLAN_HLEN;
- 
- 		iph = (void *)(skb->data + vlan_hdr_len);
-@@ -516,7 +516,7 @@ void lro_receive_skb(struct net_lro_mgr *lro_mgr,
- 		     void *priv)
- {
- 	if (__lro_proc_skb(lro_mgr, skb, NULL, 0, priv)) {
--		if (test_bit(LRO_F_NAPI, &lro_mgr->features))
-+		if (lro_mgr->features & LRO_F_NAPI)
- 			netif_receive_skb(skb);
- 		else
- 			netif_rx(skb);
-@@ -531,7 +531,7 @@ void lro_vlan_hwaccel_receive_skb(struct net_lro_mgr *lro_mgr,
- 				  void *priv)
- {
- 	if (__lro_proc_skb(lro_mgr, skb, vgrp, vlan_tag, priv)) {
--		if (test_bit(LRO_F_NAPI, &lro_mgr->features))
-+		if (lro_mgr->features & LRO_F_NAPI)
- 			vlan_hwaccel_receive_skb(skb, vgrp, vlan_tag);
- 		else
- 			vlan_hwaccel_rx(skb, vgrp, vlan_tag);
-@@ -550,7 +550,7 @@ void lro_receive_frags(struct net_lro_mgr *lro_mgr,
- 	if (!skb)
- 		return;
- 
--	if (test_bit(LRO_F_NAPI, &lro_mgr->features))
-+	if (lro_mgr->features & LRO_F_NAPI)
- 		netif_receive_skb(skb);
- 	else
- 		netif_rx(skb);
-@@ -570,7 +570,7 @@ void lro_vlan_hwaccel_receive_frags(struct net_lro_mgr *lro_mgr,
- 	if (!skb)
- 		return;
- 
--	if (test_bit(LRO_F_NAPI, &lro_mgr->features))
-+	if (lro_mgr->features & LRO_F_NAPI)
- 		vlan_hwaccel_receive_skb(skb, vgrp, vlan_tag);
- 	else
- 		vlan_hwaccel_rx(skb, vgrp, vlan_tag);
-
-
+Hannes
+-- 
+Dr. Hannes Reinecke		      zSeries & Storage
+hare@suse.de			      +49 911 74053 688
+SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Markus Rex, HRB 16746 (AG Nürnberg)
