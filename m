@@ -1,53 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756559AbYAGPS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbYAGPTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756559AbYAGPS4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 10:18:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbYAGPSr
+	id S1757213AbYAGPTj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 10:19:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbYAGPTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 10:18:47 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:36380 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751489AbYAGPSq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 10:18:46 -0500
-Date: Mon, 7 Jan 2008 10:18:01 -0500
-From: Rik van Riel <riel@redhat.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Eric Whitney <eric.whitney@hp.com>
-Subject: Re: [patch 00/19] VM pageout scalability improvements
-Message-ID: <20080107101801.126cd709@bree.surriel.com>
-In-Reply-To: <20080107190610.ed3be7b4.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080102224144.885671949@redhat.com>
-	<1199379128.5295.21.camel@localhost>
-	<20080103120000.1768f220@cuia.boston.redhat.com>
-	<20080107190610.ed3be7b4.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Jan 2008 10:19:32 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:40136 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751517AbYAGPTb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 10:19:31 -0500
+Date: Mon, 7 Jan 2008 20:49:19 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Subject: Re: [PATCH -mm/x86] revert i386: handle an initrd in highmem (Was
+	Re: 2.6.24-rc6-mm1)
+Message-ID: <20080107151919.GA7011@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20071222233056.d652743e.akpm@linux-foundation.org> <20080107135038.GA19568@linux.vnet.ibm.com> <alpine.LFD.0.99999.0801071453070.31637@localhost.localdomain> <20080107145609.GA26652@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080107145609.GA26652@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Jan 2008 19:06:10 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Thu, 3 Jan 2008 12:00:00 -0500
-> Rik van Riel <riel@redhat.com> wrote:
-
-> > If there is no swap space, my VM code will not bother scanning
-> > any anon pages.  This has the same effect as moving the pages
-> > to the no-reclaim list, with the extra benefit of being able to
-> > resume scanning the anon lists once swap space is freed.
+On Mon, Jan 07, 2008 at 03:56:09PM +0100, Ingo Molnar wrote:
+> 
+> * Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > On Mon, 7 Jan 2008, Dhaval Giani wrote:
 > > 
-> Is this 'avoiding scanning anon if no swap' feature  in this set ?
+> > > Hi Andrew, Ingo, Thomas, Peter,
+> > > 
+> > > x86: revert i386: handle an initrd in highmem
+> > > 
+> > > The patch caused a failure while booting a kexec kernel.
+> > > (http://lkml.org/lkml/2008/1/7/42 has the bisect details.)
+> > > 
+> > > The following patch reverts it.
+> > > 
+> > > Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> > 
+> > Thanks for tracking this down. I'll pull the patch from the x86 git 
+> > tree as well.
+> 
+> Dhaval, how about the other problem you had - do you have any guess 
+> what it might be related to?
+> 
 
-I seem to have lost that code in a forward merge :(
+other problem? The load_balance_monitor one? (We are still looking into
+that one, just seems that se (as usual :) ) is turning out to be null).
 
-Dunno if I started the forward merge from an older series that
-Lee had or if I lost the code myself...
+> i'm also wondering - what would be the easiest way to integrate kexec 
+> into an automated test environment. If i have a bzImage kernel, is kexec 
+> still supposed to work? Could i for example do a reboot into a new 
+> (kexec-enabled) kernel via kexec in essence?
+> 
 
-I'll put it back in ASAP.
+Yes, I use a bzImage kernel to reboot using kexec. I use a script which
+just sets it up for me. (I can send it to you separately).
 
 -- 
-All rights reversed.
+regards,
+Dhaval
