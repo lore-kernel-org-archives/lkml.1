@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755185AbYAGKhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755792AbYAGKmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755185AbYAGKhj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 05:37:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755970AbYAGKhU
+	id S1755792AbYAGKmy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 05:42:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbYAGKmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 05:37:20 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:56687 "EHLO mx2.suse.de"
+	Mon, 7 Jan 2008 05:42:47 -0500
+Received: from hobbit.corpit.ru ([81.13.94.6]:20292 "EHLO hobbit.corpit.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755564AbYAGKhS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 05:37:18 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: Ian Kent <raven@themaw.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: umount -l <path>, getcwd and /proc/<pid>/cwd inconsistent
-References: <1199675850.3156.15.camel@raven.themaw.net>
-X-Yow: I would like to urinate in an OVULAR, porcelain pool --
-Date: Mon, 07 Jan 2008 11:37:15 +0100
-In-Reply-To: <1199675850.3156.15.camel@raven.themaw.net> (Ian Kent's message
-	of "Mon\, 07 Jan 2008 12\:17\:30 +0900")
-Message-ID: <jemyrhaplw.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+	id S1754314AbYAGKmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 05:42:46 -0500
+Message-ID: <47820224.2020902@msgid.tls.msk.ru>
+Date: Mon, 07 Jan 2008 13:42:44 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Icedove 1.5.0.14pre (X11/20071018)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+To: Dmitry Torokhov <dtor@insightbb.com>
+CC: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: acpi/apm events as inputs: how to handle?
+References: <477B5FD8.5070503@msgid.tls.msk.ru> <200801052105.03068.dtor@insightbb.com>
+In-Reply-To: <200801052105.03068.dtor@insightbb.com>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: id=4F9CF57E
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Kent <raven@themaw.net> writes:
+Dmitry Torokhov wrote:
+> Hi Michael,
 
-> Basically, from a bash shell, setting working directory to a mounted
-> directory all is fine with "pwd" and "/proc/<pid>/cwd". Following a
-> "umount - l" on the mount "pwd" continues to return the expected string
-> but "/proc/<pid>/cwd" returns an empty string.
+Hello!
 
-Builtin pwd just prints $PWD.
+[]
+> There are keyboards (USB, PS2) with Sleep and Suspend buttons
+> that are not related to ACPI nor APM. We had 2 options - add
+> an input handler that would translate input events into ACPI
+> events and feed /proc/acpi/event[*] or go other way around and
+> use input layer for delivering suspend and sleep requests for
+> all types of keyboards/buttons, including ACPI buttons. The
+> secons option is better because userspace solution using input
+> layer will not be tied to a particular technology (ACPI) and
+> can be used on other platforms as well.
 
-Andreas.
+Aha, this makes sense.
+And it brings a few questions, too.
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+As far as I can see, there's little information about how to
+actually use the input interface.  Let's suppose I'm about to
+write an application (a daemon) that should replace acpid --
+it's handling of the said buttons (power and sleep).  How to
+find the right devices?  Should it use /dev/input/event* or
+something else?  How about handling hot-plugged devices like
+new (and removed) keyboards? (And yes, my keyboard has a sleep
+button.)
+
+And by the way, what INPUT can one expect from a PC speaker?
+input: PC Speaker as /devices/platform/pcspkr/input/input0
+
+Thanks!
+
+/mjt
