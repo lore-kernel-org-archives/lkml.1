@@ -1,145 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbYAGOSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757857AbYAGOSg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755878AbYAGOSV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 09:18:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753757AbYAGOSJ
+	id S1757857AbYAGOSg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 09:18:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754252AbYAGOSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 09:18:09 -0500
-Received: from mga02.intel.com ([134.134.136.20]:58639 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751489AbYAGOSI convert rfc822-to-8bit (ORCPT
+	Mon, 7 Jan 2008 09:18:11 -0500
+Received: from hpsmtp-eml17.kpnxchange.com ([213.75.38.117]:33249 "EHLO
+	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753121AbYAGOSJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 09:18:08 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,253,1196668800"; 
-   d="scan'208";a="250567729"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 7 Jan 2008 09:18:09 -0500
+From: Frans Pop <elendil@planet.nl>
+To: linux-kernel@vger.kernel.org
+Subject: Re: pnpacpi: exceeded the max number of IO resources: 24
+Date: Mon, 7 Jan 2008 15:18:06 +0100
+User-Agent: KMail/1.9.7
+References: <200712240612.46786.elendil@planet.nl> <200801070048.19468.elendil@planet.nl> <1199682448.2379.12.camel@yakui_zhao.sh.intel.com>
+In-Reply-To: <1199682448.2379.12.camel@yakui_zhao.sh.intel.com>
+Cc: linux-acpi@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: + restore-missing-sysfs-max_cstate-attr.patch added to -mm tree
-Date: Mon, 7 Jan 2008 06:18:47 -0800
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE5532E4@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <20080106231848.762e93c1.akpm@linux-foundation.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: + restore-missing-sysfs-max_cstate-attr.patch added to -mm tree
-Thread-Index: AchQ/ZQTWMs58bglR1Gbxc9zVuGQ1gAOW9bw
-References: <20071130142058.816d1693.akpm@linux-foundation.org><924EFEDD5F540B4284297C4DC59F3DEE2FAEAF@orsmsx423.amr.corp.intel.com><4750CC78.9070105@rtr.ca><20071130190227.1976e682@laptopd505.fenrus.org><4750D180.6080001@rtr.ca><20071130191816.3e744205@laptopd505.fenrus.org><4750D585.1030200@rtr.ca><477C2143.8090406@rtr.ca><924EFEDD5F540B4284297C4DC59F3DEE4FC485@orsmsx423.amr.corp.intel.com><477C622F.6010304@rtr.ca><20080104021619.GA15409@linux-os.sc.intel.com><47814958.3070208@rtr.ca> <20080106231848.762e93c1.akpm@linux-foundation.org>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>, "Mark Lord" <lkml@rtr.ca>
-Cc: "Arjan van de Ven" <arjan@infradead.org>, <abelay@novell.com>,
-       <lenb@kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       <linux-kernel@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
-       <rjw@sisk.pl>
-X-OriginalArrivalTime: 07 Jan 2008 14:18:00.0228 (UTC) FILETIME=[1B8CA640:01C85138]
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801071518.07039.elendil@planet.nl>
+X-OriginalArrivalTime: 07 Jan 2008 14:18:07.0568 (UTC) FILETIME=[1FECA500:01C85138]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+(Mail below was sent to me privately, forwarding to the lists.)
 
->-----Original Message-----
->From: Andrew Morton [mailto:akpm@linux-foundation.org] 
->Sent: Sunday, January 06, 2008 11:19 PM
->To: Mark Lord
->Cc: Pallipadi, Venkatesh; Arjan van de Ven; abelay@novell.com; 
->lenb@kernel.org; Ingo Molnar; linux-kernel@vger.kernel.org; 
->linux-acpi@vger.kernel.org; rjw@sisk.pl
->Subject: Re: + restore-missing-sysfs-max_cstate-attr.patch 
->added to -mm tree
+On Mon, 2008-01-07 at 00:48 +0100, Frans Pop wrote:
+> (Adding the kernel list back. Any reason you did not send the reply
+> there?)
 >
->On Sun, 06 Jan 2008 16:34:16 -0500 Mark Lord <lkml@rtr.ca> wrote:
->
->> Venki Pallipadi wrote:
->> > Reintroduce run time configurable max_cstate for !CPU_IDLE case.
->> > 
->> Can we get this patch upstream so that a stock 2.6.24 will work here?
->> 
->
->umm, OK, I queued it for 2.6.24.  I'll give people a day or so 
->to comment
->on this.
->
->I had to invent some silly changlelog for it.  Please review it for
->accuracy and completeness?
->
->It isn't complete, really.  How come we only make max_cstate 
->writeable if
->CONFIG_CPU_IDLE=n?  What happens to people who were reliant 
->upon writeable
->max_cstate who now enable CPU_IDLE?  Things still break?  What is the
->rationale behind this?  What constraints led us to this decision?
+> Sorry for the late reply: Christmas, New Year, the flue, etc.
 
-It is done only for !CPU_IDLE case to take care of regression at hand.
-CPU_IDLE case technically is not a regression as it is a new config
-option. It is not easy to implement this with CPU_IDLE as acpi driver
-only provides the C-state mechanism and does not have the policy in it
-anymore with CPU_IDLE. It still can be done with some hacky code. But, I
-am incliced to switch this to using latency interface which is more
-cleaner than max_cstate interface.
+> Thank you for caring this problem.
 
-For example, max_cstate does not mean anything to the user, as BIOSes
-normally tend to hide one C-state or more than one C-states behind one
-OS visible C-state. Like C2 mapped to real C3 etc. Saying that I don't
-want CPUs to enter any C-state more than 100uS latency is cleaner in
-comparison (even though we depend on the latency number coming from the
-BIOS).
+> On Friday 28 December 2007, Zhao Yakui wrote:
+> > On Mon, 2007-12-24 at 06:12 +0100, Frans Pop wrote:
+> > > During boot with v2.6.24-rc6-125-g5356f66 on my Toshiba Satellite
+> > > A40 laptop, I suddenly get the following message (repeated 22
+> > > times!): pnpacpi: exceeded the max number of IO resources: 24
+> > >
+> > > Last time I tested 2.6.24 on that box was after the initial merge,
+> > > but before -rc1. Then those lines were not present.
+> > >
+> > > Looks like the messages originate from a7839e96 by Zhao Yakui and
+> > > that patch just adds the kernel messages so it was probably a
+> > > hidden issue before, but I cannot determine if I should be worried
+> > > or not.
+> >
+> > Thanks for caring this problem.
+>
+> And thank you for the reply, although I must admit that I'm still
+> confused.
+>
+> > In the patch of a7839e96 the predefined PNP constant is changed. For
+> > example: IO is changed from 8 to 24, Mem is changed from 4 to 12.
+> > That means that more resources will be obtained from the PNP device
+> > defined in ACPI table. So the system will print more message.
+>
+> OK. The change for Mem from 4 to 12 could explain the extra "iomem
+> range" messages (although I don't quite understand why resources that
+> "could not be reserved" still use a slot).
 
-Mark said this latency interface is not working as it is expected to at
-this moment. I will look at that soon and then we will have an alternate
-mechanism for this limiting C-state thing.
+The resources of PNP device are obtained by calling the _CRS method.
+Maybe some resources has been reserved. For example: Some system will
+reserve the following resources.
+   BIOS-e820: 00000000fec00000 - 00000000fed40000 (reserved)
+   BIOS-e820: 00000000fed45000 - 0000000100000000 (reserved)
+So the system will report that some resources can't be reserved.
 
-I am OK with the below changelog.
+> I do not yet see how the "ioport range" messages increased from 0 to 16
+> is explained, but I'm not too worried about that.
+>
+> > At the same time another problem maybe happens. If the number of
+> > resources defined in BIOS still exceeds the predefined PNP constant,
+> > it will report that pnpacpi: exceeded the max number of IO resources:
+> > 24. Although it can be fixed by changed the pnp constant bigger, it
+> > is inappropriate because it will waste a lot of memory in most cases.
+> >
+> > Of course the above error message is harmless.
+>
+> Are the _errors_ really harmless?
 
-Thanks,
-Venki
+The error message is harmless. It only tells us that the resource
+definition of PNP device exceeds the predefined PNP constant and maybe
+there will be potential problem if some important resources can't be
+reserved. For example about 90 IOPORT resources are defined in some PNP
+device. So it will print the message. Of course it is more appropriate
+to change the message level from ERR to DEBUG.
 
->From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+> Your commit message was:
+> "It brings that some resources can't be reserved and resource
+> confilicts. This will cause PCI resources are assigned wrongly in some
+> systems, and cause hang. This is a regression since we deleted ACPI
+> motherboard driver and use PNP system driver."
 >
->This was writeable in 2.6.23 but the cpuidle merge made it 
->read-only.  But
->some people's scripts (ie: Mark's) were writing to it.
+> That text seems to indicate that not reserving the remaining resources
+> _can_ cause real problems. Do we know what PCI resources are now not
+> being correctly reserved on my laptop (and other machines)? The fact
+> that the message is repeated 22 times seems to indicate that in my case
+> quite a lot of resources are being ignored.
 >
->As an unhappy compromise, make max_cstate writeable again if 
->the kernel was
->configured without CONFIG_CPU_IDLE.
->
->Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
->Cc: Mark Lord <lkml@rtr.ca>
->Cc: Arjan van de Ven <arjan@infradead.org>
->Cc: Len Brown <lenb@kernel.org>
->Cc: Ingo Molnar <mingo@elte.hu>
->Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
->Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->---
->
-> drivers/acpi/processor_idle.c |    4 ++++
-> 1 file changed, 4 insertions(+)
->
->diff -puN 
->drivers/acpi/processor_idle.c~reintroduce-run-time-configurable
->-max_cstate-for-cpu_idle-case drivers/acpi/processor_idle.c
->--- 
->a/drivers/acpi/processor_idle.c~reintroduce-run-time-configurab
->le-max_cstate-for-cpu_idle-case
->+++ a/drivers/acpi/processor_idle.c
->@@ -76,7 +76,11 @@ static void (*pm_idle_save) (void) __rea
-> #define PM_TIMER_TICKS_TO_US(p)		(((p) * 
->1000)/(PM_TIMER_FREQUENCY/1000))
-> 
-> static unsigned int max_cstate __read_mostly = 
->ACPI_PROCESSOR_MAX_POWER;
->+#ifdef CONFIG_CPU_IDLE
-> module_param(max_cstate, uint, 0000);
->+#else
->+module_param(max_cstate, uint, 0644);
->+#endif
-> static unsigned int nocst __read_mostly;
-> module_param(nocst, uint, 0000);
-> 
->_
->
->
+> Should the memory allocation maybe be made dynamic instead of static if
+> the memory waste is really such a problem? Apparently the number of PCI
+> resources can vary wildly from one machine to another.
+
+It is more appropriate to use dynamic memory allocation for Pnp device
+than to increase the PNP constant bigger. Now Thomas is working on it.
+Maybe he will submit the patch very soon.
+
+> If the error messages really are harmless, shouldn't they be changed
+> from ERR to DEBUG? As it is, the messages are extremely ugly and will
+> probably cause a lot of people to file bug reports as it _looks_ like
+> there is an error.
