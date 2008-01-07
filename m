@@ -1,85 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756827AbYAGPYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757830AbYAGPYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756827AbYAGPYW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 10:24:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbYAGPYO
+	id S1757830AbYAGPYs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 10:24:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbYAGPYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 10:24:14 -0500
-Received: from rv-out-0910.google.com ([209.85.198.187]:20164 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752640AbYAGPYM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 10:24:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
-        b=D1UIRdjV/94jrIQJvbx/pFRMEKNG8yxdhzH8M5vhBArEx0CcWnXO3TODdYnCf486HVm5p0L6oou24zPZzJd9gQOD08yvZwovKOrNPg44OKHmNdJhwg60JO2874VlL9hldogoVL4ss/r7bjd2AWKEnnCiPE/aDolCTiw1jVYbrYg=
-Message-ID: <47824415.80703@gmail.com>
-Date: Tue, 08 Jan 2008 00:24:05 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Gabor Gombas <gombasg@sztaki.hu>
-CC: Al Viro <viro@ZenIV.linux.org.uk>, Dave Young <hidave.darkstar@gmail.com>,
-       linux-kernel@vger.kernel.org, bluez-devel@lists.sourceforge.net
-Subject: Re: [Bluez-devel] Oops involving RFCOMM and sysfs
-References: <20071228173203.GA20690@boogie.lpds.sztaki.hu> <a8e1da0712290007o168a730cw923055ad2c265d84@mail.gmail.com> <20080102151642.GA7273@boogie.lpds.sztaki.hu> <20080105075039.GF27894@ZenIV.linux.org.uk> <20080107141300.GB12763@boogie.lpds.sztaki.hu>
-In-Reply-To: <20080107141300.GB12763@boogie.lpds.sztaki.hu>
-X-Enigmail-Version: 0.95.3
-Content-Type: multipart/mixed;
- boundary="------------080309060701040302010706"
+	Mon, 7 Jan 2008 10:24:39 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:50762 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754814AbYAGPYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 10:24:38 -0500
+Date: Mon, 7 Jan 2008 10:23:53 -0500
+From: Rik van Riel <riel@redhat.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, lee.schermerhorn@hp.com
+Subject: Re: [patch 07/19] split anon & file LRUs for memcontrol code
+Message-ID: <20080107102353.382e6c48@bree.surriel.com>
+In-Reply-To: <20080107190455.22412330.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080102224144.885671949@redhat.com>
+	<20080102224154.309980291@redhat.com>
+	<20080107190455.22412330.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080309060701040302010706
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Mon, 7 Jan 2008 19:04:55 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-Gabor Gombas wrote:
-> Hi,
+> On Wed, 02 Jan 2008 17:41:51 -0500
+> linux-kernel@vger.kernel.org wrote:
 > 
-> On Sat, Jan 05, 2008 at 07:50:39AM +0000, Al Viro wrote:
+> > Index: linux-2.6.24-rc6-mm1/mm/vmscan.c
+> > ===================================================================
+> > --- linux-2.6.24-rc6-mm1.orig/mm/vmscan.c	2008-01-02 15:55:55.000000000 -0500
+> > +++ linux-2.6.24-rc6-mm1/mm/vmscan.c	2008-01-02 15:56:00.000000000 -0500
+> > @@ -1230,13 +1230,13 @@ static unsigned long shrink_zone(int pri
+> >  
+> >  	get_scan_ratio(zone, sc, percent);
+> >  
 > 
->> Could you stick
->> 	if (!parent->d_inode)
->> 		printk(KERN_WARNING "sysfs locking blows: %s",
->> 			parent->d_name.name);
->> right before
->>                 mutex_lock(&parent->d_inode->i_mutex);
->>                 dentry = lookup_one_noperm(cur->s_name, parent);
->>                 mutex_unlock(&parent->d_inode->i_mutex);
->> in sysfs_get_dentry() (fs/sysfs/dir.c) and verify that it does, indeed,
->> trigger?
-> 
-> Here it is:
-> 
-> Jan  7 14:35:43 twister kernel: sysfs locking blows: acl001BAFE1624D<1>Unable to handle kernel NULL pointer dereference at 00000000000000b8 RIP: 
+> I'm happy if this calclation can be following later.
+> ==
+> if (scan_global_lru(sc)) {
+> 	get_scan_ratio(zone, sc, percent);
+> } else {
+> 	get_scan_ratio_cgroup(sc->cgroup, sc, percent);
+> }
+> ==
+> To do this, 
+> mem_cgroup needs to have recent_rotated_file and recent_rolated_anon ?
 
-Does the attached patch fix the problem?
+One possible problem could be that the cgroup can also have
+pages reclaimed in global reclaim, not just in local cgroup
+reclaims.
+
+That is, these cgroup's pages can also disappear or get
+rotated without the cgroup's recent_rotated_file and 
+recent_rotated_anon being affected at all.
+
+Still, having the cgroup do the same thing as the global
+zones is probably the best approximation.
 
 -- 
-tejun
-
---------------080309060701040302010706
-Content-Type: text/x-patch;
- name="kill-extra-put-in-sysfs_move_dir.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="kill-extra-put-in-sysfs_move_dir.patch"
-
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 3371629..4e7f3bf 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -878,7 +878,6 @@ again:
- 	error = 0;
- 	d_add(new_dentry, NULL);
- 	d_move(old_dentry, new_dentry);
--	dput(new_dentry);
- 
- 	/* Remove from old parent's list and insert into new parent's list. */
- 	sysfs_unlink_sibling(sd);
-
---------------080309060701040302010706--
+All rights reversed.
