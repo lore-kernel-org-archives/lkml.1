@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbYAGMzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756644AbYAGNAL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756533AbYAGMzw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 07:55:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbYAGMzp
+	id S1756644AbYAGNAL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 08:00:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755380AbYAGM76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 07:55:45 -0500
-Received: from lazybastard.de ([212.112.238.170]:45239 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754803AbYAGMzo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 07:55:44 -0500
-Date: Mon, 7 Jan 2008 13:49:52 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Frantisek Rysanek <Frantisek.Rysanek@post.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [noob q. on block layer] block IO read-ahead during sequential *write*?
-Message-ID: <20080107124952.GA8201@lazybastard.org>
-References: <47822835.4182.1ADF8AE7@localhost>
+	Mon, 7 Jan 2008 07:59:58 -0500
+Received: from max.feld.cvut.cz ([147.32.192.36]:48388 "EHLO max.feld.cvut.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755314AbYAGM76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 07:59:58 -0500
+Message-ID: <47822272.9090503@fel.cvut.cz>
+Date: Mon, 07 Jan 2008 23:00:34 +1000
+From: Michal Simek <simekm2@fel.cvut.cz>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <47822835.4182.1ADF8AE7@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Michal Simek <simekm2@fel.cvut.cz>, linux-kernel@vger.kernel.org
+Subject: Re: New linux arch
+References: <47820D24.3060800@fel.cvut.cz> <84144f020801070447t68808bcdq64bfc949c7732462@mail.gmail.com>
+In-Reply-To: <84144f020801070447t68808bcdq64bfc949c7732462@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 January 2008 13:25:09 +0100, Frantisek Rysanek wrote:
+Hi Pekka,
+
+>> Is it possible to create git repository in git.kernel.org for Microblaze
+>> cpu?
 > 
-> let me start with a simple example. The following commands:
+> You need to ask the kernel.org administrators for that:
 > 
->  cp /dev/zero /dev/hda
->  dd if=/dev/zero of=/dev/hda [bs=512]
+>   http://www.kernel.org/faq/#account
+
+Thanks.
+
+>> How many maintainers are acceptable? (one or more)
 > 
-> both have one common side-effect: apart from the disk being properly 
-> overwritten with zeroes, the kernel seems to keep reading sectors 
-> ahead of the current seek position of the sequential write.
+> You can have as many maintainers as you want but you probably don't
+> want to make it too many. There aren't any "official" responsibilities
+> as a maintainer, it really depends on how much time and effort you're
+> willing to put in.
 
-Block devices are cached in the page cache.  If you write less than a
-full page, any remainder has to be read from the device.
+OK. Don't you have idea how many linux kernels are maintained by more 
+people?
 
-If you retry the dd with bs=4096 (or whatever your architecture's page
-size happens to be), does this still occur?
+> You don't necessarily need a public git repository before sending your
+> patches to LKML but yeah, you definitely want some public exposure
+> before asking for Linus/Andrew to merge your port.
 
-Jörn
+Yes.
 
--- 
-Chance favors only the prepared mind.
--- Louis Pasteur
+Michal Simek
