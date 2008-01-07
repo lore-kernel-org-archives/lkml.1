@@ -1,98 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758123AbYAGRr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758528AbYAGRsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758123AbYAGRr0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 12:47:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbYAGRrT
+	id S1758528AbYAGRsS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 12:48:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756159AbYAGRsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 12:47:19 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:47247 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754710AbYAGRrS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 12:47:18 -0500
-Date: Mon, 7 Jan 2008 20:49:08 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Christian Kujau <lists@nerdbynature.de>, linux-kernel@vger.kernel.org,
-       jfs-discussion@lists.sourceforge.net,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: 2.6.24-rc6: possible recursive locking detected
-Message-ID: <20080107174908.GB14880@tv-sign.ru>
-References: <alpine.DEB.0.999999.0801032349190.4821@sheep.housecafe.de> <200801040006.47979.rjw@sisk.pl> <20080104083049.GC22803@elte.hu> <20080105071205.GA28936@gondor.apana.org.au> <1199552016.31975.41.camel@lappy> <1199552476.31975.45.camel@lappy> <20080107172239.GA14880@tv-sign.ru>
+	Mon, 7 Jan 2008 12:48:05 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:63933 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756176AbYAGRsE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 12:48:04 -0500
+Subject: Re: [PATCH] kthread: always create the kernel threads with normal
+	priority
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Michal Schmidt <mschmidt@redhat.com>,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jon Masters <jcm@redhat.com>,
+       Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
+In-Reply-To: <20080107092956.419b5f91.akpm@linux-foundation.org>
+References: <20071217234314.540b59bd@hammerfall>
+	 <20071222013021.db2528cb.akpm@linux-foundation.org>
+	 <20080107110603.09b72450@brian.englab.brq.redhat.com>
+	 <20080107022513.3ac05734.akpm@linux-foundation.org>
+	 <20080107110904.GB28481@elte.hu>
+	 <20080107092956.419b5f91.akpm@linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-E542zhABk1e5bBzL7D/+"
+Date: Mon, 07 Jan 2008 18:47:59 +0100
+Message-Id: <1199728079.7143.52.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080107172239.GA14880@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.12.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/07, Oleg Nesterov wrote:
->
-> Consider this "just for illustration" patch,
-> 
-> --- t/kernel/lockdep.c	2007-11-09 12:57:31.000000000 +0300
-> +++ t/kernel/lockdep.c	2008-01-07 19:43:50.000000000 +0300
-> @@ -1266,10 +1266,13 @@ check_deadlock(struct task_struct *curr,
->  	struct held_lock *prev;
->  	int i;
->  
-> -	for (i = 0; i < curr->lockdep_depth; i++) {
-> +	for (i = curr->lockdep_depth; --i >= 0; ) {
->  		prev = curr->held_locks + i;
->  		if (prev->class != next->class)
->  			continue;
-> +
-> +		if (prev->trylock == -1)
-> +			return 2;
->  		/*
->  		 * Allow read-after-read recursion of the same
->  		 * lock class (i.e. read_lock(lock)+read_lock(lock)):
-> -------------------------------------------------------------------------
-> 
-> Now,
-> 
-> 	// trylock == -1
-> 	#define	spin_mark_nested(l)	\
-> 		lock_acquire(&(l)->dep_map, 0, -1, 0, 2, _THIS_IP_)
-> 	#define	spin_unmark_nested(l)	\
-> 		lock_release(&(l)->dep_map, 1, _THIS_IP_)
-> 
-> and ep_poll_safewake() can do:
-> 
-> 	/* Do really wake up now */
-> 	spin_mark_nested(&wq->lock);
-> 	wake_up(wq);
-> 	spin_unmark_nested(&wq->lock);
 
-I tested the patch above with the following code,
+--=-E542zhABk1e5bBzL7D/+
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-	wait_queue_head_t w1, w2, w3;
 
-	init_waitqueue_head(&w1);
-	init_waitqueue_head(&w2);
-	init_waitqueue_head(&w3);
+On Mon, 2008-01-07 at 09:29 -0800, Andrew Morton wrote:
+> On Mon, 7 Jan 2008 12:09:04 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+>=20
+> >=20
+> > > > This causes a practical problem. When a runaway real-time task is=20
+> > > > eating 100% CPU and we attempt to put the CPU offline, sometimes we=
+=20
+> > > > block while waiting for the creation of the highest-priority=20
+> > > > "kstopmachine" thread.
+> >=20
+> > sched-devel.git has new mechanisms against runaway RT tasks. There's a=20
+> > new RLIMIT_RTTIME rlimit - if an RT task exceeds that rlimit then it is=
+=20
+> > sent SIGXCPU.
+>=20
+> Is that "total RT CPU time" or "elapsed time since last schedule()"?
+>=20
+> If the former, it is not useful for this problem.
+>=20
+> > there's also a new group scheduling extension that is driven via a=20
+> > sysctl:
+> >=20
+> >   /proc/sys/kernel/sched_rt_ratio
+> >=20
+> > this way if a user has a runaway RT task, other users (and root) will=20
+> > still have some CPU time left. (in Peter's latest patchset that is=20
+> > replaced via rt_runtime_ns - but this is a detail)
+>=20
+> Doesn't this make the RT task non-RT?  Would need to understand more
+> details to tell.
 
-	local_irq_disable();
-	spin_lock(&w1.lock);
+Its an artifact of rt group scheduling. Each group will have to specify
+a period and runtime limit therein (and the normalized sum thereof must
+not exceed the total time available - otherwise the set is not
+schedulable).
 
-	spin_mark_nested(&w2.lock);
-	spin_lock(&w2.lock);
+So say we have two groups A and B. A has a period of 2 seconds and a
+runtime limit of 1, that gives him an avg of 50% cpu time. If B then has
+a period of 1 second with a runtime limit of .25s (avg 25%) the total
+time required to schedule the realtime groups would be 75% on average.
 
-	spin_mark_nested(&w3.lock);
-	wake_up(&w3);
-	spin_unmark_nested(&w3.lock);
+Without group scheduling everything is considered one group but we still
+have the period and runtime limits.
 
-	spin_unlock(&w2.lock);
-	spin_unmark_nested(&w2.lock);
+So as long as the realtime cpu usage fits within the given limits it
+acts as before. Once it exceeds its limit it will be capped hard - which
+is ok, since it exceeded its hard limit, and realtime applications are
+supposed to be deterministic and thus be able to tell how much time
+they'd require. [ If only this model were true, but its a model
+frequently used and quite accepted ]
 
-	spin_unlock(&w1.lock);
-	local_irq_enable();
 
-seems to work. What do you think?
 
-Oleg.
+--=-E542zhABk1e5bBzL7D/+
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHgmXPXA2jU0ANEf4RAp4NAJ9vmdRMb80x1QDW1RjweHCKzegkRQCcDdoV
+1pwkoo0c9NdDIGTjunVcfjk=
+=fKXs
+-----END PGP SIGNATURE-----
+
+--=-E542zhABk1e5bBzL7D/+--
 
