@@ -1,63 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754879AbYAGFrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbYAGF4P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754879AbYAGFrg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 00:47:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbYAGFr3
+	id S1754863AbYAGF4P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 00:56:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752296AbYAGF4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 00:47:29 -0500
-Received: from usermail.globalproof.net ([194.146.153.18]:53551 "EHLO
-	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751339AbYAGFr3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 00:47:29 -0500
-From: "Denys Fedoryshchenko" <denys@visp.net.lb>
-To: linux-kernel@vger.kernel.org
-Subject: bugreport kernel panic on early stage, with HIGHMEM4G:
-Date: Mon, 7 Jan 2008 07:47:18 +0200
-Message-Id: <20080107053908.M5584@visp.net.lb>
-X-Mailer: OpenWebMail 2.52 20060502
-X-OriginatingIP: 195.69.208.251 (denys@visp.net.lb)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=koi8-r
+	Mon, 7 Jan 2008 00:56:04 -0500
+Received: from mail.gmx.net ([213.165.64.20]:50973 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751734AbYAGF4C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 00:56:02 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18oPbMAj2couZQeeDCPRN6o6xwuBHePbxuTNG4tkf
+	4f7ABNo9O32LqC
+Subject: Re: [vm] writing to UDF DVD+RW (/dev/sr0) while under memory
+	pressure: box ==> doorstop
+From: Mike Galbraith <efault@gmx.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1199683988.3718.49.camel@homer.simson.net>
+References: <1199447212.4529.13.camel@homer.simson.net>
+	 <1199612533.4384.54.camel@homer.simson.net>
+	 <1199642470.3927.12.camel@homer.simson.net>
+	 <20080106122954.d8f04c98.akpm@linux-foundation.org>
+	 <1199683988.3718.49.camel@homer.simson.net>
+Content-Type: text/plain
+Date: Mon, 07 Jan 2008 06:55:58 +0100
+Message-Id: <1199685358.3718.50.camel@homer.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
 
-After physical memory upgrade from 3GB to 4GB (also it happens on 5GB) got 
-kernel panic.
+> [ 1687.358730]  [<b01a0cd3>] sys_sync+0xa/0x17
 
-Because it is happening on early stage and my machine doesn't contain serial 
-port, i had to take photo.
-Kernel boots fine with 64GB highmem, no highmem, or highmem4G with limited 
-memory by mem=3G. All dmesg attached.
-Also i attach dmidecode and lspci -vvv output, probably it will be useful.
-
-
-Photo (2.8MB, sorry, just original size from camera):
-http://www.nuclearcat.com/files/panic-07012008/img_1232.jpg
-
-dmesg without highmem
-http://www.nuclearcat.com/files/panic-07012008/dmesg-nohighmem.txt
-
-with highmem64G
-http://www.nuclearcat.com/files/panic-07012008/dmesg-highmem64G.txt
-
-with highmem4G limited by mem=3G
-http://www.nuclearcat.com/files/panic-07012008/dmesg-highmem4G-memlim3G.txt
-Kernel config for this specific boot:
-http://www.nuclearcat.com/files/panic-07012008/config.txt
-
-dmidecode output
-http://www.nuclearcat.com/files/panic-07012008/dmidecode.txt
-
-lspci output
-http://www.nuclearcat.com/files/panic-07012008/lspci.txt
-
---
-Denys Fedoryshchenko
-Technical Manager
-Virtual ISP S.A.L.
+duh.
 
