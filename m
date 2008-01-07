@@ -1,86 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757944AbYAGUBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757191AbYAGUEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757944AbYAGUBR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 15:01:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbYAGUBG
+	id S1757191AbYAGUEV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 15:04:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753465AbYAGUEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 15:01:06 -0500
-Received: from ns2.suse.de ([195.135.220.15]:37959 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754325AbYAGUBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 15:01:04 -0500
-To: mingo@elte.hu, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [5/20] x86: Introduce nsec_barrier() II
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080103149.088038000@suse.de>
-	<20080103005000.65D0C14D40@wotan.suse.de>
-	<20080103104754.GD29194@elte.hu> <200801031355.44694.ak@suse.de>
-Date: Mon, 07 Jan 2008 21:01:03 +0100
-In-Reply-To: <200801031355.44694.ak@suse.de> (Andi Kleen's message of "Thu\, 3 Jan 2008 13\:55\:44 +0100")
-Message-ID: <p7363y5s8w0.fsf_-_@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Mon, 7 Jan 2008 15:04:08 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:47302 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752372AbYAGUEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 15:04:07 -0500
+Date: Mon, 7 Jan 2008 12:04:06 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, htejun@gmail.com,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, maneesh@linux.vnet.ibm.com,
+       lkml <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: 2.6.22-stable causes oomkiller to be invoked
+In-Reply-To: <Pine.LNX.4.64.0801031258400.30856@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0801071203070.24592@schroedinger.engr.sgi.com>
+References: <20071217045904.GB31386@linux.vnet.ibm.com>
+ <Pine.LNX.4.64.0712171143280.12871@schroedinger.engr.sgi.com>
+ <20071217120720.e078194b.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0712171222470.29500@schroedinger.engr.sgi.com>
+ <20071221044508.GA11996@linux.vnet.ibm.com>
+ <Pine.LNX.4.64.0712261258050.16862@schroedinger.engr.sgi.com>
+ <20071228101109.GB5083@linux.vnet.ibm.com> <Pine.LNX.4.64.0801021237330.21526@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0801021346580.3778@schroedinger.engr.sgi.com>
+ <20080103035942.GB26166@linux.vnet.ibm.com> <20080103041606.GC26166@linux.vnet.ibm.com>
+ <Pine.LNX.4.64.0801031258400.30856@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <ak@suse.de> writes:
+Here is the cleaned version of the patch. Dhaval is testing it.
 
-> On Thursday 03 January 2008 11:47:54 Ingo Molnar wrote:
->> 
->> * Andi Kleen <ak@suse.de> wrote:
->> 
->> > nsec_barrier() is a new barrier primitive that stops RDTSC speculation 
->> > to avoid races with timer interrupts on other CPUs.
->> > 
->> > Add it to all architectures. Except for x86 it is a nop right now. I 
->> > only tested x86, but it's a very simple change.
->> > 
->> > On x86 it expands either to LFENCE (for Intel CPUs) or MFENCE (for AMD 
->> > CPUs) which stops RDTSC on all currently known microarchitectures that 
->> > implement SSE. On CPUs without SSE there is generally no RDTSC 
->> > speculation.
->> 
->> i've picked up your rdtsc patches into x86.git but have simplified it: 
->> there's no nsec_barrier() anymore - rdtsc() is always synchronous. 
->> MFENCE/LFENCE is fast enough. Open-coding such barriers almost always 
->> leads to needless trouble. Please check the next x86.git tree.
->
-> That's most likely wrong unless you added two barriers -- the barriers
-> are strictly need to be before and after RDTSC.
 
-I checked your patch now -- 743abf4d987911af1ffce4c96f06cba6ffaa7e88
-and 428f309ba5244fa25b44fcdf1d79aa94c8745cfd in gitx86 and you did it
-indeed wrong.
+quicklists: Only consider memory that can be used with GFP_KERNEL
 
-The problem is that you inserted the barrier only after the RDTSC, but
-the instruction can be speculated both forward and backward and both
-can cause inconsistencies if it leaves the critical section.
+Quicklists calculates the size of the quicklists based on the number
+of free pages. This must be the number of free pages that can be
+allocated with GFP_KERNEL. node_page_state() includes the pages in
+ZONE_HIGHMEM and ZONE_MOVABLE which may lead the quicklists to
+become too large causing OOM.
 
-The minimal fix would be to change native_read_tsc to
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-        rdtsc_barrier();
-        asm volatile("rdtsc" : EAX_EDX_RET(val, low, high));
-        rdtsc_barrier();
-
-(e.g. add the missing barrier) 
-
-Better would be still to keep the explicit nsec barriers as in
-the original patch for several reasons:
-- There are situations where RDTSC without barrier is ok and it might
-be useful there.
-- It is better to give the CPU some room to run uops in parallel;
-especially in very performance critical like gtod(). A wider
-barriered area is faster.
-- I actually expect that other architectures with aggressive OOO 
-implementations (like POWER4/5) should make use of 
-nsec_barrier() too. I don't think it's really an x86 specific concept.
-- Explicit barriers can be useful when measuring performance, although
-admittedly there a x86 specific barrier is usually ok. However forcing
-the barrier inside RDTSC is not.
-
-If you insist to keep the incorrect patch please drop my name from it.
-
--Andi
+Index: linux-2.6/mm/quicklist.c
+===================================================================
+--- linux-2.6.orig/mm/quicklist.c	2008-01-07 10:38:13.000000000 -0800
++++ linux-2.6/mm/quicklist.c	2008-01-07 10:38:44.000000000 -0800
+@@ -26,9 +26,17 @@ DEFINE_PER_CPU(struct quicklist, quickli
+ static unsigned long max_pages(unsigned long min_pages)
+ {
+ 	unsigned long node_free_pages, max;
++	struct zone *zones = NODE_DATA(numa_node_id())->node_zones;
++
++	node_free_pages =
++#ifdef CONFIG_ZONE_DMA
++		zone_page_state(&zones[ZONE_DMA], NR_FREE_PAGES) +
++#endif
++#ifdef CONFIG_ZONE_DMA32
++		zone_page_state(&zones[ZONE_DMA32], NR_FREE_PAGES) +
++#endif
++		zone_page_state(&zones[ZONE_NORMAL], NR_FREE_PAGES);
+ 
+-	node_free_pages = node_page_state(numa_node_id(),
+-			NR_FREE_PAGES);
+ 	max = node_free_pages / FRACTION_OF_NODE_MEM;
+ 	return max(max, min_pages);
+ }
