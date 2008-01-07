@@ -1,40 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbYAGNME@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758996AbYAGNM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756861AbYAGNME (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 08:12:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757564AbYAGNKV
+	id S1758996AbYAGNM1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 08:12:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758552AbYAGNKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 08:10:21 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:37637 "EHLO mx1.redhat.com"
+	Mon, 7 Jan 2008 08:10:33 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:37680 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758010AbYAGNKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 08:10:17 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <200801072233.51294.nickpiggin@yahoo.com.au>
-References: <200801072233.51294.nickpiggin@yahoo.com.au> <200712211208.24026.nickpiggin@yahoo.com.au> <6481.1198175619@redhat.com> <18996.1199291223@redhat.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: dhowells@redhat.com, viro@ftp.linux.org.uk, hch@infradead.org,
-       Trond.Myklebust@netapp.com, sds@tycho.nsa.gov, casey@schaufler-ca.com,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 10/28] FS-Cache: Recruit a couple of page flags for cache management [try #2]
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Mon, 07 Jan 2008 13:09:03 +0000
-Message-ID: <7972.1199711343@redhat.com>
+	id S1757623AbYAGNKa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 08:10:30 -0500
+Date: Mon, 7 Jan 2008 14:10:14 +0100
+From: Michal Schmidt <mschmidt@redhat.com>
+To: "Remy Bohmer" <linux@bohmer.net>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Jon Masters" <jcm@redhat.com>,
+       "Satoru Takeuchi" <takeuchi_satoru@jp.fujitsu.com>,
+       "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: [PATCH] kthread: always create the kernel threads with normal
+ priority
+Message-ID: <20080107141014.3815fcca@brian.englab.brq.redhat.com>
+In-Reply-To: <3efb10970801070322w38cf53acy75b352c44ad049b8@mail.gmail.com>
+References: <20071217234314.540b59bd@hammerfall>
+	<20071222013021.db2528cb.akpm@linux-foundation.org>
+	<20080107110603.09b72450@brian.englab.brq.redhat.com>
+	<3efb10970801070322w38cf53acy75b352c44ad049b8@mail.gmail.com>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+On Mon, 7 Jan 2008 12:22:51 +0100
+"Remy Bohmer" <linux@bohmer.net> wrote:
 
-> No. I mean call the bit PG_private2. That way non-pagecache and
-> filesystems that don't use fscache can use it.
+> Hello Michal and Andrew,
+> 
+> > Let's not make the decision for the user. Just allow the
+> > administrator to change kthreadd's priority safely if he chooses to
+> > do it. Ensure that the kernel threads are created with the usual
+> > nice level even if kthreadd's priority is changed from the default.
+> 
+> Last year, I posted a patchset (that was meant for Preempt-RT at that
+> time) to be able to prioritise the interrupt-handler-threads (which
+> are kthreads) and softirq-threads from the kernel commandline. See
+> http://lkml.org/lkml/2007/12/19/208
+> 
+> Maybe we can find a way to use a similar mechanism as I used in my
+> patchset for the priorities of the remaining kthreads.
+> I do not like the way of forcing userland to change the priorities,
+> because that would require a userland with the chrt tool installed,
+> and that is not that practical for embedded systems (in which there
+> could be cases that there is no userland at all, or the init-process
+> is the whole embedded application). In that case an option to do it on
+> the kernel commandline is more practical.
+> 
+> I propose this kernel cmd-line option:
+> kthread_pmap=somethread:50,otherthread:12,34
 
-The bit is called PG_owner_priv_2, and then 'subclassed' to PG_fscache, much
-like PG_owner_priv_1 is 'subclassed' to PG_checked as was recommended.
+I see. kthreadd would look up the priority for itself and
+kthread_create would consult the map for all other kernel threads.
+That should work.
+Your sirq_pmap would not be needed anymore, as kthread_pmap could be
+used for softirq threads too, right?
 
-David
+Michal
