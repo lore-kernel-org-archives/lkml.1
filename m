@@ -1,45 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbYAGNyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756290AbYAGOAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757471AbYAGNyu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 08:54:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbYAGNyl
+	id S1756290AbYAGOAa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 09:00:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbYAGOAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 08:54:41 -0500
-Received: from www.tglx.de ([62.245.132.106]:33803 "EHLO www.tglx.de"
+	Mon, 7 Jan 2008 09:00:17 -0500
+Received: from iona.labri.fr ([147.210.8.143]:50087 "EHLO iona.labri.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753961AbYAGNyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 08:54:40 -0500
-Date: Mon, 7 Jan 2008 14:53:55 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, hpa@zytor.com
-Subject: Re: [PATCH -mm/x86] revert i386: handle an initrd in highmem (Was
- Re: 2.6.24-rc6-mm1)
-In-Reply-To: <20080107135038.GA19568@linux.vnet.ibm.com>
-Message-ID: <alpine.LFD.0.99999.0801071453070.31637@localhost.localdomain>
-References: <20071222233056.d652743e.akpm@linux-foundation.org> <20080107135038.GA19568@linux.vnet.ibm.com>
-User-Agent: Alpine 0.99999 (LFD 796 2007-11-08)
+	id S1751184AbYAGOAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 09:00:14 -0500
+X-Greylist: delayed 1597 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Jan 2008 09:00:14 EST
+Message-ID: <47822A2C.4020303@inria.fr>
+Date: Mon, 07 Jan 2008 14:33:32 +0100
+From: Brice Goglin <Brice.Goglin@inria.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "David S. Miller" <davem@davemloft.net>
+CC: "Andrew J. Gallatin" <gallatin@myri.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       Linus Torvalds <torvalds@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: [PATCH][LRO] Fix lro_mgr->features checks
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Jan 2008, Dhaval Giani wrote:
+Hi Dave,
 
-> Hi Andrew, Ingo, Thomas, Peter,
-> 
-> x86: revert i386: handle an initrd in highmem
-> 
-> The patch caused a failure while booting a kexec kernel.
-> (http://lkml.org/lkml/2008/1/7/42 has the bisect details.)
-> 
-> The following patch reverts it.
-> 
-> Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+The LRO_F_* checks in inet_lro.c are buggy, the following patch
+is needed to check lro_mgr->features correctly.
 
-Thanks for tracking this down. I'll pull the patch from the x86 git
-tree as well.
+I decided to follow the NETIF_F_* convention and thus removed
+test_bit. Some people might like it better if we keep using
+test_bit and just set lro_mgr->features to 1<<LRO_F_NAPI instead
+of just LRO_F_NAPI. I don't know what's the best.
 
-     tglx
+Without this patch, we noticed several problems with myri10ge,
+at least when using non-IP packets. I guess the ehea driver did
+not expose any big problem because test_bit(NAPI) returns true
+thanks to lro_mgr->features containing LRO_F_EXTRACT_VLAN_ID.
+
+Please apply for 2.6.24.
+
+Brice
+
+
+
+[PATCH][LRO] Fix lro_mgr->features checks
+
+lro_mgr->features contains a bitmask of LRO_F_* values which are
+defined as power of two, not as bit indexes.
+They must be checked with x&LRO_F_FOO, not with test_bit(LRO_F_FOO,&x).
+
+Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
+Acked-by: Andrew Gallatin <gallatin@myri.com>
+---
+diff --git a/net/ipv4/inet_lro.c b/net/ipv4/inet_lro.c
+index 9a96c27..4a4d49f 100644
+--- a/net/ipv4/inet_lro.c
++++ b/net/ipv4/inet_lro.c
+@@ -310,7 +310,7 @@ static void lro_flush(struct net_lro_mgr *lro_mgr,
+ 	skb_shinfo(lro_desc->parent)->gso_size = lro_desc->mss;
+ 
+ 	if (lro_desc->vgrp) {
+-		if (test_bit(LRO_F_NAPI, &lro_mgr->features))
++		if (lro_mgr->features & LRO_F_NAPI)
+ 			vlan_hwaccel_receive_skb(lro_desc->parent,
+ 						 lro_desc->vgrp,
+ 						 lro_desc->vlan_tag);
+@@ -320,7 +320,7 @@ static void lro_flush(struct net_lro_mgr *lro_mgr,
+ 					lro_desc->vlan_tag);
+ 
+ 	} else {
+-		if (test_bit(LRO_F_NAPI, &lro_mgr->features))
++		if (lro_mgr->features & LRO_F_NAPI)
+ 			netif_receive_skb(lro_desc->parent);
+ 		else
+ 			netif_rx(lro_desc->parent);
+@@ -352,7 +352,7 @@ static int __lro_proc_skb(struct net_lro_mgr *lro_mgr, struct sk_buff *skb,
+ 		goto out;
+ 
+ 	if ((skb->protocol == htons(ETH_P_8021Q))
+-	    && !test_bit(LRO_F_EXTRACT_VLAN_ID, &lro_mgr->features))
++	    && !(lro_mgr->features & LRO_F_EXTRACT_VLAN_ID))
+ 		vlan_hdr_len = VLAN_HLEN;
+ 
+ 	if (!lro_desc->active) { /* start new lro session */
+@@ -474,7 +474,7 @@ static struct sk_buff *__lro_proc_segment(struct net_lro_mgr *lro_mgr,
+ 			goto out;
+ 
+ 		if ((skb->protocol == htons(ETH_P_8021Q))
+-		    && !test_bit(LRO_F_EXTRACT_VLAN_ID, &lro_mgr->features))
++		    && !(lro_mgr->features & LRO_F_EXTRACT_VLAN_ID))
+ 			vlan_hdr_len = VLAN_HLEN;
+ 
+ 		iph = (void *)(skb->data + vlan_hdr_len);
+@@ -516,7 +516,7 @@ void lro_receive_skb(struct net_lro_mgr *lro_mgr,
+ 		     void *priv)
+ {
+ 	if (__lro_proc_skb(lro_mgr, skb, NULL, 0, priv)) {
+-		if (test_bit(LRO_F_NAPI, &lro_mgr->features))
++		if (lro_mgr->features & LRO_F_NAPI)
+ 			netif_receive_skb(skb);
+ 		else
+ 			netif_rx(skb);
+@@ -531,7 +531,7 @@ void lro_vlan_hwaccel_receive_skb(struct net_lro_mgr *lro_mgr,
+ 				  void *priv)
+ {
+ 	if (__lro_proc_skb(lro_mgr, skb, vgrp, vlan_tag, priv)) {
+-		if (test_bit(LRO_F_NAPI, &lro_mgr->features))
++		if (lro_mgr->features & LRO_F_NAPI)
+ 			vlan_hwaccel_receive_skb(skb, vgrp, vlan_tag);
+ 		else
+ 			vlan_hwaccel_rx(skb, vgrp, vlan_tag);
+@@ -550,7 +550,7 @@ void lro_receive_frags(struct net_lro_mgr *lro_mgr,
+ 	if (!skb)
+ 		return;
+ 
+-	if (test_bit(LRO_F_NAPI, &lro_mgr->features))
++	if (lro_mgr->features & LRO_F_NAPI)
+ 		netif_receive_skb(skb);
+ 	else
+ 		netif_rx(skb);
+@@ -570,7 +570,7 @@ void lro_vlan_hwaccel_receive_frags(struct net_lro_mgr *lro_mgr,
+ 	if (!skb)
+ 		return;
+ 
+-	if (test_bit(LRO_F_NAPI, &lro_mgr->features))
++	if (lro_mgr->features & LRO_F_NAPI)
+ 		vlan_hwaccel_receive_skb(skb, vgrp, vlan_tag);
+ 	else
+ 		vlan_hwaccel_rx(skb, vgrp, vlan_tag);
+
+
