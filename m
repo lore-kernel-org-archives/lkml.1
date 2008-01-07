@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754297AbYAGTjN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756834AbYAGTjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754297AbYAGTjN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 14:39:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbYAGTi6
+	id S1756834AbYAGTjn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 14:39:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbYAGTje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 14:38:58 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40390 "EHLO
+	Mon, 7 Jan 2008 14:39:34 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59983 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751517AbYAGTi5 (ORCPT
+	by vger.kernel.org with ESMTP id S1751517AbYAGTje (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 14:38:57 -0500
-Date: Mon, 7 Jan 2008 11:36:41 -0800
+	Mon, 7 Jan 2008 14:39:34 -0500
+Date: Mon, 7 Jan 2008 11:38:31 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: imsudhirkumar@gmail.com, linux-kernel@vger.kernel.org,
-       post@hendrik-sattler.de, rpurdie@rpsys.net
-Subject: Re: [2.6.24-rc6-mm1] Build Failure on ppc64 with CONFIG_USB_GADGET
- not set.
-Message-Id: <20080107113641.ea323b9f.akpm@linux-foundation.org>
-In-Reply-To: <20080107191531.GA16710@uranus.ravnborg.org>
-References: <3da2c0120801070323v39e6f95esd47cef6b860fbf06@mail.gmail.com>
-	<20080107094955.720c3764.akpm@linux-foundation.org>
-	<20080107191531.GA16710@uranus.ravnborg.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: kamalesh@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, bunk@kernel.org,
+       apw@shadowen.org, balbir@linux.vnet.ibm.com
+Subject: Re: Linux 2.6.24-rc7 Build-Failure at
+ __you_cannot_kmalloc_that_much
+Message-Id: <20080107113831.0865cf5e.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0801071014450.22642@schroedinger.engr.sgi.com>
+References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org>
+	<478200A4.4090707@linux.vnet.ibm.com>
+	<20080107100733.3655f74f.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0801071014450.22642@schroedinger.engr.sgi.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,55 +31,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Jan 2008 20:15:31 +0100
-Sam Ravnborg <sam@ravnborg.org> wrote:
+On Mon, 7 Jan 2008 10:31:53 -0800 (PST)
+Christoph Lameter <clameter@sgi.com> wrote:
 
-> On Mon, Jan 07, 2008 at 09:49:55AM -0800, Andrew Morton wrote:
-> > On Mon, 7 Jan 2008 16:53:58 +0530 "sudhir kumar" <imsudhirkumar@gmail.com> wrote:
-> > 
-> > > Hi Andrew!
-> > > 
-> > > Kernel build fails on my ppc64 machine. It seems to be  a dependency
-> > > problem with CONFIG_USB_GADGET not set.
-> > > Config file is attached.
-> > > 
-> > >  CC      init/version.o
-> > >   LD      init/built-in.o
-> > >   LD      .tmp_vmlinux1
-> > > drivers/built-in.o: In function `oz99x_remove':
-> > > drivers/i2c/chips/oz99x.c:660: undefined reference to `.led_classdev_unregister'
-> > > drivers/built-in.o: In function `oz99x_configure_leds':
-> > > drivers/i2c/chips/oz99x.c:314: undefined reference to `.led_classdev_register'
-> > > make: *** [.tmp_vmlinux1] Error 1
-> > > 
-> > 
-> > Strange.
-> > 
-> > oz99x-i2c-button-and-led-support-driver.patch has
-> > 
-> > +config OZ99X
-> > +	tristate "O2 Micro/ETC OZ990/OZ992 SMBus chip"
-> > +	depends on I2C
-> > +	select INPUT_POLLDEV
-> > +	select LEDS_CLASS
-> > 
-> > and your .config gives
-> > 
-> > box:/usr/src/25> grep LEDS .config
-> > # CONFIG_NEW_LEDS is not set
-> > CONFIG_LEDS_CLASS=y
-> > 
-> > so drivers/leds/led-class.o should be linked into your vmlinux.  But that
-> > obviously isn't happening.
-> Because CONFIG_NEW_LEDS is not set we do not visit drivers/leds due to:
-> obj-$(CONFIG_NEW_LEDS)          += leds/
-> in drivers/Makefile
+> On Mon, 7 Jan 2008, Andrew Morton wrote:
 > 
-> This is evil select playing games (again).
-> We have LEDS_CLASS equal y but NEW_LEDS equal n
+> > > : undefined reference to `__you_cannot_kmalloc_that_much'
 > 
+> There is also a kernel.org bugzilla for this at
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=9669
+> For some reason my adds to this do not show up.
+> 
+> In both cases we have a 
+> 
+> k(z/m)alloc(sizeof(*pointer), ...)
+> 
+> that is for some reason failing. I guess what happens is that the function 
+> in which this occurs is too complex for gcc 3.2. Thus it stops constant 
+> folding the sizeof(*pointer) in the complex inline-if-cascade that SLAB 
+> needs to determine the cache and does not eliminate the 
+> __you_cannot_kmalloc_that_much branch().
+> 
+> SLUB in that case just puts a series of if comparisions in the code. This 
+> means compilation does not fail but a large amount of code is generated.
 
-Ah, OK, thanks.
+ug.  Silent and nasty.
 
-I'll switch oz99x-i2c-button-and-led-support-driver.patch over to using
-non-evil `depends on LEDS_CLASS'.
+> We could replace the __you_cannot_kmalloc_that_much() with a BUG() 
+> statement so we have the same effect in SLAB?
+
+I think it'd be better to just put suitable workarounds at the offending
+callsites.  We've only seen three or four of them in several months.
+
