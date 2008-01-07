@@ -1,47 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757984AbYAGTQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758280AbYAGTRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757984AbYAGTQv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 14:16:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYAGTQn
+	id S1758280AbYAGTRU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 14:17:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755519AbYAGTRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 14:16:43 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:42713 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753465AbYAGTQm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 14:16:42 -0500
-Date: Mon, 7 Jan 2008 20:16:45 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Michal Simek <simekm2@fel.cvut.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: New linux arch
-Message-ID: <20080107191645.GB16710@uranus.ravnborg.org>
-References: <47820D24.3060800@fel.cvut.cz> <20080107123429.GA15003@uranus.ravnborg.org> <4782205C.8060502@fel.cvut.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4782205C.8060502@fel.cvut.cz>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 7 Jan 2008 14:17:05 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:56397 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751489AbYAGTRD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 14:17:03 -0500
+Message-ID: <478278C9.8030006@zytor.com>
+Date: Mon, 07 Jan 2008 11:08:57 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+CC: vgoyal@redhat.com, hbabu@us.ibm.com, lkml <linux-kernel@vger.kernel.org>,
+       kexec@lists.infradead.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: crashing on lowmem-only config (was: kexec refuses to boot latest
+ -mm)
+References: <20071228124532.GB32643@linux.vnet.ibm.com> <478264CA.5090300@zytor.com> <20080107175303.GA9319@linux.vnet.ibm.com>
+In-Reply-To: <20080107175303.GA9319@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 07, 2008 at 10:51:40PM +1000, Michal Simek wrote:
-> Hi Sam,
+Dhaval Giani wrote:
 > 
-> > It this code drop available somewhere?
+> .config
 > 
-> the code is based on Petalogix kernel. I reduce huge Kconfig file to
-> necessary size. You'll see in patch or in web.
-> 
-> A brief information about this kernel is at http://www.monstr.eu/fdt/
-> 
-> > I would like to review the Makefiles and to a lesser extent
-> > the Kconfig files.
-> 
-> I will add you to CC at Makefile and Kconfig patches.
 
-I did not find the kernel source at first look.
-Will await your patch submissions and then
-review it.
+This appears to be unrelated, but booting this configuration on a stock 
+2.6.24-rc7 kernel crashes during bootup with no initrd if the memory 
+size is 896 MB or less (i.e. lowmem only):
 
-	Sam
+Bad page state in process 'swapper'
+page:c1b59800 flags:0xdead4aad mapping:00000000 mapcount:0 count:0
+Trying to fix it up, but a reboot is needed
+Backtrace:
+Pid: 0, comm: swapper Not tainted 2.6.24-rc7 #1
+  [<c0105ff3>] show_trace_log_lvl+0x1a/0x2f
+  [<c0106885>] show_trace+0x12/0x14
+  [<c0106b7b>] dump_stack+0x6c/0x72
+  [<c015c5c3>] bad_page+0x67/0x93
+  [<c015d33e>] __free_pages_ok+0x63/0x2f3
+  [<c015d5f2>] __free_pages+0x24/0x26
+  [<c05c70ea>] __free_pages_bootmem+0x5f/0x63
+  [<c05c57c9>] free_all_bootmem_core+0xcd/0x1a4
+  [<c05c58ad>] free_all_bootmem+0xd/0xf
+  [<c05c244c>] mem_init+0x81/0x31b
+  [<c05b4639>] start_kernel+0x2af/0x335
+  [<00000000>] 0x0
+  =======================
+Bad page state in process 'swapper'
+[...]
+  =======================
+BUG: spinlock lockup on CPU#0, swapper/0, 00000e28
+Pid: 0, comm: swapper Tainted: G    B   2.6.24-rc7 #1
+  [<c0105ff3>] show_trace_log_lvl+0x1a/0x2f
+  [<c0106885>] show_trace+0x12/0x14
+  [<c0106b7b>] dump_stack+0x6c/0x72
+  [<c024b9a9>] _raw_spin_lock+0xc1/0xe2
+  [<c0411d08>] _spin_lock+0x32/0x38
+  [<c015d3f9>] __free_pages_ok+0x11e/0x2f3
+  [<c015d5f2>] __free_pages+0x24/0x26
+  [<c05c70ea>] __free_pages_bootmem+0x5f/0x63
+  [<c05c57c9>] free_all_bootmem_core+0xcd/0x1a4
+  [<c05c58ad>] free_all_bootmem+0xd/0xf
+  [<c05c244c>] mem_init+0x81/0x31b
+  [<c05b4639>] start_kernel+0x2af/0x335
+  [<00000000>] 0x0
+  =======================
+[hang]
+
+Booting with > 896 MB works...
+
+	-hpa
