@@ -1,82 +1,539 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbYAGTyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757552AbYAGTzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755325AbYAGTyU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 14:54:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbYAGTyK
+	id S1757552AbYAGTzy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 14:55:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbYAGTzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 14:54:10 -0500
-Received: from mailout03.sul.t-online.de ([194.25.134.81]:56893 "EHLO
-	mailout03.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752577AbYAGTyJ (ORCPT
+	Mon, 7 Jan 2008 14:55:45 -0500
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:45283 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752857AbYAGTzn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 14:54:09 -0500
-Message-ID: <4782833D.3010600@t-online.de>
-Date: Mon, 07 Jan 2008 20:53:33 +0100
-From: Harald Dunkel <harald.dunkel@t-online.de>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.24-rc7, intel audio: alsa doesn't say a beep
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ID: r1ke0mZYYh-FSdIT8L+J8xJBPyqJil17rjVRP3grxQvA3ayqjsiuiGyHOw7jld6ZK6
-X-TOI-MSGID: f91b3485-feff-4cc2-b0f7-1b505dc95a0c
+	Mon, 7 Jan 2008 14:55:43 -0500
+Date: Tue, 8 Jan 2008 01:25:09 +0530
+From: "K. Prasad" <prasad@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu
+Cc: Gautham R Shenoy <ego@in.ibm.com>, "K. Prasad" <prasad@linux.vnet.ibm.com>,
+       mathieu.desnoyers@polymtl.ca, linux-rt-users@vger.kernel.org,
+       dipankar@in.ibm.com, paulmck@linux.vnet.ibm.com
+Subject: [PATCH 1/2] Markers Implementation for RCU Preempt Tracing - Ver II
+Message-ID: <20080107195509.GA5168@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20071231060911.GB6461@in.ibm.com> <20080103163055.GB27651@Krystal> <20080104105858.GA13865@in.ibm.com> <20080105124632.GA16576@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080105124632.GA16576@Krystal>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks,
-
-Upgrading from 2.6.24-rc6 to rc7 Alsa stopped working for me. I still
-can access /dev/dsp, change the volume and so on, but the speakers
-are quiet. Moving back to rc6 there is no such problem.
-
-Of course the config files are the same (except for some new
-CONFIG_SLABINFO variable).
-
-
-lspci says:
-
-00:1b.0 Audio device: Intel Corporation 82801H (ICH8 Family) HD Audio Controller (rev 02)
-00:1b.0 0403: 8086:284b (rev 02)
-
-% aplay -l
-**** List of PLAYBACK Hardware Devices ****
-card 0: Intel [HDA Intel], device 0: STAC92xx Analog [STAC92xx Analog]
-   Subdevices: 1/1
-   Subdevice #0: subdevice #0
-card 0: Intel [HDA Intel], device 1: STAC92xx Digital [STAC92xx Digital]
-   Subdevices: 1/1
-   Subdevice #0: subdevice #0
-
-
-
-The only difference between rc6 and rc7 in sound/pci/hda/hda_intel.c is
-this:
-
-diff -ur linux-2.6.24-rc6/sound/pci/hda/hda_intel.c linux-2.6.24-rc7/sound/pci/hda/hda_intel.c
---- linux-2.6.24-rc6/sound/pci/hda/hda_intel.c	2007-12-21 02:25:48.000000000 +0100
-+++ linux-2.6.24-rc7/sound/pci/hda/hda_intel.c	2008-01-06 22:45:38.000000000 +0100
-@@ -555,7 +555,8 @@
-  		}
-  		if (!chip->rirb.cmds)
-  			return chip->rirb.res; /* the last value */
--		schedule_timeout_uninterruptible(1);
-+		udelay(10);
-+		cond_resched();
-  	} while (time_after_eq(timeout, jiffies));
-
-  	if (chip->msi) {
-
-
-Do you think this could be related to the problem?
-
-
-Any hint would be highly appreciated. Please mail if I can help to
-track this down.
-
-
-Regards
-
-Harri
-
+This patch converts Preempt RCU Tracing code infrastructure to implement
+markers.
+ 
+- The rcupreempt_trace structure has been moved to the tracing
+  infrastructure and de-linked from the rcupreempt.c code. A per-cpu
+  instance of rcupreempt_trace structure will be maintained in
+  rcupreempt_trace.c
+ 
+- The above change also renders a few macro definitions unused (such as
+  RCU_TRACE_CPU, RCU_TRACE_ME and RCU_TRACE_RDP) which have been
+  removed.
+ 
+- Some of the helper functions in rcupreempt.c which were exported only
+  when CONFIG_RCU_TRACE was set are now exported unconditionally. These
+  functions operate on per-cpu variables that are used both by the RCU
+  and RCU Tracing code. The changes help in making RCU Tracing code
+  operate as a kernel module also.
+ 
+- The references to rcupreempt-boost tracing in the module
+  initialisation and cleanup have been removed here to enable kernel
+  build, but will be brought in after enclosing them inside a #ifdef
+  CONFIG_PREEMPT_RCU_BOOST.
+ 
+Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+---
+ include/linux/rcupreempt.h       |   10 ----
+ include/linux/rcupreempt_trace.h |   50 ++++++++++++------------
+ kernel/Kconfig.preempt           |    7 +--
+ kernel/rcupreempt.c              |   77 ++++++++++----------------------------
+ kernel/rcupreempt_trace.c        |   79 +++++++++++++++++++++++++++++++++++++--
+ 5 files changed, 125 insertions(+), 98 deletions(-)
+ 
+Index: linux-2.6.24-rc5-rt1.RCU_MARKERS/include/linux/rcupreempt.h
+===================================================================
+--- linux-2.6.24-rc5-rt1.RCU_MARKERS.orig/include/linux/rcupreempt.h
++++ linux-2.6.24-rc5-rt1.RCU_MARKERS/include/linux/rcupreempt.h
+@@ -96,16 +96,6 @@ extern int  rcu_pending_rt(int cpu);
+ struct softirq_action;
+ extern void rcu_process_callbacks_rt(struct softirq_action *unused);
+ 
+-#ifdef CONFIG_RCU_TRACE
+-struct rcupreempt_trace;
+-extern int *rcupreempt_flipctr(int cpu);
+-extern long rcupreempt_data_completed(void);
+-extern int rcupreempt_flip_flag(int cpu);
+-extern int rcupreempt_mb_flag(int cpu);
+-extern char *rcupreempt_try_flip_state_name(void);
+-extern struct rcupreempt_trace *rcupreempt_trace_cpu(int cpu);
+-#endif
+-
+ struct softirq_action;
+ 
+ #ifdef CONFIG_NO_HZ
+Index: linux-2.6.24-rc5-rt1.RCU_MARKERS/include/linux/rcupreempt_trace.h
+===================================================================
+--- linux-2.6.24-rc5-rt1.RCU_MARKERS.orig/include/linux/rcupreempt_trace.h
++++ linux-2.6.24-rc5-rt1.RCU_MARKERS/include/linux/rcupreempt_trace.h
+@@ -69,32 +69,32 @@ struct rcupreempt_trace {
+ 	long		rcu_try_flip_m2;
+ };
+ 
+-#ifdef CONFIG_RCU_TRACE
+-#define RCU_TRACE(fn, arg) 	fn(arg);
+-#else
+-#define RCU_TRACE(fn, arg)
+-#endif
++struct rcupreempt_probe_data {
++	const char *name;
++	const char *format;
++	marker_probe_func *probe_func;
++};
++
++#define DEFINE_RCUPREEMPT_MARKER_HANDLER(rcupreempt_trace_worker) \
++void rcupreempt_trace_worker##_callback(const struct marker *mdata, \
++				void *private_data, const char *format, ...) \
++{ \
++	struct rcupreempt_trace *trace; \
++	trace = (&per_cpu(trace_data, smp_processor_id())); \
++	rcupreempt_trace_worker(trace); \
++}
++
++#define INIT_RCUPREEMPT_PROBE(rcupreempt_trace_worker) \
++{ \
++	.name = __stringify(rcupreempt_trace_worker), \
++	.probe_func = rcupreempt_trace_worker##_callback \
++}
+ 
+-extern void rcupreempt_trace_move2done(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_move2wait(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_e1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_i1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_ie1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_g1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_a1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_ae1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_a2(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_z1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_ze1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_z2(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_m1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_me1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_m2(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_check_callbacks(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_done_remove(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_invoke(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_next_add(struct rcupreempt_trace *trace);
++extern int *rcupreempt_flipctr(int cpu);
++extern long rcupreempt_data_completed(void);
++extern int rcupreempt_flip_flag(int cpu);
++extern int rcupreempt_mb_flag(int cpu);
++extern char *rcupreempt_try_flip_state_name(void);
+ 
+ #endif /* __KERNEL__ */
+ #endif /* __LINUX_RCUPREEMPT_TRACE_H */
+Index: linux-2.6.24-rc5-rt1.RCU_MARKERS/kernel/rcupreempt.c
+===================================================================
+--- linux-2.6.24-rc5-rt1.RCU_MARKERS.orig/kernel/rcupreempt.c
++++ linux-2.6.24-rc5-rt1.RCU_MARKERS/kernel/rcupreempt.c
+@@ -54,7 +54,6 @@
+ #include <linux/delay.h>
+ #include <linux/byteorder/swabb.h>
+ #include <linux/cpumask.h>
+-#include <linux/rcupreempt_trace.h>
+ 
+ /*
+  * PREEMPT_RCU data structures.
+@@ -71,9 +70,6 @@ struct rcu_data {
+ 	struct rcu_head **waittail[GP_STAGES];
+ 	struct rcu_head *donelist;
+ 	struct rcu_head **donetail;
+-#ifdef CONFIG_RCU_TRACE
+-	struct rcupreempt_trace trace;
+-#endif /* #ifdef CONFIG_RCU_TRACE */
+ };
+ struct rcu_ctrlblk {
+ 	raw_spinlock_t	fliplock;	/* Protect state-machine transitions. */
+@@ -97,10 +93,8 @@ enum rcu_try_flip_states {
+ 	rcu_try_flip_waitmb_state	/* "M" */
+ };
+ static enum rcu_try_flip_states rcu_try_flip_state = rcu_try_flip_idle_state;
+-#ifdef CONFIG_RCU_TRACE
+ static char *rcu_try_flip_state_names[] =
+ 	{ "idle", "waitack", "waitzero", "waitmb" };
+-#endif /* #ifdef CONFIG_RCU_TRACE */
+ 
+ /*
+  * Enum and per-CPU flag to determine when each CPU has seen
+@@ -147,24 +141,6 @@ static cpumask_t rcu_cpu_online_map = CP
+ #define RCU_DATA_CPU(cpu)	(&per_cpu(rcu_data, cpu))
+ 
+ /*
+- * Helper macro for tracing when the appropriate rcu_data is not
+- * cached in a local variable, but where the CPU number is so cached.
+- */
+-#define RCU_TRACE_CPU(f, cpu) RCU_TRACE(f, &(RCU_DATA_CPU(cpu)->trace));
+-
+-/*
+- * Helper macro for tracing when the appropriate rcu_data is not
+- * cached in a local variable.
+- */
+-#define RCU_TRACE_ME(f) RCU_TRACE(f, &(RCU_DATA_ME()->trace));
+-
+-/*
+- * Helper macro for tracing when the appropriate rcu_data is pointed
+- * to by a local variable.
+- */
+-#define RCU_TRACE_RDP(f, rdp) RCU_TRACE(f, &((rdp)->trace));
+-
+-/*
+  * Return the number of RCU batches processed thus far.  Useful
+  * for debug and statistics.
+  */
+@@ -332,7 +308,7 @@ static void __rcu_advance_callbacks(stru
+ 		if (rdp->waitlist[GP_STAGES - 1] != NULL) {
+ 			*rdp->donetail = rdp->waitlist[GP_STAGES - 1];
+ 			rdp->donetail = rdp->waittail[GP_STAGES - 1];
+-			RCU_TRACE_RDP(rcupreempt_trace_move2done, rdp);
++			trace_mark(rcupreempt_trace_move2done, "NULL");
+ 		}
+ 		for (i = GP_STAGES - 2; i >= 0; i--) {
+ 			if (rdp->waitlist[i] != NULL) {
+@@ -351,7 +327,7 @@ static void __rcu_advance_callbacks(stru
+ 			wlc++;
+ 			rdp->nextlist = NULL;
+ 			rdp->nexttail = &rdp->nextlist;
+-			RCU_TRACE_RDP(rcupreempt_trace_move2wait, rdp);
++			trace_mark(rcupreempt_trace_move2wait, "NULL");
+ 		} else {
+ 			rdp->waitlist[0] = NULL;
+ 			rdp->waittail[0] = &rdp->waitlist[0];
+@@ -595,9 +571,9 @@ rcu_try_flip_idle(void)
+ {
+ 	int cpu;
+ 
+-	RCU_TRACE_ME(rcupreempt_trace_try_flip_i1);
++	trace_mark(rcupreempt_trace_try_flip_i1, "NULL");
+ 	if (!rcu_pending(smp_processor_id())) {
+-		RCU_TRACE_ME(rcupreempt_trace_try_flip_ie1);
++		trace_mark(rcupreempt_trace_try_flip_ie1, "NULL");
+ 		return 0;
+ 	}
+ 
+@@ -605,7 +581,7 @@ rcu_try_flip_idle(void)
+ 	 * Do the flip.
+ 	 */
+ 
+-	RCU_TRACE_ME(rcupreempt_trace_try_flip_g1);
++	trace_mark(rcupreempt_trace_try_flip_g1, "NULL");
+ 	rcu_ctrlblk.completed++;  /* stands in for rcu_try_flip_g2 */
+ 
+ 	/*
+@@ -635,11 +611,11 @@ rcu_try_flip_waitack(void)
+ {
+ 	int cpu;
+ 
+-	RCU_TRACE_ME(rcupreempt_trace_try_flip_a1);
++	trace_mark(rcupreempt_trace_try_flip_a1, "NULL");
+ 	for_each_cpu_mask(cpu, rcu_cpu_online_map)
+ 		if (rcu_try_flip_waitack_needed(cpu) &&
+ 		    per_cpu(rcu_flip_flag, cpu) != rcu_flip_seen) {
+-			RCU_TRACE_ME(rcupreempt_trace_try_flip_ae1);
++			trace_mark(rcupreempt_trace_try_flip_ae1, "NULL");
+ 			return 0;
+ 		}
+ 
+@@ -649,7 +625,7 @@ rcu_try_flip_waitack(void)
+ 	 */
+ 
+ 	smp_mb();	/* see above block comment. */
+-	RCU_TRACE_ME(rcupreempt_trace_try_flip_a2);
++	trace_mark(rcupreempt_trace_try_flip_a2, "NULL");
+ 	return 1;
+ }
+ 
+@@ -667,11 +643,11 @@ rcu_try_flip_waitzero(void)
+ 
+ 	/* Check to see if the sum of the "last" counters is zero. */
+ 
+-	RCU_TRACE_ME(rcupreempt_trace_try_flip_z1);
++	trace_mark(rcupreempt_trace_try_flip_z1, "NULL");
+ 	for_each_possible_cpu(cpu)
+ 		sum += per_cpu(rcu_flipctr, cpu)[lastidx];
+ 	if (sum != 0) {
+-		RCU_TRACE_ME(rcupreempt_trace_try_flip_ze1);
++		trace_mark(rcupreempt_trace_try_flip_ze1, "NULL");
+ 		return 0;
+ 	}
+ 
+@@ -684,7 +660,7 @@ rcu_try_flip_waitzero(void)
+ 		dyntick_save_progress_counter(cpu);
+ 	}
+ 
+-	RCU_TRACE_ME(rcupreempt_trace_try_flip_z2);
++	trace_mark(rcupreempt_trace_try_flip_z2, "NULL");
+ 	return 1;
+ }
+ 
+@@ -698,16 +674,16 @@ rcu_try_flip_waitmb(void)
+ {
+ 	int cpu;
+ 
+-	RCU_TRACE_ME(rcupreempt_trace_try_flip_m1);
++	trace_mark(rcupreempt_trace_try_flip_m1, "NULL");
+ 	for_each_cpu_mask(cpu, rcu_cpu_online_map)
+ 		if (rcu_try_flip_waitmb_needed(cpu) &&
+ 		    per_cpu(rcu_mb_flag, cpu) != rcu_mb_done) {
+-			RCU_TRACE_ME(rcupreempt_trace_try_flip_me1);
++			trace_mark(rcupreempt_trace_try_flip_me1, "NULL");
+ 			return 0;
+ 		}
+ 
+ 	smp_mb(); /* Ensure that the above checks precede any following flip. */
+-	RCU_TRACE_ME(rcupreempt_trace_try_flip_m2);
++	trace_mark(rcupreempt_trace_try_flip_m2, "NULL");
+ 	return 1;
+ }
+ 
+@@ -724,9 +700,9 @@ static void rcu_try_flip(void)
+ {
+ 	unsigned long oldirq;
+ 
+-	RCU_TRACE_ME(rcupreempt_trace_try_flip_1);
++	trace_mark(rcupreempt_trace_try_flip_1, "NULL");
+ 	if (unlikely(!spin_trylock_irqsave(&rcu_ctrlblk.fliplock, oldirq))) {
+-		RCU_TRACE_ME(rcupreempt_trace_try_flip_e1);
++		trace_mark(rcupreempt_trace_try_flip_e1, "NULL");
+ 		return;
+ 	}
+ 
+@@ -778,7 +754,7 @@ void rcu_check_callbacks_rt(int cpu, int
+ 	if (rcu_ctrlblk.completed == rdp->completed)
+ 		rcu_try_flip();
+ 	spin_lock_irqsave(&rdp->lock, oldirq);
+-	RCU_TRACE_RDP(rcupreempt_trace_check_callbacks, rdp);
++	trace_mark(rcupreempt_trace_check_callbacks, "NULL");
+ 	__rcu_advance_callbacks(rdp);
+ 	spin_unlock_irqrestore(&rdp->lock, oldirq);
+ }
+@@ -798,7 +774,7 @@ void rcu_advance_callbacks_rt(int cpu, i
+ 			return;
+ 	}
+ 	spin_lock_irqsave(&rdp->lock, oldirq);
+-	RCU_TRACE_RDP(rcupreempt_trace_check_callbacks, rdp);
++	trace_mark(rcupreempt_trace_check_callbacks, "NULL");
+ 	__rcu_advance_callbacks(rdp);
+ 	spin_unlock_irqrestore(&rdp->lock, oldirq);
+ }
+@@ -900,13 +876,13 @@ void rcu_process_callbacks_rt(struct sof
+ 	}
+ 	rdp->donelist = NULL;
+ 	rdp->donetail = &rdp->donelist;
+-	RCU_TRACE_RDP(rcupreempt_trace_done_remove, rdp);
++	trace_mark(rcupreempt_trace_done_remove, "NULL");
+ 	spin_unlock_irqrestore(&rdp->lock, flags);
+ 	while (list) {
+ 		next = list->next;
+ 		list->func(list);
+ 		list = next;
+-		RCU_TRACE_ME(rcupreempt_trace_invoke);
++		trace_mark(rcupreempt_trace_invoke, "NULL");
+ 	}
+ }
+ 
+@@ -924,7 +900,7 @@ void fastcall call_rcu_preempt(struct rc
+ 	__rcu_advance_callbacks(rdp);
+ 	*rdp->nexttail = head;
+ 	rdp->nexttail = &head->next;
+-	RCU_TRACE_RDP(rcupreempt_trace_next_add, rdp);
++	trace_mark(rcupreempt_trace_next_add, "NULL");
+ 	spin_unlock(&rdp->lock);
+ 	local_irq_restore(oldirq);
+ }
+@@ -1007,7 +983,6 @@ void synchronize_kernel(void)
+ 	synchronize_rcu();
+ }
+ 
+-#ifdef CONFIG_RCU_TRACE
+ int *rcupreempt_flipctr(int cpu)
+ {
+ 	return &per_cpu(rcu_flipctr, cpu)[0];
+@@ -1031,13 +1006,3 @@ char *rcupreempt_try_flip_state_name(voi
+ 	return rcu_try_flip_state_names[rcu_try_flip_state];
+ }
+ EXPORT_SYMBOL_GPL(rcupreempt_try_flip_state_name);
+-
+-struct rcupreempt_trace *rcupreempt_trace_cpu(int cpu)
+-{
+-	struct rcu_data *rdp = RCU_DATA_CPU(cpu);
+-
+-	return &rdp->trace;
+-}
+-EXPORT_SYMBOL_GPL(rcupreempt_trace_cpu);
+-
+-#endif /* #ifdef RCU_TRACE */
+Index: linux-2.6.24-rc5-rt1.RCU_MARKERS/kernel/rcupreempt_trace.c
+===================================================================
+--- linux-2.6.24-rc5-rt1.RCU_MARKERS.orig/kernel/rcupreempt_trace.c
++++ linux-2.6.24-rc5-rt1.RCU_MARKERS/kernel/rcupreempt_trace.c
+@@ -43,11 +43,19 @@
+ #include <linux/mutex.h>
+ #include <linux/rcupreempt_trace.h>
+ #include <linux/debugfs.h>
++#include <linux/percpu.h>
+ 
+ static struct mutex rcupreempt_trace_mutex;
+ static char *rcupreempt_trace_buf;
+ #define RCUPREEMPT_TRACE_BUF_SIZE 4096
+ 
++static DEFINE_PER_CPU(struct rcupreempt_trace, trace_data);
++
++struct rcupreempt_trace *rcupreempt_trace_cpu(int cpu)
++{
++	return &per_cpu(trace_data, cpu);
++}
++
+ void rcupreempt_trace_move2done(struct rcupreempt_trace *trace)
+ {
+ 	trace->done_length += trace->wait_length;
+@@ -135,6 +143,51 @@ void rcupreempt_trace_next_add(struct rc
+ 	trace->next_length++;
+ }
+ 
++DEFINE_RCUPREEMPT_MARKER_HANDLER(rcupreempt_trace_move2done);
++DEFINE_RCUPREEMPT_MARKER_HANDLER(rcupreempt_trace_move2wait);
++DEFINE_RCUPREEMPT_MARKER_HANDLER(rcupreempt_trace_try_flip_1);
++DEFINE_RCUPREEMPT_MARKER_HANDLER(rcupreempt_trace_try_flip_e1);
++DEFINE_RCUPREEMPT_MARKER_HANDLER(rcupreempt_trace_try_flip_i1);
++DEFINE_RCUPREEMPT_MARKER_HANDLER(rcupreempt_trace_try_flip_ie1);
++DEFINE_RCUPREEMPT_MARKER_HANDLER(rcupreempt_trace_try_flip_g1);
++DEFINE_RCUPREEMPT_MARKER_HANDLER(rcupreempt_trace_try_flip_a1);
++DEFINE_RCUPREEMPT_MARKER_HANDLER(rcupreempt_trace_try_flip_ae1);
++DEFINE_RCUPREEMPT_MARKER_HANDLER(rcupreempt_trace_try_flip_a2);
++DEFINE_RCUPREEMPT_MARKER_HANDLER(rcupreempt_trace_try_flip_z1);
++DEFINE_RCUPREEMPT_MARKER_HANDLER(rcupreempt_trace_try_flip_ze1);
++DEFINE_RCUPREEMPT_MARKER_HANDLER(rcupreempt_trace_try_flip_z2);
++DEFINE_RCUPREEMPT_MARKER_HANDLER(rcupreempt_trace_try_flip_m1);
++DEFINE_RCUPREEMPT_MARKER_HANDLER(rcupreempt_trace_try_flip_me1);
++DEFINE_RCUPREEMPT_MARKER_HANDLER(rcupreempt_trace_try_flip_m2);
++DEFINE_RCUPREEMPT_MARKER_HANDLER(rcupreempt_trace_check_callbacks);
++DEFINE_RCUPREEMPT_MARKER_HANDLER(rcupreempt_trace_done_remove);
++DEFINE_RCUPREEMPT_MARKER_HANDLER(rcupreempt_trace_invoke);
++DEFINE_RCUPREEMPT_MARKER_HANDLER(rcupreempt_trace_next_add);
++
++static struct rcupreempt_probe_data rcupreempt_probe_array[] =
++{
++	INIT_RCUPREEMPT_PROBE(rcupreempt_trace_move2done),
++	INIT_RCUPREEMPT_PROBE(rcupreempt_trace_move2wait),
++	INIT_RCUPREEMPT_PROBE(rcupreempt_trace_try_flip_1),
++	INIT_RCUPREEMPT_PROBE(rcupreempt_trace_try_flip_e1),
++	INIT_RCUPREEMPT_PROBE(rcupreempt_trace_try_flip_i1),
++	INIT_RCUPREEMPT_PROBE(rcupreempt_trace_try_flip_ie1),
++	INIT_RCUPREEMPT_PROBE(rcupreempt_trace_try_flip_g1),
++	INIT_RCUPREEMPT_PROBE(rcupreempt_trace_try_flip_a1),
++	INIT_RCUPREEMPT_PROBE(rcupreempt_trace_try_flip_ae1),
++	INIT_RCUPREEMPT_PROBE(rcupreempt_trace_try_flip_a2),
++	INIT_RCUPREEMPT_PROBE(rcupreempt_trace_try_flip_z1),
++	INIT_RCUPREEMPT_PROBE(rcupreempt_trace_try_flip_ze1),
++	INIT_RCUPREEMPT_PROBE(rcupreempt_trace_try_flip_z2),
++	INIT_RCUPREEMPT_PROBE(rcupreempt_trace_try_flip_m1),
++	INIT_RCUPREEMPT_PROBE(rcupreempt_trace_try_flip_me1),
++	INIT_RCUPREEMPT_PROBE(rcupreempt_trace_try_flip_m2),
++	INIT_RCUPREEMPT_PROBE(rcupreempt_trace_check_callbacks),
++	INIT_RCUPREEMPT_PROBE(rcupreempt_trace_done_remove),
++	INIT_RCUPREEMPT_PROBE(rcupreempt_trace_invoke),
++	INIT_RCUPREEMPT_PROBE(rcupreempt_trace_next_add)
++};
++
+ static void rcupreempt_trace_sum(struct rcupreempt_trace *sp)
+ {
+ 	struct rcupreempt_trace *cp;
+@@ -297,9 +350,6 @@ static int rcupreempt_debugfs_init(void)
+ 	if (!ctrsdir)
+ 		goto free_out;
+ 
+-	if (!rcu_trace_boost_create(rcudir))
+-		goto free_out;
+-
+ 	return 0;
+ free_out:
+ 	if (ctrsdir)
+@@ -316,6 +366,21 @@ out:
+ static int __init rcupreempt_trace_init(void)
+ {
+ 	int ret;
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(rcupreempt_probe_array); i++) {
++		struct rcupreempt_probe_data *p = &rcupreempt_probe_array[i];
++		ret = marker_probe_register(p->name, p->format,
++							p->probe_func, p);
++		if (ret)
++			printk(KERN_INFO "Unable to register rcupreempt \
++				probe %s\n", rcupreempt_probe_array[i].name);
++		ret = marker_arm(p->name);
++		if (ret)
++			printk(KERN_INFO "Unable to arm rcupreempt probe %s\n",
++				p->name);
++	}
++	printk(KERN_INFO "RCU Preempt markers registered\n");
+ 
+ 	mutex_init(&rcupreempt_trace_mutex);
+ 	rcupreempt_trace_buf = kmalloc(RCUPREEMPT_TRACE_BUF_SIZE, GFP_KERNEL);
+@@ -329,7 +394,12 @@ static int __init rcupreempt_trace_init(
+ 
+ static void __exit rcupreempt_trace_cleanup(void)
+ {
+-	rcu_trace_boost_destroy();
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(rcupreempt_probe_array); i++)
++		marker_probe_unregister(rcupreempt_probe_array[i].name);
++	printk(KERN_INFO "RCU Preempt markers unregistered\n");
++
+ 	debugfs_remove(statdir);
+ 	debugfs_remove(gpdir);
+ 	debugfs_remove(ctrsdir);
+@@ -337,6 +407,7 @@ static void __exit rcupreempt_trace_clea
+ 	kfree(rcupreempt_trace_buf);
+ }
+ 
++MODULE_LICENSE("GPL");
+ 
+ module_init(rcupreempt_trace_init);
+ module_exit(rcupreempt_trace_cleanup);
+Index: linux-2.6.24-rc5-rt1.RCU_MARKERS/kernel/Kconfig.preempt
+===================================================================
+--- linux-2.6.24-rc5-rt1.RCU_MARKERS.orig/kernel/Kconfig.preempt
++++ linux-2.6.24-rc5-rt1.RCU_MARKERS/kernel/Kconfig.preempt
+@@ -172,14 +172,15 @@ config PREEMPT_RCU_BOOST
+ 	  possible OOM problems.
+ 
+ config RCU_TRACE
+-	bool "Enable tracing for RCU - currently stats in debugfs"
++	tristate "Enable tracing for RCU - currently stats in debugfs"
+ 	select DEBUG_FS
+-	default y
++	select MARKERS
++	default m
+ 	help
+ 	  This option provides tracing in RCU which presents stats
+ 	  in debugfs for debugging RCU implementation.
+ 
+-	  Say Y here if you want to enable RCU tracing
++	  Say Y/M here if you want to enable RCU tracing in-kernel/module.
+ 	  Say N if you are unsure.
+ 
+ config SPINLOCK_BKL
