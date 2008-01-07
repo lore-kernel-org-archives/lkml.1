@@ -1,55 +1,354 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbYAGHpe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756024AbYAGHp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755843AbYAGHpe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 02:45:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754463AbYAGHp1
+	id S1756024AbYAGHp5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 02:45:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755464AbYAGHpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 02:45:27 -0500
-Received: from smtp.witbe.net ([81.88.96.48]:41579 "EHLO smtp.witbe.net"
+	Mon, 7 Jan 2008 02:45:47 -0500
+Received: from mga11.intel.com ([192.55.52.93]:19058 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754245AbYAGHp0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 02:45:26 -0500
-Date: Mon, 7 Jan 2008 08:45:17 +0100
-From: Paul Rolland <rol@as2917.net>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Module for simulating network default
-Message-ID: <20080107084517.58cbe9da@tux.DEF.witbe.net>
-In-Reply-To: <20080106.234207.113177790.davem@davemloft.net>
-References: <20080107083704.6527306e@tux.DEF.witbe.net>
-	<20080106.234207.113177790.davem@davemloft.net>
-Organization: AS2917.net
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.10.14; i686-pc-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
+	id S1754463AbYAGHpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 02:45:45 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,252,1196668800"; 
+   d="scan'208";a="277294097"
+Subject: [PATCH] ACPI: fix processor throttling set error
+From: Yi Yang <yi.y.yang@intel.com>
+Reply-To: yi.y.yang@intel.com
+To: linux-acpi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, lenb@kernel.org,
+       acpi-bugzilla@lists.sourceforge.net
+In-Reply-To: <1199434602.19185.1.camel@yangyi-dev.bj.intel.com>
+References: <1198738022.8950.3.camel@yangyi-dev.bj.intel.com>
+	 <1198744900.3640.4.camel@yangyi-dev.bj.intel.com>
+	 <1198916553.3806.2.camel@yangyi-dev.bj.intel.com>
+	 <1199434602.19185.1.camel@yangyi-dev.bj.intel.com>
+Content-Type: text/plain
+Organization: Intel
+Date: Mon, 07 Jan 2008 14:56:01 +0800
+Message-Id: <1199688961.3551.19.camel@yangyi-dev.bj.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Subject: ACPI: fix processor throttling set error
+From: Yi Yang <yi.y.yang@intel.com>
 
-On Sun, 06 Jan 2008 23:42:07 -0800 (PST)
-David Miller <davem@davemloft.net> wrote:
+When echo some invalid values to /proc/acpi/processor/*/throttling,
+there isn't any error info returned, on the contray, it sets
+throttling value to some T* successfully, obviously, this is incorrect,
+a correct way should be to let it fail and return error info.
 
-> From: Paul Rolland <rol@as2917.net>
-> Date: Mon, 7 Jan 2008 08:37:04 +0100
-> 
-> > I remember reading some time ago about a network driver to "simulate"
-> > network default, for example packet loss...
-> > Unfortunately, I can't find the post, neither in my mailbox nor in
-> > archives...
-> > 
-> > Does anyone has an URL that you could send me ?
-> 
-> You want the "netem" packet scheduler, and you'll get better
-> answers to networking questions on the networking list
-> netdev@vger.kernel.org
+This patch fixed the aforementioned issue, it also enables
+/proc/acpi/processor/*/throttling to accept such values as 't0' and 'T0',
+it also strictly limits /proc/acpi/processor/*/throttling only to accept
+ "*", "t*" and "T*", "*" is the throttling state value the processor can
+support, current, it is 0 - 7.
 
-Thanks David, I'll have a look at this. 
+Before applying this patch, the test result is below:
 
-For netdev, as I'm not subscribed, please don't forget to copy me on reply ;)
+[root@localhost acpi]# cat /proc/acpi/processor/CPU0/throttling
+state count:             8
+active state:            T1
+state available: T0 to T7
+states:
+    T0:                  100%
+   *T1:                  87%
+    T2:                  75%
+    T3:                  62%
+    T4:                  50%
+    T5:                  37%
+    T6:                  25%
+    T7:                  12%
+[root@localhost acpi]# echo "1xxxxxx" > /proc/acpi/processor/CPU0/throttling
+[root@localhost acpi]# cat /proc/acpi/processor/CPU0/throttling
+state count:             8
+active state:            T1
+state available: T0 to T7
+states:
+    T0:                  100%
+   *T1:                  87%
+    T2:                  75%
+    T3:                  62%
+    T4:                  50%
+    T5:                  37%
+    T6:                  25%
+    T7:                  12%
+[root@localhost acpi]# echo "0" > /proc/acpi/processor/CPU0/throttling
+[root@localhost acpi]# cat /proc/acpi/processor/CPU0/throttling
+state count:             8
+active state:            T0
+state available: T0 to T7
+states:
+   *T0:                  100%
+    T1:                  87%
+    T2:                  75%
+    T3:                  62%
+    T4:                  50%
+    T5:                  37%
+    T6:                  25%
+    T7:                  12%
+[root@localhost acpi]# cd /
+[root@localhost /]# cat /proc/acpi/processor/CPU0/throttling
+state count:             8
+active state:            T0
+state available: T0 to T7
+states:
+   *T0:                  100%
+    T1:                  87%
+    T2:                  75%
+    T3:                  62%
+    T4:                  50%
+    T5:                  37%
+    T6:                  25%
+    T7:                  12%
+[root@localhost /]# echo "T0" > /proc/acpi/processor/CPU0/throttling
+[root@localhost /]# cat /proc/acpi/processor/CPU0/throttling
+state count:             8
+active state:            T0
+state available: T0 to T7
+states:
+   *T0:                  100%
+    T1:                  87%
+    T2:                  75%
+    T3:                  62%
+    T4:                  50%
+    T5:                  37%
+    T6:                  25%
+    T7:                  12%
+[root@localhost /]# echo "T7" > /proc/acpi/processor/CPU0/throttling
+[root@localhost /]# cat /proc/acpi/processor/CPU0/throttling
+state count:             8
+active state:            T0
+state available: T0 to T7
+states:
+   *T0:                  100%
+    T1:                  87%
+    T2:                  75%
+    T3:                  62%
+    T4:                  50%
+    T5:                  37%
+    T6:                  25%
+    T7:                  12%
+[root@localhost /]# echo "T100" > /proc/acpi/processor/CPU0/throttling
+[root@localhost /]# cat /proc/acpi/processor/CPU0/throttling
+state count:             8
+active state:            T0
+state available: T0 to T7
+states:
+   *T0:                  100%
+    T1:                  87%
+    T2:                  75%
+    T3:                  62%
+    T4:                  50%
+    T5:                  37%
+    T6:                  25%
+    T7:                  12%
+[root@localhost /]# echo "xxx" > /proc/acpi/processor/CPU0/throttling
+[root@localhost /]# cat /proc/acpi/processor/CPU0/throttling
+state count:             8
+active state:            T0
+state available: T0 to T7
+states:
+   *T0:                  100%
+    T1:                  87%
+    T2:                  75%
+    T3:                  62%
+    T4:                  50%
+    T5:                  37%
+    T6:                  25%
+    T7:                  12%
+[root@localhost /]# echo "2xxxx" > /proc/acpi/processor/CPU0/throttling
+[root@localhost /]# cat /proc/acpi/processor/CPU0/throttling
+state count:             8
+active state:            T2
+state available: T0 to T7
+states:
+    T0:                  100%
+    T1:                  87%
+   *T2:                  75%
+    T3:                  62%
+    T4:                  50%
+    T5:                  37%
+    T6:                  25%
+    T7:                  12%
+[root@localhost /]# echo "" > /proc/acpi/processor/CPU0/throttling
+[root@localhost /]# cat /proc/acpi/processor/CPU0/throttling
+state count:             8
+active state:            T0
+state available: T0 to T7
+states:
+   *T0:                  100%
+    T1:                  87%
+    T2:                  75%
+    T3:                  62%
+    T4:                  50%
+    T5:                  37%
+    T6:                  25%
+    T7:                  12%
+[root@localhost /]# echo "7777" > /proc/acpi/processor/CPU0/throttling
+-bash: echo: write error: Invalid argument
+[root@localhost /]# echo "7xxx" > /proc/acpi/processor/CPU0/throttling
+[root@localhost /]# cat /proc/acpi/processor/CPU0/throttling
+state count:             8
+active state:            T7
+state available: T0 to T7
+states:
+    T0:                  100%
+    T1:                  87%
+    T2:                  75%
+    T3:                  62%
+    T4:                  50%
+    T5:                  37%
+    T6:                  25%
+   *T7:                  12%
+[root@localhost /]#
 
-Regards,
-Paul
+
+After applying this patch, the test result is below:
+
+[root@localhost linux-2.6.24-rc6]# echo > /proc/acpi/processor/CPU0/throttling
+-bash: echo: write error: Invalid argument
+[root@localhost linux-2.6.24-rc6]# echo "" > /proc/acpi/processor/CPU0/throttling
+-bash: echo: write error: Invalid argument
+[root@localhost linux-2.6.24-rc6]# echo "0" > /proc/acpi/processor/CPU0/throttling
+[root@localhost linux-2.6.24-rc6]# echo "t0" > /proc/acpi/processor/CPU0/throttling
+[root@localhost linux-2.6.24-rc6]# echo "T0" > /proc/acpi/processor/CPU0/throttling
+[root@localhost linux-2.6.24-rc6]# cat /proc/acpi/processor/CPU0/throttling
+state count:             8
+active state:            T0
+state available: T0 to T7
+states:
+   *T0:                  100%
+    T1:                  87%
+    T2:                  75%
+    T3:                  62%
+    T4:                  50%
+    T5:                  37%
+    T6:                  25%
+    T7:                  12%
+[root@localhost linux-2.6.24-rc6]# echo "T7" > /proc/acpi/processor/CPU0/throttling
+[root@localhost linux-2.6.24-rc6]# cat /proc/acpi/processor/CPU0/throttling
+state count:             8
+active state:            T7
+state available: T0 to T7
+states:
+    T0:                  100%
+    T1:                  87%
+    T2:                  75%
+    T3:                  62%
+    T4:                  50%
+    T5:                  37%
+    T6:                  25%
+   *T7:                  12%
+[root@localhost linux-2.6.24-rc6]# echo "T8" > /proc/acpi/processor/CPU0/throttling
+-bash: echo: write error: Invalid argument
+[root@localhost linux-2.6.24-rc6]# vi drivers/acpi/processor_throttling.c
+[root@localhost linux-2.6.24-rc6]# echo "T8" > /proc/acpi/processor/CPU0/throttling
+-bash: echo: write error: Invalid argument
+[root@localhost linux-2.6.24-rc6]# echo "t7" > /proc/acpi/processor/CPU0/throttling
+[root@localhost linux-2.6.24-rc6]# echo "t70" > /proc/acpi/processor/CPU0/throttling
+-bash: echo: write error: Invalid argument
+[root@localhost linux-2.6.24-rc6]# echo "70" > /proc/acpi/processor/CPU0/throttling
+-bash: echo: write error: Invalid argument
+[root@localhost linux-2.6.24-rc6]# echo "7000" > /proc/acpi/processor/CPU0/throttling
+-bash: echo: write error: Invalid argument
+[root@localhost linux-2.6.24-rc6]# echo "70" > /proc/acpi/processor/CPU0/throttling
+-bash: echo: write error: Invalid argument
+[root@localhost linux-2.6.24-rc6]# echo "xxx" > /proc/acpi/processor/CPU0/throttling
+-bash: echo: write error: Invalid argument
+[root@localhost linux-2.6.24-rc6]# echo > /proc/acpi/processor/CPU0/throttling
+-bash: echo: write error: Invalid argument
+[root@localhost linux-2.6.24-rc6]# echo -n > /proc/acpi/processor/CPU0/throttling
+[root@localhost linux-2.6.24-rc6]# echo -n "" > /proc/acpi/processor/CPU0/throttling
+[root@localhost linux-2.6.24-rc6]# echo $?
+0
+[root@localhost linux-2.6.24-rc6]# echo -n "" > /proc/acpi/processor/CPU0/throttling
+[root@localhost linux-2.6.24-rc6]# cat /proc/acpi/processor/CPU0/throttling
+state count:             8
+active state:            T7
+state available: T0 to T7
+states:
+    T0:                  100%
+    T1:                  87%
+    T2:                  75%
+    T3:                  62%
+    T4:                  50%
+    T5:                  37%
+    T6:                  25%
+   *T7:                  12%
+[root@localhost linux-2.6.24-rc6]# echo -n "" > /proc/acpi/processor/CPU0/throttling
+[root@localhost linux-2.6.24-rc6]# cat /proc/acpi/processor/CPU0/throttling
+state count:             8
+active state:            T7
+state available: T0 to T7
+states:
+    T0:                  100%
+    T1:                  87%
+    T2:                  75%
+    T3:                  62%
+    T4:                  50%
+    T5:                  37%
+    T6:                  25%
+   *T7:                  12%
+[root@localhost linux-2.6.24-rc6]# echo t0 > /proc/acpi/processor/CPU0/throttling
+[root@localhost linux-2.6.24-rc6]# echo T0 > /proc/acpi/processor/CPU0/throttling
+[root@localhost linux-2.6.24-rc6]# echo Tt0 > /proc/acpi/processor/CPU0/throttling
+-bash: echo: write error: Invalid argument
+[root@localhost linux-2.6.24-rc6]# echo T > /proc/acpi/processor/CPU0/throttling
+-bash: echo: write error: Invalid argument
+[root@localhost linux-2.6.24-rc6]#
+
+Signed-off-by: Yi Yang <yi.y.yang@intel.com>
+---
+ processor_throttling.c |   24 ++++++++++++++++++++----
+ 1 file changed, 20 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/acpi/processor_throttling.c b/drivers/acpi/processor_throttling.c
+index 6742d7b..10035a6 100644
+--- a/drivers/acpi/processor_throttling.c
++++ b/drivers/acpi/processor_throttling.c
+@@ -898,7 +898,10 @@ static ssize_t acpi_processor_write_throttling(struct file *file,
+ 	int result = 0;
+ 	struct seq_file *m = file->private_data;
+ 	struct acpi_processor *pr = m->private;
+-	char state_string[12] = { '\0' };
++	char state_string[5] = "";
++	char *charp = NULL;
++	size_t state_val = 0;
++	char tmpbuf[5] = "";
+ 
+ 	if (!pr || (count > sizeof(state_string) - 1))
+ 		return -EINVAL;
+@@ -907,10 +910,23 @@ static ssize_t acpi_processor_write_throttling(struct file *file,
+ 		return -EFAULT;
+ 
+ 	state_string[count] = '\0';
++	if ((count > 0) && (state_string[count-1] == '\n'))
++		state_string[count-1] = '\0';
+ 
+-	result = acpi_processor_set_throttling(pr,
+-					       simple_strtoul(state_string,
+-							      NULL, 0));
++	charp = state_string;
++	if ((state_string[0] == 't') || (state_string[0] == 'T'))
++		charp++;
++
++	state_val = simple_strtoul(charp, NULL, 0);
++	if (state_val >= pr->throttling.state_count)
++		return -EINVAL;
++
++	snprintf(tmpbuf, 5, "%d", state_val);
++
++	if (strcmp(tmpbuf, charp) != 0)
++		return -EINVAL;
++
++	result = acpi_processor_set_throttling(pr, state_val);
+ 	if (result)
+ 		return result;
+ 
+
+
