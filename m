@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756260AbYAGUe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757809AbYAGUf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756260AbYAGUe2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 15:34:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbYAGUeU
+	id S1757809AbYAGUf2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 15:35:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756242AbYAGUfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 15:34:20 -0500
-Received: from dvhart.com ([64.146.134.43]:39674 "EHLO dvhart.com"
+	Mon, 7 Jan 2008 15:35:17 -0500
+Received: from ns.gsystems.sk ([62.176.172.50]:46289 "EHLO www.gsystems.sk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752857AbYAGUeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 15:34:19 -0500
-Message-ID: <47828CC7.7060106@mbligh.org>
-Date: Mon, 07 Jan 2008 12:34:15 -0800
-From: Martin Bligh <mbligh@mbligh.org>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
+	id S1753501AbYAGUfP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 15:35:15 -0500
+From: Ondrej Zary <linux@rainbow-software.org>
+To: jgarzik@pobox.com
+Subject: [PATCH] [RFC] [resend] libata and starting/stopping ATAPI floppy devices
+Date: Mon, 7 Jan 2008 21:34:47 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-ide@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>
-Cc: bugme-admin@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       Peter Osterlund <petero2@telia.com>
-Subject: change SCSI owner in bugzilla
-References: <20080106161635.GL2082@does.not.exist>
-In-Reply-To: <20080106161635.GL2082@does.not.exist>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Disposition: inline
+X-Length: 1564
+Message-Id: <200801072134.49174.linux@rainbow-software.org>
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
+I switched to libata drivers for my onboard PATA controller (PIIX4) recently. 
+Everything works fine except that kernel tries to start not only my hard 
+drive (sda) but also LS-120 floppy drive (sdb) which does not like it:
 
-> Date: Sun, 06 Jan 2008 10:00:33 -0600
-> From: James Bottomley <James.Bottomley@HansenPartnership.com>
-> To: Adrian Bunk <bunk@kernel.org>
-> Cc: Ingo Molnar <mingo@elte.hu>, Peter Osterlund <petero2@telia.com>,
-> 	Linus Torvalds <torvalds@linux-foundation.org>,
-> 	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-> 	Andrew Morton <akpm@linux-foundation.org>,
-> 	Al Viro <viro@ftp.linux.org.uk>
-> Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
-> 
-> On Sun, 2008-01-06 at 17:45 +0200, Adrian Bunk wrote:
->> Bugzilla for tracking and mailing lists for discussing are not mutually 
->> exclusive.
-> 
-> I didn't ever say they were.  What I said was we needed the work flow on
-> the mailing lists.
-> 
->> What about asking the Bugzilla admins to set the default owner of new 
->> SCSI bugs to linux-scsi@vger.kernel.org?
->>
->> This way all SCSI bugs submitted in Bugzilla will automatically be 
->> forwarded to the linux-scsi mailing list.
-> 
-> Well, I've only been asking for this for the last two years.  If you can
-> actually make it happen, I'd be eternally grateful.
+sd 0:0:0:0: [sda] Starting disk
+ata1.00: configured for UDMA/33
+sd 0:0:0:0: [sda] 58633344 512-byte hardware sectors (30020 MB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+sd 1:0:1:0: [sdb] Starting disk
+ata2.00: configured for UDMA/33
+ata2.01: configured for PIO2
+sd 1:0:1:0: [sdb] Result: hostbyte=0x00 driverbyte=0x08
+sd 1:0:1:0: [sdb] Sense Key : 0x2 [current]
+sd 1:0:1:0: [sdb] ASC=0x3a ASCQ=0x0
 
-OK, changed it.
 
-I don't think this is the right way to do it, as you'll get email for
-every change to every bug until it's assigned, but seeing as that's what
-you asked for, and we can't seem to get vger to take bounces, I guess
-it'll do.
+The question is: is it correct? Or a patch like this should be applied?
 
-Let me know if (a) it works OK, and (b) you want the driver ones changed
-over as well.
+--- linux-2.6.23-orig/drivers/ata/libata-scsi.c	2007-10-09 22:31:38.000000000 +0200
++++ linux-2.6.23-pentium/drivers/ata/libata-scsi.c	2008-01-05 15:50:16.000000000 +0100
+@@ -802,7 +802,8 @@
+ 
+ 	blk_queue_max_phys_segments(sdev->request_queue, LIBATA_MAX_PRD);
+ 
+-	sdev->manage_start_stop = 1;
++	if (dev->class == ATA_DEV_ATA)
++		sdev->manage_start_stop = 1;
+ 
+ 	if (dev)
+ 		ata_scsi_dev_config(sdev, dev);
 
-M.
+
+-- 
+Ondrej Zary
