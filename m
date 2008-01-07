@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbYAGAfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752966AbYAGAr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752842AbYAGAfc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 19:35:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbYAGAfY
+	id S1752966AbYAGAr6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 19:47:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbYAGArt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 19:35:24 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:19414 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751331AbYAGAfX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 19:35:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=Z7S/0FHwwPFVmqnTRbuqQoGySIdI3BmzFQoavxQ7uj7fvbMGNg5gWPajffJnEuJxwNMAnukgICYnIL0RBQyoWiIpsx22AZfHuthHd/RZq/O3LGrHYa18bEq7k4kbbHWF9krnCkkRG0ERIdD556SnkkRkmCCalJVUBh4oskqt1EQ=
-Message-ID: <478173C4.8090507@gmail.com>
-Date: Mon, 07 Jan 2008 09:35:16 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sun, 6 Jan 2008 19:47:49 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:34213 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750904AbYAGArs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 19:47:48 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Johannes Berg" <johannes@sipsolutions.net>
+Subject: Re: [linux-pm] Re: [PATCH] PM: Acquire device locks on suspend
+Date: Mon, 7 Jan 2008 01:49:47 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Alan Stern" <stern@rowland.harvard.edu>, "Greg KH" <gregkh@suse.de>,
+       "LKML" <linux-kernel@vger.kernel.org>,
+       "ACPI Devel Maling List" <linux-acpi@vger.kernel.org>,
+       "pm list" <linux-pm@lists.linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>
+References: <Pine.LNX.4.44L0.0801061734150.20032-100000@netrider.rowland.org> <49505.::ffff:91.5.86.36.1199663162.squirrel@secure.sipsolutions.net> <200801070059.16741.rjw@sisk.pl>
+In-Reply-To: <200801070059.16741.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Mark Lord <lkml@rtr.ca>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: Linux 2.6.24-rc7
-References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org> <478169AD.3020808@rtr.ca> <alpine.LFD.1.00.0801061605240.3148@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0801061605240.3148@woody.linux-foundation.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801070149.47958.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Linus Torvalds wrote:
-> On Sun, 6 Jan 2008, Mark Lord wrote:
->> We're still missing the sata_qstor regression fix from Tejun,
->> and the patch from Venkatesh Pallipadi that reinstates max_cstate
->> in sysfs for !CPU_IDLE.
+On Monday, 7 of January 2008, Rafael J. Wysocki wrote:
+> On Monday, 7 of January 2008, Johannes Berg wrote:
+> > Rafael J. Wysocki wrote:
+> > 
+> > >> I don't see anything wrong with it.  All that will happen is that the
+> > >> removal will start before the suspend and finish after the resume.
+> > >
+> > > In that case, we'll attempt to call the device's .suspend() and .resume()
+> > > routines, but we shouldn't do that, IMHO.
+> > 
+> > I don't see anything wrong with that since the driver must be prepared to
+> > handle that even in the regular case, it's the only thing you can
+> > guarantee: no more method calls after removal finishes. Am I totally
+> > misunderstanding things?
 > 
-> I'm not seeing those in my inbox. I don't go out trolling for patches, 
-> because I expect that if the author of the patch really wants me to apply 
-> it, he'd send it upstream.
+> Well, we are towards the end of device removal at this point, having called
+> bus_remove_device(dev) for example, but still we've got it on dpm_active ...
 > 
-> But I know a number of people are on vacation, and I suspect some of these 
-> fixes are just queued up, waiting for that.  E.g. I think Jeff is supposed 
-> to be back this week, etc..
+> This may not be technically wrong (ie. we should be able to recover from
+> that), but it seems conceptually wrong and with pm_sleep_rwsem in place it
+> can be avoided.
 
-Yeap, I have two patches pending for #upstream-fixes.
+No, it can't, without major complications.
 
-http://article.gmane.org/gmane.linux.ide/26750
-http://article.gmane.org/gmane.linux.ide/26822
+Well, I think I'll just send a patch that should work most of the time ...
 
-Jeff, can you ack those?
-
-Thanks.
-
--- 
-tejun
+Rafael
