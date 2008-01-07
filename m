@@ -1,48 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbYAGJqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755495AbYAGKAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755945AbYAGJqm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 04:46:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbYAGJqf
+	id S1755495AbYAGKAs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 05:00:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbYAGKAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 04:46:35 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:40580 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752891AbYAGJqf (ORCPT
+	Mon, 7 Jan 2008 05:00:39 -0500
+Received: from hs-out-0708.google.com ([64.233.178.243]:9193 "EHLO
+	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754125AbYAGKAi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 04:46:35 -0500
-Date: Mon, 7 Jan 2008 07:46:20 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: "Gregor Jasny" <gjasny@googlemail.com>
-Cc: "Gregor Jasny" <jasny@vidsoft.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] vivi driver works only as first device
-Message-ID: <20080107074620.3f6bc77a@gaivota>
-In-Reply-To: <9d2cd630801061447w33478ad3p4eb24640e7f8784@mail.gmail.com>
-References: <20071203225610.GS17496@vidsoft.de>
-	<20071206220634.GT17496@vidsoft.de>
-	<1197270531.5168.5.camel@gaivota>
-	<9d2cd630801061447w33478ad3p4eb24640e7f8784@mail.gmail.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.1; x86_64-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 7 Jan 2008 05:00:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=vRyuV3dNBiF92Zu8B7evg0GwimvySdv1v3tNu14iMMuVaBaYlbVKquIsKLDdrqYGloRtHEVpKDD2RSRBHj+zlvrURrikNv9B6Y+2KMqEEhJYQ5YigibaEHdKKiXgztl89m6/3S9iMrqFGiBd/memH5480Ih0NRxko5jKhYoGBSw=
+Message-ID: <a8e1da0801070200l6a8630f2td27f2f0b993cd4da@mail.gmail.com>
+Date: Mon, 7 Jan 2008 18:00:36 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Greg KH" <gregkh@suse.de>
+Subject: Re: [PATCH 0/7] convert semaphore to mutex in struct class
+Cc: "Stefan Richter" <stefanr@s5r6.in-berlin.de>, stern@rowland.harvard.edu,
+       peterz@infradead.org, david-b@pacbell.net, davem@davemloft.net,
+       jarkao2@gmail.com, krh@redhat.com, dbrownell@users.sourceforge.net,
+       James.Bottomley@hansenpartnership.com, a.zummo@towertech.it,
+       cbou@mail.ru, dwmw2@infradead.org,
+       linux1394-devel@lists.sourceforge.net,
+       spi-devel-general@lists.sourceforge.net, linux-scsi@vger.kernel.org,
+       rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080107084528.GA8365@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <20080103055019.GA4885@darkstar.te-china.tietoenator.com>
+	 <478120D9.5090404@s5r6.in-berlin.de>
+	 <20080107020944.GA3637@darkstar.te-china.tietoenator.com>
+	 <20080107084528.GA8365@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 6 Jan 2008 23:47:19 +0100
-"Gregor Jasny" <gjasny@googlemail.com> wrote:
+On Jan 7, 2008 4:45 PM, Greg KH <gregkh@suse.de> wrote:
+> On Mon, Jan 07, 2008 at 10:09:44AM +0800, Dave Young wrote:
+> >
+> > Thanks for your comment, I rewrite it for 2.6.24-rc7 as a all-in-one
+> > patch, please see following. Drop i2c maintainer and list in cc
+> > because there's no changes about i2c in this patch:
+> >
+> > Convert semaphore to mutex in struct class
+>
+> Most of the non-driver core code should be converted to not use the
+> lock in the class at all.  They should use a local lock instead.
+>
+> So how about a patch series that removes the usage of the current
+> semaphore from the different drivers, and then, a single patch that
+> converts the semaphore to mutex in the class code, it should not touch
+> anything outside of the drivers/base/ directory (not including the
+> driver.h file.)
+>
+> Sound reasonable?
 
-> On Dec 10, 2007 8:08 AM, Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
-> > Thanks for the report. Instead of applying your patch, I decided to
-> > better analyze the issue, fixing it with the proper solution. The issue
-> > is that vivi_register changes iminor, but this change were not properly
-> > returned to the driver.
-> 
-> Any chance to push this into 2.6.24?
+looks like a better aproach, let me take a look ...
 
-I've scheduled this patch for inclusion at 2.6.25-rc.
-
-Cheers,
-Mauro
+>
+> thanks,
+>
+> greg k-h
+>
