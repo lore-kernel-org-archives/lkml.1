@@ -1,57 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754437AbYAGDRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753530AbYAGDSK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754437AbYAGDRv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 22:17:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbYAGDRn
+	id S1753530AbYAGDSK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 22:18:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbYAGDRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 22:17:43 -0500
-Received: from comsmtp2.singnet.com.sg ([165.21.101.75]:39676 "EHLO
-	comsmtp2.singnet.com.sg" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752901AbYAGDRn (ORCPT
+	Sun, 6 Jan 2008 22:17:55 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:35924 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754543AbYAGDRx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 22:17:43 -0500
+	Sun, 6 Jan 2008 22:17:53 -0500
+X-Sasl-enc: g6MFSXeoVAj5lLJacPjPvjjRu6LUSGj60c5mMiI2o5Qg 1199675872
+Subject: umount -l <path>, getcwd and /proc/<pid>/cwd inconsistent
+From: Ian Kent <raven@themaw.net>
 To: linux-kernel@vger.kernel.org
-Subject: Odd behaviour observed on fb0 (TFT LCD screen 800x480)
-Message-ID: <1199675857.478199d155026@discus.singnet.com.sg>
-Date: Mon, 07 Jan 2008 11:17:37 +0800 (SGT)
-From: cksim <cksim@singnet.com.sg>
-Reply-To: cksim@singnet.com.sg
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: SingNet WebMail
+Content-Type: text/plain
+Date: Mon, 07 Jan 2008 12:17:30 +0900
+Message-Id: <1199675850.3156.15.camel@raven.themaw.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi all,
 
-Lately, I have observed an odd behviour in kernel 2.6.23.1 on a 800x480 TFT LCD unit.
+Could someone please help me understand what's happening with, what
+looks like inconsistent behavior, between getpwd and procfs readlink.
 
-The odd behviour as follows:
-1) I am using Atmel AT91SAM9261 part. Circuit similar to that of AT91SAM9261EK evaluation board.
+Basically, from a bash shell, setting working directory to a mounted
+directory all is fine with "pwd" and "/proc/<pid>/cwd". Following a
+"umount - l" on the mount "pwd" continues to return the expected string
+but "/proc/<pid>/cwd" returns an empty string.
 
-2) I am booting the kernel and mounting root filesystem through NFS. Bootloader used is UBoot 1.1.5.
+What I'm really after is why this happens because sys_getcwd and
+proc_pid_readlink appear to do essentially the same thing to get the
+string.
 
-3) During kernel startup, the LCD screen shows the "Penguin" logo with the other console output messages.
+For example:
 
-4) Everything looks fine up to this point. For example, the 0,0 position of image on LCD is proper and correct.
+[raven@raven ~]$ mount
+/dev/mapper/VolGroup00-LogVol00 on / type ext3 (rw)
+proc on /proc type proc (rw)
+sysfs on /sys type sysfs (rw)
+devpts on /dev/pts type devpts (rw,gid=5,mode=620)
+/dev/mapper/VolGroup00-LogVol03 on /work type ext3 (rw)
+/dev/mapper/VolGroup00-LogVol02 on /home type ext3 (rw)
+/dev/mapper/VolGroup02-LogVol00 on /vmware type ext3 (rw)
+/dev/sda2 on /boot type ext3 (rw)
+tmpfs on /dev/shm type tmpfs (rw)
+none on /proc/sys/fs/binfmt_misc type binfmt_misc (rw)
+sunrpc on /var/lib/nfs/rpc_pipefs type rpc_pipefs (rw)
+shark:/export/auto on /mnt/auto type nfs (rw,addr=10.49.97.44)
+[raven@raven ~]$ cd /mnt/auto
+[raven@raven auto]$ pwd
+/mnt/auto
+[raven@raven auto]$ ps
+  PID TTY          TIME CMD
+ 5435 pts/2    00:00:00 bash
+ 5543 pts/2    00:00:00 ps
+[raven@raven auto]$ ls -ld /proc/5435/cwd
+lrwxrwxrwx 1 raven raven 0 2008-01-07 11:57 /proc/5435/cwd -> /mnt/auto
 
-5) The root filesystem is then mounted through NFS and followed by a message "Freeing init memory: 106K". All this are fine.
+"umount -l /mnt/auto", done elsewhere at this point.
 
-6) During the execution of init scripts and the login prompt, the image on the screen starts shifting (either left, right, up or down). For example, the 0,0 position of the LCD image is shifted. However, the image content is still correct.
+[raven@raven auto]$ mount
+/dev/mapper/VolGroup00-LogVol00 on / type ext3 (rw)
+proc on /proc type proc (rw)
+sysfs on /sys type sysfs (rw)
+devpts on /dev/pts type devpts (rw,gid=5,mode=620)
+/dev/mapper/VolGroup00-LogVol03 on /work type ext3 (rw)
+/dev/mapper/VolGroup00-LogVol02 on /home type ext3 (rw)
+/dev/mapper/VolGroup02-LogVol00 on /vmware type ext3 (rw)
+/dev/sda2 on /boot type ext3 (rw)
+tmpfs on /dev/shm type tmpfs (rw)
+none on /proc/sys/fs/binfmt_misc type binfmt_misc (rw)
+sunrpc on /var/lib/nfs/rpc_pipefs type rpc_pipefs (rw)
+[raven@raven auto]$ pwd
+/mnt/auto
+[raven@raven auto]$ ls -ld /proc/5435/cwd
+lrwxrwxrwx 1 raven raven 0 2008-01-07 11:57 /proc/5435/cwd ->
+[raven@raven auto]$
 
-7) After login, this image shift behaviour still exists during normal usage.
 
-In contrast, when using kernel 2.6.21, the image shift behaviour was not observed before the login prompt. Image shift after the login does happen occasionally but not as frequent as that seen in 2.6.23.1.
+Ian
 
-Has anyone encountered a similar image shift issue ?
-
-Is this issue related to kernel ? It appears to me that some timing causes the image shifting.
-
-Appreciate any help and advises.
-
-Thanks in advance.
-
-Sim CK
 
