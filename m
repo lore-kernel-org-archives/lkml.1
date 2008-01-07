@@ -1,39 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757585AbYAGX1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758015AbYAGX2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757585AbYAGX1u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 18:27:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbYAGX1m
+	id S1758015AbYAGX2Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 18:28:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755500AbYAGX2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 18:27:42 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49826 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752556AbYAGX1l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 18:27:41 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20080107162718.GA16072@uranus.ravnborg.org>
-References: <20080107162718.GA16072@uranus.ravnborg.org> <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org> <20080107165344.28e9f1ed@Varda>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: dhowells@redhat.com,
-       Alejandro Riveira =?iso-8859-1?Q?Fern=E1ndez?= 
-	<ariveira@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: smpboot_64 section mismatch warning
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Mon, 07 Jan 2008 23:27:35 +0000
-Message-ID: <23858.1199748455@redhat.com>
+	Mon, 7 Jan 2008 18:28:15 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39749 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755402AbYAGX2O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 18:28:14 -0500
+Date: Mon, 7 Jan 2008 15:10:22 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Philipp Zabel <philipp.zabel@gmail.com>
+Cc: linux-kernel@vger.kernel.org, johnpol@2ka.mipt.ru, mreimer@vpop.net,
+       szabolcs.gyurko@tlt.hu
+Subject: Re: [PATCH] DS1WM: decouple host IRQ and INTR active state
+ settings.
+Message-Id: <20080107151022.82901fcc.akpm@linux-foundation.org>
+In-Reply-To: <1199627174.28826.11.camel@localhost.localdomain>
+References: <1199627174.28826.11.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg <sam@ravnborg.org> wrote:
+On Sun, 06 Jan 2008 14:46:14 +0100
+Philipp Zabel <philipp.zabel@gmail.com> wrote:
 
-> David - will you look into this?
+> The DS1WM driver incorrectly infers the IAS bit (1-wire interrupt active
+> high) from IRQ settings. There are devices that have IAS=0 but still need
+> the IRQ to trigger on a rising edge. With this patch, machines with DS1WM
+> that need IAS=1 have to set .active_high=1 in the ds1wm_platform_data.
+> 
+> Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
+> ---
+>  drivers/w1/masters/ds1wm.c |    9 +++++----
+>  include/linux/ds1wm.h      |    1 +
+>  2 files changed, 6 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/w1/masters/ds1wm.c b/drivers/w1/masters/ds1wm.c
+> index 5747997..688e435 100644
+> --- a/drivers/w1/masters/ds1wm.c
+> +++ b/drivers/w1/masters/ds1wm.c
+> @@ -361,11 +361,12 @@ static int ds1wm_probe(struct platform_device *pdev)
+>  		goto err1;
+>  	}
+>  	ds1wm_data->irq = res->start;
+> -	ds1wm_data->active_high = (res->flags & IORESOURCE_IRQ_HIGHEDGE) ?
+> -		1 : 0;
+> +	ds1wm_data->active_high = plat->active_high;
+>  
+> -	set_irq_type(ds1wm_data->irq, ds1wm_data->active_high ?
+> -			IRQ_TYPE_EDGE_RISING : IRQ_TYPE_EDGE_FALLING);
+> +	if (res->flags & IORESOURCE_IRQ_HIGHEDGE)
+> +		set_irq_type(ds1wm_data->irq, IRQ_TYPE_EDGE_RISING);
+> +	if (res->flags & IORESOURCE_IRQ_LOWEDGE)
+> +		set_irq_type(ds1wm_data->irq, IRQ_TYPE_EDGE_FALLING);
+>  
+>  	ret = request_irq(ds1wm_data->irq, ds1wm_isr, IRQF_DISABLED,
+>  			  "ds1wm", ds1wm_data);
+> diff --git a/include/linux/ds1wm.h b/include/linux/ds1wm.h
+> index 31f6e3c..d3c65e4 100644
+> --- a/include/linux/ds1wm.h
+> +++ b/include/linux/ds1wm.h
+> @@ -6,6 +6,7 @@ struct ds1wm_platform_data {
+>  			     * e.g. on h5xxx and h2200 this is 2
+>  			     * (registers aligned to 4-byte boundaries),
+>  			     * while on hx4700 this is 1 */
+> +	int active_high;
+>  	void (*enable)(struct platform_device *pdev);
+>  	void (*disable)(struct platform_device *pdev);
+>  };
 
-Do you have a config?
-
-David
+But no drivers are converted to set ds1wm_platform_data.active_high.  Won't
+IORESOURCE_IRQ_HIGHEDGE devices be broken by this change?
