@@ -1,41 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755714AbYAGHmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbYAGHpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755714AbYAGHmV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 02:42:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbYAGHmK
+	id S1755843AbYAGHpe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 02:45:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754463AbYAGHp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 02:42:10 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51824
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753858AbYAGHmH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 02:42:07 -0500
-Date: Sun, 06 Jan 2008 23:42:07 -0800 (PST)
-Message-Id: <20080106.234207.113177790.davem@davemloft.net>
-To: rol@as2917.net
+	Mon, 7 Jan 2008 02:45:27 -0500
+Received: from smtp.witbe.net ([81.88.96.48]:41579 "EHLO smtp.witbe.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754245AbYAGHp0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 02:45:26 -0500
+Date: Mon, 7 Jan 2008 08:45:17 +0100
+From: Paul Rolland <rol@as2917.net>
+To: David Miller <davem@davemloft.net>
 Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Subject: Re: Module for simulating network default
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080107083704.6527306e@tux.DEF.witbe.net>
+Message-ID: <20080107084517.58cbe9da@tux.DEF.witbe.net>
+In-Reply-To: <20080106.234207.113177790.davem@davemloft.net>
 References: <20080107083704.6527306e@tux.DEF.witbe.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	<20080106.234207.113177790.davem@davemloft.net>
+Organization: AS2917.net
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.10.14; i686-pc-linux-gnu)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Rolland <rol@as2917.net>
-Date: Mon, 7 Jan 2008 08:37:04 +0100
+Hello,
 
-> I remember reading some time ago about a network driver to "simulate"
-> network default, for example packet loss...
-> Unfortunately, I can't find the post, neither in my mailbox nor in
-> archives...
+On Sun, 06 Jan 2008 23:42:07 -0800 (PST)
+David Miller <davem@davemloft.net> wrote:
+
+> From: Paul Rolland <rol@as2917.net>
+> Date: Mon, 7 Jan 2008 08:37:04 +0100
 > 
-> Does anyone has an URL that you could send me ?
+> > I remember reading some time ago about a network driver to "simulate"
+> > network default, for example packet loss...
+> > Unfortunately, I can't find the post, neither in my mailbox nor in
+> > archives...
+> > 
+> > Does anyone has an URL that you could send me ?
+> 
+> You want the "netem" packet scheduler, and you'll get better
+> answers to networking questions on the networking list
+> netdev@vger.kernel.org
 
-You want the "netem" packet scheduler, and you'll get better
-answers to networking questions on the networking list
-netdev@vger.kernel.org
+Thanks David, I'll have a look at this. 
+
+For netdev, as I'm not subscribed, please don't forget to copy me on reply ;)
+
+Regards,
+Paul
