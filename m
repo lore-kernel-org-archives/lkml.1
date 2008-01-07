@@ -1,59 +1,414 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757602AbYAGOWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755402AbYAGOsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757602AbYAGOWW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 09:22:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753622AbYAGOWP
+	id S1755402AbYAGOsc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 09:48:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbYAGOsY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 09:22:15 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:41395 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753089AbYAGOWO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 09:22:14 -0500
-Date: Mon, 7 Jan 2008 06:21:16 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: devzero@web.de
-Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au
-Subject: Re: [patch 1/2] show being-loaded/being-unloaded indicator for
- modules
-Message-ID: <20080107062116.0aa37438@laptopd505.fenrus.org>
-In-Reply-To: <90564384@web.de>
-References: <90564384@web.de>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 7 Jan 2008 09:48:24 -0500
+Received: from styx.suse.cz ([82.119.242.94]:60389 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751489AbYAGOsX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 09:48:23 -0500
+Date: Mon, 7 Jan 2008 15:48:21 +0100
+From: Jan Kara <jack@suse.cz>
+To: marcin.slusarz@gmail.com
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Ben Fennema <bfennema@falcon.csc.calpoly.edu>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 4/7] udf: replace loops coded with goto to real loops
+Message-ID: <20080107144821.GK12589@duck.suse.cz>
+References: <1199582513-7915-1-git-send-email-marcin.slusarz@gmail.com> <1199582513-7915-4-git-send-email-marcin.slusarz@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1199582513-7915-4-git-send-email-marcin.slusarz@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 07 Jan 2008 11:09:23 +0100
-devzero@web.de wrote:
+On Sun 06-01-08 02:21:50, marcin.slusarz@gmail.com wrote:
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+  I'm not sure if this improves readability in general. If the code is
+really a loop in nature, then we should code it using do {} while but in
+case we loop back just in case of some error (as seems to be the case in
+udf_bitmap_new_block()), then IMHO goto is more explanative. So at least
+that one case I'd leave as is.
 
-> this looks very useful!
+									Honza
+> ---
+>  fs/udf/balloc.c |  309 ++++++++++++++++++++++++++++---------------------------
+>  1 files changed, 157 insertions(+), 152 deletions(-)
 > 
-> >Unfortunatly, it's not always easy to see directly
-> >which module is being loaded/unloaded from the oops itself.
+> diff --git a/fs/udf/balloc.c b/fs/udf/balloc.c
+> index d1d4b8f..5ce7926 100644
+> --- a/fs/udf/balloc.c
+> +++ b/fs/udf/balloc.c
+> @@ -183,46 +183,46 @@ static void udf_bitmap_free_blocks(struct super_block *sb,
+>  	block = bloc.logicalBlockNum + offset +
+>  		(sizeof(struct spaceBitmapDesc) << 3);
+>  
+> -do_more:
+> -	overflow = 0;
+> -	block_group = block >> (sb->s_blocksize_bits + 3);
+> -	bit = block % (sb->s_blocksize << 3);
+> +	do {
+> +		overflow = 0;
+> +		block_group = block >> (sb->s_blocksize_bits + 3);
+> +		bit = block % (sb->s_blocksize << 3);
+>  
+> -	/*
+> -	 * Check to see if we are freeing blocks across a group boundary.
+> -	 */
+> -	if (bit + count > (sb->s_blocksize << 3)) {
+> -		overflow = bit + count - (sb->s_blocksize << 3);
+> -		count -= overflow;
+> -	}
+> -	bitmap_nr = load_block_bitmap(sb, bitmap, block_group);
+> -	if (bitmap_nr < 0)
+> -		goto error_return;
+> +		/*
+> +		* Check to see if we are freeing blocks across a group boundary.
+> +		*/
+> +		if (bit + count > (sb->s_blocksize << 3)) {
+> +			overflow = bit + count - (sb->s_blocksize << 3);
+> +			count -= overflow;
+> +		}
+> +		bitmap_nr = load_block_bitmap(sb, bitmap, block_group);
+> +		if (bitmap_nr < 0)
+> +			goto error_return;
+>  
+> -	bh = bitmap->s_block_bitmap[bitmap_nr];
+> -	for (i = 0; i < count; i++) {
+> -		if (udf_set_bit(bit + i, bh->b_data)) {
+> -			udf_debug("bit %ld already set\n", bit + i);
+> -			udf_debug("byte=%2x\n",
+> -				  ((char *)bh->b_data)[(bit + i) >> 3]);
+> -		} else {
+> -			if (inode)
+> -				DQUOT_FREE_BLOCK(inode, 1);
+> -			udf_inc_free_space(sbi, sbi->s_partition, 1);
+> +		bh = bitmap->s_block_bitmap[bitmap_nr];
+> +		for (i = 0; i < count; i++) {
+> +			if (udf_set_bit(bit + i, bh->b_data)) {
+> +				udf_debug("bit %ld already set\n", bit + i);
+> +				udf_debug("byte=%2x\n",
+> +					((char *)bh->b_data)[(bit + i) >> 3]);
+> +			} else {
+> +				if (inode)
+> +					DQUOT_FREE_BLOCK(inode, 1);
+> +				udf_inc_free_space(sbi, sbi->s_partition, 1);
+> +			}
+>  		}
+> -	}
+> -	mark_buffer_dirty(bh);
+> -	if (overflow) {
+> -		block += count;
+> -		count = overflow;
+> -		goto do_more;
+> -	}
+> +		mark_buffer_dirty(bh);
+> +		if (overflow) {
+> +			block += count;
+> +			count = overflow;
+> +		}
+> +	} while (overflow);
+> +
+>  error_return:
+>  	sb->s_dirt = 1;
+>  	if (sbi->s_lvid_bh)
+>  		mark_buffer_dirty(sbi->s_lvid_bh);
+>  	mutex_unlock(&sbi->s_alloc_mutex);
+> -	return;
+>  }
+>  
+>  static int udf_bitmap_prealloc_blocks(struct super_block *sb,
+> @@ -246,39 +246,40 @@ static int udf_bitmap_prealloc_blocks(struct super_block *sb,
+>  	if (first_block + block_count > part_len)
+>  		block_count = part_len - first_block;
+>  
+> -repeat:
+> -	nr_groups = (sbi->s_partmaps[partition].s_partition_len +
+> -		     (sizeof(struct spaceBitmapDesc) << 3) +
+> -		     (sb->s_blocksize * 8) - 1) / (sb->s_blocksize * 8);
+> -	block = first_block + (sizeof(struct spaceBitmapDesc) << 3);
+> -	block_group = block >> (sb->s_blocksize_bits + 3);
+> -	group_start = block_group ? 0 : sizeof(struct spaceBitmapDesc);
+> +	do {
+> +		nr_groups = (sbi->s_partmaps[partition].s_partition_len +
+> +			(sizeof(struct spaceBitmapDesc) << 3) +
+> +			(sb->s_blocksize * 8) - 1) / (sb->s_blocksize * 8);
+> +		block = first_block + (sizeof(struct spaceBitmapDesc) << 3);
+> +		block_group = block >> (sb->s_blocksize_bits + 3);
+> +		group_start = block_group ? 0 : sizeof(struct spaceBitmapDesc);
+>  
+> -	bitmap_nr = load_block_bitmap(sb, bitmap, block_group);
+> -	if (bitmap_nr < 0)
+> -		goto out;
+> -	bh = bitmap->s_block_bitmap[bitmap_nr];
+> +		bitmap_nr = load_block_bitmap(sb, bitmap, block_group);
+> +		if (bitmap_nr < 0)
+> +			goto out;
+> +		bh = bitmap->s_block_bitmap[bitmap_nr];
+>  
+> -	bit = block % (sb->s_blocksize << 3);
+> +		bit = block % (sb->s_blocksize << 3);
+>  
+> -	while (bit < (sb->s_blocksize << 3) && block_count > 0) {
+> -		if (!udf_test_bit(bit, bh->b_data)) {
+> -			goto out;
+> -		} else if (DQUOT_PREALLOC_BLOCK(inode, 1)) {
+> -			goto out;
+> -		} else if (!udf_clear_bit(bit, bh->b_data)) {
+> -			udf_debug("bit already cleared for block %d\n", bit);
+> -			DQUOT_FREE_BLOCK(inode, 1);
+> -			goto out;
+> +		while (bit < (sb->s_blocksize << 3) && block_count > 0) {
+> +			if (!udf_test_bit(bit, bh->b_data))
+> +				goto out;
+> +			else if (DQUOT_PREALLOC_BLOCK(inode, 1))
+> +				goto out;
+> +			else if (!udf_clear_bit(bit, bh->b_data)) {
+> +				udf_debug("bit already cleared for block %d\n",
+> +					  bit);
+> +				DQUOT_FREE_BLOCK(inode, 1);
+> +				goto out;
+> +			}
+> +			block_count--;
+> +			alloc_count++;
+> +			bit++;
+> +			block++;
+>  		}
+> -		block_count--;
+> -		alloc_count++;
+> -		bit++;
+> -		block++;
+> -	}
+> -	mark_buffer_dirty(bh);
+> -	if (block_count > 0)
+> -		goto repeat;
+> +		mark_buffer_dirty(bh);
+> +	} while (block_count > 0);
+> +
+>  out:
+>  	if (udf_inc_free_space(sbi, partition, -alloc_count))
+>  		mark_buffer_dirty(sbi->s_lvid_bh);
+> @@ -298,117 +299,121 @@ static int udf_bitmap_new_block(struct super_block *sb,
+>  	struct buffer_head *bh = NULL;
+>  	char *ptr;
+>  	int newblock = 0;
+> +	bool bit_already_cleared;
+>  
+>  	*err = -ENOSPC;
+>  	mutex_lock(&sbi->s_alloc_mutex);
+>  
+> -repeat:
+> -	if (goal < 0 || goal >= sbi->s_partmaps[partition].s_partition_len)
+> -		goal = 0;
+> -
+> -	nr_groups = bitmap->s_nr_groups;
+> -	block = goal + (sizeof(struct spaceBitmapDesc) << 3);
+> -	block_group = block >> (sb->s_blocksize_bits + 3);
+> -	group_start = block_group ? 0 : sizeof(struct spaceBitmapDesc);
+> -
+> -	bitmap_nr = load_block_bitmap(sb, bitmap, block_group);
+> -	if (bitmap_nr < 0)
+> -		goto error_return;
+> -	bh = bitmap->s_block_bitmap[bitmap_nr];
+> -	ptr = memscan((char *)bh->b_data + group_start, 0xFF,
+> -		      sb->s_blocksize - group_start);
+> -
+> -	if ((ptr - ((char *)bh->b_data)) < sb->s_blocksize) {
+> -		bit = block % (sb->s_blocksize << 3);
+> -		if (udf_test_bit(bit, bh->b_data))
+> -			goto got_block;
+> -
+> -		end_goal = (bit + 63) & ~63;
+> -		bit = udf_find_next_one_bit(bh->b_data, end_goal, bit);
+> -		if (bit < end_goal)
+> -			goto got_block;
+> -
+> -		ptr = memscan((char *)bh->b_data + (bit >> 3), 0xFF,
+> -			      sb->s_blocksize - ((bit + 7) >> 3));
+> -		newbit = (ptr - ((char *)bh->b_data)) << 3;
+> -		if (newbit < sb->s_blocksize << 3) {
+> -			bit = newbit;
+> -			goto search_back;
+> -		}
+> -
+> -		newbit = udf_find_next_one_bit(bh->b_data,
+> -					       sb->s_blocksize << 3, bit);
+> -		if (newbit < sb->s_blocksize << 3) {
+> -			bit = newbit;
+> -			goto got_block;
+> -		}
+> -	}
+> +	do {
+> +		if (goal < 0 ||
+> +		    goal >= sbi->s_partmaps[partition].s_partition_len)
+> +			goal = 0;
+>  
+> -	for (i = 0; i < (nr_groups * 2); i++) {
+> -		block_group++;
+> -		if (block_group >= nr_groups)
+> -			block_group = 0;
+> +		nr_groups = bitmap->s_nr_groups;
+> +		block = goal + (sizeof(struct spaceBitmapDesc) << 3);
+> +		block_group = block >> (sb->s_blocksize_bits + 3);
+>  		group_start = block_group ? 0 : sizeof(struct spaceBitmapDesc);
+>  
+>  		bitmap_nr = load_block_bitmap(sb, bitmap, block_group);
+>  		if (bitmap_nr < 0)
+>  			goto error_return;
+>  		bh = bitmap->s_block_bitmap[bitmap_nr];
+> -		if (i < nr_groups) {
+> -			ptr = memscan((char *)bh->b_data + group_start, 0xFF,
+> -				      sb->s_blocksize - group_start);
+> -			if ((ptr - ((char *)bh->b_data)) < sb->s_blocksize) {
+> -				bit = (ptr - ((char *)bh->b_data)) << 3;
+> -				break;
+> +		ptr = memscan(bh->b_data + group_start, 0xFF,
+> +			sb->s_blocksize - group_start);
+> +
+> +		if ((ptr - bh->b_data) < sb->s_blocksize) {
+> +			bit = block % (sb->s_blocksize << 3);
+> +			if (udf_test_bit(bit, bh->b_data))
+> +				goto got_block;
+> +
+> +			end_goal = (bit + 63) & ~63;
+> +			bit = udf_find_next_one_bit(bh->b_data, end_goal, bit);
+> +			if (bit < end_goal)
+> +				goto got_block;
+> +
+> +			ptr = memscan(bh->b_data + (bit >> 3), 0xFF,
+> +				sb->s_blocksize - ((bit + 7) >> 3));
+> +			newbit = (ptr - bh->b_data) << 3;
+> +			if (newbit < sb->s_blocksize << 3) {
+> +				bit = newbit;
+> +				goto search_back;
+> +			}
+> +
+> +			newbit = udf_find_next_one_bit(bh->b_data,
+> +						sb->s_blocksize << 3, bit);
+> +			if (newbit < sb->s_blocksize << 3) {
+> +				bit = newbit;
+> +				goto got_block;
+>  			}
+> -		} else {
+> -			bit = udf_find_next_one_bit((char *)bh->b_data,
+> -						    sb->s_blocksize << 3,
+> -						    group_start << 3);
+> -			if (bit < sb->s_blocksize << 3)
+> -				break;
+>  		}
+> -	}
+> -	if (i >= (nr_groups * 2)) {
+> -		mutex_unlock(&sbi->s_alloc_mutex);
+> -		return newblock;
+> -	}
+> -	if (bit < sb->s_blocksize << 3)
+> -		goto search_back;
+> -	else
+> -		bit = udf_find_next_one_bit(bh->b_data, sb->s_blocksize << 3,
+> -					    group_start << 3);
+> -	if (bit >= sb->s_blocksize << 3) {
+> -		mutex_unlock(&sbi->s_alloc_mutex);
+> -		return 0;
+> -	}
+> +
+> +		for (i = 0; i < (nr_groups * 2); i++) {
+> +			block_group++;
+> +			if (block_group >= nr_groups)
+> +				block_group = 0;
+> +			group_start = block_group ?
+> +					0 : sizeof(struct spaceBitmapDesc);
+> +
+> +			bitmap_nr = load_block_bitmap(sb, bitmap, block_group);
+> +			if (bitmap_nr < 0)
+> +				goto error_return;
+> +			bh = bitmap->s_block_bitmap[bitmap_nr];
+> +			if (i < nr_groups) {
+> +				ptr = memscan(bh->b_data + group_start,
+> +					0xFF, sb->s_blocksize - group_start);
+> +				if ((ptr - bh->b_data) < sb->s_blocksize) {
+> +					bit = (ptr - bh->b_data) << 3;
+> +					break;
+> +				}
+> +			} else {
+> +				bit = udf_find_next_one_bit(bh->b_data,
+> +							sb->s_blocksize << 3,
+> +							group_start << 3);
+> +				if (bit < sb->s_blocksize << 3)
+> +					break;
+> +			}
+> +		}
+> +		if (i >= (nr_groups * 2)) {
+> +			mutex_unlock(&sbi->s_alloc_mutex);
+> +			return newblock;
+> +		}
+> +		if (bit < sb->s_blocksize << 3)
+> +			goto search_back;
+> +		else
+> +			bit = udf_find_next_one_bit(bh->b_data,
+> +							sb->s_blocksize << 3,
+> +							group_start << 3);
+> +		if (bit >= sb->s_blocksize << 3) {
+> +			mutex_unlock(&sbi->s_alloc_mutex);
+> +			return 0;
+> +		}
+>  
+>  search_back:
+> -	i = 0;
+> -	while (i < 7 && bit > (group_start << 3) &&
+> -	       udf_test_bit(bit - 1, bh->b_data)) {
+> -		++i;
+> -		--bit;
+> -	}
+> +		i = 0;
+> +		while (i < 7 && bit > (group_start << 3) &&
+> +				udf_test_bit(bit - 1, bh->b_data)) {
+> +			++i;
+> +			--bit;
+> +		}
+>  
+>  got_block:
+>  
+> -	/*
+> -	 * Check quota for allocation of this block.
+> -	 */
+> -	if (inode && DQUOT_ALLOC_BLOCK(inode, 1)) {
+> -		mutex_unlock(&sbi->s_alloc_mutex);
+> -		*err = -EDQUOT;
+> -		return 0;
+> -	}
+> +		/*
+> +		* Check quota for allocation of this block.
+> +		*/
+> +		if (inode && DQUOT_ALLOC_BLOCK(inode, 1)) {
+> +			mutex_unlock(&sbi->s_alloc_mutex);
+> +			*err = -EDQUOT;
+> +			return 0;
+> +		}
+>  
+> -	newblock = bit + (block_group << (sb->s_blocksize_bits + 3)) -
+> -		(sizeof(struct spaceBitmapDesc) << 3);
+> +		newblock = bit + (block_group << (sb->s_blocksize_bits + 3)) -
+> +			(sizeof(struct spaceBitmapDesc) << 3);
+>  
+> -	if (!udf_clear_bit(bit, bh->b_data)) {
+> -		udf_debug("bit already cleared for block %d\n", bit);
+> -		goto repeat;
+> -	}
+> +		bit_already_cleared = !udf_clear_bit(bit, bh->b_data);
+> +		if (bit_already_cleared)
+> +			udf_debug("bit already cleared for block %d\n", bit);
+> +	} while (bit_already_cleared);
+>  
+>  	mark_buffer_dirty(bh);
+>  
+> -- 
+> 1.5.3.7
 > 
-> no wonder, as most modules seem to be very quiet on on load/unload.
-> 
-
-
-> 
-> but i wonder if some mandatory "print a message on init/exit"
-> wouldn`t give a benefit to admins or end-users, too. sure this would
-> additionally clutter up syslog, but it would add transparency.
-
-Regardless of the usefulness, really, if this would be mandatory for all modules, it should
-be done in the module loader itself.... 
-But I'm not entirely convinced how useful that is to do always, although I can see the 
-point of having it as debug option, similar to the initcall debug stuff...
-
-
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
