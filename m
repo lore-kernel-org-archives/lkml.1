@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbYAGG6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755402AbYAGHJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbYAGG6x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 01:58:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbYAGG6q
+	id S1755402AbYAGHJh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 02:09:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752916AbYAGHJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 01:58:46 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:49719 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752042AbYAGG6p (ORCPT
+	Mon, 7 Jan 2008 02:09:28 -0500
+Received: from miranda.se.axis.com ([193.13.178.8]:46189 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752042AbYAGHJ1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 01:58:45 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Benjamin LaHaise <bcrl@kvack.org>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: regression: sysctl_check changes in 2.6.24 are O(n) resulting in slow creation of 10000 network interfaces
-References: <20080106220307.GU28570@kvack.org>
-Date: Sun, 06 Jan 2008 23:57:57 -0700
-In-Reply-To: <20080106220307.GU28570@kvack.org> (Benjamin LaHaise's message of
-	"Sun, 6 Jan 2008 17:03:07 -0500")
-Message-ID: <m1ir26ktqi.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 7 Jan 2008 02:09:27 -0500
+From: "Mikael Starvik" <mikael.starvik@axis.com>
+To: "'Sam Ravnborg'" <sam@ravnborg.org>,
+       "'WANG Cong'" <xiyou.wangcong@gmail.com>
+Cc: "Mikael Starvik" <mikael.starvik@axis.com>,
+       "'LKML'" <linux-kernel@vger.kernel.org>, <linux-kbuild@vger.kernel.org>,
+       "'Andrew Morton'" <akpm@osdl.org>, "dev-etrax" <dev-etrax@axis.com>
+Subject: RE: [Patch 4/8] CRIS: Remove 'TOPDIR' from Makefiles
+Date: Mon, 7 Jan 2008 08:08:52 +0100
+Message-ID: <BFECAF9E178F144FAEF2BF4CE739C66804C402EA@exmail1.se.axis.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook, Build 10.0.6626
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1106
+Importance: Normal
+In-Reply-To: <BFECAF9E178F144FAEF2BF4CE739C668057FD0ED@exmail1.se.axis.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin LaHaise <bcrl@kvack.org> writes:
+>PS. Mikael - should Jesper be mentioned in MAINTAINERS?
 
-> Hello folks,
->
-> 2.6.24-rc6 regresses on the 10000 network interface creation test relative to 
-> 2.6.23.  The cause appears to be the new code in sysctl_check_lookup(), which 
-> shows up as the #1 item while profiling.  Is a revert of this new code 
-> possible until its scaling issues are fixed?  2.6.23 can do more than 100 new 
-> network interfaces per second for the first few thousand devices, but with 
-> 2.6.24-rc6 the results drop off rather dramatically to less than 10 interfaces
-> per second.  The 10000 interface test is unbearable with the new sysctl_check 
-> code.
+Yes, that is a good idea. Down the road Jesper will take over maintainership
+I guess.
 
-Why do we need 10000 interfaces?  Why isn't network device creation a
-slow path?
+-----Original Message-----
+From: Sam Ravnborg [mailto:sam@ravnborg.org] 
+Sent: Tuesday, January 01, 2008 11:20 AM
+To: WANG Cong
+Cc: Mikael Starvik; LKML; linux-kbuild@vger.kernel.org; Andrew Morton;
+dev-etrax
+Subject: Re: [Patch 4/8] CRIS: Remove 'TOPDIR' from Makefiles
 
-The problem seems to be in the data structures used by sysctl.
-You are increasing the length of the linked list each time you
-add a network interface.  So sysctl lookups slow down.
-At 10000 entries that is a long linked list walk.
 
-At 100000 things get even longer.  Now the numbers you report still
-seem like a lot of time to me.  My guess would be that we are getting
-badly into cache miss territory.
+On Tue, Jan 01, 2008 at 03:29:22PM +0800, WANG Cong wrote:
+> 
+> TOPDIR is obsolete, use objtree instead.
+> This patch removes TOPDIR from all Cris Makefiles.
+> 
+> Cc: Mikael Starvik <starvik@axis.com>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+> 
+> ---
+> 
+> diff --git a/arch/cris/arch-v32/boot/compressed/Makefile
+b/arch/cris/arch-v32/boot/compressed/Makefile
+> index 9f77eda..8586922 100644
+> --- a/arch/cris/arch-v32/boot/compressed/Makefile
+> +++ b/arch/cris/arch-v32/boot/compressed/Makefile
+> @@ -7,7 +7,7 @@
+>  target = $(target_compressed_dir)
+>  src    = $(src_compressed_dir)
+>  
+> -CC = gcc-cris -mlinux -march=v32 -I $(TOPDIR)/include
+> +CC = gcc-cris -mlinux -march=v32 -I $(objtree)/include
 
-If what you describe is a real scenario where users care we need
-to fix the sysctl data structures so that they scale.
+As in the mips case the right fix is to use:
+> +CC = gcc-cris -mlinux -march=v32 -Iinclude -Iinclude2
 
-Because of this bug report and another one I got earlier today
-about a real bug in the parallel port code detected by the very
-lookup that is slowing you down.  I am quite reluctant to contemplate
-pulling this code.  It seems to be doing it's job, if in some cases
-uncomfortably so.
+In this way we pick up the includes also in the O=..
+case.
 
-So is this a bug report telling me that there are users with
-10k or 100k interfaces that care.  So we need to fix sysctl.
+PS. Mikael - should Jesper be mentioned in MAINTAINERS?
 
-Is there a specific kernel test case that is run often that having
-slow sysctl performance matters for?  CONFIG_SYSCTL=n should solve
-that if it is specialized.
+	Sam
 
-Eric
