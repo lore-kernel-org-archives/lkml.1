@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbYAGDgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbYAGDt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755252AbYAGDgk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 22:36:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753919AbYAGDgX
+	id S1754707AbYAGDt5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 22:49:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbYAGDts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 22:36:23 -0500
-Received: from scrub.xs4all.nl ([194.109.195.176]:1517 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753854AbYAGDgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 22:36:22 -0500
-From: Roman Zippel <zippel@linux-m68k.org>
-To: "Ph. Marek" <philipp.marek@bmlv.gv.at>
-Subject: Re: "mconf" and help texts
-Date: Mon, 7 Jan 2008 04:31:24 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
-References: <200801031115.48859.philipp.marek@bmlv.gv.at>
-In-Reply-To: <200801031115.48859.philipp.marek@bmlv.gv.at>
+	Sun, 6 Jan 2008 22:49:48 -0500
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:32505 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753187AbYAGDtr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 22:49:47 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=5WxvX9I6DmG4FRd+rtRqPJwS9Txojy1xhoDBfSenJfujzuef82Q4btbl5EupR6UJxScGKkTSdspXAlKG/rPM5UQgIADxT4cHZfB5LMI/sdg7GSbEQFairniwJT+bfcYyK1Y1uIl9mWtrq0vjx3V6CxMO4CCvhYP3cnXan12tva0=  ;
+X-YMail-OSG: 74ZlBhMVM1lNtUKvJJ.Uvd1Vj738G7jnUuZYj7.Oix68duJBoKj8C5A3hd4QFLS0oTurP.Votw--
+From: David Brownell <david-b@pacbell.net>
+To: yi.y.yang@intel.com
+Subject: Re: [linux-pm][PATCH] base: Change power/wakeup output from "" to "unsupported" if wakeup feature isn't supported by a device
+Date: Sun, 6 Jan 2008 19:49:43 -0800
+User-Agent: KMail/1.9.6
+Cc: Olivier Galibert <galibert@pobox.com>,
+       Alan Stern <stern@rowland.harvard.edu>, pavel@ucw.cz,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <20080104160933.B01D81FBAB5@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <20080104165214.GA30672@dspnet.fr.eu.org> <1199670923.3551.10.camel@yangyi-dev.bj.intel.com>
+In-Reply-To: <1199670923.3551.10.camel@yangyi-dev.bj.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801070431.25688.zippel@linux-m68k.org>
+Message-Id: <200801061949.44408.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Thursday 3. January 2008, Ph. Marek wrote:
-
-> So I took a look at "Help", and saw that blob:
+On Sunday 06 January 2008, Yi Yang wrote:
+> 
+> > How about not changing a userland-visible interface gratuitously?
 >
->   Selected by: NETFILTER_XT_TARGET_CONNMARK && NET && INET && NETFILTER &&
->      NETFILTER_XTABLES && (IP_NF_MANGLE || IP6_NF_MANGLE) && NF_CONNTRACK
-> || NETFILTER_XT_MATCH_CONNMARK && NET && INET && NETFILTER &&
->      NETFILTER_XTABLES && NF_CONNTRACK || IP_NF_TARGET_CLUSTERIP && NET &&
->      INET && NETFILTER && IP_NF_MANGLE && EXPERIMENTAL && NF_CONNTRACK_IPV4
->
-> That is a _bit_ unreadable.
+> "empty" can't tell a user the state of wakeup of a device, so it is
+> necessary to change it.
 
-What you see here is the internal representation of the select expression. To 
-make it more easily readable, you could just cut off everything between && 
-and || (it's the dependency of the symbol which does the select, the one 
-before &&).
-The readable expression could be generated when needed, but it might be easier 
-to just generate at the same time as the full expression (in menu_finalize).
+Words don't say anything at all in isolation.  For example,
+here the current tristate behavior has been documented for
+several years now ... and that's the only thing that could
+have conveyed any meaning whatever.
 
-> As a side-node - I cannot get xconfig to work (pkg-config);
+I can't agree that it's even slightly "necessary" to make
+such a grutuitous and backwards-incompatible change.
 
-Why exactly? What's the error message?
 
-> is there some 
-> way in menuconfig to see why some config option is disallowed? The location
-> tree shows some data ("-> Networking support (NET [=y])"), but not for all
-> dependencies.
-
-I don't quite understand. The dependency for option itself is above the 
-location tree and the for dependencies of the dependencies you have to look 
-at their individual info.
-
-> [Does xconfig allow enabling them while seeing this option?] 
-
-Only if you enable the missing dependency. This is insofar a little easier as 
-they are linked if you enable the deubg info, so the prompt may be a little 
-easier to find.
-
-bye, Roman
