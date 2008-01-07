@@ -1,154 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756611AbYAGToT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbYAGTsY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756611AbYAGToT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 14:44:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbYAGToL
+	id S1756214AbYAGTsY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 14:48:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYAGTsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 14:44:11 -0500
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:42305 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753067AbYAGToJ (ORCPT
+	Mon, 7 Jan 2008 14:48:17 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:36985 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752383AbYAGTsQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 14:44:09 -0500
-Date: Tue, 8 Jan 2008 01:13:36 +0530
-From: "K. Prasad" <prasad@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org
-Cc: "K. Prasad" <prasad@linux.vnet.ibm.com>, mingo@elte.hu,
-       linux-rt-users@vger.kernel.org, dipankar@in.ibm.com,
-       paulmck@linux.vnet.ibm.com, rostedt@goodmis.org
-Subject: Re: [PATCH 2/2] Markers Implementation for Preempt RCU Boost Tracing
-Message-ID: <20080107194336.GA4556@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20071231060911.GB6461@in.ibm.com> <20080103163055.GB27651@Krystal> <20080104105858.GA13865@in.ibm.com> <20080105124632.GA16576@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080105124632.GA16576@Krystal>
-User-Agent: Mutt/1.4.2.2i
+	Mon, 7 Jan 2008 14:48:16 -0500
+Message-ID: <478281A6.1000704@zytor.com>
+Date: Mon, 07 Jan 2008 11:46:46 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: 7eggert@gmx.de
+CC: Christer Weinigel <christer@weinigel.se>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, "David P. Reed" <dpreed@reed.com>,
+       Rene Herman <rene.herman@gmail.com>, Paul Rolland <rol@as2917.net>,
+       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
+References: <9BdU5-1YW-9@gated-at.bofh.it> <9BeZN-3Gf-5@gated-at.bofh.it> <9BnTB-1As-31@gated-at.bofh.it> <9BrX4-8go-1@gated-at.bofh.it> <9BuBG-4eR-51@gated-at.bofh.it> <9BvRd-6aL-71@gated-at.bofh.it> <9GRQW-1DX-13@gated-at.bofh.it> <9GSah-23W-1@gated-at.bofh.it> <9GSDy-2GD-23@gated-at.bofh.it> <9GTpK-40d-15@gated-at.bofh.it> <9GUvy-5H2-11@gated-at.bofh.it> <9GVKU-7SS-25@gated-at.bofh.it> <E1JBxnV-00046d-CS@be1.7eggert.dyndns.org>
+In-Reply-To: <E1JBxnV-00046d-CS@be1.7eggert.dyndns.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 05, 2008 at 07:46:32AM -0500, Mathieu Desnoyers wrote:
-> * Gautham R Shenoy (ego@in.ibm.com) wrote:
-> > On Thu, Jan 03, 2008 at 11:30:55AM -0500, Mathieu Desnoyers wrote:
-> > > * K. Prasad (prasad@linux.vnet.ibm.com) wrote:
-> > > > This patch converts the tracing mechanism of Preempt RCU boosting into
-> > > > markers. The handler functions for these markers are included inside
-> > > > rcupreempt_trace.c and will be included only when PREEMPT_RCU_BOOST is
-> > > > chosen.
-> > > >  
-> > > > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-> > > > ---
-> > > >  include/linux/rcupreempt_trace.h |   46 ++++++++
-> > > >  kernel/rcupreempt-boost.c        |  211 ++++-----------------------------------
-> > > >  kernel/rcupreempt_trace.c        |  183 +++++++++++++++++++++++++++++++++
-> > > >  3 files changed, 251 insertions(+), 189 deletions(-)
-> > > >  
-> > > > Index: linux-2.6.24-rc2-rt1.MARKER_PATCHES_NEW/include/linux/rcupreempt_trace.h
-> > > > ===================================================================
-> > > > --- linux-2.6.24-rc2-rt1.MARKER_PATCHES_NEW.orig/include/linux/rcupreempt_trace.h
-> > > > +++ linux-2.6.24-rc2-rt1.MARKER_PATCHES_NEW/include/linux/rcupreempt_trace.h
-> > > > @@ -102,5 +102,51 @@ extern int rcupreempt_flip_flag(int cpu)
-> > > >  extern int rcupreempt_mb_flag(int cpu);
-> > > >  extern char *rcupreempt_try_flip_state_name(void);
-> > > >  
-> > > > +#ifdef CONFIG_PREEMPT_RCU_BOOST
-> > > > +struct preempt_rcu_boost_trace {
-> > > > +	unsigned long rbs_stat_task_boost_called;
-> > > > +	unsigned long rbs_stat_task_boosted;
-> > > > +	unsigned long rbs_stat_boost_called;
-> > > > +	unsigned long rbs_stat_try_boost;
-> > > > +	unsigned long rbs_stat_boosted;
-> > > > +	unsigned long rbs_stat_unboost_called;
-> > > > +	unsigned long rbs_stat_unboosted;
-> > > > +	unsigned long rbs_stat_try_boost_readers;
-> > > > +	unsigned long rbs_stat_boost_readers;
-> > > > +	unsigned long rbs_stat_try_unboost_readers;
-> > > > +	unsigned long rbs_stat_unboost_readers;
-> > > > +	unsigned long rbs_stat_over_taken;
-> > > > +};
-> > > > +
-> > > > +#define DEFINE_PREEMPT_RCU_BOOST_MARKER_HANDLER(preempt_rcu_boost_var) \
-> > > > +void preempt_rcu_boost_var##_callback(const struct marker *mdata, \
-> > > > +				void *private_data, const char *format, ...) \
-> > > > +{ \
-> > > > +	va_list ap; \
-> > > > +	int cpu; \
-> > > > +	struct preempt_rcu_boost_trace *boost_trace; \
-> > > > +	va_start(ap, format); \
-> > > > +	cpu = va_arg(ap, typeof(unsigned int)); \
-> > > 
-> > > (sorry for late response, I just came back from vacation)
-> > > 
-> > > Instead of passing the cpu id as a marker parameter, why don't you
-> > > simply use smp_processor_id() right here ?
-> > > 
-> > 
-> > Agreed. 
-> > 
-> > Also in patch 1, in cases where we're using markers in place of RCU_TRACE_ME(), 
-> > we need not pass the parameter and simply use smp_processor_id().
-> > 
-> > It's only the RCU_TRACE_RDP() that requires cpuid to be passed.
-> > 
+Bodo Eggert wrote:
+> Christer Weinigel <christer@weinigel.se> wrote:
 > 
+>> How do you find out the speed of the ISA bus?  AFAIK there is no
+>> standardized way to do that.  On the Geode SC2200 the ISA bus speed is
+>> usually the PCI clock divided by 4 giving 33MHz/4=8.3MHz or
+>> 30/4=7.5MHz, but with no external ISA devices it's possible to
+>> overclock the ISA bus to /3 to run it at 11MHz or so.  But without
+>> poking at some CPU and southbridge specific registers to find out the
+>> PCI bus speed and the ISA bus divisor you can't really tell.
 > 
-> And it would help if you declare the format string with something like :
+> If you overclock, you are on your own. IIRC I've used 13,3 MHz for some time
+> and used a lower PIO mode to compensate.
 > 
-> "cpuid %u" instead of "%u"
+>> So if you do udelay based on a 6MHz clock (I think you can safely
+>> assume that any 386 based system runs the ISA bus at least that fast)
+>> you'll waste at least 30% and maybe even 100% more time for the delay
+>> after every _p call.
 > 
-> This way, if a generic tracer like LTTng dumps the traces and later a
-> plugin in an analysis tool like LTTV have to hook on a specific field of
-> your event, it can access it by specifying the marker name and field
-> name. And even if fields are added to this event, it won't break
-> compatibility as long as this field is there and have the same name.
+> Defaulting to 8 MHz and offering an option to set another clock speed
+> (like idebus=) should be OK.
 > 
-> Mathieu
 
-Hi Mathieu,
-	Thanks for your suggestions.
+The formalization of the ISA bus which was part of the EISA 
+specification settled on 8.33 MHz maximum nominal frequency.  There 
+were, however, some earlier designs which used up to 12 MHz nominal; I'm 
+not sure if that applied to 386s though.
 
-Even in functions such as rcu_check_callbacks_rt, rcu_advance_callbacks_rt and
-__rcu_advance_callbacks, where a call to RCU_TRACE_RDP() is made, the
-'cpu' variable is populated at an early stage with the
-return value of smp_processor_id().
-
-__rcu_advance_callbacks() <-- rcu_check_callbacks_rt() <--
-rcu_check_callbacks() <-- update_process_times().
-
-update_process_times() [if understood correctly, is called at timer
-interrupt level] populates the 'cpu' with smp_processor_id().
-
-There doesn't seem to be a need to pass down the 'cpu' parameter for
-the above RCU functions including respective trace_mark() calls.
-
-I am re-sending the patches with your suggested changes in subsequent
-mails.
-
-Thanks,
-K.Prasad
-
-> 
-> > 
-> > Thanks and Regards
-> > gautham.
-> > 
-> > 
-> > > -- 
-> > > Mathieu Desnoyers
-> > > Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-> > > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> > 
-> > -- 
-> > Gautham R Shenoy
-> > Linux Technology Center
-> > IBM India.
-> > "Freedom comes with a price tag of responsibility, which is still a bargain,
-> > because Freedom is priceless!"
-> 
-> -- 
-> Mathieu Desnoyers
-> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+	-hpa
