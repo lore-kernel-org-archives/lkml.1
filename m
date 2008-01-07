@@ -1,74 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758011AbYAGRRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbYAGRVO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758011AbYAGRRX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 12:17:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbYAGRRQ
+	id S1757119AbYAGRVO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 12:21:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYAGRU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 12:17:16 -0500
-Received: from ns.suse.de ([195.135.220.2]:59432 "EHLO mx1.suse.de"
+	Mon, 7 Jan 2008 12:20:59 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:39608 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755351AbYAGRRO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 12:17:14 -0500
-Date: Mon, 7 Jan 2008 18:17:12 +0100
-From: Andi Kleen <ak@suse.de>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH 1 of 8] x86: page.h: unify constants
-Message-ID: <20080107171712.GE2998@bingen.suse.de>
-References: <patchbomb.1199391057@localhost> <ba0ec40a50a7aef1a315.1199391058@localhost>
-MIME-Version: 1.0
+	id S1751368AbYAGRU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 12:20:58 -0500
+Date: Mon, 7 Jan 2008 20:22:39 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, Ingo Molnar <mingo@elte.hu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Christian Kujau <lists@nerdbynature.de>, linux-kernel@vger.kernel.org,
+       jfs-discussion@lists.sourceforge.net,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: 2.6.24-rc6: possible recursive locking detected
+Message-ID: <20080107172239.GA14880@tv-sign.ru>
+References: <alpine.DEB.0.999999.0801032349190.4821@sheep.housecafe.de> <200801040006.47979.rjw@sisk.pl> <20080104083049.GC22803@elte.hu> <20080105071205.GA28936@gondor.apana.org.au> <1199552016.31975.41.camel@lappy> <1199552476.31975.45.camel@lappy>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ba0ec40a50a7aef1a315.1199391058@localhost>
+In-Reply-To: <1199552476.31975.45.camel@lappy>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 01/05, Peter Zijlstra wrote:
+>
+> Since EP_MAX_POLLWAKE_NESTS < MAX_LOCKDEP_SUBCLASSES we could perhaps do
+> something like:
+>
+>   wake_up_nested(..., wake_nests);
 
-> +
-> +#define LARGE_PAGE_SIZE		(_AC(1,UL) << PMD_SHIFT)
-> +#define LARGE_PAGE_MASK		(~(LARGE_PAGE_SIZE-1))
-> +
-> +#define HPAGE_SHIFT		PMD_SHIFT
-> +#define HPAGE_SIZE		(_AC(1,UL) << HPAGE_SHIFT)
-> +#define HPAGE_MASK		(~(HPAGE_SIZE - 1))
-> +#define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
+I think this would be the most correct change. But I wonder if it is possible
+to do something more generic (but otoh more stupid/hackish and less safe).
 
-This will actually stop being the same soon with GB pages which
-are only supported on 64bit.
+Consider this "just for illustration" patch,
 
-> +
-> +#ifdef CONFIG_X86_64
-> +#define THREAD_ORDER	1
-> +#define THREAD_SIZE  (PAGE_SIZE << THREAD_ORDER)
-> +#define CURRENT_MASK (~(THREAD_SIZE-1))
-> +
-> +#define EXCEPTION_STACK_ORDER 0
-> +#define EXCEPTION_STKSZ (PAGE_SIZE << EXCEPTION_STACK_ORDER)
-> +
-> +#define DEBUG_STACK_ORDER (EXCEPTION_STACK_ORDER + 1)
-> +#define DEBUG_STKSZ (PAGE_SIZE << DEBUG_STACK_ORDER)
-> +
-> +#define IRQSTACK_ORDER 2
-> +#define IRQSTACKSIZE (PAGE_SIZE << IRQSTACK_ORDER)
+--- t/kernel/lockdep.c	2007-11-09 12:57:31.000000000 +0300
++++ t/kernel/lockdep.c	2008-01-07 19:43:50.000000000 +0300
+@@ -1266,10 +1266,13 @@ check_deadlock(struct task_struct *curr,
+ 	struct held_lock *prev;
+ 	int i;
+ 
+-	for (i = 0; i < curr->lockdep_depth; i++) {
++	for (i = curr->lockdep_depth; --i >= 0; ) {
+ 		prev = curr->held_locks + i;
+ 		if (prev->class != next->class)
+ 			continue;
++
++		if (prev->trylock == -1)
++			return 2;
+ 		/*
+ 		 * Allow read-after-read recursion of the same
+ 		 * lock class (i.e. read_lock(lock)+read_lock(lock)):
+-------------------------------------------------------------------------
 
-This all seems hardly 64bit specific (except for THREAD_ORDER
-but you can probably handle that in Kconfig or just get rid
-of it for 32bit)
+Now,
 
-> +#define __PHYSICAL_START	CONFIG_PHYSICAL_START
+	// trylock == -1
+	#define	spin_mark_nested(l)	\
+		lock_acquire(&(l)->dep_map, 0, -1, 0, 2, _THIS_IP_)
+	#define	spin_unmark_nested(l)	\
+		lock_release(&(l)->dep_map, 1, _THIS_IP_)
 
-Also not 64bit specific
+and ep_poll_safewake() can do:
 
-> +#ifdef CONFIG_X86_PAE
-> +#define __PHYSICAL_MASK_SHIFT	36
+	/* Do really wake up now */
+	spin_mark_nested(&wq->lock);
+	wake_up(wq);
+	spin_unmark_nested(&wq->lock);
 
-I originally added the PHYSICAL_MASK stuff to deal with masking off NX,
-but I must admit it wasn't the best idea I ever had. It would be probably
-better to just get rid of it and always mask off the high reserved flags bit
-explicitely. If you make that 0 then there should be no special
-case for PAE.
+Possible?
 
--Andi
+Oleg.
+
