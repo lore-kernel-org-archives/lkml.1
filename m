@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756984AbYAGRkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757564AbYAGRmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756984AbYAGRkG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 12:40:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbYAGRjz
+	id S1757564AbYAGRmY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 12:42:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754710AbYAGRmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 12:39:55 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:55104 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753959AbYAGRjz (ORCPT
+	Mon, 7 Jan 2008 12:42:16 -0500
+Received: from wr-out-0506.google.com ([64.233.184.233]:35152 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754180AbYAGRmO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 12:39:55 -0500
-Date: Mon, 7 Jan 2008 18:39:53 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, Michal Simek <simekm2@fel.cvut.cz>,
-       linux-kernel@vger.kernel.org, monstr@monstr.eu
-Subject: Re: New linux arch
-In-Reply-To: <478260C9.6040407@s5r6.in-berlin.de>
-Message-ID: <Pine.LNX.4.64.0801071838340.14194@fbirervta.pbzchgretzou.qr>
-References: <47820D24.3060800@fel.cvut.cz> <84144f020801070447t68808bcdq64bfc949c7732462@mail.gmail.com>
- <Pine.LNX.4.64.0801071433510.14194@fbirervta.pbzchgretzou.qr>
- <478260C9.6040407@s5r6.in-berlin.de>
+	Mon, 7 Jan 2008 12:42:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=vguI0EMiVJo9x2odZzbweAoO7ASWQuFAlU6KVDlRUFh6yds/OSzFWuU5FK4b4lA4frw7sFxCnHqvI3VkTCPmX8qxbmJ/GkS58s2FhLKay45uIcNq48C3WatNpRslOTVhr0FcW9IwXeg4QtYf3l2ub9prOU0jeP5wdcDgoT2Q1ZM=
+Message-ID: <43e72e890801070942y5abcc8acs31ac446d67414483@mail.gmail.com>
+Date: Mon, 7 Jan 2008 12:42:13 -0500
+From: "Luis R. Rodriguez" <mcgrof@winlab.rutgers.edu>
+To: "Hauke Mehrtens" <hauke@hauke-m.de>
+Subject: Re: rtl8187 rate control doesn't work
+Cc: "Michael Wu" <flamingice@sourmilk.net>, linux-kernel@vger.kernel.org,
+       "Stefano Brivio" <stefano.brivio@polimi.it>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+In-Reply-To: <47824D25.5090005@hauke-m.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <477F9890.5050107@hauke-m.de>
+	 <43e72e890801051354v280c0ceeo78790bb5f1f45314@mail.gmail.com>
+	 <47824D25.5090005@hauke-m.de>
+X-Google-Sender-Auth: 527d475ff32b9739
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Jan 7 2008 18:26, Stefan Richter wrote:
->Jan Engelhardt wrote:
->>>On Jan 7, 2008 1:29 PM, Michal Simek <simekm2@fel.cvut.cz> wrote:
->>>> Is it possible to create git repository in git.kernel.org for Microblaze
->>>> cpu?
->...
->> Alternatively, providing your own git service is just as effective,
->> and comes with much more freedom :)
+On Jan 7, 2008 11:02 AM, Hauke Mehrtens <hauke@hauke-m.de> wrote:
+> There is an other Problem.
 >
->It is /almost/ as effective:
->  - Many of the git trees on kernel.org are set up to share objects with
->Linus' tree.
+> iwconfig shows me "Bit Rate=1 Mb/s" the hole time, but I'm able to
+> download with an average of 440K/s as wget says.
+>
+> It's with PID rate control algorithm.
 
-Oh? So `du -s davem/net-2.6.25` will not be like 170 megs in size?
+Thanks for reporting this, how'd it go with simple rate control
+algorithm instead?
 
->  - The tree owners can fetch from each other locally and via ssh:
->protocol, alternatively to the remote protocols.
-
-For bandwidth-savers, yeah. For those who have the pipe, time, money 
-or devotion, pulling from torvalds/linux-2.6.git is enough, and it will be
-pushed out with the next set of development changesets anyway :-)
+  Luis
