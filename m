@@ -1,51 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755919AbYAGJSg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbYAGJTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755919AbYAGJSg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 04:18:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753789AbYAGJS3
+	id S1756161AbYAGJTj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 04:19:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbYAGJTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 04:18:29 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:33274 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752683AbYAGJS2 (ORCPT
+	Mon, 7 Jan 2008 04:19:32 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:60260 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753789AbYAGJTb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 04:18:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=wY6noCddIAjg5HBt/KUU9XXV/BS2yf8dS2qAgHq376MdoPiwqPxD6qUJdRGuTNtgMjyEWiqNHcCxeFpspXHlRUphoUcOp5O6wbGPg3jXj+YoTJq6t1rr9MtCOhULz4N/TkgjcQRSxw8FcIaitBTDJSbIAmpnqldaK+qxV9IpPto=
-Message-ID: <4781EE5D.1000105@gmail.com>
-Date: Mon, 07 Jan 2008 18:18:21 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 7 Jan 2008 04:19:31 -0500
+Date: Mon, 7 Jan 2008 14:48:38 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Vivek Goyal <vgoyal@redhat.com>,
+       hbabu@us.ibm.com, lkml <linux-kernel@vger.kernel.org>,
+       kexec@lists.infradead.org, maneesh@linux.vnet.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de,
+       hpa@zytor.com
+Subject: Re: kexec refuses to boot latest -mm
+Message-ID: <20080107091838.GA30865@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20071228124532.GB32643@linux.vnet.ibm.com> <20071231150843.GB27060@redhat.com> <20080103195201.GC6392@linux.vnet.ibm.com> <200801032242.01425.rjw@sisk.pl> <20080104122816.GF4514@linux.vnet.ibm.com> <20080104155415.GC6007@linux.vnet.ibm.com> <20080106133729.GB2481@elte.hu>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Al Viro <viro@ZenIV.linux.org.uk>, Gabor Gombas <gombasg@sztaki.hu>,
-       Dave Young <hidave.darkstar@gmail.com>, linux-kernel@vger.kernel.org,
-       bluez-devel@lists.sourceforge.net, Greg KH <greg@kroah.com>
-Subject: Re: [Bluez-devel] Oops involving RFCOMM and sysfs
-References: <20071228173203.GA20690@boogie.lpds.sztaki.hu>	<a8e1da0712290007o168a730cw923055ad2c265d84@mail.gmail.com>	<20080102151642.GA7273@boogie.lpds.sztaki.hu>	<20080105075039.GF27894@ZenIV.linux.org.uk>	<477F9481.2040505@gmail.com>	<20080105194510.GK27894@ZenIV.linux.org.uk>	<478037F8.8020103@gmail.com> <47819079.3000606@gmail.com> <m1abnikpuz.fsf@ebiederm.dsl.xmission.com> <4781EE20.6070701@gmail.com>
-In-Reply-To: <4781EE20.6070701@gmail.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080106133729.GB2481@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Eric W. Biederman wrote:
->>> That said, the mechanism is a bit too fragile.  sysfs currently ensures
->>> that dentry/inode point to the associated sysfs_dirent.  This is mainly
->>> remanent of conversion from previous VFS based implementation.  I think
->>> the right thing to do here is to make sysfs behave like other proper
->>> distributed filesystems using d_revalidate.
->> Huh?  We still need something like sysfs_get_dentry to find the dentries
->> for the rename or move operation.  So we can call d_move.  
+On Sun, Jan 06, 2008 at 02:37:29PM +0100, Ingo Molnar wrote:
 > 
-> Ah... right.  Thanks.  :-)
+> * Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+> 
+> > So I went ahead and bisected -mm, and the culprit is git-x86. It boots 
+> > fine before it, but with git-x86 applied, it fails to boot.
+> > 
+> > Ingo/Thomas, could you please point me to the git-x86 tree so that I 
+> > can bisect it? (with instructions on how to pull the -mm branch, I 
+> > managed to pull the master branch, but not the -mm branch)
+> 
+> sure:
+> 
+> --------------{ x86.git instructions }---------->
+> 
+>  git-clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git linux-2.6.git
+>  cd linux-2.6.git
+>  git-branch x86
+>  git-checkout x86
+>  git-pull git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git mm
+>  git-log HEAD@{1}.. # see what's in #mm
+> 
 
-On the second thought, can't those too be dealt with d_revalidate?
+Thanks for the instructions. I went ahead and did the bisect, and
+
+commit 7dd838ea7afa42a8840cf0e262d5892346ecf379
+Author: H. Peter Anvin <hpa@zytor.com>
+Date:   Sat Jan 5 13:27:04 2008 +0100
+
+is the first bad commit.
+
+git bisect log
+
+dhaval@kernel:~/mm$ git bisect log
+git-bisect start
+# good: [439f61b9f9ebbf84fb7e6b3539fc3794e046bbb9] Merge
+git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6
+git-bisect good 439f61b9f9ebbf84fb7e6b3539fc3794e046bbb9
+# bad: [5c9b01f1566f4989bb732a46c9a9c86f3e7ef9ae] x86: unregister PIT
+clocksource when PIT is disabled
+git-bisect bad 5c9b01f1566f4989bb732a46c9a9c86f3e7ef9ae
+# good: [203bcdc3d2725751e4dc0e3749edbab3c8bf9132] move switch_to macro
+to system.h
+git-bisect good 203bcdc3d2725751e4dc0e3749edbab3c8bf9132
+# good: [81886a1b16eec7a27f3ec94f06f585685ad08bf2] x86: i387 renaming
+git-bisect good 81886a1b16eec7a27f3ec94f06f585685ad08bf2
+# bad: [fc0ed2251da6ef8ad3295a02b39bed9859dc0cfc] x86: unify
+arch/x86/kernel/Makefile(s)
+git-bisect bad fc0ed2251da6ef8ad3295a02b39bed9859dc0cfc
+# good: [6fa16686ee2b0cc6b02a59671ecb9d4c85beae64] change assembly
+definition of paravirt_patch_site
+git-bisect good 6fa16686ee2b0cc6b02a59671ecb9d4c85beae64
+# bad: [1184caa02fcc2ecd780b145f4c69cc4484a8cde4] git-x86:
+arch/x86/math-emu/errors.c: fix printk warnings
+git-bisect bad 1184caa02fcc2ecd780b145f4c69cc4484a8cde4
+# good: [e8189d0ca1970578f4b28f92928581313633be5a] x86_64 patching
+functions
+git-bisect good e8189d0ca1970578f4b28f92928581313633be5a
+# bad: [7dd838ea7afa42a8840cf0e262d5892346ecf379] i386: handle an initrd
+in highmem
+git-bisect bad 7dd838ea7afa42a8840cf0e262d5892346ecf379
+# good: [8cff7d1301d37b15add1dabe6ac8a92e6c0a1c7f] i386 EFI runtime
+service support: fixes in sync with x86_64 support
+git-bisect good 8cff7d1301d37b15add1dabe6ac8a92e6c0a1c7f
+# good: [ac3836d03c718a553634ff21c1157bb823567f4f] x86:
+arch/x86/kernel/setup_32.c whitespace fixes
+git-bisect good ac3836d03c718a553634ff21c1157bb823567f4f
 
 -- 
-tejun
+regards,
+Dhaval
