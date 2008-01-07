@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757360AbYAGMsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756815AbYAGMvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757360AbYAGMsR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 07:48:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755526AbYAGMsG
+	id S1756815AbYAGMvQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 07:51:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755258AbYAGMvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 07:48:06 -0500
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:38522 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755442AbYAGMsE convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 07:48:04 -0500
-From: "S, Prathiba" <pratibha.s@hp.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Mon, 7 Jan 2008 12:47:59 +0000
-Subject: Deprecated SCSI ioctl, please convert it to SG_IO
-Thread-Topic: Deprecated SCSI ioctl, please convert it to SG_IO
-Thread-Index: AchRKlLhnaXXd2sUQ6a5BpfEYMusCAAAEIsQ
-Message-ID: <64168A03AD4CA74FAE60B01011D9A37D27BB02DC13@G1W0490.americas.hpqcorp.net>
-References: <20080107133816.A11860@sedona.ch.intel.com>
-In-Reply-To: <20080107133816.A11860@sedona.ch.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 7 Jan 2008 07:51:06 -0500
+Received: from max.feld.cvut.cz ([147.32.192.36]:41794 "EHLO max.feld.cvut.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755760AbYAGMvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 07:51:05 -0500
+Message-ID: <4782205C.8060502@fel.cvut.cz>
+Date: Mon, 07 Jan 2008 22:51:40 +1000
+From: Michal Simek <simekm2@fel.cvut.cz>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Michal Simek <simekm2@fel.cvut.cz>, linux-kernel@vger.kernel.org
+Subject: Re: New linux arch
+References: <47820D24.3060800@fel.cvut.cz> <20080107123429.GA15003@uranus.ravnborg.org>
+In-Reply-To: <20080107123429.GA15003@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Sam,
 
-Hi,
+ > It this code drop available somewhere?
 
-Using one of the application to write on the device through scsi, I get the following
-Message "Deprecated SCSI ioctl, please convert it to SG_IO". This message is from
-System log file. It seems to be kernel message.
+the code is based on Petalogix kernel. I reduce huge Kconfig file to
+necessary size. You'll see in patch or in web.
 
-Does any kernel settings is required to overcome this warning message ?
+A brief information about this kernel is at http://www.monstr.eu/fdt/
 
-I searched in mailing list, but I couldn't get succeed, may be I was not
-using the right keyword.
+ > I would like to review the Makefiles and to a lesser extent
+ > the Kconfig files.
 
-Can some help me in solving this issue.
+I will add you to CC at Makefile and Kconfig patches.
 
-Regards,
-Prathiba
+Michal Simek
+
