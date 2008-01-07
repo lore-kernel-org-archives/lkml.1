@@ -1,101 +1,369 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754179AbYAGUZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784AbYAGUZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754179AbYAGUZi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 15:25:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757673AbYAGUZA
+	id S1754784AbYAGUZK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 15:25:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755992AbYAGUYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 15:25:00 -0500
+	Mon, 7 Jan 2008 15:24:50 -0500
 Received: from rv-out-0910.google.com ([209.85.198.188]:42716 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757550AbYAGUY6 (ORCPT
+	with ESMTP id S1755188AbYAGUYs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 15:24:58 -0500
+	Mon, 7 Jan 2008 15:24:48 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ubtBZqOR75q4yZkA2mLeA05iG0WmtKaQaTIBqQNjV2H4lP8xyO3DSH4DyhaBs4ABXgzzY5m4pyAGqQPzMRWYnTWpeFFGkqHMUNxnlf1vm+wzw+8GsIa/VePSADMZAcZ2O62SlWAYf+JCpgNk44dtk7GNO9NY7dGAXPSmaLw3/Tk=
-Message-ID: <19f34abd0801071224kb9cb121u244b00b274231db0@mail.gmail.com>
-Date: Mon, 7 Jan 2008 21:24:58 +0100
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "William Pettersson" <william.pettersson@gmail.com>
-Subject: [BISECTED] Re: psmouse.c: GlidePoint at isa0060/serio1/input0 lost sync at byte 1
-In-Reply-To: <19f34abd0711141226n60323630rdc4833db0bfb2eeb@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=jFfgb+7nqJY1NdOhgJIF6vK9ngfgnz7AUQuK20uXs3BTaKPLdPgCs3VQFemtamEGfmCDQygbbbIlARwFC88uMYYR6USLgWputCU6DjsQYIOKpxjjJaLML3OdWk4nOI1vU8uMnB0aPOhd6lTckRqzzdvh9VUpI5TKUkda0/Q4MzA=
+Subject: [PATCHv2] kprobes: Introduce is_kprobe_fault()
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: David Miller <davem@davemloft.net>, hskinnemoen@atmel.com,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, tony.luck@intel.com,
+       paulus@samba.org, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain
+Date: Mon, 07 Jan 2008 12:24:46 -0800
+Message-Id: <1199737486.7666.12.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <19f34abd0711141226n60323630rdc4833db0bfb2eeb@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Use a central is_kprobe_fault() inline in kprobes.h to remove all
+of the arch-dependant, practically identical implementations in
+avr32, ia64, powerpc, s390, sparc64, and x86.
 
-On Nov 14, 2007 9:26 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> Hello,
->
-> With 2.6.23 kernel, the laptop middle button worked fine. With
-> 2.6.24-rc1, when I press the middle button, the cursor jumps around
-> the screen and this appears in the kernel log (for each time I press
-> the button):
->
-> psmouse.c: GlidePoint at isa0060/serio1/input0 lost sync at byte 1
-> psmouse.c: GlidePoint at isa0060/serio1/input0 lost sync at byte 1
-> psmouse.c: GlidePoint at isa0060/serio1/input0 - driver resynched.
->
-> Related dmesg:
->
-> input: Macintosh mouse button emulation as /class/input/input0
-> PNP: PS/2 Controller [PNP0303:KBC0,PNP0f13:MSE0] at 0x60,0x64 irq 1,12
-> mice: PS/2 mouse device common for all mice
-> input: PS/2 Mouse as /class/input/input2
-> input: AlpsPS/2 ALPS GlidePoint as /class/input/input3
->
-> Earlier dmesgs (2.6.23) had (only) this:
->
-> input: Macintosh mouse button emulation as /class/input/input0
-> PNP: PS/2 Controller [PNP0303:KBC0,PNP0f13:MSE0] at 0x60,0x64 irq 1,12
-> mice: PS/2 mouse device common for all mice
-> input: ImPS/2 Generic Wheel Mouse as /class/input/input2
->
->
-> It seems that the driver used is different. What can I do to fix this?
+avr32 was the only arch without the preempt_disable/enable pair
+in its notify_page_fault implementation.
 
-I have now bisected the kernel (to the point where I made a guess) and
-found that reverting this commit fixes my problem:
+This uncovered a possible bug in the s390 version as that purely
+copied the x86 version unconditionally passing 14 as the trapnr
+rather than the error_code parameter.
 
-commit dac4ae0daa1be36ab015973ed9e9dc04a2684395
-Author: William Pettersson <william.pettersson@gmail.com>
-Date:   Wed Sep 5 00:18:44 2007 -0400
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Andrew, update to my previous patch, with relevant (I hope)
+maintainers CC'd.  Patch against v2.6.24-rc7
 
-    Input: ALPS - add support for model found in Dell Vostro 1400
+X86_32 is ignored for now as it truly needs user_mode_vm
+in the implementation.
 
-    Signed-off-by: William Pettersson <william.pettersson@gmail.com>
-    Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+ arch/avr32/mm/fault.c   |   21 +--------------------
+ arch/ia64/mm/fault.c    |   24 +-----------------------
+ arch/powerpc/mm/fault.c |   25 +------------------------
+ arch/s390/mm/fault.c    |   25 +------------------------
+ arch/sparc64/mm/fault.c |   23 +----------------------
+ arch/x86/mm/fault_64.c  |   26 ++------------------------
+ include/linux/kprobes.h |   19 +++++++++++++++++++
+ 7 files changed, 26 insertions(+), 137 deletions(-)
 
-diff --git a/drivers/input/mouse/alps.c b/drivers/input/mouse/alps.c
-index 2c5f11a..a810ff8 100644 (file)
---- a/drivers/input/mouse/alps.c
-+++ b/drivers/input/mouse/alps.c
-@@ -53,6 +53,7 @@ static const struct alps_model_info alps_model_data[] = {
-        { { 0x20, 0x02, 0x0e }, 0xf8, 0xf8, ALPS_PASS | ALPS_DUALPOINT
-}, /* XXX */
-        { { 0x22, 0x02, 0x0a }, 0xf8, 0xf8, ALPS_PASS | ALPS_DUALPOINT },
-        { { 0x22, 0x02, 0x14 }, 0xff, 0xff, ALPS_PASS | ALPS_DUALPOINT
-}, /* Dell Latitude D600 */
-+       { { 0x73, 0x02, 0x50 }, 0xcf, 0xff, ALPS_FW_BK_1 } /* Dell
-Vostro 1400 */
- };
+diff --git a/arch/avr32/mm/fault.c b/arch/avr32/mm/fault.c
+index 6560cb1..a95cce2 100644
+--- a/arch/avr32/mm/fault.c
++++ b/arch/avr32/mm/fault.c
+@@ -20,25 +20,6 @@
+ #include <asm/tlb.h>
+ #include <asm/uaccess.h>
+ 
+-#ifdef CONFIG_KPROBES
+-static inline int notify_page_fault(struct pt_regs *regs, int trap)
+-{
+-	int ret = 0;
+-
+-	if (!user_mode(regs)) {
+-		if (kprobe_running() && kprobe_fault_handler(regs, trap))
+-			ret = 1;
+-	}
+-
+-	return ret;
+-}
+-#else
+-static inline int notify_page_fault(struct pt_regs *regs, int trap)
+-{
+-	return 0;
+-}
+-#endif
+-
+ int exception_trace = 1;
+ 
+ /*
+@@ -66,7 +47,7 @@ asmlinkage void do_page_fault(unsigned long ecr, struct pt_regs *regs)
+ 	int code;
+ 	int fault;
+ 
+-	if (notify_page_fault(regs, ecr))
++	if (is_kprobe_fault(regs, ecr))
+ 		return;
+ 
+ 	address = sysreg_read(TLBEAR);
+diff --git a/arch/ia64/mm/fault.c b/arch/ia64/mm/fault.c
+index 7571076..1696805 100644
+--- a/arch/ia64/mm/fault.c
++++ b/arch/ia64/mm/fault.c
+@@ -18,28 +18,6 @@
+ 
+ extern void die (char *, struct pt_regs *, long);
+ 
+-#ifdef CONFIG_KPROBES
+-static inline int notify_page_fault(struct pt_regs *regs, int trap)
+-{
+-	int ret = 0;
+-
+-	if (!user_mode(regs)) {
+-		/* kprobe_running() needs smp_processor_id() */
+-		preempt_disable();
+-		if (kprobe_running() && kprobes_fault_handler(regs, trap))
+-			ret = 1;
+-		preempt_enable();
+-	}
+-
+-	return ret;
+-}
+-#else
+-static inline int notify_page_fault(struct pt_regs *regs, int trap)
+-{
+-	return 0;
+-}
+-#endif
+-
+ /*
+  * Return TRUE if ADDRESS points at a page in the kernel's mapped segment
+  * (inside region 5, on ia64) and that page is present.
+@@ -106,7 +84,7 @@ ia64_do_page_fault (unsigned long address, unsigned long isr, struct pt_regs *re
+ 	/*
+ 	 * This is to handle the kprobes on user space access instructions
+ 	 */
+-	if (notify_page_fault(regs, TRAP_BRKPT))
++	if (is_kprobe_fault(regs, TRAP_BRKPT))
+ 		return;
+ 
+ 	down_read(&mm->mmap_sem);
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 8135da0..00df6f9 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -39,29 +39,6 @@
+ #include <asm/tlbflush.h>
+ #include <asm/siginfo.h>
+ 
+-
+-#ifdef CONFIG_KPROBES
+-static inline int notify_page_fault(struct pt_regs *regs)
+-{
+-	int ret = 0;
+-
+-	/* kprobe_running() needs smp_processor_id() */
+-	if (!user_mode(regs)) {
+-		preempt_disable();
+-		if (kprobe_running() && kprobe_fault_handler(regs, 11))
+-			ret = 1;
+-		preempt_enable();
+-	}
+-
+-	return ret;
+-}
+-#else
+-static inline int notify_page_fault(struct pt_regs *regs)
+-{
+-	return 0;
+-}
+-#endif
+-
+ /*
+  * Check whether the instruction at regs->nip is a store using
+  * an update addressing form which will update r1.
+@@ -164,7 +141,7 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	is_write = error_code & ESR_DST;
+ #endif /* CONFIG_4xx || CONFIG_BOOKE */
+ 
+-	if (notify_page_fault(regs))
++	if (is_kprobe_fault(regs, 11))
+ 		return 0;
+ 
+ 	if (trap == 0x300) {
+diff --git a/arch/s390/mm/fault.c b/arch/s390/mm/fault.c
+index 2456b52..59d3f0e 100644
+--- a/arch/s390/mm/fault.c
++++ b/arch/s390/mm/fault.c
+@@ -51,29 +51,6 @@ extern int sysctl_userprocess_debug;
+ 
+ extern void die(const char *,struct pt_regs *,long);
+ 
+-#ifdef CONFIG_KPROBES
+-static inline int notify_page_fault(struct pt_regs *regs, long err)
+-{
+-	int ret = 0;
+-
+-	/* kprobe_running() needs smp_processor_id() */
+-	if (!user_mode(regs)) {
+-		preempt_disable();
+-		if (kprobe_running() && kprobe_fault_handler(regs, 14))
+-			ret = 1;
+-		preempt_enable();
+-	}
+-
+-	return ret;
+-}
+-#else
+-static inline int notify_page_fault(struct pt_regs *regs, long err)
+-{
+-	return 0;
+-}
+-#endif
+-
+-
+ /*
+  * Unlock any spinlocks which will prevent us from getting the
+  * message out.
+@@ -309,7 +286,7 @@ do_exception(struct pt_regs *regs, unsigned long error_code, int write)
+ 	int si_code;
+ 	int fault;
+ 
+-	if (notify_page_fault(regs, error_code))
++	if (is_kprobe_fault(regs, 14))
+ 		return;
+ 
+ 	tsk = current;
+diff --git a/arch/sparc64/mm/fault.c b/arch/sparc64/mm/fault.c
+index e2027f2..bb5c36a 100644
+--- a/arch/sparc64/mm/fault.c
++++ b/arch/sparc64/mm/fault.c
+@@ -31,27 +31,6 @@
+ #include <asm/sections.h>
+ #include <asm/mmu_context.h>
+ 
+-#ifdef CONFIG_KPROBES
+-static inline int notify_page_fault(struct pt_regs *regs)
+-{
+-	int ret = 0;
+-
+-	/* kprobe_running() needs smp_processor_id() */
+-	if (!user_mode(regs)) {
+-		preempt_disable();
+-		if (kprobe_running() && kprobe_fault_handler(regs, 0))
+-			ret = 1;
+-		preempt_enable();
+-	}
+-	return ret;
+-}
+-#else
+-static inline int notify_page_fault(struct pt_regs *regs)
+-{
+-	return 0;
+-}
+-#endif
+-
+ /*
+  * To debug kernel to catch accesses to certain virtual/physical addresses.
+  * Mode = 0 selects physical watchpoints, mode = 1 selects virtual watchpoints.
+@@ -280,7 +259,7 @@ asmlinkage void __kprobes do_sparc64_fault(struct pt_regs *regs)
+ 
+ 	fault_code = get_thread_fault_code();
+ 
+-	if (notify_page_fault(regs))
++	if (is_kprobe_fault(regs, 0))
+ 		return;
+ 
+ 	si_code = SEGV_MAPERR;
+diff --git a/arch/x86/mm/fault_64.c b/arch/x86/mm/fault_64.c
+index 0e26230..376e218 100644
+--- a/arch/x86/mm/fault_64.c
++++ b/arch/x86/mm/fault_64.c
+@@ -41,28 +41,6 @@
+ #define PF_RSVD	(1<<3)
+ #define PF_INSTR	(1<<4)
+ 
+-#ifdef CONFIG_KPROBES
+-static inline int notify_page_fault(struct pt_regs *regs)
+-{
+-	int ret = 0;
+-
+-	/* kprobe_running() needs smp_processor_id() */
+-	if (!user_mode(regs)) {
+-		preempt_disable();
+-		if (kprobe_running() && kprobe_fault_handler(regs, 14))
+-			ret = 1;
+-		preempt_enable();
+-	}
+-
+-	return ret;
+-}
+-#else
+-static inline int notify_page_fault(struct pt_regs *regs)
+-{
+-	return 0;
+-}
+-#endif
+-
+ /* Sometimes the CPU reports invalid exceptions on prefetch.
+    Check that here and ignore.
+    Opcode checker based on code by Richard Brunner */
+@@ -343,7 +321,7 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
+ 			if (vmalloc_fault(address) >= 0)
+ 				return;
+ 		}
+-		if (notify_page_fault(regs))
++		if (is_kprobe_fault(regs, 14))
+ 			return;
+ 		/*
+ 		 * Don't take the mm semaphore here. If we fixup a prefetch
+@@ -352,7 +330,7 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
+ 		goto bad_area_nosemaphore;
+ 	}
+ 
+-	if (notify_page_fault(regs))
++	if (is_kprobe_fault(regs, 14))
+ 		return;
+ 
+ 	if (likely(regs->eflags & X86_EFLAGS_IF))
+diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
+index 8189158..65c1ffb 100644
+--- a/include/linux/kprobes.h
++++ b/include/linux/kprobes.h
+@@ -36,6 +36,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/rcupdate.h>
+ #include <linux/mutex.h>
++#include <linux/hardirq.h>
+ 
+ #ifdef CONFIG_KPROBES
+ #include <asm/kprobes.h>
+@@ -203,6 +204,20 @@ static inline struct kprobe *kprobe_running(void)
+ 	return (__get_cpu_var(current_kprobe));
+ }
+ 
++/*
++ * If it is a kprobe pagefault we can not be premptible so return before
++ * calling kprobe_running() as it will assert on smp_processor_id if
++ * preemption is enabled.
++ */
++static inline int is_kprobe_fault(struct pt_regs *regs, int trapnr)
++{
++	if (!user_mode(regs) && !preemptible() && kprobe_running() &&
++	    kprobe_fault_handler(regs, trapnr))
++		return 1;
++	else
++		return 0;
++}
++
+ static inline void reset_current_kprobe(void)
+ {
+ 	__get_cpu_var(current_kprobe) = NULL;
+@@ -237,6 +252,10 @@ static inline struct kprobe *kprobe_running(void)
+ {
+ 	return NULL;
+ }
++static inline int is_kprobe_fault(struct pt_regs *regs, int trapnr)
++{
++	return 0;
++}
+ static inline int register_kprobe(struct kprobe *p)
+ {
+ 	return -ENOSYS;
+-- 
+1.5.4.rc2.1117.ge5809
 
-
-After reverting, all buttons work as expected -- no lost syncs. I
-might add that my laptop is Acer Aspire 5720ZG. Also, the button in
-question is not truly a middle button; when operating correctly, it is
-used for scrolling (up/down). Now what can be done to make both models
-work correctly?
-
-
-Kind regards,
-Vegard Nossum
