@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758671AbYAFX5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758122AbYAGAJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758671AbYAFX5S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 18:57:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755330AbYAFX5J
+	id S1758122AbYAGAJS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 19:09:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbYAGAJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 18:57:09 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34093 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754773AbYAFX5H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 18:57:07 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Johannes Berg" <johannes@sipsolutions.net>
-Subject: Re: [linux-pm] Re: [PATCH] PM: Acquire device locks on suspend
-Date: Mon, 7 Jan 2008 00:59:15 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Alan Stern" <stern@rowland.harvard.edu>, "Greg KH" <gregkh@suse.de>,
-       "LKML" <linux-kernel@vger.kernel.org>,
-       "ACPI Devel Maling List" <linux-acpi@vger.kernel.org>,
-       "pm list" <linux-pm@lists.linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>
-References: <Pine.LNX.4.44L0.0801061734150.20032-100000@netrider.rowland.org> <200801062347.49935.rjw@sisk.pl> <49505.::ffff:91.5.86.36.1199663162.squirrel@secure.sipsolutions.net>
-In-Reply-To: <49505.::ffff:91.5.86.36.1199663162.squirrel@secure.sipsolutions.net>
+	Sun, 6 Jan 2008 19:09:04 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33797 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754740AbYAGAJD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 19:09:03 -0500
+Date: Sun, 6 Jan 2008 16:08:52 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mark Lord <lkml@rtr.ca>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Jeff Garzik <jgarzik@pobox.com>, Tejun Heo <htejun@gmail.com>
+Subject: Re: Linux 2.6.24-rc7
+In-Reply-To: <478169AD.3020808@rtr.ca>
+Message-ID: <alpine.LFD.1.00.0801061605240.3148@woody.linux-foundation.org>
+References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org> <478169AD.3020808@rtr.ca>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801070059.16741.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 7 of January 2008, Johannes Berg wrote:
-> Rafael J. Wysocki wrote:
+
+On Sun, 6 Jan 2008, Mark Lord wrote:
 > 
-> >> I don't see anything wrong with it.  All that will happen is that the
-> >> removal will start before the suspend and finish after the resume.
-> >
-> > In that case, we'll attempt to call the device's .suspend() and .resume()
-> > routines, but we shouldn't do that, IMHO.
-> 
-> I don't see anything wrong with that since the driver must be prepared to
-> handle that even in the regular case, it's the only thing you can
-> guarantee: no more method calls after removal finishes. Am I totally
-> misunderstanding things?
+> We're still missing the sata_qstor regression fix from Tejun,
+> and the patch from Venkatesh Pallipadi that reinstates max_cstate
+> in sysfs for !CPU_IDLE.
 
-Well, we are towards the end of device removal at this point, having called
-bus_remove_device(dev) for example, but still we've got it on dpm_active ...
+I'm not seeing those in my inbox. I don't go out trolling for patches, 
+because I expect that if the author of the patch really wants me to apply 
+it, he'd send it upstream.
 
-This may not be technically wrong (ie. we should be able to recover from
-that), but it seems conceptually wrong and with pm_sleep_rwsem in place it
-can be avoided.
+But I know a number of people are on vacation, and I suspect some of these 
+fixes are just queued up, waiting for that.  E.g. I think Jeff is supposed 
+to be back this week, etc..
 
-Rafael
+			Linus
