@@ -1,89 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754981AbYAGGFY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170AbYAGGSG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754981AbYAGGFY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 01:05:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbYAGGFN
+	id S1755170AbYAGGSG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 01:18:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbYAGGRy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 01:05:13 -0500
-Received: from mail.bmlv.gv.at ([193.171.152.37]:49685 "EHLO mail.bmlv.gv.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753047AbYAGGFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 01:05:11 -0500
-From: "Ph. Marek" <philipp.marek@bmlv.gv.at>
-To: Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: "mconf" and help texts
-Date: Mon, 7 Jan 2008 07:04:58 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
-References: <200801031115.48859.philipp.marek@bmlv.gv.at> <200801070431.25688.zippel@linux-m68k.org>
-In-Reply-To: <200801070431.25688.zippel@linux-m68k.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 7 Jan 2008 01:17:54 -0500
+Received: from tama555.ecl.ntt.co.jp ([129.60.39.106]:64331 "EHLO
+	tama555.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753393AbYAGGRx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 01:17:53 -0500
+To: just.for.lkml@googlemail.com
+Cc: tomof@acm.org, akpm@linux-foundation.org, jarkao2@gmail.com,
+       herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org,
+       neilb@suse.de, bfields@fieldses.org, netdev@vger.kernel.org,
+       tom@opengridcomputing.com, fujita.tomonori@lab.ntt.co.jp
+Subject: Re: 2.6.24-rc6-mm1
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <64bb37e0801061203l503f29f0hd922a1347f8169ac@mail.gmail.com>
+References: <64bb37e0801060335k4afb3134u9c6fadb57d525dc5@mail.gmail.com>
+	<20080106223650E.tomof@acm.org>
+	<64bb37e0801061203l503f29f0hd922a1347f8169ac@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801070704.59100.philipp.marek@bmlv.gv.at>
+Message-Id: <20080107151639P.fujita.tomonori@lab.ntt.co.jp>
+Date: Mon, 07 Jan 2008 15:16:39 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hell Roman!
+On Sun, 6 Jan 2008 21:03:42 +0100
+"Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
 
-Thank you for your answer.
+> On Jan 6, 2008 2:33 PM, FUJITA Tomonori <tomof@acm.org> wrote:
+> > On Sun, 6 Jan 2008 12:35:35 +0100
+> > "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
+> > > On Jan 6, 2008 12:23 PM, FUJITA Tomonori <tomof@acm.org> wrote:
+> > > > On Sun, 6 Jan 2008 11:41:10 +0100
+> > > > "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
+> > > > > I will applie your patch and see if this hunk from
+> > > > > find_next_zero_area() makes a difference:
+> > > > >
+> > > > >        end = index + nr;
+> > > > > -       if (end > size)
+> > > > > +       if (end >= size)
+> > > > >                 return -1;
+> 
+> -> that might still have made a difference, but ...
+> 
+> > > > > -       for (i = index + 1; i < end; i++) {
+> > > > > +       for (i = index; i < end; i++) {
+> 
+> ... as you say below, the test for the index position is only needed
+> if index is modified after find_next_zero_bit().
+> 
+> > > > >                 if (test_bit(i, map)) {
+> > > >
+> > > > The patch should not make a difference for X86_64.
+> > >
+> > > Hmm...
+> > > arch/x86/kernel/pci-gart_64.c:
+> > > alloc_iommu() calls iommu_area_alloc()
+> > > lib/iommu-helper.c:
+> > > iommu_area_alloc() calls find_next_zero_area()
+> > > -> so the above code should be called even on X86_64
+> >
+> > Oops, I meant that the patch fixes the align allocation (non zero
+> > align_mask case). X86_64 doesn't use the align allocation.
+> >
+> >
+> > > And the change in the for loop means that 'index' will now be tested,
+> > > but with the old code it was not.
+> >
+> > With the old code, 'index' is tested by find_next_zero_bit.
+> >
+> > With the new code and non zero align_mask case, 'index' is not tested
+> > by find_next_zero_bit. So test_bit needs to start with 'index'.
+> >
+> > So If I understand the correctly, this patch should not make a
+> > difference for x86_64 though I might miss something.
+> 
+> You did not miss anything.
+> After 18 packages my system crashed again.
+> 
+> > > And double using something does fit with the errors I'm seeing...
+> > >
+> > > > Can you try the patch to revert my IOMMU changes?
+> > > >
+> > > > http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg12694.html
+> > >
+> > > Testing for this bug is a little bit slow, as I'm compiling ~100
+> > > packages trying to trigger it.
+> > > If my current testrun with the patch from
+> > > http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg12702.html
+> > > crashes, I will revert the hole IOMMU changes with above patch and try again.
+> >
+> > Thanks for testing,
+> 
+> OK, I'm still testing this, but after 95 completed packages I'm rather
+> certain that reverting the IOMMU changes with this patch fixes my
+> problem.
+> I didn't have time to look more into this, so I can't offer any
+> concrete ideas where the bug is.
+> 
+> If you send more patches, I'm willing to test them, but it might take
+> some more time during the next week.
 
-On Montag, 7. Januar 2008, Roman Zippel wrote:
-> On Thursday 3. January 2008, Ph. Marek wrote:
-> > So I took a look at "Help", and saw that blob:
-...
-> > That is a _bit_ unreadable.
->
-> What you see here is the internal representation of the select expression.
-> To make it more easily readable, you could just cut off everything between
-> && and || (it's the dependency of the symbol which does the select, the one
-> before &&).
-> The readable expression could be generated when needed, but it might be
-> easier to just generate at the same time as the full expression (in
-> menu_finalize).
->
-> > As a side-node - I cannot get xconfig to work (pkg-config);
->
-> Why exactly? What's the error message?
-	  CHECK   qt
-	*
-	* Unable to find the QT3 installation. Please make sure that
-	* the QT3 development package is correctly installed and
-	* either install pkg-config or set the QTDIR environment
-	* variable to the correct location.
-	*
-I didn't find a package for debian that has a qt3.pc.
+Can you try 2.6.24-rc7 + the IOMMU changes?
 
-> > is there some
-> > way in menuconfig to see why some config option is disallowed? The
-> > location tree shows some data ("-> Networking support (NET [=y])"), but
-> > not for all dependencies.
->
-> I don't quite understand. The dependency for option itself is above the
-> location tree and the for dependencies of the dependencies you have to look
-> at their individual info.
-If there's some option I currently can not choose (because of the 
-dependencies), I'd like to see *which* dependency (-ies) prohibit that.
+The patches are available at:
 
-If all I see is
-  Depends on: NET && INET && NETFILTER && NF_CONNTRACK
-I have to manually hunt down which isn't enabled.
+http://www.kernel.org/pub/linux/kernel/people/tomo/iommu/
 
-> > [Does xconfig allow enabling them while seeing this option?]
->
-> Only if you enable the missing dependency. This is insofar a little easier
-> as they are linked if you enable the deubg info, so the prompt may be a
-> little easier to find.
-So there's no easy way to say "I want that ... aktivate that, that and this 
-option as needed", and it recurses through the symbols.
+Or if you prefer the git tree:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/tomo/linux-2.6-misc.git iommu-sg-fixes
 
 
-Thank you!
+
+I've looked at the changes to GART but they are straightforward and
+don't look wrong...
 
 
-Regards,
-
-Phil
+Thanks,
