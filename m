@@ -1,131 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756766AbYAGKGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928AbYAGKJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756766AbYAGKGX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 05:06:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079AbYAGKGO
+	id S1755928AbYAGKJd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 05:09:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753168AbYAGKJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 05:06:14 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:42378 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753082AbYAGKGN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 05:06:13 -0500
-Date: Mon, 7 Jan 2008 11:06:03 +0100
-From: Michal Schmidt <mschmidt@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jon Masters <jcm@redhat.com>,
-       Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
-Subject: [PATCH] kthread: always create the kernel threads with normal
- priority
-Message-ID: <20080107110603.09b72450@brian.englab.brq.redhat.com>
-In-Reply-To: <20071222013021.db2528cb.akpm@linux-foundation.org>
-References: <20071217234314.540b59bd@hammerfall>
-	<20071222013021.db2528cb.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 7 Jan 2008 05:09:26 -0500
+Received: from fmmailgate05.web.de ([217.72.192.243]:52451 "EHLO
+	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752640AbYAGKJZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 05:09:25 -0500
+Date: Mon, 07 Jan 2008 11:09:23 +0100
+Message-Id: <90564384@web.de>
+MIME-Version: 1.0
+From: devzero@web.de
+To: arjan@infradead.org
+Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au
+Subject: =?iso-8859-15?Q?Re:_[patch_1/2]_show_being-loaded/being-unloaded_indic?=
+ =?iso-8859-15?Q?ator_for_modules?=
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX1+KBn3WYmX0ZmtvX7EhYPRIMR9hnkGvwwkCH3uikfBFxBN9W
+ /xybkP8/2QqEeU29VeGVvZdxfTcg42LKCv/r1hyuIEFEugu+1g=
+Content-Type: text/plain; charset=iso-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Dec 2007 01:30:21 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+this looks very useful!
 
-> On Mon, 17 Dec 2007 23:43:14 +0100 Michal Schmidt
-> <mschmidt@redhat.com> wrote:
-> 
-> > kthreadd, the creator of other kernel threads, runs as a normal
-> > priority task. This is a potential for priority inversion when a
-> > task wants to spawn a high-priority kernel thread. A middle priority
-> > SCHED_FIFO task can block kthreadd's execution indefinitely and thus
-> > prevent the timely creation of the high-priority kernel thread.
-> >     
-> > This causes a practical problem. When a runaway real-time task is
-> > eating 100% CPU and we attempt to put the CPU offline, sometimes we
-> > block while waiting for the creation of the highest-priority
-> > "kstopmachine" thread. 
-> > 
-> > The fix is to run kthreadd with the highest possible SCHED_FIFO
-> > priority. Its children must still run as slightly negatively reniced
-> > SCHED_NORMAL tasks.
-> 
-> Did you hit this problem with the stock kernel, or have you been
-> working on other stuff?
+>Unfortunatly, it's not always easy to see directly
+>which module is being loaded/unloaded from the oops itself.
 
-This was with RHEL5 and with current Fedora kernels.
+no wonder, as most modules seem to be very quiet on on load/unload.
 
-> A locked-up SCHED_FIFO process will cause kernel threads all sorts of
-> problems.  You've hit one instance, but there will be others.
-> (pdflush stops working, for one).
-> 
-> The general approach we've taken to this is "don't do that".  Yes, we
-> could boost lots of kernel threads in the way which this patch does
-> but this actually takes control *away* from userspace.  Userspace no
-> longer has the ability to guarantee itself minimum possible latency
-> without getting preempted by kernel threads.
-> 
-> And yes, giving userspace this minimum-latency capability does imply
-> that userspace has a responsibility to not 100% starve kernel
-> threads.  It's a reasonable compromise, I think?
+some days ago i was curious how "consistent" modules would leave messages in syslog load/unload.
+this is why i made a little statistic on that.
 
-You're right. We should not run kthreadd with SCHED_FIFO by default.
-But the user should be able to change it using chrt if he wants to
-avoid this particular problem. So how about this instead?:
+i`d like to share the essential part here (can provide more details if you like):
+
+on load, 1204 on unload, 1655 (out of 2088) left absoultely _no_ message in syslog           
 
 
+example:
 
-kthreadd, the creator of other kernel threads, runs as a normal priority task.
-This is a potential for priority inversion when a task wants to spawn a
-high-priority kernel thread. A middle priority SCHED_FIFO task can block
-kthreadd's execution indefinitely and thus prevent the timely creation of the
-high-priority kernel thread.
+3c359 - silence
+3c501 - silence
+3c503 - 2 lines on load, 0 on unload
+3c505 - 3 lines on load, 0 on unload
+3c507 - silence
+3c509 - silence
+3c515 - 1 line on load, 0 on unload
+3c574_cs - silence
+3c589_cs - silence
+3c59x  - silence
 
-This causes a practical problem. When a runaway real-time task is eating 100%
-CPU and we attempt to put the CPU offline, sometimes we block while waiting for
-the creation of the highest-priority "kstopmachine" thread.
+ok, this is not too reliable, because modules might act differently if they find appropriate hardware.
 
-This could be solved by always running kthreadd with the highest possible
-SCHED_FIFO priority, but that would be undesirable policy decision in the
-kernel. kthreadd would cause unwanted latencies even for the realtime users who
-know what they're doing.
+but i wonder if some mandatory "print a message on init/exit" wouldn`t give a benefit to admins or end-users, too.
+sure this would additionally clutter up syslog, but it would add transparency.
 
-Let's not make the decision for the user. Just allow the administrator to
-change kthreadd's priority safely if he chooses to do it. Ensure that the
-kernel threads are created with the usual nice level even if kthreadd's
-priority is changed from the default.
+if modules can print informations like credits, email-adresses and path-to-the-source-files, why not some mandatory message on load/unload then....
 
-Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
----
- kernel/kthread.c |   11 +++++++++++
- 1 files changed, 11 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/kthread.c b/kernel/kthread.c
-index dcfe724..e832a85 100644
---- a/kernel/kthread.c
-+++ b/kernel/kthread.c
-@@ -94,10 +94,21 @@ static void create_kthread(struct kthread_create_info *create)
- 	if (pid < 0) {
- 		create->result = ERR_PTR(pid);
- 	} else {
-+		struct sched_param param = { .sched_priority = 0 };
- 		wait_for_completion(&create->started);
- 		read_lock(&tasklist_lock);
- 		create->result = find_task_by_pid(pid);
- 		read_unlock(&tasklist_lock);
-+		/*
-+		 * root may want to change our (kthreadd's) priority to
-+		 * realtime to solve a corner case priority inversion problem
-+		 * (a realtime task consuming 100% CPU blocking the creation of
-+		 * kernel threads). The kernel thread should not inherit the
-+		 * higher priority. Let's always create it with the usual nice
-+		 * level.
-+		 */
-+		sched_setscheduler(create->result, SCHED_NORMAL, &param);
-+		set_user_nice(create->result, -5);
- 	}
- 	complete(&create->done);
- }
--- 
-1.5.3.3
+>List:       linux-kernel
+>Subject:    [patch 1/2] show being-loaded/being-unloaded indicator for modules
+>From:       Arjan van de Ven <arjan () infradead ! org>
+>Date:       2008-01-06 23:18:50
+>Message-ID: 20080106151850.3eab58b0 () laptopd505 ! fenrus ! org
+>[Download message RAW]
+>
+>Subject: show being-loaded/being-unloaded indicator for modules in oopses
+>From: Arjan van de Ven <arjan@linux.intel.com>
+>CC: rusty@rustcorp.com.au
+>CC: ak@suse.de
+>CC: mingo@elte.hu
+>
+>It's rather common that an oops/WARN_ON/BUG happens during the load or
+>unload of a module. Unfortunatly, it's not always easy to see directly
+>which module is being loaded/unloaded from the oops itself. Worse,
+>it's not even always possible to ask the bug reporter, since there
+>are so many components (udev etc) that auto-load modules that there's
+>a good chance that even the reporter doesn't know which module this is.
+>
+>This patch extends the existing "show if it's tainting" print code,
+>which is used as part of printing the modules in the oops/BUG/WARN_ON
+>to include a "+" for "being loaded" and a "-" for "being unloaded".
+
+>As a result this extension, the "taint_flags()" function gets renamed to
+>"module_flags()" (and takes a module struct as argument, not a taint
+>flags int).
+
+_____________________________________________________________________
+Der WEB.DE SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen!
+http://smartsurfer.web.de/?mc=100071&distributionid=000000000066
 
