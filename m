@@ -1,47 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbYAGRK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758343AbYAGRKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756005AbYAGRK2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 12:10:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754328AbYAGRKH
+	id S1758343AbYAGRKs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 12:10:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757629AbYAGRKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 12:10:07 -0500
-Received: from www.tglx.de ([62.245.132.106]:44177 "EHLO www.tglx.de"
+	Mon, 7 Jan 2008 12:10:10 -0500
+Received: from mga03.intel.com ([143.182.124.21]:55703 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757475AbYAGRJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 12:09:58 -0500
-Date: Mon, 7 Jan 2008 17:50:49 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Ingo Molnar <mingo@elte.hu>, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       hpa@zytor.com
-Subject: Re: [PATCH -mm/x86] revert i386: handle an initrd in highmem (Was
- Re: 2.6.24-rc6-mm1)
-In-Reply-To: <20080107082237.595b266a.randy.dunlap@oracle.com>
-Message-ID: <alpine.LFD.0.99999.0801071736320.31637@localhost.localdomain>
-References: <20071222233056.d652743e.akpm@linux-foundation.org> <20080107135038.GA19568@linux.vnet.ibm.com> <alpine.LFD.0.99999.0801071453070.31637@localhost.localdomain> <20080107145609.GA26652@elte.hu> <20080107082237.595b266a.randy.dunlap@oracle.com>
-User-Agent: Alpine 0.99999 (LFD 796 2007-11-08)
+	id S1757525AbYAGRKI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 12:10:08 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,254,1196668800"; 
+   d="scan'208";a="360939426"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: RE: [PATCH 3/4] async_tx: replace 'int_en' with operation preparationflags
+Date: Mon, 7 Jan 2008 16:59:23 -0000
+Message-ID: <7F38996F7185A24AB9071ED4950AD8C1FAED31@swsmsx413.ger.corp.intel.com>
+In-Reply-To: <BAE9DCEF64577A439B3A37F36F9B691C03BAD67D@orsmsx418.amr.corp.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 3/4] async_tx: replace 'int_en' with operation preparationflags
+thread-index: AchENvNqejPSYO8LReCLBpnUMwmRkQK5ChxAAIxBkRA=
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: "Williams, Dan J" <dan.j.williams@intel.com>
+Cc: <linux-kernel@vger.kernel.org>,
+       "Nelson, Shannon" <shannon.nelson@intel.com>, <yur@emcraft.com>,
+       <hskinnemoen@atmel.com>, <olof@lixom.net>, <wei.zhang@freescale.com>
+X-OriginalArrivalTime: 07 Jan 2008 16:59:23.0101 (UTC) FILETIME=[A6FDD0D0:01C8514E]
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Jan 2008, Randy Dunlap wrote:
-> On Mon, 7 Jan 2008 15:56:09 +0100 Ingo Molnar wrote:
-> > i'm also wondering - what would be the easiest way to integrate kexec 
-> > into an automated test environment. If i have a bzImage kernel, is kexec 
-> > still supposed to work? Could i for example do a reboot into a new 
-> > (kexec-enabled) kernel via kexec in essence?
-> 
-> My daily/nightly kernel test runs use kexec to boot the test kernel.
-> Well, did thru 2.6.24-rc6-git9, but they fail after that.
-> Hopefully this patch fixes things.
+>From: Williams, Dan J 
+>
+>Pass a full set of flags to drivers' per-operation 'prep' routines.
+>Currently the only flag passed is DMA_PREP_INTERRUPT.  The 
+>expectation is
+>that arch-specific async_tx_find_channel() implementations can 
+>exploit this
+>capability to find the best channel for an operation.
+>
+>Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+>---
+>
+> crypto/async_tx/async_memcpy.c         |    3 ++-
+> crypto/async_tx/async_memset.c         |    3 ++-
+> crypto/async_tx/async_xor.c            |   10 ++++++----
+> drivers/dma/ioat_dma.c                 |    4 ++--
+> drivers/dma/iop-adma.c                 |   20 ++++++++++----------
+> include/asm-arm/arch-iop13xx/adma.h    |   18 ++++++++++--------
+> include/asm-arm/hardware/iop3xx-adma.h |   30 
+>+++++++++++++++++-------------
+> include/linux/dmaengine.h              |   17 +++++++++++++----
+> 8 files changed, 62 insertions(+), 43 deletions(-)
 
-The patch in question is not in mainline, it's in the mm branch of
-x86.git. So the problem in mainline is a different one. Could you
-bisect it please ?
+As ioat_dma is not using int_en right now, this change does not impact
+the driver at the moment and may be definitely useful later.
 
-Thanks,
+Maciej Sosnowski
 
-	tglx
+---------------------------------------------------------------------
+Intel Technology Poland sp. z o.o.
+z siedziba w Gdansku
+ul. Slowackiego 173
+80-298 Gdansk
+
+Sad Rejonowy Gdansk Polnoc w Gdansku, 
+VII Wydzial Gospodarczy Krajowego Rejestru Sadowego, 
+numer KRS 101882
+
+NIP 957-07-52-316
+Kapital zakladowy 200.000 zl
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
