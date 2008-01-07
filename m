@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759424AbYAGUuT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759532AbYAGUv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759424AbYAGUuT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 15:50:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758312AbYAGUuF
+	id S1759532AbYAGUv1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 15:51:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758172AbYAGUvT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 15:50:05 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:27238 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755929AbYAGUuB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 15:50:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=P1DaJTwY0Gc/T2Ak3zMQkK4X2nFevCGfcQmn/vw4Yb4QrexX+vU0Ubakhetm9Bm1nQW1JYmb883951woEbINoZRHLyz2wI9Jw5rN2QdqpsSNGZhCA1cx8fa1DraiqJlDFmmt5xue1XJPkmASn9Vfgl/m8Q5t1hOOXKxpk2RVYnE=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Martin Bligh <mbligh@mbligh.org>
-Subject: Re: change SCSI owner in bugzilla
-Date: Mon, 7 Jan 2008 22:01:19 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
-Cc: Adrian Bunk <bunk@stusta.de>,
+	Mon, 7 Jan 2008 15:51:19 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:55067 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757963AbYAGUvS (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 15:51:18 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Willy Tarreau <w@1wt.eu>
+Cc: Adrian Bunk <bunk@kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Matthew Wilcox <matthew@wil.cx>, Ingo Molnar <mingo@elte.hu>,
+       Peter Osterlund <petero2@telia.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, bugme-admin@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, Peter Osterlund <petero2@telia.com>
-References: <20080106161635.GL2082@does.not.exist> <47828CC7.7060106@mbligh.org>
-In-Reply-To: <47828CC7.7060106@mbligh.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
+In-Reply-To: Your message of "Sun, 06 Jan 2008 22:08:13 +0100."
+             <20080106210813.GA10136@1wt.eu>
+From: Valdis.Kletnieks@vt.edu
+References: <m3ir27oe7f.fsf@telia.com> <1199627875.5205.1.camel@localhost.localdomain> <20080106144706.GA25419@elte.hu> <1199632845.5205.31.camel@localhost.localdomain> <20080106171158.GM20473@parisc-linux.org> <1199640983.5205.65.camel@localhost.localdomain> <20080106183402.GA7906@1wt.eu> <20080106185625.GM2082@does.not.exist> <20080106191044.GA1105@1wt.eu> <20080106195802.GN2082@does.not.exist>
+            <20080106210813.GA10136@1wt.eu>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1199739038_2703P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801072201.20115.bzolnier@gmail.com>
+Date: Mon, 07 Jan 2008 15:50:38 -0500
+Message-ID: <19438.1199739038@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 07 January 2008, Martin Bligh wrote:
-> 
-> > Date: Sun, 06 Jan 2008 10:00:33 -0600
-> > From: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > To: Adrian Bunk <bunk@kernel.org>
-> > Cc: Ingo Molnar <mingo@elte.hu>, Peter Osterlund <petero2@telia.com>,
-> > 	Linus Torvalds <torvalds@linux-foundation.org>,
-> > 	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-> > 	Andrew Morton <akpm@linux-foundation.org>,
-> > 	Al Viro <viro@ftp.linux.org.uk>
-> > Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
-> > 
-> > On Sun, 2008-01-06 at 17:45 +0200, Adrian Bunk wrote:
-> >> Bugzilla for tracking and mailing lists for discussing are not mutually 
-> >> exclusive.
-> > 
-> > I didn't ever say they were.  What I said was we needed the work flow on
-> > the mailing lists.
-> > 
-> >> What about asking the Bugzilla admins to set the default owner of new 
-> >> SCSI bugs to linux-scsi@vger.kernel.org?
-> >>
-> >> This way all SCSI bugs submitted in Bugzilla will automatically be 
-> >> forwarded to the linux-scsi mailing list.
-> > 
-> > Well, I've only been asking for this for the last two years.  If you can
-> > actually make it happen, I'd be eternally grateful.
-> 
-> OK, changed it.
+--==_Exmh_1199739038_2703P
+Content-Type: text/plain; charset=us-ascii
 
-Could you also change IDE to linux-ide mailing list while at it?
+On Sun, 06 Jan 2008 22:08:13 +0100, Willy Tarreau said:
 
-Thanks,
-Bart
+> even slightly annoying, we never get it. Have you noticed the number of
+> "me too" on the list ? Users find any sort of excuse for not having filed
+> a report in the first time, but are still willing to confirm another
+> one's bug. That's normal, they're just humans after all.
+
+Personally, I've lost count of the number of times I've *not* reported a
+bug/oops just because of the "NVidia users this means you" statement, only
+to have the exact same issue reported several weeks/months later by somebody
+who's able to replicate it with an untainted kernel.
+
+>  'lsmod|more' in a shell window. If you do not know how to run without
+>   those drivers, please still file the report, it may still be considered
+>  valuable, but you may be recontacted and guided to unload them."
+
+Exactly.
+
+--==_Exmh_1199739038_2703P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFHgpCdcC3lWbTT17ARAnThAJ99dlhd43snk2gZGgQ0VCGr7lFqmgCcDIUA
+sDHDhQAMOJ0UEE2hFnJs0Ic=
+=UWlN
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1199739038_2703P--
