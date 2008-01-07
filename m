@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755757AbYAGJaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755608AbYAGJip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755757AbYAGJaS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 04:30:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927AbYAGJaF
+	id S1755608AbYAGJip (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 04:38:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbYAGJih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 04:30:05 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:33349 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753068AbYAGJaC (ORCPT
+	Mon, 7 Jan 2008 04:38:37 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:57959 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754031AbYAGJig (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 04:30:02 -0500
-X-Sasl-enc: Eblacs8wMzjx/TyzS35IlDguTRQak5453w4APMcjjhEo 1199698201
-Subject: Re: umount -l <path>, getcwd and /proc/<pid>/cwd inconsistent
-From: Ian Kent <raven@themaw.net>
-To: bjdouma@xs4all.nl
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1199696154.3156.74.camel@raven.themaw.net>
-References: <1199675850.3156.15.camel@raven.themaw.net>
-	 <4781E301.7000502@xs4all.nl>  <1199696154.3156.74.camel@raven.themaw.net>
-Content-Type: text/plain
-Date: Mon, 07 Jan 2008 18:29:37 +0900
-Message-Id: <1199698177.3156.79.camel@raven.themaw.net>
+	Mon, 7 Jan 2008 04:38:36 -0500
+Date: Mon, 7 Jan 2008 07:38:18 -0200
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: [GIT PATCHES] V4L/DVB fixes
+Message-ID: <20080107073818.368243b9@gaivota>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.1; x86_64-mandriva-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus,
 
-On Mon, 2008-01-07 at 17:55 +0900, Ian Kent wrote:
-> On Mon, 2008-01-07 at 09:29 +0100, Bauke Jan Douma wrote:
-> > Ian Kent wrote on 07-01-08 04:17:
-> > > Hi all,
-> > > 
-> > > Could someone please help me understand what's happening with, what
-> > > looks like inconsistent behavior, between getpwd and procfs readlink.
-> > > 
-> > > Basically, from a bash shell, setting working directory to a mounted
-> > > directory all is fine with "pwd" and "/proc/<pid>/cwd". Following a
-> > > "umount - l" on the mount "pwd" continues to return the expected string
-> > > but "/proc/<pid>/cwd" returns an empty string.
-> > > 
-> > > What I'm really after is why this happens because sys_getcwd and
-> > > proc_pid_readlink appear to do essentially the same thing to get the
-> > > string.
-> > > 
-> > [snip]
-> > 
-> > What does `/bin/pwd' return, when you do that instead of
-> > plain `pwd' (after the umount)?
-> 
-> I did check that at one point and it returned the same as pwd.
-> I'll check again later, but I remember I explicitly checked that along
-> the way.
+Please pull from:
+        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git
+master
 
-Hey, I was sure I tested that.
-It, in fact, returns nothing also.
+For two driver regression fixes:
+   - bttv: VIDIOCGMBUF ioctl hangs on bttv driver
+   - ivtv: udelay has to be changed *after* the eeprom was read, not before
 
-Ian
+Cheers,
+Mauro.
 
+---
 
+ drivers/media/video/bt8xx/bttv-driver.c |    4 +---
+ drivers/media/video/ivtv/ivtv-driver.c  |    4 ++++
+ drivers/media/video/ivtv/ivtv-i2c.c     |    5 +----
+ 3 files changed, 6 insertions(+), 7 deletions(-)
+
+Gregor Jasny (1):
+      V4L/DVB (6944a): Fix Regression VIDIOCGMBUF ioctl hangs on bttv driver
+
+Hans Verkuil (1):
+      V4L/DVB (6916): ivtv: udelay has to be changed *after* the eeprom was
+read, not before
+
+---------------------------------------------------
+V4L/DVB development is hosted at http://linuxtv.org
