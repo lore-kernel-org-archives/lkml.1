@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757640AbYAGPIN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756559AbYAGPS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757640AbYAGPIN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 10:08:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754460AbYAGPH5
+	id S1756559AbYAGPS4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 10:18:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbYAGPSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 10:07:57 -0500
-Received: from rtr.ca ([76.10.145.34]:2190 "EHLO mail.rtr.ca"
+	Mon, 7 Jan 2008 10:18:47 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36380 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753959AbYAGPH4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 10:07:56 -0500
-Message-ID: <4782404B.704@rtr.ca>
-Date: Mon, 07 Jan 2008 10:07:55 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>, abelay@novell.com,
-       lenb@kernel.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, rjw@sisk.pl
-Subject: Re: + restore-missing-sysfs-max_cstate-attr.patch added to -mm tree
-References: <20071130142058.816d1693.akpm@linux-foundation.org>	<924EFEDD5F540B4284297C4DC59F3DEE2FAEAF@orsmsx423.amr.corp.intel.com>	<4750CC78.9070105@rtr.ca>	<20071130190227.1976e682@laptopd505.fenrus.org>	<4750D180.6080001@rtr.ca>	<20071130191816.3e744205@laptopd505.fenrus.org>	<4750D585.1030200@rtr.ca>	<477C2143.8090406@rtr.ca>	<924EFEDD5F540B4284297C4DC59F3DEE4FC485@orsmsx423.amr.corp.intel.com>	<477C622F.6010304@rtr.ca>	<20080104021619.GA15409@linux-os.sc.intel.com>	<47814958.3070208@rtr.ca>	<20080106231848.762e93c1.akpm@linux-foundation.org> <20080107060707.55af6d9c@laptopd505.fenrus.org>
-In-Reply-To: <20080107060707.55af6d9c@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1751489AbYAGPSq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 10:18:46 -0500
+Date: Mon, 7 Jan 2008 10:18:01 -0500
+From: Rik van Riel <riel@redhat.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Eric Whitney <eric.whitney@hp.com>
+Subject: Re: [patch 00/19] VM pageout scalability improvements
+Message-ID: <20080107101801.126cd709@bree.surriel.com>
+In-Reply-To: <20080107190610.ed3be7b4.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080102224144.885671949@redhat.com>
+	<1199379128.5295.21.camel@localhost>
+	<20080103120000.1768f220@cuia.boston.redhat.com>
+	<20080107190610.ed3be7b4.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-..
-> if we take a step back; Mark afaics only wants to put 1 in there...
-> And that makes sense; either you want the "no latency" C1, or you want the lot
-> (esp given that C2 and deeper are at the whim of the bios, what they mean varies
-> over time. Actually even C1 does that on some AMD systems);
-> 
-> Longer term I'd suggest we make an option that basically is "C1 only",
-> (or technically, "use hlt only")
-> that solves Marks VMWARE thing, and is a lot closer to what people really want.
-..
+On Mon, 7 Jan 2008 19:06:10 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Thu, 3 Jan 2008 12:00:00 -0500
+> Rik van Riel <riel@redhat.com> wrote:
 
-Yeah, that makes sense.
+> > If there is no swap space, my VM code will not bother scanning
+> > any anon pages.  This has the same effect as moving the pages
+> > to the no-reclaim list, with the extra benefit of being able to
+> > resume scanning the anon lists once swap space is freed.
+> > 
+> Is this 'avoiding scanning anon if no swap' feature  in this set ?
 
-> Well, that and if VMWARE really can't deal with latency in their kernel module
-> they should use the proper code for that. It's also a ton easier to implement, since
-> it basically is "don't use the CPUIDLE idle loop, but use the traditional hlt one"
-..
+I seem to have lost that code in a forward merge :(
 
-I don't think it's so much VMware itself, as it is the guest OS inside it.
+Dunno if I started the forward merge from an older series that
+Lee had or if I lost the code myself...
 
-Cheers
+I'll put it back in ASAP.
 
+-- 
+All rights reversed.
