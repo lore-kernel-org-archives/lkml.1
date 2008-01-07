@@ -1,86 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbYAGUAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757944AbYAGUBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756706AbYAGUAS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 15:00:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753371AbYAGUAF
+	id S1757944AbYAGUBR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 15:01:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbYAGUBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 15:00:05 -0500
-Received: from Mycroft.westnet.com ([216.187.52.7]:39056 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752275AbYAGUAD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 15:00:03 -0500
+	Mon, 7 Jan 2008 15:01:06 -0500
+Received: from ns2.suse.de ([195.135.220.15]:37959 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754325AbYAGUBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 15:01:04 -0500
+To: mingo@elte.hu, tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [5/20] x86: Introduce nsec_barrier() II
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080103149.088038000@suse.de>
+	<20080103005000.65D0C14D40@wotan.suse.de>
+	<20080103104754.GD29194@elte.hu> <200801031355.44694.ak@suse.de>
+Date: Mon, 07 Jan 2008 21:01:03 +0100
+In-Reply-To: <200801031355.44694.ak@suse.de> (Andi Kleen's message of "Thu\, 3 Jan 2008 13\:55\:44 +0100")
+Message-ID: <p7363y5s8w0.fsf_-_@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18306.33932.262313.661070@stoffel.org>
-Date: Mon, 7 Jan 2008 14:59:08 -0500
-From: "John Stoffel" <john@stoffel.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: John Stoffel <john@stoffel.org>, Willy Tarreau <w@1wt.eu>,
-       Adrian Bunk <bunk@kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Matthew Wilcox <matthew@wil.cx>, Ingo Molnar <mingo@elte.hu>,
-       Peter Osterlund <petero2@telia.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
-In-Reply-To: <478277CF.7070808@s5r6.in-berlin.de>
-References: <1199316785.3258.85.camel@localhost.localdomain>
-	<alpine.LFD.1.00.0801021756310.3010@woody.linux-foundation.org>
-	<m3ir27oe7f.fsf@telia.com>
-	<1199627875.5205.1.camel@localhost.localdomain>
-	<20080106144706.GA25419@elte.hu>
-	<1199632845.5205.31.camel@localhost.localdomain>
-	<20080106171158.GM20473@parisc-linux.org>
-	<1199640983.5205.65.camel@localhost.localdomain>
-	<20080106183402.GA7906@1wt.eu>
-	<20080106185625.GM2082@does.not.exist>
-	<20080106191044.GA1105@1wt.eu>
-	<18306.17536.212405.674762@stoffel.org>
-	<478277CF.7070808@s5r6.in-berlin.de>
-X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Stefan" == Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
+Andi Kleen <ak@suse.de> writes:
 
-Stefan> John Stoffel wrote:
->> The question to me really revolves around how do you automate the
->> process in a transparent manner so that people don't have to change
->> much how they interact with lkml.  
+> On Thursday 03 January 2008 11:47:54 Ingo Molnar wrote:
+>> 
+>> * Andi Kleen <ak@suse.de> wrote:
+>> 
+>> > nsec_barrier() is a new barrier primitive that stops RDTSC speculation 
+>> > to avoid races with timer interrupts on other CPUs.
+>> > 
+>> > Add it to all architectures. Except for x86 it is a nop right now. I 
+>> > only tested x86, but it's a very simple change.
+>> > 
+>> > On x86 it expands either to LFENCE (for Intel CPUs) or MFENCE (for AMD 
+>> > CPUs) which stops RDTSC on all currently known microarchitectures that 
+>> > implement SSE. On CPUs without SSE there is generally no RDTSC 
+>> > speculation.
+>> 
+>> i've picked up your rdtsc patches into x86.git but have simplified it: 
+>> there's no nsec_barrier() anymore - rdtsc() is always synchronous. 
+>> MFENCE/LFENCE is fast enough. Open-coding such barriers almost always 
+>> leads to needless trouble. Please check the next x86.git tree.
+>
+> That's most likely wrong unless you added two barriers -- the barriers
+> are strictly need to be before and after RDTSC.
 
-Stefan> I think the more important questions are:
-Stefan>   - Are there people who know how to get reports to developers?
-Stefan>     (We can't train all potential reporters to get reports right.)
+I checked your patch now -- 743abf4d987911af1ffce4c96f06cba6ffaa7e88
+and 428f309ba5244fa25b44fcdf1d79aa94c8745cfd in gitx86 and you did it
+indeed wrong.
 
-Sure, but telling them "email to helpme@vger.kernel.org" isn't tough.  
+The problem is that you inserted the barrier only after the RDTSC, but
+the instruction can be speculated both forward and backward and both
+can cause inconsistencies if it leaves the critical section.
 
-Stefan>   - Are there enough developers to work towards bug fixes?
+The minimal fix would be to change native_read_tsc to
 
-Nope, never enough.
+        rdtsc_barrier();
+        asm volatile("rdtsc" : EAX_EDX_RET(val, low, high));
+        rdtsc_barrier();
 
-Stefan> The technical means to capture reports, let alone the
-Stefan> bugtracking tools, are of secondary importance.
+(e.g. add the missing barrier) 
 
-The technical means are secondary, it's the human factors of how bug
-reports are captured which is of prime concern.  It's obvious people
-aren't happy with bugzilla.  Most, but not all, are happy with LKML,
-but a dumb mailing list isn't ideal for tracking bug reports.  
+Better would be still to keep the explicit nsec barriers as in
+the original patch for several reasons:
+- There are situations where RDTSC without barrier is ok and it might
+be useful there.
+- It is better to give the CPU some room to run uops in parallel;
+especially in very performance critical like gtod(). A wider
+barriered area is faster.
+- I actually expect that other architectures with aggressive OOO 
+implementations (like POWER4/5) should make use of 
+nsec_barrier() too. I don't think it's really an x86 specific concept.
+- Explicit barriers can be useful when measuring performance, although
+admittedly there a x86 specific barrier is usually ok. However forcing
+the barrier inside RDTSC is not.
 
-As a SysAdmin, I love being able to tell me user 'just email help' to
-open a ticket.  As a SysAdmin, I can then interact with the tickets
-which are created and managed using 'RT' (http://www.fsck.org/rt) from
-inside my email client without having to think about it too much.  
+If you insist to keep the incorrect patch please drop my name from it.
 
-Again, transparency to the end-user AND tothe developers is key.  If
-neither finds if easy to use, it won't be.  So we need to come up with
-a work flow which works with us (read you, I just read and contribute
-bug reports myself... :-) and for us.  But which never gets in the way
-if at all possible.
-
-John
-
-
+-Andi
