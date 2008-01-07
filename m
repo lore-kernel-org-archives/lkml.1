@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758280AbYAGQhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756899AbYAGQiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758280AbYAGQhl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 11:37:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755936AbYAGQhc
+	id S1756899AbYAGQiA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 11:38:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757876AbYAGQhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 11:37:32 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:55132 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755916AbYAGQhb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 11:37:31 -0500
-Message-ID: <47825510.7050306@s5r6.in-berlin.de>
-Date: Mon, 07 Jan 2008 17:36:32 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
-MIME-Version: 1.0
-To: Jarek Poplawski <jarkao2@gmail.com>
-CC: David Brownell <david-b@pacbell.net>, Greg KH <gregkh@suse.de>,
-       Dave Young <hidave.darkstar@gmail.com>, stern@rowland.harvard.edu,
-       peterz@infradead.org, davem@davemloft.net, krh@redhat.com,
-       dbrownell@users.sourceforge.net, James.Bottomley@hansenpartnership.com,
-       a.zummo@towertech.it, cbou@mail.ru, dwmw2@infradead.org,
-       linux1394-devel@lists.sourceforge.net,
-       spi-devel-general@lists.sourceforge.net, linux-scsi@vger.kernel.org,
-       rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] convert semaphore to mutex in struct class
-References: <20080103055019.GA4885@darkstar.te-china.tietoenator.com> <20080107020944.GA3637@darkstar.te-china.tietoenator.com> <20080107084528.GA8365@suse.de> <200801070101.15168.david-b@pacbell.net> <478227D5.8050402@s5r6.in-berlin.de> <20080107140014.GA2961@ff.dom.local>
-In-Reply-To: <20080107140014.GA2961@ff.dom.local>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Jan 2008 11:37:51 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:57513 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756328AbYAGQhu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 11:37:50 -0500
+Date: Mon, 7 Jan 2008 17:37:36 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Rename suspend/hibernation stuff for clarity
+Message-ID: <20080107163736.GC16072@uranus.ravnborg.org>
+References: <20080107135236.GA17140@elf.ucw.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080107135236.GA17140@elf.ucw.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarek Poplawski wrote:
->> David Brownell wrote:
->> > On Monday 07 January 2008, Greg KH wrote:
->> >> Most of the non-driver core code should be converted to not use the
->> >> lock in the class at all.  They should use a local lock instead.
->> > 
->> > Or better yet, that yet-to-be-written class_for_each_instance()
->> > iterator ... :)
-...
-> I hope I'm wrong, but IMHO it should be safer not to mix such changes,
-> so do the mutexes first or delay them until the end. Otherwise some
-> false blaming seems almost inevitable.
+On Mon, Jan 07, 2008 at 02:52:36PM +0100, Pavel Machek wrote:
+> kernel/suspend_64.c and power/cpu.c were equivalent. Move them into
+> power/cpu_*.c for consistency.
+> 
+> power/swsusp.S and kernel/suspend_asm_64.S were both misnamed and
+> equivalent. Merge then minto power/hibernation_*.S.
+> 
+> Signed-off-by: Pavel Machek <pavel@suse.cz>
+> 
+> ---
+> commit 2a4fbaecebafff5b3114d0e87ecf73c45bc57f7b
+> tree a13462c0ae1fa640a9b9d08cfea0bf6056b26385
+> parent eafb847ccc4f73c2737157b510dcf7b040f53147
+> author Pavel <pavel@amd.ucw.cz> Mon, 07 Jan 2008 14:50:25 +0100
+> committer Pavel <pavel@amd.ucw.cz> Mon, 07 Jan 2008 14:50:25 +0100
+> 
+>  arch/x86/Makefile_64             |    1 
+>  arch/x86/kernel/Makefile_64      |    2 
+>  arch/x86/kernel/suspend_64.c     |  294 --------------------------------------
+>  arch/x86/kernel/suspend_asm_64.S |  141 ------------------
+>  arch/x86/power/Makefile          |   10 +
+>  arch/x86/power/cpu.c             |  133 -----------------
+>  arch/x86/power/cpu_32.c          |  133 +++++++++++++++++
+>  arch/x86/power/cpu_64.c          |  294 ++++++++++++++++++++++++++++++++++++++
+>  arch/x86/power/hibernation_32.S  |   78 ++++++++++
+>  arch/x86/power/hibernation_64.S  |  141 ++++++++++++++++++
+>  arch/x86/power/swsusp.S          |   78 ----------
+>  11 files changed, 655 insertions(+), 650 deletions(-)
 
-I agree.  Sem2mutex conversion should not be mixed with API conversion,
-even if one or both seem trivial.
--- 
-Stefan Richter
--=====-==--- ---= --===
-http://arcgraph.de/sr/
+git diff -C -M -B  (IIRC) gives a much more readable diffstat.
+They works for git format-patch and friends too.
+
+	Sam
