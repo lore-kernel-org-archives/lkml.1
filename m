@@ -1,67 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757288AbYAGM3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756585AbYAGMec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757288AbYAGM3v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 07:29:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755414AbYAGM3o
+	id S1756585AbYAGMec (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 07:34:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755072AbYAGMeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 07:29:44 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:38850 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754855AbYAGM3n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 07:29:43 -0500
-Date: Mon, 7 Jan 2008 12:29:34 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: marcin.slusarz@gmail.com
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Ben Fennema <bfennema@falcon.csc.calpoly.edu>, Jan Kara <jack@suse.cz>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 2/7] udf: create common function for tag checksumming
-Message-ID: <20080107122933.GD3710@infradead.org>
-References: <1199582513-7915-1-git-send-email-marcin.slusarz@gmail.com> <1199582513-7915-2-git-send-email-marcin.slusarz@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 7 Jan 2008 07:34:23 -0500
+Received: from mga02.intel.com ([134.134.136.20]:32659 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754920AbYAGMeW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 07:34:22 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,253,1196668800"; 
+   d="scan'208";a="250511040"
+Date: Mon, 7 Jan 2008 13:33:46 +0100
+From: Markus Metzger <markus.t.metzger@intel.com>
+To: ak@suse.de, hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       tglx@linutronix.de
+Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com,
+       suresh.b.siddha@intel.com, roland@redhat.com, akpm@linux-foundation.org,
+       mtk.manpages@gmail.com
+Subject: [patch 1/2] x86, ptrace: add version and last remaining size to status command
+Message-ID: <20080107133346.A11643@sedona.ch.intel.com>
+Mime-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <1199582513-7915-2-git-send-email-marcin.slusarz@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+User-Agent: Mutt/1.2.5i
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> --- a/fs/udf/udfdecl.h
-> +++ b/fs/udf/udfdecl.h
-> @@ -36,6 +36,18 @@
->  
->  #define udf_get_lb_pblock(sb,loc,offset) udf_get_pblock((sb), (loc).logicalBlockNum, (loc).partitionReferenceNum, (offset))
->  
-> +/* computes tag checksum */
-> +static inline uint8_t udf_tag_checksum(const tag *t)
-> +{
-> +	uint8_t *data = (uint8_t *)t;
-> +	uint8_t checksum = 0;
-> +	int i;
-> +	for (i = 0; i < sizeof(tag); ++i)
-> +		if (i != 4) /* that's the position of checksum */
-> +			checksum += data[i];
-> +	return checksum;
-> +}
+Return the API version and the size of a bts_struct in the PTRACE_BTS_STATUS command. This might be handy in case other archs want to use and extend the interface. It allows users to program against one version and continue to work for newer versions (they have to discard everything they don't understand, of course).
 
-This function is large enough that it should be out of line in a .c
-file.  Also I'd prefer using the Linux native types ala:
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+---
 
-/* computes tag checksum */
-static u8 udf_tag_checksum(const tag *t)
-{
-	u8 *data = (u8 *)t;
-	u8 checksum = 0;
-	int i;
+Index: linux-2.6-x86/arch/x86/kernel/ptrace.c
+===================================================================
+--- linux-2.6-x86.orig/arch/x86/kernel/ptrace.c	2008-01-07 12:42:39.%N +0100
++++ linux-2.6-x86/arch/x86/kernel/ptrace.c	2008-01-07 13:09:07.%N +0100
+@@ -787,6 +787,9 @@
+ 			cfg.flags |= PTRACE_BTS_O_SCHED;
+ 	}
+ 
++	cfg.bts_size = sizeof(struct bts_struct);
++	cfg.version  = PTRACE_BTS_VERSION;
++
+ 	if (copy_to_user(ucfg, &cfg, sizeof(cfg)))
+ 		return -EFAULT;
+ 
+Index: linux-2.6-x86/include/asm-x86/ptrace-abi.h
+===================================================================
+--- linux-2.6-x86.orig/include/asm-x86/ptrace-abi.h	2008-01-07 12:42:39.%N +0100
++++ linux-2.6-x86/include/asm-x86/ptrace-abi.h	2008-01-07 13:08:39.%N +0100
+@@ -91,6 +91,10 @@
+ 	unsigned int flags;
+ 	/* buffer overflow signal */
+ 	unsigned int signal;
++	/* actual size of bts_struct in bytes */
++	unsigned short bts_size;
++	/* interface version */
++	unsigned short version;
+ };
+ #endif
+ 
+Index: linux-2.6-x86/include/asm-x86/ptrace.h
+===================================================================
+--- linux-2.6-x86.orig/include/asm-x86/ptrace.h	2008-01-07 12:42:39.%N +0100
++++ linux-2.6-x86/include/asm-x86/ptrace.h	2008-01-07 13:08:39.%N +0100
+@@ -9,6 +9,8 @@
+ 
+ #ifdef __KERNEL__
+ 
++#define PTRACE_BTS_VERSION 1
++
+ /* the DS BTS struct is used for ptrace as well */
+ #include <asm/ds.h>
+ 
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
 
-	for (i = 0; i < sizeof(tag); i++) {
-		if (i != 4) /* position of the checksum */
-			checksum += data[i];
-	}
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
-	return checksum;
-}
