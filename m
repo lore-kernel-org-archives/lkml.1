@@ -1,45 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758754AbYAGVIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759611AbYAGVNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758754AbYAGVIn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 16:08:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757054AbYAGVIf
+	id S1759611AbYAGVNo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 16:13:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbYAGVNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 16:08:35 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:55209 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756983AbYAGVIf (ORCPT
+	Mon, 7 Jan 2008 16:13:35 -0500
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:43174 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752546AbYAGVNe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 16:08:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=a9pfTBx8sM4WsZCDTwgr/eXgFAZwWm9EL1lF+j8OFg32yopKD/jaA6BIlkmeUrF94npJ+j/XU2dxLJteO6CEUrBHot0aoinfSc3UBrMZtuk1W8no9NlILrcizOu5VQR6tsLoFZmSoePdil87ltnQVA8zQzb9WQl1sWrogF0lkv8=
-Date: Mon, 7 Jan 2008 22:10:01 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Jan Kara <jack@suse.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Ben Fennema <bfennema@falcon.csc.calpoly.edu>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 4/7] udf: replace loops coded with goto to real loops
-Message-ID: <20080107210955.GC22144@joi>
-References: <1199582513-7915-1-git-send-email-marcin.slusarz@gmail.com> <1199582513-7915-4-git-send-email-marcin.slusarz@gmail.com> <20080107144821.GK12589@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080107144821.GK12589@duck.suse.cz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 7 Jan 2008 16:13:34 -0500
+Subject: Re: Error returns not
+	handled	correctly	by	sysfs.c:subsys_attr_store()
+From: Andrew Patterson <andrew.patterson@hp.com>
+To: Tejun Heo <teheo@suse.de>
+Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-hotplug@vger.kernel.org,
+       bjorn.helgaas@hp.com
+In-Reply-To: <1199405830.7025.33.camel@bluto.andrew>
+References: <1195683419.16019.225.camel@grinch>
+	 <20071126203116.0c93cdb9.akpm@linux-foundation.org>
+	 <20071127053321.GA975@kroah.com>  <474D1BD4.2050805@suse.de>
+	 <1196278300.5431.9.camel@grinch>  <474E10CF.7050009@suse.de>
+	 <1196716558.20124.179.camel@bluto.andrew>
+	 <1199404273.7025.21.camel@bluto.andrew>  <477D78BE.1060404@suse.de>
+	 <1199405830.7025.33.camel@bluto.andrew>
+Content-Type: text/plain
+Date: Mon, 07 Jan 2008 14:13:33 -0700
+Message-Id: <1199740413.7025.83.camel@bluto.andrew>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 07, 2008 at 03:48:21PM +0100, Jan Kara wrote:
-> On Sun 06-01-08 02:21:50, marcin.slusarz@gmail.com wrote:
-> > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
->   I'm not sure if this improves readability in general. If the code is
-> really a loop in nature, then we should code it using do {} while but in
-> case we loop back just in case of some error (as seems to be the case in
-> udf_bitmap_new_block()), then IMHO goto is more explanative. So at least
-> that one case I'd leave as is.
-Why do you think it's an error?
+On Thu, 2008-01-03 at 17:17 -0700, Andrew Patterson wrote:
+> On Fri, 2008-01-04 at 09:07 +0900, Tejun Heo wrote:
+> > Hello,
+> > 
+> > Andrew Patterson wrote:
+> > > It looks like this is a shell issue.  After looking through the sysfs
+> > > code, I realized that this problem seems to be driven from user-land.
+> > > So I performed some experiments:
+> > > 
+> > >      1. Wrote a simple program that just used write(2) to write to the
+> > >         sysfs entry. This works fine.
+> > >      2. Used /bin/echo instead of the built-in echo command.  This too
+> > >         works fine.
+> > >      3. Tried several shells.  Zsh and Bash both fail.  Csh works fine.
+> > > 
+> > > I then ran strace on the following shell-script:
+> > > 
+> > > #!/bin/bash
+> > > 
+> > > echo x > allow_restart
+> > > echo y > allow_restart
+> > > echo z > allow_restart
+> > > 
+> > > and got:
+> > > 
+> > > # strace -e trace=write ~/tmp/tester.sh 
+> > > write(1, "x\n", 2)                      = -1 EINVAL (Invalid argument)
+> > > write(1, "x\n", 2)                      = -1 EINVAL (Invalid argument)
+> > > write(2, "/home/andrew/tmp/tester.sh: line"..., 72/home/andrew/tmp/tester.sh: line 4: echo: write error: Invalid argument
+> > > ) = 72
+> > > write(1, "x\ny\n", 4)                   = -1 EINVAL (Invalid argument)
+> > > write(1, "x\ny\n", 4)                   = -1 EINVAL (Invalid argument)
+> > > write(2, "/home/andrew/tmp/tester.sh: line"..., 72/home/andrew/tmp/tester.sh: line 5: echo: write error: Invalid argument
+> > > ) = 72
+> > > write(1, "x\ny\nz\n", 6)                = -1 EINVAL (Invalid argument)
+> > > write(1, "x\ny\nz\n", 6)                = -1 EINVAL (Invalid argument)
+> > > write(2, "/home/andrew/tmp/tester.sh: line"..., 72/home/andrew/tmp/tester.sh: line 6: echo: write error: Invalid argument
+> > > ) = 72
+> > > write(1, "x\ny\nz\n", 6x
+> > > y
+> > > z
+> > > )                = 6
+> > > Process 3800 detached
+> > 
+> > Eeeeeeeekkkk.... That's scary.  Which distro are you using and what does
+> > 'bash --version' say?
+> 
+> IA64 Debian lenny.  
+> 
+> # bash --version
+> GNU bash, version 3.1.17(1)-release (ia64-unknown-linux-gnu)
+> 
+> # zsh --version 
+> zsh 4.3.4 (ia64-unknown-linux-gnu)
+> 
+> # csh --version
+> tcsh 6.14.00 (Astron) 2005-03-25 (ia64-unknown-linux) options
+> wide,nls,dl,al,kan,rh,nd,color,filec
+> 
+> I suppose I should try this an ia32 box again, and perhaps with some
+> other distros.  I am not sure what the kernel can do about this, but it
+> might be nice to report it to the shell maintainers.
+> 
 
-Marcin
+This looks like it might be the culprit. 
+
+http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=459643
+
+The fact that it works on SLES10 lends further evidence to glibc being
+the problem.
+
+-- 
+Andrew Patterson
+Hewlett-Packard Company
+
