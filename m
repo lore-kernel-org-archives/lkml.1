@@ -1,162 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756250AbYAGL4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756501AbYAGMCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756250AbYAGL4o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 06:56:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754613AbYAGL4f
+	id S1756501AbYAGMCj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 07:02:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754809AbYAGMC1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 06:56:35 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:41228 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754345AbYAGL4e (ORCPT
+	Mon, 7 Jan 2008 07:02:27 -0500
+Received: from an-out-0708.google.com ([209.85.132.244]:37248 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754841AbYAGMC0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 06:56:34 -0500
-Subject: Re: [PATCH 04/11] hrtimer: fixup the HRTIMER_CB_IRQSAFE_NO_SOFTIRQ
-	fallback
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       dmitry.adamushko@gmail.com,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20080106162123.431344000@chello.nl>
-References: <20080106161128.152634000@chello.nl>
-	 <20080106162123.431344000@chello.nl>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-VMr4boGlbNeTFDX0w89C"
-Date: Mon, 07 Jan 2008 12:56:28 +0100
-Message-Id: <1199706988.7143.30.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Mon, 7 Jan 2008 07:02:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=khPoe8NwjnkAgPhaTFOv3GXvFyS/9XSwfglL/8bqjRKKSnvxCgJ6Ueg/CaDyxXdqTPqPx9YQSmOuOHCj4SU/K0fg0Mrf4PwXEQLYFqzZV/T2lm4NYPZKYlfYs4GSEU8hyIJSmqWBSdxQYlMoSN7abLdW4t8weDTxxxVitg317NU=
+Message-ID: <b4292e150801070402m14221e9fh6b965a5932f78a4c@mail.gmail.com>
+Date: Mon, 7 Jan 2008 09:02:23 -0300
+From: "Adolfo R. Brandes" <arbrandes@gmail.com>
+To: "=?ISO-8859-1?Q?Bj=F6rn_Steinbrink?=" <B.Steinbrink@gmx.de>
+Subject: Re: forcedeth: MAC-address reversed on resume from suspend
+Cc: "Adrian Bunk" <bunk@kernel.org>, "Andreas Mohr" <andi@lisas.de>,
+       "Richard Jonsson" <richie@coderworld.net>, linux-kernel@vger.kernel.org,
+       "Ayaz Abdulla" <aabdulla@nvidia.com>, jgarzik@pobox.com,
+       netdev@vger.kernel.org
+In-Reply-To: <20080107014638.GA4170@atjola.homenet>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <477BFC71.7090002@coderworld.net>
+	 <20080102214843.GA19224@rhlx01.hs-esslingen.de>
+	 <20080102234209.GA10831@does.not.exist>
+	 <20080104034357.GA2113@atjola.homenet>
+	 <b4292e150801061349v3b54ffc0vfed75dbcb83daf9b@mail.gmail.com>
+	 <20080107014638.GA4170@atjola.homenet>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
---=-VMr4boGlbNeTFDX0w89C
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Jan 6, 2008 10:46 PM, Björn Steinbrink <B.Steinbrink@gmx.de> wrote:
+> Any chance that you applied the patch on your modified sources and didn't get it right?
 
+  It is perfectly possible that I messed something up, although I
+double checked what I was doing on the MCP51.  However, on that board
+(an Asus M2NPV-VM) I'm running the 2.6.22-based Ubuntu Gutsy default
+kernel with a recompiled forcedeth, as opposed to a vanilla 2.6.24-rc6
+on the CK804, where your patch worked.  It may be that the different
+kernel is throwing the patch off somehow.
 
-On Sun, 2008-01-06 at 17:11 +0100, Peter Zijlstra wrote:
-> plain text document attachment (hrtimer-fallback.patch)
+  Later on today I'm going to try the MCP51 with the same build of
+2.6.24-rc6 (built on a .config from the Ubuntu Hardy development
+kernel) I'm running on the CK804, and post results.
 
-
-I know I should have boot tested more combinations :-(
-Please fold this into the patch.
-
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/hrtimer.c |   38 ++++++++++++++++++--------------------
- 1 file changed, 18 insertions(+), 20 deletions(-)
-
-Index: linux-2.6/kernel/hrtimer.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.orig/kernel/hrtimer.c
-+++ linux-2.6/kernel/hrtimer.c
-@@ -325,6 +325,22 @@ unsigned long ktime_divns(const ktime_t=20
- }
- #endif /* BITS_PER_LONG >=3D 64 */
-=20
-+/*
-+ * Check, whether the timer is on the callback pending list
-+ */
-+static inline int hrtimer_cb_pending(const struct hrtimer *timer)
-+{
-+	return timer->state & HRTIMER_STATE_PENDING;
-+}
-+
-+/*
-+ * Remove a timer from the callback pending list
-+ */
-+static inline void hrtimer_remove_cb_pending(struct hrtimer *timer)
-+{
-+	list_del_init(&timer->cb_entry);
-+}
-+
- /* High resolution timer related functions */
- #ifdef CONFIG_HIGH_RES_TIMERS
-=20
-@@ -494,29 +510,12 @@ void hres_timers_resume(void)
- }
-=20
- /*
-- * Check, whether the timer is on the callback pending list
-- */
--static inline int hrtimer_cb_pending(const struct hrtimer *timer)
--{
--	return timer->state & HRTIMER_STATE_PENDING;
--}
--
--/*
-- * Remove a timer from the callback pending list
-- */
--static inline void hrtimer_remove_cb_pending(struct hrtimer *timer)
--{
--	list_del_init(&timer->cb_entry);
--}
--
--/*
-  * Initialize the high resolution related parts of cpu_base
-  */
- static inline void hrtimer_init_hres(struct hrtimer_cpu_base *base)
- {
- 	base->expires_next.tv64 =3D KTIME_MAX;
- 	base->hres_active =3D 0;
--	INIT_LIST_HEAD(&base->cb_pending);
- }
-=20
- /*
-@@ -524,7 +523,6 @@ static inline void hrtimer_init_hres(str
-  */
- static inline void hrtimer_init_timer_hres(struct hrtimer *timer)
- {
--	INIT_LIST_HEAD(&timer->cb_entry);
- }
-=20
- /*
-@@ -618,8 +616,6 @@ static inline int hrtimer_enqueue_reprog
- {
- 	return 0;
- }
--static inline int hrtimer_cb_pending(struct hrtimer *timer) { return 0; }
--static inline void hrtimer_remove_cb_pending(struct hrtimer *timer) { }
- static inline void hrtimer_init_hres(struct hrtimer_cpu_base *base) { }
- static inline void hrtimer_init_timer_hres(struct hrtimer *timer) { }
- static inline int hrtimer_reprogram(struct hrtimer *timer,
-@@ -1006,6 +1002,7 @@ void hrtimer_init(struct hrtimer *timer,
- 		clock_id =3D CLOCK_MONOTONIC;
-=20
- 	timer->base =3D &cpu_base->clock_base[clock_id];
-+	INIT_LIST_HEAD(&timer->cb_entry);
- 	hrtimer_init_timer_hres(timer);
-=20
- #ifdef CONFIG_TIMER_STATS
-@@ -1419,6 +1416,7 @@ static void __devinit init_hrtimers_cpu(
- 	for (i =3D 0; i < HRTIMER_MAX_CLOCK_BASES; i++)
- 		cpu_base->clock_base[i].cpu_base =3D cpu_base;
-=20
-+	INIT_LIST_HEAD(&cpu_base->cb_pending);
- 	hrtimer_init_hres(cpu_base);
- }
-=20
-
-
-
---=-VMr4boGlbNeTFDX0w89C
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHghNsXA2jU0ANEf4RAov3AKCGsYtW+r5R7AIE0uep7uj/Fyo0zgCfZmp7
-jHgXPXpPaS2H+GfUqF6irZ0=
-=kLGj
------END PGP SIGNATURE-----
-
---=-VMr4boGlbNeTFDX0w89C--
-
+Adolfo
