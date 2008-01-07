@@ -1,112 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759611AbYAGVNo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759915AbYAGVOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759611AbYAGVNo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 16:13:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbYAGVNf
+	id S1759915AbYAGVOi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 16:14:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754460AbYAGVOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 16:13:35 -0500
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:43174 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752546AbYAGVNe (ORCPT
+	Mon, 7 Jan 2008 16:14:30 -0500
+Received: from mail.daysofwonder.com ([213.186.49.53]:48624 "EHLO
+	mail.daysofwonder.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753447AbYAGVO3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 16:13:34 -0500
-Subject: Re: Error returns not
-	handled	correctly	by	sysfs.c:subsys_attr_store()
-From: Andrew Patterson <andrew.patterson@hp.com>
-To: Tejun Heo <teheo@suse.de>
-Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-hotplug@vger.kernel.org,
-       bjorn.helgaas@hp.com
-In-Reply-To: <1199405830.7025.33.camel@bluto.andrew>
-References: <1195683419.16019.225.camel@grinch>
-	 <20071126203116.0c93cdb9.akpm@linux-foundation.org>
-	 <20071127053321.GA975@kroah.com>  <474D1BD4.2050805@suse.de>
-	 <1196278300.5431.9.camel@grinch>  <474E10CF.7050009@suse.de>
-	 <1196716558.20124.179.camel@bluto.andrew>
-	 <1199404273.7025.21.camel@bluto.andrew>  <477D78BE.1060404@suse.de>
-	 <1199405830.7025.33.camel@bluto.andrew>
-Content-Type: text/plain
-Date: Mon, 07 Jan 2008 14:13:33 -0700
-Message-Id: <1199740413.7025.83.camel@bluto.andrew>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Jan 2008 16:14:29 -0500
+Message-ID: <49567.213.41.177.193.1199740466.squirrel@corp.daysofwonder.com>
+Date: Mon, 7 Jan 2008 22:14:26 +0100 (CET)
+Subject: Re: Strange freeze on 2.6.22 (deadlock?)
+From: "Brice Figureau" <brice+lklm@daysofwonder.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.11
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-01-03 at 17:17 -0700, Andrew Patterson wrote:
-> On Fri, 2008-01-04 at 09:07 +0900, Tejun Heo wrote:
-> > Hello,
-> > 
-> > Andrew Patterson wrote:
-> > > It looks like this is a shell issue.  After looking through the sysfs
-> > > code, I realized that this problem seems to be driven from user-land.
-> > > So I performed some experiments:
-> > > 
-> > >      1. Wrote a simple program that just used write(2) to write to the
-> > >         sysfs entry. This works fine.
-> > >      2. Used /bin/echo instead of the built-in echo command.  This too
-> > >         works fine.
-> > >      3. Tried several shells.  Zsh and Bash both fail.  Csh works fine.
-> > > 
-> > > I then ran strace on the following shell-script:
-> > > 
-> > > #!/bin/bash
-> > > 
-> > > echo x > allow_restart
-> > > echo y > allow_restart
-> > > echo z > allow_restart
-> > > 
-> > > and got:
-> > > 
-> > > # strace -e trace=write ~/tmp/tester.sh 
-> > > write(1, "x\n", 2)                      = -1 EINVAL (Invalid argument)
-> > > write(1, "x\n", 2)                      = -1 EINVAL (Invalid argument)
-> > > write(2, "/home/andrew/tmp/tester.sh: line"..., 72/home/andrew/tmp/tester.sh: line 4: echo: write error: Invalid argument
-> > > ) = 72
-> > > write(1, "x\ny\n", 4)                   = -1 EINVAL (Invalid argument)
-> > > write(1, "x\ny\n", 4)                   = -1 EINVAL (Invalid argument)
-> > > write(2, "/home/andrew/tmp/tester.sh: line"..., 72/home/andrew/tmp/tester.sh: line 5: echo: write error: Invalid argument
-> > > ) = 72
-> > > write(1, "x\ny\nz\n", 6)                = -1 EINVAL (Invalid argument)
-> > > write(1, "x\ny\nz\n", 6)                = -1 EINVAL (Invalid argument)
-> > > write(2, "/home/andrew/tmp/tester.sh: line"..., 72/home/andrew/tmp/tester.sh: line 6: echo: write error: Invalid argument
-> > > ) = 72
-> > > write(1, "x\ny\nz\n", 6x
-> > > y
-> > > z
-> > > )                = 6
-> > > Process 3800 detached
-> > 
-> > Eeeeeeeekkkk.... That's scary.  Which distro are you using and what does
-> > 'bash --version' say?
-> 
-> IA64 Debian lenny.  
-> 
-> # bash --version
-> GNU bash, version 3.1.17(1)-release (ia64-unknown-linux-gnu)
-> 
-> # zsh --version 
-> zsh 4.3.4 (ia64-unknown-linux-gnu)
-> 
-> # csh --version
-> tcsh 6.14.00 (Astron) 2005-03-25 (ia64-unknown-linux) options
-> wide,nls,dl,al,kan,rh,nd,color,filec
-> 
-> I suppose I should try this an ia32 box again, and perhaps with some
-> other distros.  I am not sure what the kernel can do about this, but it
-> might be nice to report it to the shell maintainers.
-> 
 
-This looks like it might be the culprit. 
+On Mon, January 7, 2008 20:06, Brice Figureau wrote:
+>
+> On Mon, January 7, 2008 18:20, Randy Dunlap wrote:
+>> On Mon, 07 Jan 2008 16:48:54 +0100 Brice Figureau wrote:
+>>
+>>> Hi,
+>>>
+>>> I'm seeing a strange complete server freeze/lock-up on an bi-Xeon HT
+>>> amd64 server running standard debian 2.6.22 (and before that vanilla
+>>> 2.6.19.x and 2.6.20.x which exhibited the same issue).
+>>>
+>>> I'm only reporting it now, since I could get a full sysrq-t only this
+>>> morning.
+>>>
+>>> The symptoms are that every 5 to 7 days, the server (which acts as a MX
+>>> along with a few low traffic websites) locks-up. The ipmi watchdog is
+>>> unable to reboot the server (and doesn't even trigger, since there is
+>>> no
+>>> evidence in the esmlog), the machine is still pingable. I can't ssh to
+>>> it, but I can enter my login & password on a serial console, but no
+>>> shell is started.
+>>>
+>>> Pressing sysrq-t produced the trace hosted here:
+>>> http://www.daysofwonder.com/bug/crash-server1.txt.gz
+>>>
+>>> It happened one time when I was connected to the server through ssh and
+>>> I could see that the load started to increase well above 100. It was
+>>> then impossible to launch new process from the command-line (and I had
+>>> to reboot manually).
+>>> It happened also last week, and the server was stuck for about 6 hours.
+>>> When I started investigating what was wrong, it slowly came back to
+>>> life
+>>> (with an avg 1-min load of more than 1500, and tons of cron processes
+>>> running in parallel).
+>>>
+>>> I'm not really familiar with kernel development so I can't really find
+>>> the issue in the aforementioned trace output.
+>>> What I think is that for some reason there is a race/deadlock that
+>>> finally prevents new processes to really start (which in turns produces
+>>> the high load).
+>>>
+>>> What seems suspect in the aforementioned trace is:
+>>>  *) lot of processes stacktrace ends in __mod_timer+0xc3/0xd3
+>>> which seems to be this line from kernel/timer.c
+>>>
+>>> 415	timer->expires = expires;
+>>> 416	internal_add_timer(base, timer);
+>>> -->	spin_unlock_irqrestore(&base->lock, flags);
+>>>
+>>> 419	return ret;
+>>> 420  }
+>>>
+>>>  *) lot of processes stacktrace ends in __mutex_lock_slowpath and/or
+>>> zone_statistics
+>>
+>> There are also lots of processes in D state (usually waiting
+>> for I/O to complete).  And jbd is in their stack traces.
+>>
+>> How is/are the ext3 filesystems mounted?  I mean what data=xyz
+>> mode?  data=journal (the heaviest duty mode) has at least one
+>> known deadlock.  If you are using data=journal, you could try
+>> switching to data=ordered...
+>
+> Thanks for the answer.
+> I'm using whatever is the default mount option (which I think is
+> data=ordered). The only other mount option I use is nodiratime,noatime.
 
-http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=459643
+I'm sorry, I stand corrected, there is a data=journal option but not on a
+mount point, as an attribute of a bunch of directories (postfix queues):
+# lsattr /var/spool/postfix/
+-------A-----j---- /var/spool/postfix/active
+-------A-----j---- /var/spool/postfix/bounce
+-------A-----j---- /var/spool/postfix/corrupt
+-------A-----j---- /var/spool/postfix/defer
+-------A-----j---- /var/spool/postfix/deferred
+-------A-----j---- /var/spool/postfix/flush
+-------A-----j---- /var/spool/postfix/hold
+-------A-----j---- /var/spool/postfix/incoming
+-------A-----j---- /var/spool/postfix/private
+-------A-----j---- /var/spool/postfix/maildrop
+-------A-----j---- /var/spool/postfix/public
+-------A-----j---- /var/spool/postfix/pid
+-------A-----j---- /var/spool/postfix/saved
+-------A-----j---- /var/spool/postfix/trace
 
-The fact that it works on SLES10 lends further evidence to glibc being
-the problem.
+The idea was that queue file are short-lived files and thus they could
+only be stored in the journal and never hit the regular data area.
 
+So I might have hit the deadlock you were talking about.
+I just disabled this setup, we'll see if that changes anything.
+
+Note that I was using this setup since 2.4 time, the problem appeared only
+a few kernel revisions ago (around 2.6.18 I think).
+
+Thanks
 -- 
-Andrew Patterson
-Hewlett-Packard Company
+Brice Figureau
 
