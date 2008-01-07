@@ -1,95 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbYAGTAN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbYAGTDQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755936AbYAGTAN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 14:00:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbYAGS76
+	id S1756218AbYAGTDQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 14:03:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbYAGTDB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 13:59:58 -0500
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:47159 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752339AbYAGS75 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 13:59:57 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq4HAH4FgkdMROHU/2dsb2JhbACBWKZM
-Date: Mon, 7 Jan 2008 13:59:54 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>,
-       "K. Prasad" <prasad@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, dipankar@in.ibm.com, ego@in.ibm.com,
-       paulmck@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 2/2] Markers Implementation for Preempt RCU Boost
-	Tracing
-Message-ID: <20080107185954.GA16041@Krystal>
-References: <20071231060911.GB6461@in.ibm.com> <20071231102045.GB30380@elte.hu> <y0modc4vr7a.fsf@ton.toronto.redhat.com> <20080102124734.GC11208@elte.hu> <20080102163309.GC11496@redhat.com> <20080102170157.GA11161@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 7 Jan 2008 14:03:01 -0500
+Received: from smtp3-g19.free.fr ([212.27.42.29]:46180 "EHLO smtp3-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751517AbYAGTDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 14:03:00 -0500
+From: Guillaume Chazarain <guichaz@yahoo.fr>
+Subject: [PATCH] fs-writeback: handle errors in sync_sb_inodes()
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Wu Fengguang <wfg@mail.ustc.edu.cn>, Michael Rubin <mrubin@google.com>,
+       linux-kernel@vger.kernel.org
+Date: Mon, 07 Jan 2008 20:02:00 +0100
+Message-ID: <20080107190200.25141.16251.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20080102170157.GA11161@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:56:31 up 65 days, 1 min,  5 users,  load average: 0.28, 0.18,
-	0.18
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Frank Ch. Eigler <fche@redhat.com> wrote:
-> 
-> > > [...] this is a general policy matter. It is _so much easier_ to add 
-> > > markers if they _can_ have near-zero overhead (as in 1-2 
-> > > instructions). Otherwise we'll keep arguing about it, especially if 
-> > > any is added to performance-critical codepath. (where we are 
-> > > counting instructions)
-> > 
-> > The effect of the immediate-values patch, combined with gcc 
-> > CFLAGS+=-freorder-blocks, *is* to keep the overhead at 1-2 
-> > dcache-impact-free instructions.  The register saves, parameter 
-> > evaluation, the function call, can all be moved out of line.
-> 
-> well, -freorder-blocks seems to be default-enabled at -O2 on gcc 4.2, so 
-> we should already be getting that, right?
-> 
-> There's one thing that would make out-of-line tracepoints have a lot 
-> less objectionable to me: right now the 'out of line' area is put to the 
-> end of functions. That splinters the kernel image with inactive, rarely 
-> taken areas of code - blowing up its icache footprint considerably. For 
-> example sched.o has ~100 functions, with the average function size being 
-> 200 bytes. At 64 bytes L1 cacheline size that's a 10-20% icache waste 
-> already.
+Currently it is possible for some errors to be detected at write-back
+time but not reported to the program as shown by the following script
+using the included make_file.c.
 
-Hrm, I agree this can be a problem on architectures with more standard
-associative icaches, but aren't most x86_64 machines (and modern x86_32)
-using an instruction trace cache instead ? This makes the problem
-irrelevant.
+---------8<---------8<---------8<---------8<---------8<---------8<---------
+#!/bin/sh
 
-But I agree that, as Frank proposed, -freorder-blocks-and-partition
-could help us in that matter for the architectures using an associative
-L1 icache.
+# We binary search the size of a file in 40M filesystem that can cause
+# the missed error.
+MIN=5000000
+MAX=50000000
+rm fs.40M
+dd if=/dev/zero of=fs.40M bs=40M count=0 seek=1 status=noxfer
+#mkfs.ext2 -F fs.40M
+mkfs.ext3 -F fs.40M
+#mkfs.jfs -q fs.40M
+#mkfs.reiserfs -fq fs.40M
+#mkfs.xfs fs.40M
 
-Mathieu
+attempt()
+{
+	SIZE=$1
+	RES=0
+	./make_file valid_file $SIZE
+	mount fs.40M /mnt -o loop
+	if ! ./make_file /mnt/not_enough_space $SIZE; then
+		# We could not create the file as the requested size
+		# was clearly too big
+		RES=1
+	fi
+	umount /mnt
 
-> 
-> It's true that keeping the off-site code within the function keeps total 
-> codesize slightly smaller, because the offsets (and hence the 
-> conditional jumps) are thus 8 bit - but that's below 1% and the 
-> cache-blow-up aspect is more severe in practice at 10-20%.
-> 
-> So it would be nice if we could collect all this offline code and stuff 
-> it away into another portion of the kernel image. (or, into another 
-> portion of the object file - which would still be good enough in 
-> practice)
-> 
-> 	Ingo
+	if [ $RES -eq 0 ]; then
+		mount fs.40M /mnt -o loop
+		if cmp valid_file /mnt/not_enough_space; then
+			# The file was too small, it fitted in the filesystem
+			RES=-1
+		fi
+		umount /mnt
+	fi
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+	if [ $RES -eq 0 ]; then
+		echo "Undetected ENOSPC with SIZE=$SIZE"
+		exit
+	fi
+
+	return $RES
+}
+while [ $((MAX - MIN)) -gt 1 ]; do
+	SIZE=$(((MIN + MAX) / 2))
+	attempt $SIZE
+	RES=$?
+	if [ $RES -eq 1 ]; then
+		MAX=$SIZE
+	else
+		MIN=$SIZE
+	fi
+done
+
+echo "Could not reproduce the problem"
+
+---------8<---------8<---------8<---------8<---------8<---------8<---------
+/* make_file.c */
+#include <unistd.h>
+#include <sys/fcntl.h>
+#include <sys/mman.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char **argv)
+{
+	int size, fd;
+	char *mapping;
+	if (argc != 3) {
+		fprintf(stderr, "Usage: %s FILE SIZE\n", argv[0]);
+		return 1;
+	}
+	size = atoi(argv[2]);
+
+	fd = open(argv[1], O_RDWR | O_CREAT, 0600);
+	if (fd < 0) {
+		perror(argv[1]);
+		return 1;
+	}
+	if (ftruncate(fd, size) < 0) {
+		perror("ftruncate");
+		return 1;
+	}
+	mapping = mmap(NULL, size, PROT_WRITE, MAP_SHARED, fd, 0);
+	if (mapping == MAP_FAILED) {
+		perror("mmap");
+		return 1;
+	}
+	memset(mapping, 0xFF, size);
+
+	/* Force a write-back */
+	sync();
+
+	if (msync(mapping, size, MS_SYNC) < 0) {
+		perror("msync");
+		return 1;
+	}
+	if (close(fd) < 0) {
+		perror("close");
+		return 1;
+	}
+	printf("%s: successfully written %d bytes\n", argv[1], size);
+	return 0;
+}
+---------8<---------8<---------8<---------8<---------8<---------8<---------
+make_file.c mmaps a hole, performs some writeback (memset + sync) and
+then expects to find some error code in msync(). The script mounts a
+40M loopback filesystem and does a binary search to find the size of
+a file big enough to provoke a ENOSPC, but small enough to show the
+error not being detected at msync() time.
+
+The error window is large enough for such a size to be quickly found, but with
+this patch, no such file size can be found.
+
+All mmap capable filesystems I tested are affected (ext2, ext3,
+jfs, reiserfs, xfs). XFS is special in that it survives the test thanks
+to the page_mkwrite() work, i.e. it SIGBUS during memset. Anyway, this
+behavious solves ENOSPC but does nothing for EIO.
+
+The offending code is in fs/fs-writeback.c:
+
+sync_sb_inodes(...) ()
+{
+	...
+	__writeback_single_inode(inode, wbc);
+	...
+}
+__writeback_single_inode() gets the error from mapping->flags, clears it
+and returns it. But sync_sb_inodes() ignores this return value. In -mm
+there is sync_sb_inodes-propagate-errors.patch that propagates the
+error from __writeback_single_inode upwards in the call stack. IMHO,
+this propagation is useless because:
+
+- the error is combined from the errors in all the synced inodes, so it
+just tells that some inode in a specific fs got an error,
+- nobody in the call stack is interested in this error: certainly not
+pdflush, or 'void sync(2)'.
+
+Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
+---
+
+ fs/fs-writeback.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index 0fca820..88bb3c4 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -417,6 +417,7 @@ sync_sb_inodes(struct super_block *sb, struct writeback_control *wbc)
+ 		struct address_space *mapping = inode->i_mapping;
+ 		struct backing_dev_info *bdi = mapping->backing_dev_info;
+ 		long pages_skipped;
++		int err;
+ 
+ 		if (!bdi_cap_writeback_dirty(bdi)) {
+ 			redirty_tail(inode);
+@@ -461,7 +462,8 @@ sync_sb_inodes(struct super_block *sb, struct writeback_control *wbc)
+ 		BUG_ON(inode->i_state & I_FREEING);
+ 		__iget(inode);
+ 		pages_skipped = wbc->pages_skipped;
+-		__writeback_single_inode(inode, wbc);
++		err = __writeback_single_inode(inode, wbc);
++		mapping_set_error(mapping, err);
+ 		if (wbc->sync_mode == WB_SYNC_HOLD) {
+ 			inode->dirtied_when = jiffies;
+ 			list_move(&inode->i_list, &sb->s_dirty);
+
