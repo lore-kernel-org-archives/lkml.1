@@ -1,123 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753822AbYAGEjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbYAGEp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753822AbYAGEjf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 23:39:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbYAGEjK
+	id S1754867AbYAGEp2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 23:45:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbYAGEpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 23:39:10 -0500
-Received: from ozlabs.org ([203.10.76.45]:54565 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753275AbYAGEjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 23:39:05 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Subject: Re: [PATCH 0/7] sg_ring: a ring of scatterlist arrays
-Date: Mon, 7 Jan 2008 15:38:58 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org
-References: <200712191731.26512.rusty@rustcorp.com.au> <1199547072.3399.15.camel@localhost.localdomain>
-In-Reply-To: <1199547072.3399.15.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Sun, 6 Jan 2008 23:45:16 -0500
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:47482 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753288AbYAGEpN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 23:45:13 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HAGM9gUdMROHU/2dsb2JhbACBWKR/
+Date: Sun, 6 Jan 2008 23:45:07 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       "William L. Irwin" <sparclinux@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 10/11] mcount tracer show task comm and pid
+Message-ID: <20080107044506.GA1798@Krystal>
+References: <20080103071609.478486470@goodmis.org> <20080103072228.212967487@goodmis.org> <20080103175650.GE30582@Krystal> <20080106153758.GA27863@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801071538.58875.rusty@rustcorp.com.au>
+In-Reply-To: <20080106153758.GA27863@elte.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 23:22:09 up 64 days,  9:27,  3 users,  load average: 0.12, 0.17,
+	0.15
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 06 January 2008 02:31:12 James Bottomley wrote:
-> On Wed, 2007-12-19 at 17:31 +1100, Rusty Russell wrote:
-> > This patch series is the start of my attempt to simplify and make
-> > explicit the chained scatterlist logic.
-> >
-> > It's not complete: my SATA box boots and seems happy, but all the other
-> > users of SCSI need to be updated and checked.  But I've gotten far enough
-> > to believe it's worth persuing.
->
-> Sorry for the delay in looking at this, I was busy with Holidays and
-> things.
+* Ingo Molnar (mingo@elte.hu) wrote:
+> 
+> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> 
+> > > @@ -34,6 +34,7 @@ mctracer_add_trace_entry(struct mctracer
+> > >  {
+> > >  	unsigned long idx, idx_next;
+> > >  	struct mctracer_entry *entry;
+> > > +	struct task_struct *tsk = current;
+> > 
+> > Aren't there situations, like in the middle of a context switch, where 
+> > current is not valid ? Is also poses a problem for early boot, and NMI 
+> > tracing.
+> 
+> no such problems on x86.
+> 
+> 	Ingo
 
-Thankyou for your consideration.
+I based my comments on the following code snippet, but I think I start
+to understand what makes it "so special"
 
-> When I compare sg_ring with the current sg_chain (and later sg_table)
-> implementations, I'm actually struck by how similar they are.
+arch/x86/mm/fault_32.c :
 
-I agree, they're solving the same problem.  It is possible that the pain of 
-change is no longer worthwhile, but I hate to see us give up on this.  We're 
-adding complexity without making it harder to misuse.
+static inline int vmalloc_fault(unsigned long address)
+{
+        unsigned long pgd_paddr;
+        pmd_t *pmd_k;
+        pte_t *pte_k;
+        /*
+         * Synchronize this task's top level page-table
+         * with the 'reference' page table.
+         *
+---->    * Do _not_ use "current" here. We might be inside
+         * an interrupt in the middle of a task switch..
+         */
+        pgd_paddr = read_cr3();
+        pmd_k = vmalloc_sync_one(__va(pgd_paddr), address);
+        if (!pmd_k)
+                return -1;
+        pte_k = pte_offset_kernel(pmd_k, address);
+        if (!pte_present(*pte_k))
+                return -1;
+        return 0;
+}
 
-> The other thing I note is that the problem you're claiming to solve with
-> sg_ring (the ability to add extra scatterlists to the front or the back
-> of an existing one) is already solved with sg_chain, so the only real
-> advantage of sg_ring was that it contains explicit counts, which
-> sg_table (in -mm) also introduces.
+At context switch on x86, loading the registers is done first, and only
+after the is the current pointer set. However, for vmalloc faults, it's
+the value in the cr3 register that is important, which may not
+correspond to the cr3 value saved in "current".
 
-I just converted virtio using latest Linus for fair comparison, and it's still 
-pretty ugly.  sg_ring needs more work to de-scsi it.  sg_table is almost 
-sg_ring except it retains all the chaining warts.
+So, I think using the "pid" and "comm" fields of current, even in NMI
+context, is not a problem, just as you said. For early boot, the current
+task will be init_task, which has pid = 0 and comm = "swapper", still
+ok.
 
-But we hit the same problems:
+Thanks for pointing it out.
 
-1) sg_chain loses information.  The clever chain packaging makes reading easy, 
-but manipulation is severely limited.  You can append to your own chains by 
-padding, but not someone elses.  This works for SCSI, but what about the rest 
-of us?  And don't even think of joining mapped chains: it will almost work.
+Mathieu
 
-2) sg_chain's end marker is only for reading non-dma elements, not for mapped 
-chains, nor for writing into chains.  Plus it's a duplicate of the num arg, 
-which is still passed around for efficiency.  (virtio had to implement 
-count_sg() because I didn't want those two redundant num args).
-
-3) By overloading struct scatterlist, it's invisible what code has been 
-converted to chains, and which hasn't.  Too clever by half!
-
-Look at sg_chain(): it claims to join two scatterlists, but it doesn't.  It 
-assumes that prv is an array, not a chain.  Because you've overloaded an 
-existing type, this happens everywhere.  Try passing skb_to_sgvec a chained 
-skb.
-
-sg_ring would not have required any change to existing drivers, just those 
-that want to use long sg lists.  And then it's damn obvious which are which.
-
-4) sg_chain missed a chance to combine all the relevent information (max, num, 
-num_dma and the sg array). sg_table comes close, but you still can't join 
-them (no max information, and even if there were, what if it's full?).  
-Unlike sg_ring, it's unlikely to reduce bugs.
-
-5) (A little moot now) sg_ring didn't require arch changes.
-
-> The other differences are that sg_ring only allows adding at the front
-> or back of an existing sg_ring, it doesn't allow splicing at any point
-> like sg_chain does, so I'd say it's less functional (not that I actually
-> want anyone ever to do this, of course ...)
-
-Well it's just as possible, but you might have to copy more elements (with sg 
-chaining you need only copy 1 sg element to make room for the chain elem).  
-Agreed that it's a little out there...
-
-> The final point is that sg_ring requires a two level traversal:  ring
-> list then scatterlist, whereas sg_chain only requires a single level
-> traversal.  I grant that we can abstract out the traversal into
-> something that would make users think they're only doing a single level,
-> but I don't see what the extra level really buys us.
-
-We hide the real complexity from users and it makes it less safe for 
-non-trivial cases.
-
-Hence the introduction of YA datastructure: sg_table.  This is getting close: 
-just hang the array off it and you'll have sg_ring and no requirement for 
-dynamic alloc all the time.  And once you have a header, no need for chaining 
-tricks...
-
-> The only thing missing from sg_chain perhaps is an accessor function
-> that does the splicing, which I can easily construct if you want to try
-> it out in virtio.
-
-I don't need that (I prepend and append), but it'd be nice if sg_next took a 
-const struct scatterlist *.
-
-Cheers,
-Rusty.
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
