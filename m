@@ -1,108 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756501AbYAGOFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbYAGOJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756501AbYAGOFz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 09:05:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbYAGOFq
+	id S1756760AbYAGOJG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 09:09:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbYAGOIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 09:05:46 -0500
-Received: from ns2.suse.de ([195.135.220.15]:55814 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751364AbYAGOFp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 09:05:45 -0500
-Message-ID: <478231B7.7080508@suse.de>
-Date: Mon, 07 Jan 2008 15:05:43 +0100
-From: Hannes Reinecke <hare@suse.de>
-User-Agent: Thunderbird 1.5 (X11/20060317)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Multipath failover handling (Was: Re: 2.6.24-rc3-mm1)
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>	 <47462F3C.3040700@googlemail.com>	 <20071122201250.f957e280.akpm@linux-foundation.org>	 <47466B5D.90607@googlemail.com>	 <20071126221509.8f437b61.akpm@linux-foundation.org>	 <1197390783.3812.19.camel@localhost.localdomain> <47624649.3040209@suse.de> <1197642405.3154.71.camel@localhost.localdomain>
-In-Reply-To: <1197642405.3154.71.camel@localhost.localdomain>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Mon, 7 Jan 2008 09:08:55 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:34570 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752574AbYAGOIy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 09:08:54 -0500
+Date: Mon, 7 Jan 2008 06:07:07 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mark Lord <lkml@rtr.ca>, Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       abelay@novell.com, lenb@kernel.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, rjw@sisk.pl
+Subject: Re: + restore-missing-sysfs-max_cstate-attr.patch added to -mm tree
+Message-ID: <20080107060707.55af6d9c@laptopd505.fenrus.org>
+In-Reply-To: <20080106231848.762e93c1.akpm@linux-foundation.org>
+References: <20071130142058.816d1693.akpm@linux-foundation.org>
+	<924EFEDD5F540B4284297C4DC59F3DEE2FAEAF@orsmsx423.amr.corp.intel.com>
+	<4750CC78.9070105@rtr.ca>
+	<20071130190227.1976e682@laptopd505.fenrus.org>
+	<4750D180.6080001@rtr.ca>
+	<20071130191816.3e744205@laptopd505.fenrus.org>
+	<4750D585.1030200@rtr.ca>
+	<477C2143.8090406@rtr.ca>
+	<924EFEDD5F540B4284297C4DC59F3DEE4FC485@orsmsx423.amr.corp.intel.com>
+	<477C622F.6010304@rtr.ca>
+	<20080104021619.GA15409@linux-os.sc.intel.com>
+	<47814958.3070208@rtr.ca>
+	<20080106231848.762e93c1.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Fri, 2007-12-14 at 10:00 +0100, Hannes Reinecke wrote:
->> James Bottomley wrote:
->>> On Mon, 2007-11-26 at 22:15 -0800, Andrew Morton wrote:
->>>> OK, thanks.  I'll assume that James and Hannes have this in hand (or will
->>>> have, by mid-week) and I won't do anything here.
->>> Just to confirm what I think I'm going to be doing:  rebasing the
->>> scsi-misc tree to remove this commit:
->>>
->>> commit 8655a546c83fc43f0a73416bbd126d02de7ad6c0
->>> Author: Hannes Reinecke <hare@suse.de>
->>> Date:   Tue Nov 6 09:23:40 2007 +0100
->>>
->>>     [SCSI] Do not requeue requests if REQ_FAILFAST is set
->>>
->>> And its allied fix ups:
->>>
->>> commit 983289045faa96fba8841d3c51b98bb8623d9504
->>> Author: James Bottomley <James.Bottomley@HansenPartnership.com>
->>> Date:   Sat Nov 24 19:47:25 2007 +0200
->>>
->>>     [SCSI] fix up REQ_FASTFAIL not to fail when state is QUIESCE
->>>
->>> commit 9dd15a13b332e9f5c8ee752b1ccd9b84cb5bdf17
->>> Author: James Bottomley <James.Bottomley@HansenPartnership.com>
->>> Date:   Sat Nov 24 19:55:53 2007 +0200
->>>
->>>     [SCSI] fix domain validation to work again
->>>
->>> James
->>>
->>>
->> Or just apply my latest patch (cf Undo __scsi_kill_request).
->> The main point is that we shouldn't retry requests
->> with FAILFAST set when the queue is blocked. AFAICS
->> only FC and iSCSI transports set the queue to blocked,
->> and use this to indicate a loss of connection. So any
->> retry with queue blocked is futile.
-> 
-> I still don't think this is the right approach.
-> 
-> For link up/down events, those are direct pathing events and should be
-> signalled along a kernel notifier, not by mucking with the SCSI state
-> machine.
-Of course they will be signalled. And eventually we should patch up
-mutltipath-tools to read the exising events from the uevent socket.
-But even with that patch there is a quite largish window during
-which IOs will be sent to the blocked device, and hence will be
-stuck in the request queue until the timer expires.
+On Sun, 6 Jan 2008 23:18:48 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> However, there's still devloss_tmo to consider ... even in
-> multipath, I don't think you want to signal path failure until
-> devloss_tmo has fired otherwise you'll get too many transient up/down
-> events which damage performance if the array has an expensive failover
-> model.
+> On Sun, 06 Jan 2008 16:34:16 -0500 Mark Lord <lkml@rtr.ca> wrote:
 > 
-Yes. But currently we have a very high failover latency as we always have
-to wait for the requeued commands to time-out.
-Hence we're damaging performance on arrays with inexpensive failover.
-
-> The other problem is what to do with in-flight commands at the time the
-> link went down.  With your current patch, they're still stuck until they
-> time out ... surely there needs to be some type of recovery mechanism
-> for these?
+> > Venki Pallipadi wrote:
+> > > Reintroduce run time configurable max_cstate for !CPU_IDLE case.
+> > > 
+> > > Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> > > 
+> > > Index: linux-2.6.24-rc/drivers/acpi/processor_idle.c
+> > > ===================================================================
+> > > --- linux-2.6.24-rc.orig/drivers/acpi/processor_idle.c
+> > > +++ linux-2.6.24-rc/drivers/acpi/processor_idle.c
+> > > @@ -76,7 +76,11 @@ static void (*pm_idle_save) (void) __rea
+> > >  #define PM_TIMER_TICKS_TO_US(p)		(((p) *
+> > > 1000)/(PM_TIMER_FREQUENCY/1000)) 
+> > >  static unsigned int max_cstate __read_mostly =
+> > > ACPI_PROCESSOR_MAX_POWER; +#ifdef CONFIG_CPU_IDLE
+> > >  module_param(max_cstate, uint, 0000);
+> > > +#else
+> > > +module_param(max_cstate, uint, 0644);
+> > > +#endif
+> > >  static unsigned int nocst __read_mostly;
+> > >  module_param(nocst, uint, 0000);
+> > >  
+> > ..
+> > 
+> > Can we get this patch upstream so that a stock 2.6.24 will work
+> > here?
+> > 
 > 
-Well, the in-flight commands are owned by the HBA driver, which should
-have the proper code to terminate / return those commands with the
-appriopriate codes. They will then be rescheduled and will be caught
-like 'normal' IO requests.
+> umm, OK, I queued it for 2.6.24.  I'll give people a day or so to
+> comment on this.
+> 
+> I had to invent some silly changlelog for it.  Please review it for
+> accuracy and completeness?
+> 
+> It isn't complete, really.  How come we only make max_cstate
+> writeable if CONFIG_CPU_IDLE=n?  What happens to people who were
+> reliant upon writeable max_cstate who now enable CPU_IDLE?  Things
+> still break?  What is the rationale behind this?  What constraints
+> led us to this decision?
 
-Cheers,
 
-Hannes
--- 
-Dr. Hannes Reinecke		      zSeries & Storage
-hare@suse.de			      +49 911 74053 688
-SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Markus Rex, HRB 16746 (AG Nürnberg)
+
+if we take a step back; Mark afaics only wants to put 1 in there...
+And that makes sense; either you want the "no latency" C1, or you want the lot
+(esp given that C2 and deeper are at the whim of the bios, what they mean varies
+over time. Actually even C1 does that on some AMD systems);
+
+Longer term I'd suggest we make an option that basically is "C1 only",
+(or technically, "use hlt only")
+that solves Marks VMWARE thing, and is a lot closer to what people really want.
+Well, that and if VMWARE really can't deal with latency in their kernel module
+they should use the proper code for that. It's also a ton easier to implement, since
+it basically is "don't use the CPUIDLE idle loop, but use the traditional hlt one"
+
+
