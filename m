@@ -1,386 +1,281 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758499AbYAGNKS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758790AbYAGNKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758499AbYAGNKS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 08:10:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757556AbYAGNHJ
+	id S1758790AbYAGNKp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 08:10:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758001AbYAGNHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 08:07:09 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34377 "EHLO mx1.redhat.com"
+	Mon, 7 Jan 2008 08:07:13 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34630 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757972AbYAGNHC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 08:07:02 -0500
+	id S1757987AbYAGNHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 08:07:10 -0500
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: lguest@ozlabs.org
 Cc: glommer@gmail.com, linux-kernel@vger.kernel.org,
        virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
        rostedt@goodmis.org, Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: [PATCH 11/16] make registers per-vcpu
-Date: Mon,  7 Jan 2008 11:05:32 -0200
-Message-Id: <11997111891639-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 13/16] per-vcpu lguest task management
+Date: Mon,  7 Jan 2008 11:05:34 -0200
+Message-Id: <11997112043261-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <11997111841603-git-send-email-gcosta@redhat.com>
-References: 11981576363806-git-send-email-gcosta@redhat.com <1199711137195-git-send-email-gcosta@redhat.com> <11997111432356-git-send-email-gcosta@redhat.com> <11997111481113-git-send-email-gcosta@redhat.com> <11997111523234-git-send-email-gcosta@redhat.com> <1199711157132-git-send-email-gcosta@redhat.com> <11997111623212-git-send-email-gcosta@redhat.com> <11997111661344-git-send-email-gcosta@redhat.com> <11997111711574-git-send-email-gcosta@redhat.com> <11997111751377-git-send-email-gcosta@redhat.com> <11997111801864-git-send-email-gcosta@redhat.com> <11997111841603-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11997111961607-git-send-email-gcosta@redhat.com>
+References: 11981576363806-git-send-email-gcosta@redhat.com <1199711137195-git-send-email-gcosta@redhat.com> <11997111432356-git-send-email-gcosta@redhat.com> <11997111481113-git-send-email-gcosta@redhat.com> <11997111523234-git-send-email-gcosta@redhat.com> <1199711157132-git-send-email-gcosta@redhat.com> <11997111623212-git-send-email-gcosta@redhat.com> <11997111661344-git-send-email-gcosta@redhat.com> <11997111711574-git-send-email-gcosta@redhat.com> <11997111751377-git-send-email-gcosta@redhat.com> <11997111801864-git-send-email-gcosta@redhat.com> <11997111841603-git-send-email-gcosta@redhat.com> <11997111891639-git-send-email-gcosta@redhat.com> <11997111961607-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the most obvious per-vcpu field: registers.
-
-So this patch moves it from struct lguest to struct vcpu,
-and patch the places in which they are used, accordingly
+lguest uses tasks to control its running behaviour (like sending
+breaks, controlling halted state, etc). In a per-vcpu environment,
+each vcpu will have its own underlying task. So this patch
+makes the infrastructure for that possible
 
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 ---
- drivers/lguest/interrupts_and_traps.c |   29 ++++++++++++-----------
- drivers/lguest/lg.h                   |    9 ++++---
- drivers/lguest/lguest_user.c          |   36 +++++++++++++++---------------
- drivers/lguest/page_tables.c          |    4 ++-
- drivers/lguest/x86/core.c             |   39 +++++++++++++++++----------------
- 5 files changed, 61 insertions(+), 56 deletions(-)
+ drivers/lguest/core.c                 |    4 +-
+ drivers/lguest/hypercalls.c           |    2 +-
+ drivers/lguest/interrupts_and_traps.c |    8 ++--
+ drivers/lguest/lg.h                   |   14 ++++----
+ drivers/lguest/lguest_user.c          |   55 ++++++++++++++++++---------------
+ 5 files changed, 44 insertions(+), 39 deletions(-)
 
+diff --git a/drivers/lguest/core.c b/drivers/lguest/core.c
+index bc3b32d..847f2df 100644
+--- a/drivers/lguest/core.c
++++ b/drivers/lguest/core.c
+@@ -197,7 +197,7 @@ int run_guest(struct lg_vcpu *vcpu, unsigned long __user *user)
+ 			return -ERESTARTSYS;
+ 
+ 		/* If Waker set break_out, return to Launcher. */
+-		if (lg->break_out)
++		if (vcpu->break_out)
+ 			return -EAGAIN;
+ 
+ 		/* Check if there are any interrupts which can be delivered
+@@ -217,7 +217,7 @@ int run_guest(struct lg_vcpu *vcpu, unsigned long __user *user)
+ 
+ 		/* If the Guest asked to be stopped, we sleep.  The Guest's
+ 		 * clock timer or LHCALL_BREAK from the Waker will wake us. */
+-		if (lg->halted) {
++		if (vcpu->halted) {
+ 			set_current_state(TASK_INTERRUPTIBLE);
+ 			schedule();
+ 			continue;
+diff --git a/drivers/lguest/hypercalls.c b/drivers/lguest/hypercalls.c
+index 1bf133e..edc8cb4 100644
+--- a/drivers/lguest/hypercalls.c
++++ b/drivers/lguest/hypercalls.c
+@@ -86,7 +86,7 @@ static void do_hcall(struct lg_vcpu *vcpu, struct hcall_args *args)
+ 		break;
+ 	case LHCALL_HALT:
+ 		/* Similarly, this sets the halted flag for run_guest(). */
+-		lg->halted = 1;
++		vcpu->halted = 1;
+ 		break;
+ 	case LHCALL_NOTIFY:
+ 		lg->pending_notify = args->arg1;
 diff --git a/drivers/lguest/interrupts_and_traps.c b/drivers/lguest/interrupts_and_traps.c
-index d28671b..4cc7404 100644
+index f8f7efe..c1ca198 100644
 --- a/drivers/lguest/interrupts_and_traps.c
 +++ b/drivers/lguest/interrupts_and_traps.c
-@@ -71,7 +71,7 @@ static void set_guest_interrupt(struct lg_vcpu *vcpu, u32 lo, u32 hi,
- 	/* There are two cases for interrupts: one where the Guest is already
- 	 * in the kernel, and a more complex one where the Guest is in
- 	 * userspace.  We check the privilege level to find out. */
--	if ((lg->regs->ss&0x3) != GUEST_PL) {
-+	if ((vcpu->regs->ss&0x3) != GUEST_PL) {
- 		/* The Guest told us their kernel stack with the SET_STACK
- 		 * hypercall: both the virtual address and the segment */
- 		virtstack = lg->esp1;
-@@ -82,12 +82,12 @@ static void set_guest_interrupt(struct lg_vcpu *vcpu, u32 lo, u32 hi,
- 		 * stack: when the Guest does an "iret" back from the interrupt
- 		 * handler the CPU will notice they're dropping privilege
- 		 * levels and expect these here. */
--		push_guest_stack(lg, &gstack, lg->regs->ss);
--		push_guest_stack(lg, &gstack, lg->regs->esp);
-+		push_guest_stack(lg, &gstack, vcpu->regs->ss);
-+		push_guest_stack(lg, &gstack, vcpu->regs->esp);
- 	} else {
- 		/* We're staying on the same Guest (kernel) stack. */
--		virtstack = lg->regs->esp;
--		ss = lg->regs->ss;
-+		virtstack = vcpu->regs->esp;
-+		ss = vcpu->regs->ss;
- 
- 		origstack = gstack = guest_pa(lg, virtstack);
- 	}
-@@ -96,7 +96,7 @@ static void set_guest_interrupt(struct lg_vcpu *vcpu, u32 lo, u32 hi,
- 	 * the "Interrupt Flag" bit is always set.  We copy that bit from the
- 	 * Guest's "irq_enabled" field into the eflags word: we saw the Guest
- 	 * copy it back in "lguest_iret". */
--	eflags = lg->regs->eflags;
-+	eflags = vcpu->regs->eflags;
- 	if (get_user(irq_enable, &lg->lguest_data->irq_enabled) == 0
- 	    && !(irq_enable & X86_EFLAGS_IF))
- 		eflags &= ~X86_EFLAGS_IF;
-@@ -105,19 +105,19 @@ static void set_guest_interrupt(struct lg_vcpu *vcpu, u32 lo, u32 hi,
- 	 * "eflags" word, the old code segment, and the old instruction
- 	 * pointer. */
- 	push_guest_stack(lg, &gstack, eflags);
--	push_guest_stack(lg, &gstack, lg->regs->cs);
--	push_guest_stack(lg, &gstack, lg->regs->eip);
-+	push_guest_stack(lg, &gstack, vcpu->regs->cs);
-+	push_guest_stack(lg, &gstack, vcpu->regs->eip);
- 
- 	/* For the six traps which supply an error code, we push that, too. */
- 	if (has_err)
--		push_guest_stack(lg, &gstack, lg->regs->errcode);
-+		push_guest_stack(lg, &gstack, vcpu->regs->errcode);
- 
- 	/* Now we've pushed all the old state, we change the stack, the code
- 	 * segment and the address to execute. */
--	lg->regs->ss = ss;
--	lg->regs->esp = virtstack + (gstack - origstack);
--	lg->regs->cs = (__KERNEL_CS|GUEST_PL);
--	lg->regs->eip = idt_address(lo, hi);
-+	vcpu->regs->ss = ss;
-+	vcpu->regs->esp = virtstack + (gstack - origstack);
-+	vcpu->regs->cs = (__KERNEL_CS|GUEST_PL);
-+	vcpu->regs->eip = idt_address(lo, hi);
- 
- 	/* There are two kinds of interrupt handlers: 0xE is an "interrupt
- 	 * gate" which expects interrupts to be disabled on entry. */
-@@ -158,7 +158,8 @@ void maybe_do_interrupt(struct lg_vcpu *vcpu)
- 
- 	/* They may be in the middle of an iret, where they asked us never to
- 	 * deliver interrupts. */
--	if (lg->regs->eip >= lg->noirq_start && lg->regs->eip < lg->noirq_end)
-+	if ((vcpu->regs->eip >= lg->noirq_start) &&
-+	    (vcpu->regs->eip < lg->noirq_end))
+@@ -163,11 +163,11 @@ void maybe_do_interrupt(struct lg_vcpu *vcpu)
  		return;
  
  	/* If they're halted, interrupts restart them. */
+-	if (lg->halted) {
++	if (vcpu->halted) {
+ 		/* Re-enable interrupts. */
+ 		if (put_user(X86_EFLAGS_IF, &lg->lguest_data->irq_enabled))
+ 			kill_guest(lg, "Re-enabling interrupts");
+-		lg->halted = 0;
++		vcpu->halted = 0;
+ 	} else {
+ 		/* Otherwise we check if they have interrupts disabled. */
+ 		u32 irq_enabled;
+@@ -500,8 +500,8 @@ static enum hrtimer_restart clockdev_fn(struct hrtimer *timer)
+ 	/* Remember the first interrupt is the timer interrupt. */
+ 	set_bit(0, vcpu->irqs_pending);
+ 	/* If the Guest is actually stopped, we need to wake it up. */
+-	if (vcpu->lg->halted)
+-		wake_up_process(vcpu->lg->tsk);
++	if (vcpu->halted)
++		wake_up_process(vcpu->tsk);
+ 	return HRTIMER_NORESTART;
+ }
+ 
 diff --git a/drivers/lguest/lg.h b/drivers/lguest/lg.h
-index f871737..d8429a0 100644
+index 5165172..8c9c8df 100644
 --- a/drivers/lguest/lg.h
 +++ b/drivers/lguest/lg.h
-@@ -44,6 +44,10 @@ struct lg_vcpu {
+@@ -43,6 +43,8 @@ struct lguest;
+ struct lg_vcpu {
  	int vcpu_id;
  	struct lguest *lg;
++	struct task_struct *tsk;
++	struct mm_struct *mm; 	/* == tsk->mm, but that becomes NULL on exit */
  
-+	/* At end of a page shared mapped over lguest_pages in guest.  */
-+	unsigned long regs_page;
-+	struct lguest_regs *regs;
+ 	/* At end of a page shared mapped over lguest_pages in guest.  */
+ 	unsigned long regs_page;
+@@ -55,6 +57,11 @@ struct lg_vcpu {
+ 	/* Virtual clock device */
+ 	struct hrtimer hrt;
+ 
++	/* Do we need to stop what we're doing and return to userspace? */
++	int break_out;
++	wait_queue_head_t break_wq;
++	int halted;
 +
- 	/* If a hypercall was asked for, this points to the arguments. */
- 	struct hcall_args *hcall;
- 	u32 next_hcall;
-@@ -58,9 +62,6 @@ struct lg_vcpu {
- /* The private info the thread maintains about the guest. */
+ 	/* Pending virtual interrupts */
+ 	DECLARE_BITMAP(irqs_pending, LGUEST_IRQS);
+ 
+@@ -65,8 +72,6 @@ struct lg_vcpu {
  struct lguest
  {
--	/* At end of a page shared mapped over lguest_pages in guest.  */
--	unsigned long regs_page;
--	struct lguest_regs *regs;
  	struct lguest_data __user *lguest_data;
- 	struct task_struct *tsk;
- 	struct mm_struct *mm; 	/* == tsk->mm, but that becomes NULL on exit */
-@@ -182,7 +183,7 @@ void lguest_arch_run_guest(struct lg_vcpu *vcpu);
- void lguest_arch_handle_trap(struct lg_vcpu *vcpu);
- int lguest_arch_init_hypercalls(struct lg_vcpu *vcpu);
- int lguest_arch_do_hcall(struct lg_vcpu *vcpu, struct hcall_args *args);
--void lguest_arch_setup_regs(struct lguest *lg, unsigned long start);
-+void lguest_arch_setup_regs(struct lg_vcpu *vcpu, unsigned long start);
+-	struct task_struct *tsk;
+-	struct mm_struct *mm; 	/* == tsk->mm, but that becomes NULL on exit */
+ 	struct lg_vcpu vcpus[NR_CPUS];
+ 	unsigned int nr_vcpus;
  
- /* <arch>/switcher.S: */
- extern char start_switcher_text[], end_switcher_text[], switch_to_guest[];
+@@ -76,15 +81,10 @@ struct lguest
+ 	void __user *mem_base;
+ 	unsigned long kernel_address;
+ 	u32 cr2;
+-	int halted;
+ 	int ts;
+ 	u32 esp1;
+ 	u8 ss1;
+ 
+-	/* Do we need to stop what we're doing and return to userspace? */
+-	int break_out;
+-	wait_queue_head_t break_wq;
+-
+ 	/* Bitmap of what has changed: see CHANGED_* above. */
+ 	int changed;
+ 	struct lguest_pages *last_pages;
 diff --git a/drivers/lguest/lguest_user.c b/drivers/lguest/lguest_user.c
-index abae008..cd68446 100644
+index cd68446..acc1616 100644
 --- a/drivers/lguest/lguest_user.c
 +++ b/drivers/lguest/lguest_user.c
-@@ -108,6 +108,19 @@ static int vcpu_start(struct lg_vcpu *vcpu, int vcpu_id,
- 	/* The timer for lguest's clock needs initialization. */
- 	init_clockdev(vcpu);
+@@ -13,7 +13,8 @@
+  * LHREQ_BREAK and the value "1" to /dev/lguest to do this.  Once the Launcher
+  * has done whatever needs attention, it writes LHREQ_BREAK and "0" to release
+  * the Waker. */
+-static int break_guest_out(struct lguest *lg, const unsigned long __user *input)
++static int break_guest_out(struct lg_vcpu *vcpu,
++			   const unsigned long __user *input)
+ {
+ 	unsigned long on;
  
-+	/* We need a complete page for the Guest registers: they are accessible
-+	 * to the Guest and we can only grant it access to whole pages. */
-+	vcpu->regs_page = get_zeroed_page(GFP_KERNEL);
-+	if (!vcpu->regs_page)
-+		return -ENOMEM;
+@@ -22,14 +23,15 @@ static int break_guest_out(struct lguest *lg, const unsigned long __user *input)
+ 		return -EFAULT;
+ 
+ 	if (on) {
+-		lg->break_out = 1;
++		vcpu->break_out = 1;
+ 		/* Pop it out of the Guest (may be running on different CPU) */
+-		wake_up_process(lg->tsk);
++		wake_up_process(vcpu->tsk);
+ 		/* Wait for them to reset it */
+-		return wait_event_interruptible(lg->break_wq, !lg->break_out);
++		return wait_event_interruptible(vcpu->break_wq,
++						!vcpu->break_out);
+ 	} else {
+-		lg->break_out = 0;
+-		wake_up(&lg->break_wq);
++		vcpu->break_out = 0;
++		wake_up(&vcpu->break_wq);
+ 		return 0;
+ 	}
+ }
+@@ -70,7 +72,7 @@ static ssize_t read(struct file *file, char __user *user, size_t size,loff_t*o)
+ 	vcpu = &lg->vcpus[vcpu_id];
+ 
+ 	/* If you're not the task which owns the Guest, go away. */
+-	if (current != lg->tsk)
++	if (current != vcpu->tsk)
+ 		return -EPERM;
+ 
+ 	/* If the guest is already dead, we indicate why */
+@@ -121,6 +123,18 @@ static int vcpu_start(struct lg_vcpu *vcpu, int vcpu_id,
+ 	 * address. */
+ 	lguest_arch_setup_regs(vcpu, start_ip);
+ 
++	/* Initialize the queue for the waker to wait on */
++	init_waitqueue_head(&vcpu->break_wq);
 +
-+	/* We actually put the registers at the bottom of the page. */
-+	vcpu->regs = (void *)vcpu->regs_page + PAGE_SIZE - sizeof(*vcpu->regs);
++	/* We keep a pointer to the Launcher task (ie. current task) for when
++	 * other Guests want to wake this one (inter-Guest I/O). */
++	vcpu->tsk = current;
 +
-+	/* Now we initialize the Guest's registers, handing it the start
-+	 * address. */
-+	lguest_arch_setup_regs(vcpu, start_ip);
++	/* We need to keep a pointer to the Launcher's memory map, because if
++	 * the Launcher dies we need to clean it up.  If we don't keep a
++	 * reference, it is destroyed before close() is called. */
++	vcpu->mm = get_task_mm(vcpu->tsk);
 +
  	vcpu->lg = container_of((vcpu - vcpu_id), struct lguest, vcpus[0]);
  	vcpu->lg->nr_vcpus++;
  
-@@ -166,16 +179,6 @@ static int initialize(struct file *file, const unsigned long __user *input)
- 	if (err)
- 		goto release_guest;
- 
--	/* We need a complete page for the Guest registers: they are accessible
--	 * to the Guest and we can only grant it access to whole pages. */
--	lg->regs_page = get_zeroed_page(GFP_KERNEL);
--	if (!lg->regs_page) {
--		err = -ENOMEM;
--		goto release_guest;
--	}
--	/* We actually put the registers at the bottom of the page. */
--	lg->regs = (void *)lg->regs_page + PAGE_SIZE - sizeof(*lg->regs);
--
- 	/* Initialize the Guest's shadow page tables, using the toplevel
- 	 * address the Launcher gave us.  This allocates memory, so can
- 	 * fail. */
-@@ -183,10 +186,6 @@ static int initialize(struct file *file, const unsigned long __user *input)
+@@ -186,17 +200,6 @@ static int initialize(struct file *file, const unsigned long __user *input)
  	if (err)
  		goto free_regs;
  
--	/* Now we initialize the Guest's registers, handing it the start
--	 * address. */
--	lguest_arch_setup_regs(lg, args[3]);
+-	/* We keep a pointer to the Launcher task (ie. current task) for when
+-	 * other Guests want to wake this one (inter-Guest I/O). */
+-	lg->tsk = current;
+-	/* We need to keep a pointer to the Launcher's memory map, because if
+-	 * the Launcher dies we need to clean it up.  If we don't keep a
+-	 * reference, it is destroyed before close() is called. */
+-	lg->mm = get_task_mm(lg->tsk);
 -
- 	/* We keep a pointer to the Launcher task (ie. current task) for when
- 	 * other Guests want to wake this one (inter-Guest I/O). */
- 	lg->tsk = current;
-@@ -211,7 +210,7 @@ static int initialize(struct file *file, const unsigned long __user *input)
- 	return sizeof(args);
+-	/* Initialize the queue for the waker to wait on */
+-	init_waitqueue_head(&lg->break_wq);
+-
+ 	/* We remember which CPU's pages this Guest used last, for optimization
+ 	 * when the same Guest runs on the same CPU twice. */
+ 	lg->last_pages = NULL;
+@@ -251,7 +254,7 @@ static ssize_t write(struct file *file, const char __user *in,
+ 		return -ENOENT;
  
- free_regs:
--	free_page(lg->regs_page);
-+	free_page(lg->vcpus[0].regs_page);
- release_guest:
- 	kfree(lg);
- unlock:
-@@ -286,9 +285,12 @@ static int close(struct inode *inode, struct file *file)
+ 	/* If you're not the task which owns the Guest, you can only break */
+-	if (lg && current != lg->tsk && req != LHREQ_BREAK)
++	if (lg && current != vcpu->tsk && req != LHREQ_BREAK)
+ 		return -EPERM;
+ 
+ 	switch (req) {
+@@ -260,7 +263,7 @@ static ssize_t write(struct file *file, const char __user *in,
+ 	case LHREQ_IRQ:
+ 		return user_send_irq(vcpu, input);
+ 	case LHREQ_BREAK:
+-		return break_guest_out(lg, input);
++		return break_guest_out(vcpu, input);
+ 	default:
+ 		return -EINVAL;
+ 	}
+@@ -285,17 +288,19 @@ static int close(struct inode *inode, struct file *file)
  	/* We need the big lock, to protect from inter-guest I/O and other
  	 * Launchers initializing guests. */
  	mutex_lock(&lguest_lock);
--	for (i = 0; i < lg->nr_vcpus; i++)
-+	for (i = 0; i < lg->nr_vcpus; i++) {
++
++	/* Free up the shadow page tables for the Guest. */
++	free_guest_pagetable(lg);
++
+ 	for (i = 0; i < lg->nr_vcpus; i++) {
  		/* Cancels the hrtimer set via LHCALL_SET_CLOCKEVENT. */
  		hrtimer_cancel(&lg->vcpus[i].hrt);
-+		/* We can free up the register page we allocated. */
-+		free_page(lg->vcpus[i].regs_page);
-+	}
- 	/* Free up the shadow page tables for the Guest. */
- 	free_guest_pagetable(lg);
- 	/* Now all the memory cleanups are done, it's safe to release the
-@@ -298,8 +300,6 @@ static int close(struct inode *inode, struct file *file)
+ 		/* We can free up the register page we allocated. */
+ 		free_page(lg->vcpus[i].regs_page);
++		/* Now all the memory cleanups are done, it's safe to release
++		 * the Launcher's memory management structure. */
++		mmput(lg->vcpus[i].mm);
+ 	}
+-	/* Free up the shadow page tables for the Guest. */
+-	free_guest_pagetable(lg);
+-	/* Now all the memory cleanups are done, it's safe to release the
+-	 * Launcher's memory management structure. */
+-	mmput(lg->mm);
+ 	/* If lg->dead doesn't contain an error code it will be NULL or a
  	 * kmalloc()ed string, either of which is ok to hand to kfree(). */
  	if (!IS_ERR(lg->dead))
- 		kfree(lg->dead);
--	/* We can free up the register page we allocated. */
--	free_page(lg->regs_page);
- 	/* We clear the entire structure, which also marks it as free for the
- 	 * next user. */
- 	memset(lg, 0, sizeof(*lg));
-diff --git a/drivers/lguest/page_tables.c b/drivers/lguest/page_tables.c
-index c79fac2..5045325 100644
---- a/drivers/lguest/page_tables.c
-+++ b/drivers/lguest/page_tables.c
-@@ -641,6 +641,7 @@ void map_switcher_in_guest(struct lg_vcpu *vcpu,
- 	pte_t *switcher_pte_page = __get_cpu_var(switcher_pte_pages);
- 	pgd_t switcher_pgd;
- 	pte_t regs_pte;
-+	unsigned long pfn;
- 
- 	/* Make the last PGD entry for this Guest point to the Switcher's PTE
- 	 * page for this CPU (with appropriate flags). */
-@@ -655,7 +656,8 @@ void map_switcher_in_guest(struct lg_vcpu *vcpu,
- 	 * CPU's "struct lguest_pages": if we make sure the Guest's register
- 	 * page is already mapped there, we don't have to copy them out
- 	 * again. */
--	regs_pte = pfn_pte (__pa(lg->regs_page) >> PAGE_SHIFT, __pgprot(_PAGE_KERNEL));
-+	pfn = __pa(vcpu->regs_page) >> PAGE_SHIFT;
-+	regs_pte = pfn_pte(pfn, __pgprot(_PAGE_KERNEL));
- 	switcher_pte_page[(unsigned long)pages/PAGE_SIZE%PTRS_PER_PTE] = regs_pte;
- }
- /*:*/
-diff --git a/drivers/lguest/x86/core.c b/drivers/lguest/x86/core.c
-index b336fff..f213d00 100644
---- a/drivers/lguest/x86/core.c
-+++ b/drivers/lguest/x86/core.c
-@@ -129,7 +129,7 @@ static void run_guest_once(struct lg_vcpu *vcpu,
- 	/* Set the trap number to 256 (impossible value).  If we fault while
- 	 * switching to the Guest (bad segment registers or bug), this will
- 	 * cause us to abort the Guest. */
--	lg->regs->trapnum = 256;
-+	vcpu->regs->trapnum = 256;
- 
- 	/* Now: we push the "eflags" register on the stack, then do an "lcall".
- 	 * This is how we change from using the kernel code segment to using
-@@ -197,11 +197,11 @@ void lguest_arch_run_guest(struct lg_vcpu *vcpu)
- 	 * bad virtual address.  We have to grab this now, because once we
- 	 * re-enable interrupts an interrupt could fault and thus overwrite
- 	 * cr2, or we could even move off to a different CPU. */
--	if (lg->regs->trapnum == 14)
-+	if (vcpu->regs->trapnum == 14)
- 		lg->arch.last_pagefault = read_cr2();
- 	/* Similarly, if we took a trap because the Guest used the FPU,
- 	 * we have to restore the FPU it expects to see. */
--	else if (lg->regs->trapnum == 7)
-+	else if (vcpu->regs->trapnum == 7)
- 		math_state_restore();
- 
- 	/* Restore SYSENTER if it's supposed to be on. */
-@@ -227,12 +227,12 @@ static int emulate_insn(struct lg_vcpu *vcpu)
- 	unsigned int insnlen = 0, in = 0, shift = 0;
- 	/* The eip contains the *virtual* address of the Guest's instruction:
- 	 * guest_pa just subtracts the Guest's page_offset. */
--	unsigned long physaddr = guest_pa(lg, lg->regs->eip);
-+	unsigned long physaddr = guest_pa(lg, vcpu->regs->eip);
- 
- 	/* This must be the Guest kernel trying to do something, not userspace!
- 	 * The bottom two bits of the CS segment register are the privilege
- 	 * level. */
--	if ((lg->regs->cs & 3) != GUEST_PL)
-+	if ((vcpu->regs->cs & 3) != GUEST_PL)
- 		return 0;
- 
- 	/* Decoding x86 instructions is icky. */
-@@ -275,12 +275,12 @@ static int emulate_insn(struct lg_vcpu *vcpu)
- 	if (in) {
- 		/* Lower bit tells is whether it's a 16 or 32 bit access */
- 		if (insn & 0x1)
--			lg->regs->eax = 0xFFFFFFFF;
-+			vcpu->regs->eax = 0xFFFFFFFF;
- 		else
--			lg->regs->eax |= (0xFFFF << shift);
-+			vcpu->regs->eax |= (0xFFFF << shift);
- 	}
- 	/* Finally, we've "done" the instruction, so move past it. */
--	lg->regs->eip += insnlen;
-+	vcpu->regs->eip += insnlen;
- 	/* Success! */
- 	return 1;
- }
-@@ -289,12 +289,12 @@ static int emulate_insn(struct lg_vcpu *vcpu)
- void lguest_arch_handle_trap(struct lg_vcpu *vcpu)
- {
- 	struct lguest *lg = vcpu->lg;
--	switch (lg->regs->trapnum) {
-+	switch (vcpu->regs->trapnum) {
- 	case 13: /* We've intercepted a General Protection Fault. */
- 		/* Check if this was one of those annoying IN or OUT
- 		 * instructions which we need to emulate.  If so, we just go
- 		 * back into the Guest after we've done it. */
--		if (lg->regs->errcode == 0) {
-+		if (vcpu->regs->errcode == 0) {
- 			if (emulate_insn(vcpu))
- 				return;
- 		}
-@@ -309,7 +309,8 @@ void lguest_arch_handle_trap(struct lg_vcpu *vcpu)
- 		 *
- 		 * The errcode tells whether this was a read or a write, and
- 		 * whether kernel or userspace code. */
--		if (demand_page(lg, lg->arch.last_pagefault, lg->regs->errcode))
-+		if (demand_page(lg, lg->arch.last_pagefault,
-+				vcpu->regs->errcode))
- 			return;
- 
- 		/* OK, it's really not there (or not OK): the Guest needs to
-@@ -340,19 +341,19 @@ void lguest_arch_handle_trap(struct lg_vcpu *vcpu)
- 	case LGUEST_TRAP_ENTRY:
- 		/* Our 'struct hcall_args' maps directly over our regs: we set
- 		 * up the pointer now to indicate a hypercall is pending. */
--		vcpu->hcall = (struct hcall_args *)lg->regs;
-+		vcpu->hcall = (struct hcall_args *)vcpu->regs;
- 		return;
- 	}
- 
- 	/* We didn't handle the trap, so it needs to go to the Guest. */
--	if (!deliver_trap(vcpu, lg->regs->trapnum))
-+	if (!deliver_trap(vcpu, vcpu->regs->trapnum))
- 		/* If the Guest doesn't have a handler (either it hasn't
- 		 * registered any yet, or it's one of the faults we don't let
- 		 * it handle), it dies with a cryptic error message. */
- 		kill_guest(lg, "unhandled trap %li at %#lx (%#lx)",
--			   lg->regs->trapnum, lg->regs->eip,
--			   lg->regs->trapnum == 14 ? lg->arch.last_pagefault
--			   : lg->regs->errcode);
-+			   vcpu->regs->trapnum, vcpu->regs->eip,
-+			   vcpu->regs->trapnum == 14 ? lg->arch.last_pagefault
-+			   : vcpu->regs->errcode);
- }
- 
- /* Now we can look at each of the routines this calls, in increasing order of
-@@ -559,9 +560,9 @@ int lguest_arch_init_hypercalls(struct lg_vcpu *vcpu)
-  *
-  * Most of the Guest's registers are left alone: we used get_zeroed_page() to
-  * allocate the structure, so they will be 0. */
--void lguest_arch_setup_regs(struct lguest *lg, unsigned long start)
-+void lguest_arch_setup_regs(struct lg_vcpu *vcpu, unsigned long start)
- {
--	struct lguest_regs *regs = lg->regs;
-+	struct lguest_regs *regs = vcpu->regs;
- 
- 	/* There are four "segment" registers which the Guest needs to boot:
- 	 * The "code segment" register (cs) refers to the kernel code segment
-@@ -588,5 +589,5 @@ void lguest_arch_setup_regs(struct lguest *lg, unsigned long start)
- 
- 	/* There are a couple of GDT entries the Guest expects when first
- 	 * booting. */
--	setup_guest_gdt(lg);
-+	setup_guest_gdt(vcpu->lg);
- }
 -- 
 1.5.0.6
 
