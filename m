@@ -1,90 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755847AbYAGNk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbYAGNvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755847AbYAGNk2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 08:40:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbYAGNkT
+	id S1755500AbYAGNvP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 08:51:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbYAGNu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 08:40:19 -0500
-Received: from rosi.naasa.net ([212.8.0.13]:56197 "EHLO rosi.naasa.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752635AbYAGNkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 08:40:18 -0500
-From: Joerg Platte <lists@naasa.net>
-Reply-To: jplatte@naasa.net
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: regression: 100% io-wait with 2.6.24-rcX
-Date: Mon, 7 Jan 2008 14:40:13 +0100
-User-Agent: KMail/1.9.7
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Fengguang Wu <wfg@mail.ustc.edu.cn>
-References: <200801071151.11200.lists@naasa.net> <200801071424.12448.lists@naasa.net> <1199712757.7143.37.camel@twins>
-In-Reply-To: <1199712757.7143.37.camel@twins>
+	Mon, 7 Jan 2008 08:50:59 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:47159 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753751AbYAGNuz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 08:50:55 -0500
+Date: Mon, 7 Jan 2008 19:20:38 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, hpa@zytor.com,
+       tglx@linutronix.de
+Subject: [PATCH -mm/x86] revert i386: handle an initrd in highmem (Was Re:
+	2.6.24-rc6-mm1)
+Message-ID: <20080107135038.GA19568@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20071222233056.d652743e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801071440.14798.lists@naasa.net>
+In-Reply-To: <20071222233056.d652743e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 7. Januar 2008 schrieb Peter Zijlstra:
-> On Mon, 2008-01-07 at 14:24 +0100, Joerg Platte wrote:
->
-> This is from: 2.6.24-rc7
->
-> > kernel: pdflush       D f41c2f14     0 18822      2
-> > kernel:        f673f000 00000046 00000286 f41c2f14 f5194ce0 00000286
-> > 00000286 f41c2f14 kernel:        00175279 f41c2f6c 00000000 c0271f6c
-> > f5ff363c f5ff3644 c0354a90 c0354a90 kernel:        00175279 c0123251
-> > f5194b80 c03546c0 c0271f67 6c666470 00687375 00000000 kernel: Call Trace:
-> > kernel:  [<c0271f6c>] schedule_timeout+0x6e/0x8b
-> > kernel:  [<c0123251>] process_timeout+0x0/0x5
-> > kernel:  [<c0271f67>] schedule_timeout+0x69/0x8b
-> > kernel:  [<c027179a>] __sched_text_start+0x3a/0x70
-> > kernel:  [<c014d34b>] congestion_wait+0x4e/0x62
-> > kernel:  [<c012be2b>] autoremove_wake_function+0x0/0x33
-> > kernel:  [<c014971e>] pdflush+0x0/0x1bf
-> > kernel:  [<c01493c6>] wb_kupdate+0x8c/0xd1
-> > kernel:  [<c014971e>] pdflush+0x0/0x1bf
-> > kernel:  [<c0149839>] pdflush+0x11b/0x1bf
-> > kernel:  [<c014933a>] wb_kupdate+0x0/0xd1
-> > kernel:  [<c012bd71>] kthread+0x36/0x5d
-> > kernel:  [<c012bd3b>] kthread+0x0/0x5d
-> > kernel:  [<c010493b>] kernel_thread_helper+0x7/0x10
-> > kernel:  =======================
->
-> What filesystem are you using?
+Hi Andrew, Ingo, Thomas, Peter,
 
-Here you can see all currently mounted filesystems:
+x86: revert i386: handle an initrd in highmem
 
-/dev/sda6 on / type ext3 (rw,noatime,errors=remount-ro,acl)
-tmpfs on /lib/init/rw type tmpfs (rw,nosuid,mode=0755)
-proc on /proc type proc (rw,noexec,nosuid,nodev)
-sysfs on /sys type sysfs (rw,noexec,nosuid,nodev)
-procbususb on /proc/bus/usb type usbfs (rw)
-udev on /dev type tmpfs (rw,mode=0755)
-tmpfs on /dev/shm type tmpfs (rw,nosuid,nodev)
-devpts on /dev/pts type devpts (rw,noexec,nosuid,gid=5,mode=620)
-fusectl on /sys/fs/fuse/connections type fusectl (rw)
-/dev/sda7 on /tmp type ext2 (rw,noatime,errors=remount-ro,acl)
-/dev/sda8 on /export type ext3 (rw,noatime,errors=remount-ro,acl)
-/dev/sda1 on /winxp type ntfs (rw,umask=002,gid=10000,nls=utf8)
-rpc_pipefs on /var/lib/nfs/rpc_pipefs type rpc_pipefs (rw)
-automount(pid4936) on /amnt type autofs 
-(rw,fd=4,pgrp=4936,minproto=2,maxproto=4)
-automount(pid4965) on /home type autofs 
-(rw,fd=4,pgrp=4965,minproto=2,maxproto=4)
-nfsd on /proc/fs/nfsd type nfsd (rw)
-/export/home/jplatte on /home/jplatte type none (rw,bind)
-binfmt_misc on /proc/sys/fs/binfmt_misc type binfmt_misc 
-(rw,noexec,nosuid,nodev)
+The patch caused a failure while booting a kexec kernel.
+(http://lkml.org/lkml/2008/1/7/42 has the bisect details.)
 
-regards,
-Jörg
+The following patch reverts it.
 
--- 
-PGP Key: send mail with subject 'SEND PGP-KEY' PGP Key-ID: FD 4E 21 1D
-PGP Fingerprint: 388A872AFC5649D3 BCEC65778BE0C605
+Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/x86/boot/header.S     |    5 -
+ arch/x86/kernel/setup_32.c |  113 +++++++--------------------------------------
+ 2 files changed, 19 insertions(+), 99 deletions(-)
 
+Index: linux-2.6.24-rc6/arch/x86/boot/header.S
+===================================================================
+--- linux-2.6.24-rc6.orig/arch/x86/boot/header.S
++++ linux-2.6.24-rc6/arch/x86/boot/header.S
+@@ -195,13 +195,10 @@ cmd_line_ptr:	.long	0		# (Header version
+ 					# can be located anywhere in
+ 					# low memory 0x10000 or higher.
+ 
+-ramdisk_max:	.long 0x7fffffff
++ramdisk_max:	.long (-__PAGE_OFFSET-(512 << 20)-1) & 0x7fffffff
+ 					# (Header version 0x0203 or later)
+ 					# The highest safe address for
+ 					# the contents of an initrd
+-					# The current kernel allows up to 4 GB,
+-					# but leave it at 2 GB to avoid
+-					# possible bootloader bugs.
+ 
+ kernel_alignment:  .long CONFIG_PHYSICAL_ALIGN	#physical addr alignment
+ 						#required for protected mode
+Index: linux-2.6.24-rc6/arch/x86/kernel/setup_32.c
+===================================================================
+--- linux-2.6.24-rc6.orig/arch/x86/kernel/setup_32.c
++++ linux-2.6.24-rc6/arch/x86/kernel/setup_32.c
+@@ -583,95 +583,6 @@ static void __init relocate_initrd(void)
+ 
+ #endif /* CONFIG_BLK_DEV_INITRD */
+ 
+-#ifdef CONFIG_BLK_DEV_INITRD
+-
+-static bool do_relocate_initrd = false;
+-
+-static void __init reserve_initrd(void)
+-{
+-	unsigned long ramdisk_image = boot_params.hdr.ramdisk_image;
+-	unsigned long ramdisk_size  = boot_params.hdr.ramdisk_size;
+-	unsigned long ramdisk_end   = ramdisk_image + ramdisk_size;
+-	unsigned long end_of_lowmem = max_low_pfn << PAGE_SHIFT;
+-	unsigned long ramdisk_here;
+-
+-	if (ramdisk_end < ramdisk_image) {
+-		printk(KERN_ERR "initrd wraps around end of memory\n"
+-		       KERN_ERR "disabling initrd\n");
+-		initrd_start = 0;
+-		return;
+-	}
+-	if (ramdisk_size >= end_of_lowmem/2) {
+-		printk(KERN_ERR "initrd too large to handle\n"
+-		       KERN_ERR "disabling initrd\n");
+-		initrd_start = 0;
+-		return;
+-	}
+-	if (ramdisk_end <= end_of_lowmem) {
+-		/* All in lowmem, easy case */
+-		reserve_bootmem(ramdisk_image, ramdisk_size);
+-		initrd_start = ramdisk_image + PAGE_OFFSET;
+-		initrd_end = initrd_start+ramdisk_size;
+-		return;
+-	}
+-
+-	/* We need to move the initrd down into lowmem */
+-	ramdisk_here = (end_of_lowmem - ramdisk_size) & PAGE_MASK;
+-
+-	/* Note: this includes all the lowmem currently occupied by
+-	   the initrd, we rely on that fact to keep the data intact. */
+-	reserve_bootmem(ramdisk_here, ramdisk_size);
+-	initrd_start = ramdisk_here + PAGE_OFFSET;
+-	initrd_end   = initrd_start + ramdisk_size;
+-
+-	do_relocate_initrd = true;
+-}
+-
+-#define MAX_MAP_CHUNK	(NR_FIX_BTMAPS << PAGE_SHIFT)
+-
+-static void __init relocate_initrd(void)
+-{
+-	unsigned long ramdisk_image = boot_params.hdr.ramdisk_image;
+-	unsigned long ramdisk_size  = boot_params.hdr.ramdisk_size;
+-	unsigned long end_of_lowmem = max_low_pfn << PAGE_SHIFT;
+-	unsigned long ramdisk_here;
+-	unsigned long slop, clen, mapaddr;
+-	char *p, *q;
+-
+-	if (!do_relocate_initrd)
+-		return;		/* Nothing to do here... */
+-
+-	ramdisk_here = initrd_start - PAGE_OFFSET;
+-	q = (char *)initrd_start;
+-
+-	/* Copy any lowmem portion of the initrd */
+-	if (ramdisk_image < end_of_lowmem) {
+-		clen = end_of_lowmem - ramdisk_image;
+-		p = (char *)__va(ramdisk_image);
+-		memcpy(q, p, clen);
+-		q += clen;
+-		ramdisk_image += clen;
+-		ramdisk_size  -= clen;
+-	}
+-
+-	/* Copy the highmem portion of the initrd */
+-	while (ramdisk_size) {
+-		slop = ramdisk_image & ~PAGE_MASK;
+-		clen = ramdisk_size;
+-		if (clen > MAX_MAP_CHUNK-slop)
+-			clen = MAX_MAP_CHUNK-slop;
+-		mapaddr = ramdisk_image & PAGE_MASK;
+-		p = bt_ioremap(mapaddr, clen+slop);
+-		memcpy(q, p+slop, clen);
+-		bt_iounmap(p, clen+slop);
+-		q += clen;
+-		ramdisk_image += clen;
+-		ramdisk_size  -= clen;
+-	}
+-}
+-
+-#endif /* CONFIG_BLK_DEV_INITRD */
+-
+ void __init setup_bootmem_allocator(void)
+ {
+ 	unsigned long bootmap_size;
+@@ -730,8 +641,24 @@ void __init setup_bootmem_allocator(void
+ #endif
+ 	numa_kva_reserve();
+ #ifdef CONFIG_BLK_DEV_INITRD
+-	if (boot_params.hdr.type_of_loader && boot_params.hdr.ramdisk_image)
+-		reserve_initrd();
++	if (boot_params.hdr.type_of_loader && boot_params.hdr.ramdisk_image) {
++		unsigned long ramdisk_image = boot_params.hdr.ramdisk_image;
++		unsigned long ramdisk_size  = boot_params.hdr.ramdisk_size;
++		unsigned long ramdisk_end   = ramdisk_image + ramdisk_size;
++		unsigned long end_of_lowmem = max_low_pfn << PAGE_SHIFT;
++
++		if (ramdisk_end <= end_of_lowmem) {
++			reserve_bootmem(ramdisk_image, ramdisk_size,
++							BOOTMEM_DEFAULT);
++			initrd_start = ramdisk_image + PAGE_OFFSET;
++			initrd_end = initrd_start+ramdisk_size;
++		} else {
++			printk(KERN_ERR "initrd extends beyond end of memory "
++			       "(0x%08lx > 0x%08lx)\ndisabling initrd\n",
++			       ramdisk_end, end_of_lowmem);
++			initrd_start = 0;
++		}
++	}
+ #endif
+ 	reserve_crashkernel();
+ }
+@@ -890,10 +817,6 @@ void __init setup_arch(char **cmdline_p)
+ 	relocate_initrd();
+ #endif
+ 
+-#ifdef CONFIG_BLK_DEV_INITRD
+-	relocate_initrd();
+-#endif
+-
+ 	dmi_scan_machine();
+ 
+ 	io_delay_init();
+
+--
+regards
+Dhaval
