@@ -1,93 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758672AbYAGQkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757917AbYAGQnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758672AbYAGQkA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 11:40:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756369AbYAGQjx
+	id S1757917AbYAGQnn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 11:43:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755692AbYAGQnf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 11:39:53 -0500
-Received: from styx.suse.cz ([82.119.242.94]:50252 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755692AbYAGQjw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 11:39:52 -0500
-Date: Mon, 7 Jan 2008 17:39:48 +0100
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Mark Fasheh <mark.fasheh@oracle.com>
-Subject: Re: [PATCH] Handle i_size > s_maxbytes correctly
-Message-ID: <20080107163948.GP12589@duck.suse.cz>
-References: <20071220175104.GA11911@duck.suse.cz> <20071222001206.9d34cc78.akpm@linux-foundation.org>
+	Mon, 7 Jan 2008 11:43:35 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37298 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754819AbYAGQne (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 11:43:34 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: yi.y.yang@intel.com
+Subject: Re: [linux-pm][PATCH] base: Change power/wakeup output from "" to  "unsupported" if wakeup feature isn't supported by a device
+Date: Mon, 7 Jan 2008 17:46:02 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: David Brownell <david-b@pacbell.net>, pavel@ucw.cz,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com> <200801070257.58884.rjw@sisk.pl> <1199671545.3551.16.camel@yangyi-dev.bj.intel.com>
+In-Reply-To: <1199671545.3551.16.camel@yangyi-dev.bj.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071222001206.9d34cc78.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200801071746.02915.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 22-12-07 00:12:06, Andrew Morton wrote:
-  Sorry for a late reply but I was on vacation.
-
-> On Thu, 20 Dec 2007 18:51:04 +0100 Jan Kara <jack@suse.cz> wrote:
-> 
-> > Although we don't allow writes over s_maxbytes, it can happen that a file's
-> > size is larger than s_maxbytes. For example we can write the file from a
-> > computer with a different architecture (which has larger s_maxbytes), boot
-> > a kernel with a different set of config options (CONFIG_LBD...), or if two
-> > nodes in a [Ocfs2, and likely Gfs2] cluster have mounted the same file
-> > system and have different s_maxbytes.  Thus we have to make sure we don't
-> > crash / corrupt data when seeing such file (page offset of the last page
-> > needn't fit into pgoff_t). Firstly, we make read() and mmap() return error
-> > when user tries to access the file above s_maxbytes, secondly we introduce
-> > a function i_size_read_trunc() which returns min(i_size, s_maxbytes) and
-> > use it when determining maximal page offset we are interested in.
+On Monday, 7 of January 2008, Yi Yang wrote:
+> On Mon, 2008-01-07 at 02:57 +0100, Rafael J. Wysocki wrote:
+> > On Monday, 7 of January 2008, Yi Yang wrote:
+> > > On Fri, 2008-01-04 at 08:09 -0800, David Brownell wrote:
+> > > > > > This patch changes empty output to "unsupported" in order that a user knows
+> > > > > > wakeup feature isn't supported by this device when he/she
+> > > > > > 'cat /sys/devices/.../power/wakeup', please consider to apply,
+> > > > > > thanks.
+> > > > >
+> > > > > What about simply removing "wakuep" file if wakeup is not supported?
+> > > > 
+> > > > It may not *stay* unsupported, so I think changing it in either
+> > > > of those permanent ways would be confusing/misleading.
+> > > > 
+> > > > For example, USB devices have multiple states ... minimally, an
+> > > > unconfigured state, and a configured state.  Some have multiple
+> > > > configurations.  Only configured states can be wakeup-capable.
+> > > > So a given device might have three states, but support wakeup
+> > > > except in one of them...
+> > > If so, we can change "unsupported" to "unconfigurable" or "inoperable"
+> > > which can cover the states "unconfigured", "unsupported" and other
+> > > unknown states. :-).
 > > 
-> > ...
-> >
-> > --- a/fs/buffer.c
-> > +++ b/fs/buffer.c
-> > @@ -1623,7 +1623,7 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
-> >  
-> >  	BUG_ON(!PageLocked(page));
-> >  
-> > -	last_block = (i_size_read(inode) - 1) >> inode->i_blkbits;
-> > +	last_block = (i_size_read_trunc(inode) - 1) >> inode->i_blkbits;
-> >  
-> > ...
-> >
-> > +/* Truncate i_size at s_maxbytes so that pagecache doesn't have problems */
-> > +static inline loff_t i_size_read_trunc(const struct inode *inode)
-> > +{
-> > +	loff_t i_size = i_size_read(inode);
-> > +
-> > +	if (unlikely(inode->i_sb->s_maxbytes < i_size))
-> > +		return inode->i_sb->s_maxbytes;
-> > +	return i_size;
-> > +}
-> > +
-> 
-> This patch takes the total text size of the affected nine files from 74167
-> bytes up to 75066 on i386.  This is core, core kernel.  Ouch.
-> 
-> It's also pretty fragile.  We now have i_size_read()s and
-> i_size_read_trunc()s sprinkled all over the place with no obvious rules to
-> determine when we should use one versus the other.
-  Looking at the patch from the distance of two weeks I agree this is a
-flaw...
+> > The main problem with your patch is that is changes a documented behavior
+> > visible by the user space.  That should be done very cautiously.
+> Which applications are using this interface? if they assume "\n" means
+> the unconfigurable or unavailable state, this is very fragile.
 
-> uninlining i_size_read_trunc() is obviously the first thing to look at but
-> the cost is still appreciable and boy the problem which is being fixed here
-> is rare and obscure.
-> 
-> Can we look at alternatives please?  What about just failing the open
-> attempt?
-  As Mark wrote, just failing the open does not solve the problem for
-clustered filesystems. I'll try to come up with something that would be
-a less fragile solution (and won't increase the text size that much).
+I can't give you examples right now, but since the behavior has been
+documented for quite some time, it's safe to assume there are some unless
+proven otherwise.
 
-						Thanks for your comments
+Also, fragile or not, it is the user space's right to rely on documented
+behavior of the kernel.
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Thanks,
+Rafael
