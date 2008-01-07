@@ -1,74 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755397AbYAHMyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755790AbYAHNAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755397AbYAHMyT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 07:54:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbYAHMyF
+	id S1755790AbYAHNAg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 08:00:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbYAHNA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 07:54:05 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:53722 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751376AbYAHMyC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 07:54:02 -0500
-Date: Tue, 8 Jan 2008 13:51:47 +0100 (CET)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Rene Herman <rene.herman@keyaccess.nl>
-cc: "H. Peter Anvin" <hpa@zytor.com>, Bodo Eggert <7eggert@gmx.de>,
-       Christer Weinigel <christer@weinigel.se>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, "David P. Reed" <dpreed@reed.com>,
-       Paul Rolland <rol@as2917.net>, Pavel Machek <pavel@ucw.cz>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>, rol@witbe.net
-Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
-In-Reply-To: <4782B515.3010008@keyaccess.nl>
-Message-ID: <alpine.LSU.0.999.0801081333530.12636@be1.lrz>
-References: <9BdU5-1YW-9@gated-at.bofh.it> <9BeZN-3Gf-5@gated-at.bofh.it>
- <9BnTB-1As-31@gated-at.bofh.it> <9BrX4-8go-1@gated-at.bofh.it>
- <9BuBG-4eR-51@gated-at.bofh.it> <9BvRd-6aL-71@gated-at.bofh.it>
- <9GRQW-1DX-13@gated-at.bofh.it> <9GSah-23W-1@gated-at.bofh.it>
- <9GSDy-2GD-23@gated-at.bofh.it> <9GTpK-40d-15@gated-at.bofh.it>
- <9GUvy-5H2-11@gated-at.bofh.it> <9GVKU-7SS-25@gated-at.bofh.it>
- <E1JBxnV-00046d-CS@be1.7eggert.dyndns.org> <478281A6.1000704@zytor.com>
- <alpine.LSU.0.999.0801072226060.16143@be1.lrz> <4782A355.1070207@zytor.com>
- <alpine.LSU.0.999.0801072316440.16143@be1.lrz> <4782AED5.1060406@keyaccess.nl>
- <4782B4B9.2020608@zytor.com> <4782B515.3010008@keyaccess.nl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX18Bmq5bbi/OawHOUp1G3/27HX7BfTzP8GUGVRd
- En64nALV5M0Pd5Ga9lViRwMH5YP+9GLAKi2ROgHfgpD1593OEM
- rbKQbTSPODfEEedSTcaeg==
+	Tue, 8 Jan 2008 08:00:26 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4467 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750724AbYAHNAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 08:00:25 -0500
+Date: Mon, 7 Jan 2008 15:03:49 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: Ingo Oeser <ioe-lkml@rameria.de>, Bernd Schubert <bernd-schubert@gmx.de>,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: sleep before boot panic
+Message-ID: <20080107150349.GA6523@ucw.cz>
+References: <9II6K-1Pg-9@gated-at.bofh.it> <9IJ2M-3l2-3@gated-at.bofh.it> <9IJme-3Nb-13@gated-at.bofh.it> <9IKrY-5vk-15@gated-at.bofh.it> <E1JBqS9-0003Xp-Sh@be1.7eggert.dyndns.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1JBqS9-0003Xp-Sh@be1.7eggert.dyndns.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Jan 2008, Rene Herman wrote:
-> On 08-01-08 00:24, H. Peter Anvin wrote:
-> > Rene Herman wrote:
+Hi!
 
-> > > Is this only about the ones then left for things like legacy PIC and PIT?
-> > > Does anyone care about just sticking in a udelay(2) (or 1) there as a
-> > > replacement and call it a day?
-> > > 
-> > 
-> > PIT is problematic because the PIT may be necessary for udelay setup.
+> Introduce config CONFIG_SOFTPANIC
+> Enabling this option changes a hard panic on boot errors to a
+> soft panic, which does not stop the system completely.
+> You can still scroll the screen and read the messages.
 > 
-> Yes, can initialise loops_per_jiffy conservatively. Just didn't quite get why
-> you guys are talking about an ISA bus speed parameter.
+> Signed-Off-By: Bodo Eggert <7eggert@gmx.de>
 
-If the ISA bus is below 8 MHz, we might need a longer delay. If we default
-to the longer delay, the delay will be too long for more than 99,99 % of 
-all systems, not counting i586+. Especially if the driver is fine-tuned to 
-give maximum throughput, this may be bad.
+Looks good to me... but should this be configurable? IMO we should
+just do the right thing.
+							Pavel
 
-OTOH, the DOS drivers I heared about use delays and would break on 
-underclocked ISA busses if the n * ISA_HZ delay was needed. Maybe
-somebody having a configurable ISA bus speed and some problematic
-chips can test it ...
+> diff -pruN linux-2.6.23.base/include/linux/kernel.h
+> linux-2.6.23.softpanic/include/linux/kernel.h
+> --- linux-2.6.23.base/include/linux/kernel.h    2007-10-11 14:15:39.000000000 +0200
+> +++ linux-2.6.23.softpanic/include/linux/kernel.h       2007-10-11 14:45:15.000000000
+> +0200
+> @@ -108,6 +108,12 @@ extern struct atomic_notifier_head panic
+>  extern long (*panic_blink)(long time);
+>  NORET_TYPE void panic(const char * fmt, ...)
+>         __attribute__ ((NORET_AND format (printf, 1, 2))) __cold;
+> +#ifdef SOFTPANIC
+> +NORET_TYPE void softpanic(const char * fmt, ...)
+> +       __attribute__ ((NORET_AND format (printf, 1, 2))) __cold;
+> +#else
+> +# define softpanic(...) do { panic(__VA_ARGS__); } while (0)
+> +#endif
+>  extern void oops_enter(void);
+>  extern void oops_exit(void);
+>  extern int oops_may_print(void);
+> diff -pruN linux-2.6.23.base/init/Kconfig linux-2.6.23.softpanic/init/Kconfig
+> --- linux-2.6.23.base/init/Kconfig      2007-10-11 14:15:42.000000000 +0200
+> +++ linux-2.6.23.softpanic/init/Kconfig 2007-10-11 15:19:07.000000000 +0200
+> @@ -441,6 +441,14 @@ config BUG
+>            option for embedded systems with no facilities for reporting errors.
+>            Just say Y.
+>  
+> +config SOFTPANIC
+> +       bool "Enable softpanic for boot errors" if EMBEDDED
+> +       default y
+> +       help
+> +               Enabling this option changes a hard panic on boot errors to a
+> +               soft panic, which does not stop the system completely.
+> +               You can still scroll the screen and read the messages.
+> +
+>  config ELF_CORE
+>         default y
+>         bool "Enable ELF core dumps" if EMBEDDED
+> diff -pruN linux-2.6.23.base/init/do_mounts.c
+> linux-2.6.23.softpanic/init/do_mounts.c
+> --- linux-2.6.23.base/init/do_mounts.c  2007-10-11 14:15:42.000000000 +0200
+> +++ linux-2.6.23.softpanic/init/do_mounts.c     2007-10-11 14:48:51.000000000 +0200
+> @@ -330,7 +330,7 @@ retry:
+>                 printk("Please append a correct \"root=\" boot option; here are the available
+> partitions:\n");
+>  
+>                 printk_all_partitions();
+> -               panic("VFS: Unable to mount root fs on %s", b);
+> +               softpanic("VFS: Unable to mount root fs on %s", b);
+>         }
+>  
+>         printk("List of all partitions:\n");
+> @@ -342,7 +342,7 @@ retry:
+>  #ifdef CONFIG_BLOCK
+>         __bdevname(ROOT_DEV, b);
+>  #endif
+> -       panic("VFS: Unable to mount root fs on %s", b);
+> +       softpanic("VFS: Unable to mount root fs on %s", b);
+>  out:
+>         putname(fs_names);
+>  }
+> diff -pruN linux-2.6.23.base/init/main.c linux-2.6.23.softpanic/init/main.c
+> --- linux-2.6.23.base/init/main.c       2007-10-11 14:15:42.000000000 +0200
+> +++ linux-2.6.23.softpanic/init/main.c  2007-10-11 14:40:06.000000000 +0200
+> @@ -590,7 +590,7 @@ asmlinkage void __init start_kernel(void
+>          */
+>         console_init();
+>         if (panic_later)
+> -               panic(panic_later, panic_param);
+> +               softpanic(panic_later, panic_param);
+>  
+>         lockdep_info();
+>  
+> @@ -807,7 +807,7 @@ static int noinline init_post(void)
+>         run_init_process("/bin/init");
+>         run_init_process("/bin/sh");
+>  
+> -       panic("No init found.  Try passing init= option to kernel.");
+> +       softpanic("No init found.  Try passing init= option to kernel.");
+>  }
+>  
+>  static int __init kernel_init(void * unused)
+> diff -pruN linux-2.6.23.base/kernel/panic.c
+> linux-2.6.23.softpanic/kernel/panic.c
+> --- linux-2.6.23.base/kernel/panic.c    2007-10-11 14:15:42.000000000 +0200
+> +++ linux-2.6.23.softpanic/kernel/panic.c       2007-10-11 14:53:42.000000000 +0200
+> @@ -139,7 +139,66 @@ NORET_TYPE void panic(const char * fmt, 
+>         }
+>  }
+>  
+> +#ifdef SOFTPANIC
+> +NORET_TYPE void softpanic(const char * fmt, ...)
+> +{
+> +       long i;
+> +       static char buf[1024];
+> +       va_list args;
+> +#if defined(CONFIG_S390)
+> +        unsigned long caller = (unsigned long) __builtin_return_address(0);
+> +#endif
+> +
+> +       va_start(args, fmt);
+> +       vsnprintf(buf, sizeof(buf), fmt, args);
+> +       va_end(args);
+> +       printk(KERN_EMERG "Kernel panic - not syncing: %s\n",buf);
+> +
+> +       atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
+> +
+> +       if (!panic_blink)
+> +               panic_blink = no_blink;
+> +
+> +       if (panic_timeout > 0) {
+> +               /*
+> +                * Delay timeout seconds before rebooting the machine. 
+> +                * We can't use the "normal" timers since we just panicked..
+> +                */
+> +               printk(KERN_EMERG "Rebooting in %d seconds..",panic_timeout);
+> +               for (i = 0; i < panic_timeout*1000; ) {
+> +                       touch_nmi_watchdog();
+> +                       i += panic_blink(i);
+> +                       mdelay(1);
+> +                       i++;
+> +               }
+> +               /*      This will not be a clean reboot, with everything
+> +                *      shutting down.  But if there is a chance of
+> +                *      rebooting the system it will be rebooted.
+> +                */
+> +               kernel_restart(NULL);
+> +       }
+> +#ifdef __sparc__
+> +       {
+> +               extern int stop_a_enabled;
+> +               /* Make sure the user can actually press Stop-A (L1-A) */
+> +               stop_a_enabled = 1;
+> +               printk(KERN_EMERG "Press Stop-A (L1-A) to return to the boot prom\n");
+> +       }
+> +#endif
+> +#if defined(CONFIG_S390)
+> +        disabled_wait(caller);
+> +#endif
+> +       for (i = 0;;) {
+> +               touch_softlockup_watchdog();
+> +               i += panic_blink(i);
+> +               msleep(1);
+> +               i++;
+> +       }
+> +}
+> +#endif
+> +
+>  EXPORT_SYMBOL(panic);
+> +EXPORT_SYMBOL(softpanic);
+>  
+>  /**
+>   *     print_tainted - return a string to represent the kernel taint state.
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
 -- 
-Fun things to slip into your budget
-"I [Meow Cat] sliped in 'Legal fees for firing Jim (Jim's my [his] boss).'
-Jim approved the budget and was fired when upper management saw the budget."
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
