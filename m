@@ -1,203 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757451AbYAGQ6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758281AbYAGQ7M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757451AbYAGQ6x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 11:58:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbYAGQ6p
+	id S1758281AbYAGQ7M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 11:59:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756419AbYAGQ6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 11:58:45 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:57285 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754596AbYAGQ6o (ORCPT
+	Mon, 7 Jan 2008 11:58:50 -0500
+Received: from mga02.intel.com ([134.134.136.20]:25054 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757005AbYAGQ6t convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 11:58:44 -0500
-Subject: [PATCH 12/11] sched: rt-group: uid-group interface
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: vatsa@linux.vnet.ibm.com
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, dmitry.adamushko@gmail.com,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20080107122330.GB25945@linux.vnet.ibm.com>
-References: <20080106161128.152634000@chello.nl>
-	 <1199703080.7143.24.camel@twins>
-	 <20080107122330.GB25945@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Mon, 07 Jan 2008 17:57:42 +0100
-Message-Id: <1199725063.31975.53.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+	Mon, 7 Jan 2008 11:58:49 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,254,1196668800"; 
+   d="scan'208";a="250630004"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Subject: RE: [PATCH 2/4] async_tx: kill tx_set_src and tx_set_dest methods
+Date: Mon, 7 Jan 2008 16:58:38 -0000
+Message-ID: <7F38996F7185A24AB9071ED4950AD8C1FAED2F@swsmsx413.ger.corp.intel.com>
+In-Reply-To: <BAE9DCEF64577A439B3A37F36F9B691C03BAD67F@orsmsx418.amr.corp.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2/4] async_tx: kill tx_set_src and tx_set_dest methods
+thread-index: AchENztu2VTCUyw/S4CqjB0ZfG4iUwK48EBAAAAX8aAAjChuEA==
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: "Williams, Dan J" <dan.j.williams@intel.com>
+Cc: <linux-kernel@vger.kernel.org>,
+       "Nelson, Shannon" <shannon.nelson@intel.com>, <yur@emcraft.com>,
+       <hskinnemoen@atmel.com>, <olof@lixom.net>, <wei.zhang@freescale.com>
+X-OriginalArrivalTime: 07 Jan 2008 16:58:38.0727 (UTC) FILETIME=[8C8AE170:01C8514E]
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>From: Williams, Dan J 
+>
+>The tx_set_src and tx_set_dest methods were originally 
+>implemented to allow
+>an array of addresses to be passed down from async_xor to the dmaengine
+>driver while minimizing stack overhead.  Removing these methods allows
+>drivers to have all transaction parameters available at 'prep' 
+>time, saves
+>two function pointers in struct dma_async_tx_descriptor, and 
+>reduces the
+>number of indirect branches..
+>
+>A consequence of moving this data to the 'prep' routine is that
+>multi-source routines like async_xor need temporary storage to 
+>convert an
+>array of linear addresses into an array of dma addresses.  In 
+>order to keep
+>the same stack footprint of the previous implementation the 
+>input array is
+>reused as storage for the dma addresses.  This requires that
+>sizeof(dma_addr_t) be less than or equal to sizeof(void *).  As a
+>consequence CONFIG_DMADEVICES now depends on 
+>!CONFIG_HIGHMEM64G.  It also
+>requires that drivers be able to make descriptor resources 
+>available when
+>the 'prep' routine is polled.
+>
+>Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+>---
 
-Subject: sched: rt-group: add uid-group interface
+>From ioat_dma point of view this change just makes life easier as it
+simplifies dma_async_tx_descriptor - it looks ok.
 
-Extend the /sys/kernel/uids/<uid>/ interface to allow setting
-the group's rt_period and rt_runtime.
+Maciej Sosnowski
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- include/linux/sched.h |    4 +-
- kernel/user.c         |   93 +++++++++++++++++++++++++++++++++++++++++++-------
- 2 files changed, 84 insertions(+), 13 deletions(-)
+---------------------------------------------------------------------
+Intel Technology Poland sp. z o.o.
+z siedziba w Gdansku
+ul. Slowackiego 173
+80-298 Gdansk
 
-Index: linux-2.6/include/linux/sched.h
-===================================================================
---- linux-2.6.orig/include/linux/sched.h
-+++ linux-2.6/include/linux/sched.h
-@@ -559,7 +559,9 @@ struct user_struct {
- 	struct task_group *tg;
- #ifdef CONFIG_SYSFS
- 	struct kset kset;
--	struct subsys_attribute user_attr;
-+	struct subsys_attribute share_attr;
-+	struct subsys_attribute rt_period_attr;
-+	struct subsys_attribute rt_runtime_attr;
- 	struct work_struct work;
- #endif
- #endif
-Index: linux-2.6/kernel/user.c
-===================================================================
---- linux-2.6.orig/kernel/user.c
-+++ linux-2.6/kernel/user.c
-@@ -129,7 +129,7 @@ static inline void uids_mutex_unlock(voi
- }
- 
- /* return cpu shares held by the user */
--static ssize_t cpu_shares_show(struct kset *kset, char *buffer)
-+static ssize_t cpu_share_show(struct kset *kset, char *buffer)
- {
- 	struct user_struct *up = container_of(kset, struct user_struct, kset);
- 
-@@ -137,8 +137,8 @@ static ssize_t cpu_shares_show(struct ks
- }
- 
- /* modify cpu shares held by the user */
--static ssize_t cpu_shares_store(struct kset *kset, const char *buffer,
--				size_t size)
-+static ssize_t cpu_share_store(struct kset *kset, const char *buffer,
-+			       size_t size)
- {
- 	struct user_struct *up = container_of(kset, struct user_struct, kset);
- 	unsigned long shares;
-@@ -151,12 +151,67 @@ static ssize_t cpu_shares_store(struct k
- 	return (rc ? rc : size);
- }
- 
--static void user_attr_init(struct subsys_attribute *sa, char *name, int mode)
-+static ssize_t cpu_rt_period_show(struct kset *kset, char *buffer)
- {
--	sa->attr.name = name;
--	sa->attr.mode = mode;
--	sa->show = cpu_shares_show;
--	sa->store = cpu_shares_store;
-+	struct user_struct *up = container_of(kset, struct user_struct, kset);
-+
-+	return sprintf(buffer, "%lu\n", sched_group_rt_period(up->tg));
-+}
-+
-+static ssize_t cpu_rt_period_store(struct kset *kset, const char *buffer,
-+				   size_t size)
-+{
-+	struct user_struct *up = container_of(kset, struct user_struct, kset);
-+	unsigned long rt_period_us;
-+	int rc;
-+
-+	sscanf(buffer, "%lu", &rt_period_us);
-+	rc = sched_group_set_rt_period(up->tg, rt_period_us);
-+
-+	return (rc ?: size);
-+}
-+
-+static ssize_t cpu_rt_runtime_show(struct kset *kset, char *buffer)
-+{
-+	struct user_struct *up = container_of(kset, struct user_struct, kset);
-+
-+	return sprintf(buffer, "%lu\n", sched_group_rt_runtime(up->tg));
-+}
-+
-+static ssize_t cpu_rt_runtime_store(struct kset *kset, const char *buffer,
-+				    size_t size)
-+{
-+	struct user_struct *up = container_of(kset, struct user_struct, kset);
-+	unsigned long rt_runtime_us;
-+	int rc;
-+
-+	sscanf(buffer, "%lu", &rt_runtime_us);
-+	rc = sched_group_set_rt_runtime(up->tg, rt_runtime_us);
-+
-+	return (rc ?: size);
-+}
-+
-+static void user_attr_init(struct user_struct *up)
-+{
-+	struct subsys_attribute *sa;
-+
-+	sa = &up->share_attr;
-+	sa->attr.name = "cpu_share";
-+	sa->attr.mode = 0644;
-+	sa->show = cpu_share_show;
-+	sa->store = cpu_share_store;
-+
-+	sa = &up->rt_period_attr;
-+	sa->attr.name = "cpu_rt_period_us";
-+	sa->attr.mode = 0644;
-+	sa->show = cpu_rt_period_show;
-+	sa->store = cpu_rt_period_store;
-+
-+	sa = &up->rt_runtime_attr;
-+	sa->attr.name = "cpu_rt_runtime_us";
-+	sa->attr.mode = 0644;
-+	sa->show = cpu_rt_runtime_show;
-+	sa->store = cpu_rt_runtime_store;
- }
- 
- /* Create "/sys/kernel/uids/<uid>" directory and
-@@ -172,15 +227,27 @@ static int user_kobject_create(struct us
- 	kobj->parent = &uids_kobject;	/* create under /sys/kernel/uids dir */
- 	kobject_set_name(kobj, "%d", up->uid);
- 	kset_init(kset);
--	user_attr_init(&up->user_attr, "cpu_share", 0644);
-+	user_attr_init(up);
- 
- 	error = kobject_add(kobj);
- 	if (error)
- 		goto done;
- 
--	error = sysfs_create_file(kobj, &up->user_attr.attr);
-+	error = sysfs_create_file(kobj, &up->share_attr.attr);
-+	if (error)
-+		goto error1;
-+	error = sysfs_create_file(kobj, &up->rt_period_attr.attr);
- 	if (error)
--		kobject_del(kobj);
-+		goto error2;
-+	error = sysfs_create_file(kobj, &up->rt_runtime_attr.attr);
-+	if (error)
-+		goto error3;
-+
-+	if (0) {
-+error3:		sysfs_remove_file(kobj, &up->rt_period_attr.attr);
-+error2: 	sysfs_remove_file(kobj, &up->share_attr.attr);
-+error1: 	kobject_del(kobj);
-+	}
- 
- 	kobject_uevent(kobj, KOBJ_ADD);
- 
-@@ -238,7 +305,9 @@ static void remove_user_sysfs_dir(struct
- 	if (!remove_user)
- 		goto done;
- 
--	sysfs_remove_file(kobj, &up->user_attr.attr);
-+	sysfs_remove_file(kobj, &up->share_attr.attr);
-+	sysfs_remove_file(kobj, &up->rt_period_attr.attr);
-+	sysfs_remove_file(kobj, &up->rt_runtime_attr.attr);
- 	kobject_uevent(kobj, KOBJ_REMOVE);
- 	kobject_del(kobj);
- 
+Sad Rejonowy Gdansk Polnoc w Gdansku, 
+VII Wydzial Gospodarczy Krajowego Rejestru Sadowego, 
+numer KRS 101882
 
+NIP 957-07-52-316
+Kapital zakladowy 200.000 zl
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
