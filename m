@@ -1,71 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758212AbYAGQxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757451AbYAGQ6x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758212AbYAGQxx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 11:53:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756298AbYAGQxp
+	id S1757451AbYAGQ6x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 11:58:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbYAGQ6p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 11:53:45 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:21916 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754756AbYAGQxn convert rfc822-to-8bit (ORCPT
+	Mon, 7 Jan 2008 11:58:45 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:57285 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754596AbYAGQ6o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 11:53:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=XlJ0o4iBwXvRpbibA+ZwHlcBJLDqQbJSuZtOELYdW+7HxvY7ZmM9Zb4IhyrZBegjc3nEqqH1lR5/fUMFDT2H88l5ONImLFA209am1IQEyM55Swph5jPFj9EWXfMcLt+Frw2ZNiGZ/ulktz2e6clVhd3YN3MgBNpB0YxerqaJVLs=
-Date: Mon, 7 Jan 2008 17:52:48 +0100
-From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
-	<ariveira@gmail.com>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org
-Subject: Re: Linux 2.6.24-rc7
-Message-ID: <20080107175248.7b0e143f@Varda>
-In-Reply-To: <200801071724.03936.mb@bu3sch.de>
-References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org>
-	<20080107171415.19826ea4@Varda>
-	<200801071724.03936.mb@bu3sch.de>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
+	Mon, 7 Jan 2008 11:58:44 -0500
+Subject: [PATCH 12/11] sched: rt-group: uid-group interface
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: vatsa@linux.vnet.ibm.com
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, dmitry.adamushko@gmail.com,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20080107122330.GB25945@linux.vnet.ibm.com>
+References: <20080106161128.152634000@chello.nl>
+	 <1199703080.7143.24.camel@twins>
+	 <20080107122330.GB25945@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Mon, 07 Jan 2008 17:57:42 +0100
+Message-Id: <1199725063.31975.53.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Mon, 7 Jan 2008 17:24:03 +0100
-Michael Buesch <mb@bu3sch.de> escribió:
 
-                                                                                     
-> 
-> Can you post the lines above this?
-> This might be a WARN_ON_ONCE() triggering, for which fixes are on their way into
-> the wireless-2.6 tree.
+Subject: sched: rt-group: add uid-group interface
 
- This?
+Extend the /sys/kernel/uids/<uid>/ interface to allow setting
+the group's rt_period and rt_runtime.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/linux/sched.h |    4 +-
+ kernel/user.c         |   93 +++++++++++++++++++++++++++++++++++++++++++-------
+ 2 files changed, 84 insertions(+), 13 deletions(-)
+
+Index: linux-2.6/include/linux/sched.h
+===================================================================
+--- linux-2.6.orig/include/linux/sched.h
++++ linux-2.6/include/linux/sched.h
+@@ -559,7 +559,9 @@ struct user_struct {
+ 	struct task_group *tg;
+ #ifdef CONFIG_SYSFS
+ 	struct kset kset;
+-	struct subsys_attribute user_attr;
++	struct subsys_attribute share_attr;
++	struct subsys_attribute rt_period_attr;
++	struct subsys_attribute rt_runtime_attr;
+ 	struct work_struct work;
+ #endif
+ #endif
+Index: linux-2.6/kernel/user.c
+===================================================================
+--- linux-2.6.orig/kernel/user.c
++++ linux-2.6/kernel/user.c
+@@ -129,7 +129,7 @@ static inline void uids_mutex_unlock(voi
+ }
+ 
+ /* return cpu shares held by the user */
+-static ssize_t cpu_shares_show(struct kset *kset, char *buffer)
++static ssize_t cpu_share_show(struct kset *kset, char *buffer)
+ {
+ 	struct user_struct *up = container_of(kset, struct user_struct, kset);
+ 
+@@ -137,8 +137,8 @@ static ssize_t cpu_shares_show(struct ks
+ }
+ 
+ /* modify cpu shares held by the user */
+-static ssize_t cpu_shares_store(struct kset *kset, const char *buffer,
+-				size_t size)
++static ssize_t cpu_share_store(struct kset *kset, const char *buffer,
++			       size_t size)
+ {
+ 	struct user_struct *up = container_of(kset, struct user_struct, kset);
+ 	unsigned long shares;
+@@ -151,12 +151,67 @@ static ssize_t cpu_shares_store(struct k
+ 	return (rc ? rc : size);
+ }
+ 
+-static void user_attr_init(struct subsys_attribute *sa, char *name, int mode)
++static ssize_t cpu_rt_period_show(struct kset *kset, char *buffer)
+ {
+-	sa->attr.name = name;
+-	sa->attr.mode = mode;
+-	sa->show = cpu_shares_show;
+-	sa->store = cpu_shares_store;
++	struct user_struct *up = container_of(kset, struct user_struct, kset);
++
++	return sprintf(buffer, "%lu\n", sched_group_rt_period(up->tg));
++}
++
++static ssize_t cpu_rt_period_store(struct kset *kset, const char *buffer,
++				   size_t size)
++{
++	struct user_struct *up = container_of(kset, struct user_struct, kset);
++	unsigned long rt_period_us;
++	int rc;
++
++	sscanf(buffer, "%lu", &rt_period_us);
++	rc = sched_group_set_rt_period(up->tg, rt_period_us);
++
++	return (rc ?: size);
++}
++
++static ssize_t cpu_rt_runtime_show(struct kset *kset, char *buffer)
++{
++	struct user_struct *up = container_of(kset, struct user_struct, kset);
++
++	return sprintf(buffer, "%lu\n", sched_group_rt_runtime(up->tg));
++}
++
++static ssize_t cpu_rt_runtime_store(struct kset *kset, const char *buffer,
++				    size_t size)
++{
++	struct user_struct *up = container_of(kset, struct user_struct, kset);
++	unsigned long rt_runtime_us;
++	int rc;
++
++	sscanf(buffer, "%lu", &rt_runtime_us);
++	rc = sched_group_set_rt_runtime(up->tg, rt_runtime_us);
++
++	return (rc ?: size);
++}
++
++static void user_attr_init(struct user_struct *up)
++{
++	struct subsys_attribute *sa;
++
++	sa = &up->share_attr;
++	sa->attr.name = "cpu_share";
++	sa->attr.mode = 0644;
++	sa->show = cpu_share_show;
++	sa->store = cpu_share_store;
++
++	sa = &up->rt_period_attr;
++	sa->attr.name = "cpu_rt_period_us";
++	sa->attr.mode = 0644;
++	sa->show = cpu_rt_period_show;
++	sa->store = cpu_rt_period_store;
++
++	sa = &up->rt_runtime_attr;
++	sa->attr.name = "cpu_rt_runtime_us";
++	sa->attr.mode = 0644;
++	sa->show = cpu_rt_runtime_show;
++	sa->store = cpu_rt_runtime_store;
+ }
+ 
+ /* Create "/sys/kernel/uids/<uid>" directory and
+@@ -172,15 +227,27 @@ static int user_kobject_create(struct us
+ 	kobj->parent = &uids_kobject;	/* create under /sys/kernel/uids dir */
+ 	kobject_set_name(kobj, "%d", up->uid);
+ 	kset_init(kset);
+-	user_attr_init(&up->user_attr, "cpu_share", 0644);
++	user_attr_init(up);
+ 
+ 	error = kobject_add(kobj);
+ 	if (error)
+ 		goto done;
+ 
+-	error = sysfs_create_file(kobj, &up->user_attr.attr);
++	error = sysfs_create_file(kobj, &up->share_attr.attr);
++	if (error)
++		goto error1;
++	error = sysfs_create_file(kobj, &up->rt_period_attr.attr);
+ 	if (error)
+-		kobject_del(kobj);
++		goto error2;
++	error = sysfs_create_file(kobj, &up->rt_runtime_attr.attr);
++	if (error)
++		goto error3;
++
++	if (0) {
++error3:		sysfs_remove_file(kobj, &up->rt_period_attr.attr);
++error2: 	sysfs_remove_file(kobj, &up->share_attr.attr);
++error1: 	kobject_del(kobj);
++	}
+ 
+ 	kobject_uevent(kobj, KOBJ_ADD);
+ 
+@@ -238,7 +305,9 @@ static void remove_user_sysfs_dir(struct
+ 	if (!remove_user)
+ 		goto done;
+ 
+-	sysfs_remove_file(kobj, &up->user_attr.attr);
++	sysfs_remove_file(kobj, &up->share_attr.attr);
++	sysfs_remove_file(kobj, &up->rt_period_attr.attr);
++	sysfs_remove_file(kobj, &up->rt_runtime_attr.attr);
+ 	kobject_uevent(kobj, KOBJ_REMOVE);
+ 	kobject_del(kobj);
+ 
 
 
-[   37.043990] WARNING: at /home/alex/kernel/linux-2.6/net/mac80211/rx.c:1486 __ieee80211_rx() 
-[   37.043996] Pid: 0, comm: swapper Not tainted 2.6.24-rc7 #3                                                               
-[   37.043998]                                                                                                               
-[   37.043999] Call Trace:                                                                                                   
-[   37.044001]  <IRQ>  [<ffffffff80227fe3>] enqueue_task+0x13/0x30                                                           
-[   37.044040]  [<ffffffff88178cbe>] :mac80211:__ieee80211_rx+0xc7e/0xd30                                                    
-[   37.044044]  [<ffffffff80228062>] activate_task+0x32/0x50                                                                 
-[   37.044073]  [<ffffffff8816a28b>] :mac80211:ieee80211_tasklet_handler+0xbb/0x120                                          
-[   37.044086]  [<ffffffff80238d08>] tasklet_action+0x48/0xb0                                                                
-[   37.044091]  [<ffffffff80238c09>] __do_softirq+0x69/0xe0                                                                  
-[   37.044097]  [<ffffffff8020ce2c>] call_softirq+0x1c/0x30                                                                  
-[   37.044101]  [<ffffffff8020efe5>] do_softirq+0x35/0x90                                                                    
-[   37.044105]  [<ffffffff80238aa5>] irq_exit+0x95/0xa0                                                                      
-[   37.044108]  [<ffffffff8020f0c0>] do_IRQ+0x80/0x100                                                                       
-[   37.044111]  [<ffffffff8020a840>] default_idle+0x0/0x40                                                                   
-[   37.044115]  [<ffffffff8020c181>] ret_from_intr+0x0/0xa                                                                   
-[   37.044117]  <EOI>  [<ffffffff8020a869>] default_idle+0x29/0x40                                                           
-[   37.044130]  [<ffffffff8020a8f5>] cpu_idle+0x75/0xc0                                                                      
-[   37.044146]                                                                                                               
-
-
-> 
