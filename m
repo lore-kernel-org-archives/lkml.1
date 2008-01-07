@@ -1,124 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759019AbYAGR6J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758933AbYAGR7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759019AbYAGR6J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 12:58:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756686AbYAGR5z
+	id S1758933AbYAGR7x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 12:59:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756774AbYAGR7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 12:57:55 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:35908 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754708AbYAGR5y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 12:57:54 -0500
-Subject: Re: Multipath failover handling (Was: Re: 2.6.24-rc3-mm1)
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Hannes Reinecke <hare@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <478231B7.7080508@suse.de>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
-	 <47462F3C.3040700@googlemail.com>
-	 <20071122201250.f957e280.akpm@linux-foundation.org>
-	 <47466B5D.90607@googlemail.com>
-	 <20071126221509.8f437b61.akpm@linux-foundation.org>
-	 <1197390783.3812.19.camel@localhost.localdomain> <47624649.3040209@suse.de>
-	 <1197642405.3154.71.camel@localhost.localdomain> <478231B7.7080508@suse.de>
-Content-Type: text/plain
-Date: Mon, 07 Jan 2008 11:57:47 -0600
-Message-Id: <1199728667.3126.32.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+	Mon, 7 Jan 2008 12:59:44 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37539 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756159AbYAGR7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 12:59:43 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM: Acquire device locks on suspend
+Date: Mon, 7 Jan 2008 19:01:23 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Johannes Berg <johannes@sipsolutions.net>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0801071207090.2748-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0801071207090.2748-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801071901.24926.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-01-07 at 15:05 +0100, Hannes Reinecke wrote:
-> James Bottomley wrote:
-> > On Fri, 2007-12-14 at 10:00 +0100, Hannes Reinecke wrote:
-> >> James Bottomley wrote:
-> >>> On Mon, 2007-11-26 at 22:15 -0800, Andrew Morton wrote:
-> >>>> OK, thanks.  I'll assume that James and Hannes have this in hand (or will
-> >>>> have, by mid-week) and I won't do anything here.
-> >>> Just to confirm what I think I'm going to be doing:  rebasing the
-> >>> scsi-misc tree to remove this commit:
-> >>>
-> >>> commit 8655a546c83fc43f0a73416bbd126d02de7ad6c0
-> >>> Author: Hannes Reinecke <hare@suse.de>
-> >>> Date:   Tue Nov 6 09:23:40 2007 +0100
-> >>>
-> >>>     [SCSI] Do not requeue requests if REQ_FAILFAST is set
-> >>>
-> >>> And its allied fix ups:
-> >>>
-> >>> commit 983289045faa96fba8841d3c51b98bb8623d9504
-> >>> Author: James Bottomley <James.Bottomley@HansenPartnership.com>
-> >>> Date:   Sat Nov 24 19:47:25 2007 +0200
-> >>>
-> >>>     [SCSI] fix up REQ_FASTFAIL not to fail when state is QUIESCE
-> >>>
-> >>> commit 9dd15a13b332e9f5c8ee752b1ccd9b84cb5bdf17
-> >>> Author: James Bottomley <James.Bottomley@HansenPartnership.com>
-> >>> Date:   Sat Nov 24 19:55:53 2007 +0200
-> >>>
-> >>>     [SCSI] fix domain validation to work again
-> >>>
-> >>> James
-> >>>
-> >>>
-> >> Or just apply my latest patch (cf Undo __scsi_kill_request).
-> >> The main point is that we shouldn't retry requests
-> >> with FAILFAST set when the queue is blocked. AFAICS
-> >> only FC and iSCSI transports set the queue to blocked,
-> >> and use this to indicate a loss of connection. So any
-> >> retry with queue blocked is futile.
-> > 
-> > I still don't think this is the right approach.
-> > 
-> > For link up/down events, those are direct pathing events and should be
-> > signalled along a kernel notifier, not by mucking with the SCSI state
-> > machine.
-> Of course they will be signalled. And eventually we should patch up
-> mutltipath-tools to read the exising events from the uevent socket.
-> But even with that patch there is a quite largish window during
-> which IOs will be sent to the blocked device, and hence will be
-> stuck in the request queue until the timer expires.
+On Monday, 7 of January 2008, Alan Stern wrote:
+> On Mon, 7 Jan 2008, Rafael J. Wysocki wrote:
+> 
+> > Please see the patch at: http://lkml.org/lkml/2008/1/6/298 .  It represents my
+> > current idea about how to do that.
+> 
+> It has some problems.
+> 
+> First, note that the list manipulations in dpm_suspend(), 
+> device_power_down(), and so on aren't protected by dpm_list_mtx.  So 
+> your patch could corrupt the list pointers.
 
-But the assumption your code makes is that if REQ_FAILFAST is set then
-it's a dm request ... and that's not true.  The code in question
-negatively impacts other users of REQ_FAILFAST.  For every user other
-than dm, the right thing to do is to wait out the block.
+Yes, they need the locking.  I have overlooked that, mostly because the locking
+was removed by gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch
+too (because you assumed there woundn't be any need to remove a device during
+a suspend, right?).
 
-> > However, there's still devloss_tmo to consider ... even in
-> > multipath, I don't think you want to signal path failure until
-> > devloss_tmo has fired otherwise you'll get too many transient up/down
-> > events which damage performance if the array has an expensive failover
-> > model.
-> > 
-> Yes. But currently we have a very high failover latency as we always have
-> to wait for the requeued commands to time-out.
-> Hence we're damaging performance on arrays with inexpensive failover.
+> Are you assuming that no other threads can be running at this time?
 
-If it's a either/or choice between the two that's showing our current
-approach to multi-path is broken.
+No, I'm not.
 
-> > The other problem is what to do with in-flight commands at the time the
-> > link went down.  With your current patch, they're still stuck until they
-> > time out ... surely there needs to be some type of recovery mechanism
-> > for these?
-> > 
-> Well, the in-flight commands are owned by the HBA driver, which should
-> have the proper code to terminate / return those commands with the
-> appriopriate codes. They will then be rescheduled and will be caught
-> like 'normal' IO requests.
+> Note also that device_pm_destroy_suspended() does up(&dev->sem), but it 
+> doesn't know whether or not dev->sem was locked to begin with.
 
-But my point is that if a driver goes blocked, those commands will be
-forced to wait the blocked timeout anyway, so your proposed patch does
-nothing to improve the case for dm anyway ... you only avoid commands
-stuck when a device goes blocked if by chance its request queue was
-empty.
+Do you mean it might have been released already by another thread
+calling device_pm_destroy_suspended() on the same device?
 
-James
+> Do you want to rule out the possibility of a driver's suspend or remove 
+> methods calling destroy_suspended_device() on its own device?  With 
+> your synchronous approach, this would mean that the suspend/resume 
+> method would indirectly end up calling the remove method.  This is 
+> dangerous at best; with USB it would be a lockdep violation.  With an 
+> asynchronous approach, on the other hand, this wouldn't be a problem.
 
+Well, the asynchronous apprach has the problem that the device may end up
+on a wrong list when removed by one of the .suspend() callbacks (and I don't
+see how to avoid that without extra complexity).  Perhaps that's something we
+can live with, though.
 
+One more question: is there any particular reason not to call
+device_pm_remove() at the beginning of device_del()?
+
+Rafael
