@@ -1,43 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757191AbYAGTIH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756036AbYAGTN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757191AbYAGTIH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 14:08:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbYAGTH4
+	id S1756036AbYAGTN3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 14:13:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbYAGTNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 14:07:56 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33522 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751761AbYAGTHz (ORCPT
+	Mon, 7 Jan 2008 14:13:19 -0500
+Received: from science.horizon.com ([192.35.100.1]:17428 "HELO
+	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752373AbYAGTNS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 14:07:55 -0500
-Date: Mon, 7 Jan 2008 11:07:54 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: Andi Kleen <andi@firstfloor.org>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Eric Whitney <eric.whitney@hp.com>, Nick Dokos <nicholas.dokos@hp.com>
-Subject: Re: [patch 00/19] VM pageout scalability improvements
-In-Reply-To: <1199466372.5290.37.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0801071107440.23617@schroedinger.engr.sgi.com>
-References: <20080102224144.885671949@redhat.com>  <1199379128.5295.21.camel@localhost>
-  <20080103120000.1768f220@cuia.boston.redhat.com>  <1199380412.5295.29.camel@localhost>
-  <20080103170035.105d22c8@cuia.boston.redhat.com>  <1199463934.5290.20.camel@localhost>
-  <p73d4sh8s93.fsf@bingen.suse.de> <1199466372.5290.37.camel@localhost>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 7 Jan 2008 14:13:18 -0500
+Date: 7 Jan 2008 14:13:13 -0500
+Message-ID: <20080107191313.6972.qmail@science.horizon.com>
+From: linux@horizon.com
+To: davem@davemloft.net, linux@horizon.com
+Subject: Re: 2.6.24-rc6 oops in net_tx_action
+Cc: jgarzik@pobox.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       romieu@fr.zoreil.com, shemminger@linux-foundation.org
+In-Reply-To: <20080107.002342.10040673.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Jan 2008, Lee Schermerhorn wrote:
+>> Thanks!  I got the patch from
+>> http://marc.info/?l=linux-netdev&m=119756785219214
+>> (Which didn't make it into -rc7; please fix!)
+>> and am recompiling now.
 
-> We see this on both NUMA and non-NUMA. x86_64 and ia64.  The basic
-> criteria to reproduce is to be able to run thousands [or low 10s of
-> thousands] of tasks, continually increasing the number until the system
-> just goes into reclaim.  Instead of swapping, the system seems to
-> hang--unresponsive from the console, but with "soft lockup" messages
-> spitting out every few seconds...
+> Jeff is busy so he's asked me to pick up the more important
+> driver bug fixes that get posted.
+>
+> I'll push this around, thanks.
 
-Ditto here.
-
+Much obliged.  It's only 11 hours of uptime, but no problems so far,
+even trying abusive things like "ping -f -l64 -s8000".
