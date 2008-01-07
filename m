@@ -1,46 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756756AbYAGXTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbYAGXWN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756756AbYAGXTk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 18:19:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbYAGXTc
+	id S1755573AbYAGXWN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 18:22:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928AbYAGXV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 18:19:32 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:54820 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753265AbYAGXTb (ORCPT
+	Mon, 7 Jan 2008 18:21:58 -0500
+Received: from hs-out-0708.google.com ([64.233.178.242]:10925 "EHLO
+	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752993AbYAGXV5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 18:19:31 -0500
-Date: Mon, 7 Jan 2008 16:19:30 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Valdis.Kletnieks@vt.edu
-Cc: Willy Tarreau <w@1wt.eu>, Adrian Bunk <bunk@kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Ingo Molnar <mingo@elte.hu>, Peter Osterlund <petero2@telia.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
-Message-ID: <20080107231930.GC16309@parisc-linux.org>
-References: <20080106171158.GM20473@parisc-linux.org> <1199640983.5205.65.camel@localhost.localdomain> <20080106183402.GA7906@1wt.eu> <20080106185625.GM2082@does.not.exist> <20080106191044.GA1105@1wt.eu> <20080106195802.GN2082@does.not.exist> <20080106210813.GA10136@1wt.eu> <19438.1199739038@turing-police.cc.vt.edu> <20080107213717.GB16309@parisc-linux.org> <26581.1199747065@turing-police.cc.vt.edu>
+	Mon, 7 Jan 2008 18:21:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=GJDHkV+U57X+zvaR7XmuYpyH8vqi8fB8M9eM+61uFwq8sZUNRGTihnlTvk0CeIvURg5VyF69c2VelYde7ZwUkTu24S7hqjqp1Ju/wVRpP8a0AN0ozTi3MEVlp1nffQCrAs2y3bYmwNR4lPLNqvmImS61JLaPqWg+ypT7JMJGt9E=
+Message-ID: <82e4877d0801071521s607491f1ue25c4b97de47db71@mail.gmail.com>
+Date: Mon, 7 Jan 2008 18:21:45 -0500
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.24-rc6-git12: Reported regressions from 2.6.23
+Cc: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Adrian Bunk" <bunk@kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <200801062011.31491.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <26581.1199747065@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <200801052042.56042.rjw@sisk.pl> <200801061357.36324.rjw@sisk.pl>
+	 <82e4877d0801060821r2ec43a9em6b4b6a8f763af7c8@mail.gmail.com>
+	 <200801062011.31491.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 07, 2008 at 06:04:25PM -0500, Valdis.Kletnieks@vt.edu wrote:
-> Theoretically, at least.  Sometimes, in the real world, other constraints
-> enter into it...
+On Jan 6, 2008 2:11 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>
+> On Sunday, 6 of January 2008, Parag Warudkar wrote:
+> > On Jan 6, 2008 7:57 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > On Sunday, 6 of January 2008, Ingo Molnar wrote:
+> > > >
+> > > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > >
+> > > > > Subject             : soft lockup - CPU#1 stuck for 15s! [swapper:0]
+> > > > > Submitter   : "Parag Warudkar" <parag.warudkar@gmail.com>
+> > > > > Date                : 2007-12-07 18:14
+> > > > > References  : http://lkml.org/lkml/2007/12/7/299
+> > > > >               http://bugzilla.kernel.org/show_bug.cgi?id=9525
+> > > > > Handled-By  : "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+> > > > >               Thomas Gleixner <tglx@linutronix.de>
+> > > > >               Ingo Molnar <mingo@elte.hu>
+> > > >
+> > > > i think this only occurs with cpuidle, right? drivers/cpuidle/ and
+> > > > CPU_IDLE is new in 2.6.24 so this appears to be a bug in that code (or a
+> > > > bug elsewhere triggered by that code), not a regression from v2.6.23.
+> > >
+> > > OK, removed from the regressions list.
+> >
+> > Nope - actually it did happen without CPU_IDLE so it is definitely a regression.
+> > (See http://lkml.org/lkml/2007/12/17/93 )
+> >
+> > And it does happen with latest git which I believe has your patch Ingo.
+> >
+> > So I would suggest to keep it on the list of regressions.
+>
+> OK
+>
+> Thanks for the clarification.
+>
 
-So you're saying that you can't find reliable ways to reproduce problems
-on demand?  Those are some of the lower quality bug reports, so I don't
-think we're losing much by having you not report them.
+BTW, I have so far tested 2.6.24-rc4/5/6/7 and 2.6.23.12 - all of
+which have this problem.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Yesterday I went back to using 2.6.22.15 and after a day's uptime it
+has not reproduced with the same config.
+
+Time for git-bisect I suppose? (the only problem is that this takes
+anywhere between 20 minutes to 8 hrs to confirm reliably.)
+
+Parag
