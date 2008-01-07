@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758996AbYAGNM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759399AbYAGNMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758996AbYAGNM1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 08:12:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758552AbYAGNKd
+	id S1759399AbYAGNMm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 08:12:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756335AbYAGNMc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 08:10:33 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:37680 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757623AbYAGNKa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 08:10:30 -0500
-Date: Mon, 7 Jan 2008 14:10:14 +0100
-From: Michal Schmidt <mschmidt@redhat.com>
-To: "Remy Bohmer" <linux@bohmer.net>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Jon Masters" <jcm@redhat.com>,
-       "Satoru Takeuchi" <takeuchi_satoru@jp.fujitsu.com>,
-       "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [PATCH] kthread: always create the kernel threads with normal
- priority
-Message-ID: <20080107141014.3815fcca@brian.englab.brq.redhat.com>
-In-Reply-To: <3efb10970801070322w38cf53acy75b352c44ad049b8@mail.gmail.com>
-References: <20071217234314.540b59bd@hammerfall>
-	<20071222013021.db2528cb.akpm@linux-foundation.org>
-	<20080107110603.09b72450@brian.englab.brq.redhat.com>
-	<3efb10970801070322w38cf53acy75b352c44ad049b8@mail.gmail.com>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 7 Jan 2008 08:12:32 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:32599 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759316AbYAGNMb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 08:12:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=ptl/HKKi2vUBbQGtJr3/GrKvAdam4YxlMWH3ZgzQM7Do6J691RfayFAopzMuU8+u3qVUMoNJXh00f41rpo/PuTbwgvxUMFreMFuRxW9yY1tYu4QfuZOwZcRYPr/3t9AaD0pzVCOBEnVqrwcS10v39GbY524pqZTJb6AvurM02jg=
+Message-ID: <84144f020801070512i93296d9i7c72242992be03f1@mail.gmail.com>
+Date: Mon, 7 Jan 2008 15:12:30 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Michal Simek" <simekm2@fel.cvut.cz>
+Subject: Re: New linux arch
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <47822272.9090503@fel.cvut.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47820D24.3060800@fel.cvut.cz>
+	 <84144f020801070447t68808bcdq64bfc949c7732462@mail.gmail.com>
+	 <47822272.9090503@fel.cvut.cz>
+X-Google-Sender-Auth: b46cb97b06bd96d5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Jan 2008 12:22:51 +0100
-"Remy Bohmer" <linux@bohmer.net> wrote:
+Hi Michal,
 
-> Hello Michal and Andrew,
-> 
-> > Let's not make the decision for the user. Just allow the
-> > administrator to change kthreadd's priority safely if he chooses to
-> > do it. Ensure that the kernel threads are created with the usual
-> > nice level even if kthreadd's priority is changed from the default.
-> 
-> Last year, I posted a patchset (that was meant for Preempt-RT at that
-> time) to be able to prioritise the interrupt-handler-threads (which
-> are kthreads) and softirq-threads from the kernel commandline. See
-> http://lkml.org/lkml/2007/12/19/208
-> 
-> Maybe we can find a way to use a similar mechanism as I used in my
-> patchset for the priorities of the remaining kthreads.
-> I do not like the way of forcing userland to change the priorities,
-> because that would require a userland with the chrt tool installed,
-> and that is not that practical for embedded systems (in which there
-> could be cases that there is no userland at all, or the init-process
-> is the whole embedded application). In that case an option to do it on
-> the kernel commandline is more practical.
-> 
-> I propose this kernel cmd-line option:
-> kthread_pmap=somethread:50,otherthread:12,34
+On Jan 7, 2008 3:00 PM, Michal Simek <simekm2@fel.cvut.cz> wrote:
+> > You can have as many maintainers as you want but you probably don't
+> > want to make it too many. There aren't any "official" responsibilities
+> > as a maintainer, it really depends on how much time and effort you're
+> > willing to put in.
+>
+> OK. Don't you have idea how many linux kernels are maintained by more
+> people?
 
-I see. kthreadd would look up the priority for itself and
-kthread_create would consult the map for all other kernel threads.
-That should work.
-Your sirq_pmap would not be needed anymore, as kthread_pmap could be
-used for softirq threads too, right?
+Well, just look up some mainstream architectures in MAINTAINERS. The
+x86 architecture, for example, has three but the point here is that
+you probably don't want to end up with ten individual maintainers (how
+are you going to coordinate the work?) whereas more than one is
+definitely okay.
 
-Michal
+If you have a lot of people maintaining your port, then just create a
+mailing list and put that in MAINTAINERS with only few "top
+maintainers" listed by their individual email to make life easy for
+patch submitters.
+
+                        Pekka
