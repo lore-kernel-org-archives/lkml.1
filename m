@@ -1,57 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbYAGVF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758754AbYAGVIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757142AbYAGVF3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 16:05:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbYAGVFS
+	id S1758754AbYAGVIn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 16:08:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757054AbYAGVIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 16:05:18 -0500
-Received: from ozlabs.org ([203.10.76.45]:33249 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752161AbYAGVFQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 16:05:16 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [patch 1/2] show being-loaded/being-unloaded indicator for modules
-Date: Tue, 8 Jan 2008 08:05:00 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: devzero@web.de, linux-kernel@vger.kernel.org
-References: <90564384@web.de> <20080107062116.0aa37438@laptopd505.fenrus.org>
-In-Reply-To: <20080107062116.0aa37438@laptopd505.fenrus.org>
+	Mon, 7 Jan 2008 16:08:35 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:55209 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756983AbYAGVIf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 16:08:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=a9pfTBx8sM4WsZCDTwgr/eXgFAZwWm9EL1lF+j8OFg32yopKD/jaA6BIlkmeUrF94npJ+j/XU2dxLJteO6CEUrBHot0aoinfSc3UBrMZtuk1W8no9NlILrcizOu5VQR6tsLoFZmSoePdil87ltnQVA8zQzb9WQl1sWrogF0lkv8=
+Date: Mon, 7 Jan 2008 22:10:01 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Jan Kara <jack@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Ben Fennema <bfennema@falcon.csc.calpoly.edu>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 4/7] udf: replace loops coded with goto to real loops
+Message-ID: <20080107210955.GC22144@joi>
+References: <1199582513-7915-1-git-send-email-marcin.slusarz@gmail.com> <1199582513-7915-4-git-send-email-marcin.slusarz@gmail.com> <20080107144821.GK12589@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200801080805.00639.rusty@rustcorp.com.au>
+In-Reply-To: <20080107144821.GK12589@duck.suse.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 08 January 2008 01:21:16 Arjan van de Ven wrote:
-> On Mon, 07 Jan 2008 11:09:23 +0100
->
-> devzero@web.de wrote:
-> > this looks very useful!
-> >
-> > >Unfortunatly, it's not always easy to see directly
-> > >which module is being loaded/unloaded from the oops itself.
-> >
-> > no wonder, as most modules seem to be very quiet on on load/unload.
-> >
-> >
-> >
-> >
-> > but i wonder if some mandatory "print a message on init/exit"
-> > wouldn`t give a benefit to admins or end-users, too. sure this would
-> > additionally clutter up syslog, but it would add transparency.
->
-> Regardless of the usefulness, really, if this would be mandatory for all
-> modules, it should be done in the module loader itself....
-> But I'm not entirely convinced how useful that is to do always, although I
-> can see the point of having it as debug option, similar to the initcall
-> debug stuff...
+On Mon, Jan 07, 2008 at 03:48:21PM +0100, Jan Kara wrote:
+> On Sun 06-01-08 02:21:50, marcin.slusarz@gmail.com wrote:
+> > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+>   I'm not sure if this improves readability in general. If the code is
+> really a loop in nature, then we should code it using do {} while but in
+> case we loop back just in case of some error (as seems to be the case in
+> udf_bitmap_new_block()), then IMHO goto is more explanative. So at least
+> that one case I'd leave as is.
+Why do you think it's an error?
 
-We could overload initcall_debug for this if we wanted to be consistant.  But 
-I'm just not sure it'd be clear when to turn it on...
-
-Rusty.
+Marcin
