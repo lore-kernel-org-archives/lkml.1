@@ -1,101 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759813AbYAGXeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759893AbYAGXfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759813AbYAGXeu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 18:34:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755519AbYAGXen
+	id S1759893AbYAGXfV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 18:35:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759115AbYAGXfB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 18:34:43 -0500
-Received: from gate.crashing.org ([63.228.1.57]:47069 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754905AbYAGXem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 18:34:42 -0500
-Subject: [PATCH][POWERPC] Workaround for iommu page alignment (#2)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <1199742359.6734.14.camel@pasglop>
-References: <1199742359.6734.14.camel@pasglop>
-Content-Type: text/plain
-Date: Tue, 08 Jan 2008 10:34:22 +1100
-Message-Id: <1199748862.6734.20.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Mon, 7 Jan 2008 18:35:01 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:59103 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759149AbYAGXe7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 18:34:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RkuyXd2/R/83XnyXQYSsRSQT8mtgOQSXo1h/U3Bk/22WhiV6mw06CN/gnE9jj9J36jtwEbDIhNp8KeAm6nU1g1nWcje40+y9T/XPIB0pCtb/jmGIMEcVVfLh4zxN2b8ahC7cvAWEjlwZdpTk3fZM4QVWT3ozTHWhRfU1O52OmVU=
+Message-ID: <9a8748490801071534h722840c5k957885e1754e9eaa@mail.gmail.com>
+Date: Tue, 8 Jan 2008 00:34:56 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Stoyan Gaydarov" <stoyboyker@gmail.com>
+Subject: Re: Kernel Oops?
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <6d291e080801071515wf7ebbccu744e3e3eca6bb0a9@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6d291e080801071515wf7ebbccu744e3e3eca6bb0a9@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-powerpc: Workaround for iommu page alignment
+On 08/01/2008, Stoyan Gaydarov <stoyboyker@gmail.com> wrote:
+> Today I upgraded my kernel from 2.6.23.9 to 2.6.23.12 and in the past
+> 30 minutes I have had to restart my computer twice.
+> I believe its a kernel oops or a kernel panic because when the
+> computer freezes it blinks the caps and scroll lock LEDs.
+> I don't know what is causing the problem but I am willing to help, I
+> can provide you with any information you need.
+> The only problem is that I don't know how to debug the system myself.
+> If anyone can tell me what to do to I can do it and give back the
+> information.
+>
 
-Our iommu page size is currently always 4K. That means with our current
-code, drivers may do a dma_map_sg() of a 64K page and obtain a dma_addr_t
-that is only 4K aligned.
-
-This works fine in most cases except some infiniband HW it seems, where
-they tell the HW about the page size and it ignores the low bits of the
-DMA address.
-
-This works around it by making our IOMMU code enforce a PAGE_SIZE alignment
-for mappings of objects that are page aligned in the first place and whose
-size is larger or equal to a page.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-
-And this version actually does what the comment says (I had forgotten
-to quilt ref... a common mistake).
-
-Index: linux-work/arch/powerpc/kernel/iommu.c
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/iommu.c	2007-12-21 10:39:39.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/iommu.c	2007-12-21 10:48:12.000000000 +1100
-@@ -278,6 +278,7 @@ int iommu_map_sg(struct iommu_table *tbl
- 	unsigned long flags;
- 	struct scatterlist *s, *outs, *segstart;
- 	int outcount, incount, i;
-+	unsigned int align;
- 	unsigned long handle;
- 
- 	BUG_ON(direction == DMA_NONE);
-@@ -309,7 +310,12 @@ int iommu_map_sg(struct iommu_table *tbl
- 		/* Allocate iommu entries for that segment */
- 		vaddr = (unsigned long) sg_virt(s);
- 		npages = iommu_num_pages(vaddr, slen);
--		entry = iommu_range_alloc(tbl, npages, &handle, mask >> IOMMU_PAGE_SHIFT, 0);
-+		align = 0;
-+		if (IOMMU_PAGE_SHIFT < PAGE_SHIFT && slen >= PAGE_SIZE &&
-+		    (vaddr & ~PAGE_MASK) == 0)
-+			align = PAGE_SHIFT - IOMMU_PAGE_SHIFT;
-+		entry = iommu_range_alloc(tbl, npages, &handle,
-+					  mask >> IOMMU_PAGE_SHIFT, align);
- 
- 		DBG("  - vaddr: %lx, size: %lx\n", vaddr, slen);
- 
-@@ -572,7 +578,7 @@ dma_addr_t iommu_map_single(struct iommu
- {
- 	dma_addr_t dma_handle = DMA_ERROR_CODE;
- 	unsigned long uaddr;
--	unsigned int npages;
-+	unsigned int npages, align;
- 
- 	BUG_ON(direction == DMA_NONE);
- 
-@@ -580,8 +586,13 @@ dma_addr_t iommu_map_single(struct iommu
- 	npages = iommu_num_pages(uaddr, size);
- 
- 	if (tbl) {
-+		align = 0;
-+		if (IOMMU_PAGE_SHIFT < PAGE_SHIFT && size >= PAGE_SIZE &&
-+		    ((unsigned long)vaddr & ~PAGE_MASK) == 0)
-+			align = PAGE_SHIFT - IOMMU_PAGE_SHIFT;
-+
- 		dma_handle = iommu_alloc(tbl, vaddr, npages, direction,
--					 mask >> IOMMU_PAGE_SHIFT, 0);
-+					 mask >> IOMMU_PAGE_SHIFT, align);
- 		if (dma_handle == DMA_ERROR_CODE) {
- 			if (printk_ratelimit())  {
- 				printk(KERN_INFO "iommu_alloc failed, "
+Here are some things for you to try :
 
 
+Try looking in your log files. look for things like "Oops", "BUG()"
+and similar. If you find anything that looks relevant, post it here.
+
+If you can trigger the problem without X running - try that. Sometimes
+an Oops makes it to the local console but doesn't make it to the logs.
+Being logged into a plain console without X running when the problem
+triggers can sometimes enable you to capture it with a digital camera.
+
+Try building your kernel with magic sysrq support (if you haven't
+already). Then you can sometimes manage to get a backtrace to the
+console after the hang. See Documentation/sysrq.txt for details.
+
+Try building your kernel with some (or all) of the debug options found
+under the 'Kernel hacking' menuconfig menu to get more debug info.
+
+Make sure you have no proprietary modules that taint your kernel
+loaded (like the NVidia driver for example). The presence of any such
+modules makes the kernel pretty much un-debugable.
+
+If nothing makes it to your logs nor to your local console, then try
+attaching a second PC via serial console or netconsole and see if you
+can manage to log the Oops that way. See
+Documentation/serial-console.txt and
+Documentation/networking/netconsole.txt for details.
+
+
+That should do it for a few starting points.  :-)
+
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
