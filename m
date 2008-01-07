@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758115AbYAGVcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758849AbYAGVcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758115AbYAGVcY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 16:32:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132AbYAGVcP
+	id S1758849AbYAGVcx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 16:32:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758336AbYAGVco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 16:32:15 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:40030 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753078AbYAGVcO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 16:32:14 -0500
-Date: Mon, 7 Jan 2008 16:32:13 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Johannes Berg <johannes@sipsolutions.net>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH] PM: Acquire device locks on suspend
-In-Reply-To: <200801072137.43401.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0801071622560.6739-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 7 Jan 2008 16:32:44 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:34151 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754132AbYAGVcn (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 16:32:43 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Zhao Yakui <yakui.zhao@intel.com>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org
+Subject: Re: pnpacpi: exceeded the max number of IO resources: 24
+In-Reply-To: Your message of "Mon, 07 Jan 2008 13:07:28 +0800."
+             <1199682448.2379.12.camel@yakui_zhao.sh.intel.com>
+From: Valdis.Kletnieks@vt.edu
+References: <200712240612.46786.elendil@planet.nl> <1198803416.21142.7.camel@yakui_zhao.sh.intel.com> <200801070048.19468.elendil@planet.nl>
+            <1199682448.2379.12.camel@yakui_zhao.sh.intel.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1199741560_2703P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Mon, 07 Jan 2008 16:32:40 -0500
+Message-ID: <21603.1199741560@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Jan 2008, Rafael J. Wysocki wrote:
+--==_Exmh_1199741560_2703P
+Content-Type: text/plain; charset=us-ascii
 
-> > > Do you mean it might have been released already by another thread
-> > > calling device_pm_destroy_suspended() on the same device?
-> > 
-> > I was thinking that it might be called before lock_all_devices().
-> 
-> I've added pm_sleep_start_end_mtx and the locking dance in
-> device_pm_destroy_suspended() specifically to prevent this from happening.
+On Mon, 07 Jan 2008 13:07:28 +0800, Zhao Yakui said:
 
-Yes, I see.  What about the fact that device_suspend() locks 
-pm_sleep_start_end_mtx first and pm_sleep_rwsem second, whereas 
-device_pm_destroy_suspended() locks pm_sleep_start_end_mtx while 
-holding pm_sleep_rwsem?  That should produce a lockdep warning.
+> The resources of PNP device are obtained by calling the _CRS method.
+> Maybe some resources has been reserved. For example: Some system will
+> reserve the following resources.
+>    BIOS-e820: 00000000fec00000 - 00000000fed40000 (reserved)
+>    BIOS-e820: 00000000fed45000 - 0000000100000000 (reserved)
+> So the system will report that some resources can't be reserved.
+...
+> The error message is harmless. It only tells us that the resource
+> definition of PNP device exceeds the predefined PNP constant and maybe
+> there will be potential problem if some important resources can't be
+> reserved. For example about 90 IOPORT resources are defined in some PNP
+> device. So it will print the message. Of course it is more appropriate
+> to change the message level from ERR to DEBUG. 
 
-> > However let's ignore that possibility and simplify the discussion by 
-> > assuming that destroy_suspended_device() is never called except by a 
-> > suspend or resume method for that device or one of its ancestors.  
-> 
-> It may also be called by one of the CPU hotplug notifiers.
+Is it possible to add some cookie crumbs to the currently non-informative
+message - things like "what address range", "what PNP devices' _CRS was
+asking for it", and so on?
 
-This suggests another approach, simpler but not as general.  So far all
-the problems we've seen have been associated with those CPU notifiers.  
-Suppose the notifications about CPUs that failed to come back up were
-delayed until after the resume was complete?  Drivers like msr would
-then have to check in their resume handler whether the CPU was actually 
-up, but no other changes would be needed.
 
-In this way we could fix the immediate problem.  It wouldn't help with 
-other sorts of devices that need to be unregistered during a suspend, 
-though.
 
-> Okay, well, now I'm leaning towards the asynchronous approach.
-> 
-> I'll prepare a new patch and send it later today.
+--==_Exmh_1199741560_2703P
+Content-Type: application/pgp-signature
 
-Okay.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-Alan Stern
+iD8DBQFHgpp4cC3lWbTT17ARAlaVAKCIG+iyWB0Oibca8zc6TcuvaW/RywCgnFG7
+d4m/t/CHsF554T1Kr/nfNHI=
+=gzmH
+-----END PGP SIGNATURE-----
 
+--==_Exmh_1199741560_2703P--
