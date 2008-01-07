@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753962AbYAGBZ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753887AbYAGB1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753962AbYAGBZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 20:25:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbYAGBZt
+	id S1753887AbYAGB1d (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 20:27:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbYAGB10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 20:25:49 -0500
-Received: from ozlabs.org ([203.10.76.45]:49313 "EHLO ozlabs.org"
+	Sun, 6 Jan 2008 20:27:26 -0500
+Received: from mga11.intel.com ([192.55.52.93]:13709 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752308AbYAGBZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 20:25:48 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [patch 2/2] track and print last unloaded module in the oops trace
-Date: Mon, 7 Jan 2008 12:25:37 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org, ak@suse.de, mingo@elte.hu
-References: <20080106151946.50c3d8cc@laptopd505.fenrus.org>
-In-Reply-To: <20080106151946.50c3d8cc@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1751861AbYAGB1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 20:27:25 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,251,1196668800"; 
+   d="scan'208";a="276172940"
+Subject: Re: [linux-pm][PATCH] base: Change power/wakeup output from "" to
+	"unsupported" if wakeup feature isn't supported by a device
+From: Yi Yang <yi.y.yang@intel.com>
+Reply-To: yi.y.yang@intel.com
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080104114832.GA4114@elf.ucw.cz>
+References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com>
+	 <20080104114832.GA4114@elf.ucw.cz>
+Content-Type: text/plain
+Organization: Intel
+Date: Mon, 07 Jan 2008 09:21:59 +0800
+Message-Id: <1199668919.19185.16.camel@yangyi-dev.bj.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801071225.37707.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 07 January 2008 10:19:46 Arjan van de Ven wrote:
-> Subject: track and print last unloaded module in the oops trace
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> CC: rusty@rustcorp.com.au
-> CC: ak@suse.de
-> CC: mingo@elte.hu
->
-> Based on a suggestion from Andi:
-> In various cases, the unload of a module may leave some bad state around
-> that causes a kernel crash AFTER a module is unloaded; and it's then hard
-> to find which module caused that.
->
-> This patch tracks the last unloaded module, and prints this as part of the
-> module list in the oops trace.
->
-> Right now, only the last 1 module is tracked; I expect that this is enough
-> for the vast majority of cases where this information matters; if it turns
-> out that tracking more is important, we can always extend it to that.
->
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+On Fri, 2008-01-04 at 12:48 +0100, Pavel Machek wrote:
+> Hi!
+> 
+> > If a device can't support wakeup, its /sys/devices/.../power/wakeup output is
+> > empty, this is confusing, a user doesn't know if it supports wakeup feature
+> > unless he/she read the ralated source code, for this case, it is more
+> > reasonable to output "unsupported". Otherwise, no matter what value the user
+> > sets to /sys/devices/.../power/wakeup, the result is the same:  Invalid argument,
+> > so the user doesn't know why.
+> > 
+> > This patch changes empty output to "unsupported" in order that a user knows
+> > wakeup feature isn't supported by this device when he/she
+> > 'cat /sys/devices/.../power/wakeup', please consider to apply,
+> > thanks.
+> 
+> What about simply removing "wakuep" file if wakeup is not supported?
+> 									Pavel
+At the beginning, i did that as you said, but it can't work, some
+power/wakeup will disappear although they can be disabled or enabled, so
+it is only one feasible way to make it exist permanently.
+> 
 
-Thanks, applied.
-
-Rusty.
