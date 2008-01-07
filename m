@@ -1,101 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756335AbYAGKFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756766AbYAGKGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756335AbYAGKFp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 05:05:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbYAGKFh
+	id S1756766AbYAGKGX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 05:06:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079AbYAGKGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 05:05:37 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42158 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753537AbYAGKFg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 05:05:36 -0500
-Subject: Re: [PATCH] block2mtd lockdep_init_map warning
-From: Peter Zijlstra <peterz@infradead.org>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>, dwmw2@infradead.org,
-       linux-mtd@lists.infradead.org, mingo@redhat.com,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
-In-Reply-To: <200801061911.m06JBldW020012@agora.fsl.cs.sunysb.edu>
-References: <200801061911.m06JBldW020012@agora.fsl.cs.sunysb.edu>
-Content-Type: text/plain
-Date: Mon, 07 Jan 2008 11:05:26 +0100
-Message-Id: <1199700326.7143.10.camel@twins>
+	Mon, 7 Jan 2008 05:06:14 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:42378 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753082AbYAGKGN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 05:06:13 -0500
+Date: Mon, 7 Jan 2008 11:06:03 +0100
+From: Michal Schmidt <mschmidt@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jon Masters <jcm@redhat.com>,
+       Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
+Subject: [PATCH] kthread: always create the kernel threads with normal
+ priority
+Message-ID: <20080107110603.09b72450@brian.englab.brq.redhat.com>
+In-Reply-To: <20071222013021.db2528cb.akpm@linux-foundation.org>
+References: <20071217234314.540b59bd@hammerfall>
+	<20071222013021.db2528cb.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 22 Dec 2007 01:30:21 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-On Sun, 2008-01-06 at 14:11 -0500, Erez Zadok wrote:
-
-> > Ingo, Peter, does either of you actually care about this problem?  In
-> > the last round when I debugged this problem there was a notable lack of
-> > reaction from either of you.
+> On Mon, 17 Dec 2007 23:43:14 +0100 Michal Schmidt
+> <mschmidt@redhat.com> wrote:
 > 
-> The problem appears to be an interaction of two components--module loading
-> and lockdep--that's perhaps why it wasn't given enough attention.
+> > kthreadd, the creator of other kernel threads, runs as a normal
+> > priority task. This is a potential for priority inversion when a
+> > task wants to spawn a high-priority kernel thread. A middle priority
+> > SCHED_FIFO task can block kthreadd's execution indefinitely and thus
+> > prevent the timely creation of the high-priority kernel thread.
+> >     
+> > This causes a practical problem. When a runaway real-time task is
+> > eating 100% CPU and we attempt to put the CPU offline, sometimes we
+> > block while waiting for the creation of the highest-priority
+> > "kstopmachine" thread. 
+> > 
+> > The fix is to run kthreadd with the highest possible SCHED_FIFO
+> > priority. Its children must still run as slightly negatively reniced
+> > SCHED_NORMAL tasks.
+> 
+> Did you hit this problem with the stock kernel, or have you been
+> working on other stuff?
 
-Would something like this work for people?
+This was with RHEL5 and with current Fedora kernels.
 
-Not-Yet-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> A locked-up SCHED_FIFO process will cause kernel threads all sorts of
+> problems.  You've hit one instance, but there will be others.
+> (pdflush stops working, for one).
+> 
+> The general approach we've taken to this is "don't do that".  Yes, we
+> could boost lots of kernel threads in the way which this patch does
+> but this actually takes control *away* from userspace.  Userspace no
+> longer has the ability to guarantee itself minimum possible latency
+> without getting preempted by kernel threads.
+> 
+> And yes, giving userspace this minimum-latency capability does imply
+> that userspace has a responsibility to not 100% starve kernel
+> threads.  It's a reasonable compromise, I think?
+
+You're right. We should not run kthreadd with SCHED_FIFO by default.
+But the user should be able to change it using chrt if he wants to
+avoid this particular problem. So how about this instead?:
+
+
+
+kthreadd, the creator of other kernel threads, runs as a normal priority task.
+This is a potential for priority inversion when a task wants to spawn a
+high-priority kernel thread. A middle priority SCHED_FIFO task can block
+kthreadd's execution indefinitely and thus prevent the timely creation of the
+high-priority kernel thread.
+
+This causes a practical problem. When a runaway real-time task is eating 100%
+CPU and we attempt to put the CPU offline, sometimes we block while waiting for
+the creation of the highest-priority "kstopmachine" thread.
+
+This could be solved by always running kthreadd with the highest possible
+SCHED_FIFO priority, but that would be undesirable policy decision in the
+kernel. kthreadd would cause unwanted latencies even for the realtime users who
+know what they're doing.
+
+Let's not make the decision for the user. Just allow the administrator to
+change kthreadd's priority safely if he chooses to do it. Ensure that the
+kernel threads are created with the usual nice level even if kthreadd's
+priority is changed from the default.
+
+Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
 ---
-Index: linux-2.6/include/linux/sched.h
-===================================================================
---- linux-2.6.orig/include/linux/sched.h
-+++ linux-2.6/include/linux/sched.h
-@@ -1160,6 +1160,7 @@ struct task_struct {
- 	int lockdep_depth;
- 	struct held_lock held_locks[MAX_LOCK_DEPTH];
- 	unsigned int lockdep_recursion;
-+	struct module *loading_module;
- #endif
- 
- /* journalling filesystem info */
-Index: linux-2.6/kernel/module.c
-===================================================================
---- linux-2.6.orig/kernel/module.c
-+++ linux-2.6/kernel/module.c
-@@ -2023,6 +2023,9 @@ static struct module *load_module(void _
- 		printk(KERN_WARNING "%s: Ignoring obsolete parameters\n",
- 		       mod->name);
- 
-+#ifdef CONFIG_LOCKDEP
-+	current->loading_module = mod;
-+#endif
- 	/* Size of section 0 is 0, so this works well if no params */
- 	err = parse_args(mod->name, mod->args,
- 			 (struct kernel_param *)
-@@ -2030,6 +2033,9 @@ static struct module *load_module(void _
- 			 sechdrs[setupindex].sh_size
- 			 / sizeof(struct kernel_param),
- 			 NULL);
-+#ifdef CONFIG_LOCKDEP
-+	current->loading_module = NULL
-+#endif
- 	if (err < 0)
- 		goto arch_cleanup;
- 
-@@ -2454,6 +2460,17 @@ int is_module_address(unsigned long addr
- 		}
+ kernel/kthread.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/kthread.c b/kernel/kthread.c
+index dcfe724..e832a85 100644
+--- a/kernel/kthread.c
++++ b/kernel/kthread.c
+@@ -94,10 +94,21 @@ static void create_kthread(struct kthread_create_info *create)
+ 	if (pid < 0) {
+ 		create->result = ERR_PTR(pid);
+ 	} else {
++		struct sched_param param = { .sched_priority = 0 };
+ 		wait_for_completion(&create->started);
+ 		read_lock(&tasklist_lock);
+ 		create->result = find_task_by_pid(pid);
+ 		read_unlock(&tasklist_lock);
++		/*
++		 * root may want to change our (kthreadd's) priority to
++		 * realtime to solve a corner case priority inversion problem
++		 * (a realtime task consuming 100% CPU blocking the creation of
++		 * kernel threads). The kernel thread should not inherit the
++		 * higher priority. Let's always create it with the usual nice
++		 * level.
++		 */
++		sched_setscheduler(create->result, SCHED_NORMAL, &param);
++		set_user_nice(create->result, -5);
  	}
- 
-+#ifdef CONFIG_LOCKDEP
-+	if (current->loading_module) {
-+		mod = current->loading_module;
-+		if (within(addr, mod->module_init, mod->init_text_size)
-+		    || within(addr, mod->module_core, mod->core_text_size)) {
-+			preempt_enable();
-+			return 1;
-+		}
-+	}
-+#endif
-+
- 	preempt_enable();
- 
- 	return 0;
-
-
+ 	complete(&create->done);
+ }
+-- 
+1.5.3.3
 
