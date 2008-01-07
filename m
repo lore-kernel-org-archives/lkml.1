@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757830AbYAGPYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbYAGP0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757830AbYAGPYs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 10:24:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbYAGPYj
+	id S1757471AbYAGP0m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 10:26:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605AbYAGP0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 10:24:39 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50762 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754814AbYAGPYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 10:24:38 -0500
-Date: Mon, 7 Jan 2008 10:23:53 -0500
-From: Rik van Riel <riel@redhat.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, lee.schermerhorn@hp.com
-Subject: Re: [patch 07/19] split anon & file LRUs for memcontrol code
-Message-ID: <20080107102353.382e6c48@bree.surriel.com>
-In-Reply-To: <20080107190455.22412330.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080102224144.885671949@redhat.com>
-	<20080102224154.309980291@redhat.com>
-	<20080107190455.22412330.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 7 Jan 2008 10:26:35 -0500
+Received: from Mycroft.westnet.com ([216.187.52.7]:59876 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751691AbYAGP0e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 10:26:34 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18306.17536.212405.674762@stoffel.org>
+Date: Mon, 7 Jan 2008 10:25:52 -0500
+From: "John Stoffel" <john@stoffel.org>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Adrian Bunk <bunk@kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Matthew Wilcox <matthew@wil.cx>, Ingo Molnar <mingo@elte.hu>,
+       Peter Osterlund <petero2@telia.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
+In-Reply-To: <20080106191044.GA1105@1wt.eu>
+References: <1199316785.3258.85.camel@localhost.localdomain>
+	<alpine.LFD.1.00.0801021756310.3010@woody.linux-foundation.org>
+	<m3ir27oe7f.fsf@telia.com>
+	<1199627875.5205.1.camel@localhost.localdomain>
+	<20080106144706.GA25419@elte.hu>
+	<1199632845.5205.31.camel@localhost.localdomain>
+	<20080106171158.GM20473@parisc-linux.org>
+	<1199640983.5205.65.camel@localhost.localdomain>
+	<20080106183402.GA7906@1wt.eu>
+	<20080106185625.GM2082@does.not.exist>
+	<20080106191044.GA1105@1wt.eu>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Jan 2008 19:04:55 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-> On Wed, 02 Jan 2008 17:41:51 -0500
-> linux-kernel@vger.kernel.org wrote:
-> 
-> > Index: linux-2.6.24-rc6-mm1/mm/vmscan.c
-> > ===================================================================
-> > --- linux-2.6.24-rc6-mm1.orig/mm/vmscan.c	2008-01-02 15:55:55.000000000 -0500
-> > +++ linux-2.6.24-rc6-mm1/mm/vmscan.c	2008-01-02 15:56:00.000000000 -0500
-> > @@ -1230,13 +1230,13 @@ static unsigned long shrink_zone(int pri
-> >  
-> >  	get_scan_ratio(zone, sc, percent);
-> >  
-> 
-> I'm happy if this calclation can be following later.
-> ==
-> if (scan_global_lru(sc)) {
-> 	get_scan_ratio(zone, sc, percent);
-> } else {
-> 	get_scan_ratio_cgroup(sc->cgroup, sc, percent);
-> }
-> ==
-> To do this, 
-> mem_cgroup needs to have recent_rotated_file and recent_rolated_anon ?
+I'll agree with what Willy wrote here, Bugzilla is a pain to use, you
+can't just dump an email into it and have it captured.  I think we
+should be looking at something more like 'WebRT' which is an *issue*
+tracker software.  But that too might be too heavy weight and too
+noisy as well.
 
-One possible problem could be that the cgroup can also have
-pages reclaimed in global reclaim, not just in local cgroup
-reclaims.
+And suddenly it would starting putting ticket numbers onto all the
+non-problem conversations we have here on lkml as well, which I'm not
+sure we really want.
 
-That is, these cgroup's pages can also disappear or get
-rotated without the cgroup's recent_rotated_file and 
-recent_rotated_anon being affected at all.
+Does it mean that we needs to have a 'bugs@kernel.org' email for
+people to report bugs/problems/issues, while lkml remains (but is
+copied for all 'bugs@kernel.org' emails) primarily the developer point
+of contact?  
 
-Still, having the cgroup do the same thing as the global
-zones is probably the best approximation.
+The question to me really revolves around how do you automate the
+process in a transparent manner so that people don't have to change
+much how they interact with lkml.  
 
--- 
-All rights reversed.
+John
