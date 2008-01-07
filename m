@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757971AbYAGXcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759505AbYAGXcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757971AbYAGXcU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 18:32:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758479AbYAGXcH
+	id S1759505AbYAGXcr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 18:32:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758479AbYAGXcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 18:32:07 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49411 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756269AbYAGXcG (ORCPT
+	Mon, 7 Jan 2008 18:32:36 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:49102 "EHLO
+	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759204AbYAGXcf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 18:32:06 -0500
-Date: Mon, 7 Jan 2008 23:30:08 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Stoyan Gaydarov" <stoyboyker@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Kernel Oops?
-Message-ID: <20080107233008.0c1b928c@lxorguk.ukuu.org.uk>
-In-Reply-To: <6d291e080801071515wf7ebbccu744e3e3eca6bb0a9@mail.gmail.com>
-References: <6d291e080801071515wf7ebbccu744e3e3eca6bb0a9@mail.gmail.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Jan 2008 18:32:35 -0500
+Date: Mon, 07 Jan 2008 17:31:58 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: MCFG ACPI patch in git-x86 causes boot regression
+In-reply-to: <200801071452.15045.jbarnes@virtuousgeek.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, akpm@osdl.org, rajesh.shah@intel.com,
+       greg@kroah.com
+Message-id: <4782B66E.8050400@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <20080107224757.GA2336@basil.nowhere.org>
+ <200801071452.15045.jbarnes@virtuousgeek.org>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Jan 2008 17:15:01 -0600
-"Stoyan Gaydarov" <stoyboyker@gmail.com> wrote:
+Jesse Barnes wrote:
+> On Monday, January 07, 2008 2:47 Andi Kleen wrote:
+>> This patch
+>>
+>> commit c5182babd1d0706f1294af7b8dbf64e378b066bb
+>> Author: Robert Hancock <hancockr@shaw.ca>
+>> Date:   Sat Jan 5 13:26:32 2008 +0100
+>>
+>>     x86: validate against ACPI motherboard resources
+>>
+>> ...
+>>
+>> recently added to git-x86 causes one of my Intel test systems to not
+>> boot unless I specify pci=conf1.
+>>
+>> ...
+>> ACPI: EC: Look up EC in DSDT
+>> ACPI: Interpreter enabled
+>> ACPI: (supports S0 S3 S4 S5)
+>> ACPI: Using IOAPIC for interrupt routing
+>> PCI: MCFG configuration 0: base 4026531840 segment 0 buses 0 - 127
+>> PCI: MCFG area at f0000000 reserved in ACPI motherboard resources
+>> PCI: Using MMCONFIG at f0000000 - f7ffffff
+>> ACPI: PCI Root Bridge [PCI0] (0000:00)
+>> <hang>
+>>
+>> The system is a SDV, but I believe production level.
+>> DSDT is available at http://firstfloor.org/~andi/dsdt.dsl
+>>
+>> On previous kernels the MCFG was rejected because it wasn't e820
+>> reserved:
+> 
+> Yep, this patch (as was stated many times) requires other fixes to PCI 
+> probing--either disabling decode, not using mmconfig unless absolutely 
+> required, or one of the other discussed changes.  I'm not sure why it 
+> was pushed before one of those changes went in.
 
-> Today I upgraded my kernel from 2.6.23.9 to 2.6.23.12 and in the past
-> 30 minutes I have had to restart my computer twice.
-> I believe its a kernel oops or a kernel panic because when the
-> computer freezes it blinks the caps and scroll lock LEDs.
-> I don't know what is causing the problem but I am willing to help, I
-> can provide you with any information you need.
-> The only problem is that I don't know how to debug the system myself.
-> If anyone can tell me what to do to I can do it and give back the
-> information.
-
-When the machine hangs in graphical mode its quite hard to get the data
-out - one of the long term todo items is to fix that.
-
-Boot the machine and leave it in text mode (or if it boots to graphical
-mode then switch to a text console/text mode) and wait.. with "luck" it
-will show the same problem in text mode and give you a meaningful screen
-dump you can then write down (or grab with a digital camera)
-
-Alan
+I believe that such a change is in Greg KH's tree. So -mm (with both 
+trees) would probably work.
