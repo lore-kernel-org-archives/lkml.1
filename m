@@ -1,77 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759212AbYAGUpr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759295AbYAGUts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759212AbYAGUpr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 15:45:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758942AbYAGUpf
+	id S1759295AbYAGUts (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 15:49:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbYAGUtk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 15:45:35 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38208 "EHLO ogre.sisk.pl"
+	Mon, 7 Jan 2008 15:49:40 -0500
+Received: from gate.crashing.org ([63.228.1.57]:57281 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758931AbYAGUpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 15:45:33 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Martin Bligh <mbligh@mbligh.org>
-Subject: Re: change SCSI owner in bugzilla
-Date: Mon, 7 Jan 2008 21:47:51 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, bugme-admin@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, Peter Osterlund <petero2@telia.com>
-References: <20080106161635.GL2082@does.not.exist> <47828CC7.7060106@mbligh.org>
-In-Reply-To: <47828CC7.7060106@mbligh.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1754500AbYAGUtj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 15:49:39 -0500
+Subject: Re: [PATCH 2/3] pci: Remove users of pci_enable_device_bars()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Cc: James Bottomley <james.bottomley@steeleye.com>,
+       Greg Kroah-Hartman <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org, ink@jurassic.park.msu.ru,
+       Alan Cox <alan@redhat.com>, james.smart@emulex.com,
+       linux-driver@qlogic.com, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+In-Reply-To: <20080107194225.GE13518@plap3.qlogic.org>
+References: <20071220042811.D312DDDEE6@ozlabs.org>
+	 <20080107194225.GE13518@plap3.qlogic.org>
+Content-Type: text/plain
+Date: Tue, 08 Jan 2008 07:48:27 +1100
+Message-Id: <1199738907.6734.11.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801072147.53011.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 7 of January 2008, Martin Bligh wrote:
-> 
-> > Date: Sun, 06 Jan 2008 10:00:33 -0600
-> > From: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > To: Adrian Bunk <bunk@kernel.org>
-> > Cc: Ingo Molnar <mingo@elte.hu>, Peter Osterlund <petero2@telia.com>,
-> > 	Linus Torvalds <torvalds@linux-foundation.org>,
-> > 	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-> > 	Andrew Morton <akpm@linux-foundation.org>,
-> > 	Al Viro <viro@ftp.linux.org.uk>
-> > Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
-> > 
-> > On Sun, 2008-01-06 at 17:45 +0200, Adrian Bunk wrote:
-> >> Bugzilla for tracking and mailing lists for discussing are not mutually 
-> >> exclusive.
-> > 
-> > I didn't ever say they were.  What I said was we needed the work flow on
-> > the mailing lists.
-> > 
-> >> What about asking the Bugzilla admins to set the default owner of new 
-> >> SCSI bugs to linux-scsi@vger.kernel.org?
-> >>
-> >> This way all SCSI bugs submitted in Bugzilla will automatically be 
-> >> forwarded to the linux-scsi mailing list.
-> > 
-> > Well, I've only been asking for this for the last two years.  If you can
-> > actually make it happen, I'd be eternally grateful.
-> 
-> OK, changed it.
-> 
-> I don't think this is the right way to do it, as you'll get email for
-> every change to every bug until it's assigned, but seeing as that's what
-> you asked for, and we can't seem to get vger to take bounces, I guess
-> it'll do.
-> 
-> Let me know if (a) it works OK, and (b) you want the driver ones changed
-> over as well.
 
-BTW, would that be possible to forward messages sent to
-power-management_other@kernel-bugs.osdl.org to
-linux-pm@lists.linux-foundation.org?
+On Mon, 2008-01-07 at 11:42 -0800, Andrew Vasquez wrote:
+> That's fine.  I take it these patches will be funneled via
+> gregkh/pci-2.6.git.  There's some qla2xxx updates which are queued for
+> post-2.6.24 consumption in jejb/scsi-misc-2.6.git which don't appear
+> to have any conflicts.
+> 
+> I do though have a series of patches which I'll hold off on submitting
+> to linux-scsi until these PCI changes are merged, as there's some
+> minor conflicts merging the three branches.  James B, will that be
+> fine?
+> 
+> The patches themselves appear to be working fine within several of our
+> test rings.  I hold off on some of the cleanup post-merge time...
 
-Rafael
+Thanks for testing ! They should be queued with Greg indeed.
+
+Cheers,
+Ben.
+
+
