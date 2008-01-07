@@ -1,68 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759184AbYAGSIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757411AbYAGSUF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759184AbYAGSIT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 13:08:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbYAGSIM
+	id S1757411AbYAGSUF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 13:20:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbYAGSTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 13:08:12 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48450 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753959AbYAGSIL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 13:08:11 -0500
-Date: Mon, 7 Jan 2008 10:07:33 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, bunk@kernel.org,
-       clameter@sgi.com, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: Linux 2.6.24-rc7 Build-Failure at
- __you_cannot_kmalloc_that_much
-Message-Id: <20080107100733.3655f74f.akpm@linux-foundation.org>
-In-Reply-To: <478200A4.4090707@linux.vnet.ibm.com>
-References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org>
-	<478200A4.4090707@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 7 Jan 2008 13:19:55 -0500
+Received: from mga11.intel.com ([192.55.52.93]:33031 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752858AbYAGSTy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 13:19:54 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,254,1196668800"; 
+   d="scan'208";a="487306024"
+Message-ID: <47826D1B.8020301@intel.com>
+Date: Mon, 07 Jan 2008 10:19:07 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
+MIME-Version: 1.0
+To: Shaohua Li <shaohua.li@intel.com>
+CC: lkml <linux-kernel@vger.kernel.org>,
+       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Greg KH <greg@kroah.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: [RFC] PCIE ASPM support
+References: <1199340944.1642.26.camel@sli10-desk.sh.intel.com>	 <477D3889.9070301@intel.com> <1199410324.3631.7.camel@sli10-desk.sh.intel.com>
+In-Reply-To: <1199410324.3631.7.camel@sli10-desk.sh.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 Jan 2008 18:19:53.0216 (UTC) FILETIME=[E5F6E000:01C85159]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 07 Jan 2008 16:06:20 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-
-> The defconfig make fails on x86_64 (AMD box) with following error
+Shaohua Li wrote:
+> On Thu, 2008-01-03 at 11:33 -0800, Kok, Auke wrote:
+>> Shaohua Li wrote:
+>>> PCI Express ASPM defines a protocol for PCI Express components in the D0
+>>> state to reduce Link power by placing their Links into a low power state
+>>> and instructing the other end of the Link to do likewise. This
+>>> capability allows hardware-autonomous, dynamic Link power reduction
+>>> beyond what is achievable by software-only controlled power management.
+>>> However, The device should be configured by software appropriately.
+>>> Enabling ASPM will save power, but will introduce device latency.
+>>>
+>>> This patch adds ASPM support in Linux. It introduces a global policy for
+>>> ASPM, a sysfs file /sys/module/pcie_aspm/parameters/policy can control
+>>> it. The interface can be used as a boot option too. Currently we have
+>>> below setting:
+>>> 	-default, BIOS default setting
+>>> 	-powersave, highest power saving mode, enable all available ASPM state
+>>> and clock power management
+>>> 	-performance, highest performance, disable ASPM and clock power
+>>> management
+>>> By default, the 'default' policy is used currently.
+>>>
+>>> In my test, power difference between powersave mode and performance mode
+>>> is about 1.3w in a system with 3 PCIE links.
+>>>
+>>> please review, any comments will be appreciated.
+>>
+>> quickly glanced this over since I recently disabled l1 ASPM for the e1000/e1000e
+>> driven 82573 device which has issues with l1 ASPM. that immediately gives me the
+>> question: how can I continue to disable 1l aspm by default for this device using
+>> this infrastructure?
+> I used to have a per-device interface, but thought the interface might
+> be hard to use for users. If we really need the per-device interface, I
+> can re-add it.
 > 
->   CHK     include/linux/utsrelease.h
->   CALL    scripts/checksyscalls.sh
->   CHK     include/linux/compile.h
->   GEN     .version
->   CHK     include/linux/compile.h
->   UPD     include/linux/compile.h
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> drivers/built-in.o(.init.text+0x8d76): In function `dmi_id_init':
-> : undefined reference to `__you_cannot_kmalloc_that_much'
-> make: *** [.tmp_vmlinux1] Error 1
+>> I do like the fact that there is a generic way to re-enable it for the users who
+>> want to use it. Can this change be done when the device is already active?
+> Yes, at least in my test.
 > 
-> 
-> # gcc --version
-> gcc (GCC) 3.2.3 20030502 (Red Hat Linux 3.2.3-59)
-> 
-> This was reported by Adrian Bunk http://lkml.org/lkml/2007/12/1/39
+>> Can you
+>> change this parameter per device/module?
+> Another way is to provide a helper for driver, and driver disables
+> specific ASPM states. It sounds better to let driver do the disabling,
+> as users haven't the knowledge?
 
-That's odd.  afacit the only kmalloc in dmi_id_init() is
+agreed, however this could still be usefull in debugging equipment for the
+experienced user. In any case an easy handle for the driver to dis/enable ASPM
+would certainly help our case, and possibly others.
 
-        dmi_dev = kzalloc(sizeof(*dmi_dev), GFP_KERNEL);
+Auke
 
-and even gcc-3.2.3 should be able to get that right.
-
-Could you please a) verify that simply removing that line fixes the build
-error and then b) try to find some way of fixing it?
-
-Try replacing `sizeof(*dmi_dev)' with `sizeof(struct dmi_device_attribute)'
-and any other tricks you can think of to try to make the compiler process
-the code differently.
 
