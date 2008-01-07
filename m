@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757564AbYAGRmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757971AbYAGRpF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757564AbYAGRmY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 12:42:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754710AbYAGRmQ
+	id S1757971AbYAGRpF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 12:45:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbYAGRov
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 12:42:16 -0500
-Received: from wr-out-0506.google.com ([64.233.184.233]:35152 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754180AbYAGRmO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 12:42:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=vguI0EMiVJo9x2odZzbweAoO7ASWQuFAlU6KVDlRUFh6yds/OSzFWuU5FK4b4lA4frw7sFxCnHqvI3VkTCPmX8qxbmJ/GkS58s2FhLKay45uIcNq48C3WatNpRslOTVhr0FcW9IwXeg4QtYf3l2ub9prOU0jeP5wdcDgoT2Q1ZM=
-Message-ID: <43e72e890801070942y5abcc8acs31ac446d67414483@mail.gmail.com>
-Date: Mon, 7 Jan 2008 12:42:13 -0500
-From: "Luis R. Rodriguez" <mcgrof@winlab.rutgers.edu>
-To: "Hauke Mehrtens" <hauke@hauke-m.de>
-Subject: Re: rtl8187 rate control doesn't work
-Cc: "Michael Wu" <flamingice@sourmilk.net>, linux-kernel@vger.kernel.org,
-       "Stefano Brivio" <stefano.brivio@polimi.it>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-In-Reply-To: <47824D25.5090005@hauke-m.de>
+	Mon, 7 Jan 2008 12:44:51 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:60244 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754708AbYAGRou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 12:44:50 -0500
+Date: Mon, 7 Jan 2008 12:44:31 -0500
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       NetDev <netdev@vger.kernel.org>
+Subject: Re: Top 10 kernel oopses for the week ending January 5th, 2008
+Message-ID: <20080107174431.GC27741@fieldses.org>
+References: <477FF149.4070609@linux.intel.com> <20080105213935.GN27894@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <477F9890.5050107@hauke-m.de>
-	 <43e72e890801051354v280c0ceeo78790bb5f1f45314@mail.gmail.com>
-	 <47824D25.5090005@hauke-m.de>
-X-Google-Sender-Auth: 527d475ff32b9739
+In-Reply-To: <20080105213935.GN27894@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.17 (2007-12-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 7, 2008 11:02 AM, Hauke Mehrtens <hauke@hauke-m.de> wrote:
-> There is an other Problem.
->
-> iwconfig shows me "Bit Rate=1 Mb/s" the hole time, but I'm able to
-> download with an average of 440K/s as wget says.
->
-> It's with PID rate control algorithm.
+On Sat, Jan 05, 2008 at 09:39:35PM +0000, Al Viro wrote:
+> On Sat, Jan 05, 2008 at 01:06:17PM -0800, Arjan van de Ven wrote:
+> > The http://www.kerneloops.org website collects kernel oops and
+> > warning reports from various mailing lists and bugzillas as well as
+> > with a client users can install to auto-submit oopses.
+> > Below is a top 10 list of the oopses collected in the last 7 days.
+> > (Reports prior to 2.6.23 have been omitted in collecting the top 10)
+> > 
+> > This week, a total of 49 oopses and warnings have been reported,
+> > compared to 53 reports in the previous week.
+> 
+> FWIW, people moaning about the lack of entry-level kernel work would
+> do well by decoding those to the level of "this place in this function,
+> called from <here>, with so-and-so variable being <this>" and posting
+> the results.  As skills go, it's far more useful than "how to trim
+> the trailing whitespace" and the rest of checkpatch.pl-inspired crap
+> that got so popular lately...
 
-Thanks for reporting this, how'd it go with simple rate control
-algorithm instead?
+Is there any good basic documentation on this to point people at?
 
-  Luis
+--b.
