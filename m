@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbYAGLRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961AbYAGLSJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755303AbYAGLRr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 06:17:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbYAGLRk
+	id S1755961AbYAGLSJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 06:18:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755629AbYAGLRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 06:17:40 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40963 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753334AbYAGLRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 06:17:39 -0500
-Date: Mon, 7 Jan 2008 12:17:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, dmitry.adamushko@gmail.com,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 00/11] another rt group sched update
-Message-ID: <20080107111717.GA29973@elte.hu>
-References: <20080106161128.152634000@chello.nl>
+	Mon, 7 Jan 2008 06:17:55 -0500
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:61344 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755210AbYAGLRy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 06:17:54 -0500
+Date: Mon, 7 Jan 2008 11:17:51 +0000
+From: Ben Dooks <ben@fluff.org>
+To: cksim <cksim@singnet.com.sg>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Size of kernel halts startup
+Message-ID: <20080107111751.GA16087@fluff.org.uk>
+References: <1199676509.47819c5deaf60@discus.singnet.com.sg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080106161128.152634000@chello.nl>
+In-Reply-To: <1199676509.47819c5deaf60@discus.singnet.com.sg>
+X-Disclaimer: These are my own opinions, so there!
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> this time compile tested on all 16 combinations of:
+On Mon, Jan 07, 2008 at 11:28:29AM +0800, cksim wrote:
+> Hi,
 > 
->   CONFIG_SMP
->   CONFIG_FAIR_GROUP_SCHED
->   CONFIG_HIGH_RES_TIMERS
->   CONFIG_NO_HZ
+> Yesterday, I have encountered an issue when the kernel size is more than 1.3MB.
 > 
-> ran some but not all combinations
+> Info on problem encountered as follows:
+> 1) I am using Atmel AT91SAM9261 part. Circuit similar to that of AT91SAM9261EK
+> evaluation board.
+> 
+> 2) I am booting the kernel through NFS. Bootloader
+> used is UBoot 1.1.5. Kernel used is 2.6.23.1
+> 
+> 3) For the past weeks, the kernel size was about 1.3MB and kernel bootup over NFS was fine.
+> 
+> 4) Yesterday, I have done a menuconfig and turned on some drivers (USB HID and I2C).  This resulted in a kernel size of about 1.4MB.
+> 
+> 5) Booting up this 1.4MB kernel over NFS causes a register dump to appear and the system is halted.
+> 
+> Is this issue related to the size of the kernel or it is due to some conflict in memory ?
+> 
+> If it is related to size of kernel, how can the size be increased so as to resolve this issue ?
+> 
+> Appreciate any help and advises.
+> 
+> Thanks in advance.
+> 
+> Sim CK
 
-thanks, applied. This is a really big step forwards in terms of making 
-RT task CPU usage more flexible and more manageable.
+You're best of subscribing to linux-arm-kernel list and asking there
+as you'll be more likely to find people who are actually using these
+sorts of systems.
 
-	Ingo
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
