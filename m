@@ -1,45 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756206AbYAGXPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756756AbYAGXTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756206AbYAGXPV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 18:15:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbYAGXPG
+	id S1756756AbYAGXTk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 18:19:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbYAGXTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 18:15:06 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:9285 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753323AbYAGXPE (ORCPT
+	Mon, 7 Jan 2008 18:19:32 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:54820 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753265AbYAGXTb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 18:15:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=m8nercKjx/eEXZmx5H19lVujAdJxLG7W/QRKPgD8c6A6fSyMLSPV+i5vrDrTAcZ5ut7NGNJW6lSOZIXrsKho2bntF93Svhwpw22ZSXi4G53Cmmip8SGhn1A+k1c2a8d1EFWM+zn5CQqAZSw+6qpQ9fs49iD0at/U3Hi6PPhfN0I=
-Message-ID: <6d291e080801071515wf7ebbccu744e3e3eca6bb0a9@mail.gmail.com>
-Date: Mon, 7 Jan 2008 17:15:01 -0600
-From: "Stoyan Gaydarov" <stoyboyker@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Kernel Oops?
+	Mon, 7 Jan 2008 18:19:31 -0500
+Date: Mon, 7 Jan 2008 16:19:30 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Valdis.Kletnieks@vt.edu
+Cc: Willy Tarreau <w@1wt.eu>, Adrian Bunk <bunk@kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Ingo Molnar <mingo@elte.hu>, Peter Osterlund <petero2@telia.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
+Message-ID: <20080107231930.GC16309@parisc-linux.org>
+References: <20080106171158.GM20473@parisc-linux.org> <1199640983.5205.65.camel@localhost.localdomain> <20080106183402.GA7906@1wt.eu> <20080106185625.GM2082@does.not.exist> <20080106191044.GA1105@1wt.eu> <20080106195802.GN2082@does.not.exist> <20080106210813.GA10136@1wt.eu> <19438.1199739038@turing-police.cc.vt.edu> <20080107213717.GB16309@parisc-linux.org> <26581.1199747065@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <26581.1199747065@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Today I upgraded my kernel from 2.6.23.9 to 2.6.23.12 and in the past
-30 minutes I have had to restart my computer twice.
-I believe its a kernel oops or a kernel panic because when the
-computer freezes it blinks the caps and scroll lock LEDs.
-I don't know what is causing the problem but I am willing to help, I
-can provide you with any information you need.
-The only problem is that I don't know how to debug the system myself.
-If anyone can tell me what to do to I can do it and give back the
-information.
+On Mon, Jan 07, 2008 at 06:04:25PM -0500, Valdis.Kletnieks@vt.edu wrote:
+> Theoretically, at least.  Sometimes, in the real world, other constraints
+> enter into it...
 
-The system I am running is a slackware 12.0 with the new kernel.
-root@SlaxDesk:~# uname -a
-Linux SlaxDesk 2.6.23.12 #1 SMP Sat Jan 5 06:58:19 CST 2008 i686
-Intel(R) Core(TM)2 Duo CPU     E4500  @ 2.20GHz GenuineIntel GNU/Linux
+So you're saying that you can't find reliable ways to reproduce problems
+on demand?  Those are some of the lower quality bug reports, so I don't
+think we're losing much by having you not report them.
 
-Thank you ahead of time for any help.
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
