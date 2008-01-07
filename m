@@ -1,86 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757411AbYAGSUF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbYAGSVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757411AbYAGSUF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 13:20:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbYAGSTz
+	id S1757938AbYAGSVS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 13:21:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbYAGSVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 13:19:55 -0500
-Received: from mga11.intel.com ([192.55.52.93]:33031 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752858AbYAGSTy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 13:19:54 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,254,1196668800"; 
-   d="scan'208";a="487306024"
-Message-ID: <47826D1B.8020301@intel.com>
-Date: Mon, 07 Jan 2008 10:19:07 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
+	Mon, 7 Jan 2008 13:21:10 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:55584 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753991AbYAGSVJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 13:21:09 -0500
+Message-ID: <47826D5A.2050801@s5r6.in-berlin.de>
+Date: Mon, 07 Jan 2008 19:20:10 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
 MIME-Version: 1.0
-To: Shaohua Li <shaohua.li@intel.com>
-CC: lkml <linux-kernel@vger.kernel.org>,
-       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Greg KH <greg@kroah.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: [RFC] PCIE ASPM support
-References: <1199340944.1642.26.camel@sli10-desk.sh.intel.com>	 <477D3889.9070301@intel.com> <1199410324.3631.7.camel@sli10-desk.sh.intel.com>
-In-Reply-To: <1199410324.3631.7.camel@sli10-desk.sh.intel.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Michal Simek <simekm2@fel.cvut.cz>, linux-kernel@vger.kernel.org,
+       monstr@monstr.eu
+Subject: Re: New linux arch
+References: <47820D24.3060800@fel.cvut.cz> <84144f020801070447t68808bcdq64bfc949c7732462@mail.gmail.com>
+In-Reply-To: <84144f020801070447t68808bcdq64bfc949c7732462@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Jan 2008 18:19:53.0216 (UTC) FILETIME=[E5F6E000:01C85159]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shaohua Li wrote:
-> On Thu, 2008-01-03 at 11:33 -0800, Kok, Auke wrote:
->> Shaohua Li wrote:
->>> PCI Express ASPM defines a protocol for PCI Express components in the D0
->>> state to reduce Link power by placing their Links into a low power state
->>> and instructing the other end of the Link to do likewise. This
->>> capability allows hardware-autonomous, dynamic Link power reduction
->>> beyond what is achievable by software-only controlled power management.
->>> However, The device should be configured by software appropriately.
->>> Enabling ASPM will save power, but will introduce device latency.
->>>
->>> This patch adds ASPM support in Linux. It introduces a global policy for
->>> ASPM, a sysfs file /sys/module/pcie_aspm/parameters/policy can control
->>> it. The interface can be used as a boot option too. Currently we have
->>> below setting:
->>> 	-default, BIOS default setting
->>> 	-powersave, highest power saving mode, enable all available ASPM state
->>> and clock power management
->>> 	-performance, highest performance, disable ASPM and clock power
->>> management
->>> By default, the 'default' policy is used currently.
->>>
->>> In my test, power difference between powersave mode and performance mode
->>> is about 1.3w in a system with 3 PCIE links.
->>>
->>> please review, any comments will be appreciated.
+Pekka Enberg wrote:
+> On Jan 7, 2008 1:29 PM, Michal Simek <simekm2@fel.cvut.cz> wrote:
+>> How many maintainers are acceptable? (one or more)
+> 
+> You can have as many maintainers as you want but you probably don't
+> want to make it too many.
+
+Bug reporters and patch submitters shouldn't be required to CC too many
+addresses.
+
+>> I see the right way to push all changes to public git repository and
+>> then send patches in small logical group to LKML with CC to people from
+>> microblaze community.
 >>
->> quickly glanced this over since I recently disabled l1 ASPM for the e1000/e1000e
->> driven 82573 device which has issues with l1 ASPM. that immediately gives me the
->> question: how can I continue to disable 1l aspm by default for this device using
->> this infrastructure?
-> I used to have a per-device interface, but thought the interface might
-> be hard to use for users. If we really need the per-device interface, I
-> can re-add it.
+>> And then wait for comments from you, solve problems, update git
+>> repository and send changes again.
 > 
->> I do like the fact that there is a generic way to re-enable it for the users who
->> want to use it. Can this change be done when the device is already active?
-> Yes, at least in my test.
-> 
->> Can you
->> change this parameter per device/module?
-> Another way is to provide a helper for driver, and driver disables
-> specific ASPM states. It sounds better to let driver do the disabling,
-> as users haven't the knowledge?
+> You don't necessarily need a public git repository before sending your
+> patches to LKML but yeah, you definitely want some public exposure
+> before asking for Linus/Andrew to merge your port.
 
-agreed, however this could still be usefull in debugging equipment for the
-experienced user. In any case an easy handle for the driver to dis/enable ASPM
-would certainly help our case, and possibly others.
+Yes, patch review is always done on the mailing list(s).  Not only
+during the initial submission, but also for all later changes.
 
-Auke
+A git repository provided by you could be used
 
+  - by interested people to fetch your pre-integrated development
+    sources,
 
+  - by Andrew Morton to pull into -mm.  This needs to be a branch in
+    your repo which only contains stuff which works to the best of your
+    knowledge, i.e. is already tested and got at least some basic review
+    by those involved in the subproject.  It always has to give a clean
+    and working diff against Linus' current tree, because that's what
+    Andrew bases -mm on.  (This means you have to rebase or otherwise
+    update this branch whenever there were conflicting changes in Linus'
+    tree.)  Also, if you need to do changes outside your subsystem,
+    coordinate it with the tree owners of the other subsystems to
+    minimize conflicts when Andrew assembles -mm.
+    Alternatively to git, you could also work with Andrew via a quilt
+    tree or via e-mail, depending on what turns out as most effective.
+
+  - by Linus to pull into his tree if he thinks he can work with your
+    tree better than via e-mail.  Regardless if git or e-mail, you are
+    of course supposed to only offer stuff to Linus which is known to
+    work and has been fully reviewed.
+    New work (feature additions or removals, refactoring, intrusive bug
+    fixes) needs to be sent to Linus early before an -rc1 release.
+    Between -rc1 and -final, only bug fixes are acceptable.  (In early
+    -rc's maybe also a few other small nonintrusive changes that can't
+    possibly break anything...)
+
+Note, everything which I said here only reflects what I remember as
+required or most desirable; it's not a canonical list of requirements.
+
+Anyway, it may be a little bit too early to think about those things
+before you posted your initial submission for review and re-review...
+-- 
+Stefan Richter
+-=====-==--- ---= --===
+http://arcgraph.de/sr/
