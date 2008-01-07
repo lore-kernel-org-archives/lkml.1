@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbYAGIaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbYAGIeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755929AbYAGIaP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 03:30:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755132AbYAGIaB
+	id S1756100AbYAGIeY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 03:34:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbYAGIeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 03:30:01 -0500
-Received: from smtp-vbr16.xs4all.nl ([194.109.24.36]:2474 "EHLO
-	smtp-vbr16.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755113AbYAGIaA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 03:30:00 -0500
-Message-ID: <4781E301.7000502@xs4all.nl>
-Date: Mon, 07 Jan 2008 09:29:53 +0100
-From: Bauke Jan Douma <bjdouma@xs4all.nl>
-Reply-To: bjdouma@xs4all.nl
-Organization: a training zoo
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 7 Jan 2008 03:34:13 -0500
+Received: from ozlabs.org ([203.10.76.45]:46486 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755192AbYAGIeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 03:34:12 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH 0/7] sg_ring: a ring of scatterlist arrays
+Date: Mon, 7 Jan 2008 19:34:01 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org
+References: <200712191731.26512.rusty@rustcorp.com.au> <200801071628.11381.rusty@rustcorp.com.au> <4781C8B5.6050207@gmail.com>
+In-Reply-To: <4781C8B5.6050207@gmail.com>
 MIME-Version: 1.0
-To: Ian Kent <raven@themaw.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: umount -l <path>, getcwd and /proc/<pid>/cwd inconsistent
-References: <1199675850.3156.15.camel@raven.themaw.net>
-In-Reply-To: <1199675850.3156.15.camel@raven.themaw.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801071934.01597.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Kent wrote on 07-01-08 04:17:
-> Hi all,
-> 
-> Could someone please help me understand what's happening with, what
-> looks like inconsistent behavior, between getpwd and procfs readlink.
-> 
-> Basically, from a bash shell, setting working directory to a mounted
-> directory all is fine with "pwd" and "/proc/<pid>/cwd". Following a
-> "umount - l" on the mount "pwd" continues to return the expected string
-> but "/proc/<pid>/cwd" returns an empty string.
-> 
-> What I'm really after is why this happens because sys_getcwd and
-> proc_pid_readlink appear to do essentially the same thing to get the
-> string.
-> 
-[snip]
+On Monday 07 January 2008 17:37:41 Tejun Heo wrote:
+> Rusty Russell wrote:
+> > Hi Tejun,
+> >
+> >    Nice try!  Even ignoring the ugliness of undoing such an operation if
+> > the caller doesn't expect you to mangle their chains, consider a
+> > one-element sg array. :(
+>
+> Heh heh, that can be dealt with by skipping the first chain if the first
+> chain is empty after chaining.  Please take a look at
+> ata_sg_setup_extra() in the following.
+>
+> http://git.kernel.org/?p=linux/kernel/git/tj/libata-dev.git;a=blob;f=driver
+>s/ata/libata-core.c;h=32dde5bbc75ed53e89ac17040da2cd0621a37161;hb=c8847e473a
+>4a2844244784226eb362be10d52ce9
+>
+> That said, yeah, it's seriously ugly.  Restoring the original sg is ugly
+> too.  I definitely agree that we need some improvements here.
 
-What does `/bin/pwd' return, when you do that instead of
-plain `pwd' (after the umount)?
+Erk, that's beyond ugly, into actual evil.
 
-bjd
+To make this general you need to find the last N 1-element chains (but SCSI 
+doesn't do this of course).  Oh the horror...
 
+I'd be remiss if I didn't mention that the sg_ring ata patches were 
+straightforward, and indescribably beautiful if compared to this!
 
+Thanks,
+Rusty.
