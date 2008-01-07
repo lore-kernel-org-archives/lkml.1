@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755111AbYAGFCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbYAGF2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755111AbYAGFCf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 00:02:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbYAGFC0
+	id S1754161AbYAGF2f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 00:28:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbYAGF2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 00:02:26 -0500
-Received: from rv-out-0910.google.com ([209.85.198.191]:33002 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751343AbYAGFCY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 00:02:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=mxAO57rlYzQFyBeIMyElkheZ+PQr6mJiHQwYwcw8fH5wq36PrNpzwUCniHzOskaMvIKDIlNRWftUshVPU5POx08c/+ZcQ2RJTrNai9tZnIoodYxzioMgU3U9MP4Zc3xXI5uKg7ni/ZBEo+lehbX3W9zuIXgmVSRBY7+PQZg5Sfs=
-Message-ID: <4781B259.6040907@gmail.com>
-Date: Mon, 07 Jan 2008 14:02:17 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 7 Jan 2008 00:28:25 -0500
+Received: from ozlabs.org ([203.10.76.45]:53954 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750768AbYAGF2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 00:28:23 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH 0/7] sg_ring: a ring of scatterlist arrays
+Date: Mon, 7 Jan 2008 16:28:10 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org
+References: <200712191731.26512.rusty@rustcorp.com.au> <200801071538.58875.rusty@rustcorp.com.au> <4781B234.7070805@gmail.com>
+In-Reply-To: <4781B234.7070805@gmail.com>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH] Don't blatt first element of prv in sg_chain()
-References: <200801071538.43371.rusty@rustcorp.com.au>
-In-Reply-To: <200801071538.43371.rusty@rustcorp.com.au>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801071628.11381.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> I realize that sg chaining is a ploy to make the rest of the kernel
-> devs feel the pain of the SCSI subsystem.  But this was a little
-> unsubtle.
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+On Monday 07 January 2008 16:01:40 Tejun Heo wrote:
+> > But we hit the same problems:
+> >
+> > 1) sg_chain loses information.  The clever chain packaging makes reading
+> > easy, but manipulation is severely limited.  You can append to your own
+> > chains by padding, but not someone elses.  This works for SCSI, but what
+> > about the rest of us?  And don't even think of joining mapped chains: it
+> > will almost work.
+>
+> You can append by allocating one more element on the chain to be
+> appended and moving the last element of the first chain to it while
+> using the last element for chaining.
 
-Embarrassingly Acked-by: Tejun Heo <htejun@gmail.com>
+Hi Tejun,
 
-Thanks.
+   Nice try!  Even ignoring the ugliness of undoing such an operation if the 
+caller doesn't expect you to mangle their chains, consider a one-element sg 
+array. :(
 
--- 
-tejun
+Cheers,
+Rusty.
