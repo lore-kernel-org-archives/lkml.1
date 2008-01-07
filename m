@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbYAGCB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbYAGCCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754725AbYAGCB0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 21:01:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbYAGCBT
+	id S1754822AbYAGCCs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 21:02:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbYAGCCl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 21:01:19 -0500
-Received: from mga02.intel.com ([134.134.136.20]:25403 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752806AbYAGCBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 21:01:19 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,251,1196668800"; 
-   d="scan'208";a="317003407"
-Subject: Re: [linux-pm][PATCH] base: Change power/wakeup output from "" to
-	"unsupported" if wakeup feature isn't supported by a device
-From: Yi Yang <yi.y.yang@intel.com>
-Reply-To: yi.y.yang@intel.com
-To: Olivier Galibert <galibert@pobox.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>, pavel@ucw.cz,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080104165214.GA30672@dspnet.fr.eu.org>
-References: <20080104160933.B01D81FBAB5@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	 <Pine.LNX.4.44L0.0801041136490.4078-100000@iolanthe.rowland.org>
-	 <20080104165214.GA30672@dspnet.fr.eu.org>
-Content-Type: text/plain
-Organization: Intel
-Date: Mon, 07 Jan 2008 09:55:23 +0800
-Message-Id: <1199670923.3551.10.camel@yangyi-dev.bj.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	Sun, 6 Jan 2008 21:02:41 -0500
+Received: from wa-out-1112.google.com ([209.85.146.183]:42957 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752806AbYAGCCk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 21:02:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rH/DqOIruWiO21pZvvo3YsqfLnHIT80NZTtF4u6Czno4GMWcji34U9l/Ps8uL3P3uncxPPZ0E88tK6gpjuZEkfLgkbCAma0U42+mnej0uwHMDFW1SrQuJFkHwLflJQmXwqLfhcxicLqRAPj/mf1nbM06ffMk8ihrI6IMiamzaeQ=
+Message-ID: <68cac7520801061802h6bbb06f0naf12d223a28ac3d9@mail.gmail.com>
+Date: Mon, 7 Jan 2008 00:02:37 -0200
+From: "Douglas Landgraf" <dougsland@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [v4l-dvb-maintainer] [PATCH] Re: Regression: VIDIOCGMBUF ioctl hangs on bttv driver (2.6.24-rc6)
+Cc: "Gregor Jasny" <jasny@vidsoft.de>, linux-kernel@vger.kernel.org,
+       video4linux-list <video4linux-list@redhat.com>,
+       "Mauro Carvalho Chehab" <mchehab@infradead.org>,
+       v4l-dvb-maintainer@linuxtv.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <20080106232234.GA12783@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080105223338.GA18690@vidsoft.de>
+	 <20080106141548.GB18690@vidsoft.de>
+	 <68cac7520801061453w6906e510o5d53449e0b28f400@mail.gmail.com>
+	 <20080106232234.GA12783@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-01-04 at 17:52 +0100, Olivier Galibert wrote:
-> On Fri, Jan 04, 2008 at 11:38:29AM -0500, Alan Stern wrote:
-> > How about changing it to say "unavailable"?  That doesn't imply 
-> > permanence.
-> 
-> How about not changing a userland-visible interface gratuitously?
-"empty" can't tell a user the state of wakeup of a device, so it is
-necessary to change it.
-> 
->   OG.
-> 
+Hi Ingo,
 
+> this is about the bttv driver in 2.6.24-rc6/(rc7?) hanging. So whatever
+> the devel tree does, this fix (if it's a correct fix) needs to be
+> commited upstream ASAP.
+
+You are right, my misunderstood. Sorry guys!
+
+Cheers,
+Douglas
