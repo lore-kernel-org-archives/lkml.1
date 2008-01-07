@@ -1,58 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753206AbYAGAyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753241AbYAGBLv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753206AbYAGAyU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Jan 2008 19:54:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751037AbYAGAyK
+	id S1753241AbYAGBLv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Jan 2008 20:11:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbYAGBLn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Jan 2008 19:54:10 -0500
-Received: from ozlabs.org ([203.10.76.45]:56385 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751343AbYAGAyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Jan 2008 19:54:09 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Glauber de Oliveira Costa" <glommer@gmail.com>
-Subject: Re: [PATCH 0/16] lguest: introduce vcpu structure
-Date: Mon, 7 Jan 2008 11:53:57 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>, lguest@ozlabs.org,
-       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       rostedt@goodmis.org
-References: <11981576363806-git-send-email-gcosta@redhat.com> <200712261054.46261.rusty@rustcorp.com.au> <5d6222a80801060933h7bc0d158h6e3b445c3db43291@mail.gmail.com>
-In-Reply-To: <5d6222a80801060933h7bc0d158h6e3b445c3db43291@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801071153.57710.rusty@rustcorp.com.au>
+	Sun, 6 Jan 2008 20:11:43 -0500
+Received: from mga10.intel.com ([192.55.52.92]:27632 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751450AbYAGBLm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Jan 2008 20:11:42 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,251,1196668800"; 
+   d="scan'208";a="276116161"
+Subject: Re: Improve hackbench
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: =?ISO-8859-1?Q?T=F6r=F6k?= Edwin <edwintorok@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <477E1DC3.5020803@gmail.com>
+References: <1199426786.3298.64.camel@ymzhang>
+	 <20080104081043.GA23046@elte.hu>  <477E1DC3.5020803@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 07 Jan 2008 09:10:14 +0800
+Message-Id: <1199668214.3298.78.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 07 January 2008 04:33:53 Glauber de Oliveira Costa wrote:
-> On Dec 25, 2007 9:54 PM, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> >     My only question is whether we should go further and vpu-ify routines
-> > like lgread and kill_guest, so that we can avoid more "lg" temporary
-> > variables...
->
-> Essentially, they don't need it, because they only touch
-> globally-visible variables (visible to the guest).
-> So it's more of an stylish thing. Using the vcpu in the signature can
-> have only one harm:
-> It needs the caller to also have a pointer to a vcpu, so we may end up
-> using it everywhere, like a domino fall.
->
-> Alternatively, in such functions that don't currently receive a vcpu
-> (nor they need to), we can convention to always pass
-> lg->vcpus[0] to lgread, kill_guest, etc. Which one do you prefer?
+On Fri, 2008-01-04 at 13:51 +0200, Török Edwin wrote:
+> Ingo Molnar wrote:
+> > * Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
+> >
+> >   
+> >> hackbench is to test Linux scheduler. The original program is at 
+> >> http://devresources.linux-foundation.org/craiger/hackbench/src/hackbench.c 
+> >> Based on this multi-process version, a nice person created a 
+> >> multi-thread version. Pls. see 
+> >> http://www.bullopensource.org/posix/pi-futex/hackbench_pth.c
+> >>     
+> >
+> > great. I've uploaded your unified & improved version to:
+> >
+> >   http://redhat.com/~mingo/cfs-scheduler/tools/hackbench.c
+> >
+> > (i made some small changes - two warning fixes on gcc 4.2 and a default 
+> > of 10 groups when hackbench is called without parameters, plus a 
+> > printout.)
+> >   
+> 
+> On x86-64 there's a bug [*], that causes hackbench to segfault when
+> compiled with optimizations:
+> in reap_worker():
+>     int status;
+> ...
+>     pthread_join(id, (void **)(void *)&status);
+> 
+> That is not correct, sizeof(void*) > sizeof(int) on x86-64.
+> Something gets overwritten on the stack, I tried with gcc
+> -fstack-protector, but it doesn't detect it !?
+> After applying the patch, it no longer segfaults.
+> 
+> This patch fixes it:
+Thanks.
 
-I'm happy with a domino effect.  I don't want to see lg->vcpus[0] *anywhere* 
-though, because it's non-futureproof.
+> --- hackbench.c 2008-01-04 10:08:26.000000000 +0200
+> +++ ../hackbench.c      2008-01-04 13:45:22.000000000 +0200
+> @@ -241,8 +241,10 @@
+>                 wait(&status);
+>                 if (!WIFEXITED(status))
+>                         exit(1);
+> -       } else
+> -               pthread_join(id, (void **)(void *)&status);
+> +       } else {
+> +               void* status;
+> +               pthread_join(id, (void **)&status);
+We could use NULL to replace &status.
 
-When I looked through these patches it seems to me that we should accept that 
-vcpu is now the basic guest unit, and lg exists to serve it.  Otherwise I 
-think you can see the bones of the old UP code poking through, and that's 
-ugly.
+> +       }
+>  }
+> 
+>  /* One group of senders and receivers */
+> 
+> ----------------
+> 
+> 
+> I also notice that the thread version is slower, than process version:
+I also noticed that. I did an initial check and found the root cause might
+be the difference between pthread_join and wait. wait will wait any sub-process
+to exit and pthread_join just waits a specific thread to exit. If the first thread
+exits lastly, it will take the main thread a longer time to reap sub-threads in the end.
 
-Thanks!
-Rusty.
+> 
+> $ ./hackbench 5 thread
+> Running with 5*40 (== 200) tasks.
+> Time: 0.413
+> $ ./hackbench 5 thread
+> Running with 5*40 (== 200) tasks.
+> Time: 0.423
+> $ ./hackbench 5 thread 20
+> Running with 5*40 (== 200) tasks.
+> Time: 0.093
+> $ ./hackbench 5 thread 200
+> Running with 5*40 (== 200) tasks.
+> Time: 0.827
+> $ ./hackbench 5 thread 2000
+> Running with 5*40 (== 200) tasks.
+> Time: 8.409
+> $ ./hackbench 5 process 2000
+> Running with 5*40 (== 200) tasks.
+> Time: 7.669
+> $ ./hackbench -pipe 5  process 2000
+> Running with 5*40 (== 200) tasks.
+> Time: 3.416
+> $ ./hackbench -pipe 5  thread 2000
+> Running with 5*40 (== 200) tasks.
+> Time: 4.320
+> 
+> [*]
+> $ uname -a
+> Linux lightspeed2 2.6.24-rc6-ge697789d #3 Wed Jan 2 11:15:05 EET 2008
+> x86_64 GNU/Linux
+> $ gcc -v
+> Using built-in specs.
+> Target: x86_64-linux-gnu
+> Configured with: ../src/configure -v
+> --enable-languages=c,c++,fortran,objc,obj-c++,treelang --prefix=/usr
+> --enable-shared --with-system-zlib --libexecdir=/usr/lib
+> --without-included-gettext --enable-threads=posix --enable-nls
+> --with-gxx-include-dir=/usr/include/c++/4.2 --program-suffix=-4.2
+> --enable-clocale=gnu --enable-libstdcxx-debug --enable-mpfr
+> --enable-checking=release --build=x86_64-linux-gnu
+> --host=x86_64-linux-gnu --target=x86_64-linux-gnu
+> Thread model: posix
+> gcc version 4.2.3 20071123 (prerelease) (Debian 4.2.2-4)
+> $ wget http://redhat.com/~mingo/cfs-scheduler/tools/hackbench.c
+> --13:40:53--  http://redhat.com/~mingo/cfs-scheduler/tools/hackbench.c
+>            => `hackbench.c'
+> Resolving redhat.com... 209.132.177.50
+> Connecting to redhat.com|209.132.177.50|:80... connected.
+> HTTP request sent, awaiting response... 302 Found
+> Location: http://www.redhat.com/~mingo/cfs-scheduler/tools/hackbench.c
+> [following]
+> --13:40:54--  http://www.redhat.com/~mingo/cfs-scheduler/tools/hackbench.c
+>            => `hackbench.c'
+> Resolving www.redhat.com... 209.132.177.50
+> Connecting to www.redhat.com|209.132.177.50|:80... connected.
+> HTTP request sent, awaiting response... 301 Moved Permanently
+> Location: http://people.redhat.com/mingo/cfs-scheduler/tools/hackbench.c
+> [following]
+> --13:40:54--  http://people.redhat.com/mingo/cfs-scheduler/tools/hackbench.c
+>            => `hackbench.c'
+> Resolving people.redhat.com... 66.187.233.237
+> Connecting to people.redhat.com|66.187.233.237|:80... connected.
+> HTTP request sent, awaiting response... 200 OK
+> Length: 8,455 (8.3K) [text/plain]
+> 
+> 100%[====================================================================================================================>]
+> 8,455         --.--K/s
+> 
+> 13:40:55 (61.93 KB/s) - `hackbench.c' saved [8455/8455]
+> 
+> $ gcc  -O2 -g -Wall -o hackbench hackbench.c -lpthread
+> hackbench.c:32:66: warning: missing terminating ' character
+> $ ./hackbench 1 thread
+> Running with 1*40 (== 40) tasks.
+> Segmentation fault
+> 
+> $ valgrind --trace-children=yes ./hackbench 1 thread
+> ==27332== Memcheck, a memory error detector.
+> ==27332== Copyright (C) 2002-2007, and GNU GPL'd, by Julian Seward et al.
+> ==27332== Using LibVEX rev 1804, a library for dynamic binary translation.
+> ==27332== Copyright (C) 2004-2007, and GNU GPL'd, by OpenWorks LLP.
+> ==27332== Using valgrind-3.3.0-Debian, a dynamic binary instrumentation
+> framework.
+> ==27332== Copyright (C) 2000-2007, and GNU GPL'd, by Julian Seward et al.
+> ==27332== For more details, rerun with: -v
+> ==27332==
+> Running with 1*40 (== 40) tasks.
+> ==27332== Thread 2:
+> ==27332== Syscall param write(buf) points to uninitialised byte(s)
+> ==27332==    at 0x4C1854B: (within /usr/lib/debug/libpthread-2.7.so)
+> ==27332==    by 0x400C34: ready (hackbench.c:138)
+> ==27332==    by 0x400C97: receiver (hackbench.c:182)
+> ==27332==    by 0x4C113F6: start_thread (pthread_create.c:297)
+> ==27332==    by 0x4EFD91C: clone (in /usr/lib/debug/libc-2.7.so)
+> ==27332==  Address 0x558a09f is on thread 2's stack
+> ==27332==
+> ==27332== Thread 22:
+> ==27332== Syscall param write(buf) points to uninitialised byte(s)
+> ==27332==    at 0x4C1854B: (within /usr/lib/debug/libpthread-2.7.so)
+> ==27332==    by 0x400C34: ready (hackbench.c:138)
+> ==27332==    by 0x400D33: sender (hackbench.c:152)
+> ==27332==    by 0x4C113F6: start_thread (pthread_create.c:297)
+> ==27332==    by 0x4EFD91C: clone (in /usr/lib/debug/libc-2.7.so)
+> ==27332==  Address 0x55da07f is on thread 22's stack
+> ==27332==
+> ==27332== Thread 40:
+> ==27332== Syscall param write(buf) points to uninitialised byte(s)
+> ==27332==    at 0x4C1854B: (within /usr/lib/debug/libpthread-2.7.so)
+> ==27332==    by 0x400D6E: sender (hackbench.c:160)
+> ==27332==    by 0x4C113F6: start_thread (pthread_create.c:297)
+> ==27332==    by 0x4EFD91C: clone (in /usr/lib/debug/libc-2.7.so)
+> ==27332==  Address 0x56220a0 is on thread 40's stack
+> ==27332==
+> ==27332== Thread 1:
+> ==27332== Jump to the invalid address stated on the next line
+> ==27332==    at 0x0: ???
+> ==27332==    by 0x518702F: ???
+> ==27332==    by 0xFFFFFFFF: ???
+> ==27332==    by 0x518702F: ???
+> ==27332==    by 0x2800000000: ???
+> ==27332==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+> ==27332==
+> ==27332== Process terminating with default action of signal 11 (SIGSEGV)
+> ==27332==  Bad permissions for mapped region at address 0x0
+> ==27332==    at 0x0: ???
+> ==27332==    by 0x518702F: ???
+> ==27332==    by 0xFFFFFFFF: ???
+> ==27332==    by 0x518702F: ???
+> ==27332==    by 0x2800000000: ???
+> ==27332==
+> ==27332== ERROR SUMMARY: 40041 errors from 4 contexts (suppressed: 8 from 1)
+> ==27332== malloc/free: in use at exit: 11,420 bytes in 61 blocks.
+> ==27332== malloc/free: 62 allocs, 1 frees, 11,692 bytes allocated.
+> ==27332== For counts of detected errors, rerun with: -v
+> ==27332== searching for pointers to 61 not-freed blocks.
+> ==27332== checked 560,688 bytes.
+> ==27332==
+> ==27332== LEAK SUMMARY:
+> ==27332==    definitely lost: 20 bytes in 1 blocks.
+> ==27332==      possibly lost: 10,608 bytes in 39 blocks.
+> ==27332==    still reachable: 792 bytes in 21 blocks.
+> ==27332==         suppressed: 0 bytes in 0 blocks.
+> ==27332== Rerun with --leak-check=full to see details of leaked memory.
+> Segmentation fault
+> 
+> 
+> 
+> Best regards,
+> --Edwin
+
