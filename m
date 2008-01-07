@@ -1,42 +1,264 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757056AbYAGM06@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756923AbYAGM2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757056AbYAGM06 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 07:26:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755369AbYAGM0u
+	id S1756923AbYAGM2U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 07:28:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbYAGM2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 07:26:50 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:38820 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754135AbYAGM0t (ORCPT
+	Mon, 7 Jan 2008 07:28:13 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:38912 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752635AbYAGM2M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 07:26:49 -0500
-Date: Mon, 7 Jan 2008 12:26:35 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: marcin.slusarz@gmail.com
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Ben Fennema <bfennema@falcon.csc.calpoly.edu>, Jan Kara <jack@suse.cz>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH] udf: fix sparse warnings (shadowing & mismatch between
-	declaration and definition)
-Message-ID: <20080107122635.GC3710@infradead.org>
-References: <1199580275-2487-1-git-send-email-marcin.slusarz@gmail.com> <1199580275-2487-7-git-send-email-marcin.slusarz@gmail.com>
-MIME-Version: 1.0
+	Mon, 7 Jan 2008 07:28:12 -0500
+Date: Mon, 7 Jan 2008 14:28:10 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: stable@kernel.org
+cc: linux-kernel@vger.kernel.org, andi@firstfloor.org, clameter@sgi.com,
+       a.p.zijlstra@chello.nl, mingo@elte.hu, torvalds@linux-foundation.org
+Subject: [PATCH] slub: provide /proc/slabinfo
+Message-ID: <Pine.LNX.4.64.0801071426350.31604@sbz-30.cs.Helsinki.FI>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1199580275-2487-7-git-send-email-marcin.slusarz@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 06, 2008 at 01:44:35AM +0100, marcin.slusarz@gmail.com wrote:
-> fix sparse warnings:
-> fs/udf/super.c:1431:24: warning: symbol 'bh' shadows an earlier one
-> fs/udf/super.c:1347:21: originally declared here
-> fs/udf/super.c:472:6: warning: symbol 'udf_write_super' was not declared. Should it be static?
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Looks good.
+[ Upstream commits: 57ed3eda977a215f054102b460ab0eb5d8d112e6,
+  6b6adc22a01941165d5af9a3e69e28e948b28f47, and
+  158a962422e4a54dc256b6a9b9562f3d30d34d9c ]
 
+This adds a read-only /proc/slabinfo file on SLUB, that makes slabtop work.
+
+[ mingo@elte.hu: build fix. ]
+[ torvalds@linux-foundation.org: config unification. ]    
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Christoph Lameter <clameter@sgi.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ fs/proc/proc_misc.c      |    4 -
+ include/linux/slab.h     |    5 ++
+ include/linux/slab_def.h |    3 -
+ init/Kconfig             |    6 ++
+ mm/slab.c                |    2 
+ mm/slub.c                |  112 +++++++++++++++++++++++++++++++++++++++++------
+ 6 files changed, 113 insertions(+), 19 deletions(-)
+
+Index: linux-2.6.23.y/fs/proc/proc_misc.c
+===================================================================
+--- linux-2.6.23.y.orig/fs/proc/proc_misc.c	2008-01-07 14:07:50.000000000 +0200
++++ linux-2.6.23.y/fs/proc/proc_misc.c	2008-01-07 14:14:17.000000000 +0200
+@@ -397,7 +397,7 @@
+ };
+ #endif
+ 
+-#ifdef CONFIG_SLAB
++#ifdef CONFIG_SLABINFO
+ static int slabinfo_open(struct inode *inode, struct file *file)
+ {
+ 	return seq_open(file, &slabinfo_op);
+@@ -709,7 +709,7 @@
+ #endif
+ 	create_seq_entry("stat", 0, &proc_stat_operations);
+ 	create_seq_entry("interrupts", 0, &proc_interrupts_operations);
+-#ifdef CONFIG_SLAB
++#ifdef CONFIG_SLABINFO
+ 	create_seq_entry("slabinfo",S_IWUSR|S_IRUGO,&proc_slabinfo_operations);
+ #ifdef CONFIG_DEBUG_SLAB_LEAK
+ 	create_seq_entry("slab_allocators", 0 ,&proc_slabstats_operations);
+Index: linux-2.6.23.y/include/linux/slab.h
+===================================================================
+--- linux-2.6.23.y.orig/include/linux/slab.h	2008-01-07 14:07:55.000000000 +0200
++++ linux-2.6.23.y/include/linux/slab.h	2008-01-07 14:14:17.000000000 +0200
+@@ -269,5 +269,10 @@
+ 	return kmalloc(size, flags | __GFP_ZERO);
+ }
+ 
++#ifdef CONFIG_SLABINFO
++extern const struct seq_operations slabinfo_op;
++ssize_t slabinfo_write(struct file *, const char __user *, size_t, loff_t *);
++#endif
++
+ #endif	/* __KERNEL__ */
+ #endif	/* _LINUX_SLAB_H */
+Index: linux-2.6.23.y/include/linux/slab_def.h
+===================================================================
+--- linux-2.6.23.y.orig/include/linux/slab_def.h	2008-01-07 14:07:55.000000000 +0200
++++ linux-2.6.23.y/include/linux/slab_def.h	2008-01-07 14:14:17.000000000 +0200
+@@ -95,7 +95,4 @@
+ 
+ #endif	/* CONFIG_NUMA */
+ 
+-extern const struct seq_operations slabinfo_op;
+-ssize_t slabinfo_write(struct file *, const char __user *, size_t, loff_t *);
+-
+ #endif	/* _LINUX_SLAB_DEF_H */
+Index: linux-2.6.23.y/init/Kconfig
+===================================================================
+--- linux-2.6.23.y.orig/init/Kconfig	2008-01-07 14:07:55.000000000 +0200
++++ linux-2.6.23.y/init/Kconfig	2008-01-07 14:14:17.000000000 +0200
+@@ -573,6 +573,12 @@
+ 
+ endmenu		# General setup
+ 
++config SLABINFO
++	bool
++	depends on PROC_FS
++	depends on SLAB || SLUB
++	default y
++
+ config RT_MUTEXES
+ 	boolean
+ 	select PLIST
+Index: linux-2.6.23.y/mm/slab.c
+===================================================================
+--- linux-2.6.23.y.orig/mm/slab.c	2008-01-07 14:07:55.000000000 +0200
++++ linux-2.6.23.y/mm/slab.c	2008-01-07 14:14:17.000000000 +0200
+@@ -4082,7 +4082,7 @@
+ 	schedule_delayed_work(work, round_jiffies_relative(REAPTIMEOUT_CPUC));
+ }
+ 
+-#ifdef CONFIG_PROC_FS
++#ifdef CONFIG_SLABINFO
+ 
+ static void print_slabinfo_header(struct seq_file *m)
+ {
+Index: linux-2.6.23.y/mm/slub.c
+===================================================================
+--- linux-2.6.23.y.orig/mm/slub.c	2008-01-07 14:07:55.000000000 +0200
++++ linux-2.6.23.y/mm/slub.c	2008-01-07 14:14:17.000000000 +0200
+@@ -2789,6 +2789,19 @@
+ 	return slab_alloc(s, gfpflags, node, caller);
+ }
+ 
++static unsigned long count_partial(struct kmem_cache_node *n)
++{
++	unsigned long flags;
++	unsigned long x = 0;
++	struct page *page;
++
++	spin_lock_irqsave(&n->list_lock, flags);
++	list_for_each_entry(page, &n->partial, lru)
++		x += page->inuse;
++	spin_unlock_irqrestore(&n->list_lock, flags);
++	return x;
++}
++
+ #if defined(CONFIG_SYSFS) && defined(CONFIG_SLUB_DEBUG)
+ static int validate_slab(struct kmem_cache *s, struct page *page,
+ 						unsigned long *map)
+@@ -3171,19 +3184,6 @@
+ 	return n;
+ }
+ 
+-static unsigned long count_partial(struct kmem_cache_node *n)
+-{
+-	unsigned long flags;
+-	unsigned long x = 0;
+-	struct page *page;
+-
+-	spin_lock_irqsave(&n->list_lock, flags);
+-	list_for_each_entry(page, &n->partial, lru)
+-		x += page->inuse;
+-	spin_unlock_irqrestore(&n->list_lock, flags);
+-	return x;
+-}
+-
+ enum slab_stat_type {
+ 	SL_FULL,
+ 	SL_PARTIAL,
+@@ -3823,3 +3823,89 @@
+ 
+ __initcall(slab_sysfs_init);
+ #endif
++
++/*
++ * The /proc/slabinfo ABI
++ */
++#ifdef CONFIG_SLABINFO
++
++ssize_t slabinfo_write(struct file *file, const char __user * buffer,
++                       size_t count, loff_t *ppos)
++{
++	return -EINVAL;
++}
++
++
++static void print_slabinfo_header(struct seq_file *m)
++{
++	seq_puts(m, "slabinfo - version: 2.1\n");
++	seq_puts(m, "# name            <active_objs> <num_objs> <objsize> "
++		 "<objperslab> <pagesperslab>");
++	seq_puts(m, " : tunables <limit> <batchcount> <sharedfactor>");
++	seq_puts(m, " : slabdata <active_slabs> <num_slabs> <sharedavail>");
++	seq_putc(m, '\n');
++}
++
++static void *s_start(struct seq_file *m, loff_t *pos)
++{
++	loff_t n = *pos;
++
++	down_read(&slub_lock);
++	if (!n)
++		print_slabinfo_header(m);
++
++	return seq_list_start(&slab_caches, *pos);
++}
++
++static void *s_next(struct seq_file *m, void *p, loff_t *pos)
++{
++	return seq_list_next(p, &slab_caches, pos);
++}
++
++static void s_stop(struct seq_file *m, void *p)
++{
++	up_read(&slub_lock);
++}
++
++static int s_show(struct seq_file *m, void *p)
++{
++	unsigned long nr_partials = 0;
++	unsigned long nr_slabs = 0;
++	unsigned long nr_inuse = 0;
++	unsigned long nr_objs;
++	struct kmem_cache *s;
++	int node;
++
++	s = list_entry(p, struct kmem_cache, list);
++
++	for_each_online_node(node) {
++		struct kmem_cache_node *n = get_node(s, node);
++
++		if (!n)
++			continue;
++
++		nr_partials += n->nr_partial;
++		nr_slabs += atomic_long_read(&n->nr_slabs);
++		nr_inuse += count_partial(n);
++	}
++
++	nr_objs = nr_slabs * s->objects;
++	nr_inuse += (nr_slabs - nr_partials) * s->objects;
++
++	seq_printf(m, "%-17s %6lu %6lu %6u %4u %4d", s->name, nr_inuse,
++		   nr_objs, s->size, s->objects, (1 << s->order));
++	seq_printf(m, " : tunables %4u %4u %4u", 0, 0, 0);
++	seq_printf(m, " : slabdata %6lu %6lu %6lu", nr_slabs, nr_slabs,
++		   0UL);
++	seq_putc(m, '\n');
++	return 0;
++}
++
++const struct seq_operations slabinfo_op = {
++	.start = s_start,
++	.next = s_next,
++	.stop = s_stop,
++	.show = s_show,
++};
++
++#endif /* CONFIG_SLABINFO */
