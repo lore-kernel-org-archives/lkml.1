@@ -1,480 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbYAGLkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757424AbYAGLlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757304AbYAGLkZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 06:40:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbYAGLkP
+	id S1757424AbYAGLlv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 06:41:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755267AbYAGLln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 06:40:15 -0500
-Received: from ro-out-1112.google.com ([72.14.202.178]:43836 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754573AbYAGLkM (ORCPT
+	Mon, 7 Jan 2008 06:41:43 -0500
+Received: from hpsmtp-eml20.KPNXCHANGE.COM ([213.75.38.85]:56370 "EHLO
+	hpsmtp-eml20.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754786AbYAGLlm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 06:40:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=jQ4aQ/+dsWX3h/i8usUGyBV81AAtqtqnVUG7E0G1jfLkDafmdzIFU0o8MZRHZ/rUOYzkX4fhbTHoMvJ2Zk7xqCnj3Nz6RgcsBC4z2V56P3NmJDo4S0e3MkI2UBIxheF058WAnQoZempxHvSzOCXgzu5+jLlraCL1M8D1dR1WCTQ=
-Message-ID: <4d8e3fd30801070340l57892cbar3df6539f132bcc41@mail.gmail.com>
-Date: Mon, 7 Jan 2008 12:40:07 +0100
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
-Subject: [PATCH 5/5] Codying style fixes in ./arch/x86/ia32
-Cc: "Ingo Molnar" <mingo@elte.hu>, trivial@kernel.org,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 7 Jan 2008 06:41:42 -0500
+X-Greylist: delayed 975 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Jan 2008 06:41:41 EST
+Envelope-to: fjp@localhost
+Delivery-date: Mon, 07 Jan 2008 06:20:01 +0100
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,251,1196668800"; 
+   d="scan'208";a="276772811"
+Subject: Re: pnpacpi: exceeded the max number of IO resources: 24
+From: Zhao Yakui <yakui.zhao@intel.com>
+To: Frans Pop <elendil@planet.nl>
+In-Reply-To: <200801070048.19468.elendil@planet.nl>
+References: <200712240612.46786.elendil@planet.nl>
+	 <1198803416.21142.7.camel@yakui_zhao.sh.intel.com>
+	 <200801070048.19468.elendil@planet.nl>
+Content-Type: text/plain
+Date: Mon, 07 Jan 2008 13:07:28 +0800
+Message-Id: <1199682448.2379.12.camel@yakui_zhao.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-OriginalArrivalTime: 07 Jan 2008 05:18:47.0248 (UTC) FILETIME=[C7ABAD00:01C850EC]
+X-Length: 6294
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix plenty of codying style errors
+On Mon, 2008-01-07 at 00:48 +0100, Frans Pop wrote:
+> (Adding the kernel list back. Any reason you did not send the reply there?)
+> 
+> Sorry for the late reply: Christmas, New Year, the flue, etc.
+Thank you for caring this problem.
+> 
+> On Friday 28 December 2007, Zhao Yakui wrote:
+> > On Mon, 2007-12-24 at 06:12 +0100, Frans Pop wrote:
+> > > During boot with v2.6.24-rc6-125-g5356f66 on my Toshiba Satellite A40
+> > > laptop, I suddenly get the following message (repeated 22 times!):
+> > >    pnpacpi: exceeded the max number of IO resources: 24
+> > >
+> > > Last time I tested 2.6.24 on that box was after the initial merge, but
+> > > before -rc1. Then those lines were not present.
+> > >
+> > > Looks like the messages originate from a7839e96 by Zhao Yakui and that
+> > > patch just adds the kernel messages so it was probably a hidden issue
+> > > before, but I cannot determine if I should be worried or not.
+> >
+> > Thanks for caring this problem.
+> 
+> And thank you for the reply, although I must admit that I'm still confused.
+> 
+> > In the patch of a7839e96 the predefined PNP constant is changed. For
+> > example: IO is changed from 8 to 24, Mem is changed from 4 to 12.
+> > That means that more resources will be obtained from the PNP device
+> > defined in ACPI table. So the system will print more message.
+> 
+> OK. The change for Mem from 4 to 12 could explain the extra "iomem range" 
+> messages (although I don't quite understand why resources that "could not 
+> be reserved" still use a slot).
+The resources of PNP device are obtained by calling the _CRS method.
+Maybe some resources has been reserved. For example: Some system will
+reserve the following resources.
+   BIOS-e820: 00000000fec00000 - 00000000fed40000 (reserved)
+   BIOS-e820: 00000000fed45000 - 0000000100000000 (reserved)
+So the system will report that some resources can't be reserved.
 
-Checkpatch now reports:
-total: 3 errors, 9 warnings, 617 lines checked
+> I do not yet see how the "ioport range" messages increased from 0 to 16 is 
+> explained, but I'm not too worried about that.
+> 
+> > At the same time another problem maybe happens. If the number of
+> > resources defined in BIOS still exceeds the predefined PNP constant, it
+> > will report that pnpacpi: exceeded the max number of IO resources: 24.
+> > Although it can be fixed by changed the pnp constant bigger, it is
+> > inappropriate because it will waste a lot of memory in most cases.
+> >
+> > Of course the above error message is harmless.
+> 
+> Are the _errors_ really harmless?
+The error message is harmless. It only tells us that the resource
+definition of PNP device exceeds the predefined PNP constant and maybe
+there will be potential problem if some important resources can't be
+reserved. For example about 90 IOPORT resources are defined in some PNP
+device. So it will print the message. Of course it is more appropriate
+to change the message level from ERR to DEBUG. 
+> Your commit message was:
+> "It brings that some resources can't be reserved and resource confilicts.  
+> This will cause PCI resources are assigned wrongly in some systems, and 
+> cause hang. This is a regression since we deleted ACPI motherboard driver 
+> and use PNP system driver."
+> 
+> That text seems to indicate that not reserving the remaining resources _can_ 
+> cause real problems. Do we know what PCI resources are now not being 
+> correctly reserved on my laptop (and other machines)? The fact that the 
+> message is repeated 22 times seems to indicate that in my case quite a lot 
+> of resources are being ignored.
+> 
+> Should the memory allocation maybe be made dynamic instead of static if the 
+> memory waste is really such a problem? Apparently the number of PCI 
+> resources can vary wildly from one machine to another.
+> 
+It is more appropriate to use dynamic memory allocation for Pnp device
+than to increase the PNP constant bigger. Now Thomas is working on it.
+Maybe he will submit the patch very soon.
+> If the error messages really are harmless, shouldn't they be changed from 
+> ERR to DEBUG? As it is, the messages are extremely ugly and will probably 
+> cause a lot of people to file bug reports as it _looks_ like there is an 
+> error.
 
-Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
----
- arch/x86/ia32/ia32_signal.c |  192 +++++++++++++++++++++---------------------
- 1 files changed, 96 insertions(+), 96 deletions(-)
-
-diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
-index 6ea19c2..dac4edb 100644
---- a/arch/x86/ia32/ia32_signal.c
-+++ b/arch/x86/ia32/ia32_signal.c
-@@ -43,7 +43,7 @@ void signal_fault(struct pt_regs *regs, void __user
-*frame, char *where);
- int copy_siginfo_to_user32(compat_siginfo_t __user *to, siginfo_t *from)
- {
-        int err;
--       if (!access_ok (VERIFY_WRITE, to, sizeof(compat_siginfo_t)))
-+       if (!access_ok(VERIFY_WRITE, to, sizeof(compat_siginfo_t)))
-                return -EFAULT;
-
-        /* If you change siginfo_t structure, please make sure that
-@@ -53,15 +53,15 @@ int copy_siginfo_to_user32(compat_siginfo_t __user
-*to, siginfo_t *from)
-           3 ints plus the relevant union member.  */
-        err = __put_user(from->si_signo, &to->si_signo);
-        err |= __put_user(from->si_errno, &to->si_errno);
--       err |= __put_user((short)from->si_code, &to->si_code);
-+       err |= __put_user((short)from->si_code, &to->si_code);
-
-        if (from->si_code < 0) {
-                err |= __put_user(from->si_pid, &to->si_pid);
--               err |= __put_user(from->si_uid, &to->si_uid);
--               err |= __put_user(ptr_to_compat(from->si_ptr), &to->si_ptr);
-+               err |= __put_user(from->si_uid, &to->si_uid);
-+               err |= __put_user(ptr_to_compat(from->si_ptr), &to->si_ptr);
-        } else {
--               /* First 32bits of unions are always present:
--                * si_pid === si_band === si_tid === si_addr(LS half) */
-+               /* First 32bits of unions are always present:
-+               * si_pid === si_band === si_tid === si_addr(LS half) */
-                err |= __put_user(from->_sifields._pad[0],
-&to->_sifields._pad[0]);
-                switch (from->si_code >> 16) {
-                case __SI_FAULT >> 16:
-@@ -76,10 +76,10 @@ int copy_siginfo_to_user32(compat_siginfo_t __user
-*to, siginfo_t *from)
-                        err |= __put_user(from->si_uid, &to->si_uid);
-                        break;
-                case __SI_POLL >> 16:
--                       err |= __put_user(from->si_fd, &to->si_fd);
-+                       err |= __put_user(from->si_fd, &to->si_fd);
-                        break;
-                case __SI_TIMER >> 16:
--                       err |= __put_user(from->si_overrun, &to->si_overrun);
-+                       err |= __put_user(from->si_overrun, &to->si_overrun);
-                        err |= __put_user(ptr_to_compat(from->si_ptr),
-                                        &to->si_ptr);
-                        break;
-@@ -97,7 +97,7 @@ int copy_siginfo_from_user32(siginfo_t *to,
-compat_siginfo_t __user *from)
- {
-        int err;
-        u32 ptr32;
--       if (!access_ok (VERIFY_READ, from, sizeof(compat_siginfo_t)))
-+       if (!access_ok(VERIFY_READ, from, sizeof(compat_siginfo_t)))
-                return -EFAULT;
-
-        err = __get_user(to->si_signo, &from->si_signo);
-@@ -130,34 +130,34 @@ sys32_sigsuspend(int history0, int history1,
-old_sigset_t mask)
-
- asmlinkage long
- sys32_sigaltstack(const stack_ia32_t __user *uss_ptr,
--                 stack_ia32_t __user *uoss_ptr,
-+                 stack_ia32_t __user *uoss_ptr,
-                  struct pt_regs *regs)
- {
--       stack_t uss,uoss;
-+       stack_t uss, uoss;
-        int ret;
--       mm_segment_t seg;
--       if (uss_ptr) {
-+       mm_segment_t seg;
-+       if (uss_ptr) {
-                u32 ptr;
--               memset(&uss,0,sizeof(stack_t));
--               if (!access_ok(VERIFY_READ,uss_ptr,sizeof(stack_ia32_t)) ||
-+               memset(&uss, 0, sizeof(stack_t));
-+               if (!access_ok(VERIFY_READ, uss_ptr, sizeof(stack_ia32_t)) ||
-                            __get_user(ptr, &uss_ptr->ss_sp) ||
-                            __get_user(uss.ss_flags, &uss_ptr->ss_flags) ||
-                            __get_user(uss.ss_size, &uss_ptr->ss_size))
-                        return -EFAULT;
-                uss.ss_sp = compat_ptr(ptr);
-        }
--       seg = get_fs();
--       set_fs(KERNEL_DS);
-+       seg = get_fs();
-+       set_fs(KERNEL_DS);
-        ret = do_sigaltstack(uss_ptr ? &uss : NULL, &uoss, regs->rsp);
--       set_fs(seg);
-+       set_fs(seg);
-        if (ret >= 0 && uoss_ptr)  {
--               if (!access_ok(VERIFY_WRITE,uoss_ptr,sizeof(stack_ia32_t)) ||
-+               if (!access_ok(VERIFY_WRITE, uoss_ptr, sizeof(stack_ia32_t)) ||
-                    __put_user(ptr_to_compat(uoss.ss_sp), &uoss_ptr->ss_sp) ||
-                    __put_user(uoss.ss_flags, &uoss_ptr->ss_flags) ||
-                    __put_user(uoss.ss_size, &uoss_ptr->ss_size))
-                        ret = -EFAULT;
--       }
--       return ret;
-+       }
-+       return ret;
- }
-
- /*
-@@ -190,7 +190,7 @@ static int
- ia32_restore_sigcontext(struct pt_regs *regs, struct sigcontext_ia32
-__user *sc, unsigned int *peax)
- {
-        unsigned int err = 0;
--
-+
-        /* Always make any pending restarted system calls return -EINTR */
-        current_thread_info()->restart_block.fn = do_no_restart_syscall;
-
-@@ -206,36 +206,36 @@ ia32_restore_sigcontext(struct pt_regs *regs,
-struct sigcontext_ia32 __user *sc,
-
- #define RELOAD_SEG(seg,mask)                                           \
-        { unsigned int cur;                                             \
--         unsigned short pre;                                           \
--         err |= __get_user(pre, &sc->seg);                             \
--         asm volatile("movl %%" #seg ",%0" : "=r" (cur));              \
--         pre |= mask;                                                  \
--         if (pre != cur) loadsegment(seg,pre); }
-+       unsigned short pre;                                             \
-+       err |= __get_user(pre, &sc->seg);                               \
-+       asm volatile("movl %%" #seg ",%0" : "=r" (cur));                \
-+         pre |= mask;
-+         if (pre != cur) loadsegment(seg, pre); }
-
-        /* Reload fs and gs if they have changed in the signal handler.
--          This does not handle long fs/gs base changes in the handler, but
--          does not clobber them at least in the normal case. */
--
-+          This does not handle long fs/gs base changes in the handler, but
-+          does not clobber them at least in the normal case. */
-+
-        {
--               unsigned gs, oldgs;
-+               unsigned gs, oldgs;
-                err |= __get_user(gs, &sc->gs);
--               gs |= 3;
-+               gs |= 3;
-                asm("movl %%gs,%0" : "=r" (oldgs));
-                if (gs != oldgs)
--               load_gs_index(gs);
--       }
--       RELOAD_SEG(fs,3);
--       RELOAD_SEG(ds,3);
--       RELOAD_SEG(es,3);
-+               load_gs_index(gs);
-+       }
-+       RELOAD_SEG(fs, 3);
-+       RELOAD_SEG(ds, 3);
-+       RELOAD_SEG(es, 3);
-
-        COPY(di); COPY(si); COPY(bp); COPY(sp); COPY(bx);
-        COPY(dx); COPY(cx); COPY(ip);
--       /* Don't touch extended registers */
--
--       err |= __get_user(regs->cs, &sc->cs);
--       regs->cs |= 3;
--       err |= __get_user(regs->ss, &sc->ss);
--       regs->ss |= 3;
-+       /* Don't touch extended registers */
-+
-+       err |= __get_user(regs->cs, &sc->cs);
-+       regs->cs |= 3;
-+       err |= __get_user(regs->ss, &sc->ss);
-+       regs->ss |= 3;
-
-        {
-                unsigned int tmpflags;
-@@ -246,7 +246,7 @@ ia32_restore_sigcontext(struct pt_regs *regs,
-struct sigcontext_ia32 __user *sc,
-
-        {
-                u32 tmp;
--               struct _fpstate_ia32 __user * buf;
-+               struct _fpstate_ia32 __user *buf;
-                err |= __get_user(tmp, &sc->fpstate);
-                buf = compat_ptr(tmp);
-                if (buf) {
-@@ -262,7 +262,7 @@ ia32_restore_sigcontext(struct pt_regs *regs,
-struct sigcontext_ia32 __user *sc,
-                }
-        }
-
--       {
-+       {
-                u32 tmp;
-                err |= __get_user(tmp, &sc->eax);
-                *peax = tmp;
-@@ -292,7 +292,7 @@ asmlinkage long sys32_sigreturn(struct pt_regs *regs)
-        current->blocked = set;
-        recalc_sigpending();
-        spin_unlock_irq(&current->sighand->siglock);
--
-+
-        if (ia32_restore_sigcontext(regs, &frame->sc, &eax))
-                goto badframe;
-        return eax;
-@@ -300,7 +300,7 @@ asmlinkage long sys32_sigreturn(struct pt_regs *regs)
- badframe:
-        signal_fault(regs, frame, "32bit sigreturn");
-        return 0;
--}
-+}
-
- asmlinkage long sys32_rt_sigreturn(struct pt_regs *regs)
- {
-@@ -321,7 +321,7 @@ asmlinkage long sys32_rt_sigreturn(struct pt_regs *regs)
-        current->blocked = set;
-        recalc_sigpending();
-        spin_unlock_irq(&current->sighand->siglock);
--
-+
-        if (ia32_restore_sigcontext(regs, &frame->uc.uc_mcontext, &eax))
-                goto badframe;
-
-@@ -332,9 +332,9 @@ asmlinkage long sys32_rt_sigreturn(struct pt_regs *regs)
-        return eax;
-
- badframe:
--       signal_fault(regs,frame,"32bit rt sigreturn");
-+       signal_fault(regs, frame, "32bit rt sigreturn");
-        return 0;
--}
-+}
-
- /*
-  * Set up a signal frame.
-@@ -375,7 +375,7 @@ ia32_setup_sigcontext(struct sigcontext_ia32
-__user *sc, struct _fpstate_ia32 __
-        tmp = save_i387_ia32(current, fpstate, regs, 0);
-        if (tmp < 0)
-                err = -EFAULT;
--       else {
-+       else {
-                clear_used_math();
-                stts();
-                err |= __put_user(ptr_to_compat(tmp ? fpstate : NULL),
-@@ -393,7 +393,7 @@ ia32_setup_sigcontext(struct sigcontext_ia32
-__user *sc, struct _fpstate_ia32 __
-  * Determine which stack to use..
-  */
- static void __user *
--get_sigframe(struct k_sigaction *ka, struct pt_regs * regs, size_t frame_size)
-+get_sigframe(struct k_sigaction *ka, struct pt_regs *regs, size_t frame_size)
- {
-        unsigned long rsp;
-
-@@ -421,7 +421,7 @@ get_sigframe(struct k_sigaction *ka, struct
-pt_regs * regs, size_t frame_size)
- }
-
- int ia32_setup_frame(int sig, struct k_sigaction *ka,
--                    compat_sigset_t *set, struct pt_regs * regs)
-+                    compat_sigset_t *set, struct pt_regs *regs)
- {
-        struct sigframe __user *frame;
-        int err = 0;
-@@ -448,32 +448,32 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
-                goto give_sigsegv;
-
-        /* Return stub is in 32bit vsyscall page */
--       {
-+       {
-                void __user *restorer;
-                if (current->binfmt->hasvdso)
-                        restorer = VSYSCALL32_SIGRETURN;
-                else
-                        restorer = (void *)&frame->retcode;
-                if (ka->sa.sa_flags & SA_RESTORER)
--                       restorer = ka->sa.sa_restorer;
-+                       restorer = ka->sa.sa_restorer;
-                err |= __put_user(ptr_to_compat(restorer), &frame->pretcode);
-        }
--       /* These are actually not used anymore, but left because some
-+       /* These are actually not used anymore, but left because some
-           gdb versions depend on them as a marker. */
--       {
-+       {
-                /* copy_to_user optimizes that into a single 8 byte store */
--               static const struct {
-+               static const struct {
-                        u16 poplmovl;
-                        u32 val;
--                       u16 int80;
--                       u16 pad;
--               } __attribute__((packed)) code = {
-+                       u16 int80;
-+                       u16 pad;
-+               } __attribute__((packed)) code = {
-                        0xb858,          /* popl %eax ; movl $...,%eax */
--                       __NR_ia32_sigreturn,
-+                       __NR_ia32_sigreturn,
-                        0x80cd,         /* int $0x80 */
-                        0,
--               };
--               err |= __copy_to_user(frame->retcode, &code, 8);
-+               };
-+               err |= __copy_to_user(frame->retcode, &code, 8);
-        }
-        if (err)
-                goto give_sigsegv;
-@@ -487,11 +487,11 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
-        regs->rdx = 0;
-        regs->rcx = 0;
-
--       asm volatile("movl %0,%%ds" :: "r" (__USER32_DS));
--       asm volatile("movl %0,%%es" :: "r" (__USER32_DS));
-+       asm volatile("movl %0,%%ds" :: "r" (__USER32_DS));
-+       asm volatile("movl %0,%%es" :: "r" (__USER32_DS));
-
--       regs->cs = __USER32_CS;
--       regs->ss = __USER32_DS;
-+       regs->cs = __USER32_CS;
-+       regs->ss = __USER32_DS;
-
-        set_fs(USER_DS);
-        regs->eflags &= ~TF_MASK;
-@@ -510,8 +510,8 @@ give_sigsegv:
-        return -EFAULT;
- }
-
--int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
--                       compat_sigset_t *set, struct pt_regs * regs)
-+nt ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
-+                       compat_sigset_t *set, struct pt_regs *regs)
- {
-        struct rt_sigframe __user *frame;
-        int err = 0;
-@@ -524,11 +524,11 @@ int ia32_setup_rt_frame(int sig, struct
-k_sigaction *ka, siginfo_t *info,
-        {
-                struct exec_domain *ed = current_thread_info()->exec_domain;
-                err |= __put_user((ed
--                          && ed->signal_invmap
--                          && sig < 32
--                          ? ed->signal_invmap[sig]
--                          : sig),
--                         &frame->sig);
-+                       && ed->signal_invmap
-+                       && sig < 32
-+                       ? ed->signal_invmap[sig]
-+                       : sig),
-+                       &frame->sig);
-        }
-        err |= __put_user(ptr_to_compat(&frame->info), &frame->pinfo);
-        err |= __put_user(ptr_to_compat(&frame->uc), &frame->puc);
-@@ -544,38 +544,38 @@ int ia32_setup_rt_frame(int sig, struct
-k_sigaction *ka, siginfo_t *info,
-                          &frame->uc.uc_stack.ss_flags);
-        err |= __put_user(current->sas_ss_size, &frame->uc.uc_stack.ss_size);
-        err |= ia32_setup_sigcontext(&frame->uc.uc_mcontext, &frame->fpstate,
--                               regs, set->sig[0]);
-+                       regs, set->sig[0]);
-        err |= __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
-        if (err)
-                goto give_sigsegv;
-
--
--       {
--               void __user *restorer = VSYSCALL32_RTSIGRETURN;
-+
-+       {
-+               void __user *restorer = VSYSCALL32_RTSIGRETURN;
-                if (ka->sa.sa_flags & SA_RESTORER)
--                       restorer = ka->sa.sa_restorer;
-+                       restorer = ka->sa.sa_restorer;
-                err |= __put_user(ptr_to_compat(restorer), &frame->pretcode);
-        }
-
-        /* This is movl $,%eax ; int $0x80 */
-        /* Not actually used anymore, but left because some gdb versions
--          need it. */
--       {
-+          need it. */
-+       {
-                /* __copy_to_user optimizes that into a single 8 byte store */
--               static const struct {
--                       u8 movl;
--                       u32 val;
--                       u16 int80;
-+               static const struct {
-+                       u8 movl;
-+                       u32 val;
-+                       u16 int80;
-                        u16 pad;
--                       u8  pad2;
--               } __attribute__((packed)) code = {
-+                       u8  pad2;
-+               } __attribute__((packed)) code = {
-                        0xb8,
-                        __NR_ia32_rt_sigreturn,
-                        0x80cd,
-                        0,
--               };
--               err |= __copy_to_user(frame->retcode, &code, 8);
--       }
-+               };
-+               err |= __copy_to_user(frame->retcode, &code, 8);
-+       }
-        if (err)
-                goto give_sigsegv;
-
-@@ -593,11 +593,11 @@ int ia32_setup_rt_frame(int sig, struct
-k_sigaction *ka, siginfo_t *info,
-        regs->rdx = (unsigned long) &frame->info;
-        regs->rcx = (unsigned long) &frame->uc;
-
--       asm volatile("movl %0,%%ds" :: "r" (__USER32_DS));
--       asm volatile("movl %0,%%es" :: "r" (__USER32_DS));
--
--       regs->cs = __USER32_CS;
--       regs->ss = __USER32_DS;
-+       asm volatile("movl %0,%%ds" :: "r" (__USER32_DS));
-+       asm volatile("movl %0,%%es" :: "r" (__USER32_DS));
-+
-+       regs->cs = __USER32_CS;
-+       regs->ss = __USER32_DS;
-
-        set_fs(USER_DS);
-        regs->eflags &= ~TF_MASK;
---
-1.5.4.rc2.17.g257f
+> 
+> Cheers,
+> Frans Pop
 
 
-
-
--- 
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
