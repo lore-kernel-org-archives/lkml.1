@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbYAGIeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbYAGIot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756100AbYAGIeY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 03:34:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbYAGIeN
+	id S1756072AbYAGIot (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 03:44:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbYAGIoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 03:34:13 -0500
-Received: from ozlabs.org ([203.10.76.45]:46486 "EHLO ozlabs.org"
+	Mon, 7 Jan 2008 03:44:38 -0500
+Received: from mx2.suse.de ([195.135.220.15]:42146 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755192AbYAGIeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 03:34:12 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH 0/7] sg_ring: a ring of scatterlist arrays
-Date: Mon, 7 Jan 2008 19:34:01 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org
-References: <200712191731.26512.rusty@rustcorp.com.au> <200801071628.11381.rusty@rustcorp.com.au> <4781C8B5.6050207@gmail.com>
-In-Reply-To: <4781C8B5.6050207@gmail.com>
+	id S1754063AbYAGIoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 03:44:37 -0500
+Date: Mon, 7 Jan 2008 00:45:28 -0800
+From: Greg KH <gregkh@suse.de>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, stern@rowland.harvard.edu,
+       peterz@infradead.org, david-b@pacbell.net, davem@davemloft.net,
+       jarkao2@gmail.com, krh@redhat.com, dbrownell@users.sourceforge.net,
+       James.Bottomley@HansenPartnership.com, a.zummo@towertech.it,
+       cbou@mail.ru, dwmw2@infradead.org,
+       linux1394-devel@lists.sourceforge.net,
+       spi-devel-general@lists.sourceforge.net, linux-scsi@vger.kernel.org,
+       rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/7] convert semaphore to mutex in struct class
+Message-ID: <20080107084528.GA8365@suse.de>
+References: <20080103055019.GA4885@darkstar.te-china.tietoenator.com> <478120D9.5090404@s5r6.in-berlin.de> <20080107020944.GA3637@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801071934.01597.rusty@rustcorp.com.au>
+In-Reply-To: <20080107020944.GA3637@darkstar.te-china.tietoenator.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 07 January 2008 17:37:41 Tejun Heo wrote:
-> Rusty Russell wrote:
-> > Hi Tejun,
-> >
-> >    Nice try!  Even ignoring the ugliness of undoing such an operation if
-> > the caller doesn't expect you to mangle their chains, consider a
-> > one-element sg array. :(
->
-> Heh heh, that can be dealt with by skipping the first chain if the first
-> chain is empty after chaining.  Please take a look at
-> ata_sg_setup_extra() in the following.
->
-> http://git.kernel.org/?p=linux/kernel/git/tj/libata-dev.git;a=blob;f=driver
->s/ata/libata-core.c;h=32dde5bbc75ed53e89ac17040da2cd0621a37161;hb=c8847e473a
->4a2844244784226eb362be10d52ce9
->
-> That said, yeah, it's seriously ugly.  Restoring the original sg is ugly
-> too.  I definitely agree that we need some improvements here.
+On Mon, Jan 07, 2008 at 10:09:44AM +0800, Dave Young wrote:
+> 
+> Thanks for your comment, I rewrite it for 2.6.24-rc7 as a all-in-one
+> patch, please see following. Drop i2c maintainer and list in cc
+> because there's no changes about i2c in this patch:
+> 
+> Convert semaphore to mutex in struct class
 
-Erk, that's beyond ugly, into actual evil.
+Most of the non-driver core code should be converted to not use the
+lock in the class at all.  They should use a local lock instead.
 
-To make this general you need to find the last N 1-element chains (but SCSI 
-doesn't do this of course).  Oh the horror...
+So how about a patch series that removes the usage of the current
+semaphore from the different drivers, and then, a single patch that
+converts the semaphore to mutex in the class code, it should not touch
+anything outside of the drivers/base/ directory (not including the
+driver.h file.)
 
-I'd be remiss if I didn't mention that the sg_ring ata patches were 
-straightforward, and indescribably beautiful if compared to this!
+Sound reasonable?
 
-Thanks,
-Rusty.
+thanks,
+
+greg k-h
