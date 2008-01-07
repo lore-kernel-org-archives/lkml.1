@@ -1,82 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757270AbYAGQSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbYAGQYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757270AbYAGQSk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 11:18:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbYAGQSd
+	id S1756669AbYAGQYx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 11:24:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755369AbYAGQYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 11:18:33 -0500
-Received: from mail.daysofwonder.com ([213.186.49.53]:33862 "EHLO
-	mail.daysofwonder.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755314AbYAGQSc (ORCPT
+	Mon, 7 Jan 2008 11:24:45 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:56081 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754992AbYAGQYo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 11:18:32 -0500
-X-Greylist: delayed 1775 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Jan 2008 11:18:32 EST
-Subject: Strange freeze on 2.6.22 (deadlock?)
-From: Brice Figureau <brice+lklm@daysofwonder.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Mon, 07 Jan 2008 16:48:54 +0100
-Message-Id: <1199720934.11173.49.camel@localhost.localdomain>
+	Mon, 7 Jan 2008 11:24:44 -0500
+Date: Mon, 7 Jan 2008 08:22:37 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       hpa@zytor.com
+Subject: Re: [PATCH -mm/x86] revert i386: handle an initrd in highmem (Was
+ Re: 2.6.24-rc6-mm1)
+Message-Id: <20080107082237.595b266a.randy.dunlap@oracle.com>
+In-Reply-To: <20080107145609.GA26652@elte.hu>
+References: <20071222233056.d652743e.akpm@linux-foundation.org>
+	<20080107135038.GA19568@linux.vnet.ibm.com>
+	<alpine.LFD.0.99999.0801071453070.31637@localhost.localdomain>
+	<20080107145609.GA26652@elte.hu>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 7 Jan 2008 15:56:09 +0100 Ingo Molnar wrote:
 
-I'm seeing a strange complete server freeze/lock-up on an bi-Xeon HT
-amd64 server running standard debian 2.6.22 (and before that vanilla
-2.6.19.x and 2.6.20.x which exhibited the same issue).
+> 
+> * Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > On Mon, 7 Jan 2008, Dhaval Giani wrote:
+> > 
+> > > Hi Andrew, Ingo, Thomas, Peter,
+> > > 
+> > > x86: revert i386: handle an initrd in highmem
+> > > 
+> > > The patch caused a failure while booting a kexec kernel.
+> > > (http://lkml.org/lkml/2008/1/7/42 has the bisect details.)
+> > > 
+> > > The following patch reverts it.
+> > > 
+> > > Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> > 
+> > Thanks for tracking this down. I'll pull the patch from the x86 git 
+> > tree as well.
+> 
+> Dhaval, how about the other problem you had - do you have any guess 
+> what it might be related to?
+> 
+> i'm also wondering - what would be the easiest way to integrate kexec 
+> into an automated test environment. If i have a bzImage kernel, is kexec 
+> still supposed to work? Could i for example do a reboot into a new 
+> (kexec-enabled) kernel via kexec in essence?
 
-I'm only reporting it now, since I could get a full sysrq-t only this
-morning.
+My daily/nightly kernel test runs use kexec to boot the test kernel.
+Well, did thru 2.6.24-rc6-git9, but they fail after that.
+Hopefully this patch fixes things.
 
-The symptoms are that every 5 to 7 days, the server (which acts as a MX
-along with a few low traffic websites) locks-up. The ipmi watchdog is
-unable to reboot the server (and doesn't even trigger, since there is no
-evidence in the esmlog), the machine is still pingable. I can't ssh to
-it, but I can enter my login & password on a serial console, but no
-shell is started.
 
-Pressing sysrq-t produced the trace hosted here:
-http://www.daysofwonder.com/bug/crash-server1.txt.gz
-
-It happened one time when I was connected to the server through ssh and
-I could see that the load started to increase well above 100. It was
-then impossible to launch new process from the command-line (and I had
-to reboot manually).
-It happened also last week, and the server was stuck for about 6 hours.
-When I started investigating what was wrong, it slowly came back to life
-(with an avg 1-min load of more than 1500, and tons of cron processes
-running in parallel).
-
-I'm not really familiar with kernel development so I can't really find
-the issue in the aforementioned trace output.
-What I think is that for some reason there is a race/deadlock that
-finally prevents new processes to really start (which in turns produces
-the high load).
-
-What seems suspect in the aforementioned trace is:
- *) lot of processes stacktrace ends in __mod_timer+0xc3/0xd3
-which seems to be this line from kernel/timer.c
-
-415	timer->expires = expires;
-416	internal_add_timer(base, timer);
--->	spin_unlock_irqrestore(&base->lock, flags);
-
-419	return ret;
-420  }
-
- *) lot of processes stacktrace ends in __mutex_lock_slowpath and/or zone_statistics
-
-Anyway, I will soon reboot to a 2.6.23.x to see if that symptom
-persists.
-More information (config, server specs) are available on request.
-
-I'm not subscribed to the list, so please CC: me for any anwser.
-Many thanks,
--- 
-Brice Figureau <brice+lklm@daysofwonder.com>
-
+---
+~Randy
