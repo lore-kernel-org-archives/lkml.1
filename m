@@ -1,47 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756948AbYAGUpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759212AbYAGUpr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756948AbYAGUpb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 15:45:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758147AbYAGUpF
+	id S1759212AbYAGUpr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 15:45:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758942AbYAGUpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 15:45:05 -0500
-Received: from ns.suse.de ([195.135.220.2]:33471 "EHLO mx1.suse.de"
+	Mon, 7 Jan 2008 15:45:35 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38208 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758122AbYAGUpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 15:45:04 -0500
-To: David Miller <davem@davemloft.net>
-Cc: ebiederm@xmission.com, bcrl@kvack.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: regression: sysctl_check changes in 2.6.24 are O(n) resulting in slow creation of 10000 network interfaces
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080106220307.GU28570@kvack.org>
-	<m1ir26ktqi.fsf@ebiederm.dsl.xmission.com>
-	<20080106.231040.222338659.davem@davemloft.net>
-Date: Mon, 07 Jan 2008 21:45:02 +0100
-In-Reply-To: <20080106.231040.222338659.davem@davemloft.net> (David Miller's message of "Sun\, 06 Jan 2008 23\:10\:40 -0800 \(PST\)")
-Message-ID: <p73wsqlqsa9.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	id S1758931AbYAGUpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 15:45:33 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Martin Bligh <mbligh@mbligh.org>
+Subject: Re: change SCSI owner in bugzilla
+Date: Mon, 7 Jan 2008 21:47:51 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, bugme-admin@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, Peter Osterlund <petero2@telia.com>
+References: <20080106161635.GL2082@does.not.exist> <47828CC7.7060106@mbligh.org>
+In-Reply-To: <47828CC7.7060106@mbligh.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801072147.53011.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller <davem@davemloft.net> writes:
->
->> So is this a bug report telling me that there are users with
->> 10k or 100k interfaces that care.  So we need to fix sysctl.
->
-> Unquestionably, we do, it's a major regression.
->
-> People create thousands of VLAN devices, as one of many examples, all
-> the time.
+On Monday, 7 of January 2008, Martin Bligh wrote:
+> 
+> > Date: Sun, 06 Jan 2008 10:00:33 -0600
+> > From: James Bottomley <James.Bottomley@HansenPartnership.com>
+> > To: Adrian Bunk <bunk@kernel.org>
+> > Cc: Ingo Molnar <mingo@elte.hu>, Peter Osterlund <petero2@telia.com>,
+> > 	Linus Torvalds <torvalds@linux-foundation.org>,
+> > 	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+> > 	Andrew Morton <akpm@linux-foundation.org>,
+> > 	Al Viro <viro@ftp.linux.org.uk>
+> > Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
+> > 
+> > On Sun, 2008-01-06 at 17:45 +0200, Adrian Bunk wrote:
+> >> Bugzilla for tracking and mailing lists for discussing are not mutually 
+> >> exclusive.
+> > 
+> > I didn't ever say they were.  What I said was we needed the work flow on
+> > the mailing lists.
+> > 
+> >> What about asking the Bugzilla admins to set the default owner of new 
+> >> SCSI bugs to linux-scsi@vger.kernel.org?
+> >>
+> >> This way all SCSI bugs submitted in Bugzilla will automatically be 
+> >> forwarded to the linux-scsi mailing list.
+> > 
+> > Well, I've only been asking for this for the last two years.  If you can
+> > actually make it happen, I'd be eternally grateful.
+> 
+> OK, changed it.
+> 
+> I don't think this is the right way to do it, as you'll get email for
+> every change to every bug until it's assigned, but seeing as that's what
+> you asked for, and we can't seem to get vger to take bounces, I guess
+> it'll do.
+> 
+> Let me know if (a) it works OK, and (b) you want the driver ones changed
+> over as well.
 
-It might be an reasonable option to just stop creating sysctl entries
-for interfaces after some threshold. I presume people who have that
-many interfaces will mostly work through {default,all}/* anyways.
+BTW, would that be possible to forward messages sent to
+power-management_other@kernel-bugs.osdl.org to
+linux-pm@lists.linux-foundation.org?
 
-I think that would be a better option than to complicate sysctl.c
-for this uncommon case.
-
--Andi
+Rafael
