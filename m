@@ -1,81 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757623AbYAGQDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757269AbYAGQKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757623AbYAGQDT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 11:03:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbYAGQDI
+	id S1757269AbYAGQKh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 11:10:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754708AbYAGQK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 11:03:08 -0500
-Received: from server19320154104.serverpool.info ([193.201.54.104]:38806 "EHLO
-	hauke-m.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754820AbYAGQDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 11:03:06 -0500
-Message-ID: <47824D25.5090005@hauke-m.de>
-Date: Mon, 07 Jan 2008 17:02:45 +0100
-From: Hauke Mehrtens <hauke@hauke-m.de>
+	Mon, 7 Jan 2008 11:10:29 -0500
+Received: from proxy2.bredband.net ([195.54.101.72]:60993 "EHLO
+	proxy2.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754416AbYAGQK2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 11:10:28 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AplZAC/dgUdT48OPQWdsb2JhbACBWI4yAQEBHhmBIpY2
+Message-ID: <47824A6F.9090503@coderworld.net>
+Date: Mon, 07 Jan 2008 16:51:11 +0100
+From: Richard Jonsson <richie@coderworld.net>
 User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-To: "Luis R. Rodriguez" <mcgrof@winlab.rutgers.edu>
-CC: Michael Wu <flamingice@sourmilk.net>, linux-kernel@vger.kernel.org,
-       Stefano Brivio <stefano.brivio@polimi.it>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-Subject: Re: rtl8187 rate control doesn't work
-References: <477F9890.5050107@hauke-m.de> <43e72e890801051354v280c0ceeo78790bb5f1f45314@mail.gmail.com>
-In-Reply-To: <43e72e890801051354v280c0ceeo78790bb5f1f45314@mail.gmail.com>
-X-Enigmail-Version: 0.95.2
-OpenPGP: id=95C58E7B;
-	url=http://www.hauke-m.de/pgp-pubkey.asc
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: =?ISO-8859-1?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: forcedeth: MAC-address reversed on resume from suspend
+References: <477BFC71.7090002@coderworld.net> <20080102214843.GA19224@rhlx01.hs-esslingen.de> <20080102234209.GA10831@does.not.exist> <20080104034357.GA2113@atjola.homenet> <b4292e150801061349v3b54ffc0vfed75dbcb83daf9b@mail.gmail.com> <20080107014638.GA4170@atjola.homenet>
+In-Reply-To: <20080107014638.GA4170@atjola.homenet>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is an other Problem.
-
-iwconfig shows me "Bit Rate=1 Mb/s" the hole time, but I'm able to
-download with an average of 440K/s as wget says.
-
-It's with PID rate control algorithm.
-
---
-
-Hauke Mehrtens
-
-Luis R. Rodriguez wrote:
-> On Jan 5, 2008 9:47 AM, Hauke Mehrtens <hauke@hauke-m.de> wrote:
->> Hi
+Björn Steinbrink skrev:
+> On 2008.01.06 19:49:49 -0200, Adolfo R. Brandes wrote:
+>>  I have this forcedeth MAC address reversal problem when suspending
+>> on 2 distinct boxes.  I can confirm Steinbrink's patch fixes the
+>> problem on only one of them:
 >>
->> Now the compat-wireless-2.6 package is working and I get an Internet
->> connection with my rtl8187 based card. (It's on an ASUS P5B Deluxe)
+>> 00:0a.0 Bridge: nVidia Corporation CK804 Ethernet Controller (rev f3)
 >>
->> I used the compat-wireless-2.6 package for this log, but I have the same
->> problem with the version integrated in kernel 2.6.24-rc6
+>>  On the other one the problem persists:
 >>
->> The Access Point is some rooms away so the signal is not the best at my
->> location. When starting the device with no fixed rate it wants to
->> connect with 54MBit/s and as iwconfig says it was successful but I can't
->> ping any device in the wireless LAN. (it's the first part of the log)
->> The rate will not be slowed down it stays fixed at 54MBit/s.
->>
->> After starting the device with rate fixed to 11M I get a connection to
->> the Access Point and iwconfig's output looks the same as without fixed
->> rate, but I'm able to ping the all devices in the network. (second part
->> of the log)
->> Now it slows down the rate to 1MBit/s
+>> 00:14.0 Bridge: nVidia Corporation MCP51 Ethernet Controller (rev a1)
 > 
-> Seems to be the new PID rate control algorithm. I believe Stephano
-> (CC'd) was sending some patches for this. Please try changing in
-> config.mk
+> Thanks. Leaves me pretty clueless though. Especially since it worked for
+> Richard, who also has a MCP51. In a private mail, you said that you had
+> hardcoded the mac address in the source. Any chance that you applied the
+> patch on your modified sources and didn't get it right?
 > 
-> From this value:
-> 
-> CONFIG_MAC80211_RC_DEFAULT=pid
-> 
-> To this:
-> 
-> CONFIG_MAC80211_RC_DEFAULT=simple
-> 
-> and let us know how that goes. Oh and linux-kernel is the wrong list
-> to use, please just use linux-wireless for future e-mails.
-> 
->   Luis
+> thanks,
+> Björn
+In case it matters, the revision of my device differs from Adolfo's:
+00:14.0 Bridge: nVidia Corporation MCP51 Ethernet Controller (rev a3)
+
+/ Richard
