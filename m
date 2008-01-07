@@ -1,91 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758009AbYAGSZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbYAGScF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758009AbYAGSZV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 13:25:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755633AbYAGSZI
+	id S1757303AbYAGScF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 13:32:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbYAGSbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 13:25:08 -0500
-Received: from sabe.cs.wisc.edu ([128.105.6.20]:50137 "EHLO sabe.cs.wisc.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754430AbYAGSZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 13:25:06 -0500
-Message-ID: <47826E63.9070008@cs.wisc.edu>
-Date: Mon, 07 Jan 2008 12:24:35 -0600
-From: Mike Christie <michaelc@cs.wisc.edu>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 7 Jan 2008 13:31:55 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:53274 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751489AbYAGSby (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 13:31:54 -0500
+Date: Mon, 7 Jan 2008 10:31:53 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       bunk@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: Linux 2.6.24-rc7 Build-Failure at __you_cannot_kmalloc_that_much
+In-Reply-To: <20080107100733.3655f74f.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0801071014450.22642@schroedinger.engr.sgi.com>
+References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org>
+ <478200A4.4090707@linux.vnet.ibm.com> <20080107100733.3655f74f.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Hannes Reinecke <hare@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: Multipath failover handling (Was: Re: 2.6.24-rc3-mm1)
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>	 <47462F3C.3040700@googlemail.com>	 <20071122201250.f957e280.akpm@linux-foundation.org>	 <47466B5D.90607@googlemail.com>	 <20071126221509.8f437b61.akpm@linux-foundation.org>	 <1197390783.3812.19.camel@localhost.localdomain> <47624649.3040209@suse.de>	 <1197642405.3154.71.camel@localhost.localdomain> <478231B7.7080508@suse.de> <1199728667.3126.32.camel@localhost.localdomain>
-In-Reply-To: <1199728667.3126.32.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
->>> However, there's still devloss_tmo to consider ... even in
->>> multipath, I don't think you want to signal path failure until
->>> devloss_tmo has fired otherwise you'll get too many transient up/down
->>> events which damage performance if the array has an expensive failover
->>> model.
->>>
->> Yes. But currently we have a very high failover latency as we always have
->> to wait for the requeued commands to time-out.
->> Hence we're damaging performance on arrays with inexpensive failover.
-> 
-> If it's a either/or choice between the two that's showing our current
-> approach to multi-path is broken.
-> 
->>> The other problem is what to do with in-flight commands at the time the
->>> link went down.  With your current patch, they're still stuck until they
->>> time out ... surely there needs to be some type of recovery mechanism
->>> for these?
->>>
->> Well, the in-flight commands are owned by the HBA driver, which should
->> have the proper code to terminate / return those commands with the
->> appriopriate codes. They will then be rescheduled and will be caught
->> like 'normal' IO requests.
-> 
-> But my point is that if a driver goes blocked, those commands will be
-> forced to wait the blocked timeout anyway, so your proposed patch does
-> nothing to improve the case for dm anyway ... you only avoid commands
-> stuck when a device goes blocked if by chance its request queue was
-> empty.
+On Mon, 7 Jan 2008, Andrew Morton wrote:
 
+> > : undefined reference to `__you_cannot_kmalloc_that_much'
 
-How about my patches to use new transport error values and make the 
-iscsi and fc behave the same.
+There is also a kernel.org bugzilla for this at
 
-The problem I think Hannes and I are both trying to solve is this:
+http://bugzilla.kernel.org/show_bug.cgi?id=9669
+For some reason my adds to this do not show up.
 
-1. We do not want to wait for dev_loss_tmo seconds for failover.
+In both cases we have a 
 
-2. The FC drivers can hook into fast_io_fail_tmo related callouts and 
-with that set that tmo to a very low value like a couple of seconds if 
-they are using multipath, so failovers are fast. However, there is a bug 
-with where when the fast_io_fail_tmo fires requests that made it to the 
-driver get failed and returned to the multipath layer, but commands in 
-the blocked request queue are stuck in there until dev_loss_tmo fires.
+k(z/m)alloc(sizeof(*pointer), ...)
 
-With my patches here (need to be rediffed and for FC I need to handle 
-JamesS's comments about not using a new field for the fast_fail_timeout 
-state bit):
+that is for some reason failing. I guess what happens is that the function 
+in which this occurs is too complex for gcc 3.2. Thus it stops constant 
+folding the sizeof(*pointer) in the complex inline-if-cascade that SLAB 
+needs to determine the cache and does not eliminate the 
+__you_cannot_kmalloc_that_much branch().
 
-http://marc.info/?l=linux-scsi&m=117399843216280&w=2
-http://marc.info/?l=linux-scsi&m=117399544112073&w=2
-http://marc.info/?l=linux-scsi&m=117399844316771&w=2
-http://marc.info/?l=linux-scsi&m=117400203324693&w=2
-http://marc.info/?l=linux-scsi&m=117400203324690&w=2
+SLUB in that case just puts a series of if comparisions in the code. This 
+means compilation does not fail but a large amount of code is generated.
 
-For FC we can use the fast_io_fail_tmo for fast failovers, and commands 
-will not get stuck in a blocked queue for dev_loss_tmo seconds because 
-when the fast_io_fail_tmo fires the target's queues are unblocked and 
-fc_remote_port_chkready() ready kicks in (iSCSI does the same with the 
-patches in the links). And with the patches if multipath-tools is 
-sending its path testing IO it will get a DID_TRANSPORT_* error code 
-that it can use to make a decent path failing decision with.
+We could replace the __you_cannot_kmalloc_that_much() with a BUG() 
+statement so we have the same effect in SLAB?
+
