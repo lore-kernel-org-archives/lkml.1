@@ -1,82 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbYAGRVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbYAGRVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757119AbYAGRVO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 12:21:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYAGRU7
+	id S1758117AbYAGRVc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 12:21:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755633AbYAGRVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 12:20:59 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:39608 "EHLO mail.screens.ru"
+	Mon, 7 Jan 2008 12:21:20 -0500
+Received: from ns2.suse.de ([195.135.220.15]:52160 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751368AbYAGRU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 12:20:58 -0500
-Date: Mon, 7 Jan 2008 20:22:39 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Christian Kujau <lists@nerdbynature.de>, linux-kernel@vger.kernel.org,
-       jfs-discussion@lists.sourceforge.net,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: 2.6.24-rc6: possible recursive locking detected
-Message-ID: <20080107172239.GA14880@tv-sign.ru>
-References: <alpine.DEB.0.999999.0801032349190.4821@sheep.housecafe.de> <200801040006.47979.rjw@sisk.pl> <20080104083049.GC22803@elte.hu> <20080105071205.GA28936@gondor.apana.org.au> <1199552016.31975.41.camel@lappy> <1199552476.31975.45.camel@lappy>
-Mime-Version: 1.0
+	id S1751489AbYAGRVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 12:21:19 -0500
+Date: Mon, 7 Jan 2008 09:20:09 -0800
+From: Greg KH <gregkh@suse.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: James.Bottomley@hansenpartnership.com, dbrownell@users.sourceforge.net,
+       Dave Young <hidave.darkstar@gmail.com>, linux-scsi@vger.kernel.org,
+       a.zummo@towertech.it, peterz@infradead.org, cbou@mail.ru,
+       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
+       krh@redhat.com, stern@rowland.harvard.edu, rtc-linux@googlegroups.com,
+       spi-devel-general@lists.sourceforge.net,
+       linux1394-devel@lists.sourceforge.net, dwmw2@infradead.org,
+       davem@davemloft.net, jarkao2@gmail.com
+Subject: Re: [PATCH 0/7] convert semaphore to mutex in struct class
+Message-ID: <20080107172009.GA25943@suse.de>
+References: <20080103055019.GA4885@darkstar.te-china.tietoenator.com> <20080107020944.GA3637@darkstar.te-china.tietoenator.com> <20080107084528.GA8365@suse.de> <200801070101.15168.david-b@pacbell.net> <478227D5.8050402@s5r6.in-berlin.de> <20080107154404.GA10880@suse.de> <47825DC1.3090102@s5r6.in-berlin.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1199552476.31975.45.camel@lappy>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <47825DC1.3090102@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/05, Peter Zijlstra wrote:
->
-> Since EP_MAX_POLLWAKE_NESTS < MAX_LOCKDEP_SUBCLASSES we could perhaps do
-> something like:
->
->   wake_up_nested(..., wake_nests);
+On Mon, Jan 07, 2008 at 06:13:37PM +0100, Stefan Richter wrote:
+> It's already in the driver core to the most part.  It remains to be seen
+> what is less complicated in the end:  Transparent mutex-protected list
+> accesses provided by driver core (requires the iterator), or all the
+> necessary locking done by the drivers themselves (requires some more
+> lock-taking but perhaps fewer lock instances overall in the drivers, and
+> respective redefinitions and documentation of the driver core API).
 
-I think this would be the most correct change. But I wonder if it is possible
-to do something more generic (but otoh more stupid/hackish and less safe).
+I favor changing the driver core api and doing this kind of thing there.
+It keeps the drivers simpler and should hopefully make their lives
+easier.
 
-Consider this "just for illustration" patch,
+> Semi off-topic:  What about struct device.sem?  Is there any chance to
+> rip this out of the driver core and let drivers serialize everything?  I
+> suppose not...
 
---- t/kernel/lockdep.c	2007-11-09 12:57:31.000000000 +0300
-+++ t/kernel/lockdep.c	2008-01-07 19:43:50.000000000 +0300
-@@ -1266,10 +1266,13 @@ check_deadlock(struct task_struct *curr,
- 	struct held_lock *prev;
- 	int i;
- 
--	for (i = 0; i < curr->lockdep_depth; i++) {
-+	for (i = curr->lockdep_depth; --i >= 0; ) {
- 		prev = curr->held_locks + i;
- 		if (prev->class != next->class)
- 			continue;
-+
-+		if (prev->trylock == -1)
-+			return 2;
- 		/*
- 		 * Allow read-after-read recursion of the same
- 		 * lock class (i.e. read_lock(lock)+read_lock(lock)):
--------------------------------------------------------------------------
+See the previous long threads about this very topic, that is what caused
+this class.sem patches :)
 
-Now,
+thanks,
 
-	// trylock == -1
-	#define	spin_mark_nested(l)	\
-		lock_acquire(&(l)->dep_map, 0, -1, 0, 2, _THIS_IP_)
-	#define	spin_unmark_nested(l)	\
-		lock_release(&(l)->dep_map, 1, _THIS_IP_)
-
-and ep_poll_safewake() can do:
-
-	/* Do really wake up now */
-	spin_mark_nested(&wq->lock);
-	wake_up(wq);
-	spin_unmark_nested(&wq->lock);
-
-Possible?
-
-Oleg.
-
+greg k-h
