@@ -1,56 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755912AbYAHWSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbYAHWSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755912AbYAHWSh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 17:18:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755191AbYAHWRE
+	id S1755446AbYAHWSz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 17:18:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbYAHWRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 17:17:04 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35773 "EHLO mx2.mail.elte.hu"
+	Tue, 8 Jan 2008 17:17:07 -0500
+Received: from quasar.osc.edu ([192.148.249.15]:53830 "EHLO quasar.osc.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753086AbYAHWRB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 17:17:01 -0500
-Date: Tue, 8 Jan 2008 23:16:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: travis@sgi.com, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <ak@suse.de>, Jack Steiner <steiner@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/10] percpu: Per cpu code simplification V3
-Message-ID: <20080108221646.GC21482@elte.hu>
-References: <20080108021142.585467000@sgi.com> <20080108090702.GB27671@elte.hu> <Pine.LNX.4.64.0801081102450.2228@schroedinger.engr.sgi.com>
+	id S1751974AbYAHWRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 17:17:05 -0500
+X-Greylist: delayed 465 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Jan 2008 17:17:05 EST
+Date: Tue, 8 Jan 2008 17:09:18 -0500
+From: Pete Wyckoff <pw@osc.edu>
+To: FUJITA Tomonori <tomof@acm.org>
+Cc: deepakrc@gmail.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH] bsg : Add support for io vectors in bsg
+Message-ID: <20080108220918.GA9484@osc.edu>
+References: <Pine.LNX.4.64.0801042137350.7836@localhost> <200801050501.m0551LFB030667@mbox.iij4u.or.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801081102450.2228@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200801050501.m0551LFB030667@mbox.iij4u.or.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Christoph Lameter <clameter@sgi.com> wrote:
-
-> On Tue, 8 Jan 2008, Ingo Molnar wrote:
+tomof@acm.org wrote on Sat, 05 Jan 2008 14:01 +0900:
+> From: Deepak Colluru <deepakrc@gmail.com>
+> Subject: [PATCH] bsg : Add support for io vectors in bsg
+> Date: Fri, 4 Jan 2008 21:47:34 +0530 (IST)
 > 
-> > i had the patch below for v2, it's still needed (because i didnt 
-> > apply the s390/etc. bits), right?
+> > From: Deepak Colluru <deepakrc@gmail.com>
+> > 
+> > Add support for io vectors in bsg.
+> > 
+> > Signed-off-by: Deepak Colluru <deepakrc@gmail.com>
+> > ---
+> >   bsg.c |   52 +++++++++++++++++++++++++++++++++++++++++++++++++---
+> >   1 file changed, 49 insertions(+), 3 deletions(-)
 > 
-> Well the patch really should go through mm because it is a change that 
-> covers multiple arches. I think testing with this is fine. I think 
-> Mike has diffed this against Linus tree so this works but will now 
-> conflict with the modcopy patch already in mm.
+> Thanks, but I have to NACK this.
+> 
+> You can find the discussion about bsg io vector support and a similar
+> patch in linux-scsi archive. I have no plan to support it since it
+> needs the compat hack.
 
-well we cannot really ack it for x86 inclusion without having tested it 
-through, so it will stay in x86.git for some time. That approach found a 
-few problems with v1 already. In any case, v3 is looking pretty good so 
-far - and it's cool stuff - i'm all for unifying/generalizing arch code.
+You may recall this is one of the patches I need to use bsg with OSD
+devices.  OSDs overload the SCSI buffer model to put mulitple fields
+in dataout and datain.  Some is user data, but some is more
+logically created by a library.  Memcpying in userspace to wedge all
+the segments into a single buffer is painful, and is required both
+on outgoing and incoming data buffers.
 
-	Ingo
+There are two approaches to add iovec to bsg.
+
+1.  Define a new sg_iovec_v4 that uses constant width types.  Both
+    32- and 64-bit userspace would hand arrays of this to the kernel.
+
+    struct sg_v4_iovec {
+	    __u64 iov_base;
+	    __u32 iov_len;
+	    __u32 __pad1;
+    };
+
+    Old patch here:  http://article.gmane.org/gmane.linux.scsi/30461/
+
+
+2.  Do as Deepak has done, using the existing sg_iovec, but then
+    also work around the compat issue.  Old v3 sg_iovec is:
+
+    typedef struct sg_iovec /* same structure as used by readv() Linux system */
+    {                       /* call. It defines one scatter-gather element. */
+	void __user *iov_base;      /* Starting address  */
+	size_t iov_len;             /* Length in bytes  */
+    } sg_iovec_t;
+
+    Old patch here:  http://article.gmane.org/gmane.linux.scsi/30460/
+
+I took another look at the compat approach, to see if it is feasible
+to keep the compat handling somewhere else, without the use of #ifdef
+CONFIG_COMPAT and size-comparison code inside bsg.c.  I don't see how.
+The use of iovec is within a write operation on a char device.  It's
+not amenable to a compat_sys_ or a .compat_ioctl approach.
+
+I'm partial to #1 because the use of architecture-independent fields
+matches the rest of struct sg_io_v4.  But if you don't want to have
+another iovec type in the kernel, could we do #2 but just return
+-EINVAL if the need for compat is detected?  I.e. change
+dout_iovec_count to dout_iovec_length and do the math?
+
+		-- Pete
