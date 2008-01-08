@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688AbYAHSxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbYAHSyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754688AbYAHSxS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 13:53:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbYAHSxF
+	id S1755292AbYAHSyb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 13:54:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbYAHSyY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 13:53:05 -0500
-Received: from fk-out-0910.google.com ([209.85.128.191]:35200 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751538AbYAHSxE (ORCPT
+	Tue, 8 Jan 2008 13:54:24 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40306 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751643AbYAHSyX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 13:53:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=ZaoGJ7GXlAvlkfmzPEjCiAM/tq1CioHoYcRYLrnLRvHleTLYGsZ2s1lNmkpasDaGkfGRbIHNz/ZpXMJB5tkly5Kg1cDK+0id2TWcB6C4ualAMYHhYJTqvKmPRwHOjiG/7kXL6Kb2ruTPHguyzHavH1AnBbM4OXtR4lU9PRy2rl0=
-Date: Tue, 8 Jan 2008 21:52:56 +0300
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       paolo.ciarrocchi@gmail.com, gorcunov@gmail.com
-Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
-Message-ID: <20080108185255.GA4627@martell.zuzino.mipt.ru>
-References: <20080108164015.GC31504@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080108164015.GC31504@one.firstfloor.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+	Tue, 8 Jan 2008 13:54:23 -0500
+Date: Tue, 8 Jan 2008 18:51:20 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "David P. Reed" <dpreed@reed.com>
+Cc: Ondrej Zary <linux@rainbow-software.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Rene Herman <rene.herman@keyaccess.nl>, Bodo Eggert <7eggert@gmx.de>,
+       Christer Weinigel <christer@weinigel.se>, Ingo Molnar <mingo@elte.hu>,
+       Paul Rolland <rol@as2917.net>, Pavel Machek <pavel@ucw.cz>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, rol@witbe.net
+Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
+ I/O delay override.
+Message-ID: <20080108185120.3ff7ed18@lxorguk.ukuu.org.uk>
+In-Reply-To: <4783C4A6.9060402@reed.com>
+References: <9BdU5-1YW-9@gated-at.bofh.it>
+	<200801081810.58904.linux@rainbow-software.org>
+	<4783B1B2.6070005@reed.com>
+	<200801081838.16241.linux@rainbow-software.org>
+	<4783C4A6.9060402@reed.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 08, 2008 at 05:40:15PM +0100, Andi Kleen wrote:
-> Here's a proposal for some useful code transformations the kernel janitors
-> could do as opposed to running checkpatch.pl.
-> 
-> Most ioctl handlers still running implicitely under the big kernel 
-> lock (BKL). But long term Linux is trying to get away from that. There is a new
-> ->unlocked_ioctl entry point that allows ioctls without BKL, but the code
-> needs to be explicitely converted to use this.
-> 
-> The first step of getting rid of the BKL is typically to make it visible
-> in the source. Once it is visible people will have incentive to eliminate it.
-> That is how the BKL conversion project for Linux long ago started too.
-> On 2.0 all system calls were still implicitely BKL and in 2.1 the
-> lock/unlock_kernel()s were moved into the various syscall functions and then
-> step by step eliminated.
-> 
-> And now it's time to do the same for all the ioctls too.
-> 
-> So my proposal is to convert the ->ioctl handlers all over the tree 
-> to ->unlocked_ioctl with explicit lock_kernel()/unlock_kernel.
+> There is no need to use io writes to supposedly/theoretically "unused 
+> ports" to make drivers work on any bus.
 
-Thanks, Andi! I think it'd very useful change.
+The natsemi docs here say otherwise. I trust them not you.
+
+> don't remember writing a driver for the 3com devices - probably didn't, 
+> because 3Com's cards were expensive at the time.
+
+3C503 needs delays for some setups according to the docs. I can't tell
+you how the 3COM drivers did it as that was a different bit of 3com to
+the bit I worked for. From the rest of 3Com I saw probably utterly
+vilely ;)
+
+Later 3Com stuff was either sane (3c509 etc) or used whacko intel chips
+(3c507/27) which had their own special breed of insanity to replace
+address setup delay bugs.
+
+> In any case, Linux *did* adopt this port 80 strategy - I'm sure all 
+> concerned thought it was frightfully clever at the time.  Linus 
+> expressed his skepticism in the comments in io.h.  The problem is to 
+> safely move away from it toward a proper strategy 
+
+No. The problem is that certain people, unfortunately those who know
+nothing about ISA related bus systems, keep trying to confuse ISA delay
+logic with core chip logic and end up trying to solve both a problem and a
+non-problem in one, creating a nasty mess in the process.
+
+Alan
