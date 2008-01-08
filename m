@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754720AbYAHWx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756328AbYAHWyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754720AbYAHWx1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 17:53:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751779AbYAHWxT
+	id S1756328AbYAHWyV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 17:54:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbYAHWyB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 17:53:19 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60922 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751371AbYAHWxS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 17:53:18 -0500
-Date: Tue, 8 Jan 2008 23:52:49 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Kyle McMartin <kyle@mcmartin.ca>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] call sysrq_timer_list_show from a workqueue
-Message-ID: <20080108225249.GC5578@elte.hu>
-References: <20080108063113.GA21287@fattire.cabal.ca> <200801082250.06828.rusty@rustcorp.com.au> <20080108155119.GA26114@elte.hu> <200801090948.43594.rusty@rustcorp.com.au>
+	Tue, 8 Jan 2008 17:54:01 -0500
+Received: from py-out-1112.google.com ([64.233.166.177]:59423 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751779AbYAHWyA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 17:54:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XodQQps9C1z0fZi4RrF3lm4fiCSwkciDm56LXOEcekFtXq5+8+/r228SmNM1pj1w5HlAhyoX6RTjANADEqur9fMazdrW8VboU+2NVhLAkdosUuN2UxGRXZncodTI0+fUVssFnusfvExLGDJif6nbBr2NexQzvRpHnGEQ7vDrEUU=
+Message-ID: <7b9198260801081453s198af7efycc7c35668c65eaf1@mail.gmail.com>
+Date: Tue, 8 Jan 2008 22:53:59 +0000
+From: "Tom Spink" <tspink@gmail.com>
+To: "Rick Jones" <rick.jones2@hp.com>
+Subject: Re: AF_UNIX MSG_PEEK bug?
+Cc: "Brent Casavant" <bcasavan@sgi.com>, netdev@vger.kernel.org,
+       "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+In-Reply-To: <4783FBD6.1000004@hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200801090948.43594.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <alpine.BSF.1.00.0801081556580.24286@pkunk.americas.sgi.com>
+	 <4783FBD6.1000004@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 08/01/2008, Rick Jones <rick.jones2@hp.com> wrote:
+> Potential bugs notwithstanding, given that this is a STREAM socket, and
+> as such shouldn't (I hope, or I'm eating toes for dinner again) have
+> side effects like tossing the rest of a datagram, why are you using
+> MSG_PEEK?  Why not simply read the N bytes of the message that will have
+> the message length with a normal read/recv, and then read that many
+> bytes in the next call?
+>
+> rick jones
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
+Hi,
 
-> On Wednesday 09 January 2008 02:51:19 Ingo Molnar wrote:
-> > cool :-)
-> >
-> > finally we have a _really_ sane symbols subsystem. Kudos :)
-> 
-> Actually, the interface is horribly scattered.  It'd be nice for 
-> someone to go through and look at what the minimum we actually need is 
-> and come up with a system to organize them.
-> 
-> BTW, do you want this fix in 2.6.24?
+Where in the code is the message length being sent across the socket?
 
-hm, i'm not sure it should go into v2.6.24 without first being exposed 
-in v2.6.25 for some time - symbol lookup has been historically a bit 
-fragile (hopefully this will change now) , and the worst thing that can 
-happen during a crash printout is for the debug code to regress. No 
-strong feelings though.
-
-	Ingo
+-- 
+Regards,
+Tom Spink
+University of Edinburgh
