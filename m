@@ -1,70 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbYAHLFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755578AbYAHLQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754721AbYAHLFa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 06:05:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbYAHLFW
+	id S1755578AbYAHLQO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 06:16:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYAHLQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 06:05:22 -0500
-Received: from mail.gmx.net ([213.165.64.20]:42075 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751502AbYAHLFU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 06:05:20 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19mWJthJdBmGDTw3u+H2CHsxCXi9y60kLyeYr2G+X
-	bEGn1qzaUfNNEC
-Subject: Re: [vm] writing to UDF DVD+RW (/dev/sr0) while under memory
-	pressure: box ==> doorstop
-From: Mike Galbraith <efault@gmx.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080106122954.d8f04c98.akpm@linux-foundation.org>
-References: <1199447212.4529.13.camel@homer.simson.net>
-	 <1199612533.4384.54.camel@homer.simson.net>
-	 <1199642470.3927.12.camel@homer.simson.net>
-	 <20080106122954.d8f04c98.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 08 Jan 2008 12:05:16 +0100
-Message-Id: <1199790316.4094.57.camel@homer.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Tue, 8 Jan 2008 06:16:01 -0500
+Received: from mx2-2.mail.ru ([194.67.23.122]:10662 "EHLO mx2.mail.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750857AbYAHLQA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 06:16:00 -0500
+Date: Tue, 8 Jan 2008 14:15:53 +0300
+From: Evgeniy Dushistov <dushistov@mail.ru>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] SCSI bug fixes for 2.6.24-rc3
+Message-ID: <20080108111549.GA30832@rain>
+Mail-Followup-To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-scsi <linux-scsi@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <1195989865.3427.16.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1195989865.3427.16.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sun, 2008-01-06 at 12:29 -0800, Andrew Morton wrote:
-> On Sun, 06 Jan 2008 19:01:10 +0100 Mike Galbraith <efault@gmx.de> wrote:
+On Sun, Nov 25, 2007 at 01:24:25PM +0200, James Bottomley wrote:
+> This is a bit of a rash of bug fixes.  The qla1280 is actually a bug fix
+> (in spite of the title---it's actually correcting an existing problem
+> with the qla1280 implementation of accessors that broke the current
+> driver).
 > 
-> > 
-> > On Sun, 2008-01-06 at 10:42 +0100, Mike Galbraith wrote:
-> > > FWIW, here's box having same seizure writing to /dev/pktcdvd/sr0.
-> > 
-> > Ugh, horrid device IO ==> horrid VM AFIKT.  I'll continue rummaging, but
-> > I wonder, am I doing something _so_ stupid as to warrant zero response?
-> > 
+
+Recently I build last Linus's git tree, and got:
+‘req_cnt’ is used uninitialized in this function,
+and see bellow
+> The patch is available here:
 > 
-> Copying linux-mm might have helped.  Bad time of year, too.
+> master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
 > 
-> >From the traces it looks like all IO has stopped and everyone is waiting
-> (directly or indirectly) for certain IO completions.  Is that really true,
-> or is IO still dribbling along?
+> The short changelog is:
+...
+> Jes Sorensen (1):
+>       qla1280: convert to use the data buffer accessors
 > 
-> >From the kswapd0 trace it would appear that UDF is doing synchronous writes
-> (udf_update_inode->sync_dirty_buffer) which perhaps is making things
-> mightily slow.
+...
+>  scsi/qla1280.c         |  387 +++++++++++++++++++++----------------------------
+...
+>  	/* Calculate number of entries and segments required. */
+> -	req_cnt = 1;
+> 
 
-This is a pretty uninteresting thread except for the VM aspect, but
-rather than leave it dangling, I'll laugh at my naivety and close.
+Initilization of req_cnt was removed, but in this function
+there are places like 
+req_cnt += (seg_cnt - 4) / 7;
+or
+req_cnt++;
+This is should be so?
 
-Seeks on DVD drives are apparently far FAR more horrible that I ever
-imagined, so writing to a filesystem on a DVD+RW in effect constitutes
-the stupid thing I was worried about above.  Make an image, populate it,
-write it instead... sure to be a truckload faster, and due to the VM
-connection, much safer too.  Oh well.
-
-	EOT
-
-	-Mike
+-- 
+/Evgeniy
 
