@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756303AbYAHJQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbYAHJSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756303AbYAHJQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 04:16:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbYAHJQp
+	id S1756723AbYAHJSW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 04:18:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbYAHJSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 04:16:45 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50965 "EHLO mx3.mail.elte.hu"
+	Tue, 8 Jan 2008 04:18:11 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37701 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750711AbYAHJQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 04:16:43 -0500
-Date: Tue, 8 Jan 2008 10:15:50 +0100
+	id S1754024AbYAHJSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 04:18:09 -0500
+Date: Tue, 8 Jan 2008 10:17:42 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: akpm@linux-foundation.org, lkml <linux-kernel@vger.kernel.org>,
-       Jim Keniston <jkenisto@us.ibm.com>, mhiramat@redhat.com,
-       davem@davemloft.net, hskinnemoen@atmel.com
-Subject: Re: [PATCH] Kprobes: Add kprobes smoke tests that run on boot
-Message-ID: <20080108091550.GC27671@elte.hu>
-References: <20080108063334.GA29385@in.ibm.com>
+To: Kyle McMartin <kyle@mcmartin.ca>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] call sysrq_timer_list_show from a workqueue
+Message-ID: <20080108091742.GD27671@elte.hu>
+References: <20080108063113.GA21287@fattire.cabal.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080108063334.GA29385@in.ibm.com>
+In-Reply-To: <20080108063113.GA21287@fattire.cabal.ca>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,36 +36,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
+(Rusty Cc:-ed)
 
-> From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+* Kyle McMartin <kyle@mcmartin.ca> wrote:
+
+> handle_sysrq can be called from interrupt context. 
+> sysrq_timer_list_show eventually starts poking at module symbols which 
+> take the module mutex.
 > 
-> Here is a quick and naive smoke test for kprobes. This is intended to 
-> just verify if some unrelated change broke the *probes subsystem. It 
-> is self contained, architecture agnostic and isn't of any great use by 
-> itself.
+> so instead, let's just kick off a workqueue.
 > 
-> This needs to be built in the kernel and runs a basic set of tests to 
-> verify if kprobes, jprobes and kretprobes run fine on the kernel. In 
-> case of an error, it'll print out a message with a "BUG" prefix.
+> [ doesn't happen on my laptop with the keyboard, but does when
+>   triggered from /proc/sysrq-trigger ]
 
-yay! Picked this up into x86.git for testing.
-
-small detail: i moved the kernel/Makefile change to another spot (see 
-below), this way it integrates without rejects with rcu-preempt and with 
-the kgdb changes.
+hmmm. This really shouldnt be happening - how come we hit the module 
+mutex on simple things like symbol lookups?
 
 	Ingo
-
-Index: linux-x86.q/kernel/Makefile
-===================================================================
---- linux-x86.q.orig/kernel/Makefile
-+++ linux-x86.q/kernel/Makefile
-@@ -43,6 +43,7 @@ obj-$(CONFIG_CPUSETS) += cpuset.o
- obj-$(CONFIG_CGROUP_NS) += ns_cgroup.o
- obj-$(CONFIG_IKCONFIG) += configs.o
- obj-$(CONFIG_STOP_MACHINE) += stop_machine.o
-+obj-$(CONFIG_KPROBES_SANITY_TEST) += test_kprobes.o
- obj-$(CONFIG_AUDIT) += audit.o auditfilter.o
- obj-$(CONFIG_AUDITSYSCALL) += auditsc.o
- obj-$(CONFIG_AUDIT_TREE) += audit_tree.o
