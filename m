@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762630AbYAHRB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762304AbYAHREx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762630AbYAHRB6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 12:01:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbYAHRBu
+	id S1762304AbYAHREx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 12:04:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755153AbYAHREo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 12:01:50 -0500
-Received: from mail.suse.de ([195.135.220.2]:60091 "EHLO mx1.suse.de"
+	Tue, 8 Jan 2008 12:04:44 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:41839 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754247AbYAHRBt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 12:01:49 -0500
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de, hpa@zytor.com
-Subject: Re: [patch 2/2] Use the stack frames to get exact stack-traces for CONFIG_FRAMEPOINTER on x86-64
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080107211437.5ba42f18@laptopd505.fenrus.org>
-Date: Tue, 08 Jan 2008 18:01:48 +0100
-In-Reply-To: <20080107211437.5ba42f18@laptopd505.fenrus.org> (Arjan van de Ven's message of "Mon\, 7 Jan 2008 21\:14\:37 -0800")
-Message-ID: <p73fxx8qmir.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	id S1753277AbYAHREn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 12:04:43 -0500
+Message-ID: <4783ACD3.5080700@redhat.com>
+Date: Tue, 08 Jan 2008 12:03:15 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       David Miller <davem@davemloft.net>, hskinnemoen@atmel.com,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, tony.luck@intel.com,
+       paulus@samba.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCHv2] kprobes: Introduce is_kprobe_fault()
+References: <1199737486.7666.12.camel@brick>
+In-Reply-To: <1199737486.7666.12.camel@brick>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven <arjan@infradead.org> writes:
+Hi,
 
-> Subject: Use the stack frames to get exact stack-traces for CONFIG_FRAMEPOINTER on x86-64
-> From: Arjan van de Ven <arjan@linux.intel.com>
->
-> x86 32 bit already has this feature: This patch uses the stack frames with
+Thank you for good work!
 
-You would also need to add frame pointers to all .S functions, otherwise
-it will stop there.
+Harvey Harrison wrote:
+> Use a central is_kprobe_fault() inline in kprobes.h to remove all
+> of the arch-dependant, practically identical implementations in
+> avr32, ia64, powerpc, s390, sparc64, and x86.
+> 
+> avr32 was the only arch without the preempt_disable/enable pair
+> in its notify_page_fault implementation.
+> 
+> This uncovered a possible bug in the s390 version as that purely
+> copied the x86 version unconditionally passing 14 as the trapnr
+> rather than the error_code parameter.
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 
-> frame pointer into an exact stack trace, by following the frame pointer.
-> This only affects kernels built with the CONFIG_FRAME_POINTER config option
-> enabled, and greatly reduces the amount of noise in oopses.
 
-Well it's still the wrong way to do this. The correct way is to reintegrate
-Jan's dwarf2 unwinder. Incidentially that code supports frame pointer
-unwinding too, but of course with the same limits as described above.
+I tested it on x86-64.
 
-> The code tries to use the frame pointers to do a backtrace, but if it smells
-> iffy or invalid, falls back to the traditional way of printing backtraces,
-> to make sure that at least some useful backtrace is created.
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
 
-That will likely happen in most non trivial cases (interrupts/exceptions etc.)
+-- 
+Masami Hiramatsu
 
--Andi
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
+
