@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759370AbYAHVVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759435AbYAHVWA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759370AbYAHVVn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 16:21:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757596AbYAHVOZ
+	id S1759435AbYAHVWA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 16:22:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756898AbYAHVRx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 16:14:25 -0500
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:46774 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757124AbYAHVOX (ORCPT
+	Tue, 8 Jan 2008 16:17:53 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:51049 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758419AbYAHVRv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 16:14:23 -0500
-Date: Tue, 8 Jan 2008 16:14:11 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, apw@shadowen.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] Deprecate checkpatch.pl --file
-Message-ID: <20080108211411.GQ27800@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Daniel Walker <dwalker@mvista.com>, Sam Ravnborg <sam@ravnborg.org>,
-	Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-	apw@shadowen.org, akpm@linux-foundation.org
-References: <20080108161403.GA11632@basil.nowhere.org> <1199811033.1756.29.camel@imap.mvista.com> <20080108175347.GA25968@uranus.ravnborg.org> <1199815279.1756.35.camel@imap.mvista.com> <20080108182048.GM27800@mit.edu> <1199817208.1756.47.camel@imap.mvista.com> <20080108192142.GA26491@uranus.ravnborg.org> <1199823584.12972.1.camel@imap.mvista.com>
+	Tue, 8 Jan 2008 16:17:51 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=hLfah7hMKPP6EOLHjOldF+D95kMQTTw0tCz/C6BvxzVsp7IRYr2bbuOn6z29UaMu1
+	7ZhNigINf/T2sOSQo7hyw==
+Message-ID: <532480950801081317y324ed146p25f08ed50ffd1911@mail.gmail.com>
+Date: Tue, 8 Jan 2008 13:17:42 -0800
+From: "Michael Rubin" <mrubin@google.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: Possible fix for lockup in drop_caches
+Cc: richard <richard@rsk.demon.co.uk>, den@openvz.org,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071222020611.9e4e78dd.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1199823584.12972.1.camel@imap.mvista.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+References: <1197893602.2866.13.camel@castor.localdomain>
+	 <20071222020611.9e4e78dd.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 08, 2008 at 12:19:44PM -0800, Daniel Walker wrote:
-> > But is discourage the creation of pure clean-up patches because it
-> > may have a disturbing effect on several other peoples work.
-> 
-> pure clean ups are _good_ patches , are they not?
-> 
+On Dec 22, 2007 2:06 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> Oh boy.  Do we really want to add all this stuff to JBD just for
+> drop_caches which is a silly root-only broken-in-22-other-ways thing?
+>
+> Michael, might your convert-inode-lists-to-tree patches eliminate the need
+> for taking inode_lock in drop_pagecache_sb()?  Probably not, as it uses an
+> rbtree.  It would have been possible if it was using a radix-tree, I
+> suspect..
 
-Not necessarily.  Whether or not it is requires common sense, and very
-often we get enthusiastic new-comers (some of them with very weak C
-programming skills :-) who might try to use checkpatch.pl.  So we
-can't assume that they will know when a pure clean-up patch is a good
-thing, and when it's a waste of everyone's time, including theirs.
-
-That's why I think the warning is a good thing.  It makes it more
-likely that this gets communicated to the enthusiastic, well-meaning,
-newcomer.  Someone who is more experienced and who knows how to
-determine whether some driver is ancient and not being worked on, and
-hence a pure clean-up patch won't be screwing up other developers,
-will know how to suppress the warning.  (OTOH, how important is it in
-the grand scheem of things to create or apply a pure clean-up patch on
-a patch that few people if any are looking at?)
-
-					- Ted
+You are correct. The rbtree will still req
+>
+> > -void __journal_unfile_buffer(struct journal_head *jh)
+> > +void __journal_unfile_buffer(struct journal_head *jh,
+> > +             struct buffer_head **dirty_bh)
+> >  {
+> > -     __journal_temp_unlink_buffer(jh);
+> > +     __journal_temp_unlink_buffer(jh, dirty_bh);
+> >       jh->b_transaction = NULL;
+> >  }
+>
+> I suspect the code would end up simpler if __journal_unfile_buffer() were
+> to take an additional ref on the bh which it placed at *dirty_bh.
+>
+> Callers of __journal_unfile_buffer() could then call
+>
+> void handle_dirty_bh(struct buffer_head *bh)
+> {
+>         if (bh) {
+>                 jbd_mark_buffer_dirty(bh);
+>                 put_bh(bh);
+>         }
+> }
+>
+> ?
+>
