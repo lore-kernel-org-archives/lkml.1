@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760695AbYAHQHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760817AbYAHQHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760695AbYAHQHT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 11:07:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753008AbYAHQHD
+	id S1760817AbYAHQHx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 11:07:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760722AbYAHQHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 11:07:03 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4264 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751039AbYAHQHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 11:07:00 -0500
-Date: Tue, 8 Jan 2008 16:06:45 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Oeser <ioe-lkml@rameria.de>, Andi Kleen <andi@firstfloor.org>,
-       Bernd Schubert <bernd-schubert@gmx.de>, linux-kernel@vger.kernel.org
-Subject: Re: sleep before boot panic
-Message-ID: <20080108160645.GA4574@ucw.cz>
-References: <200801061908.43010.bernd-schubert@gmx.de> <p731w8ts70k.fsf@bingen.suse.de> <200801080717.03467.ioe-lkml@rameria.de> <47831D97.7040908@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47831D97.7040908@zytor.com>
-User-Agent: Mutt/1.5.9i
+	Tue, 8 Jan 2008 11:07:43 -0500
+Received: from main.gmane.org ([80.91.229.2]:35504 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753008AbYAHQHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 11:07:41 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Tuomo Valkonen <tuomov@iki.fi>
+Subject: The ext3 way of journalling
+Date: Tue, 8 Jan 2008 16:07:27 +0000 (UTC)
+Message-ID: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi>
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: jolt.modeemi.cs.tut.fi
+User-Agent: slrn/0.9.8.1pl1 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> >>>I just switched to libata (pata) on my laptop and the 
-> >>>immediate panic made it impossible to figure out why 
-> >>>my boot partition wasn't available.
-> >>>After applying this little patch I could check boot 
-> >>>printk output and then saw everything was properly 
-> >>>recognized and only scsi-disk support was missing.
-> >>The correct fix would be to make scroll back (and 
-> >>sysrq) still work
-> >>after panic.  It's a little more complicated, but 
-> >>possible (essentially
-> >>it needs a polled keyboard handler)
-> >
-> >Customer: "This system could not find the root fs."
-> >Support: "Oh, yeah, just connect a (USB-) keyboard and 
-> >scroll back."
-> >
-> >Hmm, device detection works after panic?
-> >
-> >I really like the "soft" panic better, where you still 
-> >can operate the kernel debugging features, but just 
-> >have no user space supporting it.
+The ext3 journalling code can be summarised as:
 
-ACK. 'scheduling in interrupt' is very different from 'cant mount
-root'.
+    superblock->last_checked = random();
+    sync(superblock)
 
-> Of course, if we'd been using kinit, "soft panic" would 
-> have been done exclusively in userspace...
+I hate it: every time Linux crashes, e.g. due to power failure, it takes
+almost an hour to boot, because the kernel has decided to corrupt the 
+superblock to indicate that it's been years since last file system 
+check. And obviously the crappy init system provides no simple way to 
+stop the checking, to put it in the background, or whatever. The FOSS 
+herd is totally concentrated on creating a WIMP idiot box -- a cheap 
+plastic clone of Windows -- instead of fixing such fundamental problems.
+Windows, by the way, boots like a blaze compared to woeful Linux crap
+(even without the very definition of pure shit: udev, which the crap
+known as Linux practically requires these days).
 
-What's the status of kinit, btw?
-							Pavel
+A partial contributor to the slow fsck process is:
+
+    hde: ST3160023AS, ATA DISK drive
+    hde: applying pessimistic Seagate errata fix
+
+    # hdparm -t /dev/hde
+    /dev/hde:
+     Timing buffered disk reads:   48 MB in  3.01 seconds =  15.96 MB/sec
+
+Thank you very much. The disk worked perfectly well without that "fix"
+in earlier (2.2 or was it some 2.4?) kernels and, in Windows too. That
+raw timing is worse than the _encrypted_ transfer rate I get from other
+disks.
+
+One should always indicate the version of software when complaining. Well,
+
+    $ uname -a
+    Linux noi 2.6.14 #1 PREEMPT Sun Oct 30 20:18:48 EET 2005 i686 GNU/Linux
+
+I've tried upgrading, and failed: the megatonne monolith with a gazillion
+hidden options (and totally worthless make oldconfig) is impossible to
+compile these days, and the distros' stock kernel are utter and total crap
+that load drivers in wrong order etc., and are difficult to configure
+(demanding crap that demands udev to edit their initrds). Not to even
+speak of the udev-demanding scsi-mapping insanity of SATA etc. devices
+these days.
+
+I've had it with Linux. It's no longer for power users. It's so complex
+that it's only for idiot users that are content with the shoddy defaults,
+and (paid) developers.
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Tuomo
+
