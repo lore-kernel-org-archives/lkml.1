@@ -1,159 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758060AbYAHVPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbYAHVQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758060AbYAHVPw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 16:15:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbYAHVKo
+	id S1755374AbYAHVQU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 16:16:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755144AbYAHVKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 16:10:44 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47731 "EHLO mx1.redhat.com"
+	Tue, 8 Jan 2008 16:10:48 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47740 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754648AbYAHVKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 16:10:42 -0500
-Message-Id: <20080108210009.730672701@redhat.com>
+	id S1755045AbYAHVKr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 16:10:47 -0500
+Message-Id: <20080108210022.149379441@redhat.com>
 References: <20080108205939.323955454@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 08 Jan 2008 15:59:50 -0500
+Date: Tue, 08 Jan 2008 15:59:58 -0500
 From: Rik van Riel <riel@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org, Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: [patch 11/19] Non-reclaimable page statistics
-Content-Disposition: inline; filename=noreclaim-01.2-report-nonreclaimable-memory.patch
+Subject: [patch 19/19] cull non-reclaimable anon pages from the LRU at fault time
+Content-Disposition: inline; filename=noreclaim-07-cull-nonreclaimable-anon-pages-in-fault-path.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 V2 -> V3:
-+ rebase to 23-mm1 atop RvR's split LRU series
++ rebase to 23-mm1 atop RvR's split lru series.
 
 V1 -> V2:
-	no changes
++  no changes
 
-Report non-reclaimable pages per zone and system wide.
+Optional part of "noreclaim infrastructure"
 
-Note:  may want to track/report some specific reasons for 
-nonreclaimability for deciding when to splice the noreclaim
-lists back to the normal lru.  That will be tricky,
-especially in shrink_active_list(), where we'd need someplace
-to save the per page reason for non-reclaimability until the
-pages are dumped back onto the noreclaim list from the pagevec.
+In the fault paths that install new anonymous pages, check whether
+the page is reclaimable or not using lru_cache_add_active_or_noreclaim().
+If the page is reclaimable, just add it to the active lru list [via
+the pagevec cache], else add it to the noreclaim list.  
 
-Note:  my tests indicate that NR_NORECLAIM and probably the
-other LRU stats aren't being maintained properly--especially
-with large amounts of mlocked memory and the mlock patch in
-this series installed.  Can't be sure of this, as I don't 
-know why the pages are on the noreclaim list. Needs further
-investigation.
+This "proactive" culling in the fault path mimics the handling of
+mlocked pages in Nick Piggin's series to keep mlocked pages off
+the lru lists.
 
-Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
+Notes:
 
-Index: linux-2.6.24-rc6-mm1/mm/page_alloc.c
+1) This patch is optional--e.g., if one is concerned about the
+   additional test in the fault path.  We can defer the moving of
+   nonreclaimable pages until when vmscan [shrink_*_list()]
+   encounters them.  Vmscan will only need to handle such pages
+   once.
+
+2) I moved the call to page_add_new_anon_rmap() to before the test
+   for page_reclaimable() and thus before the calls to
+   lru_cache_add_{active|noreclaim}(), so that page_reclaimable()
+   could recognize the page as anon, thus obviating, I think, the
+   vma arg to page_reclaimable() for this purpose.  Still needed for
+   culling mlocked pages in fault path [later patch].
+   TBD:   I think this reordering is OK, but the previous order may
+   have existed to close some obscure race?
+
+3) With this and other patches above installed, any anon pages
+   created before swap is added--e.g., init's anonymous memory--
+   will be declared non-reclaimable and placed on the noreclaim
+   LRU list.  Need to add mechanism to bring such pages back when
+   swap becomes available.
+
+Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+Signed-off-by:  Rik van Riel <riel@redhat.com>
+
+Index: linux-2.6.24-rc6-mm1/mm/memory.c
 ===================================================================
---- linux-2.6.24-rc6-mm1.orig/mm/page_alloc.c	2008-01-02 12:37:58.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/mm/page_alloc.c	2008-01-02 12:38:03.000000000 -0500
-@@ -1899,12 +1899,20 @@ void show_free_areas(void)
- 	}
+--- linux-2.6.24-rc6-mm1.orig/mm/memory.c	2008-01-02 12:37:38.000000000 -0500
++++ linux-2.6.24-rc6-mm1/mm/memory.c	2008-01-02 15:14:31.000000000 -0500
+@@ -1665,7 +1665,7 @@ gotten:
+ 		set_pte_at(mm, address, page_table, entry);
+ 		update_mmu_cache(vma, address, entry);
+ 		SetPageSwapBacked(new_page);
+-		lru_cache_add_active_anon(new_page);
++		lru_cache_add_active_or_noreclaim(new_page, vma);
+ 		page_add_new_anon_rmap(new_page, vma, address);
  
- 	printk("Active_anon:%lu active_file:%lu inactive_anon%lu\n"
--		" inactive_file:%lu dirty:%lu writeback:%lu unstable:%lu\n"
-+		" inactive_file:%lu"
-+//TODO:  check/adjust line lengths
-+#ifdef CONFIG_NORECLAIM
-+		" noreclaim:%lu"
-+#endif
-+		" dirty:%lu writeback:%lu unstable:%lu\n"
- 		" free:%lu slab:%lu mapped:%lu pagetables:%lu bounce:%lu\n",
- 		global_page_state(NR_ACTIVE_ANON),
- 		global_page_state(NR_ACTIVE_FILE),
- 		global_page_state(NR_INACTIVE_ANON),
- 		global_page_state(NR_INACTIVE_FILE),
-+#ifdef CONFIG_NORECLAIM
-+		global_page_state(NR_NORECLAIM),
-+#endif
- 		global_page_state(NR_FILE_DIRTY),
- 		global_page_state(NR_WRITEBACK),
- 		global_page_state(NR_UNSTABLE_NFS),
-@@ -1931,6 +1939,9 @@ void show_free_areas(void)
- 			" inactive_anon:%lukB"
- 			" active_file:%lukB"
- 			" inactive_file:%lukB"
-+#ifdef CONFIG_NORECLAIM
-+			" noreclaim:%lukB"
-+#endif
- 			" present:%lukB"
- 			" pages_scanned:%lu"
- 			" all_unreclaimable? %s"
-@@ -1944,6 +1955,9 @@ void show_free_areas(void)
- 			K(zone_page_state(zone, NR_INACTIVE_ANON)),
- 			K(zone_page_state(zone, NR_ACTIVE_FILE)),
- 			K(zone_page_state(zone, NR_INACTIVE_FILE)),
-+#ifdef CONFIG_NORECLAIM
-+			K(zone_page_state(zone, NR_NORECLAIM)),
-+#endif
- 			K(zone->present_pages),
- 			zone->pages_scanned,
- 			(zone_is_all_unreclaimable(zone) ? "yes" : "no")
-Index: linux-2.6.24-rc6-mm1/mm/vmstat.c
+ 		/* Free the old page.. */
+@@ -2133,7 +2133,7 @@ static int do_anonymous_page(struct mm_s
+ 		goto release;
+ 	inc_mm_counter(mm, anon_rss);
+ 	SetPageSwapBacked(page);
+-	lru_cache_add_active_anon(page);
++	lru_cache_add_active_or_noreclaim(page, vma);
+ 	page_add_new_anon_rmap(page, vma, address);
+ 	set_pte_at(mm, address, page_table, entry);
+ 
+@@ -2285,10 +2285,10 @@ static int __do_fault(struct mm_struct *
+ 			entry = maybe_mkwrite(pte_mkdirty(entry), vma);
+ 		set_pte_at(mm, address, page_table, entry);
+ 		if (anon) {
+-                        inc_mm_counter(mm, anon_rss);
++			inc_mm_counter(mm, anon_rss);
+ 			SetPageSwapBacked(page);
+-                        lru_cache_add_active_anon(page);
+-                        page_add_new_anon_rmap(page, vma, address);
++			lru_cache_add_active_or_noreclaim(page, vma);
++			page_add_new_anon_rmap(page, vma, address);
+ 		} else {
+ 			inc_mm_counter(mm, file_rss);
+ 			page_add_file_rmap(page);
+Index: linux-2.6.24-rc6-mm1/mm/swap_state.c
 ===================================================================
---- linux-2.6.24-rc6-mm1.orig/mm/vmstat.c	2008-01-02 12:37:48.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/mm/vmstat.c	2008-01-02 12:38:03.000000000 -0500
-@@ -690,6 +690,9 @@ static const char * const vmstat_text[] 
- 	"nr_active_anon",
- 	"nr_inactive_file",
- 	"nr_active_file",
-+#ifdef CONFIG_NORECLAIM
-+	"nr_noreclaim",
-+#endif
- 	"nr_anon_pages",
- 	"nr_mapped",
- 	"nr_file_pages",
-Index: linux-2.6.24-rc6-mm1/drivers/base/node.c
-===================================================================
---- linux-2.6.24-rc6-mm1.orig/drivers/base/node.c	2008-01-02 12:37:38.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/drivers/base/node.c	2008-01-02 12:38:03.000000000 -0500
-@@ -52,6 +52,9 @@ static ssize_t node_read_meminfo(struct 
- 		       "Node %d Inactive(anon): %8lu kB\n"
- 		       "Node %d Active(file):   %8lu kB\n"
- 		       "Node %d Inactive(file): %8lu kB\n"
-+#ifdef CONFIG_NORECLAIM
-+		       "Node %d Noreclaim:    %8lu kB\n"
-+#endif
- #ifdef CONFIG_HIGHMEM
- 		       "Node %d HighTotal:      %8lu kB\n"
- 		       "Node %d HighFree:       %8lu kB\n"
-@@ -76,6 +79,9 @@ static ssize_t node_read_meminfo(struct 
- 		       nid, node_page_state(nid, NR_INACTIVE_ANON),
- 		       nid, node_page_state(nid, NR_ACTIVE_FILE),
- 		       nid, node_page_state(nid, NR_INACTIVE_FILE),
-+#ifdef CONFIG_NORECLAIM
-+		       nid, node_page_state(nid, NR_NORECLAIM),
-+#endif
- #ifdef CONFIG_HIGHMEM
- 		       nid, K(i.totalhigh),
- 		       nid, K(i.freehigh),
-Index: linux-2.6.24-rc6-mm1/fs/proc/proc_misc.c
-===================================================================
---- linux-2.6.24-rc6-mm1.orig/fs/proc/proc_misc.c	2008-01-02 12:37:38.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/fs/proc/proc_misc.c	2008-01-02 12:38:03.000000000 -0500
-@@ -162,6 +162,9 @@ static int meminfo_read_proc(char *page,
- 		"Inactive(anon): %8lu kB\n"
- 		"Active(file):   %8lu kB\n"
- 		"Inactive(file): %8lu kB\n"
-+#ifdef CONFIG_NORECLAIM
-+		"Noreclaim:    %8lu kB\n"
-+#endif
- #ifdef CONFIG_HIGHMEM
- 		"HighTotal:      %8lu kB\n"
- 		"HighFree:       %8lu kB\n"
-@@ -194,6 +197,9 @@ static int meminfo_read_proc(char *page,
- 		K(global_page_state(NR_INACTIVE_ANON)),
- 		K(global_page_state(NR_ACTIVE_FILE)),
- 		K(global_page_state(NR_INACTIVE_FILE)),
-+#ifdef CONFIG_NORECLAIM
-+		K(global_page_state(NR_NORECLAIM)),
-+#endif
- #ifdef CONFIG_HIGHMEM
- 		K(i.totalhigh),
- 		K(i.freehigh),
+--- linux-2.6.24-rc6-mm1.orig/mm/swap_state.c	2008-01-02 12:37:52.000000000 -0500
++++ linux-2.6.24-rc6-mm1/mm/swap_state.c	2008-01-02 15:14:31.000000000 -0500
+@@ -300,7 +300,10 @@ struct page *read_swap_cache_async(swp_e
+ 			/*
+ 			 * Initiate read into locked page and return.
+ 			 */
+-			lru_cache_add_anon(new_page);
++			if (!page_reclaimable(new_page, vma))
++				lru_cache_add_noreclaim(new_page);
++			else
++				lru_cache_add_anon(new_page);
+ 			swap_readpage(NULL, new_page);
+ 			return new_page;
+ 		}
 
 -- 
 All Rights Reversed
