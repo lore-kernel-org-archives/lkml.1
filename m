@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756052AbYAHDeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083AbYAHDjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756052AbYAHDeo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 22:34:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbYAHDeh
+	id S1755083AbYAHDjU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 22:39:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753038AbYAHDjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 22:34:37 -0500
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:41497 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752777AbYAHDeg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 22:34:36 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=vhgcBLPYR541tQm5MdBHKiLsC2RmshLOm0Zdry0QKaHbN6qyTb+bWguTLCptLfFH17raYdq3Hq1qROHgLK5rRYnOa73DLrOwgo2Rx6sYYQBvVxGIgN8GAGYRqI/NVAnhvinzLhCsDsGCywM2PwoCQKUNfPy860x9e+/I3PvK23M=  ;
-X-YMail-OSG: 8BkxmtYVM1kTN6aj5msxe523XscPOeauyeNYFaZgsbvJdZDEKjrs_8QKIsTDzS6082eP1BACtw--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: free_pages_check
-Date: Tue, 8 Jan 2008 14:34:14 +1100
-User-Agent: KMail/1.9.5
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Adrian Bunk" <bunk@stusta.de>, LKML <linux-kernel@vger.kernel.org>
-References: <86802c440801071843p583f390as53f8b600622b93b2@mail.gmail.com>
-In-Reply-To: <86802c440801071843p583f390as53f8b600622b93b2@mail.gmail.com>
+	Mon, 7 Jan 2008 22:39:13 -0500
+Received: from lixom.net ([66.141.50.11]:50322 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752858AbYAHDjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 22:39:12 -0500
+Date: Mon, 7 Jan 2008 21:48:24 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][POWERPC] Workaround for iommu page alignment (#2)
+Message-ID: <20080108034824.GA7983@lixom.net>
+References: <1199742359.6734.14.camel@pasglop> <1199748862.6734.20.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801081434.14723.nickpiggin@yahoo.com.au>
+In-Reply-To: <1199748862.6734.20.camel@pasglop>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 08 January 2008 13:43, Yinghai Lu wrote:
-> wonder why free_pages_check mm/page_alloc.c is using bit OR than logical OR
->
-> @@ -450,9 +450,9 @@ static inline void __free_one_page(struc
->
->  static inline int free_pages_check(struct page *page)
->  {
-> -       if (unlikely(page_mapcount(page) |
-> -               (page->mapping != NULL)  |
-> -               (page_count(page) != 0)  |
-> +       if (unlikely(page_mapcount(page) ||
-> +               (page->mapping != NULL)  ||
-> +               (page_count(page) != 0)  ||
->                 (page->flags & (
->                         1 << PG_lru     |
->                         1 << PG_private |
+On Tue, Jan 08, 2008 at 10:34:22AM +1100, Benjamin Herrenschmidt wrote:
+> powerpc: Workaround for iommu page alignment
+> 
+> Our iommu page size is currently always 4K. That means with our current
+> code, drivers may do a dma_map_sg() of a 64K page and obtain a dma_addr_t
+> that is only 4K aligned.
+> 
+> This works fine in most cases except some infiniband HW it seems, where
+> they tell the HW about the page size and it ignores the low bits of the
+> DMA address.
+> 
+> This works around it by making our IOMMU code enforce a PAGE_SIZE alignment
+> for mappings of objects that are page aligned in the first place and whose
+> size is larger or equal to a page.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+> And this version actually does what the comment says (I had forgotten
+> to quilt ref... a common mistake).
 
-Because the positive case is extremely rare, so there is no benefit (nor
-any correctness requirement) for short-circuit evaluation, and we don't
-want to have all the branches that it involves. I think it is 3 more
-conditional jumps.
+And sloppy of me to not catch it. Anyway:
+
+Acked-by: Olof Johansson <olof@lixom.net>
+
+I wonder how long until there's a device that has some other < PAGE_SIZE
+alignment bug^Wrequirement that we'll need to meet too. :(
+
+
+-Olof
+
