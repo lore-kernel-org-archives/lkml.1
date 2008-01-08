@@ -1,54 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756545AbYAHUct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496AbYAHUj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756545AbYAHUct (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 15:32:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbYAHUcj
+	id S1754496AbYAHUj6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 15:39:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbYAHUjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 15:32:39 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:38519 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751006AbYAHUci (ORCPT
+	Tue, 8 Jan 2008 15:39:48 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:37664 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750715AbYAHUjr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 15:32:38 -0500
-Date: Tue, 8 Jan 2008 20:32:36 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Pekka Paalanen <pq@iki.fi>
-Cc: linux-kernel@vger.kernel.org, jbeulich@novell.com, proski@gnu.org
-Subject: Re: Replacement for page fault notifiers?
-Message-ID: <20080108203235.GA772@infradead.org>
-References: <20080108210638.5c9e093a@daedalus.pq.iki.fi>
-MIME-Version: 1.0
+	Tue, 8 Jan 2008 15:39:47 -0500
+Date: Tue, 8 Jan 2008 21:42:14 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, gorcunov@gmail.com
+Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
+Message-ID: <20080108204214.GA2117@one.firstfloor.org>
+References: <20080108164015.GC31504@one.firstfloor.org> <4d8e3fd30801081158j3e7292d0i939776342015b12d@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080108210638.5c9e093a@daedalus.pq.iki.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <4d8e3fd30801081158j3e7292d0i939776342015b12d@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 08, 2008 at 09:06:38PM +0200, Pekka Paalanen wrote:
-> - Is there anything coming to replace register_page_fault_notifier()?
+> I grepped and tried to do what you suggested.
 
-no.
+First a quick question: how would you rate your C knowledge? Did you
+ever write a program yourself? 
 
-> - Has someone found another way to accomplish the same without patching
-> the kernel?
+My proposal assumes that you have at least basic C knowledge.
 
-no.
+> The first file that git grep reported was:
+> arch/arm/common/rtctime.c:static const struct file_operations rtc_fops = {
 
-> - Should I start writing a patch to bring back the notifiers, based on
-> the commit that removed them?
+It's probably better to only do that on files which you can easily compile.
+For ARM you would need a cross compiler.
 
-no.
+> 
+> So I cooked up the following patch (probably mangled, just to give you
+> a rough idea of what I did):
+> diff --git a/arch/arm/common/rtctime.c b/arch/arm/common/rtctime.c
+> index bf1075e..19dedb5 100644
+> --- a/arch/arm/common/rtctime.c
+> +++ b/arch/arm/common/rtctime.c
+> @@ -189,13 +189,16 @@ static int rtc_ioctl(struct inode *inode, struct
+> file *file, unsigned int cmd,
+>  		if (ret)
+>  			break;
+>  		ret = copy_to_user(uarg, &alrm.time, sizeof(tm));
+> -		if (ret)
+> +		if (ret) {
+> +			unlock_kernel();
+>  			ret = -EFAULT;
 
-> People started to complain to me that mmio-trace does not compile for
-> 2.6.24. At least the Nouveau project is a regular user of mmio-trace
-> for reverse-engineering, and the tool should be easy to use. Therefore
-> I would prefer not to force casual contributors to patch their kernels
-> as it might be too much for some. I am hoping that 2.6.25, if not
-> 2.6.24, would contain a mechanism to accomplish what I need.
+In this case it would be better to just put the unlock_kernel() directly
+before the single return. You only need to sprinkle them all over when
+the function has multiple returns. Or then change the flow to only
+have a single return, but that would be slightly advanced.
 
-Please make mmio tracing generic enough so it works for every device and
-submit it for inclusion as a config option.
+
+> -		if (ret)
+> +		if (ret) {
+> +			unlock_kernel();
+>  			ret = -EFAULT;
+> +		}
+>  		break;
+> 
+>  	default:
+> @@ -329,15 +340,18 @@ static int rtc_fasync(int fd, struct file *file, int on)
+>  	return fasync_helper(fd, file, on, &rtc_async_queue);
+>  }
+> 
+> -static const struct file_operations rtc_fops = {
+> +static long rtc_fioctl(struct file_operations rtc_fops)
+> +{
+> +	lock_kernel();
+
+No the lock_kernel() of course has to be in the function, not in the structure
+definition which does not contain any code.
+
+Also the _operations structure stays the same (except for .ioctl -> .unlocked_ioctl); 
+only the the ioctl function prototype changes.
+
+
+> Am I'm working in the right direction or should I completely redo the patch?
+
+I would suggest to only work on files that compile. e.g. do a
+
+make allyesconfig
+make -j$[$(grep -c processor /proc/cpuinfo)*2] &1 |tee LOG             (will probably take a long time) 
+
+first and then only modify files when are mentioned in "LOG" 
+
+-Andi
