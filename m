@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbYAHXtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754228AbYAHXvF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753902AbYAHXtz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 18:49:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbYAHXtq
+	id S1754228AbYAHXvF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 18:51:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbYAHXuy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 18:49:46 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:34587 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751231AbYAHXtp (ORCPT
+	Tue, 8 Jan 2008 18:50:54 -0500
+Received: from simmts5-qfe0.srvr.bell.ca ([206.47.199.163]:43382 "EHLO
+	simmts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751540AbYAHXux (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 18:49:45 -0500
-Date: Wed, 9 Jan 2008 00:52:12 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Russell Leidich <rml@google.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Torsten Kaiser <just.for.lkml@googlemail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       valdis.kletnieks@vt.edu, Tim Hockin <thockin@google.com>
-Subject: Re: [PATCH] AMD Thermal Interrupt Support
-Message-ID: <20080108235212.GE2117@one.firstfloor.org>
-References: <3f1a065b0801021312w6f823cbeh9ea6b73d2b0c46c8@mail.gmail.com> <64bb37e0801021333g3cccff81k68df75463e4a21d0@mail.gmail.com> <3f1a065b0801021350x7fd065fbj9680ce1a4f3c6538@mail.gmail.com> <20080102215433.GB13784@one.firstfloor.org> <3f1a065b0801041333x579d0a8fs9c5535f95dd56015@mail.gmail.com> <20080104222637.GA19248@one.firstfloor.org> <3f1a065b0801041653y77c27a8cvce703cb7d13e10a0@mail.gmail.com> <20080105132402.GA705@one.firstfloor.org> <3f1a065b0801051208y7e832e8ctda61f28e6328dec3@mail.gmail.com> <3f1a065b0801081542p6cca6249g35e83f7e1f450fbd@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3f1a065b0801081542p6cca6249g35e83f7e1f450fbd@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 8 Jan 2008 18:50:53 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgAAALqag0ecIvL+/2dsb2JhbAAIqWE
+Message-ID: <47840C57.6000304@gmail.com>
+Date: Tue, 08 Jan 2008 19:50:47 -0400
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       paolo.ciarrocchi@gmail.com, gorcunov@gmail.com, jgarzik@pobox.com,
+       linux-ide@vger.kernel.org
+Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
+References: <20080108164015.GC31504@one.firstfloor.org>
+In-Reply-To: <20080108164015.GC31504@one.firstfloor.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  ENTRY(thermal_interrupt)
-> -	apicinterrupt THERMAL_APIC_VECTOR,smp_thermal_interrupt
-> +	apicinterrupt THERMAL_APIC_VECTOR,smp_thermal_interrupt(%rip)
+Andi Kleen wrote:
+> Here's a proposal for some useful code transformations the kernel janitors
+> could do as opposed to running checkpatch.pl.
+> 
+<snip>
 
-Are you sure a * is not needed?  I would have thought it would jump
-to the variable instead of through it. But if it works it's ok for me.
+I notice that every driver in drivers/ata uses a .ioctl that points to
+ata_scsi_ioctl().  I could add the BKL to that function, and then change
+all of the drivers to .unlocked_ioctl, but I assume this would be a
+candidate to actually clean up by determining why the lock is needed and
+removing it if necessary.  Does anyone know off-hand the reason for
+needing the lock (I assume someone does or it wouldn't have survived
+this long)?  If the lock is absolutely required, then I can write the
+patch to add lock_kernel() and unlock_kernel().
 
-The rest of the patch looks ok to to me.
-
--Andi
+-- 
+Kevin Winchester
 
