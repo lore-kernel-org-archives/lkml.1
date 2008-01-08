@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbYAHW60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbYAHXCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756030AbYAHW60 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 17:58:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYAHW6R
+	id S1754741AbYAHXCR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 18:02:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbYAHXCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 17:58:17 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:55820 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752075AbYAHW6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 17:58:15 -0500
-Date: Tue, 8 Jan 2008 23:58:20 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
-       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
-Subject: Re: [patch 7/9] unprivileged mounts: allow unprivileged fuse mounts
-Message-ID: <20080108225820.GA9735@elf.ucw.cz>
-References: <20080108113502.184459371@szeredi.hu> <20080108113630.861045063@szeredi.hu> <20080108214625.GE5050@ucw.cz> <E1JCN9I-0004DB-DF@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1JCN9I-0004DB-DF@pomaz-ex.szeredi.hu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 8 Jan 2008 18:02:06 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:6294 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752268AbYAHXCD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 18:02:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=NevWX/4etxH1evCPkTVHj121izLhyuiHr5UDsfKrRTCwT2dgu80viKTji/27FlMS/Z+8CrGFK827i/DGjW4TLotDVr3kJnouT8ZeiX/InnqdnTZnC+t1GmsecyTDCl9dab9GD7LR/0CeiUVJfF0gG8rMDg5m9ELsiFUUp3e31wU=
+Subject: Re: [PATCHv2] kprobes: Introduce is_kprobe_fault()
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       David Miller <davem@davemloft.net>, hskinnemoen@atmel.com,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, tony.luck@intel.com,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <18307.64807.204087.375733@cargo.ozlabs.ibm.com>
+References: <1199737486.7666.12.camel@brick>
+	 <18307.64807.204087.375733@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Tue, 08 Jan 2008 15:02:04 -0800
+Message-Id: <1199833324.6424.12.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2008-01-08 23:42:20, Miklos Szeredi wrote:
-> > On Tue 2008-01-08 12:35:09, Miklos Szeredi wrote:
-> > > From: Miklos Szeredi <mszeredi@suse.cz>
-> > > 
-> > > Use FS_SAFE for "fuse" fs type, but not for "fuseblk".
-> > > 
-> > > FUSE was designed from the beginning to be safe for unprivileged users.  This
-> > > has also been verified in practice over many years.  In addition unprivileged
-> > 
-> > Eh? So 'kill -9 no longer works' and 'suspend no longer works' is not
-> > considered important enough to even mention?
+On Wed, 2008-01-09 at 09:45 +1100, Paul Mackerras wrote:
+> Harvey Harrison writes:
 > 
-> No.  Because in practice they don't seem to matter.  Also because
-> there's no way in which fuse could be done differently to address
-> these issues.
+> > Use a central is_kprobe_fault() inline in kprobes.h to remove all
+> > of the arch-dependant, practically identical implementations in
+> > avr32, ia64, powerpc, s390, sparc64, and x86.
 > 
-> The 'kill -9' thing is basically due to VFS level locking not being
-> interruptible.  It could be changed, but I'm not sure it's worth it.
+> I don't like the name "is_kprobe_fault" since the function actually
+> handles the fault - i.e. it does more than just tell the caller
+> whether this is a kprobes fault.  Something like
+> "handle_kprobes_fault" or "maybe_handle_kprobes_fault" would be
+> better IMO.
 
-Well, I believe it should be changed. "You need to mount /sys, then
-echo X to Y before kill -9 works" does not look nice... I agree it is
-not easy.
+Good point, I chose the name based simply on the usage pattern found
+in all the callers.  Of your suggestions I like handle_kprobes_fault
+better.
 
-> > 'updatedb no longer works' is not a problem?
-> 
-> I haven't seen any problems with updatedb, and haven't had any bug
-> reports about it either.
+How about check_kprobes_fault?  That seems to cover what you were
+getting at with maybe_handle_kprobes_fault but is shorter.  That
+also fits better with the !CONFIG_KPROBES case.
 
-Ok, I don't know much about FUSE. In current version, if user creates
-infinite maze and mounts it under ~, updatedb just does not enter it?
+Harvey
 
-> AFAIR there were two security vulnerabilities in fuse's history, one
-> of them an information leak in the kernel module, and the other one an
-> mtab corruption issue in the fusermount utility.  I don't think this
-> is such a bad track record.
 
-Not bad indeed. But I'd consider 'kill -9 not working' to be DoS
-vulnerability... and I'm woried about problems fuse + user mounts
-expose in other parts of system.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
