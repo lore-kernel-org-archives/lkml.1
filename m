@@ -1,42 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbYAHSdI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbYAHSe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754213AbYAHSdI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 13:33:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbYAHSc5
+	id S1754883AbYAHSe4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 13:34:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbYAHSet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 13:32:57 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:1051 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751472AbYAHSc4 (ORCPT
+	Tue, 8 Jan 2008 13:34:49 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:39754 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751174AbYAHSes (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 13:32:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=RxchI9D2rR66bPBp1x5eiBhXw2ErLtcsapofbvSC/DvyVQC2ENuph9JSJf/70i2o90TbzzV8Zc7/EAVLtyNi9sLwF8nr5FUDMhYCNfItPJCFj1k90lYav3zX8ny5B7+IcGmXyO9PbTzam3cmdtSsM6u/mxIrRwTGj/b+69T85XA=
-Date: Tue, 8 Jan 2008 19:32:28 +0100
-From: Diego Calleja <diegocg@gmail.com>
-To: Tuomo Valkonen <tuomov@iki.fi>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: The ext3 way of journalling
-Message-Id: <20080108193228.d499ccf3.diegocg@gmail.com>
-In-Reply-To: <slrnfo7aiq.6m2.tuomov@jolt.modeemi.cs.tut.fi>
-References: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi>
-	<Pine.LNX.4.64.0801081725480.3032@fbirervta.pbzchgretzou.qr>
-	<slrnfo7aiq.6m2.tuomov@jolt.modeemi.cs.tut.fi>
-X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
+	Tue, 8 Jan 2008 13:34:48 -0500
+Subject: Re: [PATCH] Deprecate checkpatch.pl --file
+From: Daniel Walker <dwalker@mvista.com>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, apw@shadowen.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20080108182048.GM27800@mit.edu>
+References: <20080108161403.GA11632@basil.nowhere.org>
+	 <1199811033.1756.29.camel@imap.mvista.com>
+	 <20080108175347.GA25968@uranus.ravnborg.org>
+	 <1199815279.1756.35.camel@imap.mvista.com> <20080108182048.GM27800@mit.edu>
+Content-Type: text/plain
+Date: Tue, 08 Jan 2008 10:33:28 -0800
+Message-Id: <1199817208.1756.47.camel@imap.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-http://freebsd.org
-http://netbsd.org
-http://openbsd.org
-http://opensolaris.org
 
+On Tue, 2008-01-08 at 13:20 -0500, Theodore Tso wrote:
+> On Tue, Jan 08, 2008 at 10:01:19AM -0800, Daniel Walker wrote:
+> > > It is a simple pain/benefit issue.
+> > > Fixing the 25 errors and 13 warnings in kernel/profile.c may look
+> > > like an easy task but then we put additional burden on the 10 people
+> > > that have patches pending for this file.
+> > 
+> > This goes for all patches on kernel/profile.c tho .. If I make a big mod
+> > to kernel/profile.c, that will screw up anyone else who has patches for
+> > that file..
+> 
+> Obviously, but why make it worse?  And what's more important?  A
+> "clean tree" (especially when some of the things that checkpatch.pl
+> flag are arbitrary and Not All That Important), or wasting developers'
+> time invalidating potentially huge number of patches thanks to cleanup
+> patches?
 
-There're so many options, that wasting your time arguing with people that thinks
-that you're a troll is worthless.
+What I was saying in my first email was we can throttle "patches"
+arbitrarily (I think Andrew/Linus even have a merge period for these
+types of patches) ..  So that's not the issue .. I feel style clean ups
+are fundamentally good.. So what we don't want to do is discourage the
+creation of good patches, which is what I think Andi is doing..
+
+If there's something in checkpatch.pl that you think is "Not All That
+Important", than send a patch to remove those cases and we can discuss
+that directly.. I'm not saying the tool is perfect..
+
+Daniel
+
