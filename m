@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbYAHWqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbYAHWrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754689AbYAHWqS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 17:46:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbYAHWqI
+	id S1755534AbYAHWrS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 17:47:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbYAHWrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 17:46:08 -0500
-Received: from ozlabs.org ([203.10.76.45]:52434 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752446AbYAHWqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 17:46:07 -0500
-MIME-Version: 1.0
+	Tue, 8 Jan 2008 17:47:09 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:45285 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751282AbYAHWrI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 17:47:08 -0500
+Date: Tue, 8 Jan 2008 23:49:33 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, ananth@in.ibm.com,
+       akpm@linux-foundation.org, lkml <linux-kernel@vger.kernel.org>,
+       Jim Keniston <jkenisto@us.ibm.com>, mhiramat@redhat.com,
+       davem@davemloft.net, hskinnemoen@atmel.com
+Subject: Re: [PATCH] Kprobes: Add kprobes smoke tests that run on boot
+Message-ID: <20080108224933.GB2117@one.firstfloor.org>
+References: <20080108063334.GA29385@in.ibm.com> <p73zlvgowwn.fsf@bingen.suse.de> <20080108221802.GD21482@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18307.64807.204087.375733@cargo.ozlabs.ibm.com>
-Date: Wed, 9 Jan 2008 09:45:59 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       David Miller <davem@davemloft.net>, hskinnemoen@atmel.com,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, tony.luck@intel.com,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCHv2] kprobes: Introduce is_kprobe_fault()
-In-Reply-To: <1199737486.7666.12.camel@brick>
-References: <1199737486.7666.12.camel@brick>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+In-Reply-To: <20080108221802.GD21482@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harvey Harrison writes:
+On Tue, Jan 08, 2008 at 11:18:02PM +0100, Ingo Molnar wrote:
+> 
+> * Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > Ananth N Mavinakayanahalli <ananth@in.ibm.com> writes:
+> > >  kernel/kprobes.c        |    2 
+> > >  kernel/test_kprobes.c   |  216 ++++++++++++++++++++++++++++++++++++++++++++++++
+> > 
+> > Can you put this somewhere else please? I know there are already some 
+> > test files in kernel/* but imho they all belong into some other 
+> > directory.
+> 
+> agreed - lib/* would be the right place i think - we've got 
+> lib/locking-selftest.c already.
 
-> Use a central is_kprobe_fault() inline in kprobes.h to remove all
-> of the arch-dependant, practically identical implementations in
-> avr32, ia64, powerpc, s390, sparc64, and x86.
+Why not test/       ?
 
-I don't like the name "is_kprobe_fault" since the function actually
-handles the fault - i.e. it does more than just tell the caller
-whether this is a kprobes fault.  Something like
-"handle_kprobes_fault" or "maybe_handle_kprobes_fault" would be
-better IMO.
+I felt a little bad about not introducing arch/x86/test/ for pageattr-test.c either.
 
-Paul.
+-Andi
