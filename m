@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbYAHSNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755531AbYAHSPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756142AbYAHSNW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 13:13:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbYAHSNL
+	id S1755531AbYAHSPW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 13:15:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750857AbYAHSPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 13:13:11 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:47166 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751186AbYAHSNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 13:13:09 -0500
-Subject: Re: [patch 5/9] unprivileged mounts: allow unprivileged bind mounts
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
-       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
-       linux-fsdevel@vger.kernel.org, containers@lists.osdl.org,
-       util-linux-ng@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080108113626.895583537@szeredi.hu>
-References: <20080108113502.184459371@szeredi.hu>
-	 <20080108113626.895583537@szeredi.hu>
-Content-Type: text/plain
-Date: Tue, 08 Jan 2008 10:12:38 -0800
-Message-Id: <1199815958.9834.58.camel@localhost>
+	Tue, 8 Jan 2008 13:15:07 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:46364 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750902AbYAHSPG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 13:15:06 -0500
+From: akepner@sgi.com
+Date: Tue, 8 Jan 2008 10:13:36 -0800
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Tony Luck <tony.luck@intel.com>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Roland Dreier <rdreier@cisco.com>, David Miller <davem@davemloft.net>,
+       Muli Ben-Yehuda <muli@il.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PARTIAL PATCH 0/3] dma: passing "attributes" to dma_map_* routines
+Message-ID: <20080108181336.GZ23661@sgi.com>
+References: <20080108023222.GP23661@sgi.com> <1199809628.3534.34.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1199809628.3534.34.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-01-08 at 12:35 +0100, Miklos Szeredi wrote:
-> +static int reserve_user_mount(void)
-> +{
-> +       int err = 0;
-> +
-> +       spin_lock(&vfsmount_lock);
-> +       if (nr_user_mounts >= max_user_mounts && !capable(CAP_SYS_ADMIN))
-> +               err = -EPERM;
-> +       else
-> +               nr_user_mounts++;
-> +       spin_unlock(&vfsmount_lock);
-> +       return err;
-> +} 
+On Tue, Jan 08, 2008 at 10:27:08AM -0600, James Bottomley wrote:
 
-Would -ENOSPC or -ENOMEM be a more descriptive error here?  
+> .... All of the attributes I can see adding are
+> bus specific (even to the extent that PCIe ones wouldn't apply to PCI
+> for instance)....
+>
 
--- Dave
+The attribute I want to pass isn't bus-specific, but architecture-
+specific.
+
+-- 
+Arthur
 
