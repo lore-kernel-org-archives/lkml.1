@@ -1,78 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbYAHUbH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756599AbYAHUbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755906AbYAHUbH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 15:31:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751607AbYAHUay
+	id S1756599AbYAHUbY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 15:31:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755289AbYAHUbB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 15:30:54 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:58165 "EHLO
-	outbound6-va3-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751283AbYAHUax (ORCPT
+	Tue, 8 Jan 2008 15:31:01 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:51400 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753831AbYAHUa7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 15:30:53 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
-Message-ID: <4783DE76.7060401@am.sony.com>
-Date: Tue, 08 Jan 2008 12:35:02 -0800
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
+	Tue, 8 Jan 2008 15:30:59 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 8 Jan 2008 12:30:58 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: Changli Gao <xiaosuo@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Improve scalability of epoll_ctl
+In-Reply-To: <4783A41B.1090100@cosmosbay.com>
+Message-ID: <Pine.LNX.4.64.0801081226090.7616@alien.or.mcafeemobile.com>
+References: <478397F7.1030005@gmail.com> <4783A41B.1090100@cosmosbay.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       "William L. Irwin" <sparclinux@vger.kernel.org>,
-       Nicholas Mc Guire <mcguire@lzu.edu.cn>
-Subject: Re: [RFC PATCH 00/11] mcount tracing utility
-References: <20080103071609.478486470@goodmis.org>
-In-Reply-To: <20080103071609.478486470@goodmis.org>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Jan 2008 20:30:26.0343 (UTC) FILETIME=[4D48F370:01C85235]
+Content-Type: MULTIPART/MIXED; BOUNDARY="1795850513-1773120604-1199824258=:7616"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> The following patch series brings to vanilla Linux a bit of the RT kernel
-> trace facility. This incorporates the "-pg" profiling option of gcc
-> that will call the "mcount" function for all functions called in
-> the kernel.
-> 
-> This patch series implements the code for x86 (32 and 64 bit), but
-> other archs can easily be implemented as well.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Steven,
+--1795850513-1773120604-1199824258=:7616
+Content-Type: TEXT/PLAIN; charset=GB2312
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-This is really exciting!
+On Tue, 8 Jan 2008, Eric Dumazet wrote:
 
-As a former maintainer of the (out-of-tree) Kernel Function Trace
-system, I really welcome this.  I'm just getting out from under
-a backlog of work due to the holiday break, but I'm very interested.
-I will take a detailed look at this this week.
+> Changli Gao a =A8=A6crit :
+> > Replace the epitem rbtree with a dynamic array to get the constant inse=
+rtion/deletion/modification time of the file descriptors. Reuse the size ar=
+gument of epoll_create, however the size must be smaller than the max file =
+descriptor number: ether the resource limitation or the compiling time limi=
+tation.
+> >
+> >  =20
+> Hum, you should read this :
+>=20
+> http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.7-rc3/=
+2.6.7-rc3-mm2/broken-out/epoll-uses-rbtrees.patch
+>=20
+>=20
+> Your patch is a revert of this change, it probably wont be accepted.
+>=20
+> epoll_ctl() is scalable, since it's O(log2(N)) : With 1 millions files
+> descriptors, that means less than 20 nodes to lookup in the tree.
 
-I have been working with -finstrument-functions for a few years
-now, so I know of a few gotchas with that (e.g. It's currently broken
-on ARM EABI with GCC 4.x)  This bug is one of the issues that has
-prevented me from attempting to mainline the KFT work this last
-year.
+Indeed, and we aren't going back.
 
-Please keep me CC'ed on developments in this area, and let me
-know if there are any specific things I can do to help.  I'd be
-very interested in helping out with non-x86 arch support.
 
-Regards,
- -- Tim
+> In what situation do you think epoll_ctl() performance is bad ?
 
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
+I'm sure you can cook up a microbench that only does epoll_ctl(), and with=
+=20
+a good hash implementation you get better numbers. This is what I did=20
+before I changed to rbtree, and the numbers did not justify the code (the=
+=20
+"size" in epoll_create() is just an hint, and that means you need to=20
+handle resizing - plus other things like locking up memory when the number=
+=20
+of fds shrinks, and other stuff I don't even remember).
 
+
+
+- Davide
+
+
+--1795850513-1773120604-1199824258=:7616--
