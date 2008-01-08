@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758350AbYAHBOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758531AbYAHBTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758350AbYAHBOU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 20:14:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757780AbYAHBOI
+	id S1758531AbYAHBTh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 20:19:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbYAHBT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 20:14:08 -0500
-Received: from gw.goop.org ([64.81.55.164]:44109 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757105AbYAHBOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 20:14:07 -0500
-Message-ID: <4782CDCE.2030209@goop.org>
-Date: Mon, 07 Jan 2008 17:11:42 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 7 Jan 2008 20:19:28 -0500
+Received: from simmts7.bellnexxia.net ([206.47.199.165]:50261 "EHLO
+	simmts7-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752209AbYAHBT2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 20:19:28 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgAAABZegkecIpjJ/2dsb2JhbAAIqFE
+Message-ID: <4782CF9C.6000508@gmail.com>
+Date: Mon, 07 Jan 2008 21:19:24 -0400
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH 1 of 8] x86: page.h: unify constants
-References: <patchbomb.1199391057@localhost> <ba0ec40a50a7aef1a315.1199391058@localhost> <20080107171712.GE2998@bingen.suse.de> <4782A420.30807@goop.org> <20080107231333.GG2998@bingen.suse.de>
-In-Reply-To: <20080107231333.GG2998@bingen.suse.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "J. Bruce Fields" <bfields@fieldses.org>
+CC: Al Viro <viro@ZenIV.linux.org.uk>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       NetDev <netdev@vger.kernel.org>
+Subject: Re: Top 10 kernel oopses for the week ending January 5th, 2008
+References: <477FF149.4070609@linux.intel.com> <20080105213935.GN27894@ZenIV.linux.org.uk> <20080107174431.GC27741@fieldses.org>
+In-Reply-To: <20080107174431.GC27741@fieldses.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> THREAD_ORDER should be used on 32bit too.
->
-> 32bit also has the equivalent of irq stacks (quite similar) 
-> and exception stacks (somewhat different). Currently they use
-> other defines, but they could use the same. Also i386 has varying
-> irqstack orders disabling them with 8k stacks, but that is something
-> that would be best dropped and irqstacks always used imho.
-> [...]
-> It might be, but it's not a 64bit specific concept.
->   
+J. Bruce Fields wrote:
+> On Sat, Jan 05, 2008 at 09:39:35PM +0000, Al Viro wrote:
+>> On Sat, Jan 05, 2008 at 01:06:17PM -0800, Arjan van de Ven wrote:
+>>> The http://www.kerneloops.org website collects kernel oops and 
+>>> warning reports from various mailing lists and bugzillas as well 
+>>> as with a client users can install to auto-submit oopses. Below 
+>>> is a top 10 list of the oopses collected in the last 7 days. 
+>>> (Reports prior to 2.6.23 have been omitted in collecting the top 
+>>> 10)
+>>> 
+>>> This week, a total of 49 oopses and warnings have been reported,
+>>>  compared to 53 reports in the previous week.
+>> FWIW, people moaning about the lack of entry-level kernel work 
+>> would do well by decoding those to the level of "this place in this
+>>  function, called from <here>, with so-and-so variable being
+>> <this>" and posting the results.  As skills go, it's far more
+>> useful than "how to trim the trailing whitespace" and the rest of 
+>> checkpatch.pl-inspired crap that got so popular lately...
+> 
+> Is there any good basic documentation on this to point people at?
+> 
 
-OK.  That's out of the scope of these particular patches, since they're 
-restricting themselves to just unifying what's there.  Another pass 
-could definitely tidy a lot more up.
+I would second this question.  I see people "decode" oops on lkml often enough, but I've never been entirely sure how its done.  Is it somewhere in Documentation?
 
-> Yes they do, but hardcoding that doesn't make sense because it varies.
-> We already got CPUs with 36, 38, 40 and 48 bits phys size.
->
-> The only size that could be hard coded would be 52 bit (theoretical max), but 
-> that also doesn't make sense if all we want to do is to mask off NX.
->   
-
-OK.  I'll see how much removing it gains us.
-
-    J
+-- 
+Kevin Winchester
