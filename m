@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755595AbYAHFls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756555AbYAHFpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755595AbYAHFls (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 00:41:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbYAHFlk
+	id S1756555AbYAHFpq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 00:45:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753506AbYAHFph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 00:41:40 -0500
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:41107 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751989AbYAHFlj (ORCPT
+	Tue, 8 Jan 2008 00:45:37 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35385 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752832AbYAHFph (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 00:41:39 -0500
-Date: Tue, 8 Jan 2008 11:11:05 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixer <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       vgoyal@redhat.com, hbabu@us.ibm.com, kexec@lists.infradead.org
-Subject: Re: [PATCH] i386: handle an initrd in highmem (version 2)
-Message-ID: <20080108054105.GC5393@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <200801080502.m0852rhW017142@tazenda.hos.anvin.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200801080502.m0852rhW017142@tazenda.hos.anvin.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 8 Jan 2008 00:45:37 -0500
+Date: Mon, 7 Jan 2008 21:45:17 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michael Halcrow <mhalcrow@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, shaggy@us.ibm.com, sandeen@redhat.com,
+       jmoyer@redhat.com
+Subject: Re: [PATCH] eCryptfs: Fix dentry handling on create error, unlink,
+ and inode destroy
+Message-Id: <20080107214517.ebf5a5bd.akpm@linux-foundation.org>
+In-Reply-To: <20080108052542.GX10989@localhost.austin.ibm.com>
+References: <20080108052542.GX10989@localhost.austin.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 07, 2008 at 09:02:53PM -0800, H. Peter Anvin wrote:
-> The boot protocol has until now required that the initrd be located in
-> lowmem, which makes the lowmem/highmem boundary visible to the boot
-> loader.  This was exported to the bootloader via a compile-time
-> field.  Unfortunately, the vmalloc= command-line option breaks this
-> part of the protocol; instead of adding yet another hack that affects
-> the bootloader, have the kernel relocate the initrd down below the
-> lowmem boundary inside the kernel itself.
-> 
-> Note that this does not rely on HIGHMEM being enabled in the kernel.
-> 
-> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-> ---
-> Fix crash on NUMA reported by Dhaval Giani (reported as being a kexec issue.)
-> 
+On Mon, 7 Jan 2008 23:25:42 -0600 Michael Halcrow <mhalcrow@us.ibm.com> wrote:
 
-Yep, it does that. Just tested that on top of the x86 git tree (the mm
-queue). It boots.
+> --- a/fs/ecryptfs/inode.c
+> +++ b/fs/ecryptfs/inode.c
+> @@ -120,22 +120,9 @@ ecryptfs_do_create(struct inode *directory_inode,
+>  	rc = ecryptfs_create_underlying_file(lower_dir_dentry->d_inode,
+>  					     ecryptfs_dentry, mode, nd);
+>  	if (rc) {
+> -		struct inode *ecryptfs_inode = ecryptfs_dentry->d_inode;
+> -		struct ecryptfs_inode_info *inode_info =
+> -			ecryptfs_inode_to_private(ecryptfs_inode);
+> -
+> -		printk(KERN_WARNING "%s: Error creating underlying file; "
+> -		       "rc = [%d]; checking for existing\n", __FUNCTION__, rc);
+> -		if (inode_info) {
+> -			mutex_lock(&inode_info->lower_file_mutex);
+> -			if (!inode_info->lower_file) {
+> -				mutex_unlock(&inode_info->lower_file_mutex);
+> -				printk(KERN_ERR "%s: Failure to set underlying "
+> -				       "file; rc = [%d]\n", __FUNCTION__, rc);
+> -				goto out_lock;
+> -			}
+> -			mutex_unlock(&inode_info->lower_file_mutex);
+> -		}
+> +		printk(KERN_ERR "%s: Failure to create dentry in lower fs; "
+> +		       "rc = [%d]\n", __FUNCTION__, rc);
+> +		goto out_lock;
+>  	}
+>  	rc = ecryptfs_interpose(lower_dentry, ecryptfs_dentry,
+>  				directory_inode->i_sb, 0);
 
-Tested-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-
--- 
-regards,
-Dhaval
+Will this cause an undesirable log storm if the underlying fs runs out of
+space?
