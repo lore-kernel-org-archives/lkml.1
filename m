@@ -1,82 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbYAHNLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757159AbYAHNOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756600AbYAHNLT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 08:11:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbYAHNLK
+	id S1757159AbYAHNOt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 08:14:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755125AbYAHNOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 08:11:10 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:50339 "EHLO pasmtpA.tele.dk"
+	Tue, 8 Jan 2008 08:14:42 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45691 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752694AbYAHNLJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 08:11:09 -0500
-Date: Tue, 8 Jan 2008 14:10:49 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: Linux 2.6.24-rc7 Build Failure on headers_install
-Message-ID: <20080108131049.GA23947@uranus.ravnborg.org>
-References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org> <4781E75B.3020307@linux.vnet.ibm.com> <20080107101235.GA13609@uranus.ravnborg.org> <47835598.7020308@linux.vnet.ibm.com>
+	id S1755916AbYAHNOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 08:14:41 -0500
+Subject: Re: [PATCH 0/5]PCI: x86 MMCONFIG
+From: Tony Camuso <tcamuso@redhat.com>
+To: Greg KH <greg@kroah.com>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, prarit@redhat.com,
+       Nagananda Chumbalkar <nagananda.chumbalkar@hp.com>,
+       Pat Schoeller <patrick.schoeller@hp.com>
+In-Reply-To: <20080108045624.GA31372@kroah.com>
+References: <476A5FD0.4010804@redhat.com> <20071220172205.GB5636@suse.de>
+	 <476AB3B5.9080808@redhat.com> <20071220215719.GA8528@suse.de>
+	 <476AEE7B.6050708@redhat.com> <20071220224006.GA16855@suse.de>
+	 <1199762423.16420.105.camel@dhcp83-188.boston.redhat.com>
+	 <20080108045624.GA31372@kroah.com>
+Content-Type: text/plain
+Date: Tue, 08 Jan 2008 08:14:22 -0500
+Message-Id: <1199798062.16420.128.camel@dhcp83-188.boston.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47835598.7020308@linux.vnet.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 08, 2008 at 04:21:04PM +0530, Kamalesh Babulal wrote:
-> Sam Ravnborg wrote:
-> > On Mon, Jan 07, 2008 at 02:18:27PM +0530, Kamalesh Babulal wrote:
-> >> Hi,
-> >>
-> >> The make allyesconfig build fails on x86_64 (AMD box) with the following
-> >> error
-> >>
-> >>   CHK     include/linux/version.h
-> >>   CHK     include/linux/utsrelease.h
-> >>   CALL    scripts/checksyscalls.sh
-> >>   CHK     include/linux/compile.h
-> >>   CHK     include/linux/version.h
-> >> make[2]: `scripts/unifdef' is up to date.
-> >> make[2]: *** No rule to make target `|', needed by `asm-generic'.  Stop.
-> >> make[1]: *** [headers_install] Error 2
-> >> make: *** [vmlinux] Error 2
+I'll respin the whole kit with [PATCH ?/5][V2]PCI: x86 MMCONFIG *
+in the subject line, where the ? is replaced by the number of the
+patch within the set and the * is replaced by a brief description,
+if that's acceptable.
+
+I can have it ready in a few hours. 
+
+On Mon, 2008-01-07 at 20:56 -0800, Greg KH wrote:
+> On Mon, Jan 07, 2008 at 10:20:23PM -0500, Tony Camuso wrote:
+> > Greg,
 > > 
-> > Which make version are you using - it looks like a make bug.
-> > Did this occur with an older kernel or has this behaviour just started?
-> > 
-> > To get further you can disable "headers check" in kernel hacking menu
-> > but we need to find out why it fails for you.
-> > 
-> > Note: '|' is used to say that a prerequisite is 'order only' in
-> > scripts/Makefile.headersinst
-> > 
-> > 	Sam
-> Hi Sam,
+> > Have you given this patch-set any more consideration?
 > 
-> After disabling the headers_check, the build failure is not seen,
-> i tried compiling 2.6.24-rc{2,3,4,5,6,7} all of these have this failure.
-> And when i tried compiling 2.6.23 with allyesconfig i got the following
-> error
+> Which patch-set, there have been a number of them :)
 > 
->   SYSCALL arch/x86_64/vdso/vdso.so
-> /usr/bin/ld: section .data [ffffffffff700900 -> ffffffffff700917] overlaps section .plt [ffffffffff7008e4 -> ffffffffff700903]
-> collect2: ld returned 1 exit status
-> make[1]: *** [arch/x86_64/vdso/vdso.so] Error 1
-> make: *** [arch/x86_64/vdso] Error 2
-No clue why you see this?
-
+> > I've submitted the changes you requested. 
 > 
-> # make --version
-> GNU Make version 3.79.1
+> Care to respin them all so I'm not confused?
+> 
+> thanks,
+> 
+> greg k-h
 
-The "orders only" facility were added in GNU make 3.80 so that explains the
-bug you see in first place.
-We should try to avoid this use since we do not require make 3.80 yet.
-
-
-	Sam
