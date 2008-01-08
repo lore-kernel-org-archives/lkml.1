@@ -1,109 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757857AbYAHGqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758099AbYAHGvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757857AbYAHGqx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 01:46:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbYAHGqn
+	id S1758099AbYAHGvm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 01:51:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbYAHGve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 01:46:43 -0500
-Received: from mail.suse.de ([195.135.220.2]:42164 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751428AbYAHGqm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 01:46:42 -0500
-From: Neil Brown <neilb@suse.de>
-To: Jeff Layton <jlayton@redhat.com>
-Date: Tue, 8 Jan 2008 17:46:33 +1100
+	Tue, 8 Jan 2008 01:51:34 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:18965 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750925AbYAHGvd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 01:51:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=Z3K0LScBb+KHJvNkDP9sEZP8XOzOgtTgmhtUqpocGn+YRlOAG3htyNENf9dEHaMdmSZYSTpIH/+stJ/b7zgFnebU491a3UyjEja4EVIOYsJS2pcpPUAkPz52I5ESyVLcy/0Rjze2rwYjeDBxXFQEGb2kltbvq9hFbOeRW1IM6TM=
+Date: Tue, 8 Jan 2008 07:52:43 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: hch@infradead.org, linux-kernel@vger.kernel.org,
+       bfennema@falcon.csc.calpoly.edu, jack@suse.cz
+Subject: Re: [PATCH] udf: convert some macros to functions
+Message-ID: <20080108065239.GA23875@joi>
+References: <1199580275-2487-1-git-send-email-marcin.slusarz@gmail.com> <1199580275-2487-6-git-send-email-marcin.slusarz@gmail.com> <20080107122617.GB3710@infradead.org> <20080107204413.GB22144@joi> <20080107152815.acab7678.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18307.7241.831689.998668@notabene.brown>
-Cc: akpm@linux-foundation.org, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/6] NLM: Add reference counting to lockd
-In-Reply-To: message from Jeff Layton on Saturday January 5
-References: <1199534542-3384-1-git-send-email-jlayton@redhat.com>
-	<1199534542-3384-2-git-send-email-jlayton@redhat.com>
-	<1199534542-3384-3-git-send-email-jlayton@redhat.com>
-	<1199534542-3384-4-git-send-email-jlayton@redhat.com>
-	<1199534542-3384-5-git-send-email-jlayton@redhat.com>
-	<1199534542-3384-6-git-send-email-jlayton@redhat.com>
-	<1199534542-3384-7-git-send-email-jlayton@redhat.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080107152815.acab7678.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday January 5, jlayton@redhat.com wrote:
-> @@ -357,7 +375,18 @@ lockd_down(void)
->  		goto out;
->  	}
->  	warned = 0;
-> -	kthread_stop(nlmsvc_task);
-> +	if (atomic_sub_return(1, &nlmsvc_ref) != 0)
-> +		printk(KERN_WARNING "lockd_down: lockd is waiting for "
-> +			"outstanding requests to complete before exiting.\n");
+On Mon, Jan 07, 2008 at 03:28:15PM -0800, Andrew Morton wrote:
+> On Mon, 7 Jan 2008 21:44:26 +0100
+> Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
+> 
+> > > There's some overly long lines here and some odd style, this should look
+> > > more like:
+> > These long lines were split later in "[PATCH 1/7] udf: fix coding style"
+> 
+> Confused.  How can patch 1/n come "later" than this one?
+> 
+> Your patches actually came through as "[patch] udf: ...".  ie: no
+> sequence numbering.
+Because there are 2 patchsets. First in third version and second in first version.
+I think I join them to not confuse anyone...
 
-Why not "atomic_dec_and_test" ??
+> > (but I will fix it in next version of this patch).
+> 
+> Please fix the sequence numbering too, thanks.
+Yeah. I forgot to do this before submission.
 
-> +
-> +	/*
-> +	 * Sending a signal is necessary here. If we get to this point and
-> +	 * nlm_blocked isn't empty then lockd may be held hostage by clients
-> +	 * that are still blocking. Sending the signal makes sure that lockd
-> +	 * invalidates all of its locks so that it's just waiting on RPC
-> +	 * callbacks to complete
-> +	 */
-> +	kill_proc(nlmsvc_task->pid, SIGKILL, 1);
-
-The previous patch removes a kill_proc(... SIGKILL),  this one adds it
-back.
-That makes me wonder if the intermediate state is 'correct'.
-
-But I also wonder what "correct" means.
-Do we want all locks to be dropped when the last nfsd thread dies?
-The answer is presumably either "yes" or "no".
-If "yes", then we don't have that because if there are any NFS mounts
-active, lockd will not be killed.
-If "no", then we don't want this kill_proc here.
-
-The comment in lockd() which currently reads:
-
-	/*
-	 * The main request loop. We don't terminate until the last
-	 * NFS mount or NFS daemon has gone away, and we've been sent a
-	 * signal, or else another process has taken over our job.
-	 */
-
-suggests that someone once thought that lockd could hang around after
-all nfsd threads and nfs mounts had gone, but I don't think it does.
-
-We really should think this through and get it right, because if lockd
-ever drops it's locks, then we really need to make sure sm_notify gets
-run.  So it needs to be a well defined event.
-
-Thoughts?
-
-Also, it is sad that the inc/dec of nlmsvc_ref is called in somewhat
-non-obvious ways.
-e.g.
-
-> +	if (!nlmsvc_users && error)
-> +		atomic_dec(&nlmsvc_ref);
-
-and
-
-> +	if (list_empty(&nlm_blocked))
-> +		atomic_inc(&nlmsvc_ref);
-> +
->  	if (list_empty(&block->b_list)) {
->  		kref_get(&block->b_count);
->  	} else {
-
-where if we moved the atomic_inc a little bit later next to the
-"list_add_tail" (which seems to make more sense) it would actually be
-wrong... But I think that code is correct as it is - just non-obvious.
-
-NeilBrown
-
+Marcin
