@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757532AbYAHGPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755919AbYAHGQ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757532AbYAHGPe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 01:15:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbYAHGPX
+	id S1755919AbYAHGQ4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 01:16:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbYAHGQs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 01:15:23 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:4437 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754551AbYAHGPW (ORCPT
+	Tue, 8 Jan 2008 01:16:48 -0500
+Received: from smtprelay12.ispgateway.de ([80.67.29.29]:48830 "EHLO
+	smtprelay12.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753397AbYAHGQr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 01:15:22 -0500
-Date: Tue, 8 Jan 2008 17:15:16 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>,
-       netdev@vger.kernel.org
-Subject: Re: [Patch] xfrm_policy_destroy: rename and relative fixes
-Message-ID: <20080108061516.GD2529@gondor.apana.org.au>
-References: <20080103120550.GB2498@hacking>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 8 Jan 2008 01:16:47 -0500
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: sleep before boot panic
+Date: Tue, 8 Jan 2008 07:17:03 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Bernd Schubert <bernd-schubert@gmx.de>, linux-kernel@vger.kernel.org
+References: <200801061908.43010.bernd-schubert@gmx.de> <p731w8ts70k.fsf@bingen.suse.de>
+In-Reply-To: <p731w8ts70k.fsf@bingen.suse.de>
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20080103120550.GB2498@hacking>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200801080717.03467.ioe-lkml@rameria.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 03, 2008 at 08:05:50PM +0800, WANG Cong wrote:
+On Monday 07 January 2008, Andi Kleen wrote:
+> Bernd Schubert <bernd-schubert@gmx.de> writes:
 > 
-> Since __xfrm_policy_destroy is used to destory the resources
-> allocated by xfrm_policy_alloc. So using the name
-> __xfrm_policy_destroy is not correspond with xfrm_policy_alloc.
-> Rename it to xfrm_policy_destroy.
+> > Hi,
+> >
+> > I just switched to libata (pata) on my laptop and the immediate panic made it 
+> > impossible to figure out why my boot partition wasn't available.
+> > After applying this little patch I could check boot printk output and then saw 
+> > everything was properly recognized and only scsi-disk support was missing.
 > 
-> And along with some instances that call xfrm_policy_alloc
-> but not using xfrm_policy_destroy to destroy the resource,
-> fix them.
-> 
-> Cc: David Miller <davem@davemloft.net>
-> Cc: Herbert Xu <herbert@gondor.apana.org.au>
-> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+> The correct fix would be to make scroll back (and sysrq) still work
+> after panic.  It's a little more complicated, but possible (essentially
+> it needs a polled keyboard handler)
 
-This patch looks OK to me.
+Customer: "This system could not find the root fs."
+Support: "Oh, yeah, just connect a (USB-) keyboard and scroll back."
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Hmm, device detection works after panic?
+
+I really like the "soft" panic better, where you still can operate the 
+kernel debugging features, but just have no user space supporting it.
+
+One better hopes, that keyboards never need external firmware to be loaded
+at this stage :-)
+
+Best Regards
+
+Ingo Oeser, who just hit the same problem yesterday...
