@@ -1,73 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753689AbYAHVtx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753152AbYAHVwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753689AbYAHVtx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 16:49:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbYAHVto
+	id S1753152AbYAHVwa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 16:52:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbYAHVwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 16:49:44 -0500
-Received: from Mycroft.westnet.com ([216.187.52.7]:52677 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751421AbYAHVto (ORCPT
+	Tue, 8 Jan 2008 16:52:22 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:19305 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751371AbYAHVwV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 16:49:44 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 8 Jan 2008 16:52:21 -0500
+Subject: Re: [PATCH] Deprecate checkpatch.pl --file
+From: Daniel Walker <dwalker@mvista.com>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, apw@shadowen.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20080108211411.GQ27800@mit.edu>
+References: <20080108161403.GA11632@basil.nowhere.org>
+	 <1199811033.1756.29.camel@imap.mvista.com>
+	 <20080108175347.GA25968@uranus.ravnborg.org>
+	 <1199815279.1756.35.camel@imap.mvista.com> <20080108182048.GM27800@mit.edu>
+	 <1199817208.1756.47.camel@imap.mvista.com>
+	 <20080108192142.GA26491@uranus.ravnborg.org>
+	 <1199823584.12972.1.camel@imap.mvista.com> <20080108211411.GQ27800@mit.edu>
+Content-Type: text/plain
+Date: Tue, 08 Jan 2008 13:50:59 -0800
+Message-Id: <1199829059.12972.40.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
 Content-Transfer-Encoding: 7bit
-Message-ID: <18307.61428.850453.481275@stoffel.org>
-Date: Tue, 8 Jan 2008 16:49:40 -0500
-From: "John Stoffel" <john@stoffel.org>
-To: Tuomo Valkonen <tuomov@iki.fi>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: The ext3 way of journalling
-In-Reply-To: <slrnfo7auq.6m2.tuomov@jolt.modeemi.cs.tut.fi>
-References: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi>
-	<18307.42821.166376.732473@stoffel.org>
-	<slrnfo7auq.6m2.tuomov@jolt.modeemi.cs.tut.fi>
-X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Tuomo" == Tuomo Valkonen <tuomov@iki.fi> writes:
 
-Tuomo> On 2008-01-08, John Stoffel <john@stoffel.org> wrote:
->> Look at your filesystems, using 'tune2fs' and see if the ext3 journal
->> is actually turned on and used.  If it's not, then I can see why
->> you're having problems on reboots.  
+On Tue, 2008-01-08 at 16:14 -0500, Theodore Tso wrote:
+> On Tue, Jan 08, 2008 at 12:19:44PM -0800, Daniel Walker wrote:
+> > > But is discourage the creation of pure clean-up patches because it
+> > > may have a disturbing effect on several other peoples work.
+> > 
+> > pure clean ups are _good_ patches , are they not?
+> > 
+> 
+> Not necessarily.  Whether or not it is requires common sense, and very
+> often we get enthusiastic new-comers (some of them with very weak C
+> programming skills :-) who might try to use checkpatch.pl.  So we
+> can't assume that they will know when a pure clean-up patch is a good
+> thing, and when it's a waste of everyone's time, including theirs.
 
-Tuomo> Journalling is on, but it's no use because the superblock always has
-Tuomo> corrupted last-checked time at boot. "File system check forced: 31352
-Tuomo> days since last check" or so. 
+You can pretty much generalize this to many patches on many mailing
+lists.. Someone submits a patch that they didn't think about, and ..
+It's at least a learning experience for the person submitting the patch.
+It does however seem a lot less likely someone will screw up a change
+when checkpatch.pl actually tells you the line where the style problem
+is, and what it is .. Even with "WARNING" and "ERROR" classifications.
 
-As Andy say, reset the counts using tune2fs, then make sure they are
-actually reset.  I've been using ext3 for a long time and even with
-crashes, it's been good about coming up and replaying the journal
-nicely.
+> That's why I think the warning is a good thing.  It makes it more
+> likely that this gets communicated to the enthusiastic, well-meaning,
+> newcomer.  Someone who is more experienced and who knows how to
+> determine whether some driver is ancient and not being worked on, and
+> hence a pure clean-up patch won't be screwing up other developers,
+> will know how to suppress the warning.  (OTOH, how important is it in
+> the grand scheem of things to create or apply a pure clean-up patch on
+> a patch that few people if any are looking at?)
 
-Again, we can't tell much without boot logs.  
+There is a maintainer involved in all this .. The maintainer needs to
+accept the patch prior to it "... screwing up other developers." Given a
+sane maintainer, and a sane list review then why wouldn't a pure clean
+up be accepted?
 
->> What CPU are you using?  Chipset?  Output of lspci?  dmesg output?  
+The warning message is actually an end run around the maintainer.. The
+clean up never gets created, and the maintainer doesn't have the choice
+to include it or not.. 
 
-Tuomo> Athlon XP 2500+, SiI 3112 (the obsoleted driver that makes the
-Tuomo> disk appear as the predictable hde, not the random scsi mapping
-Tuomo> driver).
+Daniel
 
-I use a Sil 3112 as well for some of my disks (I've got six, two each
-of SCSI, PATA and SATA) and it all works well.  So does an ancient but
-upto date Debian Unstable install running 2.6.24-rc6, so it's not
-impossible to install new kernels on old systems.  
-
-Get rid of initrd and you should be all set.  But again, without
-details we can't really help.
-
-Tuomo> As for the rest... I'm on Windows, because I can't be arsed waiting 
-Tuomo> for an hour for Linux to boot.
-
-So reboot it before you goto bed tonight and tell us what it says in
-the morning.  Esp in terms of the filesystems and their counts.
-
-Hmm... but thinking about it, you're running 2.4.x something, and
-there were bugs back then with ext3, so you just might be hitting some
-of those bugs.  Can you goto the latest 2.4.x release?
-
-John
