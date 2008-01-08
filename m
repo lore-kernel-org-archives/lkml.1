@@ -1,103 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761021AbYAHLkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761207AbYAHLlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761021AbYAHLkm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 06:40:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760340AbYAHLil
+	id S1761207AbYAHLlQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 06:41:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761037AbYAHLk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 06:38:41 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:51603 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760312AbYAHLij (ORCPT
+	Tue, 8 Jan 2008 06:40:56 -0500
+Received: from nz-out-0506.google.com ([64.233.162.239]:3901 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755868AbYAHLkz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 06:38:39 -0500
-Message-Id: <20080108113634.382855604@szeredi.hu>
-References: <20080108113502.184459371@szeredi.hu>
-User-Agent: quilt/0.45-1
-Date: Tue, 08 Jan 2008 12:35:11 +0100
-From: Miklos Szeredi <miklos@szeredi.hu>
-To: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
-       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
-Subject: [patch 9/9] unprivileged mounts: add "no submounts" flag
-Content-Disposition: inline; filename=unprivileged-mounts-add-no-submounts-flag.patch
+	Tue, 8 Jan 2008 06:40:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=vPzV9T0YdFEmdZ9Ys+MGiHN/xsG6I8Rs2U5b06Lsvk2C7Z8pwRH1yq+82Sk/2jo86U6ZhqlCFBB3eyFhy0agfHqP5LadsfR4sBTZNMNJ39yGqn2LBFhsCBWs7/cnvuHEAjAj9JFISaETixuCOBXdpS/FggarIUDosHo7rN6xszA=
+Message-ID: <e85b9d30801080340y43fbd4c0sa9b6c9811c7391a1@mail.gmail.com>
+Date: Tue, 8 Jan 2008 12:40:54 +0100
+From: Matthew <jackdachef@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Fwd: Fwd: laptop / computer hardlocks during execution of 32bit applications(binaries) on 64bit system (Gentoo)
+In-Reply-To: <e85b9d30801080333y3d6668ccgf20f9666d0326884@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <e85b9d30712291157v113f5e73yd830ae3c3429092d@mail.gmail.com>
+	 <e85b9d30712291504r2f4ef991w33f501ccf0d41c2b@mail.gmail.com>
+	 <200712300128.35476.mboton@gmail.com> <20080102084002.GA13636@elte.hu>
+	 <e85b9d30801080333y3d6668ccgf20f9666d0326884@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+Hi everyone,
 
-Add a new mount flag "nomnt", which denies submounts for the owner.
-This would be useful, if we want to support traditional /etc/fstab
-based user mounts.
+sorry for the long delay
 
-In this case mount(8) would still have to be suid-root, to check the
-mountpoint against the user/users flag in /etc/fstab, but /etc/mtab
-would no longer be mandatory for storing the actual owner of the
-mount.
+- I first had to get home & set up my rig to reproduce this hardlock
+(repeatedly hardlocking / shutting down the laptop doesn't do too good
+to the new hdd ;) )
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
+and fortunately I was successful :)
 
-Index: linux/fs/namespace.c
-===================================================================
---- linux.orig/fs/namespace.c	2008-01-04 13:49:52.000000000 +0100
-+++ linux/fs/namespace.c	2008-01-04 13:50:28.000000000 +0100
-@@ -694,6 +694,7 @@ static int show_vfsmnt(struct seq_file *
- 		{ MNT_NOATIME, ",noatime" },
- 		{ MNT_NODIRATIME, ",nodiratime" },
- 		{ MNT_RELATIME, ",relatime" },
-+		{ MNT_NOMNT, ",nomnt" },
- 		{ 0, NULL }
- 	};
- 	struct proc_fs_info *fs_infop;
-@@ -1044,6 +1045,9 @@ static bool permit_mount(struct nameidat
- 	if (S_ISLNK(inode->i_mode))
- 		return false;
- 
-+	if (nd->path.mnt->mnt_flags & MNT_NOMNT)
-+		return false;
-+
- 	if (!is_mount_owner(nd->path.mnt, current->fsuid))
- 		return false;
- 
-@@ -1888,9 +1892,11 @@ long do_mount(char *dev_name, char *dir_
- 		mnt_flags |= MNT_RELATIME;
- 	if (flags & MS_RDONLY)
- 		mnt_flags |= MNT_READONLY;
-+	if (flags & MS_NOMNT)
-+		mnt_flags |= MNT_NOMNT;
- 
--	flags &= ~(MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_ACTIVE |
--		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME| MS_KERNMOUNT);
-+	flags &= ~(MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_ACTIVE | MS_NOATIME |
-+			MS_NODIRATIME | MS_RELATIME | MS_KERNMOUNT | MS_NOMNT);
- 
- 	/* ... and get the mountpoint */
- 	retval = path_lookup(dir_name, LOOKUP_FOLLOW, &nd);
-Index: linux/include/linux/fs.h
-===================================================================
---- linux.orig/include/linux/fs.h	2008-01-04 13:49:12.000000000 +0100
-+++ linux/include/linux/fs.h	2008-01-04 13:49:58.000000000 +0100
-@@ -130,6 +130,7 @@ extern int dir_notify_enable;
- #define MS_KERNMOUNT	(1<<22) /* this is a kern_mount call */
- #define MS_I_VERSION	(1<<23) /* Update inode I_version field */
- #define MS_SETUSER	(1<<24) /* set mnt_uid to current user */
-+#define MS_NOMNT	(1<<25) /* don't allow unprivileged submounts */
- #define MS_ACTIVE	(1<<30)
- #define MS_NOUSER	(1<<31)
- 
-Index: linux/include/linux/mount.h
-===================================================================
---- linux.orig/include/linux/mount.h	2008-01-04 13:45:45.000000000 +0100
-+++ linux/include/linux/mount.h	2008-01-04 13:49:58.000000000 +0100
-@@ -30,6 +30,7 @@ struct mnt_namespace;
- #define MNT_NODIRATIME	0x10
- #define MNT_RELATIME	0x20
- #define MNT_READONLY	0x40	/* does the user want this to be r/o? */
-+#define MNT_NOMNT	0x80
- 
- #define MNT_SHRINKABLE	0x100
- #define MNT_IMBALANCED_WRITE_COUNT	0x200 /* just for debugging */
+sorry for the bad quality of the pics (they were taken with my phone):
 
---
+http://omploader.org/vYWU1/moto_0025.jpg
+http://omploader.org/vYWU2/moto_0026.jpg
+
+steps to reproduce:
+1.) log on
+2.) startx
+3.) opening some pure 64bit apps == working, no locks
+4.) opening 32bit-apps (such as firefox-bin, thunderbird-bin) == hard
+lock, only pulling power cord (on laptop) or reset button (rig) works,
+magic sysrq key doesn't (keyboard & mouse == dead)
+
+I'm currently writing from my "rescue system" (winxp ;) )
+so if you need my kernel-config or some more info of the system please tell
+
+Cheers
+
+Mat
