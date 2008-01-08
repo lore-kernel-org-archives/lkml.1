@@ -1,31 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754115AbYAHSLP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752818AbYAHSLb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754115AbYAHSLP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 13:11:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYAHSK5
+	id S1752818AbYAHSLb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 13:11:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbYAHSLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 13:10:57 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55649 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751777AbYAHSKz (ORCPT
+	Tue, 8 Jan 2008 13:11:21 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:50294 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752503AbYAHSLU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 13:10:55 -0500
-Date: Tue, 8 Jan 2008 10:08:31 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Kevin Winchester <kjwinchester@gmail.com>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       NetDev <netdev@vger.kernel.org>
-Subject: Re: Top 10 kernel oopses for the week ending January 5th, 2008
-In-Reply-To: <4783B602.1050307@linux.intel.com>
-Message-ID: <alpine.LFD.1.00.0801080957280.3148@woody.linux-foundation.org>
-References: <477FF149.4070609@linux.intel.com> <20080105213935.GN27894@ZenIV.linux.org.uk> <20080107174431.GC27741@fieldses.org> <4782CF9C.6000508@gmail.com> <alpine.LFD.1.00.0801071851120.3148@woody.linux-foundation.org> <20080108081401.d9576ac5.randy.dunlap@oracle.com>
- <4783B602.1050307@linux.intel.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 8 Jan 2008 13:11:20 -0500
+Date: Tue, 8 Jan 2008 19:11:19 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Tuomo Valkonen <tuomov@iki.fi>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: The ext3 way of journalling
+In-Reply-To: <slrnfo7e3i.c37.tuomov@jolt.modeemi.cs.tut.fi>
+Message-ID: <Pine.LNX.4.64.0801081907130.3032@fbirervta.pbzchgretzou.qr>
+References: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi>
+ <20080108164847.GA16462@skl-net.de> <slrnfo7e3i.c37.tuomov@jolt.modeemi.cs.tut.fi>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -33,63 +26,49 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+On Jan 8 2008 17:52, Tuomo Valkonen wrote:
+>On 2008-01-08, Andre Noll <maan@systemlinux.org> wrote:
+>> Use tune2fs to deactivate checking.
+>
+>So, a workaround is the answer to a clear bug. Typical FOSS.
 
-On Tue, 8 Jan 2008, Arjan van de Ven wrote:
-> 
-> I've made life easier for those using the www.kerneloops.org website;
-> at least for x86 oopses the website now does this for you and shows
-> the decoded Code: line in the raw oops data:
-> 
-> http://www.kerneloops.org/raw.php?rawid=2716
+Well if it is a problem for you, why do not you come and fix it?
 
-Cool.
+>> Modify the init scripts or use another distro.
+>
+>Another typical FOSS answer. "You have the source, you can fix it."
+>With what time?
 
-One thing I wonder about - could you separate out the bug-ons and warnings 
-from the oopses? They really are different issues, and an oops with 
-register information etc is very different from a BUG() with line numbers, 
-which in turn is very different from a WARN_ON().
+If you do not like spending time yourself, hire someone.
 
-Right now, it says
+>> Check your tool-chain. Many people compile recent kernels with no problems.
+>
+>And recompile and recompile and recompile ad infinitum, because always
+>some option was missing or wrong, there being far too many of them and
+>hidden all over the place.
 
-	Oopses reported for kernel 2.6.24-rc7
+Yes. Either you compile or you use a distro kernel. But you do not want
+either, so that kinda narrows it down.
 
+>> Nobody forces you to use udev. Moreover, you can write your own udev
+>> rules that match your expectations.
+>
+>See above on having time to learn over-cryptic systems.
 
-	7 oopses reported
+http://linux.oneandoneis2.org/LNW.htm . Replace Windows by <whatever
+favorite OS you wanted to originally have>.
 
-	hfsplus_releasepage	3
-	enqueue_task		1
-	lock_acquire		1
-	__hfs_brec_find		1
-	__ieee80211_rx		1
+>> You're not ranting about Linux but about your Distro. Complain on
+>> the corresponding distro-specific mailing list, use another distro
+>> and and stop whining.
+>
+>I don't use a distro kernel. I use a kernel I compiled myself over
+>two years ago. I have tried compiling newer ones, but it's too much
+>work to get all the options right. And then there's the problem that
+>the "good" driver for my SATA disk may not be there anymore in the
+>latest kernels, and so on.
 
-and in fact three of those five entries are really WARN_ON's. It would be 
-nicer if it would look more along the lines of
-
-	Backtraces reported for kernel 2.6.24-rc7
-
-
-	4 oopses reported
-
-	hfsplus_releasepage     3
-	__hfs_brec_find         1
-
-
-	3 warnings repored
-
-	enqueue_task            1
-	lock_acquire            1
-	__ieee80211_rx          1
-
-because those things really don't have the same kind of impact at all, and 
-tend to be very different to debug (a "BUG_ON()" is perhaps somewhat 
-closer to an oops, but a WARN_ON() is definitely in a class of its own).
-
-On that "Code:" side, it seems there is still some problem with oops 
-parsing. See for example:
-
-	http://www.kerneloops.org/raw.php?rawid=1521&msgid=http://mid.gmane.org/20071017154655.GA13394@elte.hu
-
-and notice how the Code: never made it into the raw message (and thus 
-there is also no instruction disassembly).
-
-			Linus
+I did the same previously. As soon as there was more than three
+machines to administer, I stopped building kernels the typical way
+for production machines and instead built one central RPM (sort of
+distro kernel). I never look back.
