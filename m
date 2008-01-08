@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756864AbYAHW44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbYAHW60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756864AbYAHW44 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 17:56:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbYAHW4r
+	id S1756030AbYAHW60 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 17:58:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYAHW6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 17:56:47 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57013 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753844AbYAHW4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 17:56:46 -0500
-Date: Tue, 8 Jan 2008 23:56:31 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: m.kozlowski@tuxland.pl, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Linux 2.6.24-rc7: sparc64: WARNING: at
-	kernel/lockdep_proc.c:267 lockdep_stats_show()
-Message-ID: <20080108225631.GA7021@elte.hu>
-References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org> <200801081942.17139.m.kozlowski@tuxland.pl> <20080108.145038.203528847.davem@davemloft.net>
+	Tue, 8 Jan 2008 17:58:17 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:55820 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752075AbYAHW6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 17:58:15 -0500
+Date: Tue, 8 Jan 2008 23:58:20 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
+       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
+Subject: Re: [patch 7/9] unprivileged mounts: allow unprivileged fuse mounts
+Message-ID: <20080108225820.GA9735@elf.ucw.cz>
+References: <20080108113502.184459371@szeredi.hu> <20080108113630.861045063@szeredi.hu> <20080108214625.GE5050@ucw.cz> <E1JCN9I-0004DB-DF@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080108.145038.203528847.davem@davemloft.net>
+In-Reply-To: <E1JCN9I-0004DB-DF@pomaz-ex.szeredi.hu>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* David Miller <davem@davemloft.net> wrote:
-
-> > WARNING: at kernel/lockdep_proc.c:267 lockdep_stats_show()
-> > Call Trace:
-> >  [0000000000492704] lockdep_stats_show+0x6ac/0x6c0
-> >  [00000000004eb4b4] seq_read+0x5c/0x340
-> >  [000000000050b2bc] proc_reg_read+0x64/0xa0
-> >  [00000000004cd72c] vfs_read+0x74/0x120
-> >  [00000000004cdb4c] sys_read+0x34/0x60
-> >  [00000000004062d4] linux_sparc_syscall32+0x3c/0x40
-> >  [0000000000012ff4] 0x12ffc
+On Tue 2008-01-08 23:42:20, Miklos Szeredi wrote:
+> > On Tue 2008-01-08 12:35:09, Miklos Szeredi wrote:
+> > > From: Miklos Szeredi <mszeredi@suse.cz>
+> > > 
+> > > Use FS_SAFE for "fuse" fs type, but not for "fuseblk".
+> > > 
+> > > FUSE was designed from the beginning to be safe for unprivileged users.  This
+> > > has also been verified in practice over many years.  In addition unprivileged
+> > 
+> > Eh? So 'kill -9 no longer works' and 'suspend no longer works' is not
+> > considered important enough to even mention?
 > 
-> Please turn off lockdep on sparc64, currently it not reliable.  I have 
-> many things to audit, including how the stack frames are presented to 
-> the lockdep layer.
+> No.  Because in practice they don't seem to matter.  Also because
+> there's no way in which fuse could be done differently to address
+> these issues.
 > 
-> So any problem you run into can be due to issues like that.
+> The 'kill -9' thing is basically due to VFS level locking not being
+> interruptible.  It could be changed, but I'm not sure it's worth it.
 
-is this anything the core lockdep code could help improve? Let us know 
-if any aspect is hindering you.
+Well, I believe it should be changed. "You need to mount /sys, then
+echo X to Y before kill -9 works" does not look nice... I agree it is
+not easy.
 
-	Ingo
+> > 'updatedb no longer works' is not a problem?
+> 
+> I haven't seen any problems with updatedb, and haven't had any bug
+> reports about it either.
+
+Ok, I don't know much about FUSE. In current version, if user creates
+infinite maze and mounts it under ~, updatedb just does not enter it?
+
+> AFAIR there were two security vulnerabilities in fuse's history, one
+> of them an information leak in the kernel module, and the other one an
+> mtab corruption issue in the fusermount utility.  I don't think this
+> is such a bad track record.
+
+Not bad indeed. But I'd consider 'kill -9 not working' to be DoS
+vulnerability... and I'm woried about problems fuse + user mounts
+expose in other parts of system.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
