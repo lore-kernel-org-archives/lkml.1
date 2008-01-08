@@ -1,112 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759458AbYAHQOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760916AbYAHQO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759458AbYAHQOI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 11:14:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbYAHQN4
+	id S1760916AbYAHQO2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 11:14:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759431AbYAHQOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 11:13:56 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:33411 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754170AbYAHQNz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 11:13:55 -0500
-Date: Tue, 8 Jan 2008 11:13:48 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: Wendy Cheng <wcheng@redhat.com>
-Cc: Neil Brown <neilb@suse.de>, akpm@linux-foundation.org,
-       linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/6] NLM: Add reference counting to lockd
-Message-ID: <20080108111348.48e47892@tleilax.poochiereds.net>
-In-Reply-To: <47839C33.6020207@redhat.com>
-References: <1199534542-3384-1-git-send-email-jlayton@redhat.com>
-	<1199534542-3384-2-git-send-email-jlayton@redhat.com>
-	<1199534542-3384-3-git-send-email-jlayton@redhat.com>
-	<1199534542-3384-4-git-send-email-jlayton@redhat.com>
-	<1199534542-3384-5-git-send-email-jlayton@redhat.com>
-	<1199534542-3384-6-git-send-email-jlayton@redhat.com>
-	<1199534542-3384-7-git-send-email-jlayton@redhat.com>
-	<18307.7241.831689.998668@notabene.brown>
-	<20080108082603.089718fc@tleilax.poochiereds.net>
-	<47839C33.6020207@redhat.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Jan 2008 11:14:08 -0500
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:23025 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759279AbYAHQOG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 11:14:06 -0500
+Date: Tue, 8 Jan 2008 17:14:03 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: linux-kernel@vger.kernel.org
+Cc: apw@shadowen.org, akpm@osdl.org
+Subject: [PATCH] Deprecate checkpatch.pl --file
+Message-ID: <20080108161403.GA11632@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 08 Jan 2008 16:07:55.0463 (UTC) FILETIME=[A1076570:01C85210]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 08 Jan 2008 10:52:19 -0500
-Wendy Cheng <wcheng@redhat.com> wrote:
 
-> Jeff Layton wrote:
-> >
-> >> The previous patch removes a kill_proc(... SIGKILL),  this one
-> >> adds it back.
-> >> That makes me wonder if the intermediate state is 'correct'.
-> >>
-> >> But I also wonder what "correct" means.
-> >> Do we want all locks to be dropped when the last nfsd thread dies?
-> >> The answer is presumably either "yes" or "no".
-> >> If "yes", then we don't have that because if there are any NFS
-> >> mounts active, lockd will not be killed.
-> >> If "no", then we don't want this kill_proc here.
-> >>
-> >> The comment in lockd() which currently reads:
-> >>
-> >> 	/*
-> >> 	 * The main request loop. We don't terminate until the last
-> >> 	 * NFS mount or NFS daemon has gone away, and we've been
-> >> sent a
-> >> 	 * signal, or else another process has taken over our job.
-> >> 	 */
-> >>
-> >> suggests that someone once thought that lockd could hang around
-> >> after all nfsd threads and nfs mounts had gone, but I don't think
-> >> it does.
-> >>
-> >> We really should think this through and get it right, because if
-> >> lockd ever drops it's locks, then we really need to make sure
-> >> sm_notify gets run.  So it needs to be a well defined event.
-> >>
-> >> Thoughts?
-> >>
-> >>     
-> >
-> > This is the part I've been struggling with the most -- defining what
-> > proper behavior should be when lockd is restarted. As you point out,
-> > restarting lockd without doing a sm_notify could be bad news for
-> > data integrity.
-> >
-> > Then again, we'd like someone to be able to shut down the NFS
-> > "service" and be able to unmount underlying filesystems without
-> > jumping through special hoops....
-> >
-> > Overall, I think I'd vote "yes". We need to drop locks when the last
-> > nfsd goes down. If userspace brings down nfsd, then it's userspace's
-> > responsibility to make sure that a sm_notify is sent when nfsd and
-> > lockd are restarted.
-> >   
-> 
-> I would vote for "no", at least for nfs v3. Shutting down lockd would 
-> require clients to reclaim the locks. With current status (protocol, 
-> design, and even the implementation itself, etc), it is simply too 
-> disruptive. I understand current logic (i.e. shutting down nfsd but 
-> leaving lockd alone) is awkward but debugging multiple platforms 
-> (remember clients may not be on linux boxes) is very non-trivial.
-> 
+Deprecate checkpatch.pl --file mode; add warning; add --file-force
 
-The current lockd implementation already drops all locks if nfsd goes
-down (providing there are no local NFS mounts). The last lockd_down call
-will bring down lockd and it will drop all of its locks in the process.
-My vote for "yes" is a vote to keep things the way they are. I don't
-think I'd consider it disruptive.
+As discussed on linux-kernel checkpatch.pl only patches for whole
+files have a significant cost for the maintenance process. 
 
-Changing lockd to not drop locks will mean that userspace will need to
-take extra steps if someone wants to bring down NFS and unmount an
-underlying filesystem. Those extra steps could be a SIGKILL to lockd or
-a call into the new interfaces your recent patchset adds. Either way,
-that would mean a change in behavior that will have to be accounted for
-in userspace.
+Better such changes should be only
+done together with other changes. Add a explicit warning about
+this; deprecate --file and add a --file-force instead.
 
--- 
-Jeff Layton <jlayton@redhat.com>
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+Index: linux/scripts/checkpatch.pl
+===================================================================
+--- linux.orig/scripts/checkpatch.pl
++++ linux/scripts/checkpatch.pl
+@@ -21,6 +21,7 @@ my $tst_type = 0;
+ my $emacs = 0;
+ my $terse = 0;
+ my $file = 0;
++my $file_force = 0;
+ my $check = 0;
+ my $summary = 1;
+ my $mailback = 0;
+@@ -34,6 +35,7 @@ GetOptions(
+ 	'emacs!'	=> \$emacs,
+ 	'terse!'	=> \$terse,
+ 	'file!'		=> \$file,
++	'file-force!'	=> \$file_force,
+ 	'subjective!'	=> \$check,
+ 	'strict!'	=> \$check,
+ 	'root=s'	=> \$root,
+@@ -50,12 +52,28 @@ if ($#ARGV < 0) {
+ 	print "         --no-tree    => run without a kernel tree\n";
+ 	print "         --terse      => one line per report\n";
+ 	print "         --emacs      => emacs compile window format\n";
+-	print "         --file       => check a source file\n";
++	print "         --file       => check a source file (deprecated)\n";
++	print "		--file-force => check a source file\n";
+ 	print "         --strict     => enable more subjective tests\n";
+ 	print "         --root       => path to the kernel tree root\n";
+ 	exit(1);
+ }
+ 
++if ($file) {
++	print <<EOL
++WARNING: Using --file mode. Please do not send patches to linux-kernel
++that change whole existing files if you did not significantly change most
++of the the file for other reasons anyways or just wrote the file newly
++from scratch. Pure code style patches have a significant cost in a
++quickly changing code base like Linux because they cause rejects
++with other changes.
++If you're sure you want to use whole file mode please use --file-force
++EOL
++;
++	exit(1);
++};
++$file = $file_force;
++
+ if ($terse) {
+ 	$emacs = 1;
+ 	$quiet++;
