@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbYAHTog@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753889AbYAHTv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755353AbYAHTog (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 14:44:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750962AbYAHTo3
+	id S1753889AbYAHTv3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 14:51:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbYAHTvV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 14:44:29 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:44327 "EHLO smtp.drzeus.cx"
+	Tue, 8 Jan 2008 14:51:21 -0500
+Received: from smtp1.cc.lut.fi ([157.24.2.30]:46701 "EHLO smtp1.cc.lut.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750707AbYAHTo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 14:44:28 -0500
-Date: Tue, 8 Jan 2008 20:44:24 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: "raki john" <raki4652@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Crash in Kernel 2.6.22.1 after calling mmc_register_card
-Message-ID: <20080108204424.19f4f414@poseidon.drzeus.cx>
-In-Reply-To: <d2a348dd0801071531u5ecabd43i260639aae39b3ae@mail.gmail.com>
-References: <d2a348dd0801071531u5ecabd43i260639aae39b3ae@mail.gmail.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+	id S1751766AbYAHTvU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 14:51:20 -0500
+X-Greylist: delayed 2642 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Jan 2008 14:51:20 EST
+Date: Tue, 8 Jan 2008 21:06:38 +0200
+From: Pekka Paalanen <pq@iki.fi>
+To: linux-kernel@vger.kernel.org
+Cc: jbeulich@novell.com, proski@gnu.org
+Subject: Replacement for page fault notifiers?
+Message-ID: <20080108210638.5c9e093a@daedalus.pq.iki.fi>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_hera.drzeus.cx-1359-1199821466-0001-2"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Hello,
 
---=_hera.drzeus.cx-1359-1199821466-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+the commit "x86: optimize page faults like all other achitectures and
+kill notifier cruft" by Christoph Hellwig removed the page fault
+notifiers (e.g. register_page_fault_notifier()) completely in 2.6.24.
+Mmio-trace [1] is using them for tracking memory mapped IO, and also
+other people have mentioned they need it [2,3].
 
-On Mon, 7 Jan 2008 15:31:32 -0800
-"raki john" <raki4652@gmail.com> wrote:
+This is roughly how I understand mmio-trace is working. In a loadable
+kernel module calls to __ioremap() are diverted to an mmio-trace
+specific function. The function calls the real __ioremap() and marks
+the returned pages as not present. Access to the mapped IO memory
+causes a page fault. Mmio-trace's page fault handler marks the page
+present, records the event, single-steps the faulting instruction, and
+finally marks the page as not present again.
 
-> Hi All,
->=20
-> Please CC me on responses.
->=20
-> I am working on a SD/MMC Host driver .
->=20
-> I am getting kerenl oops after mmc_register_card () is called.
-> i working on  LINUX 2.6.22.1 kerenl.
->=20
-> What might be the reason for this.
->=20
+- Is there anything coming to replace register_page_fault_notifier()?
+- Has someone found another way to accomplish the same without patching
+the kernel?
+- Should I start writing a patch to bring back the notifiers, based on
+the commit that removed them?
 
-That's a rather central place for it to crash, so I'm doubtful it's a bug t=
-here. I'd guess some kind of memory corruption (an all to easy mistake to m=
-ake when writing a new driver). Are you using DMA for the controller? If so=
-, try using PIO and see if it stops oopsing.
+People started to complain to me that mmio-trace does not compile for
+2.6.24. At least the Nouveau project is a regular user of mmio-trace
+for reverse-engineering, and the tool should be easy to use. Therefore
+I would prefer not to force casual contributors to patch their kernels
+as it might be too much for some. I am hoping that 2.6.25, if not
+2.6.24, would contain a mechanism to accomplish what I need.
 
-Rgds
-Pierre
+I am not a subscriber, so please keep me in CC. Also I CC'd the people
+who wrote about the same issue in the past.
 
---=_hera.drzeus.cx-1359-1199821466-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
+Thanks.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
 
-iEYEARECAAYFAkeD0pgACgkQ7b8eESbyJLjGEwCg+numWOBJokAyOyy0Bv97e03D
-SLsAoO/XJN9iHfAW/DZ1dujPUe9eoGd4
-=rdbz
------END PGP SIGNATURE-----
+[1] http://nouveau.freedesktop.org/wiki/MmioTrace
+[2] http://marc.info/?l=linux-kernel&m=119540769014745&w=2
+[3] http://article.gmane.org/gmane.linux.kernel/609521
 
---=_hera.drzeus.cx-1359-1199821466-0001-2--
+-- 
+Pekka Paalanen
+http://www.iki.fi/pq/
