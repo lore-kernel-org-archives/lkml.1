@@ -1,110 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761125AbYAHQPE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759430AbYAHQTY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761125AbYAHQPE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 11:15:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbYAHQOr
+	id S1759430AbYAHQTY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 11:19:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbYAHQTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 11:14:47 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:19167 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760028AbYAHQOq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 11:14:46 -0500
-Date: Tue, 8 Jan 2008 08:14:01 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Kevin Winchester <kjwinchester@gmail.com>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       NetDev <netdev@vger.kernel.org>
-Subject: Re: Top 10 kernel oopses for the week ending January 5th, 2008
-Message-Id: <20080108081401.d9576ac5.randy.dunlap@oracle.com>
-In-Reply-To: <alpine.LFD.1.00.0801071851120.3148@woody.linux-foundation.org>
-References: <477FF149.4070609@linux.intel.com>
-	<20080105213935.GN27894@ZenIV.linux.org.uk>
-	<20080107174431.GC27741@fieldses.org>
-	<4782CF9C.6000508@gmail.com>
-	<alpine.LFD.1.00.0801071851120.3148@woody.linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 8 Jan 2008 11:19:15 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40306 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751210AbYAHQTO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 11:19:14 -0500
+Date: Tue, 8 Jan 2008 17:18:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: DM <dm.n9107@gmail.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       rusty@rustcorp.com.au, ak@suse.de
+Subject: Re: [patch 2/2] track and print last unloaded module in the oops
+	trace
+Message-ID: <20080108161846.GD32273@elte.hu>
+References: <20080106151946.50c3d8cc@laptopd505.fenrus.org> <5eeb9ad90801080551n562b9f15o27b495495a452c22@mail.gmail.com> <20080108062656.311cd3aa@laptopd505.fenrus.org> <5eeb9ad90801080639h2992e9b7maec0339e4f763f65@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5eeb9ad90801080639h2992e9b7maec0339e4f763f65@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Jan 2008 19:26:12 -0800 (PST) Linus Torvalds wrote:
 
-> On Mon, 7 Jan 2008, Kevin Winchester wrote:
-> 
-> > J. Bruce Fields wrote:
-> > > 
-> > > Is there any good basic documentation on this to point people at?
-> > 
-> > I would second this question.  I see people "decode" oops on lkml often 
-> > enough, but I've never been entirely sure how its done.  Is it somewhere 
-> > in Documentation?
-> 
-> It's actually not necessarily at all that trivial, unless you have a deep 
-> understanding of the code generated for the architecture in question (and 
-> even then, some oopses take more time to figure out than others, thanks 
-> to inlining and tailcalls etc).
-> 
-> If the oops happened with a kernel you generated yourself, it's usually 
-> rather easy. Especially if you said "y" to the "generate debugging info" 
-> question at configuration time. Because, in that case, you really just do 
-> a simple
-> 
-> 	gdb vmlinux
-> 
-> and then you can do (for example) something like setting a breakpoint at 
-> the EIP that was reported for the oops, and it will tell you what line it 
-> came from.
-> 
-> However, if you don't have the exact binary - which is the common case for 
-> random oopses reported on lkml - you will generally have to disassemble 
-> the hex sequence given in the oops (the "Code:" line), and try to match it 
-> up against the source code to try to figure out what is going on.
-> 
-> Even just the disassembly is not entirely trivial, since the oops will 
-> give you the eip that it happened at, but you often want to also 
-> disassemble *backwards* in order to get more of a context (the "Code:" 
-> line will mark the particular EIP that starts the oopsing instruction by 
-> enclosing it in <xx>, but with non-constant instruction lengths, you need 
-> to use a bit of trial-and-error to figure it out.
-> 
-> I usually just compile a small program like
-> 
-> 	const char array[]="\xnn\xnn\xnn...";
-> 
-> 	int main(int argc, char **argv)
-> 	{
-> 		printf("%p\n", array);
-> 		*(int *)0=0;
-> 	}
-> 
-> and run it under gdb, and then when it gets the SIGSEGV (due to the 
-> obvious NULL pointer dereference), I can just ask gdb to disassemble 
-> around the array that contains the code[] stuff. Try a few offsets, to see 
-> when the disassembly makes sense (and gives the reported EIP as the 
-> beginning of one of the disassembled instructions).
-> 
-> (You can do it other and smarter ways too, I'm not claiming that's a 
-> particularly good way to do it, and the old "ksymoops" program used to do 
-> a pretty good job of this, but I'm used to that particular idiotic way 
-> myself, since it's how I've basically always done it)
+* DM <dm.n9107@gmail.com> wrote:
 
-One other way to do it (at least for x86-32/64) is to use
-$kerneltree/scripts/decodecode.  It may work on other $arches also,
-but I haven't tested it on others.
+> On Jan 8, 2008 3:26 PM, Arjan van de Ven <arjan@infradead.org> wrote:
+> > >
+> > > Why use sprintf? If a module name contains the % character we could
+> > > overflow the buffer. Or is module-unloading root-only and we don't
+> > > care?
+> >
+> > module loading isn't just root only; the name comes from an already loaded module.
+> > If you can load kernel modules of your choice you own the entire kernel already anway
+> >
+> 
+> Still, strcpy seems like a better choice IMHO.
 
----
-~Randy
+agreed, this just isnt obvious IMO:
+
++       sprintf(last_unloaded_module, mod->name);
+
+	Ingo
