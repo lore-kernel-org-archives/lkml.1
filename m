@@ -1,91 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756204AbYAHUQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754564AbYAHUVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756204AbYAHUQd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 15:16:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753783AbYAHUQO
+	id S1754564AbYAHUVR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 15:21:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbYAHUVD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 15:16:14 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:38126 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753347AbYAHUQM (ORCPT
+	Tue, 8 Jan 2008 15:21:03 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:35492 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751171AbYAHUVA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 15:16:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=n8Ed9Dji28J/GKouqe6fr3Oq/1CCXsstwY5pf2l6NLnRU8I1rrVdeH6HF5d3B/s1a+qlZIWFLDQqTROPtIKeHVMbI0/Qmjh8FvARRBT0W2ENkGljoScU7Q+xb5iisLGdZaKCaABTTabKbvWhgHMSNtBkzG+p/UMIivUBTgq0wpU=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] Deprecate checkpatch.pl --file
-Date: Tue, 8 Jan 2008 21:27:21 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
-Cc: Daniel Walker <dwalker@mvista.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, apw@shadowen.org,
-       akpm@linux-foundation.org
-References: <20080108161403.GA11632@basil.nowhere.org> <1199811033.1756.29.camel@imap.mvista.com> <20080108175347.GA25968@uranus.ravnborg.org>
-In-Reply-To: <20080108175347.GA25968@uranus.ravnborg.org>
+	Tue, 8 Jan 2008 15:21:00 -0500
+Date: Tue, 8 Jan 2008 13:21:00 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, gorcunov@gmail.com
+Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
+Message-ID: <20080108202059.GK16309@parisc-linux.org>
+References: <20080108164015.GC31504@one.firstfloor.org> <4d8e3fd30801081158j3e7292d0i939776342015b12d@mail.gmail.com> <20080108200044.GI16309@parisc-linux.org> <4d8e3fd30801081203l636c5923j7965efaa9c121c56@mail.gmail.com> <20080108201606.GJ16309@parisc-linux.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801082127.21602.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20080108201606.GJ16309@parisc-linux.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 08 January 2008, Sam Ravnborg wrote:
-> On Tue, Jan 08, 2008 at 08:50:33AM -0800, Daniel Walker wrote:
-> > 
-> > On Tue, 2008-01-08 at 17:14 +0100, Andi Kleen wrote:
-> > 
-> > 
-> > > +if ($file) {
-> > > +	print <<EOL
-> > > +WARNING: Using --file mode. Please do not send patches to linux-kernel
-> > > +that change whole existing files if you did not significantly change most
-> > > +of the the file for other reasons anyways or just wrote the file newly
-> > > +from scratch. Pure code style patches have a significant cost in a
-> > > +quickly changing code base like Linux because they cause rejects
-> > > +with other changes.
-> > > +If you're sure you want to use whole file mode please use --file-force
-> > > +EOL
-> > > +;
-> > > +	exit(1);
+On Tue, Jan 08, 2008 at 01:16:06PM -0700, Matthew Wilcox wrote:
+> On Tue, Jan 08, 2008 at 09:03:13PM +0100, Paolo Ciarrocchi wrote:
+> > Yes of course, I've been silly in didn't verify whether the file compile
+> > but I would appreciate to know whether I'm on the right track or not.
+> 
+> Well ... you're not.
 
-I'm not against the patch (although --file to --file-force parameter change
-seems unnecessary and the warning should be toned down) but I think that
-cleanup patches have been demonized out of proportion recently on LKML.
+Here's what a correct conversion might look like.  I haven't tried to
+compile it, so I'm copying and pasting it in order to damage whitespace
+and make sure nobody tries to compile it.
 
-> > Can't say I like this too much .. It sounds like your telling people to
-> > stop sending cleanup patches, which doesn't make much sense .. We want a
-> > clean kernel .. Or at least I do ..
+index bf1075e..0c543a8 100644
+--- a/arch/arm/common/rtctime.c
++++ b/arch/arm/common/rtctime.c
+@@ -174,8 +174,7 @@ static unsigned int rtc_poll(struct file *file, poll_table *
+        return data != 0 ? POLLIN | POLLRDNORM : 0;
+ }
+ 
+-static int rtc_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+-                    unsigned long arg)
++static long rtc_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
+        struct rtc_ops *ops = file->private_data;
+        struct rtc_time tm;
+@@ -183,6 +182,8 @@ static int rtc_ioctl(struct inode *inode, struct file *file,
+        void __user *uarg = (void __user *)arg;
+        int ret = -EINVAL;
+ 
++       lock_kernel();
++
+        switch (cmd) {
+        case RTC_ALM_READ:
+                ret = rtc_arm_read_alarm(ops, &alrm);
+@@ -277,6 +278,9 @@ static int rtc_ioctl(struct inode *inode, struct file *file,
+                        ret = ops->ioctl(cmd, arg);
+                break;
+        }
++
++       unlock_kernel();
++
+        return ret;
+ }
+ 
+@@ -334,7 +338,7 @@ static const struct file_operations rtc_fops = {
+        .llseek         = no_llseek,
+        .read           = rtc_read,
+        .poll           = rtc_poll,
+-       .ioctl          = rtc_ioctl,
++       .unlocked_ioctl = rtc_ioctl,
+        .open           = rtc_open,
+        .release        = rtc_release,
+        .fasync         = rtc_fasync,
 
-Seconded, also if this is what people like to work on we shouldn't be trying
-to stop them but point them into the direction where their work could be more
-productive in "the big picture" context.
 
-> It is a simple pain/benefit issue.
-> Fixing the 25 errors and 13 warnings in kernel/profile.c may look
-> like an easy task but then we put additional burden on the 10 people
-> that have patches pending for this file.
-
-OTOH there is a lot of old/legacy code that almost nobody is touching where
-cleanup would be appreciated (it is quite likely that somebody will notice
-and fix a bug or two in the process).
-
-> It is the same reason why we do not run a 'kill-trailing-whitespace'
-> on the full kernel tree.
-
-Agreed but we sometimes accept per file whitespace cleanups.
-
-The important thing here is "common sense".  Sending a big patch series
-of "checkpatch.pl fixes" for kernel/* files is certainly not a good thing.
-Core code has a lot of high-profile people looking over it so you will be
-just interfering with their changes.
-
-However if somebody do such fixes for some old/orphaned driver _and_ also
-fix other things at the same time then everything is sweet from my POV. :)
-
-Thanks,
-Bart
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
