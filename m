@@ -1,51 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758744AbYAHNvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756235AbYAHOHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758744AbYAHNvt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 08:51:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbYAHNvk
+	id S1756235AbYAHOHe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 09:07:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752236AbYAHOHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 08:51:40 -0500
-Received: from nz-out-0506.google.com ([64.233.162.225]:16599 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751586AbYAHNvi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 08:51:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RzFv6iUAkvP/YHFg2gDY6QOSYt7QDohfZR+RpdUCVoOFw85a7O77J0KWAvQyZ4S8+sN09JoOnEDLvUv5KX1MHhEbEBNBZ9DJywWnLF46QGxRH3HC6BxOtegJaGw7cW373dK8HQBmcZYfz/Rfa30ptPKM2tH/gpIcTX9P5rSnFTA=
-Message-ID: <5eeb9ad90801080551n562b9f15o27b495495a452c22@mail.gmail.com>
-Date: Tue, 8 Jan 2008 14:51:37 +0100
-From: DM <dm.n9107@gmail.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: [patch 2/2] track and print last unloaded module in the oops trace
-Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, ak@suse.de,
-       mingo@elte.hu
-In-Reply-To: <20080106151946.50c3d8cc@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 8 Jan 2008 09:07:23 -0500
+Received: from mo10.iij4u.or.jp ([210.138.174.78]:51864 "EHLO mo10.iij4u.or.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751601AbYAHOHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 09:07:22 -0500
+Date: Tue, 8 Jan 2008 23:07:01 +0900
+To: dushistov@mail.ru
+Cc: James.Bottomley@HansenPartnership.com, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Cc: fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [GIT PATCH] SCSI bug fixes for 2.6.24-rc3
+From: FUJITA Tomonori <tomof@acm.org>
+In-Reply-To: <20080108111549.GA30832@rain>
+References: <1195989865.3427.16.camel@localhost.localdomain>
+	<20080108111549.GA30832@rain>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080106151946.50c3d8cc@laptopd505.fenrus.org>
+Message-Id: <20080108230943U.tomof@acm.org>
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 7, 2008 12:19 AM, Arjan van de Ven <arjan@infradead.org> wrote:
-[...]
-> This patch tracks the last unloaded module, and prints this as part of the
-> module list in the oops trace.
->
-[...]
->        }
-> +       /* Store the name of the last unloaded module for diagnostic purposes */
-> +       sprintf(last_unloaded_module, mod->name);
->        free_module(mod);
->
+CC'ed Jes,
 
-Why use sprintf? If a module name contains the % character we could
-overflow the buffer. Or is module-unloading root-only and we don't
-care?
+On Tue, 8 Jan 2008 14:15:53 +0300
+Evgeniy Dushistov <dushistov@mail.ru> wrote:
 
-Best regards,
-dm.n9107
+> On Sun, Nov 25, 2007 at 01:24:25PM +0200, James Bottomley wrote:
+> > This is a bit of a rash of bug fixes.  The qla1280 is actually a bug fix
+> > (in spite of the title---it's actually correcting an existing problem
+> > with the qla1280 implementation of accessors that broke the current
+> > driver).
+> > 
+> 
+> Recently I build last Linus's git tree, and got:
+> req_cnt is used uninitialized in this function,
+> and see bellow
+> > The patch is available here:
+> > 
+> > master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+> > 
+> > The short changelog is:
+> ...
+> > Jes Sorensen (1):
+> >       qla1280: convert to use the data buffer accessors
+> > 
+> ...
+> >  scsi/qla1280.c         |  387 +++++++++++++++++++++----------------------------
+> ...
+> >  	/* Calculate number of entries and segments required. */
+> > -	req_cnt = 1;
+> > 
+> 
+> Initilization of req_cnt was removed, but in this function
+> there are places like 
+> req_cnt += (seg_cnt - 4) / 7;
+> or
+> req_cnt++;
+> This is should be so?
+
+req_cnt should not be removed. Jes tested the patch but this critical
+bug appears only with BITS_PER_LONG != 64 && CONFIG_HIGHMEM=n case. So
+he didn't see this, I think.
+
+qla1280_32bit_start_scsi also gives the following warning:
+
+drivers/scsi/qla1280.c: In function 'qla1280_32bit_start_scsi':
+drivers/scsi/qla1280.c:3044: warning: unused variable 'dma_handle'
+
+
+diff --git a/drivers/scsi/qla1280.c b/drivers/scsi/qla1280.c
+index 146d540..2886407 100644
+--- a/drivers/scsi/qla1280.c
++++ b/drivers/scsi/qla1280.c
+@@ -3041,7 +3041,6 @@ qla1280_32bit_start_scsi(struct scsi_qla_host *ha, struct srb * sp)
+ 	int cnt;
+ 	int req_cnt;
+ 	int seg_cnt;
+-	dma_addr_t dma_handle;
+ 	u8 dir;
+ 
+ 	ENTER("qla1280_32bit_start_scsi");
+@@ -3050,6 +3049,7 @@ qla1280_32bit_start_scsi(struct scsi_qla_host *ha, struct srb * sp)
+ 		cmd->cmnd[0]);
+ 
+ 	/* Calculate number of entries and segments required. */
++	req_cnt = 1;
+ 	seg_cnt = scsi_dma_map(cmd);
+ 	if (seg_cnt) {
+ 		/*
