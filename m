@@ -1,54 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754513AbYAHSVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755055AbYAHSVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754513AbYAHSVd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 13:21:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbYAHSVE
+	id S1755055AbYAHSVs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 13:21:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754101AbYAHSVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 13:21:04 -0500
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:45136 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751643AbYAHSVD (ORCPT
+	Tue, 8 Jan 2008 13:21:20 -0500
+Received: from mga10.intel.com ([192.55.52.92]:31523 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754044AbYAHSVT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 13:21:03 -0500
-Date: Tue, 8 Jan 2008 13:20:48 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, apw@shadowen.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] Deprecate checkpatch.pl --file
-Message-ID: <20080108182048.GM27800@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Daniel Walker <dwalker@mvista.com>, Sam Ravnborg <sam@ravnborg.org>,
-	Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-	apw@shadowen.org, akpm@linux-foundation.org
-References: <20080108161403.GA11632@basil.nowhere.org> <1199811033.1756.29.camel@imap.mvista.com> <20080108175347.GA25968@uranus.ravnborg.org> <1199815279.1756.35.camel@imap.mvista.com>
+	Tue, 8 Jan 2008 13:21:19 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,258,1196668800"; 
+   d="scan'208";a="280285664"
+Message-ID: <4783BE06.1070507@linux.intel.com>
+Date: Tue, 08 Jan 2008 10:16:38 -0800
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1199815279.1756.35.camel@imap.mvista.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Randy Dunlap <randy.dunlap@oracle.com>,
+       Kevin Winchester <kjwinchester@gmail.com>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       NetDev <netdev@vger.kernel.org>
+Subject: Re: Top 10 kernel oopses for the week ending January 5th, 2008
+References: <477FF149.4070609@linux.intel.com> <20080105213935.GN27894@ZenIV.linux.org.uk> <20080107174431.GC27741@fieldses.org> <4782CF9C.6000508@gmail.com> <alpine.LFD.1.00.0801071851120.3148@woody.linux-foundation.org> <20080108081401.d9576ac5.randy.dunlap@oracle.com> <4783B602.1050307@linux.intel.com> <alpine.LFD.1.00.0801080957280.3148@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0801080957280.3148@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 08, 2008 at 10:01:19AM -0800, Daniel Walker wrote:
-> > It is a simple pain/benefit issue.
-> > Fixing the 25 errors and 13 warnings in kernel/profile.c may look
-> > like an easy task but then we put additional burden on the 10 people
-> > that have patches pending for this file.
+Linus Torvalds wrote:
+> Cool.
 > 
-> This goes for all patches on kernel/profile.c tho .. If I make a big mod
-> to kernel/profile.c, that will screw up anyone else who has patches for
-> that file..
+> One thing I wonder about - could you separate out the bug-ons and warnings 
+> from the oopses? They really are different issues, and an oops with 
+> register information etc is very different from a BUG() with line numbers, 
+> which in turn is very different from a WARN_ON().
 
-Obviously, but why make it worse?  And what's more important?  A
-"clean tree" (especially when some of the things that checkpatch.pl
-flag are arbitrary and Not All That Important), or wasting developers'
-time invalidating potentially huge number of patches thanks to cleanup
-patches?
 
-							- Ted
+> and in fact three of those five entries are really WARN_ON's. It would be 
+> nicer if it would look more along the lines of
+> 
+> 	Backtraces reported for kernel 2.6.24-rc7
+> 
+> 
+> 	4 oopses reported
+> 
+> 	hfsplus_releasepage     3
+> 	__hfs_brec_find         1
+> 
+> 
+> 	3 warnings repored
+> 
+> 	enqueue_task            1
+> 	lock_acquire            1
+> 	__ieee80211_rx          1
+> 
+> because those things really don't have the same kind of impact at all, and 
+> tend to be very different to debug (a "BUG_ON()" is perhaps somewhat 
+> closer to an oops, but a WARN_ON() is definitely in a class of its own).
+
+the database has the information so it's just a matter of slightly different php code ;)
+Before I do that... do you want the BUG's separate, part of the warnings or part of the oopses?
+(I rather make this change once ;)
+
+> 
+> On that "Code:" side, it seems there is still some problem with oops 
+> parsing. See for example:
+> 
+> 	http://www.kerneloops.org/raw.php?rawid=1521&msgid=http://mid.gmane.org/20071017154655.GA13394@elte.hu
+> 
+> and notice how the Code: never made it into the raw message (and thus 
+> there is also no instruction disassembly).
+
+ok I'll fix this; I can fix this for all new entries at least, fixing retroactive is going to be
+near impossible I suspect.
