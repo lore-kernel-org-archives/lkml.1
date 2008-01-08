@@ -1,73 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbYAHSpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbYAHSsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbYAHSpk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 13:45:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYAHSp3
+	id S1754611AbYAHSsp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 13:48:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbYAHSsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 13:45:29 -0500
-Received: from mho-01-bos.mailhop.org ([63.208.196.178]:53964 "EHLO
-	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751825AbYAHSp1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 13:45:27 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 18.85.9.106
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX19RYfw8mgv+Purs36zrTl7W
-Message-ID: <4783C4A6.9060402@reed.com>
-Date: Tue, 08 Jan 2008 13:44:54 -0500
-From: "David P. Reed" <dpreed@reed.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.9) Gecko/20071115 Fedora/2.0.0.9-1.fc8 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
+	Tue, 8 Jan 2008 13:48:37 -0500
+Received: from www.tglx.de ([62.245.132.106]:42633 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752161AbYAHSsg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 13:48:36 -0500
+Date: Tue, 8 Jan 2008 19:47:38 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Roland Westrelin <roland.westrelin@sun.com>
+Subject: [PATCH] futex: Prevent stale futex owner when interrupted/timeout
+Message-ID: <alpine.LFD.0.99999.0801081739000.31637@localhost.localdomain>
+User-Agent: Alpine 0.99999 (LFD 796 2007-11-08)
 MIME-Version: 1.0
-To: Ondrej Zary <linux@rainbow-software.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Rene Herman <rene.herman@keyaccess.nl>,
-       Bodo Eggert <7eggert@gmx.de>, Christer Weinigel <christer@weinigel.se>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Paul Rolland <rol@as2917.net>, Pavel Machek <pavel@ucw.cz>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>, rol@witbe.net
-Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
- I/O delay override.
-References: <9BdU5-1YW-9@gated-at.bofh.it> <200801081810.58904.linux@rainbow-software.org> <4783B1B2.6070005@reed.com> <200801081838.16241.linux@rainbow-software.org>
-In-Reply-To: <200801081838.16241.linux@rainbow-software.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Roland Westrelin did a great analysis of a long standing thinko in the
+return path of futex_lock_pi.
 
+While we fixed the lock steal case long ago, which was easy to trigger,
+we never had a test case which exposed this problem and stupidly never
+thought about the reverse lock stealing scenario and the return to user
+space with a stale state.
 
-Ondrej Zary wrote:
-> On Tuesday 08 January 2008 18:24:02 David P. Reed wrote:
->   
->> Windows these days does delays with timing loops or the scheduler.  It
->> doesn't use a "port".  Also, Windows XP only supports machines that tend
->> not to have timing problems that use delays.  Instead, if a device takes
->> a while to respond, it has a "busy bit" in some port or memory slot that
->> can be tested.
->>     
->
-> Windows XP can run on a machine with ISA slot(s) and has built-in drivers for 
-> some plug&play ISA cards - e.g. the famous 3Com EtherLink III. I think that 
-> there's a driver for NE2000-compatible cards too and it probably works.
->   
-There is no need to use io writes to supposedly/theoretically "unused 
-ports" to make drivers work on any bus.
-ISA included!  You can, for example, wait for an ISA bus serial adapter 
-to put out its next character by looping reading the port that has the 
-output buffer full flag in a tight loop, with no delay code at all.  And 
-if you need to time things, just call a timing loop subroutine that you 
-calibrate at boot time.
-I wrote DOS drivers for NE2000's on the ISA bus when they were brand new 
-designs from Novell without such kludges as writes to I/O port 80.  I 
-don't remember writing a driver for the 3com devices - probably didn't, 
-because 3Com's cards were expensive at the time.
+When a blocked tasks returns from rt_mutex_timed_locked without holding
+the rt_mutex (due to a signal or timeout) and at the same time the task
+holding the futex is releasing the futex and assigning the ownership of
+the futex to the returning task, then it might happen that a third task
+acquires the rt_mutex before the final rt_mutex_trylock() of the
+returning task happens under the futex hash bucket lock. The returning
+task returns to user space with ETIMEOUT or EINTR, but the user space
+futex value is assigned to this task. The task which acquired the
+rt_mutex fixes the user space futex value right after the hash bucket
+lock has been released by the returning task, but for a short period of
+time the user space value is wrong.
 
-In any case, Linux *did* adopt this port 80 strategy - I'm sure all 
-concerned thought it was frightfully clever at the time.  Linus 
-expressed his skepticism in the comments in io.h.  The problem is to 
-safely move away from it toward a proper strategy that doesn't depend on 
-"bus aborts" which would trigger machine checks if they were properly 
-enabled.
+Detailed description is available at:
 
+   https://bugzilla.redhat.com/show_bug.cgi?id=400541
+
+The fix for this is the same as we do when the rt_mutex was acquired by
+a higher priority task via lock stealing from the designated new owner.
+In that case we already fix the user space value and the internal
+pi_state up before we return. This mechanism can be used to fixup the
+above corner case as well. When the returning task, which failed to
+acquire the rt_mutex, notices that it is the designated owner of the
+futex, then it fixes up the stale user space value and the pi_state,
+before returning to user space. This happens with the futex hash bucket
+lock held, so the task which acquired the rt_mutex is guaranteed to be
+blocked on the hash bucket lock. We can access the rt_mutex owner, which
+gives us the pid of the new owner, safely here as the owner is not able
+to modify (release) it while waiting on the hash bucket lock.
+
+Rename the "curr" argument of fixup_pi_state_owner() to "newowner" to
+avoid confusion with current and add the check for the stale state into
+the failure path of rt_mutex_trylock() in the return path of
+unlock_futex_pi(). If the situation is detected use
+fixup_pi_state_owner() to assign everything to the owner of the
+rt_mutex.
+
+Pointed-out-by: Roland Westrelin <roland.westrelin@sun.com>
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Tested-by: Roland Westrelin <roland.westrelin@sun.com>
+
+diff --git a/kernel/futex.c b/kernel/futex.c
+index 172a1ae..db9824d 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -1097,15 +1097,15 @@ static void unqueue_me_pi(struct futex_q *q)
+ }
+ 
+ /*
+- * Fixup the pi_state owner with current.
++ * Fixup the pi_state owner with the new owner.
+  *
+  * Must be called with hash bucket lock held and mm->sem held for non
+  * private futexes.
+  */
+ static int fixup_pi_state_owner(u32 __user *uaddr, struct futex_q *q,
+-				struct task_struct *curr)
++				struct task_struct *newowner)
+ {
+-	u32 newtid = task_pid_vnr(curr) | FUTEX_WAITERS;
++	u32 newtid = task_pid_vnr(newowner) | FUTEX_WAITERS;
+ 	struct futex_pi_state *pi_state = q->pi_state;
+ 	u32 uval, curval, newval;
+ 	int ret;
+@@ -1119,12 +1119,12 @@ static int fixup_pi_state_owner(u32 __user *uaddr, struct futex_q *q,
+ 	} else
+ 		newtid |= FUTEX_OWNER_DIED;
+ 
+-	pi_state->owner = curr;
++	pi_state->owner = newowner;
+ 
+-	spin_lock_irq(&curr->pi_lock);
++	spin_lock_irq(&newowner->pi_lock);
+ 	WARN_ON(!list_empty(&pi_state->list));
+-	list_add(&pi_state->list, &curr->pi_state_list);
+-	spin_unlock_irq(&curr->pi_lock);
++	list_add(&pi_state->list, &newowner->pi_state_list);
++	spin_unlock_irq(&newowner->pi_lock);
+ 
+ 	/*
+ 	 * We own it, so we have to replace the pending owner
+@@ -1508,9 +1508,40 @@ static int futex_lock_pi(u32 __user *uaddr, struct rw_semaphore *fshared,
+ 		 * when we were on the way back before we locked the
+ 		 * hash bucket.
+ 		 */
+-		if (q.pi_state->owner == curr &&
+-		    rt_mutex_trylock(&q.pi_state->pi_mutex)) {
+-			ret = 0;
++		if (q.pi_state->owner == curr) {
++			/*
++			 * Try to get the rt_mutex now. This might
++			 * fail as some other task acquired the
++			 * rt_mutex after we removed ourself from the
++			 * rt_mutex waiters list.
++			 */
++			if (rt_mutex_trylock(&q.pi_state->pi_mutex))
++				ret = 0;
++			else {
++				/*
++				 * pi_state is incorrect, some other
++				 * task did a lock steal and we
++				 * returned due to timeout or signal
++				 * without taking the rt_mutex. Too
++				 * late. We can access the
++				 * rt_mutex_owner without locking, as
++				 * the other task is now blocked on
++				 * the hash bucket lock. Fix the state
++				 * up.
++				 */
++				struct task_struct *owner;
++				int res;
++
++				owner = rt_mutex_owner(&q.pi_state->pi_mutex);
++				res = fixup_pi_state_owner(uaddr, &q, owner);
++
++				WARN_ON(rt_mutex_owner(&q.pi_state->pi_mutex) !=
++					owner);
++
++				/* propagate -EFAULT, if the fixup failed */
++				if (res)
++					ret = res;
++			}
+ 		} else {
+ 			/*
+ 			 * Paranoia check. If we did not take the lock
