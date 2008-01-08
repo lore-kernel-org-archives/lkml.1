@@ -1,105 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbYAHUZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585AbYAHU05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754830AbYAHUZe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 15:25:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbYAHUZ0
+	id S1755585AbYAHU05 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 15:26:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbYAHU0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 15:25:26 -0500
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:64769 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751091AbYAHUZZ (ORCPT
+	Tue, 8 Jan 2008 15:26:49 -0500
+Received: from wx-out-0506.google.com ([66.249.82.224]:55305 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751100AbYAHU0r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 15:25:25 -0500
-X-IronPort-AV: E=Sophos;i="4.24,259,1196668800"; 
-   d="scan'208";a="18570026"
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: [GIT PULL] please pull infiniband.git
-X-Message-Flag: Warning: May contain useful information
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 08 Jan 2008 12:25:23 -0800
-Message-ID: <adatzlo83po.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+	Tue, 8 Jan 2008 15:26:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=s580oNDpZY6+LflG9pchbXPFVQ15LhvzRp5nibXmDr1zKWza+6iR5CmK1/tcuLZUUjPXXgOsuLNvNxbVkbpqMJYKRUYYKPU/hkuyMBqu1vbrxKIyOzd9NrV6iK1htiNI3I63i2g1Rea8Ka/BQdaMRgw9YyXMU/pbGzytJFNhh4c=
+Message-ID: <4d8e3fd30801081226u8911e19w7e2d3ef5a3545ef8@mail.gmail.com>
+Date: Tue, 8 Jan 2008 21:26:45 +0100
+From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
+To: "Matthew Wilcox" <matthew@wil.cx>
+Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
+Cc: "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, gorcunov@gmail.com
+In-Reply-To: <20080108202059.GK16309@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 08 Jan 2008 20:25:24.0025 (UTC) FILETIME=[9916E290:01C85234]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080108164015.GC31504@one.firstfloor.org>
+	 <4d8e3fd30801081158j3e7292d0i939776342015b12d@mail.gmail.com>
+	 <20080108200044.GI16309@parisc-linux.org>
+	 <4d8e3fd30801081203l636c5923j7965efaa9c121c56@mail.gmail.com>
+	 <20080108201606.GJ16309@parisc-linux.org>
+	 <20080108202059.GK16309@parisc-linux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+On Jan 8, 2008 9:21 PM, Matthew Wilcox <matthew@wil.cx> wrote:
+> On Tue, Jan 08, 2008 at 01:16:06PM -0700, Matthew Wilcox wrote:
+> > On Tue, Jan 08, 2008 at 09:03:13PM +0100, Paolo Ciarrocchi wrote:
+> > > Yes of course, I've been silly in didn't verify whether the file compile
+> > > but I would appreciate to know whether I'm on the right track or not.
+> >
+> > Well ... you're not.
+>
+> Here's what a correct conversion might look like.  I haven't tried to
+> compile it, so I'm copying and pasting it in order to damage whitespace
+> and make sure nobody tries to compile it.
+>
+> index bf1075e..0c543a8 100644
+> --- a/arch/arm/common/rtctime.c
+> +++ b/arch/arm/common/rtctime.c
+> @@ -174,8 +174,7 @@ static unsigned int rtc_poll(struct file *file, poll_table *
+>         return data != 0 ? POLLIN | POLLRDNORM : 0;
+>  }
+>
+> -static int rtc_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+> -                    unsigned long arg)
+> +static long rtc_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+>  {
+>         struct rtc_ops *ops = file->private_data;
+>         struct rtc_time tm;
+> @@ -183,6 +182,8 @@ static int rtc_ioctl(struct inode *inode, struct file *file,
+>         void __user *uarg = (void __user *)arg;
+>         int ret = -EINVAL;
+>
+> +       lock_kernel();
+> +
+>         switch (cmd) {
+>         case RTC_ALM_READ:
+>                 ret = rtc_arm_read_alarm(ops, &alrm);
+> @@ -277,6 +278,9 @@ static int rtc_ioctl(struct inode *inode, struct file *file,
+>                         ret = ops->ioctl(cmd, arg);
+>                 break;
+>         }
+> +
+> +       unlock_kernel();
+> +
+>         return ret;
+>  }
+>
+> @@ -334,7 +338,7 @@ static const struct file_operations rtc_fops = {
+>         .llseek         = no_llseek,
+>         .read           = rtc_read,
+>         .poll           = rtc_poll,
+> -       .ioctl          = rtc_ioctl,
+> +       .unlocked_ioctl = rtc_ioctl,
+>         .open           = rtc_open,
+>         .release        = rtc_release,
+>         .fasync         = rtc_fasync,
+>
 
-    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+Thank you Matthew,
+I definitely need to back studying before submitting another patch.
 
-This tree is also available from kernel.org mirrors at:
-
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
-
-This will get a few one-line fixes: change a maintainer email address
-that is going away soon, fix a bug that would make the second port on
-some HCAs useless, and fix SRP the right way now that the root cause
-is fixed via James's tree.
-
-(And just to counter James's suggestion that the SRP user base is
-comparable to voyager's: these SRP fixes are coming from a real
-production user, and that user is @ornl.gov, which means that SRP is
-actually being used to do something involving things like atomic bombs
-or sharks with laser beams)
-
-Dave Dillow (1):
-      IB/srp: Release transport before removing host
-
-Dotan Barak (1):
-      IB/mlx4: Fix value of pkey_index in QP1 completions
-
-Sean Hefty (1):
-      MAINTAINERS: Update Sean Hefty's email address
-
- MAINTAINERS                         |    2 +-
- drivers/infiniband/hw/mlx4/cq.c     |    2 +-
- drivers/infiniband/ulp/srp/ib_srp.c |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
-
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 79c711e..56e6159 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1919,7 +1919,7 @@ INFINIBAND SUBSYSTEM
- P:	Roland Dreier
- M:	rolandd@cisco.com
- P:	Sean Hefty
--M:	mshefty@ichips.intel.com
-+M:	sean.hefty@intel.com
- P:	Hal Rosenstock
- M:	hal.rosenstock@gmail.com 
- L:	general@lists.openfabrics.org
-diff --git a/drivers/infiniband/hw/mlx4/cq.c b/drivers/infiniband/hw/mlx4/cq.c
-index 8bf44da..9d32c49 100644
---- a/drivers/infiniband/hw/mlx4/cq.c
-+++ b/drivers/infiniband/hw/mlx4/cq.c
-@@ -430,7 +430,7 @@ static int mlx4_ib_poll_one(struct mlx4_ib_cq *cq,
- 		wc->dlid_path_bits = (be32_to_cpu(cqe->g_mlpath_rqpn) >> 24) & 0x7f;
- 		wc->wc_flags      |= be32_to_cpu(cqe->g_mlpath_rqpn) & 0x80000000 ?
- 			IB_WC_GRH : 0;
--		wc->pkey_index     = be32_to_cpu(cqe->immed_rss_invalid) >> 16;
-+		wc->pkey_index     = be32_to_cpu(cqe->immed_rss_invalid) & 0x7f;
- 	}
- 
- 	return 0;
-diff --git a/drivers/infiniband/ulp/srp/ib_srp.c b/drivers/infiniband/ulp/srp/ib_srp.c
-index 77e8b90..bdb6f85 100644
---- a/drivers/infiniband/ulp/srp/ib_srp.c
-+++ b/drivers/infiniband/ulp/srp/ib_srp.c
-@@ -2053,8 +2053,8 @@ static void srp_remove_one(struct ib_device *device)
- 
- 		list_for_each_entry_safe(target, tmp_target,
- 					 &host->target_list, list) {
--			scsi_remove_host(target->scsi_host);
- 			srp_remove_host(target->scsi_host);
-+			scsi_remove_host(target->scsi_host);
- 			srp_disconnect_target(target);
- 			ib_destroy_cm_id(target->cm_id);
- 			srp_free_target_ib(target);
+Ciao,
+-- 
+Paolo
+http://paolo.ciarrocchi.googlepages.com/
