@@ -1,80 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbYAHBfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756236AbYAHBiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401AbYAHBfj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 20:35:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbYAHBfb
+	id S1756236AbYAHBiy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 20:38:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbYAHBiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 20:35:31 -0500
-Received: from mga02.intel.com ([134.134.136.20]:48287 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751902AbYAHBfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 20:35:30 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,255,1196668800"; 
-   d="scan'208";a="250848910"
-Subject: Re: [RFC] PCIE ASPM support
-From: Shaohua Li <shaohua.li@intel.com>
-To: michael@ellerman.id.au
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Greg KH <greg@kroah.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-In-Reply-To: <1199743355.7518.2.camel@concordia>
-References: <1199340944.1642.26.camel@sli10-desk.sh.intel.com>
-	 <1199743355.7518.2.camel@concordia>
-Content-Type: text/plain
-Date: Tue, 08 Jan 2008 09:35:42 +0800
-Message-Id: <1199756142.28410.2.camel@sli10-desk.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Mon, 7 Jan 2008 20:38:46 -0500
+Received: from mho-02-bos.mailhop.org ([63.208.196.179]:61207 "EHLO
+	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752781AbYAHBip (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 20:38:45 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 216.15.117.105
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX19R3U0EJnS9Nu532Our9gbd
+Message-ID: <4782D407.7010301@reed.com>
+Date: Mon, 07 Jan 2008 20:38:15 -0500
+From: "David P. Reed" <dpreed@reed.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.9) Gecko/20071115 Fedora/2.0.0.9-1.fc8 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Rene Herman <rene.herman@keyaccess.nl>, Bodo Eggert <7eggert@gmx.de>,
+       Christer Weinigel <christer@weinigel.se>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Paul Rolland <rol@as2917.net>,
+       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
+Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
+ I/O delay override.
+References: <9BdU5-1YW-9@gated-at.bofh.it> <9BeZN-3Gf-5@gated-at.bofh.it> <9BnTB-1As-31@gated-at.bofh.it> <9BrX4-8go-1@gated-at.bofh.it> <9BuBG-4eR-51@gated-at.bofh.it> <9BvRd-6aL-71@gated-at.bofh.it> <9GRQW-1DX-13@gated-at.bofh.it> <9GSah-23W-1@gated-at.bofh.it> <9GSDy-2GD-23@gated-at.bofh.it> <9GTpK-40d-15@gated-at.bofh.it> <9GUvy-5H2-11@gated-at.bofh.it> <9GVKU-7SS-25@gated-at.bofh.it> <E1JBxnV-00046d-CS@be1.7eggert.dyndns.org> <478281A6.1000704@zytor.com> <alpine.LSU.0.999.0801072226060.16143@be1.lrz> <4782A355.1070207@zytor.com> <alpine.LSU.0.999.0801072316440.16143@be1.lrz> <4782AED5.1060406@keyaccess.nl> <4782B4B9.2020608@zytor.com> <4782B515.3010008@keyaccess.nl> <4782BF77.80703@reed.com> <4782C017.3000208@zytor.com>
+In-Reply-To: <4782C017.3000208@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+H. Peter Anvin wrote:
+>
+> And shoot the designer of this particular microcontroller firmware.
+>
+>  
+Well, some days I want to shoot the "designer" of the entire Wintel 
+architecture...  it's not exactly "designed" by anybody of course, and 
+today it's created largely by a collection of Taiwanese and Chinese ODM 
+firms, coupled with Microsoft WinHEC and Intel folks.  At least they 
+follow the rules and their ACPI and BIOS code say that they are using 
+port 80 very clearly if you use PnP and ACPI properly.  And in the old 
+days, you were "supposed" to use the system BIOS to talk to things like 
+the PIT that had timing issues, not write your own code.
 
-On Tue, 2008-01-08 at 09:02 +1100, Michael Ellerman wrote:
-> On Thu, 2008-01-03 at 14:15 +0800, Shaohua Li wrote:
-> > PCI Express ASPM defines a protocol for PCI Express components in the D0
-> > state to reduce Link power by placing their Links into a low power state
-> > and instructing the other end of the Link to do likewise. This
-> > capability allows hardware-autonomous, dynamic Link power reduction
-> > beyond what is achievable by software-only controlled power management.
-> > However, The device should be configured by software appropriately.
-> > Enabling ASPM will save power, but will introduce device latency.
-> > 
-> > This patch adds ASPM support in Linux. It introduces a global policy for
-> > ASPM, a sysfs file /sys/module/pcie_aspm/parameters/policy can control
-> > it. The interface can be used as a boot option too. Currently we have
-> > below setting:
-> > 	-default, BIOS default setting
-> > 	-powersave, highest power saving mode, enable all available ASPM state
-> > and clock power management
-> > 	-performance, highest performance, disable ASPM and clock power
-> > management
-> > By default, the 'default' policy is used currently.
-> > 
-> > In my test, power difference between powersave mode and performance mode
-> > is about 1.3w in a system with 3 PCIE links.
-> > 
-> > please review, any comments will be appreciated.
-> > 
-> > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> 
-> Minor nit, but you do a lot of these:
-> 
-> +	return ((struct link_state *)pdev->link_state)->bios_aspm_state;
-> +	return ((struct link_state *)pdev->link_state)->bios_clk_state;
-> +	((struct link_state*)pdev->link_state)->clk_pm_enabled = !!enable;
-> +	((struct link_state*)pdev->link_state)->clk_pm_capable = capable;
-> +	((struct link_state*)pdev->link_state)->clk_pm_enabled = enabled;
-> +	((struct link_state*)pdev->link_state)->bios_clk_state = enabled;
-> +	((struct link_state *)pdev->link_state)->enabled_state = state;
-> +	if (((struct link_state *)pdev->link_state)->support_state == 0)
-> +	if (((struct link_state *)pdev->link_state)->enabled_state == state)
-> +	((struct link_state *)pdev->link_state)->enabled_state);
-Thanks for your time. I'll fix in next release.
+Or perhaps the ACPI spec should specify a timing loop spec and precisely 
+specify the desired timing after accessing an I/O port till that device 
+has properly "acted" on that operation.
 
-Thanks,
-Shaohua
+The idea that Port 80 was "unused" and appropriate for delay purposes 
+elicited skepticism by Linus that is recorded for posterity in the 
+comments of the relevant Linux include files - especially since it was 
+clearly "used" for non-delay purposes, by cards that could be plugged 
+into a PCI (fast), not just an 8-bit ISA, bus.
+
+Perhaps we should declare the world of ACPI systems a separate "arch" 
+from the world of l'ancien regime where folklore about which ports were 
+used for what ruled.   I lived through those old days, and they were not 
+wonderful, either.
+
+The world sucks, and Linux is supposed to be able to adapt to that 
+world, suckitude and all.
 
