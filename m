@@ -1,17 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757443AbYAHCji@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbYAHClY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757443AbYAHCji (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 21:39:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755829AbYAHCja
+	id S1757938AbYAHClY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 21:41:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbYAHClP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 21:39:30 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46807 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755815AbYAHCj3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 21:39:29 -0500
+	Mon, 7 Jan 2008 21:41:15 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:58439 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752383AbYAHClO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 21:41:14 -0500
 From: akepner@sgi.com
-Date: Mon, 7 Jan 2008 18:38:00 -0800
+Date: Mon, 7 Jan 2008 18:39:47 -0800
 To: Tony Luck <tony.luck@intel.com>,
        Grant Grundler <grundler@parisc-linux.org>,
        Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
@@ -20,8 +19,8 @@ To: Tony Luck <tony.luck@intel.com>,
        James Bottomley <James.Bottomley@steeleye.com>,
        David Miller <davem@davemloft.net>, Muli Ben-Yehuda <muli@il.ibm.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [RFC/PARTIAL PATCH 2/3] dma: ia64/sn2 allow "attributes" to be used by dma_map_*
-Message-ID: <20080108023800.GR23661@sgi.com>
+Subject: [RFC/PARTIAL PATCH 3/3] dma: x86_64 allow "attributes" to be used by dma_map_*
+Message-ID: <20080108023947.GS23661@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -31,231 +30,425 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Allow dma "attributes" to be used by dma_map_*/dma_unmap_* 
-implementations on the ia64/sn2 architecture. (This one also 
-includes some changes to lib/swiotlb.c which aren't specific 
-to ia64/sn2.)
+Allow dma "attributes" to be passed to dma_map_*/dma_unmap_*
+implementations on x86_64.
 
 Signed-off-by: Arthur Kepner <akepner@sgi.com>
 
 --
 
- arch/ia64/sn/pci/pci_dma.c |   45 ++++++++++++++++++++++++++++++++-------------
- include/asm-ia64/machvec.h |    8 ++++----
- lib/swiotlb.c              |   12 ++++++++----
- 3 files changed, 44 insertions(+), 21 deletions(-)
+ arch/x86/kernel/pci-calgary_64.c |   13 ++++++++-----
+ arch/x86/kernel/pci-gart_64.c    |   27 +++++++++++++++++----------
+ arch/x86/kernel/pci-nommu_64.c   |    8 ++++----
+ drivers/pci/intel-iommu.c        |   10 ++++++----
+ include/asm-x86/dma-mapping_64.h |   27 ++++++++++++++++-----------
+ include/asm-x86/swiotlb.h        |    8 ++++----
+ 6 files changed, 55 insertions(+), 38 deletions(-)
 
-diff --git a/arch/ia64/sn/pci/pci_dma.c b/arch/ia64/sn/pci/pci_dma.c
-index 511db2f..57ddbcb 100644
---- a/arch/ia64/sn/pci/pci_dma.c
-+++ b/arch/ia64/sn/pci/pci_dma.c
-@@ -10,6 +10,7 @@
-  */
- 
- #include <linux/module.h>
+diff --git a/arch/x86/kernel/pci-calgary_64.c b/arch/x86/kernel/pci-calgary_64.c
+index 6bf1f71..f742384 100644
+--- a/arch/x86/kernel/pci-calgary_64.c
++++ b/arch/x86/kernel/pci-calgary_64.c
+@@ -36,6 +36,7 @@
+ #include <linux/pci.h>
+ #include <linux/delay.h>
+ #include <linux/scatterlist.h>
 +#include <linux/dma-direction.h>
- #include <asm/dma.h>
- #include <asm/sn/intr.h>
- #include <asm/sn/pcibus_provider_defs.h>
-@@ -153,7 +154,7 @@ EXPORT_SYMBOL(sn_dma_free_coherent);
-  * @dev: device to map for
-  * @cpu_addr: kernel virtual address of the region to map
-  * @size: size of the region
-- * @direction: DMA direction
-+ * @flags: DMA direction and attributes
-  *
-  * Map the region pointed to by @cpu_addr for DMA and return the
-  * DMA address.
-@@ -167,17 +168,23 @@ EXPORT_SYMBOL(sn_dma_free_coherent);
-  *       figure out how to save dmamap handle so can use two step.
-  */
- dma_addr_t sn_dma_map_single(struct device *dev, void *cpu_addr, size_t size,
--			     int direction)
-+			     u32 flags)
+ #include <asm/gart.h>
+ #include <asm/calgary.h>
+ #include <asm/tce.h>
+@@ -382,7 +383,7 @@ static inline struct iommu_table *find_iommu_table(struct device *dev)
+ }
+ 
+ static void calgary_unmap_sg(struct device *dev,
+-	struct scatterlist *sglist, int nelems, int direction)
++	struct scatterlist *sglist, int nelems, u32 flags)
  {
- 	dma_addr_t dma_addr;
- 	unsigned long phys_addr;
- 	struct pci_dev *pdev = to_pci_dev(dev);
-+	u32 attr = dma_flags_get_attr(flags);
- 	struct sn_pcibus_provider *provider = SN_PCIDEV_BUSPROVIDER(pdev);
+ 	struct iommu_table *tbl = find_iommu_table(dev);
+ 	struct scatterlist *s;
+@@ -421,7 +422,7 @@ static int calgary_nontranslate_map_sg(struct device* dev,
+ }
  
- 	BUG_ON(dev->bus != &pci_bus_type);
+ static int calgary_map_sg(struct device *dev, struct scatterlist *sg,
+-	int nelems, int direction)
++	int nelems, u32 flags)
+ {
+ 	struct iommu_table *tbl = find_iommu_table(dev);
+ 	struct scatterlist *s;
+@@ -429,6 +430,7 @@ static int calgary_map_sg(struct device *dev, struct scatterlist *sg,
+ 	unsigned int npages;
+ 	unsigned long entry;
+ 	int i;
++	enum dma_data_direction direction = dma_flags_get_dir(flags);
  
- 	phys_addr = __pa(cpu_addr);
--	dma_addr = provider->dma_map(pdev, phys_addr, size, SN_DMA_ADDR_PHYS);
-+	if (attr & DMA_ATTR_BARRIER)
-+		dma_addr = provider->dma_map_consistent(pdev, phys_addr, size, 
-+							SN_DMA_ADDR_PHYS);
-+	else
-+		dma_addr = provider->dma_map(pdev, phys_addr, size, 
-+					     SN_DMA_ADDR_PHYS);
- 	if (!dma_addr) {
- 		printk(KERN_ERR "%s: out of ATEs\n", __FUNCTION__);
+ 	if (!translation_enabled(tbl))
+ 		return calgary_nontranslate_map_sg(dev, sg, nelems, direction);
+@@ -457,7 +459,7 @@ static int calgary_map_sg(struct device *dev, struct scatterlist *sg,
+ 
+ 	return nelems;
+ error:
+-	calgary_unmap_sg(dev, sg, nelems, direction);
++	calgary_unmap_sg(dev, sg, nelems, flags);
+ 	for_each_sg(sg, s, nelems, i) {
+ 		sg->dma_address = bad_dma_address;
+ 		sg->dma_length = 0;
+@@ -466,12 +468,13 @@ error:
+ }
+ 
+ static dma_addr_t calgary_map_single(struct device *dev, void *vaddr,
+-	size_t size, int direction)
++	size_t size, u32 flags)
+ {
+ 	dma_addr_t dma_handle = bad_dma_address;
+ 	unsigned long uaddr;
+ 	unsigned int npages;
+ 	struct iommu_table *tbl = find_iommu_table(dev);
++	enum dma_data_direction direction = dma_flags_get_dir(flags);
+ 
+ 	uaddr = (unsigned long)vaddr;
+ 	npages = num_dma_pages(uaddr, size);
+@@ -485,7 +488,7 @@ static dma_addr_t calgary_map_single(struct device *dev, void *vaddr,
+ }
+ 
+ static void calgary_unmap_single(struct device *dev, dma_addr_t dma_handle,
+-	size_t size, int direction)
++	size_t size, u32 flags)
+ {
+ 	struct iommu_table *tbl = find_iommu_table(dev);
+ 	unsigned int npages;
+diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
+index 06bcba5..da7336a 100644
+--- a/arch/x86/kernel/pci-gart_64.c
++++ b/arch/x86/kernel/pci-gart_64.c
+@@ -25,6 +25,7 @@
+ #include <linux/bitops.h>
+ #include <linux/kdebug.h>
+ #include <linux/scatterlist.h>
++#include <linux/dma-direction.h>
+ #include <asm/atomic.h>
+ #include <asm/io.h>
+ #include <asm/mtrr.h>
+@@ -230,15 +231,17 @@ static dma_addr_t dma_map_area(struct device *dev, dma_addr_t phys_mem,
+ }
+ 
+ static dma_addr_t gart_map_simple(struct device *dev, char *buf,
+-				 size_t size, int dir)
++				 size_t size, u32 flags)
+ {
++	enum dma_data_direction dir = dma_flags_get_dir(flags);
+ 	dma_addr_t map = dma_map_area(dev, virt_to_bus(buf), size, dir);
+ 	flush_gart();
+ 	return map;
+ }
+ 
+ /* Map a single area into the IOMMU */
+-static dma_addr_t gart_map_single(struct device *dev, void *addr, size_t size, int dir)
++static dma_addr_t gart_map_single(struct device *dev, void *addr, size_t size, 
++				  u32 flags)
+ {
+ 	unsigned long phys_mem, bus;
+ 
+@@ -249,7 +252,7 @@ static dma_addr_t gart_map_single(struct device *dev, void *addr, size_t size, i
+ 	if (!need_iommu(dev, phys_mem, size))
+ 		return phys_mem; 
+ 
+-	bus = gart_map_simple(dev, addr, size, dir);
++	bus = gart_map_simple(dev, addr, size, flags);
+ 	return bus; 
+ }
+ 
+@@ -257,7 +260,7 @@ static dma_addr_t gart_map_single(struct device *dev, void *addr, size_t size, i
+  * Free a DMA mapping.
+  */
+ static void gart_unmap_single(struct device *dev, dma_addr_t dma_addr,
+-		      size_t size, int direction)
++		      size_t size, u32 flags)
+ {
+ 	unsigned long iommu_page;
+ 	int npages;
+@@ -278,10 +281,12 @@ static void gart_unmap_single(struct device *dev, dma_addr_t dma_addr,
+ /*
+  * Wrapper for pci_unmap_single working with scatterlists.
+  */
+-static void gart_unmap_sg(struct device *dev, struct scatterlist *sg, int nents, int dir)
++static void gart_unmap_sg(struct device *dev, struct scatterlist *sg, 
++			  int nents, u32 flags)
+ {
+ 	struct scatterlist *s;
+ 	int i;
++	enum dma_data_direction dir = dma_flags_get_dir(flags);
+ 
+ 	for_each_sg(sg, s, nents, i) {
+ 		if (!s->dma_length || !s->length)
+@@ -292,10 +297,11 @@ static void gart_unmap_sg(struct device *dev, struct scatterlist *sg, int nents,
+ 
+ /* Fallback for dma_map_sg in case of overflow */
+ static int dma_map_sg_nonforce(struct device *dev, struct scatterlist *sg,
+-			       int nents, int dir)
++			       int nents, u32 flags)
+ {
+ 	struct scatterlist *s;
+ 	int i;
++	enum dma_data_direction dir = dma_flags_get_dir(flags);
+ 
+ #ifdef CONFIG_IOMMU_DEBUG
+ 	printk(KERN_DEBUG "dma_map_sg overflow\n");
+@@ -307,7 +313,7 @@ static int dma_map_sg_nonforce(struct device *dev, struct scatterlist *sg,
+ 			addr = dma_map_area(dev, addr, s->length, dir);
+ 			if (addr == bad_dma_address) { 
+ 				if (i > 0) 
+-					gart_unmap_sg(dev, sg, i, dir);
++					gart_unmap_sg(dev, sg, i, flags);
+ 				nents = 0; 
+ 				sg[0].dma_length = 0;
+ 				break;
+@@ -376,7 +382,7 @@ static inline int dma_map_cont(struct scatterlist *start, int nelems,
+  * Merge chunks that have page aligned sizes into a continuous mapping. 
+  */
+ static int gart_map_sg(struct device *dev, struct scatterlist *sg, int nents,
+-			int dir)
++		       u32 flags)
+ {
+ 	int i;
+ 	int out;
+@@ -384,6 +390,7 @@ static int gart_map_sg(struct device *dev, struct scatterlist *sg, int nents,
+ 	unsigned long pages = 0;
+ 	int need = 0, nextneed;
+ 	struct scatterlist *s, *ps, *start_sg, *sgmap;
++	enum dma_data_direction dir = dma_flags_get_dir(flags);
+ 
+ 	if (nents == 0) 
  		return 0;
-@@ -191,17 +198,18 @@ EXPORT_SYMBOL(sn_dma_map_single);
-  * @dev: device to sync
-  * @dma_addr: DMA address to sync
-  * @size: size of region
-- * @direction: DMA direction
-+ * @flags: DMA direction and attributes
-  *
-  * This routine is supposed to sync the DMA region specified
-  * by @dma_handle into the coherence domain.  On SN, we're always cache
-  * coherent, so we just need to free any ATEs associated with this mapping.
-  */
- void sn_dma_unmap_single(struct device *dev, dma_addr_t dma_addr, size_t size,
--			 int direction)
-+			 u32 flags)
- {
- 	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct sn_pcibus_provider *provider = SN_PCIDEV_BUSPROVIDER(pdev);
-+	enum dma_data_direction direction = dma_flags_get_dir(flags);
+@@ -435,10 +442,10 @@ static int gart_map_sg(struct device *dev, struct scatterlist *sg, int nents,
  
- 	BUG_ON(dev->bus != &pci_bus_type);
+ error:
+ 	flush_gart();
+-	gart_unmap_sg(dev, sg, out, dir);
++	gart_unmap_sg(dev, sg, out, flags);
+ 	/* When it was forced or merged try again in a dumb way */
+ 	if (force_iommu || iommu_merge) {
+-		out = dma_map_sg_nonforce(dev, sg, nents, dir);
++		out = dma_map_sg_nonforce(dev, sg, nents, flags);
+ 		if (out > 0)
+ 			return out;
+ 	}
+diff --git a/arch/x86/kernel/pci-nommu_64.c b/arch/x86/kernel/pci-nommu_64.c
+index ab08e18..6c31163 100644
+--- a/arch/x86/kernel/pci-nommu_64.c
++++ b/arch/x86/kernel/pci-nommu_64.c
+@@ -27,7 +27,7 @@ check_addr(char *name, struct device *hwdev, dma_addr_t bus, size_t size)
  
-@@ -214,16 +222,17 @@ EXPORT_SYMBOL(sn_dma_unmap_single);
-  * @dev: device to unmap
-  * @sg: scatterlist to unmap
-  * @nhwentries: number of scatterlist entries
-- * @direction: DMA direction
-+ * @flags: DMA direction and attributes
-  *
-  * Unmap a set of streaming mode DMA translations.
-  */
- void sn_dma_unmap_sg(struct device *dev, struct scatterlist *sgl,
--		     int nhwentries, int direction)
-+		     int nhwentries, u32 flags)
- {
- 	int i;
- 	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct sn_pcibus_provider *provider = SN_PCIDEV_BUSPROVIDER(pdev);
-+	enum dma_data_direction direction = dma_flags_get_dir(flags);
- 	struct scatterlist *sg;
- 
- 	BUG_ON(dev->bus != &pci_bus_type);
-@@ -241,17 +250,19 @@ EXPORT_SYMBOL(sn_dma_unmap_sg);
-  * @dev: device to map for
-  * @sg: scatterlist to map
-  * @nhwentries: number of entries
-- * @direction: direction of the DMA transaction
-+ * @flags: direction of the DMA transaction and DMA attributes
-  *
-  * Maps each entry of @sg for DMA.
-  */
- int sn_dma_map_sg(struct device *dev, struct scatterlist *sgl, int nhwentries,
--		  int direction)
-+		  u32 flags)
- {
- 	unsigned long phys_addr;
- 	struct scatterlist *saved_sg = sgl, *sg;
- 	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct sn_pcibus_provider *provider = SN_PCIDEV_BUSPROVIDER(pdev);
-+	enum dma_data_direction direction = dma_flags_get_dir(flags);
-+	u32 attr = dma_flags_get_attr(flags);
- 	int i;
- 
- 	BUG_ON(dev->bus != &pci_bus_type);
-@@ -260,12 +271,20 @@ int sn_dma_map_sg(struct device *dev, struct scatterlist *sgl, int nhwentries,
- 	 * Setup a DMA address for each entry in the scatterlist.
- 	 */
- 	for_each_sg(sgl, sg, nhwentries, i) {
-+		dma_addr_t dma_addr;
- 		phys_addr = SG_ENT_PHYS_ADDRESS(sg);
--		sg->dma_address = provider->dma_map(pdev,
--						    phys_addr, sg->length,
--						    SN_DMA_ADDR_PHYS);
- 
--		if (!sg->dma_address) {
-+		if (attr & DMA_ATTR_BARRIER)
-+			dma_addr = provider->dma_map_consistent(pdev,
-+								phys_addr,
-+								sg->length,
-+								SN_DMA_ADDR_PHYS);
-+		else
-+			dma_addr = provider->dma_map(pdev,
-+						     phys_addr, sg->length,
-+						     SN_DMA_ADDR_PHYS);
-+
-+		if (!(sg->dma_address = dma_addr)) {
- 			printk(KERN_ERR "%s: out of ATEs\n", __FUNCTION__);
- 
- 			/*
-diff --git a/include/asm-ia64/machvec.h b/include/asm-ia64/machvec.h
-index c201a20..db3b805 100644
---- a/include/asm-ia64/machvec.h
-+++ b/include/asm-ia64/machvec.h
-@@ -45,10 +45,10 @@ typedef void ia64_mv_kernel_launch_event_t(void);
- typedef void ia64_mv_dma_init (void);
- typedef void *ia64_mv_dma_alloc_coherent (struct device *, size_t, dma_addr_t *, gfp_t);
- typedef void ia64_mv_dma_free_coherent (struct device *, size_t, void *, dma_addr_t);
--typedef dma_addr_t ia64_mv_dma_map_single (struct device *, void *, size_t, int);
--typedef void ia64_mv_dma_unmap_single (struct device *, dma_addr_t, size_t, int);
--typedef int ia64_mv_dma_map_sg (struct device *, struct scatterlist *, int, int);
--typedef void ia64_mv_dma_unmap_sg (struct device *, struct scatterlist *, int, int);
-+typedef dma_addr_t ia64_mv_dma_map_single (struct device *, void *, size_t, u32);
-+typedef void ia64_mv_dma_unmap_single (struct device *, dma_addr_t, size_t, u32);
-+typedef int ia64_mv_dma_map_sg (struct device *, struct scatterlist *, int, u32);
-+typedef void ia64_mv_dma_unmap_sg (struct device *, struct scatterlist *, int, u32);
- typedef void ia64_mv_dma_sync_single_for_cpu (struct device *, dma_addr_t, size_t, int);
- typedef void ia64_mv_dma_sync_sg_for_cpu (struct device *, struct scatterlist *, int, int);
- typedef void ia64_mv_dma_sync_single_for_device (struct device *, dma_addr_t, size_t, int);
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index 1a8050a..45780e9 100644
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -535,10 +535,11 @@ swiotlb_full(struct device *dev, size_t size, int dir, int do_panic)
-  * either swiotlb_unmap_single or swiotlb_dma_sync_single is performed.
-  */
- dma_addr_t
--swiotlb_map_single(struct device *hwdev, void *ptr, size_t size, int dir)
-+swiotlb_map_single(struct device *hwdev, void *ptr, size_t size, u32 flags)
- {
- 	dma_addr_t dev_addr = virt_to_bus(ptr);
- 	void *map;
-+	enum dma_data_direction dir = dma_flags_get_dir(flags);
- 
- 	BUG_ON(dir == DMA_NONE);
- 	/*
-@@ -579,9 +580,10 @@ swiotlb_map_single(struct device *hwdev, void *ptr, size_t size, int dir)
-  */
- void
- swiotlb_unmap_single(struct device *hwdev, dma_addr_t dev_addr, size_t size,
--		     int dir)
-+		     u32 flags)
- {
- 	char *dma_addr = bus_to_virt(dev_addr);
-+	enum dma_data_direction dir = dma_flags_get_dir(flags);
- 
- 	BUG_ON(dir == DMA_NONE);
- 	if (dma_addr >= io_tlb_start && dma_addr < io_tlb_end)
-@@ -678,12 +680,13 @@ swiotlb_sync_single_range_for_device(struct device *hwdev, dma_addr_t dev_addr,
-  */
- int
- swiotlb_map_sg(struct device *hwdev, struct scatterlist *sgl, int nelems,
--	       int dir)
+ static dma_addr_t
+ nommu_map_single(struct device *hwdev, void *ptr, size_t size,
+-	       int direction)
 +	       u32 flags)
  {
- 	struct scatterlist *sg;
- 	void *addr;
- 	dma_addr_t dev_addr;
+ 	dma_addr_t bus = virt_to_bus(ptr);
+ 	if (!check_addr("map_single", hwdev, bus, size))
+@@ -36,7 +36,7 @@ nommu_map_single(struct device *hwdev, void *ptr, size_t size,
+ }
+ 
+ static void nommu_unmap_single(struct device *dev, dma_addr_t addr,size_t size,
+-			int direction)
++			u32 flags)
+ {
+ }
+ 
+@@ -56,7 +56,7 @@ static void nommu_unmap_single(struct device *dev, dma_addr_t addr,size_t size,
+  * the same here.
+  */
+ static int nommu_map_sg(struct device *hwdev, struct scatterlist *sg,
+-	       int nents, int direction)
++	       int nents, u32 flags)
+ {
+ 	struct scatterlist *s;
  	int i;
+@@ -76,7 +76,7 @@ static int nommu_map_sg(struct device *hwdev, struct scatterlist *sg,
+  * pci_unmap_single() above.
+  */
+ static void nommu_unmap_sg(struct device *dev, struct scatterlist *sg,
+-		  int nents, int dir)
++		  int nents, u32 flags)
+ {
+ }
+ 
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index e079a52..934e199 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -1825,7 +1825,7 @@ get_valid_domain_for_dev(struct pci_dev *pdev)
+ }
+ 
+ static dma_addr_t intel_map_single(struct device *hwdev, void *addr,
+-	size_t size, int dir)
++	size_t size, u32 flags)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(hwdev);
+ 	int ret;
+@@ -1833,6 +1833,7 @@ static dma_addr_t intel_map_single(struct device *hwdev, void *addr,
+ 	unsigned long start_addr;
+ 	struct iova *iova;
+ 	int prot = 0;
 +	enum dma_data_direction dir = dma_flags_get_dir(flags);
  
  	BUG_ON(dir == DMA_NONE);
+ 	if (pdev->dev.archdata.iommu == DUMMY_DEVICE_DOMAIN_INFO)
+@@ -1892,7 +1893,7 @@ error:
+ }
  
-@@ -714,10 +717,11 @@ swiotlb_map_sg(struct device *hwdev, struct scatterlist *sgl, int nelems,
+ static void intel_unmap_single(struct device *dev, dma_addr_t dev_addr,
+-	size_t size, int dir)
++	size_t size, u32 flags)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct dmar_domain *domain;
+@@ -1963,7 +1964,7 @@ static void intel_free_coherent(struct device *hwdev, size_t size,
+ 
+ #define SG_ENT_VIRT_ADDRESS(sg)	(sg_virt((sg)))
+ static void intel_unmap_sg(struct device *hwdev, struct scatterlist *sglist,
+-	int nelems, int dir)
++	int nelems, u32 flags)
+ {
+ 	int i;
+ 	struct pci_dev *pdev = to_pci_dev(hwdev);
+@@ -2017,7 +2018,7 @@ static int intel_nontranslate_map_sg(struct device *hddev,
+ }
+ 
+ static int intel_map_sg(struct device *hwdev, struct scatterlist *sglist,
+-				int nelems, int dir)
++			int nelems, u32 flags)
+ {
+ 	void *addr;
+ 	int i;
+@@ -2030,6 +2031,7 @@ static int intel_map_sg(struct device *hwdev, struct scatterlist *sglist,
+ 	int ret;
+ 	struct scatterlist *sg;
+ 	unsigned long start_addr;
++	enum dma_data_direction dir = dma_flags_get_dir(flags);
+ 
+ 	BUG_ON(dir == DMA_NONE);
+ 	if (pdev->dev.archdata.iommu == DUMMY_DEVICE_DOMAIN_INFO)
+diff --git a/include/asm-x86/dma-mapping_64.h b/include/asm-x86/dma-mapping_64.h
+index ecd0f61..4bf1359 100644
+--- a/include/asm-x86/dma-mapping_64.h
++++ b/include/asm-x86/dma-mapping_64.h
+@@ -7,6 +7,7 @@
   */
- void
- swiotlb_unmap_sg(struct device *hwdev, struct scatterlist *sgl, int nelems,
--		 int dir)
+ 
+ #include <linux/scatterlist.h>
++#include <linux/dma-direction.h>
+ #include <asm/io.h>
+ #include <asm/swiotlb.h>
+ 
+@@ -17,12 +18,12 @@ struct dma_mapping_ops {
+ 	void            (*free_coherent)(struct device *dev, size_t size,
+                                 void *vaddr, dma_addr_t dma_handle);
+ 	dma_addr_t      (*map_single)(struct device *hwdev, void *ptr,
+-                                size_t size, int direction);
++                                size_t size, u32 flags);
+ 	/* like map_single, but doesn't check the device mask */
+ 	dma_addr_t      (*map_simple)(struct device *hwdev, char *ptr,
+-                                size_t size, int direction);
++                                size_t size, u32 flags);
+ 	void            (*unmap_single)(struct device *dev, dma_addr_t addr,
+-		                size_t size, int direction);
++		                size_t size, u32 flags);
+ 	void            (*sync_single_for_cpu)(struct device *hwdev,
+ 		                dma_addr_t dma_handle, size_t size,
+ 				int direction);
+@@ -42,10 +43,10 @@ struct dma_mapping_ops {
+ 				struct scatterlist *sg, int nelems,
+ 				int direction);
+ 	int             (*map_sg)(struct device *hwdev, struct scatterlist *sg,
+-		                int nents, int direction);
++		                int nents, u32 flags);
+ 	void            (*unmap_sg)(struct device *hwdev,
+ 				struct scatterlist *sg, int nents,
+-				int direction);
++				u32 flags);
+ 	int             (*dma_supported)(struct device *hwdev, u64 mask);
+ 	int		is_phys;
+ };
+@@ -75,22 +76,24 @@ extern void dma_free_coherent(struct device *dev, size_t size, void *vaddr,
+ 
+ static inline dma_addr_t
+ dma_map_single(struct device *hwdev, void *ptr, size_t size,
+-	       int direction)
++	       u32 flags)
+ {
++	enum dma_data_direction direction = dma_flags_get_dir(flags);
+ 	BUG_ON(!valid_dma_direction(direction));
+ 	return dma_ops->map_single(hwdev, ptr, size, direction);
+ }
+ 
+ static inline void
+ dma_unmap_single(struct device *dev, dma_addr_t addr,size_t size,
+-		 int direction)
 +		 u32 flags)
  {
- 	struct scatterlist *sg;
- 	int i;
-+	enum dma_data_direction dir = dma_flags_get_dir(flags);
++	enum dma_data_direction direction = dma_flags_get_dir(flags);
+ 	BUG_ON(!valid_dma_direction(direction));
+ 	dma_ops->unmap_single(dev, addr, size, direction);
+ }
  
- 	BUG_ON(dir == DMA_NONE);
+-#define dma_map_page(dev,page,offset,size,dir) \
+-	dma_map_single((dev), page_address(page)+(offset), (size), (dir))
++#define dma_map_page(dev,page,offset,size,flags) \
++	dma_map_single((dev), page_address(page)+(offset), (size), (flags))
  
+ #define dma_unmap_page dma_unmap_single
+ 
+@@ -163,16 +166,18 @@ dma_sync_sg_for_device(struct device *hwdev, struct scatterlist *sg,
+ }
+ 
+ static inline int
+-dma_map_sg(struct device *hwdev, struct scatterlist *sg, int nents, int direction)
++dma_map_sg(struct device *hwdev, struct scatterlist *sg, int nents, u32 flags)
+ {
++	enum dma_data_direction direction = dma_flags_get_dir(flags);
+ 	BUG_ON(!valid_dma_direction(direction));
+ 	return dma_ops->map_sg(hwdev, sg, nents, direction);
+ }
+ 
+ static inline void
+ dma_unmap_sg(struct device *hwdev, struct scatterlist *sg, int nents,
+-	     int direction)
++	     u32 flags)
+ {
++	enum dma_data_direction direction = dma_flags_get_dir(flags);
+ 	BUG_ON(!valid_dma_direction(direction));
+ 	dma_ops->unmap_sg(hwdev, sg, nents, direction);
+ }
+diff --git a/include/asm-x86/swiotlb.h b/include/asm-x86/swiotlb.h
+index f9c5895..ad3ea99 100644
+--- a/include/asm-x86/swiotlb.h
++++ b/include/asm-x86/swiotlb.h
+@@ -6,11 +6,11 @@
+ /* SWIOTLB interface */
+ 
+ extern dma_addr_t swiotlb_map_single(struct device *hwdev, void *ptr,
+-				     size_t size, int dir);
++				     size_t size, u32 flags);
+ extern void *swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+                        dma_addr_t *dma_handle, gfp_t flags);
+ extern void swiotlb_unmap_single(struct device *hwdev, dma_addr_t dev_addr,
+-				  size_t size, int dir);
++				  size_t size, u32 flags);
+ extern void swiotlb_sync_single_for_cpu(struct device *hwdev,
+ 					 dma_addr_t dev_addr,
+ 					 size_t size, int dir);
+@@ -32,9 +32,9 @@ extern void swiotlb_sync_sg_for_device(struct device *hwdev,
+ 					struct scatterlist *sg, int nelems,
+ 					int dir);
+ extern int swiotlb_map_sg(struct device *hwdev, struct scatterlist *sg,
+-		      int nents, int direction);
++		      int nents, u32 flags);
+ extern void swiotlb_unmap_sg(struct device *hwdev, struct scatterlist *sg,
+-			 int nents, int direction);
++			 int nents, u32 flags);
+ extern int swiotlb_dma_mapping_error(dma_addr_t dma_addr);
+ extern void swiotlb_free_coherent (struct device *hwdev, size_t size,
+ 				   void *vaddr, dma_addr_t dma_handle);
 
 -- 
 Arthur
