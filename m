@@ -1,199 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753437AbYAHVQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbYAHVRX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753437AbYAHVQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 16:16:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755413AbYAHVKx
+	id S1756663AbYAHVRX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 16:17:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755493AbYAHVKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 16:10:53 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47756 "EHLO mx1.redhat.com"
+	Tue, 8 Jan 2008 16:10:54 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47759 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755257AbYAHVKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 16:10:51 -0500
-Message-Id: <20080108205959.952424899@redhat.com>
+	id S1755307AbYAHVKx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 16:10:53 -0500
+Message-Id: <20080108210011.210063483@redhat.com>
 References: <20080108205939.323955454@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 08 Jan 2008 15:59:42 -0500
+Date: Tue, 08 Jan 2008 15:59:52 -0500
 From: Rik van Riel <riel@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org, Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: [patch 03/19] define page_file_cache() function
-Content-Disposition: inline; filename=rvr-01-linux-2.6-page_file_cache.patch
+Subject: [patch 13/19] ramfs pages are non-reclaimable
+Content-Disposition: inline; filename=noreclaim-02-ramdisk-and-ramfs-pages-are-nonreclaimable.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Define page_file_cache() function to answer the question:
-	is page backed by a file?
+V3 -> V4:
++ drivers/block/rd.c was replaced by brd.c in 24-rc4-mm1.
+  Update patch to add brd_open() to mark mapping as nonreclaimable
 
-Originally part of Rik van Riel's split-lru patch.  Extracted
-to make available for other, independent reclaim patches.
+V2 -> V3:
++  rebase to 23-mm1 atop RvR's split LRU series [no changes]
 
-Moved inline function to linux/mm_inline.h where it will
-be needed by subsequent "split LRU" and "noreclaim" patches.  
+V1 -> V2:
++  add ramfs pages to this class of non-reclaimable pages by
+   marking ramfs address_space [mapping] as non-reclaimble.
 
-Unfortunately this needs to use a page flag, since the
-PG_swapbacked state needs to be preserved all the way
-to the point where the page is last removed from the
-LRU.  Trying to derive the status from other info in
-the page resulted in wrong VM statistics in earlier
-split VM patchsets.
+Christoph Lameter pointed out that ram disk pages also clutter the
+LRU lists.  When vmscan finds them dirty and tries to clean them,
+the ram disk writeback function just redirties the page so that it
+goes back onto the active list.  Round and round she goes...
+
+Define new address_space flag [shares address_space flags member
+with mapping's gfp mask] to indicate that the address space contains
+all non-reclaimable pages.  This will provide for efficient testing
+of ramdisk pages in page_reclaimable().
+
+Also provide wrapper functions to set/test the noreclaim state to
+minimize #ifdefs in ramdisk driver and any other users of this
+facility.
+
+Set the noreclaim state on address_space structures for new
+ramdisk inodes.  Test the noreclaim state in page_reclaimable()
+to cull non-reclaimable pages.
+
+Similarly, ramfs pages are non-reclaimable.  Set the 'noreclaim'
+address_space flag for new ramfs inodes.
+
+These changes depend on [CONFIG_]NORECLAIM.
 
 
-Signed-off-by:  Rik van Riel <riel@redhat.com>
 Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+Signed-off-by:  Rik van Riel <riel@redhat.com>
 
-
-Index: linux-2.6.24-rc6-mm1/include/linux/mm_inline.h
+Index: linux-2.6.24-rc6-mm1/include/linux/pagemap.h
 ===================================================================
---- linux-2.6.24-rc6-mm1.orig/include/linux/mm_inline.h	2008-01-02 12:37:11.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/include/linux/mm_inline.h	2008-01-02 12:37:22.000000000 -0500
-@@ -1,3 +1,24 @@
-+#ifndef LINUX_MM_INLINE_H
-+#define LINUX_MM_INLINE_H
-+
-+/**
-+ * page_file_cache(@page)
-+ * Returns !0 if @page is page cache page backed by a regular filesystem,
-+ * or 0 if @page is anonymous, tmpfs or otherwise ram or swap backed.
-+ *
-+ * We would like to get this info without a page flag, but the state
-+ * needs to survive until the page is last deleted from the LRU, which
-+ * could be as far down as __page_cache_release.
-+ */
-+static inline int page_file_cache(struct page *page)
-+{
-+	if (PageSwapBacked(page))
-+		return 0;
-+
-+	/* The page is page cache backed by a normal filesystem. */
-+	return 2;
-+}
-+
- static inline void
- add_page_to_active_list(struct zone *zone, struct page *page)
- {
-@@ -38,3 +59,4 @@ del_page_from_lru(struct zone *zone, str
+--- linux-2.6.24-rc6-mm1.orig/include/linux/pagemap.h	2008-01-08 12:08:02.000000000 -0500
++++ linux-2.6.24-rc6-mm1/include/linux/pagemap.h	2008-01-08 12:17:21.000000000 -0500
+@@ -30,6 +30,28 @@ static inline void mapping_set_error(str
  	}
  }
  
-+#endif
-Index: linux-2.6.24-rc6-mm1/mm/shmem.c
-===================================================================
---- linux-2.6.24-rc6-mm1.orig/mm/shmem.c	2008-01-02 12:37:11.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/mm/shmem.c	2008-01-02 12:37:22.000000000 -0500
-@@ -1377,6 +1377,7 @@ repeat:
- 				goto failed;
- 			}
- 
-+			SetPageSwapBacked(filepage);
- 			spin_lock(&info->lock);
- 			entry = shmem_swp_alloc(info, idx, sgp);
- 			if (IS_ERR(entry))
-Index: linux-2.6.24-rc6-mm1/include/linux/page-flags.h
-===================================================================
---- linux-2.6.24-rc6-mm1.orig/include/linux/page-flags.h	2008-01-02 12:37:11.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/include/linux/page-flags.h	2008-01-02 12:37:22.000000000 -0500
-@@ -89,6 +89,7 @@
- #define PG_mappedtodisk		16	/* Has blocks allocated on-disk */
- #define PG_reclaim		17	/* To be reclaimed asap */
- #define PG_buddy		19	/* Page is free, on buddy lists */
-+#define PG_swapbacked		20	/* Page is backed by RAM/swap */
- 
- /* PG_readahead is only used for file reads; PG_reclaim is only for writes */
- #define PG_readahead		PG_reclaim /* Reminder to do async read-ahead */
-@@ -216,6 +217,10 @@ static inline void SetPageUptodate(struc
- #define ClearPageReclaim(page)	clear_bit(PG_reclaim, &(page)->flags)
- #define TestClearPageReclaim(page) test_and_clear_bit(PG_reclaim, &(page)->flags)
- 
-+#define PageSwapBacked(page)	test_bit(PG_swapbacked, &(page)->flags)
-+#define SetPageSwapBacked(page)	set_bit(PG_swapbacked, &(page)->flags)
-+#define __ClearPageSwapBacked(page)	__clear_bit(PG_swapbacked, &(page)->flags)
++#ifdef CONFIG_NORECLAIM
++#define AS_NORECLAIM	(__GFP_BITS_SHIFT + 2)	/* e.g., ramdisk, SHM_LOCK */
 +
- #define PageCompound(page)	test_bit(PG_compound, &(page)->flags)
- #define __SetPageCompound(page)	__set_bit(PG_compound, &(page)->flags)
- #define __ClearPageCompound(page) __clear_bit(PG_compound, &(page)->flags)
-Index: linux-2.6.24-rc6-mm1/mm/memory.c
++static inline void mapping_set_noreclaim(struct address_space *mapping)
++{
++	set_bit(AS_NORECLAIM, &mapping->flags);
++}
++
++static inline int mapping_non_reclaimable(struct address_space *mapping)
++{
++	if (mapping && (mapping->flags & AS_NORECLAIM))
++		return 1;
++	return 0;
++}
++#else
++static inline void mapping_set_noreclaim(struct address_space *mapping) { }
++static inline int mapping_non_reclaimable(struct address_space *mapping)
++{
++	return 0;
++}
++#endif
++
+ static inline gfp_t mapping_gfp_mask(struct address_space * mapping)
+ {
+ 	return (__force gfp_t)mapping->flags & __GFP_BITS_MASK;
+Index: linux-2.6.24-rc6-mm1/mm/vmscan.c
 ===================================================================
---- linux-2.6.24-rc6-mm1.orig/mm/memory.c	2008-01-02 12:37:11.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/mm/memory.c	2008-01-02 12:37:22.000000000 -0500
-@@ -1664,6 +1664,7 @@ gotten:
- 		ptep_clear_flush(vma, address, page_table);
- 		set_pte_at(mm, address, page_table, entry);
- 		update_mmu_cache(vma, address, entry);
-+		SetPageSwapBacked(new_page);
- 		lru_cache_add_active(new_page);
- 		page_add_new_anon_rmap(new_page, vma, address);
+--- linux-2.6.24-rc6-mm1.orig/mm/vmscan.c	2008-01-08 12:17:17.000000000 -0500
++++ linux-2.6.24-rc6-mm1/mm/vmscan.c	2008-01-08 12:17:21.000000000 -0500
+@@ -2258,6 +2258,7 @@ int zone_reclaim(struct zone *zone, gfp_
+  *               If !NULL, called from fault path.
+  *
+  * Reasons page might not be reclaimable:
++ * + page's mapping marked non-reclaimable
+  * TODO - later patches
+  *
+  * TODO:  specify locking assumptions
+@@ -2267,6 +2268,9 @@ int page_reclaimable(struct page *page, 
  
-@@ -2131,6 +2132,7 @@ static int do_anonymous_page(struct mm_s
- 	if (!pte_none(*page_table))
- 		goto release;
- 	inc_mm_counter(mm, anon_rss);
-+	SetPageSwapBacked(page);
- 	lru_cache_add_active(page);
- 	page_add_new_anon_rmap(page, vma, address);
- 	set_pte_at(mm, address, page_table, entry);
-@@ -2284,6 +2286,7 @@ static int __do_fault(struct mm_struct *
- 		set_pte_at(mm, address, page_table, entry);
- 		if (anon) {
-                         inc_mm_counter(mm, anon_rss);
-+			SetPageSwapBacked(page);
-                         lru_cache_add_active(page);
-                         page_add_new_anon_rmap(page, vma, address);
- 		} else {
-Index: linux-2.6.24-rc6-mm1/mm/swap_state.c
-===================================================================
---- linux-2.6.24-rc6-mm1.orig/mm/swap_state.c	2008-01-02 12:37:11.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/mm/swap_state.c	2008-01-02 12:37:22.000000000 -0500
-@@ -82,6 +82,7 @@ int add_to_swap_cache(struct page *page,
- 		if (!error) {
- 			page_cache_get(page);
- 			SetPageSwapCache(page);
-+			SetPageSwapBacked(page);
- 			set_page_private(page, entry.val);
- 			total_swapcache_pages++;
- 			__inc_zone_page_state(page, NR_FILE_PAGES);
-Index: linux-2.6.24-rc6-mm1/mm/migrate.c
-===================================================================
---- linux-2.6.24-rc6-mm1.orig/mm/migrate.c	2008-01-02 12:37:14.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/mm/migrate.c	2008-01-02 12:37:22.000000000 -0500
-@@ -546,6 +546,8 @@ static int move_to_new_page(struct page 
- 	/* Prepare mapping for the new page.*/
- 	newpage->index = page->index;
- 	newpage->mapping = page->mapping;
-+	if (PageSwapBacked(page))
-+		SetPageSwapBacked(newpage);
+ 	VM_BUG_ON(PageNoreclaim(page));
  
- 	mapping = page_mapping(page);
- 	if (!mapping)
-Index: linux-2.6.24-rc6-mm1/mm/page_alloc.c
-===================================================================
---- linux-2.6.24-rc6-mm1.orig/mm/page_alloc.c	2008-01-02 12:37:11.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/mm/page_alloc.c	2008-01-02 12:37:22.000000000 -0500
-@@ -253,6 +253,7 @@ static void bad_page(struct page *page)
- 			1 << PG_slab    |
- 			1 << PG_swapcache |
- 			1 << PG_writeback |
-+			1 << PG_swapbacked |
- 			1 << PG_buddy );
- 	set_page_count(page, 0);
- 	reset_page_mapcount(page);
-@@ -485,6 +486,8 @@ static inline int free_pages_check(struc
- 		bad_page(page);
- 	if (PageDirty(page))
- 		__ClearPageDirty(page);
-+	if (PageSwapBacked(page))
-+		__ClearPageSwapBacked(page);
- 	/*
- 	 * For now, we report if PG_reserved was found set, but do not
- 	 * clear it, and do not free the page.  But we shall soon need
-@@ -631,6 +634,7 @@ static int prep_new_page(struct page *pa
- 			1 << PG_swapcache |
- 			1 << PG_writeback |
- 			1 << PG_reserved |
-+			1 << PG_swapbacked |
- 			1 << PG_buddy ))))
- 		bad_page(page);
++	if (mapping_non_reclaimable(page_mapping(page)))
++		return 0;
++
+ 	/* TODO:  test page [!]reclaimable conditions */
  
+ 	return 1;
+Index: linux-2.6.24-rc6-mm1/fs/ramfs/inode.c
+===================================================================
+--- linux-2.6.24-rc6-mm1.orig/fs/ramfs/inode.c	2008-01-08 12:08:02.000000000 -0500
++++ linux-2.6.24-rc6-mm1/fs/ramfs/inode.c	2008-01-08 12:17:21.000000000 -0500
+@@ -61,6 +61,7 @@ struct inode *ramfs_get_inode(struct sup
+ 		inode->i_mapping->a_ops = &ramfs_aops;
+ 		inode->i_mapping->backing_dev_info = &ramfs_backing_dev_info;
+ 		mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER);
++		mapping_set_noreclaim(inode->i_mapping);
+ 		inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+ 		switch (mode & S_IFMT) {
+ 		default:
+Index: linux-2.6.24-rc6-mm1/drivers/block/brd.c
+===================================================================
+--- linux-2.6.24-rc6-mm1.orig/drivers/block/brd.c	2008-01-08 12:08:02.000000000 -0500
++++ linux-2.6.24-rc6-mm1/drivers/block/brd.c	2008-01-08 12:17:21.000000000 -0500
+@@ -373,8 +373,21 @@ static int brd_ioctl(struct inode *inode
+ 	return error;
+ }
+ 
++/*
++ * brd_open():
++ * Just mark the mapping as containing non-reclaimable pages
++ */
++static int brd_open(struct inode *inode, struct file *filp)
++{
++	struct address_space *mapping = inode->i_mapping;
++
++	mapping_set_noreclaim(mapping);
++	return 0;
++}
++
+ static struct block_device_operations brd_fops = {
+ 	.owner =		THIS_MODULE,
++	.open  =		brd_open,
+ 	.ioctl =		brd_ioctl,
+ #ifdef CONFIG_BLK_DEV_XIP
+ 	.direct_access =	brd_direct_access,
 
 -- 
 All Rights Reversed
