@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758919AbYAHOjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759186AbYAHOjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758919AbYAHOjT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 09:39:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755288AbYAHOjJ
+	id S1759186AbYAHOjz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 09:39:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755288AbYAHOjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 09:39:09 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:59422 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753455AbYAHOjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 09:39:06 -0500
-To: hch@infradead.org
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, takedakn@nttdata.co.jp
-Subject: Re: [TOMOYO #6 02/21] Add struct vfsmount to struct task_struct.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <20080108094903.484613061@nttdata.co.jp>
-	<20080108094956.610620186@nttdata.co.jp>
-	<20080108140902.GA12238@infradead.org>
-In-Reply-To: <20080108140902.GA12238@infradead.org>
-Message-Id: <200801082339.CGC57333.OJFVHMSFOLFtOQ@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Tue, 8 Jan 2008 23:39:03 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 8 Jan 2008 09:39:47 -0500
+Received: from nz-out-0506.google.com ([64.233.162.226]:50890 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758914AbYAHOjq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 09:39:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=cEDFKiPz2nep8QuFUes01rQBU3eOJgpuZL6yLfiZ/aoxIhoQNmgQDl4xEjrUYPQiU/WM8eUFbj2fG0GDIgUoZHcxffn8NCLxyRKUwQI9nIO9mtUlkhxsz74GlMh/SIMyOHJyI/w1q2hIHIW2wKy4sZzt7gQ2rzMehP6DYFbBZmM=
+Message-ID: <5eeb9ad90801080639h2992e9b7maec0339e4f763f65@mail.gmail.com>
+Date: Tue, 8 Jan 2008 15:39:45 +0100
+From: DM <dm.n9107@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: [patch 2/2] track and print last unloaded module in the oops trace
+Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, ak@suse.de,
+       mingo@elte.hu
+In-Reply-To: <20080108062656.311cd3aa@laptopd505.fenrus.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080106151946.50c3d8cc@laptopd505.fenrus.org>
+	 <5eeb9ad90801080551n562b9f15o27b495495a452c22@mail.gmail.com>
+	 <20080108062656.311cd3aa@laptopd505.fenrus.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Jan 8, 2008 3:26 PM, Arjan van de Ven <arjan@infradead.org> wrote:
+> >
+> > Why use sprintf? If a module name contains the % character we could
+> > overflow the buffer. Or is module-unloading root-only and we don't
+> > care?
+>
+> module loading isn't just root only; the name comes from an already loaded module.
+> If you can load kernel modules of your choice you own the entire kernel already anway
+>
 
-Christoph Hellwig wrote:
-> Just FYI:  A NACK to such an addition doesn't simply go away by
-> ignoring it.
-Excuse me. What NACK is remaining?
+Still, strcpy seems like a better choice IMHO.
 
-About the below comments?
-> > NACK to this. Passing function parameters through the task_struct is
-> > definitely not an acceptable hack
-> 
-> Exactly.  Having a vfsmount other than the current processes root or
-> current working directory in task_struct doesn't make any sense.
-
-I explained that this approach pushes the parameter on the stack memory
-and behaves as if the parameter was passed by function calls.
-http://lkml.org/lkml/2007/11/19/80
-
-But if this approach is still unacceptable,
-please discuss and adopt AppArmor's patches as soon as possible.
-Both AppArmor and TOMOYO needs vfsmount parameters, but
-I'm sad to see no comments on AppArmor's vfsmount patches.
-
-Regards.
+/DM
