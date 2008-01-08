@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758800AbYAHVXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759262AbYAHVXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758800AbYAHVXK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 16:23:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759224AbYAHVUw
+	id S1759262AbYAHVXk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 16:23:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbYAHVX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 16:20:52 -0500
-Received: from ozlabs.org ([203.10.76.45]:48007 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759215AbYAHVUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 16:20:51 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 2/2] track and print last unloaded module in the oops trace
-Date: Wed, 9 Jan 2008 08:20:27 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: DM <dm.n9107@gmail.com>, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org, ak@suse.de
-References: <20080106151946.50c3d8cc@laptopd505.fenrus.org> <5eeb9ad90801080639h2992e9b7maec0339e4f763f65@mail.gmail.com> <20080108161846.GD32273@elte.hu>
-In-Reply-To: <20080108161846.GD32273@elte.hu>
+	Tue, 8 Jan 2008 16:23:26 -0500
+Received: from [212.12.190.54] ([212.12.190.54]:56137 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753033AbYAHVXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 16:23:25 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: linux-fsdevel@vger.kernel.org
+Subject: [RFD] Incremental fsck
+Date: Wed, 9 Jan 2008 00:22:55 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801090820.28440.rusty@rustcorp.com.au>
+Message-Id: <200801090022.55589.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 09 January 2008 03:18:46 Ingo Molnar wrote:
-> * DM <dm.n9107@gmail.com> wrote:
-> > On Jan 8, 2008 3:26 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> > > > Why use sprintf? If a module name contains the % character we could
-> > > > overflow the buffer. Or is module-unloading root-only and we don't
-> > > > care?
-> > >
-> > > module loading isn't just root only; the name comes from an already
-> > > loaded module. If you can load kernel modules of your choice you own
-> > > the entire kernel already anway
-> >
-> > Still, strcpy seems like a better choice IMHO.
+Andi Kleen wrote:
+> Theodore Tso <tytso@mit.edu> writes:
+> > Now, there are good reasons for doing periodic checks every N mounts
+> > and after M months.  And it has to do with PC class hardware.  (Ted's
+> > aphorism: "PC class hardware is cr*p").
 >
-> agreed, this just isnt obvious IMO:
+> If these reasons are good ones (some skepticism here) then the correct
+> way to really handle this would be to do regular background scrubbing
+> during runtime; ideally with metadata checksums so that you can actually
+> detect all corruption.
 >
-> +       sprintf(last_unloaded_module, mod->name);
->
-> 	Ingo
+> But since fsck is so slow and disks are so big this whole thing
+> is a ticking time bomb now. e.g. it is not uncommon to require tens
+> of minutes or even hours of fsck time and some server that reboots
+> only every few months will eat that when it happens to reboot.
+> This means you get a quite long downtime.
 
-Yes, I've changed it to:
-+	strlcpy(last_unloaded_module, mod->name, sizeof(last_unloaded_module));
+Has there been some thought about an incremental fsck?
 
-In my tree.
+You know, somehow fencing a sub-dir to do an online fsck?
 
-Thanks,
-Rusty.
+
+Thanks for some thoughts!
+
+--
+Al
+
