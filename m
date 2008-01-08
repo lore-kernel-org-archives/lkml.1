@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753645AbYAHWnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbYAHWnp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753645AbYAHWnN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 17:43:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbYAHWm7
+	id S1756005AbYAHWnp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 17:43:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYAHWnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 17:42:59 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56115 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751916AbYAHWm6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 17:42:58 -0500
-Date: Tue, 8 Jan 2008 23:42:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH 00 of 10] x86: unify asm/pgtable.h
-Message-ID: <20080108224244.GA3768@elte.hu>
-References: <patchbomb.1199829603@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <patchbomb.1199829603@localhost>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0001]
+	Tue, 8 Jan 2008 17:43:37 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42797 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751718AbYAHWng (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 17:43:36 -0500
+Date: Tue, 8 Jan 2008 14:42:15 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michael Halcrow <mhalcrow@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, shaggy@us.ibm.com, sandeen@redhat.com,
+       jmoyer@redhat.com
+Subject: Re: [PATCH] eCryptfs: Fix dentry handling on create error, unlink,
+ and inode destroy
+Message-Id: <20080108144215.f21115e2.akpm@linux-foundation.org>
+In-Reply-To: <20080108215807.GE10989@localhost.austin.ibm.com>
+References: <20080108052542.GX10989@localhost.austin.ibm.com>
+	<20080107214517.ebf5a5bd.akpm@linux-foundation.org>
+	<20080108215807.GE10989@localhost.austin.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 8 Jan 2008 15:58:07 -0600
+Michael Halcrow <mhalcrow@us.ibm.com> wrote:
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
-> Hi Ingo,
+> > >  	rc = ecryptfs_interpose(lower_dentry, ecryptfs_dentry,
+> > >  				directory_inode->i_sb, 0);
+> > 
+> > Will this cause an undesirable log storm if the underlying fs runs
+> > out of space?
 > 
-> Here's a series which goes some way to tidying up pgtable.h.  It is 
-> not complete yet, but this lot compiles and works for me.
-> 
-> In many cases I've moved code around with no attempt at adjusting the 
-> formatting to acceptible style.  That can be done in a later patch, 
-> but it means that checkpatch is noisy with this lot.
+> When you're bumping up against the end of your storage space, you will
+> get a lot more that just this message in your logs. There are printk's
+> in ecryptfs_write_lower(), ecryptfs_encrypt_page(), ecryptfs_write(),
+> and ecryptfs_write_metadata_to_contents() that will get pretty
+> noisy. Is it worth wrapping those in a higher level of verbosity?
 
-thanks Jeremy, applied.
+The consequences of this can actually be pretty harmful.  syslogd typically
+does sychronous writes so a random full disk can cause a seek storm over on
+the log disk and a runaway ecryptfs-using application could pretty quickly
+exhaust the space on the log disk.
 
-	Ingo
+So I'd suggest that sometime you go through the fs and find any such
+user-triggerable printks and fix them up.  The most robust way of fixing
+them up would be to delete them, or make them dependent on
+CONFIG_ECRYPTFS_DEBUG.  Fiddling with the facility levels would help, but
+it just lessens the probability rather than fixing it completely.
+
