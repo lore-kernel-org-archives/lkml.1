@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755158AbYAHSCs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755879AbYAHSGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755158AbYAHSCs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 13:02:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750724AbYAHSCl
+	id S1755879AbYAHSGB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 13:06:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754541AbYAHSFx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 13:02:41 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:23281 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750695AbYAHSCk (ORCPT
+	Tue, 8 Jan 2008 13:05:53 -0500
+Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:46916 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754108AbYAHSFw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 13:02:40 -0500
-Subject: Re: [PATCH] Deprecate checkpatch.pl --file
-From: Daniel Walker <dwalker@mvista.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       apw@shadowen.org, akpm@linux-foundation.org
-In-Reply-To: <20080108175347.GA25968@uranus.ravnborg.org>
-References: <20080108161403.GA11632@basil.nowhere.org>
-	 <1199811033.1756.29.camel@imap.mvista.com>
-	 <20080108175347.GA25968@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Tue, 08 Jan 2008 10:01:19 -0800
-Message-Id: <1199815279.1756.35.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Jan 2008 13:05:52 -0500
+X-IronPort-AV: E=Sophos;i="4.24,258,1196668800"; 
+   d="scan'208";a="18500209"
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: akepner@sgi.com, Tony Luck <tony.luck@intel.com>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       David Miller <davem@davemloft.net>, Muli Ben-Yehuda <muli@il.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PARTIAL PATCH 0/3] dma: passing "attributes" to dma_map_* routines
+X-Message-Flag: Warning: May contain useful information
+References: <20080108023222.GP23661@sgi.com>
+	<1199809628.3534.34.camel@localhost.localdomain>
+	<ada63y4kycs.fsf@cisco.com>
+	<1199814853.3534.39.camel@localhost.localdomain>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 08 Jan 2008 10:05:44 -0800
+In-Reply-To: <1199814853.3534.39.camel@localhost.localdomain> (James Bottomley's message of "Tue, 08 Jan 2008 11:54:13 -0600")
+Message-ID: <adawsqkjipz.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 08 Jan 2008 18:05:44.0854 (UTC) FILETIME=[16B6DB60:01C85221]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ > > I think the case before us that Arthur is dealing with is a
+ > > counterexample for this: there's nothing bus-specific about it all.
+ > > The issue is related to reordering of DMAs within the Altix system
+ > > fabric, after they've left the PCI world.  This issue would be present
+ > > no matter what kind of host bridge you hook up to the system fabric,
+ > > be it PCI-X, PCIe, ISA, MCA or whatever.
 
-On Tue, 2008-01-08 at 18:53 +0100, Sam Ravnborg wrote:
-> On Tue, Jan 08, 2008 at 08:50:33AM -0800, Daniel Walker wrote:
-> > 
-> > On Tue, 2008-01-08 at 17:14 +0100, Andi Kleen wrote:
-> > 
-> > 
-> > > +if ($file) {
-> > > +	print <<EOL
-> > > +WARNING: Using --file mode. Please do not send patches to linux-kernel
-> > > +that change whole existing files if you did not significantly change most
-> > > +of the the file for other reasons anyways or just wrote the file newly
-> > > +from scratch. Pure code style patches have a significant cost in a
-> > > +quickly changing code base like Linux because they cause rejects
-> > > +with other changes.
-> > > +If you're sure you want to use whole file mode please use --file-force
-> > > +EOL
-> > > +;
-> > > +	exit(1);
-> > 
-> > Can't say I like this too much .. It sounds like your telling people to
-> > stop sending cleanup patches, which doesn't make much sense .. We want a
-> > clean kernel .. Or at least I do ..
-> 
-> It is a simple pain/benefit issue.
-> Fixing the 25 errors and 13 warnings in kernel/profile.c may look
-> like an easy task but then we put additional burden on the 10 people
-> that have patches pending for this file.
+ > But it is: for performance reasons, the Altix boxes have a rather non
+ > standard PCI bridge implementation that gives relaxed ordering on the
+ > PCI bus.
 
-This goes for all patches on kernel/profile.c tho .. If I make a big mod
-to kernel/profile.c, that will screw up anyone else who has patches for
-that file..
+I don't think this is accurate. As I understand things, the reordering
+happens within the Altix system interconnect -- nothing to do with the
+PCI bridge hanging off this fabric.  It is "platform" behavior and I
+think is properly handled within the dma_ API, which exists to
+abstract platforms.
 
-> It is the same reason why we do not run a 'kill-trailing-whitespace'
-> on the full kernel tree.
+ > This behaviour was later standardised to some degree in PCIe,
+ > so you could argue they actually have an altix specific PCI bus (PCIa
+ > anyone?).  Regardless, other manufacturers are probably going to demand
+ > something equivalent to this based on the PCIe standard, so we should be
+ > ready for it, hence the desire for the bus specific attributes.
 
-At least style clean ups at worst are file by file..
+But:
+ a) The Altix has PCI-X, not PCIe, so having something PCIe-specific
+    is not a solution for this case; and
+ b) the PCIe behavior is opt-in, in the sense that you have to
+    specifically ask for looser ordering, while the Altix is loosely
+    ordered unless you ask for this "flush" property.  So I don't
+    think the same attribute will work for both cases.
 
-Daniel
-
+ - R.
