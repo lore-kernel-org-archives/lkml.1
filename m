@@ -1,33 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbYAHJzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbYAHJ4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753211AbYAHJzb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 04:55:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbYAHJzX
+	id S1754110AbYAHJ4W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 04:56:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbYAHJ4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 04:55:23 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:40301 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750792AbYAHJzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 04:55:22 -0500
-Date: Tue, 8 Jan 2008 10:54:28 +0100
-From: Michal Schmidt <mschmidt@redhat.com>
+	Tue, 8 Jan 2008 04:56:13 -0500
+Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:1608 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752328AbYAHJ4M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 04:56:12 -0500
+Date: Tue, 8 Jan 2008 10:56:09 +0100
+From: Jean Delvare <khali@linux-fr.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jon Masters <jcm@redhat.com>,
-       Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] kthread: always create the kernel threads with normal
- priority
-Message-ID: <20080108105428.2fb04bdd@brian.englab.brq.redhat.com>
-In-Reply-To: <20080107092956.419b5f91.akpm@linux-foundation.org>
-References: <20071217234314.540b59bd@hammerfall>
-	<20071222013021.db2528cb.akpm@linux-foundation.org>
-	<20080107110603.09b72450@brian.englab.brq.redhat.com>
-	<20080107022513.3ac05734.akpm@linux-foundation.org>
-	<20080107110904.GB28481@elte.hu>
-	<20080107092956.419b5f91.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; i386-redhat-linux-gnu)
+Cc: Christoph Lameter <clameter@sgi.com>, kamalesh@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, bunk@kernel.org, apw@shadowen.org,
+       balbir@linux.vnet.ibm.com
+Subject: Re: Linux 2.6.24-rc7 Build-Failure at
+ __you_cannot_kmalloc_that_much
+Message-ID: <20080108105609.197a2874@hyperion.delvare>
+In-Reply-To: <20080107113831.0865cf5e.akpm@linux-foundation.org>
+References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org>
+	<478200A4.4090707@linux.vnet.ibm.com>
+	<20080107100733.3655f74f.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0801071014450.22642@schroedinger.engr.sgi.com>
+	<20080107113831.0865cf5e.akpm@linux-foundation.org>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -35,28 +33,102 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Jan 2008 09:29:56 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Hi Andrew, hi Chritoph,
 
-> On Mon, 7 Jan 2008 12:09:04 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+On Mon, 7 Jan 2008 11:38:31 -0800, Andrew Morton wrote:
+> On Mon, 7 Jan 2008 10:31:53 -0800 (PST)
+> Christoph Lameter <clameter@sgi.com> wrote:
 > 
+> > On Mon, 7 Jan 2008, Andrew Morton wrote:
 > > 
-> > > > This causes a practical problem. When a runaway real-time task
-> > > > is eating 100% CPU and we attempt to put the CPU offline,
-> > > > sometimes we block while waiting for the creation of the
-> > > > highest-priority "kstopmachine" thread.
+> > > > : undefined reference to `__you_cannot_kmalloc_that_much'
 > > 
-> > sched-devel.git has new mechanisms against runaway RT tasks.
-> > There's a new RLIMIT_RTTIME rlimit - if an RT task exceeds that
-> > rlimit then it is sent SIGXCPU.
+> > There is also a kernel.org bugzilla for this at
+> > 
+> > http://bugzilla.kernel.org/show_bug.cgi?id=9669
+> > For some reason my adds to this do not show up.
+> > 
+> > In both cases we have a 
+> > 
+> > k(z/m)alloc(sizeof(*pointer), ...)
+> > 
+> > that is for some reason failing. I guess what happens is that the function 
+> > in which this occurs is too complex for gcc 3.2. Thus it stops constant 
+> > folding the sizeof(*pointer) in the complex inline-if-cascade that SLAB 
+> > needs to determine the cache and does not eliminate the 
+> > __you_cannot_kmalloc_that_much branch().
+
+Interesting theory... So I tried to split half of the code of
+dmi_id_init() to a subfunction and bingo! gcc 3.2.3 is now able to
+build it properly. Thanks for the hint!
+
+> > SLUB in that case just puts a series of if comparisions in the code. This 
+> > means compilation does not fail but a large amount of code is generated.
 > 
-> Is that "total RT CPU time" or "elapsed time since last schedule()"?
+> ug.  Silent and nasty.
 > 
-> If the former, it is not useful for this problem.
+> > We could replace the __you_cannot_kmalloc_that_much() with a BUG() 
+> > statement so we have the same effect in SLAB?
+> 
+> I think it'd be better to just put suitable workarounds at the offending
+> callsites.  We've only seen three or four of them in several months.
 
-It's "runtime since last sleep" so it is useful.
+Here's a workaround for dmi-id.
 
-I still think the kthread patch is good to have anyway. The user can
-have other reasons to change kthreadd's priority/cpumask.
+Subject: Fix for __you_cannot_kmalloc_that_much failure in dmi-id
 
-Michal
+gcc 3.2 has a hard time coping with the code in dmi_id_init():
+
+drivers/built-in.o(.init.text+0x789e): In function `dmi_id_init':
+: undefined reference to `__you_cannot_kmalloc_that_much'
+make: *** [.tmp_vmlinux1] Error 1
+
+Moving half of the code to a separate function seems to help. This is
+a no-op for gcc 4.1 which will successfully inline the code anyway.
+
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+---
+ drivers/firmware/dmi-id.c |   19 ++++++++++++++-----
+ 1 file changed, 14 insertions(+), 5 deletions(-)
+
+--- linux-2.6.24-rc7.orig/drivers/firmware/dmi-id.c	2007-10-24 09:59:28.000000000 +0200
++++ linux-2.6.24-rc7/drivers/firmware/dmi-id.c	2008-01-08 10:32:00.000000000 +0100
+@@ -175,12 +175,11 @@ static struct device *dmi_dev;
+ 
+ extern int dmi_available;
+ 
+-static int __init dmi_id_init(void)
++/* In a separate function to keep gcc 3.2 happy - do NOT merge this in
++   dmi_id_init! */
++static void __init dmi_id_init_attr_table(void)
+ {
+-	int ret, i;
+-
+-	if (!dmi_available)
+-		return -ENODEV;
++	int i;
+ 
+ 	/* Not necessarily all DMI fields are available on all
+ 	 * systems, hence let's built an attribute table of just
+@@ -205,6 +204,16 @@ static int __init dmi_id_init(void)
+ 	ADD_DMI_ATTR(chassis_serial,    DMI_CHASSIS_SERIAL);
+ 	ADD_DMI_ATTR(chassis_asset_tag, DMI_CHASSIS_ASSET_TAG);
+ 	sys_dmi_attributes[i++] = &sys_dmi_modalias_attr.attr;
++}
++
++static int __init dmi_id_init(void)
++{
++	int ret;
++
++	if (!dmi_available)
++		return -ENODEV;
++
++	dmi_id_init_attr_table();
+ 
+ 	ret = class_register(&dmi_class);
+ 	if (ret)
+
+I'll now check if I can do something similar for snd-mixer-oss.
+
+-- 
+Jean Delvare
