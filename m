@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762575AbYAHQ70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762630AbYAHRB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762575AbYAHQ70 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 11:59:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756179AbYAHQ7S
+	id S1762630AbYAHRB6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 12:01:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbYAHRBu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 11:59:18 -0500
-Received: from main.gmane.org ([80.91.229.2]:44825 "EHLO ciao.gmane.org"
+	Tue, 8 Jan 2008 12:01:50 -0500
+Received: from mail.suse.de ([195.135.220.2]:60091 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756160AbYAHQ7R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 11:59:17 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Tuomo Valkonen <tuomov@iki.fi>
-Subject: Re: The ext3 way of journalling
-Date: Tue, 8 Jan 2008 16:59:06 +0000 (UTC)
-Message-ID: <slrnfo7auq.6m2.tuomov@jolt.modeemi.cs.tut.fi>
-References: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi> <18307.42821.166376.732473@stoffel.org>
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: jolt.modeemi.cs.tut.fi
-User-Agent: slrn/0.9.8.1pl1 (Debian)
+	id S1754247AbYAHRBt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 12:01:49 -0500
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de, hpa@zytor.com
+Subject: Re: [patch 2/2] Use the stack frames to get exact stack-traces for CONFIG_FRAMEPOINTER on x86-64
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080107211437.5ba42f18@laptopd505.fenrus.org>
+Date: Tue, 08 Jan 2008 18:01:48 +0100
+In-Reply-To: <20080107211437.5ba42f18@laptopd505.fenrus.org> (Arjan van de Ven's message of "Mon\, 7 Jan 2008 21\:14\:37 -0800")
+Message-ID: <p73fxx8qmir.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008-01-08, John Stoffel <john@stoffel.org> wrote:
-> Look at your filesystems, using 'tune2fs' and see if the ext3 journal
-> is actually turned on and used.  If it's not, then I can see why
-> you're having problems on reboots.  
+Arjan van de Ven <arjan@infradead.org> writes:
 
-Journalling is on, but it's no use because the superblock always has
-corrupted last-checked time at boot. "File system check forced: 31352
-days since last check" or so. 
+> Subject: Use the stack frames to get exact stack-traces for CONFIG_FRAMEPOINTER on x86-64
+> From: Arjan van de Ven <arjan@linux.intel.com>
+>
+> x86 32 bit already has this feature: This patch uses the stack frames with
 
-> What CPU are you using?  Chipset?  Output of lspci?  dmesg output?  
+You would also need to add frame pointers to all .S functions, otherwise
+it will stop there.
 
-Athlon XP 2500+, SiI 3112 (the obsoleted driver that makes the disk 
-appear as the predictable hde, not the random scsi mapping driver). 
+> frame pointer into an exact stack trace, by following the frame pointer.
+> This only affects kernels built with the CONFIG_FRAME_POINTER config option
+> enabled, and greatly reduces the amount of noise in oopses.
 
-As for the rest... I'm on Windows, because I can't be arsed waiting 
-for an hour for Linux to boot.
+Well it's still the wrong way to do this. The correct way is to reintegrate
+Jan's dwarf2 unwinder. Incidentially that code supports frame pointer
+unwinding too, but of course with the same limits as described above.
 
--- 
-Tuomo
+> The code tries to use the frame pointers to do a backtrace, but if it smells
+> iffy or invalid, falls back to the traditional way of printing backtraces,
+> to make sure that at least some useful backtrace is created.
 
+That will likely happen in most non trivial cases (interrupts/exceptions etc.)
+
+-Andi
