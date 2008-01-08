@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbYAHTc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756504AbYAHTcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756023AbYAHTc1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 14:32:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755559AbYAHTcP
+	id S1756504AbYAHTcn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 14:32:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755934AbYAHTcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 14:32:15 -0500
+	Tue, 8 Jan 2008 14:32:25 -0500
 Received: from fg-out-1718.google.com ([72.14.220.159]:50843 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755499AbYAHTcN (ORCPT
+	with ESMTP id S1755890AbYAHTcX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 14:32:13 -0500
+	Tue, 8 Jan 2008 14:32:23 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=L96sL0CkyhRhNZES4gZ7ji84vqc/R/xO99tWnaA7HIq8RlxCS2DBEfcmMncc66OYgiYNkdRs2K9xUEJTK4UfCPqzW+JZ6g5MibJNiiQUv+KUeVuEsAP3S58EKQQzAt+RdQ5wMxR5h3Ij04SnAoN0Boe0PvktXtIPRjq53aws3n0=
-Date: Tue, 8 Jan 2008 20:32:23 +0100
+        b=q7PlD8DeXk3I8MhZvfn3FBc3eR6uaL1Q20C+tcoV//o58qZfDzJMs1ard7oXOLAhO90fgQ/kllMs+TQvqQOP3iYOOjzPk/3/zGkLC2NbcEDgTQ9m4Rl0i731dM+MSffAei1A3JiyWSlh3mH3jkY0Lwm+8vSAwJ8ucOMHlIogrRk=
+Date: Tue, 8 Jan 2008 20:32:33 +0100
 From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
 To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
        Ingo Molnar <mingo@elte.hu>
 Cc: Linux Kernel <linux-kernel@vger.kernel.org>, trivial@kernel.org
-Subject: [PATCH 2/5] x86: coding style fixes in arch/x86/ia32/fpu32.c
-Message-ID: <20080108203223.5671cd54@paolo-desktop>
+Subject: [PATCH 3/5] x86: coding style fixes in arch/x86/ia32/ia32_aout.c
+Message-ID: <20080108203233.01bb5c7f@paolo-desktop>
 X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,174 +29,299 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a few coding style violations (37 errors).
+Fix plenty of coding style errors
 
 Checkpatch now reports:
-total: 2 errors, 1 warnings, 183 lines checked
-
+total: 2 errors, 18 warnings, 526 lines checked
 
 Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
 ---
- arch/x86/ia32/fpu32.c |   68 ++++++++++++++++++++++++------------------------
- 1 files changed, 34 insertions(+), 34 deletions(-)
+ arch/x86/ia32/ia32_aout.c |  100 ++++++++++++++++++++++-----------------------
+ 1 files changed, 49 insertions(+), 51 deletions(-)
 
-diff --git a/arch/x86/ia32/fpu32.c b/arch/x86/ia32/fpu32.c
-index 2c8209a..2efc306 100644
---- a/arch/x86/ia32/fpu32.c
-+++ b/arch/x86/ia32/fpu32.c
-@@ -1,8 +1,8 @@
--/* 
-+/*
-  * Copyright 2002 Andi Kleen, SuSE Labs.
-  * FXSAVE<->i387 conversion support. Based on code by Gareth Hughes.
-  * This is used for ptrace, signals and coredumps in 32bit emulation.
-- */ 
-+ */
+diff --git a/arch/x86/ia32/ia32_aout.c b/arch/x86/ia32/ia32_aout.c
+index f82e1a9..65dc50a 100644
+--- a/arch/x86/ia32/ia32_aout.c
++++ b/arch/x86/ia32/ia32_aout.c
+@@ -36,8 +36,8 @@
+ #undef WARN_OLD
+ #undef CORE_DUMP /* probably broken */
  
- #include <linux/sched.h>
- #include <asm/sigcontext32.h>
-@@ -13,15 +13,15 @@
- static inline unsigned short twd_i387_to_fxsr(unsigned short twd)
+-static int load_aout_binary(struct linux_binprm *, struct pt_regs * regs);
+-static int load_aout_library(struct file*);
++static int load_aout_binary(struct linux_binprm *, struct pt_regs *regs);
++static int load_aout_library(struct file *);
+ 
+ #ifdef CORE_DUMP
+ static int aout_core_dump(long signr, struct pt_regs *regs, struct file *file, unsigned long limit);
+@@ -45,9 +45,9 @@ static int aout_core_dump(long signr, struct pt_regs *regs, struct file *file, u
+ /*
+  * fill in the user structure for a core dump..
+  */
+-static void dump_thread32(struct pt_regs * regs, struct user32 * dump)
++static void dump_thread32(struct pt_regs *regs, struct user32 *dump)
  {
- 	unsigned int tmp; /* to avoid 16 bit prefixes in the code */
-- 
-+
- 	/* Transform each pair of bits into 01 (valid) or 00 (empty) */
--        tmp = ~twd;
--        tmp = (tmp | (tmp>>1)) & 0x5555; /* 0V0V0V0V0V0V0V0V */
--        /* and move the valid bits to the lower byte. */
--        tmp = (tmp | (tmp >> 1)) & 0x3333; /* 00VV00VV00VV00VV */
--        tmp = (tmp | (tmp >> 2)) & 0x0f0f; /* 0000VVVV0000VVVV */
--        tmp = (tmp | (tmp >> 4)) & 0x00ff; /* 00000000VVVVVVVV */
--        return tmp;
-+	tmp = ~twd;
-+	tmp = (tmp | (tmp>>1)) & 0x5555; /* 0V0V0V0V0V0V0V0V */
-+	/* and move the valid bits to the lower byte. */
-+	tmp = (tmp | (tmp >> 1)) & 0x3333; /* 00VV00VV00VV00VV */
-+	tmp = (tmp | (tmp >> 2)) & 0x0f0f; /* 0000VVVV0000VVVV */
-+	tmp = (tmp | (tmp >> 4)) & 0x00ff; /* 00000000VVVVVVVV */
-+	return tmp;
+-	u32 fs,gs;
++	u32 fs, gs;
+ 
+ /* changed the size calculations - should hopefully work better. lbt */
+ 	dump->magic = CMAGIC;
+@@ -57,14 +57,14 @@ static void dump_thread32(struct pt_regs * regs, struct user32 * dump)
+ 	dump->u_dsize = ((unsigned long) (current->mm->brk + (PAGE_SIZE-1))) >> PAGE_SHIFT;
+ 	dump->u_dsize -= dump->u_tsize;
+ 	dump->u_ssize = 0;
+-	dump->u_debugreg[0] = current->thread.debugreg0;  
+-	dump->u_debugreg[1] = current->thread.debugreg1;  
+-	dump->u_debugreg[2] = current->thread.debugreg2;  
+-	dump->u_debugreg[3] = current->thread.debugreg3;  
+-	dump->u_debugreg[4] = 0;  
+-	dump->u_debugreg[5] = 0;  
+-	dump->u_debugreg[6] = current->thread.debugreg6;  
+-	dump->u_debugreg[7] = current->thread.debugreg7;  
++	dump->u_debugreg[0] = current->thread.debugreg0;
++	dump->u_debugreg[1] = current->thread.debugreg1;
++	dump->u_debugreg[2] = current->thread.debugreg2;
++	dump->u_debugreg[3] = current->thread.debugreg3;
++	dump->u_debugreg[4] = 0;
++	dump->u_debugreg[5] = 0;
++	dump->u_debugreg[6] = current->thread.debugreg6;
++	dump->u_debugreg[7] = current->thread.debugreg7;
+ 
+ 	if (dump->start_stack < 0xc0000000)
+ 		dump->u_ssize = ((unsigned long) (0xc0000000 - dump->start_stack)) >> PAGE_SHIFT;
+@@ -79,7 +79,7 @@ static void dump_thread32(struct pt_regs * regs, struct user32 * dump)
+ 	dump->regs.ds = current->thread.ds;
+ 	dump->regs.es = current->thread.es;
+ 	asm("movl %%fs,%0" : "=r" (fs)); dump->regs.fs = fs;
+-	asm("movl %%gs,%0" : "=r" (gs)); dump->regs.gs = gs; 
++	asm("movl %%gs,%0" : "=r" (gs)); dump->regs.gs = gs;
+ 	dump->regs.orig_eax = regs->orig_rax;
+ 	dump->regs.eip = regs->rip;
+ 	dump->regs.cs = regs->cs;
+@@ -90,7 +90,7 @@ static void dump_thread32(struct pt_regs * regs, struct user32 * dump)
+ #if 1 /* FIXME */
+ 	dump->u_fpvalid = 0;
+ #else
+-	dump->u_fpvalid = dump_fpu (regs, &dump->i387);
++	dump->u_fpvalid = dump_fpu(regs, &dump->i387);
+ #endif
  }
  
- static inline unsigned long twd_fxsr_to_i387(struct i387_fxsave_struct *fxsave)
-@@ -37,17 +37,17 @@ static inline unsigned long twd_fxsr_to_i387(struct i387_fxsave_struct *fxsave)
+@@ -134,8 +134,8 @@ static int dump_write(struct file *file, const void *addr, int nr)
  
- 	for (i = 0 ; i < 8 ; i++) {
- 		if (twd & 0x1) {
--			st = FPREG_ADDR( fxsave, (i - tos) & 7 );
-+			st = FPREG_ADDR(fxsave, (i - tos) & 7);
+ #define DUMP_SEEK(offset) \
+ if (file->f_op->llseek) { \
+-	if (file->f_op->llseek(file,(offset),0) != (offset)) \
+- 		goto end_coredump; \
++	if (file->f_op->llseek(file, (offset), 0) != (offset)) \
++		goto end_coredump; \
+ } else file->f_pos = (offset)
  
- 			switch (st->exponent & 0x7fff) {
- 			case 0x7fff:
- 				tag = 2;		/* Special */
- 				break;
- 			case 0x0000:
--				if ( !st->significand[0] &&
-+				if (!st->significand[0] &&
- 				     !st->significand[1] &&
- 				     !st->significand[2] &&
--				     !st->significand[3] ) {
-+				     !st->significand[3]) {
- 					tag = 1;	/* Zero */
- 				} else {
- 					tag = 2;	/* Special */
-@@ -91,8 +91,8 @@ static inline int convert_fxsr_from_user(struct i387_fxsave_struct *fxsave,
- 	G(5, fxsave->rdp);
- 	/* 6: ds ignored */
- #undef G
--	if (err) 
--		return -1; 
-+	if (err)
-+		return -1;
+ /*
+@@ -161,7 +161,7 @@ static int aout_core_dump(long signr, struct pt_regs *regs, struct file *file, u
+ 	set_fs(KERNEL_DS);
+ 	has_dumped = 1;
+ 	current->flags |= PF_DUMPCORE;
+-       	strncpy(dump.u_comm, current->comm, sizeof(current->comm));
++	strncpy(dump.u_comm, current->comm, sizeof(current->comm));
+ 	dump.u_ar0 = (u32)(((unsigned long)(&dump.regs)) - ((unsigned long)(&dump)));
+ 	dump.signal = signr;
+ 	dump_thread32(regs, &dump);
+@@ -184,7 +184,7 @@ static int aout_core_dump(long signr, struct pt_regs *regs, struct file *file, u
  
- 	to = (struct _fpxreg *)&fxsave->st_space[0];
- 	from = &buf->_st[0];
-@@ -112,57 +112,57 @@ static inline int convert_fxsr_to_user(struct _fpstate_ia32 __user *buf,
- 	struct _fpreg __user *to;
- 	struct _fpxreg *from;
- 	int i;
--	u16 cs,ds; 
--	int err = 0; 
-+	u16 cs, ds;
-+	int err = 0;
- 
- 	if (tsk == current) {
- 		/* should be actually ds/cs at fpu exception time,
- 		   but that information is not available in 64bit mode. */
--		asm("movw %%ds,%0 " : "=r" (ds)); 
--		asm("movw %%cs,%0 " : "=r" (cs)); 		
-+		asm("movw %%ds,%0 " : "=r" (ds));
-+		asm("movw %%cs,%0 " : "=r" (cs));
- 	} else { /* ptrace. task has stopped. */
- 		ds = tsk->thread.ds;
- 		cs = regs->cs;
--	} 
-+	}
- 
- #define P(num,val) err |= __put_user(val, num + (u32 __user *)buf)
- 	P(0, (u32)fxsave->cwd | 0xffff0000);
- 	P(1, (u32)fxsave->swd | 0xffff0000);
- 	P(2, twd_fxsr_to_i387(fxsave));
- 	P(3, (u32)fxsave->rip);
--	P(4,  cs | ((u32)fxsave->fop) << 16); 
-+	P(4,  cs | ((u32)fxsave->fop) << 16);
- 	P(5, fxsave->rdp);
- 	P(6, 0xffff0000 | ds);
- #undef P
- 
--	if (err) 
--		return -1; 
-+	if (err)
-+		return -1;
- 
- 	to = &buf->_st[0];
- 	from = (struct _fpxreg *) &fxsave->st_space[0];
--	for ( i = 0 ; i < 8 ; i++, to++, from++ ) {
-+	for (i = 0 ; i < 8 ; i++, to++, from++) {
- 		if (__copy_to_user(to, from, sizeof(*to)))
- 			return -1;
+ 	set_fs(KERNEL_DS);
+ /* struct user */
+-	DUMP_WRITE(&dump,sizeof(dump));
++	DUMP_WRITE(&dump, sizeof(dump));
+ /* Now dump all of the user data.  Include malloced stuff as well */
+ 	DUMP_SEEK(PAGE_SIZE);
+ /* now we start writing out the user space info */
+@@ -193,17 +193,17 @@ static int aout_core_dump(long signr, struct pt_regs *regs, struct file *file, u
+ 	if (dump.u_dsize != 0) {
+ 		dump_start = START_DATA(dump);
+ 		dump_size = dump.u_dsize << PAGE_SHIFT;
+-		DUMP_WRITE(dump_start,dump_size);
++		DUMP_WRITE(dump_start, dump_size);
  	}
- 	return 0;
- }
+ /* Now prepare to dump the stack area */
+ 	if (dump.u_ssize != 0) {
+ 		dump_start = START_STACK(dump);
+ 		dump_size = dump.u_ssize << PAGE_SHIFT;
+-		DUMP_WRITE(dump_start,dump_size);
++		DUMP_WRITE(dump_start, dump_size);
+ 	}
+ /* Finally dump the task struct.  Not be used by gdb, but could be useful */
+ 	set_fs(KERNEL_DS);
+-	DUMP_WRITE(current,sizeof(*current));
++	DUMP_WRITE(current, sizeof(*current));
+ end_coredump:
+ 	set_fs(fs);
+ 	return has_dumped;
+@@ -228,24 +228,24 @@ static u32 __user *create_aout_tables(char __user *p, struct linux_binprm *bprm)
+ 	envp = sp;
+ 	sp -= argc+1;
+ 	argv = sp;
+-	put_user((unsigned long) envp,--sp);
+-	put_user((unsigned long) argv,--sp);
+-	put_user(argc,--sp);
++	put_user((unsigned long) envp, --sp);
++	put_user((unsigned long) argv, --sp);
++	put_user(argc, --sp);
+ 	current->mm->arg_start = (unsigned long) p;
+-	while (argc-->0) {
++	while (argc-- > 0) {
+ 		char c;
+-		put_user((u32)(unsigned long)p,argv++);
++		put_user((u32)(unsigned long)p, argv++);
+ 		do {
+-			get_user(c,p++);
++			get_user(c, p++);
+ 		} while (c);
+ 	}
+ 	put_user(0, argv);
+ 	current->mm->arg_end = current->mm->env_start = (unsigned long) p;
+-	while (envc-->0) {
++	while (envc-- > 0) {
+ 		char c;
+-		put_user((u32)(unsigned long)p,envp++);
++		put_user((u32)(unsigned long)p, envp++);
+ 		do {
+-			get_user(c,p++);
++			get_user(c, p++);
+ 		} while (c);
+ 	}
+ 	put_user(0, envp);
+@@ -258,7 +258,7 @@ static u32 __user *create_aout_tables(char __user *p, struct linux_binprm *bprm)
+  * libraries.  There is no binary dependent code anywhere else.
+  */
  
--int restore_i387_ia32(struct task_struct *tsk, struct _fpstate_ia32 __user *buf, int fsave) 
--{ 
-+int restore_i387_ia32(struct task_struct *tsk, struct _fpstate_ia32 __user *buf, int fsave)
-+{
- 	clear_fpu(tsk);
--	if (!fsave) { 
--		if (__copy_from_user(&tsk->thread.i387.fxsave, 
-+	if (!fsave) {
-+		if (__copy_from_user(&tsk->thread.i387.fxsave,
- 				     &buf->_fxsr_env[0],
- 				     sizeof(struct i387_fxsave_struct)))
- 			return -1;
- 		tsk->thread.i387.fxsave.mxcsr &= mxcsr_feature_mask;
- 		set_stopped_child_used_math(tsk);
--	} 
-+	}
- 	return convert_fxsr_from_user(&tsk->thread.i387.fxsave, buf);
--}  
-+}
- 
--int save_i387_ia32(struct task_struct *tsk, 
--		   struct _fpstate_ia32 __user *buf, 
-+int save_i387_ia32(struct task_struct *tsk,
-+		   struct _fpstate_ia32 __user *buf,
- 		   struct pt_regs *regs,
- 		   int fsave)
+-static int load_aout_binary(struct linux_binprm * bprm, struct pt_regs * regs)
++static int load_aout_binary(struct linux_binprm *bprm, struct pt_regs *regs)
  {
-@@ -174,8 +174,8 @@ int save_i387_ia32(struct task_struct *tsk,
- 	if (fsave)
- 		return 0;
- 	err |= __put_user(tsk->thread.i387.fxsave.swd, &buf->status);
--	if (fsave) 
--		return err ? -1 : 1; 	
-+	if (fsave)
-+		return err ? -1 : 1;
- 	err |= __put_user(X86_FXSR_MAGIC, &buf->magic);
- 	err |= __copy_to_user(&buf->_fxsr_env[0], &tsk->thread.i387.fxsave,
- 			      sizeof(struct i387_fxsave_struct));
+ 	struct exec ex;
+ 	unsigned long error;
+@@ -291,13 +291,13 @@ static int load_aout_binary(struct linux_binprm * bprm, struct pt_regs * regs)
+ 	if (retval)
+ 		return retval;
+ 
+-	regs->cs = __USER32_CS; 
++	regs->cs = __USER32_CS;
+ 	regs->r8 = regs->r9 = regs->r10 = regs->r11 = regs->r12 =
+ 		regs->r13 = regs->r14 = regs->r15 = 0;
+ 
+ 	/* OK, This is the point of no return */
+ 	set_personality(PER_LINUX);
+-	set_thread_flag(TIF_IA32); 
++	set_thread_flag(TIF_IA32);
+ 	clear_thread_flag(TIF_ABI_PENDING);
+ 
+ 	current->mm->end_code = ex.a_text +
+@@ -311,7 +311,7 @@ static int load_aout_binary(struct linux_binprm * bprm, struct pt_regs * regs)
+ 
+ 	current->mm->mmap = NULL;
+ 	compute_creds(bprm);
+- 	current->flags &= ~PF_FORKNOEXEC;
++	current->flags &= ~PF_FORKNOEXEC;
+ 
+ 	if (N_MAGIC(ex) == OMAGIC) {
+ 		unsigned long text_addr, map_size;
+@@ -338,29 +338,27 @@ static int load_aout_binary(struct linux_binprm * bprm, struct pt_regs * regs)
+ 			send_sig(SIGKILL, current, 0);
+ 			return error;
+ 		}
+-			 
++
+ 		flush_icache_range(text_addr, text_addr+ex.a_text+ex.a_data);
+ 	} else {
+ #ifdef WARN_OLD
+ 		static unsigned long error_time, error_time2;
+ 		if ((ex.a_text & 0xfff || ex.a_data & 0xfff) &&
+-		    (N_MAGIC(ex) != NMAGIC) && (jiffies-error_time2) > 5*HZ)
+-		{
++		    (N_MAGIC(ex) != NMAGIC) && (jiffies-error_time2) > 5*HZ) {
+ 			printk(KERN_NOTICE "executable not page aligned\n");
+ 			error_time2 = jiffies;
+ 		}
+ 
+ 		if ((fd_offset & ~PAGE_MASK) != 0 &&
+-		    (jiffies-error_time) > 5*HZ)
+-		{
+-			printk(KERN_WARNING 
++		    (jiffies-error_time) > 5*HZ) {
++			printk(KERN_WARNING
+ 			       "fd_offset is not page aligned. Please convert program: %s\n",
+ 			       bprm->file->f_path.dentry->d_name.name);
+ 			error_time = jiffies;
+ 		}
+ #endif
+ 
+-		if (!bprm->file->f_op->mmap||((fd_offset & ~PAGE_MASK) != 0)) {
++		if (!bprm->file->f_op->mmap || ((fd_offset & ~PAGE_MASK) != 0)) {
+ 			loff_t pos = fd_offset;
+ 			down_write(&current->mm->mmap_sem);
+ 			do_brk(N_TXTADDR(ex), ex.a_text+ex.a_data);
+@@ -387,7 +385,7 @@ static int load_aout_binary(struct linux_binprm * bprm, struct pt_regs * regs)
+ 		}
+ 
+ 		down_write(&current->mm->mmap_sem);
+- 		error = do_mmap(bprm->file, N_DATADDR(ex), ex.a_data,
++		error = do_mmap(bprm->file, N_DATADDR(ex), ex.a_data,
+ 				PROT_READ | PROT_WRITE | PROT_EXEC,
+ 				MAP_FIXED | MAP_PRIVATE | MAP_DENYWRITE | MAP_EXECUTABLE | MAP_32BIT,
+ 				fd_offset + ex.a_text);
+@@ -403,9 +401,9 @@ beyond_if:
+ 	set_brk(current->mm->start_brk, current->mm->brk);
+ 
+ 	retval = setup_arg_pages(bprm, IA32_STACK_TOP, EXSTACK_DEFAULT);
+-	if (retval < 0) { 
+-		/* Someone check-me: is this error path enough? */ 
+-		send_sig(SIGKILL, current, 0); 
++	if (retval < 0) {
++		/* Someone check-me: is this error path enough? */
++		send_sig(SIGKILL, current, 0);
+ 		return retval;
+ 	}
+ 
+@@ -414,7 +412,7 @@ beyond_if:
+ 	/* start thread */
+ 	asm volatile("movl %0,%%fs" :: "r" (0)); \
+ 	asm volatile("movl %0,%%es; movl %0,%%ds": :"r" (__USER32_DS));
+-	load_gs_index(0); 
++	load_gs_index(0);
+ 	(regs)->rip = ex.a_entry;
+ 	(regs)->rsp = current->mm->start_stack;
+ 	(regs)->eflags = 0x200;
+@@ -434,7 +432,7 @@ beyond_if:
+ 
+ static int load_aout_library(struct file *file)
+ {
+-	struct inode * inode;
++	struct inode *inode;
+ 	unsigned long bss, start_addr, len;
+ 	unsigned long error;
+ 	int retval;
+@@ -467,9 +465,9 @@ static int load_aout_library(struct file *file)
+ 
+ #ifdef WARN_OLD
+ 		static unsigned long error_time;
+-		if ((jiffies-error_time) > 5*HZ)
+-		{
+-			printk(KERN_WARNING 
++		if ((jiffies-error_time) > 5*HZ) {
++
++			printk(KERN_WARNING
+ 			       "N_TXTOFF is not page aligned. Please convert library: %s\n",
+ 			       file->f_path.dentry->d_name.name);
+ 			error_time = jiffies;
+@@ -478,7 +476,7 @@ static int load_aout_library(struct file *file)
+ 		down_write(&current->mm->mmap_sem);
+ 		do_brk(start_addr, ex.a_text + ex.a_data + ex.a_bss);
+ 		up_write(&current->mm->mmap_sem);
+-		
++
+ 		file->f_op->read(file, (char __user *)start_addr,
+ 			ex.a_text + ex.a_data, &pos);
+ 		flush_icache_range((unsigned long) start_addr,
 -- 
 1.5.4.rc2.17.g257f
 
