@@ -1,42 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757220AbYAHGJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757532AbYAHGPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757220AbYAHGJk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 01:09:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755415AbYAHGJa
+	id S1757532AbYAHGPe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 01:15:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbYAHGPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 01:09:30 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38578
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755040AbYAHGJ3 (ORCPT
+	Tue, 8 Jan 2008 01:15:23 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:4437 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754551AbYAHGPW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 01:09:29 -0500
-Date: Mon, 07 Jan 2008 22:09:28 -0800 (PST)
-Message-Id: <20080107.220928.211341509.davem@davemloft.net>
-To: Brice.Goglin@inria.fr
-Cc: gallatin@myri.com, themann@de.ibm.com, torvalds@osdl.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH][LRO] Fix lro_mgr->features checks
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <47822A2C.4020303@inria.fr>
-References: <47822A2C.4020303@inria.fr>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 8 Jan 2008 01:15:22 -0500
+Date: Tue, 8 Jan 2008 17:15:16 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>,
+       netdev@vger.kernel.org
+Subject: Re: [Patch] xfrm_policy_destroy: rename and relative fixes
+Message-ID: <20080108061516.GD2529@gondor.apana.org.au>
+References: <20080103120550.GB2498@hacking>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080103120550.GB2498@hacking>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Brice Goglin <Brice.Goglin@inria.fr>
-Date: Mon, 07 Jan 2008 14:33:32 +0100
-
-> [PATCH][LRO] Fix lro_mgr->features checks
+On Thu, Jan 03, 2008 at 08:05:50PM +0800, WANG Cong wrote:
 > 
-> lro_mgr->features contains a bitmask of LRO_F_* values which are
-> defined as power of two, not as bit indexes.
-> They must be checked with x&LRO_F_FOO, not with test_bit(LRO_F_FOO,&x).
+> Since __xfrm_policy_destroy is used to destory the resources
+> allocated by xfrm_policy_alloc. So using the name
+> __xfrm_policy_destroy is not correspond with xfrm_policy_alloc.
+> Rename it to xfrm_policy_destroy.
 > 
-> Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
-> Acked-by: Andrew Gallatin <gallatin@myri.com>
+> And along with some instances that call xfrm_policy_alloc
+> but not using xfrm_policy_destroy to destroy the resource,
+> fix them.
+> 
+> Cc: David Miller <davem@davemloft.net>
+> Cc: Herbert Xu <herbert@gondor.apana.org.au>
+> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
 
-Applied, thanks a lot.
+This patch looks OK to me.
+
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
