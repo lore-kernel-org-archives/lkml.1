@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756504AbYAHTcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbYAHTc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756504AbYAHTcn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 14:32:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755934AbYAHTcZ
+	id S1756805AbYAHTc7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 14:32:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756176AbYAHTcf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 14:32:25 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:50843 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755890AbYAHTcX (ORCPT
+	Tue, 8 Jan 2008 14:32:35 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:40488 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756144AbYAHTcd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 14:32:23 -0500
+	Tue, 8 Jan 2008 14:32:33 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=q7PlD8DeXk3I8MhZvfn3FBc3eR6uaL1Q20C+tcoV//o58qZfDzJMs1ard7oXOLAhO90fgQ/kllMs+TQvqQOP3iYOOjzPk/3/zGkLC2NbcEDgTQ9m4Rl0i731dM+MSffAei1A3JiyWSlh3mH3jkY0Lwm+8vSAwJ8ucOMHlIogrRk=
-Date: Tue, 8 Jan 2008 20:32:33 +0100
+        b=IHOghiUsOz107kD+4aiU1sGrdMRmGTiKYsS2HLrWUT5Mts1kHAIapawR1PgzBqs0cEAViGcV9WfhfHMqKIVG+a3apiyvlELFxWwWtIMMPlXclbLSfuFnqcLQWQfOAyBoJY8+tePdSy3TxOT9ACiKrp3lGajOj1zA/jzrM5rWwZ0=
+Date: Tue, 8 Jan 2008 20:32:42 +0100
 From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
 To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
        Ingo Molnar <mingo@elte.hu>
 Cc: Linux Kernel <linux-kernel@vger.kernel.org>, trivial@kernel.org
-Subject: [PATCH 3/5] x86: coding style fixes in arch/x86/ia32/ia32_aout.c
-Message-ID: <20080108203233.01bb5c7f@paolo-desktop>
+Subject: [PATCH 4/5] x86: coding style fixes in arch/x86/ia32/ia32_binfmt.c
+Message-ID: <20080108203242.5e033d97@paolo-desktop>
 X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,299 +29,199 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix plenty of coding style errors
+Fix 39 Codying Style errors reported by checkpatch
 
-Checkpatch now reports:
-total: 2 errors, 18 warnings, 526 lines checked
+It now reports:
+total: 2 errors, 5 warnings, 285 lines checked
 
 Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
 ---
- arch/x86/ia32/ia32_aout.c |  100 ++++++++++++++++++++++-----------------------
- 1 files changed, 49 insertions(+), 51 deletions(-)
+ arch/x86/ia32/ia32_binfmt.c |   70 +++++++++++++++++++++---------------------
+ 1 files changed, 35 insertions(+), 35 deletions(-)
 
-diff --git a/arch/x86/ia32/ia32_aout.c b/arch/x86/ia32/ia32_aout.c
-index f82e1a9..65dc50a 100644
---- a/arch/x86/ia32/ia32_aout.c
-+++ b/arch/x86/ia32/ia32_aout.c
-@@ -36,8 +36,8 @@
- #undef WARN_OLD
- #undef CORE_DUMP /* probably broken */
+diff --git a/arch/x86/ia32/ia32_binfmt.c b/arch/x86/ia32/ia32_binfmt.c
+index 55822d2..137d14e 100644
+--- a/arch/x86/ia32/ia32_binfmt.c
++++ b/arch/x86/ia32/ia32_binfmt.c
+@@ -1,10 +1,10 @@
+-/* 
+- * Written 2000,2002 by Andi Kleen. 
+- * 
++/*
++ * Written 2000,2002 by Andi Kleen.
++ *
+  * Loosely based on the sparc64 and IA64 32bit emulation loaders.
+- * This tricks binfmt_elf.c into loading 32bit binaries using lots 
++ * This tricks binfmt_elf.c into loading 32bit binaries using lots
+  * of ugly preprocessor tricks. Talk about very very poor man's inheritance.
+- */ 
++ */
  
--static int load_aout_binary(struct linux_binprm *, struct pt_regs * regs);
--static int load_aout_library(struct file*);
-+static int load_aout_binary(struct linux_binprm *, struct pt_regs *regs);
-+static int load_aout_library(struct file *);
+ #include <linux/types.h>
+ #include <linux/stddef.h>
+@@ -17,7 +17,7 @@
+ #include <linux/security.h>
+ #include <linux/elfcore-compat.h>
  
- #ifdef CORE_DUMP
- static int aout_core_dump(long signr, struct pt_regs *regs, struct file *file, unsigned long limit);
-@@ -45,9 +45,9 @@ static int aout_core_dump(long signr, struct pt_regs *regs, struct file *file, u
- /*
-  * fill in the user structure for a core dump..
-  */
--static void dump_thread32(struct pt_regs * regs, struct user32 * dump)
-+static void dump_thread32(struct pt_regs *regs, struct user32 *dump)
- {
--	u32 fs,gs;
-+	u32 fs, gs;
+-#include <asm/segment.h> 
++#include <asm/segment.h>
+ #include <asm/ptrace.h>
+ #include <asm/processor.h>
+ #include <asm/user32.h>
+@@ -56,7 +56,7 @@ int sysctl_vsyscall32 = 1;
+ 		NEW_AUX_ENT(AT_SYSINFO, (u32)(u64)VSYSCALL32_VSYSCALL); \
+ 		NEW_AUX_ENT(AT_SYSINFO_EHDR, VSYSCALL32_BASE);    \
+ 	}	\
+-} while(0)
++} while (0)
  
- /* changed the size calculations - should hopefully work better. lbt */
- 	dump->magic = CMAGIC;
-@@ -57,14 +57,14 @@ static void dump_thread32(struct pt_regs * regs, struct user32 * dump)
- 	dump->u_dsize = ((unsigned long) (current->mm->brk + (PAGE_SIZE-1))) >> PAGE_SHIFT;
- 	dump->u_dsize -= dump->u_tsize;
- 	dump->u_ssize = 0;
--	dump->u_debugreg[0] = current->thread.debugreg0;  
--	dump->u_debugreg[1] = current->thread.debugreg1;  
--	dump->u_debugreg[2] = current->thread.debugreg2;  
--	dump->u_debugreg[3] = current->thread.debugreg3;  
--	dump->u_debugreg[4] = 0;  
--	dump->u_debugreg[5] = 0;  
--	dump->u_debugreg[6] = current->thread.debugreg6;  
--	dump->u_debugreg[7] = current->thread.debugreg7;  
-+	dump->u_debugreg[0] = current->thread.debugreg0;
-+	dump->u_debugreg[1] = current->thread.debugreg1;
-+	dump->u_debugreg[2] = current->thread.debugreg2;
-+	dump->u_debugreg[3] = current->thread.debugreg3;
-+	dump->u_debugreg[4] = 0;
-+	dump->u_debugreg[5] = 0;
-+	dump->u_debugreg[6] = current->thread.debugreg6;
-+	dump->u_debugreg[7] = current->thread.debugreg7;
+ struct file;
  
- 	if (dump->start_stack < 0xc0000000)
- 		dump->u_ssize = ((unsigned long) (0xc0000000 - dump->start_stack)) >> PAGE_SHIFT;
-@@ -79,7 +79,7 @@ static void dump_thread32(struct pt_regs * regs, struct user32 * dump)
- 	dump->regs.ds = current->thread.ds;
- 	dump->regs.es = current->thread.es;
- 	asm("movl %%fs,%0" : "=r" (fs)); dump->regs.fs = fs;
--	asm("movl %%gs,%0" : "=r" (gs)); dump->regs.gs = gs; 
-+	asm("movl %%gs,%0" : "=r" (gs)); dump->regs.gs = gs;
- 	dump->regs.orig_eax = regs->orig_rax;
- 	dump->regs.eip = regs->rip;
- 	dump->regs.cs = regs->cs;
-@@ -90,7 +90,7 @@ static void dump_thread32(struct pt_regs * regs, struct user32 * dump)
- #if 1 /* FIXME */
- 	dump->u_fpvalid = 0;
- #else
--	dump->u_fpvalid = dump_fpu (regs, &dump->i387);
-+	dump->u_fpvalid = dump_fpu(regs, &dump->i387);
- #endif
+@@ -66,7 +66,7 @@ struct file;
+ 
+ #define ELF_ET_DYN_BASE		(TASK_UNMAPPED_BASE + 0x1000000)
+ 
+-#define jiffies_to_timeval(a,b) do { (b)->tv_usec = 0; (b)->tv_sec = (a)/HZ; }while(0)
++#define jiffies_to_timeval(a, b) do { (b)->tv_usec = 0; (b)->tv_sec = (a)/HZ; } while (0)
+ 
+ #define _GET_SEG(x) \
+ 	({ __u32 seg; asm("movl %%" __stringify(x) ",%0" : "=r"(seg)); seg; })
+@@ -112,23 +112,23 @@ static inline void elf32_core_copy_regs(compat_elf_gregset_t *elfregs,
+ #define elf_core_copy_task_regs		elf32_core_copy_task_regs
+ static inline int elf32_core_copy_task_regs(struct task_struct *t,
+ 					    compat_elf_gregset_t* elfregs)
+-{	
++{
+ 	struct pt_regs *pp = task_pt_regs(t);
+ 	ELF_CORE_COPY_REGS((&elfregs->ebx), pp);
+-	/* fix wrong segments */ 
++	/* fix wrong segments */
+ 	elfregs->ds = t->thread.ds;
+ 	elfregs->fs = t->thread.fsindex;
+ 	elfregs->gs = t->thread.gsindex;
+ 	elfregs->es = t->thread.es;
+-	return 1; 
++	return 1;
  }
  
-@@ -134,8 +134,8 @@ static int dump_write(struct file *file, const void *addr, int nr)
- 
- #define DUMP_SEEK(offset) \
- if (file->f_op->llseek) { \
--	if (file->f_op->llseek(file,(offset),0) != (offset)) \
-- 		goto end_coredump; \
-+	if (file->f_op->llseek(file, (offset), 0) != (offset)) \
-+		goto end_coredump; \
- } else file->f_pos = (offset)
- 
- /*
-@@ -161,7 +161,7 @@ static int aout_core_dump(long signr, struct pt_regs *regs, struct file *file, u
- 	set_fs(KERNEL_DS);
- 	has_dumped = 1;
- 	current->flags |= PF_DUMPCORE;
--       	strncpy(dump.u_comm, current->comm, sizeof(current->comm));
-+	strncpy(dump.u_comm, current->comm, sizeof(current->comm));
- 	dump.u_ar0 = (u32)(((unsigned long)(&dump.regs)) - ((unsigned long)(&dump)));
- 	dump.signal = signr;
- 	dump_thread32(regs, &dump);
-@@ -184,7 +184,7 @@ static int aout_core_dump(long signr, struct pt_regs *regs, struct file *file, u
- 
- 	set_fs(KERNEL_DS);
- /* struct user */
--	DUMP_WRITE(&dump,sizeof(dump));
-+	DUMP_WRITE(&dump, sizeof(dump));
- /* Now dump all of the user data.  Include malloced stuff as well */
- 	DUMP_SEEK(PAGE_SIZE);
- /* now we start writing out the user space info */
-@@ -193,17 +193,17 @@ static int aout_core_dump(long signr, struct pt_regs *regs, struct file *file, u
- 	if (dump.u_dsize != 0) {
- 		dump_start = START_DATA(dump);
- 		dump_size = dump.u_dsize << PAGE_SHIFT;
--		DUMP_WRITE(dump_start,dump_size);
-+		DUMP_WRITE(dump_start, dump_size);
- 	}
- /* Now prepare to dump the stack area */
- 	if (dump.u_ssize != 0) {
- 		dump_start = START_STACK(dump);
- 		dump_size = dump.u_ssize << PAGE_SHIFT;
--		DUMP_WRITE(dump_start,dump_size);
-+		DUMP_WRITE(dump_start, dump_size);
- 	}
- /* Finally dump the task struct.  Not be used by gdb, but could be useful */
- 	set_fs(KERNEL_DS);
--	DUMP_WRITE(current,sizeof(*current));
-+	DUMP_WRITE(current, sizeof(*current));
- end_coredump:
- 	set_fs(fs);
- 	return has_dumped;
-@@ -228,24 +228,24 @@ static u32 __user *create_aout_tables(char __user *p, struct linux_binprm *bprm)
- 	envp = sp;
- 	sp -= argc+1;
- 	argv = sp;
--	put_user((unsigned long) envp,--sp);
--	put_user((unsigned long) argv,--sp);
--	put_user(argc,--sp);
-+	put_user((unsigned long) envp, --sp);
-+	put_user((unsigned long) argv, --sp);
-+	put_user(argc, --sp);
- 	current->mm->arg_start = (unsigned long) p;
--	while (argc-->0) {
-+	while (argc-- > 0) {
- 		char c;
--		put_user((u32)(unsigned long)p,argv++);
-+		put_user((u32)(unsigned long)p, argv++);
- 		do {
--			get_user(c,p++);
-+			get_user(c, p++);
- 		} while (c);
- 	}
- 	put_user(0, argv);
- 	current->mm->arg_end = current->mm->env_start = (unsigned long) p;
--	while (envc-->0) {
-+	while (envc-- > 0) {
- 		char c;
--		put_user((u32)(unsigned long)p,envp++);
-+		put_user((u32)(unsigned long)p, envp++);
- 		do {
--			get_user(c,p++);
-+			get_user(c, p++);
- 		} while (c);
- 	}
- 	put_user(0, envp);
-@@ -258,7 +258,7 @@ static u32 __user *create_aout_tables(char __user *p, struct linux_binprm *bprm)
-  * libraries.  There is no binary dependent code anywhere else.
-  */
- 
--static int load_aout_binary(struct linux_binprm * bprm, struct pt_regs * regs)
-+static int load_aout_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+ #define elf_core_copy_task_fpregs	elf32_core_copy_task_fpregs
+-static inline int 
++static inline int
+ elf32_core_copy_task_fpregs(struct task_struct *tsk, struct pt_regs *regs,
+ 			    elf_fpregset_t *fpu)
  {
- 	struct exec ex;
- 	unsigned long error;
-@@ -291,13 +291,13 @@ static int load_aout_binary(struct linux_binprm * bprm, struct pt_regs * regs)
- 	if (retval)
- 		return retval;
+-	struct _fpstate_ia32 *fpstate = (void*)fpu; 
++	struct _fpstate_ia32 *fpstate = (void *)fpu;
+ 	mm_segment_t oldfs = get_fs();
  
--	regs->cs = __USER32_CS; 
-+	regs->cs = __USER32_CS;
- 	regs->r8 = regs->r9 = regs->r10 = regs->r11 = regs->r12 =
- 		regs->r13 = regs->r14 = regs->r15 = 0;
+ 	if (!tsk_used_math(tsk))
+@@ -137,29 +137,29 @@ elf32_core_copy_task_fpregs(struct task_struct *tsk, struct pt_regs *regs,
+ 		regs = task_pt_regs(tsk);
+ 	if (tsk == current)
+ 		unlazy_fpu(tsk);
+-	set_fs(KERNEL_DS); 
++	set_fs(KERNEL_DS);
+ 	save_i387_ia32(tsk, fpstate, regs, 1);
+-	/* Correct for i386 bug. It puts the fop into the upper 16bits of 
+-	   the tag word (like FXSAVE), not into the fcs*/ 
+-	fpstate->cssel |= fpstate->tag & 0xffff0000; 
+-	set_fs(oldfs); 
+-	return 1; 
++	/* Correct for i386 bug. It puts the fop into the upper 16bits of
++	   the tag word (like FXSAVE), not into the fcs*/
++	fpstate->cssel |= fpstate->tag & 0xffff0000;
++	set_fs(oldfs);
++	return 1;
+ }
  
- 	/* OK, This is the point of no return */
- 	set_personality(PER_LINUX);
--	set_thread_flag(TIF_IA32); 
-+	set_thread_flag(TIF_IA32);
- 	clear_thread_flag(TIF_ABI_PENDING);
+ #define ELF_CORE_COPY_XFPREGS 1
+ #define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
+ #define elf_core_copy_task_xfpregs	elf32_core_copy_task_xfpregs
+-static inline int 
++static inline int
+ elf32_core_copy_task_xfpregs(struct task_struct *t, elf_fpxregset_t *xfpu)
+ {
+ 	struct pt_regs *regs = task_pt_regs(t);
+ 	if (!tsk_used_math(t))
+ 		return 0;
+ 	if (t == current)
+-		unlazy_fpu(t); 
++		unlazy_fpu(t);
+ 	memcpy(xfpu, &t->thread.i387.fxsave, sizeof(elf_fpxregset_t));
+-	xfpu->fcs = regs->cs; 
+-	xfpu->fos = t->thread.ds; /* right? */ 
++	xfpu->fcs = regs->cs;
++	xfpu->fos = t->thread.ds; /* right? */
+ 	return 1;
+ }
  
- 	current->mm->end_code = ex.a_text +
-@@ -311,7 +311,7 @@ static int load_aout_binary(struct linux_binprm * bprm, struct pt_regs * regs)
+@@ -202,7 +202,7 @@ do {							\
+ #define ELF_PLAT_INIT(r, load_addr)	elf32_init(r)
  
- 	current->mm->mmap = NULL;
- 	compute_creds(bprm);
-- 	current->flags &= ~PF_FORKNOEXEC;
-+	current->flags &= ~PF_FORKNOEXEC;
- 
- 	if (N_MAGIC(ex) == OMAGIC) {
- 		unsigned long text_addr, map_size;
-@@ -338,29 +338,27 @@ static int load_aout_binary(struct linux_binprm * bprm, struct pt_regs * regs)
- 			send_sig(SIGKILL, current, 0);
- 			return error;
- 		}
--			 
-+
- 		flush_icache_range(text_addr, text_addr+ex.a_text+ex.a_data);
- 	} else {
- #ifdef WARN_OLD
- 		static unsigned long error_time, error_time2;
- 		if ((ex.a_text & 0xfff || ex.a_data & 0xfff) &&
--		    (N_MAGIC(ex) != NMAGIC) && (jiffies-error_time2) > 5*HZ)
--		{
-+		    (N_MAGIC(ex) != NMAGIC) && (jiffies-error_time2) > 5*HZ) {
- 			printk(KERN_NOTICE "executable not page aligned\n");
- 			error_time2 = jiffies;
- 		}
- 
- 		if ((fd_offset & ~PAGE_MASK) != 0 &&
--		    (jiffies-error_time) > 5*HZ)
--		{
--			printk(KERN_WARNING 
-+		    (jiffies-error_time) > 5*HZ) {
-+			printk(KERN_WARNING
- 			       "fd_offset is not page aligned. Please convert program: %s\n",
- 			       bprm->file->f_path.dentry->d_name.name);
- 			error_time = jiffies;
- 		}
- #endif
- 
--		if (!bprm->file->f_op->mmap||((fd_offset & ~PAGE_MASK) != 0)) {
-+		if (!bprm->file->f_op->mmap || ((fd_offset & ~PAGE_MASK) != 0)) {
- 			loff_t pos = fd_offset;
- 			down_write(&current->mm->mmap_sem);
- 			do_brk(N_TXTADDR(ex), ex.a_text+ex.a_data);
-@@ -387,7 +385,7 @@ static int load_aout_binary(struct linux_binprm * bprm, struct pt_regs * regs)
- 		}
- 
- 		down_write(&current->mm->mmap_sem);
-- 		error = do_mmap(bprm->file, N_DATADDR(ex), ex.a_data,
-+		error = do_mmap(bprm->file, N_DATADDR(ex), ex.a_data,
- 				PROT_READ | PROT_WRITE | PROT_EXEC,
- 				MAP_FIXED | MAP_PRIVATE | MAP_DENYWRITE | MAP_EXECUTABLE | MAP_32BIT,
- 				fd_offset + ex.a_text);
-@@ -403,9 +401,9 @@ beyond_if:
- 	set_brk(current->mm->start_brk, current->mm->brk);
- 
- 	retval = setup_arg_pages(bprm, IA32_STACK_TOP, EXSTACK_DEFAULT);
--	if (retval < 0) { 
--		/* Someone check-me: is this error path enough? */ 
--		send_sig(SIGKILL, current, 0); 
-+	if (retval < 0) {
-+		/* Someone check-me: is this error path enough? */
-+		send_sig(SIGKILL, current, 0);
- 		return retval;
- 	}
- 
-@@ -414,7 +412,7 @@ beyond_if:
- 	/* start thread */
+ #undef start_thread
+-#define start_thread(regs,new_rip,new_rsp) do { \
++#define start_thread(regs, new_rip,new_rsp) do { \
  	asm volatile("movl %0,%%fs" :: "r" (0)); \
- 	asm volatile("movl %0,%%es; movl %0,%%ds": :"r" (__USER32_DS));
--	load_gs_index(0); 
-+	load_gs_index(0);
- 	(regs)->rip = ex.a_entry;
- 	(regs)->rsp = current->mm->start_stack;
- 	(regs)->eflags = 0x200;
-@@ -434,7 +432,7 @@ beyond_if:
+ 	asm volatile("movl %0,%%es; movl %0,%%ds": :"r" (__USER32_DS)); \
+ 	load_gs_index(0); \
+@@ -212,12 +212,12 @@ do {							\
+ 	(regs)->cs = __USER32_CS; \
+ 	(regs)->ss = __USER32_DS; \
+ 	set_fs(USER_DS); \
+-} while(0) 
++} while (0)
  
- static int load_aout_library(struct file *file)
+ 
+ #include <linux/module.h>
+ 
+-MODULE_DESCRIPTION("Binary format loader for compatibility with IA32 ELF binaries."); 
++MODULE_DESCRIPTION("Binary format loader for compatibility with IA32 ELF binaries.");
+ MODULE_AUTHOR("Eric Youngdale, Andi Kleen");
+ 
+ #undef MODULE_DESCRIPTION
+@@ -229,25 +229,25 @@ static void elf32_init(struct pt_regs *);
+ #define arch_setup_additional_pages syscall32_setup_pages
+ extern int syscall32_setup_pages(struct linux_binprm *, int exstack);
+ 
+-#include "../../../fs/binfmt_elf.c" 
++#include "../../../fs/binfmt_elf.c"
+ 
+ static void elf32_init(struct pt_regs *regs)
  {
--	struct inode * inode;
-+	struct inode *inode;
- 	unsigned long bss, start_addr, len;
- 	unsigned long error;
- 	int retval;
-@@ -467,9 +465,9 @@ static int load_aout_library(struct file *file)
+-	struct task_struct *me = current; 
++	struct task_struct *me = current;
+ 	regs->rdi = 0;
+ 	regs->rsi = 0;
+ 	regs->rdx = 0;
+ 	regs->rcx = 0;
+ 	regs->rax = 0;
+-	regs->rbx = 0; 
+-	regs->rbp = 0; 
++	regs->rbx = 0;
++	regs->rbp = 0;
+ 	regs->r8 = regs->r9 = regs->r10 = regs->r11 = regs->r12 =
+-		regs->r13 = regs->r14 = regs->r15 = 0; 
+-    me->thread.fs = 0; 
++		regs->r13 = regs->r14 = regs->r15 = 0;
++    me->thread.fs = 0;
+ 	me->thread.gs = 0;
+-	me->thread.fsindex = 0; 
++	me->thread.fsindex = 0;
+ 	me->thread.gsindex = 0;
+-    me->thread.ds = __USER_DS; 
++    me->thread.ds = __USER_DS;
+ 	me->thread.es = __USER_DS;
+ }
  
- #ifdef WARN_OLD
- 		static unsigned long error_time;
--		if ((jiffies-error_time) > 5*HZ)
--		{
--			printk(KERN_WARNING 
-+		if ((jiffies-error_time) > 5*HZ) {
-+
-+			printk(KERN_WARNING
- 			       "N_TXTOFF is not page aligned. Please convert library: %s\n",
- 			       file->f_path.dentry->d_name.name);
- 			error_time = jiffies;
-@@ -478,7 +476,7 @@ static int load_aout_library(struct file *file)
- 		down_write(&current->mm->mmap_sem);
- 		do_brk(start_addr, ex.a_text + ex.a_data + ex.a_bss);
- 		up_write(&current->mm->mmap_sem);
--		
-+
- 		file->f_op->read(file, (char __user *)start_addr,
- 			ex.a_text + ex.a_data, &pos);
- 		flush_icache_range((unsigned long) start_addr,
+@@ -277,7 +277,7 @@ static ctl_table abi_root_table2[] = {
+ };
+ 
+ static __init int ia32_binfmt_init(void)
+-{ 
++{
+ 	register_sysctl_table(abi_root_table2);
+ 	return 0;
+ }
 -- 
 1.5.4.rc2.17.g257f
 
