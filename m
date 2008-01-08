@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758031AbYAHL5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759867AbYAHL5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758031AbYAHL5Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 06:57:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbYAHL5R
+	id S1759867AbYAHL5j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 06:57:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756662AbYAHL5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 06:57:17 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:50984 "EHLO
+	Tue, 8 Jan 2008 06:57:22 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:50985 "EHLO
 	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750696AbYAHL5Q (ORCPT
+	with ESMTP id S1756339AbYAHL5V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 06:57:16 -0500
-Date: Tue, 8 Jan 2008 11:51:49 +0000
+	Tue, 8 Jan 2008 06:57:21 -0500
+Date: Tue, 8 Jan 2008 11:57:03 +0000
 From: Russell King <rmk+lkml@arm.linux.org.uk>
 To: Linux Kernel List <linux-kernel@vger.kernel.org>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH: 1/2] [SERIAL] avoid waking up closed serial ports on resume
-Message-ID: <20080108115148.GB10546@flint.arm.linux.org.uk>
+Subject: Re: [PATCH: 2/2] [SERIAL] avoid stalling suspend if serial port won't drain
+Message-ID: <20080108115703.GA27179@flint.arm.linux.org.uk>
+References: <20080108115148.GB10546@flint.arm.linux.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080108115148.GB10546@flint.arm.linux.org.uk>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When we boot, serial ports remain in low power mode until they're
-used either by userspace or for the kernel console.
+Some ports seem to be unable to drain their transmitters on shut down.
+Such a problem can occur if the port is programmed for hardware imposed
+flow control, characters are in the FIFO but the CTS signal is inactive.
 
-However, if you suspend the system, and then resume, all serial ports
-will be taken out of low power mode.  This is bad news for embedded
-devices where this can mean higher power consumption.
+Normally, this isn't a problem because most places where we wait for the
+transmitter to drain have a time-out.  However, there is no timeout in
+the suspend path.
 
-Only bring a serial port out of low power mode if the port is being
-used as the kernel console, or is in use by userspace.
+Give a port 30ms to drain; this is an arbitary value chosen to avoid
+long delays if there are many such ports in the system, while giving a
+reasonable chance for a single port to drain.  Should a port not drain
+within this timeout, issue a warning.
 
 Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 
 diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index 3bb5d24..80486c6 100644
+index 3bb5d24..4ce219c 100644
 --- a/drivers/serial/serial_core.c
 +++ b/drivers/serial/serial_core.c
-@@ -2029,8 +2029,6 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *port)
- 	}
- 	port->suspended = 0;
+@@ -1977,6 +1977,7 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *port)
  
--	uart_change_pm(state, 0);
--
- 	/*
- 	 * Re-enable the console device after suspending.
- 	 */
-@@ -2049,6 +2047,7 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *port)
- 		if (state->info && state->info->tty && termios.c_cflag == 0)
- 			termios = *state->info->tty->termios;
- 
-+		uart_change_pm(state, 0);
- 		port->ops->set_termios(port, &termios, NULL);
- 		console_start(port->cons);
- 	}
-@@ -2057,6 +2056,7 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *port)
+ 	if (state->info && state->info->flags & UIF_INITIALIZED) {
  		const struct uart_ops *ops = port->ops;
- 		int ret;
++		int tries;
  
-+		uart_change_pm(state, 0);
- 		ops->set_mctrl(port, 0);
- 		ret = ops->startup(port);
- 		if (ret == 0) {
+ 		state->info->flags = (state->info->flags & ~UIF_INITIALIZED)
+ 				     | UIF_SUSPENDED;
+@@ -1990,9 +1991,14 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *port)
+ 		/*
+ 		 * Wait for the transmitter to empty.
+ 		 */
+-		while (!ops->tx_empty(port)) {
++		for (tries = 3; !ops->tx_empty(port) && tries; tries--) {
+ 			msleep(10);
+ 		}
++		if (!tries)
++			printk(KERN_ERR "%s%s%s%d: Unable to drain transmitter\n",
++			       port->dev ? port->dev->bus_id : "",
++			       port->dev ? ": " : "",
++			       drv->dev_name, port->line);
+ 
+ 		ops->shutdown(port);
+ 	}
+
 
 -- 
 Russell King
