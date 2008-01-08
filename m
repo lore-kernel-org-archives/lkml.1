@@ -1,68 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757375AbYAHTWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbYAHTYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757375AbYAHTWv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 14:22:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757217AbYAHTWl
+	id S1757511AbYAHTYh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 14:24:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbYAHTY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 14:22:41 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:55144 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753407AbYAHTWj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 14:22:39 -0500
-To: haveblue@us.ibm.com
-CC: miklos@szeredi.hu, akpm@linux-foundation.org, hch@infradead.org,
-       serue@us.ibm.com, viro@ftp.linux.org.uk, ebiederm@xmission.com,
-       kzak@redhat.com, linux-fsdevel@vger.kernel.org,
-       containers@lists.osdl.org, util-linux-ng@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-reply-to: <1199816786.9834.70.camel@localhost> (message from Dave Hansen on
-	Tue, 08 Jan 2008 10:26:26 -0800)
-Subject: Re: [patch 5/9] unprivileged mounts: allow unprivileged bind mounts
-References: <20080108113502.184459371@szeredi.hu>
-	 <20080108113626.895583537@szeredi.hu> <1199816786.9834.70.camel@localhost>
-Message-Id: <E1JCK11-0003ik-4f@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 08 Jan 2008 20:21:35 +0100
+	Tue, 8 Jan 2008 14:24:29 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:55799 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752157AbYAHTY2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 14:24:28 -0500
+Date: Tue, 8 Jan 2008 20:24:25 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: travis@sgi.com
+Cc: mingo@elte.hu, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
+       Jack Steiner <steiner@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 01/10] percpu: Use a kconfig variable to signal arch specific percpu setup
+Message-ID: <20080108192425.GB26491@uranus.ravnborg.org>
+References: <20080108021142.585467000@sgi.com> <20080108021142.835662000@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080108021142.835662000@sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > @@ -510,10 +533,16 @@ static struct vfsmount *clone_mnt(struct
-> >                                         int flag)
-> >  {
-> >         struct super_block *sb = old->mnt_sb;
-> > -       struct vfsmount *mnt = alloc_vfsmnt(old->mnt_devname);
-> > +       struct vfsmount *mnt;
-> > 
-> > +       if (flag & CL_SETUSER) {
-> > +               int err = reserve_user_mount();
-> > +               if (err)
-> > +                       return ERR_PTR(err);
-> > +       }
-> > +       mnt = alloc_vfsmnt(old->mnt_devname);
-> >         if (!mnt)
-> > -               return ERR_PTR(-ENOMEM);
-> > +               goto alloc_failed;
-> > 
-> >         mnt->mnt_flags = old->mnt_flags;
-> >         atomic_inc(&sb->s_active); 
+On Mon, Jan 07, 2008 at 06:11:43PM -0800, travis@sgi.com wrote:
+> V1->V2:
+> - Use def_bool as suggested by Randy.
 > 
-> I think there's a little race here.  We could have several users racing
-> to get to this point when nr_user_mounts==max_user_mounts-1.  One user
-> wins the race and gets their mount reserved.  The others get the error
-> out of reserve_user_mount(), and return.
+> The use of the __GENERIC_PERCPU is a bit problematic since arches
+> may want to run their own percpu setup while using the generic
+> percpu definitions. Replace it through a kconfig variable.
 > 
-> But, the winner goes on to error out on some condition further down in
-> clone_mnt() and never actually instantiates the mount.
 > 
-> Do you think this is a problem?
+> 
+> Cc: Rusty Russell <rusty@rustcorp.com.au>
+> Cc: Andi Kleen <ak@suse.de>
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> Signed-off-by: Mike Travis <travis@sgi.com>
+> 
+> ---
+>  arch/ia64/Kconfig            |    3 +++
+>  arch/powerpc/Kconfig         |    3 +++
+>  arch/sparc64/Kconfig         |    3 +++
+>  arch/x86/Kconfig             |    3 +++
+>  include/asm-generic/percpu.h |    1 -
+>  include/asm-s390/percpu.h    |    2 --
+>  include/asm-x86/percpu_32.h  |    2 --
+>  init/main.c                  |    4 ++--
+>  8 files changed, 14 insertions(+), 7 deletions(-)
+> 
+> --- a/arch/ia64/Kconfig
+> +++ b/arch/ia64/Kconfig
+> @@ -80,6 +80,9 @@ config GENERIC_TIME_VSYSCALL
+>  	bool
+>  	default y
+>  
+> +config ARCH_SETS_UP_PER_CPU_AREA
+> +	def_bool y
+> +
+>  config DMI
+>  	bool
+>  	default y
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -42,6 +42,9 @@ config GENERIC_HARDIRQS
+>  	bool
+>  	default y
+>  
+> +config ARCH_SETS_UP_PER_CPU_AREA
+> +	def_bool PPC64
+> +
+>  config IRQ_PER_CPU
+>  	bool
+>  	default y
 
-For similar reasons as stated in the previous mail, I don't think this
-matters.  If nr_user_mounts is getting remotely close to
-max_user_mounts, then something is wrong (or the max needs to be
-raised anyway).
+Please do not create one variable per arch to enable this functionality.
+Define one common variable and name it:
+config HAVE_SETUP_PER_CPU_AREA
 
-Thanks for the review, Dave!
+and then for the arch's that supports it you select this symbol.
+For X86 it would look like:
 
-Miklos
+ config X86
++	select HAVE_SETUP_PER_CPU_AREA
+
+
+This is the recommended methiond today - albeit not widely used yet.
+
+	Sam
