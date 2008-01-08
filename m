@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755822AbYAHXZI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbYAHX0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755822AbYAHXZI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 18:25:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbYAHXY5
+	id S1755968AbYAHX0X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 18:26:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbYAHX0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 18:24:57 -0500
-Received: from gw.goop.org ([64.81.55.164]:33943 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752138AbYAHXY4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 18:24:56 -0500
-Message-ID: <478405DA.40303@goop.org>
-Date: Tue, 08 Jan 2008 15:23:06 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH 00 of 10] x86: unify asm/pgtable.h
-References: <patchbomb.1199829603@localhost> <20080108224244.GA3768@elte.hu> <20080108231226.GA10744@elte.hu>
-In-Reply-To: <20080108231226.GA10744@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Jan 2008 18:26:15 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:33320 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752174AbYAHX0O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 18:26:14 -0500
+Date: Wed, 9 Jan 2008 00:28:41 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Andi Kleen <andi@firstfloor.org>, ananth@in.ibm.com,
+       akpm@linux-foundation.org, lkml <linux-kernel@vger.kernel.org>,
+       mingo@elte.hu, mhiramat@redhat.com, davem@davemloft.net,
+       hskinnemoen@atmel.com
+Subject: Re: [PATCH] Kprobes: Add kprobes smoke tests that run on boot
+Message-ID: <20080108232841.GD2117@one.firstfloor.org>
+References: <20080108063334.GA29385@in.ibm.com> <p73zlvgowwn.fsf@bingen.suse.de> <1199833842.3914.33.camel@dyn9047018096.beaverton.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1199833842.3914.33.camel@dyn9047018096.beaverton.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> threw this into the random test setup: it found the attached config 
-> after a few iterations, which needed the fix below. (config builds and 
-> boots fine with this fix)
->
-> the problem was that set_pud() is used by 
-> include/asm-generic/pgtable-nopud.h, to build set_pgd():
->
-> #define set_pgd(pgdptr, pgdval)                 set_pud((pud_t *)(pgdptr), (pud_t) { pgdval })
->   
+> I have no problem with that, but if we want to make it buildable as a
+> module, the call to get_kprobe() needs to be replaced with some other
+> gcc-inline-defeating mechanism, or we need to export get_probe().  I
 
-Oh, yeah.  That's bitten me before, but I guess I lost that part of the 
-patch somewhere :(.
+It's still unclear where noinline does not work (do you have details on that? 
+It sounds a little dubious) but there are lots of different other ways to prevent gcc 
+from inlining anything.
 
-> it's truly a maze ... took me 10 straight minutes of staring at the code 
-> to figure out where the set_pud() came from :-/
->   
+e.g. you can use stdarg or computed goto or a variable length local array 
 
-It's pretty awful.  The pagetable level folding stuff is fairly deep 
-into "too clever" territory, but its hard to see what better 
-alternatives there are...  Dropping non-PAE support would be nice, but 
-impractical given that even relatively recent chips are missing support 
-for it.
 
-> anyway, your patchset is holding up pretty good so far in testing.
->   
+> much prefer the former, since get_kprobe() is a kprobes-internal
+> function.
+> 
+> Anybody know an architecture-independent way (other than noinline, which
+> doesn't always work) of making gcc decide not to inline a function?
 
-Great!
+Details?
 
-    J
+> E.g., does taking (and using) the function's address do it?
+
+No, that just creates another out of line copy.
+
+-Andi
