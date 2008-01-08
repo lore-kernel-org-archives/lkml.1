@@ -1,66 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbYAHT1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754532AbYAHTbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753421AbYAHT1K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 14:27:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbYAHT04
+	id S1754532AbYAHTbj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 14:31:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbYAHTbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 14:26:56 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:56741 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753308AbYAHT0z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 14:26:55 -0500
-Date: Tue, 8 Jan 2008 20:26:57 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: travis@sgi.com
-Cc: mingo@elte.hu, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
-       Jack Steiner <steiner@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/10] percpu: Per cpu code simplification V3
-Message-ID: <20080108192657.GC26491@uranus.ravnborg.org>
-References: <20080108021142.585467000@sgi.com>
+	Tue, 8 Jan 2008 14:31:31 -0500
+Received: from fk-out-0910.google.com ([209.85.128.191]:7796 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751500AbYAHTba (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 14:31:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=kblrZ8VYzOBxILV2V5gUY4QXLx85EXjkxzQKgoyf/SzQ8rcPsr5G4I7IuWEDsx6OL8VrQV5wOb0wsNvQqIbV6Zhlb6gSip2dEZWyxTneqljbSsPqgL8C0zYpqrzLz56Oxovpr126FoNmnoZccEm/DxfHanaV/gyb75pVplTLOeM=
+Date: Tue, 8 Jan 2008 20:31:38 +0100
+From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, mingo@elte.hu
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, trivial@kernel.org
+Subject: [PATCH 0/5] x86: coding style fixes in arch/x86/ia32/
+Message-ID: <20080108203138.4d43937c@paolo-desktop>
+X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080108021142.585467000@sgi.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 07, 2008 at 06:11:42PM -0800, travis@sgi.com wrote:
-> 
-> This patchset simplifies the code that arches need to maintain to support
-> per cpu functionality. Most of the code is moved into arch independent
-> code. Only a minimal set of definitions is kept for each arch.
-> 
-> The patch also unifies the x86 arch so that there is only a single
-> asm-x86/percpu.h
-> 
-> V1->V2:
-> - Add support for specifying attributes for per cpu declarations (preserves
->   IA64 model(small) attribute).
->   - Drop first patch that removes the model(small) attribute for IA64
->   - Missing #endif in powerpc generic config /  Wrong Kconfig
->   - Follow Randy's suggestions on how to do the Kconfig settings
-> 
-> V2->V3:
->   - fix x86_64 non-SMP case
->   - change SHIFT_PTR to SHIFT_PERCPU_PTR
->   - fix various percpu_modcopy()'s to reference correct per_cpu_offset()
->   - s390 has a special way to determine the pointer to a per cpu area
+Hi all,
 
-In your changelog comments you have this:
-V1->V2
- - ...
+the following 5 patches fix 227 errors and 2 warnings
+reported by checkpatch.pl
 
-V2->V3
-- ...
+I hope they don't introduce problems in the process and 
+that they can be applied.
 
-But that really belongs below the "end-of-changelog" comment as this info
-is relevant only for this submission to lkml and not in whats get committed.
+I know there is no agreement on the list about whether these
+patches should be posted/accepted or not so I'm just resending
+the mangled patches that already hit the list.
 
-As your submission did not include an RFC I assume this is expected to be 
-the final version.
+I'll then start working what Andi suggested here:
+http://lkml.org/lkml/2008/1/8/213
 
-	Sam
+Ingo, I would appreciated your feedback about the work I'm 
+doing, if you want me to stop or continue.
+If you want me to work on further fixes I would appreciate
+if you could indicate files that needs fixing minimazing
+impacts on the overall process.
+
+Thanks.
+
+
+--- BEFORE ---
+ia32_signal.c
+total: 96 errors, 11 warnings, 617 lines checked
+
+ia32_binfmt.c
+total: 41 errors, 5 warnings, 285 lines checked
+
+ia32_aout.c
+total: 50 errors, 18 warnings, 528 lines checked
+
+fpu32.c
+total: 39 errors, 1 warnings, 183 lines checked
+
+audit.c
+total: 1 errors, 0 warnings, 42 lines checked
+
+Total
+total: 227 errors, 35 warnings
+
+
+--- AFTER ---
+ia32_signal.c
+total: 3 errors, 9 warnings, 617 lines checked
+
+ia32_binfmt.c
+total: 2 errors, 5 warnings, 285 lines checked
+
+ia32_aout.c
+total: 2 errors, 18 warnings, 526 lines checked
+
+fpu32.c
+total: 2 errors, 1 warnings, 183 lines checked
+
+audit.c
+total: 0 errors, 0 warnings, 42 lines checked
+
+Total
+total: 9 errors, 33 warning
+
+
+-- 
+Paolo
+paolo.ciarrocchi.googlepages.com
