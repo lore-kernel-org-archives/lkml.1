@@ -1,82 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758910AbYAHPbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759790AbYAHPbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758910AbYAHPbW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 10:31:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750844AbYAHPbK
+	id S1759790AbYAHPbn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 10:31:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750844AbYAHPbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 10:31:10 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:53629 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751445AbYAHPbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 10:31:08 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: util-linux-ng: unprivileged mounts support
-Date: Tue, 8 Jan 2008 10:31:04 -0500
-User-Agent: KMail/1.9.7
-Cc: util-linux-ng@vger.kernel.org, akpm@linux-foundation.org,
-       hch@infradead.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
-       ebiederm@xmission.com, kzak@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org
-References: <E1JCCyk-0002pY-AM@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1JCCyk-0002pY-AM@pomaz-ex.szeredi.hu>
+	Tue, 8 Jan 2008 10:31:32 -0500
+Received: from vs166246.vserver.de ([62.75.166.246]:36852 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752535AbYAHPbb convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 10:31:31 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: Alejandro Riveira =?utf-8?q?Fern=C3=A1ndez?= <ariveira@gmail.com>
+Subject: Re: Linux 2.6.24-rc7
+Date: Tue, 8 Jan 2008 16:30:30 +0100
+User-Agent: KMail/1.9.6
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org
+References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org> <200801071830.51895.mb@bu3sch.de> <20080107212344.1372cc47@Varda>
+In-Reply-To: <20080107212344.1372cc47@Varda>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1646180.jnDCrdTZE9";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200801081031.06826.vapier@gentoo.org>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200801081630.31110.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1646180.jnDCrdTZE9
-Content-Type: text/plain;
-  charset="iso-8859-6"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Monday 07 January 2008 21:23:44 Alejandro Riveira Fernández wrote:
+> > > [   37.043990] WARNING: at /home/alex/kernel/linux-2.6/net/mac80211/rx.c:1486 __ieee80211_rx() 
+> > > [   37.043996] Pid: 0, comm: swapper Not tainted 2.6.24-rc7 #3                                                               
+> > > [   37.043998]                                                                                                               
+> > > [   37.043999] Call Trace:                                                                                                   
+> > > [   37.044001]  <IRQ>  [<ffffffff80227fe3>] enqueue_task+0x13/0x30                                                           
+> > > [   37.044040]  [<ffffffff88178cbe>] :mac80211:__ieee80211_rx+0xc7e/0xd30                                                    
+> > > [   37.044044]  [<ffffffff80228062>] activate_task+0x32/0x50                                                                 
+> > > [   37.044073]  [<ffffffff8816a28b>] :mac80211:ieee80211_tasklet_handler+0xbb/0x120                                          
+> > > [   37.044086]  [<ffffffff80238d08>] tasklet_action+0x48/0xb0                                                                
+> > > [   37.044091]  [<ffffffff80238c09>] __do_softirq+0x69/0xe0                                                                  
+> > > [   37.044097]  [<ffffffff8020ce2c>] call_softirq+0x1c/0x30                                                                  
+> > > [   37.044101]  [<ffffffff8020efe5>] do_softirq+0x35/0x90                                                                    
+> > > [   37.044105]  [<ffffffff80238aa5>] irq_exit+0x95/0xa0                                                                      
+> > > [   37.044108]  [<ffffffff8020f0c0>] do_IRQ+0x80/0x100                                                                       
+> > > [   37.044111]  [<ffffffff8020a840>] default_idle+0x0/0x40                                                                   
+> > > [   37.044115]  [<ffffffff8020c181>] ret_from_intr+0x0/0xa                                                                   
+> > > [   37.044117]  <EOI>  [<ffffffff8020a869>] default_idle+0x29/0x40                                                           
+> > > [   37.044130]  [<ffffffff8020a8f5>] cpu_idle+0x75/0xc0                                                                      
+> > > [   37.044146]                                                                                                               
+> > 
+> > 
+> > Can you check if that is the
+> > WARN_ON_ONCE(((unsigned long)(skb->data + hdrlen)) & 3);
+> > in rx.c line 1486?
+>  
+>  How can I check? The source code I build does indeed have the line
+>  you quoted on net/mac80211/rx.c:1486 Is that what you are asking for?
+>  
+>  WARN_ON_ONCE(((unsigned long)(skb->data + hdrlen)) & 3);
 
-On Tuesday 08 January 2008, Miklos Szeredi wrote:
-> --- util-linux-ng.orig/configure.ac	2008-01-07 21:40:22.000000000 +0100
-> +++ util-linux-ng/configure.ac	2008-01-07 21:40:50.000000000 +0100
-> @@ -91,6 +92,11 @@ fi
->  UTIL_CHECK_LIB(util, openpty)
->  UTIL_CHECK_LIB(termcap, tgetnum)
->
-> +UTIL_CHECK_LIB(cap, cap_get_proc)
-> +if test $have_cap =3D no; then
-> +   AC_MSG_ERROR([libcap is required for mount]);
-> +fi
+Yes fine.
+Patches are on their way. Ignore the warning for now. It is harmless.
 
-this should be optional and it should be controlled with an AC_ARG_WITH()
-
-with all the non-linux changes that have gone in, does there need to be hea=
-der=20
-checks here and then have mount.c key off of them ?  i'm thinking so ...
-=2Dmike
-
---nextPart1646180.jnDCrdTZE9
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.8 (GNU/Linux)
-
-iQIcBAABAgAGBQJHg5c6AAoJEEFjO5/oN/WB9ggP/1qUuUNMJr3fP4KxRDqijtCK
-bOu4qa0/IXfLu2+Mqlc2vTf9iTq+rRGdNxN+LZIhv/n1BWGuy2PndwMPjiBiTghb
-I5VlS+/QlwN9WfE2TOxK0bwrjZBQm8k9hOjJVxsdttjibyJOTQr2uAnUScSdF2+9
-o9wSihgPy/AHOolUpIYJzF1xKK0cb3KW8Nve/ZJ6o0bxY41oCmJ+EAUI+CLyUUH/
-OjiLEJ9JqdirBPWyQsE24ZjnQR5vzRdDRavjRVVreHYBFcp6BOxAr7beVN+4vyXD
-LSlO5WFRVFbOW+WdApPhA34H+a1hJuO6JrlbHYSYq0A9d/OO79a2islQE7BuKklz
-eZlOzGymp9AYPFKxmnecyqBllKpctQHAQ3lslHziuU0ova9HIOI7cpdPb3ISooGb
-3mInMLou+DIMNoo9X83Qmm4fOgaIw0KbH2/TrbFKVDoNE/9B586tzL0BTyF45qk4
-EAwKJP4G3cc2JdAHNUqX/RTqoC8v0jf2/j2hJeO8XfWXL0i8RPhIx7qbtgmgE0Pj
-gSi1x4R0y/QLH0HKPEFt3GZ4HGzUkIoq/0MUBBTSHvKweF3bh+/rXpuYE7am/RQQ
-xAOm7iHC5C9DIWqtF9V8ps1AXr/e6Ir6jq9Dvv57ZUT0MmBeELH9fWciSggKqVav
-xMgDfZ86PHZem33awA6a
-=YgCz
------END PGP SIGNATURE-----
-
---nextPart1646180.jnDCrdTZE9--
+-- 
+Greetings Michael.
