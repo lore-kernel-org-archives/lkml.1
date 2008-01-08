@@ -1,118 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763380AbYAHRSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763462AbYAHRU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763380AbYAHRSw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 12:18:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762730AbYAHRSo
+	id S1763462AbYAHRU1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 12:20:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755559AbYAHRUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 12:18:44 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:57790 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758065AbYAHRSn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 12:18:43 -0500
-Date: Tue, 8 Jan 2008 18:18:42 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
+	Tue, 8 Jan 2008 12:20:14 -0500
+Received: from systemlinux.org ([83.151.29.59]:36201 "EHLO m18s25.vlinux.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754293AbYAHRUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 12:20:12 -0500
+X-Greylist: delayed 1858 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Jan 2008 12:20:12 EST
+Date: Tue, 8 Jan 2008 17:48:47 +0100
+From: Andre Noll <maan@systemlinux.org>
 To: Tuomo Valkonen <tuomov@iki.fi>
-cc: linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 Subject: Re: The ext3 way of journalling
-In-Reply-To: <slrnfo7aiq.6m2.tuomov@jolt.modeemi.cs.tut.fi>
-Message-ID: <Pine.LNX.4.64.0801081801300.3032@fbirervta.pbzchgretzou.qr>
+Message-ID: <20080108164847.GA16462@skl-net.de>
 References: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi>
- <Pine.LNX.4.64.0801081725480.3032@fbirervta.pbzchgretzou.qr>
- <slrnfo7aiq.6m2.tuomov@jolt.modeemi.cs.tut.fi>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="qMm9M+Fa2AknHoGS"
+Content-Disposition: inline
+In-Reply-To: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Jan 8 2008 16:52, Tuomo Valkonen wrote:
->
->> I can recommend that you try another distribution then.
->
->They all suck.
+--qMm9M+Fa2AknHoGS
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Roll your own.
+On 16:07, Tuomo Valkonen wrote:
 
->Typically distros' stock kernels load the intorable integrated buzz-chip
->as the first sound card,
+> I hate it: every time Linux crashes, e.g. due to power failure, it takes
+> almost an hour to boot, because the kernel has decided to corrupt the=20
+> superblock to indicate that it's been years since last file system=20
+> check.
 
-While that is true, configuration tools such as, ads aside, yast2 
-(designed for those "idiots" you referred to with 'WIMP idiot box') has 
-a setting for which card should be loaded first. "Power users" may still 
-use the index= option of sound card modules and wire it up in 
-/etc/modprobe.d if they prefer.
+Use tune2fs to deactivate checking.
 
->and the wrong network adapter as eth0.
+> And obviously the crappy init system provides no simple way to=20
+> stop the checking, to put it in the background, or whatever.
 
-You can guess my answer: udev will fix it. And actually, udev will 
-record the MAC address and the device name the first time it encounters 
-a new device, hence will always use the same interface name for a MAC 
-address. So the MAC--interface mapping may be wrong on the first 
-install (until you 'fix' the mapping so that it is to your liking), 
-but will remain the same afterwards.
-Exempt are some nvidia-based weirdo chips which assign a random 
-MAC at every boot.
+Modify the init scripts or use another distro.
 
->SATA and 
->USB disks appear as some randomly ordered scsi nodes, and so on.
+> The FOSS herd is totally concentrated on creating a WIMP idiot box --
+> a cheap plastic clone of Windows -- instead of fixing such fundamental
+> problems.
+> Windows, by the way, boots like a blaze compared to woeful Linux crap
+> (even without the very definition of pure shit: udev, which the crap
+> known as Linux practically requires these days).
 
-Well what do you expect of it? The kernel does not keep USB port <-> 
-SCSI device mappings. Neither USB device <-> SCSI device mapping, 
-because not all USB ports or USB devices are mass-storage devices.
-It just is not the kernel's job.
+Don't use udev then. Good old static dev works fine if you have a fixed
+set of devices.
 
-Now that you mention that, 
-/dev/disk/by-id/ata-DIAMOND_250G_2B5400_030400026 always has had the 
-contents I expected it to have. Wonder how that comes!? Don't tell me 
-you are using those old-fashioned /dev/sda - that would be negligent. 
-Some/most(?) distros do not follow /dev/disk consistently yet, so you 
-are free to blame them. Not to forget that udev makes this possible :)
+> A partial contributor to the slow fsck process is:
+>=20
+>     hde: ST3160023AS, ATA DISK drive
+>     hde: applying pessimistic Seagate errata fix
+>=20
+>     # hdparm -t /dev/hde
+>     /dev/hde:
+>      Timing buffered disk reads:   48 MB in  3.01 seconds =3D  15.96 MB/s=
+ec
 
->This could be configured with udev if one were willing to learn -- for 
->a fundamentally very trivial task --
+You're using the sil3112 driver? Edit its blacklist and remove the
+entry for your drive. That gives you the usual speed.
 
-Nothing to configure, this is standard udev configuration file 
-boilerplate and comes prepackaged. Upgrade udev to version 114 at least.
+>     Linux noi 2.6.14 #1 PREEMPT Sun Oct 30 20:18:48 EET 2005 i686 GNU/Lin=
+ux
+>=20
+> I've tried upgrading, and failed: the megatonne monolith with a gazillion
+> hidden options (and totally worthless make oldconfig)
 
->yet another wheel-reinving unnecessarily
->cryptic piece of shit, to tolerate distros breaking your cryptic config 
->constantly,
+Gradually upgrade to 2.6.15, 2.6.16...
 
-Mine plays very well.
+> is impossible to compile these days,
 
-$ cat /etc/crypttab 
-home /dev/disk/by-id/ata-DIAMOND_250G_2B5400_030400026-part2 none 
-cipher=aes-cbc-essiv:sha256
+Check your tool-chain. Many people compile recent kernels with no problems.
 
-and /dev/mapper/home is a fixed name.
+> and the distros' stock kernel are utter and total crap
+> that load drivers in wrong order etc., and are difficult to configure
+> (demanding crap that demands udev to edit their initrds).
 
->and to tolerate its intolerable slowness at boot. (/dev should
->still be the UI for modifying dynamic device mappings, reacting to ln, mv,
->chmod, etc., instead of being reduced into a race-condition ridden tmpfs
->shadow, that loses your normally created symlinks and permissions at boot.)
+Use a kernel.org version.
 
-May I remind you that the kernel also "loses" all your network interface 
-configuration, routes, firewalling rules and all sysctl settings at 
-boot (sic: reboot & powerdown).
+> Not to even speak of the udev-demanding scsi-mapping insanity of SATA
+> etc. devices these days.
 
->But the stock kernels also takes age at boot in (trying to) load a zillion
->unnecessary drivers.
+Nobody forces you to use udev. Moreover, you can write your own udev
+rules that match your expectations.
 
-Distros have to decide whether to
+> I've had it with Linux. It's no longer for power users. It's so complex
+> that it's only for idiot users that are content with the shoddy defaults,
+> and (paid) developers.
 
-- not autoload a zillion of modules, potentially generating lots of 
-crying "idiot" users
+You're not ranting about Linux but about your Distro. Complain on
+the corresponding distro-specific mailing list, use another distro
+and and stop whining.
 
-- autoload a zillion of modules, potentially firing you up.
+Thanks
+Andre
+--=20
+The only person who always got his work done by Friday was Robinson Crusoe
 
+--qMm9M+Fa2AknHoGS
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
->They need to be configured to not load them. But
->_obviously_ they won't use a _simple_ listing of the modules to load
->(/etc/modules), but demand complex initrd editing.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
 
-Nonsense. The kernel notices udev about all available hardware and udev 
-will load modules. It has nothing to do with initrd, in fact, this very 
-step of loading a gazillion of modules is done after initrd has passed 
-control on to /sbin/init. At least, in opensuse.
+iD8DBQFHg6lvWto1QDEAkw8RArL5AKCfCEZD4luSlF8nJR7EJwkO15l2tACgoLc9
+i5ajLx1iSuSi1iIsN/OYEfI=
+=y0Qc
+-----END PGP SIGNATURE-----
+
+--qMm9M+Fa2AknHoGS--
