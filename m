@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbYAHIpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757144AbYAHIq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755454AbYAHIpg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 03:45:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbYAHIp2
+	id S1757144AbYAHIq4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 03:46:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750902AbYAHIqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 03:45:28 -0500
-Received: from mailhub.sw.ru ([195.214.232.25]:42405 "EHLO relay.sw.ru"
+	Tue, 8 Jan 2008 03:46:49 -0500
+Received: from mailhub.sw.ru ([195.214.232.25]:46695 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750711AbYAHIp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 03:45:28 -0500
-Date: Tue, 8 Jan 2008 11:45:20 +0300
+	id S1750715AbYAHIqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 03:46:48 -0500
+Date: Tue, 8 Jan 2008 11:46:29 +0300
 From: Alexey Dobriyan <adobriyan@sw.ru>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: [PATCH -mm 3/4] hvcs: fixup container_of() usage
-Message-ID: <20080108084520.GC6209@localhost.sw.ru>
+To: akpm@osdl.org
+Cc: rusty@rustcorp.com.au, linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: [PATCH 4/4] Fixup container_of() usage
+Message-ID: <20080108084629.GD6209@localhost.sw.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,26 +23,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please, fold into
-gregkh-driver-kobject-convert-hvcs-to-use-kref-not-kobject.patch
-----------------------------------------------------------------------
-[PATCH -mm 3/4] hvcs: fixup container_of() usage 
+Using "attr" twice is not OK, because it effectively prohibits such
+container_of() on variables not named "attr".
 
 Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
 ---
 
- drivers/char/hvcs.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/sh/kernel/cpu/sh4/sq.c    |    2 +-
+ drivers/lguest/lguest_device.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/char/hvcs.c
-+++ b/drivers/char/hvcs.c
-@@ -304,7 +304,7 @@ struct hvcs_struct {
+--- a/arch/sh/kernel/cpu/sh4/sq.c
++++ b/arch/sh/kernel/cpu/sh4/sq.c
+@@ -263,7 +263,7 @@ struct sq_sysfs_attr {
+ 	ssize_t (*store)(const char *buf, size_t count);
  };
  
- /* Required to back map a kref to its containing object */
--#define from_kref(kref) container_of(kref, struct hvcs_struct, kref)
-+#define from_kref(k) container_of(k, struct hvcs_struct, kref)
+-#define to_sq_sysfs_attr(attr)	container_of(attr, struct sq_sysfs_attr, attr)
++#define to_sq_sysfs_attr(a)	container_of(a, struct sq_sysfs_attr, attr)
  
- static LIST_HEAD(hvcs_structs);
- static DEFINE_SPINLOCK(hvcs_structs_lock);
+ static ssize_t sq_sysfs_show(struct kobject *kobj, struct attribute *attr,
+ 			     char *buf)
+--- a/drivers/lguest/lguest_device.c
++++ b/drivers/lguest/lguest_device.c
+@@ -47,7 +47,7 @@ struct lguest_device {
+ /* Since the virtio infrastructure hands us a pointer to the virtio_device all
+  * the time, it helps to have a curt macro to get a pointer to the struct
+  * lguest_device it's enclosed in.  */
+-#define to_lgdev(vdev) container_of(vdev, struct lguest_device, vdev)
++#define to_lgdev(vd) container_of(vd, struct lguest_device, vdev)
+ 
+ /*D:130
+  * Device configurations
 
