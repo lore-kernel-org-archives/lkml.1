@@ -1,51 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbYAHAtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754780AbYAHAud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755325AbYAHAtR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 19:49:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbYAHAtH
+	id S1754780AbYAHAud (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 19:50:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbYAHAuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 19:49:07 -0500
-Received: from nz-out-0506.google.com ([64.233.162.234]:31793 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752209AbYAHAtE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 19:49:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YpdOejZe3dBQqCFvfBT/Zz8HradErZ/7ikFJRinJQmMMioSl6sjc9IWHHpHxk/EANEKdxg5J6fZLCVuJ9VFKKhwumztLC1ujwgc7wP96ikV3aKlUbwCgQTCsTlO9/rPXYvTRUsSeodA7OFdfCWvihL2KXkB9a0QAjNs4jI5pHVc=
-Message-ID: <82e4877d0801071649vd0af3a0h7cb7cbd0b58353ed@mail.gmail.com>
-Date: Mon, 7 Jan 2008 19:49:03 -0500
-From: "Parag Warudkar" <parag.warudkar@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.24-rc6-git12: Reported regressions from 2.6.23
-Cc: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Adrian Bunk" <bunk@kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <200801080054.57916.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 7 Jan 2008 19:50:25 -0500
+Received: from smtp.ono.com ([62.42.230.12]:32790 "EHLO resmaa03.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752857AbYAHAuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 19:50:25 -0500
+Date: Tue, 8 Jan 2008 01:50:12 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: "Linux-Kernel, " <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.24-rc7
+Message-ID: <20080108015012.2e518dd4@werewolf>
+In-Reply-To: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org>
+References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org>
+X-Mailer: Claws Mail 3.2.0cvs23 (GTK+ 2.12.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200801052042.56042.rjw@sisk.pl> <200801062011.31491.rjw@sisk.pl>
-	 <82e4877d0801071521s607491f1ue25c4b97de47db71@mail.gmail.com>
-	 <200801080054.57916.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 7, 2008 6:54 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+HI all...
 
-> Well, now you're saying 2.6.23.12 is also affected, so this doesn't seem to
-> be a recent regression in fact?
->
+On Sun, 6 Jan 2008 14:19:16 -0800 (PST), Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-I have run 2.6.23 series before but my usage pattern seems to have not
-triggered the bug before.
-But yes, this is a 6 month old regression based on today's findings.
-(2.6.22 which doesn't have this issue was released on July 8).
+> 
+> It's been two weeks since rc6, but let's face it, with xmas and new years 
+> (and birthdays) in between, there hasn't actually been a lot of working 
+> days, and the incremental patch from -rc6 is about half the size of the 
+> one from rc5->rc6.
+> 
+> And I'll be charitable and claim it's because it's all stabilizing, and 
+> not because we've all been in a drunken stupor over the holidays.
+> 
+> The shortlog (appended below) is short and fairly informative. It's all 
+> really just a lot of rather small changes. The diffstat shows a lot of 
+> one- and two-liners, with just a few drivers (and the Cell platform) 
+> getting a bit more attention, and the SLUB support of /proc/slabinfo 
+> showing up as a blip.
+> 
 
-Parag
+With this kernel I'm getting frequent temporary freezes (system comes
+back responsive after a minute or so...). I see this in dmesg:
+
+ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata3.00: cmd ca/00:08:67:10:18/00:00:00:00:00/e2 tag 0 dma 4096 out
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata3.00: status: { DRDY }
+ata3: soft resetting link
+ata3.00: configured for UDMA/133
+ata3: EH complete
+sd 2:0:0:0: [sdb] 390721968 512-byte hardware sectors (200050 MB)
+sd 2:0:0:0: [sdb] Write Protect is off
+sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+
+ata4.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata4.00: cmd c8/00:08:ef:0b:c7/00:00:00:00:00/e7 tag 0 dma 4096 in
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+ata4.00: status: { DRDY }
+ata4: soft resetting link
+ata4.00: configured for UDMA/133
+ata4: EH complete
+sd 3:0:0:0: [sdc] 625142448 512-byte hardware sectors (320073 MB)
+sd 3:0:0:0: [sdc] Write Protect is off
+sd 3:0:0:0: [sdc] Mode Sense: 00 3a 00 00
+sd 3:0:0:0: [sdc] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+
+See this are two different drives, I doubt both drives have gone nuts
+at the same time...
+
+Controllers:
+00:1f.1 IDE interface: Intel Corporation 82801EB/ER (ICH5/ICH5R) IDE Controller (rev 02)
+00:1f.2 IDE interface: Intel Corporation 82801EB (ICH5) SATA Controller (rev 02)
+03:04.0 RAID bus controller: Promise Technology, Inc. PDC20378 (FastTrak 378/SATA 378) (rev 02)
+
+Drives (sda is PATA, sd[bcd] are SATA, 
+werewolf:~> lsscsi
+[0:0:0:0]    disk    ATA      ST3120022A       3.06  /dev/sda
+[0:0:1:0]    cd/dvd  HL-DT-ST DVDRAM GSA-H10N  JL12  /dev/sr0
+[2:0:0:0]    disk    ATA      ST3200822AS      3.01  /dev/sdb
+[3:0:0:0]    disk    ATA      MAXTOR STM332082 3.AA  /dev/sdc
+[4:0:0:0]    disk    ATA      Maxtor 7Y250M0   YAR5  /dev/sdd
+werewolf:~> df
+Filesystem    Type    Size  Used Avail Use% Mounted on
+/dev/sdb1     ext3     30G   11G   18G  38% /
+/dev/sdb2     ext3    152G   71G   81G  47% /home
+/dev/sdc1     ext3    294G   67G  212G  24% /home/store/media/music
+/dev/sdd1     ext3    231G   42G  177G  20% /home/store/media/video
+/dev/sda1     ext3    111G  887M  104G   1% /scratch
+
+
+Driver 'sd' needs updating - please use bus_type methods
+Driver 'sr' needs updating - please use bus_type methods
+ata_piix 0000:00:1f.1: version 2.12
+ACPI: PCI Interrupt 0000:00:1f.1[A] -> GSI 18 (level, low) -> IRQ 16
+PCI: Setting latency timer of device 0000:00:1f.1 to 64
+scsi0 : ata_piix
+scsi1 : ata_piix
+ata1: PATA max UDMA/100 cmd 0x1f0 ctl 0x3f6 bmdma 0xf000 irq 14
+ata2: PATA max UDMA/100 cmd 0x170 ctl 0x376 bmdma 0xf008 irq 15
+Switched to high resolution mode on CPU 2
+Switched to high resolution mode on CPU 3
+Switched to high resolution mode on CPU 0
+Switched to high resolution mode on CPU 1
+ata1.00: ATA-6: ST3120022A, 3.06, max UDMA/100
+ata1.00: 234441648 sectors, multi 16: LBA48 
+ata1.01: ATAPI: HL-DT-ST DVDRAM GSA-H10N, JL12, max UDMA/33
+ata1.00: configured for UDMA/100
+ata1.01: configured for UDMA/33
+scsi 0:0:0:0: Direct-Access     ATA      ST3120022A       3.06 PQ: 0 ANSI: 5
+sd 0:0:0:0: [sda] 234441648 512-byte hardware sectors (120034 MB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+sd 0:0:0:0: [sda] 234441648 512-byte hardware sectors (120034 MB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+ sda: sda1
+sd 0:0:0:0: [sda] Attached SCSI disk
+scsi 0:0:1:0: CD-ROM            HL-DT-ST DVDRAM GSA-H10N  JL12 PQ: 0 ANSI: 5
+sr0: scsi3-mmc drive: 48x/48x writer dvd-ram cd/rw xa/form2 cdda tray
+Uniform CD-ROM driver Revision: 3.20
+sr 0:0:1:0: Attached scsi CD-ROM sr0
+ata_piix 0000:00:1f.2: MAP [ P0 -- P1 -- ]
+ACPI: PCI Interrupt 0000:00:1f.2[A] -> GSI 18 (level, low) -> IRQ 16
+PCI: Setting latency timer of device 0000:00:1f.2 to 64
+scsi2 : ata_piix
+scsi3 : ata_piix
+ata3: SATA max UDMA/133 cmd 0xc000 ctl 0xc400 bmdma 0xd000 irq 16
+ata4: SATA max UDMA/133 cmd 0xc800 ctl 0xcc00 bmdma 0xd008 irq 16
+ata3.00: ATA-6: ST3200822AS, 3.01, max UDMA/133
+ata3.00: 390721968 sectors, multi 16: LBA48 
+ata3.00: configured for UDMA/133
+ata4.00: ATA-7: MAXTOR STM3320820AS, 3.AAE, max UDMA/133
+ata4.00: 625142448 sectors, multi 16: LBA48 NCQ (depth 0/32)
+ata4.00: configured for UDMA/133
+scsi 2:0:0:0: Direct-Access     ATA      ST3200822AS      3.01 PQ: 0 ANSI: 5
+sd 2:0:0:0: [sdb] 390721968 512-byte hardware sectors (200050 MB)
+sd 2:0:0:0: [sdb] Write Protect is off
+sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+sd 2:0:0:0: [sdb] 390721968 512-byte hardware sectors (200050 MB)
+sd 2:0:0:0: [sdb] Write Protect is off
+sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+ sdb: sdb1 sdb2 sdb3
+sd 2:0:0:0: [sdb] Attached SCSI disk
+scsi 3:0:0:0: Direct-Access     ATA      MAXTOR STM332082 3.AA PQ: 0 ANSI: 5
+sd 3:0:0:0: [sdc] 625142448 512-byte hardware sectors (320073 MB)
+sd 3:0:0:0: [sdc] Write Protect is off
+sd 3:0:0:0: [sdc] Mode Sense: 00 3a 00 00
+sd 3:0:0:0: [sdc] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+sd 3:0:0:0: [sdc] 625142448 512-byte hardware sectors (320073 MB)
+sd 3:0:0:0: [sdc] Write Protect is off
+sd 3:0:0:0: [sdc] Mode Sense: 00 3a 00 00
+sd 3:0:0:0: [sdc] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+ sdc: sdc1
+sd 3:0:0:0: [sdc] Attached SCSI disk
+...
+sata_promise 0000:03:04.0: version 2.11
+ACPI: PCI Interrupt 0000:03:04.0[A] -> GSI 23 (level, low) -> IRQ 17
+scsi4 : sata_promise
+scsi5 : sata_promise
+scsi6 : sata_promise
+ata5: SATA max UDMA/133 mmio m4096@0xf6026000 port 0xf6026200 irq 17
+ata6: SATA max UDMA/133 mmio m4096@0xf6026000 port 0xf6026280 irq 17
+ata7: PATA max UDMA/133 mmio m4096@0xf6026000 port 0xf6026300 irq 17
+ata5: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+ata5.00: ATA-7: Maxtor 7Y250M0, YAR51EW0, max UDMA/133
+ata5.00: 490234752 sectors, multi 0: LBA48 
+ata5.00: configured for UDMA/133
+ata6: SATA link down (SStatus 0 SControl 300)
+scsi 4:0:0:0: Direct-Access     ATA      Maxtor 7Y250M0   YAR5 PQ: 0 ANSI: 5
+sd 4:0:0:0: [sdd] 490234752 512-byte hardware sectors (251000 MB)
+sd 4:0:0:0: [sdd] Write Protect is off
+sd 4:0:0:0: [sdd] Mode Sense: 00 3a 00 00
+sd 4:0:0:0: [sdd] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+sd 4:0:0:0: [sdd] 490234752 512-byte hardware sectors (251000 MB)
+sd 4:0:0:0: [sdd] Write Protect is off
+sd 4:0:0:0: [sdd] Mode Sense: 00 3a 00 00
+sd 4:0:0:0: [sdd] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+ sdd: sdd1
+sd 4:0:0:0: [sdd] Attached SCSI disk
+sd 4:0:0:0: Attached scsi generic sg4 type 0
+
+--
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2008.1 (Cooker) for i586
+Linux 2.6.23-jam05 (gcc 4.2.2 20071128 (4.2.2-2mdv2008.1)) SMP PREEMPT
