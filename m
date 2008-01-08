@@ -1,118 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760031AbYAHPhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbYAHPlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760031AbYAHPhz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 10:37:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758048AbYAHPhs
+	id S1754708AbYAHPlu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 10:41:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbYAHPlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 10:37:48 -0500
-Received: from wx-out-0506.google.com ([66.249.82.227]:12002 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757978AbYAHPhr (ORCPT
+	Tue, 8 Jan 2008 10:41:40 -0500
+Received: from web707.biz.mail.mud.yahoo.com ([209.191.119.232]:23099 "HELO
+	web707.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753413AbYAHPli (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 10:37:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding:from;
-        b=xxUumRjr1bDgdBNr8jpFOg0Uco7bkOGpQfdW7BKUzhiRN4lNJgooe6GqIpa9bOwet+LEDB26R70sTNJp6wyyOBwgmFW/SLMqessb/I0EE+OaWc9FzgloF08rf0kL9j3amBC3MpvyLiVZdjzsn9vmCKpIanz0aK59+dbXj7TJxxc=
-Message-ID: <478398B1.1080903@gmail.com>
-Date: Tue, 08 Jan 2008 16:37:21 +0100
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+	Tue, 8 Jan 2008 10:41:38 -0500
+X-Greylist: delayed 394 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Jan 2008 10:41:38 EST
+X-YMail-OSG: MGgJPtUVM1nuh.xuC2JSQD.fA6G3qmZ2qGfgwJi1ClG.j9ZcMNfOW0A0nKtUryaxVA--
+Date: Tue, 8 Jan 2008 10:34:58 -0500 (EST)
+From: Jon Paul Maloy <maloy@donjonn.com>
+Reply-To: maloy@donjonn.com
+Subject: RE : [tipc-discussion] /net/tipc/port.c: Use tipc_port_unlock
+To: Julia Lawall <julia@diku.dk>, per.liden@ericsson.com,
+       jon.maloy@ericsson.com, allan.stephens@windriver.com,
+       tipc-discussion@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.58.0801041546220.1184@pc-041.diku.dk>
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-CC: Alain PORTAL <alain.portal@univ-montp2.fr>
-Subject: man-pages-2.75 and man-pages-fr-2.75.0 are released
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Message-ID: <335603.50794.qm@web707.biz.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gidday,
+I have no objections.
+///jon
 
-The Linux man-pages maintainer, Michael Kerrisk, and the maintainer of the
-French translation of man-pages, Alain Portal, proudly announce the
-simultaneous release (*) of man-pages-2.75 in English original and French
-translation.
+--- Julia Lawall <julia@diku.dk> a écrit :
 
-The English version:
-
-    man-pages-2.75.tar.gz - man pages for Linux
-
-is now available for download at:
-
-    http://www.kernel.org/pub/linux/docs/man-pages
-    or ftp://ftp.kernel.org/pub/linux/docs/man-pages
-
-    The (rather long) list of changes in this release can be seen at
-    http://www.kernel.org/doc/man-pages/changelog.html#release_2.75
-    A short summary of the changes in this release that may be
-    of interest to readers of this list is provided below.
-
-The French translation is available for download here:
-
-    http://manpagesfr.free.fr/download.html
-
-The translated pages are viewable online, along with some translated man
-pages from other projects, here:
-
-    http://manpagesfr.free.fr/consulter.html
-
-    Comments and suggestions for the French translation can be
-    sent to manpagesfr@free.fr.
-
-A huge thanks to Alain, who has over the last two and a half years made a
-terrific effort to bring the French translation fully up to date with the
-English original.
-
-Cheers,
-
-Michael
-
-(*) See
-http://linux-man-pages.blogspot.com/2007/12/man-pages-fr-2740-est-sorti.html
-
-==================== Changes in man-pages-2.75 ====================
-
-Changes to individual pages
----------------------------
-
-arch_prctl.2
-    mtk, Acked by Andi Kleen
-        Clarify interpretation of 'addr'; plus a few other minor edits
-        and updates.
-
-close.2
-    mtk
-        Clarify relationship between file descriptor and open file
-        description.
-
-connect.2
-    mtk, Acked by Andi Kleen
-        Since kernel 2.2, AF_UNSPEC for unconnecting a connected
-        socket *is* supported.
-
-listen.2
-    mtk
-        Rewrote various parts.
-
-open.2
-    mtk
-        Clarify initial description of O_EXCL.
-        Clarify description of behaviors of O_CREAT | O_EXCL
-        for symbolic links.
-        Clarify text describing use of lockfiles without O_EXCL.
-    mtk, with input from Timo Sirainen and Trond Myklebust
-        O_EXCL is supported on NFSv3 and later, with Linux 2.6 and later.
-
--- 
-Michael Kerrisk
-Maintainer of the Linux man-pages project
-http://www.kernel.org/doc/man-pages/
-Want to report a man-pages bug?  Look here:
-http://www.kernel.org/doc/man-pages/reporting_bugs.html
-
-
-
-
+> From: Julia Lawall <julia@diku.dk>
+> 
+> The file net/tipc/port.c takes a lock using the
+> function tipc_port_lock and
+> then releases the lock sometimes using
+> tipc_port_unlock and sometimes using
+> spin_unlock_bh(p_ptr->publ.lock).  tipc_port_unlock
+> simply does the
+> spin_unlock_bh, but it seems cleaner to use it
+> everywhere.
+> 
+> 
+> The problem was fixed using the following semantic
+> patch.
+> (http://www.emn.fr/x-info/coccinelle/)
+> 
+> // <smpl>
+> @@
+> struct port *p_ptr;
+> @@
+> 
+>    p_ptr = tipc_port_lock(...)
+>    ...
+> (
+>    p_ptr = tipc_port_lock(...);
+> |
+> ?- spin_unlock_bh(p_ptr->publ.lock);
+> +  tipc_port_unlock(p_ptr);
+> )
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> ---
+> 
+> diff -u -p a/net/tipc/port.c b/net/tipc/port.c
+> --- a/net/tipc/port.c 2008-01-01 10:43:55.000000000
+> +0100
+> +++ b/net/tipc/port.c 2008-01-04 10:51:05.000000000
+> +0100
+> @@ -340,7 +340,7 @@ int tipc_portunreliable(u32 ref,
+> unsigne
+>  	if (!p_ptr)
+>  		return -EINVAL;
+>  	*isunreliable = port_unreliable(p_ptr);
+> -	spin_unlock_bh(p_ptr->publ.lock);
+> +	tipc_port_unlock(p_ptr);
+>  	return TIPC_OK;
+>  }
+> 
+> @@ -369,7 +369,7 @@ int tipc_portunreturnable(u32
+> ref, unsig
+>  	if (!p_ptr)
+>  		return -EINVAL;
+>  	*isunrejectable = port_unreturnable(p_ptr);
+> -	spin_unlock_bh(p_ptr->publ.lock);
+> +	tipc_port_unlock(p_ptr);
+>  	return TIPC_OK;
+>  }
+> 
+> @@ -843,7 +843,7 @@ static void
+> port_dispatcher_sigh(void *d
+>  				u32 peer_port = port_peerport(p_ptr);
+>  				u32 peer_node = port_peernode(p_ptr);
+> 
+> -				spin_unlock_bh(p_ptr->publ.lock);
+> +				tipc_port_unlock(p_ptr);
+>  				if (unlikely(!connected)) {
+>  					if (unlikely(published))
+>  						goto reject;
+> @@ -867,7 +867,7 @@ static void
+> port_dispatcher_sigh(void *d
+>  		case TIPC_DIRECT_MSG:{
+>  				tipc_msg_event cb = up_ptr->msg_cb;
+> 
+> -				spin_unlock_bh(p_ptr->publ.lock);
+> +				tipc_port_unlock(p_ptr);
+>  				if (unlikely(connected))
+>  					goto reject;
+>  				if (unlikely(!cb))
+> @@ -882,7 +882,7 @@ static void
+> port_dispatcher_sigh(void *d
+>  		case TIPC_NAMED_MSG:{
+>  				tipc_named_msg_event cb = up_ptr->named_msg_cb;
+> 
+> -				spin_unlock_bh(p_ptr->publ.lock);
+> +				tipc_port_unlock(p_ptr);
+>  				if (unlikely(connected))
+>  					goto reject;
+>  				if (unlikely(!cb))
+> @@ -913,7 +913,7 @@ err:
+>  				u32 peer_port = port_peerport(p_ptr);
+>  				u32 peer_node = port_peernode(p_ptr);
+> 
+> -				spin_unlock_bh(p_ptr->publ.lock);
+> +				tipc_port_unlock(p_ptr);
+>  				if (!connected || !cb)
+>  					break;
+>  				if (msg_origport(msg) != peer_port)
+> @@ -929,7 +929,7 @@ err:
+>  		case TIPC_DIRECT_MSG:{
+>  				tipc_msg_err_event cb = up_ptr->err_cb;
+> 
+> -				spin_unlock_bh(p_ptr->publ.lock);
+> +				tipc_port_unlock(p_ptr);
+>  				if (connected || !cb)
+>  					break;
+>  				skb_pull(buf, msg_hdr_sz(msg));
+> @@ -942,7 +942,7 @@ err:
+>  				tipc_named_msg_err_event cb =
+>  					up_ptr->named_err_cb;
+> 
+> -				spin_unlock_bh(p_ptr->publ.lock);
+> +				tipc_port_unlock(p_ptr);
+>  				if (connected || !cb)
+>  					break;
+>  				dseq.type =  msg_nametype(msg);
+> @@ -1107,7 +1107,7 @@ int tipc_portimportance(u32
+> ref, unsigne
+>  	if (!p_ptr)
+>  		return -EINVAL;
+>  	*importance = (unsigned
+> int)msg_importance(&p_ptr->publ.phdr);
+> -	spin_unlock_bh(p_ptr->publ.lock);
+> +	tipc_port_unlock(p_ptr);
+>  	return TIPC_OK;
+>  }
+> 
+> @@ -1122,7 +1122,7 @@ int
+> tipc_set_portimportance(u32 ref, uns
+>  	if (!p_ptr)
+>  		return -EINVAL;
+>  	msg_set_importance(&p_ptr->publ.phdr, (u32)imp);
+> -	spin_unlock_bh(p_ptr->publ.lock);
+> +	tipc_port_unlock(p_ptr);
+>  	return TIPC_OK;
+>  }
+> 
+> 
+>
+-------------------------------------------------------------------------
+> This SF.net email is sponsored by: Microsoft
+> Defy all challenges. Microsoft(R) Visual Studio
+> 2005.
+>
+http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+> _______________________________________________
+> tipc-discussion mailing list
+> tipc-discussion@lists.sourceforge.net
+>
+https://lists.sourceforge.net/lists/listinfo/tipc-discussion
+> 
 
