@@ -1,48 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759186AbYAHOjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759323AbYAHOkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759186AbYAHOjz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 09:39:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755288AbYAHOjr
+	id S1759323AbYAHOkT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 09:40:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755288AbYAHOj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 09:39:47 -0500
-Received: from nz-out-0506.google.com ([64.233.162.226]:50890 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758914AbYAHOjq (ORCPT
+	Tue, 8 Jan 2008 09:39:59 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43911 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759206AbYAHOj5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 09:39:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cEDFKiPz2nep8QuFUes01rQBU3eOJgpuZL6yLfiZ/aoxIhoQNmgQDl4xEjrUYPQiU/WM8eUFbj2fG0GDIgUoZHcxffn8NCLxyRKUwQI9nIO9mtUlkhxsz74GlMh/SIMyOHJyI/w1q2hIHIW2wKy4sZzt7gQ2rzMehP6DYFbBZmM=
-Message-ID: <5eeb9ad90801080639h2992e9b7maec0339e4f763f65@mail.gmail.com>
-Date: Tue, 8 Jan 2008 15:39:45 +0100
-From: DM <dm.n9107@gmail.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: [patch 2/2] track and print last unloaded module in the oops trace
-Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, ak@suse.de,
-       mingo@elte.hu
-In-Reply-To: <20080108062656.311cd3aa@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 8 Jan 2008 09:39:57 -0500
+Date: Tue, 8 Jan 2008 14:37:02 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "David P. Reed" <dpreed@reed.com>
+Cc: Bodo Eggert <7eggert@gmx.de>, Rene Herman <rene.herman@keyaccess.nl>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Christer Weinigel <christer@weinigel.se>, Ingo Molnar <mingo@elte.hu>,
+       Paul Rolland <rol@as2917.net>, Pavel Machek <pavel@ucw.cz>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, rol@witbe.net
+Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
+ I/O delay override.
+Message-ID: <20080108143702.5569c7bf@lxorguk.ukuu.org.uk>
+In-Reply-To: <478375AA.3090306@reed.com>
+References: <9BdU5-1YW-9@gated-at.bofh.it>
+	<9BeZN-3Gf-5@gated-at.bofh.it>
+	<9BnTB-1As-31@gated-at.bofh.it>
+	<9BrX4-8go-1@gated-at.bofh.it>
+	<9BuBG-4eR-51@gated-at.bofh.it>
+	<9BvRd-6aL-71@gated-at.bofh.it>
+	<9GRQW-1DX-13@gated-at.bofh.it>
+	<9GSah-23W-1@gated-at.bofh.it>
+	<9GSDy-2GD-23@gated-at.bofh.it>
+	<9GTpK-40d-15@gated-at.bofh.it>
+	<9GUvy-5H2-11@gated-at.bofh.it>
+	<9GVKU-7SS-25@gated-at.bofh.it>
+	<E1JBxnV-00046d-CS@be1.7eggert.dyndns.org>
+	<478281A6.1000704@zytor.com>
+	<alpine.LSU.0.999.0801072226060.16143@be1.lrz>
+	<4782A355.1070207@zytor.com>
+	<alpine.LSU.0.999.0801072316440.16143@be1.lrz>
+	<4782AED5.1060406@keyaccess.nl>
+	<4782B4B9.2020608@zytor.com>
+	<4782B515.3010008@keyaccess.nl>
+	<alpine.LSU.0.999.0801081333530.12636@be1.lrz>
+	<478375AA.3090306@reed.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080106151946.50c3d8cc@laptopd505.fenrus.org>
-	 <5eeb9ad90801080551n562b9f15o27b495495a452c22@mail.gmail.com>
-	 <20080108062656.311cd3aa@laptopd505.fenrus.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 8, 2008 3:26 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> >
-> > Why use sprintf? If a module name contains the % character we could
-> > overflow the buffer. Or is module-unloading root-only and we don't
-> > care?
->
-> module loading isn't just root only; the name comes from an already loaded module.
-> If you can load kernel modules of your choice you own the entire kernel already anway
->
+> The last time I heard of a 12 MHz bus in a PC system was in the days of 
+> the PC-AT, when some clone makers sped up their buses (pre PCI!!!) in an 
+> attempt to allow adapter card *memory* to run at the 12 MHz speed.
 
-Still, strcpy seems like a better choice IMHO.
+It wasn't about clone makers speeding up their busses. The ISA bus
+originally ran at the CPU clock - 4.77/8/6/10 .. etc. Quite a few board
+makers assumed 8MHz and while faster isn't a big problem at 8bit trying
+to do the 8/16 bit decode with logic chips at 8MHz is quite tight and
+above that generally broke. 8bit tends to work fine because you've got a
+lot more timing headroom.
 
-/DM
+> I can't believe that we are not supporting today's machines correctly 
+> because we are still trying to be compatible with a few (at most a 
+> hundre thousand were manufactured!  Much less still functioning or 
+> running Linux) machines.
+
+It is about supporting this properly. Properly for ISA devices means
+using I/O delays. Properly for chipset devices is probably using udelay.
+
+> Now I understand that PC/104 machines and other things are very non PC 
+> compatible, but are x86 processor architectures.  Do they even run x86 
+> under 2.6.24?
+
+Linux runs on x86, it isn't limited to PC type architectures at all. We
+don't need a BIOS, we don't need legacy compatible I/O devices.
+
+> for "relics" and develop a merged architecture called "modern machines" 
+> to include only those PCs that have been made to work since, say, the 
+> release of (cough) WIndows 2000?
+
+No point. We've got the 64bit kernel for that. That is a much saner
+boundary to throw out all the nutty stuff.
+
+Alan
