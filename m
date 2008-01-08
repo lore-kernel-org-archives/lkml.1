@@ -1,86 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752936AbYAHPzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755376AbYAHP4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752936AbYAHPzw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 10:55:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbYAHPzo
+	id S1755376AbYAHP4o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 10:56:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbYAHP4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 10:55:44 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58491 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751489AbYAHPzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 10:55:43 -0500
-Message-ID: <47839C33.6020207@redhat.com>
-Date: Tue, 08 Jan 2008 10:52:19 -0500
-From: Wendy Cheng <wcheng@redhat.com>
-User-Agent: Thunderbird 1.5.0.7 (X11/20060913)
-MIME-Version: 1.0
-To: Jeff Layton <jlayton@redhat.com>
-CC: Neil Brown <neilb@suse.de>, akpm@linux-foundation.org,
-       linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/6] NLM: Add reference counting to lockd
-References: <1199534542-3384-1-git-send-email-jlayton@redhat.com>	<1199534542-3384-2-git-send-email-jlayton@redhat.com>	<1199534542-3384-3-git-send-email-jlayton@redhat.com>	<1199534542-3384-4-git-send-email-jlayton@redhat.com>	<1199534542-3384-5-git-send-email-jlayton@redhat.com>	<1199534542-3384-6-git-send-email-jlayton@redhat.com>	<1199534542-3384-7-git-send-email-jlayton@redhat.com>	<18307.7241.831689.998668@notabene.brown> <20080108082603.089718fc@tleilax.poochiereds.net>
-In-Reply-To: <20080108082603.089718fc@tleilax.poochiereds.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Jan 2008 10:56:34 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:49356 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752893AbYAHP4d convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 10:56:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=SbtCx+5gF+HwpyUsUZVOlFvSkTYfhbAU78cnp7XVydOrv6+VY0CjL1tTWKsSk65gxqzpYs4epAIPUa04iuiq1E30kHpZMPuQJ6eQJRgi92VpzgUFfHjJsUVT8lHmAxPfyjGGZvKY30qkewtB/QOmSR/0jxWKdd/K9oJJNQjS0cI=
+Date: Tue, 8 Jan 2008 16:55:30 +0100
+From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
+	<ariveira@gmail.com>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org
+Subject: Re: Linux 2.6.24-rc7
+Message-ID: <20080108165530.19b2d03a@Varda>
+In-Reply-To: <200801081630.31110.mb@bu3sch.de>
+References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org>
+	<200801071830.51895.mb@bu3sch.de>
+	<20080107212344.1372cc47@Varda>
+	<200801081630.31110.mb@bu3sch.de>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Layton wrote:
->
->> The previous patch removes a kill_proc(... SIGKILL),  this one adds it
->> back.
->> That makes me wonder if the intermediate state is 'correct'.
->>
->> But I also wonder what "correct" means.
->> Do we want all locks to be dropped when the last nfsd thread dies?
->> The answer is presumably either "yes" or "no".
->> If "yes", then we don't have that because if there are any NFS mounts
->> active, lockd will not be killed.
->> If "no", then we don't want this kill_proc here.
->>
->> The comment in lockd() which currently reads:
->>
->> 	/*
->> 	 * The main request loop. We don't terminate until the last
->> 	 * NFS mount or NFS daemon has gone away, and we've been sent
->> a
->> 	 * signal, or else another process has taken over our job.
->> 	 */
->>
->> suggests that someone once thought that lockd could hang around after
->> all nfsd threads and nfs mounts had gone, but I don't think it does.
->>
->> We really should think this through and get it right, because if lockd
->> ever drops it's locks, then we really need to make sure sm_notify gets
->> run.  So it needs to be a well defined event.
->>
->> Thoughts?
->>
->>     
->
-> This is the part I've been struggling with the most -- defining what
-> proper behavior should be when lockd is restarted. As you point out,
-> restarting lockd without doing a sm_notify could be bad news for data
-> integrity.
->
-> Then again, we'd like someone to be able to shut down the NFS "service"
-> and be able to unmount underlying filesystems without jumping through
-> special hoops....
->
-> Overall, I think I'd vote "yes". We need to drop locks when the last
-> nfsd goes down. If userspace brings down nfsd, then it's userspace's
-> responsibility to make sure that a sm_notify is sent when nfsd and lockd
-> are restarted.
->   
+El Tue, 8 Jan 2008 16:30:30 +0100
+Michael Buesch <mb@bu3sch.de> escribió:
 
-I would vote for "no", at least for nfs v3. Shutting down lockd would 
-require clients to reclaim the locks. With current status (protocol, 
-design, and even the implementation itself, etc), it is simply too 
-disruptive. I understand current logic (i.e. shutting down nfsd but 
-leaving lockd alone) is awkward but debugging multiple platforms 
-(remember clients may not be on linux boxes) is very non-trivial.
+> On Monday 07 January 2008 21:23:44 Alejandro Riveira Fernández wrote:
+>
+> >  
+> >  How can I check? The source code I build does indeed have the line
+> >  you quoted on net/mac80211/rx.c:1486 Is that what you are asking for?
+> >  
+> >  WARN_ON_ONCE(((unsigned long)(skb->data + hdrlen)) & 3);
+> 
+> Yes fine.
+> Patches are on their way. Ignore the warning for now. It is harmless.
+> 
 
--- Wendy
+  Thank you very much for your time. Keep on the good work :)
 
 
