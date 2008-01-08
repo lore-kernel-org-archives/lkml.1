@@ -1,202 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755790AbYAHNAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbYAHNIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755790AbYAHNAg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 08:00:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbYAHNA0
+	id S1756148AbYAHNIn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 08:08:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754342AbYAHNIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 08:00:26 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4467 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750724AbYAHNAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 08:00:25 -0500
-Date: Mon, 7 Jan 2008 15:03:49 +0000
-From: Pavel Machek <pavel@ucw.cz>
+	Tue, 8 Jan 2008 08:08:34 -0500
+Received: from mho-01-bos.mailhop.org ([63.208.196.178]:62880 "EHLO
+	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754281AbYAHNId (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 08:08:33 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 216.15.117.105
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX18ynNUNgNFuV6aiZfastvP8
+Message-ID: <478375AA.3090306@reed.com>
+Date: Tue, 08 Jan 2008 08:07:54 -0500
+From: "David P. Reed" <dpreed@reed.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.9) Gecko/20071115 Fedora/2.0.0.9-1.fc8 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
+MIME-Version: 1.0
 To: Bodo Eggert <7eggert@gmx.de>
-Cc: Ingo Oeser <ioe-lkml@rameria.de>, Bernd Schubert <bernd-schubert@gmx.de>,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: sleep before boot panic
-Message-ID: <20080107150349.GA6523@ucw.cz>
-References: <9II6K-1Pg-9@gated-at.bofh.it> <9IJ2M-3l2-3@gated-at.bofh.it> <9IJme-3Nb-13@gated-at.bofh.it> <9IKrY-5vk-15@gated-at.bofh.it> <E1JBqS9-0003Xp-Sh@be1.7eggert.dyndns.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1JBqS9-0003Xp-Sh@be1.7eggert.dyndns.org>
-User-Agent: Mutt/1.5.9i
+CC: Rene Herman <rene.herman@keyaccess.nl>, "H. Peter Anvin" <hpa@zytor.com>,
+       Christer Weinigel <christer@weinigel.se>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Paul Rolland <rol@as2917.net>,
+       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
+Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
+ I/O delay override.
+References: <9BdU5-1YW-9@gated-at.bofh.it> <9BeZN-3Gf-5@gated-at.bofh.it> <9BnTB-1As-31@gated-at.bofh.it> <9BrX4-8go-1@gated-at.bofh.it> <9BuBG-4eR-51@gated-at.bofh.it> <9BvRd-6aL-71@gated-at.bofh.it> <9GRQW-1DX-13@gated-at.bofh.it> <9GSah-23W-1@gated-at.bofh.it> <9GSDy-2GD-23@gated-at.bofh.it> <9GTpK-40d-15@gated-at.bofh.it> <9GUvy-5H2-11@gated-at.bofh.it> <9GVKU-7SS-25@gated-at.bofh.it> <E1JBxnV-00046d-CS@be1.7eggert.dyndns.org> <478281A6.1000704@zytor.com> <alpine.LSU.0.999.0801072226060.16143@be1.lrz> <4782A355.1070207@zytor.com> <alpine.LSU.0.999.0801072316440.16143@be1.lrz> <4782AED5.1060406@keyaccess.nl> <4782B4B9.2020608@zytor.com> <4782B515.3010008@keyaccess.nl> <alpine.LSU.0.999.0801081333530.12636@be1.lrz>
+In-Reply-To: <alpine.LSU.0.999.0801081333530.12636@be1.lrz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+The last time I heard of a 12 MHz bus in a PC system was in the days of 
+the PC-AT, when some clone makers sped up their buses (pre PCI!!!) in an 
+attempt to allow adapter card *memory* to run at the 12 MHz speed.
 
-> Introduce config CONFIG_SOFTPANIC
-> Enabling this option changes a hard panic on boot errors to a
-> soft panic, which does not stop the system completely.
-> You can still scroll the screen and read the messages.
-> 
-> Signed-Off-By: Bodo Eggert <7eggert@gmx.de>
+This caused so many industry-wide problems with adapter cards that 
+couldn't be installed in certain machines and still run reliably that 
+the industry learned a lesson.  That doesn't mean that LPCs don't run at 
+12 MHz, but if they do, they don't have old 8 bit punky cards plugged 
+into them for lots of practical reasons.  (I have whole drawers full of 
+such old cards, trying to figure out an environmentally responsible way 
+to get rid of them - even third world countries would be fools to make 
+machiens with them).
 
-Looks good to me... but should this be configurable? IMO we should
-just do the right thing.
-							Pavel
+I can't believe that we are not supporting today's machines correctly 
+because we are still trying to be compatible with a few (at most a 
+hundre thousand were manufactured!  Much less still functioning or 
+running Linux) machines.
 
-> diff -pruN linux-2.6.23.base/include/linux/kernel.h
-> linux-2.6.23.softpanic/include/linux/kernel.h
-> --- linux-2.6.23.base/include/linux/kernel.h    2007-10-11 14:15:39.000000000 +0200
-> +++ linux-2.6.23.softpanic/include/linux/kernel.h       2007-10-11 14:45:15.000000000
-> +0200
-> @@ -108,6 +108,12 @@ extern struct atomic_notifier_head panic
->  extern long (*panic_blink)(long time);
->  NORET_TYPE void panic(const char * fmt, ...)
->         __attribute__ ((NORET_AND format (printf, 1, 2))) __cold;
-> +#ifdef SOFTPANIC
-> +NORET_TYPE void softpanic(const char * fmt, ...)
-> +       __attribute__ ((NORET_AND format (printf, 1, 2))) __cold;
-> +#else
-> +# define softpanic(...) do { panic(__VA_ARGS__); } while (0)
-> +#endif
->  extern void oops_enter(void);
->  extern void oops_exit(void);
->  extern int oops_may_print(void);
-> diff -pruN linux-2.6.23.base/init/Kconfig linux-2.6.23.softpanic/init/Kconfig
-> --- linux-2.6.23.base/init/Kconfig      2007-10-11 14:15:42.000000000 +0200
-> +++ linux-2.6.23.softpanic/init/Kconfig 2007-10-11 15:19:07.000000000 +0200
-> @@ -441,6 +441,14 @@ config BUG
->            option for embedded systems with no facilities for reporting errors.
->            Just say Y.
->  
-> +config SOFTPANIC
-> +       bool "Enable softpanic for boot errors" if EMBEDDED
-> +       default y
-> +       help
-> +               Enabling this option changes a hard panic on boot errors to a
-> +               soft panic, which does not stop the system completely.
-> +               You can still scroll the screen and read the messages.
-> +
->  config ELF_CORE
->         default y
->         bool "Enable ELF core dumps" if EMBEDDED
-> diff -pruN linux-2.6.23.base/init/do_mounts.c
-> linux-2.6.23.softpanic/init/do_mounts.c
-> --- linux-2.6.23.base/init/do_mounts.c  2007-10-11 14:15:42.000000000 +0200
-> +++ linux-2.6.23.softpanic/init/do_mounts.c     2007-10-11 14:48:51.000000000 +0200
-> @@ -330,7 +330,7 @@ retry:
->                 printk("Please append a correct \"root=\" boot option; here are the available
-> partitions:\n");
->  
->                 printk_all_partitions();
-> -               panic("VFS: Unable to mount root fs on %s", b);
-> +               softpanic("VFS: Unable to mount root fs on %s", b);
->         }
->  
->         printk("List of all partitions:\n");
-> @@ -342,7 +342,7 @@ retry:
->  #ifdef CONFIG_BLOCK
->         __bdevname(ROOT_DEV, b);
->  #endif
-> -       panic("VFS: Unable to mount root fs on %s", b);
-> +       softpanic("VFS: Unable to mount root fs on %s", b);
->  out:
->         putname(fs_names);
->  }
-> diff -pruN linux-2.6.23.base/init/main.c linux-2.6.23.softpanic/init/main.c
-> --- linux-2.6.23.base/init/main.c       2007-10-11 14:15:42.000000000 +0200
-> +++ linux-2.6.23.softpanic/init/main.c  2007-10-11 14:40:06.000000000 +0200
-> @@ -590,7 +590,7 @@ asmlinkage void __init start_kernel(void
->          */
->         console_init();
->         if (panic_later)
-> -               panic(panic_later, panic_param);
-> +               softpanic(panic_later, panic_param);
->  
->         lockdep_info();
->  
-> @@ -807,7 +807,7 @@ static int noinline init_post(void)
->         run_init_process("/bin/init");
->         run_init_process("/bin/sh");
->  
-> -       panic("No init found.  Try passing init= option to kernel.");
-> +       softpanic("No init found.  Try passing init= option to kernel.");
->  }
->  
->  static int __init kernel_init(void * unused)
-> diff -pruN linux-2.6.23.base/kernel/panic.c
-> linux-2.6.23.softpanic/kernel/panic.c
-> --- linux-2.6.23.base/kernel/panic.c    2007-10-11 14:15:42.000000000 +0200
-> +++ linux-2.6.23.softpanic/kernel/panic.c       2007-10-11 14:53:42.000000000 +0200
-> @@ -139,7 +139,66 @@ NORET_TYPE void panic(const char * fmt, 
->         }
->  }
->  
-> +#ifdef SOFTPANIC
-> +NORET_TYPE void softpanic(const char * fmt, ...)
-> +{
-> +       long i;
-> +       static char buf[1024];
-> +       va_list args;
-> +#if defined(CONFIG_S390)
-> +        unsigned long caller = (unsigned long) __builtin_return_address(0);
-> +#endif
-> +
-> +       va_start(args, fmt);
-> +       vsnprintf(buf, sizeof(buf), fmt, args);
-> +       va_end(args);
-> +       printk(KERN_EMERG "Kernel panic - not syncing: %s\n",buf);
-> +
-> +       atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
-> +
-> +       if (!panic_blink)
-> +               panic_blink = no_blink;
-> +
-> +       if (panic_timeout > 0) {
-> +               /*
-> +                * Delay timeout seconds before rebooting the machine. 
-> +                * We can't use the "normal" timers since we just panicked..
-> +                */
-> +               printk(KERN_EMERG "Rebooting in %d seconds..",panic_timeout);
-> +               for (i = 0; i < panic_timeout*1000; ) {
-> +                       touch_nmi_watchdog();
-> +                       i += panic_blink(i);
-> +                       mdelay(1);
-> +                       i++;
-> +               }
-> +               /*      This will not be a clean reboot, with everything
-> +                *      shutting down.  But if there is a chance of
-> +                *      rebooting the system it will be rebooted.
-> +                */
-> +               kernel_restart(NULL);
-> +       }
-> +#ifdef __sparc__
-> +       {
-> +               extern int stop_a_enabled;
-> +               /* Make sure the user can actually press Stop-A (L1-A) */
-> +               stop_a_enabled = 1;
-> +               printk(KERN_EMERG "Press Stop-A (L1-A) to return to the boot prom\n");
-> +       }
-> +#endif
-> +#if defined(CONFIG_S390)
-> +        disabled_wait(caller);
-> +#endif
-> +       for (i = 0;;) {
-> +               touch_softlockup_watchdog();
-> +               i += panic_blink(i);
-> +               msleep(1);
-> +               i++;
-> +       }
-> +}
-> +#endif
-> +
->  EXPORT_SYMBOL(panic);
-> +EXPORT_SYMBOL(softpanic);
->  
->  /**
->   *     print_tainted - return a string to represent the kernel taint state.
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Now I understand that PC/104 machines and other things are very non PC 
+compatible, but are x86 processor architectures.  Do they even run x86 
+under 2.6.24?
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Perhaps the rational solution here is to declare x86 the architecture 
+for "relics" and develop a merged architecture called "modern machines" 
+to include only those PCs that have been made to work since, say, the 
+release of (cough) WIndows 2000?
+
+Bodo Eggert wrote:
+> On Tue, 8 Jan 2008, Rene Herman wrote:
+>   
+>> On 08-01-08 00:24, H. Peter Anvin wrote:
+>>     
+>>> Rene Herman wrote:
+>>>       
+>
+>   
+>>>> Is this only about the ones then left for things like legacy PIC and PIT?
+>>>> Does anyone care about just sticking in a udelay(2) (or 1) there as a
+>>>> replacement and call it a day?
+>>>>
+>>>>         
+>>> PIT is problematic because the PIT may be necessary for udelay setup.
+>>>       
+>> Yes, can initialise loops_per_jiffy conservatively. Just didn't quite get why
+>> you guys are talking about an ISA bus speed parameter.
+>>     
+>
+> If the ISA bus is below 8 MHz, we might need a longer delay. If we default
+> to the longer delay, the delay will be too long for more than 99,99 % of 
+> all systems, not counting i586+. Especially if the driver is fine-tuned to 
+> give maximum throughput, this may be bad.
+>
+> OTOH, the DOS drivers I heared about use delays and would break on 
+> underclocked ISA busses if the n * ISA_HZ delay was needed. Maybe
+> somebody having a configurable ISA bus speed and some problematic
+> chips can test it ...
+>
+>   
