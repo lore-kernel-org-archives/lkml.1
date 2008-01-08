@@ -1,52 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759878AbYAHLeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759927AbYAHLha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759878AbYAHLeE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 06:34:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbYAHLdy
+	id S1759927AbYAHLha (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 06:37:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbYAHLhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 06:33:54 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55994 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750927AbYAHLdx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 06:33:53 -0500
-Date: Tue, 8 Jan 2008 12:33:23 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Kyle McMartin <kyle@mcmartin.ca>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] call sysrq_timer_list_show from a workqueue
-Message-ID: <20080108113323.GB11083@elte.hu>
-References: <20080108063113.GA21287@fattire.cabal.ca> <20080108091742.GD27671@elte.hu> <200801082228.05218.rusty@rustcorp.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200801082228.05218.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 8 Jan 2008 06:37:21 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:51564 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751445AbYAHLhU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 06:37:20 -0500
+Message-Id: <20080108113626.895583537@szeredi.hu>
+References: <20080108113502.184459371@szeredi.hu>
+User-Agent: quilt/0.45-1
+Date: Tue, 08 Jan 2008 12:35:07 +0100
+From: Miklos Szeredi <miklos@szeredi.hu>
+To: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
+       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
+Subject: [patch 5/9] unprivileged mounts: allow unprivileged bind mounts
+Content-Disposition: inline; filename=unprivileged-mounts-allow-unprivileged-bind-mounts.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
+Allow bind mounts to unprivileged users if the following conditions are met:
 
-> +/* FIXME: Risky: returns a pointer into a module w/o lock */
+  - mountpoint is not a symlink
+  - parent mount is owned by the user
+  - the number of user mounts is below the maximum
 
-stupid question: since module unloads are so rare, why isnt this via the 
-same mechanism that CPU hotplug uses to securely unregister CPUs? I.e. 
-quiet all CPUs, disable irqs on all of them, then unlink the module. 
-This would make module unload fundamentally safe, and symbols could be 
-looked up lockless. (with the exception of crashing within NMIs, but 
-that is not lock safe anyway.)
+Unprivileged mounts imply MS_SETUSER, and will also have the "nosuid" and
+"nodev" mount flags set.
 
-Or is this a rathole for some reason?
+In particular, if mounting process doesn't have CAP_SETUID capability,
+then the "nosuid" flag will be added, and if it doesn't have CAP_MKNOD
+capability, then the "nodev" flag will be added.
 
-	Ingo
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
+
+Index: linux/fs/namespace.c
+===================================================================
+--- linux.orig/fs/namespace.c	2008-01-04 13:47:49.000000000 +0100
++++ linux/fs/namespace.c	2008-01-04 13:48:01.000000000 +0100
+@@ -487,11 +487,34 @@ static void dec_nr_user_mounts(void)
+ 	spin_unlock(&vfsmount_lock);
+ }
+ 
+-static void set_mnt_user(struct vfsmount *mnt)
++static int reserve_user_mount(void)
++{
++	int err = 0;
++
++	spin_lock(&vfsmount_lock);
++	if (nr_user_mounts >= max_user_mounts && !capable(CAP_SYS_ADMIN))
++		err = -EPERM;
++	else
++		nr_user_mounts++;
++	spin_unlock(&vfsmount_lock);
++	return err;
++}
++
++static void __set_mnt_user(struct vfsmount *mnt)
+ {
+ 	BUG_ON(mnt->mnt_flags & MNT_USER);
+ 	mnt->mnt_uid = current->fsuid;
+ 	mnt->mnt_flags |= MNT_USER;
++
++	if (!capable(CAP_SETUID))
++		mnt->mnt_flags |= MNT_NOSUID;
++	if (!capable(CAP_MKNOD))
++		mnt->mnt_flags |= MNT_NODEV;
++}
++
++static void set_mnt_user(struct vfsmount *mnt)
++{
++	__set_mnt_user(mnt);
+ 	spin_lock(&vfsmount_lock);
+ 	nr_user_mounts++;
+ 	spin_unlock(&vfsmount_lock);
+@@ -510,10 +533,16 @@ static struct vfsmount *clone_mnt(struct
+ 					int flag)
+ {
+ 	struct super_block *sb = old->mnt_sb;
+-	struct vfsmount *mnt = alloc_vfsmnt(old->mnt_devname);
++	struct vfsmount *mnt;
+ 
++	if (flag & CL_SETUSER) {
++		int err = reserve_user_mount();
++		if (err)
++			return ERR_PTR(err);
++	}
++	mnt = alloc_vfsmnt(old->mnt_devname);
+ 	if (!mnt)
+-		return ERR_PTR(-ENOMEM);
++		goto alloc_failed;
+ 
+ 	mnt->mnt_flags = old->mnt_flags;
+ 	atomic_inc(&sb->s_active);
+@@ -525,7 +554,7 @@ static struct vfsmount *clone_mnt(struct
+ 	/* don't copy the MNT_USER flag */
+ 	mnt->mnt_flags &= ~MNT_USER;
+ 	if (flag & CL_SETUSER)
+-		set_mnt_user(mnt);
++		__set_mnt_user(mnt);
+ 
+ 	if (flag & CL_SLAVE) {
+ 		list_add(&mnt->mnt_slave, &old->mnt_slave_list);
+@@ -550,6 +579,11 @@ static struct vfsmount *clone_mnt(struct
+ 		spin_unlock(&vfsmount_lock);
+ 	}
+ 	return mnt;
++
++ alloc_failed:
++	if (flag & CL_SETUSER)
++		dec_nr_user_mounts();
++	return ERR_PTR(-ENOMEM);
+ }
+ 
+ static inline void __mntput(struct vfsmount *mnt)
+@@ -986,22 +1020,26 @@ asmlinkage long sys_oldumount(char __use
+ 
+ #endif
+ 
+-static int mount_is_safe(struct nameidata *nd)
++/*
++ * Conditions for unprivileged mounts are:
++ * - mountpoint is not a symlink
++ * - mountpoint is in a mount owned by the user
++ */
++static bool permit_mount(struct nameidata *nd, int *flags)
+ {
++	struct inode *inode = nd->path.dentry->d_inode;
++
+ 	if (capable(CAP_SYS_ADMIN))
+-		return 0;
+-	return -EPERM;
+-#ifdef notyet
+-	if (S_ISLNK(nd->path.dentry->d_inode->i_mode))
+-		return -EPERM;
+-	if (nd->path.dentry->d_inode->i_mode & S_ISVTX) {
+-		if (current->uid != nd->path.dentry->d_inode->i_uid)
+-			return -EPERM;
+-	}
+-	if (vfs_permission(nd, MAY_WRITE))
+-		return -EPERM;
+-	return 0;
+-#endif
++		return true;
++
++	if (S_ISLNK(inode->i_mode))
++		return false;
++
++	if (!is_mount_owner(nd->path.mnt, current->fsuid))
++		return false;
++
++	*flags |= MS_SETUSER;
++	return true;
+ }
+ 
+ static int lives_below_in_same_fs(struct dentry *d, struct dentry *dentry)
+@@ -1245,9 +1283,10 @@ static int do_loopback(struct nameidata 
+ 	int clone_fl;
+ 	struct nameidata old_nd;
+ 	struct vfsmount *mnt = NULL;
+-	int err = mount_is_safe(nd);
+-	if (err)
+-		return err;
++	int err;
++
++	if (!permit_mount(nd, &flags))
++		return -EPERM;
+ 	if (!old_name || !*old_name)
+ 		return -EINVAL;
+ 	err = path_lookup(old_name, LOOKUP_FOLLOW, &old_nd);
+
+--
