@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754229AbYAHXSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755376AbYAHXTG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754229AbYAHXSR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 18:18:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750743AbYAHXSE
+	id S1755376AbYAHXTG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 18:19:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbYAHXSw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 18:18:04 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35122 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751371AbYAHXSD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 18:18:03 -0500
-Message-ID: <4784046B.5000004@redhat.com>
-Date: Tue, 08 Jan 2008 18:16:59 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+	Tue, 8 Jan 2008 18:18:52 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56560 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752519AbYAHXSv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 18:18:51 -0500
+Date: Tue, 8 Jan 2008 17:18:48 -0600 (CST)
+From: Brent Casavant <bcasavan@sgi.com>
+Reply-To: Brent Casavant <bcasavan@sgi.com>
+To: Tom Spink <tspink@gmail.com>
+cc: Rick Jones <rick.jones2@hp.com>, netdev@vger.kernel.org,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: AF_UNIX MSG_PEEK bug?
+In-Reply-To: <7b9198260801081453s198af7efycc7c35668c65eaf1@mail.gmail.com>
+Message-ID: <alpine.BSF.1.00.0801081716010.24286@pkunk.americas.sgi.com>
+References: <alpine.BSF.1.00.0801081556580.24286@pkunk.americas.sgi.com>  <4783FBD6.1000004@hp.com> <7b9198260801081453s198af7efycc7c35668c65eaf1@mail.gmail.com>
+User-Agent: Alpine 1.00 (BSF 882 2007-12-20)
+Organization: "Silicon Graphics, Inc."
 MIME-Version: 1.0
-To: Brice Figureau <brice+lklm@daysofwonder.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: Strange freeze on 2.6.22 (deadlock?)
-References: <49447.213.41.177.193.1199732765.squirrel@corp.daysofwonder.com>
-In-Reply-To: <49447.213.41.177.193.1199732765.squirrel@corp.daysofwonder.com>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/07/2008 02:06 PM, Brice Figureau wrote:
- 
-> Thanks for the answer.
-> I'm using whatever is the default mount option (which I think is
-> data=ordered). The only other mount option I use is nodiratime,noatime.
-> 
-> Note that a large part of the processes in D state are "waiting" in
-> __mutex_lock from generic_file_aio_write.
-> Another large part is coming from balance_dirty_pages_ratelimited_nr.
-> 
-> It seems that there was some writeback congestion to the block device.
-> All the /proc/sys/vm/* files are at their defaults.
-> 
-> This looks like if it wasn't possible to write to the block device anymore.
-> Could a block device write error (ie hardware failure) be the root cause?
-> 
-> Any other idea?
-> What should I try the next time it freezes?
+On Tue, 8 Jan 2008, Tom Spink wrote:
 
-Same bug as http://lkml.org/lkml/2007/8/1/469 ??
+> Where in the code is the message length being sent across the socket?
+
+In do_producer(), there are the following lines in the main loop:
+
+	/* Send random lengths of data */
+	messages[i].length = (rand() % MAXLEN) + sizeof(size_t);
+	iov[i].iov_len = messages[i].length;
+
+The entire "struct sockmsg" is sent across the socket, so the first
+size_t in each message contains the length of the entire message
+(including the size_t).  This size gets picked up at the
+recv(...,MSG_PEEK) line in do_consumer().
+
+Thanks,
+Brent
+
+-- 
+Brent Casavant                          All music is folk music.  I ain't
+bcasavan@sgi.com                        never heard a horse sing a song.
+Silicon Graphics, Inc.                    -- Louis Armstrong
