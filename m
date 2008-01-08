@@ -1,55 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbYAHBEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757220AbYAHBLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756823AbYAHBEf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 20:04:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754787AbYAHBE1
+	id S1757220AbYAHBLm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 20:11:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbYAHBLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 20:04:27 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:2553 "EHLO
-	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754630AbYAHBE0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 20:04:26 -0500
-Date: Mon, 07 Jan 2008 19:03:46 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: MCFG ACPI patch in git-x86 causes boot regression
-In-reply-to: <20080108010110.GB16156@one.firstfloor.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, mingo@elte.hu, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, akpm@osdl.org, rajesh.shah@intel.com,
-       greg@kroah.com
-Message-id: <4782CBF2.6030208@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <20080107224757.GA2336@basil.nowhere.org>
- <200801071452.15045.jbarnes@virtuousgeek.org> <4782B66E.8050400@shaw.ca>
- <20080108010110.GB16156@one.firstfloor.org>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Mon, 7 Jan 2008 20:11:31 -0500
+Received: from mga02.intel.com ([134.134.136.20]:40291 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750768AbYAHBLa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 20:11:30 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,255,1196668800"; 
+   d="scan'208";a="318133269"
+Message-ID: <4782CD50.90006@intel.com>
+Date: Mon, 07 Jan 2008 17:09:36 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
+MIME-Version: 1.0
+To: Jayakrishnan.Chathu@nokia.com
+CC: linux-kernel@vger.kernel.org, NetDev <netdev@vger.kernel.org>
+Subject: Re: WARNING: at kernel/softirq.c:139 local_bh_enable()
+References: <2198383E1141814486F0B881B3260CF501D6BB66@daebe103.NOE.Nokia.com>
+In-Reply-To: <2198383E1141814486F0B881B3260CF501D6BB66@daebe103.NOE.Nokia.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 08 Jan 2008 01:10:14.0888 (UTC) FILETIME=[399FDE80:01C85193]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Mon, Jan 07, 2008 at 05:31:58PM -0600, Robert Hancock wrote:
->> Jesse Barnes wrote:
+Jayakrishnan.Chathu@nokia.com wrote:
+> I am running 2.6.23 kernel on a DUAL core and QUAD core i386 boxes and
+> after everyboot, when the ethernet traffic starts i get this warning.
 > 
-> Hmm -- I didn't see Jesse's mail? 
-> 
->> I believe that such a change is in Greg KH's tree. So -mm (with both 
->> trees) would probably work.
-> 
-> Yes 2.6.24-rc6-mm1 works, but plain git-x86 does not:
-> 
-> PCI: MCFG configuration 0: base 4026531840 segment 0 buses 0 - 127
-> PCI: MCFG area at f0000000 reserved in ACPI motherboard resources
-> PCI: Using MMCONFIG at f0000000 - f7ffffff
+> All the ports in the system are e1000 and i am using the kernel e1000
+> driver.
 
-At least, I thought it was in Greg's tree, not sure now.. This is the 
-patch in -mm:
+[added netdev to the Cc:]
 
-http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc6/2.6.24-rc6-mm1/broken-out/pci-disable-decoding-during-sizing-of-bars.patch
+can you repro this with 2.6.24-rc7? What distro are you using? Is your distro
+running a link-monitoring tool of some sorts?
 
-Without this change a bunch of machines fail to boot even without the 
-MCFG change (since their MCFG was E820 reserved and so the old 
-validation check passed).
+Auke
+
+
+
+> 
+> Jan  7 22:31:00 localhost [warning] WARNING: at kernel/softirq.c:139
+> local_bh_enable() 
+> Jan  7 22:31:00 localhost [warning] [<c012bd0f>]
+> local_bh_enable+0x49/0xa9 
+> Jan  7 22:31:00 localhost [warning] [<c039ba1a>]
+> dev_queue_xmit+0x26c/0x275 
+> Jan  7 22:31:00 localhost [warning] [<c03cdf6c>] arp_xmit+0x4d/0x51 
+> Jan  7 22:31:00 localhost [warning] [<c03cd9f6>] arp_solicit+0x156/0x174
+> 
+> Jan  7 22:31:00 localhost [warning] [<c03a047f>]
+> neigh_timer_handler+0x1e0/0x224 
+> Jan  7 22:31:00 localhost [warning] [<c012f820>]
+> run_timer_softirq+0x113/0x172 
+> Jan  7 22:31:00 localhost [warning] [<c013b042>] WARNING: at
+> kernel/softirq.c:139 local_bh_enable() 
+> Jan  7 22:31:00 localhost [warning] hrtimer_interrupt+0x19c/0x1c4 
+> Jan  7 22:31:00 localhost [warning] [<c014002a>]  [<c012bd0f>]
+> local_bh_enable+0x49/0xa9 
+> Jan  7 22:31:00 localhost [warning] [<c039ba1a>]
+> dev_queue_xmit+0x26c/0x275 
+> Jan  7 22:31:00 localhost [warning] [<c03a0c05>]
+> neigh_resolve_output+0x12c/0x15e 
+> Jan  7 22:31:00 localhost [warning] [<c03a0881>]
+> neigh_update+0x246/0x2cb 
+> Jan  7 22:31:00 localhost [warning] [<c039fb21>] neigh_lookup+0xa9/0xb3 
+> Jan  7 22:31:00 localhost [warning] [<c03ce410>] arp_process+0x43c/0x477
+> 
+> Jan  7 22:31:00 localhost [warning] [<c0120b73>]
+> enqueue_task_fair+0x2d/0x30 
+> Jan  7 22:31:00 localhost [warning] tick_sched_timer+0x0/0xba 
+> Jan  7 22:31:00 localhost [warning] [<c03ce554>] arp_rcv+0x104/0x119 
+> Jan  7 22:31:00 localhost [warning] [<c03a029f>]  [<c039bda6>]
+> netif_receive_skb+0x1c5/0x1de 
+> Jan  7 22:31:00 localhost [warning] [<f897a61d>]
+> e1000_clean_rx_irq+0x40e/0x4ca [e1000] 
+> Jan  7 22:31:00 localhost [warning] [<c013bdc6>]
+> getnstimeofday+0x36/0x10c 
+> Jan  7 22:31:00 localhost [warning] neigh_timer_handler+0x0/0x224 
+> Jan  7 22:31:00 localhost [warning] [<c012be12>] __do_softirq+0x60/0xc1 
+> Jan  7 22:31:00 localhost [warning] [<f8979e34>] e1000_clean+0x74/0x119
+> [e1000] 
+> Jan  7 22:31:00 localhost [warning] [<c039bf03>]  [<c012bea4>]
+> net_rx_action+0x5a/0xd3 
+> Jan  7 22:31:00 localhost [warning] [<c012be12>] __do_softirq+0x60/0xc1 
+> Jan  7 22:31:00 localhost [warning] do_softirq+0x31/0x35 
+> Jan  7 22:31:00 localhost [warning] [<c012bea4>] do_softirq+0x31/0x35 
+> Jan  7 22:31:00 localhost [warning] [<c012bf03>] irq_exit+0x38/0x6b 
+> Jan  7 22:31:00 localhost [warning] [<c0106a1e>]  [<c012bf03>]
+> do_IRQ+0x80/0x93 
+> Jan  7 22:31:00 localhost [warning] irq_exit+0x38/0x6b 
+> Jan  7 22:31:00 localhost [warning] [<c01057b7>]
+> common_interrupt+0x23/0x28 
+> Jan  7 22:31:00 localhost [warning] [<c01600d8>]  [<c011a34d>]
+> get_swap_page+0xe7/0x215 
+> Jan  7 22:31:00 localhost [warning] [<c0103232>]
+> mwait_idle_with_hints+0x34/0x38 Jan  7 22:31:00 localhost [warning]
+> [<c0103236>] mwait_idle+0x0/0xa 
+> Jan  7 22:31:00 localhost [warning] [<c01030f2>] cpu_idle+0x98/0xb9 
+> Jan  7 22:31:00 localhost [warning] smp_apic_timer_interrupt+0x2c/0x35
+> Jan  7 22:31:00 localhost [warning] ======================= 
+> Jan  7 22:31:00 localhost [warning] [<c0105874>]
+> apic_timer_interrupt+0x28/0x30 
+> Jan  7 22:31:00 localhost [warning] [<c01600d8>]
+> get_swap_page+0xe7/0x215 
+> Jan  7 22:31:00 localhost [warning] [<c0103232>]
+> mwait_idle_with_hints+0x34/0x38 
+> Jan  7 22:31:00 localhost [warning] [<c0103236>] mwait_idle+0x0/0xa 
+> Jan  7 22:31:00 localhost [warning] [<c01030f2>] cpu_idle+0x98/0xb9 
+> Jan  7 22:31:00 localhost [warning] =======================
+> 
+> 
+> Thanks
+> Jayakrishnan Chathu
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
