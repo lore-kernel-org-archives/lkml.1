@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757443AbYAHHoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755840AbYAHHsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757443AbYAHHoz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 02:44:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750716AbYAHHoq
+	id S1755840AbYAHHsZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 02:48:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbYAHHsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 02:44:46 -0500
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:31330 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750727AbYAHHop (ORCPT
+	Tue, 8 Jan 2008 02:48:18 -0500
+Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:57607 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750711AbYAHHsR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 02:44:45 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=GzGrCvG3XTv6jytxREpjNHkDsvVv/fLInWayQHJIxCvRZj+QVJZ70svdT4oKJ0uPQs6/PyEOfSrdNsKU4rpUqZuWHAU0RzZIcHTAJgutWdqfqsjFid73WvrE0M9gESOdNByues+pxbzVmne/exYjFgIzfoG9RLP77cfiLx+4Ojo=  ;
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: free_pages_check
-Date: Tue, 8 Jan 2008 18:44:22 +1100
-User-Agent: KMail/1.9.5
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Adrian Bunk <bunk@stusta.de>, LKML <linux-kernel@vger.kernel.org>
-References: <86802c440801071843p583f390as53f8b600622b93b2@mail.gmail.com> <200801081434.14723.nickpiggin@yahoo.com.au> <47830DCF.3080306@zytor.com>
-In-Reply-To: <47830DCF.3080306@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 8 Jan 2008 02:48:17 -0500
+Date: Tue, 8 Jan 2008 08:48:13 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, bunk@kernel.org,
+       clameter@sgi.com, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: Linux 2.6.24-rc7 Build-Failure at
+ __you_cannot_kmalloc_that_much
+Message-ID: <20080108084813.7e08f59b@hyperion.delvare>
+In-Reply-To: <478200A4.4090707@linux.vnet.ibm.com>
+References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org>
+	<478200A4.4090707@linux.vnet.ibm.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801081844.22448.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 08 January 2008 16:44, H. Peter Anvin wrote:
-> Nick Piggin wrote:
-> > On Tuesday 08 January 2008 13:43, Yinghai Lu wrote:
-> >> wonder why free_pages_check mm/page_alloc.c is using bit OR than logical
-> >> OR
-> >>
-> >> @@ -450,9 +450,9 @@ static inline void __free_one_page(struc
-> >>
-> >>  static inline int free_pages_check(struct page *page)
-> >>  {
-> >> -       if (unlikely(page_mapcount(page) |
-> >> -               (page->mapping != NULL)  |
-> >> -               (page_count(page) != 0)  |
-> >> +       if (unlikely(page_mapcount(page) ||
-> >> +               (page->mapping != NULL)  ||
-> >> +               (page_count(page) != 0)  ||
-> >>                 (page->flags & (
-> >>                         1 << PG_lru     |
-> >>                         1 << PG_private |
-> >
-> > Because the positive case is extremely rare, so there is no benefit (nor
-> > any correctness requirement) for short-circuit evaluation, and we don't
-> > want to have all the branches that it involves. I think it is 3 more
-> > conditional jumps.
->
-> Depends on how smart the compiler is.  If the page_() functions are
-> inlines or macros, there is only one pointer reference involved and it
-> should be able to do that transformation.  Whether or not gcc is that
-> smart is another matter.
+On Mon, 07 Jan 2008 16:06:20 +0530, Kamalesh Babulal wrote:
+> The defconfig make fails on x86_64 (AMD box) with following error
+> 
+>   CHK     include/linux/utsrelease.h
+>   CALL    scripts/checksyscalls.sh
+>   CHK     include/linux/compile.h
+>   GEN     .version
+>   CHK     include/linux/compile.h
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> drivers/built-in.o(.init.text+0x8d76): In function `dmi_id_init':
+> : undefined reference to `__you_cannot_kmalloc_that_much'
+> make: *** [.tmp_vmlinux1] Error 1
+> 
+> 
+> # gcc --version
+> gcc (GCC) 3.2.3 20030502 (Red Hat Linux 3.2.3-59)
+> 
+> This was reported by Adrian Bunk http://lkml.org/lkml/2007/12/1/39
 
-Mine is not.
+And by myself long before that...
+http://lkml.org/lkml/2007/10/1/308
+
+Since then I have had a private report that upgrading libtool would
+solve the issue, but I have to admit I'm a bit skeptical, as I don't
+quite get how libtool would be involved in the kernel building process
+at all.
+
+-- 
+Jean Delvare
