@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757261AbYAHIP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbYAHIQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757261AbYAHIP0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 03:15:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755346AbYAHIPP
+	id S1757938AbYAHIQR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 03:16:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757321AbYAHIQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 03:15:15 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:17188 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754433AbYAHIPO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 03:15:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hLTNH2pJTZfrhf2K+FP4w4p1o0RdCJSHB086IvFVzM0mlWlWXPWvQbfmCcDKHnkyyMoNeReqtVsGMXgp5FU/5I1eRV528ne1Ar4Qh1JUeZoKVj9oURrVvufqVVjtmKHLkDy0ih/LS5Jo/H+TzBBS2hiGvkmICq/SOWXDObk5S7o=
-Message-ID: <86802c440801080015g4e3abe86s53b8af11e0074eb6@mail.gmail.com>
-Date: Tue, 8 Jan 2008 00:15:11 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Christoph Lameter" <clameter@sgi.com>
-Subject: Re: kexec fail
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0801072150050.28773@schroedinger.engr.sgi.com>
+	Tue, 8 Jan 2008 03:16:04 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39655 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755346AbYAHIQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 03:16:01 -0500
+Date: Tue, 8 Jan 2008 09:15:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Andi Kleen <andi@firstfloor.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org, akpm@osdl.org,
+       rajesh.shah@intel.com, greg@kroah.com
+Subject: Re: MCFG ACPI patch in git-x86 causes boot regression
+Message-ID: <20080108081543.GF31838@elte.hu>
+References: <20080107224757.GA2336@basil.nowhere.org> <200801071452.15045.jbarnes@virtuousgeek.org> <4782B66E.8050400@shaw.ca> <20080108010110.GB16156@one.firstfloor.org> <4782CBF2.6030208@shaw.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <86802c440801071837q1d6d63ewf095c9b497b33785@mail.gmail.com>
-	 <Pine.LNX.4.64.0801072150050.28773@schroedinger.engr.sgi.com>
+In-Reply-To: <4782CBF2.6030208@shaw.ca>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 7, 2008 9:50 PM, Christoph Lameter <clameter@sgi.com> wrote:
-> On Mon, 7 Jan 2008, Yinghai Lu wrote:
->
-> > try to kexec 2.6.23 from RHEL 5.1, will get
-> > Your BIOS doesn't leave a aperture memory hole
-> > Please enable the IOMMU option in the BIOS setup
-> > This costs you 64 MB of RAM ======> reboot
-> >
-> > but 2.6.24-rc7 kexec 2.6.24-rc7 is ok.
->
-> BUG in 2.6.23 kexec?
->
->
 
-yeah, that is more worse. it will cause reboot.
+* Robert Hancock <hancockr@shaw.ca> wrote:
 
-YH
+> At least, I thought it was in Greg's tree, not sure now.. This is the 
+> patch in -mm:
+>
+> http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc6/2.6.24-rc6-mm1/broken-out/pci-disable-decoding-during-sizing-of-bars.patch
+>
+> Without this change a bunch of machines fail to boot even without the 
+> MCFG change (since their MCFG was E820 reserved and so the old 
+> validation check passed).
+
+Andi, can you confirm that your box boots fine with that patch applied?
+
+	Ingo
