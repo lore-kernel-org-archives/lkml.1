@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754875AbYAHXU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754857AbYAHXXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754875AbYAHXU3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 18:20:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbYAHXUS
+	id S1754857AbYAHXXc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 18:23:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbYAHXXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 18:20:18 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56622 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751497AbYAHXUQ (ORCPT
+	Tue, 8 Jan 2008 18:23:25 -0500
+Received: from mail.gmx.net ([213.165.64.20]:54974 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752163AbYAHXXY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 18:20:16 -0500
-Date: Tue, 8 Jan 2008 17:20:15 -0600 (CST)
-From: Brent Casavant <bcasavan@sgi.com>
-Reply-To: Brent Casavant <bcasavan@sgi.com>
-To: Rick Jones <rick.jones2@hp.com>
-cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
+	Tue, 8 Jan 2008 18:23:24 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1/2lgogUS72DlAY+t5wraDhYUZuAE/OrUyNaOgJEg
+	x+5dFpmbip+zh7
+Date: Wed, 9 Jan 2008 00:23:24 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-mtd@lists.infradead.org,
        linux-kernel@vger.kernel.org
-Subject: Re: AF_UNIX MSG_PEEK bug?
-In-Reply-To: <4783FBD6.1000004@hp.com>
-Message-ID: <alpine.BSF.1.00.0801081702370.24286@pkunk.americas.sgi.com>
-References: <alpine.BSF.1.00.0801081556580.24286@pkunk.americas.sgi.com> <4783FBD6.1000004@hp.com>
-User-Agent: Alpine 1.00 (BSF 882 2007-12-20)
-Organization: "Silicon Graphics, Inc."
+Subject: Re: [PATCH] Claim maintainership for block2mtd and update email
+ addresses
+In-Reply-To: <20080108010656.GA10627@lazybastard.org>
+Message-ID: <Pine.LNX.4.64.0801090016570.10908@axis700.grange>
+References: <20080106135600.GB3120@lazybastard.org>
+ <20080107152300.2ed7cddb.akpm@linux-foundation.org> <20080108010656.GA10627@lazybastard.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Jan 2008, Rick Jones wrote:
+On Tue, 8 Jan 2008, Jörn Engel wrote:
 
-> Potential bugs notwithstanding, given that this is a STREAM socket, and as
-> such shouldn't (I hope, or I'm eating toes for dinner again) have side effects
-> like tossing the rest of a datagram, why are you using MSG_PEEK?  Why not
-> simply read the N bytes of the message that will have the message length with
-> a normal read/recv, and then read that many bytes in the next call?
+> I'm happy if people spend effort and make unicode work.  Until then I'll
+> semi-officially change my name to "Joern" and keep collecting unusual
+> specimens.
 
-That's entirely reasonable, and probably a worthwhile change to make.
-But, as you say, it doesn't change whether or not this is a bug in
-the MSG_PEEK code.
+Just wondering - nothing personal at all. What's the official plan for 
+this - do we want (when utf8 works) to use utf8 codes for symbols only for 
+languages mostly based on ASCII, like iso-8859-15, or for all? Would we, 
+for example, then also write Cyrillic names in utf-8 and every other 
+alphabet for that matter? Didn't find anything under Documentation about 
+that. Maybe we want to document it somewhere? Wasn't C-sources originally 
+supposed to be ASCII? So, what we use in sources, what under Documentation 
+or in MAINTAINERS may be different matters?
 
-With a small bit of complication I certainly can do what you suggest.
-
-The initial reasoning was that this made it easy to handle the case where
-the caller of the library routine (my code which stumbled on this was
-part of a small library I wrote as part of the application) did not supply
-a sufficiently sized buffer for reception of the next message.  The "easy"
-way to do this was a MSG_PEEK to validate the buffer size against the
-message size, followed by a regular recv() if the buffer is large enough.
-To do what you suggest (which effectively works around the bug) is certainly
-possible, but also requires maintaining state between calls to the
-"get message" routine, as I need to track whether or not the size has already
-been read from the next message on the stream socket.
-
-The change isn't terribly difficult, but wasn't the initial idea.
-
-Plus it's always good to flush a bug out of hiding, right? ;)
-
-Brent
-
--- 
-Brent Casavant                          All music is folk music.  I ain't
-bcasavan@sgi.com                        never heard a horse sing a song.
-Silicon Graphics, Inc.                    -- Louis Armstrong
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
