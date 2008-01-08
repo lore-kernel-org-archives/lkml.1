@@ -1,101 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbYAHDlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755838AbYAHDoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755416AbYAHDlY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 22:41:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbYAHDlQ
+	id S1755838AbYAHDoR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 22:44:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbYAHDoH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 22:41:16 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:38074 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752777AbYAHDlP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 22:41:15 -0500
-Subject: Re: [Fwd: Re: [PATCH 0/5]PCI: x86 MMCONFIG]
-From: Tony Camuso <tcamuso@redhat.com>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Matthew Wilcox <matthew@wil.cx>, Loic Prylli <loic@myri.com>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       Nagananda Chumbalkar <nagananda.chumbalkar@hp.com>,
-       Pat Schoeller <patrick.schoeller@hp.com>
-In-Reply-To: <20071220195021.GA427@jurassic.park.msu.ru>
-References: <476A5FD0.4010804@redhat.com> <20071220172205.GB5636@suse.de>
-	 <20071220173528.GE29690@parisc-linux.org> <476AAE99.7090301@redhat.com>
-	 <20071220181603.GF29690@parisc-linux.org> <476AB920.7040604@myri.com>
-	 <476ABCBF.8090006@redhat.com> <20071220190833.GH29690@parisc-linux.org>
-	 <20071220195021.GA427@jurassic.park.msu.ru>
-Content-Type: text/plain
-Date: Mon, 07 Jan 2008 22:41:00 -0500
-Message-Id: <1199763660.16420.119.camel@dhcp83-188.boston.redhat.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+	Mon, 7 Jan 2008 22:44:07 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:48781 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751902AbYAHDoG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 22:44:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=gFJwa9yfh1dTCbOqghsVs2jbsp7sgo3q1AXb8G4i8A4L7IrMhBIDKQcF+vaBNNxYKqMfdyijgh9/cCUMHH03X+EBlsqRYuDKA6E/j6Ot1HIkV2eD71KidiU1GwixFwcTXLvM/8x74z8Op+XyngiZpU/gWcD4DPjj/6BQIGaqtCY=
+Message-ID: <4782F180.7000104@gmail.com>
+Date: Tue, 08 Jan 2008 06:44:00 +0300
+From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Organization: DmVo Home
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
+MIME-Version: 1.0
+To: ralf@linux-mips.org, linux-mips@linux-mips.org
+CC: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [BUG][PATCH] fix broken software reset for Malta board
+Content-Type: text/plain; charset=KOI8-R
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-12-20 at 22:50 +0300, Ivan Kokshaysky wrote:
+From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
 
-> Use type 1 just for the first 64 bytes and tg3 will be happy. All we need
-> is to avoid touching BARs with mmconfig.
-> 
-> Ivan.
+I noticed that the commit f197465384bf7ef1af184c2ed1a4e268911a91e3
+(MIPS Tech: Get rid of volatile in core code) broke the software
+reset functionality for MIPS Malta boards in big-endian mode.
 
-I've tried Ivan's suggestion, and it works. 
+According to the MIPS Malta board user's manual, writing the magic
+32-bit GORESET value into the SOFTRES register initiates board soft
+reset. My experimentation has shown that the endianness of the GORESET
+integer should thereby be the same as the endianness, which has been
+set for the CPU itself. The writew() function used to write the magic
+value in the code introduced by the commit mentioned above, however,
+swaps bytes for big-endian kernels and transfers 16 bits instead of 32.
 
-The patch is appended below. 
+The patch below replaces the writew() function by the __raw_writel()
+routine, which leaves the byte order intact and transfers the whole
+MIPS machine word. Trivial code cleanup (replacing spaces by a tab
+and cutting oversized lines to make checkpatch.pl happy) is also
+included.
 
-My question is, do we want to incorporate this full-time upstream?
+The patch was tested using a Malta evaluation board running in both
+BE and LE modes. For both modes, software reset was fully functional
+after the change.
 
-It would fix a lot of existing and potential problems, and the cost
-is very small. 
+P.S. I suspect that the same commit broke the "standby" functionality
+for MIPS Atlas boards. However, I did not touch the Atlas code as I
+don't have such board at my disposal and also because the linux-mips.org
+Web site claims that Atlas support is scheduled for removal.
 
-Regards,
-Tony
+Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
 
-diff --git a/arch/x86/pci/mmconfig_32.c b/arch/x86/pci/mmconfig_32.c
-index 1bf5816..42e7d4a 100644
---- a/arch/x86/pci/mmconfig_32.c
-+++ b/arch/x86/pci/mmconfig_32.c
-@@ -73,7 +73,8 @@ static int pci_mmcfg_read(unsigned int seg, unsigned int bus,
- 	}
+---
+diff --git a/arch/mips/mips-boards/generic/reset.c b/arch/mips/mips-boards/generic/reset.c
+index 7a1bb51..583d468 100644
+--- a/arch/mips/mips-boards/generic/reset.c
++++ b/arch/mips/mips-boards/generic/reset.c
+@@ -39,16 +39,18 @@ static void atlas_machine_power_off(void);
  
- 	base = get_base_addr(seg, bus, devfn);
--	if (!base)
-+	if ((!addr) || (reg < 0x40))
-+
- 		return pci_conf1_read(seg,bus,devfn,reg,len,value);
+ static void mips_machine_restart(char *command)
+ {
+-	unsigned int __iomem *softres_reg = ioremap(SOFTRES_REG, sizeof(unsigned int));
++	unsigned int __iomem *softres_reg =
++		ioremap(SOFTRES_REG, sizeof(unsigned int));
  
- 	spin_lock_irqsave(&pci_config_lock, flags);
-@@ -106,7 +107,7 @@ static int pci_mmcfg_write(unsigned int seg, unsigned int bus,
- 		return -EINVAL;
+-	writew(GORESET, softres_reg);
++	__raw_writel(GORESET, softres_reg);
+ }
  
- 	base = get_base_addr(seg, bus, devfn);
--	if (!base)
-+	if ((!addr) || (reg < 0x40))
- 		return pci_conf1_write(seg,bus,devfn,reg,len,value);
+ static void mips_machine_halt(void)
+ {
+-        unsigned int __iomem *softres_reg = ioremap(SOFTRES_REG, sizeof(unsigned int));
++	unsigned int __iomem *softres_reg =
++		ioremap(SOFTRES_REG, sizeof(unsigned int));
  
- 	spin_lock_irqsave(&pci_config_lock, flags);
-diff --git a/arch/x86/pci/mmconfig_64.c b/arch/x86/pci/mmconfig_64.c
-index 4095e4d..4ad1fcb 100644
---- a/arch/x86/pci/mmconfig_64.c
-+++ b/arch/x86/pci/mmconfig_64.c
-@@ -61,7 +61,7 @@ static int pci_mmcfg_read(unsigned int seg, unsigned int bus,
- 	}
+-	writew(GORESET, softres_reg);
++	__raw_writel(GORESET, softres_reg);
+ }
  
- 	addr = pci_dev_base(seg, bus, devfn);
--	if (!addr)
-+	if ((!addr) || (reg < 0x40))
- 		return pci_conf1_read(seg,bus,devfn,reg,len,value);
- 
- 	switch (len) {
-@@ -89,7 +89,7 @@ static int pci_mmcfg_write(unsigned int seg, unsigned int bus,
- 		return -EINVAL;
- 
- 	addr = pci_dev_base(seg, bus, devfn);
--	if (!addr)
-+	if ((!addr) || (reg < 0x40))
- 		return pci_conf1_write(seg,bus,devfn,reg,len,value);
- 
- 	switch (len) {
-
-
+ #if defined(CONFIG_MIPS_ATLAS)
