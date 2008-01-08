@@ -1,80 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752373AbYAHKRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753385AbYAHKRo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752373AbYAHKRW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 05:17:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750857AbYAHKRN
+	id S1753385AbYAHKRo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 05:17:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbYAHKRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 05:17:13 -0500
-Received: from mga02.intel.com ([134.134.136.20]:54843 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750837AbYAHKRL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 05:17:11 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,257,1196668800"; 
-   d="scan'208";a="251011655"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 8 Jan 2008 05:17:34 -0500
+Received: from styx.suse.cz ([82.119.242.94]:55860 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750857AbYAHKRd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 05:17:33 -0500
+Date: Tue, 8 Jan 2008 11:17:32 +0100
+From: Jan Kara <jack@suse.cz>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Ben Fennema <bfennema@falcon.csc.calpoly.edu>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 4/7] udf: replace loops coded with goto to real loops
+Message-ID: <20080108101732.GB17794@duck.suse.cz>
+References: <1199582513-7915-1-git-send-email-marcin.slusarz@gmail.com> <1199582513-7915-4-git-send-email-marcin.slusarz@gmail.com> <20080107144821.GK12589@duck.suse.cz> <20080107210955.GC22144@joi>
 MIME-Version: 1.0
-Subject: RE: [patch 1/2] x86, ptrace: add version and last remaining sizeto status command
-Date: Tue, 8 Jan 2008 10:17:05 -0000
-Message-ID: <029E5BE7F699594398CA44E3DDF55444012EB6BB@swsmsx413.ger.corp.intel.com>
-In-Reply-To: <20080108095030.GI27671@elte.hu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch 1/2] x86, ptrace: add version and last remaining sizeto status command
-thread-index: AchR3E+a0UYp23/WT0a1SzWu1+gPJwAAD33w
-References: <20080107133346.A11643@sedona.ch.intel.com> <20080108095030.GI27671@elte.hu>
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: <ak@suse.de>, <hpa@zytor.com>, <linux-kernel@vger.kernel.org>,
-       <tglx@linutronix.de>, <markus.t.metzger@gmail.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, <roland@redhat.com>,
-       <akpm@linux-foundation.org>, <mtk.manpages@gmail.com>,
-       "Ulrich Drepper" <drepper@redhat.com>
-X-OriginalArrivalTime: 08 Jan 2008 10:17:06.0003 (UTC) FILETIME=[9E92B230:01C851DF]
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080107210955.GC22144@joi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Ingo Molnar [mailto:mingo@elte.hu] 
->Sent: Dienstag, 8. Januar 2008 10:50
+On Mon 07-01-08 22:10:01, Marcin Slusarz wrote:
+> On Mon, Jan 07, 2008 at 03:48:21PM +0100, Jan Kara wrote:
+> > On Sun 06-01-08 02:21:50, marcin.slusarz@gmail.com wrote:
+> > > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> >   I'm not sure if this improves readability in general. If the code is
+> > really a loop in nature, then we should code it using do {} while but in
+> > case we loop back just in case of some error (as seems to be the case in
+> > udf_bitmap_new_block()), then IMHO goto is more explanative. So at least
+> > that one case I'd leave as is.
+> Why do you think it's an error?
+  There is code:
 
->please dont use shorts. Lets just us bts_size and no version 
->at all, ok? 
+          if (!udf_clear_bit(bit, bh->b_data)) {
+                udf_debug("bit already cleared for block %d\n", bit);
+                goto repeat;
+        }
+  Now if this happens, it's a bug AFAICS because we have been searching for
+a free block and we hold s_alloc_mutex and hence we should not race with
+any other allocation.
 
-OK.
-
-We need to be careful to add the positive and negative flag for new
-features. Otherwise, we cannot distinguish between the default and the
-absence of that feature.
-
->and while at it, how about using u32/u64 for the fields (that's how we 
-
-OK.
-
->expose ABIs, even if we know that 'unsigned int' is always 32-bit on 
->x86), and add support for COMPAT as well?
-
-COMPAT should already work.
-
-regards,
-markus.
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
