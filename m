@@ -1,49 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758805AbYAHQLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbYAHQNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758805AbYAHQLx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 11:11:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYAHQLo
+	id S1754628AbYAHQNW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 11:13:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbYAHQNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 11:11:44 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:51111 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752024AbYAHQLn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 11:11:43 -0500
-Date: Tue, 8 Jan 2008 17:14:09 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Robert Hancock <hancockr@shaw.ca>, Andi Kleen <andi@firstfloor.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, akpm@osdl.org, rajesh.shah@intel.com,
-       greg@kroah.com
-Subject: Re: MCFG ACPI patch in git-x86 causes boot regression
-Message-ID: <20080108161409.GB31504@one.firstfloor.org>
-References: <20080107224757.GA2336@basil.nowhere.org> <200801071452.15045.jbarnes@virtuousgeek.org> <4782B66E.8050400@shaw.ca> <20080108010110.GB16156@one.firstfloor.org> <4782CBF2.6030208@shaw.ca> <20080108081543.GF31838@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080108081543.GF31838@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 8 Jan 2008 11:13:14 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:33384 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750918AbYAHQNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 11:13:13 -0500
+Message-ID: <4783A10F.1080604@redhat.com>
+Date: Tue, 08 Jan 2008 11:13:03 -0500
+From: Peter Staubach <staubach@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071018)
+MIME-Version: 1.0
+To: Jeff Layton <jlayton@redhat.com>
+CC: Neil Brown <neilb@suse.de>, akpm@linux-foundation.org,
+       linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/6] NLM: Add reference counting to lockd
+References: <1199534542-3384-1-git-send-email-jlayton@redhat.com>	<1199534542-3384-2-git-send-email-jlayton@redhat.com>	<1199534542-3384-3-git-send-email-jlayton@redhat.com>	<1199534542-3384-4-git-send-email-jlayton@redhat.com>	<1199534542-3384-5-git-send-email-jlayton@redhat.com>	<1199534542-3384-6-git-send-email-jlayton@redhat.com>	<1199534542-3384-7-git-send-email-jlayton@redhat.com>	<18307.7241.831689.998668@notabene.brown> <20080108082603.089718fc@tleilax.poochiereds.net>
+In-Reply-To: <20080108082603.089718fc@tleilax.poochiereds.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 08, 2008 at 09:15:43AM +0100, Ingo Molnar wrote:
-> 
-> * Robert Hancock <hancockr@shaw.ca> wrote:
-> 
-> > At least, I thought it was in Greg's tree, not sure now.. This is the 
-> > patch in -mm:
-> >
-> > http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc6/2.6.24-rc6-mm1/broken-out/pci-disable-decoding-during-sizing-of-bars.patch
-> >
-> > Without this change a bunch of machines fail to boot even without the 
-> > MCFG change (since their MCFG was E820 reserved and so the old 
-> > validation check passed).
-> 
-> Andi, can you confirm that your box boots fine with that patch applied?
+Jeff Layton wrote:
+> On Tue, 8 Jan 2008 17:46:33 +1100
+> Neil Brown <neilb@suse.de> wrote:
+>
+> The comments about patch 5/6 seem sane. I'll plan to incorporate them
+> in the respin...
+>
+>   
+>> On Saturday January 5, jlayton@redhat.com wrote:
+>>     
+>>> @@ -357,7 +375,18 @@ lockd_down(void)
+>>>  		goto out;
+>>>  	}
+>>>  	warned = 0;
+>>> -	kthread_stop(nlmsvc_task);
+>>> +	if (atomic_sub_return(1, &nlmsvc_ref) != 0)
+>>> +		printk(KERN_WARNING "lockd_down: lockd is waiting
+>>> for "
+>>> +			"outstanding requests to complete before
+>>> exiting.\n");
+>>>       
+>> Why not "atomic_dec_and_test" ??
+>>
+>>     
+>
+> Temporary amnesia? :-) I'll change that, atomic_dec_and_test will be
+> clearer.
+>
+>   
+>>> +
+>>> +	/*
+>>> +	 * Sending a signal is necessary here. If we get to this
+>>> point and
+>>> +	 * nlm_blocked isn't empty then lockd may be held hostage
+>>> by clients
+>>> +	 * that are still blocking. Sending the signal makes sure
+>>> that lockd
+>>> +	 * invalidates all of its locks so that it's just waiting
+>>> on RPC
+>>> +	 * callbacks to complete
+>>> +	 */
+>>> +	kill_proc(nlmsvc_task->pid, SIGKILL, 1);
+>>>       
+>> The previous patch removes a kill_proc(... SIGKILL),  this one adds it
+>> back.
+>> That makes me wonder if the intermediate state is 'correct'.
+>>
+>> But I also wonder what "correct" means.
+>> Do we want all locks to be dropped when the last nfsd thread dies?
+>> The answer is presumably either "yes" or "no".
+>> If "yes", then we don't have that because if there are any NFS mounts
+>> active, lockd will not be killed.
+>> If "no", then we don't want this kill_proc here.
+>>
+>> The comment in lockd() which currently reads:
+>>
+>> 	/*
+>> 	 * The main request loop. We don't terminate until the last
+>> 	 * NFS mount or NFS daemon has gone away, and we've been sent
+>> a
+>> 	 * signal, or else another process has taken over our job.
+>> 	 */
+>>
+>> suggests that someone once thought that lockd could hang around after
+>> all nfsd threads and nfs mounts had gone, but I don't think it does.
+>>
+>> We really should think this through and get it right, because if lockd
+>> ever drops it's locks, then we really need to make sure sm_notify gets
+>> run.  So it needs to be a well defined event.
+>>
+>> Thoughts?
+>>
+>>     
+>
+> This is the part I've been struggling with the most -- defining what
+> proper behavior should be when lockd is restarted. As you point out,
+> restarting lockd without doing a sm_notify could be bad news for data
+> integrity.
+>
+> Then again, we'd like someone to be able to shut down the NFS "service"
+> and be able to unmount underlying filesystems without jumping through
+> special hoops....
+>
+> Overall, I think I'd vote "yes". We need to drop locks when the last
+> nfsd goes down. If userspace brings down nfsd, then it's userspace's
+> responsibility to make sure that a sm_notify is sent when nfsd and lockd
+> are restarted.
+>   
 
-Yes it does.
+I would vote for the simplest possible model that makes sense.
+We need a simple model for admins as well as a simple model
+which is easy to implement in as bug free way as possible.  The
+trick is not making it too simple because that can cost
+performance, but not making it too complicated to implement
+reasonably and for admins to be able to figure out.
 
--Andi
+So, I would vote for "yes" as well.  That will yield an
+architecture where we can shutdown systems cleanly and will
+be easy to understand when locks for clients exist and when
+they do not.
+
+    Thanx...
+
+       ps
+
+
+
+> As a side note, I'm not thrilled with this design that mixes signals
+> and kthreads, but didn't see another way to do this. I'm open to
+> suggestions if anyone has them...
+>
+>   
+>> Also, it is sad that the inc/dec of nlmsvc_ref is called in somewhat
+>> non-obvious ways.
+>> e.g.
+>>
+>>     
+>>> +	if (!nlmsvc_users && error)
+>>> +		atomic_dec(&nlmsvc_ref);
+>>>       
+>> and
+>>
+>>     
+>>> +	if (list_empty(&nlm_blocked))
+>>> +		atomic_inc(&nlmsvc_ref);
+>>> +
+>>>  	if (list_empty(&block->b_list)) {
+>>>  		kref_get(&block->b_count);
+>>>  	} else {
+>>>       
+>> where if we moved the atomic_inc a little bit later next to the
+>> "list_add_tail" (which seems to make more sense) it would actually be
+>> wrong... But I think that code is correct as it is - just non-obvious.
+>>
+>>     
+>
+> The nlmsvc_ref logic is pretty convoluted, unfortunately. I'll plan to
+> add some comments to clarify what I'm doing there.
+>
+> Thanks for the review, Neil. I'll see if I can get a new patchset done
+> in the next few days.
+>
+> Cheers,
+>   
+
