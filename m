@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbYAHGwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756721AbYAHGyB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756760AbYAHGwa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 01:52:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbYAHGwW
+	id S1756721AbYAHGyB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 01:54:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbYAHGxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 01:52:22 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:45468 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753198AbYAHGwV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 01:52:21 -0500
-Message-ID: <47831D97.7040908@zytor.com>
-Date: Mon, 07 Jan 2008 22:52:07 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 8 Jan 2008 01:53:54 -0500
+Received: from smurf.noris.de ([192.109.102.42]:54898 "EHLO smurf.noris.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752407AbYAHGxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 01:53:53 -0500
+X-Greylist: delayed 1561 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Jan 2008 01:53:53 EST
+Date: Tue, 8 Jan 2008 07:27:39 +0100
+From: Matthias Urlichs <smurf@smurf.noris.de>
+To: =?utf-8?B?5byg6Z+h5q2m?= <zhangweiwu@realss.com>
+Cc: linux-kernel@vger.kernel.org, hugh@blemings.org
+Subject: Re: Huawei EC321 CDMA PCCARD support broken
+Message-ID: <20080108062739.GO22955@kiste.smurf.noris.de>
+References: <1199753931.6093.7.camel@Cruella>
 MIME-Version: 1.0
-To: Ingo Oeser <ioe-lkml@rameria.de>
-CC: Andi Kleen <andi@firstfloor.org>, Bernd Schubert <bernd-schubert@gmx.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: sleep before boot panic
-References: <200801061908.43010.bernd-schubert@gmx.de> <p731w8ts70k.fsf@bingen.suse.de> <200801080717.03467.ioe-lkml@rameria.de>
-In-Reply-To: <200801080717.03467.ioe-lkml@rameria.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1199753931.6093.7.camel@Cruella>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Smurf-Spam-Score: -2.6 (--)
+X-Smurf-Whitelist: +relay_from_hosts
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Oeser wrote:
-> On Monday 07 January 2008, Andi Kleen wrote:
->> Bernd Schubert <bernd-schubert@gmx.de> writes:
->>
->>> Hi,
->>>
->>> I just switched to libata (pata) on my laptop and the immediate panic made it 
->>> impossible to figure out why my boot partition wasn't available.
->>> After applying this little patch I could check boot printk output and then saw 
->>> everything was properly recognized and only scsi-disk support was missing.
->> The correct fix would be to make scroll back (and sysrq) still work
->> after panic.  It's a little more complicated, but possible (essentially
->> it needs a polled keyboard handler)
+Hi,
+> A lot of google searches reflect that, the latest kernel supporting
+> Huawei EC321 CDMA PCCARD is 2.6.17. My version (2.6.22-14 on Ubuntu)
+> doesn't work.
 > 
-> Customer: "This system could not find the root fs."
-> Support: "Oh, yeah, just connect a (USB-) keyboard and scroll back."
-> 
-> Hmm, device detection works after panic?
-> 
-> I really like the "soft" panic better, where you still can operate the 
-> kernel debugging features, but just have no user space supporting it.
-> 
+This is probably because ...
 
-Of course, if we'd been using kinit, "soft panic" would have been done 
-exclusively in userspace...
+> [ 3804.140000] /build/buildd/linux-source-2.6.22-2.6.22/drivers/usb/serial/usb-serial.c: USB Serial support registered for pl2303
 
-	-hpa
+... the card is in fact recognized by the pl2303 driver instead of the
+Option driver. This driver may do something stupid.
+
+Please try this (as root):
+# rmmod plc2303
+# modprobe option
+
+If the card still does not work, type
+# lsusb
+
+and send me that.
+
+-- 
+Matthias Urlichs   |   {M:U} IT Design @ m-u-it.de   |  smurf@smurf.noris.de
+Disclaimer: The quote was selected randomly. Really. | http://smurf.noris.de
+ - -
+Okay, who stopped the payment on my reality check?
