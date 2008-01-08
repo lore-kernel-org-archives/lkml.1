@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752091AbYAHT7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754879AbYAHUAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752091AbYAHT7s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 14:59:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbYAHT7k
+	id S1754879AbYAHUAz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 15:00:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbYAHUAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 14:59:40 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:40745 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751860AbYAHT7j (ORCPT
+	Tue, 8 Jan 2008 15:00:46 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:46502 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751289AbYAHUAq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 14:59:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=ms0wMxH1K+MySkeGmn9Ucc1gb0iyqUXbXhl1yoPnBgxi5avAWXcGvtc1KpGINulUFsrpyBHYPgFO2ZDKFJRu8h9fRHgSAWy2Jw5KZDVGf2XsvC5il/0N6ZC0Y229MNAZMLsQwrROTfCxv3tvf95xIbec6XvjLGZ3NZil5bL2BOE=
-Date: Tue, 8 Jan 2008 22:59:33 +0300
+	Tue, 8 Jan 2008 15:00:46 -0500
+Date: Tue, 8 Jan 2008 13:00:45 -0700
+From: Matthew Wilcox <matthew@wil.cx>
 To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, trivial@kernel.org
-Subject: Re: [PATCH 3/5] x86: coding style fixes in arch/x86/ia32/ia32_aout.c
-Message-ID: <20080108195933.GB4627@martell.zuzino.mipt.ru>
-References: <20080108203233.01bb5c7f@paolo-desktop>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, gorcunov@gmail.com
+Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
+Message-ID: <20080108200044.GI16309@parisc-linux.org>
+References: <20080108164015.GC31504@one.firstfloor.org> <4d8e3fd30801081158j3e7292d0i939776342015b12d@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080108203233.01bb5c7f@paolo-desktop>
+In-Reply-To: <4d8e3fd30801081158j3e7292d0i939776342015b12d@mail.gmail.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -		if ((jiffies-error_time) > 5*HZ)
-> -		{
-> -			printk(KERN_WARNING 
-> +		if ((jiffies-error_time) > 5*HZ) {
+On Tue, Jan 08, 2008 at 08:58:04PM +0100, Paolo Ciarrocchi wrote:
+> -static const struct file_operations rtc_fops = {
+> +static long rtc_fioctl(struct file_operations rtc_fops)
+> +{
+> +	lock_kernel();
+>  	.owner		= THIS_MODULE,
 
-Should we expect second wave of this crap when you will suddenly realize
-that it would be even nicer to write:
+You should probably restrict yourself to files that you can at least
+compile ...
 
-	if (jiffies - error_time > 5 * HZ) {
-
-	Alexey "?" Dobriyan
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
