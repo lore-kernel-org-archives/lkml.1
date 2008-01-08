@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758546AbYAHAL4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758901AbYAHAMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758546AbYAHAL4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 19:11:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbYAHALr
+	id S1758901AbYAHAMR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 19:12:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758539AbYAHAL5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 19:11:47 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:13875 "EHLO
-	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754334AbYAHALq (ORCPT
+	Mon, 7 Jan 2008 19:11:57 -0500
+Received: from mho-01-bos.mailhop.org ([63.208.196.178]:61616 "EHLO
+	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758517AbYAHALz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 19:11:46 -0500
-Date: Mon, 07 Jan 2008 18:10:29 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: sata_nv + ADMA + Samsung disk problem
-In-reply-to: <F72FA20C31DD4F4C997B91C5B3690A09505598@hqemmail07.nvidia.com>
-To: Gabor Gombas <gombasg@sztaki.hu>
-Cc: Allen Martin <AMartin@nvidia.com>, Mark Lord <lkml@rtr.ca>,
-       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Kuan Luo <kluo@nvidia.com>, Peer Chen <pchen@nvidia.com>
-Message-id: <4782BF75.9040803@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <20070808120804.GB5257@boogie.lpds.sztaki.hu>
- <20080101164416.GA29574@boogie.lpds.sztaki.hu> <477B0429.7040909@gmail.com>
- <477B0CFD.1030603@shaw.ca>
- <F72FA20C31DD4F4C997B91C5B3690A09505577@hqemmail07.nvidia.com>
- <477BDEA5.8040701@garzik.org>
- <F72FA20C31DD4F4C997B91C5B3690A0950557D@hqemmail07.nvidia.com>
- <477C2A99.9010208@shaw.ca> <477C61D3.30009@rtr.ca> <477C6A85.9020607@shaw.ca>
- <F72FA20C31DD4F4C997B91C5B3690A09505598@hqemmail07.nvidia.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Mon, 7 Jan 2008 19:11:55 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 216.15.117.105
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX19ZFAAggQUbzQCKA0Cc/Tvx
+Message-ID: <4782BF77.80703@reed.com>
+Date: Mon, 07 Jan 2008 19:10:31 -0500
+From: "David P. Reed" <dpreed@reed.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.9) Gecko/20071115 Fedora/2.0.0.9-1.fc8 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: Rene Herman <rene.herman@keyaccess.nl>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Bodo Eggert <7eggert@gmx.de>,
+       Christer Weinigel <christer@weinigel.se>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Paul Rolland <rol@as2917.net>,
+       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
+Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
+ I/O delay override.
+References: <9BdU5-1YW-9@gated-at.bofh.it> <9BeZN-3Gf-5@gated-at.bofh.it> <9BnTB-1As-31@gated-at.bofh.it> <9BrX4-8go-1@gated-at.bofh.it> <9BuBG-4eR-51@gated-at.bofh.it> <9BvRd-6aL-71@gated-at.bofh.it> <9GRQW-1DX-13@gated-at.bofh.it> <9GSah-23W-1@gated-at.bofh.it> <9GSDy-2GD-23@gated-at.bofh.it> <9GTpK-40d-15@gated-at.bofh.it> <9GUvy-5H2-11@gated-at.bofh.it> <9GVKU-7SS-25@gated-at.bofh.it> <E1JBxnV-00046d-CS@be1.7eggert.dyndns.org> <478281A6.1000704@zytor.com> <alpine.LSU.0.999.0801072226060.16143@be1.lrz> <4782A355.1070207@zytor.com> <alpine.LSU.0.999.0801072316440.16143@be1.lrz> <4782AED5.1060406@keyaccess.nl> <4782B4B9.2020608@zytor.com> <4782B515.3010008@keyaccess.nl>
+In-Reply-To: <4782B515.3010008@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allen Martin wrote:
->  
->>> Dunno about the NVidia version.
->> Theirs works rather differently - the GO bit is there, but there's 
->> another append register which is used to tell the controller 
->> that a new 
->> tag has been added to the CPB list.
->>
->> The only thing we currently use the GO bit for is to switch 
->> between ADMA 
->> and port register mode. Could be there's something we need to 
->> do there, 
->> though, who knows..
->>
-> 
-> You shouldn't ever need to touch GO other than the ADMA / legacy mode
-> switch as you say.
-> 
-> The NVIDIA ADMA hw is not based on the Pacific Digital core.
+On another topic.  I have indeed determined what device uses port 80 on 
+Quanta AMD64 laptops from HP.
 
-Gabor, I just noticed you said that it worked OK in 2.6.20, yet 2.6.22 
-fails. 2.6.20 had ADMA support as well, so I wonder what change started 
-causing the problem. Would it be possible for you to do a git bisect (or 
-at least try 2.6.21 to try and narrow it down)?
+I had lunch with Jim Gettys of OLPC a week ago; he's an old friend since 
+he worked on the original X windows system.   After telling him my story 
+about port 80, he mentioned that the OLPC XO machine had some issues 
+with port 80 which was by design handled by the ENE KBC device on its 
+motherboard.   He said the ENE was a very desirable chipset for AMD 
+designs recommended by Quanta.  Richard Smith of OLPC explained to me 
+how the KB3700 they use works, and that they use the KB3700 to send POST 
+codes out over a serial link during boot up.
+
+This gave me a reason to take apart my laptop, to discover that it has 
+an ENE KB3920 B0 as its EC and KBC.  The port interface for the KB3920 
+includes listening to port 80 which is then made available to firmware 
+on the EC.  It is recognized and decoded on the LPC bus, only for 
+writes, and optionally can generate an interrupt in the 8051.
+
+Dumping both the ENE chip, and looking at the DSDT.dsl for my machine, I 
+discovered that port 80 is used as an additional parameter for various 
+DSDT methods that communicate to the EC, when it is operating in ACPI mode.
+
+More work is in progress as I play around with this.  But the key thing 
+is that ACPI and perhaps SMM both use port 80 as part of the base 
+function of the chipset.
+
+And actually, if I had looked at the /sys/bus/pnp definitions, rather 
+than /proc/ioports, I would have noticed that port 80 was part of a 
+PNP0C02 resource set.   That means exactly one thing:  ACPI says that 
+port 80 is NOT free to be used, for delays or anything else.
+
+This should make no difference here: it's just one more reason to stop 
+using port 80 for delays on modern machines.
+
