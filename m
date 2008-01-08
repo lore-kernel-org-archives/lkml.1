@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbYAHWoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbYAHWqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755597AbYAHWoh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 17:44:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbYAHWo1
+	id S1754689AbYAHWqS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 17:46:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbYAHWqI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 17:44:27 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:56658 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752078AbYAHWoZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 17:44:25 -0500
-To: pavel@ucw.cz
-CC: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
-       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
-In-reply-to: <20080108214625.GE5050@ucw.cz> (message from Pavel Machek on Tue,
-	8 Jan 2008 21:46:26 +0000)
-Subject: Re: [patch 7/9] unprivileged mounts: allow unprivileged fuse mounts
-References: <20080108113502.184459371@szeredi.hu> <20080108113630.861045063@szeredi.hu> <20080108214625.GE5050@ucw.cz>
-Message-Id: <E1JCN9I-0004DB-DF@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 08 Jan 2008 23:42:20 +0100
+	Tue, 8 Jan 2008 17:46:08 -0500
+Received: from ozlabs.org ([203.10.76.45]:52434 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752446AbYAHWqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 17:46:07 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18307.64807.204087.375733@cargo.ozlabs.ibm.com>
+Date: Wed, 9 Jan 2008 09:45:59 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       David Miller <davem@davemloft.net>, hskinnemoen@atmel.com,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, tony.luck@intel.com,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCHv2] kprobes: Introduce is_kprobe_fault()
+In-Reply-To: <1199737486.7666.12.camel@brick>
+References: <1199737486.7666.12.camel@brick>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue 2008-01-08 12:35:09, Miklos Szeredi wrote:
-> > From: Miklos Szeredi <mszeredi@suse.cz>
-> > 
-> > Use FS_SAFE for "fuse" fs type, but not for "fuseblk".
-> > 
-> > FUSE was designed from the beginning to be safe for unprivileged users.  This
-> > has also been verified in practice over many years.  In addition unprivileged
-> 
-> Eh? So 'kill -9 no longer works' and 'suspend no longer works' is not
-> considered important enough to even mention?
+Harvey Harrison writes:
 
-No.  Because in practice they don't seem to matter.  Also because
-there's no way in which fuse could be done differently to address
-these issues.
+> Use a central is_kprobe_fault() inline in kprobes.h to remove all
+> of the arch-dependant, practically identical implementations in
+> avr32, ia64, powerpc, s390, sparc64, and x86.
 
-The 'kill -9' thing is basically due to VFS level locking not being
-interruptible.  It could be changed, but I'm not sure it's worth it.
+I don't like the name "is_kprobe_fault" since the function actually
+handles the fault - i.e. it does more than just tell the caller
+whether this is a kprobes fault.  Something like
+"handle_kprobes_fault" or "maybe_handle_kprobes_fault" would be
+better IMO.
 
-For the suspend issue, there are also no easy solutions.
-
-> 'updatedb no longer works' is not a problem?
-
-I haven't seen any problems with updatedb, and haven't had any bug
-reports about it either.
-
-> Are you ready to offer shell account for bugtraq people to see how
-> long it survives?
-
-Bugtraq people are free to install fuse on their machines and take it
-apart.
-
-AFAIR there were two security vulnerabilities in fuse's history, one
-of them an information leak in the kernel module, and the other one an
-mtab corruption issue in the fusermount utility.  I don't think this
-is such a bad track record.
-
-Miklos
+Paul.
