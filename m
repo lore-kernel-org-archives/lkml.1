@@ -1,134 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbYAHJ4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752010AbYAHKI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754110AbYAHJ4W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 04:56:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbYAHJ4N
+	id S1752010AbYAHKI3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 05:08:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbYAHKIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 04:56:13 -0500
-Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:1608 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752328AbYAHJ4M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 04:56:12 -0500
-Date: Tue, 8 Jan 2008 10:56:09 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Lameter <clameter@sgi.com>, kamalesh@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, bunk@kernel.org, apw@shadowen.org,
-       balbir@linux.vnet.ibm.com
-Subject: Re: Linux 2.6.24-rc7 Build-Failure at
- __you_cannot_kmalloc_that_much
-Message-ID: <20080108105609.197a2874@hyperion.delvare>
-In-Reply-To: <20080107113831.0865cf5e.akpm@linux-foundation.org>
-References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org>
-	<478200A4.4090707@linux.vnet.ibm.com>
-	<20080107100733.3655f74f.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0801071014450.22642@schroedinger.engr.sgi.com>
-	<20080107113831.0865cf5e.akpm@linux-foundation.org>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Jan 2008 05:08:18 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38105 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751144AbYAHKIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 05:08:16 -0500
+Date: Tue, 8 Jan 2008 11:07:52 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Martin Bligh <mbligh@mbligh.org>, Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, bugme-admin@linux-foundation.org,
+       Peter Osterlund <petero2@telia.com>
+Subject: Re: change SCSI owner in bugzilla
+Message-ID: <20080108100752.GA6906@elte.hu>
+References: <20080106161635.GL2082@does.not.exist> <47828CC7.7060106@mbligh.org> <200801072147.53011.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200801072147.53011.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew, hi Chritoph,
 
-On Mon, 7 Jan 2008 11:38:31 -0800, Andrew Morton wrote:
-> On Mon, 7 Jan 2008 10:31:53 -0800 (PST)
-> Christoph Lameter <clameter@sgi.com> wrote:
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+
+> > OK, changed it.
+> > 
+> > I don't think this is the right way to do it, as you'll get email 
+> > for every change to every bug until it's assigned, but seeing as 
+> > that's what you asked for, and we can't seem to get vger to take 
+> > bounces, I guess it'll do.
+> > 
+> > Let me know if (a) it works OK, and (b) you want the driver ones 
+> > changed over as well.
 > 
-> > On Mon, 7 Jan 2008, Andrew Morton wrote:
-> > 
-> > > > : undefined reference to `__you_cannot_kmalloc_that_much'
-> > 
-> > There is also a kernel.org bugzilla for this at
-> > 
-> > http://bugzilla.kernel.org/show_bug.cgi?id=9669
-> > For some reason my adds to this do not show up.
-> > 
-> > In both cases we have a 
-> > 
-> > k(z/m)alloc(sizeof(*pointer), ...)
-> > 
-> > that is for some reason failing. I guess what happens is that the function 
-> > in which this occurs is too complex for gcc 3.2. Thus it stops constant 
-> > folding the sizeof(*pointer) in the complex inline-if-cascade that SLAB 
-> > needs to determine the cache and does not eliminate the 
-> > __you_cannot_kmalloc_that_much branch().
+> BTW, would that be possible to forward messages sent to
+> power-management_other@kernel-bugs.osdl.org to
+> linux-pm@lists.linux-foundation.org?
 
-Interesting theory... So I tried to split half of the code of
-dmi_id_init() to a subfunction and bingo! gcc 3.2.3 is now able to
-build it properly. Thanks for the hint!
+stupid question: why isnt this done via what most maintainers do, to set 
+up your bugzilla account to generate notifications of the special 
+power-management_other@kernel-bugs.osdl.org bugzilla user?
 
-> > SLUB in that case just puts a series of if comparisions in the code. This 
-> > means compilation does not fail but a large amount of code is generated.
-> 
-> ug.  Silent and nasty.
-> 
-> > We could replace the __you_cannot_kmalloc_that_much() with a BUG() 
-> > statement so we have the same effect in SLAB?
-> 
-> I think it'd be better to just put suitable workarounds at the offending
-> callsites.  We've only seen three or four of them in several months.
-
-Here's a workaround for dmi-id.
-
-Subject: Fix for __you_cannot_kmalloc_that_much failure in dmi-id
-
-gcc 3.2 has a hard time coping with the code in dmi_id_init():
-
-drivers/built-in.o(.init.text+0x789e): In function `dmi_id_init':
-: undefined reference to `__you_cannot_kmalloc_that_much'
-make: *** [.tmp_vmlinux1] Error 1
-
-Moving half of the code to a separate function seems to help. This is
-a no-op for gcc 4.1 which will successfully inline the code anyway.
-
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
----
- drivers/firmware/dmi-id.c |   19 ++++++++++++++-----
- 1 file changed, 14 insertions(+), 5 deletions(-)
-
---- linux-2.6.24-rc7.orig/drivers/firmware/dmi-id.c	2007-10-24 09:59:28.000000000 +0200
-+++ linux-2.6.24-rc7/drivers/firmware/dmi-id.c	2008-01-08 10:32:00.000000000 +0100
-@@ -175,12 +175,11 @@ static struct device *dmi_dev;
- 
- extern int dmi_available;
- 
--static int __init dmi_id_init(void)
-+/* In a separate function to keep gcc 3.2 happy - do NOT merge this in
-+   dmi_id_init! */
-+static void __init dmi_id_init_attr_table(void)
- {
--	int ret, i;
--
--	if (!dmi_available)
--		return -ENODEV;
-+	int i;
- 
- 	/* Not necessarily all DMI fields are available on all
- 	 * systems, hence let's built an attribute table of just
-@@ -205,6 +204,16 @@ static int __init dmi_id_init(void)
- 	ADD_DMI_ATTR(chassis_serial,    DMI_CHASSIS_SERIAL);
- 	ADD_DMI_ATTR(chassis_asset_tag, DMI_CHASSIS_ASSET_TAG);
- 	sys_dmi_attributes[i++] = &sys_dmi_modalias_attr.attr;
-+}
-+
-+static int __init dmi_id_init(void)
-+{
-+	int ret;
-+
-+	if (!dmi_available)
-+		return -ENODEV;
-+
-+	dmi_id_init_attr_table();
- 
- 	ret = class_register(&dmi_class);
- 	if (ret)
-
-I'll now check if I can do something similar for snd-mixer-oss.
-
--- 
-Jean Delvare
+	Ingo
