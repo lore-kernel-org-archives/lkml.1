@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755797AbYAHUFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbYAHUGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755797AbYAHUFj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 15:05:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbYAHUFb
+	id S1756072AbYAHUGY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 15:06:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbYAHUGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 15:05:31 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:57306 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752926AbYAHUFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 15:05:30 -0500
-Date: Tue, 8 Jan 2008 15:04:39 -0500
-From: Rik van Riel <riel@redhat.com>
+	Tue, 8 Jan 2008 15:06:16 -0500
+Received: from hu-out-0506.google.com ([72.14.214.232]:41462 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752157AbYAHUGP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 15:06:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=WzT9Uk1vZ+hzzGXdGbtfQgna6HvIfoQP0NUk+IinEO1fpCN07zVOXOsR48q6JM31RpKoVgz/+JN13td6beb8rj0V3j4fzuk+5bJmx6kmuviDNrqhbmdckg8vZNyJ/n/hL91Tj7zT6vQZl39TVTPcQVKG39DOUZjbQgsRqFKwlV4=
+Date: Tue, 8 Jan 2008 23:06:07 +0300
 To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
 Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
        Ingo Molnar <mingo@elte.hu>,
        Linux Kernel <linux-kernel@vger.kernel.org>, trivial@kernel.org
-Subject: Re: [PATCH 3/5] x86: coding style fixes in
- arch/x86/ia32/ia32_aout.c
-Message-ID: <20080108150439.6388028e@bree.surriel.com>
-In-Reply-To: <20080108203233.01bb5c7f@paolo-desktop>
-References: <20080108203233.01bb5c7f@paolo-desktop>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 5/5] x86: coding style fixes in arch/x86/ia32/ia32_signal.c
+Message-ID: <20080108200607.GD4627@martell.zuzino.mipt.ru>
+References: <20080108203254.621a22ae@paolo-desktop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080108203254.621a22ae@paolo-desktop>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Jan 2008 20:32:33 +0100
-Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
+>  #define RELOAD_SEG(seg,mask)						\
+>  	{ unsigned int cur; 						\
+> -	  unsigned short pre;						\
+> -	  err |= __get_user(pre, &sc->seg);				\
+> -    	  asm volatile("movl %%" #seg ",%0" : "=r" (cur));		\
+> -	  pre |= mask; 							\
+> -	  if (pre != cur) loadsegment(seg,pre); }
+> +	unsigned short pre;						\
+> +	err |= __get_user(pre, &sc->seg);				\
+> +	asm volatile("movl %%" #seg ",%0" : "=r" (cur));		\
+> +	  pre |= mask;
+> +	  if (pre != cur) loadsegment(seg, pre); }
 
-> Fix plenty of coding style errors
-
-Most of these kernel changes would probably get in the way of
-real development, making patches reject that would otherwise
-apply.
-
-You did find one possible bug, though:
-
-> @@ -467,9 +465,9 @@ static int load_aout_library(struct file *file)
->  
->  #ifdef WARN_OLD
->  		static unsigned long error_time;
-> -		if ((jiffies-error_time) > 5*HZ)
-> -		{
-> -			printk(KERN_WARNING 
-> +		if ((jiffies-error_time) > 5*HZ) {
-> +
-> +			printk(KERN_WARNING
->  			       "N_TXTOFF is not page aligned. Please convert library: %s\n",
->  			       file->f_path.dentry->d_name.name);
->  			error_time = jiffies;
-
-You may want to look into the time_after() macro and make sure
-it is used here.
-
--- 
-All rights reversed.
+No comments.
