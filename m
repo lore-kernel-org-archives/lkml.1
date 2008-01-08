@@ -1,79 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbYAHRjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbYAHRnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756823AbYAHRjS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 12:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756793AbYAHRi5
+	id S1755296AbYAHRnR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 12:43:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbYAHRnD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 12:38:57 -0500
-Received: from ns.gsystems.sk ([62.176.172.50]:50901 "EHLO www.gsystems.sk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756725AbYAHRiz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 12:38:55 -0500
-From: Ondrej Zary <linux@rainbow-software.org>
-To: "David P. Reed" <dpreed@reed.com>
-Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
-Date: Tue, 8 Jan 2008 18:38:11 +0100
-User-Agent: KMail/1.9.7
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Rene Herman <rene.herman@keyaccess.nl>,
-       Bodo Eggert <7eggert@gmx.de>, Christer Weinigel <christer@weinigel.se>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Paul Rolland <rol@as2917.net>, Pavel Machek <pavel@ucw.cz>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>, rol@witbe.net
-References: <9BdU5-1YW-9@gated-at.bofh.it> <200801081810.58904.linux@rainbow-software.org> <4783B1B2.6070005@reed.com>
-In-Reply-To: <4783B1B2.6070005@reed.com>
+	Tue, 8 Jan 2008 12:43:03 -0500
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:60383 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751275AbYAHRnB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 12:43:01 -0500
+X-IronPort-AV: E=Sophos;i="4.24,258,1196668800"; 
+   d="scan'208";a="7292022"
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: akepner@sgi.com, Tony Luck <tony.luck@intel.com>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       David Miller <davem@davemloft.net>, Muli Ben-Yehuda <muli@il.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PARTIAL PATCH 0/3] dma: passing "attributes" to dma_map_* routines
+X-Message-Flag: Warning: May contain useful information
+References: <20080108023222.GP23661@sgi.com>
+	<1199809628.3534.34.camel@localhost.localdomain>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 08 Jan 2008 09:42:43 -0800
+In-Reply-To: <1199809628.3534.34.camel@localhost.localdomain> (James Bottomley's message of "Tue, 08 Jan 2008 10:27:08 -0600")
+Message-ID: <ada63y4kycs.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801081838.16241.linux@rainbow-software.org>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 08 Jan 2008 17:42:43.0900 (UTC) FILETIME=[DF99FFC0:01C8521D]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 08 January 2008 18:24:02 David P. Reed wrote:
-> Windows these days does delays with timing loops or the scheduler.  It
-> doesn't use a "port".  Also, Windows XP only supports machines that tend
-> not to have timing problems that use delays.  Instead, if a device takes
-> a while to respond, it has a "busy bit" in some port or memory slot that
-> can be tested.
+ > I'm already on record saying I don't think attributes in the generic
+ > code is the right approach.  All of the attributes I can see adding are
+ > bus specific (even to the extent that PCIe ones wouldn't apply to PCI
+ > for instance).
 
-Windows XP can run on a machine with ISA slot(s) and has built-in drivers for 
-some plug&play ISA cards - e.g. the famous 3Com EtherLink III. I think that 
-there's a driver for NE2000-compatible cards too and it probably works.
+I think the case before us that Arthur is dealing with is a
+counterexample for this: there's nothing bus-specific about it all.
+The issue is related to reordering of DMAs within the Altix system
+fabric, after they've left the PCI world.  This issue would be present
+no matter what kind of host bridge you hook up to the system fabric,
+be it PCI-X, PCIe, ISA, MCA or whatever.
 
-> Almost all of the issues in Linux where _p operations are used are (or
-> should be) historical - IMO.
->
-> Ondrej Zary wrote:
-> > On Tuesday 08 January 2008 02:38:15 David P. Reed wrote:
-> >> H. Peter Anvin wrote:
-> >>> And shoot the designer of this particular microcontroller firmware.
-> >>
-> >> Well, some days I want to shoot the "designer" of the entire Wintel
-> >> architecture...  it's not exactly "designed" by anybody of course, and
-> >> today it's created largely by a collection of Taiwanese and Chinese ODM
-> >> firms, coupled with Microsoft WinHEC and Intel folks.  At least they
-> >> follow the rules and their ACPI and BIOS code say that they are using
-> >> port 80 very clearly if you use PnP and ACPI properly.  And in the old
-> >> days, you were "supposed" to use the system BIOS to talk to things like
-> >> the PIT that had timing issues, not write your own code.
-> >
-> > Does anyone know what port does Windows use? I'm pretty sure that it
-> > isn't 80h as I run Windows 98 often with port 80h debug card inserted.
-> > The last POST code set by BIOS usually remains on the display and only
-> > changes when BIOS does something like suspend/resume. IIRC, there was a
-> > program that was able to display temperature from onboard sensors on the
-> > port 80h display that's integrated on some mainboards.
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
-
-
--- 
-Ondrej Zary
+ - R.
