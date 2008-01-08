@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752438AbYAHJva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbYAHJzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752438AbYAHJva (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 04:51:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750729AbYAHJvX
+	id S1753211AbYAHJzb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 04:55:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbYAHJzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 04:51:23 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:32893 "EHLO mx2.mail.elte.hu"
+	Tue, 8 Jan 2008 04:55:23 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:40301 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750706AbYAHJvW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 04:51:22 -0500
-Date: Tue, 8 Jan 2008 10:50:30 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Markus Metzger <markus.t.metzger@intel.com>
-Cc: ak@suse.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, markus.t.metzger@gmail.com,
-       suresh.b.siddha@intel.com, roland@redhat.com, akpm@linux-foundation.org,
-       mtk.manpages@gmail.com, Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [patch 1/2] x86, ptrace: add version and last remaining size
-	to status command
-Message-ID: <20080108095030.GI27671@elte.hu>
-References: <20080107133346.A11643@sedona.ch.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080107133346.A11643@sedona.ch.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1750792AbYAHJzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 04:55:22 -0500
+Date: Tue, 8 Jan 2008 10:54:28 +0100
+From: Michal Schmidt <mschmidt@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jon Masters <jcm@redhat.com>,
+       Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] kthread: always create the kernel threads with normal
+ priority
+Message-ID: <20080108105428.2fb04bdd@brian.englab.brq.redhat.com>
+In-Reply-To: <20080107092956.419b5f91.akpm@linux-foundation.org>
+References: <20071217234314.540b59bd@hammerfall>
+	<20071222013021.db2528cb.akpm@linux-foundation.org>
+	<20080107110603.09b72450@brian.englab.brq.redhat.com>
+	<20080107022513.3ac05734.akpm@linux-foundation.org>
+	<20080107110904.GB28481@elte.hu>
+	<20080107092956.419b5f91.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 7 Jan 2008 09:29:56 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-* Markus Metzger <markus.t.metzger@intel.com> wrote:
+> On Mon, 7 Jan 2008 12:09:04 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > > > This causes a practical problem. When a runaway real-time task
+> > > > is eating 100% CPU and we attempt to put the CPU offline,
+> > > > sometimes we block while waiting for the creation of the
+> > > > highest-priority "kstopmachine" thread.
+> > 
+> > sched-devel.git has new mechanisms against runaway RT tasks.
+> > There's a new RLIMIT_RTTIME rlimit - if an RT task exceeds that
+> > rlimit then it is sent SIGXCPU.
+> 
+> Is that "total RT CPU time" or "elapsed time since last schedule()"?
+> 
+> If the former, it is not useful for this problem.
 
-> Return the API version and the size of a bts_struct in the 
-> PTRACE_BTS_STATUS command. This might be handy in case other archs 
-> want to use and extend the interface. It allows users to program 
-> against one version and continue to work for newer versions (they have 
-> to discard everything they don't understand, of course).
+It's "runtime since last sleep" so it is useful.
 
-i think this will be quite handy. But:
+I still think the kthread patch is good to have anyway. The user can
+have other reasons to change kthreadd's priority/cpumask.
 
-+       /* actual size of bts_struct in bytes */
-+       unsigned short bts_size;
-+       /* interface version */
-+       unsigned short version;
-
-please dont use shorts. Lets just us bts_size and no version at all, ok? 
-Any change to the ABI will be extension and that can be done by changing 
-the size of the data structure. We try to avoid doing versioned APIs in 
-Linux syscalls.
-
-and while at it, how about using u32/u64 for the fields (that's how we 
-expose ABIs, even if we know that 'unsigned int' is always 32-bit on 
-x86), and add support for COMPAT as well?
-
-	Ingo
+Michal
