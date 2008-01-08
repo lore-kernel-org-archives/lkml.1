@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182AbYAHXv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbYAHXwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755182AbYAHXv7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 18:51:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbYAHXvu
+	id S1756072AbYAHXwY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 18:52:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbYAHXvy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 18:51:50 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44080 "EHLO mx3.mail.elte.hu"
+	Tue, 8 Jan 2008 18:51:54 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:33497 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751590AbYAHXvt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 18:51:49 -0500
-Date: Wed, 9 Jan 2008 00:51:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH 00 of 10] x86: unify asm/pgtable.h
-Message-ID: <20080108235136.GA25692@elte.hu>
-References: <patchbomb.1199829603@localhost> <20080108224244.GA3768@elte.hu> <20080108231226.GA10744@elte.hu> <478405DA.40303@goop.org> <20080108232803.GA19906@elte.hu> <20080108234449.GA24274@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080108234449.GA24274@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1753264AbYAHXvx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 18:51:53 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <200801081401.11975.nickpiggin@yahoo.com.au>
+References: <200801081401.11975.nickpiggin@yahoo.com.au> <200801072233.51294.nickpiggin@yahoo.com.au> <18996.1199291223@redhat.com> <7972.1199711343@redhat.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: dhowells@redhat.com, viro@ftp.linux.org.uk, hch@infradead.org,
+       Trond.Myklebust@netapp.com, sds@tycho.nsa.gov, casey@schaufler-ca.com,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 10/28] FS-Cache: Recruit a couple of page flags for cache management [try #2]
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Tue, 08 Jan 2008 23:51:24 +0000
+Message-ID: <31207.1199836284@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > it's one of these patches:
-> > 
-> >  Subject: x86: move all asm/pgtable constants into one place
-> >  Subject: x86: avoid name conflict for Voyager leave_mm
-> >  Subject: x86/pgtable: unify pagetable accessors
+> > Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > > No. I mean call the bit PG_private2. That way non-pagecache and
+> > > filesystems that don't use fscache can use it.
+> >
+> > The bit is called PG_owner_priv_2, and then 'subclassed' to PG_fscache,
+> > much like PG_owner_priv_1 is 'subclassed' to PG_checked as was recommended.
 > 
-> it's the first one that causes the crash.
-> 
-> reviewed it carefully and found the bug below. Checking now whether it 
-> fixes the crash.
+> It is not owner_priv if you're putting checks and tests into core
+> kernel pagecache code for it. owner_priv means a filesystem has it
+> _all_ to itself.
 
-hm, doesnt fix it. Weird.
+Okay, I'll change it if it makes you happy.  Bear in mind, though, you're
+dictating instructions that conflict with those other people have dictated.
 
-	Ingo
+David
