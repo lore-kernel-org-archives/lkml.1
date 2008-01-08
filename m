@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbYAHWnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbYAHWoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756005AbYAHWnp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 17:43:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYAHWnh
+	id S1755597AbYAHWoh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 17:44:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbYAHWo1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 17:43:37 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42797 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751718AbYAHWng (ORCPT
+	Tue, 8 Jan 2008 17:44:27 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:56658 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752078AbYAHWoZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 17:43:36 -0500
-Date: Tue, 8 Jan 2008 14:42:15 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael Halcrow <mhalcrow@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, shaggy@us.ibm.com, sandeen@redhat.com,
-       jmoyer@redhat.com
-Subject: Re: [PATCH] eCryptfs: Fix dentry handling on create error, unlink,
- and inode destroy
-Message-Id: <20080108144215.f21115e2.akpm@linux-foundation.org>
-In-Reply-To: <20080108215807.GE10989@localhost.austin.ibm.com>
-References: <20080108052542.GX10989@localhost.austin.ibm.com>
-	<20080107214517.ebf5a5bd.akpm@linux-foundation.org>
-	<20080108215807.GE10989@localhost.austin.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Jan 2008 17:44:25 -0500
+To: pavel@ucw.cz
+CC: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
+       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
+In-reply-to: <20080108214625.GE5050@ucw.cz> (message from Pavel Machek on Tue,
+	8 Jan 2008 21:46:26 +0000)
+Subject: Re: [patch 7/9] unprivileged mounts: allow unprivileged fuse mounts
+References: <20080108113502.184459371@szeredi.hu> <20080108113630.861045063@szeredi.hu> <20080108214625.GE5050@ucw.cz>
+Message-Id: <E1JCN9I-0004DB-DF@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 08 Jan 2008 23:42:20 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Jan 2008 15:58:07 -0600
-Michael Halcrow <mhalcrow@us.ibm.com> wrote:
-
-> > >  	rc = ecryptfs_interpose(lower_dentry, ecryptfs_dentry,
-> > >  				directory_inode->i_sb, 0);
+> On Tue 2008-01-08 12:35:09, Miklos Szeredi wrote:
+> > From: Miklos Szeredi <mszeredi@suse.cz>
 > > 
-> > Will this cause an undesirable log storm if the underlying fs runs
-> > out of space?
+> > Use FS_SAFE for "fuse" fs type, but not for "fuseblk".
+> > 
+> > FUSE was designed from the beginning to be safe for unprivileged users.  This
+> > has also been verified in practice over many years.  In addition unprivileged
 > 
-> When you're bumping up against the end of your storage space, you will
-> get a lot more that just this message in your logs. There are printk's
-> in ecryptfs_write_lower(), ecryptfs_encrypt_page(), ecryptfs_write(),
-> and ecryptfs_write_metadata_to_contents() that will get pretty
-> noisy. Is it worth wrapping those in a higher level of verbosity?
+> Eh? So 'kill -9 no longer works' and 'suspend no longer works' is not
+> considered important enough to even mention?
 
-The consequences of this can actually be pretty harmful.  syslogd typically
-does sychronous writes so a random full disk can cause a seek storm over on
-the log disk and a runaway ecryptfs-using application could pretty quickly
-exhaust the space on the log disk.
+No.  Because in practice they don't seem to matter.  Also because
+there's no way in which fuse could be done differently to address
+these issues.
 
-So I'd suggest that sometime you go through the fs and find any such
-user-triggerable printks and fix them up.  The most robust way of fixing
-them up would be to delete them, or make them dependent on
-CONFIG_ECRYPTFS_DEBUG.  Fiddling with the facility levels would help, but
-it just lessens the probability rather than fixing it completely.
+The 'kill -9' thing is basically due to VFS level locking not being
+interruptible.  It could be changed, but I'm not sure it's worth it.
 
+For the suspend issue, there are also no easy solutions.
+
+> 'updatedb no longer works' is not a problem?
+
+I haven't seen any problems with updatedb, and haven't had any bug
+reports about it either.
+
+> Are you ready to offer shell account for bugtraq people to see how
+> long it survives?
+
+Bugtraq people are free to install fuse on their machines and take it
+apart.
+
+AFAIR there were two security vulnerabilities in fuse's history, one
+of them an information leak in the kernel module, and the other one an
+mtab corruption issue in the fusermount utility.  I don't think this
+is such a bad track record.
+
+Miklos
