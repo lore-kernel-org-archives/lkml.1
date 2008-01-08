@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbYAHSyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755777AbYAHSy6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755292AbYAHSyb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 13:54:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbYAHSyY
+	id S1755777AbYAHSy6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 13:54:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbYAHSyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 13:54:24 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40306 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751643AbYAHSyX (ORCPT
+	Tue, 8 Jan 2008 13:54:49 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:52512 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753195AbYAHSys (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 13:54:23 -0500
-Date: Tue, 8 Jan 2008 18:51:20 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "David P. Reed" <dpreed@reed.com>
-Cc: Ondrej Zary <linux@rainbow-software.org>, "H. Peter Anvin" <hpa@zytor.com>,
+	Tue, 8 Jan 2008 13:54:48 -0500
+Date: Tue, 8 Jan 2008 19:51:41 +0100 (CET)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Ondrej Zary <linux@rainbow-software.org>
+cc: "David P. Reed" <dpreed@reed.com>, "H. Peter Anvin" <hpa@zytor.com>,
        Rene Herman <rene.herman@keyaccess.nl>, Bodo Eggert <7eggert@gmx.de>,
        Christer Weinigel <christer@weinigel.se>, Ingo Molnar <mingo@elte.hu>,
-       Paul Rolland <rol@as2917.net>, Pavel Machek <pavel@ucw.cz>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>, rol@witbe.net
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Paul Rolland <rol@as2917.net>,
+       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
 Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
  I/O delay override.
-Message-ID: <20080108185120.3ff7ed18@lxorguk.ukuu.org.uk>
-In-Reply-To: <4783C4A6.9060402@reed.com>
-References: <9BdU5-1YW-9@gated-at.bofh.it>
-	<200801081810.58904.linux@rainbow-software.org>
-	<4783B1B2.6070005@reed.com>
-	<200801081838.16241.linux@rainbow-software.org>
-	<4783C4A6.9060402@reed.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <200801081838.16241.linux@rainbow-software.org>
+Message-ID: <alpine.LSU.0.999.0801081950470.3158@be1.lrz>
+References: <9BdU5-1YW-9@gated-at.bofh.it> <200801081810.58904.linux@rainbow-software.org>
+ <4783B1B2.6070005@reed.com>
+ <200801081838.16241.linux@rainbow-software.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1/aPUs8csnKSXfDPu2qtHFsU/bEO4v9Hdo2y9U
+ mYhylVBPHlGmdikaaUVgFUnAipC15gi5f7r6RAXuLxpuvvUcsw
+ 7NlvSgPcFfod4OQRP6cRQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> There is no need to use io writes to supposedly/theoretically "unused 
-> ports" to make drivers work on any bus.
+On Tue, 8 Jan 2008, Ondrej Zary wrote:
+> On Tuesday 08 January 2008 18:24:02 David P. Reed wrote:
 
-The natsemi docs here say otherwise. I trust them not you.
+> > Windows these days does delays with timing loops or the scheduler.  It
+> > doesn't use a "port".  Also, Windows XP only supports machines that tend
+> > not to have timing problems that use delays.  Instead, if a device takes
+> > a while to respond, it has a "busy bit" in some port or memory slot that
+> > can be tested.
+> 
+> Windows XP can run on a machine with ISA slot(s) and has built-in drivers for 
+> some plug&play ISA cards - e.g. the famous 3Com EtherLink III. I think that 
+> there's a driver for NE2000-compatible cards too and it probably works.
 
-> don't remember writing a driver for the 3com devices - probably didn't, 
-> because 3Com's cards were expensive at the time.
-
-3C503 needs delays for some setups according to the docs. I can't tell
-you how the 3COM drivers did it as that was a different bit of 3com to
-the bit I worked for. From the rest of 3Com I saw probably utterly
-vilely ;)
-
-Later 3Com stuff was either sane (3c509 etc) or used whacko intel chips
-(3c507/27) which had their own special breed of insanity to replace
-address setup delay bugs.
-
-> In any case, Linux *did* adopt this port 80 strategy - I'm sure all 
-> concerned thought it was frightfully clever at the time.  Linus 
-> expressed his skepticism in the comments in io.h.  The problem is to 
-> safely move away from it toward a proper strategy 
-
-No. The problem is that certain people, unfortunately those who know
-nothing about ISA related bus systems, keep trying to confuse ISA delay
-logic with core chip logic and end up trying to solve both a problem and a
-non-problem in one, creating a nasty mess in the process.
-
-Alan
+The NE2K-driver went missing in W2K. BTDT.
+-- 
+Anyone can speak Troll. All you have to do is point and grunt.
+	-- Fred Weasley
