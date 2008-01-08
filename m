@@ -1,91 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759356AbYAHCN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759484AbYAHCOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759356AbYAHCN4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 21:13:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757086AbYAHCL4
+	id S1759484AbYAHCOW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 21:14:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757208AbYAHCL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 7 Jan 2008 21:11:56 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:36028 "EHLO relay.sgi.com"
+Received: from relay2.sgi.com ([192.48.171.30]:36029 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754878AbYAHCLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755006AbYAHCLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 7 Jan 2008 21:11:47 -0500
-Message-Id: <20080108021143.444476000@sgi.com>
+Message-Id: <20080108021144.012541000@sgi.com>
 References: <20080108021142.585467000@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 07 Jan 2008 18:11:46 -0800
+Date: Mon, 07 Jan 2008 18:11:50 -0800
 From: travis@sgi.com
 To: mingo@elte.hu, Andrew Morton <akpm@linux-foundation.org>,
        Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>
 Cc: Jack Steiner <steiner@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com
-Subject: [PATCH 04/10] x86_32: Use generic percpu.h
-Content-Disposition: inline; filename=x86_32_use_generic_percpu
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>
+Subject: [PATCH 08/10] Sparc64: Use generic percpu
+Content-Disposition: inline; filename=sparc64_generic_percpu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86_32 only provides a special way to obtain the local per cpu area offset
-via x86_read_percpu. Otherwise it can fully use the generic handling.
+V2->V3:
+- use generic percpy_modcopy()
 
-Cc: tglx@linutronix.de
-Cc: mingo@redhat.com
-Cc: ak@suse.de
+Sparc64 has a way of providing the base address for the per cpu area of the
+currently executing processor in a global register.
+
+Sparc64 also provides a way to calculate the address of a per cpu area
+from a base address instead of performing an array lookup.
+
+Cc: David Miller <davem@davemloft.net>
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 Signed-off-by: Mike Travis <travis@sgi.com>
 
 ---
- include/asm-x86/percpu_32.h |   30 +++++++++---------------------
- 1 file changed, 9 insertions(+), 21 deletions(-)
+ arch/sparc64/mm/init.c       |    5 +++++
+ include/asm-sparc64/percpu.h |   22 +++-------------------
+ 2 files changed, 8 insertions(+), 19 deletions(-)
 
---- a/include/asm-x86/percpu_32.h
-+++ b/include/asm-x86/percpu_32.h
-@@ -42,26 +42,7 @@
-  */
+--- a/arch/sparc64/mm/init.c
++++ b/arch/sparc64/mm/init.c
+@@ -1328,6 +1328,11 @@ pgd_t swapper_pg_dir[2048];
+ static void sun4u_pgprot_init(void);
+ static void sun4v_pgprot_init(void);
+ 
++/* Dummy function */
++void __init setup_per_cpu_areas(void)
++{
++}
++
+ void __init paging_init(void)
+ {
+ 	unsigned long end_pfn, pages_avail, shift, phys_base;
+--- a/include/asm-sparc64/percpu.h
++++ b/include/asm-sparc64/percpu.h
+@@ -7,7 +7,6 @@ register unsigned long __local_per_cpu_o
+ 
  #ifdef CONFIG_SMP
  
--/* This is used for other cpus to find our section. */
--extern unsigned long __per_cpu_offset[];
--
--#define per_cpu_offset(x) (__per_cpu_offset[x])
--
--#define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu__##name
--/* We can use this directly for local CPU (faster). */
--DECLARE_PER_CPU(unsigned long, this_cpu_off);
--
+-#define setup_per_cpu_areas()			do { } while (0)
+ extern void real_setup_per_cpu_areas(void);
+ 
+ extern unsigned long __per_cpu_base;
+@@ -16,29 +15,14 @@ extern unsigned long __per_cpu_shift;
+ 	(__per_cpu_base + ((unsigned long)(__cpu) << __per_cpu_shift))
+ #define per_cpu_offset(x) (__per_cpu_offset(x))
+ 
 -/* var is in discarded region: offset to particular copy we want */
--#define per_cpu(var, cpu) (*({				\
--	extern int simple_indentifier_##var(void);	\
--	RELOC_HIDE(&per_cpu__##var, __per_cpu_offset[cpu]); }))
+-#define per_cpu(var, cpu) (*RELOC_HIDE(&per_cpu__##var, __per_cpu_offset(cpu)))
+-#define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __local_per_cpu_offset))
+-#define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __local_per_cpu_offset))
 -
--#define __raw_get_cpu_var(var) (*({					\
--	extern int simple_indentifier_##var(void);			\
--	RELOC_HIDE(&per_cpu__##var, x86_read_percpu(this_cpu_off));	\
--}))
+-/* A macro to avoid #include hell... */
+-#define percpu_modcopy(pcpudst, src, size)			\
+-do {								\
+-	unsigned int __i;					\
+-	for_each_possible_cpu(__i)				\
+-		memcpy((pcpudst)+__per_cpu_offset(__i),		\
+-		       (src), (size));				\
+-} while (0)
++#define __my_cpu_offset __local_per_cpu_offset
++
+ #else /* ! SMP */
+ 
+ #define real_setup_per_cpu_areas()		do { } while (0)
+ 
+-#define per_cpu(var, cpu)			(*((void)cpu, &per_cpu__##var))
+-#define __get_cpu_var(var)			per_cpu__##var
+-#define __raw_get_cpu_var(var)			per_cpu__##var
 -
--#define __get_cpu_var(var) __raw_get_cpu_var(var)
-+#define __my_cpu_offset x86_read_percpu(this_cpu_off)
- 
- /* A macro to avoid #include hell... */
- #define percpu_modcopy(pcpudst, src, size)			\
-@@ -74,11 +55,18 @@ do {								\
- 
- /* fs segment starts at (positive) offset == __per_cpu_offset[cpu] */
- #define __percpu_seg "%%fs:"
-+
- #else  /* !SMP */
--#include <asm-generic/percpu.h>
-+
- #define __percpu_seg ""
-+
  #endif	/* SMP */
  
+-#define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu__##name
 +#include <asm-generic/percpu.h>
-+
-+/* We can use this directly for local CPU (faster). */
-+DECLARE_PER_CPU(unsigned long, this_cpu_off);
-+
- /* For arch-specific code, we can use direct single-insn ops (they
-  * don't give an lvalue though). */
- extern void __bad_percpu_size(void);
+ 
+ #endif /* __ARCH_SPARC64_PERCPU__ */
 
 -- 
