@@ -1,74 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760908AbYAHLkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761021AbYAHLkm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760908AbYAHLkV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 06:40:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760211AbYAHLiW
+	id S1761021AbYAHLkm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 06:40:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760340AbYAHLil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 06:38:22 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37273 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760204AbYAHLiV (ORCPT
+	Tue, 8 Jan 2008 06:38:41 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:51603 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760312AbYAHLij (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 06:38:21 -0500
-Date: Tue, 8 Jan 2008 03:38:01 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Galbraith <efault@gmx.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [vm] writing to UDF DVD+RW (/dev/sr0) while under memory
- pressure: box ==> doorstop
-Message-Id: <20080108033801.40d0043a.akpm@linux-foundation.org>
-In-Reply-To: <1199790316.4094.57.camel@homer.simson.net>
-References: <1199447212.4529.13.camel@homer.simson.net>
-	<1199612533.4384.54.camel@homer.simson.net>
-	<1199642470.3927.12.camel@homer.simson.net>
-	<20080106122954.d8f04c98.akpm@linux-foundation.org>
-	<1199790316.4094.57.camel@homer.simson.net>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Jan 2008 06:38:39 -0500
+Message-Id: <20080108113634.382855604@szeredi.hu>
+References: <20080108113502.184459371@szeredi.hu>
+User-Agent: quilt/0.45-1
+Date: Tue, 08 Jan 2008 12:35:11 +0100
+From: Miklos Szeredi <miklos@szeredi.hu>
+To: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
+       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
+Subject: [patch 9/9] unprivileged mounts: add "no submounts" flag
+Content-Disposition: inline; filename=unprivileged-mounts-add-no-submounts-flag.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 08 Jan 2008 12:05:16 +0100 Mike Galbraith <efault@gmx.de> wrote:
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-> 
-> On Sun, 2008-01-06 at 12:29 -0800, Andrew Morton wrote:
-> > On Sun, 06 Jan 2008 19:01:10 +0100 Mike Galbraith <efault@gmx.de> wrote:
-> > 
-> > > 
-> > > On Sun, 2008-01-06 at 10:42 +0100, Mike Galbraith wrote:
-> > > > FWIW, here's box having same seizure writing to /dev/pktcdvd/sr0.
-> > > 
-> > > Ugh, horrid device IO ==> horrid VM AFIKT.  I'll continue rummaging, but
-> > > I wonder, am I doing something _so_ stupid as to warrant zero response?
-> > > 
-> > 
-> > Copying linux-mm might have helped.  Bad time of year, too.
-> > 
-> > >From the traces it looks like all IO has stopped and everyone is waiting
-> > (directly or indirectly) for certain IO completions.  Is that really true,
-> > or is IO still dribbling along?
-> > 
-> > >From the kswapd0 trace it would appear that UDF is doing synchronous writes
-> > (udf_update_inode->sync_dirty_buffer) which perhaps is making things
-> > mightily slow.
-> 
-> This is a pretty uninteresting thread except for the VM aspect, but
-> rather than leave it dangling, I'll laugh at my naivety and close.
-> 
-> Seeks on DVD drives are apparently far FAR more horrible that I ever
-> imagined, so writing to a filesystem on a DVD+RW in effect constitutes
-> the stupid thing I was worried about above.  Make an image, populate it,
-> write it instead... sure to be a truckload faster, and due to the VM
-> connection, much safer too.  Oh well.
-> 
+Add a new mount flag "nomnt", which denies submounts for the owner.
+This would be useful, if we want to support traditional /etc/fstab
+based user mounts.
 
-Well.  From your earlier trace it appeared that something was causing
-the filesystem to perform synchronous inode writes - sync_dirty_buffer() was
-called.
+In this case mount(8) would still have to be suid-root, to check the
+mountpoint against the user/users flag in /etc/fstab, but /etc/mtab
+would no longer be mandatory for storing the actual owner of the
+mount.
 
-This will cause many more seeks than would occur if we were doing full
-delayed writing, with obvious throughput implications.
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
 
+Index: linux/fs/namespace.c
+===================================================================
+--- linux.orig/fs/namespace.c	2008-01-04 13:49:52.000000000 +0100
++++ linux/fs/namespace.c	2008-01-04 13:50:28.000000000 +0100
+@@ -694,6 +694,7 @@ static int show_vfsmnt(struct seq_file *
+ 		{ MNT_NOATIME, ",noatime" },
+ 		{ MNT_NODIRATIME, ",nodiratime" },
+ 		{ MNT_RELATIME, ",relatime" },
++		{ MNT_NOMNT, ",nomnt" },
+ 		{ 0, NULL }
+ 	};
+ 	struct proc_fs_info *fs_infop;
+@@ -1044,6 +1045,9 @@ static bool permit_mount(struct nameidat
+ 	if (S_ISLNK(inode->i_mode))
+ 		return false;
+ 
++	if (nd->path.mnt->mnt_flags & MNT_NOMNT)
++		return false;
++
+ 	if (!is_mount_owner(nd->path.mnt, current->fsuid))
+ 		return false;
+ 
+@@ -1888,9 +1892,11 @@ long do_mount(char *dev_name, char *dir_
+ 		mnt_flags |= MNT_RELATIME;
+ 	if (flags & MS_RDONLY)
+ 		mnt_flags |= MNT_READONLY;
++	if (flags & MS_NOMNT)
++		mnt_flags |= MNT_NOMNT;
+ 
+-	flags &= ~(MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_ACTIVE |
+-		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME| MS_KERNMOUNT);
++	flags &= ~(MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_ACTIVE | MS_NOATIME |
++			MS_NODIRATIME | MS_RELATIME | MS_KERNMOUNT | MS_NOMNT);
+ 
+ 	/* ... and get the mountpoint */
+ 	retval = path_lookup(dir_name, LOOKUP_FOLLOW, &nd);
+Index: linux/include/linux/fs.h
+===================================================================
+--- linux.orig/include/linux/fs.h	2008-01-04 13:49:12.000000000 +0100
++++ linux/include/linux/fs.h	2008-01-04 13:49:58.000000000 +0100
+@@ -130,6 +130,7 @@ extern int dir_notify_enable;
+ #define MS_KERNMOUNT	(1<<22) /* this is a kern_mount call */
+ #define MS_I_VERSION	(1<<23) /* Update inode I_version field */
+ #define MS_SETUSER	(1<<24) /* set mnt_uid to current user */
++#define MS_NOMNT	(1<<25) /* don't allow unprivileged submounts */
+ #define MS_ACTIVE	(1<<30)
+ #define MS_NOUSER	(1<<31)
+ 
+Index: linux/include/linux/mount.h
+===================================================================
+--- linux.orig/include/linux/mount.h	2008-01-04 13:45:45.000000000 +0100
++++ linux/include/linux/mount.h	2008-01-04 13:49:58.000000000 +0100
+@@ -30,6 +30,7 @@ struct mnt_namespace;
+ #define MNT_NODIRATIME	0x10
+ #define MNT_RELATIME	0x20
+ #define MNT_READONLY	0x40	/* does the user want this to be r/o? */
++#define MNT_NOMNT	0x80
+ 
+ #define MNT_SHRINKABLE	0x100
+ #define MNT_IMBALANCED_WRITE_COUNT	0x200 /* just for debugging */
+
+--
