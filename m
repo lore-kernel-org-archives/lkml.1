@@ -1,62 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757763AbYAHFvb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758015AbYAHFx2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757763AbYAHFvb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 00:51:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757062AbYAHFvX
+	id S1758015AbYAHFx2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 00:53:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbYAHFxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 00:51:23 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:33595 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756783AbYAHFvW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 00:51:22 -0500
-Message-ID: <47830DCF.3080306@zytor.com>
-Date: Mon, 07 Jan 2008 21:44:47 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 8 Jan 2008 00:53:20 -0500
+Received: from mail.suse.de ([195.135.220.2]:37946 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754247AbYAHFxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 00:53:19 -0500
+From: Neil Brown <neilb@suse.de>
+To: Jeff Layton <jlayton@redhat.com>
+Date: Tue, 8 Jan 2008 16:53:09 +1100
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Adrian Bunk <bunk@stusta.de>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: free_pages_check
-References: <86802c440801071843p583f390as53f8b600622b93b2@mail.gmail.com> <200801081434.14723.nickpiggin@yahoo.com.au>
-In-Reply-To: <200801081434.14723.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18307.4037.415675.519239@notabene.brown>
+Cc: akpm@linux-foundation.org, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] SUNRPC: spin svc_rqst initialization to its own function
+In-Reply-To: message from Jeff Layton on Saturday January 5
+References: <1199534542-3384-1-git-send-email-jlayton@redhat.com>
+	<1199534542-3384-2-git-send-email-jlayton@redhat.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Tuesday 08 January 2008 13:43, Yinghai Lu wrote:
->> wonder why free_pages_check mm/page_alloc.c is using bit OR than logical OR
->>
->> @@ -450,9 +450,9 @@ static inline void __free_one_page(struc
->>
->>  static inline int free_pages_check(struct page *page)
->>  {
->> -       if (unlikely(page_mapcount(page) |
->> -               (page->mapping != NULL)  |
->> -               (page_count(page) != 0)  |
->> +       if (unlikely(page_mapcount(page) ||
->> +               (page->mapping != NULL)  ||
->> +               (page_count(page) != 0)  ||
->>                 (page->flags & (
->>                         1 << PG_lru     |
->>                         1 << PG_private |
+On Saturday January 5, jlayton@redhat.com wrote:
+> Move the initialzation in __svc_create_thread that happens prior to
+> thread creation to a new function. Export the function to allow
+> services to have better control over the svc_rqst structs.
 > 
-> Because the positive case is extremely rare, so there is no benefit (nor
-> any correctness requirement) for short-circuit evaluation, and we don't
-> want to have all the branches that it involves. I think it is 3 more
-> conditional jumps.
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> ---
+>  include/linux/sunrpc/svc.h |    2 ++
+>  net/sunrpc/svc.c           |   43 +++++++++++++++++++++++++++++++------------
+>  2 files changed, 33 insertions(+), 12 deletions(-)
+> 
+> diff --git a/include/linux/sunrpc/svc.h b/include/linux/sunrpc/svc.h
+> index 8531a70..5f07300 100644
+> --- a/include/linux/sunrpc/svc.h
+> +++ b/include/linux/sunrpc/svc.h
+> @@ -382,6 +382,8 @@ struct svc_procedure {
+>   */
+>  struct svc_serv *  svc_create(struct svc_program *, unsigned int,
+>  			      void (*shutdown)(struct svc_serv*));
+> +struct svc_rqst *svc_prepare_thread(struct svc_serv *serv,
+> +					struct svc_pool *pool);
+>  int		   svc_create_thread(svc_thread_fn, struct svc_serv *);
+>  void		   svc_exit_thread(struct svc_rqst *);
+>  struct svc_serv *  svc_create_pooled(struct svc_program *, unsigned int,
+> diff --git a/net/sunrpc/svc.c b/net/sunrpc/svc.c
+> index fca17d0..b29ed43 100644
+> --- a/net/sunrpc/svc.c
+> +++ b/net/sunrpc/svc.c
+> @@ -538,23 +538,14 @@ svc_release_buffer(struct svc_rqst *rqstp)
+>  			put_page(rqstp->rq_pages[i]);
+>  }
+>  
+> -/*
+> - * Create a thread in the given pool.  Caller must hold BKL.
+> - * On a NUMA or SMP machine, with a multi-pool serv, the thread
+> - * will be restricted to run on the cpus belonging to the pool.
+> - */
+> -static int
+> -__svc_create_thread(svc_thread_fn func, struct svc_serv *serv,
+> -		    struct svc_pool *pool)
+> +struct svc_rqst *
+> +svc_prepare_thread(struct svc_serv *serv, struct svc_pool *pool)
+>  {
+>  	struct svc_rqst	*rqstp;
+> -	int		error = -ENOMEM;
+> -	int		have_oldmask = 0;
+> -	cpumask_t	oldmask;
+>  
+>  	rqstp = kzalloc(sizeof(*rqstp), GFP_KERNEL);
+>  	if (!rqstp)
+> -		goto out;
+> +		goto out_enomem;
+>  
+>  	init_waitqueue_head(&rqstp->rq_wait);
+>  
+> @@ -570,6 +561,34 @@ __svc_create_thread(svc_thread_fn func, struct svc_serv *serv,
+>  	spin_unlock_bh(&pool->sp_lock);
+>  	rqstp->rq_server = serv;
+>  	rqstp->rq_pool = pool;
+> +	return rqstp;
+> +
+> +out_thread:
+> +	svc_exit_thread(rqstp);
 
-Depends on how smart the compiler is.  If the page_() functions are 
-inlines or macros, there is only one pointer reference involved and it 
-should be able to do that transformation.  Whether or not gcc is that 
-smart is another matter.
+I realise that the bug existed before your change, but calling
+svc_exit_thread at this point is not good.
+The 'goto out_thread' is *before* "pool->sp_nrthreads++", but
+svc_exit_thread does "pool->sp_nrthreads--;".  Not good.
 
-	-hpa
+As you are playing is this code, do you feel like fixing that error
+path??
 
+
+Otherwise, patch looks good.
+Acked-By: NeilBrown <neilb@suse.de>
+
+Thanks,
+NeilBrown
