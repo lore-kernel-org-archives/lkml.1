@@ -1,68 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753889AbYAHTv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754605AbYAHTw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753889AbYAHTv3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 14:51:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbYAHTvV
+	id S1754605AbYAHTw0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 14:52:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbYAHTwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 14:51:21 -0500
-Received: from smtp1.cc.lut.fi ([157.24.2.30]:46701 "EHLO smtp1.cc.lut.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751766AbYAHTvU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 14:51:20 -0500
-X-Greylist: delayed 2642 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Jan 2008 14:51:20 EST
-Date: Tue, 8 Jan 2008 21:06:38 +0200
-From: Pekka Paalanen <pq@iki.fi>
-To: linux-kernel@vger.kernel.org
-Cc: jbeulich@novell.com, proski@gnu.org
-Subject: Replacement for page fault notifiers?
-Message-ID: <20080108210638.5c9e093a@daedalus.pq.iki.fi>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 8 Jan 2008 14:52:18 -0500
+Received: from mho-01-bos.mailhop.org ([63.208.196.178]:65145 "EHLO
+	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751643AbYAHTwS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 14:52:18 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 18.85.9.106
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1+toVjAVnqcDWI9ES/pvKEw
+Message-ID: <4783D449.4050406@reed.com>
+Date: Tue, 08 Jan 2008 14:51:37 -0500
+From: "David P. Reed" <dpreed@reed.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.9) Gecko/20071115 Fedora/2.0.0.9-1.fc8 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Ondrej Zary <linux@rainbow-software.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Rene Herman <rene.herman@keyaccess.nl>, Bodo Eggert <7eggert@gmx.de>,
+       Christer Weinigel <christer@weinigel.se>, Ingo Molnar <mingo@elte.hu>,
+       Paul Rolland <rol@as2917.net>, Pavel Machek <pavel@ucw.cz>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, rol@witbe.net
+Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
+ I/O delay override.
+References: <9BdU5-1YW-9@gated-at.bofh.it>	<200801081810.58904.linux@rainbow-software.org>	<4783B1B2.6070005@reed.com>	<200801081838.16241.linux@rainbow-software.org>	<4783C4A6.9060402@reed.com>	<20080108185120.3ff7ed18@lxorguk.ukuu.org.uk>	<4783CBD9.7020709@reed.com> <20080108192313.1c2d222a@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080108192313.1c2d222a@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Alan -
 
-the commit "x86: optimize page faults like all other achitectures and
-kill notifier cruft" by Christoph Hellwig removed the page fault
-notifiers (e.g. register_page_fault_notifier()) completely in 2.6.24.
-Mmio-trace [1] is using them for tracking memory mapped IO, and also
-other people have mentioned they need it [2,3].
+I dug up a DP83901A SNIC datasheet in a quick Google search, while that 
+wasn't the only such chip, it was one of them.  I can forward the PDF 
+(the www.alldatasheet.com site dynamically creates the download URL), if 
+anyone wants it.
+The relevant passage says, in regard to delaying between checking the 
+CRDA addresses to see if a dummy "remote read" has been executed., and 
+in regard perhaps to other card IO register loops: 
+                                                         
 
-This is roughly how I understand mmio-trace is working. In a loadable
-kernel module calls to __ioremap() are diverted to an mmio-trace
-specific function. The function calls the real __ioremap() and marks
-the returned pages as not present. Access to the mapped IO memory
-causes a page fault. Mmio-trace's page fault handler marks the page
-present, records the event, single-steps the faulting instruction, and
-finally marks the page as not present again.
+    TIME BETWEEN CHIP SELECTS
+                                                                 
+    The SNIC requires that successive chip selects be no
+    closer                                                     
+    than 4 bus clocks (BSCK) together. If the condition is
+    violat-                                           
+    ed the SNIC may glitch ACK. CPUs that operate from pipe-
+    lined instructions (i e 386) or have a cache (i e 486) can
+    execute consecutive I O cycles very quickly The solution is
+    to delay the execution of consecutive I O cycles by either
+    breaking the pipeline or forcing the CPU to access outside
+    its cache.
 
-- Is there anything coming to replace register_page_fault_notifier()?
-- Has someone found another way to accomplish the same without patching
-the kernel?
-- Should I start writing a patch to bring back the notifiers, based on
-the commit that removed them?
+The NE2000 as I recall had no special logic on the board to protect the 
+chip from successive chip selects that were too close - which is the 
+reason for the problem. Clearly an out to port 80 takes more than 4 ISA 
+bus clocks, so that works if the NE2000 is on the ISA bus,   On the 
+other hand, there are other ways to delay more than 4 ISA bus clocks.  
+And as you say, one needs a delay for this chip that relates to the 
+chip's card's bus's clock speed, not absolute time.
 
-People started to complain to me that mmio-trace does not compile for
-2.6.24. At least the Nouveau project is a regular user of mmio-trace
-for reverse-engineering, and the tool should be easy to use. Therefore
-I would prefer not to force casual contributors to patch their kernels
-as it might be too much for some. I am hoping that 2.6.25, if not
-2.6.24, would contain a mechanism to accomplish what I need.
-
-I am not a subscriber, so please keep me in CC. Also I CC'd the people
-who wrote about the same issue in the past.
-
-Thanks.
-
-
-[1] http://nouveau.freedesktop.org/wiki/MmioTrace
-[2] http://marc.info/?l=linux-kernel&m=119540769014745&w=2
-[3] http://article.gmane.org/gmane.linux.kernel/609521
-
--- 
-Pekka Paalanen
-http://www.iki.fi/pq/
+Alan Cox wrote:
+>> As well you should. I am honestly curious (for my own satisfaction) as 
+>> to what the natsemi docs say the delay code should do  (can't imagine 
+>> they say "use io port 80 because it is unused").  I don't have any 
+>>     
+>
+> They say you must allow 4 bus clocks for the address decode. They don't
+> deal with the ISA side as the chip itself has no ISA glue.
+>
+>
+>   
+>> copies anymore. But mere curiosity on my part is not worth spending a 
+>> lot of time on - I know you are super busy.   If there's a copy online 
+>> at a URL ...
+>>     
+>
+> Not that I know of. There may be. A good general source of info is Russ
+> Nelson's old DOS packet driver collection.
+>
+>
+>   
