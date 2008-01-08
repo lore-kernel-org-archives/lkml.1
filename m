@@ -1,86 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbYAHVOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757995AbYAHVOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757272AbYAHVOU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 16:14:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbYAHVKi
+	id S1757995AbYAHVOj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 16:14:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbYAHVKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 16:10:38 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47706 "EHLO mx1.redhat.com"
+	Tue, 8 Jan 2008 16:10:39 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47704 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753948AbYAHVKh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753971AbYAHVKh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 8 Jan 2008 16:10:37 -0500
-Message-Id: <20080108210007.257424941@redhat.com>
+Message-Id: <20080108210005.558041779@redhat.com>
 References: <20080108205939.323955454@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 08 Jan 2008 15:59:48 -0500
+Date: Tue, 08 Jan 2008 15:59:46 -0500
 From: Rik van Riel <riel@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org
-Subject: [patch 09/19] (NEW) more aggressively use lumpy reclaim
-Content-Disposition: inline; filename=lumpy-reclaim-lower-order.patch
+Subject: [patch 07/19] (NEW) add some sanity checks to get_scan_ratio
+Content-Disposition: inline; filename=rvr-04-linux-2.6-scan-ratio-fixes.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-During an AIM7 run on a 16GB system, fork started failing around
-32000 threads, despite the system having plenty of free swap and
-15GB of pageable memory.
-
-If normal pageout does not result in contiguous free pages for
-kernel stacks, fall back to lumpy reclaim instead of failing fork
-or doing excessive pageout IO.
-
-I do not know whether this change is needed due to the extreme
-stress test or because the inactive list is a smaller fraction
-of system memory on huge systems.
+The access ratio based scan rate determination in get_scan_ratio
+works ok in most situations, but needs to be corrected in some
+corner cases:
+- if we run out of swap space, do not bother scanning the anon LRUs
+- if we have already freed all of the page cache, we need to scan
+  the anon LRUs
 
 Signed-off-by: Rik van Riel <riel@redhat.com>
 
 Index: linux-2.6.24-rc6-mm1/mm/vmscan.c
 ===================================================================
---- linux-2.6.24-rc6-mm1.orig/mm/vmscan.c	2008-01-08 12:08:03.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/mm/vmscan.c	2008-01-08 12:21:04.000000000 -0500
-@@ -870,7 +870,8 @@ int isolate_lru_page(struct page *page)
-  * of reclaimed pages
-  */
- static unsigned long shrink_inactive_list(unsigned long max_scan,
--			struct zone *zone, struct scan_control *sc, int file)
-+			struct zone *zone, struct scan_control *sc,
-+			int priority, int file)
+--- linux-2.6.24-rc6-mm1.orig/mm/vmscan.c	2008-01-07 17:33:50.000000000 -0500
++++ linux-2.6.24-rc6-mm1/mm/vmscan.c	2008-01-07 17:57:49.000000000 -0500
+@@ -1182,7 +1182,7 @@ static unsigned long shrink_list(enum lr
+ static void get_scan_ratio(struct zone *zone, struct scan_control * sc,
+ 					unsigned long *percent)
  {
- 	LIST_HEAD(page_list);
- 	struct pagevec pvec;
-@@ -888,8 +889,19 @@ static unsigned long shrink_inactive_lis
- 		unsigned long nr_freed;
- 		unsigned long nr_active;
- 		unsigned int count[NR_LRU_LISTS] = { 0, };
--		int mode = (sc->order > PAGE_ALLOC_COSTLY_ORDER) ?
--					ISOLATE_BOTH : ISOLATE_INACTIVE;
-+		int mode = ISOLATE_INACTIVE;
+-	unsigned long anon, file;
++	unsigned long anon, file, free;
+ 	unsigned long anon_prio, file_prio;
+ 	unsigned long rotate_sum;
+ 	unsigned long ap, fp;
+@@ -1230,6 +1230,20 @@ static void get_scan_ratio(struct zone *
+ 	else if (fp > 100)
+ 		fp = 100;
+ 	percent[1] = fp;
 +
-+		/*
-+		 * If we need a large contiguous chunk of memory, or have
-+		 * trouble getting a small set of contiguous pages, we
-+		 * will reclaim both active and inactive pages.
-+		 *
-+		 * We use the same threshold as pageout congestion_wait below.
-+		 */
-+		if (sc->order > PAGE_ALLOC_COSTLY_ORDER)
-+			mode = ISOLATE_BOTH;
-+		else if (sc->order && priority < DEF_PRIORITY - 2)
-+			mode = ISOLATE_BOTH;
- 
- 		nr_taken = sc->isolate_pages(sc->swap_cluster_max,
- 			     &page_list, &nr_scan, sc->order, mode,
-@@ -1166,7 +1178,7 @@ static unsigned long shrink_list(enum lr
- 		shrink_active_list(nr_to_scan, zone, sc, priority, file);
- 		return 0;
- 	}
--	return shrink_inactive_list(nr_to_scan, zone, sc, file);
-+	return shrink_inactive_list(nr_to_scan, zone, sc, priority, file);
++	free = zone_page_state(zone, NR_FREE_PAGES);
++
++	/*
++	 * If we have no swap space, do not bother scanning anon pages
++	 */
++	if (nr_swap_pages <= 0)
++		percent[0] = 0;
++	/*
++	 * If we already freed most file pages, scan the anon pages
++	 * regardless of the page access ratios or swappiness setting.
++	 */
++	else if (file + free <= zone->pages_high)
++		percent[0] = 100;
  }
  
- /*
+ 
 
 -- 
 All Rights Reversed
