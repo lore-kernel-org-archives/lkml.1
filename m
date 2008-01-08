@@ -1,247 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760819AbYAHLjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760908AbYAHLkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760819AbYAHLjy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 06:39:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760181AbYAHLiQ
+	id S1760908AbYAHLkV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 06:40:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760211AbYAHLiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 06:38:16 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:51600 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760148AbYAHLiL (ORCPT
+	Tue, 8 Jan 2008 06:38:22 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37273 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760204AbYAHLiV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 06:38:11 -0500
-Message-Id: <20080108113629.192719163@szeredi.hu>
-References: <20080108113502.184459371@szeredi.hu>
-User-Agent: quilt/0.45-1
-Date: Tue, 08 Jan 2008 12:35:08 +0100
-From: Miklos Szeredi <miklos@szeredi.hu>
-To: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
-       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
-Subject: [patch 6/9] unprivileged mounts: allow unprivileged mounts
-Content-Disposition: inline; filename=unprivileged-mounts-allow-unprivileged-mounts.patch
+	Tue, 8 Jan 2008 06:38:21 -0500
+Date: Tue, 8 Jan 2008 03:38:01 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Galbraith <efault@gmx.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [vm] writing to UDF DVD+RW (/dev/sr0) while under memory
+ pressure: box ==> doorstop
+Message-Id: <20080108033801.40d0043a.akpm@linux-foundation.org>
+In-Reply-To: <1199790316.4094.57.camel@homer.simson.net>
+References: <1199447212.4529.13.camel@homer.simson.net>
+	<1199612533.4384.54.camel@homer.simson.net>
+	<1199642470.3927.12.camel@homer.simson.net>
+	<20080106122954.d8f04c98.akpm@linux-foundation.org>
+	<1199790316.4094.57.camel@homer.simson.net>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+On Tue, 08 Jan 2008 12:05:16 +0100 Mike Galbraith <efault@gmx.de> wrote:
 
-Define a new fs flag FS_SAFE, which denotes, that unprivileged mounting of
-this filesystem may not constitute a security problem.
+> 
+> On Sun, 2008-01-06 at 12:29 -0800, Andrew Morton wrote:
+> > On Sun, 06 Jan 2008 19:01:10 +0100 Mike Galbraith <efault@gmx.de> wrote:
+> > 
+> > > 
+> > > On Sun, 2008-01-06 at 10:42 +0100, Mike Galbraith wrote:
+> > > > FWIW, here's box having same seizure writing to /dev/pktcdvd/sr0.
+> > > 
+> > > Ugh, horrid device IO ==> horrid VM AFIKT.  I'll continue rummaging, but
+> > > I wonder, am I doing something _so_ stupid as to warrant zero response?
+> > > 
+> > 
+> > Copying linux-mm might have helped.  Bad time of year, too.
+> > 
+> > >From the traces it looks like all IO has stopped and everyone is waiting
+> > (directly or indirectly) for certain IO completions.  Is that really true,
+> > or is IO still dribbling along?
+> > 
+> > >From the kswapd0 trace it would appear that UDF is doing synchronous writes
+> > (udf_update_inode->sync_dirty_buffer) which perhaps is making things
+> > mightily slow.
+> 
+> This is a pretty uninteresting thread except for the VM aspect, but
+> rather than leave it dangling, I'll laugh at my naivety and close.
+> 
+> Seeks on DVD drives are apparently far FAR more horrible that I ever
+> imagined, so writing to a filesystem on a DVD+RW in effect constitutes
+> the stupid thing I was worried about above.  Make an image, populate it,
+> write it instead... sure to be a truckload faster, and due to the VM
+> connection, much safer too.  Oh well.
+> 
 
-Since most filesystems haven't been designed with unprivileged mounting in
-mind, a thorough audit is needed before setting this flag.
+Well.  From your earlier trace it appeared that something was causing
+the filesystem to perform synchronous inode writes - sync_dirty_buffer() was
+called.
 
-For "safe" filesystems also allow unprivileged forced unmounting.
+This will cause many more seeks than would occur if we were doing full
+delayed writing, with obvious throughput implications.
 
-Move subtype handling from do_kern_mount() into do_new_mount().  All
-other callers are kernel-internal and do not need subtype support.
-
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
-
-Index: linux/fs/namespace.c
-===================================================================
---- linux.orig/fs/namespace.c	2008-01-03 21:20:11.000000000 +0100
-+++ linux/fs/namespace.c	2008-01-03 21:21:06.000000000 +0100
-@@ -960,14 +960,16 @@ static bool is_mount_owner(struct vfsmou
- /*
-  * umount is permitted for
-  *  - sysadmin
-- *  - mount owner, if not forced umount
-+ *  - mount owner
-+ *    o if not forced umount,
-+ *    o if forced umount, and filesystem is "safe"
-  */
- static bool permit_umount(struct vfsmount *mnt, int flags)
- {
- 	if (capable(CAP_SYS_ADMIN))
- 		return true;
- 
--	if (flags & MNT_FORCE)
-+	if ((flags & MNT_FORCE) && !(mnt->mnt_sb->s_type->fs_flags & FS_SAFE))
- 		return false;
- 
- 	return is_mount_owner(mnt, current->fsuid);
-@@ -1025,13 +1027,17 @@ asmlinkage long sys_oldumount(char __use
-  * - mountpoint is not a symlink
-  * - mountpoint is in a mount owned by the user
-  */
--static bool permit_mount(struct nameidata *nd, int *flags)
-+static bool permit_mount(struct nameidata *nd, struct file_system_type *type,
-+			 int *flags)
- {
- 	struct inode *inode = nd->path.dentry->d_inode;
- 
- 	if (capable(CAP_SYS_ADMIN))
- 		return true;
- 
-+	if (type && !(type->fs_flags & FS_SAFE))
-+		return false;
-+
- 	if (S_ISLNK(inode->i_mode))
- 		return false;
- 
-@@ -1285,7 +1291,7 @@ static int do_loopback(struct nameidata 
- 	struct vfsmount *mnt = NULL;
- 	int err;
- 
--	if (!permit_mount(nd, &flags))
-+	if (!permit_mount(nd, NULL, &flags))
- 		return -EPERM;
- 	if (!old_name || !*old_name)
- 		return -EINVAL;
-@@ -1466,30 +1472,76 @@ out:
- 	return err;
- }
- 
-+static struct vfsmount *fs_set_subtype(struct vfsmount *mnt, const char *fstype)
-+{
-+	int err;
-+	const char *subtype = strchr(fstype, '.');
-+	if (subtype) {
-+		subtype++;
-+		err = -EINVAL;
-+		if (!subtype[0])
-+			goto err;
-+	} else
-+		subtype = "";
-+
-+	mnt->mnt_sb->s_subtype = kstrdup(subtype, GFP_KERNEL);
-+	err = -ENOMEM;
-+	if (!mnt->mnt_sb->s_subtype)
-+		goto err;
-+	return mnt;
-+
-+ err:
-+	mntput(mnt);
-+	return ERR_PTR(err);
-+}
-+
- /*
-  * create a new mount for userspace and request it to be added into the
-  * namespace's tree
-  */
--static int do_new_mount(struct nameidata *nd, char *type, int flags,
-+static int do_new_mount(struct nameidata *nd, char *fstype, int flags,
- 			int mnt_flags, char *name, void *data)
- {
-+	int err;
- 	struct vfsmount *mnt;
-+	struct file_system_type *type;
- 
--	if (!type || !memchr(type, 0, PAGE_SIZE))
-+	if (!fstype || !memchr(fstype, 0, PAGE_SIZE))
- 		return -EINVAL;
- 
--	/* we need capabilities... */
--	if (!capable(CAP_SYS_ADMIN))
--		return -EPERM;
--
--	mnt = do_kern_mount(type, flags & ~MS_SETUSER, name, data);
--	if (IS_ERR(mnt))
-+	type = get_fs_type(fstype);
-+	if (!type)
-+		return -ENODEV;
-+
-+	err = -EPERM;
-+	if (!permit_mount(nd, type, &flags))
-+		goto out_put_filesystem;
-+
-+	if (flags & MS_SETUSER) {
-+		err = reserve_user_mount();
-+		if (err)
-+			goto out_put_filesystem;
-+	}
-+
-+	mnt = vfs_kern_mount(type, flags & ~MS_SETUSER, name, data);
-+	if (!IS_ERR(mnt) && (type->fs_flags & FS_HAS_SUBTYPE) &&
-+	    !mnt->mnt_sb->s_subtype)
-+		mnt = fs_set_subtype(mnt, fstype);
-+	put_filesystem(type);
-+	if (IS_ERR(mnt)) {
-+		if (flags & MS_SETUSER)
-+			dec_nr_user_mounts();
- 		return PTR_ERR(mnt);
-+	}
- 
- 	if (flags & MS_SETUSER)
--		set_mnt_user(mnt);
-+		__set_mnt_user(mnt);
- 
- 	return do_add_mount(mnt, nd, mnt_flags, NULL);
-+
-+ out_put_filesystem:
-+	put_filesystem(type);
-+	return err;
- }
- 
- /*
-@@ -1520,7 +1572,7 @@ int do_add_mount(struct vfsmount *newmnt
- 	if (S_ISLNK(newmnt->mnt_root->d_inode->i_mode))
- 		goto unlock;
- 
--	/* MNT_USER was set earlier */
-+	/* some flags may have been set earlier */
- 	newmnt->mnt_flags |= mnt_flags;
- 	if ((err = graft_tree(newmnt, nd)))
- 		goto unlock;
-Index: linux/include/linux/fs.h
-===================================================================
---- linux.orig/include/linux/fs.h	2008-01-03 21:15:35.000000000 +0100
-+++ linux/include/linux/fs.h	2008-01-03 21:21:06.000000000 +0100
-@@ -96,6 +96,7 @@ extern int dir_notify_enable;
- #define FS_REQUIRES_DEV 1 
- #define FS_BINARY_MOUNTDATA 2
- #define FS_HAS_SUBTYPE 4
-+#define FS_SAFE 8		/* Safe to mount by unprivileged users */
- #define FS_REVAL_DOT	16384	/* Check the paths ".", ".." for staleness */
- #define FS_RENAME_DOES_D_MOVE	32768	/* FS will handle d_move()
- 					 * during rename() internally.
-Index: linux/fs/super.c
-===================================================================
---- linux.orig/fs/super.c	2008-01-02 21:42:10.000000000 +0100
-+++ linux/fs/super.c	2008-01-03 21:21:06.000000000 +0100
-@@ -906,29 +906,6 @@ out:
- 
- EXPORT_SYMBOL_GPL(vfs_kern_mount);
- 
--static struct vfsmount *fs_set_subtype(struct vfsmount *mnt, const char *fstype)
--{
--	int err;
--	const char *subtype = strchr(fstype, '.');
--	if (subtype) {
--		subtype++;
--		err = -EINVAL;
--		if (!subtype[0])
--			goto err;
--	} else
--		subtype = "";
--
--	mnt->mnt_sb->s_subtype = kstrdup(subtype, GFP_KERNEL);
--	err = -ENOMEM;
--	if (!mnt->mnt_sb->s_subtype)
--		goto err;
--	return mnt;
--
-- err:
--	mntput(mnt);
--	return ERR_PTR(err);
--}
--
- struct vfsmount *
- do_kern_mount(const char *fstype, int flags, const char *name, void *data)
- {
-@@ -937,9 +914,6 @@ do_kern_mount(const char *fstype, int fl
- 	if (!type)
- 		return ERR_PTR(-ENODEV);
- 	mnt = vfs_kern_mount(type, flags, name, data);
--	if (!IS_ERR(mnt) && (type->fs_flags & FS_HAS_SUBTYPE) &&
--	    !mnt->mnt_sb->s_subtype)
--		mnt = fs_set_subtype(mnt, fstype);
- 	put_filesystem(type);
- 	return mnt;
- }
-
---
