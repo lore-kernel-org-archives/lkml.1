@@ -1,83 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755055AbYAHSVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbYAHSWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755055AbYAHSVs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 13:21:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754101AbYAHSVU
+	id S1755417AbYAHSWJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 13:22:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbYAHSVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 13:21:20 -0500
-Received: from mga10.intel.com ([192.55.52.92]:31523 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754044AbYAHSVT (ORCPT
+	Tue, 8 Jan 2008 13:21:54 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:57222 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755182AbYAHSVv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 13:21:19 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,258,1196668800"; 
-   d="scan'208";a="280285664"
-Message-ID: <4783BE06.1070507@linux.intel.com>
-Date: Tue, 08 Jan 2008 10:16:38 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Kevin Winchester <kjwinchester@gmail.com>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       NetDev <netdev@vger.kernel.org>
-Subject: Re: Top 10 kernel oopses for the week ending January 5th, 2008
-References: <477FF149.4070609@linux.intel.com> <20080105213935.GN27894@ZenIV.linux.org.uk> <20080107174431.GC27741@fieldses.org> <4782CF9C.6000508@gmail.com> <alpine.LFD.1.00.0801071851120.3148@woody.linux-foundation.org> <20080108081401.d9576ac5.randy.dunlap@oracle.com> <4783B602.1050307@linux.intel.com> <alpine.LFD.1.00.0801080957280.3148@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0801080957280.3148@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 8 Jan 2008 13:21:51 -0500
+Subject: Re: [RFC/PARTIAL PATCH 0/3] dma: passing "attributes" to dma_map_*
+	routines
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: akepner@sgi.com, Tony Luck <tony.luck@intel.com>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       David Miller <davem@davemloft.net>, Muli Ben-Yehuda <muli@il.ibm.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <adawsqkjipz.fsf@cisco.com>
+References: <20080108023222.GP23661@sgi.com>
+	 <1199809628.3534.34.camel@localhost.localdomain>
+	 <ada63y4kycs.fsf@cisco.com>
+	 <1199814853.3534.39.camel@localhost.localdomain>
+	 <adawsqkjipz.fsf@cisco.com>
+Content-Type: text/plain
+Date: Tue, 08 Jan 2008 12:21:44 -0600
+Message-Id: <1199816504.3534.59.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> Cool.
+
+On Tue, 2008-01-08 at 10:05 -0800, Roland Dreier wrote:
+> > > I think the case before us that Arthur is dealing with is a
+>  > > counterexample for this: there's nothing bus-specific about it all.
+>  > > The issue is related to reordering of DMAs within the Altix system
+>  > > fabric, after they've left the PCI world.  This issue would be present
+>  > > no matter what kind of host bridge you hook up to the system fabric,
+>  > > be it PCI-X, PCIe, ISA, MCA or whatever.
 > 
-> One thing I wonder about - could you separate out the bug-ons and warnings 
-> from the oopses? They really are different issues, and an oops with 
-> register information etc is very different from a BUG() with line numbers, 
-> which in turn is very different from a WARN_ON().
+>  > But it is: for performance reasons, the Altix boxes have a rather non
+>  > standard PCI bridge implementation that gives relaxed ordering on the
+>  > PCI bus.
+> 
+> I don't think this is accurate. As I understand things, the reordering
+> happens within the Altix system interconnect
+
+Which would be a platform bus, rather like the runway bus in parisc
+systems ...
+
+>  -- nothing to do with the
+> PCI bridge hanging off this fabric.  It is "platform" behavior and I
+> think is properly handled within the dma_ API, which exists to
+> abstract platforms.
 
 
-> and in fact three of those five entries are really WARN_ON's. It would be 
-> nicer if it would look more along the lines of
+>  > This behaviour was later standardised to some degree in PCIe,
+>  > so you could argue they actually have an altix specific PCI bus (PCIa
+>  > anyone?).  Regardless, other manufacturers are probably going to demand
+>  > something equivalent to this based on the PCIe standard, so we should be
+>  > ready for it, hence the desire for the bus specific attributes.
 > 
-> 	Backtraces reported for kernel 2.6.24-rc7
-> 
-> 
-> 	4 oopses reported
-> 
-> 	hfsplus_releasepage     3
-> 	__hfs_brec_find         1
-> 
-> 
-> 	3 warnings repored
-> 
-> 	enqueue_task            1
-> 	lock_acquire            1
-> 	__ieee80211_rx          1
-> 
-> because those things really don't have the same kind of impact at all, and 
-> tend to be very different to debug (a "BUG_ON()" is perhaps somewhat 
-> closer to an oops, but a WARN_ON() is definitely in a class of its own).
+> But:
+>  a) The Altix has PCI-X, not PCIe, so having something PCIe-specific
+>     is not a solution for this case; and
+>  b) the PCIe behavior is opt-in, in the sense that you have to
+>     specifically ask for looser ordering, while the Altix is loosely
+>     ordered unless you ask for this "flush" property.  So I don't
+>     think the same attribute will work for both cases.
 
-the database has the information so it's just a matter of slightly different php code ;)
-Before I do that... do you want the BUG's separate, part of the warnings or part of the oopses?
-(I rather make this change once ;)
+But the point is that the Altix does something non-standard but which
+was later standardised (in a different way) largely so others could also
+benefit from the relaxed ordering speedup.
 
-> 
-> On that "Code:" side, it seems there is still some problem with oops 
-> parsing. See for example:
-> 
-> 	http://www.kerneloops.org/raw.php?rawid=1521&msgid=http://mid.gmane.org/20071017154655.GA13394@elte.hu
-> 
-> and notice how the Code: never made it into the raw message (and thus 
-> there is also no instruction disassembly).
+I agree the altix needs something, what I don't agree is that we should
+be overloading the dma data direction to do it ... especially given the
+confetti like shower of other bus attributes waiting in the wings.
 
-ok I'll fix this; I can fix this for all new entries at least, fixing retroactive is going to be
-near impossible I suspect.
+What it wants to do is set strict ordering for the bus ... well, that is
+an attribute in the PCIe standard (it just happens to be the default one
+for a standard bus, whereas relaxed is the default for altix).  However,
+set bus attribute strict would be a simple no-op for a standard bus (and
+set attribute relaxed a no-op for altix).
+
+James
+
+
