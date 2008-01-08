@@ -1,92 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756941AbYAHBsF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756909AbYAHCBu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756941AbYAHBsF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 20:48:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbYAHBrz
+	id S1756909AbYAHCBu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 21:01:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbYAHCBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 20:47:55 -0500
-Received: from mga03.intel.com ([143.182.124.21]:44690 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753811AbYAHBry (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 20:47:54 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,255,1196668800"; 
-   d="scan'208";a="361386756"
-Subject: Re: [RFC] PCIE ASPM support
-From: Shaohua Li <shaohua.li@intel.com>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Greg KH <greg@kroah.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-In-Reply-To: <47826D1B.8020301@intel.com>
-References: <1199340944.1642.26.camel@sli10-desk.sh.intel.com>
-	 <477D3889.9070301@intel.com>
-	 <1199410324.3631.7.camel@sli10-desk.sh.intel.com>
-	 <47826D1B.8020301@intel.com>
-Content-Type: text/plain
-Date: Tue, 08 Jan 2008 09:34:43 +0800
-Message-Id: <1199756083.28410.0.camel@sli10-desk.sh.intel.com>
+	Mon, 7 Jan 2008 21:01:42 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47206 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752407AbYAHCBl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 21:01:41 -0500
+Date: Tue, 8 Jan 2008 01:58:36 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "David P. Reed" <dpreed@reed.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Rene Herman <rene.herman@keyaccess.nl>,
+       Bodo Eggert <7eggert@gmx.de>, Christer Weinigel <christer@weinigel.se>,
+       Ingo Molnar <mingo@elte.hu>, Rene Herman <rene.herman@gmail.com>,
+       Paul Rolland <rol@as2917.net>, Pavel Machek <pavel@ucw.cz>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, rol@witbe.net
+Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
+ I/O delay override.
+Message-ID: <20080108015836.554bb144@lxorguk.ukuu.org.uk>
+In-Reply-To: <4782BC56.9050607@reed.com>
+References: <9BdU5-1YW-9@gated-at.bofh.it>
+	<9BeZN-3Gf-5@gated-at.bofh.it>
+	<9BnTB-1As-31@gated-at.bofh.it>
+	<9BrX4-8go-1@gated-at.bofh.it>
+	<9BuBG-4eR-51@gated-at.bofh.it>
+	<9BvRd-6aL-71@gated-at.bofh.it>
+	<9GRQW-1DX-13@gated-at.bofh.it>
+	<9GSah-23W-1@gated-at.bofh.it>
+	<9GSDy-2GD-23@gated-at.bofh.it>
+	<9GTpK-40d-15@gated-at.bofh.it>
+	<9GUvy-5H2-11@gated-at.bofh.it>
+	<9GVKU-7SS-25@gated-at.bofh.it>
+	<E1JBxnV-00046d-CS@be1.7eggert.dyndns.org>
+	<478281A6.1000704@zytor.com>
+	<alpine.LSU.0.999.0801072226060.16143@be1.lrz>
+	<4782A355.1070207@zytor.com>
+	<alpine.LSU.0.999.0801072316440.16143@be1.lrz>
+	<4782AED5.1060406@keyaccess.nl>
+	<4782B4B9.2020608@zytor.com>
+	<4782BC56.9050607@reed.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> The PIT usage for calibrating the delay loop can be moderated, if need 
+> by, by using the PC BIOS which by definition uses the PIT correctly it 
+> its int 15 function 83 call..   Just do it before coming up in a state 
+> where the PC BIOS int 15h calls no longer work.  I gave code to do this 
+> in a much earlier message.
 
-On Mon, 2008-01-07 at 10:19 -0800, Kok, Auke wrote:
-> Shaohua Li wrote:
-> > On Thu, 2008-01-03 at 11:33 -0800, Kok, Auke wrote:
-> >> Shaohua Li wrote:
-> >>> PCI Express ASPM defines a protocol for PCI Express components in the D0
-> >>> state to reduce Link power by placing their Links into a low power state
-> >>> and instructing the other end of the Link to do likewise. This
-> >>> capability allows hardware-autonomous, dynamic Link power reduction
-> >>> beyond what is achievable by software-only controlled power management.
-> >>> However, The device should be configured by software appropriately.
-> >>> Enabling ASPM will save power, but will introduce device latency.
-> >>>
-> >>> This patch adds ASPM support in Linux. It introduces a global policy for
-> >>> ASPM, a sysfs file /sys/module/pcie_aspm/parameters/policy can control
-> >>> it. The interface can be used as a boot option too. Currently we have
-> >>> below setting:
-> >>> 	-default, BIOS default setting
-> >>> 	-powersave, highest power saving mode, enable all available ASPM state
-> >>> and clock power management
-> >>> 	-performance, highest performance, disable ASPM and clock power
-> >>> management
-> >>> By default, the 'default' policy is used currently.
-> >>>
-> >>> In my test, power difference between powersave mode and performance mode
-> >>> is about 1.3w in a system with 3 PCIE links.
-> >>>
-> >>> please review, any comments will be appreciated.
-> >>
-> >> quickly glanced this over since I recently disabled l1 ASPM for the e1000/e1000e
-> >> driven 82573 device which has issues with l1 ASPM. that immediately gives me the
-> >> question: how can I continue to disable 1l aspm by default for this device using
-> >> this infrastructure?
-> > I used to have a per-device interface, but thought the interface might
-> > be hard to use for users. If we really need the per-device interface, I
-> > can re-add it.
-> > 
-> >> I do like the fact that there is a generic way to re-enable it for the users who
-> >> want to use it. Can this change be done when the device is already active?
-> > Yes, at least in my test.
-> > 
-> >> Can you
-> >> change this parameter per device/module?
-> > Another way is to provide a helper for driver, and driver disables
-> > specific ASPM states. It sounds better to let driver do the disabling,
-> > as users haven't the knowledge?
-> 
-> agreed, however this could still be usefull in debugging equipment for the
-> experienced user. In any case an easy handle for the driver to dis/enable ASPM
-> would certainly help our case, and possibly others.
-Then I'll add a config option, and enable the per-device interface with
-config enabled.
+And as I've said before we don't know if we have a PC BIOS. If we are
+running from a kexec or on a Macintoy with EFI or an Xbox we may not.
 
-Thanks,
-Shaohua
+As per previous discussions for the PIT we can simply guess a safe
+initial udelay value and then tune the real one.
 
+Alan
