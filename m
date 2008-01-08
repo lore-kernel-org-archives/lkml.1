@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753676AbYAHS2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755039AbYAHS3P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753676AbYAHS2w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 13:28:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbYAHS2k
+	id S1755039AbYAHS3P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 13:29:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754352AbYAHS25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 13:28:40 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41275 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751632AbYAHS2j (ORCPT
+	Tue, 8 Jan 2008 13:28:57 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:59276 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751907AbYAHS24 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 13:28:39 -0500
-Date: Tue, 8 Jan 2008 10:27:34 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Kevin Winchester <kjwinchester@gmail.com>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       NetDev <netdev@vger.kernel.org>
-Subject: Re: Top 10 kernel oopses for the week ending January 5th, 2008
-In-Reply-To: <4783BE06.1070507@linux.intel.com>
-Message-ID: <alpine.LFD.1.00.0801081025470.3148@woody.linux-foundation.org>
-References: <477FF149.4070609@linux.intel.com> <20080105213935.GN27894@ZenIV.linux.org.uk> <20080107174431.GC27741@fieldses.org> <4782CF9C.6000508@gmail.com> <alpine.LFD.1.00.0801071851120.3148@woody.linux-foundation.org> <20080108081401.d9576ac5.randy.dunlap@oracle.com>
- <4783B602.1050307@linux.intel.com> <alpine.LFD.1.00.0801080957280.3148@woody.linux-foundation.org> <4783BE06.1070507@linux.intel.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 8 Jan 2008 13:28:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=Iy+em2Thbycp7YHGBUHguImWDgNd9VAAwgG61MeEidCN1BkMMwBYP6juWnCBXQuMndFIat7zMRq6ItfAbMEfsrusAamvQAy11kWPs3o4uI03tbhXwKeyYZEGrkeDj5Bt20oiH2eOAhOdnIQjyNOV+aKfZfMxREVLbO/kw0n7Bbk=
+Date: Tue, 8 Jan 2008 19:29:54 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Jan Kara <jack@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Ben Fennema <bfennema@falcon.csc.calpoly.edu>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 4/7] udf: replace loops coded with goto to real loops
+Message-ID: <20080108182945.GA8106@joi>
+References: <1199582513-7915-1-git-send-email-marcin.slusarz@gmail.com> <1199582513-7915-4-git-send-email-marcin.slusarz@gmail.com> <20080107144821.GK12589@duck.suse.cz> <20080107210955.GC22144@joi> <20080108101732.GB17794@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080108101732.GB17794@duck.suse.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 8 Jan 2008, Arjan van de Ven wrote:
+On Tue, Jan 08, 2008 at 11:17:32AM +0100, Jan Kara wrote:
+> On Mon 07-01-08 22:10:01, Marcin Slusarz wrote:
+> > On Mon, Jan 07, 2008 at 03:48:21PM +0100, Jan Kara wrote:
+> > > On Sun 06-01-08 02:21:50, marcin.slusarz@gmail.com wrote:
+> > > > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> > >   I'm not sure if this improves readability in general. If the code is
+> > > really a loop in nature, then we should code it using do {} while but in
+> > > case we loop back just in case of some error (as seems to be the case in
+> > > udf_bitmap_new_block()), then IMHO goto is more explanative. So at least
+> > > that one case I'd leave as is.
+> > Why do you think it's an error?
+>   There is code:
 > 
-> the database has the information so it's just a matter of slightly different
-> php code ;)
-> Before I do that... do you want the BUG's separate, part of the warnings or
-> part of the oopses?
-> (I rather make this change once ;)
+>           if (!udf_clear_bit(bit, bh->b_data)) {
+>                 udf_debug("bit already cleared for block %d\n", bit);
+>                 goto repeat;
+>         }
+>   Now if this happens, it's a bug AFAICS because we have been searching for
+> a free block and we hold s_alloc_mutex and hence we should not race with
+> any other allocation.
+Fine, I'll drop this part of patch.
 
-I'd like them all separate, they tend to be very different and contain 
-different information.
-
-Put the warnings last, as the least important. Oopses at the top, since 
-they tend to be the ones that are less expected.
-
-> > and notice how the Code: never made it into the raw message (and thus there
-> > is also no instruction disassembly).
-> 
-> ok I'll fix this; I can fix this for all new entries at least, fixing
-> retroactive is going to be near impossible I suspect.
-
-Oh well..
-
-		Linus
+Marcin
