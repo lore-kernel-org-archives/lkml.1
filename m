@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbYAHUt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756077AbYAHUvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755849AbYAHUt7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 15:49:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbYAHUtx
+	id S1756077AbYAHUvx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 15:51:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbYAHUvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 15:49:53 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:46170 "EHLO smtp.drzeus.cx"
+	Tue, 8 Jan 2008 15:51:46 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:42012 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751776AbYAHUtw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 15:49:52 -0500
-Date: Tue, 8 Jan 2008 21:49:46 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch] split MMC_CAP_4_BIT_DATA
-Message-ID: <20080108214946.03018d95@poseidon.drzeus.cx>
-In-Reply-To: <200801081440.49683.vapier.adi@gmail.com>
-References: <200801081329.39611.vapier.adi@gmail.com>
-	<20080108202157.0b8d3393@poseidon.drzeus.cx>
-	<200801081440.49683.vapier.adi@gmail.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+	id S1753005AbYAHUvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 15:51:45 -0500
+Date: Tue, 8 Jan 2008 21:51:49 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>, tglx@linutronix.de,
+       mingo@redhat.com, hpa@zytor.com, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, trivial@kernel.org
+Subject: Re: [PATCH 3/5] x86: coding style fixes in arch/x86/ia32/ia32_aout.c
+Message-ID: <20080108205149.GA26794@uranus.ravnborg.org>
+References: <20080108203233.01bb5c7f@paolo-desktop> <20080108150439.6388028e@bree.surriel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080108150439.6388028e@bree.surriel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Jan 2008 14:40:49 -0500
-Mike Frysinger <vapier.adi@gmail.com> wrote:
-
+On Tue, Jan 08, 2008 at 03:04:39PM -0500, Rik van Riel wrote:
+> On Tue, 8 Jan 2008 20:32:33 +0100
+> Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
 > 
-> i dont understand what's confusing.  the Blackfin on chip host controller only 
-> supports 1-bit MMC, but it supports 4-bit SD/SDIO.  this is a fact.  while it 
-> may be a stupid decision, it is what it is, and i need the framework made 
-> more flexible in order to get the Blackfin driver merged cleanly.  we do 
-> software for hardware, we dont do hardware.
+> > Fix plenty of coding style errors
+> 
+> Most of these kernel changes would probably get in the way of
+> real development, making patches reject that would otherwise
+> apply.
+> 
+> You did find one possible bug, though:
+> 
+> > @@ -467,9 +465,9 @@ static int load_aout_library(struct file *file)
+> >  
+> >  #ifdef WARN_OLD
+> >  		static unsigned long error_time;
+> > -		if ((jiffies-error_time) > 5*HZ)
+> > -		{
+> > -			printk(KERN_WARNING 
+> > +		if ((jiffies-error_time) > 5*HZ) {
+> > +
+> > +			printk(KERN_WARNING
+> >  			       "N_TXTOFF is not page aligned. Please convert library: %s\n",
+> >  			       file->f_path.dentry->d_name.name);
+> >  			error_time = jiffies;
+> 
+> You may want to look into the time_after() macro and make sure
+> it is used here.
 
-Well, since I've seen no _hardware_ differences between 4-bit MMC and 4-bit SD, "support" in this case must me "vendor will guarantee it works". And that is not the kind of "support" that needs a distinction in the code.
+It is already fixed in the x86 tree in the mm branch.
 
-So, again, if you feel that there is a hardware difference between 4-bit MMC and 4-bit SD then please elaborate as it is my understanding that they are identical.
+So this part would conflict with ongoing development effort...
 
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+	Sam
