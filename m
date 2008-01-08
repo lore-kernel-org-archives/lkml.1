@@ -1,71 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755200AbYAHXpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbYAHXq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755200AbYAHXpS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 18:45:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087AbYAHXpF
+	id S1756156AbYAHXq2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 18:46:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbYAHXqS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 18:45:05 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38181 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752251AbYAHXpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 18:45:04 -0500
-Date: Wed, 9 Jan 2008 00:44:49 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH 00 of 10] x86: unify asm/pgtable.h
-Message-ID: <20080108234449.GA24274@elte.hu>
-References: <patchbomb.1199829603@localhost> <20080108224244.GA3768@elte.hu> <20080108231226.GA10744@elte.hu> <478405DA.40303@goop.org> <20080108232803.GA19906@elte.hu>
+	Tue, 8 Jan 2008 18:46:18 -0500
+Received: from py-out-1112.google.com ([64.233.166.182]:10491 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753087AbYAHXqR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 18:46:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=edxLj2Spp7daOQ6awjzBq4tK55ppGz/Z/BkiXx2qfQXtDMt6FRBorXKT8pwvPT7YlayjlcV2BCEwPaBNzXoBTiPprkcY60xZzWZ1ee9SeWIw4PH/UKdcguX9w6vt9cwEyDKiszdfsfNTA/Qsbr3xKAmsMloTeSeezwSTQpu2fUQ=
+Message-ID: <7b9198260801081546u50f11e9ck32ec6f071efa300d@mail.gmail.com>
+Date: Tue, 8 Jan 2008 23:46:15 +0000
+From: "Tom Spink" <tspink@gmail.com>
+To: "Brent Casavant" <bcasavan@sgi.com>
+Subject: Re: AF_UNIX MSG_PEEK bug?
+Cc: "Rick Jones" <rick.jones2@hp.com>, netdev@vger.kernel.org,
+       "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+In-Reply-To: <7b9198260801081539x7aee72fbm53b5f298c5faf56@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080108232803.GA19906@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <alpine.BSF.1.00.0801081556580.24286@pkunk.americas.sgi.com>
+	 <4783FBD6.1000004@hp.com>
+	 <7b9198260801081453s198af7efycc7c35668c65eaf1@mail.gmail.com>
+	 <alpine.BSF.1.00.0801081716010.24286@pkunk.americas.sgi.com>
+	 <7b9198260801081539x7aee72fbm53b5f298c5faf56@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 08/01/2008, Tom Spink <tspink@gmail.com> wrote:
+> On 08/01/2008, Brent Casavant <bcasavan@sgi.com> wrote:
+> > On Tue, 8 Jan 2008, Tom Spink wrote:
+> >
+> > > Where in the code is the message length being sent across the socket?
+> >
+> > In do_producer(), there are the following lines in the main loop:
+> >
+> >         /* Send random lengths of data */
+> >         messages[i].length = (rand() % MAXLEN) + sizeof(size_t);
+> >         iov[i].iov_len = messages[i].length;
+> >
+> > The entire "struct sockmsg" is sent across the socket, so the first
+> > size_t in each message contains the length of the entire message
+> > (including the size_t).  This size gets picked up at the
+> > recv(...,MSG_PEEK) line in do_consumer().
+> >
+> > Thanks,
+> > Brent
+> >
+> > --
+> > Brent Casavant                          All music is folk music.  I ain't
+> > bcasavan@sgi.com                        never heard a horse sing a song.
+> > Silicon Graphics, Inc.                    -- Louis Armstrong
+> >
+>
+> Hi,
+>
+> But you're not consuming the size_t on the other end.  You're only
+> peeking it, i.e. you're doing the recv to peek at the message, but
+> never calling recv to remove that data from the queue... or am I
+> missing something?
+>
+> --
+> Regards,
+> Tom Spink
+> University of Edinburgh
+>
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Ach.  I *am* missing something... and what I'm missing is my
+understanding of the sendmsg and recvmsg calls.
 
-> it's one of these patches:
-> 
->  Subject: x86: move all asm/pgtable constants into one place
->  Subject: x86: avoid name conflict for Voyager leave_mm
->  Subject: x86/pgtable: unify pagetable accessors
+A quick Google has sorted me out.
 
-it's the first one that causes the crash.
-
-reviewed it carefully and found the bug below. Checking now whether it 
-fixes the crash.
-
-	Ingo
-
----
- include/asm-x86/pgtable.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-x86.q/include/asm-x86/pgtable.h
-===================================================================
---- linux-x86.q.orig/include/asm-x86/pgtable.h
-+++ linux-x86.q/include/asm-x86/pgtable.h
-@@ -68,7 +68,7 @@ extern unsigned long long __PAGE_KERNEL,
- #endif	/* __ASSEMBLER__ */
- #else
- #define __PAGE_KERNEL_EXEC						\
--	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_GLOBAL)
-+	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED)
- #define __PAGE_KERNEL		(__PAGE_KERNEL_EXEC | _PAGE_NX)
- #endif
- 
-
+-- 
+Regards,
+Tom Spink
+University of Edinburgh
