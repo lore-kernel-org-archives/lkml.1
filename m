@@ -1,84 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbYAHXzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbYAHXzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755267AbYAHXzW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 18:55:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbYAHXzI
+	id S1753264AbYAHXzl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 18:55:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbYAHXzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 18:55:08 -0500
-Received: from ns.suse.de ([195.135.220.2]:34760 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751174AbYAHXzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 18:55:06 -0500
-Date: Tue, 8 Jan 2008 15:58:46 -0800
-From: Greg KH <gregkh@suse.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, vatsa@linux.vnet.ibm.com,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, dmitry.adamushko@gmail.com,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 12/11] sched: rt-group: uid-group interface
-Message-ID: <20080108235846.GA17067@suse.de>
-References: <20080106161128.152634000@chello.nl> <1199703080.7143.24.camel@twins> <20080107122330.GB25945@linux.vnet.ibm.com> <1199725063.31975.53.camel@lappy> <20080108105733.GA2569@linux.vnet.ibm.com> <1199790150.7143.57.camel@twins> <3ae72650801080631p2b2c50a6q3d59badf06b62684@mail.gmail.com> <1199835332.31975.66.camel@lappy>
+	Tue, 8 Jan 2008 18:55:12 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:52827 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752847AbYAHXzJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 18:55:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=w36q+PftS9evVLIxAkp369xrLRheDwa/PTxJbDqBkkdzFGrN980CAUf0dXu4kk0Lza68tOBB5fhXRgYIkp9Y//BhHeOdWCZa4vB9k++gHuS2Xsp4J1W8EnRGSibrCatimiSSnZn+FvN92bX34D03V8443iSkjt7qE+2XezxYI7E=
+Message-ID: <47840D56.2080107@gmail.com>
+Date: Wed, 09 Jan 2008 02:55:02 +0300
+From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Organization: DmVo Home
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1199835332.31975.66.camel@lappy>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, gorcunov@gmail.com
+Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
+References: <20080108164015.GC31504@one.firstfloor.org> <4d8e3fd30801081158j3e7292d0i939776342015b12d@mail.gmail.com> <20080108200044.GI16309@parisc-linux.org> <4d8e3fd30801081203l636c5923j7965efaa9c121c56@mail.gmail.com> <20080108201606.GJ16309@parisc-linux.org> <20080108202059.GK16309@parisc-linux.org>
+In-Reply-To: <20080108202059.GK16309@parisc-linux.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 09, 2008 at 12:35:32AM +0100, Peter Zijlstra wrote:
+Matthew Wilcox пишет:
+> On Tue, Jan 08, 2008 at 01:16:06PM -0700, Matthew Wilcox wrote:
+>> On Tue, Jan 08, 2008 at 09:03:13PM +0100, Paolo Ciarrocchi wrote:
+>>> Yes of course, I've been silly in didn't verify whether the file compile
+>>> but I would appreciate to know whether I'm on the right track or not.
+>> Well ... you're not.
 > 
-> On Tue, 2008-01-08 at 15:31 +0100, Kay Sievers wrote:
-> > On Jan 8, 2008 12:02 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > >
-> > > On Tue, 2008-01-08 at 16:27 +0530, Dhaval Giani wrote:
-> > > > On Mon, Jan 07, 2008 at 05:57:42PM +0100, Peter Zijlstra wrote:
-> > > > >
-> > > > > Subject: sched: rt-group: add uid-group interface
-> > > > >
-> > > > > Extend the /sys/kernel/uids/<uid>/ interface to allow setting
-> > > > > the group's rt_period and rt_runtime.
-> > > > >
-> > > >
-> > > > Hi Peter,
-> > > >
-> > > > Cool stuff! I will try out these patches and try to give you some
-> > > > feedback.
-> > >
-> > > Thanks, much appreciated!
-> > >
-> > > > One request though, could you please add some documentation to
-> > > > Documentation/ABI/testing/sysfs-kernel-uids?
-> > >
-> > > I already have documentation on the todo list, I'll add this file to
-> > > that list :-)
-> > 
-> > Care to rebase the patch against -mm, we fixed the mixed-up usage
-> > of ksets and kobjects, and this can not apply anymore:
-> >   http://git.kernel.org/?p=linux/kernel/git/gregkh/patches.git;a=blob;f=driver/struct-user_info-sysfs.patch;hb=HEAD
-> > 
-> > There is also an attribute group now which makes it much easier to add
-> > new files.
+> Here's what a correct conversion might look like.  I haven't tried to
+> compile it, so I'm copying and pasting it in order to damage whitespace
+> and make sure nobody tries to compile it.
+
+It seems that the kernel janitors project needs to explicitly describe the
+prerequisites a person should meet before tackling the enterprise's toughest
+technical challenges such as operating system kernel development.
+
+On the face of it, it seems quite ridiculous to me that a team of extremely
+qualified kernel engineers spend their valuable time teaching the basics of
+the C language using this mailing list. Time is precious, and even more so
+when we are having that many unresolved problems, e.g. when the Kernel Bug
+Tracker lists more than 1300 open bugs:
+
+http://bugzilla.kernel.org/buglist.cgi?order=relevance&bug_status=__open__
+
+Paolo, I have nothing against you personally as you seem to have adequately
+reacted to what is going on and went on strengthening your C skills; my point
+is that an operating system kernel development facility such as LKML is most
+probably not the right place to set up a correspondence course in programming
+basics.
+
 > 
-> Ingo, Greg,
+> index bf1075e..0c543a8 100644
+> --- a/arch/arm/common/rtctime.c
+> +++ b/arch/arm/common/rtctime.c
+> @@ -174,8 +174,7 @@ static unsigned int rtc_poll(struct file *file, poll_table *
+>         return data != 0 ? POLLIN | POLLRDNORM : 0;
+>  }
+>  
+> -static int rtc_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+> -                    unsigned long arg)
+> +static long rtc_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+>  {
+>         struct rtc_ops *ops = file->private_data;
+>         struct rtc_time tm;
+> @@ -183,6 +182,8 @@ static int rtc_ioctl(struct inode *inode, struct file *file,
+>         void __user *uarg = (void __user *)arg;
+>         int ret = -EINVAL;
+>  
+> +       lock_kernel();
+> +
+>         switch (cmd) {
+>         case RTC_ALM_READ:
+>                 ret = rtc_arm_read_alarm(ops, &alrm);
+> @@ -277,6 +278,9 @@ static int rtc_ioctl(struct inode *inode, struct file *file,
+>                         ret = ops->ioctl(cmd, arg);
+>                 break;
+>         }
+> +
+> +       unlock_kernel();
+> +
+>         return ret;
+>  }
+>  
+> @@ -334,7 +338,7 @@ static const struct file_operations rtc_fops = {
+>         .llseek         = no_llseek,
+>         .read           = rtc_read,
+>         .poll           = rtc_poll,
+> -       .ioctl          = rtc_ioctl,
+> +       .unlocked_ioctl = rtc_ioctl,
+>         .open           = rtc_open,
+>         .release        = rtc_release,
+>         .fasync         = rtc_fasync,
 > 
-> What would be the easiest way to carry this forward? sched-devel and
-> greg's tree would intersect at this point and leave poor akpm with the
-> resulting mess. Should I just make an incremental patch akpm can carry
-> and push? Or can we base one tree off the other?
+> 
 
-If it's just a single patch for this, I'd be glad to take it.  But by
-looking at the [11/12] above, I doubt this is so...
-
-If it's not that rough (12 patches is not a big deal), I'd be glad to
-take these through my tree, after you fix up Kay's requests above :)
-
-thanks,
-
-greg k-h
