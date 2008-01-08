@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754521AbYAHRy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbYAHRyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754521AbYAHRy2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 12:54:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750844AbYAHRyV
+	id S1756192AbYAHRyq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 12:54:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754971AbYAHRyh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 12:54:21 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:41670 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750695AbYAHRyU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 12:54:20 -0500
-Subject: Re: [RFC/PARTIAL PATCH 0/3] dma: passing "attributes" to dma_map_*
-	routines
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: akepner@sgi.com, Tony Luck <tony.luck@intel.com>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       David Miller <davem@davemloft.net>, Muli Ben-Yehuda <muli@il.ibm.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <ada63y4kycs.fsf@cisco.com>
-References: <20080108023222.GP23661@sgi.com>
-	 <1199809628.3534.34.camel@localhost.localdomain>
-	 <ada63y4kycs.fsf@cisco.com>
-Content-Type: text/plain
-Date: Tue, 08 Jan 2008 11:54:13 -0600
-Message-Id: <1199814853.3534.39.camel@localhost.localdomain>
+	Tue, 8 Jan 2008 12:54:37 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:36691 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754441AbYAHRyf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 12:54:35 -0500
+Date: Tue, 8 Jan 2008 18:53:47 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       apw@shadowen.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] Deprecate checkpatch.pl --file
+Message-ID: <20080108175347.GA25968@uranus.ravnborg.org>
+References: <20080108161403.GA11632@basil.nowhere.org> <1199811033.1756.29.camel@imap.mvista.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1199811033.1756.29.camel@imap.mvista.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-01-08 at 09:42 -0800, Roland Dreier wrote:
-> > I'm already on record saying I don't think attributes in the generic
->  > code is the right approach.  All of the attributes I can see adding are
->  > bus specific (even to the extent that PCIe ones wouldn't apply to PCI
->  > for instance).
+On Tue, Jan 08, 2008 at 08:50:33AM -0800, Daniel Walker wrote:
 > 
-> I think the case before us that Arthur is dealing with is a
-> counterexample for this: there's nothing bus-specific about it all.
-> The issue is related to reordering of DMAs within the Altix system
-> fabric, after they've left the PCI world.  This issue would be present
-> no matter what kind of host bridge you hook up to the system fabric,
-> be it PCI-X, PCIe, ISA, MCA or whatever.
+> On Tue, 2008-01-08 at 17:14 +0100, Andi Kleen wrote:
+> 
+> 
+> > +if ($file) {
+> > +	print <<EOL
+> > +WARNING: Using --file mode. Please do not send patches to linux-kernel
+> > +that change whole existing files if you did not significantly change most
+> > +of the the file for other reasons anyways or just wrote the file newly
+> > +from scratch. Pure code style patches have a significant cost in a
+> > +quickly changing code base like Linux because they cause rejects
+> > +with other changes.
+> > +If you're sure you want to use whole file mode please use --file-force
+> > +EOL
+> > +;
+> > +	exit(1);
+> 
+> Can't say I like this too much .. It sounds like your telling people to
+> stop sending cleanup patches, which doesn't make much sense .. We want a
+> clean kernel .. Or at least I do ..
 
-But it is: for performance reasons, the Altix boxes have a rather non
-standard PCI bridge implementation that gives relaxed ordering on the
-PCI bus.  This behaviour was later standardised to some degree in PCIe,
-so you could argue they actually have an altix specific PCI bus (PCIa
-anyone?).  Regardless, other manufacturers are probably going to demand
-something equivalent to this based on the PCIe standard, so we should be
-ready for it, hence the desire for the bus specific attributes.
+It is a simple pain/benefit issue.
+Fixing the 25 errors and 13 warnings in kernel/profile.c may look
+like an easy task but then we put additional burden on the 10 people
+that have patches pending for this file.
 
-James
+It is the same reason why we do not run a 'kill-trailing-whitespace'
+on the full kernel tree.
 
-
+	Sam
