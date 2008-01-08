@@ -1,237 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758691AbYAHTgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbYAHTlJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758691AbYAHTgY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 14:36:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757967AbYAHTeR
+	id S1754866AbYAHTlJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 14:41:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbYAHTk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 14:34:17 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:36826 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757859AbYAHTeN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 14:34:13 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: akpm@linux-foundation.org, neilb@suse.de
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 5/6] NLM: Convert lockd to use kthreads
-Date: Tue,  8 Jan 2008 14:33:17 -0500
-Message-Id: <1199820798-5289-6-git-send-email-jlayton@redhat.com>
-X-Mailer: git-send-email 1.5.3.3
-In-Reply-To: <1199820798-5289-5-git-send-email-jlayton@redhat.com>
-References: <1199820798-5289-1-git-send-email-jlayton@redhat.com>
- <1199820798-5289-2-git-send-email-jlayton@redhat.com>
- <1199820798-5289-3-git-send-email-jlayton@redhat.com>
- <1199820798-5289-4-git-send-email-jlayton@redhat.com>
- <1199820798-5289-5-git-send-email-jlayton@redhat.com>
+	Tue, 8 Jan 2008 14:40:56 -0500
+Received: from an-out-0708.google.com ([209.85.132.243]:50707 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751632AbYAHTky (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 14:40:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=uUV2JKTGDiXDvVsf3+nwM1CZLZUxlPipicqqLEfmrqsV5bkQ9Mw06S3HM4awQ/8SScfwGttlLlWnLljbwoBv8YwomfSHL3q1Urhzr9RqYA6h425R8jnUVuUaaDIwOrQ3X806d/OtveqhUGq55+fbib/e3TLeeQbMtilEaS1Ct7c=
+From: Mike Frysinger <vapier.adi@gmail.com>
+Organization: ADI
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Subject: Re: [patch] split MMC_CAP_4_BIT_DATA
+Date: Tue, 8 Jan 2008 14:40:49 -0500
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <200801081329.39611.vapier.adi@gmail.com> <20080108202157.0b8d3393@poseidon.drzeus.cx>
+In-Reply-To: <20080108202157.0b8d3393@poseidon.drzeus.cx>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801081440.49683.vapier.adi@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Have lockd_up start lockd using kthread_run. With this change,
-lockd_down now blocks until lockd actually exits, so there's no longer
-need for the waitqueue code at the end of lockd_down. This also means
-that only one lockd can be running at a time which simplifies the code
-within lockd's main loop.
+On Tuesday 08 January 2008 14:21:57 Pierre Ossman wrote:
+> Mike Frysinger <vapier.adi@gmail.com> wrote:
+> > The on-chip Blackfin MMC/SD/SDIO host controller has the ability to do
+> > 1-bit MMC, 1-bit/4-bit SD, and 1-bit/4-bit SDIO.  Thus the current
+> > convention of MMC_CAP_4_BIT_DATA meaning "your host controller can do
+> > 1-bit or 4-bit for all modes" is insufficient for our needs.  The
+> > attached patch splits MMC_CAP_4_BIT_DATA into MMC_CAP_MMC_4_BIT_DATA and
+> > MMC_CAP_SD_4_BIT_DATA and updates all host controllers to include these
+> > in their caps and then changes existing code to check the new defines. 
+> > At the moment, SD/SDIO are lumped into MMC_CAP_SD_4_BIT_DATA ... should I
+> > bother with splitting that into SD and SDIO as well while I'm doing this
+> > ?
+> >
+> > Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+>
+> I fail to see why you need to split MMC and SD. Could you elaborate why the
+> controller won't work with MMC cards? I haven't seen any differences from
+> SD.
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
- fs/lockd/svc.c |   93 ++++++++++++++++++++++++--------------------------------
- 1 files changed, 40 insertions(+), 53 deletions(-)
-
-diff --git a/fs/lockd/svc.c b/fs/lockd/svc.c
-index 03a83a0..0777a4e 100644
---- a/fs/lockd/svc.c
-+++ b/fs/lockd/svc.c
-@@ -25,6 +25,7 @@
- #include <linux/smp.h>
- #include <linux/smp_lock.h>
- #include <linux/mutex.h>
-+#include <linux/kthread.h>
- #include <linux/freezer.h>
- 
- #include <linux/sunrpc/types.h>
-@@ -48,13 +49,12 @@ EXPORT_SYMBOL(nlmsvc_ops);
- 
- static DEFINE_MUTEX(nlmsvc_mutex);
- static unsigned int		nlmsvc_users;
--static pid_t			nlmsvc_pid;
-+static struct task_struct	*nlmsvc_task;
- static struct svc_serv		*nlmsvc_serv;
- int				nlmsvc_grace_period;
- unsigned long			nlmsvc_timeout;
- 
- static DECLARE_COMPLETION(lockd_start_done);
--static DECLARE_WAIT_QUEUE_HEAD(lockd_exit);
- 
- /*
-  * These can be set at insmod time (useful for NFS as root filesystem),
-@@ -111,10 +111,11 @@ static inline void clear_grace_period(void)
- /*
-  * This is the lockd kernel thread
-  */
--static void
--lockd(struct svc_rqst *rqstp)
-+static int
-+lockd(void *vrqstp)
- {
- 	int		err = 0;
-+	struct svc_rqst *rqstp = vrqstp;
- 	unsigned long grace_period_expire;
- 
- 	/* Lock module and set up kernel thread */
-@@ -122,17 +123,14 @@ lockd(struct svc_rqst *rqstp)
- 	 * be holding a reference to this module, so it
- 	 * is safe to just claim another reference
- 	 */
--	__module_get(THIS_MODULE);
- 	lock_kernel();
- 
- 	/*
- 	 * Let our maker know we're running.
- 	 */
--	nlmsvc_pid = current->pid;
- 	nlmsvc_serv = rqstp->rq_server;
- 	complete(&lockd_start_done);
- 
--	daemonize("lockd");
- 	set_freezable();
- 
- 	/* Process request with signals blocked, but allow SIGKILL.  */
-@@ -151,7 +149,7 @@ lockd(struct svc_rqst *rqstp)
- 	 * NFS mount or NFS daemon has gone away, and we've been sent a
- 	 * signal, or else another process has taken over our job.
- 	 */
--	while ((nlmsvc_users || !signalled()) && nlmsvc_pid == current->pid) {
-+	while (!kthread_should_stop()) {
- 		long timeout = MAX_SCHEDULE_TIMEOUT;
- 		char buf[RPC_MAX_ADDRBUFLEN];
- 
-@@ -199,27 +197,18 @@ lockd(struct svc_rqst *rqstp)
- 
- 	flush_signals(current);
- 
--	/*
--	 * Check whether there's a new lockd process before
--	 * shutting down the hosts and clearing the slot.
--	 */
--	if (!nlmsvc_pid || current->pid == nlmsvc_pid) {
--		if (nlmsvc_ops)
--			nlmsvc_invalidate_all();
--		nlm_shutdown_hosts();
--		nlmsvc_pid = 0;
--		nlmsvc_serv = NULL;
--	} else
--		printk(KERN_DEBUG
--			"lockd: new process, skipping host shutdown\n");
--	wake_up(&lockd_exit);
-+	if (nlmsvc_ops)
-+		nlmsvc_invalidate_all();
-+	nlm_shutdown_hosts();
-+	nlmsvc_task = NULL;
-+	nlmsvc_serv = NULL;
- 
- 	/* Exit the RPC thread */
- 	svc_exit_thread(rqstp);
- 
- 	/* Release module */
- 	unlock_kernel();
--	module_put_and_exit(0);
-+	return 0;
- }
- 
- 
-@@ -269,14 +258,15 @@ static int make_socks(struct svc_serv *serv, int proto)
- int
- lockd_up(int proto) /* Maybe add a 'family' option when IPv6 is supported ?? */
- {
--	struct svc_serv *	serv;
--	int			error = 0;
-+	struct svc_serv *serv;
-+	struct svc_rqst *rqstp;
-+	int		error = 0;
- 
- 	mutex_lock(&nlmsvc_mutex);
- 	/*
- 	 * Check whether we're already up and running.
- 	 */
--	if (nlmsvc_pid) {
-+	if (nlmsvc_task) {
- 		if (proto)
- 			error = make_socks(nlmsvc_serv, proto);
- 		goto out;
-@@ -303,11 +293,24 @@ lockd_up(int proto) /* Maybe add a 'family' option when IPv6 is supported ?? */
- 	/*
- 	 * Create the kernel thread and wait for it to start.
- 	 */
-+	rqstp = svc_prepare_thread(serv, &serv->sv_pools[0]);
-+	if (IS_ERR(rqstp)) {
-+		error = PTR_ERR(rqstp);
-+		printk(KERN_WARNING
-+			"lockd_up: svc_rqst allocation failed, error=%d\n",
-+			error);
-+		goto destroy_and_out;
-+	}
-+
-+	svc_sock_update_bufs(serv);
- 	init_completion(&lockd_start_done);
--	error = svc_create_thread(lockd, serv);
--	if (error) {
-+	nlmsvc_task = kthread_run(lockd, rqstp, serv->sv_name);
-+	if (IS_ERR(nlmsvc_task)) {
-+		error = PTR_ERR(nlmsvc_task);
-+		nlmsvc_task = NULL;
- 		printk(KERN_WARNING
--			"lockd_up: create thread failed, error=%d\n", error);
-+			"lockd_up: kthread_run failed, error=%d\n", error);
-+		svc_exit_thread(rqstp);
- 		goto destroy_and_out;
- 	}
- 	wait_for_completion(&lockd_start_done);
-@@ -332,37 +335,21 @@ EXPORT_SYMBOL(lockd_up);
- void
- lockd_down(void)
- {
--	static int warned;
--
- 	mutex_lock(&nlmsvc_mutex);
- 	if (nlmsvc_users) {
- 		if (--nlmsvc_users)
- 			goto out;
--	} else
--		printk(KERN_WARNING "lockd_down: no users! pid=%d\n", nlmsvc_pid);
--
--	if (!nlmsvc_pid) {
--		if (warned++ == 0)
--			printk(KERN_WARNING "lockd_down: no lockd running.\n"); 
--		goto out;
-+	} else {
-+		printk(KERN_ERR "lockd_down: no users! task=%p\n",
-+			nlmsvc_task);
-+		BUG();
- 	}
--	warned = 0;
- 
--	kill_proc(nlmsvc_pid, SIGKILL, 1);
--	/*
--	 * Wait for the lockd process to exit, but since we're holding
--	 * the lockd semaphore, we can't wait around forever ...
--	 */
--	clear_thread_flag(TIF_SIGPENDING);
--	interruptible_sleep_on_timeout(&lockd_exit, HZ);
--	if (nlmsvc_pid) {
--		printk(KERN_WARNING 
--			"lockd_down: lockd failed to exit, clearing pid\n");
--		nlmsvc_pid = 0;
-+	if (!nlmsvc_task) {
-+		printk(KERN_ERR "lockd_down: no lockd running.\n");
-+		BUG();
- 	}
--	spin_lock_irq(&current->sighand->siglock);
--	recalc_sigpending();
--	spin_unlock_irq(&current->sighand->siglock);
-+	kthread_stop(nlmsvc_task);
- out:
- 	mutex_unlock(&nlmsvc_mutex);
- }
--- 
-1.5.3.3
-
+i dont understand what's confusing.  the Blackfin on chip host controller only 
+supports 1-bit MMC, but it supports 4-bit SD/SDIO.  this is a fact.  while it 
+may be a stupid decision, it is what it is, and i need the framework made 
+more flexible in order to get the Blackfin driver merged cleanly.  we do 
+software for hardware, we dont do hardware.
+-mike
