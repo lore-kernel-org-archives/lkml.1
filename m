@@ -1,42 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756385AbYAHWt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754797AbYAHWuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756385AbYAHWt0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 17:49:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbYAHWtJ
+	id S1754797AbYAHWuz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 17:50:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbYAHWuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 17:49:09 -0500
-Received: from ozlabs.org ([203.10.76.45]:34316 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752163AbYAHWtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 17:49:07 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] call sysrq_timer_list_show from a workqueue
-Date: Wed, 9 Jan 2008 09:48:43 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Kyle McMartin <kyle@mcmartin.ca>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20080108063113.GA21287@fattire.cabal.ca> <200801082250.06828.rusty@rustcorp.com.au> <20080108155119.GA26114@elte.hu>
-In-Reply-To: <20080108155119.GA26114@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 8 Jan 2008 17:50:46 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55338
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751452AbYAHWup (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 17:50:45 -0500
+Date: Tue, 08 Jan 2008 14:50:38 -0800 (PST)
+Message-Id: <20080108.145038.203528847.davem@davemloft.net>
+To: m.kozlowski@tuxland.pl
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       sparclinux@vger.kernel.org
+Subject: Re: Linux 2.6.24-rc7: sparc64: WARNING: at
+ kernel/lockdep_proc.c:267 lockdep_stats_show()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200801081942.17139.m.kozlowski@tuxland.pl>
+References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org>
+	<200801081942.17139.m.kozlowski@tuxland.pl>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801090948.43594.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 09 January 2008 02:51:19 Ingo Molnar wrote:
-> cool :-)
->
-> finally we have a _really_ sane symbols subsystem. Kudos :)
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Date: Tue, 8 Jan 2008 19:42:16 +0100
 
-Actually, the interface is horribly scattered.  It'd be nice for someone to go 
-through and look at what the minimum we actually need is and come up with a 
-system to organize them.
+> Hello,
+> 
+> 	Got this when doing usual looping over /proc entries on fresh test kernel:
+> 
+> WARNING: at kernel/lockdep_proc.c:267 lockdep_stats_show()
+> Call Trace:
+>  [0000000000492704] lockdep_stats_show+0x6ac/0x6c0
+>  [00000000004eb4b4] seq_read+0x5c/0x340
+>  [000000000050b2bc] proc_reg_read+0x64/0xa0
+>  [00000000004cd72c] vfs_read+0x74/0x120
+>  [00000000004cdb4c] sys_read+0x34/0x60
+>  [00000000004062d4] linux_sparc_syscall32+0x3c/0x40
+>  [0000000000012ff4] 0x12ffc
 
-BTW, do you want this fix in 2.6.24?
-Rusty.
+Please turn off lockdep on sparc64, currently it not
+reliable.  I have many things to audit, including how
+the stack frames are presented to the lockdep layer.
+
+So any problem you run into can be due to issues like
+that.
