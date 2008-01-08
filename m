@@ -1,46 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbYAHVWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758800AbYAHVXK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759525AbYAHVWu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 16:22:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758801AbYAHVTL
+	id S1758800AbYAHVXK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 16:23:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759224AbYAHVUw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 16:19:11 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:50308 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758677AbYAHVTJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 16:19:09 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=HU5uZe7/+KbHmCe+V8YrEwPpX3R7+1SM2sMtxf/MqB4fE6xCvrVDKuujONetCv7oG
-	moydBhuS/5hTST4eQuqpw==
-Message-ID: <532480950801081319v690dec0fy3538721fc1cd57a7@mail.gmail.com>
-Date: Tue, 8 Jan 2008 13:19:00 -0800
-From: "Michael Rubin" <mrubin@google.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: Possible fix for lockup in drop_caches
-Cc: richard <richard@rsk.demon.co.uk>, den@openvz.org,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071222020611.9e4e78dd.akpm@linux-foundation.org>
+	Tue, 8 Jan 2008 16:20:52 -0500
+Received: from ozlabs.org ([203.10.76.45]:48007 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759215AbYAHVUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 16:20:51 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 2/2] track and print last unloaded module in the oops trace
+Date: Wed, 9 Jan 2008 08:20:27 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: DM <dm.n9107@gmail.com>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org, ak@suse.de
+References: <20080106151946.50c3d8cc@laptopd505.fenrus.org> <5eeb9ad90801080639h2992e9b7maec0339e4f763f65@mail.gmail.com> <20080108161846.GD32273@elte.hu>
+In-Reply-To: <20080108161846.GD32273@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1197893602.2866.13.camel@castor.localdomain>
-	 <20071222020611.9e4e78dd.akpm@linux-foundation.org>
+Message-Id: <200801090820.28440.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 22, 2007 2:06 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Mon, 17 Dec 2007 12:13:22 +0000 richard <richard@rsk.demon.co.uk> wrote:
-> Michael, might your convert-inode-lists-to-tree patches eliminate the need
-> for taking inode_lock in drop_pagecache_sb()?  Probably not, as it uses an
-> rbtree.  It would have been possible if it was using a radix-tree, I
-> suspect..
+On Wednesday 09 January 2008 03:18:46 Ingo Molnar wrote:
+> * DM <dm.n9107@gmail.com> wrote:
+> > On Jan 8, 2008 3:26 PM, Arjan van de Ven <arjan@infradead.org> wrote:
+> > > > Why use sprintf? If a module name contains the % character we could
+> > > > overflow the buffer. Or is module-unloading root-only and we don't
+> > > > care?
+> > >
+> > > module loading isn't just root only; the name comes from an already
+> > > loaded module. If you can load kernel modules of your choice you own
+> > > the entire kernel already anway
+> >
+> > Still, strcpy seems like a better choice IMHO.
+>
+> agreed, this just isnt obvious IMO:
+>
+> +       sprintf(last_unloaded_module, mod->name);
+>
+> 	Ingo
 
-You are correct the new patch based on an rbtree will still require the lock.
+Yes, I've changed it to:
++	strlcpy(last_unloaded_module, mod->name, sizeof(last_unloaded_module));
 
-mrubin
+In my tree.
+
+Thanks,
+Rusty.
