@@ -1,110 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbYAHVPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758060AbYAHVPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753047AbYAHVPg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 16:15:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbYAHVKn
+	id S1758060AbYAHVPw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 16:15:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbYAHVKo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 16:10:43 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47729 "EHLO mx1.redhat.com"
+	Tue, 8 Jan 2008 16:10:44 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47731 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754614AbYAHVKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754648AbYAHVKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 8 Jan 2008 16:10:42 -0500
-Message-Id: <20080108205958.947621624@redhat.com>
+Message-Id: <20080108210009.730672701@redhat.com>
 References: <20080108205939.323955454@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 08 Jan 2008 15:59:41 -0500
+Date: Tue, 08 Jan 2008 15:59:50 -0500
 From: Rik van Riel <riel@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org, Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: [patch 02/19] free swap space on swap-in/activation
-Content-Disposition: inline; filename=rvr-00-linux-2.6-swapfree.patch
+Cc: linux-mm@kvack.org, Lee Schermerhorn <lee.schermerhorn@hp.com>
+Subject: [patch 11/19] Non-reclaimable page statistics
+Content-Disposition: inline; filename=noreclaim-01.2-report-nonreclaimable-memory.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-+ lts' convert anon_vma list lock to reader/write lock patch
-+ Nick Piggin's move and rework isolate_lru_page() patch
+V2 -> V3:
++ rebase to 23-mm1 atop RvR's split LRU series
 
-Free swap cache entries when swapping in pages if vm_swap_full()
-[swap space > 1/2 used?].  Uses new pagevec to reduce pressure
-on locks.
+V1 -> V2:
+	no changes
 
-Signed-off-by: Rik van Riel <riel@redhat.com>
-Signed-off-by: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Report non-reclaimable pages per zone and system wide.
 
-Index: linux-2.6.24-rc6-mm1/mm/vmscan.c
+Note:  may want to track/report some specific reasons for 
+nonreclaimability for deciding when to splice the noreclaim
+lists back to the normal lru.  That will be tricky,
+especially in shrink_active_list(), where we'd need someplace
+to save the per page reason for non-reclaimability until the
+pages are dumped back onto the noreclaim list from the pagevec.
+
+Note:  my tests indicate that NR_NORECLAIM and probably the
+other LRU stats aren't being maintained properly--especially
+with large amounts of mlocked memory and the mlock patch in
+this series installed.  Can't be sure of this, as I don't 
+know why the pages are on the noreclaim list. Needs further
+investigation.
+
+Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
+
+Index: linux-2.6.24-rc6-mm1/mm/page_alloc.c
 ===================================================================
---- linux-2.6.24-rc6-mm1.orig/mm/vmscan.c	2008-01-02 12:37:14.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/mm/vmscan.c	2008-01-02 12:37:18.000000000 -0500
-@@ -632,6 +632,9 @@ free_it:
- 		continue;
- 
- activate_locked:
-+		/* Not a candidate for swapping, so reclaim swap space. */
-+		if (PageSwapCache(page) && vm_swap_full())
-+			remove_exclusive_swap_page(page);
- 		SetPageActive(page);
- 		pgactivate++;
- keep_locked:
-@@ -1214,6 +1217,8 @@ static void shrink_active_list(unsigned 
- 			__mod_zone_page_state(zone, NR_ACTIVE, pgmoved);
- 			pgmoved = 0;
- 			spin_unlock_irq(&zone->lru_lock);
-+			if (vm_swap_full())
-+				pagevec_swap_free(&pvec);
- 			__pagevec_release(&pvec);
- 			spin_lock_irq(&zone->lru_lock);
- 		}
-@@ -1223,6 +1228,8 @@ static void shrink_active_list(unsigned 
- 	__count_zone_vm_events(PGREFILL, zone, pgscanned);
- 	__count_vm_events(PGDEACTIVATE, pgdeactivate);
- 	spin_unlock_irq(&zone->lru_lock);
-+	if (vm_swap_full())
-+		pagevec_swap_free(&pvec);
- 
- 	pagevec_release(&pvec);
- }
-Index: linux-2.6.24-rc6-mm1/mm/swap.c
-===================================================================
---- linux-2.6.24-rc6-mm1.orig/mm/swap.c	2008-01-02 12:37:12.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/mm/swap.c	2008-01-02 12:37:18.000000000 -0500
-@@ -465,6 +465,24 @@ void pagevec_strip(struct pagevec *pvec)
+--- linux-2.6.24-rc6-mm1.orig/mm/page_alloc.c	2008-01-02 12:37:58.000000000 -0500
++++ linux-2.6.24-rc6-mm1/mm/page_alloc.c	2008-01-02 12:38:03.000000000 -0500
+@@ -1899,12 +1899,20 @@ void show_free_areas(void)
  	}
- }
  
-+/*
-+ * Try to free swap space from the pages in a pagevec
-+ */
-+void pagevec_swap_free(struct pagevec *pvec)
-+{
-+	int i;
-+
-+	for (i = 0; i < pagevec_count(pvec); i++) {
-+		struct page *page = pvec->pages[i];
-+
-+		if (PageSwapCache(page) && !TestSetPageLocked(page)) {
-+			if (PageSwapCache(page))
-+				remove_exclusive_swap_page(page);
-+			unlock_page(page);
-+		}
-+	}
-+}
-+
- /**
-  * pagevec_lookup - gang pagecache lookup
-  * @pvec:	Where the resulting pages are placed
-Index: linux-2.6.24-rc6-mm1/include/linux/pagevec.h
+ 	printk("Active_anon:%lu active_file:%lu inactive_anon%lu\n"
+-		" inactive_file:%lu dirty:%lu writeback:%lu unstable:%lu\n"
++		" inactive_file:%lu"
++//TODO:  check/adjust line lengths
++#ifdef CONFIG_NORECLAIM
++		" noreclaim:%lu"
++#endif
++		" dirty:%lu writeback:%lu unstable:%lu\n"
+ 		" free:%lu slab:%lu mapped:%lu pagetables:%lu bounce:%lu\n",
+ 		global_page_state(NR_ACTIVE_ANON),
+ 		global_page_state(NR_ACTIVE_FILE),
+ 		global_page_state(NR_INACTIVE_ANON),
+ 		global_page_state(NR_INACTIVE_FILE),
++#ifdef CONFIG_NORECLAIM
++		global_page_state(NR_NORECLAIM),
++#endif
+ 		global_page_state(NR_FILE_DIRTY),
+ 		global_page_state(NR_WRITEBACK),
+ 		global_page_state(NR_UNSTABLE_NFS),
+@@ -1931,6 +1939,9 @@ void show_free_areas(void)
+ 			" inactive_anon:%lukB"
+ 			" active_file:%lukB"
+ 			" inactive_file:%lukB"
++#ifdef CONFIG_NORECLAIM
++			" noreclaim:%lukB"
++#endif
+ 			" present:%lukB"
+ 			" pages_scanned:%lu"
+ 			" all_unreclaimable? %s"
+@@ -1944,6 +1955,9 @@ void show_free_areas(void)
+ 			K(zone_page_state(zone, NR_INACTIVE_ANON)),
+ 			K(zone_page_state(zone, NR_ACTIVE_FILE)),
+ 			K(zone_page_state(zone, NR_INACTIVE_FILE)),
++#ifdef CONFIG_NORECLAIM
++			K(zone_page_state(zone, NR_NORECLAIM)),
++#endif
+ 			K(zone->present_pages),
+ 			zone->pages_scanned,
+ 			(zone_is_all_unreclaimable(zone) ? "yes" : "no")
+Index: linux-2.6.24-rc6-mm1/mm/vmstat.c
 ===================================================================
---- linux-2.6.24-rc6-mm1.orig/include/linux/pagevec.h	2008-01-02 12:37:12.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/include/linux/pagevec.h	2008-01-02 12:37:18.000000000 -0500
-@@ -26,6 +26,7 @@ void __pagevec_free(struct pagevec *pvec
- void __pagevec_lru_add(struct pagevec *pvec);
- void __pagevec_lru_add_active(struct pagevec *pvec);
- void pagevec_strip(struct pagevec *pvec);
-+void pagevec_swap_free(struct pagevec *pvec);
- unsigned pagevec_lookup(struct pagevec *pvec, struct address_space *mapping,
- 		pgoff_t start, unsigned nr_pages);
- unsigned pagevec_lookup_tag(struct pagevec *pvec,
+--- linux-2.6.24-rc6-mm1.orig/mm/vmstat.c	2008-01-02 12:37:48.000000000 -0500
++++ linux-2.6.24-rc6-mm1/mm/vmstat.c	2008-01-02 12:38:03.000000000 -0500
+@@ -690,6 +690,9 @@ static const char * const vmstat_text[] 
+ 	"nr_active_anon",
+ 	"nr_inactive_file",
+ 	"nr_active_file",
++#ifdef CONFIG_NORECLAIM
++	"nr_noreclaim",
++#endif
+ 	"nr_anon_pages",
+ 	"nr_mapped",
+ 	"nr_file_pages",
+Index: linux-2.6.24-rc6-mm1/drivers/base/node.c
+===================================================================
+--- linux-2.6.24-rc6-mm1.orig/drivers/base/node.c	2008-01-02 12:37:38.000000000 -0500
++++ linux-2.6.24-rc6-mm1/drivers/base/node.c	2008-01-02 12:38:03.000000000 -0500
+@@ -52,6 +52,9 @@ static ssize_t node_read_meminfo(struct 
+ 		       "Node %d Inactive(anon): %8lu kB\n"
+ 		       "Node %d Active(file):   %8lu kB\n"
+ 		       "Node %d Inactive(file): %8lu kB\n"
++#ifdef CONFIG_NORECLAIM
++		       "Node %d Noreclaim:    %8lu kB\n"
++#endif
+ #ifdef CONFIG_HIGHMEM
+ 		       "Node %d HighTotal:      %8lu kB\n"
+ 		       "Node %d HighFree:       %8lu kB\n"
+@@ -76,6 +79,9 @@ static ssize_t node_read_meminfo(struct 
+ 		       nid, node_page_state(nid, NR_INACTIVE_ANON),
+ 		       nid, node_page_state(nid, NR_ACTIVE_FILE),
+ 		       nid, node_page_state(nid, NR_INACTIVE_FILE),
++#ifdef CONFIG_NORECLAIM
++		       nid, node_page_state(nid, NR_NORECLAIM),
++#endif
+ #ifdef CONFIG_HIGHMEM
+ 		       nid, K(i.totalhigh),
+ 		       nid, K(i.freehigh),
+Index: linux-2.6.24-rc6-mm1/fs/proc/proc_misc.c
+===================================================================
+--- linux-2.6.24-rc6-mm1.orig/fs/proc/proc_misc.c	2008-01-02 12:37:38.000000000 -0500
++++ linux-2.6.24-rc6-mm1/fs/proc/proc_misc.c	2008-01-02 12:38:03.000000000 -0500
+@@ -162,6 +162,9 @@ static int meminfo_read_proc(char *page,
+ 		"Inactive(anon): %8lu kB\n"
+ 		"Active(file):   %8lu kB\n"
+ 		"Inactive(file): %8lu kB\n"
++#ifdef CONFIG_NORECLAIM
++		"Noreclaim:    %8lu kB\n"
++#endif
+ #ifdef CONFIG_HIGHMEM
+ 		"HighTotal:      %8lu kB\n"
+ 		"HighFree:       %8lu kB\n"
+@@ -194,6 +197,9 @@ static int meminfo_read_proc(char *page,
+ 		K(global_page_state(NR_INACTIVE_ANON)),
+ 		K(global_page_state(NR_ACTIVE_FILE)),
+ 		K(global_page_state(NR_INACTIVE_FILE)),
++#ifdef CONFIG_NORECLAIM
++		K(global_page_state(NR_NORECLAIM)),
++#endif
+ #ifdef CONFIG_HIGHMEM
+ 		K(i.totalhigh),
+ 		K(i.freehigh),
 
 -- 
 All Rights Reversed
