@@ -1,127 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757220AbYAHBLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757565AbYAHBNK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757220AbYAHBLm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 20:11:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbYAHBLb
+	id S1757565AbYAHBNK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 20:13:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755417AbYAHBM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 20:11:31 -0500
-Received: from mga02.intel.com ([134.134.136.20]:40291 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750768AbYAHBLa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 20:11:30 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,255,1196668800"; 
-   d="scan'208";a="318133269"
-Message-ID: <4782CD50.90006@intel.com>
-Date: Mon, 07 Jan 2008 17:09:36 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
+	Mon, 7 Jan 2008 20:12:58 -0500
+Received: from lazybastard.de ([212.112.238.170]:36895 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753882AbYAHBM5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Jan 2008 20:12:57 -0500
+Date: Tue, 8 Jan 2008 02:06:56 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Claim maintainership for block2mtd and update email addresses
+Message-ID: <20080108010656.GA10627@lazybastard.org>
+References: <20080106135600.GB3120@lazybastard.org> <20080107152300.2ed7cddb.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Jayakrishnan.Chathu@nokia.com
-CC: linux-kernel@vger.kernel.org, NetDev <netdev@vger.kernel.org>
-Subject: Re: WARNING: at kernel/softirq.c:139 local_bh_enable()
-References: <2198383E1141814486F0B881B3260CF501D6BB66@daebe103.NOE.Nokia.com>
-In-Reply-To: <2198383E1141814486F0B881B3260CF501D6BB66@daebe103.NOE.Nokia.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Jan 2008 01:10:14.0888 (UTC) FILETIME=[399FDE80:01C85193]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080107152300.2ed7cddb.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jayakrishnan.Chathu@nokia.com wrote:
-> I am running 2.6.23 kernel on a DUAL core and QUAD core i386 boxes and
-> after everyboot, when the ethernet traffic starts i get this warning.
+On Mon, 7 January 2008 15:23:00 -0800, Andrew Morton wrote:
+> On Sun, 6 Jan 2008 14:56:01 +0100
+> J__rn Engel <joern@lazybastard.org> wrote:
+
+You found a new one!  That make a round dozen, I believe.
+http://logfs.org/logfs/joern
+
+> > - * Copyright (C) 2004-2006	JÃ¶rn Engel <joern@wh.fh-wedel.de>
+> > + * Copyright (C) 2004-2006	Joern Engel <joern@lazybastard.org>
 > 
-> All the ports in the system are e1000 and i am using the kernel e1000
-> driver.
-
-[added netdev to the Cc:]
-
-can you repro this with 2.6.24-rc7? What distro are you using? Is your distro
-running a link-monitoring tool of some sorts?
-
-Auke
-
-
-
+> Yup.  Your name comes out like that when sylpheed does its
+> save-email-to-a-file thing as well and I haven't got around to working out
+> why, or to reporting it.
 > 
-> Jan  7 22:31:00 localhost [warning] WARNING: at kernel/softirq.c:139
-> local_bh_enable() 
-> Jan  7 22:31:00 localhost [warning] [<c012bd0f>]
-> local_bh_enable+0x49/0xa9 
-> Jan  7 22:31:00 localhost [warning] [<c039ba1a>]
-> dev_queue_xmit+0x26c/0x275 
-> Jan  7 22:31:00 localhost [warning] [<c03cdf6c>] arp_xmit+0x4d/0x51 
-> Jan  7 22:31:00 localhost [warning] [<c03cd9f6>] arp_solicit+0x156/0x174
+> In this case it looks like the dud characters came about due to "[MTD] Fix
+> legacy character sets throughout drivers/mtd, include/linux/mtd".  Which
+> doesn't look like it fixed anything much really.
 > 
-> Jan  7 22:31:00 localhost [warning] [<c03a047f>]
-> neigh_timer_handler+0x1e0/0x224 
-> Jan  7 22:31:00 localhost [warning] [<c012f820>]
-> run_timer_softirq+0x113/0x172 
-> Jan  7 22:31:00 localhost [warning] [<c013b042>] WARNING: at
-> kernel/softirq.c:139 local_bh_enable() 
-> Jan  7 22:31:00 localhost [warning] hrtimer_interrupt+0x19c/0x1c4 
-> Jan  7 22:31:00 localhost [warning] [<c014002a>]  [<c012bd0f>]
-> local_bh_enable+0x49/0xa9 
-> Jan  7 22:31:00 localhost [warning] [<c039ba1a>]
-> dev_queue_xmit+0x26c/0x275 
-> Jan  7 22:31:00 localhost [warning] [<c03a0c05>]
-> neigh_resolve_output+0x12c/0x15e 
-> Jan  7 22:31:00 localhost [warning] [<c03a0881>]
-> neigh_update+0x246/0x2cb 
-> Jan  7 22:31:00 localhost [warning] [<c039fb21>] neigh_lookup+0xa9/0xb3 
-> Jan  7 22:31:00 localhost [warning] [<c03ce410>] arp_process+0x43c/0x477
-> 
-> Jan  7 22:31:00 localhost [warning] [<c0120b73>]
-> enqueue_task_fair+0x2d/0x30 
-> Jan  7 22:31:00 localhost [warning] tick_sched_timer+0x0/0xba 
-> Jan  7 22:31:00 localhost [warning] [<c03ce554>] arp_rcv+0x104/0x119 
-> Jan  7 22:31:00 localhost [warning] [<c03a029f>]  [<c039bda6>]
-> netif_receive_skb+0x1c5/0x1de 
-> Jan  7 22:31:00 localhost [warning] [<f897a61d>]
-> e1000_clean_rx_irq+0x40e/0x4ca [e1000] 
-> Jan  7 22:31:00 localhost [warning] [<c013bdc6>]
-> getnstimeofday+0x36/0x10c 
-> Jan  7 22:31:00 localhost [warning] neigh_timer_handler+0x0/0x224 
-> Jan  7 22:31:00 localhost [warning] [<c012be12>] __do_softirq+0x60/0xc1 
-> Jan  7 22:31:00 localhost [warning] [<f8979e34>] e1000_clean+0x74/0x119
-> [e1000] 
-> Jan  7 22:31:00 localhost [warning] [<c039bf03>]  [<c012bea4>]
-> net_rx_action+0x5a/0xd3 
-> Jan  7 22:31:00 localhost [warning] [<c012be12>] __do_softirq+0x60/0xc1 
-> Jan  7 22:31:00 localhost [warning] do_softirq+0x31/0x35 
-> Jan  7 22:31:00 localhost [warning] [<c012bea4>] do_softirq+0x31/0x35 
-> Jan  7 22:31:00 localhost [warning] [<c012bf03>] irq_exit+0x38/0x6b 
-> Jan  7 22:31:00 localhost [warning] [<c0106a1e>]  [<c012bf03>]
-> do_IRQ+0x80/0x93 
-> Jan  7 22:31:00 localhost [warning] irq_exit+0x38/0x6b 
-> Jan  7 22:31:00 localhost [warning] [<c01057b7>]
-> common_interrupt+0x23/0x28 
-> Jan  7 22:31:00 localhost [warning] [<c01600d8>]  [<c011a34d>]
-> get_swap_page+0xe7/0x215 
-> Jan  7 22:31:00 localhost [warning] [<c0103232>]
-> mwait_idle_with_hints+0x34/0x38 Jan  7 22:31:00 localhost [warning]
-> [<c0103236>] mwait_idle+0x0/0xa 
-> Jan  7 22:31:00 localhost [warning] [<c01030f2>] cpu_idle+0x98/0xb9 
-> Jan  7 22:31:00 localhost [warning] smp_apic_timer_interrupt+0x2c/0x35
-> Jan  7 22:31:00 localhost [warning] ======================= 
-> Jan  7 22:31:00 localhost [warning] [<c0105874>]
-> apic_timer_interrupt+0x28/0x30 
-> Jan  7 22:31:00 localhost [warning] [<c01600d8>]
-> get_swap_page+0xe7/0x215 
-> Jan  7 22:31:00 localhost [warning] [<c0103232>]
-> mwait_idle_with_hints+0x34/0x38 
-> Jan  7 22:31:00 localhost [warning] [<c0103236>] mwait_idle+0x0/0xa 
-> Jan  7 22:31:00 localhost [warning] [<c01030f2>] cpu_idle+0x98/0xb9 
-> Jan  7 22:31:00 localhost [warning] =======================
-> 
-> 
-> Thanks
-> Jayakrishnan Chathu
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Going with the asciified/anglicised/bastardised spelling is a practical
+> (albeit unhappy) solution.
 
+I'm happy if people spend effort and make unicode work.  Until then I'll
+semi-officially change my name to "Joern" and keep collecting unusual
+specimens.
+
+Jörn
+
+-- 
+Measure. Don't tune for speed until you've measured, and even then
+don't unless one part of the code overwhelms the rest.
+-- Rob Pike
