@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760592AbYAHQGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760695AbYAHQHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760592AbYAHQGn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 11:06:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753008AbYAHQGe
+	id S1760695AbYAHQHT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 11:07:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753008AbYAHQHD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 11:06:34 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56733 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751039AbYAHQGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 11:06:33 -0500
-Date: Tue, 8 Jan 2008 17:06:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Martin Bligh <mbligh@mbligh.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, bugme-admin@linux-foundation.org,
-       Peter Osterlund <petero2@telia.com>
-Subject: Re: change SCSI owner in bugzilla
-Message-ID: <20080108160607.GA32273@elte.hu>
-References: <20080106161635.GL2082@does.not.exist> <47828CC7.7060106@mbligh.org> <200801072147.53011.rjw@sisk.pl> <20080108100752.GA6906@elte.hu> <47839D3C.1090106@mbligh.org>
-MIME-Version: 1.0
+	Tue, 8 Jan 2008 11:07:03 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4264 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751039AbYAHQHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 11:07:00 -0500
+Date: Tue, 8 Jan 2008 16:06:45 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Oeser <ioe-lkml@rameria.de>, Andi Kleen <andi@firstfloor.org>,
+       Bernd Schubert <bernd-schubert@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: sleep before boot panic
+Message-ID: <20080108160645.GA4574@ucw.cz>
+References: <200801061908.43010.bernd-schubert@gmx.de> <p731w8ts70k.fsf@bingen.suse.de> <200801080717.03467.ioe-lkml@rameria.de> <47831D97.7040908@zytor.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47839D3C.1090106@mbligh.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <47831D97.7040908@zytor.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-* Martin Bligh <mbligh@mbligh.org> wrote:
+> >>>I just switched to libata (pata) on my laptop and the 
+> >>>immediate panic made it impossible to figure out why 
+> >>>my boot partition wasn't available.
+> >>>After applying this little patch I could check boot 
+> >>>printk output and then saw everything was properly 
+> >>>recognized and only scsi-disk support was missing.
+> >>The correct fix would be to make scroll back (and 
+> >>sysrq) still work
+> >>after panic.  It's a little more complicated, but 
+> >>possible (essentially
+> >>it needs a polled keyboard handler)
+> >
+> >Customer: "This system could not find the root fs."
+> >Support: "Oh, yeah, just connect a (USB-) keyboard and 
+> >scroll back."
+> >
+> >Hmm, device detection works after panic?
+> >
+> >I really like the "soft" panic better, where you still 
+> >can operate the kernel debugging features, but just 
+> >have no user space supporting it.
 
->>> BTW, would that be possible to forward messages sent to
->>> power-management_other@kernel-bugs.osdl.org to
->>> linux-pm@lists.linux-foundation.org?
->>
->> stupid question: why isnt this done via what most maintainers do, to 
->> set up your bugzilla account to generate notifications of the special 
->> power-management_other@kernel-bugs.osdl.org bugzilla user?
->
-> That would be better. Creating "users" for mailing lists may be 
-> problematic - if it is, let me know.
+ACK. 'scheduling in interrupt' is very different from 'cant mount
+root'.
 
-for those who have not set that up yet, it's in:
+> Of course, if we'd been using kinit, "soft panic" would 
+> have been done exclusively in userspace...
 
-  Edit / Prefs / Email Preferences / Users to watch
-
-add power-management_other@kernel-bugs.osdl.org to that list and you'll 
-be notified about new bugs and changes to existing bugs.
-
-	Ingo
+What's the status of kinit, btw?
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
