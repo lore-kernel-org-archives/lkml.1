@@ -1,93 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbYAHWSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbYAHWTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755446AbYAHWSz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 17:18:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbYAHWRH
+	id S1755374AbYAHWTZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 17:19:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbYAHWRW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 17:17:07 -0500
-Received: from quasar.osc.edu ([192.148.249.15]:53830 "EHLO quasar.osc.edu"
+	Tue, 8 Jan 2008 17:17:22 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:54298 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751974AbYAHWRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 17:17:05 -0500
-X-Greylist: delayed 465 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Jan 2008 17:17:05 EST
-Date: Tue, 8 Jan 2008 17:09:18 -0500
-From: Pete Wyckoff <pw@osc.edu>
-To: FUJITA Tomonori <tomof@acm.org>
-Cc: deepakrc@gmail.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH] bsg : Add support for io vectors in bsg
-Message-ID: <20080108220918.GA9484@osc.edu>
-References: <Pine.LNX.4.64.0801042137350.7836@localhost> <200801050501.m0551LFB030667@mbox.iij4u.or.jp>
-MIME-Version: 1.0
+	id S1754808AbYAHWRU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 17:17:20 -0500
+Date: Tue, 8 Jan 2008 23:17:22 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Rik van Riel <riel@redhat.com>,
+       Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>, tglx@linutronix.de,
+       mingo@redhat.com, hpa@zytor.com,
+       Linux Kernel <linux-kernel@vger.kernel.org>, trivial@kernel.org
+Subject: Re: [PATCH 3/5] x86: coding style fixes in arch/x86/ia32/ia32_aout.c
+Message-ID: <20080108221722.GA27698@uranus.ravnborg.org>
+References: <20080108203233.01bb5c7f@paolo-desktop> <20080108150439.6388028e@bree.surriel.com> <20080108215247.GE14829@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200801050501.m0551LFB030667@mbox.iij4u.or.jp>
+In-Reply-To: <20080108215247.GE14829@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tomof@acm.org wrote on Sat, 05 Jan 2008 14:01 +0900:
-> From: Deepak Colluru <deepakrc@gmail.com>
-> Subject: [PATCH] bsg : Add support for io vectors in bsg
-> Date: Fri, 4 Jan 2008 21:47:34 +0530 (IST)
+> > Most of these kernel changes would probably get in the way of real 
+> > development, making patches reject that would otherwise apply.
 > 
-> > From: Deepak Colluru <deepakrc@gmail.com>
-> > 
-> > Add support for io vectors in bsg.
-> > 
-> > Signed-off-by: Deepak Colluru <deepakrc@gmail.com>
-> > ---
-> >   bsg.c |   52 +++++++++++++++++++++++++++++++++++++++++++++++++---
-> >   1 file changed, 49 insertions(+), 3 deletions(-)
+> I'm curious, in what way would they interfere?
+
+Developer A work one some complicated stuff in foo.c which is
+not yet -mm fooder.
+
+Developer B submits and have applied a massive cleanup to some of the
+files touced by Developer A's patch.
+
+Developer A now needs to fix up his stuff.
+
+Reminder: Not everyone writes their stuff in 48 hours before it
+is lkml ready.
+
 > 
-> Thanks, but I have to NACK this.
-> 
-> You can find the discussion about bsg io vector support and a similar
-> patch in linux-scsi archive. I have no plan to support it since it
-> needs the compat hack.
+> Firstly, anyone with a forked kernel with outstanding patches that are 
+> not in x86.git only has themselves to blame. We want to actively 
+> discourage forking and sitting on patches too long.
 
-You may recall this is one of the patches I need to use bsg with OSD
-devices.  OSDs overload the SCSI buffer model to put mulitple fields
-in dataout and datain.  Some is user data, but some is more
-logically created by a library.  Memcpying in userspace to wedge all
-the segments into a single buffer is painful, and is required both
-on outgoing and incoming data buffers.
+Curious - what is the purpose of the x86.git tree these days?
 
-There are two approaches to add iovec to bsg.
-
-1.  Define a new sg_iovec_v4 that uses constant width types.  Both
-    32- and 64-bit userspace would hand arrays of this to the kernel.
-
-    struct sg_v4_iovec {
-	    __u64 iov_base;
-	    __u32 iov_len;
-	    __u32 __pad1;
-    };
-
-    Old patch here:  http://article.gmane.org/gmane.linux.scsi/30461/
-
-
-2.  Do as Deepak has done, using the existing sg_iovec, but then
-    also work around the compat issue.  Old v3 sg_iovec is:
-
-    typedef struct sg_iovec /* same structure as used by readv() Linux system */
-    {                       /* call. It defines one scatter-gather element. */
-	void __user *iov_base;      /* Starting address  */
-	size_t iov_len;             /* Length in bytes  */
-    } sg_iovec_t;
-
-    Old patch here:  http://article.gmane.org/gmane.linux.scsi/30460/
-
-I took another look at the compat approach, to see if it is feasible
-to keep the compat handling somewhere else, without the use of #ifdef
-CONFIG_COMPAT and size-comparison code inside bsg.c.  I don't see how.
-The use of iovec is within a write operation on a char device.  It's
-not amenable to a compat_sys_ or a .compat_ioctl approach.
-
-I'm partial to #1 because the use of architecture-independent fields
-matches the rest of struct sg_io_v4.  But if you don't want to have
-another iovec type in the kernel, could we do #2 but just return
--EINVAL if the need for compat is detected?  I.e. change
-dout_iovec_count to dout_iovec_length and do the math?
-
-		-- Pete
+	Sam
