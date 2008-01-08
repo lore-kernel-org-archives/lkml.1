@@ -1,82 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755227AbYAHEVN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755516AbYAHEf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755227AbYAHEVN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 23:21:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbYAHEVD
+	id S1755516AbYAHEf3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 23:35:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753963AbYAHEfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 23:21:03 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:40354 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752539AbYAHEVB (ORCPT
+	Mon, 7 Jan 2008 23:35:18 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:34307 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753817AbYAHEfP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 23:21:01 -0500
-Date: Mon, 7 Jan 2008 20:20:50 -0800
-From: Arjan van de Ven <arjan@infradead.org>
+	Mon, 7 Jan 2008 23:35:15 -0500
+Date: Tue, 8 Jan 2008 10:03:48 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
 To: Christoph Lameter <clameter@sgi.com>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bunk@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: Linux 2.6.24-rc7 Build-Failure at
- __you_cannot_kmalloc_that_much
-Message-ID: <20080107202050.6926ae46@laptopd505.fenrus.org>
-In-Reply-To: <Pine.LNX.4.64.0801071014450.22642@schroedinger.engr.sgi.com>
-References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org>
- <478200A4.4090707@linux.vnet.ibm.com>
- <20080107100733.3655f74f.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0801071014450.22642@schroedinger.engr.sgi.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Cc: Andrew Morton <akpm@linux-foundation.org>, htejun@gmail.com,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, maneesh@linux.vnet.ibm.com,
+       lkml <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: 2.6.22-stable causes oomkiller to be invoked
+Message-ID: <20080108043348.GB5393@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <Pine.LNX.4.64.0712171222470.29500@schroedinger.engr.sgi.com> <20071221044508.GA11996@linux.vnet.ibm.com> <Pine.LNX.4.64.0712261258050.16862@schroedinger.engr.sgi.com> <20071228101109.GB5083@linux.vnet.ibm.com> <Pine.LNX.4.64.0801021237330.21526@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0801021346580.3778@schroedinger.engr.sgi.com> <20080103035942.GB26166@linux.vnet.ibm.com> <20080103041606.GC26166@linux.vnet.ibm.com> <Pine.LNX.4.64.0801031258400.30856@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0801071203070.24592@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0801071203070.24592@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Jan 2008 10:31:53 -0800 (PST)
-Christoph Lameter <clameter@sgi.com> wrote:
-
-> We could replace the __you_cannot_kmalloc_that_much() with a BUG() 
-> statement so we have the same effect in SLAB?
+On Mon, Jan 07, 2008 at 12:04:06PM -0800, Christoph Lameter wrote:
+> Here is the cleaned version of the patch. Dhaval is testing it.
 > 
+> 
+> quicklists: Only consider memory that can be used with GFP_KERNEL
+> 
+> Quicklists calculates the size of the quicklists based on the number
+> of free pages. This must be the number of free pages that can be
+> allocated with GFP_KERNEL. node_page_state() includes the pages in
+> ZONE_HIGHMEM and ZONE_MOVABLE which may lead the quicklists to
+> become too large causing OOM.
+> 
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-sounds like a bad idea; a compile time failure is of course nicer than
-a runtime failure for the cases we can find the bug at compile-time already.
+Does the job here for me.
 
-We should however investigate using one of the two following gcc function attributes;
-they can give the user a lot better diagnostic information than what we have
-right now:
+Tested-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
 
-
-error ("message")
-    If this attribute is used on a function declaration and a call to
-such a function is not eliminated through dead code elimination or
-other optimizations, an error which will include message will be
-diagnosed. This is useful for compile time checking, especially
-together with __builtin_constant_p and inline functions where checking
-the inline function arguments is not possible through extern char
-[(condition) ? 1 : -1]; tricks. While it is possible to leave the
-function undefined and thus invoke a link failure, when using this
-attribute the problem will be diagnosed earlier and with exact location
-of the call even in presence of inline functions or when not emitting
-debugging information.
-
-warning ("message")
-    If this attribute is used on a function declaration and a call to
-such a function is not eliminated through dead code elimination or
-other optimizations, a warning which will include message will be
-diagnosed. This is useful for compile time checking, especially
-together with __builtin_constant_p and inline functions. While it is
-possible to define the function with a message in .gnu.warning*
-section, when using this attribute the problem will be diagnosed
-earlier and with exact location of the call even in presence of inline
-functions or when not emitting debugging information. 
+> 
+> Index: linux-2.6/mm/quicklist.c
+> ===================================================================
+> --- linux-2.6.orig/mm/quicklist.c	2008-01-07 10:38:13.000000000 -0800
+> +++ linux-2.6/mm/quicklist.c	2008-01-07 10:38:44.000000000 -0800
+> @@ -26,9 +26,17 @@ DEFINE_PER_CPU(struct quicklist, quickli
+>  static unsigned long max_pages(unsigned long min_pages)
+>  {
+>  	unsigned long node_free_pages, max;
+> +	struct zone *zones = NODE_DATA(numa_node_id())->node_zones;
+> +
+> +	node_free_pages =
+> +#ifdef CONFIG_ZONE_DMA
+> +		zone_page_state(&zones[ZONE_DMA], NR_FREE_PAGES) +
+> +#endif
+> +#ifdef CONFIG_ZONE_DMA32
+> +		zone_page_state(&zones[ZONE_DMA32], NR_FREE_PAGES) +
+> +#endif
+> +		zone_page_state(&zones[ZONE_NORMAL], NR_FREE_PAGES);
+> 
+> -	node_free_pages = node_page_state(numa_node_id(),
+> -			NR_FREE_PAGES);
+>  	max = node_free_pages / FRACTION_OF_NODE_MEM;
+>  	return max(max, min_pages);
+>  }
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+regards,
+Dhaval
