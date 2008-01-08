@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbYAHFN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbYAHFOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755044AbYAHFN7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 00:13:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbYAHFNw
+	id S1755381AbYAHFOv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 00:14:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750716AbYAHFOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 00:13:52 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:46301 "EHLO
+	Tue, 8 Jan 2008 00:14:44 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46310 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750696AbYAHFNv (ORCPT
+	with ESMTP id S1750715AbYAHFOn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 00:13:51 -0500
-Date: Mon, 7 Jan 2008 21:13:43 -0800
+	Tue, 8 Jan 2008 00:14:43 -0500
+Date: Mon, 7 Jan 2008 21:14:37 -0800
 From: Arjan van de Ven <arjan@infradead.org>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, tglx@tglx.de, hpa@zytor.com
-Subject: [patch 1/2] Turn 64 bit x86 HANDLE_STACK into print_context_stack
- like 32 bit has
-Message-ID: <20080107211343.18b48da8@laptopd505.fenrus.org>
+Subject: [patch 2/2] Use the stack frames to get exact stack-traces for
+ CONFIG_FRAMEPOINTER on x86-64
+Message-ID: <20080107211437.5ba42f18@laptopd505.fenrus.org>
 Organization: Intel
 X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -28,149 +28,152 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: Turn 64 bit x86 HANDLE_STACK into print_context_stack like 32 bit has
+
+Subject: Use the stack frames to get exact stack-traces for CONFIG_FRAMEPOINTER on x86-64
 From: Arjan van de Ven <arjan@linux.intel.com>
 
-This patch turns the x86 64 bit HANDLE_STACK macro in the backtrace code into 
-a function, just like 32 bit has. This is needed pre work in order to get exact
-backtraces for CONFIG_FRAME_POINTER to work.
+x86 32 bit already has this feature: This patch uses the stack frames with
+frame pointer into an exact stack trace, by following the frame pointer.
+This only affects kernels built with the CONFIG_FRAME_POINTER config option
+enabled, and greatly reduces the amount of noise in oopses.
 
-The function and it's arguments are not the same as 32 bit; due to the
-exception/interrupt stack way of x86-64 there are a few differences.
-
-This patch should not have any behavior changes, only code movement.
+The code tries to use the frame pointers to do a backtrace, but if it smells
+iffy or invalid, falls back to the traditional way of printing backtraces,
+to make sure that at least some useful backtrace is created.
 
 Due to the fragility and importance of the backtrace code, this needs to
 be well reviewed and well tested before merging into mainlne.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+
 ---
- arch/x86/kernel/traps_64.c |   74 +++++++++++++++++++++++++++------------------
- 1 file changed, 45 insertions(+), 29 deletions(-)
+ arch/x86/kernel/traps_64.c |   72 ++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 62 insertions(+), 10 deletions(-)
 
 Index: linux-2.6.24-rc7/arch/x86/kernel/traps_64.c
 ===================================================================
 --- linux-2.6.24-rc7.orig/arch/x86/kernel/traps_64.c
 +++ linux-2.6.24-rc7/arch/x86/kernel/traps_64.c
-@@ -208,10 +208,46 @@ static unsigned long *in_exception_stack
-  * severe exception (double fault, nmi, stack fault, debug, mce) hardware stack
-  */
- 
--static inline int valid_stack_ptr(struct thread_info *tinfo, void *p)
-+static inline int valid_stack_ptr(struct thread_info *tinfo,
-+			void *p, unsigned int size, void *end)
- {
- 	void *t = (void *)tinfo;
--        return p > t && p < t + THREAD_SIZE - 3;
-+	if (end) {
-+		if (p < end)
-+			return 1;
-+		else
-+			return 0;
-+	}
-+	return p > t && p < t + THREAD_SIZE - size;
-+}
-+
-+static inline unsigned long print_context_stack(struct thread_info *tinfo,
-+				unsigned long *stack, unsigned long ebp,
-+				const struct stacktrace_ops *ops, void *data,
-+				unsigned long *end)
-+{
-+	/*
-+	 * Print function call entries within a stack. 'cond' is the
-+	 * "end of stackframe" condition, that the 'stack++'
-+	 * iteration will eventually trigger.
-+	 */
-+	while (valid_stack_ptr(tinfo, stack, 3, end))) {
-+		unsigned long addr = *stack++;
-+		/* Use unlocked access here because except for NMIs
-+		   we should be already protected against module unloads */
-+		if (__kernel_text_address(addr)) {
-+			/*
-+			 * If the address is either in the text segment of the
-+			 * kernel, or in the region which contains vmalloc'ed
-+			 * memory, it *may* be the address of a calling
-+			 * routine; if so, print it so that someone tracing
-+			 * down the cause of the crash will be able to figure
-+			 * out the call path that was taken.
-+			 */
-+			ops->address(data, addr);
-+		}
-+	}
-+	return ebp;
+@@ -221,17 +221,55 @@ static inline int valid_stack_ptr(struct
+ 	return p > t && p < t + THREAD_SIZE - size;
  }
  
- void dump_trace(struct task_struct *tsk, struct pt_regs *regs,
-@@ -225,6 +261,7 @@ void dump_trace(struct task_struct *tsk,
- 
- 	if (!tsk)
- 		tsk = current;
-+	tinfo = task_thread_info(tsk);
- 
- 	if (!stack) {
- 		unsigned long dummy;
-@@ -233,28 +270,6 @@ void dump_trace(struct task_struct *tsk,
- 			stack = (unsigned long *)tsk->thread.rsp;
- 	}
- 
--	/*
+-static inline unsigned long print_context_stack(struct thread_info *tinfo,
++/* The form of the top of the frame on the stack */
++struct stack_frame {
++	struct stack_frame *next_frame;
++	unsigned long return_address;
++};
++
++
++static inline unsigned long print_context_stack(void *tinfo,
+ 				unsigned long *stack, unsigned long ebp,
+ 				const struct stacktrace_ops *ops, void *data,
+ 				unsigned long *end)
+ {
++
++#ifdef CONFIG_FRAME_POINTER
++	struct stack_frame *frame = (struct stack_frame *)ebp;
++
+ 	/*
 -	 * Print function call entries within a stack. 'cond' is the
 -	 * "end of stackframe" condition, that the 'stack++'
 -	 * iteration will eventually trigger.
--	 */
--#define HANDLE_STACK(cond) \
--	do while (cond) { \
--		unsigned long addr = *stack++; \
--		/* Use unlocked access here because except for NMIs	\
--		   we should be already protected against module unloads */ \
--		if (__kernel_text_address(addr)) { \
--			/* \
--			 * If the address is either in the text segment of the \
--			 * kernel, or in the region which contains vmalloc'ed \
--			 * memory, it *may* be the address of a calling \
--			 * routine; if so, print it so that someone tracing \
--			 * down the cause of the crash will be able to figure \
--			 * out the call path that was taken. \
--			 */ \
--			ops->address(data, addr);   \
--		} \
--	} while (0)
++	 * if EBP is in the current stack frame, use stack frame tracking;
++	 * otherwise fall back to the traditional method.
+ 	 */
+-	while (valid_stack_ptr(tinfo, stack, 3, end))) {
++
++	if (valid_stack_ptr(tinfo, frame, sizeof(*frame), end)) {
++		while (valid_stack_ptr(tinfo, frame, sizeof(*frame), end)) {
++			struct stack_frame *next;
++			unsigned long addr;
++
++			addr = frame->return_address;
++			if (__kernel_text_address(addr))
++				ops->address(data, addr);
++			/*
++			 * break out of recursive entries (such as
++			 * end_of_stack_stop_unwind_function). Also,
++			 * we can never allow a frame pointer to
++			 * move downwards!
++			 */
++			next = frame->next_frame;
++			ebp = (unsigned long)next;
++			if (next <= frame)
++				break;
++			frame = next;
++		}
++	} else
++#endif
++	/*
++	 * Print function call entries within a stack.
++	 * The end condition is either a bound on the stack, or
++	 * an invalid stack ptr, depending on the caller.
++	 */
++	while (valid_stack_ptr(tinfo, stack, 3, end)) {
+ 		unsigned long addr = *stack++;
+ 		/* Use unlocked access here because except for NMIs
+ 		   we should be already protected against module unloads */
+@@ -258,6 +296,7 @@ void dump_trace(struct task_struct *tsk,
+ 	unsigned long *irqstack_end = (unsigned long*)cpu_pda(cpu)->irqstackptr;
+ 	unsigned used = 0;
+ 	struct thread_info *tinfo;
++	unsigned long ebp = 0;
+ 
+ 	if (!tsk)
+ 		tsk = current;
+@@ -270,6 +309,19 @@ void dump_trace(struct task_struct *tsk,
+ 			stack = (unsigned long *)tsk->thread.rsp;
+ 	}
+ 
++#ifdef CONFIG_FRAME_POINTER
++	if (!ebp) {
++		if (tsk == current) {
++			/* Grab ebp right from our regs */
++			asm("movq %%rbp, %0" : "=r" (ebp):);
++		} else {
++			/* ebp is the last reg pushed by switch_to */
++			ebp = *(unsigned long *) tsk->thread.rsp;
++		}
++	}
++#endif
++
++
  
  	/*
  	 * Print function call entries in all stacks, starting at the
-@@ -270,7 +285,9 @@ void dump_trace(struct task_struct *tsk,
- 		if (estack_end) {
+@@ -286,8 +338,8 @@ void dump_trace(struct task_struct *tsk,
  			if (ops->stack(data, id) < 0)
  				break;
--			HANDLE_STACK (stack < estack_end);
-+
-+			print_context_stack(tinfo, stack, 0, ops,
-+						data, estack_end);
+ 
+-			print_context_stack(tinfo, stack, 0, ops,
+-						data, estack_end);
++			ebp = print_context_stack(tinfo, stack, ebp, ops,
++							data, estack_end);
  			ops->stack(data, "<EOE>");
  			/*
  			 * We link to the next stack via the
-@@ -288,7 +305,8 @@ void dump_trace(struct task_struct *tsk,
+@@ -305,8 +357,8 @@ void dump_trace(struct task_struct *tsk,
  			if (stack >= irqstack && stack < irqstack_end) {
  				if (ops->stack(data, "IRQ") < 0)
  					break;
--				HANDLE_STACK (stack < irqstack_end);
-+				print_context_stack(tinfo, stack, 0, ops,
-+							 data, irqstack_end);
+-				print_context_stack(tinfo, stack, 0, ops,
+-							 data, irqstack_end);
++				ebp = print_context_stack(tinfo, stack, ebp,
++						ops, data, irqstack_end);
  				/*
  				 * We link to the next stack (which would be
  				 * the process stack normally) the last
-@@ -306,9 +324,7 @@ void dump_trace(struct task_struct *tsk,
+@@ -324,7 +376,7 @@ void dump_trace(struct task_struct *tsk,
  	/*
  	 * This handles the process stack:
  	 */
--	tinfo = task_thread_info(tsk);
--	HANDLE_STACK (valid_stack_ptr(tinfo, stack));
--#undef HANDLE_STACK
-+	print_context_stack(tinfo, stack, 0, ops, data, NULL);
+-	print_context_stack(tinfo, stack, 0, ops, data, NULL);
++	ebp = print_context_stack(tinfo, stack, ebp, ops, data, NULL);
  	put_cpu();
  }
  EXPORT_SYMBOL(dump_trace);
-
 
 -- 
 If you want to reach me at my work email, use arjan@linux.intel.com
