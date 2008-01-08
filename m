@@ -1,73 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755879AbYAHSGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbYAHSHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755879AbYAHSGB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 13:06:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754541AbYAHSFx
+	id S1756062AbYAHSHs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 13:07:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750716AbYAHSHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 13:05:53 -0500
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:46916 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754108AbYAHSFw (ORCPT
+	Tue, 8 Jan 2008 13:07:40 -0500
+Received: from hs-out-0708.google.com ([64.233.178.247]:48038 "EHLO
+	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751802AbYAHSHj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 13:05:52 -0500
-X-IronPort-AV: E=Sophos;i="4.24,258,1196668800"; 
-   d="scan'208";a="18500209"
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: akepner@sgi.com, Tony Luck <tony.luck@intel.com>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       David Miller <davem@davemloft.net>, Muli Ben-Yehuda <muli@il.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PARTIAL PATCH 0/3] dma: passing "attributes" to dma_map_* routines
-X-Message-Flag: Warning: May contain useful information
-References: <20080108023222.GP23661@sgi.com>
-	<1199809628.3534.34.camel@localhost.localdomain>
-	<ada63y4kycs.fsf@cisco.com>
-	<1199814853.3534.39.camel@localhost.localdomain>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 08 Jan 2008 10:05:44 -0800
-In-Reply-To: <1199814853.3534.39.camel@localhost.localdomain> (James Bottomley's message of "Tue, 08 Jan 2008 11:54:13 -0600")
-Message-ID: <adawsqkjipz.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+	Tue, 8 Jan 2008 13:07:39 -0500
+Message-ID: <1a9da18c0801081007q1ed8ce04x7a78e880ee5bcac7@mail.gmail.com>
+Date: Tue, 8 Jan 2008 10:07:37 -0800
+From: "=?UTF-8?Q?Masoud_Sharbiani?=
+	=?UTF-8?Q?_\"=D9=85=D8=B3=D8=B9=D9=88=D8=AF_?=
+	=?UTF-8?Q?=D8=B4=D8=B1=D8=A8=DB=8C=D8=A7=D9=86=DB=8C\"?=" 
+	<masouds@masoud.ir>
+To: "Tuomo Valkonen" <tuomov@iki.fi>
+Subject: Re: The ext3 way of journalling
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <slrnfo7e3i.c37.tuomov@jolt.modeemi.cs.tut.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 08 Jan 2008 18:05:44.0854 (UTC) FILETIME=[16B6DB60:01C85221]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi>
+	 <20080108164847.GA16462@skl-net.de>
+	 <slrnfo7e3i.c37.tuomov@jolt.modeemi.cs.tut.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > I think the case before us that Arthur is dealing with is a
- > > counterexample for this: there's nothing bus-specific about it all.
- > > The issue is related to reordering of DMAs within the Altix system
- > > fabric, after they've left the PCI world.  This issue would be present
- > > no matter what kind of host bridge you hook up to the system fabric,
- > > be it PCI-X, PCIe, ISA, MCA or whatever.
+On 1/8/08, Tuomo Valkonen <tuomov@iki.fi> wrote:
+> On 2008-01-08, Andre Noll <maan@systemlinux.org> wrote:
+> > Use tune2fs to deactivate checking.
+>
+> So, a workaround is the answer to a clear bug. Typical FOSS.
 
- > But it is: for performance reasons, the Altix boxes have a rather non
- > standard PCI bridge implementation that gives relaxed ordering on the
- > PCI bus.
+It isn't a bug. It is a feature; Think about silent corruption that
+may damage your filesystem; Only an FSCK can see how much of damage is
+done and fix it. Journaling will help you to a degree, but not all the
+way.
 
-I don't think this is accurate. As I understand things, the reordering
-happens within the Altix system interconnect -- nothing to do with the
-PCI bridge hanging off this fabric.  It is "platform" behavior and I
-think is properly handled within the dma_ API, which exists to
-abstract platforms.
+> > Modify the init scripts or use another distro.
+>
+> Another typical FOSS answer. "You have the source, you can fix it."
+> With what time?
 
- > This behaviour was later standardised to some degree in PCIe,
- > so you could argue they actually have an altix specific PCI bus (PCIa
- > anyone?).  Regardless, other manufacturers are probably going to demand
- > something equivalent to this based on the PCIe standard, so we should be
- > ready for it, hence the desire for the bus specific attributes.
+heh, the way I look at it, you either have the time, or money. Use one
+and get rid of your problem. If you have them and aren't willing to
+commit to fix your problem, maybe your problem isn't important enough
+to you. If you have no time and no money, ranting here doesn't help
+you either.
 
-But:
- a) The Altix has PCI-X, not PCIe, so having something PCIe-specific
-    is not a solution for this case; and
- b) the PCIe behavior is opt-in, in the sense that you have to
-    specifically ask for looser ordering, while the Altix is loosely
-    ordered unless you ask for this "flush" property.  So I don't
-    think the same attribute will work for both cases.
+cheers,
+Masoud
 
- - R.
+> > Don't use udev then. Good old static dev works fine if you have a fixed
+> > set of devices.
+>
+> It doesn't, with the unpredictable SCSI mapping insanity.
+>
+> > You're using the sil3112 driver? Edit its blacklist and remove the
+> > entry for your drive. That gives you the usual speed.
+>
+> Recompiling? No thanks. Compiling the Linux kernel is too painful.
+>
+> > Check your tool-chain. Many people compile recent kernels with no problems.
+>
+> And recompile and recompile and recompile ad infinitum, because always
+> some option was missing or wrong, there being far too many of them and
+> hidden all over the place.
+>
+> > Nobody forces you to use udev. Moreover, you can write your own udev
+> > rules that match your expectations.
+>
+> See above on having time to learn over-cryptic systems.
+>
+> > You're not ranting about Linux but about your Distro. Complain on
+> > the corresponding distro-specific mailing list, use another distro
+> > and and stop whining.
+>
+> I don't use a distro kernel. I use a kernel I compiled myself over
+> two years ago. I have tried compiling newer ones, but it's too much
+> work to get all the options right. And then there's the problem that
+> the "good" driver for my SATA disk may not be there anymore in the
+> latest kernels, and so on.
+>
+> --
+> Tuomo
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
