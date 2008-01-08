@@ -1,53 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757214AbYAHLRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759009AbYAHLSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757214AbYAHLRY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 06:17:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbYAHLRP
+	id S1759009AbYAHLSR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 06:18:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbYAHLSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 06:17:15 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53221 "EHLO mx2.mail.elte.hu"
+	Tue, 8 Jan 2008 06:18:05 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:60321 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751532AbYAHLRO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 06:17:14 -0500
-Date: Tue, 8 Jan 2008 12:16:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, dmitry.adamushko@gmail.com,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 04/11] hrtimer: fixup the HRTIMER_CB_IRQSAFE_NO_SOFTIRQ
-	fallback
-Message-ID: <20080108111639.GA30710@elte.hu>
-References: <20080106161128.152634000@chello.nl> <20080106162123.431344000@chello.nl> <1199706988.7143.30.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1199706988.7143.30.camel@twins>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752439AbYAHLSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 06:18:04 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080107162718.GA16072@uranus.ravnborg.org>
+References: <20080107162718.GA16072@uranus.ravnborg.org> <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org> <20080107165344.28e9f1ed@Varda>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: dhowells@redhat.com,
+       Alejandro Riveira =?iso-8859-1?Q?Fern=E1ndez?= 
+	<ariveira@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: smpboot_64 section mismatch warning
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Tue, 08 Jan 2008 11:17:51 +0000
+Message-ID: <29505.1199791071@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+	[arch/x86/kernel/smpboot_64.c]
+	void do_fork_idle(struct work_struct *work)
 
-> On Sun, 2008-01-06 at 17:11 +0100, Peter Zijlstra wrote:
-> > plain text document attachment (hrtimer-fallback.patch)
-> 
-> I know I should have boot tested more combinations :-(
-> Please fold this into the patch.
+Needs labelling with __cpuinit.
 
-done.
-
-	Ingo
+David
