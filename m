@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbYAHTVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757177AbYAHTWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756862AbYAHTVt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 14:21:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbYAHTVm
+	id S1757177AbYAHTWT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 14:22:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbYAHTWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 14:21:42 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:39386 "EHLO pasmtpA.tele.dk"
+	Tue, 8 Jan 2008 14:22:06 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:51942 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752161AbYAHTVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 14:21:41 -0500
-Date: Tue, 8 Jan 2008 20:21:42 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, apw@shadowen.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] Deprecate checkpatch.pl --file
-Message-ID: <20080108192142.GA26491@uranus.ravnborg.org>
-References: <20080108161403.GA11632@basil.nowhere.org> <1199811033.1756.29.camel@imap.mvista.com> <20080108175347.GA25968@uranus.ravnborg.org> <1199815279.1756.35.camel@imap.mvista.com> <20080108182048.GM27800@mit.edu> <1199817208.1756.47.camel@imap.mvista.com>
+	id S1755748AbYAHTWF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 14:22:05 -0500
+Date: Tue, 8 Jan 2008 20:21:57 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch] split MMC_CAP_4_BIT_DATA
+Message-ID: <20080108202157.0b8d3393@poseidon.drzeus.cx>
+In-Reply-To: <200801081329.39611.vapier.adi@gmail.com>
+References: <200801081329.39611.vapier.adi@gmail.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1199817208.1756.47.camel@imap.mvista.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 8 Jan 2008 13:29:39 -0500
+Mike Frysinger <vapier.adi@gmail.com> wrote:
+
+> The on-chip Blackfin MMC/SD/SDIO host controller has the ability to do 1-bit
+> MMC, 1-bit/4-bit SD, and 1-bit/4-bit SDIO.  Thus the current convention of
+> MMC_CAP_4_BIT_DATA meaning "your host controller can do 1-bit or 4-bit for all
+> modes" is insufficient for our needs.  The attached patch splits
+> MMC_CAP_4_BIT_DATA into MMC_CAP_MMC_4_BIT_DATA and MMC_CAP_SD_4_BIT_DATA and
+> updates all host controllers to include these in their caps and then changes
+> existing code to check the new defines.  At the moment, SD/SDIO are lumped
+> into MMC_CAP_SD_4_BIT_DATA ... should I bother with splitting that into SD and
+> SDIO as well while I'm doing this ?
 > 
-> What I was saying in my first email was we can throttle "patches"
-> arbitrarily (I think Andrew/Linus even have a merge period for these
-> types of patches) ..  So that's not the issue .. I feel style clean ups
-> are fundamentally good.. So what we don't want to do is discourage the
-> creation of good patches, which is what I think Andi is doing..
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 
-The way I read this:
-+WARNING: Using --file mode. Please do not send patches to linux-kernel
-+that change whole existing files if you did not significantly change most
-+of the the file for other reasons anyways or just wrote the file newly
-+from scratch. Pure code style patches have a significant cost in a
-+quickly changing code base like Linux because they cause rejects
-+with other changes.
-does not discourage the creation of good patches.
+I fail to see why you need to split MMC and SD. Could you elaborate why the controller won't work with MMC cards? I haven't seen any differences from SD.
 
-But is discourage the creation of pure clean-up patches because it
-may have a disturbing effect on several other peoples work.
+Rgds
+-- 
+     -- Pierre Ossman
 
-	Sam
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
