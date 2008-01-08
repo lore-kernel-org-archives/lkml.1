@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759430AbYAHQTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761284AbYAHQXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759430AbYAHQTY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 11:19:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbYAHQTP
+	id S1761284AbYAHQXT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 11:23:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbYAHQXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 11:19:15 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40306 "EHLO mx2.mail.elte.hu"
+	Tue, 8 Jan 2008 11:23:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49597 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751210AbYAHQTO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 11:19:14 -0500
-Date: Tue, 8 Jan 2008 17:18:46 +0100
+	id S1753013AbYAHQXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 11:23:08 -0500
+Date: Tue, 8 Jan 2008 17:22:53 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: DM <dm.n9107@gmail.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au, ak@suse.de
-Subject: Re: [patch 2/2] track and print last unloaded module in the oops
-	trace
-Message-ID: <20080108161846.GD32273@elte.hu>
-References: <20080106151946.50c3d8cc@laptopd505.fenrus.org> <5eeb9ad90801080551n562b9f15o27b495495a452c22@mail.gmail.com> <20080108062656.311cd3aa@laptopd505.fenrus.org> <5eeb9ad90801080639h2992e9b7maec0339e4f763f65@mail.gmail.com>
+To: Michal Schmidt <mschmidt@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jon Masters <jcm@redhat.com>,
+       Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
+Subject: Re: [PATCH] kthread: always create the kernel threads with normal
+	priority
+Message-ID: <20080108162253.GE32273@elte.hu>
+References: <20071217234314.540b59bd@hammerfall> <20071222013021.db2528cb.akpm@linux-foundation.org> <20080107110603.09b72450@brian.englab.brq.redhat.com> <20080107022513.3ac05734.akpm@linux-foundation.org> <20080107141835.44bdc7c6@brian.englab.brq.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <5eeb9ad90801080639h2992e9b7maec0339e4f763f65@mail.gmail.com>
+In-Reply-To: <20080107141835.44bdc7c6@brian.englab.brq.redhat.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,22 +38,15 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* DM <dm.n9107@gmail.com> wrote:
+* Michal Schmidt <mschmidt@redhat.com> wrote:
 
-> On Jan 8, 2008 3:26 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> > >
-> > > Why use sprintf? If a module name contains the % character we could
-> > > overflow the buffer. Or is module-unloading root-only and we don't
-> > > care?
-> >
-> > module loading isn't just root only; the name comes from an already loaded module.
-> > If you can load kernel modules of your choice you own the entire kernel already anway
-> >
+> Allow the administrator to change kthreadd's priority and affinity. 
+> Ensure that the kernel threads are created with the usual nice level 
+> and affinity even if kthreadd's properties were changed from the 
+> default.
 > 
-> Still, strcpy seems like a better choice IMHO.
+> Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
 
-agreed, this just isnt obvious IMO:
-
-+       sprintf(last_unloaded_module, mod->name);
+thanks Michal, applied your patch to sched-devel.git.
 
 	Ingo
