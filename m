@@ -1,148 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753297AbYAHShm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbYAHSkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753297AbYAHShm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 13:37:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbYAHSh3
+	id S1754078AbYAHSkj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 13:40:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbYAHSkb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 13:37:29 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:46824 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751765AbYAHSh1 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 13:37:27 -0500
-x-mimeole: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: WARNING: at kernel/softirq.c:139 local_bh_enable()
-Date: Tue, 8 Jan 2008 12:36:46 -0600
-Message-ID: <2198383E1141814486F0B881B3260CF501D6BD24@daebe103.NOE.Nokia.com>
-In-Reply-To: <4782CD50.90006@intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: WARNING: at kernel/softirq.c:139 local_bh_enable()
-Thread-Index: AchRk2ochNQfxR7IRDi587WBWiXG+gAkaObA
-From: <Jayakrishnan.Chathu@nokia.com>
-To: <auke-jan.h.kok@intel.com>
-Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
-X-OriginalArrivalTime: 08 Jan 2008 18:36:47.0288 (UTC) FILETIME=[6CCFBB80:01C85225]
-X-Nokia-AV: Clean
+	Tue, 8 Jan 2008 13:40:31 -0500
+Received: from main.gmane.org ([80.91.229.2]:41797 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751112AbYAHSkb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 13:40:31 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Tuomo Valkonen <tuomov@iki.fi>
+Subject: Re: The ext3 way of journalling
+Date: Tue, 8 Jan 2008 18:40:14 +0000 (UTC)
+Message-ID: <slrnfo7gse.fne.tuomov@jolt.modeemi.cs.tut.fi>
+References: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi> <20080108164847.GA16462@skl-net.de> <slrnfo7e3i.c37.tuomov@jolt.modeemi.cs.tut.fi> <20080108182904.GB16462@skl-net.de>
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: jolt.modeemi.cs.tut.fi
+User-Agent: slrn/0.9.8.1pl1 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is an embedded system, With a small file system and 2.6.23 kernel.
-There are no link-monitoring tool running.  I will
-Try to reproduce with 2.6.24-rc7. 
+On 2008-01-08, Andre Noll <maan@systemlinux.org> wrote:
+> It's not a workaround. The ext3 maintainers argue that every file
+> system should be checked from time to time. Therefore it's the
+> default. You do not agree with them, so change the default and be
+> happy. 
 
-Chathu
+The thing is, I agree with them (although the default intervals could
+be a bit longer), but it gets confused and thinks it's been years since
+last check, when it hasn't. I have my doubts that Theodore Tso's reply
+is the problem here, because I didn't use to have this problem; it 
+appeared relatively recently. But maybe old versions of e2fsck were
+smarter...
 
------Original Message-----
-From: ext Kok, Auke [mailto:auke-jan.h.kok@intel.com] 
-Sent: Monday, January 07, 2008 5:10 PM
-To: Chathu Jayakrishnan (Nokia-S&S/MtView)
-Cc: linux-kernel@vger.kernel.org; NetDev
-Subject: Re: WARNING: at kernel/softirq.c:139 local_bh_enable()
+> Use the time you are currently using for whining on mailing lists.
 
-Jayakrishnan.Chathu@nokia.com wrote:
-> I am running 2.6.23 kernel on a DUAL core and QUAD core i386 boxes and
+That's doable on time you'd spend idling anyway. There are only so
+many hours of the day that you can do work that demands considerable
+thinking.
 
-> after everyboot, when the ethernet traffic starts i get this warning.
-> 
-> All the ports in the system are e1000 and i am using the kernel e1000 
-> driver.
+> Then write a set of udev rules for your SCSI devices. It's easy.
 
-[added netdev to the Cc:]
+It isn't. There's no simple pre-existing setting to edit. And besides,
+it's the wrong approach from the POV of clean consistent design. It's
+the kludged worse-is-better approach that results in unusable 
+clusterfucks.
 
-can you repro this with 2.6.24-rc7? What distro are you using? Is your
-distro running a link-monitoring tool of some sorts?
+> If you're not willing to compile, you'll have to use what other
+> people provide. It's your choice, but at least there _is_ a choice.
 
-Auke
+I'd compile, if the thing to be compiled weren't made uncompilable.
+I'd use pre-compiled shit, if it wasn't shit.
 
+> I tend to disagree. It's not hard at all to configure a kernel if
+> you know the hardware. It's even easier if you already have a working
+> config for some kernel version. Just use "make oldconfig" to upgrade
+>=66rom one version to the next as already suggested by others and me.
 
+It didn't use to be hard for 1.2 or so, but it's been constantly getting
+worse, along with all the bloat. 
 
-> 
-> Jan  7 22:31:00 localhost [warning] WARNING: at kernel/softirq.c:139
-> local_bh_enable()
-> Jan  7 22:31:00 localhost [warning] [<c012bd0f>]
-> local_bh_enable+0x49/0xa9
-> Jan  7 22:31:00 localhost [warning] [<c039ba1a>]
-> dev_queue_xmit+0x26c/0x275
-> Jan  7 22:31:00 localhost [warning] [<c03cdf6c>] arp_xmit+0x4d/0x51 
-> Jan  7 22:31:00 localhost [warning] [<c03cd9f6>] 
-> arp_solicit+0x156/0x174
-> 
-> Jan  7 22:31:00 localhost [warning] [<c03a047f>]
-> neigh_timer_handler+0x1e0/0x224
-> Jan  7 22:31:00 localhost [warning] [<c012f820>]
-> run_timer_softirq+0x113/0x172
-> Jan  7 22:31:00 localhost [warning] [<c013b042>] WARNING: at
-> kernel/softirq.c:139 local_bh_enable() Jan  7 22:31:00 localhost 
-> [warning] hrtimer_interrupt+0x19c/0x1c4 Jan  7 22:31:00 localhost 
-> [warning] [<c014002a>]  [<c012bd0f>]
-> local_bh_enable+0x49/0xa9
-> Jan  7 22:31:00 localhost [warning] [<c039ba1a>]
-> dev_queue_xmit+0x26c/0x275
-> Jan  7 22:31:00 localhost [warning] [<c03a0c05>] 
-> neigh_resolve_output+0x12c/0x15e Jan  7 22:31:00 localhost [warning] 
-> [<c03a0881>] neigh_update+0x246/0x2cb Jan  7 22:31:00 localhost 
-> [warning] [<c039fb21>] neigh_lookup+0xa9/0xb3 Jan  7 22:31:00 
-> localhost [warning] [<c03ce410>] arp_process+0x43c/0x477
-> 
-> Jan  7 22:31:00 localhost [warning] [<c0120b73>] 
-> enqueue_task_fair+0x2d/0x30 Jan  7 22:31:00 localhost [warning] 
-> tick_sched_timer+0x0/0xba Jan  7 22:31:00 localhost [warning] 
-> [<c03ce554>] arp_rcv+0x104/0x119 Jan  7 22:31:00 localhost [warning] 
-> [<c03a029f>]  [<c039bda6>] netif_receive_skb+0x1c5/0x1de Jan  7 
-> 22:31:00 localhost [warning] [<f897a61d>] 
-> e1000_clean_rx_irq+0x40e/0x4ca [e1000] Jan  7 22:31:00 localhost 
-> [warning] [<c013bdc6>]
-> getnstimeofday+0x36/0x10c
-> Jan  7 22:31:00 localhost [warning] neigh_timer_handler+0x0/0x224 Jan
+>> And then there's the problem that the "good" driver for my SATA disk
+>> may not be there anymore in the latest kernels, and so on.
+>
+> That is clearly a regression and I'm sure Jeff and other maintainers
+> of the driver would be interested in details on this matter.
 
-> 7 22:31:00 localhost [warning] [<c012be12>] __do_softirq+0x60/0xc1 Jan
+I don't know the details; all I know is that I've heard that the old
+SATA drivers that appear as /dev/hd$PREDICTABLE are being obsoleted in
+favour of those that appear as /dev/sd$RANDOM along with all the USB
+devices and whatnot.
 
-> 7 22:31:00 localhost [warning] [<f8979e34>] e1000_clean+0x74/0x119 
-> [e1000] Jan  7 22:31:00 localhost [warning] [<c039bf03>]  [<c012bea4>]
-> net_rx_action+0x5a/0xd3
-> Jan  7 22:31:00 localhost [warning] [<c012be12>] 
-> __do_softirq+0x60/0xc1 Jan  7 22:31:00 localhost [warning] 
-> do_softirq+0x31/0x35 Jan  7 22:31:00 localhost [warning] [<c012bea4>] 
-> do_softirq+0x31/0x35 Jan  7 22:31:00 localhost [warning] [<c012bf03>] 
-> irq_exit+0x38/0x6b Jan  7 22:31:00 localhost [warning] [<c0106a1e>]  
-> [<c012bf03>]
-> do_IRQ+0x80/0x93
-> Jan  7 22:31:00 localhost [warning] irq_exit+0x38/0x6b Jan  7 22:31:00
-
-> localhost [warning] [<c01057b7>]
-> common_interrupt+0x23/0x28
-> Jan  7 22:31:00 localhost [warning] [<c01600d8>]  [<c011a34d>]
-> get_swap_page+0xe7/0x215
-> Jan  7 22:31:00 localhost [warning] [<c0103232>]
-> mwait_idle_with_hints+0x34/0x38 Jan  7 22:31:00 localhost [warning] 
-> [<c0103236>] mwait_idle+0x0/0xa Jan  7 22:31:00 localhost [warning] 
-> [<c01030f2>] cpu_idle+0x98/0xb9 Jan  7 22:31:00 localhost [warning] 
-> smp_apic_timer_interrupt+0x2c/0x35
-> Jan  7 22:31:00 localhost [warning] ======================= Jan  7 
-> 22:31:00 localhost [warning] [<c0105874>] 
-> apic_timer_interrupt+0x28/0x30 Jan  7 22:31:00 localhost [warning] 
-> [<c01600d8>]
-> get_swap_page+0xe7/0x215
-> Jan  7 22:31:00 localhost [warning] [<c0103232>]
-> mwait_idle_with_hints+0x34/0x38
-> Jan  7 22:31:00 localhost [warning] [<c0103236>] mwait_idle+0x0/0xa 
-> Jan  7 22:31:00 localhost [warning] [<c01030f2>] cpu_idle+0x98/0xb9 
-> Jan  7 22:31:00 localhost [warning] =======================
-> 
-> 
-> Thanks
-> Jayakrishnan Chathu
-> --
-> To unsubscribe from this list: send the line "unsubscribe
-linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+Tuomo
 
