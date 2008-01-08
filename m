@@ -1,264 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbYAHFIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbYAHFN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882AbYAHFIk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 00:08:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750718AbYAHFIa
+	id S1755044AbYAHFN7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 00:13:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbYAHFNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 00:08:30 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:48476 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750695AbYAHFI3 (ORCPT
+	Tue, 8 Jan 2008 00:13:52 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46301 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750696AbYAHFNv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 00:08:29 -0500
-Date: Mon, 7 Jan 2008 21:02:53 -0800
-Message-Id: <200801080502.m0852rhW017142@tazenda.hos.anvin.org>
-From: "H. Peter Anvin" <hpa@zytor.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixer <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>, vgoyal@redhat.com,
-       hbabu@us.ibm.com, kexec@lists.infradead.org
-Subject: [PATCH] i386: handle an initrd in highmem (version 2)
+	Tue, 8 Jan 2008 00:13:51 -0500
+Date: Mon, 7 Jan 2008 21:13:43 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, tglx@tglx.de, hpa@zytor.com
+Subject: [patch 1/2] Turn 64 bit x86 HANDLE_STACK into print_context_stack
+ like 32 bit has
+Message-ID: <20080107211343.18b48da8@laptopd505.fenrus.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The boot protocol has until now required that the initrd be located in
-lowmem, which makes the lowmem/highmem boundary visible to the boot
-loader.  This was exported to the bootloader via a compile-time
-field.  Unfortunately, the vmalloc= command-line option breaks this
-part of the protocol; instead of adding yet another hack that affects
-the bootloader, have the kernel relocate the initrd down below the
-lowmem boundary inside the kernel itself.
+Subject: Turn 64 bit x86 HANDLE_STACK into print_context_stack like 32 bit has
+From: Arjan van de Ven <arjan@linux.intel.com>
 
-Note that this does not rely on HIGHMEM being enabled in the kernel.
+This patch turns the x86 64 bit HANDLE_STACK macro in the backtrace code into 
+a function, just like 32 bit has. This is needed pre work in order to get exact
+backtraces for CONFIG_FRAME_POINTER to work.
 
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+The function and it's arguments are not the same as 32 bit; due to the
+exception/interrupt stack way of x86-64 there are a few differences.
+
+This patch should not have any behavior changes, only code movement.
+
+Due to the fragility and importance of the backtrace code, this needs to
+be well reviewed and well tested before merging into mainlne.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
-Fix crash on NUMA reported by Dhaval Giani (reported as being a kexec issue.)
+ arch/x86/kernel/traps_64.c |   74 +++++++++++++++++++++++++++------------------
+ 1 file changed, 45 insertions(+), 29 deletions(-)
 
- arch/x86/boot/header.S     |    5 ++-
- arch/x86/kernel/setup_32.c |  128 ++++++++++++++++++++++++++++++++++++--------
- arch/x86/mm/discontig_32.c |    4 +-
- 3 files changed, 111 insertions(+), 26 deletions(-)
-
-diff --git a/arch/x86/boot/header.S b/arch/x86/boot/header.S
-index 4cc5b04..64ad901 100644
---- a/arch/x86/boot/header.S
-+++ b/arch/x86/boot/header.S
-@@ -195,10 +195,13 @@ cmd_line_ptr:	.long	0		# (Header version 0x0202 or later)
- 					# can be located anywhere in
- 					# low memory 0x10000 or higher.
+Index: linux-2.6.24-rc7/arch/x86/kernel/traps_64.c
+===================================================================
+--- linux-2.6.24-rc7.orig/arch/x86/kernel/traps_64.c
++++ linux-2.6.24-rc7/arch/x86/kernel/traps_64.c
+@@ -208,10 +208,46 @@ static unsigned long *in_exception_stack
+  * severe exception (double fault, nmi, stack fault, debug, mce) hardware stack
+  */
  
--ramdisk_max:	.long (-__PAGE_OFFSET-(512 << 20)-1) & 0x7fffffff
-+ramdisk_max:	.long 0x7fffffff
- 					# (Header version 0x0203 or later)
- 					# The highest safe address for
- 					# the contents of an initrd
-+					# The current kernel allows up to 4 GB,
-+					# but leave it at 2 GB to avoid
-+					# possible bootloader bugs.
- 
- kernel_alignment:  .long CONFIG_PHYSICAL_ALIGN	#physical addr alignment
- 						#required for protected mode
-diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
-index 9c24b45..8a8b13d 100644
---- a/arch/x86/kernel/setup_32.c
-+++ b/arch/x86/kernel/setup_32.c
-@@ -116,9 +116,9 @@ extern int root_mountflags;
- 
- unsigned long saved_videomode;
- 
--#define RAMDISK_IMAGE_START_MASK  	0x07FF
-+#define RAMDISK_IMAGE_START_MASK	0x07FF
- #define RAMDISK_PROMPT_FLAG		0x8000
--#define RAMDISK_LOAD_FLAG		0x4000	
-+#define RAMDISK_LOAD_FLAG		0x4000
- 
- static char __initdata command_line[COMMAND_LINE_SIZE];
- 
-@@ -176,7 +176,7 @@ static int __init parse_mem(char *arg)
- 		 * trim the existing memory map.
- 		 */
- 		unsigned long long mem_size;
-- 
-+
- 		mem_size = memparse(arg, &arg);
- 		limit_regions(mem_size);
- 		user_defined_memmap = 1;
-@@ -315,7 +315,7 @@ static void __init reserve_ebda_region(void)
- 	unsigned int addr;
- 	addr = get_bios_ebda();
- 	if (addr)
--		reserve_bootmem(addr, PAGE_SIZE);	
-+		reserve_bootmem(addr, PAGE_SIZE);
- }
- 
- #ifndef CONFIG_NEED_MULTIPLE_NODES
-@@ -420,6 +420,100 @@ static inline void __init reserve_crashkernel(void)
- {}
- #endif
- 
-+#ifdef CONFIG_BLK_DEV_INITRD
-+
-+static bool do_relocate_initrd = false;
-+
-+static void __init reserve_initrd(void)
-+{
-+	unsigned long ramdisk_image = boot_params.hdr.ramdisk_image;
-+	unsigned long ramdisk_size  = boot_params.hdr.ramdisk_size;
-+	unsigned long ramdisk_end   = ramdisk_image + ramdisk_size;
-+	unsigned long end_of_lowmem = max_low_pfn << PAGE_SHIFT;
-+	unsigned long ramdisk_here;
-+
-+	initrd_start = 0;
-+
-+	if (!boot_params.hdr.type_of_loader ||
-+	    !ramdisk_image || !ramdisk_size)
-+		return;		/* No initrd provided by bootloader */
-+
-+	if (ramdisk_end < ramdisk_image) {
-+		printk(KERN_ERR "initrd wraps around end of memory, "
-+		       "disabling initrd\n");
-+		return;
-+	}
-+	if (ramdisk_size >= end_of_lowmem/2) {
-+		printk(KERN_ERR "initrd too large to handle, "
-+		       "disabling initrd\n");
-+		return;
-+	}
-+	if (ramdisk_end <= end_of_lowmem) {
-+		/* All in lowmem, easy case */
-+		reserve_bootmem(ramdisk_image, ramdisk_size);
-+		initrd_start = ramdisk_image + PAGE_OFFSET;
-+		initrd_end = initrd_start+ramdisk_size;
-+		return;
-+	}
-+
-+	/* We need to move the initrd down into lowmem */
-+	ramdisk_here = (end_of_lowmem - ramdisk_size) & PAGE_MASK;
-+
-+	/* Note: this includes all the lowmem currently occupied by
-+	   the initrd, we rely on that fact to keep the data intact. */
-+	reserve_bootmem(ramdisk_here, ramdisk_size);
-+	initrd_start = ramdisk_here + PAGE_OFFSET;
-+	initrd_end   = initrd_start + ramdisk_size;
-+
-+	do_relocate_initrd = true;
-+}
-+
-+#define MAX_MAP_CHUNK	(NR_FIX_BTMAPS << PAGE_SHIFT)
-+
-+static void __init relocate_initrd(void)
-+{
-+	unsigned long ramdisk_image = boot_params.hdr.ramdisk_image;
-+	unsigned long ramdisk_size  = boot_params.hdr.ramdisk_size;
-+	unsigned long end_of_lowmem = max_low_pfn << PAGE_SHIFT;
-+	unsigned long ramdisk_here;
-+	unsigned long slop, clen, mapaddr;
-+	char *p, *q;
-+
-+	if (!do_relocate_initrd)
-+		return;
-+
-+	ramdisk_here = initrd_start - PAGE_OFFSET;
-+
-+	q = (char *)initrd_start;
-+
-+	/* Copy any lowmem portion of the initrd */
-+	if (ramdisk_image < end_of_lowmem) {
-+		clen = end_of_lowmem - ramdisk_image;
-+		p = (char *)__va(ramdisk_image);
-+		memcpy(q, p, clen);
-+		q += clen;
-+		ramdisk_image += clen;
-+		ramdisk_size  -= clen;
-+	}
-+
-+	/* Copy the highmem portion of the initrd */
-+	while (ramdisk_size) {
-+		slop = ramdisk_image & ~PAGE_MASK;
-+		clen = ramdisk_size;
-+		if (clen > MAX_MAP_CHUNK-slop)
-+			clen = MAX_MAP_CHUNK-slop;
-+		mapaddr = ramdisk_image & PAGE_MASK;
-+		p = bt_ioremap(mapaddr, clen+slop);
-+		memcpy(q, p+slop, clen);
-+		bt_iounmap(p, clen+slop);
-+		q += clen;
-+		ramdisk_image += clen;
-+		ramdisk_size  -= clen;
-+	}
-+}
-+
-+#endif /* CONFIG_BLK_DEV_INITRD */
-+
- void __init setup_bootmem_allocator(void)
+-static inline int valid_stack_ptr(struct thread_info *tinfo, void *p)
++static inline int valid_stack_ptr(struct thread_info *tinfo,
++			void *p, unsigned int size, void *end)
  {
- 	unsigned long bootmap_size;
-@@ -475,26 +569,10 @@ void __init setup_bootmem_allocator(void)
- 	 */
- 	find_smp_config();
- #endif
--	numa_kva_reserve();
- #ifdef CONFIG_BLK_DEV_INITRD
--	if (boot_params.hdr.type_of_loader && boot_params.hdr.ramdisk_image) {
--		unsigned long ramdisk_image = boot_params.hdr.ramdisk_image;
--		unsigned long ramdisk_size  = boot_params.hdr.ramdisk_size;
--		unsigned long ramdisk_end   = ramdisk_image + ramdisk_size;
--		unsigned long end_of_lowmem = max_low_pfn << PAGE_SHIFT;
--
--		if (ramdisk_end <= end_of_lowmem) {
--			reserve_bootmem(ramdisk_image, ramdisk_size);
--			initrd_start = ramdisk_image + PAGE_OFFSET;
--			initrd_end = initrd_start+ramdisk_size;
--		} else {
--			printk(KERN_ERR "initrd extends beyond end of memory "
--			       "(0x%08lx > 0x%08lx)\ndisabling initrd\n",
--			       ramdisk_end, end_of_lowmem);
--			initrd_start = 0;
--		}
--	}
-+	reserve_initrd();
- #endif
-+	numa_kva_reserve();
- 	reserve_crashkernel();
+ 	void *t = (void *)tinfo;
+-        return p > t && p < t + THREAD_SIZE - 3;
++	if (end) {
++		if (p < end)
++			return 1;
++		else
++			return 0;
++	}
++	return p > t && p < t + THREAD_SIZE - size;
++}
++
++static inline unsigned long print_context_stack(struct thread_info *tinfo,
++				unsigned long *stack, unsigned long ebp,
++				const struct stacktrace_ops *ops, void *data,
++				unsigned long *end)
++{
++	/*
++	 * Print function call entries within a stack. 'cond' is the
++	 * "end of stackframe" condition, that the 'stack++'
++	 * iteration will eventually trigger.
++	 */
++	while (valid_stack_ptr(tinfo, stack, 3, end))) {
++		unsigned long addr = *stack++;
++		/* Use unlocked access here because except for NMIs
++		   we should be already protected against module unloads */
++		if (__kernel_text_address(addr)) {
++			/*
++			 * If the address is either in the text segment of the
++			 * kernel, or in the region which contains vmalloc'ed
++			 * memory, it *may* be the address of a calling
++			 * routine; if so, print it so that someone tracing
++			 * down the cause of the crash will be able to figure
++			 * out the call path that was taken.
++			 */
++			ops->address(data, addr);
++		}
++	}
++	return ebp;
  }
  
-@@ -644,13 +722,17 @@ void __init setup_arch(char **cmdline_p)
- 	 * NOTE: at this point the bootmem allocator is fully available.
- 	 */
+ void dump_trace(struct task_struct *tsk, struct pt_regs *regs,
+@@ -225,6 +261,7 @@ void dump_trace(struct task_struct *tsk,
  
-+#ifdef CONFIG_BLK_DEV_INITRD
-+	relocate_initrd();
-+#endif
+ 	if (!tsk)
+ 		tsk = current;
++	tinfo = task_thread_info(tsk);
+ 
+ 	if (!stack) {
+ 		unsigned long dummy;
+@@ -233,28 +270,6 @@ void dump_trace(struct task_struct *tsk,
+ 			stack = (unsigned long *)tsk->thread.rsp;
+ 	}
+ 
+-	/*
+-	 * Print function call entries within a stack. 'cond' is the
+-	 * "end of stackframe" condition, that the 'stack++'
+-	 * iteration will eventually trigger.
+-	 */
+-#define HANDLE_STACK(cond) \
+-	do while (cond) { \
+-		unsigned long addr = *stack++; \
+-		/* Use unlocked access here because except for NMIs	\
+-		   we should be already protected against module unloads */ \
+-		if (__kernel_text_address(addr)) { \
+-			/* \
+-			 * If the address is either in the text segment of the \
+-			 * kernel, or in the region which contains vmalloc'ed \
+-			 * memory, it *may* be the address of a calling \
+-			 * routine; if so, print it so that someone tracing \
+-			 * down the cause of the crash will be able to figure \
+-			 * out the call path that was taken. \
+-			 */ \
+-			ops->address(data, addr);   \
+-		} \
+-	} while (0)
+ 
+ 	/*
+ 	 * Print function call entries in all stacks, starting at the
+@@ -270,7 +285,9 @@ void dump_trace(struct task_struct *tsk,
+ 		if (estack_end) {
+ 			if (ops->stack(data, id) < 0)
+ 				break;
+-			HANDLE_STACK (stack < estack_end);
 +
- 	paravirt_post_allocator_init();
- 
- 	dmi_scan_machine();
- 
- #ifdef CONFIG_X86_GENERICARCH
- 	generic_apic_probe();
--#endif	
-+#endif
- 	if (efi_enabled)
- 		efi_map_memmap();
- 
-diff --git a/arch/x86/mm/discontig_32.c b/arch/x86/mm/discontig_32.c
-index 13a474d..88a7499 100644
---- a/arch/x86/mm/discontig_32.c
-+++ b/arch/x86/mm/discontig_32.c
-@@ -288,8 +288,8 @@ unsigned long __init setup_memory(void)
- 
- #ifdef CONFIG_BLK_DEV_INITRD
- 	/* Numa kva area is below the initrd */
--	if (boot_params.hdr.type_of_loader && boot_params.hdr.ramdisk_image)
--		kva_start_pfn = PFN_DOWN(boot_params.hdr.ramdisk_image)
-+	if (initrd_start)
-+		kva_start_pfn = PFN_DOWN(initrd_start - PAGE_OFFSET)
- 			- kva_pages;
- #endif
- 	kva_start_pfn -= kva_start_pfn & (PTRS_PER_PTE-1);
--- 
-1.5.3.6
++			print_context_stack(tinfo, stack, 0, ops,
++						data, estack_end);
+ 			ops->stack(data, "<EOE>");
+ 			/*
+ 			 * We link to the next stack via the
+@@ -288,7 +305,8 @@ void dump_trace(struct task_struct *tsk,
+ 			if (stack >= irqstack && stack < irqstack_end) {
+ 				if (ops->stack(data, "IRQ") < 0)
+ 					break;
+-				HANDLE_STACK (stack < irqstack_end);
++				print_context_stack(tinfo, stack, 0, ops,
++							 data, irqstack_end);
+ 				/*
+ 				 * We link to the next stack (which would be
+ 				 * the process stack normally) the last
+@@ -306,9 +324,7 @@ void dump_trace(struct task_struct *tsk,
+ 	/*
+ 	 * This handles the process stack:
+ 	 */
+-	tinfo = task_thread_info(tsk);
+-	HANDLE_STACK (valid_stack_ptr(tinfo, stack));
+-#undef HANDLE_STACK
++	print_context_stack(tinfo, stack, 0, ops, data, NULL);
+ 	put_cpu();
+ }
+ EXPORT_SYMBOL(dump_trace);
 
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
