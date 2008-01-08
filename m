@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761786AbYAHQaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761860AbYAHQf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761786AbYAHQaj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 11:30:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYAHQaS
+	id S1761860AbYAHQf0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 11:35:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbYAHQfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 11:30:18 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:42159 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756816AbYAHQaQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 11:30:16 -0500
-Date: Tue, 8 Jan 2008 22:03:05 +0530
-From: Sudhir Kumar <skumar@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org, greg@kroah.com
-Subject: [2.6.24-rc6-mm1]Build failure in drivers/net/ehea/ehea_main.c
-Message-ID: <20080108163305.GB10026@in.ibm.com>
-Reply-To: skumar@linux.vnet.ibm.com
+	Tue, 8 Jan 2008 11:35:17 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:48028 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751802AbYAHQfP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 11:35:15 -0500
+Date: Tue, 8 Jan 2008 17:35:14 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Tuomo Valkonen <tuomov@iki.fi>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: The ext3 way of journalling
+In-Reply-To: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi>
+Message-ID: <Pine.LNX.4.64.0801081725480.3032@fbirervta.pbzchgretzou.qr>
+References: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
-Kernel build fails on my machine with error :
 
+On Jan 8 2008 16:07, Tuomo Valkonen wrote:
+>
+>One should always indicate the version of software when complaining. Well,
+>
+>    $ uname -a
+>    Linux noi 2.6.14 #1 PREEMPT Sun Oct 30 20:18:48 EET 2005 i686 GNU/Linux
+>
+>I've tried upgrading, and failed: the megatonne monolith with a gazillion
+>hidden options (and totally worthless make oldconfig) is impossible to
+>compile these days,
 
-  LD      drivers/net/ehea/built-in.o
-  CC [M]  drivers/net/ehea/ehea_main.o
-drivers/net/ehea/ehea_main.c: In function ‘ehea_driver_sysfs_add’:
-drivers/net/ehea/ehea_main.c:2812: error: ‘struct device_driver’ has no
-member named ‘kobj’
-drivers/net/ehea/ehea_main.c:2815: error: ‘struct device_driver’ has no
-member named ‘kobj’
-drivers/net/ehea/ehea_main.c:2818: error: ‘struct device_driver’ has no
-member named ‘kobj’
-drivers/net/ehea/ehea_main.c: In function ‘ehea_driver_sysfs_remove’:
-drivers/net/ehea/ehea_main.c:2830: error: ‘struct device_driver’ has no
-member named ‘kobj’
-make[3]: *** [drivers/net/ehea/ehea_main.o] Error 1
-make[2]: *** [drivers/net/ehea] Error 2
-make[1]: *** [drivers/net] Error 2
-make: *** [drivers] Error 2
+Do it step-by-step.
 
-The structure device_driver(in device.h) has a member struct driver_private which
-contains the member kobj (according to drivers/base/base.h).
-But in device.h struct driver_private has been declared localy and 
-neither defined nor included from base.h.
-So my effort to use driver->driver_private->obj also does not work.
-(I am surprised from where do you access the struct device_driver)
+git checkout v2.6.15
+make oldconfig
+git checkout v2.6.16
+make oldconfig
+...
 
-Thanks and Regards
-Sudhir Kumar
+>and the distros' stock kernel are utter and total crap
+
+I can recommend that you try another distribution then.
+
+>that load drivers in wrong order etc.,
+
+What specific modules and which order do you need for the disks?
+There is also kernel-side loading order coming up:
+http://lwn.net/Articles/260856/
+
+>and are difficult to configure
+
+I do not really have to configure anything on my machine. Then again,
+yours might be vastly different. I can seamlessy switch distro and
+self-built kernels, with the only extra that I have to call mkinitrd
+(on opensuse that works without arguments even) for the self-built one.
+
+>(demanding crap that demands udev to edit their initrds).
+
+mkinitrd should take care of that.
