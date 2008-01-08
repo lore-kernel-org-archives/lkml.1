@@ -1,241 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbYAHJlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757305AbYAHJm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756723AbYAHJlS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 04:41:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750711AbYAHJlJ
+	id S1757305AbYAHJm7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 04:42:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbYAHJmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 04:41:09 -0500
-Received: from ns1.suse.de ([195.135.220.2]:58680 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754658AbYAHJlG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 04:41:06 -0500
-Date: Tue, 8 Jan 2008 10:41:02 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: [patch 3/3] mm: remove nopage
-Message-ID: <20080108094102.GC14302@wotan.suse.de>
-References: <20080108093815.GA14302@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080108093815.GA14302@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+	Tue, 8 Jan 2008 04:42:51 -0500
+Received: from po-out-1718.google.com ([72.14.252.152]:44487 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750711AbYAHJmu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 04:42:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
+        b=ci2CPgdDC6MDpp9zVyJ/3pM6sod3MsvMZ3EASQ6IFPKeSTo39URRRyhQOkhZmfS/Y1tnVRgIVVZEljUSBPO0sC6plSdGSMqnVyP/MWMibfikPVNjUN53FefofpoShNgsoMbLJ9m0KB3UxLQSty9nPy26mmRbcxnH3tBwYzqbweU=
+Message-ID: <47834593.1000506@gmail.com>
+Date: Tue, 08 Jan 2008 18:42:43 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Gabor Gombas <gombasg@sztaki.hu>
+CC: Al Viro <viro@ZenIV.linux.org.uk>, Dave Young <hidave.darkstar@gmail.com>,
+       linux-kernel@vger.kernel.org, bluez-devel@lists.sourceforge.net
+Subject: Re: [Bluez-devel] Oops involving RFCOMM and sysfs
+References: <20071228173203.GA20690@boogie.lpds.sztaki.hu> <a8e1da0712290007o168a730cw923055ad2c265d84@mail.gmail.com> <20080102151642.GA7273@boogie.lpds.sztaki.hu> <20080105075039.GF27894@ZenIV.linux.org.uk> <20080107141300.GB12763@boogie.lpds.sztaki.hu> <47824415.80703@gmail.com> <20080107210024.GA13537@boogie.lpds.sztaki.hu>
+In-Reply-To: <20080107210024.GA13537@boogie.lpds.sztaki.hu>
+X-Enigmail-Version: 0.95.3
+Content-Type: multipart/mixed;
+ boundary="------------010600060907090706030500"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch against 2.6.24-rc6-mm1... nothing in your tree appears to use nopage.
-This patch should transfer without rejects upstream, so it shouldn't be too
-difficult.
+This is a multi-part message in MIME format.
+--------------010600060907090706030500
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Would be nice to get in 2.6.25 if we can.
+Gabor Gombas wrote:
+> On Tue, Jan 08, 2008 at 12:24:05AM +0900, Tejun Heo wrote:
+> 
+>> Does the attached patch fix the problem?
+> 
+> No, it still oopses.
 
----
+Thanks.  Please apply the attached patch and report the oops.
 
-mm: remove nopage
+-- 
+tejun
 
-Nothing in the tree uses nopage any more. Remove support for it in the
-core mm code and documentation (and a few stray references to it in comments).
+--------------010600060907090706030500
+Content-Type: text/x-patch;
+ name="debug.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="debug.patch"
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-Cc: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org
----
- Documentation/feature-removal-schedule.txt |    9 --------
- Documentation/filesystems/Locking          |    3 --
- drivers/media/video/vino.c                 |    2 -
- drivers/video/vermilion/vermilion.c        |    5 ++--
- include/linux/mm.h                         |    8 -------
- mm/memory.c                                |   32 ++++++++++-------------------
- mm/mincore.c                               |    2 -
- mm/mmap.c                                  |   20 +++++++++---------
- mm/rmap.c                                  |    1 
- 9 files changed, 27 insertions(+), 55 deletions(-)
-
-Index: linux-2.6/include/linux/mm.h
-===================================================================
---- linux-2.6.orig/include/linux/mm.h
-+++ linux-2.6/include/linux/mm.h
-@@ -166,8 +166,6 @@ struct vm_operations_struct {
- 	void (*open)(struct vm_area_struct * area);
- 	void (*close)(struct vm_area_struct * area);
- 	int (*fault)(struct vm_area_struct *vma, struct vm_fault *vmf);
--	struct page *(*nopage)(struct vm_area_struct *area,
--			unsigned long address, int *type);
- 	unsigned long (*nopfn)(struct vm_area_struct *area,
- 			unsigned long address);
+diff --git a/drivers/ata/libata-eh.c b/drivers/ata/libata-eh.c
+diff --git a/fs/dcache.c b/fs/dcache.c
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index 3371629..f5ec27e 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -96,7 +96,7 @@ static void sysfs_unlink_sibling(struct sysfs_dirent *sd)
+  *	RETURNS:
+  *	Pointer to found dentry on success, ERR_PTR() value on error.
+  */
+-struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd)
++static struct dentry *__sysfs_get_dentry(struct sysfs_dirent *sd, int dbg)
+ {
+ 	struct dentry *dentry = dget(sysfs_sb->s_root);
  
-@@ -642,12 +640,6 @@ static inline int page_mapped(struct pag
+@@ -111,6 +111,8 @@ struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd)
+ 
+ 		/* look it up */
+ 		parent = dentry;
++		printk("XXX: looking up %s (%p) / %s\n",
++		       parent->d_name.name, parent->d_inode, cur->s_name);
+ 		mutex_lock(&parent->d_inode->i_mutex);
+ 		dentry = lookup_one_noperm(cur->s_name, parent);
+ 		mutex_unlock(&parent->d_inode->i_mutex);
+@@ -122,6 +124,11 @@ struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd)
+ 	return dentry;
  }
  
- /*
-- * Error return values for the *_nopage functions
-- */
--#define NOPAGE_SIGBUS	(NULL)
--#define NOPAGE_OOM	((struct page *) (-1))
--
--/*
-  * Error return values for the *_nopfn functions
-  */
- #define NOPFN_SIGBUS	((unsigned long) -1)
-Index: linux-2.6/mm/memory.c
-===================================================================
---- linux-2.6.orig/mm/memory.c
-+++ linux-2.6/mm/memory.c
-@@ -1042,8 +1042,7 @@ int get_user_pages(struct task_struct *t
- 		if (pages)
- 			foll_flags |= FOLL_GET;
- 		if (!write && !(vma->vm_flags & VM_LOCKED) &&
--		    (!vma->vm_ops || (!vma->vm_ops->nopage &&
--					!vma->vm_ops->fault)))
-+		    (!vma->vm_ops || !vma->vm_ops->fault))
- 			foll_flags |= FOLL_ANON;
++struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd)
++{
++	return __sysfs_get_dentry(sd, 0);
++}
++
+ /**
+  *	sysfs_get_active - get an active reference to sysfs_dirent
+  *	@sd: sysfs_dirent to get an active reference to
+@@ -838,6 +845,14 @@ int sysfs_move_dir(struct kobject *kobj, struct kobject *new_parent_kobj)
  
- 		do {
-@@ -2184,20 +2183,9 @@ static int __do_fault(struct mm_struct *
+ 	mutex_lock(&sysfs_rename_mutex);
+ 	BUG_ON(!sd->s_parent);
++	{
++		char *s = kobject_get_path(kobj, GFP_KERNEL);
++		char *p = kobject_get_path(new_parent_kobj, GFP_KERNEL);
++
++		printk("XXX: moving %s under %s\n", s, p);
++		kfree(s);
++		kfree(p);
++	}
+ 	new_parent_sd = new_parent_kobj->sd ? new_parent_kobj->sd : &sysfs_root;
  
- 	BUG_ON(vma->vm_flags & VM_PFNMAP);
+ 	error = 0;
+@@ -845,14 +860,14 @@ int sysfs_move_dir(struct kobject *kobj, struct kobject *new_parent_kobj)
+ 		goto out;	/* nothing to move */
  
--	if (likely(vma->vm_ops->fault)) {
--		ret = vma->vm_ops->fault(vma, &vmf);
--		if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))
--			return ret;
--	} else {
--		/* Legacy ->nopage path */
--		ret = 0;
--		vmf.page = vma->vm_ops->nopage(vma, address & PAGE_MASK, &ret);
--		/* no page was available -- either SIGBUS or OOM */
--		if (unlikely(vmf.page == NOPAGE_SIGBUS))
--			return VM_FAULT_SIGBUS;
--		else if (unlikely(vmf.page == NOPAGE_OOM))
--			return VM_FAULT_OOM;
--	}
-+	ret = vma->vm_ops->fault(vma, &vmf);
-+	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))
-+		return ret;
+ 	/* get dentries */
+-	old_dentry = sysfs_get_dentry(sd);
++	old_dentry = __sysfs_get_dentry(sd, 1);
+ 	if (IS_ERR(old_dentry)) {
+ 		error = PTR_ERR(old_dentry);
+ 		goto out;
+ 	}
+ 	old_parent = old_dentry->d_parent;
  
- 	/*
- 	 * For consistency in subsequent calls, make the faulted page always
-@@ -2443,7 +2431,7 @@ static inline int handle_pte_fault(struc
- 	if (!pte_present(entry)) {
- 		if (pte_none(entry)) {
- 			if (vma->vm_ops) {
--				if (vma->vm_ops->fault || vma->vm_ops->nopage)
-+				if (likely(vma->vm_ops->fault))
- 					return do_linear_fault(mm, vma, address,
- 						pte, pmd, write_access, entry);
- 				if (unlikely(vma->vm_ops->nopfn))
-Index: linux-2.6/mm/mincore.c
-===================================================================
---- linux-2.6.orig/mm/mincore.c
-+++ linux-2.6/mm/mincore.c
-@@ -33,7 +33,7 @@ static unsigned char mincore_page(struct
- 	 * When tmpfs swaps out a page from a file, any process mapping that
- 	 * file will not get a swp_entry_t in its pte, but rather it is like
- 	 * any other file mapping (ie. marked !present and faulted in with
--	 * tmpfs's .nopage). So swapped out tmpfs mappings are tested here.
-+	 * tmpfs's .fault). So swapped out tmpfs mappings are tested here.
- 	 *
- 	 * However when tmpfs moves the page from pagecache and into swapcache,
- 	 * it is still in core, but the find_get_page below won't find it.
-Index: linux-2.6/Documentation/feature-removal-schedule.txt
-===================================================================
---- linux-2.6.orig/Documentation/feature-removal-schedule.txt
-+++ linux-2.6/Documentation/feature-removal-schedule.txt
-@@ -155,15 +155,6 @@ Who:	Greg Kroah-Hartman <gregkh@suse.de>
+-	new_parent = sysfs_get_dentry(new_parent_sd);
++	new_parent = __sysfs_get_dentry(new_parent_sd, 1);
+ 	if (IS_ERR(new_parent)) {
+ 		error = PTR_ERR(new_parent);
+ 		goto out;
+@@ -878,7 +893,6 @@ again:
+ 	error = 0;
+ 	d_add(new_dentry, NULL);
+ 	d_move(old_dentry, new_dentry);
+-	dput(new_dentry);
  
- ---------------------------
- 
--What:	vm_ops.nopage
--When:	Soon, provided in-kernel callers have been converted
--Why:	This interface is replaced by vm_ops.fault, but it has been around
--	forever, is used by a lot of drivers, and doesn't cost much to
--	maintain.
--Who:	Nick Piggin <npiggin@suse.de>
--
-----------------------------
--
- What:	PHYSDEVPATH, PHYSDEVBUS, PHYSDEVDRIVER in the uevent environment
- When:	October 2008
- Why:	The stacking of class devices makes these values misleading and
-Index: linux-2.6/Documentation/filesystems/Locking
-===================================================================
---- linux-2.6.orig/Documentation/filesystems/Locking
-+++ linux-2.6/Documentation/filesystems/Locking
-@@ -511,7 +511,6 @@ prototypes:
- 	void (*open)(struct vm_area_struct*);
- 	void (*close)(struct vm_area_struct*);
- 	int (*fault)(struct vm_area_struct*, struct vm_fault *);
--	struct page *(*nopage)(struct vm_area_struct*, unsigned long, int *);
- 	int (*page_mkwrite)(struct vm_area_struct *, struct page *);
- 
- locking rules:
-@@ -519,7 +518,6 @@ locking rules:
- open:		no	yes
- close:		no	yes
- fault:		no	yes
--nopage:		no	yes
- page_mkwrite:	no	yes		no
- 
- 	->page_mkwrite() is called when a previously read-only page is
-@@ -537,4 +535,3 @@ NULL.
- 
- ipc/shm.c::shm_delete() - may need BKL.
- ->read() and ->write() in many drivers are (probably) missing BKL.
--drivers/sgi/char/graphics.c::sgi_graphics_nopage() - may need BKL.
-Index: linux-2.6/mm/rmap.c
-===================================================================
---- linux-2.6.orig/mm/rmap.c
-+++ linux-2.6/mm/rmap.c
-@@ -655,7 +655,6 @@ void page_remove_rmap(struct page *page,
- 			printk (KERN_EMERG "  page->mapping = %p\n", page->mapping);
- 			print_symbol (KERN_EMERG "  vma->vm_ops = %s\n", (unsigned long)vma->vm_ops);
- 			if (vma->vm_ops) {
--				print_symbol (KERN_EMERG "  vma->vm_ops->nopage = %s\n", (unsigned long)vma->vm_ops->nopage);
- 				print_symbol (KERN_EMERG "  vma->vm_ops->fault = %s\n", (unsigned long)vma->vm_ops->fault);
- 			}
- 			if (vma->vm_file && vma->vm_file->f_op)
-Index: linux-2.6/drivers/media/video/vino.c
-===================================================================
---- linux-2.6.orig/drivers/media/video/vino.c
-+++ linux-2.6/drivers/media/video/vino.c
-@@ -13,7 +13,7 @@
- /*
-  * TODO:
-  * - remove "mark pages reserved-hacks" from memory allocation code
-- *   and implement nopage()
-+ *   and implement fault()
-  * - check decimation, calculating and reporting image size when
-  *   using decimation
-  * - implement read(), user mode buffers and overlay (?)
-Index: linux-2.6/drivers/video/vermilion/vermilion.c
-===================================================================
---- linux-2.6.orig/drivers/video/vermilion/vermilion.c
-+++ linux-2.6/drivers/video/vermilion/vermilion.c
-@@ -114,8 +114,9 @@ static int vmlfb_alloc_vram_area(struct 
- 
- 	/*
- 	 * It seems like __get_free_pages only ups the usage count
--	 * of the first page. This doesn't work with nopage mapping, so
--	 * up the usage count once more.
-+	 * of the first page. This doesn't work with fault mapping, so
-+	 * up the usage count once more (XXX: should use split_page or
-+	 * compound page).
- 	 */
- 
- 	memset((void *)va->logical, 0x00, va->size);
-Index: linux-2.6/fs/gfs2/ops_address.c
-===================================================================
---- linux-2.6.orig/fs/gfs2/ops_address.c
-+++ linux-2.6/fs/gfs2/ops_address.c
-@@ -441,7 +441,7 @@ static int stuffed_readpage(struct gfs2_
- 	int error;
- 
- 	/*
--	 * Due to the order of unstuffing files and ->nopage(), we can be
-+	 * Due to the order of unstuffing files and ->fault(), we can be
- 	 * asked for a zero page in the case of a stuffed file being extended,
- 	 * so we need to supply one here. It doesn't happen often.
- 	 */
+ 	/* Remove from old parent's list and insert into new parent's list. */
+ 	sysfs_unlink_sibling(sd);
+
+--------------010600060907090706030500--
