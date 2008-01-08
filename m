@@ -1,62 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756494AbYAHWUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755152AbYAHWUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756494AbYAHWUA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 17:20:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755275AbYAHWTU
+	id S1755152AbYAHWUp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 17:20:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYAHWUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 17:19:20 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:13444 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756155AbYAHWTR (ORCPT
+	Tue, 8 Jan 2008 17:20:34 -0500
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:42343
+	"EHLO mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752817AbYAHWUd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 17:19:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding:from;
-        b=LknqCVDFrJ/1aDeGt5hpTJhSzMuFkny3HmsxTVWCFKXxPCKAhAnDuMftK5G1rTOKesiyMZdQfLaonOfYDFMYGcfDCouAP4lZ6p+pIvbz/AdRaBDUlbF3INjC8rnl5WdapFDt2IFTso5ext/JE4t0BxR/7NXMJMmd4azVGRncy8c=
-Subject: [PATCH] Fix 2.6.24-rc7 regression in asix.c
-To: linux-kernel@vger.kernel.org
-Cc: linux-net@vget.kernel.org
-Content-Type: text/plain
-Date: Tue, 08 Jan 2008 15:17:27 -0700
-Message-Id: <1199830647.30986.1.camel@russ-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.4 
+	Tue, 8 Jan 2008 17:20:33 -0500
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-From: Russ Dill <russ.dill@gmail.com>
+Subject: [PATCH 02 of 10] x86: avoid name conflict for Voyager leave_mm
+X-Mercurial-Node: 2cd20aa5a4797f6d7285de54b4b759e7d6ae5443
+Message-Id: <2cd20aa5a4797f6d7285.1199829605@localhost>
+In-Reply-To: <patchbomb.1199829603@localhost>
+Date: Tue, 08 Jan 2008 14:00:05 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jan Beulich <jbeulich@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-51bf2976 caused a regression in the asix usbnet driver. usb_control_msg
-returns the number of bytes read on success, not 0. Tested with NETGEAR
-FA120.
+Avoid a conflict between Voyager's leave_mm and asm-x86/mmu.h's leave_mm.
 
-Signed-off-by: Russ Dill <Russ.Dill@gmail.com>
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+
 ---
- drivers/net/usb/asix.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ arch/x86/mach-voyager/voyager_smp.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/usb/asix.c b/drivers/net/usb/asix.c
-index 1249f44..569028b 100644
---- a/drivers/net/usb/asix.c
-+++ b/drivers/net/usb/asix.c
-@@ -202,10 +202,10 @@ static int asix_read_cmd(struct usbnet *dev, u8 cmd, u16 value, u16 index,
- 		buf,
- 		size,
- 		USB_CTRL_GET_TIMEOUT);
--	if (err >= 0 && err < size)
--		err = -EINVAL;
--	if (!err)
-+	if (err == size)
- 		memcpy(data, buf, size);
-+	else if (err >= 0)
-+		err = -EINVAL;
- 	kfree(buf);
+diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
+--- a/arch/x86/mach-voyager/voyager_smp.c
++++ b/arch/x86/mach-voyager/voyager_smp.c
+@@ -808,7 +808,7 @@ static DEFINE_SPINLOCK(tlbstate_lock);
+  * We need to reload %cr3 since the page tables may be going
+  * away from under us..
+  */
+-static inline void leave_mm(unsigned long cpu)
++static inline void voyager_leave_mm(unsigned long cpu)
+ {
+ 	if (per_cpu(cpu_tlbstate, cpu).state == TLBSTATE_OK)
+ 		BUG();
+@@ -838,7 +838,7 @@ static void smp_invalidate_interrupt(voi
+ 			else
+ 				__flush_tlb_one(flush_va);
+ 		} else
+-			leave_mm(cpu);
++			voyager_leave_mm(cpu);
+ 	}
+ 	smp_mb__before_clear_bit();
+ 	clear_bit(cpu, &smp_invalidate_needed);
+@@ -919,7 +919,7 @@ void flush_tlb_mm(struct mm_struct *mm)
+ 		if (current->mm)
+ 			local_flush_tlb();
+ 		else
+-			leave_mm(smp_processor_id());
++			voyager_leave_mm(smp_processor_id());
+ 	}
+ 	if (cpu_mask)
+ 		voyager_flush_tlb_others(cpu_mask, mm, TLB_FLUSH_ALL);
+@@ -939,7 +939,7 @@ void flush_tlb_page(struct vm_area_struc
+ 		if (current->mm)
+ 			__flush_tlb_one(va);
+ 		else
+-			leave_mm(smp_processor_id());
++			voyager_leave_mm(smp_processor_id());
+ 	}
  
- out:
--- 
-1.5.3.7
-
+ 	if (cpu_mask)
+@@ -1155,7 +1155,7 @@ static void do_flush_tlb_all(void *info)
+ 
+ 	__flush_tlb_all();
+ 	if (per_cpu(cpu_tlbstate, cpu).state == TLBSTATE_LAZY)
+-		leave_mm(cpu);
++		voyager_leave_mm(cpu);
+ }
+ 
+ /* flush the TLB of every active CPU in the system */
 
 
