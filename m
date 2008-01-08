@@ -1,89 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760916AbYAHQO2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761125AbYAHQPE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760916AbYAHQO2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 11:14:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759431AbYAHQOI
+	id S1761125AbYAHQPE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 11:15:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbYAHQOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 11:14:08 -0500
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:23025 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759279AbYAHQOG (ORCPT
+	Tue, 8 Jan 2008 11:14:47 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:19167 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760028AbYAHQOq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 11:14:06 -0500
-Date: Tue, 8 Jan 2008 17:14:03 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: linux-kernel@vger.kernel.org
-Cc: apw@shadowen.org, akpm@osdl.org
-Subject: [PATCH] Deprecate checkpatch.pl --file
-Message-ID: <20080108161403.GA11632@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 08 Jan 2008 16:07:55.0463 (UTC) FILETIME=[A1076570:01C85210]
+	Tue, 8 Jan 2008 11:14:46 -0500
+Date: Tue, 8 Jan 2008 08:14:01 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Kevin Winchester <kjwinchester@gmail.com>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       NetDev <netdev@vger.kernel.org>
+Subject: Re: Top 10 kernel oopses for the week ending January 5th, 2008
+Message-Id: <20080108081401.d9576ac5.randy.dunlap@oracle.com>
+In-Reply-To: <alpine.LFD.1.00.0801071851120.3148@woody.linux-foundation.org>
+References: <477FF149.4070609@linux.intel.com>
+	<20080105213935.GN27894@ZenIV.linux.org.uk>
+	<20080107174431.GC27741@fieldses.org>
+	<4782CF9C.6000508@gmail.com>
+	<alpine.LFD.1.00.0801071851120.3148@woody.linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 7 Jan 2008 19:26:12 -0800 (PST) Linus Torvalds wrote:
 
-Deprecate checkpatch.pl --file mode; add warning; add --file-force
+> On Mon, 7 Jan 2008, Kevin Winchester wrote:
+> 
+> > J. Bruce Fields wrote:
+> > > 
+> > > Is there any good basic documentation on this to point people at?
+> > 
+> > I would second this question.  I see people "decode" oops on lkml often 
+> > enough, but I've never been entirely sure how its done.  Is it somewhere 
+> > in Documentation?
+> 
+> It's actually not necessarily at all that trivial, unless you have a deep 
+> understanding of the code generated for the architecture in question (and 
+> even then, some oopses take more time to figure out than others, thanks 
+> to inlining and tailcalls etc).
+> 
+> If the oops happened with a kernel you generated yourself, it's usually 
+> rather easy. Especially if you said "y" to the "generate debugging info" 
+> question at configuration time. Because, in that case, you really just do 
+> a simple
+> 
+> 	gdb vmlinux
+> 
+> and then you can do (for example) something like setting a breakpoint at 
+> the EIP that was reported for the oops, and it will tell you what line it 
+> came from.
+> 
+> However, if you don't have the exact binary - which is the common case for 
+> random oopses reported on lkml - you will generally have to disassemble 
+> the hex sequence given in the oops (the "Code:" line), and try to match it 
+> up against the source code to try to figure out what is going on.
+> 
+> Even just the disassembly is not entirely trivial, since the oops will 
+> give you the eip that it happened at, but you often want to also 
+> disassemble *backwards* in order to get more of a context (the "Code:" 
+> line will mark the particular EIP that starts the oopsing instruction by 
+> enclosing it in <xx>, but with non-constant instruction lengths, you need 
+> to use a bit of trial-and-error to figure it out.
+> 
+> I usually just compile a small program like
+> 
+> 	const char array[]="\xnn\xnn\xnn...";
+> 
+> 	int main(int argc, char **argv)
+> 	{
+> 		printf("%p\n", array);
+> 		*(int *)0=0;
+> 	}
+> 
+> and run it under gdb, and then when it gets the SIGSEGV (due to the 
+> obvious NULL pointer dereference), I can just ask gdb to disassemble 
+> around the array that contains the code[] stuff. Try a few offsets, to see 
+> when the disassembly makes sense (and gives the reported EIP as the 
+> beginning of one of the disassembled instructions).
+> 
+> (You can do it other and smarter ways too, I'm not claiming that's a 
+> particularly good way to do it, and the old "ksymoops" program used to do 
+> a pretty good job of this, but I'm used to that particular idiotic way 
+> myself, since it's how I've basically always done it)
 
-As discussed on linux-kernel checkpatch.pl only patches for whole
-files have a significant cost for the maintenance process. 
+One other way to do it (at least for x86-32/64) is to use
+$kerneltree/scripts/decodecode.  It may work on other $arches also,
+but I haven't tested it on others.
 
-Better such changes should be only
-done together with other changes. Add a explicit warning about
-this; deprecate --file and add a --file-force instead.
-
-Signed-off-by: Andi Kleen <ak@suse.de>
-
-Index: linux/scripts/checkpatch.pl
-===================================================================
---- linux.orig/scripts/checkpatch.pl
-+++ linux/scripts/checkpatch.pl
-@@ -21,6 +21,7 @@ my $tst_type = 0;
- my $emacs = 0;
- my $terse = 0;
- my $file = 0;
-+my $file_force = 0;
- my $check = 0;
- my $summary = 1;
- my $mailback = 0;
-@@ -34,6 +35,7 @@ GetOptions(
- 	'emacs!'	=> \$emacs,
- 	'terse!'	=> \$terse,
- 	'file!'		=> \$file,
-+	'file-force!'	=> \$file_force,
- 	'subjective!'	=> \$check,
- 	'strict!'	=> \$check,
- 	'root=s'	=> \$root,
-@@ -50,12 +52,28 @@ if ($#ARGV < 0) {
- 	print "         --no-tree    => run without a kernel tree\n";
- 	print "         --terse      => one line per report\n";
- 	print "         --emacs      => emacs compile window format\n";
--	print "         --file       => check a source file\n";
-+	print "         --file       => check a source file (deprecated)\n";
-+	print "		--file-force => check a source file\n";
- 	print "         --strict     => enable more subjective tests\n";
- 	print "         --root       => path to the kernel tree root\n";
- 	exit(1);
- }
- 
-+if ($file) {
-+	print <<EOL
-+WARNING: Using --file mode. Please do not send patches to linux-kernel
-+that change whole existing files if you did not significantly change most
-+of the the file for other reasons anyways or just wrote the file newly
-+from scratch. Pure code style patches have a significant cost in a
-+quickly changing code base like Linux because they cause rejects
-+with other changes.
-+If you're sure you want to use whole file mode please use --file-force
-+EOL
-+;
-+	exit(1);
-+};
-+$file = $file_force;
-+
- if ($terse) {
- 	$emacs = 1;
- 	$quiet++;
+---
+~Randy
