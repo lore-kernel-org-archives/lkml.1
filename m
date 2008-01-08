@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbYAHXwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbYAHXxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756072AbYAHXwY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 18:52:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbYAHXvy
+	id S1755249AbYAHXxt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 18:53:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbYAHXxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 18:51:54 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:33497 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753264AbYAHXvx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 18:51:53 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <200801081401.11975.nickpiggin@yahoo.com.au>
-References: <200801081401.11975.nickpiggin@yahoo.com.au> <200801072233.51294.nickpiggin@yahoo.com.au> <18996.1199291223@redhat.com> <7972.1199711343@redhat.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: dhowells@redhat.com, viro@ftp.linux.org.uk, hch@infradead.org,
-       Trond.Myklebust@netapp.com, sds@tycho.nsa.gov, casey@schaufler-ca.com,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 10/28] FS-Cache: Recruit a couple of page flags for cache management [try #2]
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Tue, 08 Jan 2008 23:51:24 +0000
-Message-ID: <31207.1199836284@redhat.com>
+	Tue, 8 Jan 2008 18:53:41 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:56935 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751500AbYAHXxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 18:53:41 -0500
+Message-ID: <47840D00.8000907@sgi.com>
+Date: Tue, 08 Jan 2008 15:53:36 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Jack Steiner <steiner@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/10] percpu: Per cpu code simplification V3
+References: <20080108021142.585467000@sgi.com> <20080108090702.GB27671@elte.hu> <Pine.LNX.4.64.0801081102450.2228@schroedinger.engr.sgi.com> <20080108221646.GC21482@elte.hu>
+In-Reply-To: <20080108221646.GC21482@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-
-> > Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > > No. I mean call the bit PG_private2. That way non-pagecache and
-> > > filesystems that don't use fscache can use it.
-> >
-> > The bit is called PG_owner_priv_2, and then 'subclassed' to PG_fscache,
-> > much like PG_owner_priv_1 is 'subclassed' to PG_checked as was recommended.
+Ingo Molnar wrote:
+> * Christoph Lameter <clameter@sgi.com> wrote:
 > 
-> It is not owner_priv if you're putting checks and tests into core
-> kernel pagecache code for it. owner_priv means a filesystem has it
-> _all_ to itself.
+>> On Tue, 8 Jan 2008, Ingo Molnar wrote:
+>>
+>>> i had the patch below for v2, it's still needed (because i didnt 
+>>> apply the s390/etc. bits), right?
+>> Well the patch really should go through mm because it is a change that 
+>> covers multiple arches. I think testing with this is fine. I think 
+>> Mike has diffed this against Linus tree so this works but will now 
+>> conflict with the modcopy patch already in mm.
+> 
+> well we cannot really ack it for x86 inclusion without having tested it 
+> through, so it will stay in x86.git for some time. That approach found a 
+> few problems with v1 already. In any case, v3 is looking pretty good so 
+> far - and it's cool stuff - i'm all for unifying/generalizing arch code.
+> 
+> 	Ingo
 
-Okay, I'll change it if it makes you happy.  Bear in mind, though, you're
-dictating instructions that conflict with those other people have dictated.
+Hi Ingo,
 
-David
+You probably will want to pick up V4 though I didn't add that ifndef
+patch you mentioned earlier.  There are no functional changes, basically
+only a rebasing on the correct mm version.
+
+Thanks,
+Mike
