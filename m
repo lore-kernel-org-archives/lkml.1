@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbYAHTdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757877AbYAHTeE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757529AbYAHTdp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 14:33:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756991AbYAHTdP
+	id S1757877AbYAHTeE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 14:34:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757310AbYAHTdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 14:33:15 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52086 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756956AbYAHTdM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 14:33:12 -0500
-Date: Tue, 8 Jan 2008 11:31:19 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Kevin Winchester <kjwinchester@gmail.com>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       NetDev <netdev@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Top 10 kernel oopses for the week ending January 5th, 2008
-In-Reply-To: <4783C95C.7050303@linux.intel.com>
-Message-ID: <alpine.LFD.1.00.0801081126200.3148@woody.linux-foundation.org>
-References: <477FF149.4070609@linux.intel.com> <20080105213935.GN27894@ZenIV.linux.org.uk> <20080107174431.GC27741@fieldses.org> <4782CF9C.6000508@gmail.com> <alpine.LFD.1.00.0801071851120.3148@woody.linux-foundation.org> <20080108081401.d9576ac5.randy.dunlap@oracle.com>
- <4783B602.1050307@linux.intel.com> <alpine.LFD.1.00.0801080957280.3148@woody.linux-foundation.org> <4783BE06.1070507@linux.intel.com> <alpine.LFD.1.00.0801081025470.3148@woody.linux-foundation.org> <4783C95C.7050303@linux.intel.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 8 Jan 2008 14:33:35 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36797 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757289AbYAHTdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 14:33:32 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: akpm@linux-foundation.org, neilb@suse.de
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/6] SUNRPC: export svc_sock_update_bufs
+Date: Tue,  8 Jan 2008 14:33:14 -0500
+Message-Id: <1199820798-5289-3-git-send-email-jlayton@redhat.com>
+X-Mailer: git-send-email 1.5.3.3
+In-Reply-To: <1199820798-5289-2-git-send-email-jlayton@redhat.com>
+References: <1199820798-5289-1-git-send-email-jlayton@redhat.com>
+ <1199820798-5289-2-git-send-email-jlayton@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Needed since the plan is to not have a svc_create_thread helper and to
+have current users of that function just call kthread_run directly.
 
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+---
+ net/sunrpc/svcsock.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-On Tue, 8 Jan 2008, Arjan van de Ven wrote:
-> 
-> ok done; I had to fizzle a bit because some things aren't *exactly* a 
-> BUG() statement but I track them anyway (things like the "sleeping in 
-> invalid context" check), so I had to somewhat arbitrarily assign 
-> categories for those. I might fine tune these over time some; if you or 
-> someone else sees problems with categorization please let me know
+diff --git a/net/sunrpc/svcsock.c b/net/sunrpc/svcsock.c
+index 057c870..f2bef16 100644
+--- a/net/sunrpc/svcsock.c
++++ b/net/sunrpc/svcsock.c
+@@ -1407,6 +1407,7 @@ svc_sock_update_bufs(struct svc_serv *serv)
+ 	}
+ 	spin_unlock_bh(&serv->sv_lock);
+ }
++EXPORT_SYMBOL(svc_sock_update_bufs);
+ 
+ /*
+  * Receive the next request on any socket.  This code is carefully
+-- 
+1.5.3.3
 
-Looking good. I wonder if we could also have some way to cross-ref these 
-things with the regression list (notably try to get pointers to them in 
-the regression list). 
-
-Right now, the regression list keeps track of the things that are closed, 
-but kerneloops.org obviously doesn't see that, so it's not obvious which 
-oopses are "uninteresting" since they've been fixed.
-
-			Linus
