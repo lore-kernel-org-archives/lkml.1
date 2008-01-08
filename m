@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbYAHTKd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755227AbYAHTOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754716AbYAHTKd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 14:10:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbYAHTKX
+	id S1755227AbYAHTOr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 14:14:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbYAHTOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 14:10:23 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:47689 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750857AbYAHTKW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 14:10:22 -0500
-To: haveblue@us.ibm.com
-CC: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
-       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
-       linux-fsdevel@vger.kernel.org, containers@lists.osdl.org,
-       util-linux-ng@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <1199815958.9834.58.camel@localhost> (message from Dave Hansen on
-	Tue, 08 Jan 2008 10:12:38 -0800)
-Subject: Re: [patch 5/9] unprivileged mounts: allow unprivileged bind mounts
-References: <20080108113502.184459371@szeredi.hu>
-	 <20080108113626.895583537@szeredi.hu> <1199815958.9834.58.camel@localhost>
-Message-Id: <E1JCJoQ-0003g9-Nk@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 08 Jan 2008 20:08:34 +0100
+	Tue, 8 Jan 2008 14:14:40 -0500
+Received: from ns.gsystems.sk ([62.176.172.50]:51326 "EHLO www.gsystems.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750707AbYAHTOj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 14:14:39 -0500
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
+Date: Tue, 8 Jan 2008 20:13:32 +0100
+User-Agent: KMail/1.9.7
+Cc: "David P. Reed" <dpreed@reed.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Rene Herman <rene.herman@keyaccess.nl>,
+       Christer Weinigel <christer@weinigel.se>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Paul Rolland <rol@as2917.net>,
+       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
+References: <9BdU5-1YW-9@gated-at.bofh.it> <200801081838.16241.linux@rainbow-software.org> <alpine.LSU.0.999.0801081950470.3158@be1.lrz>
+In-Reply-To: <alpine.LSU.0.999.0801081950470.3158@be1.lrz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801082013.37026.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 2008-01-08 at 12:35 +0100, Miklos Szeredi wrote:
-> > +static int reserve_user_mount(void)
-> > +{
-> > +       int err = 0;
-> > +
-> > +       spin_lock(&vfsmount_lock);
-> > +       if (nr_user_mounts >= max_user_mounts && !capable(CAP_SYS_ADMIN))
-> > +               err = -EPERM;
-> > +       else
-> > +               nr_user_mounts++;
-> > +       spin_unlock(&vfsmount_lock);
-> > +       return err;
-> > +} 
-> 
-> Would -ENOSPC or -ENOMEM be a more descriptive error here?  
+On Tuesday 08 January 2008 19:51:41 Bodo Eggert wrote:
+> On Tue, 8 Jan 2008, Ondrej Zary wrote:
+> > On Tuesday 08 January 2008 18:24:02 David P. Reed wrote:
+> > > Windows these days does delays with timing loops or the scheduler.  It
+> > > doesn't use a "port".  Also, Windows XP only supports machines that
+> > > tend not to have timing problems that use delays.  Instead, if a device
+> > > takes a while to respond, it has a "busy bit" in some port or memory
+> > > slot that can be tested.
+> >
+> > Windows XP can run on a machine with ISA slot(s) and has built-in drivers
+> > for some plug&play ISA cards - e.g. the famous 3Com EtherLink III. I
+> > think that there's a driver for NE2000-compatible cards too and it
+> > probably works.
+>
+> The NE2K-driver went missing in W2K. BTDT.
 
-The logic behind EPERM, is that this failure is only for unprivileged
-callers.  ENOMEM is too specifically about OOM.  It could be changed
-to ENOSPC, ENFILE, EMFILE, or it could remain EPERM.  What do others
-think?
+Haven't tried personally but it seems to work accroding to this 
+http://www.windowsnetworking.com/articles_tutorials/wxpne2k.html - and it can 
+be made to work even with non-PnP cards.
 
-Miklos
+-- 
+Ondrej Zary
