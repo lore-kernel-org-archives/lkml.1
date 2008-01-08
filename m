@@ -1,65 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759582AbYAHPWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758910AbYAHPbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759582AbYAHPWM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 10:22:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754730AbYAHPV6
+	id S1758910AbYAHPbW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 10:31:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750844AbYAHPbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 10:21:58 -0500
-Received: from mail.gmx.net ([213.165.64.20]:59079 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754247AbYAHPV5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 10:21:57 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/NHkIiToLNIvL5uv8go4PgfFeibsoENQZwittuVf
-	dYngtxvVLBOkv3
-Subject: Re: [vm] writing to UDF DVD+RW (/dev/sr0) while under memory
-	pressure: box ==> doorstop
-From: Mike Galbraith <efault@gmx.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080108033801.40d0043a.akpm@linux-foundation.org>
-References: <1199447212.4529.13.camel@homer.simson.net>
-	 <1199612533.4384.54.camel@homer.simson.net>
-	 <1199642470.3927.12.camel@homer.simson.net>
-	 <20080106122954.d8f04c98.akpm@linux-foundation.org>
-	 <1199790316.4094.57.camel@homer.simson.net>
-	 <20080108033801.40d0043a.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 08 Jan 2008 16:21:53 +0100
-Message-Id: <1199805713.3571.12.camel@homer.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Tue, 8 Jan 2008 10:31:10 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:53629 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751445AbYAHPbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 10:31:08 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: util-linux-ng: unprivileged mounts support
+Date: Tue, 8 Jan 2008 10:31:04 -0500
+User-Agent: KMail/1.9.7
+Cc: util-linux-ng@vger.kernel.org, akpm@linux-foundation.org,
+       hch@infradead.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
+       ebiederm@xmission.com, kzak@redhat.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+References: <E1JCCyk-0002pY-AM@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1JCCyk-0002pY-AM@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1646180.jnDCrdTZE9";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Message-Id: <200801081031.06826.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart1646180.jnDCrdTZE9
+Content-Type: text/plain;
+  charset="iso-8859-6"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-On Tue, 2008-01-08 at 03:38 -0800, Andrew Morton wrote:
-> On Tue, 08 Jan 2008 12:05:16 +0100 Mike Galbraith <efault@gmx.de> wrote:
+On Tuesday 08 January 2008, Miklos Szeredi wrote:
+> --- util-linux-ng.orig/configure.ac	2008-01-07 21:40:22.000000000 +0100
+> +++ util-linux-ng/configure.ac	2008-01-07 21:40:50.000000000 +0100
+> @@ -91,6 +92,11 @@ fi
+>  UTIL_CHECK_LIB(util, openpty)
+>  UTIL_CHECK_LIB(termcap, tgetnum)
+>
+> +UTIL_CHECK_LIB(cap, cap_get_proc)
+> +if test $have_cap =3D no; then
+> +   AC_MSG_ERROR([libcap is required for mount]);
+> +fi
 
-> > Seeks on DVD drives are apparently far FAR more horrible that I ever
-> > imagined, so writing to a filesystem on a DVD+RW in effect constitutes
-> > the stupid thing I was worried about above.  Make an image, populate it,
-> > write it instead... sure to be a truckload faster, and due to the VM
-> > connection, much safer too.  Oh well.
-> > 
-> 
-> Well.  From your earlier trace it appeared that something was causing
-> the filesystem to perform synchronous inode writes - sync_dirty_buffer() was
-> called.
-> 
-> This will cause many more seeks than would occur if we were doing full
-> delayed writing, with obvious throughput implications.
+this should be optional and it should be controlled with an AC_ARG_WITH()
 
-Yes, with UDF, the IO was _incredibly_ slow.  With ext2, it was better,
-though still very bad.  I tested with that other OS, and it gets ~same
-throughput with UDF as I got with ext2 (ick).
+with all the non-linux changes that have gone in, does there need to be hea=
+der=20
+checks here and then have mount.c key off of them ?  i'm thinking so ...
+=2Dmike
 
-UDF does udf_clear_inode() -> write_inode_now(inode, 1)
+--nextPart1646180.jnDCrdTZE9
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-I suppose I could try write_inode_now(inode, 0).  Might unstick the box.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.8 (GNU/Linux)
 
-	-Mike
+iQIcBAABAgAGBQJHg5c6AAoJEEFjO5/oN/WB9ggP/1qUuUNMJr3fP4KxRDqijtCK
+bOu4qa0/IXfLu2+Mqlc2vTf9iTq+rRGdNxN+LZIhv/n1BWGuy2PndwMPjiBiTghb
+I5VlS+/QlwN9WfE2TOxK0bwrjZBQm8k9hOjJVxsdttjibyJOTQr2uAnUScSdF2+9
+o9wSihgPy/AHOolUpIYJzF1xKK0cb3KW8Nve/ZJ6o0bxY41oCmJ+EAUI+CLyUUH/
+OjiLEJ9JqdirBPWyQsE24ZjnQR5vzRdDRavjRVVreHYBFcp6BOxAr7beVN+4vyXD
+LSlO5WFRVFbOW+WdApPhA34H+a1hJuO6JrlbHYSYq0A9d/OO79a2islQE7BuKklz
+eZlOzGymp9AYPFKxmnecyqBllKpctQHAQ3lslHziuU0ova9HIOI7cpdPb3ISooGb
+3mInMLou+DIMNoo9X83Qmm4fOgaIw0KbH2/TrbFKVDoNE/9B586tzL0BTyF45qk4
+EAwKJP4G3cc2JdAHNUqX/RTqoC8v0jf2/j2hJeO8XfWXL0i8RPhIx7qbtgmgE0Pj
+gSi1x4R0y/QLH0HKPEFt3GZ4HGzUkIoq/0MUBBTSHvKweF3bh+/rXpuYE7am/RQQ
+xAOm7iHC5C9DIWqtF9V8ps1AXr/e6Ir6jq9Dvv57ZUT0MmBeELH9fWciSggKqVav
+xMgDfZ86PHZem33awA6a
+=YgCz
+-----END PGP SIGNATURE-----
 
+--nextPart1646180.jnDCrdTZE9--
