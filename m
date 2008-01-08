@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758225AbYAHCnz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756958AbYAHDBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758225AbYAHCnz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 21:43:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753622AbYAHCnr
+	id S1756958AbYAHDBt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 22:01:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbYAHDBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 21:43:47 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:24245 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752383AbYAHCnq (ORCPT
+	Mon, 7 Jan 2008 22:01:38 -0500
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:44741 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750768AbYAHDBh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 21:43:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=rxjO3sFjxi/H+MWpKODwmzqZcxnJ6nw95jOpvMf2sWQ2Vn/O48qx1QavmPLAV1CzeA2UbD6GkIW96zpzbLXMApLB9wamSIeHpxcq3EDB42L8nKXLicrorl5LjzfCzEN0l6vfV6imJ156IlJf+1PngGFUEW3bvuB+y/G+DMDdQZY=
-Message-ID: <86802c440801071843p583f390as53f8b600622b93b2@mail.gmail.com>
-Date: Mon, 7 Jan 2008 18:43:46 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Adrian Bunk" <bunk@stusta.de>
-Subject: free_pages_check
-Cc: LKML <linux-kernel@vger.kernel.org>
+	Mon, 7 Jan 2008 22:01:37 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=cCNMpnXZ2m3yIzAFpF699dAz1AMzUWa7xUbN+DdTMEhOWbZlUmZez5F6FC72BQXCtvYAmC7NvQ/c3CDLmvOq0MACMy35G9Jf/GWwgObnMvU0zx1uIqxHEFSggfvBoVdWup+o7ZMa+ZKC0i2muaK0hxwIGGHxDGLvtd8cLvTQ/Ds=  ;
+X-YMail-OSG: Llpv3yoVM1nlb4Av7zSghrSV2yu_RwmQT6ThJOqTb0erX.FYKC5EAFBobfeXv1a7EQUWtN6gIg--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 10/28] FS-Cache: Recruit a couple of page flags for cache management [try #2]
+Date: Tue, 8 Jan 2008 14:01:11 +1100
+User-Agent: KMail/1.9.5
+Cc: viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
+       sds@tycho.nsa.gov, casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
+References: <200801072233.51294.nickpiggin@yahoo.com.au> <18996.1199291223@redhat.com> <7972.1199711343@redhat.com>
+In-Reply-To: <7972.1199711343@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200801081401.11975.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-wonder why free_pages_check mm/page_alloc.c is using bit OR than logical OR
+On Tuesday 08 January 2008 00:09, David Howells wrote:
+> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > No. I mean call the bit PG_private2. That way non-pagecache and
+> > filesystems that don't use fscache can use it.
+>
+> The bit is called PG_owner_priv_2, and then 'subclassed' to PG_fscache,
+> much like PG_owner_priv_1 is 'subclassed' to PG_checked as was recommended.
 
-@@ -450,9 +450,9 @@ static inline void __free_one_page(struc
-
- static inline int free_pages_check(struct page *page)
- {
--       if (unlikely(page_mapcount(page) |
--               (page->mapping != NULL)  |
--               (page_count(page) != 0)  |
-+       if (unlikely(page_mapcount(page) ||
-+               (page->mapping != NULL)  ||
-+               (page_count(page) != 0)  ||
-                (page->flags & (
-                        1 << PG_lru     |
-                        1 << PG_private |
-
-YH
+It is not owner_priv if you're putting checks and tests into core
+kernel pagecache code for it. owner_priv means a filesystem has it
+_all_ to itself.
