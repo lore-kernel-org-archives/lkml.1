@@ -1,94 +1,371 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbYAHWZD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755818AbYAHWZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755487AbYAHWZD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 17:25:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbYAHWYw
+	id S1755818AbYAHWZd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 17:25:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbYAHWZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 17:24:52 -0500
-Received: from mho-02-bos.mailhop.org ([63.208.196.179]:64185 "EHLO
-	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751553AbYAHWYu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 17:24:50 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 216.15.117.105
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX19Iw1NqU+3naZdgCD13kWL4
-Message-ID: <4783F80C.4020903@reed.com>
-Date: Tue, 08 Jan 2008 17:24:12 -0500
-From: "David P. Reed" <dpreed@reed.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.9) Gecko/20071115 Fedora/2.0.0.9-1.fc8 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
+	Tue, 8 Jan 2008 17:25:21 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:57135 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752428AbYAHWZS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 17:25:18 -0500
+Date: Tue, 8 Jan 2008 22:25:15 +0000 (GMT)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: Nick Piggin <npiggin@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 1/3] drm: nopage
+In-Reply-To: <20080108093815.GA14302@wotan.suse.de>
+Message-ID: <alpine.DEB.0.82.0801082224520.9570@skynet.skynet.ie>
+References: <20080108093815.GA14302@wotan.suse.de>
 MIME-Version: 1.0
-To: Christer Weinigel <christer@weinigel.se>
-CC: Ondrej Zary <linux@rainbow-software.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Rene Herman <rene.herman@keyaccess.nl>, Bodo Eggert <7eggert@gmx.de>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Paul Rolland <rol@as2917.net>, Pavel Machek <pavel@ucw.cz>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>, rol@witbe.net
-Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
- I/O delay override.
-References: <9BdU5-1YW-9@gated-at.bofh.it>	<200801081810.58904.linux@rainbow-software.org>	<4783B1B2.6070005@reed.com>	<200801081838.16241.linux@rainbow-software.org>	<4783C4A6.9060402@reed.com>	<20080108202519.1057cb75@cw05linux>	<4783DCD3.8010201@reed.com> <20080108224351.3a6a4016@weinigel.se>
-In-Reply-To: <20080108224351.3a6a4016@weinigel.se>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christer Weinigel wrote:
-> Argument by personal authority.  Thats good.
-There is no other kind of argument.  Are you claiming supernatural 
-authority drives your typing fingers, or is your argument based on what 
-you think you know?  I have piles of code that I wrote, spec sheets (now 
-that I'm back in my home office), code that others wrote at the time, 
-and documentation from vendors that come from my personal experiences.  
-That doesn't mean I'm always right - always happy to learn something 
-new.  Just don't condescend to a 55 year old who has been writing 
-operating systems, compilers, and designing hardware for almost 40 years 
-professionally (yes, I got my first job at 16 writing FORTRAN code to 
-simulate hydrodynamic systems).
-> I guess that's why you
-> don't seem to understand the difference between reading the serial port
-> status register and not being allowed to access a register at all
-> due to such this as the 4 cycle delay you quoted yourself from the 8390
-> data sheet,
-If you read what I said carefully, I said that the 8390 was a very 
-special case.   The "chip select" problem it experienced was pretty much 
-unique among boards of the time.  Those of us who looked at its design 
-and had any experience designing hardware for buses like the unibus or 
-even the buses on PDP-8's and DG machines thought it had to be a joke.  
-Of course it saved money per board, so it beat the 3Com boards on price 
-- and you could program it after a fashion.  So it involved "cheaping out".
 
-The normal timing problem was that an out or in operation to a board or 
-chip required some time to elapse before the chip performed the side 
-effects internally so that the next operation to it would have an 
-effect.  This is exactly the reason why most chips and boards are 
-designed to either have a polling of a flag indicate operation 
-completion.  The serial "buffer empty" flag is the simplest possible 
-explanatory example of such handshaking that came to mind (writing a 
-character to a serial output device twice often leads to surprises, 
-unless you wait for the previous character to clock out).  See my 
-comment on RTC below, for a more complex to explain example.
-> and similar issues with the I8253 that I quoted from its
-> data sheet a few posts ago.
->
->   
-The 8253 was a motherboard chip.  I am not sure it had any timing 
-problems with its electrical signalling.  I just don't remember.  The 
-spec sheet doesn't say it's internal state can get scrambled.
->
-> I was thinking of another timer, the RTC which is usually a part of the
-> Super I/O.
-The RTC has very well documented timing requirements.  But none of the 
-spec sheets, nor my experience with it, mention electrical issues that 
-prevented back-to-back port operations.  The documented timing 
-requirements have to do with the state during the time it ticks over 
-internally once per second.  But it is carefully designed to have a flag 
-that is "on" during 244 microseconds prior to and covering the time it 
-is unsafe to read the registers.   That design is special because it is 
-designed to operate when the machine is powered off, so it has two 
-internal clock domains, one of which is used in "low power" mode and is 
-very slow to minimize power.
 
+> Dave, this patch is against 2.6.24-rc6-mm1. You said git-drm had rewritten this area,
+> but the patch didn't have any rejects and seems to run fine here (although I'm not
+> exactly sure how to exercise drm too well).
+
+Hi Nick,
+
+there should be a new nopage method added though which you need to 
+convert..
+
+Dave.
+
+> 
+> Anyway, please apply.
+> 
+> --
+> 
+> drm: nopage
+> 
+> Convert drm from nopage to fault.
+> Remove redundant vma range checks.
+> 
+> Signed-off-by: Nick Piggin <npiggin@suse.de>
+> Cc: airlied@linux.ie
+> Cc: linux-kernel@vger.kernel.org
+> ---
+>  drivers/char/drm/drm_vm.c |  131 +++++++++++++++++++++-------------------------
+>  1 file changed, 61 insertions(+), 70 deletions(-)
+> 
+> Index: linux-2.6/drivers/char/drm/drm_vm.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/char/drm/drm_vm.c
+> +++ linux-2.6/drivers/char/drm/drm_vm.c
+> @@ -70,7 +70,7 @@ static pgprot_t drm_io_prot(uint32_t map
+>  }
+>  
+>  /**
+> - * \c nopage method for AGP virtual memory.
+> + * \c fault method for AGP virtual memory.
+>   *
+>   * \param vma virtual memory area.
+>   * \param address access address.
+> @@ -80,8 +80,8 @@ static pgprot_t drm_io_prot(uint32_t map
+>   * map, get the page, increment the use count and return it.
+>   */
+>  #if __OS_HAS_AGP
+> -static __inline__ struct page *drm_do_vm_nopage(struct vm_area_struct *vma,
+> -						unsigned long address)
+> +static __inline__ int drm_do_vm_fault(struct vm_area_struct *vma,
+> +						struct vm_fault *vmf)
+>  {
+>  	struct drm_file *priv = vma->vm_file->private_data;
+>  	struct drm_device *dev = priv->head->dev;
+> @@ -93,19 +93,24 @@ static __inline__ struct page *drm_do_vm
+>  	 * Find the right map
+>  	 */
+>  	if (!drm_core_has_AGP(dev))
+> -		goto vm_nopage_error;
+> +		goto vm_fault_error;
+>  
+>  	if (!dev->agp || !dev->agp->cant_use_aperture)
+> -		goto vm_nopage_error;
+> +		goto vm_fault_error;
+>  
+>  	if (drm_ht_find_item(&dev->map_hash, vma->vm_pgoff, &hash))
+> -		goto vm_nopage_error;
+> +		goto vm_fault_error;
+>  
+>  	r_list = drm_hash_entry(hash, struct drm_map_list, hash);
+>  	map = r_list->map;
+>  
+>  	if (map && map->type == _DRM_AGP) {
+> -		unsigned long offset = address - vma->vm_start;
+> +		/*
+> +		 * Using vm_pgoff as a selector forces us to use this unusual
+> +		 * addressing scheme.
+> +		 */
+> +		unsigned long offset = (unsigned long)vmf->virtual_address -
+> +								vma->vm_start;
+>  		unsigned long baddr = map->offset + offset;
+>  		struct drm_agp_mem *agpmem;
+>  		struct page *page;
+> @@ -127,7 +132,7 @@ static __inline__ struct page *drm_do_vm
+>  		}
+>  
+>  		if (!agpmem)
+> -			goto vm_nopage_error;
+> +			goto vm_fault_error;
+>  
+>  		/*
+>  		 * Get the page, inc the use count, and return it
+> @@ -135,27 +140,28 @@ static __inline__ struct page *drm_do_vm
+>  		offset = (baddr - agpmem->bound) >> PAGE_SHIFT;
+>  		page = virt_to_page(__va(agpmem->memory->memory[offset]));
+>  		get_page(page);
+> +		vmf->page = page;
+>  
+>  		DRM_DEBUG
+>  		    ("baddr = 0x%lx page = 0x%p, offset = 0x%lx, count=%d\n",
+>  		     baddr, __va(agpmem->memory->memory[offset]), offset,
+>  		     page_count(page));
+>  
+> -		return page;
+> +		return 0;
+>  	}
+> -      vm_nopage_error:
+> -	return NOPAGE_SIGBUS;	/* Disallow mremap */
+> +      vm_fault_error:
+> +	return VM_FAULT_SIGBUS;	/* Disallow mremap */
+>  }
+>  #else				/* __OS_HAS_AGP */
+> -static __inline__ struct page *drm_do_vm_nopage(struct vm_area_struct *vma,
+> -						unsigned long address)
+> +static __inline__ int drm_do_vm_fault(struct vm_area_struct *vma,
+> +						struct vm_fault *vmf)
+>  {
+> -	return NOPAGE_SIGBUS;
+> +	return VM_FAULT_SIGBUS;
+>  }
+>  #endif				/* __OS_HAS_AGP */
+>  
+>  /**
+> - * \c nopage method for shared virtual memory.
+> + * \c fault method for shared virtual memory.
+>   *
+>   * \param vma virtual memory area.
+>   * \param address access address.
+> @@ -164,28 +170,27 @@ static __inline__ struct page *drm_do_vm
+>   * Get the mapping, find the real physical page to map, get the page, and
+>   * return it.
+>   */
+> -static __inline__ struct page *drm_do_vm_shm_nopage(struct vm_area_struct *vma,
+> -						    unsigned long address)
+> +static __inline__ int drm_do_vm_shm_fault(struct vm_area_struct *vma,
+> +						    struct vm_fault *vmf)
+>  {
+>  	struct drm_map *map = (struct drm_map *) vma->vm_private_data;
+>  	unsigned long offset;
+>  	unsigned long i;
+>  	struct page *page;
+>  
+> -	if (address > vma->vm_end)
+> -		return NOPAGE_SIGBUS;	/* Disallow mremap */
+>  	if (!map)
+> -		return NOPAGE_SIGBUS;	/* Nothing allocated */
+> +		return VM_FAULT_SIGBUS;	/* Nothing allocated */
+>  
+> -	offset = address - vma->vm_start;
+> +	offset = (unsigned long)vmf->virtual_address - vma->vm_start;
+>  	i = (unsigned long)map->handle + offset;
+>  	page = vmalloc_to_page((void *)i);
+>  	if (!page)
+> -		return NOPAGE_SIGBUS;
+> +		return VM_FAULT_SIGBUS;
+>  	get_page(page);
+> +	vmf->page = page;
+>  
+> -	DRM_DEBUG("shm_nopage 0x%lx\n", address);
+> -	return page;
+> +	DRM_DEBUG("shm_fault 0x%lx\n", offset);
+> +	return 0;
+>  }
+>  
+>  /**
+> @@ -270,7 +275,7 @@ static void drm_vm_shm_close(struct vm_a
+>  }
+>  
+>  /**
+> - * \c nopage method for DMA virtual memory.
+> + * \c fault method for DMA virtual memory.
+>   *
+>   * \param vma virtual memory area.
+>   * \param address access address.
+> @@ -278,8 +283,8 @@ static void drm_vm_shm_close(struct vm_a
+>   *
+>   * Determine the page number from the page offset and get it from drm_device_dma::pagelist.
+>   */
+> -static __inline__ struct page *drm_do_vm_dma_nopage(struct vm_area_struct *vma,
+> -						    unsigned long address)
+> +static __inline__ int drm_do_vm_dma_fault(struct vm_area_struct *vma,
+> +						    struct vm_fault *vmf)
+>  {
+>  	struct drm_file *priv = vma->vm_file->private_data;
+>  	struct drm_device *dev = priv->head->dev;
+> @@ -289,24 +294,23 @@ static __inline__ struct page *drm_do_vm
+>  	struct page *page;
+>  
+>  	if (!dma)
+> -		return NOPAGE_SIGBUS;	/* Error */
+> -	if (address > vma->vm_end)
+> -		return NOPAGE_SIGBUS;	/* Disallow mremap */
+> +		return VM_FAULT_SIGBUS;	/* Error */
+>  	if (!dma->pagelist)
+> -		return NOPAGE_SIGBUS;	/* Nothing allocated */
+> +		return VM_FAULT_SIGBUS;	/* Nothing allocated */
+>  
+> -	offset = address - vma->vm_start;	/* vm_[pg]off[set] should be 0 */
+> -	page_nr = offset >> PAGE_SHIFT;
+> +	offset = (unsigned long)vmf->virtual_address - vma->vm_start;	/* vm_[pg]off[set] should be 0 */
+> +	page_nr = offset >> PAGE_SHIFT; /* page_nr could just be vmf->pgoff */
+>  	page = virt_to_page((dma->pagelist[page_nr] + (offset & (~PAGE_MASK))));
+>  
+>  	get_page(page);
+> +	vmf->page = page;
+>  
+> -	DRM_DEBUG("dma_nopage 0x%lx (page %lu)\n", address, page_nr);
+> -	return page;
+> +	DRM_DEBUG("dma_fault 0x%lx (page %lu)\n", offset, page_nr);
+> +	return 0;
+>  }
+>  
+>  /**
+> - * \c nopage method for scatter-gather virtual memory.
+> + * \c fault method for scatter-gather virtual memory.
+>   *
+>   * \param vma virtual memory area.
+>   * \param address access address.
+> @@ -314,8 +318,8 @@ static __inline__ struct page *drm_do_vm
+>   *
+>   * Determine the map offset from the page offset and get it from drm_sg_mem::pagelist.
+>   */
+> -static __inline__ struct page *drm_do_vm_sg_nopage(struct vm_area_struct *vma,
+> -						   unsigned long address)
+> +static __inline__ int drm_do_vm_sg_fault(struct vm_area_struct *vma,
+> +						   struct vm_fault *vmf)
+>  {
+>  	struct drm_map *map = (struct drm_map *) vma->vm_private_data;
+>  	struct drm_file *priv = vma->vm_file->private_data;
+> @@ -327,77 +331,64 @@ static __inline__ struct page *drm_do_vm
+>  	struct page *page;
+>  
+>  	if (!entry)
+> -		return NOPAGE_SIGBUS;	/* Error */
+> -	if (address > vma->vm_end)
+> -		return NOPAGE_SIGBUS;	/* Disallow mremap */
+> +		return VM_FAULT_SIGBUS;	/* Error */
+>  	if (!entry->pagelist)
+> -		return NOPAGE_SIGBUS;	/* Nothing allocated */
+> +		return VM_FAULT_SIGBUS;	/* Nothing allocated */
+>  
+> -	offset = address - vma->vm_start;
+> +	offset = (unsigned long)vmf->virtual_address - vma->vm_start;
+>  	map_offset = map->offset - (unsigned long)dev->sg->virtual;
+>  	page_offset = (offset >> PAGE_SHIFT) + (map_offset >> PAGE_SHIFT);
+>  	page = entry->pagelist[page_offset];
+>  	get_page(page);
+> +	vmf->page = page;
+>  
+> -	return page;
+> +	return 0;
+>  }
+>  
+> -static struct page *drm_vm_nopage(struct vm_area_struct *vma,
+> -				  unsigned long address, int *type)
+> +static int drm_vm_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+>  {
+> -	if (type)
+> -		*type = VM_FAULT_MINOR;
+> -	return drm_do_vm_nopage(vma, address);
+> +	return drm_do_vm_fault(vma, vmf);
+>  }
+>  
+> -static struct page *drm_vm_shm_nopage(struct vm_area_struct *vma,
+> -				      unsigned long address, int *type)
+> +static int drm_vm_shm_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+>  {
+> -	if (type)
+> -		*type = VM_FAULT_MINOR;
+> -	return drm_do_vm_shm_nopage(vma, address);
+> +	return drm_do_vm_shm_fault(vma, vmf);
+>  }
+>  
+> -static struct page *drm_vm_dma_nopage(struct vm_area_struct *vma,
+> -				      unsigned long address, int *type)
+> +static int drm_vm_dma_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+>  {
+> -	if (type)
+> -		*type = VM_FAULT_MINOR;
+> -	return drm_do_vm_dma_nopage(vma, address);
+> +	return drm_do_vm_dma_fault(vma, vmf);
+>  }
+>  
+> -static struct page *drm_vm_sg_nopage(struct vm_area_struct *vma,
+> -				     unsigned long address, int *type)
+> +static int drm_vm_sg_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+>  {
+> -	if (type)
+> -		*type = VM_FAULT_MINOR;
+> -	return drm_do_vm_sg_nopage(vma, address);
+> +	return drm_do_vm_sg_fault(vma, vmf);
+>  }
+>  
+>  /** AGP virtual memory operations */
+>  static struct vm_operations_struct drm_vm_ops = {
+> -	.nopage = drm_vm_nopage,
+> +	.fault = drm_vm_fault,
+>  	.open = drm_vm_open,
+>  	.close = drm_vm_close,
+>  };
+>  
+>  /** Shared virtual memory operations */
+>  static struct vm_operations_struct drm_vm_shm_ops = {
+> -	.nopage = drm_vm_shm_nopage,
+> +	.fault = drm_vm_shm_fault,
+>  	.open = drm_vm_open,
+>  	.close = drm_vm_shm_close,
+>  };
+>  
+>  /** DMA virtual memory operations */
+>  static struct vm_operations_struct drm_vm_dma_ops = {
+> -	.nopage = drm_vm_dma_nopage,
+> +	.fault = drm_vm_dma_fault,
+>  	.open = drm_vm_open,
+>  	.close = drm_vm_close,
+>  };
+>  
+>  /** Scatter-gather virtual memory operations */
+>  static struct vm_operations_struct drm_vm_sg_ops = {
+> -	.nopage = drm_vm_sg_nopage,
+> +	.fault = drm_vm_sg_fault,
+>  	.open = drm_vm_open,
+>  	.close = drm_vm_close,
+>  };
+> @@ -610,7 +601,7 @@ static int drm_mmap_locked(struct file *
+>  			/*
+>  			 * On some platforms we can't talk to bus dma address from the CPU, so for
+>  			 * memory of type DRM_AGP, we'll deal with sorting out the real physical
+> -			 * pages and mappings in nopage()
+> +			 * pages and mappings in fault()
+>  			 */
+>  #if defined(__powerpc__)
+>  			pgprot_val(vma->vm_page_prot) |= _PAGE_NO_CACHE;
+> @@ -640,7 +631,7 @@ static int drm_mmap_locked(struct file *
+>  		break;
+>  	case _DRM_CONSISTENT:
+>  		/* Consistent memory is really like shared memory. But
+> -		 * it's allocated in a different way, so avoid nopage */
+> +		 * it's allocated in a different way, so avoid fault */
+>  		if (remap_pfn_range(vma, vma->vm_start,
+>  		    page_to_pfn(virt_to_page(map->handle)),
+>  		    vma->vm_end - vma->vm_start, vma->vm_page_prot))
+> 
+> 
