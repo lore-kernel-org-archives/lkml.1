@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758792AbYAHHLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758994AbYAHHQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758792AbYAHHLz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 02:11:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754787AbYAHHLs
+	id S1758994AbYAHHQw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 02:16:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbYAHHQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 02:11:48 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57535 "EHLO mx3.mail.elte.hu"
+	Tue, 8 Jan 2008 02:16:44 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56867 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754658AbYAHHLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 02:11:47 -0500
-Date: Tue, 8 Jan 2008 08:11:29 +0100
+	id S1751982AbYAHHQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 02:16:43 -0500
+Date: Tue, 8 Jan 2008 08:16:21 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, tglx@tglx.de, hpa@zytor.com
-Subject: Re: [patch 2/2] Use the stack frames to get exact stack-traces for
-	CONFIG_FRAMEPOINTER on x86-64
-Message-ID: <20080108071129.GB31838@elte.hu>
-References: <20080107211437.5ba42f18@laptopd505.fenrus.org>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Greg KH <greg@kroah.com>, akpm@linux-foundation.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, Andi Kleen <ak@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] x86 boot : export boot_params via debugfs for
+	debugging
+Message-ID: <20080108071621.GC31838@elte.hu>
+References: <1199770820.11041.6.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080107211437.5ba42f18@laptopd505.fenrus.org>
+In-Reply-To: <1199770820.11041.6.camel@caritas-dev.intel.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,25 +39,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Arjan van de Ven <arjan@infradead.org> wrote:
+* Huang, Ying <ying.huang@intel.com> wrote:
 
-> x86 32 bit already has this feature: This patch uses the stack frames 
-> with frame pointer into an exact stack trace, by following the frame 
-> pointer. This only affects kernels built with the CONFIG_FRAME_POINTER 
-> config option enabled, and greatly reduces the amount of noise in 
-> oopses.
+> This patch export the boot parameters via debugfs for debugging.
+> 
+> The files added are as follow:
+> 
+> boot_params/data    :  binary file for struct boot_params
+> boot_params/version :  boot protocol version
+> 
+> This patch is based on 2.6.24-rc5-mm1 and has been tested on i386 and
+> x86_64 platform.
+> 
+> This patch is based on the Peter Anvin's proposal.
 
-nice! Applied.
-
-> The code tries to use the frame pointers to do a backtrace, but if it 
-> smells iffy or invalid, falls back to the traditional way of printing 
-> backtraces, to make sure that at least some useful backtrace is 
-> created.
->
-> Due to the fragility and importance of the backtrace code, this needs 
-> to be well reviewed and well tested before merging into mainlne.
-
-yeah, agreed. But i think this is still fundamentally more robust than 
-the unwind info based backtracer. Cool stuff!
+thanks, applied.
 
 	Ingo
