@@ -1,99 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756235AbYAHOHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754600AbYAHOJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756235AbYAHOHe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 09:07:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752236AbYAHOHX
+	id S1754600AbYAHOJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 09:09:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbYAHOJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 09:07:23 -0500
-Received: from mo10.iij4u.or.jp ([210.138.174.78]:51864 "EHLO mo10.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751601AbYAHOHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 09:07:22 -0500
-Date: Tue, 8 Jan 2008 23:07:01 +0900
-To: dushistov@mail.ru
-Cc: James.Bottomley@HansenPartnership.com, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Cc: fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [GIT PATCH] SCSI bug fixes for 2.6.24-rc3
-From: FUJITA Tomonori <tomof@acm.org>
-In-Reply-To: <20080108111549.GA30832@rain>
-References: <1195989865.3427.16.camel@localhost.localdomain>
-	<20080108111549.GA30832@rain>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080108230943U.tomof@acm.org>
-X-Dispatcher: imput version 20040704(IM147)
+	Tue, 8 Jan 2008 09:09:13 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:44250 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751811AbYAHOJL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 09:09:11 -0500
+Date: Tue, 8 Jan 2008 14:09:02 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Kentaro Takeda <takedakn@nttdata.co.jp>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Subject: Re: [TOMOYO #6 02/21] Add struct vfsmount to struct task_struct.
+Message-ID: <20080108140902.GA12238@infradead.org>
+References: <20080108094903.484613061@nttdata.co.jp> <20080108094956.610620186@nttdata.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080108094956.610620186@nttdata.co.jp>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC'ed Jes,
-
-On Tue, 8 Jan 2008 14:15:53 +0300
-Evgeniy Dushistov <dushistov@mail.ru> wrote:
-
-> On Sun, Nov 25, 2007 at 01:24:25PM +0200, James Bottomley wrote:
-> > This is a bit of a rash of bug fixes.  The qla1280 is actually a bug fix
-> > (in spite of the title---it's actually correcting an existing problem
-> > with the qla1280 implementation of accessors that broke the current
-> > driver).
-> > 
-> 
-> Recently I build last Linus's git tree, and got:
-> req_cnt is used uninitialized in this function,
-> and see bellow
-> > The patch is available here:
-> > 
-> > master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
-> > 
-> > The short changelog is:
-> ...
-> > Jes Sorensen (1):
-> >       qla1280: convert to use the data buffer accessors
-> > 
-> ...
-> >  scsi/qla1280.c         |  387 +++++++++++++++++++++----------------------------
-> ...
-> >  	/* Calculate number of entries and segments required. */
-> > -	req_cnt = 1;
-> > 
-> 
-> Initilization of req_cnt was removed, but in this function
-> there are places like 
-> req_cnt += (seg_cnt - 4) / 7;
-> or
-> req_cnt++;
-> This is should be so?
-
-req_cnt should not be removed. Jes tested the patch but this critical
-bug appears only with BITS_PER_LONG != 64 && CONFIG_HIGHMEM=n case. So
-he didn't see this, I think.
-
-qla1280_32bit_start_scsi also gives the following warning:
-
-drivers/scsi/qla1280.c: In function 'qla1280_32bit_start_scsi':
-drivers/scsi/qla1280.c:3044: warning: unused variable 'dma_handle'
-
-
-diff --git a/drivers/scsi/qla1280.c b/drivers/scsi/qla1280.c
-index 146d540..2886407 100644
---- a/drivers/scsi/qla1280.c
-+++ b/drivers/scsi/qla1280.c
-@@ -3041,7 +3041,6 @@ qla1280_32bit_start_scsi(struct scsi_qla_host *ha, struct srb * sp)
- 	int cnt;
- 	int req_cnt;
- 	int seg_cnt;
--	dma_addr_t dma_handle;
- 	u8 dir;
- 
- 	ENTER("qla1280_32bit_start_scsi");
-@@ -3050,6 +3049,7 @@ qla1280_32bit_start_scsi(struct scsi_qla_host *ha, struct srb * sp)
- 		cmd->cmnd[0]);
- 
- 	/* Calculate number of entries and segments required. */
-+	req_cnt = 1;
- 	seg_cnt = scsi_dma_map(cmd);
- 	if (seg_cnt) {
- 		/*
+Just FYI:  A NACK to such an addition doesn't simply go away by
+ignoring it.
