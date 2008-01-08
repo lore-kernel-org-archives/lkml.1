@@ -1,93 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754020AbYAHWgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752990AbYAHWgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754020AbYAHWgZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 17:36:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751779AbYAHWgR
+	id S1752990AbYAHWgl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 17:36:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754391AbYAHWg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 17:36:17 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58812 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751619AbYAHWgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 17:36:16 -0500
-Date: Tue, 8 Jan 2008 23:35:54 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Rik van Riel <riel@redhat.com>,
-       Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com,
-       Linux Kernel <linux-kernel@vger.kernel.org>, trivial@kernel.org
-Subject: Re: [PATCH 3/5] x86: coding style fixes in
-	arch/x86/ia32/ia32_aout.c
-Message-ID: <20080108223554.GE21482@elte.hu>
-References: <20080108203233.01bb5c7f@paolo-desktop> <20080108150439.6388028e@bree.surriel.com> <20080108215247.GE14829@elte.hu> <20080108221722.GA27698@uranus.ravnborg.org>
+	Tue, 8 Jan 2008 17:36:26 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:26831 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753950AbYAHWgY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 17:36:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gZ52GQE4ParuKih1TynhskueKegkoKZmXBMlBXVG3ImDryrgyU5WZesi44rfPebgIBWuKadPO3LZGGWTGJKTIEmwOnuPIEQ/4z0pLCT9t4bf1+QqWRuMAHAdCxjMbEPDyn60j1rBqxqAq7yWWrgMBmNJd5d3Q4FYmjNk8fO+VfY=
+Message-ID: <86802c440801081436q166f3d2fp8686fff81aaa6921@mail.gmail.com>
+Date: Tue, 8 Jan 2008 14:36:24 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: kexec fail
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <86802c440801080015g4e3abe86s53b8af11e0074eb6@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080108221722.GA27698@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <86802c440801071837q1d6d63ewf095c9b497b33785@mail.gmail.com>
+	 <Pine.LNX.4.64.0801072150050.28773@schroedinger.engr.sgi.com>
+	 <86802c440801080015g4e3abe86s53b8af11e0074eb6@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jan 8, 2008 12:15 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>
+> On Jan 7, 2008 9:50 PM, Christoph Lameter <clameter@sgi.com> wrote:
+> > On Mon, 7 Jan 2008, Yinghai Lu wrote:
+> >
+> > > try to kexec 2.6.23 from RHEL 5.1, will get
+> > > Your BIOS doesn't leave a aperture memory hole
+> > > Please enable the IOMMU option in the BIOS setup
+> > > This costs you 64 MB of RAM ======> reboot
+> > >
+> > > but 2.6.24-rc7 kexec 2.6.24-rc7 is ok.
+> >
+> > BUG in 2.6.23 kexec?
+> >
+> >
+>
+> yeah, that is more worse. it will cause reboot.
+>
 
-* Sam Ravnborg <sam@ravnborg.org> wrote:
+change mem model from CONFIG_SPARSEMEM_MANUL to
+CONFIG_DISCONTIGMEM_MANUAL it will work.
 
-> > > Most of these kernel changes would probably get in the way of real 
-> > > development, making patches reject that would otherwise apply.
-> > 
-> > I'm curious, in what way would they interfere?
-> 
-> Developer A work one some complicated stuff in foo.c which is not yet 
-> -mm fooder.
-> 
-> Developer B submits and have applied a massive cleanup to some of the 
-> files touced by Developer A's patch.
-> 
-> Developer A now needs to fix up his stuff.
-
-Solution: Developer A does a trivial patch -R for the changes that 
-generate rejects. Cleanups are NOPs and they are almost infinitely 
-splittable. You can apply and unapply them chunk by chunk, almost 
-always.
-
-and we actually have first-hand experience with the effects of 
-largescale cleanups:
-
-> > How many times did we have to do this in x86.git? Once or twice - 
-> > out of 100+ cleanup patches.
-
-i've never seen cleanups truly interfere with development work, in fact 
-i mostly saw the positive effects of them. They are easily undone and 
-easily redone. But they do keep developers honest (no lame "oh, i'll 
-clean this up after i do feature X, Y and Z") and they do keep newbies 
-involved. The Linux kernel does have a fundamental "we are too hostile 
-towards newbies" problem. It's also fundamentally Linuxish: nobody 
-really "owns" the code in an exclusive fashion. If you dont keep it 
-clean, someone else will clean it up for you.
-
-and even if there are patch conflicts, it can all be done intelligently 
-and trivially. Mail us: "please do not clean up pgtable.h because i'm 
-working on unifying it and will do the cleanup after that" and we dont 
-clean it up.
-
-But broad statements of "cleanups hinder development work" are just 
-plain _WRONG_. Cleanups are good by default - full stop. There are 
-exceptions, and we all recognize them when we see them.
-
-> > Firstly, anyone with a forked kernel with outstanding patches that 
-> > are not in x86.git only has themselves to blame. We want to actively 
-> > discourage forking and sitting on patches too long.
-> 
-> Curious - what is the purpose of the x86.git tree these days?
-
-what do want to imply by 'these days'?
-
-	Ingo
+YH
