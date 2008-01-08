@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758847AbYAGX6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbYAHAKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758847AbYAGX6O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Jan 2008 18:58:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756251AbYAGX57
+	id S1758699AbYAHAKV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Jan 2008 19:10:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754352AbYAHAKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Jan 2008 18:57:59 -0500
-Received: from mho-01-bos.mailhop.org ([63.208.196.178]:63131 "EHLO
-	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754606AbYAGX56 (ORCPT
+	Mon, 7 Jan 2008 19:10:09 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53341 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754187AbYAHAKI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Jan 2008 18:57:58 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 216.15.117.105
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX18NkSAfcU7jg4qp3zpeZEPg
-Message-ID: <4782BC56.9050607@reed.com>
-Date: Mon, 07 Jan 2008 18:57:10 -0500
-From: "David P. Reed" <dpreed@reed.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.9) Gecko/20071115 Fedora/2.0.0.9-1.fc8 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
-MIME-Version: 1.0
+	Mon, 7 Jan 2008 19:10:08 -0500
+Date: Mon, 7 Jan 2008 16:09:51 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Rene Herman <rene.herman@keyaccess.nl>, Bodo Eggert <7eggert@gmx.de>,
-       Christer Weinigel <christer@weinigel.se>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rene Herman <rene.herman@gmail.com>, Paul Rolland <rol@as2917.net>,
-       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       rol@witbe.net
-Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
- I/O delay override.
-References: <9BdU5-1YW-9@gated-at.bofh.it> <9BeZN-3Gf-5@gated-at.bofh.it> <9BnTB-1As-31@gated-at.bofh.it> <9BrX4-8go-1@gated-at.bofh.it> <9BuBG-4eR-51@gated-at.bofh.it> <9BvRd-6aL-71@gated-at.bofh.it> <9GRQW-1DX-13@gated-at.bofh.it> <9GSah-23W-1@gated-at.bofh.it> <9GSDy-2GD-23@gated-at.bofh.it> <9GTpK-40d-15@gated-at.bofh.it> <9GUvy-5H2-11@gated-at.bofh.it> <9GVKU-7SS-25@gated-at.bofh.it> <E1JBxnV-00046d-CS@be1.7eggert.dyndns.org> <478281A6.1000704@zytor.com> <alpine.LSU.0.999.0801072226060.16143@be1.lrz> <4782A355.1070207@zytor.com> <alpine.LSU.0.999.0801072316440.16143@be1.lrz> <4782AED5.1060406@keyaccess.nl> <4782B4B9.2020608@zytor.com>
-In-Reply-To: <4782B4B9.2020608@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Cc: david@fries.net, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] system timer: fix crash in <100Hz system timer
+Message-Id: <20080107160951.5b63d5dc.akpm@linux-foundation.org>
+In-Reply-To: <4782BAED.7060102@zytor.com>
+References: <20080105221653.GA10065@spacedout.fries.net>
+	<20080107153650.0cb85eeb.akpm@linux-foundation.org>
+	<4782BAED.7060102@zytor.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 07 Jan 2008 15:51:09 -0800
+"H. Peter Anvin" <hpa@zytor.com> wrote:
 
+> >> +		do_div(x, HZ / USER_HZ);
+> >> +	#endif
+> >>  #else
+> >>  	/*
+> >>  	 * There are better ways that don't overflow early,
+> > 
+> > Alas, I get 100% rejects due to conflicting changes from Peter's
+> > avoid-overflows-in-kernel-timec.patch.
+> > 
+> > Peter, did that patch propagate this failure, or might it have happily
+> > fixed it?
+> > 
+> 
+> My patch doesn't touch any of these functions, nor touches any code 
+> within 70 lines of this patch -- the last line touched is line 478 -- 
+> and doesn't touch linux/acct.h at all, so how could it cause a conflict?
 
-H. Peter Anvin wrote:
-> Rene Herman wrote:
->>
->> Is this only about the ones then left for things like legacy PIC and 
->> PIT? Does anyone care about just sticking in a udelay(2) (or 1) there 
->> as a replacement and call it a day?
->>
->
-> PIT is problematic because the PIT may be necessary for udelay setup.
->
-The PIT usage for calibrating the delay loop can be moderated, if need 
-by, by using the PC BIOS which by definition uses the PIT correctly it 
-its int 15 function 83 call..   Just do it before coming up in a state 
-where the PC BIOS int 15h calls no longer work.  I gave code to do this 
-in a much earlier message.
+oop, sorry, it was the mime-mess-mangles-everything problem and I failed to
+spot it.
 
-This is the MOST reliable way to use the PIT early in boot, on a PC 
-compatible.  God knows how one should do it on a Macintosh running a 
-386/20  :-).   But the ONLY old bat-PIT machines are, thank god, PC 
-compatible, maybe.
+> But no, it doesn't fix this particular problem, even if using a similar 
+> technique might very well be a better way to do this kind of conversion.
 
+OK.
