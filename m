@@ -1,52 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbYAHIQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758108AbYAHIU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757938AbYAHIQR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 03:16:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757321AbYAHIQE
+	id S1758108AbYAHIU2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 03:20:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbYAHIUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 03:16:04 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39655 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755346AbYAHIQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 03:16:01 -0500
-Date: Tue, 8 Jan 2008 09:15:43 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Andi Kleen <andi@firstfloor.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org, akpm@osdl.org,
-       rajesh.shah@intel.com, greg@kroah.com
-Subject: Re: MCFG ACPI patch in git-x86 causes boot regression
-Message-ID: <20080108081543.GF31838@elte.hu>
-References: <20080107224757.GA2336@basil.nowhere.org> <200801071452.15045.jbarnes@virtuousgeek.org> <4782B66E.8050400@shaw.ca> <20080108010110.GB16156@one.firstfloor.org> <4782CBF2.6030208@shaw.ca>
+	Tue, 8 Jan 2008 03:20:15 -0500
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:36458 "EHLO
+	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750902AbYAHIUN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 03:20:13 -0500
+Message-ID: <47833231.3080801@linux.vnet.ibm.com>
+Date: Tue, 08 Jan 2008 13:50:01 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4782CBF2.6030208@shaw.ca>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, bunk@kernel.org,
+       clameter@sgi.com, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: Linux 2.6.24-rc7 Build-Failure at __you_cannot_kmalloc_that_much
+References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org> <478200A4.4090707@linux.vnet.ibm.com> <20080107100733.3655f74f.akpm@linux-foundation.org>
+In-Reply-To: <20080107100733.3655f74f.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote:
+> On Mon, 07 Jan 2008 16:06:20 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> 
+>> The defconfig make fails on x86_64 (AMD box) with following error
+>>
+>>   CHK     include/linux/utsrelease.h
+>>   CALL    scripts/checksyscalls.sh
+>>   CHK     include/linux/compile.h
+>>   GEN     .version
+>>   CHK     include/linux/compile.h
+>>   UPD     include/linux/compile.h
+>>   CC      init/version.o
+>>   LD      init/built-in.o
+>>   LD      .tmp_vmlinux1
+>> drivers/built-in.o(.init.text+0x8d76): In function `dmi_id_init':
+>> : undefined reference to `__you_cannot_kmalloc_that_much'
+>> make: *** [.tmp_vmlinux1] Error 1
+>>
+>>
+>> # gcc --version
+>> gcc (GCC) 3.2.3 20030502 (Red Hat Linux 3.2.3-59)
+>>
+>> This was reported by Adrian Bunk http://lkml.org/lkml/2007/12/1/39
+> 
+> That's odd.  afacit the only kmalloc in dmi_id_init() is
+> 
+>         dmi_dev = kzalloc(sizeof(*dmi_dev), GFP_KERNEL);
+> 
+> and even gcc-3.2.3 should be able to get that right.
+> 
+> Could you please a) verify that simply removing that line fixes the build
+> error and then b) try to find some way of fixing it?
+> 
+> Try replacing `sizeof(*dmi_dev)' with `sizeof(struct dmi_device_attribute)'
+> and any other tricks you can think of to try to make the compiler process
+> the code differently.
+> 
 
-* Robert Hancock <hancockr@shaw.ca> wrote:
+removing the line fixes the issue, but changing the sizeof(*dmi_dev) to
+sizeof(struct device) is not helping.
 
-> At least, I thought it was in Greg's tree, not sure now.. This is the 
-> patch in -mm:
->
-> http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc6/2.6.24-rc6-mm1/broken-out/pci-disable-decoding-during-sizing-of-bars.patch
->
-> Without this change a bunch of machines fail to boot even without the 
-> MCFG change (since their MCFG was E820 reserved and so the old 
-> validation check passed).
-
-Andi, can you confirm that your box boots fine with that patch applied?
-
-	Ingo
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
