@@ -1,389 +1,342 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759042AbYAIXjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758897AbYAIXji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759042AbYAIXjV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 18:39:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757799AbYAIXdM
+	id S1758897AbYAIXji (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 18:39:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757828AbYAIXdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 18:33:12 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53143 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757616AbYAIXdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 18:33:09 -0500
-Message-ID: <4785596F.4030003@redhat.com>
-Date: Wed, 09 Jan 2008 18:31:59 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
+	Wed, 9 Jan 2008 18:33:18 -0500
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:60365 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757983AbYAIXdP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 18:33:15 -0500
+Message-Id: <20080109232914.676624725@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 09 Jan 2008 18:29:14 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       David Miller <davem@davemloft.net>, hskinnemoen@atmel.com,
-       schwidefsky@de.ibm.com, tony.luck@intel.com,
-       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCHv4] kprobes: Introduce kprobe_handle_fault()
-References: <1199737486.7666.12.camel@brick>	 <18307.64807.204087.375733@cargo.ozlabs.ibm.com>	 <1199833324.6424.12.camel@brick> <1199852360.6424.39.camel@brick>	 <20080109061408.GA9486@osiris.ibm.com>  <1199859742.6424.44.camel@brick> <1199916062.6424.60.camel@brick>
-In-Reply-To: <1199916062.6424.60.camel@brick>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>
+Subject: [RFC PATCH 00/22 -v2] mcount and latency tracing utility -v2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Harvey,
+[
+  version 2 of mcount patches:
 
-Harvey Harrison wrote:
-> Use a central kprobe_handle_fault() inline in kprobes.h to remove
-> all of the arch-dependant, practically identical implementations in
-> avr32, ia64, powerpc, s390, sparc64, and x86.
-> 
-> This patch removes the preempt_disable/enable pair around kprobe_running
-> which was originally added to avoid the assertion from smp_processor_id
-> which would be unreliable if preemption was enabled.
-> 
-> Kprobes can not be running if we are preemptible, so test explicitly
-> for preemption and bail out before hitting kprobe_running().
-> 
-> Style comments from Christoph Hellwig and Heiko Carstens included in
-> this version.
+  changes include:
 
-Could you please separate this patch into 2 parts as Christoph mentioned?:
-- introduce kprobe_handle_fault()
-- remove preempt_disable/enable.
+  Removal of most notrace. Even though it may clutter a bit,
+  we can always add more later.
 
-I agree with removing preempt_disable/enable, because kprobes premises
-that it runs on same CPU while processing probing and single-stepping.
-Actually, it uses per-cpu  to check the running kprobe's status.
-Thus, if a fault occurs when preemption is enabled, we can ensure
-that it is not caused by a kprobe handler.
+  Removal of REGPARM. No changes is made with respect to that.
 
-> 
-> avr32 was the only arch without the preempt_disable/enable pair
-> in its notify_page_fault implementation.
-> 
-> This uncovered a possible bug in the s390 version as that purely
-> copied the x86 version unconditionally passing 14 as the trapnr
-> rather than the error_code parameter.
-> 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
->  arch/avr32/mm/fault.c   |   21 +--------------------
->  arch/ia64/mm/fault.c    |   24 +-----------------------
->  arch/powerpc/mm/fault.c |   25 +------------------------
->  arch/s390/mm/fault.c    |   25 +------------------------
->  arch/sparc64/mm/fault.c |   23 +----------------------
->  arch/x86/mm/fault_64.c  |   23 ++---------------------
->  include/linux/kprobes.h |   17 +++++++++++++++++
->  7 files changed, 24 insertions(+), 134 deletions(-)
-> 
-> diff --git a/arch/avr32/mm/fault.c b/arch/avr32/mm/fault.c
-> index 6560cb1..e41953e 100644
-> --- a/arch/avr32/mm/fault.c
-> +++ b/arch/avr32/mm/fault.c
-> @@ -20,25 +20,6 @@
->  #include <asm/tlb.h>
->  #include <asm/uaccess.h>
->  
-> -#ifdef CONFIG_KPROBES
-> -static inline int notify_page_fault(struct pt_regs *regs, int trap)
-> -{
-> -	int ret = 0;
-> -
-> -	if (!user_mode(regs)) {
-> -		if (kprobe_running() && kprobe_fault_handler(regs, trap))
-> -			ret = 1;
-> -	}
-> -
-> -	return ret;
-> -}
-> -#else
-> -static inline int notify_page_fault(struct pt_regs *regs, int trap)
-> -{
-> -	return 0;
-> -}
-> -#endif
-> -
->  int exception_trace = 1;
->  
->  /*
-> @@ -66,7 +47,7 @@ asmlinkage void do_page_fault(unsigned long ecr, struct pt_regs *regs)
->  	int code;
->  	int fault;
->  
-> -	if (notify_page_fault(regs, ecr))
-> +	if (kprobe_handle_fault(regs, ecr))
->  		return;
->  
->  	address = sysreg_read(TLBEAR);
-> diff --git a/arch/ia64/mm/fault.c b/arch/ia64/mm/fault.c
-> index 7571076..bfc83e8 100644
-> --- a/arch/ia64/mm/fault.c
-> +++ b/arch/ia64/mm/fault.c
-> @@ -18,28 +18,6 @@
->  
->  extern void die (char *, struct pt_regs *, long);
->  
-> -#ifdef CONFIG_KPROBES
-> -static inline int notify_page_fault(struct pt_regs *regs, int trap)
-> -{
-> -	int ret = 0;
-> -
-> -	if (!user_mode(regs)) {
-> -		/* kprobe_running() needs smp_processor_id() */
-> -		preempt_disable();
-> -		if (kprobe_running() && kprobes_fault_handler(regs, trap))
-> -			ret = 1;
-> -		preempt_enable();
-> -	}
-> -
-> -	return ret;
-> -}
-> -#else
-> -static inline int notify_page_fault(struct pt_regs *regs, int trap)
-> -{
-> -	return 0;
-> -}
-> -#endif
-> -
->  /*
->   * Return TRUE if ADDRESS points at a page in the kernel's mapped segment
->   * (inside region 5, on ia64) and that page is present.
-> @@ -106,7 +84,7 @@ ia64_do_page_fault (unsigned long address, unsigned long isr, struct pt_regs *re
->  	/*
->  	 * This is to handle the kprobes on user space access instructions
->  	 */
-> -	if (notify_page_fault(regs, TRAP_BRKPT))
-> +	if (kprobe_handle_fault(regs, TRAP_BRKPT))
->  		return;
->  
->  	down_read(&mm->mmap_sem);
-> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> index 8135da0..ff64bd3 100644
-> --- a/arch/powerpc/mm/fault.c
-> +++ b/arch/powerpc/mm/fault.c
-> @@ -39,29 +39,6 @@
->  #include <asm/tlbflush.h>
->  #include <asm/siginfo.h>
->  
-> -
-> -#ifdef CONFIG_KPROBES
-> -static inline int notify_page_fault(struct pt_regs *regs)
-> -{
-> -	int ret = 0;
-> -
-> -	/* kprobe_running() needs smp_processor_id() */
-> -	if (!user_mode(regs)) {
-> -		preempt_disable();
-> -		if (kprobe_running() && kprobe_fault_handler(regs, 11))
-> -			ret = 1;
-> -		preempt_enable();
-> -	}
-> -
-> -	return ret;
-> -}
-> -#else
-> -static inline int notify_page_fault(struct pt_regs *regs)
-> -{
-> -	return 0;
-> -}
-> -#endif
-> -
->  /*
->   * Check whether the instruction at regs->nip is a store using
->   * an update addressing form which will update r1.
-> @@ -164,7 +141,7 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
->  	is_write = error_code & ESR_DST;
->  #endif /* CONFIG_4xx || CONFIG_BOOKE */
->  
-> -	if (notify_page_fault(regs))
-> +	if (kprobe_handle_fault(regs, 11))
->  		return 0;
->  
->  	if (trap == 0x300) {
-> diff --git a/arch/s390/mm/fault.c b/arch/s390/mm/fault.c
-> index 2456b52..a9033cf 100644
-> --- a/arch/s390/mm/fault.c
-> +++ b/arch/s390/mm/fault.c
-> @@ -51,29 +51,6 @@ extern int sysctl_userprocess_debug;
->  
->  extern void die(const char *,struct pt_regs *,long);
->  
-> -#ifdef CONFIG_KPROBES
-> -static inline int notify_page_fault(struct pt_regs *regs, long err)
-> -{
-> -	int ret = 0;
-> -
-> -	/* kprobe_running() needs smp_processor_id() */
-> -	if (!user_mode(regs)) {
-> -		preempt_disable();
-> -		if (kprobe_running() && kprobe_fault_handler(regs, 14))
-> -			ret = 1;
-> -		preempt_enable();
-> -	}
-> -
-> -	return ret;
-> -}
-> -#else
-> -static inline int notify_page_fault(struct pt_regs *regs, long err)
-> -{
-> -	return 0;
-> -}
-> -#endif
-> -
-> -
->  /*
->   * Unlock any spinlocks which will prevent us from getting the
->   * message out.
-> @@ -309,7 +286,7 @@ do_exception(struct pt_regs *regs, unsigned long error_code, int write)
->  	int si_code;
->  	int fault;
->  
-> -	if (notify_page_fault(regs, error_code))
-> +	if (kprobe_handle_fault(regs, 14))
->  		return;
->  
->  	tsk = current;
-> diff --git a/arch/sparc64/mm/fault.c b/arch/sparc64/mm/fault.c
-> index e2027f2..8467dd6 100644
-> --- a/arch/sparc64/mm/fault.c
-> +++ b/arch/sparc64/mm/fault.c
-> @@ -31,27 +31,6 @@
->  #include <asm/sections.h>
->  #include <asm/mmu_context.h>
->  
-> -#ifdef CONFIG_KPROBES
-> -static inline int notify_page_fault(struct pt_regs *regs)
-> -{
-> -	int ret = 0;
-> -
-> -	/* kprobe_running() needs smp_processor_id() */
-> -	if (!user_mode(regs)) {
-> -		preempt_disable();
-> -		if (kprobe_running() && kprobe_fault_handler(regs, 0))
-> -			ret = 1;
-> -		preempt_enable();
-> -	}
-> -	return ret;
-> -}
-> -#else
-> -static inline int notify_page_fault(struct pt_regs *regs)
-> -{
-> -	return 0;
-> -}
-> -#endif
-> -
->  /*
->   * To debug kernel to catch accesses to certain virtual/physical addresses.
->   * Mode = 0 selects physical watchpoints, mode = 1 selects virtual watchpoints.
-> @@ -280,7 +259,7 @@ asmlinkage void __kprobes do_sparc64_fault(struct pt_regs *regs)
->  
->  	fault_code = get_thread_fault_code();
->  
-> -	if (notify_page_fault(regs))
-> +	if (kprobe_handle_fault(regs, 0))
->  		return;
->  
->  	si_code = SEGV_MAPERR;
-> diff --git a/arch/x86/mm/fault_64.c b/arch/x86/mm/fault_64.c
-> index f681ff8..f81660f 100644
-> --- a/arch/x86/mm/fault_64.c
-> +++ b/arch/x86/mm/fault_64.c
-> @@ -45,25 +45,6 @@
->  #define PF_RSVD		(1<<3)
->  #define PF_INSTR	(1<<4)
->  
-> -static inline int notify_page_fault(struct pt_regs *regs)
-> -{
-> -#ifdef CONFIG_KPROBES
-> -	int ret = 0;
-> -
-> -	/* kprobe_running() needs smp_processor_id() */
-> -	if (!user_mode(regs)) {
-> -		preempt_disable();
-> -		if (kprobe_running() && kprobe_fault_handler(regs, 14))
-> -			ret = 1;
-> -		preempt_enable();
-> -	}
-> -
-> -	return ret;
-> -#else
-> -	return 0;
-> -#endif
-> -}
-> -
->  #ifdef CONFIG_X86_32
->  /*
->   * Return EIP plus the CS segment base.  The segment limit is also
-> @@ -468,7 +449,7 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
->  			if (vmalloc_fault(address) >= 0)
->  				return;
->  		}
-> -		if (notify_page_fault(regs))
-> +		if (kprobe_handle_fault(regs, 14))
->  			return;
->  		/*
->  		 * Don't take the mm semaphore here. If we fixup a prefetch
-> @@ -477,7 +458,7 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
->  		goto bad_area_nosemaphore;
->  	}
->  
-> -	if (notify_page_fault(regs))
-> +	if (kprobe_handle_fault(regs, 14))
->  		return;
->  
->  	if (likely(regs->flags & X86_EFLAGS_IF))
-> diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
-> index 6168c0a..e099426 100644
-> --- a/include/linux/kprobes.h
-> +++ b/include/linux/kprobes.h
-> @@ -36,6 +36,7 @@
->  #include <linux/spinlock.h>
->  #include <linux/rcupdate.h>
->  #include <linux/mutex.h>
-> +#include <linux/hardirq.h>
->  
->  #ifdef CONFIG_KPROBES
->  #include <asm/kprobes.h>
-> @@ -212,6 +213,18 @@ static inline struct kprobe *kprobe_running(void)
->  	return (__get_cpu_var(current_kprobe));
->  }
->  
-> +/*
-> + * If it is a kprobe pagefault we can not be preemptible so return before
-> + * calling kprobe_running() as it will assert on smp_processor_id if
-> + * preemption is enabled.
-> + */
-> +static inline int kprobe_handle_fault(struct pt_regs *regs, int trapnr)
-> +{
-> +	if (!user_mode(regs) && !preemptible() && kprobe_running())
-> +		return kprobe_fault_handler(regs, trapnr);
-> +	return 0;
-> +}
-> +
->  static inline void reset_current_kprobe(void)
->  {
->  	__get_cpu_var(current_kprobe) = NULL;
-> @@ -247,6 +260,10 @@ static inline struct kprobe *kprobe_running(void)
->  {
->  	return NULL;
->  }
-> +static inline int kprobe_handle_fault(struct pt_regs *regs, int trapnr)
-> +{
-> +	return 0;
-> +}
->  static inline int register_kprobe(struct kprobe *p)
->  {
->  	return -ENOSYS;
+  Cleaned up Makefile and used Kconfig for config dependencies.
 
--- 
-Masami Hiramatsu
+  Some other minor cleanups.
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+  Cleaned up tracer itself. Made it more generic and can be used
+  to trace multiple methods.
 
-e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
+  Added irqs off latency tracing. This records the highest latency
+  areas that interrupts are disabled.
+]
+    
+The following patch series brings to vanilla Linux a bit of the RT kernel
+trace facility. This incorporates the "-pg" profiling option of gcc
+that will call the "mcount" function for all functions called in
+the kernel.
+
+Note: I did investigate using -finstrument-functions but that adds a call
+to both start and end of a function. Using mcount only does the
+beginning of the function. mcount alone adds ~13% overhead. The
+-finstrument-functions added ~19%.  Also it caused me to do tricks with
+inline, because it adds the function calls to inline functions as well.
+
+This patch series implements the code for x86 (32 and 64 bit), but
+other archs can easily be implemented as well (note: ARM and PPC are
+already implemented in -rt)
+
+Some Background:
+----------------
+
+A while back, Ingo Molnar and William Lee Irwin III created a latency tracer
+to find problem latency areas in the kernel for the RT patch.  This tracer
+became a very integral part of the RT kernel in solving where latency hot
+spots were.  One of the features that the latency tracer added was a
+function trace.  This function tracer would record all functions that
+were called (implemented by the gcc "-pg" option) and would show what was
+called when interrupts or preemption was turned off.
+
+This feature is also very helpful in normal debugging. So it's been talked
+about taking bits and pieces from the RT latency tracer and bring them
+to LKML. But no one had the time to do it.
+
+Arnaldo Carvalho de Melo took a crack at it. He pulled out the mcount
+as well as part of the tracing code and made it generic from the point
+of the tracing code.  I'm not sure why this stopped. Probably because
+Arnaldo is a very busy man, and his efforts had to be utilized elsewhere.
+
+While I still maintain my own Logdev utility:
+
+  http://rostedt.homelinux.com/logdev
+
+I came across a need to do the mcount with logdev too. I was successful
+but found that it became very dependent on a lot of code. One thing that
+I liked about my logdev utility was that it was very non-intrusive, and has
+been easy to port from the Linux 2.0 days. I did not want to burden the
+logdev patch with the intrusiveness of mcount (not really that intrusive,
+it just needs to add a "notrace" annotation to functions in the kernel
+that will cause more conflicts in applying patches for me).
+
+Being close to the holidays, I grabbed Arnaldos old patches and started
+massaging them into something that could be useful for logdev, and what
+I found out (and talking this over with Arnaldo too) that this can
+be much more useful for others as well.
+
+The main thing I changed, was that I made the mcount function itself
+generic, and not the dependency on the tracing code.  That is I added
+
+register_mcount_function()
+ and
+clear_mcount_function()
+
+So when ever mcount is enabled and a function is registered that function
+is called for all functions in the kernel that is not labeled with the
+"notrace" annotation.
+
+
+The Simple Tracer:
+------------------
+
+To show the power of this I also massaged the tracer code that Arnaldo pulled
+from the RT patch and made it be a nice example of what can be done
+with this.
+
+The function that is registered to mcount has the prototype:
+
+ void func(unsigned long ip, unsigned long parent_ip);
+
+The ip is the address of the function and parent_ip is the address of
+the parent function that called it.
+
+The x86_64 version has the assembly call the registered function directly
+to save having to do a double function call.
+
+To enable mcount, a sysctl is added:
+
+   /proc/sys/kernel/mcount_enabled
+
+Once mcount is enabled, when a function is registed, it will be called by
+all functions. The tracer in this patch series shows how this is done.
+It adds a directory in the debugfs, called mctracer. With a ctrl file that
+will allow the user have the tracer register its function.  Note, the order
+of enabling mcount and registering a function is not important, but both
+must be done to initiate the tracing. That is, you can disable tracing
+by either disabling mcount or by clearing the registered function.
+
+Only one function may be registered at a time. If another function is
+registered, it will simply override what ever was there previously.
+
+Here's a simple example of the tracer output:
+
+CPU 2: hackbench:11867 preempt_schedule+0xc/0x84 <-- avc_has_perm_noaudit+0x45d/0x52c
+CPU 1: hackbench:12052 selinux_file_permission+0x10/0x11c <-- security_file_permission+0x16/0x18
+CPU 3: hackbench:12017 update_curr+0xe/0x8b <-- put_prev_task_fair+0x24/0x4c
+CPU 2: hackbench:11867 avc_audit+0x16/0x9e3 <-- avc_has_perm+0x51/0x63
+CPU 0: hackbench:12019 socket_has_perm+0x16/0x7c <-- selinux_socket_sendmsg+0x27/0x3e
+CPU 1: hackbench:12052 file_has_perm+0x16/0xbb <-- selinux_file_permission+0x104/0x11c
+
+This is formated like:
+
+ CPU <CPU#>: <task-comm>:<task-pid> <function> <-- <parent-function>
+
+
+Latency Tracer Format:
+----------------------
+
+The format used by the RT patch is a bit more complex. It is designed to
+record a lot of information quickly and dump out a lot too.
+
+There's two versions of the format. Verbose and non-vebose.
+
+verbose:
+
+preemption latency trace v1.1.5 on 2.6.24-rc7-tst
+--------------------------------------------------------------------
+ latency: 89 us, #3/3, CPU#1 | (M:desktop VP:0, KP:0, SP:0 HP:0 #P:4)
+    -----------------
+    | task: kjournald-600 (uid:0 nice:-5 policy:0 rt_prio:0)
+    -----------------
+ => started at: _spin_lock_irqsave+0x2a/0x63 <c06310d2>
+ => ended at:   _spin_unlock_irqrestore+0x32/0x41 <c0631245>
+
+       kjournald   600 1 1 00000000 00000000 [397408f1] 0.003ms (+0.079ms): _spin_lock_irqsave+0x2a/0x63 <c06310d2> (scsi_dispatch_cmd+0x155/0x234 [scsi_mod] <f8867c19>)
+       kjournald   600 1 1 00000000 00000001 [39740940] 0.081ms (+0.005ms): _spin_unlock_irqrestore+0x32/0x41 <c0631245> (scsi_dispatch_cmd+0x1be/0x234 [scsi_mod] <f8867c82>)
+       kjournald   600 1 1 00000000 00000002 [39740945] 0.087ms (+0.000ms): trace_hardirqs_on_caller+0x74/0x86 <c0508bdc> (_spin_unlock_irqrestore+0x32/0x41 <c0631245>)
+
+
+non-verbose:
+
+preemption latency trace v1.1.5 on 2.6.24-rc7-tst
+--------------------------------------------------------------------
+ latency: 89 us, #3/3, CPU#2 | (M:desktop VP:0, KP:0, SP:0 HP:0 #P:4)
+    -----------------
+    | task: kjournald-600 (uid:0 nice:-5 policy:0 rt_prio:0)
+    -----------------
+ => started at: _spin_lock_irqsave+0x2a/0x63 <c06310d2>
+ => ended at:   _spin_unlock_irqrestore+0x32/0x41 <c0631245>
+
+                 _------=> CPU#            
+                / _-----=> irqs-off        
+               | / _----=> need-resched    
+               || / _---=> hardirq/softirq 
+               ||| / _--=> preempt-depth   
+               |||| /                      
+               |||||     delay             
+   cmd     pid ||||| time  |   caller      
+      \   /    |||||   \   |   /           
+kjournal-600   1d...    3us+: _spin_lock_irqsave+0x2a/0x63 <c06310d2> (scsi_dispatch_cmd+0x155/0x234 [scsi_mod] <f8867c19>)
+kjournal-600   1d...   81us+: _spin_unlock_irqrestore+0x32/0x41 <c0631245> (scsi_dispatch_cmd+0x1be/0x234 [scsi_mod] <f8867c82>)
+kjournal-600   1d...   87us : trace_hardirqs_on_caller+0x74/0x86 <c0508bdc> (_spin_unlock_irqrestore+0x32/0x41 <c0631245>)
+
+
+Debug FS:
+---------
+
+Although enabling and disabling mcount is done through the sysctl:
+
+/proc/sys/kernel/mcount_enabled
+
+The rest of the tracing uses debugfs.
+
+/debugfs/tracing
+
+Here's the available files:
+
+fn_trace_ctrl
+  echo 1 to this enables mcount tracing (if mcount_enabled is set)
+  echo 0 to disable the function trace tracing.
+
+function_trace
+  Outputs the function trace in latency_trace format.
+
+irqsoff_fn_trace_ctrl
+  echo 1 to enable function tracing between disabled interrupts
+  echo 0 to disable
+
+irqsoff_trace
+  Outputs the irqs off latency
+
+irq_thresh
+  echo a number (in usecs) into this to record all traces that are
+  greater than threshold.
+
+iter_ctrl
+  echo "symonly" to not show the instruction pointers in the trace
+  echo "nosymonly" to disable symonly.
+  echo "verbose" for verbose output from latency format.
+  echo "noverbose" to disable verbose ouput.
+  cat iter_ctrl to see the current settings.
+
+max_irq_latency
+  Holds the current max irq latency.
+  echo 0 to reset and start tracing.
+
+trace
+  simple output format of the function trace code.
+
+
+Overhead:
+---------
+
+Note that having mcount compiled in seems to show a little overhead.
+
+Here's 3 runs of hackbench 50 without the patches:
+Time: 2.137
+Time: 2.283
+Time: 2.245
+
+ Avg: 2.221
+
+and here's 3 runs with the patches (without tracing on):
+Time: 2.738
+Time: 2.469
+Time: 2.388
+
+  Avg: 2.531
+
+So it is a 13% overhead when enabled (according to hackbench).
+
+But full tracing can cause a bit more problems:
+
+# hackbench 50
+Time: 113.350
+
+  113.350!!!!!
+
+But this is tracing *every* function call!
+
+
+Future:
+-------
+The way the mcount hook is done here, other utilities can easily add their
+own functions. Just care needs to be made not to call anything that is not
+marked with notrace, or you will crash the box with recursion. But
+even the simple tracer adds a "disabled" feature so in case it happens
+to call something that is not marked with notrace, it is a safety net
+not to kill the box.
+
+I was originally going to use the relay system to record the data, but
+that had a chance of calling functions not marked with notrace. But, if
+for example LTTng wanted to use this, it could disable tracing on a CPU
+when doing the calls, and this will protect from recusion.
+
+SystemTap:
+----------
+One thing that Arnaldo and I discussed last year was using systemtap to
+add hooks into the kernel to start and stop tracing.  kprobes is too
+heavy to do on all funtion calls, but it would be perfect to add to
+non hot paths to start the tracer and stop the tracer.
+
+So when debugging the kernel, instead of recompiling with printks
+or other markers, you could simply use systemtap to place a trace start
+and stop locations and trace the problem areas to see what is happening.
+
+
+Cleanup:
+--------
+Currently the latency and function tracing records the task->comm at every
+trace. This is a bit expensive (16 bytes copied everytime). The RT patch
+implements a separate cmdline recording that is done in certain situations.
+Then the trace buffers can be scanned to map comm's with pids to produce
+the output.
+
+Markers - Other tracing can be done too, and is currently done in
+the RT patch with trace points. It may be better to insert markers
+at these locations and have hooks into them to get the proper tracing.
+
+Latency Tracing:
+----------------
+
+We can also add trace points to record the time the highest priority task
+needs to wait before running. This too is currently done in the RT patch.
+
+
+These are just some of the ideas we have with this. And we are sure others
+could come up with more.
+
+These patches are for the underlining work. We'll see what happens next.
+
+
+
 
