@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758197AbYAIXd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbYAIXeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758197AbYAIXd5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 18:33:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756707AbYAIXa7
+	id S1754951AbYAIXeV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 18:34:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756736AbYAIXbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 18:30:59 -0500
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:33585 "EHLO
+	Wed, 9 Jan 2008 18:31:00 -0500
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:33559 "EHLO
 	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755899AbYAIXaw (ORCPT
+	with ESMTP id S1755759AbYAIXav (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 18:30:52 -0500
-Message-Id: <20080109233044.288563621@goodmis.org>
+	Wed, 9 Jan 2008 18:30:51 -0500
+Message-Id: <20080109233044.614812007@goodmis.org>
 References: <20080109232914.676624725@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 Jan 2008 18:29:27 -0500
+Date: Wed, 09 Jan 2008 18:29:29 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -26,280 +26,61 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
        Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
        Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       John Stultz <johnstul@us.ibm.com>, Steven Rostedt <srostedt@redhat.com>
-Subject: [RFC PATCH 13/22 -v2] handle accurate time keeping over long delays
-Content-Disposition: inline; filename=rt-time-starvation-fix.patch
+       John Stultz <johnstul@us.ibm.com>
+Subject: [RFC PATCH 15/22 -v2] initialize the clock source to jiffies clock.
+Content-Disposition: inline; filename=initialize-clocksource-to-jiffies.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Handle accurate time even if there's a long delay between
-accumulated clock cycles.
+The latency tracer can call clocksource_read very early in bootup and
+before the clock source variable has been initialized. This results in a
+crash at boot up (even before earlyprintk is initialized). Since the
+clock->read variable points to NULL.
 
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+This patch simply initializes the clock to use clocksource_jiffies, so
+that any early user of clocksource_read will not crash.
+
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+Acked-by: John Stultz <johnstul@us.ibm.com>
 ---
- arch/x86/kernel/vsyscall_64.c |    5 ++-
- include/asm-x86/vgtod.h       |    2 -
- include/linux/clocksource.h   |   58 ++++++++++++++++++++++++++++++++++++++++--
- kernel/time/timekeeping.c     |   35 +++++++++++++------------
- 4 files changed, 80 insertions(+), 20 deletions(-)
+ include/linux/clocksource.h |    3 +++
+ kernel/time/timekeeping.c   |    9 +++++++--
+ 2 files changed, 10 insertions(+), 2 deletions(-)
 
-linux-2.6.21-rc5_cycles-accumulated_C7.patch
-============================================
-Index: linux-compile-i386.git/arch/x86/kernel/vsyscall_64.c
-===================================================================
---- linux-compile-i386.git.orig/arch/x86/kernel/vsyscall_64.c	2008-01-09 14:10:20.000000000 -0500
-+++ linux-compile-i386.git/arch/x86/kernel/vsyscall_64.c	2008-01-09 14:17:53.000000000 -0500
-@@ -86,6 +86,7 @@ void update_vsyscall(struct timespec *wa
- 	vsyscall_gtod_data.clock.mask = clock->mask;
- 	vsyscall_gtod_data.clock.mult = clock->mult;
- 	vsyscall_gtod_data.clock.shift = clock->shift;
-+	vsyscall_gtod_data.clock.cycle_accumulated = clock->cycle_accumulated;
- 	vsyscall_gtod_data.wall_time_sec = wall_time->tv_sec;
- 	vsyscall_gtod_data.wall_time_nsec = wall_time->tv_nsec;
- 	vsyscall_gtod_data.wall_to_monotonic = wall_to_monotonic;
-@@ -121,7 +122,7 @@ static __always_inline long time_syscall
- 
- static __always_inline void do_vgettimeofday(struct timeval * tv)
- {
--	cycle_t now, base, mask, cycle_delta;
-+	cycle_t now, base, accumulated, mask, cycle_delta;
- 	unsigned seq;
- 	unsigned long mult, shift, nsec;
- 	cycle_t (*vread)(void);
-@@ -135,6 +136,7 @@ static __always_inline void do_vgettimeo
- 		}
- 		now = vread();
- 		base = __vsyscall_gtod_data.clock.cycle_last;
-+		accumulated  = __vsyscall_gtod_data.clock.cycle_accumulated;
- 		mask = __vsyscall_gtod_data.clock.mask;
- 		mult = __vsyscall_gtod_data.clock.mult;
- 		shift = __vsyscall_gtod_data.clock.shift;
-@@ -145,6 +147,7 @@ static __always_inline void do_vgettimeo
- 
- 	/* calculate interval: */
- 	cycle_delta = (now - base) & mask;
-+	cycle_delta += accumulated;
- 	/* convert to nsecs: */
- 	nsec += (cycle_delta * mult) >> shift;
- 
-Index: linux-compile-i386.git/include/linux/clocksource.h
-===================================================================
---- linux-compile-i386.git.orig/include/linux/clocksource.h	2008-01-09 14:07:34.000000000 -0500
-+++ linux-compile-i386.git/include/linux/clocksource.h	2008-01-09 15:17:33.000000000 -0500
-@@ -50,8 +50,12 @@ struct clocksource;
-  * @flags:		flags describing special properties
-  * @vread:		vsyscall based read
-  * @resume:		resume function for the clocksource, if necessary
-+ * @cycle_last:		Used internally by timekeeping core, please ignore.
-+ * @cycle_accumulated:	Used internally by timekeeping core, please ignore.
-  * @cycle_interval:	Used internally by timekeeping core, please ignore.
-  * @xtime_interval:	Used internally by timekeeping core, please ignore.
-+ * @xtime_nsec:		Used internally by timekeeping core, please ignore.
-+ * @error:		Used internally by timekeeping core, please ignore.
-  */
- struct clocksource {
- 	/*
-@@ -82,7 +86,10 @@ struct clocksource {
- 	 * Keep it in a different cache line to dirty no
- 	 * more than one cache line.
- 	 */
--	cycle_t cycle_last ____cacheline_aligned_in_smp;
-+	struct {
-+		cycle_t cycle_last, cycle_accumulated;
-+	} ____cacheline_aligned_in_smp;
-+
- 	u64 xtime_nsec;
- 	s64 error;
- 
-@@ -168,11 +175,44 @@ static inline cycle_t clocksource_read(s
- }
- 
- /**
-+ * clocksource_get_cycles: - Access the clocksource's accumulated cycle value
-+ * @cs:		pointer to clocksource being read
-+ * @now:	current cycle value
-+ *
-+ * Uses the clocksource to return the current cycle_t value.
-+ * NOTE!!!: This is different from clocksource_read, because it
-+ * returns the accumulated cycle value! Must hold xtime lock!
-+ */
-+static inline cycle_t
-+clocksource_get_cycles(struct clocksource *cs, cycle_t now)
-+{
-+	cycle_t offset = (now - cs->cycle_last) & cs->mask;
-+	offset += cs->cycle_accumulated;
-+	return offset;
-+}
-+
-+/**
-+ * clocksource_accumulate: - Accumulates clocksource cycles
-+ * @cs:		pointer to clocksource being read
-+ * @now:	current cycle value
-+ *
-+ * Used to avoids clocksource hardware overflow by periodically
-+ * accumulating the current cycle delta. Must hold xtime write lock!
-+ */
-+static inline void clocksource_accumulate(struct clocksource *cs, cycle_t now)
-+{
-+	cycle_t offset = (now - cs->cycle_last) & cs->mask;
-+	cs->cycle_last = now;
-+	cs->cycle_accumulated += offset;
-+}
-+
-+/**
-  * cyc2ns - converts clocksource cycles to nanoseconds
-  * @cs:		Pointer to clocksource
-  * @cycles:	Cycles
-  *
-  * Uses the clocksource and ntp ajdustment to convert cycle_ts to nanoseconds.
-+ * Must hold xtime lock!
-  *
-  * XXX - This could use some mult_lxl_ll() asm optimization
-  */
-@@ -184,13 +224,27 @@ static inline s64 cyc2ns(struct clocksou
- }
- 
- /**
-+ * ns2cyc - converts nanoseconds to clocksource cycles
-+ * @cs:		Pointer to clocksource
-+ * @nsecs:	Nanoseconds
-+ */
-+static inline cycle_t ns2cyc(struct clocksource *cs, u64 nsecs)
-+{
-+	cycle_t ret = nsecs << cs->shift;
-+
-+	do_div(ret, cs->mult + 1);
-+
-+	return ret;
-+}
-+
-+/**
-  * clocksource_calculate_interval - Calculates a clocksource interval struct
-  *
-  * @c:		Pointer to clocksource.
-  * @length_nsec: Desired interval length in nanoseconds.
-  *
-  * Calculates a fixed cycle/nsec interval for a given clocksource/adjustment
-- * pair and interval request.
-+ * pair and interval request. Must hold xtime_lock!
-  *
-  * Unless you're the timekeeping code, you should not be using this!
-  */
 Index: linux-compile-i386.git/kernel/time/timekeeping.c
 ===================================================================
---- linux-compile-i386.git.orig/kernel/time/timekeeping.c	2008-01-09 14:07:34.000000000 -0500
-+++ linux-compile-i386.git/kernel/time/timekeeping.c	2008-01-09 15:17:31.000000000 -0500
-@@ -66,16 +66,10 @@ static struct clocksource *clock; /* poi
-  */
- static inline s64 __get_nsec_offset(void)
- {
--	cycle_t cycle_now, cycle_delta;
-+	cycle_t cycle_delta;
- 	s64 ns_offset;
- 
--	/* read clocksource: */
--	cycle_now = clocksource_read(clock);
--
--	/* calculate the delta since the last update_wall_time: */
--	cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
--
--	/* convert to nanoseconds: */
-+	cycle_delta = clocksource_get_cycles(clock, clocksource_read(clock));
- 	ns_offset = cyc2ns(clock, cycle_delta);
- 
- 	return ns_offset;
-@@ -195,7 +189,7 @@ static void change_clocksource(void)
- 
- 	clock = new;
- 	clock->cycle_last = now;
--
-+	clock->cycle_accumulated = 0;
- 	clock->error = 0;
- 	clock->xtime_nsec = 0;
- 	clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
-@@ -205,9 +199,15 @@ static void change_clocksource(void)
- 	printk(KERN_INFO "Time: %s clocksource has been installed.\n",
- 	       clock->name);
+--- linux-compile-i386.git.orig/kernel/time/timekeeping.c	2008-01-09 14:17:53.000000000 -0500
++++ linux-compile-i386.git/kernel/time/timekeeping.c	2008-01-09 15:17:30.000000000 -0500
+@@ -53,8 +53,13 @@ static inline void update_xtime_cache(u6
+ 	timespec_add_ns(&xtime_cache, nsec);
  }
-+
-+void timekeeping_accumulate(void)
-+{
-+	clocksource_accumulate(clock, clocksource_read(clock));
-+}
- #else
- static inline void change_clocksource(void) { }
- static inline s64 __get_nsec_offset(void) { return 0; }
-+void timekeeping_accumulate(void) { }
- #endif
  
- /**
-@@ -302,6 +302,7 @@ static int timekeeping_resume(struct sys
- 	timespec_add_ns(&xtime, timekeeping_suspend_nsecs);
- 	/* re-base the last cycle value */
- 	clock->cycle_last = clocksource_read(clock);
-+	clock->cycle_accumulated = 0;
- 	clock->error = 0;
- 	timekeeping_suspended = 0;
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
-@@ -448,27 +449,29 @@ static void clocksource_adjust(s64 offse
-  */
- void update_wall_time(void)
- {
--	cycle_t offset;
-+	cycle_t cycle_now, offset;
- 
- 	/* Make sure we're fully resumed: */
- 	if (unlikely(timekeeping_suspended))
- 		return;
+-static struct clocksource *clock; /* pointer to current clocksource */
+-
++/*
++ * pointer to current clocksource
++ *  Just in case we use clocksource_read before we initialize
++ *  the actual clock source. Instead of calling a NULL read pointer
++ *  we return jiffies.
++ */
++static struct clocksource *clock = &clocksource_jiffies;
  
  #ifdef CONFIG_GENERIC_TIME
--	offset = (clocksource_read(clock) - clock->cycle_last) & clock->mask;
-+	cycle_now = clocksource_read(clock);
- #else
--	offset = clock->cycle_interval;
-+	cycle_now = clock->cycle_last + clock->cycle_interval;
- #endif
-+	offset = (cycle_now - clock->cycle_last) & clock->mask;
-+	clocksource_accumulate(clock, cycle_now);
-+
- 	clock->xtime_nsec += (s64)xtime.tv_nsec << clock->shift;
- 
- 	/* normally this loop will run just once, however in the
- 	 * case of lost or late ticks, it will accumulate correctly.
- 	 */
--	while (offset >= clock->cycle_interval) {
-+	while (clock->cycle_accumulated >= clock->cycle_interval) {
- 		/* accumulate one interval */
- 		clock->xtime_nsec += clock->xtime_interval;
--		clock->cycle_last += clock->cycle_interval;
--		offset -= clock->cycle_interval;
-+		clock->cycle_accumulated -= clock->cycle_interval;
- 
- 		if (clock->xtime_nsec >= (u64)NSEC_PER_SEC << clock->shift) {
- 			clock->xtime_nsec -= (u64)NSEC_PER_SEC << clock->shift;
-@@ -482,7 +485,7 @@ void update_wall_time(void)
- 	}
- 
- 	/* correct the clock when NTP error is too big */
--	clocksource_adjust(offset);
-+	clocksource_adjust(clock->cycle_accumulated);
- 
- 	/* store full nanoseconds into xtime */
- 	xtime.tv_nsec = (s64)clock->xtime_nsec >> clock->shift;
-Index: linux-compile-i386.git/include/asm-x86/vgtod.h
+ /**
+Index: linux-compile-i386.git/include/linux/clocksource.h
 ===================================================================
---- linux-compile-i386.git.orig/include/asm-x86/vgtod.h	2008-01-09 14:07:34.000000000 -0500
-+++ linux-compile-i386.git/include/asm-x86/vgtod.h	2008-01-09 14:17:53.000000000 -0500
-@@ -15,7 +15,7 @@ struct vsyscall_gtod_data {
- 	struct timezone sys_tz;
- 	struct { /* extract of a clocksource struct */
- 		cycle_t (*vread)(void);
--		cycle_t	cycle_last;
-+		cycle_t	cycle_last, cycle_accumulated;
- 		cycle_t	mask;
- 		u32	mult;
- 		u32	shift;
+--- linux-compile-i386.git.orig/include/linux/clocksource.h	2008-01-09 14:23:42.000000000 -0500
++++ linux-compile-i386.git/include/linux/clocksource.h	2008-01-09 15:17:30.000000000 -0500
+@@ -274,6 +274,9 @@ extern struct clocksource* clocksource_g
+ extern void clocksource_change_rating(struct clocksource *cs, int rating);
+ extern void clocksource_resume(void);
+ 
++/* used to initialize clock */
++extern struct clocksource clocksource_jiffies;
++
+ #ifdef CONFIG_GENERIC_TIME_VSYSCALL
+ extern void update_vsyscall(struct timespec *ts, struct clocksource *c);
+ extern void update_vsyscall_tz(void);
 
 -- 
