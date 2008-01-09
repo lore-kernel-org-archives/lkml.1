@@ -1,92 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbYAIPy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbYAIP6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753839AbYAIPy2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 10:54:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbYAIPyT
+	id S1754188AbYAIP6b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 10:58:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbYAIP6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 10:54:19 -0500
-Received: from smtp-vbr5.xs4all.nl ([194.109.24.25]:4827 "EHLO
-	smtp-vbr5.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751157AbYAIPyS (ORCPT
+	Wed, 9 Jan 2008 10:58:23 -0500
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:45656 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752092AbYAIP6W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 10:54:18 -0500
-Date: Wed, 9 Jan 2008 16:54:12 +0100
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: linux-kernel@vger.kernel.org
-Cc: udovdh@xs4all.nl
-Subject: Re: [RS232] setting trigger-level of fifo
-Message-ID: <20080109155412.GX8331@vanheusden.com>
-References: <20080109153242.GU8331@vanheusden.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080109153242.GU8331@vanheusden.com>
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Read-Receipt-To: <folkert@vanheusden.com>
-Reply-By: Thu Jan 10 13:04:15 CET 2008
-X-Message-Flag: Want to extend your PGP web-of-trust? Coordinate a
-	key-signing at www.biglumber.com
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 9 Jan 2008 10:58:22 -0500
+Date: Wed, 9 Jan 2008 16:57:48 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Gabor Gombas <gombasg@sztaki.hu>, Al Viro <viro@ZenIV.linux.org.uk>,
+       Dave Young <hidave.darkstar@gmail.com>, linux-kernel@vger.kernel.org,
+       bluez-devel@lists.sourceforge.net, kay.sievers@vrfy.org,
+       Greg KH <greg@kroah.com>
+Subject: Re: [Bluez-devel] Oops involving RFCOMM and sysfs
+Message-ID: <20080109165748.419ad7fe@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <478490D2.5050902@gmail.com>
+References: <20071228173203.GA20690@boogie.lpds.sztaki.hu>
+	<a8e1da0712290007o168a730cw923055ad2c265d84@mail.gmail.com>
+	<20080102151642.GA7273@boogie.lpds.sztaki.hu>
+	<20080105075039.GF27894@ZenIV.linux.org.uk>
+	<20080107141300.GB12763@boogie.lpds.sztaki.hu>
+	<47824415.80703@gmail.com>
+	<20080107210024.GA13537@boogie.lpds.sztaki.hu>
+	<47834593.1000506@gmail.com>
+	<20080108133215.GA15814@boogie.lpds.sztaki.hu>
+	<478490D2.5050902@gmail.com>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> In windows one can configure at what point the uart will trigger an
-> interrupt. E.g. 1, 4, 8 or 14 bytes received. Setserial doesn't let you
-> and I saw in the sources of the serial driver no hint that it is
-> supported in linux at all. Also in MAINTAINERS I saw that sreial is
-> orphaned. Can someone tell how I can proceed with this? Is it at all
-> possible to do this setting? 
+On Wed, 09 Jan 2008 18:16:02 +0900,
+Tejun Heo <htejun@gmail.com> wrote:
 
-I think it must be something like this:
+> This isn't supported.  sysfs doesn't allow parents to die first and the
+> dangling children to be salvaged using sysfs_move().
 
-static void limit_fifo(struct uart_port *port)
-{
-        struct uart_8250_port *up = (struct uart_8250_port *)port;
-        unsigned char cval, fcr = 0;
-        unsigned long flags;
+But (with the sysfs bugs fixed) it will return an error, won't it? It
+seems the bluetooth code is rather optimistic with never checking
+device_move()'s return code.
 
-	/* hopefully not setting the UART_FCR_ENABLE_FIFO flag will
-	 * set it to off. otherwhise the trigger_1 should make the
-	 * uart trigger the interrupt immediately after the first
-	 * byte comes in
-	 */
-        fcr = UART_FCR_TRIGGER_1;
+> 
+> 2. Which in turn exposes three bugs in sysfs
+> 	- sysfs_lookup() returning NULL on negative lookup.  sysfs
+> 	  code requires that all negative dentries are shot down.
+> 	  lookup should return -ENOENT instead of NULL.
+> 	- in move and rename, error handling is wrong.  It ends up
+> 	  passing ERR_PTR() values to dput().
+> 	- there was an extra dput() in sysfs_move_dir().
 
-        spin_lock_irqsave(&up->port.lock, flags);
+Ups, seem to have copied that from some old version of
+sysfs_rename_dir()...
 
-        if (up->port.type == PORT_16750)
-                serial_outp(up, UART_FCR, fcr);
+> 
+> The attached patch fixes all sysfs bugs and removes the oops. 
 
-        serial_outp(up, UART_LCR, cval);                /* reset DLAB */
-        up->lcr = cval;                                 /* Save LCR */
-        if (up->port.type != PORT_16750) {
-                if (fcr & UART_FCR_ENABLE_FIFO) {
-                        /* emulated UARTs (Lucent Venus 167x) need two steps */
-                        serial_outp(up, UART_FCR, UART_FCR_ENABLE_FIFO);
-                }
-                serial_outp(up, UART_FCR, fcr);         /* set fcr */
-        }
-        serial8250_set_mctrl(&up->port, up->port.mctrl);
-        spin_unlock_irqrestore(&up->port.lock, flags);
-}
-
-But I don't know how to interface this to an ioctl or so.
-
-All help is appreciated!
-
-
-Folkert van Heusden
-
--- 
-Looking for a cheap but fast webhoster with an excellent helpdesk?
-http://keetweej.vanheusden.com/redir.php?id=1001
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+Looks OK at first glance.
