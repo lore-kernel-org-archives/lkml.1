@@ -1,67 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754720AbYAIQC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219AbYAIQFL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754720AbYAIQC2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 11:02:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbYAIQCV
+	id S1755219AbYAIQFL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 11:05:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYAIQFA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 11:02:21 -0500
-Received: from mail.daysofwonder.com ([213.186.49.53]:50963 "EHLO
-	mail.daysofwonder.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752145AbYAIQCU (ORCPT
+	Wed, 9 Jan 2008 11:05:00 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52501 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752166AbYAIQE7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 11:02:20 -0500
-Subject: Re: Strange freeze on 2.6.22 (deadlock?)
-From: Brice Figureau <brice+lklm@daysofwonder.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <4784046B.5000004@redhat.com>
-References: <49447.213.41.177.193.1199732765.squirrel@corp.daysofwonder.com>
-	 <4784046B.5000004@redhat.com>
-Content-Type: text/plain
-Date: Wed, 09 Jan 2008 17:02:14 +0100
-Message-Id: <1199894534.7626.75.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Jan 2008 11:04:59 -0500
+Date: Wed, 9 Jan 2008 08:03:51 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] show_task: real_parent
+In-Reply-To: <20080109080323.8FCDC26F9A7@magilla.localdomain>
+Message-ID: <alpine.LFD.1.00.0801090800360.3148@woody.linux-foundation.org>
+References: <20080109080323.8FCDC26F9A7@magilla.localdomain>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Tue, 2008-01-08 at 18:16 -0500, Chuck Ebbert wrote: 
-> On 01/07/2008 02:06 PM, Brice Figureau wrote:
->  
-> > Thanks for the answer.
-> > I'm using whatever is the default mount option (which I think is
-> > data=ordered). The only other mount option I use is nodiratime,noatime.
-> > 
-> > Note that a large part of the processes in D state are "waiting" in
-> > __mutex_lock from generic_file_aio_write.
-> > Another large part is coming from balance_dirty_pages_ratelimited_nr.
-> > 
-> > It seems that there was some writeback congestion to the block device.
-> > All the /proc/sys/vm/* files are at their defaults.
-> > 
-> > This looks like if it wasn't possible to write to the block device anymore.
-> > Could a block device write error (ie hardware failure) be the root cause?
-> > 
-> > Any other idea?
-> > What should I try the next time it freezes?
+
+On Wed, 9 Jan 2008, Roland McGrath wrote:
 > 
-> Same bug as http://lkml.org/lkml/2007/8/1/469 ??
+> The show_task function invoked by sysrq-t et al displays the
+> pid and parent's pid of each task.  It seems more useful to
+> show the actual process hierarchy here than who is using
+> ptrace on each process.
 
-Some of the stacktrace of the OP looks like the ones I posted.
-The timeframe also matches since I noticed the first problems in 2.6.19
-like the OP.
+Hmm. It could go both ways. If the problem is some ptrace()/wait4() 
+interaction issue (which is certainly not unheard of!) the parent that 
+matters for the kernel may be the right thing to print out.
 
-I remounted the fs without noatime and we'll see if it still freezes
-next week.
+I wonder if we should just print out both (or perhaps print out the 
+ptrace parent only if it differs from the normal parent?)
 
-Unfortunately, there doesn't seem to be any bug fix for this problem yet
-(except the upcoming per device write throttling patch).
+I'll apply this, because I agree that it's sensible in general, I just 
+wonder how often anybody really even cares about the parent information 
+when it's not about some wait-related issue..
 
-Thanks for pointing me in this direction,
--- 
-Brice Figureau <brice+lklm@daysofwonder.com>
-
+		Linus
