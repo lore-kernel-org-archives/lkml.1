@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753497AbYAINsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754314AbYAINti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753497AbYAINsi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 08:48:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbYAINs3
+	id S1754314AbYAINti (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 08:49:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbYAINt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 08:48:29 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59769
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750756AbYAINs2 (ORCPT
+	Wed, 9 Jan 2008 08:49:29 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:44007 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751260AbYAINt2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 08:48:28 -0500
-Date: Wed, 09 Jan 2008 05:48:28 -0800 (PST)
-Message-Id: <20080109.054828.24151898.davem@davemloft.net>
-To: jikos@jikos.cz
-Cc: hch@lst.de, airlied@linux.ie, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, ak@suse.de, pq@iki.fi,
-       jbeulich@novell.com, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Revert "x86: optimize page faults like all other
- achitectures and kill notifier cruft"
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0801091418510.25041@twin.jikos.cz>
-References: <20080109071727.GA10695@lst.de>
-	<20080108.232223.211829980.davem@davemloft.net>
-	<Pine.LNX.4.64.0801091418510.25041@twin.jikos.cz>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Jan 2008 08:49:28 -0500
+To: pavel@ucw.cz
+CC: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
+       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
+In-reply-to: <20080109133506.GI9735@elf.ucw.cz> (message from Pavel Machek on
+	Wed, 9 Jan 2008 14:35:06 +0100)
+Subject: Re: [patch 7/9] unprivileged mounts: allow unprivileged fuse mounts
+References: <20080108113502.184459371@szeredi.hu> <20080108113630.861045063@szeredi.hu> <20080108214625.GE5050@ucw.cz> <E1JCN9I-0004DB-DF@pomaz-ex.szeredi.hu> <20080108225820.GA9735@elf.ucw.cz> <E1JCWxm-0005Fn-36@pomaz-ex.szeredi.hu> <20080109113325.GC9735@elf.ucw.cz> <E1JCan7-0005mP-UE@pomaz-ex.szeredi.hu> <20080109133506.GI9735@elf.ucw.cz>
+Message-Id: <E1JCbIb-0005rA-5O@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 09 Jan 2008 14:48:53 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Kosina <jikos@jikos.cz>
-Date: Wed, 9 Jan 2008 14:19:58 +0100 (CET)
+> I'm not saying fuse is worthless. It is a nice toy for single-user
+> systems. But I do not think we should be merging "allow ordinary users
+> to mount their own fuse's" before issues above are fixed.
 
-> On Tue, 8 Jan 2008, David Miller wrote:
-> 
-> > You can set a kprobe on the x86 fault handler to do things like
-> > mmiotrace.
-> 
-> Currently, on x86, you can not, because:
-> 
-> 	fastcall void __kprobes do_page_fault( ... );
+I think multi user systems are not all that interesting.  And I
+suspect very few of them want reliably working suspend/hibernate
+(which they wouldn't get due to other issues anyway), or have weird
+shutdown scripts which stop when they are unable to umount
+filesystems.
 
-Read Ingo's reply.
+For paranoid sysadmins, I suggest not enabling fuse for unprivileged
+users, which is pretty easy to do: just don't set /dev/fuse to be
+world read-writable (which is the default BTW).
+
+So your reasons just don't warrant a big effort involving VFS hacking,
+etc.  Patches are of course welcome.
+
+Miklos
