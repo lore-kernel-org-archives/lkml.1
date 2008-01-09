@@ -1,86 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757415AbYAIBRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757632AbYAIBSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757415AbYAIBRU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 20:17:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYAIBRK
+	id S1757632AbYAIBSb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 20:18:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbYAIBSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 20:17:10 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:56255 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751927AbYAIBRI (ORCPT
+	Tue, 8 Jan 2008 20:18:23 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:43796 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752606AbYAIBSW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 20:17:08 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Michal Simek <simekm2@fel.cvut.cz>
-Subject: Re: New linux arch
-Date: Wed, 9 Jan 2008 02:16:55 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-kernel@vger.kernel.org, monstr@monstr.eu
-References: <47820D24.3060800@fel.cvut.cz>
-In-Reply-To: <47820D24.3060800@fel.cvut.cz>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+	Tue, 8 Jan 2008 20:18:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=D8jfcFcyDVpk46BVuANyJe5iO4W0klV/KYqE3o97sOCxZUfpYO2QHLorYWED9QGqV/dwGmaFqZFg96hWAjMUjK7qf6C4JhlvoXtPe/DV57DbV1Wj+3iYu5BJ+wZg8q9qUKQsyR39JGOmXfIYC+yywsEiYucYzhqdOzHCw7MiJgo=
+Subject: [PATCH] x86: Introduce __die helper to X86_32
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Content-Type: text/plain
+Date: Tue, 08 Jan 2008 17:18:22 -0800
+Message-Id: <1199841502.6424.25.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801090216.55958.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+xTWhF32Q1sgX1A4t65Ir5NBaib5Jb0ftYHO1
- OceZGtHmY5HUGnMe7xkOElMbwEMMzqp7oR7+rUXZw+OCVZE1ZZ
- salmVn8SCyeOFZoLkJ60g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 07 January 2008, Michal Simek wrote:
-> I would like to ask you what is the best way to push these changes to 
-> kernel.org.
-> 
-> I would like to know step by step how to do.
-> 
+Small step towards unifying traps_32|64.c.  No functional
+changes.  Pull out a small helper from an if() statement
+in die().
 
-Adding the whole architecture tree will probably be too much for
-a single reviewer and almost certainly too much for a the size limit
-of mails to lkml.
-On the other hand, there is not much point in merging the architecture
-code in multiple changesets if there is nothing at all you can do
-with part of it. I suggest therefore that you split the code twice:
+Marked as __kprobes as eventually we will want to call this
+from do_page_fault similar to how X86_64 does it.
 
-First, split every device driver into its own git changeset. Often,
-these have to go through a different set of mailing lists, e.g.
-network drivers go to netdev@vger.kernel.org (see MAINTAINERS for
-details), while the actual architecture changeset should not have
-device drivers by itself. These are going to be the changesets
-that you have in your git tree and merged upstream eventually.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ arch/x86/kernel/traps_32.c |   76 ++++++++++++++++++++++++-------------------
+ 1 files changed, 42 insertions(+), 34 deletions(-)
 
-Then, split each of those changesets into reviewer-friendly
-chunks of less than 100kb. Don't worry if a patch ends up only having
-a few line while others are considerably larger.
-For people that like to see a whole changeset, upload it as a combined
-patch to an http location that you mention in your patch 00/12 or so,
-and have the smaller patches as reply mails to that.
-Use either 'quilt mail' or 'git-format-patch' to do that work for you.
+diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
+index ac8fd36..5f2b38e 100644
+--- a/arch/x86/kernel/traps_32.c
++++ b/arch/x86/kernel/traps_32.c
+@@ -352,6 +352,45 @@ int is_valid_bugaddr(unsigned long ip)
+ 	return ud2 == 0x0b0f;
+ }
+ 
++static int die_counter;
++
++int __kprobes __die(const char * str, struct pt_regs * regs, long err)
++{
++	unsigned long sp;
++	unsigned short ss;
++
++	printk(KERN_EMERG "%s: %04lx [#%d] ", str, err & 0xffff, ++die_counter);
++#ifdef CONFIG_PREEMPT
++	printk("PREEMPT ");
++#endif
++#ifdef CONFIG_SMP
++	printk("SMP ");
++#endif
++#ifdef CONFIG_DEBUG_PAGEALLOC
++	printk("DEBUG_PAGEALLOC");
++#endif
++	printk("\n");
++
++	if (notify_die(DIE_OOPS, str, regs, err,
++				current->thread.trap_no, SIGSEGV) !=
++			NOTIFY_STOP) {
++		show_registers(regs);
++		/* Executive summary in case the oops scrolled away */
++		sp = (unsigned long) (&regs->sp);
++		savesegment(ss, ss);
++		if (user_mode(regs)) {
++			sp = regs->sp;
++			ss = regs->ss & 0xffff;
++		}
++		printk(KERN_EMERG "EIP: [<%08lx>] ", regs->ip);
++		print_symbol("%s", regs->ip);
++		printk(" SS:ESP %04x:%08lx\n", ss, sp);
++		return 0;
++	} else {
++		return 1;
++	}
++}
++
+ /*
+  * This is gone through when something in the kernel has done something bad and
+  * is about to be terminated.
+@@ -367,7 +406,6 @@ void die(const char * str, struct pt_regs * regs, long err)
+ 		.lock_owner =		-1,
+ 		.lock_owner_depth =	0
+ 	};
+-	static int die_counter;
+ 	unsigned long flags;
+ 
+ 	oops_enter();
+@@ -383,43 +421,13 @@ void die(const char * str, struct pt_regs * regs, long err)
+ 		raw_local_irq_save(flags);
+ 
+ 	if (++die.lock_owner_depth < 3) {
+-		unsigned long sp;
+-		unsigned short ss;
+-
+ 		report_bug(regs->ip, regs);
+ 
+-		printk(KERN_EMERG "%s: %04lx [#%d] ", str, err & 0xffff,
+-		       ++die_counter);
+-#ifdef CONFIG_PREEMPT
+-		printk("PREEMPT ");
+-#endif
+-#ifdef CONFIG_SMP
+-		printk("SMP ");
+-#endif
+-#ifdef CONFIG_DEBUG_PAGEALLOC
+-		printk("DEBUG_PAGEALLOC");
+-#endif
+-		printk("\n");
+-
+-		if (notify_die(DIE_OOPS, str, regs, err,
+-					current->thread.trap_no, SIGSEGV) !=
+-				NOTIFY_STOP) {
+-			show_registers(regs);
+-			/* Executive summary in case the oops scrolled away */
+-			sp = (unsigned long) (&regs->sp);
+-			savesegment(ss, ss);
+-			if (user_mode(regs)) {
+-				sp = regs->sp;
+-				ss = regs->ss & 0xffff;
+-			}
+-			printk(KERN_EMERG "EIP: [<%08lx>] ", regs->ip);
+-			print_symbol("%s", regs->ip);
+-			printk(" SS:ESP %04x:%08lx\n", ss, sp);
+-		}
+-		else
++		if (__die(str, regs, err))
+ 			regs = NULL;
+-  	} else
++	} else {
+ 		printk(KERN_EMERG "Recursive die() failure, output suppressed\n");
++	}
+ 
+ 	bust_spinlocks(0);
+ 	die.lock_owner = -1;
+-- 
+1.5.4.rc2.1164.g6451
 
-I think blackfin is a good example of how an architecture got merged,
-and how they resolved the initial problems. Read through the comments
-at http://lkml.org/lkml/2006/9/20/404 and related mails to see what
-can go wrong in such large projects and how to do it better.
-
-Regarding the code itself, my assumption is that you started out
-copying from another architecture (everyone does that) and hacked on
-it until you had it working. This is not wrong by itself, but it would
-be really nice if we can make it easier for the next person to
-add an architecture. My vision is that for each header file you
-copied from include/asm-i386 or similar and did not end up rewriting,
-you create a version in include/asm-generic and start using that
-instead of adding a private copy in your architecture.
-One example where this was already done is <asm/errno.h>, an example
-where you should do it is <asm/stat.h>.
-It's similar for files like arch/microblaze/kernel/sys.c and pci.c:
-ideally, you shouldn't have these at all, but be able to just
-use completely generic code.
-
-	Arnd <><
