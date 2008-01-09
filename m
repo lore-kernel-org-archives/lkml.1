@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbYAIAsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbYAIAtG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754669AbYAIAsT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 19:48:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbYAIAsJ
+	id S1755324AbYAIAtG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 19:49:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbYAIAsz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 19:48:09 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:57222 "EHLO
+	Tue, 8 Jan 2008 19:48:55 -0500
+Received: from rv-out-0910.google.com ([209.85.198.187]:59312 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751218AbYAIAsH (ORCPT
+	with ESMTP id S1751925AbYAIAsy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 19:48:07 -0500
+	Tue, 8 Jan 2008 19:48:54 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ekKgF8p3HRgiyz2I2S6yzJKjuyDh6tUIMn2GP0M9WV2ya3THePESoGslH5dCyoz2UnYC3zJWNpQ6fGd+XJBXXJbOuiyz/en4ea9jIFQJXWNG4Ivy24Woy6uyr8T8yTuMMzN5GkvcJf7sCzBs7XrjnZuJ1ZW8W+VRCJiFx1t3fGg=
-Subject: [PATCH] x86: Introduce __die helper to X86_32
+        b=RRNjI3MlV76qzOuRrnjATYpLsKgpJkuITkIq/r9pFxgS64qrQIMQ8IQj3On/pvBuVqnaD6AWdg2NDpG0kl/ecbDtAdY6sbwJc6Ss7luRuj5qaLF3NqNidM6k4xgCRkcTC8lRNP1mIqiz0JpQMgdoShmZZQL0vtNEDX9hDiYWCTU=
+Subject: [PATCH] x86: More users of PF_ constants in fault_32|64.c
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
        Thomas Gleixner <tglx@linutronix.de>
 Content-Type: text/plain
-Date: Tue, 08 Jan 2008 16:48:08 -0800
-Message-Id: <1199839688.6424.17.camel@brick>
+Date: Tue, 08 Jan 2008 16:48:54 -0800
+Message-Id: <1199839734.6424.19.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -29,125 +29,60 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Small step towards unifying traps_32|64.c.  No functional
-changes.  Pull out a small helper from an if() statement
-in die().
+Should be the last of the error_code tests that could use
+the PF_ defines.  Makes X86_32|64 a little closer.
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
-Ingo, I know this will have checkpatch problems, doing code
-movement first, will do the cleanup as a final step once
-we get to the end of unifying the files.
+ arch/x86/mm/fault_32.c |    7 ++++---
+ arch/x86/mm/fault_64.c |    2 +-
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
- arch/x86/kernel/traps_32.c |   76 ++++++++++++++++++++++++-------------------
- 1 files changed, 42 insertions(+), 34 deletions(-)
-
-diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
-index ac8fd36..edd0750 100644
---- a/arch/x86/kernel/traps_32.c
-+++ b/arch/x86/kernel/traps_32.c
-@@ -352,6 +352,45 @@ int is_valid_bugaddr(unsigned long ip)
- 	return ud2 == 0x0b0f;
- }
+diff --git a/arch/x86/mm/fault_32.c b/arch/x86/mm/fault_32.c
+index 50a9930..adf5fed 100644
+--- a/arch/x86/mm/fault_32.c
++++ b/arch/x86/mm/fault_32.c
+@@ -404,7 +404,8 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
+ 	 * protection error (error_code & 9) == 0.
+ 	 */
+ 	if (unlikely(address >= TASK_SIZE)) {
+-		if (!(error_code & 0x0000000d) && vmalloc_fault(address) >= 0)
++		if (!(error_code & (PF_RSVD|PF_USER|PF_PROT)) &&
++		    vmalloc_fault(address) >= 0)
+ 			return;
+ 		if (notify_page_fault(regs))
+ 			return;
+@@ -607,7 +608,7 @@ no_context:
+ 		__typeof__(pte_val(__pte(0))) page;
  
-+static int die_counter;
-+
-+static int __die(const char * str, struct pt_regs * regs, long err)
-+{
-+	unsigned long sp;
-+	unsigned short ss;
-+
-+	printk(KERN_EMERG "%s: %04lx [#%d] ", str, err & 0xffff, ++die_counter);
-+#ifdef CONFIG_PREEMPT
-+	printk("PREEMPT ");
-+#endif
-+#ifdef CONFIG_SMP
-+	printk("SMP ");
-+#endif
-+#ifdef CONFIG_DEBUG_PAGEALLOC
-+	printk("DEBUG_PAGEALLOC");
-+#endif
-+	printk("\n");
-+
-+	if (notify_die(DIE_OOPS, str, regs, err,
-+				current->thread.trap_no, SIGSEGV) !=
-+			NOTIFY_STOP) {
-+		show_registers(regs);
-+		/* Executive summary in case the oops scrolled away */
-+		sp = (unsigned long) (&regs->sp);
-+		savesegment(ss, ss);
-+		if (user_mode(regs)) {
-+			sp = regs->sp;
-+			ss = regs->ss & 0xffff;
-+		}
-+		printk(KERN_EMERG "EIP: [<%08lx>] ", regs->ip);
-+		print_symbol("%s", regs->ip);
-+		printk(" SS:ESP %04x:%08lx\n", ss, sp);
-+		return 0;
-+	} else {
-+		return 1;
-+	}
-+}
-+
- /*
-  * This is gone through when something in the kernel has done something bad and
-  * is about to be terminated.
-@@ -367,7 +406,6 @@ void die(const char * str, struct pt_regs * regs, long err)
- 		.lock_owner =		-1,
- 		.lock_owner_depth =	0
- 	};
--	static int die_counter;
- 	unsigned long flags;
+ #ifdef CONFIG_X86_PAE
+-		if (error_code & 16) {
++		if (error_code & PF_INSTR) {
+ 			pte_t *pte = lookup_address(address);
  
- 	oops_enter();
-@@ -383,43 +421,13 @@ void die(const char * str, struct pt_regs * regs, long err)
- 		raw_local_irq_save(flags);
+ 			if (pte && pte_present(*pte) && !pte_exec_kernel(*pte))
+@@ -678,7 +679,7 @@ out_of_memory:
+ 		goto survive;
+ 	}
+ 	printk("VM: killing process %s\n", tsk->comm);
+-	if (error_code & 4)
++	if (error_code & PF_USER)
+ 		do_group_exit(SIGKILL);
+ 	goto no_context;
  
- 	if (++die.lock_owner_depth < 3) {
--		unsigned long sp;
--		unsigned short ss;
--
- 		report_bug(regs->ip, regs);
+diff --git a/arch/x86/mm/fault_64.c b/arch/x86/mm/fault_64.c
+index 018ab78..267a1d5 100644
+--- a/arch/x86/mm/fault_64.c
++++ b/arch/x86/mm/fault_64.c
+@@ -681,7 +681,7 @@ out_of_memory:
+ 		goto again;
+ 	}
+ 	printk("VM: killing process %s\n", tsk->comm);
+-	if (error_code & 4)
++	if (error_code & PF_USER)
+ 		do_group_exit(SIGKILL);
+ 	goto no_context;
  
--		printk(KERN_EMERG "%s: %04lx [#%d] ", str, err & 0xffff,
--		       ++die_counter);
--#ifdef CONFIG_PREEMPT
--		printk("PREEMPT ");
--#endif
--#ifdef CONFIG_SMP
--		printk("SMP ");
--#endif
--#ifdef CONFIG_DEBUG_PAGEALLOC
--		printk("DEBUG_PAGEALLOC");
--#endif
--		printk("\n");
--
--		if (notify_die(DIE_OOPS, str, regs, err,
--					current->thread.trap_no, SIGSEGV) !=
--				NOTIFY_STOP) {
--			show_registers(regs);
--			/* Executive summary in case the oops scrolled away */
--			sp = (unsigned long) (&regs->sp);
--			savesegment(ss, ss);
--			if (user_mode(regs)) {
--				sp = regs->sp;
--				ss = regs->ss & 0xffff;
--			}
--			printk(KERN_EMERG "EIP: [<%08lx>] ", regs->ip);
--			print_symbol("%s", regs->ip);
--			printk(" SS:ESP %04x:%08lx\n", ss, sp);
--		}
--		else
-+		if (__die(str, regs, err))
- 			regs = NULL;
--  	} else
-+	} else {
- 		printk(KERN_EMERG "Recursive die() failure, output suppressed\n");
-+	}
- 
- 	bust_spinlocks(0);
- 	die.lock_owner = -1;
 -- 
 1.5.4.rc2.1164.g6451
-
 
