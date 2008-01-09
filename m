@@ -1,69 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbYAIOQI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbYAIOQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754031AbYAIOQI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 09:16:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbYAIOPz
+	id S1755190AbYAIOQp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 09:16:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYAIOQi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 09:15:55 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:52090 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751100AbYAIOPy (ORCPT
+	Wed, 9 Jan 2008 09:16:38 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:60926 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752145AbYAIOQh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 09:15:54 -0500
-To: pavel@ucw.cz
-CC: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
-       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
-In-reply-to: <20080109140051.GB12784@elf.ucw.cz> (message from Pavel Machek on
-	Wed, 9 Jan 2008 15:00:51 +0100)
-Subject: Re: [patch 7/9] unprivileged mounts: allow unprivileged fuse mounts
-References: <20080108113502.184459371@szeredi.hu> <20080108113630.861045063@szeredi.hu> <20080108214625.GE5050@ucw.cz> <E1JCN9I-0004DB-DF@pomaz-ex.szeredi.hu> <20080108225820.GA9735@elf.ucw.cz> <E1JCWxm-0005Fn-36@pomaz-ex.szeredi.hu> <20080109113325.GC9735@elf.ucw.cz> <E1JCan7-0005mP-UE@pomaz-ex.szeredi.hu> <20080109133506.GI9735@elf.ucw.cz> <E1JCbIb-0005rA-5O@pomaz-ex.szeredi.hu> <20080109140051.GB12784@elf.ucw.cz>
-Message-Id: <E1JCbh7-0005u7-0L@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 09 Jan 2008 15:14:13 +0100
+	Wed, 9 Jan 2008 09:16:37 -0500
+Date: Wed, 9 Jan 2008 15:19:08 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: More breakage in native_rdtsc out of line in git-x86
+Message-ID: <20080109141908.GB12855@one.firstfloor.org>
+References: <20080109035534.GA30321@basil.nowhere.org> <20080109090956.GA14274@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080109090956.GA14274@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > I'm not saying fuse is worthless. It is a nice toy for single-user
-> > > systems. But I do not think we should be merging "allow ordinary users
-> > > to mount their own fuse's" before issues above are fixed.
-> > 
-> > I think multi user systems are not all that interesting.  And I
-> > suspect very few of them want reliably working suspend/hibernate
-> > (which they wouldn't get due to other issues anyway), or have weird
-> > shutdown scripts which stop when they are unable to umount
-> > filesystems.
-> 
-> Weird shutdown scripts? I believe all shutdown scripts have this issue
-> -- if you want to [cleanly] unmount your / filesystem, you need all
-> the opens for write closed, right...? Which self-deadlocked fused
-> holding files open will prevent.
-> 
-> > For paranoid sysadmins, I suggest not enabling fuse for unprivileged
-> > users, which is pretty easy to do: just don't set /dev/fuse to be
-> > world read-writable (which is the default BTW).
-> > 
-> > So your reasons just don't warrant a big effort involving VFS hacking,
-> > etc.  Patches are of course welcome.
-> 
-> Well, I believe code with obscure, but almost impossible to fix
-> problems should not be merged...
+> nope, it's a 64-bit setup/dependency bug/problem: the vsyscall mappings 
+> are installed via an __initcall, and that's too late for early use. The 
+> combo patch below fixed the crash for me, does it work on your box too?
 
-That code _has_ been merged, something like 3 years ago, and is doing
-fine, thank you.
+That gives
 
-The unprivileged mounts code, which we should be discussing, doesn't
-change anything about that, except to not require another suid-root
-utility.  Many distributions enabling unprivileged mounting by default
-_now_, so it's not as if there's some great danger in doing this
-slightly differently.
+/home/lsrc/quilt/linux/arch/x86/kernel/setup_64.c: In function 'setup_arch':
+/home/lsrc/quilt/linux/arch/x86/kernel/setup_64.c:468: error: implicit declarati
+on of function 'map_vsyscall'
 
-> Anyway, I believe it would be fair to mention kill -9 no longer
-> working and shutdown/hibernation/multiuser problems it implies in the
-> changelogs and probably sysctl documentation or how is this enabled.
+But after I add a prototype to vsyscall.h it seems to work.
 
-Sure.
+Just the barriers are still broken -- you have not replied to any 
+of my emails on that topic. What's up with that?
 
-Miklos
+-Andi
