@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbYAIJ4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753954AbYAIKAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755428AbYAIJ4Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 04:56:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbYAIJ4C
+	id S1753954AbYAIKAi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 05:00:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbYAIKAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 04:56:02 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:53156 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751788AbYAIJ4A (ORCPT
+	Wed, 9 Jan 2008 05:00:31 -0500
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:60436 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751540AbYAIKAa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 04:56:00 -0500
-Subject: Re: [LTP] Container Code Coverage for 2.6.23 mainline kernel
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-Reply-To: subrata@linux.vnet.ibm.com
-To: Balbir Singh <bsingharora@gmail.com>,
-       "balbir.singh" <balbir.singh@linux.vnet.ibm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, risrajak@in.ibm.com,
-       ltp-list@lists.sourceforge.net, ltp-coverage@lists.sourceforge.net
-In-Reply-To: <661de9470801090131l3c640ac4ga3b33af846c6defa@mail.gmail.com>
-References: <1199863373.4440.9.camel@localhost.localdomain>
-	 <661de9470801090108k2e81e8fawf885d643b0aeeafe@mail.gmail.com>
-	 <1199870159.4415.24.camel@subratamodak.linux.ibm.com>
-	 <661de9470801090118y5304dab6y58592ff8dd2759b6@mail.gmail.com>
-	 <1199870509.4415.27.camel@subratamodak.linux.ibm.com>
-	 <661de9470801090131l3c640ac4ga3b33af846c6defa@mail.gmail.com>
-Content-Type: text/plain
-Organization: IBM
-Date: Wed, 09 Jan 2008 15:25:52 +0530
-Message-Id: <1199872552.4415.34.camel@subratamodak.linux.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Jan 2008 05:00:30 -0500
+From: Junio C Hamano <junio@pobox.com>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
+References: <20080108164015.GC31504@one.firstfloor.org>
+	<20080108185255.GA4627@martell.zuzino.mipt.ru>
+	<20080108191843.GA1004@one.firstfloor.org>
+	<200801090140.58864.arnd@arndb.de>
+	<20080109004748.GI2117@one.firstfloor.org>
+cc: Arnd Bergmann <arnd@arndb.de>, Alexey Dobriyan <adobriyan@gmail.com>,
+       linux-kernel@vger.kernel.org, apw@shadowen.org
+Date: Wed, 09 Jan 2008 02:00:21 -0800
+In-Reply-To: <20080109004748.GI2117@one.firstfloor.org> (Andi Kleen's message
+	of "Wed, 9 Jan 2008 01:47:48 +0100")
+Message-ID: <7vir23jp3e.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-01-09 at 15:01 +0530, Balbir Singh wrote:
-> > OK Balbir,
-> >
-> 
-> Thanks and textual data will also do, if it helps save space.
-> 
-> > I will find out how this can be made available to the community. I will
-> > probably upload it to sf.net and inform the community about the link to
-> > download.
-> >
-> 
-> Balbir
+Andi Kleen <andi@firstfloor.org> writes:
 
-Here goes the link for downloading the code coverage data:
+> I imagined it would check for 
+>
+> +struct file_operations ... = { 
+> +      ...
+> +	.ioctl = ...
+>
+> That wouldn't catch the case of someone adding only .ioctl to an 
+> already existing file_operations which is not visible in the patch context, 
+> but that should be hopefully rare. The more common case is adding
+> completely new operations.
 
-http://prdownloads.sourceforge.net/ltp/Code_Coverage_kernel_2.6.23-Containers-UTS-SYSVIPC-NAMESPACE.tgz?download
+Because "diff -p" format used by the kernel mailing list takes
+the most recent line that begins with an identifier letter and
+put that on the hunk header line, even in such a case, you will
+see:
 
-Thanks--
-Subrata
+	@@ -l,k +m,n @@ struct file_operations ... = {
+		...
+		...
+	+	...
+	+	.ioctl = ...
+	+	...
+		...
 
+which would be a good enough cue that the new .ioctl member is
+added to file_operations.
