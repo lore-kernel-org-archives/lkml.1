@@ -1,126 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757251AbYAIXCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbYAIXGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757251AbYAIXCA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 18:02:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbYAIXBw
+	id S1756713AbYAIXGX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 18:06:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbYAIXGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 18:01:52 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54327 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752906AbYAIXBu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 18:01:50 -0500
-Date: Wed, 9 Jan 2008 15:01:39 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Galbraith <efault@gmx.de>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [vm] writing to UDF DVD+RW (/dev/sr0) while under memory
- pressure: box ==> doorstop
-Message-Id: <20080109150139.311f68d3.akpm@linux-foundation.org>
-In-Reply-To: <1199877080.4340.19.camel@homer.simson.net>
-References: <1199447212.4529.13.camel@homer.simson.net>
-	<1199612533.4384.54.camel@homer.simson.net>
-	<1199642470.3927.12.camel@homer.simson.net>
-	<20080106122954.d8f04c98.akpm@linux-foundation.org>
-	<1199790316.4094.57.camel@homer.simson.net>
-	<20080108033801.40d0043a.akpm@linux-foundation.org>
-	<1199805713.3571.12.camel@homer.simson.net>
-	<1199806071.4174.2.camel@homer.simson.net>
-	<1199877080.4340.19.camel@homer.simson.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 9 Jan 2008 18:06:14 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:54558 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751112AbYAIXGN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 18:06:13 -0500
+Date: Wed, 9 Jan 2008 23:05:45 +0000
+From: Alasdair G Kergon <agk@redhat.com>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: Alasdair G Kergon <agk@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       Matt Mackall <mpm@selenic.com>,
+       Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       gorcunov@gmail.com
+Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
+Message-ID: <20080109230545.GG3510@agk.fab.redhat.com>
+Mail-Followup-To: Alasdair G Kergon <agk@redhat.com>,
+	Chris Friesen <cfriesen@nortel.com>,
+	Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
+	Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>,
+	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+	gorcunov@gmail.com
+References: <20080108164015.GC31504@one.firstfloor.org> <4d8e3fd30801081158j3e7292d0i939776342015b12d@mail.gmail.com> <1199909560.6245.67.camel@cinder.waste.org> <20080109224026.GA4039@agk.fab.redhat.com> <20080109224603.GH15612@one.firstfloor.org> <20080109224513.GF3510@agk.fab.redhat.com> <478551A6.9050803@nortel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <478551A6.9050803@nortel.com>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 09 Jan 2008 12:11:20 +0100
-Mike Galbraith <efault@gmx.de> wrote:
+On Wed, Jan 09, 2008 at 04:58:46PM -0600, Chris Friesen wrote:
+> Alasdair G Kergon wrote:
+> >On Wed, Jan 09, 2008 at 11:46:03PM +0100, Andi Kleen wrote:
+> >>struct inode *inode = file->f_dentry->d_inode;
+> >And oops if that's not defined?
+> Isn't this basically identical to what was being passed in to .ioctl()?
+ 
+Not in every case, unless someone's been through and created fake structures in
+all the remaining places that pass in a NULL 'file' because there isn't one
+available.
 
-> 
-> On Tue, 2008-01-08 at 16:27 +0100, Mike Galbraith wrote:
-> > On Tue, 2008-01-08 at 16:21 +0100, Mike Galbraith wrote:
-> > > On Tue, 2008-01-08 at 03:38 -0800, Andrew Morton wrote:
-> > > > 
-> > > > Well.  From your earlier trace it appeared that something was causing
-> > > > the filesystem to perform synchronous inode writes - sync_dirty_buffer() was
-> > > > called.
-> > > > 
-> > > > This will cause many more seeks than would occur if we were doing full
-> > > > delayed writing, with obvious throughput implications.
-> > > 
-> > > Yes, with UDF, the IO was _incredibly_ slow.  With ext2, it was better,
-> > > though still very bad.  I tested with that other OS, and it gets ~same
-> > > throughput with UDF as I got with ext2 (ick).
-> > > 
-> > > UDF does udf_clear_inode() -> write_inode_now(inode, 1)
-> > > 
-> > > I suppose I could try write_inode_now(inode, 0).  Might unstick the box.
-> > 
-> > (nope, still sync, UDF still deadly)
-> 
-> write_inode_now() is a fibber.
-
-Sure is.  Looks like it was busted by:
-
-commit fa94396d2792f5093aab7cf66e1fc1da0c9fc442
-Author: akpm <akpm>
-Date:   Tue Feb 4 17:01:43 2003 +0000
-
-    [PATCH] Remove unneeded code in fs/fs-writeback.c
-    
-    We do not need to pass the `wait' argument down to __sync_single_inode().
-    That information is now present at wbc->sync_mode.
-    
-
-> The below seems to fix it in that writes dribbling to the DVD+RW at the
-> whopping 1 to 10 pages/sec I'm seeing no longer turn box into a
-> doorstop.  It's probably busted as heck.
-
-The VFS change looks good.  Not sure about the UDF details.
-
-> Think I'll cc linux-mm, and go find something safer to play with.
-> 
-> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-> index 0fca820..f1cce24 100644
-> --- a/fs/fs-writeback.c
-> +++ b/fs/fs-writeback.c
-> @@ -657,7 +657,7 @@ int write_inode_now(struct inode *inode, int sync)
->  	int ret;
->  	struct writeback_control wbc = {
->  		.nr_to_write = LONG_MAX,
-> -		.sync_mode = WB_SYNC_ALL,
-> +		.sync_mode = sync ? WB_SYNC_ALL : WB_SYNC_NONE,
->  		.range_start = 0,
->  		.range_end = LLONG_MAX,
->  	};
-> diff --git a/fs/udf/inode.c b/fs/udf/inode.c
-> index 6ff8151..d1fc116 100644
-> --- a/fs/udf/inode.c
-> +++ b/fs/udf/inode.c
-> @@ -117,7 +117,7 @@ void udf_clear_inode(struct inode *inode)
->  		udf_discard_prealloc(inode);
->  		udf_truncate_tail_extent(inode);
->  		unlock_kernel();
-> -		write_inode_now(inode, 1);
-> +		write_inode_now(inode, 0);
->  	}
->  	kfree(UDF_I_DATA(inode));
->  	UDF_I_DATA(inode) = NULL;
-> 
-
-WB_SYNC_* should die.
-
-I wonder why UDF was doing a synchronous write in there.  In fact I wonder
-why it's writing the inode at all?  extN doesn't do that.  If for some
-reason it really does want to make the inode immediately reclaimable then
-simply shoving it down into the /dev/hda1 pagecache should be sufficient
-(ie: what you did)..
-
-
-hm.
-
-So are you saying that the fs throughput is unaltered by this change,
-but that the side-effects which your workload has on the overall
-machine are lessened?
+Alasdair
+-- 
+agk@redhat.com
