@@ -1,46 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688AbYAIJbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753546AbYAIJcG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754688AbYAIJbi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 04:31:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750920AbYAIJbW
+	id S1753546AbYAIJcG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 04:32:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbYAIJbu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 04:31:22 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:44235 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750793AbYAIJbU (ORCPT
+	Wed, 9 Jan 2008 04:31:50 -0500
+Received: from an-out-0708.google.com ([209.85.132.249]:35520 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750920AbYAIJbs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 04:31:20 -0500
-Date: Wed, 9 Jan 2008 09:31:07 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, chris.mason@oracle.com,
-       linux-fsdevel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH][RFC] fast file mapping for loop
-Message-ID: <20080109093107.GA5023@infradead.org>
-References: <20080109085231.GE6650@kernel.dk>
+	Wed, 9 Jan 2008 04:31:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=s8Tl2PQWo7I/svLx20LwEa8xNp33dgqo/M+nQxSGLe1irC++SsIl0hvO6FyTPfGwtJLMjnWhpeuH1aE843EDtiozSIEDOx5tdH53d3NdHejfDbACOn6x5xYihYJ3wPe233S1Q888/OwFaW3HRYUDtOCumifkqaJGBEP4oJNi/z0=
+Message-ID: <e02b4fed0801090131h40b0e236t49cc0ae4ac147d5c@mail.gmail.com>
+Date: Wed, 9 Jan 2008 10:31:45 +0100
+From: "David Martin" <taldmd@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Compile-time error with gcc-4.3 on sparc64
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080109085231.GE6650@kernel.dk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 09, 2008 at 09:52:32AM +0100, Jens Axboe wrote:
-> - The file block mappings must not change while loop is using the file.
->   This means that we have to ensure exclusive access to the file and
->   this is the bit that is currently missing in the implementation. It
->   would be nice if we could just do this via open(), ideas welcome...
+Hi,
 
-And the way this is done is simply broken.  It means you have to get
-rid of things like delayed or unwritten hands beforehand, it'll be
-a complete pain for COW or non-block backed filesystems.
+I get the following error compiling latest kernel from git on sparc64
+using gcc-4.3:
 
-The right way to do this is to allow direct I/O from kernel sources
-where the filesystem is in-charge of submitting the actual I/O after
-the pages are handed to it.  I think Peter Zijlstra has been looking
-into something like that for swap over nfs.
+  CC      arch/sparc64/kernel/signal.o
+cc1: warnings being treated as errors
+arch/sparc64/kernel/signal.c: En la función 'do_notify_resume':
+include/asm/uaccess.h:233: error: el subíndice de la matriz está por
+arriba de los límites de la matriz
+make[1]: *** [arch/sparc64/kernel/signal.o] Error 1
+make: *** [arch/sparc64/kernel] Error 2
 
+("On function 'do_notify resume: error: matrix subindex is over matrix limits")
+
+Compiling with gcc-4.2 it doesn't fail, neither a warning.
