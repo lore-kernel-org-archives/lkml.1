@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbYAIWFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756815AbYAIWGq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756718AbYAIWFZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 17:05:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbYAIWFN
+	id S1756815AbYAIWGq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 17:06:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898AbYAIWGi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 17:05:13 -0500
-Received: from ozlabs.org ([203.10.76.45]:59234 "EHLO ozlabs.org"
+	Wed, 9 Jan 2008 17:06:38 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36966 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752564AbYAIWFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 17:05:11 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Zach Brown <zach.brown@oracle.com>
-Subject: Re: [PATCH 5/6] syslets: add generic syslets infrastructure
-Date: Thu, 10 Jan 2008 09:04:45 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dan Williams <dan.j.williams@gmail.com>, Jeff Moyer <jmoyer@redhat.com>,
-       Simon Holm Thogersen <odie@cs.aau.dk>, suresh.b.siddha@intel.com
-References: <1196983219534-git-send-email-zach.brown@oracle.com> <200801091448.46241.rusty@rustcorp.com.au> <47850F99.5020001@oracle.com>
-In-Reply-To: <47850F99.5020001@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	id S1753178AbYAIWGh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 17:06:37 -0500
+Date: Wed, 9 Jan 2008 17:06:33 -0500
+From: Rik van Riel <riel@redhat.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: Anton Salikhmetov <salikhmetov@gmail.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RFC][BUG] updating the ctime and mtime time stamps in
+ msync()
+Message-ID: <20080109170633.292644dc@cuia.boston.redhat.com>
+In-Reply-To: <26932.1199912777@turing-police.cc.vt.edu>
+References: <1199728459.26463.11.camel@codedot>
+	<20080109155015.4d2d4c1d@cuia.boston.redhat.com>
+	<26932.1199912777@turing-police.cc.vt.edu>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801100904.46842.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 10 January 2008 05:16:57 Zach Brown wrote:
-> > The latter.  A ring is optimal for processing a huge number of requests,
-> > but if you're really going to be firing off syslet threads all over the
-> > place you're not going to be optimal anyway.  And being able to point the
-> > return value to the stack or into some datastructure is way nicer to code
-> > (zero setup == easy to understand and easy to convert).
->
-> One of Linus' rhetorical requirements for the syslets work is that we be
-> able to wait for the result without spending overhead building up state
-> in some completion context.  The userland rings in the current syslet
-> patches achieve that and don't seem outrageously complicated.
+On Wed, 09 Jan 2008 16:06:17 -0500
+Valdis.Kletnieks@vt.edu wrote:
+> On Wed, 09 Jan 2008 15:50:15 EST, Rik van Riel said:
+> 
+> > Could you explain (using short words and simple sentences) what the
+> > exact problem is?
+> 
+> It's like this:
+> 
+> Monday  9:04AM:  System boots, database server starts up, mmaps file
+> Monday  9:06AM:  Database server writes to mmap area, updates mtime/ctime
+> Monday <many times> Database server writes to mmap area, no further update..
+> Monday 11:45PM:  Backup sees "file modified 9:06AM, let's back it up"
+> Tuesday 9:00AM-5:00PM: Database server touches it another 5,398 times, no mtime
+> Tuesday 11:45PM: Backup sees "file modified back on Monday, we backed this up..
+> Wed  9:00AM-5:00PM: More updates, more not touching the mtime
+> Wed  11:45PM: *yawn* It hasn't been touched in 2 days, no sense in backing it up..
+> 
+> Lather, rinse, repeat....
 
-I'd have to read his original statement, but eventfd doesn't build up state, 
-so I think it qualifies.
+On the other hand, updating the mtime and ctime whenever a page is dirtied
+also does not work right.  Apparently that can break mutt.
 
-YA incompatible userspace notification system just doesn't excite me though.
+Calling msync() every once in a while with Anton's patch does not look like a
+fool proof method to me either, because the VM can write all the dirty pages
+to disk by itself, leaving nothing for msync() to detect.  (I think...)
 
-Cheers,
-Rusty.
+Can we get by with simply updating the ctime and mtime every time msync()
+is called, regardless of whether or not the mmaped pages were still dirty
+by the time we called msync() ?
+
+-- 
+All Rights Reversed
