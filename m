@@ -1,94 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbYAIDWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbYAIDYo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754848AbYAIDWw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 22:22:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbYAIDWo
+	id S1754709AbYAIDYo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 22:24:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbYAIDYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 22:22:44 -0500
-Received: from smtpoutm.mac.com ([17.148.16.67]:49320 "EHLO smtpoutm.mac.com"
+	Tue, 8 Jan 2008 22:24:36 -0500
+Received: from gw.goop.org ([64.81.55.164]:49760 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752536AbYAIDWn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 22:22:43 -0500
-In-Reply-To: <p734pdoqbva.fsf@bingen.suse.de>
-References: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi> <p73odbwqmx2.fsf@bingen.suse.de> <slrnfo7b3a.6m2.tuomov@jolt.modeemi.cs.tut.fi> <20080108181525.GL27800@mit.edu> <p734pdoqbva.fsf@bingen.suse.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <8DEA7347-120C-4A97-A208-2577ED88F799@mac.com>
-Cc: Theodore Tso <tytso@mit.edu>, LKML Kernel <linux-kernel@vger.kernel.org>
+	id S1751710AbYAIDYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 22:24:35 -0500
+Message-ID: <47843E06.3070809@goop.org>
+Date: Tue, 08 Jan 2008 19:22:46 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jan Beulich <jbeulich@novell.com>
+Subject: Re: [PATCH 00 of 10] x86: unify asm/pgtable.h
+References: <20080109002014.GB31289@elte.hu> <20080109002803.GA3732@elte.hu> <20080109003034.GA4658@elte.hu> <47841B09.3020507@goop.org> <20080109005914.GA24228@elte.hu> <47841E3C.9020106@goop.org> <20080109011233.GD25945@bingen.suse.de> <478424DE.3030609@goop.org> <20080109014233.GG25945@bingen.suse.de> <478429DE.1090901@goop.org> <20080109021124.GH25945@bingen.suse.de>
+In-Reply-To: <20080109021124.GH25945@bingen.suse.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: The ext3 way of journalling
-Date: Tue, 8 Jan 2008 22:21:02 -0500
-To: Andi Kleen <andi@firstfloor.org>
-X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 08, 2008, at 15:51:53, Andi Kleen wrote:
-> Theodore Tso <tytso@mit.edu> writes:
->> Now, there are good reasons for doing periodic checks every N  
->> mounts and after M months.  And it has to do with PC class  
->> hardware.  (Ted's aphorism: "PC class hardware is cr*p").
+Andi Kleen wrote:
+>> Yeah, that may be true, but this particular tree is weird, and I'm trying 
+>> to understand what's going on here.  Specifically, 64-bit ioremap()s 
+>> *don't* set _PAGE_GLOBAL, which appears to be an accident resulting from 
+>> the strange definitions of __PAGE_KERNEL_* vs PAGE_KERNEL_*. 
+>>     
 >
-> If these reasons are good ones (some skepticism here) then the  
-> correct way to really handle this would be to do regular background  
-> scrubbing during runtime; ideally with metadata checksums so that  
-> you can actually detect all corruption.
+> ioremap() should set G agreed.
+>
+>   
+>> For example, ioremap_64.c:__ioremap() creates a vma for the io mapping, and 
+>> explicitly sets _PAGE_GLOBAL in the vma's version of pgprot - but then it 
+>> calls ioremap_page_range() to actually create the mapping, which ends up 
+>> making a non-global mapping, because its rolling its own version of 
+>> PAGE_KERNEL by using pgprot(__PAGE_KERNEL) - which is not the actual 
+>> definition of PAGE_KERNEL.
+>>     
+>
+> That should not really matter because ioremap_change_attr()->c_p_a is only called
+> when flags is != 0 and that means it is already different from PAGE_KERNEL.
+>
+>   
+>> I think there's a bug around here, but I think its currently being hidden 
+>>     
+>
+> There's one Jan pointed out: iounmap does not subtract the guard page size
+> so it ends up resetting one page too much. That is probably what causes your
+> problem. But again you should be passing in G in the first place.
+>
+> -Andi
+>
+> Here was Jan's patch; it incidently fixes the G problem too
+>   
 
-Poor man's background scrubbing:
+OK, great.  Ingo, that means we can use this and go back to folding 
+_PAGE_GLOBAL into __PAGE_KERNEL_*.  Well, at least give it a try.
 
-(A)  Use LVM like virtually all modern distros offer
-(B)  Leave some extra space in your LVM volume group (enough for 1  
-snapshot over the time it takes to do an FSCK).
-(C)  Periodically run the following scriptlet:
+    J
 
-set -e
-START="$(date +'%Y%m%d%H%M%S')"
-lvcreate -s -n "${VOLUME}-snap" "${VG}/${VOLUME}"
-if nice +20 fsck -fy "/dev/mapper/${VG}_${VOLUME}-snap"; then
-	echo 'Background scrubbing succeeded!'
-	tune2fs -T "${START}" "/dev/mapper/${VG}_${VOLUME}"
-else
-	echo 'Background scrubbing failed!  Reboot to fsck soon!'
-	tune2fs -C 16383 -T "19000101" "/dev/mapper/${VG}_${VOLUME}"
-fi
-lvremove "${VG}/${VOLUME}-snap"
-
-Basically you can fsck the offline snapshot in the background.  If it  
-succeeds you can adjust the "last checked" date to the time when the  
-snapshot was taken and if it fails you can schedule an FSCK at next  
-reboot (and possibly remount the filesystem read-only or reboot  
-immediately).
-
-You can do the same thing for your /boot volume, although you  
-probably have to manually use dmsetup since most bootloaders can't  
-interpret LVM volumes.
-
-I've always been surprised that distros like RedHat which  
-automatically use LVM don't stuff this in their weekly or monthly  
-checks on desktop systems.  User experience could also be  
-dramatically improved with automated smartd configuration and user- 
-interactive logging and warning messages.
-
-
-> But since fsck is so slow and disks are so big this whole thing is  
-> a ticking time bomb now. e.g. it is not uncommon to require tens of  
-> minutes or even hours of fsck time and some server that reboots  
-> only every few months will eat that when it happens to reboot. This  
-> means you get a quite long downtime.
-
-My servers all have an "interval-between-checks" of 2-6 weeks and are  
-configured to run nice +20 background "fsck" checks during off-hours  
-between once every few days and once every few weeks.  I also have  
-the "max mount count" numbers set to primes between 7 and 37  
-(depending on the filesystem) so that troubled or frequently-rebooted  
-systems are more frequently verified.  The end result is that I  
-almost never have the dreaded 4-hour-fsck-on-boot problem.  A drive  
-has certainly been fscked within the last few weeks of operation, and  
-I will only ever have multiple large filesystems all fscked at the  
-same time very rarely (gcd of their max-mount-counts).
-
-Cheers,
-Kyle Moffett
+> snip
+>
+> Additionally I found it necessary to fix ioremap_64.c's use of
+> change_page_attr_addr():
+>
+> --- a/arch/x86/mm/ioremap_64.c
+> +++ b/arch/x86/mm/ioremap_64.c
+> @@ -48,7 +48,7 @@ ioremap_change_attr(unsigned long phys_a
+>   		 * Must use a address here and not struct page because the phys addr
+>  		 * can be a in hole between nodes and not have an memmap entry.
+>  		 */
+> -		err = change_page_attr_addr(vaddr,npages,__pgprot(__PAGE_KERNEL|flags));
+> +		err = change_page_attr_addr(vaddr,npages,MAKE_GLOBAL(__PAGE_KERNEL|flags));
+>  		if (!err)
+>  			global_flush_tlb();
+>  	}
+> @@ -199,7 +199,7 @@ void iounmap(volatile void __iomem *addr
+>  
+>  	/* Reset the direct mapping. Can block */
+>  	if (p->flags >> 20)
+> -		ioremap_change_attr(p->phys_addr, p->size, 0);
+> +		ioremap_change_attr(p->phys_addr, get_vm_area_size(p), 0);
+>  
+>  	/* Finally remove it */
+>  	o = remove_vm_area((void *)addr);
+>
+> Other extra changes I had in my version could possibly be counted as enhancements...
+>
+> Jan
+>   
 
