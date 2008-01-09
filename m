@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbYAIQtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755551AbYAIQvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755345AbYAIQtP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 11:49:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbYAIQtA
+	id S1755551AbYAIQvi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 11:51:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbYAIQva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 11:49:00 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:40427 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751691AbYAIQs7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 11:48:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FpuaPrqbOIHfT94DKk1xX/sAcR8yaqEV/wBCtWqhEU3+p7bBvx43FkCcM0MfpCDyhh0VJjZ9B6XI7EV3kcrsT496Aefk4G+ipgDGvHTEcoZBhmW/czuWSsealFJU8pPJCSHHTqQ63hWhmDs3e55KPmV72fUQmjRshYeMhNNqESw=
-Message-ID: <386072610801090848m4866e41bt41f439422c174799@mail.gmail.com>
-Date: Thu, 10 Jan 2008 00:48:56 +0800
-From: "Bryan Wu" <cooloney.lkml@gmail.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>, xiyou.wangcong@gmail.com
-Subject: Re: [GIT PATCH] Update to Chinese documents
-Cc: "Li Yang" <leoli@freescale.com>, torvalds@linux-foundation.org,
-       gregkh@suse.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-kernel@zh-kernel.org
-In-Reply-To: <20080109115413.GA981@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1199796637.6835.7.camel@Gundam>
-	 <20080108131823.GB23947@uranus.ravnborg.org>
-	 <1199875266.21597.16.camel@Gundam>
-	 <20080109115413.GA981@uranus.ravnborg.org>
+	Wed, 9 Jan 2008 11:51:30 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:50820 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751844AbYAIQv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 11:51:29 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1197307397.18120.72.camel@moss-spartans.epoch.ncsc.mil>
+References: <1197307397.18120.72.camel@moss-spartans.epoch.ncsc.mil> <1197305173.18120.60.camel@moss-spartans.epoch.ncsc.mil> <20071205193818.24617.79771.stgit@warthog.procyon.org.uk> <20071205193859.24617.36392.stgit@warthog.procyon.org.uk> <25037.1197306473@redhat.com>
+To: Stephen Smalley <sds@tycho.nsa.gov>, kmacmill@redhat.com
+Cc: dhowells@redhat.com, casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM settings for task actions [try #2]
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Wed, 09 Jan 2008 16:51:24 +0000
+Message-ID: <17868.1199897484@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 9, 2008 7:54 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
-> > >
-> > > What is generally seen as a showstopper is the amount of work needed
-> > > to do the translation - and keeping it up-to-date.
-> >
-> > Sure.  The key is to have more participants to involve.  The work can't
-> > be done without a large contributor base.
->
-> I already got positive feedback from Bryan Wu and WANG Cong so a Chinese
-> translation is well within reach if we get the infrastructure adapted so
-> we have better .po files support.
->
 
-Thanks.
-As Leo said, we can host this project in zh-kernel.org and invite some
-Chinese developers to boost up the translation.
-WANG Cong is good to maintain this, -:))
+Okay.  I can:
 
--Bryan Wu
+ (1) Have cachefilesd (the daemon) pass a security context string to the
+     cachefiles kernel module, which can then convert it to a secID.  It'll
+     require a security_secctx_to_secid() function, but I'm fairly certain I
+     have a patch to add such kicking around somewhere.
+
+ (2) Make security_task_kernel_act_as() take a task_security struct and a
+     secID and just assign the latter to the former.  I'm not sure it makes
+     sense to do any checks here, other than checking that under SELinux the
+     secID is of SECCLASS_PROCESS class.
+
+However, I need to write a check that the cachefilesd daemon is permitted to
+nominate the secID it did.  Can someone tell me how to do this?  The obvious
+way to do this is to add another PROCESS__xxx security permit specifically for
+cachefiles, but that seems like a waste of a bit when there are only two spare
+bits.
+
+	avc_has_perm(daemon_tsec->sid, nominated_sid,
+		     SECCLASS_PROCESS, PROCESS__CACHEFILES_USE, NULL);
+
+Now, I recall the addition of another security class being mentioned, which
+presumably would give something like:
+
+	avc_has_perm(daemon_tsec->sid, nominated_sid,
+		     SECCLASS_CACHE, CACHE__USE_AS_OVERRIDE, NULL);
+
+And I assume this doesn't care if one, the other or both of the two SIDs
+mentioned are of SECCLASS_PROCESS rather than of SECCLASS_CACHE.
+
+David
