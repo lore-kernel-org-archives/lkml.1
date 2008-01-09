@@ -1,54 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbYAIA2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755947AbYAIA3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755322AbYAIA2e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 19:28:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbYAIA20
+	id S1755947AbYAIA3Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 19:29:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbYAIA3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 19:28:26 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51389 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750822AbYAIA2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 19:28:25 -0500
-Date: Wed, 9 Jan 2008 01:28:03 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH 00 of 10] x86: unify asm/pgtable.h
-Message-ID: <20080109002803.GA3732@elte.hu>
-References: <patchbomb.1199829603@localhost> <20080108224244.GA3768@elte.hu> <20080108231226.GA10744@elte.hu> <478405DA.40303@goop.org> <20080108232803.GA19906@elte.hu> <20080108234449.GA24274@elte.hu> <20080109000146.GA29095@elte.hu> <47841194.2010208@goop.org> <20080109002014.GB31289@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080109002014.GB31289@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 8 Jan 2008 19:29:13 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42767 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751943AbYAIA3L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 19:29:11 -0500
+Date: Tue, 8 Jan 2008 16:27:39 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: mingo@elte.hu, fujita.tomonori@lab.ntt.co.jp, just.for.lkml@googlemail.com,
+       tomof@acm.org, jarkao2@gmail.com, herbert@gondor.apana.org.au,
+       linux-kernel@vger.kernel.org, neilb@suse.de, bfields@fieldses.org,
+       netdev@vger.kernel.org, tom@opengridcomputing.com
+Subject: Re: 2.6.24-rc6-mm1
+Message-Id: <20080108162739.f2f577ce.akpm@linux-foundation.org>
+In-Reply-To: <20080109085753O.fujita.tomonori@lab.ntt.co.jp>
+References: <64bb37e0801061203l503f29f0hd922a1347f8169ac@mail.gmail.com>
+	<20080107151639P.fujita.tomonori@lab.ntt.co.jp>
+	<20080108155948.GC26114@elte.hu>
+	<20080109085753O.fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 09 Jan 2008 08:57:53 +0900
+FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-> >>>  #define __PAGE_KERNEL_EXEC						\
-> >>> -	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_GLOBAL)
-> >>> +	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED)
-> >>>     
-> >
-> > This shouldn't be necessary.  The old 64-bit code defined everything 
-> > without _PAGE_GLOBAL, but then used a MAKE_GLOBAL() macro to OR it 
-> > in later.  This seemed a bit roundabout to me, so I just put it in 
-> > from the outset.
+> Andrew, can you replace
+> 
+> iommu-sg-add-iommu-helper-functions-for-the-free-area-management.patch
+> 
+> with the updated patch:
+> 
+> http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048997.html
+> 
+> For your convenience I've attached the updated patch too.
 
-actually, this is wrong.
+<generates the incremental>
 
-a couple of places use __PAGE_* values, which you've now changed to 
-include the _PAGE_GLOBAL flag.
 
-	Ingo
+> --- a/lib/iommu-helper.c~a
+> +++ a/lib/iommu-helper.c
+> @@ -8,15 +8,20 @@
+>  static unsigned long find_next_zero_area(unsigned long *map,
+>  					 unsigned long size,
+>  					 unsigned long start,
+> -					 unsigned int nr)
+> +					 unsigned int nr,
+> +					 unsigned long align_mask)
+>  {
+>  	unsigned long index, end, i;
+>  again:
+>  	index = find_next_zero_bit(map, size, start);
+> +
+> +	/* Align allocation */
+> +	index = (index + align_mask) & ~align_mask;
+
+The ALIGN() macro is the approved way of doing this.
+
+(I don't think ALIGN adds much value really, especially given that you've
+commented what's going on, but I guess it does make reviewing and reading a
+little easier).
+
+
+>  	end = index + nr;
+> -	if (end > size)
+> +	if (end >= size)
+>  		return -1;
+> -	for (i = index + 1; i < end; i++) {
+> +	for (i = index; i < end; i++) {
+>  		if (test_bit(i, map)) {
+>  			start = i+1;
+>  			goto again;
+> @@ -50,9 +55,8 @@ unsigned long iommu_area_alloc(unsigned 
+>  {
+>  	unsigned long index;
+>  again:
+> -	index = find_next_zero_area(map, size, start, nr);
+> +	index = find_next_zero_area(map, size, start, nr, align_mask);
+>  	if (index != -1) {
+> -		index = (index + align_mask) & ~align_mask;
+>  		if (is_span_boundary(index, nr, shift, boundary_size)) {
+>  			/* we could do more effectively */
+>  			start = index + 1;
+> _
+> 
+> 
