@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbYAIUIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828AbYAIULZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755407AbYAIUIo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 15:08:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbYAIUIg
+	id S1755828AbYAIULZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 15:11:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbYAIULR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 15:08:36 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:41385 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752184AbYAIUIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 15:08:35 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Pekka Paalanen <pq@iki.fi>
-Subject: Re: [PATCH] Revert "x86: optimize page faults like all other achitectures and kill notifier cruft"
-Date: Wed, 9 Jan 2008 21:08:26 +0100
-User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       hch@lst.de, airlied@linux.ie, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, jbeulich@novell.com,
-       linux-kernel@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-References: <20080108192951.a4dc394f.akpm@linux-foundation.org> <20080109104149.GB8041@elte.hu> <20080109220148.5caebaf1@daedalus.pq.iki.fi>
-In-Reply-To: <20080109220148.5caebaf1@daedalus.pq.iki.fi>
+	Wed, 9 Jan 2008 15:11:17 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:35631 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752701AbYAIULQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 15:11:16 -0500
+Date: Wed, 9 Jan 2008 12:11:14 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Dave Hansen <haveblue@us.ibm.com>
+cc: travis@sgi.com, Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       Andi Kleen <ak@suse.de>, Jack Steiner <steiner@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>, tglx@linutronix.de,
+       mingo@redhat.com
+Subject: Re: [PATCH 10/10] x86: Unify percpu.h
+In-Reply-To: <1199908430.9834.104.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0801091210300.11709@schroedinger.engr.sgi.com>
+References: <20080108211023.923047000@sgi.com>  <20080108211025.293924000@sgi.com>
+ <1199906905.9834.101.camel@localhost>  <Pine.LNX.4.64.0801091130420.11317@schroedinger.engr.sgi.com>
+ <1199908430.9834.104.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801092108.26550.ak@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 9 Jan 2008, Dave Hansen wrote:
 
-> I have been reading about kprobes and one thing particularly bothers me
-> in the case of mmio-trace. The probe will actually service the page
-> fault, therefore it should be able force do_page_fault() to return at
-> the probe point. I could not figure out a way to do that.
-> 
-> Is it possible to do reliably with kprobes or markers?
+> Then I really think this particular patch belongs in that other patch
+> set.  Here, it makes very little sense, and it's on the end anyway.
 
-Probes are generally not designed to change the flow of the 
-underlying code.
-
-While it's in theory possible it will be always unreliable.
-
-For checks that result in logic changes you'll always need
-some kind of explicit hook.
-
--Andi
-
-
+It makes sense in that both percpu_32/64 are very small as a result of 
+earlier patches and so its justifiable to put them together to simplify 
+the next patchset.
 
