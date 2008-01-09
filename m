@@ -1,49 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752184AbYAIN1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbYAINcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752184AbYAIN1R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 08:27:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbYAIN0o
+	id S1753844AbYAINcu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 08:32:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbYAINck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 08:26:44 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:51121 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750828AbYAIN0l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 08:26:41 -0500
-Date: Wed, 9 Jan 2008 14:26:26 +0100 (CET)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Matthew Wilcox <matthew@wil.cx>
-cc: Nikanth Karthikesan <knikanth@suse.de>, grant@torque.net, tim@cyberelk.net,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] Change paride driver to use unlocked_ioctl instead of
- ioctl
-In-Reply-To: <20080109123311.GP16309@parisc-linux.org>
-Message-ID: <Pine.LNX.4.64.0801091425100.25041@twin.jikos.cz>
-References: <4785B7BC.5040106@suse.de> <4785C7D8.2020808@suse.de>
- <20080109123311.GP16309@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 9 Jan 2008 08:32:40 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:45430 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751169AbYAINcj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 08:32:39 -0500
+To: kzak@redhat.com
+CC: jengelh@computergmbh.de, miklos@szeredi.hu, haveblue@us.ibm.com,
+       akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
+       viro@ftp.linux.org.uk, ebiederm@xmission.com,
+       linux-fsdevel@vger.kernel.org, containers@lists.osdl.org,
+       util-linux-ng@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <20080109132610.GJ3926@petra.dvoda.cz> (message from Karel Zak on
+	Wed, 9 Jan 2008 14:26:10 +0100)
+Subject: Re: [patch 5/9] unprivileged mounts: allow unprivileged bind mounts
+References: <20080108113502.184459371@szeredi.hu> <20080108113626.895583537@szeredi.hu> <1199815958.9834.58.camel@localhost> <E1JCJoQ-0003g9-Nk@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0801091340270.29244@fbirervta.pbzchgretzou.qr> <20080109132610.GJ3926@petra.dvoda.cz>
+Message-Id: <E1JCb2G-0005pD-FY@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 09 Jan 2008 14:32:00 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Jan 2008, Matthew Wilcox wrote:
+>     case EMFILE:
+>       error ("mount table full"); break;
 
-> >  	default:
-> >  		printk("%s: Unimplemented ioctl 0x%x\n", tape->name, cmd);
-> > +		unlock_kernel();
-> >  		return -EINVAL;
-> Surely a bug ... shouldn't this return -ENOTTY?
+OK, we could go with EMFILE, but the message should be changed to
+something like "maximum unprivileged mount count exceeded".
 
-What POSIX states [1]:
-
-[EINVAL]
-    The request or arg argument is not valid for this device.
-
-[ENOTTY]
-    The fildes argument is not associated with a STREAMS device that
-    accepts control functions.
-
-[1] http://www.opengroup.org/onlinepubs/009695399/functions/ioctl.html
-
--- 
-Jiri Kosina
+Miklos
