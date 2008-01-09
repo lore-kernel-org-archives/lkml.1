@@ -1,79 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755033AbYAIJiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbYAIJng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755033AbYAIJiQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 04:38:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbYAIJhy
+	id S1754254AbYAIJng (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 04:43:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYAIJn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 04:37:54 -0500
-Received: from mga10.intel.com ([192.55.52.92]:25740 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753381AbYAIJhw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 04:37:52 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,261,1196668800"; 
-   d="scan'208";a="490805146"
-Subject: Netperf TCP_RR(loopback) 10% regression in 2.6.24-rc6, comparing
-	with 2.6.22
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 09 Jan 2008 17:35:30 +0800
-Message-Id: <1199871330.3298.132.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Jan 2008 04:43:26 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:11387 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751157AbYAIJnY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 04:43:24 -0500
+Date: Wed, 9 Jan 2008 10:43:21 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, chris.mason@oracle.com,
+       linux-fsdevel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH][RFC] fast file mapping for loop
+Message-ID: <20080109094320.GA6258@kernel.dk>
+References: <20080109085231.GE6650@kernel.dk> <20080109093107.GA5023@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080109093107.GA5023@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The regression is:
-1)stoakley with 2 qual-core processors: 11%;
-2)Tulsa with 4 dual-core(+hyperThread) processors:13%;
+On Wed, Jan 09 2008, Christoph Hellwig wrote:
+> On Wed, Jan 09, 2008 at 09:52:32AM +0100, Jens Axboe wrote:
+> > - The file block mappings must not change while loop is using the file.
+> >   This means that we have to ensure exclusive access to the file and
+> >   this is the bit that is currently missing in the implementation. It
+> >   would be nice if we could just do this via open(), ideas welcome...
+> 
+> And the way this is done is simply broken.  It means you have to get
+> rid of things like delayed or unwritten hands beforehand, it'll be
+> a complete pain for COW or non-block backed filesystems.
 
-The test command is:
-#sudo taskset -c 7 ./netserver
-#sudo taskset -c 0 ./netperf -t TCP_RR -l 60 -H 127.0.0.1 -i 50,3 -I 99,5 -- -r 1,1
+COW is not that hard to handle, you just need to be notified of moving
+blocks. If you view the patch as just a tighter integration between loop
+and fs, I don't think it's necessarily that broken.
 
-As a matter of fact, 2.6.23 has about 6% regression and 2.6.24-rc's
-regression is between 16%~11%.
+I did consider these cases, and it can be done with the existing
+approach.
 
-I tried to use bisect to locate the bad patch between 2.6.22 and 2.6.23-rc1,
-but the bisected kernel wasn't stable and went crazy.
+> The right way to do this is to allow direct I/O from kernel sources
+> where the filesystem is in-charge of submitting the actual I/O after
+> the pages are handed to it.  I think Peter Zijlstra has been looking
+> into something like that for swap over nfs.
 
-I tried both CONFIG_SLUB=y and CONFIG_SLAB=y to make sure SLUB isn't the
-culprit.
+That does sound like a nice approach, but a lot more work. It'll behave
+differently too, the advantage of what I proposed is that it behaves
+like a real device.
 
-The oprofile data of CONFIG_SLAB=y. Top cpu utilizations are:
-1) 2.6.22 
-2067379   9.4888  vmlinux                  schedule
-1873604   8.5994  vmlinux                  mwait_idle
-1568131   7.1974  vmlinux                  resched_task
-1066976   4.8972  vmlinux                  tcp_v4_rcv
-986641    4.5285  vmlinux                  tcp_rcv_established
-979518    4.4958  vmlinux                  find_busiest_group
-767069    3.5207  vmlinux                  sock_def_readable
-736808    3.3818  vmlinux                  tcp_sendmsg
-595889    2.7350  vmlinux                  task_rq_lock
-557193    2.5574  vmlinux                  tcp_ack
-470570    2.1598  vmlinux                  __mod_timer
-392220    1.8002  vmlinux                  __alloc_skb
-358106    1.6436  vmlinux                  skb_release_data
-313372    1.4383  vmlinux                  skb_clone
+I'm not asking you to love it (in fact I knew some people would complain
+about this approach and I understand why), just tossing it out there to
+get things rolling. If we end up doing it differently I don't really
+care, I'm not married to any solution but merely wish to solve a
+problem. If that ends up being solved differently, the outcome is the
+same to me.
 
-2) 2.6.24-rc7
-2668426  12.4497  vmlinux                  vmlinux                  schedule
-955698    4.4589  vmlinux                  vmlinux                  skb_release_data
-836311    3.9018  vmlinux                  vmlinux                  tcp_v4_rcv
-762398    3.5570  vmlinux                  vmlinux                  skb_release_all
-728907    3.4007  vmlinux                  vmlinux                  task_rq_lock
-705037    3.2894  vmlinux                  vmlinux                  __wake_up
-694206    3.2388  vmlinux                  vmlinux                  __mod_timer
-617616    2.8815  vmlinux                  vmlinux                  mwait_idle
-
-It looks like tcp in 2.6.22 sends more packets, but frees far less skb than 2.6.24-rc6.
-tcp_rcv_established in 2.6.22 is highlighted on cpu utilization.
-
--yanmin
-
+-- 
+Jens Axboe
 
