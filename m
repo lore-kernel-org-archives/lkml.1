@@ -1,206 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758081AbYAIBAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757730AbYAIBBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758081AbYAIBAv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 20:00:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756003AbYAIAzO
+	id S1757730AbYAIBBW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 20:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756878AbYAIAzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 19:55:14 -0500
-Received: from ms0.nttdata.co.jp ([163.135.193.231]:51943 "EHLO
+	Tue, 8 Jan 2008 19:55:20 -0500
+Received: from ms0.nttdata.co.jp ([163.135.193.231]:51953 "EHLO
 	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751321AbYAIAy2 (ORCPT
+	with ESMTP id S1755487AbYAIAy2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 8 Jan 2008 19:54:28 -0500
-Message-Id: <20080109005424.662567261@nttdata.co.jp>
+Message-Id: <20080109005425.211182127@nttdata.co.jp>
 References: <20080109005320.323184643@nttdata.co.jp>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 Jan 2008 09:53:34 +0900
+Date: Wed, 09 Jan 2008 09:53:35 +0900
 From: Kentaro Takeda <takedakn@nttdata.co.jp>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #6 retry 14/21] Network access control functions.
-X-OriginalArrivalTime: 09 Jan 2008 00:54:25.0271 (UTC) FILETIME=[2E059070:01C8525A]
+Subject: [TOMOYO #6 retry 15/21] Namespace manipulation control functions.
+X-OriginalArrivalTime: 09 Jan 2008 00:54:25.0537 (UTC) FILETIME=[2E2E2710:01C8525A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TOMOYO Linux checks permission by the following four parameters.
-  * protocol type (TCP, UDP, RAW)
-  * access type (bind, listen, connect, accept)
-  * IP address (Both IPv4 and IPv6 are available)
-  * port number
-In order to check 'TCP accept' and 'UDP connect',
-modification against net/socket.c and net/core/datagram.c is needed.
+TOMOYO Linux checks mount permission based on
+device name, mount point, filesystem type and optional flags.
+TOMOYO Linux also checks permission in umount and pivot_root.
 
 Each permission can be automatically accumulated into
-the policy of each domain using 'learning mode'.
+the policy using 'learning mode'.
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 ---
- security/tomoyo/net.c |  934 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 934 insertions(+)
+ security/tomoyo/mount.c |  908 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 908 insertions(+)
 
 --- /dev/null
-+++ linux-2.6-mm/security/tomoyo/net.c
-@@ -0,0 +1,934 @@
++++ linux-2.6-mm/security/tomoyo/mount.c
+@@ -0,0 +1,908 @@
 +/*
-+ * security/tomoyo/net.c
++ * security/tomoyo/mount.c
 + *
-+ * Network access control functions for TOMOYO Linux.
++ * Mount access control functions for TOMOYO Linux.
 + */
 +
 +#include "tomoyo.h"
 +#include "realpath.h"
 +
-+/*************************  AUDIT FUNCTIONS  *************************/
++/***** KEYWORDS for mount restrictions. *****/
 +
-+static int tmy_audit_network_log(const bool is_ipv6,
-+				 const char *operation,
-+				 const u8 *address,
-+				 const u16 port,
-+				 const bool is_granted,
-+				 const u8 profile,
-+				 const unsigned int mode)
++#define MOUNT_BIND_KEYWORD    	      "--bind"
++#define MOUNT_MOVE_KEYWORD    	      "--move"
++#define MOUNT_REMOUNT_KEYWORD 	      "--remount"
++#define MOUNT_MAKE_UNBINDABLE_KEYWORD "--make-unbindable"
++#define MOUNT_MAKE_PRIVATE_KEYWORD    "--make-private"
++#define MOUNT_MAKE_SLAVE_KEYWORD      "--make-slave"
++#define MOUNT_MAKE_SHARED_KEYWORD     "--make-shared"
++
++/***** The structure for mount restrictions. *****/
++
++struct mount_entry {
++	struct list_head list;
++	const struct path_info *dev_name;
++	const struct path_info *dir_name;
++	const struct path_info *fs_type;
++	unsigned int flags; /* Mount flags. */
++	bool is_deleted;
++};
++
++struct no_umount_entry {
++	struct list_head list;
++	const struct path_info *dir;
++	bool is_deleted;
++};
++
++/************************  MOUNT RESTRICTION HANDLER  ************************/
++
++static LIST_HEAD(mount_list);
++
++/* Add or remove a mount entry. */
++static int tmy_add_mount_acl(const char *dev_name,
++			     const char *dir_name,
++			     const char *fs_type,
++			     const unsigned int flags,
++			     const bool is_delete)
 +{
-+	char *buf;
-+	int len = 256;
-+
-+	if (is_granted) {
-+		if (!tmy_audit_grant())
-+			return 0;
-+	} else {
-+		if (!tmy_audit_reject())
-+			return 0;
-+	}
-+
-+	buf = tmy_init_audit_log(&len, profile, mode);
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	tmy_sncatprintf(buf, len - 1, TMY_ALLOW_NETWORK "%s ", operation);
-+
-+	if (is_ipv6)
-+		tmy_print_ipv6(buf + strlen(buf), len - strlen(buf),
-+			       (const struct in6_addr *) address);
-+	else {
-+		u32 ip = *address;
-+		tmy_sncatprintf(buf, len - 1, NIPQUAD_FMT, NIPQUAD(ip));
-+	}
-+
-+	tmy_sncatprintf(buf, len - 1, " %u\n", port);
-+
-+	return tmy_write_audit_log(buf, is_granted);
-+}
-+
-+/*************************  UTILITY FUNCTIONS  *************************/
-+
-+static const struct in6_addr *tmy_save_ipv6_address(const struct in6_addr *addr)
-+{
-+	static const int block_size = 16;
-+	struct addr_list {
-+		struct in6_addr addr[block_size];
-+		struct addr_list *next;
-+		u32 in_use_count;
-+	};
-+	static struct addr_list *list;
-+	struct addr_list *ptr;
-+	static DEFINE_MUTEX(lock);
-+	int i = block_size;
-+	if (!addr)
-+		return NULL;
-+	mutex_lock(&lock);
-+	for (ptr = list; ptr; ptr = ptr->next) {
-+		for (i = 0; i < ptr->in_use_count; i++)
-+			if (memcmp(&ptr->addr[i], addr, sizeof(*addr)) == 0)
-+				goto out;
-+		if (i < block_size)
-+			break;
-+	}
-+	if (i == block_size) {
-+		struct addr_list *p = list;
-+		ptr = tmy_alloc_element(sizeof(*ptr));
-+		if (!ptr)
-+			goto out;
-+		if (p) {
-+			while (p->next)
-+				p = p->next;
-+			p->next = ptr;
-+		} else
-+			list = ptr;
-+		i = 0;
-+	}
-+	ptr->addr[ptr->in_use_count++] = *addr;
-+out:
-+	mutex_unlock(&lock);
-+	return ptr ? &ptr->addr[i] : NULL;
-+}
-+
-+/*************************  ADDRESS GROUP HANDLER  *************************/
-+
-+/* List of address group. */
-+static LIST_HEAD(address_group_list);
-+
-+static int tmy_add_address_group_entry(const char *group_name,
-+				       const bool is_ipv6,
-+				       const u8 *min_address,
-+				       const u8 *max_address,
-+				       const bool is_delete)
-+{
++	struct mount_entry *new_entry;
++	struct mount_entry  *ptr;
++	const struct path_info *fs;
++	const struct path_info *dev;
++	const struct path_info *dir;
 +	static DEFINE_MUTEX(mutex);
-+	struct address_group_entry *new_group;
-+	struct address_group_entry *group;
-+	struct address_group_member *new_member;
-+	struct address_group_member *member;
-+	const struct path_info *saved_group_name;
 +	int error = -ENOMEM;
-+	bool found = 0;
-+	const u32 min_ip = ntohl(*(u32 *) min_address);
-+	const u32 max_ip = ntohl(*(u32 *) max_address);
-+	const struct in6_addr *saved_min_address = NULL;
-+	const struct in6_addr *saved_max_address = NULL;
-+	if (is_ipv6) {
-+		saved_min_address =
-+			tmy_save_ipv6_address((struct in6_addr *) min_address);
-+		saved_max_address =
-+			tmy_save_ipv6_address((struct in6_addr *) max_address);
-+		if (!saved_min_address || !saved_max_address)
-+			return -ENOMEM;
-+	}
 +
-+	if (!tmy_correct_path(group_name, 0, 0, 0, __FUNCTION__) ||
-+	    !group_name[0])
++	fs = tmy_save_name(fs_type);
++	if (!fs)
 +		return -EINVAL;
 +
-+	saved_group_name = tmy_save_name(group_name);
-+	if (!saved_group_name)
++	if (!dev_name)
++		/* Map dev_name to "<NULL>" for if no dev_name given. */
++		dev_name = "<NULL>";
++	if (strcmp(fs->name, MOUNT_REMOUNT_KEYWORD) == 0)
++		/* Fix dev_name to "any" for remount permission. */
++		dev_name = "any";
++	if (strcmp(fs->name, MOUNT_MAKE_UNBINDABLE_KEYWORD) == 0 ||
++	    strcmp(fs->name, MOUNT_MAKE_PRIVATE_KEYWORD) == 0 ||
++	    strcmp(fs->name, MOUNT_MAKE_SLAVE_KEYWORD) == 0 ||
++	    strcmp(fs->name, MOUNT_MAKE_SHARED_KEYWORD) == 0)
++		dev_name = "any";
++
++	if (!tmy_correct_path(dev_name, 0, 0, 0, __FUNCTION__) ||
++	    !tmy_correct_path(dir_name, 0, 0, 0, __FUNCTION__))
++		return -EINVAL;
++
++	dev = tmy_save_name(dev_name);
++	if (!dev)
++		return -ENOMEM;
++	dir = tmy_save_name(dir_name);
++	if (!dir)
 +		return -ENOMEM;
 +
 +	mutex_lock(&mutex);
 +
-+	list_for_each_entry(group, &address_group_list, list) {
-+		if (saved_group_name != group->group_name)
++	list_for_each_entry(ptr, &mount_list, list) {
++		if (ptr->flags != flags ||
++		    tmy_pathcmp(ptr->dev_name, dev) ||
++		    tmy_pathcmp(ptr->dir_name, dir) ||
++		    tmy_pathcmp(ptr->fs_type, fs))
 +			continue;
-+		list_for_each_entry(member, &group->address_group_member_list,
-+				    list) {
-+			if (member->is_ipv6 != is_ipv6)
-+				continue;
-+			if (is_ipv6) {
-+				if (member->min.ipv6 != saved_min_address ||
-+				    member->max.ipv6 != saved_max_address)
-+					continue;
-+			} else {
-+				if (member->min.ipv4 != min_ip ||
-+				    member->max.ipv4 != max_ip)
-+					continue;
-+			}
-+			member->is_deleted = is_delete;
-+			error = 0;
-+			goto out;
-+		}
-+		found = 1;
-+		break;
++		ptr->is_deleted = is_delete;
++		error = 0;
++		goto out;
 +	}
 +
 +	if (is_delete) {
@@ -208,776 +141,813 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +		goto out;
 +	}
 +
-+	if (!found) {
-+		new_group = tmy_alloc_element(sizeof(*new_group));
-+		if (!new_group)
-+			goto out;
-+		INIT_LIST_HEAD(&new_group->address_group_member_list);
-+		new_group->group_name = saved_group_name;
-+		list_add_tail_mb(&new_group->list, &address_group_list);
-+		group = new_group;
-+	}
-+
-+	new_member = tmy_alloc_element(sizeof(*new_member));
-+	if (!new_member)
++	new_entry = tmy_alloc_element(sizeof(*new_entry));
++	if (!new_entry)
 +		goto out;
 +
-+	new_member->is_ipv6 = is_ipv6;
-+
-+	if (is_ipv6) {
-+		new_member->min.ipv6 = saved_min_address;
-+		new_member->max.ipv6 = saved_max_address;
-+	} else {
-+		new_member->min.ipv4 = min_ip;
-+		new_member->max.ipv4 = max_ip;
-+	}
-+
-+	list_add_tail_mb(&new_member->list, &group->address_group_member_list);
++	new_entry->dev_name = dev;
++	new_entry->dir_name = dir;
++	new_entry->fs_type = fs;
++	new_entry->flags = flags;
++	list_add_tail_mb(&new_entry->list, &mount_list);
 +	error = 0;
 +out: ;
++	mutex_unlock(&mutex);
++	return error;
++}
++
++/* Print error message for mount request. */
++static inline int tmy_mount_perm_error(char *dev_name,
++				       char *dir_name,
++				       char *type,
++				       unsigned long flags,
++				       const u8 profile,
++				       const unsigned int mode)
++{
++	int error = -EPERM;
++	const char *realname1 = tmy_realpath(dev_name);
++	const char *realname2 = tmy_realpath(dir_name);
++	const char *exename = tmy_get_exe();
++	const bool is_enforce = (mode == 3);
++
++	if (!strcmp(type, MOUNT_REMOUNT_KEYWORD)) {
++		tmy_audit(KERN_WARNING "TOMOYO-%s: mount -o remount %s 0x%lX "
++			  "(pid=%d:exe=%s): Permission denied.\n",
++			  tmy_getmsg(is_enforce),
++			  realname2 ? realname2 : dir_name, flags,
++			  current->pid, exename);
++		if (is_enforce &&
++		    !tmy_supervisor("# %s is requesting\nmount -o remount %s\n",
++				    exename, realname2 ? realname2 : dir_name))
++			error = 0;
++
++	} else if (!strcmp(type, MOUNT_BIND_KEYWORD) ||
++		   !strcmp(type, MOUNT_MOVE_KEYWORD)) {
++		tmy_audit(KERN_WARNING "TOMOYO-%s: mount %s %s %s 0x%lX "
++			  "(pid=%d:exe=%s): Permission denied.\n",
++			  tmy_getmsg(is_enforce), type,
++			  realname1 ? realname1 : dev_name,
++			  realname2 ? realname2 : dir_name,
++			  flags, current->pid, exename);
++		if (is_enforce &&
++		    tmy_supervisor("# %s is requesting\nmount %s %s %s 0x%lX\n",
++				   exename, type,
++				   realname1 ? realname1 : dev_name,
++				   realname2 ? realname2 : dir_name,
++				   flags) == 0)
++			error = 0;
++
++	} else if (!strcmp(type, MOUNT_MAKE_UNBINDABLE_KEYWORD) ||
++		   !strcmp(type, MOUNT_MAKE_PRIVATE_KEYWORD) ||
++		   !strcmp(type, MOUNT_MAKE_SLAVE_KEYWORD) ||
++		   !strcmp(type, MOUNT_MAKE_SHARED_KEYWORD)) {
++		tmy_audit(KERN_WARNING "TOMOYO-%s: mount %s %s 0x%lX "
++			  "(pid=%d:exe=%s): Permission denied.\n",
++			  tmy_getmsg(is_enforce), type,
++			  realname2 ? realname2 : dir_name,
++			  flags, current->pid, exename);
++		if (is_enforce &&
++		    tmy_supervisor("# %s is requesting\nmount %s %s 0x%lX",
++				   exename, type,
++				   realname2 ? realname2 : dir_name,
++				   flags) == 0)
++			error = 0;
++
++	} else {
++		tmy_audit(KERN_WARNING "TOMOYO-%s: mount -t %s %s %s 0x%lX "
++			  "(pid=%d:exe=%s): Permission denied.\n",
++			  tmy_getmsg(is_enforce), type,
++			  realname1 ? realname1 : dev_name,
++			  realname2 ? realname2 : dir_name,
++			  flags, current->pid, exename);
++		if (is_enforce &&
++		    tmy_supervisor("# %s is requesting\n"
++				   "mount -t %s %s %s 0x%lX\n",
++				   exename, type,
++				   realname1 ? realname1 : dev_name,
++				   realname2 ? realname2 : dir_name,
++				   flags) == 0)
++			error = 0;
++
++	}
++
++	tmy_free(exename);
++	tmy_free(realname2);
++	tmy_free(realname1);
++	return error;
++}
++
++/**
++ * tmy_mount_perm - check for mount permission.
++ * @dev_name: pointer to device name. May be NULL.
++ * @dir_name: pointer to mount point.
++ * @type:     pointer to filesystem. May be NULL.
++ * @flags:    mount flags.
++ *
++ * Returns zero if permission granted.
++ * Returns nonzero if permission denied.
++ */
++int tmy_mount_perm(char *dev_name,
++		   char *dir_name,
++		   char *type,
++		   unsigned long flags)
++{
++	const u8 profile = TMY_SECURITY->domain->profile;
++	const unsigned int mode = tmy_flags(TMY_RESTRICT_MOUNT);
++	const bool is_enforce = (mode == 3);
++	int error = -EPERM;
++
++	if (!mode)
++		return 0;
++	if (!type)
++		type = "<NULL>";
++	if ((flags & MS_MGC_MSK) == MS_MGC_VAL)
++		flags &= ~MS_MGC_MSK;
++
++	switch (flags & (MS_REMOUNT | MS_MOVE | MS_BIND)) {
++	case MS_REMOUNT:
++	case MS_MOVE:
++	case MS_BIND:
++	case 0:
++		break;
++	default:
++		tmy_audit(KERN_WARNING "TOMOYO-ERROR: %s%s%sare given "
++			  "for single mount operation.\n",
++			  flags & MS_REMOUNT ? "'remount' " : "",
++			  flags & MS_MOVE    ? "'move' " : "",
++			  flags & MS_BIND    ? "'bind' " : "");
++		return -EINVAL;
++	}
++
++	switch (flags & (MS_UNBINDABLE | MS_PRIVATE | MS_SLAVE | MS_SHARED)) {
++	case MS_UNBINDABLE:
++	case MS_PRIVATE:
++	case MS_SLAVE:
++	case MS_SHARED:
++	case 0:
++		break;
++	default:
++		tmy_audit(KERN_WARNING "TOMOYO-ERROR: %s%s%s%sare given "
++			  "for single mount operation.\n",
++			  flags & MS_UNBINDABLE ? "'unbindable' " : "",
++			  flags & MS_PRIVATE    ? "'private' " : "",
++			  flags & MS_SLAVE      ? "'slave' " : "",
++			  flags & MS_SHARED     ? "'shared' " : "");
++		return -EINVAL;
++	}
++
++	if (flags & MS_REMOUNT)
++		error = tmy_mount_perm(dev_name, dir_name,
++				       MOUNT_REMOUNT_KEYWORD,
++				       flags & ~MS_REMOUNT);
++	else if (flags & MS_MOVE)
++		error = tmy_mount_perm(dev_name, dir_name,
++				       MOUNT_MOVE_KEYWORD,
++				       flags & ~MS_MOVE);
++	else if (flags & MS_BIND)
++		error = tmy_mount_perm(dev_name, dir_name,
++				       MOUNT_BIND_KEYWORD,
++				       flags & ~MS_BIND);
++	else if (flags & MS_UNBINDABLE)
++		error = tmy_mount_perm(dev_name, dir_name,
++				       MOUNT_MAKE_UNBINDABLE_KEYWORD,
++				       flags & ~MS_UNBINDABLE);
++	else if (flags & MS_PRIVATE)
++		error = tmy_mount_perm(dev_name, dir_name,
++				       MOUNT_MAKE_PRIVATE_KEYWORD,
++				       flags & ~MS_PRIVATE);
++	else if (flags & MS_SLAVE)
++		error = tmy_mount_perm(dev_name, dir_name,
++				       MOUNT_MAKE_SLAVE_KEYWORD,
++				       flags & ~MS_SLAVE);
++	else if (flags & MS_SHARED)
++		error = tmy_mount_perm(dev_name, dir_name,
++				       MOUNT_MAKE_SHARED_KEYWORD,
++				       flags & ~MS_SHARED);
++	else {
++		struct mount_entry *ptr;
++		struct file_system_type *fstype = NULL;
++		const char *requested_dir_name = NULL;
++		const char *requested_dev_name = NULL;
++		struct path_info rdev;
++		struct path_info rdir;
++		int need_dev = 0;
++
++		requested_dir_name = tmy_realpath(dir_name);
++		if (!requested_dir_name) {
++			error = -ENOENT;
++			goto cleanup;
++		}
++		rdir.name = requested_dir_name;
++		tmy_fill_path_info(&rdir);
++
++		/* Compare fs name. */
++		fstype = get_fs_type(type);
++		if (strcmp(type, MOUNT_REMOUNT_KEYWORD) == 0)
++			/* Needn't to resolve dev_name */;
++		else if (strcmp(type, MOUNT_MAKE_UNBINDABLE_KEYWORD) == 0 ||
++			 strcmp(type, MOUNT_MAKE_PRIVATE_KEYWORD) == 0 ||
++			 strcmp(type, MOUNT_MAKE_SLAVE_KEYWORD) == 0 ||
++			 strcmp(type, MOUNT_MAKE_SHARED_KEYWORD) == 0)
++			/* Needn't to resolve dev_name */;
++		else if (strcmp(type, MOUNT_BIND_KEYWORD) == 0 ||
++			 strcmp(type, MOUNT_MOVE_KEYWORD) == 0) {
++			requested_dev_name = tmy_realpath(dev_name);
++			if (!requested_dev_name) {
++				error = -ENOENT;
++				goto cleanup;
++			}
++			rdev.name = requested_dev_name;
++			tmy_fill_path_info(&rdev);
++			need_dev = -1;
++		} else if (fstype) {
++			if (fstype->fs_flags & FS_REQUIRES_DEV) {
++				requested_dev_name = tmy_realpath(dev_name);
++				if (!requested_dev_name) {
++					error = -ENOENT;
++					goto cleanup;
++				}
++				rdev.name = requested_dev_name;
++				tmy_fill_path_info(&rdev);
++				need_dev = 1;
++			}
++		} else {
++			error = -ENODEV;
++			goto cleanup;
++		}
++
++		list_for_each_entry(ptr, &mount_list, list) {
++			if (ptr->is_deleted)
++				continue;
++
++			/* Compare options */
++			if (ptr->flags != flags)
++				continue;
++
++			/* Compare fs name. */
++			if (strcmp(type, ptr->fs_type->name))
++				continue;
++
++			/* Compare mount point. */
++			if (tmy_path_match(&rdir, ptr->dir_name) == 0)
++				continue;
++
++			/* Compare device name. */
++			if (requested_dev_name &&
++			    tmy_path_match(&rdev, ptr->dev_name) == 0)
++				continue;
++
++			/* OK. */
++			error = 0;
++
++			if (need_dev > 0)
++				tmy_audit(KERN_DEBUG "TOMOYO-NOTICE: "
++					  "'mount -t %s %s %s 0x%lX' "
++					  "accepted.\n",
++					  type, requested_dev_name,
++					  requested_dir_name, flags);
++			else if (need_dev < 0)
++				tmy_audit(KERN_DEBUG "TOMOYO-NOTICE: "
++					  "'mount %s %s %s 0x%lX' accepted.\n",
++					  type, requested_dev_name,
++					  requested_dir_name, flags);
++			else if (!strcmp(type, MOUNT_REMOUNT_KEYWORD))
++				tmy_audit(KERN_DEBUG "TOMOYO-NOTICE: "
++					  "'mount -o remount %s 0x%lX' "
++					  "accepted.\n",
++					  requested_dir_name, flags);
++			else if (!strcmp(type, MOUNT_MAKE_UNBINDABLE_KEYWORD) ||
++				 !strcmp(type, MOUNT_MAKE_PRIVATE_KEYWORD) ||
++				 !strcmp(type, MOUNT_MAKE_SLAVE_KEYWORD) ||
++				 !strcmp(type, MOUNT_MAKE_SHARED_KEYWORD))
++				tmy_audit(KERN_DEBUG "TOMOYO-NOTICE: "
++					  "'mount %s %s 0x%lX' accepted.\n",
++					  type, requested_dir_name, flags);
++			else
++				tmy_audit(KERN_DEBUG "TOMOYO-NOTICE: "
++					  "'mount %s on %s 0x%lX' accepted.\n",
++					  type, requested_dir_name, flags);
++			break;
++		}
++
++		if (error)
++			error = tmy_mount_perm_error(dev_name, dir_name, type,
++						     flags, profile, mode);
++
++		if (error && mode == 1) {
++			tmy_add_mount_acl(need_dev ?
++					  requested_dev_name : dev_name,
++					  requested_dir_name, type, flags, 0);
++			tmy_update_counter(TMY_UPDATE_SYSTEMPOLICY);
++		}
++
++cleanup:
++		tmy_free(requested_dev_name);
++		tmy_free(requested_dir_name);
++		if (fstype)
++			put_filesystem(fstype);
++
++	}
++
++	if (!is_enforce)
++		error = 0;
++	return error;
++
++}
++
++/**
++ * tmy_add_mount_policy - add or delete mount policy.
++ * @data:      a line to parse.
++ * @is_delete: is this delete request?
++ *
++ * Returns zero on success.
++ * Returns nonzero on failure.
++ */
++int tmy_add_mount_policy(char *data, const bool is_delete)
++{
++	char *cp;
++	char *cp2;
++	const char *fs;
++	const char *dev;
++	const char *dir;
++	unsigned int flags = 0;
++
++	cp2 = data;
++	cp = strchr(cp2, ' ');
++	if (!cp)
++		return -EINVAL;
++	*cp = '\0';
++	dev = cp2;
++
++	cp2 = cp + 1;
++	cp = strchr(cp2, ' ');
++	if (!cp)
++		return -EINVAL;
++	*cp = '\0';
++	dir = cp2;
++
++	cp2 = cp + 1;
++	cp = strchr(cp2, ' ');
++	if (!cp)
++		return -EINVAL;
++	*cp = '\0';
++	fs = cp2;
++
++	flags = simple_strtoul(cp + 1, NULL, 0);
++	return tmy_add_mount_acl(dev, dir, fs, flags, is_delete);
++}
++
++/**
++ * tmy_read_mount_policy - read mount policy.
++ * @head: pointer to "struct io_buffer".
++ *
++ * Returns nonzero if reading incomplete.
++ * Returns zero otherwise.
++ */
++int tmy_read_mount_policy(struct io_buffer *head)
++{
++	struct list_head *pos;
++	list_for_each_cookie(pos, head->read_var2, &mount_list) {
++		struct mount_entry *ptr;
++		ptr = list_entry(pos, struct mount_entry, list);
++		if (ptr->is_deleted)
++			continue;
++		if (tmy_io_printf(head, TMY_ALLOW_MOUNT "%s %s %s 0x%x\n",
++				  ptr->dev_name->name, ptr->dir_name->name,
++				  ptr->fs_type->name, ptr->flags))
++			return -ENOMEM;
++	}
++	return 0;
++}
++
++static int tmy_find_conceal(struct nameidata *nd,
++			    struct vfsmount *vfsmnt,
++			    struct dentry *dentry)
++{
++	int flag = 0;
++
++	if (IS_ROOT(dentry) || !d_unhashed(dentry)) {
++		while (1) {
++
++			if (nd->path.mnt->mnt_root == vfsmnt->mnt_root &&
++			    nd->path.dentry == dentry) {
++				flag = 1;
++				break;
++			}
++
++			if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
++
++				spin_lock(&vfsmount_lock);
++
++				if (vfsmnt->mnt_parent == vfsmnt) {
++					spin_unlock(&vfsmount_lock);
++					break;
++				}
++				dentry = vfsmnt->mnt_mountpoint;
++				vfsmnt = vfsmnt->mnt_parent;
++
++				spin_unlock(&vfsmount_lock);
++
++				continue;
++			}
++			dentry = dentry->d_parent;
++
++		}
++	}
++
++	return flag;
++}
++
++/**
++ * tmy_conceal_mount - check for conceal mount permission.
++ * @nd: pointer to "struct nameidata".
++ *
++ * Returns zero if permission granted.
++ * Returns nonzero if permission denied.
++ *
++ * People seldom mount on directries that have submounts.
++ * For example, you don't mount on /usr/ directory if /usr/local/ directory
++ * is already mounted, do you?
++ * This function forbids such mount requests.
++ */
++int tmy_conceal_mount(struct nameidata *nd)
++{
++	int flag = 0;
++	const unsigned int mode = tmy_flags(TMY_DENY_CONCEAL_MOUNT);
++	const bool is_enforce = (mode == 3);
++	struct mnt_namespace *namespace = current->nsproxy->mnt_ns;
++
++	if (!mode)
++		return 0;
++
++	if (namespace) {
++		struct list_head *p;
++
++		list_for_each(p, &namespace->list) {
++			struct vfsmount *vfsmnt =
++				list_entry(p, struct vfsmount, mnt_list);
++			struct dentry *dentry = vfsmnt->mnt_root;
++
++			spin_lock(&dcache_lock);
++
++			flag = tmy_find_conceal(nd, vfsmnt, dentry);
++
++			spin_unlock(&dcache_lock);
++
++			if (flag)
++				break;
++		}
++	}
++
++
++	if (flag) {
++		int error = -EPERM;
++		char *dir;
++		dir = tmy_realpath_dentry(nd->path.dentry, nd->path.mnt);
++		if (dir) {
++			const char *exename = tmy_get_exe();
++			tmy_audit("TOMOYO-%s: mount %s (pid=%d:exe=%s): "
++				  "Permission denied.\n",
++				  tmy_getmsg(is_enforce),
++				  dir, current->pid, exename);
++			if (is_enforce &&
++			    tmy_supervisor("# %s is requesting\nmount on %s\n",
++					   exename, dir) == 0)
++				error = 0;
++
++			tmy_free(exename);
++		}
++		tmy_free(dir);
++
++		if (is_enforce)
++			return error;
++	}
++
++	return 0;
++}
++
++/************************  UMOUNT RESTRICTION HANDLER  ************************/
++
++static LIST_HEAD(no_umount_list);
++
++/* Add or remove a no-unmount entry. */
++static int tmy_add_no_umount_acl(const char *dir, const bool is_delete)
++{
++	struct no_umount_entry *new_entry;
++	struct no_umount_entry *ptr;
++	const struct path_info *saved_dir;
++	static DEFINE_MUTEX(mutex);
++	int error = -ENOMEM;
++
++	if (!tmy_correct_path(dir, 1, 0, 1, __FUNCTION__))
++		return -EINVAL;
++	saved_dir = tmy_save_name(dir);
++	if (!saved_dir)
++		return -ENOMEM;
++
++	mutex_lock(&mutex);
++
++	list_for_each_entry(ptr, &no_umount_list, list) {
++		if (ptr->dir == saved_dir) {
++			ptr->is_deleted = is_delete;
++			error = 0;
++			goto out;
++		}
++	}
++
++	if (is_delete) {
++		error = -ENOENT;
++		goto out;
++	}
++
++	new_entry = tmy_alloc_element(sizeof(*new_entry));
++	if (!new_entry)
++		goto out;
++
++	new_entry->dir = saved_dir;
++	list_add_tail_mb(&new_entry->list, &no_umount_list);
++	error = 0;
++out: ;
++
 +	mutex_unlock(&mutex);
 +
 +	return error;
 +}
 +
 +/**
-+ * tmy_add_address_group_policy - add or delete address group policy.
-+ * @data: a line to parse.
++ * tmy_umount_perm - check for no-unmount permission.
++ * @mnt: pointer to "struct vfsmount".
++ *
++ * Returns zero if permission granted.
++ * Returns nonzero if permission denied.
++ */
++int tmy_umount_perm(struct vfsmount *mnt)
++{
++	int error = -EPERM;
++	const char *dir0;
++	const unsigned int mode = tmy_flags(TMY_RESTRICT_UMOUNT);
++	const bool is_enforce = (mode == 3);
++
++	if (!mode)
++		return 0;
++
++	dir0 = tmy_realpath_dentry(mnt->mnt_root, mnt);
++
++	if (dir0) {
++		struct no_umount_entry *ptr;
++		struct path_info dir;
++		bool found = 0;
++
++		dir.name = dir0;
++		tmy_fill_path_info(&dir);
++
++		list_for_each_entry(ptr, &no_umount_list, list) {
++			if (ptr->is_deleted)
++				continue;
++			if (tmy_path_match(&dir, ptr->dir)) {
++				found = 1;
++				break;
++			}
++		}
++
++		if (found) {
++			const char *exename = tmy_get_exe();
++			tmy_audit("TOMOYO-%s: umount %s (pid=%d:exe=%s): "
++				  "Permission denied.\n",
++				  tmy_getmsg(is_enforce),
++				  dir0, current->pid, exename);
++			if (is_enforce &&
++			    tmy_supervisor("# %s is requesting\nunmount %s\n",
++					   exename, dir0) == 0)
++				error = 0;
++
++			tmy_free(exename);
++		} else {
++			error = 0;
++		}
++
++		tmy_free(dir0);
++	}
++
++	if (!is_enforce)
++		error = 0;
++	return error;
++}
++
++/**
++ * tmy_add_no_umount_policy - add or delete no-unmount policy.
++ * @data:      a line to parse.
 + * @is_delete: is this delete request?
 + *
 + * Returns zero on success.
 + * Returns nonzero on failure.
 + */
-+int tmy_add_address_group_policy(char *data, const bool is_delete)
++int tmy_add_no_umount_policy(char *data, const bool is_delete)
 +{
-+	int count;
-+	bool is_ipv6;
-+	u8 min_address[16];
-+	u8 max_address[16];
-+	char *cp = strchr(data, ' ');
-+
-+	/*** Parse address_group_name part ***/
-+	if (!cp)
-+		return -EINVAL;
-+	*cp++ = '\0';
-+
-+	/*** Parse address part ***/
-+	/* single IPv6 or IPv6 range */
-+	count = strcspn(cp, "-");
-+	if (!in6_pton(cp, count, min_address, -1, NULL))
-+		goto no_ipv6;
-+	is_ipv6 = 1;
-+	cp += count;
-+	if (*cp++ != '-')
-+		goto copy_address;
-+	if (!in6_pton(cp, -1, max_address, -1, NULL))
-+		goto out;
-+	goto ok;
-+no_ipv6:
-+	/* single IPv4 or IPv4 range */
-+	if (!in4_pton(cp, count, min_address, -1, NULL))
-+		goto out;
-+	is_ipv6 = 0;
-+	cp += count;
-+	if (*cp++ != '-')
-+		goto copy_address;
-+	if (!in4_pton(cp, -1, max_address, -1, NULL))
-+		goto out;
-+	goto ok;
-+copy_address:
-+	memmove(max_address, min_address, sizeof(max_address));
-+ok: ;
-+	return tmy_add_address_group_entry(data, is_ipv6,
-+					   min_address,
-+					   max_address, is_delete);
-+out:
-+	return -EINVAL;
-+}
-+
-+static struct address_group_entry *tmy_new_address_group(const char *name)
-+{
-+	int i;
-+	struct address_group_entry *group;
-+
-+	for (i = 0; i <= 1; i++) {
-+		list_for_each_entry(group, &address_group_list, list) {
-+			if (strcmp(name, group->group_name->name) == 0)
-+				return group;
-+		}
-+
-+		if (i == 0) {
-+			/*
-+			 * Add a dummy entry to create new address group
-+			 * and delete that entry.
-+			 */
-+			const u8 dum[4] = { 0, 0, 0, 0 };
-+			tmy_add_address_group_entry(name, 0, dum, dum, 0);
-+			tmy_add_address_group_entry(name, 0, dum, dum, 1);
-+		}
-+	}
-+
-+	return NULL;
-+}
-+
-+static int tmy_address_match_group(const bool is_ipv6,
-+				   const u8 *address,
-+				   const struct address_group_entry *group)
-+{
-+	struct address_group_member *member;
-+	const u32 ip = ntohl(*(u32 *) address);
-+
-+	list_for_each_entry(member, &group->address_group_member_list, list) {
-+		if (member->is_deleted)
-+			continue;
-+
-+		if (member->is_ipv6) {
-+
-+			if (is_ipv6 &&
-+			    memcmp(member->min.ipv6, address, 16) <= 0 &&
-+			    memcmp(address, member->max.ipv6, 16) <= 0)
-+				return 1;
-+
-+		} else {
-+
-+			if (!is_ipv6 &&
-+			    member->min.ipv4 <= ip &&
-+			    ip <= member->max.ipv4)
-+				return 1;
-+
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int tmy_read_address_group(struct io_buffer *head,
-+			       struct address_group_entry *group,
-+			       struct address_group_member *member)
-+{
-+	char buf[128];
-+	if (!member)
-+		return 0;
-+
-+	if (member->is_ipv6) {
-+
-+		const struct in6_addr *min_addr = member->min.ipv6;
-+		const struct in6_addr *max_addr = member->max.ipv6;
-+
-+		tmy_print_ipv6(buf, sizeof(buf), min_addr);
-+
-+		if (min_addr != max_addr) {
-+			char *cp = strchr(buf, '\0');
-+			int len = sizeof(buf) - strlen(buf) - 1;
-+
-+			*cp++ = '-';
-+			tmy_print_ipv6(cp, len, max_addr);
-+		}
-+
-+	} else {
-+
-+		const u32 min_addr = member->min.ipv4;
-+		const u32 max_addr = member->max.ipv4;
-+
-+		memset(buf, 0, sizeof(buf));
-+		snprintf(buf, sizeof(buf) - 1,
-+			 NIPQUAD_FMT, HIPQUAD(min_addr));
-+
-+		if (min_addr != max_addr)
-+			tmy_sncatprintf(buf, sizeof(buf) - 1,
-+					"-" NIPQUAD_FMT, HIPQUAD(max_addr));
-+	}
-+
-+	return tmy_io_printf(head, TMY_ADDRESS_GROUP "%s %s\n",
-+			     group->group_name->name, buf);
++	return tmy_add_no_umount_acl(data, is_delete);
 +}
 +
 +/**
-+ * tmy_read_address_group_policy - read address group policy
++ * tmy_read_no_umount_policy - read no-unmount policy.
 + * @head: pointer to "struct io_buffer".
 + *
 + * Returns nonzero if reading incomplete.
 + * Returns zero otherwise.
 + */
-+int tmy_read_address_group_policy(struct io_buffer *head)
++int tmy_read_no_umount_policy(struct io_buffer *head)
 +{
-+	struct list_head *gpos;
-+	struct list_head *mpos;
-+	list_for_each_cookie(gpos, head->read_var1, &address_group_list) {
-+		struct address_group_entry *group;
-+		group = list_entry(gpos, struct address_group_entry, list);
-+		list_for_each_cookie(mpos, head->read_var2,
-+				     &group->address_group_member_list) {
-+			struct address_group_member *member;
-+			member = list_entry(mpos, struct address_group_member,
-+					    list);
-+			if (member->is_deleted)
-+				continue;
-+			if (tmy_read_address_group(head, group, member))
-+				return -ENOMEM;
-+		}
++	struct list_head *pos;
++	list_for_each_cookie(pos, head->read_var2, &no_umount_list) {
++		struct no_umount_entry *ptr;
++		ptr = list_entry(pos, struct no_umount_entry, list);
++		if (ptr->is_deleted)
++			continue;
++		if (tmy_io_printf(head, TMY_DENY_UNMOUNT "%s\n",
++				  ptr->dir->name))
++			return -ENOMEM;
 +	}
 +	return 0;
 +}
 +
-+/***********************  NETWORK NETWORK ACL HANDLER  ***********************/
++/***** The structure for pivot_root restrictions. *****/
 +
-+/**
-+ * tmy_print_ipv6 - print ipv6 address
-+ * @buffer:     pointer to buffer to save the result.
-+ * @buffer_len: sizeof @buffer .
-+ * @ip:         pointer to an IPv6 address in network byte order.
-+ *
-+ * Returns @buffer .
-+ */
-+char *tmy_print_ipv6(char *buffer, const int buffer_len,
-+		     const struct in6_addr *ip)
-+{
-+	memset(buffer, 0, buffer_len);
-+	snprintf(buffer, buffer_len - 1, NIP6_FMT, NIP6(*ip));
-+	return buffer;
-+}
++struct pivot_root_entry {
++	struct list_head list;
++	const struct path_info *old_root;
++	const struct path_info *new_root;
++	bool is_deleted;
++};
 +
-+/**
-+ * tmy_network2keyword - get keyword from access control index.
-+ * @operation: index number.
-+ *
-+ * Returns keyword that corresponds with @operation .
-+ */
-+const char *tmy_network2keyword(const unsigned int operation)
-+{
-+	const char *keyword = "unknown";
-+	switch (operation) {
-+	case TMY_NETWORK_ACL_UDP_BIND:
-+		keyword = "UDP bind";
-+		break;
-+	case TMY_NETWORK_ACL_UDP_CONNECT:
-+		keyword = "UDP connect";
-+		break;
-+	case TMY_NETWORK_ACL_TCP_BIND:
-+		keyword = "TCP bind";
-+		break;
-+	case TMY_NETWORK_ACL_TCP_LISTEN:
-+		keyword = "TCP listen";
-+		break;
-+	case TMY_NETWORK_ACL_TCP_CONNECT:
-+		keyword = "TCP connect";
-+		break;
-+	case TMY_NETWORK_ACL_TCP_ACCEPT:
-+		keyword = "TCP accept";
-+		break;
-+	case TMY_NETWORK_ACL_RAW_BIND:
-+		keyword = "RAW bind";
-+		break;
-+	case TMY_NETWORK_ACL_RAW_CONNECT:
-+		keyword = "RAW connect";
-+		break;
-+	}
-+	return keyword;
-+}
++/**********************  PIVOT_ROOT RESTRICTION HANDLER  **********************/
 +
-+/* Compare IPv4/IPv6 address. */
-+static int tmy_cmp_network_entry(const u8 record_type,
-+				 struct net_acl *acl,
-+				 const struct address_group_entry *group,
-+				 const u32 min_ip,
-+				 const u32 max_ip,
-+				 const struct in6_addr *saved_min_address,
-+				 const struct in6_addr *saved_max_address)
-+{
-+	switch (record_type) {
-+	case TMY_TYPE_ADDRESS_GROUP:
-+		return acl->u.group == group;
-+	case TMY_TYPE_IPv4:
-+		return acl->u.ipv4.min == min_ip &&
-+			max_ip == acl->u.ipv4.max;
-+	default:
-+		return acl->u.ipv6.min == saved_min_address &&
-+			saved_max_address ==  acl->u.ipv6.max;
-+	}
-+}
++static LIST_HEAD(pivot_root_list);
 +
-+static int tmy_add_network_entry(const u8 operation,
-+				 const u8 record_type,
-+				 const struct address_group_entry *group,
-+				 const u8 *min_address,
-+				 const u8 *max_address,
-+				 const u16 min_port,
-+				 const u16 max_port,
-+				 struct domain_info *domain,
-+				 const struct condition_list *cond,
-+				 const bool is_delete)
++/* Add or remove a pivot_root entry. */
++static int tmy_add_pivot_root_acl(const char *old_root,
++				  const char *new_root,
++				  const bool is_delete)
 +{
-+	struct acl_info *ptr;
-+	struct net_acl *acl;
++	struct pivot_root_entry *new_entry;
++	struct pivot_root_entry *ptr;
++	const struct path_info *saved_old_root;
++	const struct path_info *saved_new_root;
++	static DEFINE_MUTEX(mutex);
 +	int error = -ENOMEM;
-+	/* using host byte order to allow u32 comparison than memcmp().*/
-+	const u32 min_ip = ntohl(*(u32 *) min_address);
-+	const u32 max_ip = ntohl(*(u32 *) max_address);
-+	const struct in6_addr *saved_min_address = NULL;
-+	const struct in6_addr *saved_max_address = NULL;
-+	if (!domain)
++
++	if (!tmy_correct_path(old_root, 1, 0, 1, __FUNCTION__) ||
++	    !tmy_correct_path(new_root, 1, 0, 1, __FUNCTION__))
 +		return -EINVAL;
 +
-+	if (record_type == TMY_TYPE_IPv6) {
-+		saved_min_address =
-+			tmy_save_ipv6_address((struct in6_addr *) min_address);
-+		saved_max_address =
-+			tmy_save_ipv6_address((struct in6_addr *) max_address);
-+		if (!saved_min_address || !saved_max_address)
-+			return -ENOMEM;
-+	}
++	saved_old_root = tmy_save_name(old_root);
++	if (!saved_old_root)
++		return -ENOMEM;
++	saved_new_root = tmy_save_name(new_root);
++	if (!saved_new_root)
++		return -ENOMEM;
 +
-+	mutex_lock(&domain_acl_lock);
++	mutex_lock(&mutex);
 +
-+	if (is_delete)
-+		goto remove;
-+
-+	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		acl = container_of(ptr, struct net_acl, head);
-+		if (ptr->type == TMY_TYPE_IP_NETWORK_ACL &&
-+		    ptr->cond == cond &&
-+		    acl->operation_type == operation &&
-+		    acl->record_type == record_type &&
-+		    acl->min_port == min_port &&
-+		    max_port == acl->max_port &&
-+		    tmy_cmp_network_entry(record_type, acl,
-+					  group, min_ip, max_ip,
-+					  saved_min_address,
-+					  saved_max_address)) {
-+			ptr->is_deleted = 0;
++	list_for_each_entry(ptr, &pivot_root_list, list) {
++		if (ptr->old_root == saved_old_root &&
++		    ptr->new_root == saved_new_root) {
++			ptr->is_deleted = is_delete;
 +			error = 0;
-+			goto ok;
++			goto out;
 +		}
 +	}
-+	/* Not found. Append it to the tail. */
-+	acl = tmy_alloc_element(sizeof(*acl));
-+	if (!acl)
-+		goto ok;
 +
-+	acl->head.type = TMY_TYPE_IP_NETWORK_ACL;
-+	acl->head.cond = cond;
-+	acl->operation_type = operation;
-+	acl->record_type = record_type;
-+
-+	if (record_type == TMY_TYPE_ADDRESS_GROUP)
-+		acl->u.group = group;
-+	else if (record_type == TMY_TYPE_IPv4) {
-+		acl->u.ipv4.min = min_ip;
-+		acl->u.ipv4.max = max_ip;
-+	} else {
-+		acl->u.ipv6.min = saved_min_address;
-+		acl->u.ipv6.max = saved_max_address;
++	if (is_delete) {
++		error = -ENOENT;
++		goto out;
 +	}
 +
-+	acl->min_port = min_port;
-+	acl->max_port = max_port;
-+	error = tmy_add_acl(domain, &acl->head);
-+	goto ok;
-+remove: ;
-+	error = -ENOENT;
-+	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		acl = container_of(ptr, struct net_acl, head);
-+		if (ptr->type != TMY_TYPE_IP_NETWORK_ACL ||
-+		    ptr->cond != cond ||
-+		    ptr->is_deleted ||
-+		    acl->operation_type != operation ||
-+		    acl->record_type != record_type ||
-+		    acl->min_port != min_port ||
-+		    acl->max_port != max_port ||
-+		    !tmy_cmp_network_entry(record_type, acl,
-+					   group, min_ip, max_ip,
-+					   saved_min_address,
-+					   saved_max_address))
-+			continue;
-+		error = tmy_del_acl(ptr);
-+		break;
-+	}
-+ok: ;
-+	mutex_unlock(&domain_acl_lock);
++	new_entry = tmy_alloc_element(sizeof(*new_entry));
++	if (!new_entry)
++		goto out;
++
++	new_entry->old_root = saved_old_root;
++	new_entry->new_root = saved_new_root;
++	list_add_tail_mb(&new_entry->list, &pivot_root_list);
++	error = 0;
++out: ;
++
++	mutex_unlock(&mutex);
 +
 +	return error;
 +}
 +
-+/* Check network permission. */
-+static int tmy_network_entry(const bool is_ipv6,
-+			     const int operation,
-+			     const u8 *address,
-+			     const u16 port)
++/**
++ * tmy_pivot_root_perm - check for pivot_root permission.
++ * @old_nd:  pointer to "struct nameidata".
++ * @new_nd:  pointer to "struct nameidata".
++ *
++ * Returns zero if permission granted.
++ * Returns nonzero if permission denied.
++ */
++int tmy_pivot_root_perm(struct nameidata *old_nd, struct nameidata *new_nd)
 +{
-+	struct domain_info * const domain = TMY_SECURITY->domain;
-+	const u8 profile = domain->profile;
-+	const unsigned int mode = tmy_flags(TMY_MAC_FOR_NETWORK);
-+	struct acl_info *ptr;
-+	const char *keyword = tmy_network2keyword(operation);
++	int error = -EPERM;
++	const unsigned int mode = tmy_flags(TMY_RESTRICT_PIVOT_ROOT);
 +	const bool is_enforce = (mode == 3);
-+	/* using host byte order to allow u32 comparison than memcmp().*/
-+	const u32 ip = ntohl(*(u32 *) address);
-+	bool found = 0;
++	char *old_root;
++	char *new_root;
++	struct path_info old_root_dir;
++	struct path_info new_root_dir;
 +
 +	if (!mode)
 +		return 0;
 +
-+	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		struct net_acl *acl;
-+		acl = container_of(ptr, struct net_acl, head);
-+		if (ptr->type != TMY_TYPE_IP_NETWORK_ACL ||
-+		    ptr->is_deleted ||
-+		    acl->operation_type != operation ||
-+		    port < acl->min_port ||
-+		    acl->max_port < port ||
-+		    tmy_check_condition(ptr->cond, NULL))
-+			continue;
++	old_root = tmy_realpath_dentry(old_nd->path.dentry, old_nd->path.mnt);
++	new_root = tmy_realpath_dentry(new_nd->path.dentry, new_nd->path.mnt);
 +
-+		if (acl->record_type == TMY_TYPE_ADDRESS_GROUP) {
-+			if (tmy_address_match_group(is_ipv6, address,
-+						    acl->u.group)) {
-+				found = 1;
-+				break;
-+			}
-+		} else if (acl->record_type == TMY_TYPE_IPv4) {
-+			if (!is_ipv6 &&
-+			    (acl->u.ipv4.min <= ip && ip <= acl->u.ipv4.max)) {
-+				found = 1;
-+				break;
-+			}
-+		} else {
-+			if (is_ipv6 &&
-+			    memcmp(acl->u.ipv6.min, address, 16) <= 0 &&
-+			    memcmp(address, acl->u.ipv6.max, 16) <= 0) {
-+				found = 1;
++	if (!old_root || !new_root)
++		goto out;
++
++	old_root_dir.name = old_root;
++	tmy_fill_path_info(&old_root_dir);
++	new_root_dir.name = new_root;
++	tmy_fill_path_info(&new_root_dir);
++
++	if (old_root_dir.is_dir && new_root_dir.is_dir) {
++		struct pivot_root_entry *ptr;
++		list_for_each_entry(ptr, &pivot_root_list, list) {
++			if (ptr->is_deleted)
++				continue;
++			if (tmy_path_match(&old_root_dir, ptr->old_root) &&
++			    tmy_path_match(&new_root_dir, ptr->new_root)) {
++				error = 0;
 +				break;
 +			}
 +		}
 +	}
 +
-+	tmy_audit_network_log(is_ipv6, keyword, address,
-+			      port, found, profile, mode);
++out: ;
++	if (error) {
++		const char *exename = tmy_get_exe();
++		tmy_audit("TOMOYO-%s: pivot_root %s %s (pid=%d:exe=%s): "
++			  "Permission denied.\n", tmy_getmsg(is_enforce),
++			  new_root, old_root, current->pid, exename);
++		if (is_enforce &&
++		    tmy_supervisor("# %s is requesting\npivot_root %s %s\n",
++				   exename, new_root, old_root) == 0)
++			error = 0;
 +
-+	if (found)
-+		return 0;
++		if (exename)
++			tmy_free(exename);
 +
-+	if (tmy_flags(TMY_VERBOSE)) {
-+		if (is_ipv6) {
-+			char buf[64];
-+			tmy_print_ipv6(buf, sizeof(buf),
-+				       (const struct in6_addr *) address);
-+			tmy_audit("TOMOYO-%s: %s to %s %u denied for %s\n",
-+				  tmy_getmsg(is_enforce), keyword, buf, port,
-+				  tmy_lastname(domain));
-+		} else {
-+			tmy_audit("TOMOYO-%s: %s to %u.%u.%u.%u %u denied for "
-+				  "%s\n", tmy_getmsg(is_enforce), keyword,
-+				  HIPQUAD(ip), port, tmy_lastname(domain));
-+		}
-+	}
-+
-+	if (is_enforce) {
-+
-+		if (is_ipv6) {
-+
-+			char buf[64];
-+
-+			tmy_print_ipv6(buf, sizeof(buf),
-+				       (const struct in6_addr *) address);
-+			return tmy_supervisor("%s\n" TMY_ALLOW_NETWORK
-+					      "%s %s %u\n",
-+					      domain->domainname->name, keyword,
-+					      buf, port);
-+
++		if (!is_enforce && mode == 1 && old_root && new_root) {
++			tmy_add_pivot_root_acl(old_root, new_root, 0);
++			tmy_update_counter(TMY_UPDATE_SYSTEMPOLICY);
 +		}
 +
-+		return tmy_supervisor("%s\n" TMY_ALLOW_NETWORK
-+				      "%s " NIPQUAD_FMT " %u\n",
-+				      domain->domainname->name, keyword,
-+				      HIPQUAD(ip), port);
-+
++		if (!is_enforce)
++			error = 0;
 +	}
 +
-+	if (mode == 1 && tmy_quota())
-+		tmy_add_network_entry(operation,
-+				      is_ipv6 ? TMY_TYPE_IPv6 : TMY_TYPE_IPv4,
-+				      NULL, address, address,
-+				      port, port, domain, NULL, 0);
-+
-+	return 0;
++	tmy_free(old_root);
++	tmy_free(new_root);
++	return error;
 +}
 +
 +/**
-+ * tmy_add_network_policy - add or delete network policy.
++ * tmy_add_pivot_root_policy - add or delete pivot_root policy.
 + * @data:      a line to parse.
-+ * @domain:    pointer to "struct domain_info".
-+ * @cond:      pointer to "struct condition_list". May be NULL.
 + * @is_delete: is this delete request?
 + *
 + * Returns zero on success.
 + * Returns nonzero on failure.
 + */
-+int tmy_add_network_policy(char *data,
-+			   struct domain_info *domain,
-+			   const struct condition_list *cond,
-+			   const bool is_delete)
++int tmy_add_pivot_root_policy(char *data, const bool is_delete)
 +{
-+	u8 sock_type;
-+	u8 operation;
-+	u8 record_type;
-+	u8 min_address[16];
-+	u8 max_address[16];
-+	struct address_group_entry *group = NULL;
-+	u16 min_port;
-+	u16 max_port;
-+	int count;
-+	char *cp1 = NULL;
-+	char *cp2 = NULL;
++	char *cp = strchr(data, ' ');
 +
-+	cp1 = strchr(data, ' ');
-+	if (!cp1)
-+		goto out;
-+	cp1++;
++	if (!cp)
++		return -EINVAL;
++	*cp++ = '\0';
 +
-+	if (strncmp(data, "TCP ", 4) == 0)
-+		sock_type = SOCK_STREAM;
-+	else if (strncmp(data, "UDP ", 4) == 0)
-+		sock_type = SOCK_DGRAM;
-+	else if (strncmp(data, "RAW ", 4) == 0)
-+		sock_type = SOCK_RAW;
-+	else
-+		goto out;
-+
-+	cp2 = strchr(cp1, ' ');
-+	if (!cp2)
-+		goto out;
-+	cp2++;
-+
-+	if (strncmp(cp1, "bind ", 5) == 0) {
-+		switch (sock_type) {
-+		case SOCK_STREAM:
-+			operation = TMY_NETWORK_ACL_TCP_BIND;
-+			break;
-+		case SOCK_DGRAM:
-+			operation = TMY_NETWORK_ACL_UDP_BIND;
-+			break;
-+		default:
-+			operation = TMY_NETWORK_ACL_RAW_BIND;
-+			break;
-+		}
-+	} else if (strncmp(cp1, "connect ", 8) == 0) {
-+		switch (sock_type) {
-+		case SOCK_STREAM:
-+			operation = TMY_NETWORK_ACL_TCP_CONNECT;
-+			break;
-+		case SOCK_DGRAM:
-+			operation = TMY_NETWORK_ACL_UDP_CONNECT;
-+			break;
-+		default:
-+			operation = TMY_NETWORK_ACL_RAW_CONNECT;
-+			break;
-+		}
-+	} else if (sock_type == SOCK_STREAM &&
-+		   strncmp(cp1, "listen ", 7) == 0)
-+		operation = TMY_NETWORK_ACL_TCP_LISTEN;
-+
-+	else if (sock_type == SOCK_STREAM &&
-+		 strncmp(cp1, "accept ", 7) == 0)
-+		operation = TMY_NETWORK_ACL_TCP_ACCEPT;
-+
-+	else
-+		goto out;
-+
-+	/*** Parse port part. ***/
-+	cp1 = strchr(cp2, ' ');
-+	if (!cp1)
-+		goto out;
-+	*cp1++ = '\0';
-+	if (strchr(cp1, ' '))
-+		goto out;
-+	count = sscanf(cp1, "%hu-%hu", &min_port, &max_port);
-+	if (count != 1 && count != 2)
-+		goto out;
-+	if (count == 1)
-+		max_port = min_port;
-+
-+	/*** Parse address part. ***/
-+	if (*cp2 != '@')
-+		goto no_address_group;
-+	/* @address_group_name */
-+	group = tmy_new_address_group(cp2 + 1);
-+	if (!group)
-+		return -ENOMEM;
-+	record_type = TMY_TYPE_ADDRESS_GROUP;
-+	goto ok;
-+no_address_group:
-+	count = strcspn(cp2, "-");
-+	if (!in6_pton(cp2, count, min_address, -1, NULL))
-+		goto no_ipv6;
-+	/* single IPv6 or IPv6 range */
-+	record_type = TMY_TYPE_IPv6;
-+	cp2 += count;
-+	if (*cp2++ != '-')
-+		goto copy_address;
-+	if (!in6_pton(cp2, -1, max_address, -1, NULL))
-+		goto out;
-+	goto ok;
-+no_ipv6:
-+	if (!in4_pton(cp2, count, min_address, -1, NULL))
-+		goto out;
-+	/* single IPv4 or IPv4 range */
-+	record_type = TMY_TYPE_IPv4;
-+	cp2 += count;
-+	if (*cp2++ != '-')
-+		goto copy_address;
-+	if (!in4_pton(cp2, -1, max_address, -1, NULL))
-+		goto out;
-+	goto ok;
-+copy_address:
-+	memmove(max_address, min_address, sizeof(max_address));
-+ok: ;
-+	return tmy_add_network_entry(operation, record_type, group,
-+				     min_address, max_address,
-+				     min_port, max_port, domain,
-+				     cond, is_delete);
-+out: ;
-+	return -EINVAL;
++	return tmy_add_pivot_root_acl(cp, data, is_delete);
 +}
 +
 +/**
-+ * tmy_network_listen_acl - check permission for listen(2) operation.
-+ * @is_ipv6: is @address an IPv6 address?
-+ * @address: pointer to IPv4/IPv6 address in network byte order.
-+ * @port:    TCP or UDP's port number.
++ * tmy_read_pivot_root_policy - read pivot_root policy.
++ * @head: pointer to "struct io_buffer".
 + *
-+ * Returns zero if permission granted.
-+ * Returns nonzero if permission denied.
++ * Returns nonzero if reading incomplete.
++ * Returns zero otherwise.
 + */
-+int tmy_network_listen_acl(const bool is_ipv6,
-+			   const u8 *address,
-+			   const u16 port)
++int tmy_read_pivot_root_policy(struct io_buffer *head)
 +{
-+	return tmy_network_entry(is_ipv6, TMY_NETWORK_ACL_TCP_LISTEN,
-+				 address, ntohs(port));
-+}
-+
-+/**
-+ * tmy_network_connect_acl - check permission for connect(2) operation.
-+ * @is_ipv6:   is @address an IPv6 address?
-+ * @sock_type: socket type (TCP, UDP or IP).
-+ * @address:   pointer to IPv4/IPv6 address in network byte order.
-+ * @port:      TCP or UDP's port number or IP's protocol number.
-+ *
-+ * Returns zero if permission granted.
-+ * Returns nonzero if permission denied.
-+ */
-+int tmy_network_connect_acl(const bool is_ipv6,
-+			    const int sock_type,
-+			    const u8 *address,
-+			    const u16 port)
-+{
-+	int type;
-+
-+	switch (sock_type) {
-+	case SOCK_STREAM:
-+		type = TMY_NETWORK_ACL_TCP_CONNECT;
-+		break;
-+	case SOCK_DGRAM:
-+		type = TMY_NETWORK_ACL_UDP_CONNECT;
-+		break;
-+	default:
-+		type = TMY_NETWORK_ACL_RAW_CONNECT;
-+		break;
++	struct list_head *pos;
++	list_for_each_cookie(pos, head->read_var2, &pivot_root_list) {
++		struct pivot_root_entry *ptr;
++		ptr = list_entry(pos, struct pivot_root_entry, list);
++		if (ptr->is_deleted)
++			continue;
++		if (tmy_io_printf(head, TMY_ALLOW_PIVOT_ROOT "%s %s\n",
++				  ptr->new_root->name, ptr->old_root->name))
++			return -ENOMEM;
 +	}
-+
-+	return tmy_network_entry(is_ipv6, type, address, ntohs(port));
-+}
-+
-+/**
-+ * tmy_network_bind_acl - check permission for bind(2) operation.
-+ * @is_ipv6:   is @address an IPv6 address?
-+ * @sock_type: socket type (TCP, UDP or IP).
-+ * @address:   pointer to IPv4/IPv6 address in network byte order.
-+ * @port:      TCP or UDP's port number or IP's protocol number.
-+ *
-+ * Returns zero if permission granted.
-+ * Returns nonzero if permission denied.
-+ */
-+int tmy_network_bind_acl(const bool is_ipv6,
-+			 const int sock_type,
-+			 const u8 *address,
-+			 const u16 port)
-+{
-+	int type;
-+
-+	switch (sock_type) {
-+	case SOCK_STREAM:
-+		type = TMY_NETWORK_ACL_TCP_BIND;
-+		break;
-+	case SOCK_DGRAM:
-+		type = TMY_NETWORK_ACL_UDP_BIND;
-+		break;
-+	default:
-+		type = TMY_NETWORK_ACL_RAW_BIND;
-+		break;
-+	}
-+
-+	return tmy_network_entry(is_ipv6, type, address, ntohs(port));
-+}
-+
-+/**
-+ * tmy_network_sendmsg_acl - check permission for sendmsg(2) operation.
-+ * @is_ipv6:   is @address an IPv6 address?
-+ * @sock_type: socket type (UDP or IP).
-+ * @address:   pointer to IPv4/IPv6 address in network byte order.
-+ * @port:      UDP's port number or IP's protocol number.
-+ *
-+ * Returns zero if permission granted.
-+ * Returns nonzero if permission denied.
-+ */
-+int tmy_network_sendmsg_acl(const bool is_ipv6,
-+			    const int sock_type,
-+			    const u8 *address,
-+			    const u16 port)
-+{
-+	int type;
-+
-+	if (sock_type == SOCK_DGRAM)
-+		type = TMY_NETWORK_ACL_UDP_CONNECT;
-+	else
-+		type = TMY_NETWORK_ACL_RAW_CONNECT;
-+
-+	return tmy_network_entry(is_ipv6, type, address, ntohs(port));
-+}
-+
-+/**
-+ * tmy_network_accept_acl - check permission for accept(2) operation.
-+ * @is_ipv6:   is @address an IPv6 address?
-+ * @address:   pointer to IPv4/IPv6 address in network byte order.
-+ * @port:      TCP client's port number.
-+ *
-+ * Returns zero if permission granted.
-+ * Returns nonzero if permission denied.
-+ */
-+int tmy_network_accept_acl(const bool is_ipv6, const u8 *address,
-+			   const u16 port)
-+{
-+	return tmy_network_entry(is_ipv6, TMY_NETWORK_ACL_TCP_ACCEPT,
-+				 address, ntohs(port));
-+}
-+
-+/**
-+ * tmy_network_recvmsg_acl - check permission for recvmsg(2) operation.
-+ * @is_ipv6:   is @address an IPv6 address?
-+ * @sock_type: socket type (UDP or IP).
-+ * @address:   pointer to IPv4/IPv6 address in network byte order.
-+ * @port:      UDP's port number or IP's protocol number.
-+ *
-+ * Returns zero if permission granted.
-+ * Returns nonzero if permission denied.
-+ */
-+int tmy_network_recvmsg_acl(const bool is_ipv6, const int sock_type,
-+			    const u8 *address, const u16 port)
-+{
-+	return tmy_network_entry(is_ipv6, sock_type == SOCK_DGRAM ?
-+				 TMY_NETWORK_ACL_UDP_CONNECT :
-+				 TMY_NETWORK_ACL_RAW_CONNECT,
-+				 address, ntohs(port));
++	return 0;
 +}
 
 -- 
