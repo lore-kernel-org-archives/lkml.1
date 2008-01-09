@@ -1,74 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbYAINeM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752411AbYAINfR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755186AbYAINeM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 08:34:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbYAINd6
+	id S1752411AbYAINfR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 08:35:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbYAINfB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 08:33:58 -0500
-Received: from systemlinux.org ([83.151.29.59]:44388 "EHLO m18s25.vlinux.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751787AbYAINd5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 08:33:57 -0500
-Date: Wed, 9 Jan 2008 14:33:23 +0100
-From: Andre Noll <maan@systemlinux.org>
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, paolo.ciarrocchi@gmail.com,
-       gorcunov@gmail.com
-Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
-Message-ID: <20080109133323.GD16462@skl-net.de>
-References: <20080108164015.GC31504@one.firstfloor.org> <20080109103459.GC16462@skl-net.de> <4784C96D.5030805@student.ltu.se>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="XvKFcGCOAo53UbWW"
+	Wed, 9 Jan 2008 08:35:01 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:46766 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751419AbYAINfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 08:35:00 -0500
+Date: Wed, 9 Jan 2008 14:35:06 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
+       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
+Subject: Re: [patch 7/9] unprivileged mounts: allow unprivileged fuse mounts
+Message-ID: <20080109133506.GI9735@elf.ucw.cz>
+References: <20080108113502.184459371@szeredi.hu> <20080108113630.861045063@szeredi.hu> <20080108214625.GE5050@ucw.cz> <E1JCN9I-0004DB-DF@pomaz-ex.szeredi.hu> <20080108225820.GA9735@elf.ucw.cz> <E1JCWxm-0005Fn-36@pomaz-ex.szeredi.hu> <20080109113325.GC9735@elf.ucw.cz> <E1JCan7-0005mP-UE@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4784C96D.5030805@student.ltu.se>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <E1JCan7-0005mP-UE@pomaz-ex.szeredi.hu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
---XvKFcGCOAo53UbWW
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> > ...this will break with FUSE enabled, right? (Minor security hole by
+> > allowing users to stop c-a-delete, where none existed before?)
+> 
+> Yup (or I don't know, I'm sure there was or is some problem with
+> ptrace, that could be used to create unkillable processes).
+> 
+> Fuse could actually be fixed to exit reliably for 'killall5 -9' (it
+> used to), but that has other problems, and it doesn't seem very
+> important to me.  But this can be discussed.
 
-On 14:17, Richard Knutsson wrote:
+I think it is better to fix fuse than to rewrite all the shutdown scripts.
 
-> Would had preferred:
->=20
-> if (x) {
->    result =3D -Exxxx;
->    goto out;
-> }
->=20
-> then:
->=20
-> result =3D -Exxxx;
-> if (x)
->    goto out;
->=20
+> What cannot be fixed is if one process is inside an fs operation
+> (e.g. unlink), holding a VFS lock (i_mutex) and another process goes
+> to uninterruptible sleep on that lock.  There's no way (other than
+> rewriting the VFS) in which that second process could be killed unless
+> you kill the first one or the fuse server.
 
-AFAIK, the second form is preferred in Linux because it is better
-readable and it generates slightly better code.
+I believe VFS should be rewritten here. Perhaps new "TASK_KILLABLE"
+state can help?
 
-Thanks for the review.
-Andre
---=20
-The only person who always got his work done by Friday was Robinson Crusoe
+> > I really believe FUSE vs. signals needs fixing. Either that, or
+> > updating all the manpages
+> > 
+> > man 1 kill:
+> > -       KILL       9   exit      this signal may not be blocked
+> > +       KILL       9   exit      this signal may not be blocked, except by FUSE user mount
+> 
+> Heh, there are all very interesting, but most of these issues are not
+> even on my todo list (which has grown into quite a big pile over the
+> years), which means, that they don't seem to matter to people in
+> practice.
+> 
+> You seem to be implying that fuse is worthless if these issues are not
+> fixed, but that is very far from the truth, I think.
 
---XvKFcGCOAo53UbWW
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQFHhM0jWto1QDEAkw8RAhw8AJ4x2Jt2rknSfKQRxn8+4/t1ly+WAgCfZNRr
-vBjDHDAL+TsEaBbDDD6ZnHQ=
-=n25R
------END PGP SIGNATURE-----
-
---XvKFcGCOAo53UbWW--
+I'm not saying fuse is worthless. It is a nice toy for single-user
+systems. But I do not think we should be merging "allow ordinary users
+to mount their own fuse's" before issues above are fixed.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
