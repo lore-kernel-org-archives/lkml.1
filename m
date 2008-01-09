@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbYAIXGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbYAIXOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756713AbYAIXGX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 18:06:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbYAIXGO
+	id S1756218AbYAIXOi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 18:14:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbYAIXOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 18:06:14 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54558 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751112AbYAIXGN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 18:06:13 -0500
-Date: Wed, 9 Jan 2008 23:05:45 +0000
-From: Alasdair G Kergon <agk@redhat.com>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: Alasdair G Kergon <agk@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Matt Mackall <mpm@selenic.com>,
-       Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       gorcunov@gmail.com
-Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
-Message-ID: <20080109230545.GG3510@agk.fab.redhat.com>
-Mail-Followup-To: Alasdair G Kergon <agk@redhat.com>,
-	Chris Friesen <cfriesen@nortel.com>,
-	Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
-	Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>,
-	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-	gorcunov@gmail.com
-References: <20080108164015.GC31504@one.firstfloor.org> <4d8e3fd30801081158j3e7292d0i939776342015b12d@mail.gmail.com> <1199909560.6245.67.camel@cinder.waste.org> <20080109224026.GA4039@agk.fab.redhat.com> <20080109224603.GH15612@one.firstfloor.org> <20080109224513.GF3510@agk.fab.redhat.com> <478551A6.9050803@nortel.com>
+	Wed, 9 Jan 2008 18:14:30 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53658 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752750AbYAIXO3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 18:14:29 -0500
+Date: Wed, 9 Jan 2008 15:13:19 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pierre Peiffer <pierre.peiffer@bull.net>
+Cc: ricknu-0@student.ltu.se, nadia.derbey@bull.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [-mm] new warning in ipc/msg.c
+Message-Id: <20080109151319.edff136c.akpm@linux-foundation.org>
+In-Reply-To: <4784EB6A.5020604@bull.net>
+References: <4784EB6A.5020604@bull.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <478551A6.9050803@nortel.com>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 09, 2008 at 04:58:46PM -0600, Chris Friesen wrote:
-> Alasdair G Kergon wrote:
-> >On Wed, Jan 09, 2008 at 11:46:03PM +0100, Andi Kleen wrote:
-> >>struct inode *inode = file->f_dentry->d_inode;
-> >And oops if that's not defined?
-> Isn't this basically identical to what was being passed in to .ioctl()?
- 
-Not in every case, unless someone's been through and created fake structures in
-all the remaining places that pass in a NULL 'file' because there isn't one
-available.
+On Wed, 09 Jan 2008 16:42:34 +0100
+Pierre Peiffer <pierre.peiffer@bull.net> wrote:
 
-Alasdair
--- 
-agk@redhat.com
+> Hi,
+> 
+> This very small patch:
+>     ipc-convert-handmade-min-to-min.patch
+> introduces a new warning when compiling the -mm kernel:
+> 
+> .../linux-2.6.24-rc6-mm1/ipc/msg.c: In function `do_msgrcv':
+> .../linux-2.6.24-rc6-mm1/ipc/msg.c:939: warning: comparison of distinct pointer
+> types lacks a cast
+> 
+> I don't know if doing in include/linux/msg.h
+> 
+> struct msg_msg {
+> 	struct list_head m_list;
+> 	long  m_type;
+> -	int m_ts;           /* message text size */
+> +	size_t m_ts;           /* message text size */
+> 	struct msg_msgseg* next;
+> 	void *security;
+> 	/* the actual message follows immediately */
+> };
+> 
+> is acceptable ?
+> 
+> Otherwise, either a cast can be added or this patch can be dropped...
+> 
+
+Thanks.  I think I'll drop the original patch.  The mix of ints, size_t's,
+etc in that code is pretty random and would be best addressed by somene
+sitting down and working out from scratch what types we _should_ be using
+in there and then making all the code use the right types in an organised
+fashion.
+
+Doing this in a piecemeal through-a-pinhole fashion won't work very well
+and is a bit risky.
+
