@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756184AbYAIVd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbYAIVsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756184AbYAIVd6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 16:33:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbYAIVdu
+	id S1755482AbYAIVsT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 16:48:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYAIVsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 16:33:50 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:33234 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752360AbYAIVdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 16:33:50 -0500
-Date: Wed, 9 Jan 2008 23:33:06 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: andi@firstfloor.org, harvey.harrison@gmail.com, jdike@addtoit.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: uml and -regparm=3
-Message-ID: <20080109213305.GC4394@does.not.exist>
-References: <E1JCi3M-0006hO-7i@pomaz-ex.szeredi.hu> <p734pdmput0.fsf@bingen.suse.de> <E1JCiLx-0006lI-HR@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <E1JCiLx-0006lI-HR@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.17 (2007-12-11)
+	Wed, 9 Jan 2008 16:48:09 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:41488 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750825AbYAIVsI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 16:48:08 -0500
+Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
+	I/O delay override.
+From: Zachary Amsden <zach@vmware.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "David P. Reed" <dpreed@reed.com>, Avi Kivity <avi@quramnet.com>,
+       Christer Weinigel <christer@weinigel.se>,
+       Ondrej Zary <linux@rainbow-software.org>,
+       Rene Herman <rene.herman@keyaccess.nl>, Bodo Eggert <7eggert@gmx.de>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Paul Rolland <rol@as2917.net>, Pavel Machek <pavel@ucw.cz>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, rol <rol@witbe.net>
+In-Reply-To: <47845972.9090803@zytor.com>
+References: <9BdU5-1YW-9@gated-at.bofh.it>
+	 <200801081810.58904.linux@rainbow-software.org> <4783B1B2.6070005@reed.com>
+	 <200801081838.16241.linux@rainbow-software.org> <4783C4A6.9060402@reed.com>
+	 <20080108185120.3ff7ed18@lxorguk.ukuu.org.uk> <4783CBD9.7020709@reed.com>
+	 <1199847162.7369.323.camel@bodhitayantram.eng.vmware.com>
+	 <47845972.9090803@zytor.com>
+Content-Type: text/plain
+Date: Wed, 09 Jan 2008 13:53:34 -0800
+Message-Id: <1199915614.7369.367.camel@bodhitayantram.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 09, 2008 at 10:20:49PM +0100, Miklos Szeredi wrote:
-> > Miklos Szeredi <miklos@szeredi.hu> writes:
+On Tue, 2008-01-08 at 21:19 -0800, H. Peter Anvin wrote:
+> Zachary Amsden wrote:
 > > 
-> > > FASTCALL is defined empty in -mm, but UML is not compiled with
-> > > -mregparm=3 and so this breaks things (I noticed problems with
-> > > rwsem_down_write_failed).
-> > >
-> > > Tried recompiling UML with -mregparm=3, but that resulted in a strange
-> > > failure immediately after startup:
-> > >
-> > > |%Gï¿½%@: Invalid argument
-> > >
-> > > What's up?
-> > 
-> > UML links with glibc and that does not use -mregparm. 
-> > 
-> > You can only use -mregparm in user space if you recompile
-> > all libraries too.
+> > BTW, it isn't ever safe to pass port 0x80 through to hardware from a
+> > virtual machine; some OSes use port 0x80 as a hardware available scratch
+> > register (I believe Darwin/x86 did/does this during boot).
 > 
-> Ah, right.  I didn't think of that.
-> 
-> Does that mean that FASTCALL removals will have to be undone?  Or is
-> there an alternative?
+> That's funny, because there is definitely no guarantee that you get back 
+> what you read (well, perhaps there is on Apple.)
 
-It's enough when we keep fastcall/FASTCALL in the few cases where UML 
-calls assembler code with this calling convention. [1]
+According to Phoenix Technologies book "System BIOS for IBM PCs,
+Compatibles and EISA Computers, 2nd Edition", the I/O port list gives
 
-> Miklos
+port 0080h   R/W  Extra page register (temporary storage)
 
-cu
-Adrian
+Despite looking, I've never seen it documented anywhere else, but I
+believe it works on just about every PC platform.  Except, apparently,
+my laptop.
 
-[1] http://lkml.org/lkml/2007/12/4/425
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Zach
 
