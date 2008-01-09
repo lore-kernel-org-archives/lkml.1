@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756098AbYAITTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756347AbYAITUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756098AbYAITTQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 14:19:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022AbYAITTF
+	id S1756347AbYAITUS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 14:20:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754221AbYAITUD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 14:19:05 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:43460 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753957AbYAITTE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 14:19:04 -0500
-Date: Wed, 9 Jan 2008 11:19:01 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: cleanup setup_node_zones called by paging_init
- v2
-In-Reply-To: <200801091030.40545.yinghai.lu@sun.com>
-Message-ID: <Pine.LNX.4.64.0801091117430.11317@schroedinger.engr.sgi.com>
-References: <200801081934.33964.yinghai.lu@sun.com>
- <Pine.LNX.4.64.0801090947570.10163@schroedinger.engr.sgi.com>
- <200801091030.40545.yinghai.lu@sun.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 9 Jan 2008 14:20:03 -0500
+Received: from zombie.ncsc.mil ([144.51.88.131]:38463 "EHLO zombie.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753119AbYAITUA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 14:20:00 -0500
+Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM
+	settings for task actions [try #2]
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: David Howells <dhowells@redhat.com>
+Cc: Daniel J Walsh <dwalsh@redhat.com>, casey@schaufler-ca.com,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <1316.1199904980@redhat.com>
+References: <1199902278.9393.283.camel@moss-spartans.epoch.ncsc.mil>
+	 <1197307397.18120.72.camel@moss-spartans.epoch.ncsc.mil>
+	 <1197305173.18120.60.camel@moss-spartans.epoch.ncsc.mil>
+	 <20071205193818.24617.79771.stgit@warthog.procyon.org.uk>
+	 <20071205193859.24617.36392.stgit@warthog.procyon.org.uk>
+	 <25037.1197306473@redhat.com> <17868.1199897484@redhat.com>
+	 <1316.1199904980@redhat.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Wed, 09 Jan 2008 14:19:18 -0500
+Message-Id: <1199906358.9393.324.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Jan 2008, Yinghai Lu wrote:
 
-> +#ifdef CONFIG_FLAT_NODE_MEM_MAP
->  /* Initialize final allocator for a zone */
-> -void __init setup_node_zones(int nodeid)
-> +static void __init setup_node_zones(int nodeid)
->  { 
->  	unsigned long start_pfn, end_pfn, memmapsize, limit;
->  
-> @@ -244,14 +245,14 @@ void __init setup_node_zones(int nodeid)
->  	   memory. */
->  	memmapsize = sizeof(struct page) * (end_pfn-start_pfn);
->  	limit = end_pfn << PAGE_SHIFT;
-> -#ifdef CONFIG_FLAT_NODE_MEM_MAP
-> +
->  	NODE_DATA(nodeid)->node_mem_map = 
->  		__alloc_bootmem_core(NODE_DATA(nodeid)->bdata, 
->  				memmapsize, SMP_CACHE_BYTES, 
->  				round_down(limit - memmapsize, PAGE_SIZE), 
->  				limit);
-> -#endif
->  } 
+On Wed, 2008-01-09 at 18:56 +0000, David Howells wrote:
+> Stephen Smalley <sds@tycho.nsa.gov> wrote:
+> 
+> > Right, the latter is reasonable.
+> > Requires adding the class and permission definition to
+> > policy/flask/security_classes and policy/flask/access_vectors and then
+> > regenerating the kernel headers from those files, ala:
+> >   svn co http://oss.tresys.com/repos/refpolicy/trunk refpolicy
+> >   cd refpolicy/policy/flask
+> >   vi security_classes access_vectors
+> >   <add new class to end>
+> >   make
+> >   make LINUX_D=/path/to/linux-2.6 tokern
+> 
+> Does this require rebuilding and updating all the SELinux rpms to know about
+> the new class?
 
-Here you could do an 
+Policy ultimately has to be updated in order to start writing allow
+rules based on the new class/perm.  libselinux et al doesn't have to
+change.
 
-#else
+If you have a "SELinux:  policy loaded with handle_unknown=allow"
+message in your /var/log/messages, then new classes/perms that are not
+yet known to the policy will be allowed by default, so the operation
+will be permitted by the kernel.
 
-<empty def of setup_node_zones>
+-- 
+Stephen Smalley
+National Security Agency
 
-which would avoid the additional #ifdef later.
-
-Also move the for_each statement into that function. 
-
-The current version will have an unused variable i if 
-CONFIG_FLAG_NODE_MEM_MAP is not set.
