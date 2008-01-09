@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753119AbYAIULh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900AbYAIUNK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753119AbYAIULh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 15:11:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755528AbYAIULY
+	id S1754900AbYAIUNK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 15:13:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbYAIUM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 15:11:24 -0500
-Received: from mailout08.sul.t-online.de ([194.25.134.20]:43151 "EHLO
-	mailout08.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754600AbYAIULW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 15:11:22 -0500
-Message-ID: <47852A41.9020903@t-online.de>
-Date: Wed, 09 Jan 2008 21:10:41 +0100
-From: Harald Dunkel <harald.dunkel@t-online.de>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc7, intel audio: alsa doesn't say a beep
-References: <4782833D.3010600@t-online.de>	<s5h3at8rd9c.wl%tiwai@suse.de>	<4783AC7C.50900@t-online.de>	<s5h63y42oy6.wl%tiwai@suse.de>	<478463A6.2070106@t-online.de> <s5h8x2zo3ox.wl%tiwai@suse.de>
-In-Reply-To: <s5h8x2zo3ox.wl%tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 9 Jan 2008 15:12:57 -0500
+Received: from waste.org ([66.93.16.53]:41372 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753115AbYAIUM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 15:12:56 -0500
+Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
+From: Matt Mackall <mpm@selenic.com>
+To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, gorcunov@gmail.com
+In-Reply-To: <4d8e3fd30801081158j3e7292d0i939776342015b12d@mail.gmail.com>
+References: <20080108164015.GC31504@one.firstfloor.org>
+	 <4d8e3fd30801081158j3e7292d0i939776342015b12d@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 09 Jan 2008 14:12:40 -0600
+Message-Id: <1199909560.6245.67.camel@cinder.waste.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
-X-ID: r9pZJBZCohp93pbuirJ3uj9rdn4YKoJbSDgn69sZ0Tlbby8O6Uwb4YWMtXUMkhsgIm
-X-TOI-MSGID: bdec3e48-44f9-43b2-8bca-1228499d62e0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takashi Iwai wrote:
-> 
-> Thanks.  Then the possible reason might be the registers that don't
-> appear in this proc output, such as GPIO.
-> Could you try the patch below with the latency patch (you reverted) in
-> rc7?
-> 
 
-Using rc7:
+On Tue, 2008-01-08 at 20:58 +0100, Paolo Ciarrocchi wrote:
+> On Jan 8, 2008 5:40 PM, Andi Kleen <andi@firstfloor.org> wrote:
+> So I cooked up the following patch (probably mangled, just to give you
+> a rough idea of what I did):
+> diff --git a/arch/arm/common/rtctime.c b/arch/arm/common/rtctime.c
+> index bf1075e..19dedb5 100644
+> --- a/arch/arm/common/rtctime.c
+> +++ b/arch/arm/common/rtctime.c
+> @@ -189,13 +189,16 @@ static int rtc_ioctl(struct inode *inode, struct
+> file *file, unsigned int cmd,
 
-hda_intel.c(rc6) + patch for sigmatel.c:     sound works
-hda_intel.c(rc7) + patch for sigmatel.c:     sound does not work
+You'll need to change the prototype, the unlocked version doesn't take
+an inode. And you'll need to make sure that nothing in the function uses
+the inode, which I think Andi forgot to mention.
 
-Sorry to say, but AFAICS the patch for sigmatel.c doesn't fix
-the problem.
+> +		if (ret) {
+> +			unlock_kernel();
+>  			ret = -EFAULT;
 
+This is not a return statement. You only need to unlock before the
+actual return.
 
-Regards
+> -static const struct file_operations rtc_fops = {
+> +static long rtc_fioctl(struct file_operations rtc_fops)
+> +{
+> +	lock_kernel();
 
-Harri
+Heh.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
 
