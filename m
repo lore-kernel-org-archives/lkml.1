@@ -1,105 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756334AbYAIE2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753593AbYAIE2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756334AbYAIE2Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 23:28:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbYAIE2P
+	id S1753593AbYAIE2i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 23:28:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbYAIE2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 23:28:15 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:54295 "EHLO e6.ny.us.ibm.com"
+	Tue, 8 Jan 2008 23:28:18 -0500
+Received: from ozlabs.org ([203.10.76.45]:37478 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752248AbYAIE2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 23:28:14 -0500
-Subject: Re: [PATCH 1/4] add task handling notifier: base definitions
-From: Matthew Helsley <matthltc@us.ibm.com>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: linux-kernel@vger.kernel.org, Paul Jackson <pj@sgi.com>
-In-Reply-To: <476A7832.76E4.0078.0@novell.com>
-References: <476A7832.76E4.0078.0@novell.com>
-Content-Type: text/plain
-Date: Tue, 08 Jan 2008 20:28:09 -0800
-Message-Id: <1199852889.17010.243.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+	id S1753673AbYAIE2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 23:28:17 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] call sysrq_timer_list_show from a workqueue
+Date: Wed, 9 Jan 2008 15:27:59 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: mingo@elte.hu, kyle@mcmartin.ca, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@redhat.com
+References: <20080108063113.GA21287@fattire.cabal.ca> <200801091420.19273.rusty@rustcorp.com.au> <20080108193350.ffc94e44.akpm@linux-foundation.org>
+In-Reply-To: <20080108193350.ffc94e44.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801091528.00402.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-12-20 at 13:12 +0000, Jan Beulich wrote:
-> This is the base patch, adding notification for task creation and
-> deletion.
-> 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> ---
->  include/linux/sched.h |    8 +++++++-
->  kernel/fork.c         |   11 +++++++++++
->  2 files changed, 18 insertions(+), 1 deletion(-)
-> 
-> --- 2.6.24-rc5-notify-task.orig/include/linux/sched.h
-> +++ 2.6.24-rc5-notify-task/include/linux/sched.h
-> @@ -80,7 +80,7 @@ struct sched_param {
->  #include <linux/rcupdate.h>
->  #include <linux/futex.h>
->  #include <linux/rtmutex.h>
-> -
-> +#include <linux/notifier.h>
->  #include <linux/time.h>
->  #include <linux/param.h>
->  #include <linux/resource.h>
-> @@ -1700,6 +1700,12 @@ extern int do_execve(char *, char __user
->  extern long do_fork(unsigned long, unsigned long, struct pt_regs *, unsigned long, int __user *, int __user *);
->  struct task_struct *fork_idle(int);
-> 
-> +#define TASK_NEW 1
-> +#define TASK_DELETE 2
-> +
-> +extern struct blocking_notifier_head task_notifier_list;
-> +extern struct atomic_notifier_head atomic_task_notifier_list;
-> +
->  extern void set_task_comm(struct task_struct *tsk, char *from);
->  extern void get_task_comm(char *to, struct task_struct *tsk);
-> 
-> --- 2.6.24-rc5-notify-task.orig/kernel/fork.c
-> +++ 2.6.24-rc5-notify-task/kernel/fork.c
-> @@ -46,6 +46,7 @@
->  #include <linux/tsacct_kern.h>
->  #include <linux/cn_proc.h>
->  #include <linux/freezer.h>
-> +#include <linux/notifier.h>
->  #include <linux/delayacct.h>
->  #include <linux/taskstats_kern.h>
->  #include <linux/random.h>
-> @@ -71,6 +72,11 @@ DEFINE_PER_CPU(unsigned long, process_co
-> 
->  __cacheline_aligned DEFINE_RWLOCK(tasklist_lock);  /* outer */
-> 
-> +BLOCKING_NOTIFIER_HEAD(task_notifier_list);
-> +EXPORT_SYMBOL_GPL(task_notifier_list);
-> +ATOMIC_NOTIFIER_HEAD(atomic_task_notifier_list);
-> +EXPORT_SYMBOL_GPL(atomic_task_notifier_list);
-> +
+On Wednesday 09 January 2008 14:33:50 Andrew Morton wrote:
+> On Wed, 9 Jan 2008 14:20:18 +1100 Rusty Russell <rusty@rustcorp.com.au> 
+wrote:
+> > On Wednesday 09 January 2008 11:21:59 Andrew Morton wrote:
+> > > The string handling in here has become a bit scruffy.
+> >
+> > Yes, that patch also evokes a const warning.  Fixed below.
+>
+> No patch was included.
 
-When these global notifier lists were proposed years ago folks at SGI
-loudly objected with concerns over anticipated cache line bouncing on
-512+ cpu machines. Is that no longer a concern?
+Yes, I decided it's a secret.  Mine, all mine!
 
->  int nr_processes(void)
->  {
->  	int cpu;
-> @@ -121,6 +127,9 @@ void __put_task_struct(struct task_struc
->  	WARN_ON(atomic_read(&tsk->usage));
->  	WARN_ON(tsk == current);
-> 
-> +	atomic_notifier_call_chain(&atomic_task_notifier_list,
-> +				   TASK_DELETE, tsk);
-> +
->  	security_task_free(tsk);
->  	free_uid(tsk->user);
->  	put_group_info(tsk->group_info);
+> >  I assume you've
+> > queued these because you're thinking of applying them before 2.6.24?  I'd
+> > say only
+> > modules-de-mutex-more-symbol-lookup-paths-in-the-module-code.patch
+> > warrants that (the other is unlikely and not a regression).
+>
+> Actually I was thinking 2.6.25 on both.
 
-Would the atomic notifier call chain be necessary if you hooked into an
-earlier section of do_exit() instead?
+Then, you should get them next time you grab my series, no?  Or is that 
+particular lever not working yet?
 
-Cheers,
-	-Matt Helsley
+Hmm, I see my link was not updated (damn, ln -sfn, not ln -sf!).  Fixed now:
+	http://ozlabs.org/~rusty/kernel/rr-latest/
 
+More goodies there than a UK comedy convention...
+
+> OK, 2.6.24 seems reasonable.
+
+Kyle acked it at least...
+
+> Yes, it could all do with a revisit.
+
+And it goes without saying that glory awaits they who succeed...
+Rusty.
