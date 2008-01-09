@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755921AbYAIUCF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbYAIUIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755921AbYAIUCF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 15:02:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbYAIUBz
+	id S1755407AbYAIUIo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 15:08:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbYAIUIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 15:01:55 -0500
-Received: from smtp1.cc.lut.fi ([157.24.2.30]:59195 "EHLO smtp1.cc.lut.fi"
+	Wed, 9 Jan 2008 15:08:36 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:41385 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752145AbYAIUBy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 15:01:54 -0500
-Date: Wed, 9 Jan 2008 22:01:48 +0200
-From: Pekka Paalanen <pq@iki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Miller <davem@davemloft.net>, hch@lst.de, airlied@linux.ie,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org, ak@suse.de,
-       jbeulich@novell.com, linux-kernel@vger.kernel.org,
+	id S1752184AbYAIUIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 15:08:35 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Pekka Paalanen <pq@iki.fi>
+Subject: Re: [PATCH] Revert "x86: optimize page faults like all other achitectures and kill notifier cruft"
+Date: Wed, 9 Jan 2008 21:08:26 +0100
+User-Agent: KMail/1.9.6
+Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       hch@lst.de, airlied@linux.ie, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, jbeulich@novell.com,
+       linux-kernel@vger.kernel.org,
        Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH] Revert "x86: optimize page faults like all other
- achitectures and kill notifier cruft"
-Message-ID: <20080109220148.5caebaf1@daedalus.pq.iki.fi>
-In-Reply-To: <20080109104149.GB8041@elte.hu>
-References: <20080108192951.a4dc394f.akpm@linux-foundation.org>
-	<alpine.DEB.0.82.0801090346370.9570@skynet.skynet.ie>
-	<20080109071945.GB10695@lst.de>
-	<20080108.232311.79648776.davem@davemloft.net>
-	<20080109104149.GB8041@elte.hu>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <20080108192951.a4dc394f.akpm@linux-foundation.org> <20080109104149.GB8041@elte.hu> <20080109220148.5caebaf1@daedalus.pq.iki.fi>
+In-Reply-To: <20080109220148.5caebaf1@daedalus.pq.iki.fi>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801092108.26550.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Jan 2008 11:41:49 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
 
-> i agree. There a few practical complication on x86: the
-> do_page_fault() function is currently excluded from kprobe probing,
-> for recursion reasons. handle_mm_fault() can be probed OTOH - but
-> that does not catch vmalloc()-ed faults. The middle of
-> do_page_fault() [line 348] should work better [the point after
-> notify_page_fault()] - but it's usually more fragile to insert probes
-> to such middle-of-the-function places.
+> I have been reading about kprobes and one thing particularly bothers me
+> in the case of mmio-trace. The probe will actually service the page
+> fault, therefore it should be able force do_page_fault() to return at
+> the probe point. I could not figure out a way to do that.
+> 
+> Is it possible to do reliably with kprobes or markers?
 
-I have been reading about kprobes and one thing particularly bothers me
-in the case of mmio-trace. The probe will actually service the page
-fault, therefore it should be able force do_page_fault() to return at
-the probe point. I could not figure out a way to do that.
+Probes are generally not designed to change the flow of the 
+underlying code.
 
-Is it possible to do reliably with kprobes or markers?
+While it's in theory possible it will be always unreliable.
+
+For checks that result in logic changes you'll always need
+some kind of explicit hook.
+
+-Andi
 
 
-Thanks for the replies.
 
--- 
-Pekka Paalanen
-http://www.iki.fi/pq/
