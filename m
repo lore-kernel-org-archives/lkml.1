@@ -1,110 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755018AbYAISpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755429AbYAISsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755018AbYAISpd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 13:45:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbYAISpX
+	id S1755429AbYAISsb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 13:48:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbYAISsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 13:45:23 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:47045 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752301AbYAISpW (ORCPT
+	Wed, 9 Jan 2008 13:48:23 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:47291 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753115AbYAISsX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 13:45:22 -0500
-Subject: Re: [GIT PATCH] SCSI bug fixes for 2.6.24-rc3
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: FUJITA Tomonori <tomof@acm.org>
-Cc: dushistov@mail.ru, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
-In-Reply-To: <20080108230943U.tomof@acm.org>
-References: <1195989865.3427.16.camel@localhost.localdomain>
-	 <20080108111549.GA30832@rain>  <20080108230943U.tomof@acm.org>
-Content-Type: text/plain
-Date: Wed, 09 Jan 2008 12:45:14 -0600
-Message-Id: <1199904314.3493.31.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Jan 2008 13:48:23 -0500
+Date: Wed, 9 Jan 2008 18:48:14 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>, akpm@linux-foundation.org,
+       neilb@suse.de, linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/6] NLM: Add reference counting to lockd
+Message-ID: <20080109184814.GA1562@infradead.org>
+References: <1199820798-5289-1-git-send-email-jlayton@redhat.com> <1199820798-5289-2-git-send-email-jlayton@redhat.com> <1199820798-5289-3-git-send-email-jlayton@redhat.com> <1199820798-5289-4-git-send-email-jlayton@redhat.com> <1199820798-5289-5-git-send-email-jlayton@redhat.com> <1199820798-5289-6-git-send-email-jlayton@redhat.com> <1199820798-5289-7-git-send-email-jlayton@redhat.com> <20080109174707.GC30523@infradead.org> <20080109133621.72f611ec@tleilax.poochiereds.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080109133621.72f611ec@tleilax.poochiereds.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jan 09, 2008 at 01:36:21PM -0500, Jeff Layton wrote:
+> I don't see a good alternative though. We need to be able to drop the
+> and check the refcount in nlmsvc_unlink_block. That function is called
+> from lockd, and we can't have lockd call kthread_stop on itself.
+> 
+> If you see a better way to do this, I'm certainly open to suggestions.
+> 
+> I'll note that my first stab at fixing this problem was to change the
+> svc_wake_up() call in the rpc callback to a routine to wake up any
+> lockd on the box that happened to be up. That sidesteps this entire
+> problem of having to make sure lockd stays up. If we decided that was
+> the right approach we could dump the last patch in this series
+> altogether.
+> 
+> That said there could be other use after free bugs lurking in the lockd
+> code so maybe keeping lockd up until nlm_blocked is empty is the right
+> thing to do.
 
-On Tue, 2008-01-08 at 23:07 +0900, FUJITA Tomonori wrote:
-> CC'ed Jes,
-> 
-> On Tue, 8 Jan 2008 14:15:53 +0300
-> Evgeniy Dushistov <dushistov@mail.ru> wrote:
-> 
-> > On Sun, Nov 25, 2007 at 01:24:25PM +0200, James Bottomley wrote:
-> > > This is a bit of a rash of bug fixes.  The qla1280 is actually a bug fix
-> > > (in spite of the title---it's actually correcting an existing problem
-> > > with the qla1280 implementation of accessors that broke the current
-> > > driver).
-> > > 
-> > 
-> > Recently I build last Linus's git tree, and got:
-> > req_cnt is used uninitialized in this function,
-> > and see bellow
-> > > The patch is available here:
-> > > 
-> > > master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
-> > > 
-> > > The short changelog is:
-> > ...
-> > > Jes Sorensen (1):
-> > >       qla1280: convert to use the data buffer accessors
-> > > 
-> > ...
-> > >  scsi/qla1280.c         |  387 +++++++++++++++++++++----------------------------
-> > ...
-> > >  	/* Calculate number of entries and segments required. */
-> > > -	req_cnt = 1;
-> > > 
-> > 
-> > Initilization of req_cnt was removed, but in this function
-> > there are places like 
-> > req_cnt += (seg_cnt - 4) / 7;
-> > or
-> > req_cnt++;
-> > This is should be so?
-> 
-> req_cnt should not be removed. Jes tested the patch but this critical
-> bug appears only with BITS_PER_LONG != 64 && CONFIG_HIGHMEM=n case. So
-> he didn't see this, I think.
-> 
-> qla1280_32bit_start_scsi also gives the following warning:
-> 
-> drivers/scsi/qla1280.c: In function 'qla1280_32bit_start_scsi':
-> drivers/scsi/qla1280.c:3044: warning: unused variable 'dma_handle'
-> 
-> 
-> diff --git a/drivers/scsi/qla1280.c b/drivers/scsi/qla1280.c
-> index 146d540..2886407 100644
-> --- a/drivers/scsi/qla1280.c
-> +++ b/drivers/scsi/qla1280.c
-> @@ -3041,7 +3041,6 @@ qla1280_32bit_start_scsi(struct scsi_qla_host *ha, struct srb * sp)
->  	int cnt;
->  	int req_cnt;
->  	int seg_cnt;
-> -	dma_addr_t dma_handle;
->  	u8 dir;
->  
->  	ENTER("qla1280_32bit_start_scsi");
-> @@ -3050,6 +3049,7 @@ qla1280_32bit_start_scsi(struct scsi_qla_host *ha, struct srb * sp)
->  		cmd->cmnd[0]);
->  
->  	/* Calculate number of entries and segments required. */
-> +	req_cnt = 1;
->  	seg_cnt = scsi_dma_map(cmd);
->  	if (seg_cnt) {
->  		/*
-
-I tested this on my qla1280 and confirm all else seems well in 32 bit
-mode.  I have to say, 32 bit mode was very difficult to enable.
-Apparently you not only need a 32 bit non-PAE mode kernel, but also you
-need to have HIGHMEM disabled for no readily apparent reason.
-
-James
-
-
+What about just not exiting from lockd as long as nlm_blocked is not
+empty?  lockd_down still simply calls kthread_stop, but lockd only
+honours it when nlm_blocked is empty?
