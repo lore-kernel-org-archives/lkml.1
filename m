@@ -1,73 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755944AbYAILHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755108AbYAILLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755944AbYAILHs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 06:07:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbYAILH0
+	id S1755108AbYAILLc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 06:11:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYAILLZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 06:07:26 -0500
-Received: from pfx2.jmh.fr ([194.153.89.55]:53337 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752549AbYAILHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 06:07:25 -0500
-Date: Wed, 9 Jan 2008 12:07:22 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: tom@kavaga.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Possible 2.6.24-rc7 issue w/respect to pthreads
-Message-Id: <20080109120722.262b4eff.dada1@cosmosbay.com>
-In-Reply-To: <39848.76.189.45.79.1199874932.squirrel@webmail.kavaga.com>
-References: <39848.76.189.45.79.1199874932.squirrel@webmail.kavaga.com>
-X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; i486-pc-linux-gnu)
+	Wed, 9 Jan 2008 06:11:25 -0500
+Received: from mail.gmx.net ([213.165.64.20]:37957 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751424AbYAILLX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 06:11:23 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/65vcqTAT6DoH9BKQZt9J7OpzjWkBHyKr/G3N5r4
+	3WTg/XmG3PwzBJ
+Subject: Re: [vm] writing to UDF DVD+RW (/dev/sr0) while under memory
+	pressure: box ==> doorstop
+From: Mike Galbraith <efault@gmx.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+In-Reply-To: <1199806071.4174.2.camel@homer.simson.net>
+References: <1199447212.4529.13.camel@homer.simson.net>
+	 <1199612533.4384.54.camel@homer.simson.net>
+	 <1199642470.3927.12.camel@homer.simson.net>
+	 <20080106122954.d8f04c98.akpm@linux-foundation.org>
+	 <1199790316.4094.57.camel@homer.simson.net>
+	 <20080108033801.40d0043a.akpm@linux-foundation.org>
+	 <1199805713.3571.12.camel@homer.simson.net>
+	 <1199806071.4174.2.camel@homer.simson.net>
+Content-Type: text/plain
+Date: Wed, 09 Jan 2008 12:11:20 +0100
+Message-Id: <1199877080.4340.19.camel@homer.simson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Jan 2008 02:35:32 -0800 (PST)
-tom@kavaga.com wrote:
 
-> To Whom It May Concern,
+On Tue, 2008-01-08 at 16:27 +0100, Mike Galbraith wrote:
+> On Tue, 2008-01-08 at 16:21 +0100, Mike Galbraith wrote:
+> > On Tue, 2008-01-08 at 03:38 -0800, Andrew Morton wrote:
+> > > 
+> > > Well.  From your earlier trace it appeared that something was causing
+> > > the filesystem to perform synchronous inode writes - sync_dirty_buffer() was
+> > > called.
+> > > 
+> > > This will cause many more seeks than would occur if we were doing full
+> > > delayed writing, with obvious throughput implications.
+> > 
+> > Yes, with UDF, the IO was _incredibly_ slow.  With ext2, it was better,
+> > though still very bad.  I tested with that other OS, and it gets ~same
+> > throughput with UDF as I got with ext2 (ick).
+> > 
+> > UDF does udf_clear_inode() -> write_inode_now(inode, 1)
+> > 
+> > I suppose I could try write_inode_now(inode, 0).  Might unstick the box.
 > 
-> After I patched my 2.6.23 kernel to 2.6.24-rc7 this morning, I noticed
-> some odd behavior with respect to POSIX threads in a test program I had
-> written (originally to test epoll.)
-> 
-> The behavior is as follows:
-> 
-> 1.  main() creates a new thread of execution with pthread_create
-> 2.  thread_func() immediately calls pthread_detach(), which is supposed to
-> ensure that thread resources are cleaned up when the thread terminates.
-> 3.  The spawned thread sleeps and then prints a message "got here"
-> 4.  The main thread calls pthread_join().  According to the POSIX
-> documentation, this should suspend execution until the spawned thread has
-> terminated.
-> 
-> What I'm seeing is that the main thread terminates immediately.  If I
-> comment out the call to pthread_detach(), the program runs normally.  If I
-> boot with my 2.6.23 kernel, the program runs normally.
-> 
-> I'm not sure if this is some oversight on my part but similar programs
-> operate correctly on my Debian etch installation with 2.6.18 as well as
-> with the newer 23 kernel, but not with the patch.
-> 
-> If you have any questions, don't hesitate to email me; my address is
-> provided below.
-> 
-> See Attached (bug.c)
-> 
-> Tom R. Dial
-> tom@kavaga.com
+> (nope, still sync, UDF still deadly)
 
-Hello Tom
+write_inode_now() is a fibber.
 
-Your program is buggy and depends on scheduling policies.
+The below seems to fix it in that writes dribbling to the DVD+RW at the
+whopping 1 to 10 pages/sec I'm seeing no longer turn box into a
+doorstop.  It's probably busted as heck.
 
-To make it fails on 2.6.23 (or say 2.6.9) too, just add a sleep(1) before pthread_join() call
+Think I'll cc linux-mm, and go find something safer to play with.
 
-Once a thread calls pthread_detach(pthread_t this_id), it's not possible anymore to
-pthread_join(this_id, &ret) or effect is undefined.
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index 0fca820..f1cce24 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -657,7 +657,7 @@ int write_inode_now(struct inode *inode, int sync)
+ 	int ret;
+ 	struct writeback_control wbc = {
+ 		.nr_to_write = LONG_MAX,
+-		.sync_mode = WB_SYNC_ALL,
++		.sync_mode = sync ? WB_SYNC_ALL : WB_SYNC_NONE,
+ 		.range_start = 0,
+ 		.range_end = LLONG_MAX,
+ 	};
+diff --git a/fs/udf/inode.c b/fs/udf/inode.c
+index 6ff8151..d1fc116 100644
+--- a/fs/udf/inode.c
++++ b/fs/udf/inode.c
+@@ -117,7 +117,7 @@ void udf_clear_inode(struct inode *inode)
+ 		udf_discard_prealloc(inode);
+ 		udf_truncate_tail_extent(inode);
+ 		unlock_kernel();
+-		write_inode_now(inode, 1);
++		write_inode_now(inode, 0);
+ 	}
+ 	kfree(UDF_I_DATA(inode));
+ 	UDF_I_DATA(inode) = NULL;
 
-(quoting POSIX : "The results of multiple simultaneous calls to pthread_join() specifying the same target thread are undefined" )
 
