@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756347AbYAITUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbYAIT3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756347AbYAITUS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 14:20:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754221AbYAITUD
+	id S1755364AbYAIT3Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 14:29:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbYAIT3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 14:20:03 -0500
-Received: from zombie.ncsc.mil ([144.51.88.131]:38463 "EHLO zombie.ncsc.mil"
+	Wed, 9 Jan 2008 14:29:17 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:55532 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753119AbYAITUA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 14:20:00 -0500
-Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM
-	settings for task actions [try #2]
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: David Howells <dhowells@redhat.com>
-Cc: Daniel J Walsh <dwalsh@redhat.com>, casey@schaufler-ca.com,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <1316.1199904980@redhat.com>
-References: <1199902278.9393.283.camel@moss-spartans.epoch.ncsc.mil>
-	 <1197307397.18120.72.camel@moss-spartans.epoch.ncsc.mil>
-	 <1197305173.18120.60.camel@moss-spartans.epoch.ncsc.mil>
-	 <20071205193818.24617.79771.stgit@warthog.procyon.org.uk>
-	 <20071205193859.24617.36392.stgit@warthog.procyon.org.uk>
-	 <25037.1197306473@redhat.com> <17868.1199897484@redhat.com>
-	 <1316.1199904980@redhat.com>
+	id S1752120AbYAIT3Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 14:29:16 -0500
+Subject: Re: [PATCH 10/10] x86: Unify percpu.h
+From: Dave Hansen <haveblue@us.ibm.com>
+To: travis@sgi.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
+       Jack Steiner <steiner@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       tglx@linutronix.de, mingo@redhat.com
+In-Reply-To: <20080108211025.293924000@sgi.com>
+References: <20080108211023.923047000@sgi.com>
+	 <20080108211025.293924000@sgi.com>
 Content-Type: text/plain
-Organization: National Security Agency
-Date: Wed, 09 Jan 2008 14:19:18 -0500
-Message-Id: <1199906358.9393.324.camel@moss-spartans.epoch.ncsc.mil>
+Date: Wed, 09 Jan 2008 11:28:24 -0800
+Message-Id: <1199906905.9834.101.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2008-01-08 at 13:10 -0800, travis@sgi.com wrote:
+> Form a single percpu.h from percpu_32.h and percpu_64.h. Both are now pretty
+> small so this is simply adding them together. 
 
-On Wed, 2008-01-09 at 18:56 +0000, David Howells wrote:
-> Stephen Smalley <sds@tycho.nsa.gov> wrote:
-> 
-> > Right, the latter is reasonable.
-> > Requires adding the class and permission definition to
-> > policy/flask/security_classes and policy/flask/access_vectors and then
-> > regenerating the kernel headers from those files, ala:
-> >   svn co http://oss.tresys.com/repos/refpolicy/trunk refpolicy
-> >   cd refpolicy/policy/flask
-> >   vi security_classes access_vectors
-> >   <add new class to end>
-> >   make
-> >   make LINUX_D=/path/to/linux-2.6 tokern
-> 
-> Does this require rebuilding and updating all the SELinux rpms to know about
-> the new class?
+I guess I just don't really see the point of moving the code around like
+this.  Before, it would have been easier to tell at a glance before
+whether you were looking at 32 or 64-bit code because of which file you
+are in.  But, now, you need to look for #ifdef context.  I'm not sure
+that's a win.
 
-Policy ultimately has to be updated in order to start writing allow
-rules based on the new class/perm.  libselinux et al doesn't have to
-change.
+This only saves 5 net lines of code, and those are probably from:
 
-If you have a "SELinux:  policy loaded with handle_unknown=allow"
-message in your /var/log/messages, then new classes/perms that are not
-yet known to the policy will be allowed by default, so the operation
-will be permitted by the kernel.
+-#ifndef __ARCH_I386_PERCPU__
+-#define __ARCH_I386_PERCPU__
 
--- 
-Stephen Smalley
-National Security Agency
+right?
+
+The rest of the set looks brilliant, though.  
+
+-- Dave
 
