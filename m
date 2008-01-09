@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbYAIGNc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753122AbYAIGOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754681AbYAIGNc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 01:13:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbYAIGNZ
+	id S1753122AbYAIGOx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 01:14:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750867AbYAIGOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 01:13:25 -0500
-Received: from rosi.naasa.net ([212.8.0.13]:33918 "EHLO rosi.naasa.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751765AbYAIGNY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 01:13:24 -0500
-From: Joerg Platte <lists@naasa.net>
-Reply-To: jplatte@naasa.net
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Subject: Re: regression: 100% io-wait with 2.6.24-rcX
-Date: Wed, 9 Jan 2008 07:13:14 +0100
-User-Agent: KMail/1.9.7
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-References: <200801071151.11200.lists@naasa.net> <200801071440.14798.lists@naasa.net> <399849251.21417@ustc.edu.cn>
-In-Reply-To: <399849251.21417@ustc.edu.cn>
+	Wed, 9 Jan 2008 01:14:45 -0500
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:57343 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750830AbYAIGOo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 01:14:44 -0500
+Date: Wed, 9 Jan 2008 07:14:08 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       David Miller <davem@davemloft.net>, hskinnemoen@atmel.com,
+       schwidefsky@de.ibm.com, tony.luck@intel.com,
+       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCHv3] kprobes: Introduce kprobe_handle_fault()
+Message-ID: <20080109061408.GA9486@osiris.ibm.com>
+References: <1199737486.7666.12.camel@brick> <18307.64807.204087.375733@cargo.ozlabs.ibm.com> <1199833324.6424.12.camel@brick> <1199852360.6424.39.camel@brick>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801090713.15655.lists@naasa.net>
+In-Reply-To: <1199852360.6424.39.camel@brick>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 9. Januar 2008 schrieb Fengguang Wu:
-> > /dev/sda6 on / type ext3 (rw,noatime,errors=remount-ro,acl)
-> > tmpfs on /lib/init/rw type tmpfs (rw,nosuid,mode=0755)
-> > proc on /proc type proc (rw,noexec,nosuid,nodev)
-> > sysfs on /sys type sysfs (rw,noexec,nosuid,nodev)
-> > procbususb on /proc/bus/usb type usbfs (rw)
-> > udev on /dev type tmpfs (rw,mode=0755)
-> > tmpfs on /dev/shm type tmpfs (rw,nosuid,nodev)
-> > devpts on /dev/pts type devpts (rw,noexec,nosuid,gid=5,mode=620)
-> > fusectl on /sys/fs/fuse/connections type fusectl (rw)
-> > /dev/sda7 on /tmp type ext2 (rw,noatime,errors=remount-ro,acl)
-> > /dev/sda8 on /export type ext3 (rw,noatime,errors=remount-ro,acl)
-> > /dev/sda1 on /winxp type ntfs (rw,umask=002,gid=10000,nls=utf8)
->
-> So they are ext3/ext2/ntfs.  What if you umount ntfs? and ext2 if possible?
+> +/*
+> + * If it is a kprobe pagefault we can not be premptible so return before
 
-Unmounting ntfs doesn't help, hence I converted the remaining ext2 filesystem 
-to ext3, modified the fstab entry accordingly and rebooted. Now everything 
-seems to be fine! Top reports an idle system and there is no abnormal iowait 
-any longer! Seems to be ext2 was causing this! Later today I can try to 
-remount the filesystem as ext2 to be sure the bug shows up again.
+Missing 'e' in preemptible.
+However, the old code you removed had a lot of preempt_disable/enable calls
+that you removed. Hope you checked that preemption was always disabled
+already and the calls were not necessary (true at least for s390).
 
-regards,
-Jörg
+Are there cases where this code could be called with preemption enabled?
+If so then that looks like a bug anyway. I'd say the preemptible check
+should be removed or turned into a WARN_ON.
 
--- 
-PGP Key: send mail with subject 'SEND PGP-KEY' PGP Key-ID: FD 4E 21 1D
-PGP Fingerprint: 388A872AFC5649D3 BCEC65778BE0C605
+> + * calling kprobe_running() as it will assert on smp_processor_id if
+> + * preemption is enabled.
+> + */
+> +static inline int kprobe_handle_fault(struct pt_regs *regs, int trapnr)
+> +{
+> +	if (!user_mode(regs) && !preemptible() && kprobe_running() &&
+> +	    kprobe_fault_handler(regs, trapnr))
+> +		return 1;
+> +	else
+> +		return 0;
+
+I like this better (not including any other changes):
+
+	if (!user_mode(regs) && !preemptible() && kprobe_running())
+		return kprobe_fault_handler(regs, trapnr);
+	return 0;
