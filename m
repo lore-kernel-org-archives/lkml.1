@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbYAIPcx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbYAIPee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755044AbYAIPcx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 10:32:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbYAIPcp
+	id S1755463AbYAIPee (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 10:34:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbYAIPe0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 10:32:45 -0500
-Received: from smtp-vbr17.xs4all.nl ([194.109.24.37]:1800 "EHLO
-	smtp-vbr17.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751944AbYAIPco (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 10:32:44 -0500
-Date: Wed, 9 Jan 2008 16:32:42 +0100
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: linux-kernel@vger.kernel.org
-Cc: udovdh@xs4all.nl
-Subject: [RS232] setting trigger-level of fifo
-Message-ID: <20080109153242.GU8331@vanheusden.com>
+	Wed, 9 Jan 2008 10:34:26 -0500
+Received: from ns2.suse.de ([195.135.220.15]:39775 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751916AbYAIPeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 10:34:25 -0500
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, chris.mason@oracle.com,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH][RFC] fast file mapping for loop
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080109085231.GE6650@kernel.dk>
+Date: Wed, 09 Jan 2008 16:34:23 +0100
+In-Reply-To: <20080109085231.GE6650@kernel.dk> (Jens Axboe's message of "Wed\, 9 Jan 2008 09\:52\:32 +0100")
+Message-ID: <p73k5mjovwg.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Read-Receipt-To: <folkert@vanheusden.com>
-Reply-By: Thu Jan 10 13:04:15 CET 2008
-X-Message-Flag: PGP key-id: 0x1f28d8ae - consider encrypting your e-mail to
-	me with PGP!
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Jens Axboe <jens.axboe@oracle.com> writes:
+>
+> So how does it work? Instead of punting IO to a thread and passing it
+> through the page cache, we instead attempt to send the IO directly to the
 
-In windows one can configure at what point the uart will trigger an
-interrupt. E.g. 1, 4, 8 or 14 bytes received. Setserial doesn't let you
-and I saw in the sources of the serial driver no hint that it is
-supported in linux at all. Also in MAINTAINERS I saw that sreial is
-orphaned. Can someone tell how I can proceed with this? Is it at all
-possible to do this setting? 
+Great -- something like this was needed for a long time.
 
+> - The file block mappings must not change while loop is using the file.
+>   This means that we have to ensure exclusive access to the file and
+>   this is the bit that is currently missing in the implementation. It
+>   would be nice if we could just do this via open(), ideas welcome...
 
-Folkert van Heusden
+get_write_access()/put_write_access() will block other writers.
 
--- 
-Multi tail barnamaj mowahib li mora9abat attasjilat wa nataij awamir
-al 7asoub. damj, talwin, mora9abat attarchi7 wa ila akhirih.
-http://www.vanheusden.com/multitail/
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+But as pointed out by others that is not enough for this.
+
+I suppose you could use a white list like a special flag for file systems 
+(like ext2/ext3) that do not reallocate blocks.
+
+-Andi
