@@ -1,96 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757144AbYAIXAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbYAIXA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757144AbYAIXAn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 18:00:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754304AbYAIXAf
+	id S1757340AbYAIXA4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 18:00:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754826AbYAIXAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 9 Jan 2008 18:00:36 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48422 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754296AbYAIXAf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 9 Jan 2008 18:00:35 -0500
-Received: from waste.org ([66.93.16.53]:40381 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753570AbYAIXAe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 18:00:34 -0500
-Subject: Re: [RFC PATCH] greatly reduce SLOB external fragmentation
-From: Matt Mackall <mpm@selenic.com>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>, Andi Kleen <andi@firstfloor.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0801100037230.3071@sbz-30.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com>
-	 <84144f020801021109v78e06c6k10d26af0e330fc85@mail.gmail.com>
-	 <alpine.LFD.1.00.0801021130210.32517@woody.linux-foundation.org>
-	 <1199314218.4497.109.camel@cinder.waste.org>
-	 <20080103085239.GA10813@elte.hu>
-	 <1199378818.8274.25.camel@cinder.waste.org>
-	 <Pine.LNX.4.64.0801031808470.7244@schroedinger.engr.sgi.com>
-	 <1199419890.4608.77.camel@cinder.waste.org>
-	 <Pine.LNX.4.64.0801051816490.22821@sbz-30.cs.Helsinki.FI>
-	 <1199641910.8215.28.camel@cinder.waste.org>
-	 <Pine.LNX.4.64.0801072005380.23932@sbz-30.cs.Helsinki.FI>
-	 <1199906151.6245.57.camel@cinder.waste.org>
-	 <Pine.LNX.4.64.0801100037230.3071@sbz-30.cs.Helsinki.FI>
-Content-Type: text/plain
-Date: Wed, 09 Jan 2008 16:59:07 -0600
-Message-Id: <1199919548.6245.74.camel@cinder.waste.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
+Date: Wed, 9 Jan 2008 14:58:10 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Zach Brown <zach.brown@oracle.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dan Williams <dan.j.williams@gmail.com>, Jeff Moyer <jmoyer@redhat.com>,
+       Simon Holm Thogersen <odie@cs.aau.dk>, suresh.b.siddha@intel.com
+Subject: Re: [PATCH 5/6] syslets: add generic syslets infrastructure
+In-Reply-To: <200801100904.46842.rusty@rustcorp.com.au>
+Message-ID: <alpine.LFD.1.00.0801091423160.3148@woody.linux-foundation.org>
+References: <1196983219534-git-send-email-zach.brown@oracle.com> <200801091448.46241.rusty@rustcorp.com.au> <47850F99.5020001@oracle.com> <200801100904.46842.rusty@rustcorp.com.au>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 2008-01-10 at 00:43 +0200, Pekka J Enberg wrote:
-> Hi Matt,
-> 
-> On Wed, 9 Jan 2008, Matt Mackall wrote:
-> > I kicked this around for a while, slept on it, and then came up with
-> > this little hack first thing this morning:
-> > 
-> > ------------
-> > slob: split free list by size
-> > 
-> 
-> [snip]
-> 
-> > And the results are fairly miraculous, so please double-check them on
-> > your setup. The resulting statistics change to this:
-> 
-> [snip]
->  
-> > So the average jumped by 714k from before the patch, became much more
-> > stable, and beat SLUB by 287k. There are also 7 perfectly filled pages
-> > now, up from 1 before. And we can't get a whole lot better than this:
-> > we're using 259 pages for 244 pages of actual data, so our total
-> > overhead is only 6%! For comparison, SLUB's using about 70 pages more
-> > for the same data, so its total overhead appears to be about 35%.
-> 
-> Unfortunately I only see a slight improvement to SLOB (but it still gets 
-> beaten by SLUB):
-> 
-> [ the minimum, maximum, and average are captured from 10 individual runs ]
-> 
->                                  Free (kB)             Used (kB)
->                     Total (kB)   min   max   average   min  max  average
->   SLUB (no debug)   26536        23868 23892 23877.6   2644 2668 2658.4
->   SLOB (patched)    26548        23456 23708 23603.2   2840 3092 2944.8
->   SLOB (vanilla)    26548        23472 23640 23579.6   2908 3076 2968.4
->   SLAB (no debug)   26544        23316 23364 23343.2   3180 3228 3200.8
->   SLUB (with debug) 26484        23120 23136 23127.2   3348 3364 3356.8
 
-Huh, that's a fairly negligible change on your system. Is that with or
-without the earlier patch? That doesn't appear to change much here.
-Guess I'll have to clean up my stats patch and send it to you.
+On Thu, 10 Jan 2008, Rusty Russell wrote:
+> 
+> I'd have to read his original statement, but eventfd doesn't build up state, 
+> so I think it qualifies.
 
-> What .config did you use? What kind of user-space do you have? (I am still 
-> using the exact same configuration I described in the first mail.)
+How about you guys battle it out by giving an example program usign the 
+interface?
 
-I'm using lguest with my Thinkpad config (I'll send that separately),
-with busybox and init=doit like your setup. Was having trouble getting
-lguest going with your config, but I may have found the problem.
+Here's a favourite really simple load of mine:
 
--- 
-Mathematics is the supreme nostalgia of our time.
+ - do the equivalent of "ls -lR" or "find /usr" as quickly as possible, 
+   without playing "sort by the inode numbers" games (that don't work in 
+   general, but are great for some filesystems)
 
+   Do this on a directory that isn't newly created, but has had files 
+   added and removed over time (so that the return order of "readdir()" 
+   isn't dense and sorted in the inode tables already). The classic 
+   example is "ls -l /usr/bin" or similar.
+
+This is actually a fairly hard load, because there's two easily tested 
+cases that are both equally important: hot-cache (no IO at all, just CPU), 
+and cold-cache (all about trying to get concurrent IO on inode lookups 
+going, to get the disk elevator working in the *absense* of any sorting).
+
+And almost all of the operations are operations that right now have no 
+asynchronous model except for full threads (ie neither filename nor inode 
+lookup have any aio_xyz() things).
+
+How can we do something like *that*? It's about as simple an IO test 
+program you can imagine, while I'd argue that it is still a reasonably 
+"realistic" thing to do, and interesting for asynchronous operations.
+
+How would do you something like this, striving to allow overlap of IO, and 
+getting (hopefully) the block layer to create bigger request sizes?
+
+To make it simple, let's make the *only* operation we care about being 
+asynchronous be that "lstat()". And instead of printing out each file, 
+just add up the sizes or something (ie make this approximate "du -sh"). 
+
+But the important thing is that if things are cached, it should be the 
+same speed as this trivial program, ie the async interfaces shouldn't slow 
+things down. But if things require IO, hopefully we can get at least some 
+reasonable number of concurrent IO's going, and making the program not 
+seek back and forth quite so much).
+
+Try this with and without a "echo 3 > /proc/sys/vm/drop_caches" in 
+between. Both are real and relevant usage cases, I think.
+
+And *simplicity* of the end result really does matter. If it's not simple 
+to use, people won't use it.
+
+		Linus
+
+---
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+static void find(const char *base, int baselen);
+
+static void handle(const char *name, int namelen)
+{
+	struct stat st;
+
+	if (lstat(name, &st) < 0)
+		return;
+	printf("%8lu %s\n", st.st_size, name);
+	if (S_ISDIR(st.st_mode))
+		find(name, namelen);
+}
+
+static void find(const char *base, int baselen)
+{
+	DIR *dir;
+	char *name = malloc(baselen + 255 + 2);
+
+	if (!name)
+		return;
+	memcpy(name, base, baselen);
+	name[baselen] = '/';
+	dir = opendir(base);
+	if (dir) {
+		struct dirent *de;
+		while ((de = readdir(dir)) != NULL) {
+			const char *p = de->d_name;
+			int len = strlen(p);
+			if (len > 255)
+				continue;
+			if (p[0] == '.') {
+				if (len == 1)
+					continue;
+				if (len == 2 && p[1] == '.')
+					continue;
+			}
+			memcpy(name + baselen + 1, de->d_name, len+1);
+			handle(name, baselen + 1 + len);
+		}
+		closedir(dir);
+	}
+	free(name);
+}
+
+int main(int argc, char **argv)
+{
+	find(".",1);
+	return 0;
+}
