@@ -1,41 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199AbYAIAZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945AbYAIA1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754199AbYAIAZT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 19:25:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbYAIAZF
+	id S1753945AbYAIA1o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 19:27:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbYAIA1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 19:25:05 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:45899 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751837AbYAIAZD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 19:25:03 -0500
-Date: Wed, 9 Jan 2008 01:27:29 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Kevin Winchester <kjwinchester@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, paolo.ciarrocchi@gmail.com,
-       gorcunov@gmail.com, jgarzik@pobox.com, linux-ide@vger.kernel.org
-Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
-Message-ID: <20080109002729.GH2117@one.firstfloor.org>
-References: <20080108164015.GC31504@one.firstfloor.org> <47840C57.6000304@gmail.com> <20080109000946.GG2117@one.firstfloor.org> <47841296.8090104@gmail.com>
+	Tue, 8 Jan 2008 19:27:34 -0500
+Received: from gate.crashing.org ([63.228.1.57]:53767 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751026AbYAIA1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 19:27:33 -0500
+Subject: Re: Replacement for page fault notifiers?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Dave Airlie <airlied@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Pekka Paalanen <pq@iki.fi>,
+       linux-kernel@vger.kernel.org, jbeulich@novell.com, proski@gnu.org
+In-Reply-To: <21d7e9970801081413n307ab07aq462a9fff014143ae@mail.gmail.com>
+References: <20080108210638.5c9e093a@daedalus.pq.iki.fi>
+	 <20080108203235.GA772@infradead.org>
+	 <21d7e9970801081413n307ab07aq462a9fff014143ae@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 09 Jan 2008 11:26:47 +1100
+Message-Id: <1199838407.6734.83.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47841296.8090104@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Sorry about the noise here - I now notice that not all .ioctl function
-> pointers have the option of changing to .unlocked_ioctl.  In this case,
-> the ioctl is in the struct scsi_host_template, rather than struct
-> file_operations.
+
+> Christoph,
 > 
-> I'll try to be a little more careful about the git grepping in the future.
+> it is generic code, it works by patching the module you load and is in
+> no way nvidia specific, I think we should revert your chance
+> as the notifiers have a valid user and one it has been planned to upstream..
 
-Well it just points to another area that needs to be improved. Clearly
-scsi_host_template should have a unlocked_ioctl too.
+Agreed, it looks like a sane enough user of page fault notifiers, it's
+going to be upstream, and it's useful to fight evil binary drivers so
+that sounds like a good justification to bring those back in :-)
 
--Andi
+Cheers,
+Ben.
+
+
