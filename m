@@ -1,270 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbYAILdJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbYAILdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753409AbYAILdJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 06:33:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbYAILc4
+	id S1754184AbYAILdg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 06:33:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbYAILdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 06:32:56 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:16822 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751024AbYAILcy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 06:32:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=L8a4cXbw/H5i56RfEBAWW9ghgEuxOW8ercy0ua5RzjCNDrPiHiWqnzcAadhx+uaqeGSYKLCRE6Pb+uEj6279KQM723IUTeGSDmgSW5MF9KCBuWDck2aJTGIFVoklVQ/I+vc1nmesh9LezPoBMBU2pgHuEx0+oAaikoJKZbBG3Nc=
-Message-ID: <4df4ef0c0801090332y345ccb67se98409edc65fd6bf@mail.gmail.com>
-Date: Wed, 9 Jan 2008 14:32:53 +0300
-From: "Anton Salikhmetov" <salikhmetov@gmail.com>
-To: linux-mm@kvack.org
-Subject: Re: [PATCH][RFC][BUG] updating the ctime and mtime time stamps in msync()
-Cc: linux-kernel@vger.kernel.org, joe@evalesco.com
-In-Reply-To: <1199728459.26463.11.camel@codedot>
+	Wed, 9 Jan 2008 06:33:24 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39851 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752772AbYAILdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 06:33:22 -0500
+Date: Wed, 9 Jan 2008 12:33:25 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
+       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
+Subject: Re: [patch 7/9] unprivileged mounts: allow unprivileged fuse mounts
+Message-ID: <20080109113325.GC9735@elf.ucw.cz>
+References: <20080108113502.184459371@szeredi.hu> <20080108113630.861045063@szeredi.hu> <20080108214625.GE5050@ucw.cz> <E1JCN9I-0004DB-DF@pomaz-ex.szeredi.hu> <20080108225820.GA9735@elf.ucw.cz> <E1JCWxm-0005Fn-36@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1199728459.26463.11.camel@codedot>
+In-Reply-To: <E1JCWxm-0005Fn-36@pomaz-ex.szeredi.hu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since no reaction in LKML was recieved for this message it seemed
-logical to suggest closing the bug #2645 as "WONTFIX":
+Hi!
 
-http://bugzilla.kernel.org/show_bug.cgi?id=2645#c15
+> > > AFAIR there were two security vulnerabilities in fuse's history, one
+> > > of them an information leak in the kernel module, and the other one an
+> > > mtab corruption issue in the fusermount utility.  I don't think this
+> > > is such a bad track record.
+> > 
+> > Not bad indeed. But I'd consider 'kill -9 not working' to be DoS
+> > vulnerability...
+> 
+> The worst that can happen is that a sysadmin doesn't read the docs
+> (likely) before enabling fuse on a multiuser system, and is surprised
+> by a user doing funny things.  And _then_ has to go read the docs, or
+> google for some info.  This is basically how things normally work, and
+> I don't consider it a DoS.
 
-However, the reporter of the bug, Jacob Oestergaard, insisted the
-solution to be resubmitted once more:
+No, this is not normal. Kill -9 has been estabilished long time ago,
+and we should not be documenting its now-brokenness in
+Documentation/filesystems/fuse.txt .
 
->>>
+For example, my /etc/inittab currently has:
 
-Please re-submit to LKML.
+kb::kbrequest:/etc/rc/rc.reboot 2 0
 
-This bug causes backup systems to *miss* changed files.
+#
+# This file handles system shutdown and reboot.
+#
 
-This bug does cause data loss in common real-world deployments (I gave an
-example with a database when posting the bug, but this affects the data from
-all mmap using applications with common backup systems).
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+sync &
 
-Silent exclusion from backups is very very nasty.
+# Kill all processes.
+wall System is going down NOW\!
+echo -n -e "\rSystem is going down: processes."
+killall5 -15
+echo -n "."
+sleep 1
+echo -n ". "
+killall5 -9
 
-<<<
+# Before unmounting file systems write a reboot record to wtmp.
+echo -n "wtmp "
+halt -w
 
-Please comment on my solution or commit it if it's acceptable in its
-present form.
+# Swap needs to be unmounted because otherwise busy filesystems
+remain.
+echo -n "swap "
+swapoff -a
+swapoff /c/swap
+swapoff /c/swap2
 
-2008/1/7, Anton Salikhmetov <salikhmetov@gmail.com>:
-> From: Anton Salikhmetov <salikhmetov@gmail.com>
->
-> Due to the lack of reaction in LKML I presume the message was lost
-> in the high traffic of that list. Resending it now with the addressee changed
-> to the memory management mailing list.
->
-> I would like to propose my solution for the bug #2645 from the kernel bug tracker:
->
-> http://bugzilla.kernel.org/show_bug.cgi?id=2645
->
-> The Open Group defines the behavior of the mmap() function as follows.
->
-> The st_ctime and st_mtime fields of a file that is mapped with MAP_SHARED
-> and PROT_WRITE shall be marked for update at some point in the interval
-> between a write reference to the mapped region and the next call to msync()
-> with MS_ASYNC or MS_SYNC for that portion of the file by any process.
-> If there is no such call and if the underlying file is modified as a result
-> of a write reference, then these fields shall be marked for update at some
-> time after the write reference.
->
-> The above citation was taken from the following link:
->
-> http://www.opengroup.org/onlinepubs/009695399/functions/mmap.html
->
-> Therefore, the msync() function should be called before verifying the time
-> stamps st_mtime and st_ctime in the test program Badari wrote in the context
-> of the bug #2645. Otherwise, the time stamps may be updated
-> at some unspecified moment according to the POSIX standard.
->
-> I changed his test program a little. The changed unit test can be downloaded
-> using the following link:
->
-> http://pygx.sourceforge.net/mmap.c
->
-> This program showed that the msync() function had a bug:
-> it did not update the st_mtime and st_ctime fields.
->
-> The program shows appropriate behavior of the msync()
-> function using the kernel with the proposed patch applied.
-> Specifically, the ctime and mtime time stamps do change
-> when modifying the mapped memory and do not change when
-> there have been no write references between the mmap()
-> and msync() system calls.
->
-> Additionally, the test cases for the msync() system call from
-> the LTP test suite (msync01 - msync05, mmapstress01, mmapstress09,
-> and mmapstress10) successfully passed using the kernel
-> with the patch included into this email.
->
-> The patch adds a call to the file_update_time() function to change
-> the file metadata before syncing. The patch also contains
-> substantial code cleanup: consolidated error check
-> for function parameters, using the PAGE_ALIGN() macro instead of
-> "manual" alignment, improved readability of the loop,
-> which traverses the process memory regions, updated comments.
->
-> Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
->
-> ---
->
-> diff --git a/mm/msync.c b/mm/msync.c
-> index 144a757..cb973eb 100644
-> --- a/mm/msync.c
-> +++ b/mm/msync.c
-> @@ -1,26 +1,32 @@
->  /*
->   *     linux/mm/msync.c
->   *
-> + * The msync() system call.
->   * Copyright (C) 1994-1999  Linus Torvalds
-> + *
-> + * Updating the mtime and ctime stamps for mapped files
-> + * and code cleanup.
-> + * Copyright (C) 2008 Anton Salikhmetov <salikhmetov@gmail.com>
->   */
->
-> -/*
-> - * The msync() system call.
-> - */
-> +#include <linux/file.h>
->  #include <linux/fs.h>
->  #include <linux/mm.h>
->  #include <linux/mman.h>
-> -#include <linux/file.h>
-> -#include <linux/syscalls.h>
->  #include <linux/sched.h>
-> +#include <linux/syscalls.h>
->
->  /*
->   * MS_SYNC syncs the entire file - including mappings.
->   *
->   * MS_ASYNC does not start I/O (it used to, up to 2.5.67).
-> - * Nor does it marks the relevant pages dirty (it used to up to 2.6.17).
-> + * Nor does it mark the relevant pages dirty (it used to up to 2.6.17).
->   * Now it doesn't do anything, since dirty pages are properly tracked.
->   *
-> + * The msync() system call updates the ctime and mtime fields for
-> + * the mapped file when called with the MS_SYNC or MS_ASYNC flags
-> + * according to the POSIX standard.
-> + *
->   * The application may now run fsync() to
->   * write out the dirty pages and wait on the writeout and check the result.
->   * Or the application may run fadvise(FADV_DONTNEED) against the fd to start
-> @@ -33,70 +39,68 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
->         unsigned long end;
->         struct mm_struct *mm = current->mm;
->         struct vm_area_struct *vma;
-> -       int unmapped_error = 0;
-> -       int error = -EINVAL;
-> +       int error = 0, unmapped_error = 0;
->
-> -       if (flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC))
-> -               goto out;
-> -       if (start & ~PAGE_MASK)
-> +       if ((flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC)) ||
-> +                       (start & ~PAGE_MASK) ||
-> +                       ((flags & MS_ASYNC) && (flags & MS_SYNC))) {
-> +               error = -EINVAL;
->                 goto out;
-> -       if ((flags & MS_ASYNC) && (flags & MS_SYNC))
-> -               goto out;
-> -       error = -ENOMEM;
-> -       len = (len + ~PAGE_MASK) & PAGE_MASK;
-> +       }
-> +
-> +       len = PAGE_ALIGN(len);
->         end = start + len;
-> -       if (end < start)
-> +       if (end < start) {
-> +               error = -ENOMEM;
->                 goto out;
-> -       error = 0;
-> +       }
->         if (end == start)
->                 goto out;
-> +
->         /*
->          * If the interval [start,end) covers some unmapped address ranges,
->          * just ignore them, but return -ENOMEM at the end.
->          */
->         down_read(&mm->mmap_sem);
->         vma = find_vma(mm, start);
-> -       for (;;) {
-> +       do {
->                 struct file *file;
->
-> -               /* Still start < end. */
-> -               error = -ENOMEM;
-> -               if (!vma)
-> -                       goto out_unlock;
-> -               /* Here start < vma->vm_end. */
-> +               if (!vma) {
-> +                       error = -ENOMEM;
-> +                       break;
-> +               }
->                 if (start < vma->vm_start) {
->                         start = vma->vm_start;
-> -                       if (start >= end)
-> -                               goto out_unlock;
-> +                       if (start >= end) {
-> +                               error = -ENOMEM;
-> +                               break;
-> +                       }
->                         unmapped_error = -ENOMEM;
->                 }
-> -               /* Here vma->vm_start <= start < vma->vm_end. */
->                 if ((flags & MS_INVALIDATE) &&
->                                 (vma->vm_flags & VM_LOCKED)) {
->                         error = -EBUSY;
-> -                       goto out_unlock;
-> +                       break;
->                 }
->                 file = vma->vm_file;
-> -               start = vma->vm_end;
-> -               if ((flags & MS_SYNC) && file &&
-> -                               (vma->vm_flags & VM_SHARED)) {
-> +               if (file && (vma->vm_flags & VM_SHARED)) {
->                         get_file(file);
-> -                       up_read(&mm->mmap_sem);
-> -                       error = do_fsync(file, 0);
-> -                       fput(file);
-> -                       if (error || start >= end)
-> -                               goto out;
-> -                       down_read(&mm->mmap_sem);
-> -                       vma = find_vma(mm, start);
-> -               } else {
-> -                       if (start >= end) {
-> -                               error = 0;
-> -                               goto out_unlock;
-> +                       if (file->f_mapping->host->i_state & I_DIRTY_PAGES)
-> +                               file_update_time(file);
-> +                       if (flags & MS_SYNC) {
-> +                               up_read(&mm->mmap_sem);
-> +                               error = do_fsync(file, 0);
-> +                               down_read(&mm->mmap_sem);
->                         }
-> -                       vma = vma->vm_next;
-> +                       fput(file);
-> +                       if (error)
-> +                               break;
->                 }
-> -       }
-> -out_unlock:
-> +
-> +               start = vma->vm_end;
-> +               vma = vma->vm_next;
-> +       } while (start < end);
->         up_read(&mm->mmap_sem);
->  out:
->         return error ? : unmapped_error;
->
->
+# Unmount file systems
+echo -n "umount."
+umount -a || (
+	sync &
+	echo -n "umount-retry."
+	sleep 1
+	umount -a || sulogin
+)
+echo -n ". "
+mount -n -o remount,ro /
+
+# Now halt or reboot.
+if [ "$2" = "0" ] ; then
+	swapoff -a
+	echo "halted."
+	halt -p -f
+else
+	echo "rebooting..."
+	reboot -d -f
+fi
+
+...this will break with FUSE enabled, right? (Minor security hole by
+allowing users to stop c-a-delete, where none existed before?)
+
+I'm currently suspending by 'echo "mem" > /sys/power/state'. How
+should I do that _safely_ with FUSE enabled?
+
+If I want to get rid of nasty user in multiuser system, I do 
+su nastyuser 'kill -9 -1' . How do I do the equivalent with FUSE
+enabled? (Without affecting other users?)
+
+Load average was never really meaningful number, but with FUSE
+enabled, users can set it to 666 without actually eating any CPU.
+
+SIGSTOP used to work, allowing you to prevent user processes from
+working while you examine them. Now SIGSTOP can be delayed for
+arbitrary time.
+
+Heck, imagine malicious user process misbehaves. Before FUSE, you
+could at least attach it with gdb to look what it is doing. Now you
+can't.
+
+I really believe FUSE vs. signals needs fixing. Either that, or
+updating all the manpages
+
+man 1 kill:
+-       KILL       9   exit      this signal may not be blocked
++       KILL       9   exit      this signal may not be blocked, except by FUSE user mount
+
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
