@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580AbYAIQb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbYAIQkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755580AbYAIQb0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 11:31:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbYAIQbS
+	id S1753994AbYAIQkN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 11:40:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbYAIQkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 11:31:18 -0500
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1652 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751411AbYAIQbR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 11:31:17 -0500
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: Linux 2.6.24-rc7: sparc64: WARNING: at kernel/lockdep_proc.c:267 lockdep_stats_show()
-Date: Wed, 9 Jan 2008 17:31:15 +0100
-User-Agent: KMail/1.9.7
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       sparclinux@vger.kernel.org
-References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org> <200801082339.13198.m.kozlowski@tuxland.pl> <4783FD17.90806@oracle.com>
-In-Reply-To: <4783FD17.90806@oracle.com>
+	Wed, 9 Jan 2008 11:40:00 -0500
+Received: from an-out-0708.google.com ([209.85.132.241]:35981 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751847AbYAIQj7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 11:39:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=hI7GlujAd2xpVN4IIYZBNnSzYeXGs7K8p7LFEYyXxUiFRyZiVOvFVHN10UiZHyIxq0TgNfGaq7lFg6+5ELngz/Bq/zYjdXFRmBSqeRNxObonbd3J7JJDNPWuGSRVTKmvIU5ku1hvpNhTuAz5pmbVKN4CUvDMbIsI6gdh0fZ8Pb0=
+Date: Wed, 9 Jan 2008 19:39:52 +0300
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: cbouatmailru@gmail.com, linux-kernel@vger.kernel.org, cbou@mail.ru,
+       dwmw2@infradead.org
+Subject: [PATCH] pda_power: add device_init_wakeup
+Message-ID: <20080109163952.GA29397@doriath.ww600.siemens.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801091731.16043.m.kozlowski@tuxland.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Add device_init_wakeup to init wakeup.
 
-> >>> 	Got this when doing usual looping over /proc entries on fresh test kernel:
-> >> What is the usual looping, please?
-> > 
-> > #!/bin/bash
-> > 
-> > for i in `find /proc -type f`; do
-> >         echo -n "cat $i > /dev/null ... ";
-> >         ( cat $i > /dev/null & );
-> >         echo "done";
-> > done
-> 
-> OK, thanks.  Probably not related to the problem report, but
-> the script should probably check each file for 'readable' (-r).
-> /proc/sysrq-trigger is write-only...
+Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
 
-Hm... true. Good hint.
-
-Thanks,
-
-	Mariusz
-
+diff --git a/drivers/power/pda_power.c b/drivers/power/pda_power.c
+index d98622f..28360e8 100644
+--- a/drivers/power/pda_power.c
++++ b/drivers/power/pda_power.c
+@@ -207,6 +207,8 @@ static int pda_power_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
++	device_init_wakeup(&pdev->dev, 1);
++
+ 	return 0;
+ 
+ usb_irq_failed:
+-- 
+With best wishes
+Dmitry
 
