@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbYAIIEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbYAIIGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754702AbYAIIEw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 03:04:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbYAIIEn
+	id S1754741AbYAIIGk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 03:06:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751163AbYAIIGc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 03:04:43 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:47089 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752126AbYAIIEm (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 03:04:42 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Al Boldi <a1426z@gawab.com>
-Cc: Rik van Riel <riel@redhat.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFD] Incremental fsck
-In-Reply-To: Your message of "Wed, 09 Jan 2008 07:40:12 +0300."
-             <200801090740.12989.a1426z@gawab.com>
-From: Valdis.Kletnieks@vt.edu
-References: <200801090022.55589.a1426z@gawab.com> <20080108164106.735c431d@bree.surriel.com>
-            <200801090740.12989.a1426z@gawab.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1199865859_3703P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 09 Jan 2008 03:04:19 -0500
-Message-ID: <23019.1199865859@turing-police.cc.vt.edu>
+	Wed, 9 Jan 2008 03:06:32 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:52904 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750937AbYAIIGb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 03:06:31 -0500
+Date: Wed, 9 Jan 2008 08:06:20 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: grant@torque.net, tim@cyberelk.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] Change paride driver to use unlocked_ioctl instead of
+	ioctl
+Message-ID: <20080109080620.GE32560@infradead.org>
+References: <4785B7BC.5040106@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4785B7BC.5040106@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1199865859_3703P
-Content-Type: text/plain; charset=us-ascii
+On Thu, Jan 10, 2008 at 11:44:20AM +0530, Nikanth Karthikesan wrote:
+> -static int pt_ioctl(struct inode *inode, struct file *file,
+> -	 unsigned int cmd, unsigned long arg)
+> +static long pt_ioctl(struct file *file, unsigned int cmd, unsigned long
+> arg)
 
-On Wed, 09 Jan 2008 07:40:12 +0300, Al Boldi said:
+this looks line-wrapper by your mailer.
 
-> But why wouldn't it be possible to do this on the current fs infrastructure, 
-> using just a smart fsck, working incrementally on some sub-dir?
+> -		if (copy_from_user(&mtop, p, sizeof(struct mtop)))
+> +		if (copy_from_user(&mtop, p, sizeof(struct mtop))) {
+> +			unlock_kernel();
+>  			return -EFAULT;
+> +		}
+> 
+>  		switch (mtop.mt_op) {
+> 
+>  		case MTREW:
+>  			pt_rewind(tape);
+> +			unlock_kernel();
 
-If you have /home/usera, /home/userb, and /home/userc, the vast majority of
-fs screw-ups can't be detected by only looking at one sub-dir.  For example,
-you can't tell definitively that all blocks referenced by an inode under
-/home/usera are properly only allocated to one file until you *also* look at
-the inodes under user[bc].  Heck, you can't even tell if the link count for
-a file is correct unless you walk the entire filesystem - you can find a file
-with a link count of 3 in the inode, and you find one reference under usera,
-and a second under userb - you can't tell if the count is one too high or
-not until you walk through userc and actually see (or fail to see) a third
-directory entry referencing it.
+It's generally considered good style to only have as few as possible
+return values.  And this is especially important when returning from
+a section that's under a lock.  So in this case it would be much better
+if you changes this function to have a local 'int error' variable
+and then just do
 
---==_Exmh_1199865859_3703P
-Content-Type: application/pgp-signature
+	error = -EFOO;
+	goto out_unlock;
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+wherever you have an early return with the end of the function looking
+like
 
-iD8DBQFHhIADcC3lWbTT17ARAr5PAKCM0E9XY50I9miH28PWtQSIwHgHOwCfT2Oc
-fGxDWRXnT4Jx5oWiJaeU1G4=
-=c3fI
------END PGP SIGNATURE-----
 
---==_Exmh_1199865859_3703P--
+out_unlock:
+	unlock_kernel();
+	return error;
