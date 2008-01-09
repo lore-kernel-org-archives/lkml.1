@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbYAIAxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756376AbYAIAxh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755597AbYAIAxW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 19:53:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbYAIAxN
+	id S1756376AbYAIAxh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 19:53:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752310AbYAIAxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 19:53:13 -0500
-Received: from mail.davidb.org ([66.93.32.219]:38787 "EHLO mail.davidb.org"
+	Tue, 8 Jan 2008 19:53:14 -0500
+Received: from mail.davidb.org ([66.93.32.219]:38788 "EHLO mail.davidb.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750818AbYAIAxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751254AbYAIAxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 8 Jan 2008 19:53:13 -0500
-X-Greylist: delayed 2006 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Jan 2008 19:53:13 EST
-Date: Tue, 8 Jan 2008 16:19:31 -0800
-From: David Brown <davidb@davidb.org>
+X-Greylist: delayed 1995 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Jan 2008 19:53:13 EST
+Date: Tue, 8 Jan 2008 16:19:48 -0800
+From: David Brown <mtd@davidb.org>
 To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 Cc: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] Claim maintainership for block2mtd and update email
 	addresses
-Message-ID: <20080109001931.GA16426@old.davidb.org>
+Message-ID: <20080109001948.GA16644@old.davidb.org>
 References: <20080106135600.GB3120@lazybastard.org> <20080107152300.2ed7cddb.akpm@linux-foundation.org> <20080108010656.GA10627@lazybastard.org> <Pine.LNX.4.64.0801090016570.10908@axis700.grange>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
