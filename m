@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbYAIADU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755050AbYAIAGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756829AbYAIADU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 19:03:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751779AbYAIADM
+	id S1755050AbYAIAGo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 19:06:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYAIAGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 19:03:12 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:46679 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751667AbYAIADL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 19:03:11 -0500
-Date: Tue, 8 Jan 2008 18:03:09 -0600
-From: Paul Jackson <pj@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: jbeulich@novell.com, hch@infradead.org, pagg@oss.sgi.com, erikj@sgi.com,
-       matthltc@us.ibm.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4] add task handling notifier
-Message-Id: <20080108180309.4ccab28d.pj@sgi.com>
-In-Reply-To: <20080108141424.de5d8fba.akpm@linux-foundation.org>
-References: <476A780C.76E4.0078.0@novell.com>
-	<20071223122621.GA19310@infradead.org>
-	<20071225140526.547a882f.akpm@linux-foundation.org>
-	<47838ACB.76E4.0078.0@novell.com>
-	<20080108141424.de5d8fba.akpm@linux-foundation.org>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Tue, 8 Jan 2008 19:06:36 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50202 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752090AbYAIAGf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 19:06:35 -0500
+Date: Tue, 8 Jan 2008 16:06:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH: 2/2] [SERIAL] avoid stalling suspend if serial port
+ won't drain
+Message-Id: <20080108160610.53694773.akpm@linux-foundation.org>
+In-Reply-To: <20080108115703.GA27179@flint.arm.linux.org.uk>
+References: <20080108115148.GB10546@flint.arm.linux.org.uk>
+	<20080108115703.GA27179@flint.arm.linux.org.uk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -31,17 +29,55 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew wrote:
-> What are those (unidentified) add-on features doing at present?
-> Patching calls into fork.c/exec.c/exit.c?
+On Tue, 8 Jan 2008 11:57:03 +0000
+Russell King <rmk+lkml@arm.linux.org.uk> wrote:
 
-Most likely.  I suspect we have general agreement and awareness
-that such patching is not something that sells well in Linux-land.
-And for good reason in my personal view ... such patching by loadable
-modules could open the door to compromising the integrity of Linux in
-ways that could be dangerous.
+> Some ports seem to be unable to drain their transmitters on shut down.
+> Such a problem can occur if the port is programmed for hardware imposed
+> flow control, characters are in the FIFO but the CTS signal is inactive.
+> 
+> Normally, this isn't a problem because most places where we wait for the
+> transmitter to drain have a time-out.  However, there is no timeout in
+> the suspend path.
+> 
+> Give a port 30ms to drain; this is an arbitary value chosen to avoid
+> long delays if there are many such ports in the system, while giving a
+> reasonable chance for a single port to drain.  Should a port not drain
+> within this timeout, issue a warning.
+> 
+> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+> 
+> diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
+> index 3bb5d24..4ce219c 100644
+> --- a/drivers/serial/serial_core.c
+> +++ b/drivers/serial/serial_core.c
+> @@ -1977,6 +1977,7 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *port)
+>  
+>  	if (state->info && state->info->flags & UIF_INITIALIZED) {
+>  		const struct uart_ops *ops = port->ops;
+> +		int tries;
+>  
+>  		state->info->flags = (state->info->flags & ~UIF_INITIALIZED)
+>  				     | UIF_SUSPENDED;
+> @@ -1990,9 +1991,14 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *port)
+>  		/*
+>  		 * Wait for the transmitter to empty.
+>  		 */
+> -		while (!ops->tx_empty(port)) {
+> +		for (tries = 3; !ops->tx_empty(port) && tries; tries--) {
+>  			msleep(10);
+>  		}
+> +		if (!tries)
+> +			printk(KERN_ERR "%s%s%s%d: Unable to drain transmitter\n",
+> +			       port->dev ? port->dev->bus_id : "",
+> +			       port->dev ? ": " : "",
+> +			       drv->dev_name, port->line);
+>  
+>  		ops->shutdown(port);
+>  	}
+> 
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+One hopes that doing a printk from within uart_suspend_port() will dtrt if
+that port is (was?) being used as a console.
+
+
