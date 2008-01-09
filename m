@@ -1,205 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbYAHX7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756416AbYAIABS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755894AbYAHX7g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 18:59:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbYAHX7Y
+	id S1756416AbYAIABS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 19:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbYAIABE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 18:59:24 -0500
-Received: from tama50.ecl.ntt.co.jp ([129.60.39.147]:43816 "EHLO
-	tama50.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752157AbYAHX7W (ORCPT
+	Tue, 8 Jan 2008 19:01:04 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:11463 "EHLO
+	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752713AbYAIABB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 18:59:22 -0500
-To: mingo@elte.hu, akpm@linux-foundation.org
-Cc: fujita.tomonori@lab.ntt.co.jp, just.for.lkml@googlemail.com, tomof@acm.org,
-       jarkao2@gmail.com, herbert@gondor.apana.org.au,
-       linux-kernel@vger.kernel.org, neilb@suse.de, bfields@fieldses.org,
-       netdev@vger.kernel.org, tom@opengridcomputing.com
-Subject: Re: 2.6.24-rc6-mm1
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080108155948.GC26114@elte.hu>
-References: <64bb37e0801061203l503f29f0hd922a1347f8169ac@mail.gmail.com>
-	<20080107151639P.fujita.tomonori@lab.ntt.co.jp>
-	<20080108155948.GC26114@elte.hu>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080109085753O.fujita.tomonori@lab.ntt.co.jp>
-Date: Wed, 09 Jan 2008 08:57:53 +0900
-X-Dispatcher: imput version 20040704(IM147)
+	Tue, 8 Jan 2008 19:01:01 -0500
+Date: Tue, 08 Jan 2008 18:00:50 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: PROBLEM: I/O scheduler problem with an 8 SATA disks raid 5 under
+ heavy load  ?
+In-reply-to: <2A722A49-F024-44E9-9FC8-7B714FB25626@neuf.fr>
+To: =?ISO-8859-1?Q?Guillaume_Laur=E8s?= <guillaume-laures@neuf.fr>
+Cc: linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>
+Message-id: <47840EB2.2010300@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 8BIT
+References: <fa.NcJePXcdrF+7E7oXv5ULIxogTYI@ifi.uio.no>
+ <4782C3DB.1090201@shaw.ca> <2A722A49-F024-44E9-9FC8-7B714FB25626@neuf.fr>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Jan 2008 16:59:48 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
 
+
+Guillaume Laurès wrote:
 > 
-> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> Le 8 janv. 08 à 01:29, Robert Hancock a écrit :
 > 
-> > The patches are available at:
-> > 
-> > http://www.kernel.org/pub/linux/kernel/people/tomo/iommu/
-> > 
-> > Or if you prefer the git tree:
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/tomo/linux-2.6-misc.git 
-> > iommu-sg-fixes
+>> From your report:
+>>
+>> ata5: EH in ADMA mode, notifier 0x0 notifier_error 0x0 gen_ctl 
+>> 0x1501000 status 0x400
+>> ata5: CPB 0: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 1: ctl_flags 0x1f, resp_flags 0x2
+>> ata5: CPB 2: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 3: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 4: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 5: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 6: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 7: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 8: ctl_flags 0x1f, resp_flags 0x2
+>> ata5: CPB 9: ctl_flags 0x1f, resp_flags 0x2
+>> ata5: CPB 10: ctl_flags 0x1f, resp_flags 0x2
+>> ata5: CPB 11: ctl_flags 0x1f, resp_flags 0x2
+>> ata5: CPB 12: ctl_flags 0x1f, resp_flags 0x2
+>> ata5: CPB 13: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 14: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 15: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 16: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 17: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 18: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 19: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 20: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 21: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 22: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 23: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 24: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 25: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 26: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 27: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 28: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 29: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: CPB 30: ctl_flags 0x1f, resp_flags 0x1
+>> ata5: Resetting port
+>> ata5.00: exception Emask 0x0 SAct 0x1f02 SErr 0x0 action 0x2 frozen
+>> ata5.00: cmd 60/40:08:8f:eb:67/00:00:03:00:00/40 tag 1 cdb 0x0 data 
+>> 32768 in
+>>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>> ata5.00: cmd 60/08:40:17:eb:67/00:00:03:00:00/40 tag 8 cdb 0x0 data 
+>> 4096 in
+>>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>> ata5.00: cmd 60/18:48:47:eb:67/00:00:03:00:00/40 tag 9 cdb 0x0 data 
+>> 12288 in
+>>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>> ata5.00: cmd 60/08:50:77:eb:67/00:00:03:00:00/40 tag 10 cdb 0x0 data 
+>> 4096 in
+>>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>> ata5.00: cmd 60/08:58:87:eb:67/00:00:03:00:00/40 tag 11 cdb 0x0 data 
+>> 4096 in
+>>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>> ata5.00: cmd 60/48:60:d7:eb:67/00:00:03:00:00/40 tag 12 cdb 0x0 data 
+>> 36864 in
+>>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>> ata5: soft resetting port
+>>
+>> The CPB resp_flags 0x2 entries are ones where the drive has been sent 
+>> the request and the controller is waiting for a response. The timeout 
+>> is 30 seconds, so that means the drive failed to service those queued 
+>> commands for that length of time.
+>>
+>> It may be that your drive has a poor NCQ implementation that can 
+>> starve some of the pending commands for a long time under heavy load?
 > 
-> btw., these improvements to the IOMMU code are in -mm and will go into 
-> v2.6.25, right? The changes look robust to me.
+> Thanks for your answer. That could very well be the problem, as all 4 
+> drives on the sata_nv HBA are older than the sata_sil ones.
+> I'm going to swap them to see if the problem is reproducible on the 
+> sata_sil HBA. (see test #2)
+> 
+> - Test #1
+> I switched the scheduler to CFQ on all disks and ran the file 
+> reorganizer all night. In the morning I ended with a drive missing in 
+> the array. And lots of SATA port resets, with plenty of 0x2 again, see 
+> the attached log.
 
-Thanks, they have been in -mm though the iommu helper fix hasn't
-yet. Balbir Singh found the bug in 2.6.24-rc6-mm1. I've just check
-mmotm and found that the IOMMU helper patch doesn't include the fix.
+> BTW, you can see around "md2: recovery done" a second disk failed before the first was completely rebuilt.
+> 
+> 
+> 
+> - Test #2
+> 
+> I swapped all the drives with this scheme: sda->sdh, sdb->sdg, sdc->sdf,..., sdg->sdb, sdh->sda. So now all the newer drives are attached through sata_nv (ata5:8), the oldest through sata_sil (ata1:4)
+> 
+> I kept the scheduler to anticipatory and ran xfs_frs. 60 seconds later it hanged. Still on ata5/ata6, i.e. sata_nv. Drive reconstruction...
+> 
+> Then I switched the scheduler to CFQ. xfs_fsr + 10 seconds: another freeze. No drive loss from the array though. See the dmesg below.
+> 
+> ------------------------------------------------------------------------
+> 
+> So it seems to be either a cabling problem or a bug with sata_nv ? I'm running gentoo's 2.6.20-xen, and maybe my problem looks like the sata_nv/adma/samsung problems reports I can see on the net ?
+> 
 
-Andrew, can you replace
+I don't think it's the same problem. In that case the controller appears 
+to indicate that it didn't even start processing the command. In this 
+case it's indicating that the command was sent to the drive and is still 
+waiting for it to indicate completion.
 
-iommu-sg-add-iommu-helper-functions-for-the-free-area-management.patch
-
-with the updated patch:
-
-http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048997.html
-
-For your convenience I've attached the updated patch too.
-
-Hopefully, they will go into v2.6.25. At least, I hope that the
-patches (0001-0011) that make the IOMMUs respect segment size limits
-when merging sg lists will be merged. They are simple and I got ACKs
-on POWER and PARISC.
-
-
-Thanks,
-
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] add IOMMU helper functions for the free area management
-
-This adds IOMMU helper functions for the free area management.  These
-functions take care of LLD's segment boundary limit for IOMMUs.  They would be
-useful for IOMMUs that use bitmap for the free area management.
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- include/linux/iommu-helper.h |    7 ++++
- lib/Makefile                 |    1 +
- lib/iommu-helper.c           |   80 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 88 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/iommu-helper.h
- create mode 100644 lib/iommu-helper.c
-
-diff --git a/include/linux/iommu-helper.h b/include/linux/iommu-helper.h
-new file mode 100644
-index 0000000..4dd4c04
---- /dev/null
-+++ b/include/linux/iommu-helper.h
-@@ -0,0 +1,7 @@
-+extern unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
-+				      unsigned long start, unsigned int nr,
-+				      unsigned long shift,
-+				      unsigned long boundary_size,
-+				      unsigned long align_mask);
-+extern void iommu_area_free(unsigned long *map, unsigned long start,
-+			    unsigned int nr);
-diff --git a/lib/Makefile b/lib/Makefile
-index b6793ed..0e7383f 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -64,6 +64,7 @@ obj-$(CONFIG_SMP) += percpu_counter.o
- obj-$(CONFIG_AUDIT_GENERIC) += audit.o
- 
- obj-$(CONFIG_SWIOTLB) += swiotlb.o
-+obj-$(CONFIG_IOMMU_HELPER) += iommu-helper.o
- obj-$(CONFIG_FAULT_INJECTION) += fault-inject.o
- 
- lib-$(CONFIG_GENERIC_BUG) += bug.o
-diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
-new file mode 100644
-index 0000000..495575a
---- /dev/null
-+++ b/lib/iommu-helper.c
-@@ -0,0 +1,80 @@
-+/*
-+ * IOMMU helper functions for the free area management
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/bitops.h>
-+
-+static unsigned long find_next_zero_area(unsigned long *map,
-+					 unsigned long size,
-+					 unsigned long start,
-+					 unsigned int nr,
-+					 unsigned long align_mask)
-+{
-+	unsigned long index, end, i;
-+again:
-+	index = find_next_zero_bit(map, size, start);
-+
-+	/* Align allocation */
-+	index = (index + align_mask) & ~align_mask;
-+
-+	end = index + nr;
-+	if (end >= size)
-+		return -1;
-+	for (i = index; i < end; i++) {
-+		if (test_bit(i, map)) {
-+			start = i+1;
-+			goto again;
-+		}
-+	}
-+	return index;
-+}
-+
-+static inline void set_bit_area(unsigned long *map, unsigned long i,
-+				int len)
-+{
-+	unsigned long end = i + len;
-+	while (i < end) {
-+		__set_bit(i, map);
-+		i++;
-+	}
-+}
-+
-+static inline int is_span_boundary(unsigned int index, unsigned int nr,
-+				   unsigned long shift,
-+				   unsigned long boundary_size)
-+{
-+	shift = (shift + index) & (boundary_size - 1);
-+	return shift + nr > boundary_size;
-+}
-+
-+unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
-+			       unsigned long start, unsigned int nr,
-+			       unsigned long shift, unsigned long boundary_size,
-+			       unsigned long align_mask)
-+{
-+	unsigned long index;
-+again:
-+	index = find_next_zero_area(map, size, start, nr, align_mask);
-+	if (index != -1) {
-+		if (is_span_boundary(index, nr, shift, boundary_size)) {
-+			/* we could do more effectively */
-+			start = index + 1;
-+			goto again;
-+		}
-+		set_bit_area(map, index, nr);
-+	}
-+	return index;
-+}
-+EXPORT_SYMBOL(iommu_area_alloc);
-+
-+void iommu_area_free(unsigned long *map, unsigned long start, unsigned int nr)
-+{
-+	unsigned long end = start + nr;
-+
-+	while (start < end) {
-+		__clear_bit(start, map);
-+		start++;
-+	}
-+}
-+EXPORT_SYMBOL(iommu_area_free);
--- 
-1.5.3.4
-
-
+It could be a cabling problem, yes. Also, are you sure your power supply 
+is able to handle the power draw of that many drives?
