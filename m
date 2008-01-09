@@ -1,141 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753504AbYAIDzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754090AbYAIEB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753504AbYAIDzu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 22:55:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbYAIDzk
+	id S1754090AbYAIEB5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 23:01:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbYAIEBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 22:55:40 -0500
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:28602 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752162AbYAIDzj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 22:55:39 -0500
-Date: Wed, 9 Jan 2008 04:55:34 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: More breakage in native_rdtsc out of line in git-x86
-Message-ID: <20080109035534.GA30321@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 09 Jan 2008 03:49:25.0901 (UTC) FILETIME=[A0E28BD0:01C85272]
+	Tue, 8 Jan 2008 23:01:49 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:49701 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751438AbYAIEBt (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 23:01:49 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Willy Tarreau <w@1wt.eu>, Adrian Bunk <bunk@kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Ingo Molnar <mingo@elte.hu>, Peter Osterlund <petero2@telia.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
+In-Reply-To: Your message of "Mon, 07 Jan 2008 16:19:30 MST."
+             <20080107231930.GC16309@parisc-linux.org>
+From: Valdis.Kletnieks@vt.edu
+References: <20080106171158.GM20473@parisc-linux.org> <1199640983.5205.65.camel@localhost.localdomain> <20080106183402.GA7906@1wt.eu> <20080106185625.GM2082@does.not.exist> <20080106191044.GA1105@1wt.eu> <20080106195802.GN2082@does.not.exist> <20080106210813.GA10136@1wt.eu> <19438.1199739038@turing-police.cc.vt.edu> <20080107213717.GB16309@parisc-linux.org> <26581.1199747065@turing-police.cc.vt.edu>
+            <20080107231930.GC16309@parisc-linux.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1199851267_3703P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 08 Jan 2008 23:01:07 -0500
+Message-ID: <8336.1199851267@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1199851267_3703P
+Content-Type: text/plain; charset=us-ascii
 
-I had some boot failures here with git-x86 with init and hotplug all 
-segfaulting early on userland with new glibc.  Bisecting found
+On Mon, 07 Jan 2008 16:19:30 MST, Matthew Wilcox said:
+> On Mon, Jan 07, 2008 at 06:04:25PM -0500, Valdis.Kletnieks@vt.edu wrote:
+> > Theoretically, at least.  Sometimes, in the real world, other constraints
+> > enter into it...
+> 
+> So you're saying that you can't find reliable ways to reproduce problems
+> on demand?  Those are some of the lower quality bug reports, so I don't
+> think we're losing much by having you not report them.
 
-commit 6aea5bc37fa790eaf3a942f0785985914568e214
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Sat Jan 5 13:27:08 2008 +0100
+I'm sure that *everybody* on this list would *love* to know how you find
+a reliable way to reproduce all the bugs that start off with "after X days of
+uptime".   But when you're chasing what might be a race condition with a
+very small timing hole, you may need an event to happen several million times
+before the accumulated chance of hitting it becomes appreciable.
 
-    x86: move native_read_tsc() offline
-    
-    move native_read_tsc() offline.
+--==_Exmh_1199851267_3703P
+Content-Type: application/pgp-signature
 
-I think the problem is that the vsyscall/vdso code calls it through
-vread and for that it has to be exported. There seems to be also
-another bug with the old style vsyscalls not using the TSC vread
-that masks it on older glibc
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-Stepping with gdb through old style vgettimeofday() confirms that RDTSC is 
-not used.
+iD8DBQFHhEcDcC3lWbTT17ARAmyPAJsE0OHlYbURRy8hKMkHpcavm2UGWQCfYep9
+IDAQ2Gwdp0girq2PGi4VKb0=
+=hzjY
+-----END PGP SIGNATURE-----
 
-A long time ago we had a similar problem once and it was because of a 
-problem exporting the vsyscall variables in vmlinux.lds.S -- looks like that 
-has reappeared.
-
-I think the new glibc shows it because it uses the vDSO not 
-the older vsyscall and the new vDSO probably still works. Anyways haven't 
-investigated why that is in detail yet, but that's a separate 
-regression.
-
-Back to the boot failure:
-
-Unfortunately simply adding __vsyscall_fn to native_read_tsc doesn't 
-work -- causes early kernel faults like
-
-PANIC: early exception rip ffffffffff600105 error 10 cr2 ffffffffff600105
-Pid: 0, comm: swapper Not tainted 2.6.24-rc6 #58
-
-Call Trace:
- [<ffffffff80211dec>] native_sched_clock+0x9/0x3f
- [<ffffffff8022b758>] init_idle+0x33/0xd1
- [<ffffffff80825449>] sched_init+0x26d/0x283
- [<ffffffff80815899>] start_kernel+0x10b/0x2bd
- [<ffffffff80815114>] _sinittext+0x114/0x11b
-
-Not sure why that is -- in theory the vsyscall functions should be callable 
-from the main kernel. Might be a binutils problem or another code
-regression.
-
-Anyways it looks like the only good fix is to either revert that or
-fork into two functions one for vread() and another for normal tsc ->read()
-
-This is all in addition to the problem of it having incorrect barriers.
-I note that my original patch didn't have any of these problems.
-
-I'm using the appended revert patch here as a workaround for now.
-
--Andi
-
-
-Revert rdtsc out of line change
-
-Reverts 
-
-commit 6aea5bc37fa790eaf3a942f0785985914568e214
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Sat Jan 5 13:27:08 2008 +0100
-
-    x86: move native_read_tsc() offline
-
-    move native_read_tsc() offline.
-
-The function is called by vsyscalls in ring 3, so it can't be out of line this way.
-
-Signed-off-by: Andi Kleen <ak@suse.de>
-
-Index: linux/arch/x86/kernel/rtc.c
-===================================================================
---- linux.orig/arch/x86/kernel/rtc.c
-+++ linux/arch/x86/kernel/rtc.c
-@@ -194,14 +194,3 @@ int update_persistent_clock(struct times
- {
- 	return set_rtc_mmss(now.tv_sec);
- }
--
--unsigned long long native_read_tsc(void)
--{
--	DECLARE_ARGS(val, low, high);
--
--	asm volatile("rdtsc" : EAX_EDX_RET(val, low, high));
--	rdtsc_barrier();
--
--	return EAX_EDX_VAL(val, low, high);
--}
--
-Index: linux/include/asm-x86/msr.h
-===================================================================
---- linux.orig/include/asm-x86/msr.h
-+++ linux/include/asm-x86/msr.h
-@@ -91,7 +91,13 @@ static inline int native_write_msr_safe(
- 	return err;
- }
- 
--extern unsigned long long native_read_tsc(void);
-+static inline unsigned long long native_read_tsc(void)
-+{
-+	DECLARE_ARGS(val, low, high);
-+
-+	asm volatile("rdtsc" : EAX_EDX_RET(val, low, high));
-+	return EAX_EDX_VAL(val, low, high);
-+}
- 
- static inline unsigned long long native_read_pmc(int counter)
- {
-
-
+--==_Exmh_1199851267_3703P--
