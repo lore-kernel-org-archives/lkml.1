@@ -1,60 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbYAINRy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753151AbYAINVE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754835AbYAINRy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 08:17:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbYAINRo
+	id S1753151AbYAINVE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 08:21:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbYAINUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 08:17:44 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:63434 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751218AbYAINRk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 08:17:40 -0500
-Message-ID: <4784C96D.5030805@student.ltu.se>
-Date: Wed, 09 Jan 2008 14:17:33 +0100
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 9 Jan 2008 08:20:54 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:50525 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750756AbYAINUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 08:20:53 -0500
+Date: Wed, 9 Jan 2008 14:19:58 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: David Miller <davem@davemloft.net>
+cc: hch@lst.de, airlied@linux.ie, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       pq@iki.fi, jbeulich@novell.com, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Revert "x86: optimize page faults like all other
+ achitectures and kill notifier cruft"
+In-Reply-To: <20080108.232223.211829980.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0801091418510.25041@twin.jikos.cz>
+References: <alpine.DEB.0.82.0801090226240.9570@skynet.skynet.ie>
+ <20080109071727.GA10695@lst.de> <20080108.232223.211829980.davem@davemloft.net>
 MIME-Version: 1.0
-To: Andre Noll <maan@systemlinux.org>
-CC: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, paolo.ciarrocchi@gmail.com,
-       gorcunov@gmail.com
-Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
-References: <20080108164015.GC31504@one.firstfloor.org> <20080109103459.GC16462@skl-net.de>
-In-Reply-To: <20080109103459.GC16462@skl-net.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andre Noll wrote:
-> On 17:40, Andi Kleen wrote:
->  
->   
->> Here's a proposal for some useful code transformations the kernel janitors
->> could do as opposed to running checkpatch.pl.
->>     
->
-> Here's my take on drivers/scsi/sg.c. It's only compile-tested on x86-64.
->   
-... and x86 with all(yes|mod)config. :)
+On Tue, 8 Jan 2008, David Miller wrote:
 
-Would had preferred:
+> You can set a kprobe on the x86 fault handler to do things like
+> mmiotrace.
 
-if (x) {
-    result = -Exxxx;
-    goto out;
-}
+Currently, on x86, you can not, because:
 
-then:
+	fastcall void __kprobes do_page_fault( ... );
 
-result = -Exxxx;
-if (x)
-    goto out;
-
-but it looks correct.
-
-cu,
-Richard
-
+-- 
+Jiri Kosina
