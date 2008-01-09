@@ -1,58 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbYAIGJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbYAIGKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754213AbYAIGJe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 01:09:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYAIGJY
+	id S1754863AbYAIGKS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 01:10:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbYAIGJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 01:09:24 -0500
-Received: from rtr.ca ([76.10.145.34]:1837 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751555AbYAIGJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 01:09:23 -0500
-Message-ID: <47846511.30805@rtr.ca>
-Date: Wed, 09 Jan 2008 01:09:21 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 9 Jan 2008 01:09:59 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:16421 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752197AbYAIGJ6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 01:09:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=cXsW4OUa/kdl9T0jHEx0KfejMCYw04HXIttIDgLOKxkHK7LqSfLqQ4xAvJ4tH1hnnL5EumxVY55f1omVF+ytxFPSChbty4MCMabe8SHrOmU8dLmHnKWgIxXhVcuRXArAubC+/ViW00OzeJtwlgnG470NYb/yymCrMCR9DbQMXW0=
+Date: Wed, 9 Jan 2008 14:13:16 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       James.Bottomley@hansenpartnership.com, dbrownell@users.sourceforge.net,
+       linux-scsi@vger.kernel.org, a.zummo@towertech.it, peterz@infradead.org,
+       cbou@mail.ru, linux-kernel@vger.kernel.org,
+       David Brownell <david-b@pacbell.net>, krh@redhat.com,
+       stern@rowland.harvard.edu, rtc-linux@googlegroups.com,
+       spi-devel-general@lists.sourceforge.net,
+       linux1394-devel@lists.sourceforge.net, dwmw2@infradead.org,
+       davem@davemloft.net, jarkao2@gmail.com
+Subject: Re: [PATCH 0/7] convert semaphore to mutex in struct class
+Message-ID: <20080109061316.GA3249@darkstar.te-china.tietoenator.com>
+References: <20080107020944.GA3637@darkstar.te-china.tietoenator.com> <20080107084528.GA8365@suse.de> <200801070101.15168.david-b@pacbell.net> <478227D5.8050402@s5r6.in-berlin.de> <20080107154404.GA10880@suse.de> <47825DC1.3090102@s5r6.in-berlin.de> <20080107172009.GA25943@suse.de> <a8e1da0801072305x3378c195qeb0bb7027030254c@mail.gmail.com> <20080108224837.GA19623@suse.de> <a8e1da0801081732i3677245chef1fda1fea65f7cf@mail.gmail.com>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-Cc: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>,
-       linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Mark Lord <liml@rtr.ca>
-Subject: Re: Do SATA tape drives work?
-References: <200801090329.m093T7Op019488@turbo.physics.adelaide.edu.au> <4784591D.3060000@gmail.com>
-In-Reply-To: <4784591D.3060000@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a8e1da0801081732i3677245chef1fda1fea65f7cf@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> [cc'ing linux-ide]
+On Wed, Jan 09, 2008 at 09:32:48AM +0800, Dave Young wrote:
+> On Jan 9, 2008 6:48 AM, Greg KH <gregkh@suse.de> wrote:
+> > On Tue, Jan 08, 2008 at 03:05:10PM +0800, Dave Young wrote:
+> > > On Jan 8, 2008 1:20 AM, Greg KH <gregkh@suse.de> wrote:
+> > > > On Mon, Jan 07, 2008 at 06:13:37PM +0100, Stefan Richter wrote:
+> > > > > It's already in the driver core to the most part.  It remains to be seen
+> > > > > what is less complicated in the end:  Transparent mutex-protected list
+> > > > > accesses provided by driver core (requires the iterator), or all the
+> > > > > necessary locking done by the drivers themselves (requires some more
+> > > > > lock-taking but perhaps fewer lock instances overall in the drivers, and
+> > > > > respective redefinitions and documentation of the driver core API).
+> > > >
+> > > > I favor changing the driver core api and doing this kind of thing there.
+> > > > It keeps the drivers simpler and should hopefully make their lives
+> > > > easier.
+> > >
+> > > What about this?
+> > >
+> > > #define class_for_each_dev(pos, head, member) \
+> > >         for (mutex_lock(&(container_of(head, struct class, devices))->mutex), po
+> > > s = list_entry((head)->next, typeof(*pos), member); \
+> > >         prefetch(pos->member.next), &pos->member != (head) ? 1 : (mutex_unlock(&
+> > > (container_of(head, struct class, devices))->mutex), 0); \
+> > >         pos = list_entry(pos->member.next, typeof(*pos), member))
+> >
+> I'm wrong, it's same as before indeed.
 > 
-> Jonathan Woithe wrote:
->> Hi guys
->>
->> I was wondering whether anyone can shed any light on the status of SATA tape
->> drives.  There's very little info on the net about this at least in the
->> places I've checked; the only thing of any significance I've found thus far
->> is a note in a Bacula document dated April 2007 which states that drives
->> other than real SCSI units don't generally work with Bacula.
->>
->> To put this into context, I'm looking at purchasing a Sony SDX470VRB SATA
->> AIT-1 tape drive for use with the SATA controller on an Intel DG31PR
->> mainboard.  The drive will be used primarily with tar/cpio.  Obvsiouly
->> however I only want to make the purchase if there's a reasonable chance of
->> it working.
->>
->> I would appreciate any information you can shed on this issue.
+> > Eeek, just make the thing a function please, where you pass the iterator
+> > function in, like the driver core has (driver_for_each_device)
 > 
-> It's supposed to with recent updates.  Mark, right?
-..
+> Ok, so need a new member of knode_class, I will update the patch later.
+> Thanks.
 
-I wouldn't buy anything with "Sony" on it,
-but Albert thinks ATAPI tapes should be working now
-(he has my old drive now).
- 
+Withdraw my post, sorry :)
 
+For now the mutex patch, I will only use the mutex to lock the devices list and write an iterater function. 
+Most of the iterating is for finding some device in the list, so maybe need a match function just like drivers do?
+
+Regards
+dave
+> 
+> >
+> > thanks,
+> >
+> > greg k-h
+> >
