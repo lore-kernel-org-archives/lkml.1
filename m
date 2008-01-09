@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758169AbYAICd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758372AbYAICe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758169AbYAICd0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 21:33:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757983AbYAICdF
+	id S1758372AbYAICe6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 21:34:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbYAICes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 21:33:05 -0500
-Received: from po-out-1718.google.com ([72.14.252.157]:31806 "EHLO
-	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757964AbYAICdD (ORCPT
+	Tue, 8 Jan 2008 21:34:48 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:58828 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751567AbYAICes (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 21:33:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=SPTBAzcURbIkq4bnZPQS3lhK6YJBHs+fOjL9eev/dD65rx+N+qCXwE5SCQBFSUyyOaotJqh9rd7W8+ptOlL/RXuIjGb0vgTtDXfUV2BtMnesk4kood8K77BcFg2w0s0tYv+nJYEzO/cqJk7NKicKNcA1DGXfUVimTT+FaS9Apvw=
-Date: Wed, 9 Jan 2008 10:32:39 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Adrian Bunk <bunk@kernel.org>, WANG Cong <xiyou.wangcong@gmail.com>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Kbuild update
-Message-ID: <20080109023239.GF2480@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <20080103213255.GA21811@uranus.ravnborg.org> <20080104132316.GA2485@hacking> <20080104143953.GA30536@uranus.ravnborg.org> <20080105054840.GB9976@does.not.exist> <20080106142606.GB2528@hacking> <20080106150744.GJ2082@does.not.exist> <20080106154521.GB3504@uranus.ravnborg.org>
-MIME-Version: 1.0
+	Tue, 8 Jan 2008 21:34:48 -0500
+Date: Wed, 9 Jan 2008 03:37:14 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Russell Leidich <rml@google.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Torsten Kaiser <just.for.lkml@googlemail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       valdis.kletnieks@vt.edu, Tim Hockin <thockin@google.com>
+Subject: Re: [PATCH] AMD Thermal Interrupt Support
+Message-ID: <20080109023714.GK2117@one.firstfloor.org>
+References: <3f1a065b0801021350x7fd065fbj9680ce1a4f3c6538@mail.gmail.com> <20080102215433.GB13784@one.firstfloor.org> <3f1a065b0801041333x579d0a8fs9c5535f95dd56015@mail.gmail.com> <20080104222637.GA19248@one.firstfloor.org> <3f1a065b0801041653y77c27a8cvce703cb7d13e10a0@mail.gmail.com> <20080105132402.GA705@one.firstfloor.org> <3f1a065b0801051208y7e832e8ctda61f28e6328dec3@mail.gmail.com> <3f1a065b0801081542p6cca6249g35e83f7e1f450fbd@mail.gmail.com> <20080108235212.GE2117@one.firstfloor.org> <3f1a065b0801081828y4b084a52g1db9bcb8821cb3da@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080106154521.GB3504@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <3f1a065b0801081828y4b084a52g1db9bcb8821cb3da@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jan 08, 2008 at 06:28:18PM -0800, Russell Leidich wrote:
+> On Jan 8, 2008 3:52 PM, Andi Kleen <andi@firstfloor.org> wrote:
+> > >  ENTRY(thermal_interrupt)
+> > > -     apicinterrupt THERMAL_APIC_VECTOR,smp_thermal_interrupt
+> > > +     apicinterrupt THERMAL_APIC_VECTOR,smp_thermal_interrupt(%rip)
+> >
+> > Are you sure a * is not needed?  I would have thought it would jump
+> > to the variable instead of through it. But if it works it's ok for me.
+> 
+> I will test to make sure it works.  I don't think stars mean anything
+> in AT&T-style X86-64.
 
->> > If we can make this to be an offical project for Linux kernel, I
->> > think it won't be a big problem.
->> 
->> We don't even manage to maintain the English language texts properly,
->> and I am therefore not overly optimistic that we'll have the 
->> translations maintained properly for many years.
->Italian was 100% translated at one point in time.
->And the Linux Kernel Translation project has a number of
->spelling error fixes in queue (I dunno if they have been applied).
->
->So even when run as an external project it was ok for some languages,
->and having it official and someone taking patches to .po files would
->for sure allow more users to build a kernel.
->
+% cat t.s
+        call foo
+        call *foo
+% as -o t.o t.s
+% objdump -S t.o
 
-Agreed.
+t.o:     file format elf64-x86-64
 
-That's the goal of TLKTP. Sam, can you contact to the author of
-TLKTP? Maybe we can talk to him to see if we can restart the
-project. If so, I can help with the Chinese translation part.
+Disassembly of section .text:
 
-Best regards.
+0000000000000000 <.text>:
+   0:   e8 00 00 00 00          callq  0x5
+   5:   ff 14 25 00 00 00 00    callq  *0x0
 
-
- Cong
-
+-Andi
