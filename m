@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbYAITHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755578AbYAITMI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755721AbYAITHa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 14:07:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYAITHX
+	id S1755578AbYAITMI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 14:12:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbYAITL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 14:07:23 -0500
-Received: from cantor.suse.de ([195.135.220.2]:40708 "EHLO mx1.suse.de"
+	Wed, 9 Jan 2008 14:11:56 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:46011 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751026AbYAITHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 14:07:22 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH] Revert "x86: optimize page faults like all other achitectures and kill notifier cruft"
-Date: Wed, 9 Jan 2008 20:07:13 +0100
-User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       hch@lst.de, airlied@linux.ie, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, pq@iki.fi, jbeulich@novell.com,
-       linux-kernel@vger.kernel.org,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-References: <20080108192951.a4dc394f.akpm@linux-foundation.org> <20080109104149.GB8041@elte.hu> <20080109165254.GA4912@Krystal>
-In-Reply-To: <20080109165254.GA4912@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1752946AbYAITLz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 14:11:55 -0500
+Subject: Re: [PATCH] x86_64: cleanup setup_node_zones called by paging_init
+	v2
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200801091030.40545.yinghai.lu@sun.com>
+References: <200801081934.33964.yinghai.lu@sun.com>
+	 <Pine.LNX.4.64.0801090947570.10163@schroedinger.engr.sgi.com>
+	 <200801091030.40545.yinghai.lu@sun.com>
+Content-Type: text/plain
+Date: Wed, 09 Jan 2008 11:11:40 -0800
+Message-Id: <1199905900.9834.96.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801092007.13414.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2008-01-09 at 10:30 -0800, Yinghai Lu wrote:
+> 
+> [PATCH] x86_64: cleanup setup_node_zones called by paging_init v2
+> 
+> setup_node_zones calcuates some variable but only use them when
+> FLAT_NODE_MEM_MAP is set
+> 
+> so change the MACRO postion to avoid calculating.
+> 
+> also change it to static 
 
-> Probing vmalloc faults is _really_ tricky : it also implies that the
-> handler (let's call it probe) connected to the probe point (marker or
-> kprobe) should _never_ cause a vmalloc page fault, 
+I just see the patch adding a net of one #ifdef (and 3 lines of .c
+file), and I don't consider that a cleanup. :(
 
-That is why vmalloc_sync_all() was invented. It might make sense
-to just call that on kprobe registration.
+If you make the function static, and make sure to cover that Dprintk up
+with the #ifdef, I think the compiler should take care of the rest and
+just throw away the function.  Then, you won't need to add the second
+#ifdef.  You can even kill the brackets in that for loop.
 
-But I agree the other problems makes it a bad idea.
+Also, if you're going to be mucking around in there, can you give
+setup_node_zones() a better name?  It doesn't exactly setup any zones
+any more.  alloc_node_mem_map(), perhaps?  The comment above it is
+bogus, too.
 
-I think the better solution is to keep the notifier, but make 
-it cheaper (e.g. by using constant patching ...)
+-- Dave
 
--Andi
