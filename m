@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757106AbYAIACQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbYAIADU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757106AbYAIACQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 19:02:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbYAIAB7
+	id S1756829AbYAIADU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 19:03:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751779AbYAIADM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 19:01:59 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55991 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753446AbYAIAB6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 19:01:58 -0500
-Date: Wed, 9 Jan 2008 01:01:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH 00 of 10] x86: unify asm/pgtable.h
-Message-ID: <20080109000146.GA29095@elte.hu>
-References: <patchbomb.1199829603@localhost> <20080108224244.GA3768@elte.hu> <20080108231226.GA10744@elte.hu> <478405DA.40303@goop.org> <20080108232803.GA19906@elte.hu> <20080108234449.GA24274@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080108234449.GA24274@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.7
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.7 required=5.9 tests=BAYES_00,UPPERCASE_50_75 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.8 UPPERCASE_50_75        message body is 50-75% uppercase
+	Tue, 8 Jan 2008 19:03:12 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:46679 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751667AbYAIADL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 19:03:11 -0500
+Date: Tue, 8 Jan 2008 18:03:09 -0600
+From: Paul Jackson <pj@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: jbeulich@novell.com, hch@infradead.org, pagg@oss.sgi.com, erikj@sgi.com,
+       matthltc@us.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] add task handling notifier
+Message-Id: <20080108180309.4ccab28d.pj@sgi.com>
+In-Reply-To: <20080108141424.de5d8fba.akpm@linux-foundation.org>
+References: <476A780C.76E4.0078.0@novell.com>
+	<20071223122621.GA19310@infradead.org>
+	<20071225140526.547a882f.akpm@linux-foundation.org>
+	<47838ACB.76E4.0078.0@novell.com>
+	<20080108141424.de5d8fba.akpm@linux-foundation.org>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew wrote:
+> What are those (unidentified) add-on features doing at present?
+> Patching calls into fork.c/exec.c/exit.c?
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Most likely.  I suspect we have general agreement and awareness
+that such patching is not something that sells well in Linux-land.
+And for good reason in my personal view ... such patching by loadable
+modules could open the door to compromising the integrity of Linux in
+ways that could be dangerous.
 
->  #define __PAGE_KERNEL_EXEC						\
-> -	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_GLOBAL)
-> +	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED)
-
-btw., __PAGE_KERNEL_EXEC should probably be _PAGE_GLOBAL - but it wasnt 
-before.
-
-	Ingo
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
