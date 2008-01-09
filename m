@@ -1,120 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755354AbYAICPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755645AbYAICWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755354AbYAICPh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 21:15:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbYAICP2
+	id S1755645AbYAICWo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 21:22:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYAICWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 21:15:28 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:8740 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751575AbYAICP1 (ORCPT
+	Tue, 8 Jan 2008 21:22:33 -0500
+Received: from po-out-1718.google.com ([72.14.252.154]:26187 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751799AbYAICWc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 21:15:27 -0500
+	Tue, 8 Jan 2008 21:22:32 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=t7O2T+onXUSJEVfMVrr+4zVvUxqlnNpGX5YVy4nrWUkZUxKXCM0FmcTD8NIyXmmSwcLF0vEKxmfSPPulcbF9obzVXl009wGGQOzqrv62BLAGAey8/yqkBzclvCJ6rQmknCNGopEgFdTTDUDi8u6flxagVEJ/mgqSgwS5GHSBlA0=
-Subject: [PATCH] x86: Use fixup_exception() in traps_64.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain
-Date: Tue, 08 Jan 2008 18:15:28 -0800
-Message-Id: <1199844928.6424.29.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=QJkM3ujP6UOG+iATYsqNezSVJVGcLkdlQzdxJ9MREqojVJJpgNfONLTuXfUtDPjaJblPrjPhuk5z1fBEj9+V+OcOf5yjW+OtsbArZrPtnTpZuvjRUF1H80WUyVi5SYw9nqaMcmqshrDoYJSu9iC4PYYfwN8MUusZf/lRtoSWLJo=
+Date: Wed, 9 Jan 2008 10:22:08 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, Adrian Bunk <bunk@kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: translations (Re: Kbuild update)
+Message-ID: <20080109022208.GD2480@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <20080103213255.GA21811@uranus.ravnborg.org> <20080104132316.GA2485@hacking> <20080104143953.GA30536@uranus.ravnborg.org> <20080105054840.GB9976@does.not.exist> <20080106142606.GB2528@hacking> <20080106214136.GA24008@flower.upol.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080106214136.GA24008@flower.upol.cz>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the fixup_exception() helper instead of the open-coded
-search_extable() users.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Ingo, this depends on my patch in x86.git unifying extable.c that
-introduces fixup_exception() to X86_64.
+>"I will use ...
+>http://images.google.cz/images?svnum=100&um=1&hl=cs&client=firefox-a&rls=org.mozilla%3Acs%3Aofficial&q=I+will+use+Google+before&btnG=Hledat+obr%C3%A1zky
+>... for making translations..."
+>http://www.google.com/translate?u=http%3A%2F%2Flxr.linux.no%2Flinux%2FDocumentation%2FHOWTO&langpair=en%7Czh-TW&hl=en&ie=UTF8
+>?
+>
+>In case if people will help Google to have better quality of translation,
+>that will be better generally for much bigger number of *people*,
+>especially in China, isn't it?
 
- arch/x86/kernel/traps_64.c |   47 ++++++++++++++-----------------------------
- 1 files changed, 15 insertions(+), 32 deletions(-)
+Perhaps yes.
 
-diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
-index e3d1ca1..c173687 100644
---- a/arch/x86/kernel/traps_64.c
-+++ b/arch/x86/kernel/traps_64.c
-@@ -606,19 +606,12 @@ static void __kprobes do_trap(int trapnr, int signr, char *str,
- 	}
- 
+But at least now, that kind of translation still sucks. It can
+satisfy me.
 
--	/* kernel trap */ 
--	{	     
--		const struct exception_table_entry *fixup;
--		fixup = search_exception_tables(regs->ip);
--		if (fixup)
--			regs->ip = fixup->fixup;
--		else {
--			tsk->thread.error_code = error_code;
--			tsk->thread.trap_no = trapnr;
--			die(str, regs, error_code);
--		}
--		return;
-+	if (!fixup_exception(regs)) {
-+		tsk->thread.error_code = error_code;
-+		tsk->thread.trap_no = trapnr;
-+		die(str, regs, error_code);
- 	}
-+	return;
- }
- 
- #define DO_ERROR(trapnr, signr, str, name) \
-@@ -707,22 +700,15 @@ asmlinkage void __kprobes do_general_protection(struct pt_regs * regs,
- 		return;
- 	} 
- 
--	/* kernel gp */
--	{
--		const struct exception_table_entry *fixup;
--		fixup = search_exception_tables(regs->ip);
--		if (fixup) {
--			regs->ip = fixup->fixup;
--			return;
--		}
-+	if (fixup_exception(regs))
-+		return;
- 
--		tsk->thread.error_code = error_code;
--		tsk->thread.trap_no = 13;
--		if (notify_die(DIE_GPF, "general protection fault", regs,
--					error_code, 13, SIGSEGV) == NOTIFY_STOP)
--			return;
--		die("general protection fault", regs, error_code);
--	}
-+	tsk->thread.error_code = error_code;
-+	tsk->thread.trap_no = 13;
-+	if (notify_die(DIE_GPF, "general protection fault", regs,
-+				error_code, 13, SIGSEGV) == NOTIFY_STOP)
-+		return;
-+	die("general protection fault", regs, error_code);
- }
- 
- static __kprobes void
-@@ -914,12 +900,9 @@ clear_TF_reenable:
- 
- static int kernel_math_error(struct pt_regs *regs, const char *str, int trapnr)
- {
--	const struct exception_table_entry *fixup;
--	fixup = search_exception_tables(regs->ip);
--	if (fixup) {
--		regs->ip = fixup->fixup;
-+	if (fixup_exception(regs))
- 		return 1;
--	}
-+
- 	notify_die(DIE_GPF, str, regs, 0, trapnr, SIGFPE);
- 	/* Illegal floating point operation in the kernel */
- 	current->thread.trap_no = trapnr;
--- 
-1.5.4.rc2.1164.g6451
+>
+>Making any official world-domination/new-world-order projects with
+>Linux will not help IMHO. Very fast code flow and almost no up to date
+>documentation is still relevant and google search + email archives
+>are not going to be obsolete in the near future.
+>
+>Also, future of the linux codebase with Chinese comments in C or in
+>ASM is kind of wired nightmare. Those, who cannot read actual source
+>code (i.e. C) will not go too far.
+>
+>So, translation guys, maybe you will stop making noise and will start
+>to make e.g. less buggy Linux? Greg KH have much more stuff to care,
+>than some translations IMHO.
+
+I never say to translate C comments. What we want to translate is the
+strings in Kconfig.
+
+I abosutely agree that we should focus on the exsiting bugs of Linux,
+but like Greg's inclusion of some kernel doc translations, this kind
+of work is really helpful to attract some kernel newbies from none
+English-speaking countries. Even we can't make offical efforts,
+the civil work, like TLKTP, is still worthy. Believe me, I am leading
+a local LUG in my college and I found that one _big_ reason that why
+the newbies are afraid of Linux kernel is English, instead of the
+C tricks or low-level programming.
+
+Regards.
+
+
+ Cong
 
