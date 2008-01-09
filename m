@@ -1,76 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752411AbYAINfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754228AbYAINjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752411AbYAINfR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 08:35:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbYAINfB
+	id S1754228AbYAINjc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 08:39:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbYAINjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 08:35:01 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:46766 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751419AbYAINfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 08:35:00 -0500
-Date: Wed, 9 Jan 2008 14:35:06 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
-       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
-Subject: Re: [patch 7/9] unprivileged mounts: allow unprivileged fuse mounts
-Message-ID: <20080109133506.GI9735@elf.ucw.cz>
-References: <20080108113502.184459371@szeredi.hu> <20080108113630.861045063@szeredi.hu> <20080108214625.GE5050@ucw.cz> <E1JCN9I-0004DB-DF@pomaz-ex.szeredi.hu> <20080108225820.GA9735@elf.ucw.cz> <E1JCWxm-0005Fn-36@pomaz-ex.szeredi.hu> <20080109113325.GC9735@elf.ucw.cz> <E1JCan7-0005mP-UE@pomaz-ex.szeredi.hu>
+	Wed, 9 Jan 2008 08:39:24 -0500
+Received: from def92-3-81-56-114-101.fbx.proxad.net ([81.56.114.101]:41180
+	"EHLO barad-dur.regala.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751149AbYAINjY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 08:39:24 -0500
+To: Tuomo Valkonen <tuomov@iki.fi>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: The ext3 way of journalling
+References: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi>
+	<18307.42821.166376.732473@stoffel.org>
+	<slrnfo7auq.6m2.tuomov@jolt.modeemi.cs.tut.fi>
+From: Mathieu SEGAUD <mathieu.segaud@regala.cx>
+Date: Wed, 09 Jan 2008 14:39:23 +0100
+In-Reply-To: <slrnfo7auq.6m2.tuomov@jolt.modeemi.cs.tut.fi> (Tuomo Valkonen's message of "Tue\, 8 Jan 2008 16\:59\:06 +0000 \(UTC\)")
+Message-ID: <871w8r6ruc.fsf@barad-dur.regala.cx>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1JCan7-0005mP-UE@pomaz-ex.szeredi.hu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Vous m'avez dit récemment :
 
-> > ...this will break with FUSE enabled, right? (Minor security hole by
-> > allowing users to stop c-a-delete, where none existed before?)
-> 
-> Yup (or I don't know, I'm sure there was or is some problem with
-> ptrace, that could be used to create unkillable processes).
-> 
-> Fuse could actually be fixed to exit reliably for 'killall5 -9' (it
-> used to), but that has other problems, and it doesn't seem very
-> important to me.  But this can be discussed.
+> On 2008-01-08, John Stoffel <john@stoffel.org> wrote:
+>> Look at your filesystems, using 'tune2fs' and see if the ext3 journal
+>> is actually turned on and used.  If it's not, then I can see why
+>> you're having problems on reboots.  
+>
+> Journalling is on, but it's no use because the superblock always has
+> corrupted last-checked time at boot. "File system check forced: 31352
+> days since last check" or so. 
 
-I think it is better to fix fuse than to rewrite all the shutdown scripts.
+fix your hardware clock then
 
-> What cannot be fixed is if one process is inside an fs operation
-> (e.g. unlink), holding a VFS lock (i_mutex) and another process goes
-> to uninterruptible sleep on that lock.  There's no way (other than
-> rewriting the VFS) in which that second process could be killed unless
-> you kill the first one or the fuse server.
-
-I believe VFS should be rewritten here. Perhaps new "TASK_KILLABLE"
-state can help?
-
-> > I really believe FUSE vs. signals needs fixing. Either that, or
-> > updating all the manpages
-> > 
-> > man 1 kill:
-> > -       KILL       9   exit      this signal may not be blocked
-> > +       KILL       9   exit      this signal may not be blocked, except by FUSE user mount
-> 
-> Heh, there are all very interesting, but most of these issues are not
-> even on my todo list (which has grown into quite a big pile over the
-> years), which means, that they don't seem to matter to people in
-> practice.
-> 
-> You seem to be implying that fuse is worthless if these issues are not
-> fixed, but that is very far from the truth, I think.
-
-I'm not saying fuse is worthless. It is a nice toy for single-user
-systems. But I do not think we should be merging "allow ordinary users
-to mount their own fuse's" before issues above are fixed.
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Mathieu
