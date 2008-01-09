@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757836AbYAIXhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758163AbYAIXhx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757836AbYAIXhM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 18:37:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960AbYAIXbP
+	id S1758163AbYAIXhx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 18:37:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755991AbYAIXbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 18:31:15 -0500
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:53994 "EHLO
+	Wed, 9 Jan 2008 18:31:16 -0500
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:53984 "EHLO
 	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756157AbYAIXay (ORCPT
+	with ESMTP id S1756009AbYAIXax (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 18:30:54 -0500
-Message-Id: <20080109233043.337688449@goodmis.org>
+	Wed, 9 Jan 2008 18:30:53 -0500
+Message-Id: <20080109233045.251234302@goodmis.org>
 References: <20080109232914.676624725@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 Jan 2008 18:29:21 -0500
+Date: Wed, 09 Jan 2008 18:29:33 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -27,148 +27,86 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
        Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [RFC PATCH 07/22 -v2] tracer add debugfs interface
-Content-Disposition: inline; filename=mcount-tracer-debugfs.patch
+Subject: [RFC PATCH 19/22 -v2] speed up the output of the tracer
+Content-Disposition: inline; filename=mcount-tracer-speed-output.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds an interface into debugfs.
-
-  /debugfs/tracing/ctrl
-
-echoing 1 into the ctrl file turns on the tracer,
-and echoing 0 turns it off.
+The current method of printing out the trace is on every
+read, do a linear search for the next entry to print.
+This patch remembers the next entry to look at in the
+iterator, and if the next read is sequential, it can
+start reading from the next location.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- lib/tracing/tracer.c |   87 ++++++++++++++++++++++++++++++++++++++++++++++++++-
- lib/tracing/tracer.h |    1 
- 2 files changed, 87 insertions(+), 1 deletion(-)
+ lib/tracing/tracer.c |   28 +++++++++++++++++++---------
+ 1 file changed, 19 insertions(+), 9 deletions(-)
 
 Index: linux-compile-i386.git/lib/tracing/tracer.c
 ===================================================================
---- linux-compile-i386.git.orig/lib/tracing/tracer.c	2008-01-09 14:10:46.000000000 -0500
-+++ linux-compile-i386.git/lib/tracing/tracer.c	2008-01-09 15:17:43.000000000 -0500
-@@ -15,6 +15,8 @@
- #include <linux/init.h>
- #include <linux/linkage.h>
- #include <linux/seq_file.h>
-+#include <linux/debugfs.h>
-+#include <linux/uaccess.h>
- #include <linux/mcount.h>
+--- linux-compile-i386.git.orig/lib/tracing/tracer.c	2008-01-09 14:37:13.000000000 -0500
++++ linux-compile-i386.git/lib/tracing/tracer.c	2008-01-09 15:17:24.000000000 -0500
+@@ -105,6 +105,7 @@ enum trace_iterator {
+ struct mctracer_iterator {
+ 	struct mctracer_trace *tr;
+ 	struct mctracer_entry *ent;
++	loff_t pos;
+ 	unsigned long next_idx[NR_CPUS];
+ 	int cpu;
+ 	int idx;
+@@ -176,6 +177,8 @@ static void *s_next(struct seq_file *m, 
+ 	while (ent && iter->idx < i)
+ 		ent = find_next_entry(iter);
  
- #include "tracer.h"
-@@ -71,6 +73,89 @@ static notrace void trace_function(const
- 	raw_local_irq_restore(flags);
++	iter->pos = *pos;
++
+ 	return ent;
  }
  
-+#ifdef CONFIG_DEBUG_FS
-+static int mctracer_open_generic(struct inode *inode, struct file *filp)
-+{
-+	filp->private_data = inode->i_private;
-+	return 0;
-+}
+@@ -186,19 +189,25 @@ static void *s_start(struct seq_file *m,
+ 	loff_t l = 0;
+ 	int i;
+ 
+-	iter->ent = NULL;
+-	iter->cpu = 0;
+-	iter->idx = -1;
+-
+-	for (i = 0; i < NR_CPUS; i++)
+-		iter->next_idx[i] = 0;
+-
+ 	/* stop the trace while dumping */
+ 	if (iter->tr->ctrl)
+ 		clear_mcount_function();
+ 
+-	for (p = iter; p && l < *pos; p = s_next(m, p, &l))
+-		;
++	if (*pos != iter->pos) {
++		iter->ent = NULL;
++		iter->cpu = 0;
++		iter->idx = -1;
 +
++		for (i = 0; i < NR_CPUS; i++)
++			iter->next_idx[i] = 0;
 +
-+static ssize_t mctracer_ctrl_read(struct file *filp, char __user *ubuf,
-+				  size_t cnt, loff_t *ppos)
-+{
-+	struct mctracer_trace *tr = filp->private_data;
-+	char buf[16];
-+	int r;
++		for (p = iter; p && l < *pos; p = s_next(m, p, &l))
++			;
 +
-+	r = sprintf(buf, "%ld\n", tr->ctrl);
-+	return simple_read_from_buffer(ubuf, cnt, ppos,
-+				       buf, r);
-+}
-+
-+static ssize_t mctracer_ctrl_write(struct file *filp,
-+				   const char __user *ubuf,
-+				   size_t cnt, loff_t *ppos)
-+{
-+	struct mctracer_trace *tr = filp->private_data;
-+	long val;
-+	char buf[16];
-+
-+	if (cnt > 15)
-+		cnt = 15;
-+
-+	if (copy_from_user(&buf, ubuf, cnt))
-+		return -EFAULT;
-+
-+	buf[cnt] = 0;
-+
-+	val = !!simple_strtoul(buf, NULL, 10);
-+
-+	if (tr->ctrl ^ val) {
-+		if (val)
-+			register_mcount_function(trace_function);
-+		else
-+			clear_mcount_function();
-+		tr->ctrl = val;
++	} else {
++		l = *pos;
++		p = s_next(m, p, &l);
 +	}
-+
-+	filp->f_pos += cnt;
-+
-+	return cnt;
-+}
-+
-+static struct file_operations mctracer_ctrl_fops = {
-+	.open = mctracer_open_generic,
-+	.read = mctracer_ctrl_read,
-+	.write = mctracer_ctrl_write,
-+};
-+
-+static void mctrace_init_debugfs(void)
-+{
-+	struct dentry *d_mctracer;
-+	struct dentry *entry;
-+
-+	d_mctracer = debugfs_create_dir("tracing", NULL);
-+	if (!d_mctracer) {
-+		pr_warning("Could not create debugfs directory mctracer\n");
-+		return;
-+	}
-+
-+	entry = debugfs_create_file("ctrl", 0644, d_mctracer,
-+				    &mctracer_trace, &mctracer_ctrl_fops);
-+	if (!entry)
-+		pr_warning("Could not create debugfs 'ctrl' entry\n");
-+}
-+#else /* CONFIG_DEBUG_FS */
-+static void mctrace_init_debugfs(void)
-+{
-+	/*
-+	 * No way to turn on or off the trace function
-+	 * without debugfs, so we just turn it on.
-+	 */
-+	register_mcount_function(trace_function);
-+}
-+#endif /* CONFIG_DEBUG_FS */
  
- static notrace int page_order(const unsigned long size)
- {
-@@ -106,7 +191,7 @@ static notrace int mctracer_alloc_buffer
- 		size, MCTRACER_NR_ENTRIES, MCTRACER_ENTRY_SIZE);
- 	pr_info("   actual entries %ld\n", mctracer_trace.entries);
+ 	return p;
+ }
+@@ -286,6 +295,7 @@ static int mctrace_open(struct inode *in
+ 		return -ENOMEM;
  
--	register_mcount_function(trace_function);
-+	mctrace_init_debugfs();
+ 	iter->tr = &mctracer_trace;
++	iter->pos = -1;
  
- 	return 0;
- 
-Index: linux-compile-i386.git/lib/tracing/tracer.h
-===================================================================
---- linux-compile-i386.git.orig/lib/tracing/tracer.h	2008-01-09 14:10:46.000000000 -0500
-+++ linux-compile-i386.git/lib/tracing/tracer.h	2008-01-09 15:17:41.000000000 -0500
-@@ -13,6 +13,7 @@ struct mctracer_trace {
- 	void	      *trace[NR_CPUS];
- 	unsigned long trace_idx[NR_CPUS];
- 	unsigned long entries;
-+	long	      ctrl;
- 	atomic_t      cnt;
- 	atomic_t      disabled[NR_CPUS];
- 	atomic_t      underrun[NR_CPUS];
+ 	/* TODO stop tracer */
+ 	ret = seq_open(file, &mctrace_seq_ops);
 
 -- 
