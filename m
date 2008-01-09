@@ -1,86 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754101AbYAIDUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444AbYAIDWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754101AbYAIDUh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 22:20:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbYAIDU3
+	id S1754444AbYAIDWV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 22:22:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbYAIDWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 22:20:29 -0500
-Received: from ozlabs.org ([203.10.76.45]:45240 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751354AbYAIDU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 22:20:28 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] call sysrq_timer_list_show from a workqueue
-Date: Wed, 9 Jan 2008 14:20:18 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: mingo@elte.hu, kyle@mcmartin.ca, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@redhat.com
-References: <20080108063113.GA21287@fattire.cabal.ca> <200801082250.06828.rusty@rustcorp.com.au> <20080108162159.9f37d856.akpm@linux-foundation.org>
-In-Reply-To: <20080108162159.9f37d856.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 8 Jan 2008 22:22:13 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43732 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752535AbYAIDWL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 22:22:11 -0500
+Date: Tue, 8 Jan 2008 19:22:07 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: Jan Beulich <jbeulich@novell.com>, hch@infradead.org, pagg@oss.sgi.com,
+       erikj@sgi.com, pj@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] add task handling notifier
+Message-Id: <20080108192207.4646e574.akpm@linux-foundation.org>
+In-Reply-To: <1199846820.17010.166.camel@localhost.localdomain>
+References: <476A780C.76E4.0078.0@novell.com>
+	<20071223122621.GA19310@infradead.org>
+	<20071225140526.547a882f.akpm@linux-foundation.org>
+	<47838ACB.76E4.0078.0@novell.com>
+	<20080108141424.de5d8fba.akpm@linux-foundation.org>
+	<1199846820.17010.166.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801091420.19273.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 09 January 2008 11:21:59 Andrew Morton wrote:
-> The string handling in here has become a bit scruffy.
+On Tue, 08 Jan 2008 18:47:00 -0800 Matt Helsley <matthltc@us.ibm.com> wrote:
 
-Yes, that patch also evokes a const warning.  Fixed below.  I assume you've
-queued these because you're thinking of applying them before 2.6.24?  I'd say
-only modules-de-mutex-more-symbol-lookup-paths-in-the-module-code.patch
-warrants that (the other is unlikely and not a regression).
+> > > 
+> ...
+> > > Am I to conclude then that there's no point in addressing the issues other
+> > > people pointed out? While I (obviously, since I submitted the patch disagree),
+> > > I'm not certain how others feel. My main point for disagreement here is (I'm
+> > > sorry to repeat this) that as long as certain code isn't allowed into the kernel
+> > > I think it is not unreasonable to at least expect the kernel to provide some
+> > > fundamental infrastructure that can be used for those (supposedly
+> > > unacceptable) bits. All I did here was utilizing the base infrastructure I want
+> > > added to clean up code that appeared pretty ad-hoc.
+> > > 
+> > 
+> > Ah.  That's a brand new requirement.
+> 
+> In all fairness it's not really a brand new requirement -- just one that
+> wasn't strongly emphasized during prior attempts to get something like
+> this in.
+> 
+> I had a mostly-working patch for this on top of the Task Watchers v2
+> patch set. I never posted that specific patch because it had a race with
+> module unloading and the fix only increased the overhead you were
+> unhappy with. I mentioned it briefly in my lengthy [PATCH 0/X]
+> description for Task Watchers v2 (http://lwn.net/Articles/207873/):
+> 
+> "TODO:
+> ...
+> I'm working on three more patches that add support for creating a task
+> watcher from within a module using an ELF section. They haven't recieved
+> as much attention since I've been focusing on measuring the performance
+> impact of these patches."
+> 
+> <snip>
+> 
+> Would tainting the kernel upon registration of out-of-tree "notifiers"
+> be more acceptable?
 
-> afacit the `namebuf[KSYM_NAME_LEN - 1] = 0;' would be unneeded if we were
-> to use strlcpy() and I suspect the `namebuf[0] = 0;' isn't needed either.
->
-> And the use of strlcpy() means we don't need to subtract 1 from
-> KSYM_NAME_LEN and we don't need to fret about weird strncpy semantics when
-> the input string is too large.
->
->
-> And the fact that incoming arg `namebuf' MUST point at a
-> KSYM_NAME_LEN-sized buffer could be better communicated by using a
-> dedicated struct for this, or by giving the arg a type of `char
-> namebuf[KSYM_NAME_LEN]'.  Or by adding a comment. Or by just ignoring
-> me and doing something more useful.
+How does that work?  module.c does the register/deregister on behalf of the
+module?
 
-Or better, rework all the name lookup interfaces, rather than having: 
+I certainly encourage people to disagreee with me here, but my current
+thinking is:
 
-struct module *module_text_address(unsigned long addr);
-struct module *__module_text_address(unsigned long addr);
-int is_module_address(unsigned long addr);
-int module_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
-			char *name, char *module_name, int *exported);
-char *module_address_lookup(unsigned long addr,
-			    unsigned long *symbolsize,
-			    unsigned long *offset,
-			    char **modname,
-			    char *namebuf);
-int lookup_module_symbol_name(unsigned long addr, char *symname);
-int lookup_module_symbol_attrs(unsigned long addr, unsigned long *size,
-			       unsigned long *offset, char *modname, char *name);
-unsigned long module_kallsyms_lookup_name(const char *name);
+- the cleanup aspect isn't worth the runtime overhead and
 
-unsigned long kallsyms_lookup_name(const char *name);
-extern int kallsyms_lookup_size_offset(unsigned long addr,
-				  unsigned long *symbolsize,
-				  unsigned long *offset);
-const char *kallsyms_lookup(unsigned long addr,
-			    unsigned long *symbolsize,
-			    unsigned long *offset,
-			    char **modname, char *namebuf);
-extern int sprint_symbol(char *buffer, unsigned long address);
-extern void __print_symbol(const char *fmt, unsigned long address);
-int lookup_symbol_name(unsigned long addr, char *symname);
-int lookup_symbol_attrs(unsigned long addr, unsigned long *size,
-		        unsigned long *offset, char *modname, char *name);
-
-Cheers,
-Rusty.
+- the support-modular-users aspect is largely new and would need a lot
+  more description and justification (with examples) before we can even
+  begin to evaluate it.
 
