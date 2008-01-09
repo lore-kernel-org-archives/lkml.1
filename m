@@ -1,88 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753631AbYAIB4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbYAIB72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753631AbYAIB4X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 20:56:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbYAIB4P
+	id S1754189AbYAIB72 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 20:59:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbYAIB7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 20:56:15 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:46601 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750867AbYAIB4O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 20:56:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=P2n/LIOWfkg2iuOkizFs37Ggo58DSruTimYkRZP+acveahuFeF4j4hBzvn4qBMuxh7GZEQKCHyF9fVlabHakfz2C5h/VCKAg+47fXQbZPeXpcIp+cbbSHzVlgz7rCNFxtQoB0Vj1+o5vvkpqxIqedkVUn472yh7HDqUyw/f2a8I=
-Message-ID: <478429B2.2030002@gmail.com>
-Date: Wed, 09 Jan 2008 10:56:02 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 8 Jan 2008 20:59:21 -0500
+Received: from gw.goop.org ([64.81.55.164]:53650 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751831AbYAIB7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 20:59:20 -0500
+Message-ID: <478429DE.1090901@goop.org>
+Date: Tue, 08 Jan 2008 17:56:46 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?=22J=2EA=2E_Magall=F3n=22?= <jamagallon@ono.com>
-CC: "Linux-Kernel, " <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.24-rc7
-References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org> <20080108015012.2e518dd4@werewolf>
-In-Reply-To: <20080108015012.2e518dd4@werewolf>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+To: Andi Kleen <ak@suse.de>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jan Beulich <jbeulich@novell.com>
+Subject: Re: [PATCH 00 of 10] x86: unify asm/pgtable.h
+References: <20080109000146.GA29095@elte.hu> <47841194.2010208@goop.org> <20080109002014.GB31289@elte.hu> <20080109002803.GA3732@elte.hu> <20080109003034.GA4658@elte.hu> <47841B09.3020507@goop.org> <20080109005914.GA24228@elte.hu> <47841E3C.9020106@goop.org> <20080109011233.GD25945@bingen.suse.de> <478424DE.3030609@goop.org> <20080109014233.GG25945@bingen.suse.de>
+In-Reply-To: <20080109014233.GG25945@bingen.suse.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J.A. Magallón wrote:
-> HI all...
-> 
-> On Sun, 6 Jan 2008 14:19:16 -0800 (PST), Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
->> It's been two weeks since rc6, but let's face it, with xmas and new years 
->> (and birthdays) in between, there hasn't actually been a lot of working 
->> days, and the incremental patch from -rc6 is about half the size of the 
->> one from rc5->rc6.
->>
->> And I'll be charitable and claim it's because it's all stabilizing, and 
->> not because we've all been in a drunken stupor over the holidays.
->>
->> The shortlog (appended below) is short and fairly informative. It's all 
->> really just a lot of rather small changes. The diffstat shows a lot of 
->> one- and two-liners, with just a few drivers (and the Cell platform) 
->> getting a bit more attention, and the SLUB support of /proc/slabinfo 
->> showing up as a blip.
->>
-> 
-> With this kernel I'm getting frequent temporary freezes (system comes
-> back responsive after a minute or so...). I see this in dmesg:
-> 
-> ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> ata3.00: cmd ca/00:08:67:10:18/00:00:00:00:00/e2 tag 0 dma 4096 out
->          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> ata3.00: status: { DRDY }
-> ata3: soft resetting link
-> ata3.00: configured for UDMA/133
-> ata3: EH complete
-> sd 2:0:0:0: [sdb] 390721968 512-byte hardware sectors (200050 MB)
-> sd 2:0:0:0: [sdb] Write Protect is off
-> sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-> sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> 
-> ata4.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> ata4.00: cmd c8/00:08:ef:0b:c7/00:00:00:00:00/e7 tag 0 dma 4096 in
->          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> ata4.00: status: { DRDY }
-> ata4: soft resetting link
-> ata4.00: configured for UDMA/133
-> ata4: EH complete
-> sd 3:0:0:0: [sdc] 625142448 512-byte hardware sectors (320073 MB)
-> sd 3:0:0:0: [sdc] Write Protect is off
-> sd 3:0:0:0: [sdc] Mode Sense: 00 3a 00 00
-> sd 3:0:0:0: [sdc] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> 
-> See this are two different drives, I doubt both drives have gone nuts
-> at the same time...
+Andi Kleen wrote:
+>> Or to put it another way, what's the underlying rationale for making 
+>> __PAGE_KERNEL_* not include the GLOBAL flag, but including it in the pgprot 
+>> versions?  It means that code like this in ioremap_64.c:
+>>     
+>
+> There is none, but that is not what change_page_attr() cares about.
+> It just cares that you pass in the correct bits and you don't currently.
+>
+> I think you're missing the forrest because of all the trees currently.
+>   
 
-That's weird.  There hasn't been any related changes.  Does going back
-to 2.6.24-rc6 fix the problem?
+Yeah, that may be true, but this particular tree is weird, and I'm 
+trying to understand what's going on here.  Specifically, 64-bit 
+ioremap()s *don't* set _PAGE_GLOBAL, which appears to be an accident 
+resulting from the strange definitions of __PAGE_KERNEL_* vs 
+PAGE_KERNEL_*. 
 
--- 
-tejun
+For example, ioremap_64.c:__ioremap() creates a vma for the io mapping, 
+and explicitly sets _PAGE_GLOBAL in the vma's version of pgprot - but 
+then it calls ioremap_page_range() to actually create the mapping, which 
+ends up making a non-global mapping, because its rolling its own version 
+of PAGE_KERNEL by using pgprot(__PAGE_KERNEL) - which is not the actual 
+definition of PAGE_KERNEL.
+
+I think there's a bug around here, but I think its currently being 
+hidden by accident.  I think my changes are correct, and they're 
+exposing some other bug.  But I don't really understand how all this 
+stuff is supposed to fit together, so I'm looking for an explanation of 
+what's supposed to be happening - and ideally - why the current code 
+isn't actually buggy.
+
+For example: is ioremap_change_attr() actually *deliberately* creating 
+non-global mappings?  Or is it an accident?  And if it really intends to 
+create non-global mappings, why?  And why is it buggy for it to create 
+global mappings?
+
+    J
