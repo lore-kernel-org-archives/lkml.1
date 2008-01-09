@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbYAIQQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594AbYAIQ0I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755404AbYAIQQQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 11:16:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYAIQQD
+	id S1754594AbYAIQ0I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 11:26:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbYAIQZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 11:16:03 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35042 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751916AbYAIQQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 11:16:01 -0500
-Date: Wed, 9 Jan 2008 17:15:45 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 4/4] x86: coding style fixes in arch/x86/pci/fixup.c
-Message-ID: <20080109161545.GD17739@elte.hu>
-References: <20080109003107.459108ba@paolo-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080109003107.459108ba@paolo-desktop>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 9 Jan 2008 11:25:55 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:36891 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752098AbYAIQZy (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 11:25:54 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Thanasis <thanasis@asyr.hopto.org>, linux-kernel@vger.kernel.org
+Subject: Re: NIC as RS232
+In-Reply-To: Your message of "Wed, 09 Jan 2008 09:29:41 +0100."
+             <Pine.LNX.4.64.0801090926590.1377@anakin>
+From: Valdis.Kletnieks@vt.edu
+References: <47831CC3.9080604@asyr.hopto.org> <9263.1199852504@turing-police.cc.vt.edu>
+            <Pine.LNX.4.64.0801090926590.1377@anakin>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1199895828_3223P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Wed, 09 Jan 2008 11:23:48 -0500
+Message-ID: <12138.1199895828@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1199895828_3223P
+Content-Type: text/plain; charset=us-ascii
 
-* Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
+On Wed, 09 Jan 2008 09:29:41 +0100, Geert Uytterhoeven said:
 
-> Simple coding style fixes.
+> We have plenty of DB9-to-RJ45 at work. Very useful when abusing the
+> Ethernet cabling in the wall for serial connections (also used for
+> phone).
+> 
+> Maybe surprisingly to you, I haven't seen the RJ11 variant ;-)
 
-thanks, applied. If this interfers with ongoing drivers/pci work then 
-we'll rearrange it (drop/reapply) to around those changes.
+I have to admit, the RJ11 variant was from a long time ago, when Ethernet
+was still either Thickwire or Thinwire, and this Cat-N stuff was still in
+the future, so RJ45 wasn't exactly a common critter.  For reference, the
+machine involved was an ATT 3B2-400, and some Blit terminals were in the mix,
+which tells you just how far back that was.. ;)
 
-	Ingo
+--==_Exmh_1199895828_3223P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFHhPUUcC3lWbTT17ARAtHkAJ9mMY46mce6WlRAylC8WLthm4STJACgvyxJ
+qnrGxFxLLxtjizP7tMZeSD8=
+=ZlXp
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1199895828_3223P--
