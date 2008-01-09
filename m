@@ -1,204 +1,263 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756680AbYAIA4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbYAIA4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756680AbYAIA4X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 19:56:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755173AbYAIAyb
+	id S1757328AbYAIA4h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 19:56:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbYAIAyd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 19:54:31 -0500
-Received: from ms0.nttdata.co.jp ([163.135.193.231]:51868 "EHLO
+	Tue, 8 Jan 2008 19:54:33 -0500
+Received: from ms0.nttdata.co.jp ([163.135.193.231]:51873 "EHLO
 	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752910AbYAIAyW (ORCPT
+	with ESMTP id S1752925AbYAIAyX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 19:54:22 -0500
-Message-Id: <20080109005418.967825467@nttdata.co.jp>
+	Tue, 8 Jan 2008 19:54:23 -0500
+Message-Id: <20080109005419.494892830@nttdata.co.jp>
 References: <20080109005320.323184643@nttdata.co.jp>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 Jan 2008 09:53:23 +0900
+Date: Wed, 09 Jan 2008 09:53:24 +0900
 From: Kentaro Takeda <takedakn@nttdata.co.jp>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #6 retry 03/21] Add wrapper functions for VFS helper functions.
-X-OriginalArrivalTime: 09 Jan 2008 00:54:19.0615 (UTC) FILETIME=[2AA686F0:01C8525A]
+Subject: [TOMOYO #6 retry 04/21] Replace VFS with wrapper functions.
+X-OriginalArrivalTime: 09 Jan 2008 00:54:20.0021 (UTC) FILETIME=[2AE47A50:01C8525A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch allows LSM hooks refer previously associated "struct vfsmount"
-parameter so that they can calculate pathname of given "struct dentry".
+This patch replaces VFS helper function calls caused by
+userland process's request with VFS wrapper functions call.
+I don't have a plan to control VFS helper function calls
+caused by the kernel. Therefore, this patch doesn't modify
+individual filesystems in fs/*/ directory.
 
-AppArmor's approach is to add "struct vfsmount" parameter to all related
-functions, while my approach is to store "struct vfsmount" parameter
-in "struct task_struct". My approach resembles to "syscall auditing" because
-"syscall auditing" saves parameters at the entrance of a system call
-in "struct audit_context" of "struct task_struct"
-instead of adding parameters needed for auditing to all functions.
+I need to know the vfsmount parameter from LSM hooks so that
+I can calculate the pathname of a given dentry.
+
+Scanning the caller process's namespace list cannot reliably
+determine which vfsmount the given dentry belongs to
+because the corresponding vfsmount parameter appears for
+multiple times when bind mounts are used.
+
+What is worse, accessing namespace_sem from LSM hooks triggers
+AB-BA deadlock. Therefore, I definitely need either AppArmor's
+"Add struct vfsmount parameter to ..." patches or this patch.
 
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 ---
- include/linux/fs.h |  138 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 138 insertions(+)
+ fs/namei.c         |   34 +++++++++++++++++++---------------
+ fs/open.c          |   23 +++++++++++++----------
+ net/unix/af_unix.c |    3 ++-
+ 3 files changed, 34 insertions(+), 26 deletions(-)
 
---- linux-2.6-mm.orig/include/linux/fs.h
-+++ linux-2.6-mm/include/linux/fs.h
-@@ -1081,6 +1081,116 @@ extern int vfs_rmdir(struct inode *, str
- extern int vfs_unlink(struct inode *, struct dentry *);
- extern int vfs_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
+--- linux-2.6-mm.orig/fs/open.c
++++ linux-2.6-mm/fs/open.c
+@@ -271,7 +271,8 @@ static long do_sys_truncate(const char _
+ 	error = locks_verify_truncate(inode, NULL, length);
+ 	if (!error) {
+ 		DQUOT_INIT(inode);
+-		error = do_truncate(nd.path.dentry, length, 0, NULL);
++		error = do_truncate2(nd.path.dentry, nd.path.mnt, length, 0,
++				     NULL);
+ 	}
  
-+#include <linux/mount.h>
-+#include <linux/sched.h>
-+
-+static inline int vfs_create2(struct inode *dir, struct dentry *dentry,
-+			      int mode, struct nameidata *nd)
-+{
-+	int ret;
-+	struct vfsmount *mnt = nd ? nd->path.mnt : NULL;
-+	struct task_struct *task = current;
-+	struct vfsmount *prev_mnt = task->last_vfsmount;
-+	task->last_vfsmount = mntget(mnt);
-+	ret = vfs_create(dir, dentry, mode, nd);
-+	task->last_vfsmount = prev_mnt;
-+	mntput(mnt);
-+	return ret;
-+}
-+
-+static inline int vfs_mkdir2(struct inode *dir, struct dentry *dentry,
-+			     struct vfsmount *mnt, int mode)
-+{
-+	int ret;
-+	struct task_struct *task = current;
-+	struct vfsmount *prev_mnt = task->last_vfsmount;
-+	task->last_vfsmount = mntget(mnt);
-+	ret = vfs_mkdir(dir, dentry, mode);
-+	task->last_vfsmount = prev_mnt;
-+	mntput(mnt);
-+	return ret;
-+}
-+
-+static inline int vfs_mknod2(struct inode *dir, struct dentry *dentry,
-+			     struct vfsmount *mnt, int mode, dev_t dev)
-+{
-+	int ret;
-+	struct task_struct *task = current;
-+	struct vfsmount *prev_mnt = task->last_vfsmount;
-+	task->last_vfsmount = mntget(mnt);
-+	ret = vfs_mknod(dir, dentry, mode, dev);
-+	task->last_vfsmount = prev_mnt;
-+	mntput(mnt);
-+	return ret;
-+}
-+
-+static inline int vfs_symlink2(struct inode *dir, struct dentry *dentry,
-+			       struct vfsmount *mnt, const char *oldname,
-+			       int mode)
-+{
-+	int ret;
-+	struct task_struct *task = current;
-+	struct vfsmount *prev_mnt = task->last_vfsmount;
-+	task->last_vfsmount = mntget(mnt);
-+	ret = vfs_symlink(dir, dentry, oldname, mode);
-+	task->last_vfsmount = prev_mnt;
-+	mntput(mnt);
-+	return ret;
-+}
-+
-+static inline int vfs_link2(struct dentry *old_dentry, struct inode *dir,
-+			    struct dentry *new_dentry, struct vfsmount *mnt)
-+{
-+	int ret;
-+	struct task_struct *task = current;
-+	struct vfsmount *prev_mnt = task->last_vfsmount;
-+	task->last_vfsmount = mntget(mnt);
-+	ret = vfs_link(old_dentry, dir, new_dentry);
-+	task->last_vfsmount = prev_mnt;
-+	mntput(mnt);
-+	return ret;
-+}
-+
-+static inline int vfs_rmdir2(struct inode *dir, struct dentry *dentry,
-+			     struct vfsmount *mnt)
-+{
-+	int ret;
-+	struct task_struct *task = current;
-+	struct vfsmount *prev_mnt = task->last_vfsmount;
-+	task->last_vfsmount = mntget(mnt);
-+	ret = vfs_rmdir(dir, dentry);
-+	task->last_vfsmount = prev_mnt;
-+	mntput(mnt);
-+	return ret;
-+}
-+
-+static inline int vfs_unlink2(struct inode *dir, struct dentry *dentry,
-+			     struct vfsmount *mnt)
-+{
-+	int ret;
-+	struct task_struct *task = current;
-+	struct vfsmount *prev_mnt = task->last_vfsmount;
-+	task->last_vfsmount = mntget(mnt);
-+	ret = vfs_unlink(dir, dentry);
-+	task->last_vfsmount = prev_mnt;
-+	mntput(mnt);
-+	return ret;
-+}
-+
-+static inline int vfs_rename2(struct inode *old_dir, struct dentry *old_dentry,
-+			      struct inode *new_dir, struct dentry *new_dentry,
-+			      struct vfsmount *mnt)
-+{
-+	int ret;
-+	struct task_struct *task = current;
-+	struct vfsmount *prev_mnt = task->last_vfsmount;
-+	task->last_vfsmount = mntget(mnt);
-+	ret = vfs_rename(old_dir, old_dentry, new_dir, new_dentry);
-+	task->last_vfsmount = prev_mnt;
-+	mntput(mnt);
-+	return ret;
-+}
-+
- /*
-  * VFS dentry helper functions.
-  */
-@@ -1558,6 +1668,21 @@ static inline int break_lease(struct ino
+ put_write_and_out:
+@@ -326,7 +327,8 @@ static long do_sys_ftruncate(unsigned in
  
- extern int do_truncate(struct dentry *, loff_t start, unsigned int time_attrs,
- 		       struct file *filp);
-+
-+static inline int do_truncate2(struct dentry *dentry, struct vfsmount *mnt,
-+			       loff_t length, unsigned int time_attrs,
-+			       struct file *filp)
-+{
-+	int ret;
-+	struct task_struct *task = current;
-+	struct vfsmount *prev_mnt = task->last_vfsmount;
-+	task->last_vfsmount = mntget(mnt);
-+	ret = do_truncate(dentry, length, time_attrs, filp);
-+	task->last_vfsmount = prev_mnt;
-+	mntput(mnt);
-+	return ret;
-+}
-+
- extern long do_sys_open(int dfd, const char __user *filename, int flags,
- 			int mode);
- extern struct file * dentry_open(struct dentry *, struct vfsmount *, int);
-@@ -1718,6 +1843,19 @@ extern int permission(struct inode *, in
- extern int generic_permission(struct inode *, int,
- 		int (*check_acl)(struct inode *, int));
+ 	error = locks_verify_truncate(inode, file, length);
+ 	if (!error)
+-		error = do_truncate(dentry, length, ATTR_MTIME|ATTR_CTIME, file);
++		error = do_truncate2(dentry, file->f_path.mnt, length,
++				     ATTR_MTIME|ATTR_CTIME, file);
+ out_putf:
+ 	fput(file);
+ out:
+@@ -589,7 +591,7 @@ asmlinkage long sys_fchmod(unsigned int 
+ 		mode = inode->i_mode;
+ 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
+ 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+-	err = notify_change(dentry, &newattrs);
++	err = notify_change2(dentry, file->f_path.mnt, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
  
-+static inline int notify_change2(struct dentry *dentry, struct vfsmount *mnt,
-+				 struct iattr *attr)
-+{
-+	int ret;
-+	struct task_struct *task = current;
-+	struct vfsmount *prev_mnt = task->last_vfsmount;
-+	task->last_vfsmount = mntget(mnt);
-+	ret = notify_change(dentry, attr);
-+	task->last_vfsmount = prev_mnt;
-+	mntput(mnt);
-+	return ret;
-+}
-+
- extern int get_write_access(struct inode *);
- extern int deny_write_access(struct file *);
- static inline void put_write_access(struct inode * inode)
+ out_drop_write:
+@@ -626,7 +628,7 @@ asmlinkage long sys_fchmodat(int dfd, co
+ 		mode = inode->i_mode;
+ 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
+ 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+-	error = notify_change(nd.path.dentry, &newattrs);
++	error = notify_change2(nd.path.dentry, nd.path.mnt, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+ 
+ out_drop_write:
+@@ -642,7 +644,8 @@ asmlinkage long sys_chmod(const char __u
+ 	return sys_fchmodat(AT_FDCWD, filename, mode);
+ }
+ 
+-static int chown_common(struct dentry * dentry, uid_t user, gid_t group)
++static int chown_common(struct dentry *dentry, struct vfsmount *mnt,
++			uid_t user, gid_t group)
+ {
+ 	struct inode * inode;
+ 	int error;
+@@ -669,7 +672,7 @@ static int chown_common(struct dentry * 
+ 		newattrs.ia_valid |=
+ 			ATTR_KILL_SUID | ATTR_KILL_SGID | ATTR_KILL_PRIV;
+ 	mutex_lock(&inode->i_mutex);
+-	error = notify_change(dentry, &newattrs);
++	error = notify_change2(dentry, mnt, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+ out:
+ 	return error;
+@@ -686,7 +689,7 @@ asmlinkage long sys_chown(const char __u
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_release;
+-	error = chown_common(nd.path.dentry, user, group);
++	error = chown_common(nd.path.dentry, nd.path.mnt, user, group);
+ 	mnt_drop_write(nd.path.mnt);
+ out_release:
+ 	path_put(&nd.path);
+@@ -711,7 +714,7 @@ asmlinkage long sys_fchownat(int dfd, co
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_release;
+-	error = chown_common(nd.path.dentry, user, group);
++	error = chown_common(nd.path.dentry, nd.path.mnt, user, group);
+ 	mnt_drop_write(nd.path.mnt);
+ out_release:
+ 	path_put(&nd.path);
+@@ -730,7 +733,7 @@ asmlinkage long sys_lchown(const char __
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_release;
+-	error = chown_common(nd.path.dentry, user, group);
++	error = chown_common(nd.path.dentry, nd.path.mnt, user, group);
+ 	mnt_drop_write(nd.path.mnt);
+ out_release:
+ 	path_put(&nd.path);
+@@ -754,7 +757,7 @@ asmlinkage long sys_fchown(unsigned int 
+ 		goto out_fput;
+ 	dentry = file->f_path.dentry;
+ 	audit_inode(NULL, dentry);
+-	error = chown_common(dentry, user, group);
++	error = chown_common(dentry, file->f_vfsmnt, user, group);
+ 	mnt_drop_write(file->f_vfsmnt);
+ out_fput:
+ 	fput(file);
+--- linux-2.6-mm.orig/fs/namei.c
++++ linux-2.6-mm/fs/namei.c
+@@ -1663,7 +1663,7 @@ int may_open(struct nameidata *nd, int a
+ 		if (!error) {
+ 			DQUOT_INIT(inode);
+ 
+-			error = do_truncate(dentry, 0,
++			error = do_truncate2(dentry, nd->path.mnt, 0,
+ 					    ATTR_MTIME|ATTR_CTIME|ATTR_OPEN,
+ 					    NULL);
+ 		}
+@@ -1690,7 +1690,7 @@ static int __open_namei_create(struct na
+ 
+ 	if (!IS_POSIXACL(dir->d_inode))
+ 		mode &= ~current->fs->umask;
+-	error = vfs_create(dir->d_inode, path->dentry, mode, nd);
++	error = vfs_create2(dir->d_inode, path->dentry, mode, nd);
+ 	mutex_unlock(&dir->d_inode->i_mutex);
+ 	dput(nd->path.dentry);
+ 	nd->path.dentry = path->dentry;
+@@ -2078,16 +2078,17 @@ asmlinkage long sys_mknodat(int dfd, con
+ 		goto out_dput;
+ 	switch (mode & S_IFMT) {
+ 		case 0: case S_IFREG:
+-			error = vfs_create(nd.path.dentry->d_inode, dentry,
+-						mode, &nd);
++			error = vfs_create2(nd.path.dentry->d_inode, dentry,
++					    mode, &nd);
+ 			break;
+ 		case S_IFCHR: case S_IFBLK:
+-			error = vfs_mknod(nd.path.dentry->d_inode, dentry, mode,
+-					new_decode_dev(dev));
++			error = vfs_mknod2(nd.path.dentry->d_inode, dentry,
++					   nd.path.mnt, mode,
++					   new_decode_dev(dev));
+ 			break;
+ 		case S_IFIFO: case S_IFSOCK:
+-			error = vfs_mknod(nd.path.dentry->d_inode, dentry,
+-						mode, 0);
++			error = vfs_mknod2(nd.path.dentry->d_inode, dentry,
++					   nd.path.mnt, mode, 0);
+ 			break;
+ 	}
+ 	mnt_drop_write(nd.path.mnt);
+@@ -2154,7 +2155,7 @@ asmlinkage long sys_mkdirat(int dfd, con
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
+-	error = vfs_mkdir(nd.path.dentry->d_inode, dentry, mode);
++	error = vfs_mkdir2(nd.path.dentry->d_inode, dentry, nd.path.mnt, mode);
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+ 	dput(dentry);
+@@ -2266,7 +2267,7 @@ static long do_rmdir(int dfd, const char
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto exit3;
+-	error = vfs_rmdir(nd.path.dentry->d_inode, dentry);
++	error = vfs_rmdir2(nd.path.dentry->d_inode, dentry, nd.path.mnt);
+ 	mnt_drop_write(nd.path.mnt);
+ exit3:
+ 	dput(dentry);
+@@ -2352,7 +2353,8 @@ static long do_unlinkat(int dfd, const c
+ 		error = mnt_want_write(nd.path.mnt);
+ 		if (error)
+ 			goto exit2;
+-		error = vfs_unlink(nd.path.dentry->d_inode, dentry);
++		error = vfs_unlink2(nd.path.dentry->d_inode, dentry,
++				    nd.path.mnt);
+ 		mnt_drop_write(nd.path.mnt);
+ 	exit2:
+ 		dput(dentry);
+@@ -2437,7 +2439,8 @@ asmlinkage long sys_symlinkat(const char
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
+-	error = vfs_symlink(nd.path.dentry->d_inode, dentry, from, S_IALLUGO);
++	error = vfs_symlink2(nd.path.dentry->d_inode, dentry, nd.path.mnt, from,
++			     S_IALLUGO);
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+ 	dput(dentry);
+@@ -2537,7 +2540,8 @@ asmlinkage long sys_linkat(int olddfd, c
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
+-	error = vfs_link(old_nd.path.dentry, nd.path.dentry->d_inode, new_dentry);
++	error = vfs_link2(old_nd.path.dentry, nd.path.dentry->d_inode,
++			  new_dentry, nd.path.mnt);
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+ 	dput(new_dentry);
+@@ -2768,8 +2772,8 @@ static int do_rename(int olddfd, const c
+ 	error = mnt_want_write(oldnd.path.mnt);
+ 	if (error)
+ 		goto exit5;
+-	error = vfs_rename(old_dir->d_inode, old_dentry,
+-				   new_dir->d_inode, new_dentry);
++	error = vfs_rename2(old_dir->d_inode, old_dentry,
++			    new_dir->d_inode, new_dentry, newnd.path.mnt);
+ 	mnt_drop_write(oldnd.path.mnt);
+ exit5:
+ 	dput(new_dentry);
+--- linux-2.6-mm.orig/net/unix/af_unix.c
++++ linux-2.6-mm/net/unix/af_unix.c
+@@ -822,7 +822,8 @@ static int unix_bind(struct socket *sock
+ 		err = mnt_want_write(nd.path.mnt);
+ 		if (err)
+ 			goto out_mknod_dput;
+-		err = vfs_mknod(nd.path.dentry->d_inode, dentry, mode, 0);
++		err = vfs_mknod2(nd.path.dentry->d_inode, dentry, nd.path.mnt,
++				 mode, 0);
+ 		mnt_drop_write(nd.path.mnt);
+ 		if (err)
+ 			goto out_mknod_dput;
 
 -- 
