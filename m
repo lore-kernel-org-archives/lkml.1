@@ -1,143 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754269AbYAIJuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754991AbYAIJv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754269AbYAIJuz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 04:50:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbYAIJur
+	id S1754991AbYAIJv4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 04:51:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbYAIJvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 04:50:47 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58726 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751026AbYAIJuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 04:50:46 -0500
-Date: Wed, 09 Jan 2008 18:50:36 +0900 (JST)
-Message-Id: <20080109.185036.227535061.yamato@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: ltp-list@lists.sourceforge.net
-Subject: [PATCH] checking ADVICE of fadvice64_64 even if get_xip_page is
- given
-From: Masatake YAMATO <yamato@redhat.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1.50 / Mule 5.0 (SAKAKI)
+	Wed, 9 Jan 2008 04:51:48 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:35215
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752216AbYAIJvr convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 04:51:47 -0500
+Message-Id: <4784A751.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Wed, 09 Jan 2008 09:52:01 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <hch@infradead.org>, <pagg@oss.sgi.com>, <erikj@sgi.com>, <pj@sgi.com>,
+       <matthltc@us.ibm.com>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/4] add task handling notifier
+References: <476A780C.76E4.0078.0@novell.com>
+ <20071223122621.GA19310@infradead.org>
+ <20071225140526.547a882f.akpm@linux-foundation.org>
+ <47838ACB.76E4.0078.0@novell.com>
+ <20080108141424.de5d8fba.akpm@linux-foundation.org>
+In-Reply-To: <20080108141424.de5d8fba.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+>> Am I to conclude then that there's no point in addressing the issues other
+>> people pointed out? While I (obviously, since I submitted the patch disagree),
+>> I'm not certain how others feel. My main point for disagreement here is (I'm
+>> sorry to repeat this) that as long as certain code isn't allowed into the kernel
+>> I think it is not unreasonable to at least expect the kernel to provide some
+>> fundamental infrastructure that can be used for those (supposedly
+>> unacceptable) bits. All I did here was utilizing the base infrastructure I want
+>> added to clean up code that appeared pretty ad-hoc.
+>> 
+>
+>Ah.  That's a brand new requirement.
 
-I've written some test programs in ltp project.
-During writing I met an problem which I cannot solve
-in user land. So I wrote a patch for linux kernel.
-Please, include this patch if acceptable.
+I'm sorry, but I didn't feel this was important, as I didn't expect the cleanup
+effect to cause much debate...
 
+>I think we'd need a pretty detailed description of the pain which this
+>would relieve before we would take such an extraordinary step.  What are
+>those (unidentified) add-on features doing at present?  Patching calls into
+>fork.c/exec.c/exit.c?
 
-The test program tests the 4th parameter of fadvise64_64:
+Yes. And the unidentified feature is NLKD. But as with other notifiers (most
+notably the module unload one), all reasonable kernel debuggers should
+need them (or do explicit patching of the mentioned source files). As I
+explained before, I think that if kernel debuggers aren't allowed into the
+tree, they should at least be allowed to co-exist (since the argument of
+requiring in-tree users and submitting code for mainline inclusion is void
+if political/personal reasons exclude certain code from even being
+considered for inclusion).
 
-    long sys_fadvise64_64(int fd, loff_t offset, loff_t len, int advice);
+Jan
 
-
-My test case calls fadvise64_64 with invalid advice value and
-checks errno is set to EINVAL.
-About the advice parameter man page says:
-
-    ...
-    Permissible values for advice include:
-
-	   POSIX_FADV_NORMAL
-                  ...
-	   POSIX_FADV_SEQUENTIAL
-                  ...
-	   POSIX_FADV_RANDOM
-		  ...
-	   POSIX_FADV_NOREUSE
-                  ...
-	   POSIX_FADV_WILLNEED
-                  ...
-	   POSIX_FADV_DONTNEED
-		  ...
-    ERRORS
-           ...
-	   EINVAL An invalid value was specified for advice.
-
-However, I got a bug report that the system call invocations
-in my test case returned 0 unexpectedly. 
-
-I've inspected the kernel code:
-
-    asmlinkage long sys_fadvise64_64(int fd, loff_t offset, loff_t len, int advice)
-    {
-	    struct file *file = fget(fd);
-	    struct address_space *mapping;
-	    struct backing_dev_info *bdi;
-	    loff_t endbyte;			/* inclusive */
-	    pgoff_t start_index;
-	    pgoff_t end_index;
-	    unsigned long nrpages;
-	    int ret = 0;
-
-	    if (!file)
-		    return -EBADF;
-
-	    if (S_ISFIFO(file->f_path.dentry->d_inode->i_mode)) {
-		    ret = -ESPIPE;
-		    goto out;
-	    }
-
-	    mapping = file->f_mapping;
-	    if (!mapping || len < 0) {
-		    ret = -EINVAL;
-		    goto out;
-	    }
-
-	    if (mapping->a_ops->get_xip_page)
-		    /* no bad return value, but ignore advice */
-		    goto out;
-    ...
-    out:
-	    fput(file);
-	    return ret;
-    }
-
-I found the advice parameter is just ignored in the case
-mapping->a_ops->get_xip_page is given. This behavior is different from
-what is written on the man page. Is this o.k.?
-
-get_xip_page is given if CONFIG_EXT2_FS_XIP is true.
-Anyway I cannot find the easy way to detect get_xip_page 
-field is given or CONFIG_EXT2_FS_XIP is true from the 
-user space.
-
-I propose the following patch which checks the advice parameter
-even if get_xip_page is given.
-
-Signed-off-by: Masatake YAMATO <yamato@redhat.com>
-
-diff --git a/mm/fadvise.c b/mm/fadvise.c
-index 0df4c89..3c0f1e9 100644
---- a/mm/fadvise.c
-+++ b/mm/fadvise.c
-@@ -49,9 +49,21 @@ asmlinkage long sys_fadvise64_64(int fd, loff_t offset, loff_t len, int advice)
- 		goto out;
- 	}
- 
--	if (mapping->a_ops->get_xip_page)
--		/* no bad return value, but ignore advice */
-+	if (mapping->a_ops->get_xip_page) {
-+		switch (advice) {
-+		case POSIX_FADV_NORMAL:
-+		case POSIX_FADV_RANDOM:
-+		case POSIX_FADV_SEQUENTIAL:
-+		case POSIX_FADV_WILLNEED:
-+		case POSIX_FADV_NOREUSE:
-+		case POSIX_FADV_DONTNEED:
-+			/* no bad return value, but ignore advice */
-+			break;
-+		default:
-+			ret = -EINVAL;
-+		}
- 		goto out;
-+	}
- 
- 	/* Careful about overflows. Len == 0 means "as much as possible" */
- 	endbyte = offset + len;
