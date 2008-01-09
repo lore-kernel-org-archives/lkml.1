@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754314AbYAINti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbYAINyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754314AbYAINti (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 08:49:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbYAINt3
+	id S1753376AbYAINyR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 08:54:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbYAINyD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 08:49:29 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:44007 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751260AbYAINt2 (ORCPT
+	Wed, 9 Jan 2008 08:54:03 -0500
+Received: from py-out-1112.google.com ([64.233.166.183]:40659 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751787AbYAINyB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 08:49:28 -0500
-To: pavel@ucw.cz
-CC: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
-       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
-In-reply-to: <20080109133506.GI9735@elf.ucw.cz> (message from Pavel Machek on
-	Wed, 9 Jan 2008 14:35:06 +0100)
-Subject: Re: [patch 7/9] unprivileged mounts: allow unprivileged fuse mounts
-References: <20080108113502.184459371@szeredi.hu> <20080108113630.861045063@szeredi.hu> <20080108214625.GE5050@ucw.cz> <E1JCN9I-0004DB-DF@pomaz-ex.szeredi.hu> <20080108225820.GA9735@elf.ucw.cz> <E1JCWxm-0005Fn-36@pomaz-ex.szeredi.hu> <20080109113325.GC9735@elf.ucw.cz> <E1JCan7-0005mP-UE@pomaz-ex.szeredi.hu> <20080109133506.GI9735@elf.ucw.cz>
-Message-Id: <E1JCbIb-0005rA-5O@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 09 Jan 2008 14:48:53 +0100
+	Wed, 9 Jan 2008 08:54:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ViqQwKDq0TNFMlb6DCuH1lhYLeLw+zlcf9rWPJMG0+DxlTSniUNWxiKpX9clLtOL4LTKKJo69FGpl4yWrkmyxH1bNfLfzDUvfGkpRlD1Xz9ZejZIBV7fRHsbrwKrGSOKQZd2pbl2X9XF9DuaDTonWkHOkUUuIwdWKP9gCIhrV74=
+Message-ID: <6e0cfd1d0801090553r4187dfa2lb8cb6b848f06669f@mail.gmail.com>
+Date: Wed, 9 Jan 2008 14:53:58 +0100
+From: "Martin Schwidefsky" <schwidefsky@googlemail.com>
+To: "Theodore Tso" <tytso@mit.edu>,
+       "Martin Schwidefsky" <schwidefsky@googlemail.com>,
+       "Tuomo Valkonen" <tuomov@iki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: The ext3 way of journalling
+In-Reply-To: <20080109122556.GL21097@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi>
+	 <p73odbwqmx2.fsf@bingen.suse.de>
+	 <slrnfo7b3a.6m2.tuomov@jolt.modeemi.cs.tut.fi>
+	 <20080108181525.GL27800@mit.edu>
+	 <6e0cfd1d0801090154r75c9ca93v5361aea45fe41bb5@mail.gmail.com>
+	 <20080109122556.GL21097@mit.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm not saying fuse is worthless. It is a nice toy for single-user
-> systems. But I do not think we should be merging "allow ordinary users
-> to mount their own fuse's" before issues above are fixed.
+On Jan 9, 2008 1:25 PM, Theodore Tso <tytso@mit.edu> wrote:
+> On Wed, Jan 09, 2008 at 10:54:11AM +0100, Martin Schwidefsky wrote:
+> > Actually you can force Windows to accept a hardware clock in UTC:
+> > HKEY_LOCAL_MACHINE/SYSTEMCurrentControlSetControl/TimeZoneInformation/RealTimeIsUniversal
+>
+> Oh, so cool!!!  Do you know off hand what version of Windows started
+> honoring that registry setting?
 
-I think multi user systems are not all that interesting.  And I
-suspect very few of them want reliably working suspend/hibernate
-(which they wouldn't get due to other issues anyway), or have weird
-shutdown scripts which stop when they are unable to umount
-filesystems.
+I have a Windows XP next to Linux on my home box. So I can say from
+experience that Windows XP works. I have no idea if older versions had
+that registry entry as well.
 
-For paranoid sysadmins, I suggest not enabling fuse for unprivileged
-users, which is pretty easy to do: just don't set /dev/fuse to be
-world read-writable (which is the default BTW).
+> And what do you set that registry value to?  Just a boolean "true"?
 
-So your reasons just don't warrant a big effort involving VFS hacking,
-etc.  Patches are of course welcome.
+I can check my dual-boot machine when I get home. I think it was just "1".
 
-Miklos
+> Now, how to convince Ubuntu to put this in their FAQ so I stop having
+> their ahhh, less than clueful dual-booting Windows users who happen to
+> live in Europe stop submitting bugs on this issue....
+
+An entry in some FAQ would indeed be helpful. It would have saved me
+some hassle.
+
+-- 
+blue skies,
+  Martin
