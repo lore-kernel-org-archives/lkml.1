@@ -1,87 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbYAINEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753044AbYAINRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753432AbYAINEl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 08:04:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751157AbYAINEe
+	id S1753044AbYAINRc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 08:17:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbYAINRW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 08:04:34 -0500
-Received: from rosi.naasa.net ([212.8.0.13]:40093 "EHLO rosi.naasa.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751100AbYAINEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 08:04:33 -0500
-From: Joerg Platte <lists@naasa.net>
-Reply-To: jplatte@naasa.net
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Subject: Re: regression: 100% io-wait with 2.6.24-rcX
-Date: Wed, 9 Jan 2008 14:04:29 +0100
-User-Agent: KMail/1.9.7
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-References: <200801071151.11200.lists@naasa.net> <200801091322.35133.lists@naasa.net> <399883439.31205@ustc.edu.cn>
-In-Reply-To: <399883439.31205@ustc.edu.cn>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200801091404.30330.lists@naasa.net>
+	Wed, 9 Jan 2008 08:17:22 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:58801 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750756AbYAINRV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 08:17:21 -0500
+To: pavel@ucw.cz
+CC: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
+       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
+In-reply-to: <20080109113325.GC9735@elf.ucw.cz> (message from Pavel Machek on
+	Wed, 9 Jan 2008 12:33:25 +0100)
+Subject: Re: [patch 7/9] unprivileged mounts: allow unprivileged fuse mounts
+References: <20080108113502.184459371@szeredi.hu> <20080108113630.861045063@szeredi.hu> <20080108214625.GE5050@ucw.cz> <E1JCN9I-0004DB-DF@pomaz-ex.szeredi.hu> <20080108225820.GA9735@elf.ucw.cz> <E1JCWxm-0005Fn-36@pomaz-ex.szeredi.hu> <20080109113325.GC9735@elf.ucw.cz>
+Message-Id: <E1JCan7-0005mP-UE@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 09 Jan 2008 14:16:21 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 9. Januar 2008 schrieb Fengguang Wu:
-> On Wed, Jan 09, 2008 at 01:22:33PM +0100, Joerg Platte wrote:
-> > Am Mittwoch, 9. Januar 2008 schrieb Fengguang Wu:
-> >
-> > Thank your for the hint with the filesystems!
-> >
-> > > Thank you for the clue. However I cannot reproduce the bug on
-> > > ext2/2.6.24-rc7. Can you provide more details? Thank you.
-> >
-> > I attached some more information. I'm using the ata_piix driver for my
-> > PATA disk and cdrom drive and booted with hpet=force. Kernel 2.6.23.X has
-> > been
->
->                                                           ~~~~~~~~
-> 							  not 2.6.24-rc7?
->
-No, 2.6.23.X was the last working kernel without this problem, the bug shows 
-up with 2.6.24-rcX. I just wanted to emphasis, that I don't think that it has 
-something to do with the hpet stuff. Kernel 2.6.24-rcX is unpatched, because 
-the hrt stuff has been merged.
+> ...this will break with FUSE enabled, right? (Minor security hole by
+> allowing users to stop c-a-delete, where none existed before?)
 
-> > patched with the -hrt patches to enable the hidden hpet time on the
-> > ICH4-M chipset. I just rebooted the notebook and mounted /tmp again as
-> > ext2 and now the iowait problem is back. Seems to be reproducible on my
-> > computer. What additional information do you need?
->
-> I mounted an ext2 as tmp and find no problem. My config options are:
->
-> CONFIG_EXT2_FS=y
-> CONFIG_EXT2_FS_XATTR=y
-> CONFIG_EXT2_FS_POSIX_ACL=y
-> CONFIG_EXT2_FS_SECURITY=y
-> # CONFIG_EXT2_FS_XIP is not set
->
-> Fengguang
+Yup (or I don't know, I'm sure there was or is some problem with
+ptrace, that could be used to create unkillable processes).
 
-CONFIG_EXT2_FS=m
-CONFIG_EXT2_FS_XATTR=y
-CONFIG_EXT2_FS_POSIX_ACL=y
-CONFIG_EXT2_FS_SECURITY=y
-CONFIG_EXT2_FS_XIP=y
+Fuse could actually be fixed to exit reliably for 'killall5 -9' (it
+used to), but that has other problems, and it doesn't seem very
+important to me.  But this can be discussed.
 
-Here it is modular and I enabled CONFIG_EXT2_FS_XIP, but the same is enabled 
-on 2.6.23.X. Maybe it is related to libata? I additionally discovered, that 
-the problem disappears for a few seconds when I press the eject button for 
-the ultra bay of my thinkpad. Pressing the button unregisters the cdrom drive 
-to be able to replace it with a hard drive or a battery. Maybe this bug is 
-thinkpad relared?
+What cannot be fixed is if one process is inside an fs operation
+(e.g. unlink), holding a VFS lock (i_mutex) and another process goes
+to uninterruptible sleep on that lock.  There's no way (other than
+rewriting the VFS) in which that second process could be killed unless
+you kill the first one or the fuse server.
 
-regards,
-Jörg
+> I'm currently suspending by 'echo "mem" > /sys/power/state'. How
+> should I do that _safely_ with FUSE enabled?
 
--- 
-PGP Key: send mail with subject 'SEND PGP-KEY' PGP Key-ID: FD 4E 21 1D
-PGP Fingerprint: 388A872AFC5649D3 BCEC65778BE0C605
+You can't.  But that's only solvable with
 
+ - rewrite of VFS (see above)
+ - rewrite of freezer
+
+> If I want to get rid of nasty user in multiuser system, I do 
+> su nastyuser 'kill -9 -1' . How do I do the equivalent with FUSE
+> enabled? (Without affecting other users?)
+
+You can still do that.  If a process cannot be killed with 'kill -9',
+due to being deadlocked with itself through fuse (not an easy feat to
+accomplish), then it's not going to do any more harm, and you _can_
+get rid of it by forced umounting the filesystem, or if it has been
+detached, through the fusectl filesystem.
+
+> Load average was never really meaningful number, but with FUSE
+> enabled, users can set it to 666 without actually eating any CPU.
+> 
+> SIGSTOP used to work, allowing you to prevent user processes from
+> working while you examine them. Now SIGSTOP can be delayed for
+> arbitrary time.
+
+Making filesystem operations restartable is not easy.  I would say
+near impossible, but I haven't given a lot of enery into investigating.
+
+> Heck, imagine malicious user process misbehaves. Before FUSE, you
+> could at least attach it with gdb to look what it is doing. Now you
+> can't.
+
+Sure, but you can check in other ways (/proc/$PID/wchan), sysrq-t.
+
+> I really believe FUSE vs. signals needs fixing. Either that, or
+> updating all the manpages
+> 
+> man 1 kill:
+> -       KILL       9   exit      this signal may not be blocked
+> +       KILL       9   exit      this signal may not be blocked, except by FUSE user mount
+
+Heh, there are all very interesting, but most of these issues are not
+even on my todo list (which has grown into quite a big pile over the
+years), which means, that they don't seem to matter to people in
+practice.
+
+You seem to be implying that fuse is worthless if these issues are not
+fixed, but that is very far from the truth, I think.
+
+Miklos
