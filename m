@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753450AbYAIAhT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753492AbYAIAlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753450AbYAIAhT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 19:37:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYAIAhF
+	id S1753492AbYAIAlW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 19:41:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbYAIAlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 19:37:05 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58088 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751421AbYAIAhD (ORCPT
+	Tue, 8 Jan 2008 19:41:15 -0500
+Received: from moutng.kundenserver.de ([212.227.126.188]:52443 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751128AbYAIAlO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 19:37:03 -0500
-Date: Tue, 8 Jan 2008 16:31:20 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Jackson <pj@sgi.com>
-Cc: jbeulich@novell.com, hch@infradead.org, pagg@oss.sgi.com, erikj@sgi.com,
-       matthltc@us.ibm.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4] add task handling notifier
-Message-Id: <20080108163120.e1b42c30.akpm@linux-foundation.org>
-In-Reply-To: <20080108180309.4ccab28d.pj@sgi.com>
-References: <476A780C.76E4.0078.0@novell.com>
-	<20071223122621.GA19310@infradead.org>
-	<20071225140526.547a882f.akpm@linux-foundation.org>
-	<47838ACB.76E4.0078.0@novell.com>
-	<20080108141424.de5d8fba.akpm@linux-foundation.org>
-	<20080108180309.4ccab28d.pj@sgi.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 8 Jan 2008 19:41:14 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
+Date: Wed, 9 Jan 2008 01:40:58 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
+       apw@shadowen.org
+References: <20080108164015.GC31504@one.firstfloor.org> <20080108185255.GA4627@martell.zuzino.mipt.ru> <20080108191843.GA1004@one.firstfloor.org>
+In-Reply-To: <20080108191843.GA1004@one.firstfloor.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801090140.58864.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19SMrLrtzGWSN7IJ2Lk32K771/sYAjAg0D1woI
+ 2765dNbK4vcOR/egAd3uI6kRisoim80651DJkvFbPnXvtgBpYJ
+ edPJqjamA8yTRGbkBgBpw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Jan 2008 18:03:09 -0600
-Paul Jackson <pj@sgi.com> wrote:
-
-> Andrew wrote:
-> > What are those (unidentified) add-on features doing at present?
-> > Patching calls into fork.c/exec.c/exit.c?
+On Tuesday 08 January 2008, Andi Kleen wrote:
+> > Thanks, Andi! I think it'd very useful change.
 > 
-> Most likely.  I suspect we have general agreement and awareness
-> that such patching is not something that sells well in Linux-land.
-> And for good reason in my personal view ... such patching by loadable
-> modules could open the door to compromising the integrity of Linux in
-> ways that could be dangerous.
+> Reminds me this is something that should be actually flagged
+> in checkpatch.pl too
 > 
+> Andy, it would be good if checkpatch.pl complained about .ioctl = 
+> as opposed to .unlocked_ioctl = ...
 
-err, no.
+This is rather hard, as there are different data structures that
+all contain ->ioctl and/or ->unlocked_ioctl function pointers.
+Some of them already use ->ioctl in an unlocked fashion only,
+so blindly warning about this would give lots of false positives.
+ 
+> Also perhaps if a whole new file_operations with a ioctl is added
+> complain about missing compat_ioctl as a low prioritity warning?
+> (might be ok if it's architecture specific on architectures without
+> compat layer)
 
-What I meant was that the providers of these mystery features are
-presumably also patching into fork.c/exec.c/exit.c at the source code level
-so as to enable the mystery features within their overall kernel package.
+Also, not every data structure that provides a ->ioctl callback
+also has a ->compat_ioctl, although there should be fewer exceptions
+here.
 
-If so, this doesn't sounds terribly onerous.
+	Arnd <><
