@@ -1,80 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754722AbYAIVAx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbYAIVBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754722AbYAIVAx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 16:00:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbYAIVAp
+	id S1755834AbYAIVBv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 16:01:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbYAIVBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 16:00:45 -0500
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:17933 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750780AbYAIVAo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 16:00:44 -0500
-X-IronPort-AV: E=Sophos;i="4.24,264,1196668800"; 
-   d="scan'208";a="19063009"
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: akepner@sgi.com, Tony Luck <tony.luck@intel.com>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       David Miller <davem@davemloft.net>, Muli Ben-Yehuda <muli@il.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PARTIAL PATCH 0/3] dma: passing "attributes" to dma_map_* routines
-X-Message-Flag: Warning: May contain useful information
-References: <20080108023222.GP23661@sgi.com>
-	<1199809628.3534.34.camel@localhost.localdomain>
-	<ada63y4kycs.fsf@cisco.com>
-	<1199814853.3534.39.camel@localhost.localdomain>
-	<adawsqkjipz.fsf@cisco.com>
-	<1199816504.3534.59.camel@localhost.localdomain>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 09 Jan 2008 13:00:38 -0800
-In-Reply-To: <1199816504.3534.59.camel@localhost.localdomain> (James Bottomley's message of "Tue, 08 Jan 2008 12:21:44 -0600")
-Message-ID: <adaprwa7lzd.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
-MIME-Version: 1.0
+	Wed, 9 Jan 2008 16:01:41 -0500
+Received: from main.gmane.org ([80.91.229.2]:37197 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750780AbYAIVBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 16:01:40 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Matthieu castet <castet.matthieu@free.fr>
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
+Date: Wed, 9 Jan 2008 21:01:30 +0000 (UTC)
+Message-ID: <loom.20080109T204856-761@post.gmane.org>
+References: <9BdU5-1YW-9@gated-at.bofh.it> <9BeZN-3Gf-5@gated-at.bofh.it> <9BnTB-1As-31@gated-at.bofh.it> <9BrX4-8go-1@gated-at.bofh.it> <9BuBG-4eR-51@gated-at.bofh.it> <9BvRd-6aL-71@gated-at.bofh.it> <9GRQW-1DX-13@gated-at.bofh.it> <9GSah-23W-1@gated-at.bofh.it> <9GSDy-2GD-23@gated-at.bofh.it> <9GTpK-40d-15@gated-at.bofh.it> <9GUvy-5H2-11@gated-at.bofh.it> <9GVKU-7SS-25@gated-at.bofh.it> <E1JBxnV-00046d-CS@be1.7eggert.dyndns.org> <478281A6.1000704@zytor.com> <alpine.LSU.0.999.0801072226060.16143@be1.lrz> <4782A355.1070207@zytor.com> <alpine.LSU.0.999.0801072316440.16143@be1.lrz> <4782AED5.1060406@keyaccess.nl> <4782B4B9.2020608@zytor.com> <4782B515.3010008@keyaccess.nl> <4782BF77.80703@reed.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 09 Jan 2008 21:00:39.0037 (UTC) FILETIME=[B025DAD0:01C85302]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 81.57.151.96 (Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071119 Iceape/1.1.7 (Debian-1.1.7-1))
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > What it wants to do is set strict ordering for the bus ... well, that is
- > an attribute in the PCIe standard (it just happens to be the default one
- > for a standard bus, whereas relaxed is the default for altix).  However,
- > set bus attribute strict would be a simple no-op for a standard bus (and
- > set attribute relaxed a no-op for altix).
+Hi,
 
-I don't think that this can work.  As Arthur and I have said several
-times, the Altix issue is within the system NUMA interconnect --
-nothing to do with the PCI bus.  And as I understand things, to get
-good performance, we have to allow reordering within the NUMA
-interconnect except that certain transactions need to flush all
-earlier writes.  So this attribute needs to be set per-mapping, not
-per-bus.
+David P. Reed <dpreed <at> reed.com> writes:
 
-If you have a cleaner way to specify this attribute that Arthur's
-idea, then it would be very useful to share that.  If we were starting
-from scratch, then probably adding another "flags" parameter to the
-DMA mapping functions would be the way to go, but given the number of
-calls to dma_map_xxx all around, changing the signature now doesn't
-look very appealing.
+> And actually, if I had looked at the /sys/bus/pnp definitions, rather 
+> than /proc/ioports, I would have noticed that port 80 was part of a 
+> PNP0C02 resource set.   That means exactly one thing:  ACPI says that 
+> port 80 is NOT free to be used, for delays or anything else.
 
-The reason this hasn't been an issue until now is that almost all
-drivers work correctly if the Altix code just sets the "flush" bit for
-memory allocated via the consistent/coherent allocators.  However, if
-we want the device to write to userspace memory, this doesn't work
-(and mapping coherent memory allocated in the kernel into userspace is
-a mess on other platforms, because it unnecessarily consumes lowmem
-and/or kernel address space).
+I have some computers where port 0x80 is claimed by 8237A DMA controller [1]
+But in this case it seems a lasy acpi programmer that doesn't want to convert
+the hole in  0x80-0x8f range...
 
-Also, all of this is quite separate from the PCIe "loose ordering"
-stuff.  In fact, it's quite conceivable that SGI could hook up a PCIe
-3.0 host bridge to the Altix NUMA interconnect, so that you could have
-a PCI bus that supported loose ordering and also a system interconnect
-that allowed a different type of reordering too.
 
- - R.
+PS : I post from gmane web interface, so I can't keep CC.
+
+[1]
+This happen with a old 7 years old siemens PIII and a new hp core2duo.
+state = active
+io 0x0-0xf
+io 0x80-0x8f
+io 0xc0-0xdf
+dma 4 
 
