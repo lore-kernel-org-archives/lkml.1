@@ -1,61 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbYAIJqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754269AbYAIJuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755186AbYAIJqV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 04:46:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbYAIJqO
+	id S1754269AbYAIJuz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 04:50:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbYAIJur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 04:46:14 -0500
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:34922
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752464AbYAIJqN convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 04:46:13 -0500
-Message-Id: <4784A601.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Wed, 09 Jan 2008 09:46:25 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Matthew Helsley" <matthltc@us.ibm.com>
-Cc: "Paul Jackson" <pj@sgi.com>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/4] add task handling notifier: base definitions
-References: <476A7832.76E4.0078.0@novell.com>
- <1199852889.17010.243.camel@localhost.localdomain>
-In-Reply-To: <1199852889.17010.243.camel@localhost.localdomain>
+	Wed, 9 Jan 2008 04:50:47 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58726 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751026AbYAIJuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 04:50:46 -0500
+Date: Wed, 09 Jan 2008 18:50:36 +0900 (JST)
+Message-Id: <20080109.185036.227535061.yamato@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: ltp-list@lists.sourceforge.net
+Subject: [PATCH] checking ADVICE of fadvice64_64 even if get_xip_page is
+ given
+From: Masatake YAMATO <yamato@redhat.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1.50 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> +BLOCKING_NOTIFIER_HEAD(task_notifier_list);
->> +EXPORT_SYMBOL_GPL(task_notifier_list);
->> +ATOMIC_NOTIFIER_HEAD(atomic_task_notifier_list);
->> +EXPORT_SYMBOL_GPL(atomic_task_notifier_list);
->> +
->
->When these global notifier lists were proposed years ago folks at SGI
->loudly objected with concerns over anticipated cache line bouncing on
->512+ cpu machines. Is that no longer a concern?
+Hi,
 
-I can't see an alternative, since the serialization is unavoidable.
+I've written some test programs in ltp project.
+During writing I met an problem which I cannot solve
+in user land. So I wrote a patch for linux kernel.
+Please, include this patch if acceptable.
 
->> @@ -121,6 +127,9 @@ void __put_task_struct(struct task_struc
->>  	WARN_ON(atomic_read(&tsk->usage));
->>  	WARN_ON(tsk == current);
->> 
->> +	atomic_notifier_call_chain(&atomic_task_notifier_list,
->> +				   TASK_DELETE, tsk);
->> +
->>  	security_task_free(tsk);
->>  	free_uid(tsk->user);
->>  	put_group_info(tsk->group_info);
->
->Would the atomic notifier call chain be necessary if you hooked into an
->earlier section of do_exit() instead?
 
-I'm afraid it is, as I was told that sleeping in the do_exit() path is not
-generally possible.
+The test program tests the 4th parameter of fadvise64_64:
 
-Jan
+    long sys_fadvise64_64(int fd, loff_t offset, loff_t len, int advice);
 
+
+My test case calls fadvise64_64 with invalid advice value and
+checks errno is set to EINVAL.
+About the advice parameter man page says:
+
+    ...
+    Permissible values for advice include:
+
+	   POSIX_FADV_NORMAL
+                  ...
+	   POSIX_FADV_SEQUENTIAL
+                  ...
+	   POSIX_FADV_RANDOM
+		  ...
+	   POSIX_FADV_NOREUSE
+                  ...
+	   POSIX_FADV_WILLNEED
+                  ...
+	   POSIX_FADV_DONTNEED
+		  ...
+    ERRORS
+           ...
+	   EINVAL An invalid value was specified for advice.
+
+However, I got a bug report that the system call invocations
+in my test case returned 0 unexpectedly. 
+
+I've inspected the kernel code:
+
+    asmlinkage long sys_fadvise64_64(int fd, loff_t offset, loff_t len, int advice)
+    {
+	    struct file *file = fget(fd);
+	    struct address_space *mapping;
+	    struct backing_dev_info *bdi;
+	    loff_t endbyte;			/* inclusive */
+	    pgoff_t start_index;
+	    pgoff_t end_index;
+	    unsigned long nrpages;
+	    int ret = 0;
+
+	    if (!file)
+		    return -EBADF;
+
+	    if (S_ISFIFO(file->f_path.dentry->d_inode->i_mode)) {
+		    ret = -ESPIPE;
+		    goto out;
+	    }
+
+	    mapping = file->f_mapping;
+	    if (!mapping || len < 0) {
+		    ret = -EINVAL;
+		    goto out;
+	    }
+
+	    if (mapping->a_ops->get_xip_page)
+		    /* no bad return value, but ignore advice */
+		    goto out;
+    ...
+    out:
+	    fput(file);
+	    return ret;
+    }
+
+I found the advice parameter is just ignored in the case
+mapping->a_ops->get_xip_page is given. This behavior is different from
+what is written on the man page. Is this o.k.?
+
+get_xip_page is given if CONFIG_EXT2_FS_XIP is true.
+Anyway I cannot find the easy way to detect get_xip_page 
+field is given or CONFIG_EXT2_FS_XIP is true from the 
+user space.
+
+I propose the following patch which checks the advice parameter
+even if get_xip_page is given.
+
+Signed-off-by: Masatake YAMATO <yamato@redhat.com>
+
+diff --git a/mm/fadvise.c b/mm/fadvise.c
+index 0df4c89..3c0f1e9 100644
+--- a/mm/fadvise.c
++++ b/mm/fadvise.c
+@@ -49,9 +49,21 @@ asmlinkage long sys_fadvise64_64(int fd, loff_t offset, loff_t len, int advice)
+ 		goto out;
+ 	}
+ 
+-	if (mapping->a_ops->get_xip_page)
+-		/* no bad return value, but ignore advice */
++	if (mapping->a_ops->get_xip_page) {
++		switch (advice) {
++		case POSIX_FADV_NORMAL:
++		case POSIX_FADV_RANDOM:
++		case POSIX_FADV_SEQUENTIAL:
++		case POSIX_FADV_WILLNEED:
++		case POSIX_FADV_NOREUSE:
++		case POSIX_FADV_DONTNEED:
++			/* no bad return value, but ignore advice */
++			break;
++		default:
++			ret = -EINVAL;
++		}
+ 		goto out;
++	}
+ 
+ 	/* Careful about overflows. Len == 0 means "as much as possible" */
+ 	endbyte = offset + len;
