@@ -1,81 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbYAIDzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753504AbYAIDzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755226AbYAIDzb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 22:55:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbYAIDzX
+	id S1753504AbYAIDzu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 22:55:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbYAIDzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 22:55:23 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:54269 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752162AbYAIDzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 22:55:22 -0500
-Date: Wed, 9 Jan 2008 03:55:20 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: torvalds@linux-foundation.org, hch@lst.de, ak@suse.de, pq@iki.fi,
-       jbeulich@novell.com, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Revert "x86: optimize page faults like all other
- achitectures and kill notifier cruft"
-In-Reply-To: <20080108192951.a4dc394f.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.0.82.0801090346370.9570@skynet.skynet.ie>
-References: <alpine.DEB.0.82.0801090226240.9570@skynet.skynet.ie>
- <20080108190611.3b9c0760.akpm@linux-foundation.org>
- <alpine.DEB.0.82.0801090308230.9570@skynet.skynet.ie>
- <20080108192951.a4dc394f.akpm@linux-foundation.org>
+	Tue, 8 Jan 2008 22:55:40 -0500
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:28602 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752162AbYAIDzj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 22:55:39 -0500
+Date: Wed, 9 Jan 2008 04:55:34 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: More breakage in native_rdtsc out of line in git-x86
+Message-ID: <20080109035534.GA30321@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 09 Jan 2008 03:49:25.0901 (UTC) FILETIME=[A0E28BD0:01C85272]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> 
-> An alternative might be to come up with something decent and target 2.6.24.x
+I had some boot failures here with git-x86 with init and hotplug all 
+segfaulting early on userland with new glibc.  Bisecting found
 
-I don't see mmiotrace getting merged into a stable kernel... how do 
-however see it getting cleaned up for 2.6.25 now that people know how 
-fragile the kernel hooks for it are..
+commit 6aea5bc37fa790eaf3a942f0785985914568e214
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Sat Jan 5 13:27:08 2008 +0100
 
-> We put the crappy code back in for 2.6.24 then take it out immediately
-> after 2.6.24 and put something else in to support mmiotrace and perhaps the
-> other new mystery features to which you refer below.  hm.
+    x86: move native_read_tsc() offline
+    
+    move native_read_tsc() offline.
 
-(I think the other mystery feature is actually a Novell kernel debugger 
-but I'm not sure, madwifi use it for similiar reasons to mmiotrace I 
-think..)
+I think the problem is that the vsyscall/vdso code calls it through
+vread and for that it has to be exported. There seems to be also
+another bug with the old style vsyscalls not using the TSC vread
+that masks it on older glibc
 
-> > > 		all that crap
-> > > 	}
-> > > 
-> > > 
-> > > But that's all speculation.  Has anyone actually measured the pagefault
-> > > latency impact of this change?
+Stepping with gdb through old style vgettimeofday() confirms that RDTSC is 
+not used.
 
-Message-Id: <20070427140516.523272684@de.ibm.com>
-Subject: [patch 20/38] Minor fault path optimization.
-Date:	Fri, 27 Apr 2007 16:05:23 +0200
+A long time ago we had a similar problem once and it was because of a 
+problem exporting the vsyscall variables in vmlinux.lds.S -- looks like that 
+has reappeared.
 
-was a patch to do exactly that.. hch decided the feature wasn't useful and 
-posted a patch to remove it..
+I think the new glibc shows it because it uses the vDSO not 
+the older vsyscall and the new vDSO probably still works. Anyways haven't 
+investigated why that is in detail yet, but that's a separate 
+regression.
 
-> 
-> That change has been in the mainline tree for nearly three months.  All
-> these affected parties have left it until the eve of 2.6.24 to actually
-> tell us about it.  This is causing me sympathy problems :(
-> 
+Back to the boot failure:
 
-Jan first complained on the 4th Decemeber last year, I'm just posting this 
-now because Linus said send him a patch to revert regressions rather than 
-just complain, I've prepared the patch to put back the old behaviour from 
-2.6.23. This was only brought to my notice this morning but I'm not going 
-to let that stop me from trying to find a correct fix rather than just 
-ripping the feature out..
+Unfortunately simply adding __vsyscall_fn to native_read_tsc doesn't 
+work -- causes early kernel faults like
 
-I think we could apply the page fault cleanup patch I mentioned earlier on 
-top of this patch and get back the 300 cycles and that would make people 
-happy, it makes sense for mmiotrace to use kprobes hooks and not have to 
-do this stuff directly but if that is what is wanted the mmiotrace guys 
-can do it directly in the future.
+PANIC: early exception rip ffffffffff600105 error 10 cr2 ffffffffff600105
+Pid: 0, comm: swapper Not tainted 2.6.24-rc6 #58
 
-Dave.
+Call Trace:
+ [<ffffffff80211dec>] native_sched_clock+0x9/0x3f
+ [<ffffffff8022b758>] init_idle+0x33/0xd1
+ [<ffffffff80825449>] sched_init+0x26d/0x283
+ [<ffffffff80815899>] start_kernel+0x10b/0x2bd
+ [<ffffffff80815114>] _sinittext+0x114/0x11b
+
+Not sure why that is -- in theory the vsyscall functions should be callable 
+from the main kernel. Might be a binutils problem or another code
+regression.
+
+Anyways it looks like the only good fix is to either revert that or
+fork into two functions one for vread() and another for normal tsc ->read()
+
+This is all in addition to the problem of it having incorrect barriers.
+I note that my original patch didn't have any of these problems.
+
+I'm using the appended revert patch here as a workaround for now.
+
+-Andi
+
+
+Revert rdtsc out of line change
+
+Reverts 
+
+commit 6aea5bc37fa790eaf3a942f0785985914568e214
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Sat Jan 5 13:27:08 2008 +0100
+
+    x86: move native_read_tsc() offline
+
+    move native_read_tsc() offline.
+
+The function is called by vsyscalls in ring 3, so it can't be out of line this way.
+
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+Index: linux/arch/x86/kernel/rtc.c
+===================================================================
+--- linux.orig/arch/x86/kernel/rtc.c
++++ linux/arch/x86/kernel/rtc.c
+@@ -194,14 +194,3 @@ int update_persistent_clock(struct times
+ {
+ 	return set_rtc_mmss(now.tv_sec);
+ }
+-
+-unsigned long long native_read_tsc(void)
+-{
+-	DECLARE_ARGS(val, low, high);
+-
+-	asm volatile("rdtsc" : EAX_EDX_RET(val, low, high));
+-	rdtsc_barrier();
+-
+-	return EAX_EDX_VAL(val, low, high);
+-}
+-
+Index: linux/include/asm-x86/msr.h
+===================================================================
+--- linux.orig/include/asm-x86/msr.h
++++ linux/include/asm-x86/msr.h
+@@ -91,7 +91,13 @@ static inline int native_write_msr_safe(
+ 	return err;
+ }
+ 
+-extern unsigned long long native_read_tsc(void);
++static inline unsigned long long native_read_tsc(void)
++{
++	DECLARE_ARGS(val, low, high);
++
++	asm volatile("rdtsc" : EAX_EDX_RET(val, low, high));
++	return EAX_EDX_VAL(val, low, high);
++}
+ 
+ static inline unsigned long long native_read_pmc(int counter)
+ {
+
+
