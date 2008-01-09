@@ -1,93 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753593AbYAIGjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752598AbYAIHPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753593AbYAIGjk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 01:39:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbYAIGj2
+	id S1752598AbYAIHPx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 02:15:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751157AbYAIHPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 01:39:28 -0500
-Received: from hs-out-0708.google.com ([64.233.178.246]:64410 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751667AbYAIGj0 (ORCPT
+	Wed, 9 Jan 2008 02:15:44 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38657 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750867AbYAIHPn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 01:39:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sSSLJ9rH4ZbMQPexz3Ft5NKaBAsDbOUSoOhAkmvuhzZIKS4tUezBSOAbqWwW+rglXfusChY6SsWCNDgb3hSbTyK/tlVeYBAcER0W9ulLiSmwFANJx1pxFfLF4zSWVKmOS++hYg5JmHqOdCIeyXinMqd5+yLZlCTgo01S1944P/0=
-Message-ID: <a8e1da0801082239h198c4d45i5cd7cf183472a166@mail.gmail.com>
-Date: Wed, 9 Jan 2008 14:39:23 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Greg KH" <gregkh@suse.de>
-Subject: Re: [PATCH 0/7] convert semaphore to mutex in struct class
-Cc: "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
-       James.Bottomley@hansenpartnership.com, linux-scsi@vger.kernel.org,
-       a.zummo@towertech.it, peterz@infradead.org, cbou@mail.ru,
-       linux-kernel@vger.kernel.org, "David Brownell" <david-b@pacbell.net>,
-       krh@redhat.com, stern@rowland.harvard.edu, rtc-linux@googlegroups.com,
-       spi-devel-general@lists.sourceforge.net,
-       linux1394-devel@lists.sourceforge.net, dwmw2@infradead.org,
-       davem@davemloft.net, jarkao2@gmail.com
-In-Reply-To: <a8e1da0801082237x37d2a56eqee6db19017499dbc@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 9 Jan 2008 02:15:43 -0500
+Date: Tue, 8 Jan 2008 23:15:07 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Fries <david@fries.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] system timer: fix crash in <100Hz system timer
+Message-Id: <20080108231507.ff34862f.akpm@linux-foundation.org>
+In-Reply-To: <20080105221653.GA10065@spacedout.fries.net>
+References: <20080105221653.GA10065@spacedout.fries.net>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080107020944.GA3637@darkstar.te-china.tietoenator.com>
-	 <478227D5.8050402@s5r6.in-berlin.de> <20080107154404.GA10880@suse.de>
-	 <47825DC1.3090102@s5r6.in-berlin.de> <20080107172009.GA25943@suse.de>
-	 <a8e1da0801072305x3378c195qeb0bb7027030254c@mail.gmail.com>
-	 <20080108224837.GA19623@suse.de>
-	 <a8e1da0801081732i3677245chef1fda1fea65f7cf@mail.gmail.com>
-	 <20080109061316.GA3249@darkstar.te-china.tietoenator.com>
-	 <a8e1da0801082237x37d2a56eqee6db19017499dbc@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 9, 2008 2:37 PM, Dave Young <hidave.darkstar@gmail.com> wrote:
->
-> On Jan 9, 2008 2:13 PM, Dave Young <hidave.darkstar@gmail.com> wrote:
-> >
-> > On Wed, Jan 09, 2008 at 09:32:48AM +0800, Dave Young wrote:
-> > > On Jan 9, 2008 6:48 AM, Greg KH <gregkh@suse.de> wrote:
-> > > > On Tue, Jan 08, 2008 at 03:05:10PM +0800, Dave Young wrote:
-> > > > > On Jan 8, 2008 1:20 AM, Greg KH <gregkh@suse.de> wrote:
-> > > > > > On Mon, Jan 07, 2008 at 06:13:37PM +0100, Stefan Richter wrote:
-> > > > > > > It's already in the driver core to the most part.  It remains to be seen
-> > > > > > > what is less complicated in the end:  Transparent mutex-protected list
-> > > > > > > accesses provided by driver core (requires the iterator), or all the
-> > > > > > > necessary locking done by the drivers themselves (requires some more
-> > > > > > > lock-taking but perhaps fewer lock instances overall in the drivers, and
-> > > > > > > respective redefinitions and documentation of the driver core API).
-> > > > > >
-> > > > > > I favor changing the driver core api and doing this kind of thing there.
-> > > > > > It keeps the drivers simpler and should hopefully make their lives
-> > > > > > easier.
-> > > > >
-> > > > > What about this?
-> > > > >
-> > > > > #define class_for_each_dev(pos, head, member) \
-> > > > >         for (mutex_lock(&(container_of(head, struct class, devices))->mutex), po
-> > > > > s = list_entry((head)->next, typeof(*pos), member); \
-> > > > >         prefetch(pos->member.next), &pos->member != (head) ? 1 : (mutex_unlock(&
-> > > > > (container_of(head, struct class, devices))->mutex), 0); \
-> > > > >         pos = list_entry(pos->member.next, typeof(*pos), member))
-> > > >
-> > > I'm wrong, it's same as before indeed.
-> > >
-> > > > Eeek, just make the thing a function please, where you pass the iterator
-> > > > function in, like the driver core has (driver_for_each_device)
-> > >
-> > > Ok, so need a new member of knode_class, I will update the patch later.
-> > > Thanks.
-> >
-> > Withdraw my post, sorry :)
-> >
-> > For now the mutex patch, I will only use the mutex to lock the devices list and write an iterater function.
-> > Most of the iterating is for finding some device in the list, so maybe need a match function just like drivers do?
-> >
->
-> Drop one more mail address of David Brownell in cc list.
-> Sorry for this, david
->
-gmail web client make me crazy.
+On Sat, 5 Jan 2008 16:16:55 -0600 David Fries <david@fries.net> wrote:
+
+> --- a/kernel/time.c
+> +++ b/kernel/time.c
+> @@ -565,7 +565,11 @@ EXPORT_SYMBOL(jiffies_to_timeval);
+>  clock_t jiffies_to_clock_t(long x)
+>  {
+>  #if (TICK_NSEC % (NSEC_PER_SEC / USER_HZ)) == 0
+> +	#if HZ < USER_HZ
+> +	return x * (USER_HZ / HZ);
+> +	#else
+>  	return x / (HZ / USER_HZ);
+> +	#endif
+>  #else
+>  	u64 tmp = (u64)x * TICK_NSEC;
+>  	do_div(tmp, (NSEC_PER_SEC / USER_HZ));
+> @@ -598,7 +602,12 @@ EXPORT_SYMBOL(clock_t_to_jiffies);
+>  u64 jiffies_64_to_clock_t(u64 x)
+>  {
+>  #if (TICK_NSEC % (NSEC_PER_SEC / USER_HZ)) == 0
+> -	do_div(x, HZ / USER_HZ);
+> +	#if HZ < USER_HZ
+> +		x *= USER_HZ;
+> +		do_div(x, HZ);
+> +	#else
+> +		do_div(x, HZ / USER_HZ);
+> +	#endif
+>  #else
+
+Somwhat off-topic:
+
+I guess HZ=USER_HZ is a not-uncommon case, and it's pretty silly calling
+do_div(x, 1) all the time.  How about we optimise that case?
+
+Perhaps there are other places...
+
+
+--- a/kernel/time.c~speed-up-jiffies-conversion-functions-if-hz==user_hz
++++ a/kernel/time.c
+@@ -618,8 +618,10 @@ u64 jiffies_64_to_clock_t(u64 x)
+ # if HZ < USER_HZ
+ 	x *= USER_HZ;
+ 	do_div(x, HZ);
+-# else
++# elif HZ > USER_HZ
+ 	do_div(x, HZ / USER_HZ);
++# else
++	/* Nothing to do */
+ # endif
+ #else
+ 	/*
+_
+
