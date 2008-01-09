@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759203AbYAIXl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755947AbYAIXmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759203AbYAIXl7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 18:41:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758587AbYAIXlt
+	id S1755947AbYAIXmj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 18:42:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758587AbYAIXm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 18:41:49 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47512 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758197AbYAIXls (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 18:41:48 -0500
-Date: Wed, 9 Jan 2008 18:41:41 -0500
-From: Rik van Riel <riel@redhat.com>
-To: Jakob Oestergaard <jakob@unthought.net>
-Cc: Valdis.Kletnieks@vt.edu, Anton Salikhmetov <salikhmetov@gmail.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RFC][BUG] updating the ctime and mtime time stamps in
- msync()
-Message-ID: <20080109184141.287189b8@bree.surriel.com>
-In-Reply-To: <20080109223340.GH25527@unthought.net>
-References: <1199728459.26463.11.camel@codedot>
-	<20080109155015.4d2d4c1d@cuia.boston.redhat.com>
-	<26932.1199912777@turing-police.cc.vt.edu>
-	<20080109170633.292644dc@cuia.boston.redhat.com>
-	<20080109223340.GH25527@unthought.net>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
+	Wed, 9 Jan 2008 18:42:28 -0500
+Received: from mail.impinj.com ([206.169.229.170]:47750 "EHLO earth.impinj.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758197AbYAIXm1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 18:42:27 -0500
+X-Greylist: delayed 497 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 Jan 2008 18:42:27 EST
+From: Vadim Lobanov <vlobanov@speakeasy.net>
+To: Alasdair G Kergon <agk@redhat.com>
+Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
+Date: Wed, 9 Jan 2008 15:31:00 -0800
+User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
+Cc: Chris Friesen <cfriesen@nortel.com>, Andi Kleen <andi@firstfloor.org>,
+       Matt Mackall <mpm@selenic.com>,
+       Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       gorcunov@gmail.com
+References: <20080108164015.GC31504@one.firstfloor.org> <478551A6.9050803@nortel.com> <20080109230545.GG3510@agk.fab.redhat.com>
+In-Reply-To: <20080109230545.GG3510@agk.fab.redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Content-Disposition: inline
+Message-Id: <200801091531.00483.vlobanov@speakeasy.net>
+X-OriginalArrivalTime: 09 Jan 2008 23:31:04.0110 (UTC) FILETIME=[B382B4E0:01C85317]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Jan 2008 23:33:40 +0100
-Jakob Oestergaard <jakob@unthought.net> wrote:
-> On Wed, Jan 09, 2008 at 05:06:33PM -0500, Rik van Riel wrote:
+On Wednesday 09 January 2008 03:05:45 pm Alasdair G Kergon wrote:
+> On Wed, Jan 09, 2008 at 04:58:46PM -0600, Chris Friesen wrote:
+> > Alasdair G Kergon wrote:
+> > >On Wed, Jan 09, 2008 at 11:46:03PM +0100, Andi Kleen wrote:
+> > >>struct inode *inode = file->f_dentry->d_inode;
+> > >
+> > >And oops if that's not defined?
+> >
+> > Isn't this basically identical to what was being passed in to .ioctl()?
+>
+> Not in every case, unless someone's been through and created fake
+> structures in all the remaining places that pass in a NULL 'file' because
+> there isn't one available.
 
-> > Can we get by with simply updating the ctime and mtime every time msync()
-> > is called, regardless of whether or not the mmaped pages were still dirty
-> > by the time we called msync() ?
-> 
-> The update must still happen, eventually, after a write to the mapped region
-> followed by an unmap/close even if no msync is ever called.
-> 
-> The msync only serves as a "no later than" deadline. The write to the region
-> triggers the need for the update.
-> 
-> At least this is how I read the standard - please feel free to correct me if I
-> am mistaken.
- 
-You are absolutely right.  If we wrote dirty pages to disk, the ctime
-and mtime updates must happen no later than msync or close time.
+>From 2.6.23's fs/ioctl.c - do_ioctl():
 
-I guess a third possible time (if we want to minimize the number of
-updates) would be when natural syncing of the file data to disk, by
-other things in the VM, would be about to clear the I_DIRTY_PAGES
-flag on the inode.  That way we do not need to remember any special
-"we already flushed all dirty data, but we have not updated the mtime
-and ctime yet" state.
+        if (filp->f_op->unlocked_ioctl) {
+                error = filp->f_op->unlocked_ioctl(filp, cmd, arg);
+                if (error == -ENOIOCTLCMD)
+                        error = -EINVAL;
+                goto out;
+        } else if (filp->f_op->ioctl) {
+                lock_kernel();
+                error = filp->f_op->ioctl(filp->f_path.dentry->d_inode,
+                                          filp, cmd, arg);
+                unlock_kernel();
+        }
 
-Does this sound reasonable?
+As a sidenote, please don't use f_dentry and f_vfsmnt, since they are just 
+#defines for the correct fields. They were meant to be temporary transition 
+helpers, but (alas) have refused to die thus far. If noone beats me to it, 
+I'll take a look-see at deprecating them all the way.
 
--- 
-All rights reversed.
+-- Vadim Lobanov
