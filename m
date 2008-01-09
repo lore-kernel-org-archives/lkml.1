@@ -1,294 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbYAIDiH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754401AbYAIDnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755868AbYAIDiH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 22:38:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbYAIDhy
+	id S1754401AbYAIDnS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 22:43:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYAIDnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 22:37:54 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:33771 "EHLO gir.skynet.ie"
+	Tue, 8 Jan 2008 22:43:07 -0500
+Received: from mga11.intel.com ([192.55.52.93]:50102 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752349AbYAIDhx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 22:37:53 -0500
-Date: Wed, 9 Jan 2008 03:37:50 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Kevin Winchester <kjwinchester@gmail.com>
-cc: dri-devel@lists.sourceforge.net, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [patch 1/1] Convert drivers in drivers/char/drm to use
- .unlocked_ioctl
-In-Reply-To: <20080109005443.227306069@gmail.com>
-Message-ID: <alpine.DEB.0.82.0801090336000.9570@skynet.skynet.ie>
-References: <20080109005416.039551758@gmail.com>
- <20080109005443.227306069@gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751812AbYAIDnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 22:43:05 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,260,1196668800"; 
+   d="scan'208";a="490272835"
+Date: Wed, 9 Jan 2008 11:27:33 +0800
+From: Zhenyu Wang <zhenyu.z.wang@intel.com>
+To: Dave Airlie <airlied@linux.ie>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH][AGP] intel_agp: add new chipset ids
+Message-ID: <20080109032733.GA14231@zhen-devel.sh.intel.com>
+Mail-Followup-To: Dave Airlie <airlied@linux.ie>,
+	LKML <linux-kernel@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
+X-Mailer: mutt
+X-Operating-System: Linux 2.6.23 i686
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> The drm drivers in this patch all used drm_ioctl to perform their
-> ioctl calls.  The common function is converted to use lock_kernel()
-> and unlock_kernel() and the drivers are converted to use .unlocked_ioctl
-> 
+Dave,
 
-NAK
+This one adds new pci ids for Intel intergrated graphics
+chipset, with gtt table access change on it and new gtt table
+size definition.
 
-I've started looking at this already in the drm git tree, I'm going to 
-provide both locked and unlocked paths for drivers to choose, as we need 
-to audit the drivers on a per-driver basis, the other option is to provide 
-wrappers in each driver to do the lock/unlock kernel and leave drm_ioctl 
-alone..
+Thanks.
 
-I'll take a look kmalloc failure case sounds like a bug though..
+Signed-off-by: Zhenyu Wang <zhenyu.z.wang@intel.com>
+---
+ drivers/char/agp/agp.h       |    3 +++
+ drivers/char/agp/intel-agp.c |   31 ++++++++++++++++++++++++++-----
+ 2 files changed, 29 insertions(+), 5 deletions(-)
 
-Dave.
+diff --git a/drivers/char/agp/agp.h b/drivers/char/agp/agp.h
+index b83824c..d132914 100644
+--- a/drivers/char/agp/agp.h
++++ b/drivers/char/agp/agp.h
+@@ -235,6 +235,9 @@ struct agp_bridge_data {
+ #define I965_PGETBL_SIZE_512KB	(0 << 1)
+ #define I965_PGETBL_SIZE_256KB	(1 << 1)
+ #define I965_PGETBL_SIZE_128KB	(2 << 1)
++#define I965_PGETBL_SIZE_1MB	(3 << 1)
++#define I965_PGETBL_SIZE_2MB	(4 << 1)
++#define I965_PGETBL_SIZE_1_5MB	(5 << 1)
+ #define G33_PGETBL_SIZE_MASK    (3 << 8)
+ #define G33_PGETBL_SIZE_1M      (1 << 8)
+ #define G33_PGETBL_SIZE_2M      (2 << 8)
+diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+index d879619..091e765 100644
+--- a/drivers/char/agp/intel-agp.c
++++ b/drivers/char/agp/intel-agp.c
+@@ -30,13 +30,16 @@
+ #define PCI_DEVICE_ID_INTEL_Q35_IG          0x29B2
+ #define PCI_DEVICE_ID_INTEL_Q33_HB          0x29D0
+ #define PCI_DEVICE_ID_INTEL_Q33_IG          0x29D2
++#define PCI_DEVICE_ID_INTEL_IGD_HB          0x2A40
++#define PCI_DEVICE_ID_INTEL_IGD_IG          0x2A42
+ 
+ #define IS_I965 (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82946GZ_HB || \
+                  agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965G_1_HB || \
+                  agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965Q_HB || \
+                  agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965G_HB || \
+                  agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965GM_HB || \
+-                 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965GME_HB)
++                 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965GME_HB || \
++                 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_IGD_HB)
+ 
+ #define IS_G33 (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_G33_HB || \
+ 		agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_Q35_HB || \
+@@ -456,6 +459,15 @@ static void intel_i830_init_gtt_entries(void)
+ 		case I965_PGETBL_SIZE_512KB:
+ 			size = 512;
+ 			break;
++		case I965_PGETBL_SIZE_1MB:
++			size = 1024;
++			break;
++		case I965_PGETBL_SIZE_2MB:
++			size = 2048;
++			break;
++		case I965_PGETBL_SIZE_1_5MB:
++			size = 1024 + 512;
++			break;
+ 		default:
+ 			printk(KERN_INFO PFX "Unknown page table size, "
+ 			       "assuming 512KB\n");
+@@ -981,6 +993,7 @@ static int intel_i965_create_gatt_table(struct agp_bridge_data *bridge)
+        struct aper_size_info_fixed *size;
+        int num_entries;
+        u32 temp;
++       int gtt_offset, gtt_size;
+ 
+        size = agp_bridge->current_size;
+        page_order = size->page_order;
+@@ -990,13 +1003,18 @@ static int intel_i965_create_gatt_table(struct agp_bridge_data *bridge)
+        pci_read_config_dword(intel_private.pcidev, I915_MMADDR, &temp);
+ 
+        temp &= 0xfff00000;
+-       intel_private.gtt = ioremap((temp + (512 * 1024)) , 512 * 1024);
+ 
+-	if (!intel_private.gtt)
+-		return -ENOMEM;
++       if (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_IGD_HB)
++	       gtt_offset = gtt_size = MB(2);
++       else
++	       gtt_offset = gtt_size = KB(512);
++
++       intel_private.gtt = ioremap((temp + gtt_offset) , gtt_size);
+ 
++       if (!intel_private.gtt)
++	       return -ENOMEM;
+ 
+-       intel_private.registers = ioremap(temp,128 * 4096);
++       intel_private.registers = ioremap(temp, 128 * 4096);
+        if (!intel_private.registers) {
+ 		iounmap(intel_private.gtt);
+ 		return -ENOMEM;
+@@ -1884,6 +1902,8 @@ static const struct intel_driver_description {
+ 		NULL, &intel_g33_driver },
+ 	{ PCI_DEVICE_ID_INTEL_Q33_HB, PCI_DEVICE_ID_INTEL_Q33_IG, 0, "Q33",
+ 		NULL, &intel_g33_driver },
++	{ PCI_DEVICE_ID_INTEL_IGD_HB, PCI_DEVICE_ID_INTEL_IGD_IG, 0,
++	    "Intel Integrated Graphics Device", NULL, &intel_i965_driver },
+ 	{ 0, 0, 0, NULL, NULL, NULL }
+ };
+ 
+@@ -2073,6 +2093,7 @@ static struct pci_device_id agp_intel_pci_table[] = {
+ 	ID(PCI_DEVICE_ID_INTEL_G33_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_Q35_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_Q33_HB),
++	ID(PCI_DEVICE_ID_INTEL_IGD_HB),
+ 	{ }
+ };
+ 
+-- 
+1.5.3.7
 
-> Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
-> 
-> ---
-> 
-> I also noted that in the failed kmalloc case in drm_ioctl(), the function
-> immediately returns -ENOMEM, rather than following the error path that
-> calls atomic_dec(&dev->ioctl_count);.  I'm not sure if the ioctl_count
-> is just not important in the -ENOMEM case, or if this is a bug.
-> 
->  drivers/char/drm/drmP.h       |    3 +--
->  drivers/char/drm/drm_drv.c    |   10 ++++++----
->  drivers/char/drm/i810_dma.c   |    2 +-
->  drivers/char/drm/i810_drv.c   |    2 +-
->  drivers/char/drm/i830_dma.c   |    2 +-
->  drivers/char/drm/i830_drv.c   |    2 +-
->  drivers/char/drm/i915_drv.c   |    2 +-
->  drivers/char/drm/mga_drv.c    |    2 +-
->  drivers/char/drm/r128_drv.c   |    2 +-
->  drivers/char/drm/radeon_drv.c |    2 +-
->  drivers/char/drm/savage_drv.c |    2 +-
->  drivers/char/drm/sis_drv.c    |    2 +-
->  drivers/char/drm/tdfx_drv.c   |    2 +-
->  drivers/char/drm/via_drv.c    |    2 +-
->  14 files changed, 19 insertions(+), 18 deletions(-)
-> 
-> Index: v2.6.24-rc7/drivers/char/drm/drmP.h
-> ===================================================================
-> --- v2.6.24-rc7.orig/drivers/char/drm/drmP.h
-> +++ v2.6.24-rc7/drivers/char/drm/drmP.h
-> @@ -833,8 +833,7 @@ static inline int drm_mtrr_del(int handl
->  				/* Driver support (drm_drv.h) */
->  extern int drm_init(struct drm_driver *driver);
->  extern void drm_exit(struct drm_driver *driver);
-> -extern int drm_ioctl(struct inode *inode, struct file *filp,
-> -		     unsigned int cmd, unsigned long arg);
-> +extern long drm_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
->  extern long drm_compat_ioctl(struct file *filp,
->  			     unsigned int cmd, unsigned long arg);
->  extern int drm_lastclose(struct drm_device *dev);
-> Index: v2.6.24-rc7/drivers/char/drm/drm_drv.c
-> ===================================================================
-> --- v2.6.24-rc7.orig/drivers/char/drm/drm_drv.c
-> +++ v2.6.24-rc7/drivers/char/drm/drm_drv.c
-> @@ -438,7 +438,6 @@ static int drm_version(struct drm_device
->  /**
->   * Called whenever a process performs an ioctl on /dev/drm.
->   *
-> - * \param inode device inode.
->   * \param file_priv DRM file private.
->   * \param cmd command.
->   * \param arg user argument.
-> @@ -447,8 +446,7 @@ static int drm_version(struct drm_device
->   * Looks up the ioctl function in the ::ioctls table, checking for root
->   * previleges if so required, and dispatches to the respective function.
->   */
-> -int drm_ioctl(struct inode *inode, struct file *filp,
-> -	      unsigned int cmd, unsigned long arg)
-> +long drm_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
->  {
->  	struct drm_file *file_priv = filp->private_data;
->  	struct drm_device *dev = file_priv->head->dev;
-> @@ -458,6 +456,7 @@ int drm_ioctl(struct inode *inode, struc
->  	int retcode = -EINVAL;
->  	char *kdata = NULL;
->  
-> +	lock_kernel();
->  	atomic_inc(&dev->ioctl_count);
->  	atomic_inc(&dev->counts[_DRM_STAT_IOCTLS]);
->  	++file_priv->ioctl_count;
-> @@ -494,8 +493,10 @@ int drm_ioctl(struct inode *inode, struc
->  	} else {
->  		if (cmd & (IOC_IN | IOC_OUT)) {
->  			kdata = kmalloc(_IOC_SIZE(cmd), GFP_KERNEL);
-> -			if (!kdata)
-> +			if (!kdata) {
-> +				unlock_kernel();
->  				return -ENOMEM;
-> +			}
->  		}
->  
->  		if (cmd & IOC_IN) {
-> @@ -520,6 +521,7 @@ int drm_ioctl(struct inode *inode, struc
->  	atomic_dec(&dev->ioctl_count);
->  	if (retcode)
->  		DRM_DEBUG("ret = %x\n", retcode);
-> +	unlock_kernel();
->  	return retcode;
->  }
->  
-> Index: v2.6.24-rc7/drivers/char/drm/i810_dma.c
-> ===================================================================
-> --- v2.6.24-rc7.orig/drivers/char/drm/i810_dma.c
-> +++ v2.6.24-rc7/drivers/char/drm/i810_dma.c
-> @@ -115,7 +115,7 @@ static int i810_mmap_buffers(struct file
->  static const struct file_operations i810_buffer_fops = {
->  	.open = drm_open,
->  	.release = drm_release,
-> -	.ioctl = drm_ioctl,
-> +	.unlocked_ioctl = drm_ioctl,
->  	.mmap = i810_mmap_buffers,
->  	.fasync = drm_fasync,
->  };
-> Index: v2.6.24-rc7/drivers/char/drm/i810_drv.c
-> ===================================================================
-> --- v2.6.24-rc7.orig/drivers/char/drm/i810_drv.c
-> +++ v2.6.24-rc7/drivers/char/drm/i810_drv.c
-> @@ -59,7 +59,7 @@ static struct drm_driver driver = {
->  		 .owner = THIS_MODULE,
->  		 .open = drm_open,
->  		 .release = drm_release,
-> -		 .ioctl = drm_ioctl,
-> +		 .unlocked_ioctl = drm_ioctl,
->  		 .mmap = drm_mmap,
->  		 .poll = drm_poll,
->  		 .fasync = drm_fasync,
-> Index: v2.6.24-rc7/drivers/char/drm/i830_dma.c
-> ===================================================================
-> --- v2.6.24-rc7.orig/drivers/char/drm/i830_dma.c
-> +++ v2.6.24-rc7/drivers/char/drm/i830_dma.c
-> @@ -117,7 +117,7 @@ static int i830_mmap_buffers(struct file
->  static const struct file_operations i830_buffer_fops = {
->  	.open = drm_open,
->  	.release = drm_release,
-> -	.ioctl = drm_ioctl,
-> +	.unlocked_ioctl = drm_ioctl,
->  	.mmap = i830_mmap_buffers,
->  	.fasync = drm_fasync,
->  };
-> Index: v2.6.24-rc7/drivers/char/drm/i830_drv.c
-> ===================================================================
-> --- v2.6.24-rc7.orig/drivers/char/drm/i830_drv.c
-> +++ v2.6.24-rc7/drivers/char/drm/i830_drv.c
-> @@ -70,7 +70,7 @@ static struct drm_driver driver = {
->  		 .owner = THIS_MODULE,
->  		 .open = drm_open,
->  		 .release = drm_release,
-> -		 .ioctl = drm_ioctl,
-> +		 .unlocked_ioctl = drm_ioctl,
->  		 .mmap = drm_mmap,
->  		 .poll = drm_poll,
->  		 .fasync = drm_fasync,
-> Index: v2.6.24-rc7/drivers/char/drm/i915_drv.c
-> ===================================================================
-> --- v2.6.24-rc7.orig/drivers/char/drm/i915_drv.c
-> +++ v2.6.24-rc7/drivers/char/drm/i915_drv.c
-> @@ -64,7 +64,7 @@ static struct drm_driver driver = {
->  		 .owner = THIS_MODULE,
->  		 .open = drm_open,
->  		 .release = drm_release,
-> -		 .ioctl = drm_ioctl,
-> +		 .unlocked_ioctl = drm_ioctl,
->  		 .mmap = drm_mmap,
->  		 .poll = drm_poll,
->  		 .fasync = drm_fasync,
-> Index: v2.6.24-rc7/drivers/char/drm/mga_drv.c
-> ===================================================================
-> --- v2.6.24-rc7.orig/drivers/char/drm/mga_drv.c
-> +++ v2.6.24-rc7/drivers/char/drm/mga_drv.c
-> @@ -67,7 +67,7 @@ static struct drm_driver driver = {
->  		 .owner = THIS_MODULE,
->  		 .open = drm_open,
->  		 .release = drm_release,
-> -		 .ioctl = drm_ioctl,
-> +		 .unlocked_ioctl = drm_ioctl,
->  		 .mmap = drm_mmap,
->  		 .poll = drm_poll,
->  		 .fasync = drm_fasync,
-> Index: v2.6.24-rc7/drivers/char/drm/r128_drv.c
-> ===================================================================
-> --- v2.6.24-rc7.orig/drivers/char/drm/r128_drv.c
-> +++ v2.6.24-rc7/drivers/char/drm/r128_drv.c
-> @@ -62,7 +62,7 @@ static struct drm_driver driver = {
->  		 .owner = THIS_MODULE,
->  		 .open = drm_open,
->  		 .release = drm_release,
-> -		 .ioctl = drm_ioctl,
-> +		 .unlocked_ioctl = drm_ioctl,
->  		 .mmap = drm_mmap,
->  		 .poll = drm_poll,
->  		 .fasync = drm_fasync,
-> Index: v2.6.24-rc7/drivers/char/drm/radeon_drv.c
-> ===================================================================
-> --- v2.6.24-rc7.orig/drivers/char/drm/radeon_drv.c
-> +++ v2.6.24-rc7/drivers/char/drm/radeon_drv.c
-> @@ -85,7 +85,7 @@ static struct drm_driver driver = {
->  		 .owner = THIS_MODULE,
->  		 .open = drm_open,
->  		 .release = drm_release,
-> -		 .ioctl = drm_ioctl,
-> +		 .unlocked_ioctl = drm_ioctl,
->  		 .mmap = drm_mmap,
->  		 .poll = drm_poll,
->  		 .fasync = drm_fasync,
-> Index: v2.6.24-rc7/drivers/char/drm/savage_drv.c
-> ===================================================================
-> --- v2.6.24-rc7.orig/drivers/char/drm/savage_drv.c
-> +++ v2.6.24-rc7/drivers/char/drm/savage_drv.c
-> @@ -50,7 +50,7 @@ static struct drm_driver driver = {
->  		 .owner = THIS_MODULE,
->  		 .open = drm_open,
->  		 .release = drm_release,
-> -		 .ioctl = drm_ioctl,
-> +		 .unlocked_ioctl = drm_ioctl,
->  		 .mmap = drm_mmap,
->  		 .poll = drm_poll,
->  		 .fasync = drm_fasync,
-> Index: v2.6.24-rc7/drivers/char/drm/sis_drv.c
-> ===================================================================
-> --- v2.6.24-rc7.orig/drivers/char/drm/sis_drv.c
-> +++ v2.6.24-rc7/drivers/char/drm/sis_drv.c
-> @@ -80,7 +80,7 @@ static struct drm_driver driver = {
->  		 .owner = THIS_MODULE,
->  		 .open = drm_open,
->  		 .release = drm_release,
-> -		 .ioctl = drm_ioctl,
-> +		 .unlocked_ioctl = drm_ioctl,
->  		 .mmap = drm_mmap,
->  		 .poll = drm_poll,
->  		 .fasync = drm_fasync,
-> Index: v2.6.24-rc7/drivers/char/drm/tdfx_drv.c
-> ===================================================================
-> --- v2.6.24-rc7.orig/drivers/char/drm/tdfx_drv.c
-> +++ v2.6.24-rc7/drivers/char/drm/tdfx_drv.c
-> @@ -48,7 +48,7 @@ static struct drm_driver driver = {
->  		 .owner = THIS_MODULE,
->  		 .open = drm_open,
->  		 .release = drm_release,
-> -		 .ioctl = drm_ioctl,
-> +		 .unlocked_ioctl = drm_ioctl,
->  		 .mmap = drm_mmap,
->  		 .poll = drm_poll,
->  		 .fasync = drm_fasync,
-> Index: v2.6.24-rc7/drivers/char/drm/via_drv.c
-> ===================================================================
-> --- v2.6.24-rc7.orig/drivers/char/drm/via_drv.c
-> +++ v2.6.24-rc7/drivers/char/drm/via_drv.c
-> @@ -62,7 +62,7 @@ static struct drm_driver driver = {
->  		 .owner = THIS_MODULE,
->  		 .open = drm_open,
->  		 .release = drm_release,
-> -		 .ioctl = drm_ioctl,
-> +		 .unlocked_ioctl = drm_ioctl,
->  		 .mmap = drm_mmap,
->  		 .poll = drm_poll,
->  		 .fasync = drm_fasync,
-> 
-> 
