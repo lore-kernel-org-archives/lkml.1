@@ -1,151 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbYAIXA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757251AbYAIXCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757340AbYAIXA4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 18:00:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754826AbYAIXAg
+	id S1757251AbYAIXCA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 18:02:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbYAIXBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 18:00:36 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48422 "EHLO
+	Wed, 9 Jan 2008 18:01:52 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54327 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754296AbYAIXAf (ORCPT
+	by vger.kernel.org with ESMTP id S1752906AbYAIXBu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 18:00:35 -0500
-Date: Wed, 9 Jan 2008 14:58:10 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Zach Brown <zach.brown@oracle.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dan Williams <dan.j.williams@gmail.com>, Jeff Moyer <jmoyer@redhat.com>,
-       Simon Holm Thogersen <odie@cs.aau.dk>, suresh.b.siddha@intel.com
-Subject: Re: [PATCH 5/6] syslets: add generic syslets infrastructure
-In-Reply-To: <200801100904.46842.rusty@rustcorp.com.au>
-Message-ID: <alpine.LFD.1.00.0801091423160.3148@woody.linux-foundation.org>
-References: <1196983219534-git-send-email-zach.brown@oracle.com> <200801091448.46241.rusty@rustcorp.com.au> <47850F99.5020001@oracle.com> <200801100904.46842.rusty@rustcorp.com.au>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 9 Jan 2008 18:01:50 -0500
+Date: Wed, 9 Jan 2008 15:01:39 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Galbraith <efault@gmx.de>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [vm] writing to UDF DVD+RW (/dev/sr0) while under memory
+ pressure: box ==> doorstop
+Message-Id: <20080109150139.311f68d3.akpm@linux-foundation.org>
+In-Reply-To: <1199877080.4340.19.camel@homer.simson.net>
+References: <1199447212.4529.13.camel@homer.simson.net>
+	<1199612533.4384.54.camel@homer.simson.net>
+	<1199642470.3927.12.camel@homer.simson.net>
+	<20080106122954.d8f04c98.akpm@linux-foundation.org>
+	<1199790316.4094.57.camel@homer.simson.net>
+	<20080108033801.40d0043a.akpm@linux-foundation.org>
+	<1199805713.3571.12.camel@homer.simson.net>
+	<1199806071.4174.2.camel@homer.simson.net>
+	<1199877080.4340.19.camel@homer.simson.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 09 Jan 2008 12:11:20 +0100
+Mike Galbraith <efault@gmx.de> wrote:
 
-
-On Thu, 10 Jan 2008, Rusty Russell wrote:
 > 
-> I'd have to read his original statement, but eventfd doesn't build up state, 
-> so I think it qualifies.
+> On Tue, 2008-01-08 at 16:27 +0100, Mike Galbraith wrote:
+> > On Tue, 2008-01-08 at 16:21 +0100, Mike Galbraith wrote:
+> > > On Tue, 2008-01-08 at 03:38 -0800, Andrew Morton wrote:
+> > > > 
+> > > > Well.  From your earlier trace it appeared that something was causing
+> > > > the filesystem to perform synchronous inode writes - sync_dirty_buffer() was
+> > > > called.
+> > > > 
+> > > > This will cause many more seeks than would occur if we were doing full
+> > > > delayed writing, with obvious throughput implications.
+> > > 
+> > > Yes, with UDF, the IO was _incredibly_ slow.  With ext2, it was better,
+> > > though still very bad.  I tested with that other OS, and it gets ~same
+> > > throughput with UDF as I got with ext2 (ick).
+> > > 
+> > > UDF does udf_clear_inode() -> write_inode_now(inode, 1)
+> > > 
+> > > I suppose I could try write_inode_now(inode, 0).  Might unstick the box.
+> > 
+> > (nope, still sync, UDF still deadly)
+> 
+> write_inode_now() is a fibber.
 
-How about you guys battle it out by giving an example program usign the 
-interface?
+Sure is.  Looks like it was busted by:
 
-Here's a favourite really simple load of mine:
+commit fa94396d2792f5093aab7cf66e1fc1da0c9fc442
+Author: akpm <akpm>
+Date:   Tue Feb 4 17:01:43 2003 +0000
 
- - do the equivalent of "ls -lR" or "find /usr" as quickly as possible, 
-   without playing "sort by the inode numbers" games (that don't work in 
-   general, but are great for some filesystems)
+    [PATCH] Remove unneeded code in fs/fs-writeback.c
+    
+    We do not need to pass the `wait' argument down to __sync_single_inode().
+    That information is now present at wbc->sync_mode.
+    
 
-   Do this on a directory that isn't newly created, but has had files 
-   added and removed over time (so that the return order of "readdir()" 
-   isn't dense and sorted in the inode tables already). The classic 
-   example is "ls -l /usr/bin" or similar.
+> The below seems to fix it in that writes dribbling to the DVD+RW at the
+> whopping 1 to 10 pages/sec I'm seeing no longer turn box into a
+> doorstop.  It's probably busted as heck.
 
-This is actually a fairly hard load, because there's two easily tested 
-cases that are both equally important: hot-cache (no IO at all, just CPU), 
-and cold-cache (all about trying to get concurrent IO on inode lookups 
-going, to get the disk elevator working in the *absense* of any sorting).
+The VFS change looks good.  Not sure about the UDF details.
 
-And almost all of the operations are operations that right now have no 
-asynchronous model except for full threads (ie neither filename nor inode 
-lookup have any aio_xyz() things).
+> Think I'll cc linux-mm, and go find something safer to play with.
+> 
+> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> index 0fca820..f1cce24 100644
+> --- a/fs/fs-writeback.c
+> +++ b/fs/fs-writeback.c
+> @@ -657,7 +657,7 @@ int write_inode_now(struct inode *inode, int sync)
+>  	int ret;
+>  	struct writeback_control wbc = {
+>  		.nr_to_write = LONG_MAX,
+> -		.sync_mode = WB_SYNC_ALL,
+> +		.sync_mode = sync ? WB_SYNC_ALL : WB_SYNC_NONE,
+>  		.range_start = 0,
+>  		.range_end = LLONG_MAX,
+>  	};
+> diff --git a/fs/udf/inode.c b/fs/udf/inode.c
+> index 6ff8151..d1fc116 100644
+> --- a/fs/udf/inode.c
+> +++ b/fs/udf/inode.c
+> @@ -117,7 +117,7 @@ void udf_clear_inode(struct inode *inode)
+>  		udf_discard_prealloc(inode);
+>  		udf_truncate_tail_extent(inode);
+>  		unlock_kernel();
+> -		write_inode_now(inode, 1);
+> +		write_inode_now(inode, 0);
+>  	}
+>  	kfree(UDF_I_DATA(inode));
+>  	UDF_I_DATA(inode) = NULL;
+> 
 
-How can we do something like *that*? It's about as simple an IO test 
-program you can imagine, while I'd argue that it is still a reasonably 
-"realistic" thing to do, and interesting for asynchronous operations.
+WB_SYNC_* should die.
 
-How would do you something like this, striving to allow overlap of IO, and 
-getting (hopefully) the block layer to create bigger request sizes?
+I wonder why UDF was doing a synchronous write in there.  In fact I wonder
+why it's writing the inode at all?  extN doesn't do that.  If for some
+reason it really does want to make the inode immediately reclaimable then
+simply shoving it down into the /dev/hda1 pagecache should be sufficient
+(ie: what you did)..
 
-To make it simple, let's make the *only* operation we care about being 
-asynchronous be that "lstat()". And instead of printing out each file, 
-just add up the sizes or something (ie make this approximate "du -sh"). 
 
-But the important thing is that if things are cached, it should be the 
-same speed as this trivial program, ie the async interfaces shouldn't slow 
-things down. But if things require IO, hopefully we can get at least some 
-reasonable number of concurrent IO's going, and making the program not 
-seek back and forth quite so much).
+hm.
 
-Try this with and without a "echo 3 > /proc/sys/vm/drop_caches" in 
-between. Both are real and relevant usage cases, I think.
-
-And *simplicity* of the end result really does matter. If it's not simple 
-to use, people won't use it.
-
-		Linus
-
----
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <dirent.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-
-static void find(const char *base, int baselen);
-
-static void handle(const char *name, int namelen)
-{
-	struct stat st;
-
-	if (lstat(name, &st) < 0)
-		return;
-	printf("%8lu %s\n", st.st_size, name);
-	if (S_ISDIR(st.st_mode))
-		find(name, namelen);
-}
-
-static void find(const char *base, int baselen)
-{
-	DIR *dir;
-	char *name = malloc(baselen + 255 + 2);
-
-	if (!name)
-		return;
-	memcpy(name, base, baselen);
-	name[baselen] = '/';
-	dir = opendir(base);
-	if (dir) {
-		struct dirent *de;
-		while ((de = readdir(dir)) != NULL) {
-			const char *p = de->d_name;
-			int len = strlen(p);
-			if (len > 255)
-				continue;
-			if (p[0] == '.') {
-				if (len == 1)
-					continue;
-				if (len == 2 && p[1] == '.')
-					continue;
-			}
-			memcpy(name + baselen + 1, de->d_name, len+1);
-			handle(name, baselen + 1 + len);
-		}
-		closedir(dir);
-	}
-	free(name);
-}
-
-int main(int argc, char **argv)
-{
-	find(".",1);
-	return 0;
-}
+So are you saying that the fs throughput is unaltered by this change,
+but that the side-effects which your workload has on the overall
+machine are lessened?
