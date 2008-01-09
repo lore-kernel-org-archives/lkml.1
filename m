@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbYAIT7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755921AbYAIUCF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755837AbYAIT7T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 14:59:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbYAIT7L
+	id S1755921AbYAIUCF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 15:02:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbYAIUBz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 14:59:11 -0500
-Received: from gate.crashing.org ([63.228.1.57]:46750 "EHLO gate.crashing.org"
+	Wed, 9 Jan 2008 15:01:55 -0500
+Received: from smtp1.cc.lut.fi ([157.24.2.30]:59195 "EHLO smtp1.cc.lut.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753229AbYAIT7L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 14:59:11 -0500
-Subject: Re: Replacement for page fault notifiers?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Pavel Roskin <proski@gnu.org>, Dave Airlie <airlied@gmail.com>,
-       Pekka Paalanen <pq@iki.fi>, linux-kernel@vger.kernel.org,
-       jbeulich@novell.com
-In-Reply-To: <20080109182157.GA32754@infradead.org>
-References: <20080108210638.5c9e093a@daedalus.pq.iki.fi>
-	 <20080108203235.GA772@infradead.org>
-	 <21d7e9970801081413n307ab07aq462a9fff014143ae@mail.gmail.com>
-	 <1199838407.6734.83.camel@pasglop> <1199902724.8050.11.camel@dv>
-	 <20080109182157.GA32754@infradead.org>
-Content-Type: text/plain
-Date: Thu, 10 Jan 2008 06:58:23 +1100
-Message-Id: <1199908703.6734.133.camel@pasglop>
+	id S1752145AbYAIUBy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 15:01:54 -0500
+Date: Wed, 9 Jan 2008 22:01:48 +0200
+From: Pekka Paalanen <pq@iki.fi>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Miller <davem@davemloft.net>, hch@lst.de, airlied@linux.ie,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org, ak@suse.de,
+       jbeulich@novell.com, linux-kernel@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH] Revert "x86: optimize page faults like all other
+ achitectures and kill notifier cruft"
+Message-ID: <20080109220148.5caebaf1@daedalus.pq.iki.fi>
+In-Reply-To: <20080109104149.GB8041@elte.hu>
+References: <20080108192951.a4dc394f.akpm@linux-foundation.org>
+	<alpine.DEB.0.82.0801090346370.9570@skynet.skynet.ie>
+	<20080109071945.GB10695@lst.de>
+	<20080108.232311.79648776.davem@davemloft.net>
+	<20080109104149.GB8041@elte.hu>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 9 Jan 2008 11:41:49 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-On Wed, 2008-01-09 at 18:21 +0000, Christoph Hellwig wrote:
-> On Wed, Jan 09, 2008 at 01:18:44PM -0500, Pavel Roskin wrote:
-> > notification without patching the kernel.  But if no such solution is
-> > found, I would also support reverting the patch that removed fault
-> > notifiers on i386.
-> 
-> With your fixation on not patching the kernel you sound like a windows
-> developer.  There is no problem with patching the kernel, but the best
-> patching of that kernel is that which happens upstream so please folks
-> start submitting an mmiotrace variant for kernel inclusion.
-> 
-> Then again I don't quite get why you absolutely want to track pagefaults
-> anyway.  Just hooking into ioremap and read*/write* and iomap +
-> ioread*/iowrite* would be much easier and also a lot faster.  It would
-> also allow adding a nice sysfs attribute to enable this per-device.
+> i agree. There a few practical complication on x86: the
+> do_page_fault() function is currently excluded from kprobe probing,
+> for recursion reasons. handle_mm_fault() can be probed OTOH - but
+> that does not catch vmalloc()-ed faults. The middle of
+> do_page_fault() [line 348] should work better [the point after
+> notify_page_fault()] - but it's usually more fragile to insert probes
+> to such middle-of-the-function places.
 
-Because binary drivers don't use ioread/iowrite/readX/writeX (or if they
-do, they've long been inlined in the blob). The only solution is to map
-things as non-accessible and trap the page faults.
+I have been reading about kprobes and one thing particularly bothers me
+in the case of mmio-trace. The probe will actually service the page
+fault, therefore it should be able force do_page_fault() to return at
+the probe point. I could not figure out a way to do that.
 
-It's a sane thing to do, Christoph, I don't think it's a unreasonable
-request to put the hooks back in.
-
-Cheers,
-Ben.
+Is it possible to do reliably with kprobes or markers?
 
 
+Thanks for the replies.
+
+-- 
+Pekka Paalanen
+http://www.iki.fi/pq/
