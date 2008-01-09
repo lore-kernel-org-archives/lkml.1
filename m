@@ -1,150 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754401AbYAIDnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754424AbYAIDtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754401AbYAIDnS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 22:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYAIDnH
+	id S1754424AbYAIDtU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 22:49:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbYAIDtI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 22:43:07 -0500
-Received: from mga11.intel.com ([192.55.52.93]:50102 "EHLO mga11.intel.com"
+	Tue, 8 Jan 2008 22:49:08 -0500
+Received: from ozlabs.org ([203.10.76.45]:42303 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751812AbYAIDnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 22:43:05 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,260,1196668800"; 
-   d="scan'208";a="490272835"
-Date: Wed, 9 Jan 2008 11:27:33 +0800
-From: Zhenyu Wang <zhenyu.z.wang@intel.com>
-To: Dave Airlie <airlied@linux.ie>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH][AGP] intel_agp: add new chipset ids
-Message-ID: <20080109032733.GA14231@zhen-devel.sh.intel.com>
-Mail-Followup-To: Dave Airlie <airlied@linux.ie>,
-	LKML <linux-kernel@vger.kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752078AbYAIDtF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 22:49:05 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Zach Brown <zach.brown@oracle.com>
+Subject: Re: [PATCH 5/6] syslets: add generic syslets infrastructure
+Date: Wed, 9 Jan 2008 14:48:44 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dan Williams <dan.j.williams@gmail.com>, Jeff Moyer <jmoyer@redhat.com>,
+       Simon Holm Thogersen <odie@cs.aau.dk>, suresh.b.siddha@intel.com
+References: <1196983219534-git-send-email-zach.brown@oracle.com> <200801091303.58920.rusty@rustcorp.com.au> <478438B4.6010101@oracle.com>
+In-Reply-To: <478438B4.6010101@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
-X-Mailer: mutt
-X-Operating-System: Linux 2.6.23 i686
+Message-Id: <200801091448.46241.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 09 January 2008 14:00:04 Zach Brown wrote:
+> >     Firstly, why not just specify an address for the return value and be
+> > done with it?  This infrastructure seems overkill, and you can always
+> > extend later if required.
+>
+> Sorry, which infrastructure?
+>
+> Providing the function and stack to return to?  Sure, I could certainly
+> entertain the idea of not having syslet tasks return to userspace in the
+> first pass.  Ingo sure seemed excited by the idea.
+>
+> Or do you mean the syscall return value ending up in the userspace
+> completion event ring?  That's mostly about being able to wait for
+> pending syslets to complete.
 
-Dave,
+The latter.  A ring is optimal for processing a huge number of requests, but 
+if you're really going to be firing off syslet threads all over the place 
+you're not going to be optimal anyway.  And being able to point the return 
+value to the stack or into some datastructure is way nicer to code (zero 
+setup == easy to understand and easy to convert).
 
-This one adds new pci ids for Intel intergrated graphics
-chipset, with gtt table access change on it and new gtt table
-size definition.
+For notification, see below.
 
-Thanks.
+> > Secondly, you really should allow integration with an eventfd so you
+> > don't make the posix AIO mistake of providing a poll-incompatible
+> > interface.
+>
+> Yeah, this seems straight forward enough that I haven't made it an
+> initial priority.  I'm sure it will be helpful for people who are stuck
+> integrating with entrenched software that wants to wait for pollable fds.
 
-Signed-off-by: Zhenyu Wang <zhenyu.z.wang@intel.com>
----
- drivers/char/agp/agp.h       |    3 +++
- drivers/char/agp/intel-agp.c |   31 ++++++++++++++++++++++++++-----
- 2 files changed, 29 insertions(+), 5 deletions(-)
+Unfortunately, waiting for someone to write a killer app which uses your new 
+API is the road to disappointment.  The real target is convincing the handful 
+of important apps (Samba, Apache, ...) to #ifdef around some small piece of 
+code in order to get performance.  And a mere single design wart could mean 
+that never happens.  Look at epoll, it's probably been the most successful 
+and it's still damn niche.
 
-diff --git a/drivers/char/agp/agp.h b/drivers/char/agp/agp.h
-index b83824c..d132914 100644
---- a/drivers/char/agp/agp.h
-+++ b/drivers/char/agp/agp.h
-@@ -235,6 +235,9 @@ struct agp_bridge_data {
- #define I965_PGETBL_SIZE_512KB	(0 << 1)
- #define I965_PGETBL_SIZE_256KB	(1 << 1)
- #define I965_PGETBL_SIZE_128KB	(2 << 1)
-+#define I965_PGETBL_SIZE_1MB	(3 << 1)
-+#define I965_PGETBL_SIZE_2MB	(4 << 1)
-+#define I965_PGETBL_SIZE_1_5MB	(5 << 1)
- #define G33_PGETBL_SIZE_MASK    (3 << 8)
- #define G33_PGETBL_SIZE_1M      (1 << 8)
- #define G33_PGETBL_SIZE_2M      (2 << 8)
-diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
-index d879619..091e765 100644
---- a/drivers/char/agp/intel-agp.c
-+++ b/drivers/char/agp/intel-agp.c
-@@ -30,13 +30,16 @@
- #define PCI_DEVICE_ID_INTEL_Q35_IG          0x29B2
- #define PCI_DEVICE_ID_INTEL_Q33_HB          0x29D0
- #define PCI_DEVICE_ID_INTEL_Q33_IG          0x29D2
-+#define PCI_DEVICE_ID_INTEL_IGD_HB          0x2A40
-+#define PCI_DEVICE_ID_INTEL_IGD_IG          0x2A42
- 
- #define IS_I965 (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82946GZ_HB || \
-                  agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965G_1_HB || \
-                  agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965Q_HB || \
-                  agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965G_HB || \
-                  agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965GM_HB || \
--                 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965GME_HB)
-+                 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965GME_HB || \
-+                 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_IGD_HB)
- 
- #define IS_G33 (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_G33_HB || \
- 		agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_Q35_HB || \
-@@ -456,6 +459,15 @@ static void intel_i830_init_gtt_entries(void)
- 		case I965_PGETBL_SIZE_512KB:
- 			size = 512;
- 			break;
-+		case I965_PGETBL_SIZE_1MB:
-+			size = 1024;
-+			break;
-+		case I965_PGETBL_SIZE_2MB:
-+			size = 2048;
-+			break;
-+		case I965_PGETBL_SIZE_1_5MB:
-+			size = 1024 + 512;
-+			break;
- 		default:
- 			printk(KERN_INFO PFX "Unknown page table size, "
- 			       "assuming 512KB\n");
-@@ -981,6 +993,7 @@ static int intel_i965_create_gatt_table(struct agp_bridge_data *bridge)
-        struct aper_size_info_fixed *size;
-        int num_entries;
-        u32 temp;
-+       int gtt_offset, gtt_size;
- 
-        size = agp_bridge->current_size;
-        page_order = size->page_order;
-@@ -990,13 +1003,18 @@ static int intel_i965_create_gatt_table(struct agp_bridge_data *bridge)
-        pci_read_config_dword(intel_private.pcidev, I915_MMADDR, &temp);
- 
-        temp &= 0xfff00000;
--       intel_private.gtt = ioremap((temp + (512 * 1024)) , 512 * 1024);
- 
--	if (!intel_private.gtt)
--		return -ENOMEM;
-+       if (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_IGD_HB)
-+	       gtt_offset = gtt_size = MB(2);
-+       else
-+	       gtt_offset = gtt_size = KB(512);
-+
-+       intel_private.gtt = ioremap((temp + gtt_offset) , gtt_size);
- 
-+       if (!intel_private.gtt)
-+	       return -ENOMEM;
- 
--       intel_private.registers = ioremap(temp,128 * 4096);
-+       intel_private.registers = ioremap(temp, 128 * 4096);
-        if (!intel_private.registers) {
- 		iounmap(intel_private.gtt);
- 		return -ENOMEM;
-@@ -1884,6 +1902,8 @@ static const struct intel_driver_description {
- 		NULL, &intel_g33_driver },
- 	{ PCI_DEVICE_ID_INTEL_Q33_HB, PCI_DEVICE_ID_INTEL_Q33_IG, 0, "Q33",
- 		NULL, &intel_g33_driver },
-+	{ PCI_DEVICE_ID_INTEL_IGD_HB, PCI_DEVICE_ID_INTEL_IGD_IG, 0,
-+	    "Intel Integrated Graphics Device", NULL, &intel_i965_driver },
- 	{ 0, 0, 0, NULL, NULL, NULL }
- };
- 
-@@ -2073,6 +2093,7 @@ static struct pci_device_id agp_intel_pci_table[] = {
- 	ID(PCI_DEVICE_ID_INTEL_G33_HB),
- 	ID(PCI_DEVICE_ID_INTEL_Q35_HB),
- 	ID(PCI_DEVICE_ID_INTEL_Q33_HB),
-+	ID(PCI_DEVICE_ID_INTEL_IGD_HB),
- 	{ }
- };
- 
--- 
-1.5.3.7
+> For more flexible software, though, it's compelling to now be able to
+> aggregate waiting for completion of the existing waiting syscalls (poll,
+> epoll_wait, futexes, whatever) by issuing them as concurrent syslets.
 
+Is replacing epoll with syslets really going to win, even if you're writing 
+apps from scratch?  Anyway a fast notification mechanism is a different 
+problem than syslets, and should be separated.
+
+> > Finally, and probably most alarmingly, AFAICT randomly changing TID will
+> > break all threaded programs, which means this won't be fitted into
+> > existing code bases, making it YA niche Linux-only API 8(
+>
+> I wonder if there isn't an opportunity to add a clone() flag which
+> juggles the association between TIDs and task_structs.  I don't relish
+> the idea of investigating the life cycles of task_struct references that
+> derive from TIDs and seeing how those would race with a syslet blocking
+> and cloning, but, well, maybe that's what needs to be done.
+
+This must be solved, yet all avenues seem crawling with worms.  Redirecting 
+find_task_by_pid() to find the original and converting all the places where 
+we return tids to userspace?  Swapping tids when we clone?  Duplicate tids, 
+with only the non-syslet one being returned from find_task_by_pid()?
+
+> This all isn't my area of expertise, though, sadly.  It would be swell
+> if someone wanted to look into it before I'm forced to learn yet another
+> weird corner of the kernel.
+
+Let's just tell Ingo it's impossible to solve :)
+
+Rusty.
