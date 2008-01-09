@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753122AbYAIGOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752367AbYAIGP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753122AbYAIGOx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 01:14:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750867AbYAIGOp
+	id S1752367AbYAIGP6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 01:15:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750796AbYAIGPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 01:14:45 -0500
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:57343 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750830AbYAIGOo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 01:14:44 -0500
-Date: Wed, 9 Jan 2008 07:14:08 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       David Miller <davem@davemloft.net>, hskinnemoen@atmel.com,
-       schwidefsky@de.ibm.com, tony.luck@intel.com,
-       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCHv3] kprobes: Introduce kprobe_handle_fault()
-Message-ID: <20080109061408.GA9486@osiris.ibm.com>
-References: <1199737486.7666.12.camel@brick> <18307.64807.204087.375733@cargo.ozlabs.ibm.com> <1199833324.6424.12.camel@brick> <1199852360.6424.39.camel@brick>
-MIME-Version: 1.0
+	Wed, 9 Jan 2008 01:15:49 -0500
+Received: from 1wt.eu ([62.212.114.60]:1237 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750718AbYAIGPs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 01:15:48 -0500
+Date: Wed, 9 Jan 2008 07:03:24 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Valdis.Kletnieks@vt.edu, Matthew Wilcox <matthew@wil.cx>,
+       Adrian Bunk <bunk@kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Ingo Molnar <mingo@elte.hu>, Peter Osterlund <petero2@telia.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [patch] scsi: revert "[SCSI] Get rid of scsi_cmnd->done"
+Message-ID: <20080109060324.GD19959@1wt.eu>
+References: <20080106185625.GM2082@does.not.exist> <20080106191044.GA1105@1wt.eu> <20080106195802.GN2082@does.not.exist> <20080106210813.GA10136@1wt.eu> <19438.1199739038@turing-police.cc.vt.edu> <20080107213717.GB16309@parisc-linux.org> <26581.1199747065@turing-police.cc.vt.edu> <20080107231930.GC16309@parisc-linux.org> <8336.1199851267@turing-police.cc.vt.edu> <20080108201042.03c3aead.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1199852360.6424.39.camel@brick>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080108201042.03c3aead.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +/*
-> + * If it is a kprobe pagefault we can not be premptible so return before
+On Tue, Jan 08, 2008 at 08:10:42PM -0800, Andrew Morton wrote:
+[...]
+> I must say that the number of bugs which actually go away when the user
+> stops using nvidia/fglrx/ndiswrapper/etc is a small minority.
 
-Missing 'e' in preemptible.
-However, the old code you removed had a lot of preempt_disable/enable calls
-that you removed. Hope you checked that preemption was always disabled
-already and the calls were not necessary (true at least for s390).
+[...]
+> But people who think that removing the nvidia driver will
+> magically fix that khubd-got-stuck-in-D-state bug are urinating up an
+> incline.
+> 
+> 
+> Facts:
+> 
+> - lots of people use nvidia/etc
+> 
+> - most bugs they report aren't caused by nvidia/etc
+> 
+> - we need lots of testers
+> 
+> draw you own conclusions.
 
-Are there cases where this code could be called with preemption enabled?
-If so then that looks like a bug anyway. I'd say the preemptible check
-should be removed or turned into a WARN_ON.
+Thanks Andrew for this demonstration. At least now I know I'm not the only
+one to think that. And no, I do not have any nvidia/etc. It's just that I
+value their users' reports as much as the other ones just because otherwise
+we would only track some elite's bugs, thus reducing the amount of information
+we have to understand the circumstances under which it happens.
 
-> + * calling kprobe_running() as it will assert on smp_processor_id if
-> + * preemption is enabled.
-> + */
-> +static inline int kprobe_handle_fault(struct pt_regs *regs, int trapnr)
-> +{
-> +	if (!user_mode(regs) && !preemptible() && kprobe_running() &&
-> +	    kprobe_fault_handler(regs, trapnr))
-> +		return 1;
-> +	else
-> +		return 0;
+Cheers,
+Willy
 
-I like this better (not including any other changes):
-
-	if (!user_mode(regs) && !preemptible() && kprobe_running())
-		return kprobe_fault_handler(regs, trapnr);
-	return 0;
