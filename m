@@ -1,37 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbYAIORT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbYAIOVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755428AbYAIORT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 09:17:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbYAIORF
+	id S1754134AbYAIOVj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 09:21:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbYAIOVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 09:17:05 -0500
-Received: from main.gmane.org ([80.91.229.2]:47383 "EHLO ciao.gmane.org"
+	Wed, 9 Jan 2008 09:21:32 -0500
+Received: from ns2.suse.de ([195.135.220.15]:60345 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752225AbYAIORE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 09:17:04 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Tuomo Valkonen <tuomov@iki.fi>
-Subject: Re: The ext3 way of journalling
-Date: Wed, 9 Jan 2008 14:16:52 +0000 (UTC)
-Message-ID: <slrnfo9lqk.17l.tuomov@jolt.modeemi.cs.tut.fi>
-References: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi> <18307.42821.166376.732473@stoffel.org> <slrnfo7auq.6m2.tuomov@jolt.modeemi.cs.tut.fi> <871w8r6ruc.fsf@barad-dur.regala.cx>
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: jolt.modeemi.cs.tut.fi
-User-Agent: slrn/0.9.8.1pl1 (Debian)
+	id S1750828AbYAIOVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 09:21:32 -0500
+From: Andi Kleen <ak@suse.de>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] Revert "x86: optimize page faults like all other achitectures and kill notifier cruft"
+Date: Wed, 9 Jan 2008 15:23:34 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: hch@lst.de, airlied@linux.ie, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, pq@iki.fi, jbeulich@novell.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org
+References: <alpine.DEB.0.82.0801090226240.9570@skynet.skynet.ie> <20080109071727.GA10695@lst.de> <20080108.232223.211829980.davem@davemloft.net>
+In-Reply-To: <20080108.232223.211829980.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801091523.35845.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008-01-09, Mathieu SEGAUD <mathieu.segaud@regala.cx> wrote:
-> fix your hardware clock then
 
-It displays just the right time. On boot anyway. (Linux has had some
-serious problems keeping the time after the switch from 2.6.7 to 2.6.14,
-advanding even 15 minutes a day -- that ntpd doesn't seem to be able 
-to keep up with -- requiring running adjtimexconfig every now and
-then for new settings. But the cmos clock displays the right time.)
+> You can set a kprobe on the x86 fault handler to do things like
+> mmiotrace.
 
--- 
-Tuomo
+That would mean that if the kprobe faults it goes into an endless loop.
+Most of do_page_fault() is not really safe for kprobes.
+
+-Andi
 
