@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751681AbYAIFSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502AbYAIFVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751681AbYAIFSl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 00:18:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750718AbYAIFSa
+	id S1753502AbYAIFVW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 00:21:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750859AbYAIFVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 00:18:30 -0500
-Received: from rv-out-0910.google.com ([209.85.198.187]:53777 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750882AbYAIFS2 (ORCPT
+	Wed, 9 Jan 2008 00:21:14 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:49392 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750828AbYAIFVN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 00:18:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=rF1XQlVTHajDdpksYNmnHQwnZTwoNCKG2020SY1sJz4X0uqGZtsJt83vbY9UsuTjALDe+DsHWdYFQIg2P7NkuZs/JM1dYht71WhIonezOBnboFViAqa0yPN+/k8dONPWlef5zuUB64ARc1UYzdyVW+nLq9cYQU3NkS4V40u8G4Y=
-Message-ID: <4784591D.3060000@gmail.com>
-Date: Wed, 09 Jan 2008 14:18:21 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 9 Jan 2008 00:21:13 -0500
+Message-ID: <47845972.9090803@zytor.com>
+Date: Tue, 08 Jan 2008 21:19:46 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-CC: linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Mark Lord <liml@rtr.ca>
-Subject: Re: Do SATA tape drives work?
-References: <200801090329.m093T7Op019488@turbo.physics.adelaide.edu.au>
-In-Reply-To: <200801090329.m093T7Op019488@turbo.physics.adelaide.edu.au>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+To: Zachary Amsden <zach@vmware.com>
+CC: "David P. Reed" <dpreed@reed.com>, Avi Kivity <avi@quramnet.com>,
+       Christer Weinigel <christer@weinigel.se>,
+       Ondrej Zary <linux@rainbow-software.org>,
+       Rene Herman <rene.herman@keyaccess.nl>, Bodo Eggert <7eggert@gmx.de>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Paul Rolland <rol@as2917.net>, Pavel Machek <pavel@ucw.cz>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, rol <rol@witbe.net>
+Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
+ I/O delay override.
+References: <9BdU5-1YW-9@gated-at.bofh.it>	 <200801081810.58904.linux@rainbow-software.org>	<4783B1B2.6070005@reed.com>	 <200801081838.16241.linux@rainbow-software.org>	<4783C4A6.9060402@reed.com>	 <20080108185120.3ff7ed18@lxorguk.ukuu.org.uk>  <4783CBD9.7020709@reed.com> <1199847162.7369.323.camel@bodhitayantram.eng.vmware.com>
+In-Reply-To: <1199847162.7369.323.camel@bodhitayantram.eng.vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[cc'ing linux-ide]
-
-Jonathan Woithe wrote:
-> Hi guys
+Zachary Amsden wrote:
 > 
-> I was wondering whether anyone can shed any light on the status of SATA tape
-> drives.  There's very little info on the net about this at least in the
-> places I've checked; the only thing of any significance I've found thus far
-> is a note in a Bacula document dated April 2007 which states that drives
-> other than real SCSI units don't generally work with Bacula.
-> 
-> To put this into context, I'm looking at purchasing a Sony SDX470VRB SATA
-> AIT-1 tape drive for use with the SATA controller on an Intel DG31PR
-> mainboard.  The drive will be used primarily with tar/cpio.  Obvsiouly
-> however I only want to make the purchase if there's a reasonable chance of
-> it working.
-> 
-> I would appreciate any information you can shed on this issue.
+> BTW, it isn't ever safe to pass port 0x80 through to hardware from a
+> virtual machine; some OSes use port 0x80 as a hardware available scratch
+> register (I believe Darwin/x86 did/does this during boot).
 
-It's supposed to with recent updates.  Mark, right?
+That's funny, because there is definitely no guarantee that you get back 
+what you read (well, perhaps there is on Apple.)
 
--- 
-tejun
+	-hpa
