@@ -1,74 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757577AbYAIBmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753174AbYAIBuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757577AbYAIBmn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 20:42:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbYAIBmf
+	id S1753174AbYAIBuZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 20:50:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbYAIBuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 20:42:35 -0500
-Received: from ns2.suse.de ([195.135.220.15]:52849 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753195AbYAIBme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 20:42:34 -0500
-Date: Wed, 9 Jan 2008 02:42:33 +0100
-From: Andi Kleen <ak@suse.de>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH 00 of 10] x86: unify asm/pgtable.h
-Message-ID: <20080109014233.GG25945@bingen.suse.de>
-References: <20080109000146.GA29095@elte.hu> <47841194.2010208@goop.org> <20080109002014.GB31289@elte.hu> <20080109002803.GA3732@elte.hu> <20080109003034.GA4658@elte.hu> <47841B09.3020507@goop.org> <20080109005914.GA24228@elte.hu> <47841E3C.9020106@goop.org> <20080109011233.GD25945@bingen.suse.de> <478424DE.3030609@goop.org>
+	Tue, 8 Jan 2008 20:50:09 -0500
+Received: from wa-out-1112.google.com ([209.85.146.179]:32247 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750792AbYAIBuG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 20:50:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=WjH7xNRbUZPnb/A1ftyvMKMVkM24t02MpY6rUKa1H+cK56r/0f5FiwVvhQS6PNjV11oqiLysrcP5Dlhw41+8g6dlvam2beQBMJ0e2xaEkhAm0dDu+bDiXu5J5QAPlv/+S7iMXD8YdPPIxEcC1fbAwzKQoPfwsDE0cu5kTYCukLs=
+Message-ID: <47842842.9090805@gmail.com>
+Date: Wed, 09 Jan 2008 10:49:54 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <478424DE.3030609@goop.org>
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: [Re: Linux 2.6.24-rc7] ata1: exception Emask 0x10 SAct 0x0 SErr
+ 0x0 action 0x9 t4
+References: <8db1092f0801080826s44582801s2dbacd02f30c7240@mail.gmail.com>
+In-Reply-To: <8db1092f0801080826s44582801s2dbacd02f30c7240@mail.gmail.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 08, 2008 at 05:35:26PM -0800, Jeremy Fitzhardinge wrote:
-> Andi Kleen wrote:
->>> of the if()?  If not, can't we just remove it and avoid this present 
->>> problem?
->>>     
->>
->> That would just hide your problem.
->>   
->
-> The "problem" is a BUG() in pageattr_64.c:change_page_attr(), which to me 
-> looks spurious.  It arises because __PAGE_KERNEL_* doesn't contain 
-> _PAGE_GLOBAL, but PAGE_KERNEL_* does.  When ioremap() change_page_attr(), 
-> it does so in a way that guarentees that the test
->
-> 	if (pgprot_val(prot) != pgprot_val(ref_prot)) {
->
-> in __change_page_attr() always succeeds.  When I folded _PAGE_GLOBAL into 
-> the __PAGE_KERNEL_* definitions, it mostly works except it causes this if() 
-> to fail, falling into the otherwise dead else clause and triggers a BUG().
+Maciej Rutecki wrote:
+> I have this message when resume from suspend to disk:
+> 
+> hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
+> hda: MWDMA2 mode selected
+> sd 0:0:0:0: [sda] Starting disk
+> [...]
+> ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> ata1.00: ACPI cmd f5/00:00:00:00:00:a0 filtered out
+> ata1.00: ACPI cmd b1/c1:00:00:00:00:a0 filtered out
+> ata1.00: ACPI cmd c6/00:10:00:00:00:a0 succeeded
+> ata1.00: ACPI cmd ef/10:03:00:00:00:a0 succeeded
+> ata1.00: ACPI cmd f5/00:00:00:00:00:a0 filtered out
+> ata1.00: ACPI cmd b1/c1:00:00:00:00:a0 filtered out
+> ata1.00: ACPI cmd c6/00:10:00:00:00:a0 succeeded
+> ata1.00: ACPI cmd ef/10:03:00:00:00:a0 succeeded
+> ata1.00: configured for UDMA/133
+> ata1: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0x9 t4
+> ata1: irq_stat 0x00400040, connection status changed
+> ata1.00: configured for UDMA/133
+> ata1: EH complete
+> sd 0:0:0:0: [sda] 234441648 512-byte hardware sectors (120034 MB)
+> sd 0:0:0:0: [sda] Write Protect is off
+> sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
+> support DPO or FUA
+> 
+> Suspend to disk works fine without any problems.
 
-That means your callers pass in the wrong values.
+Those are newly added ACPI command filtering and KERN_DEBUG messages.
+As we're following what BIOS is telling us, we definitely want to filter
+and log what rubbish it tells us.  :-)
 
-> I'm not really sure what the logic in here is supposed to be doing, but it 
-> seems to me that it isn't the difference between global and non-global 
-> mappings (I guess its really testing for cached vs uncached mappings).
+Thanks.
 
-No it is testing for all page attributes. That can be cached vs uncached
-but also rw vs ro and nx vs non nx and everything else you can set
-as bits on ptes.
-
-While changing global sounds weird the pageattr-test code I recently
-submitted does just that for test purposes.
-
-
-> Or to put it another way, what's the underlying rationale for making 
-> __PAGE_KERNEL_* not include the GLOBAL flag, but including it in the pgprot 
-> versions?  It means that code like this in ioremap_64.c:
-
-There is none, but that is not what change_page_attr() cares about.
-It just cares that you pass in the correct bits and you don't currently.
-
-I think you're missing the forrest because of all the trees currently.
-
--Andi
-
+-- 
+tejun
