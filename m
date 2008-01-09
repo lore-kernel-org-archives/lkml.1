@@ -1,41 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752788AbYAIIfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753013AbYAIIs4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752788AbYAIIfo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 03:35:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbYAIIff
+	id S1753013AbYAIIs4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 03:48:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbYAIIsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 03:35:35 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58622 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751480AbYAIIfe (ORCPT
+	Wed, 9 Jan 2008 03:48:45 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:58021 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750796AbYAIIso (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 03:35:34 -0500
-Date: Wed, 9 Jan 2008 08:34:48 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH: 2/2] [SERIAL] avoid stalling suspend if serial port won't drain
-Message-ID: <20080109083448.GA26781@flint.arm.linux.org.uk>
-References: <20080108115148.GB10546@flint.arm.linux.org.uk> <20080108115703.GA27179@flint.arm.linux.org.uk> <20080108160610.53694773.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080108160610.53694773.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 9 Jan 2008 03:48:44 -0500
+To: nigel@nigel.suspend2.net
+CC: pavel@ucw.cz, akpm@linux-foundation.org, hch@infradead.org,
+       serue@us.ibm.com, viro@ftp.linux.org.uk, ebiederm@xmission.com,
+       kzak@redhat.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       util-linux-ng@vger.kernel.org
+In-reply-to: <47840DAC.5000108@nigel.suspend2.net> (message from Nigel
+	Cunningham on Wed, 09 Jan 2008 10:56:28 +1100)
+Subject: Re: [patch 7/9] unprivileged mounts: allow unprivileged fuse mounts
+References: <20080108113502.184459371@szeredi.hu> <20080108113630.861045063@szeredi.hu> <20080108214625.GE5050@ucw.cz> <E1JCN9I-0004DB-DF@pomaz-ex.szeredi.hu> <47840DAC.5000108@nigel.suspend2.net>
+Message-Id: <E1JCWax-0005Ck-Kg@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 09 Jan 2008 09:47:31 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 08, 2008 at 04:06:10PM -0800, Andrew Morton wrote:
-> One hopes that doing a printk from within uart_suspend_port() will dtrt if
-> that port is (was?) being used as a console.
+> >> On Tue 2008-01-08 12:35:09, Miklos Szeredi wrote:
+> >>> From: Miklos Szeredi <mszeredi@suse.cz>
+> >>>
+> >>> Use FS_SAFE for "fuse" fs type, but not for "fuseblk".
+> >>>
+> >>> FUSE was designed from the beginning to be safe for unprivileged users.  This
+> >>> has also been verified in practice over many years.  In addition unprivileged
+> >> Eh? So 'kill -9 no longer works' and 'suspend no longer works' is not
+> >> considered important enough to even mention?
+> > 
+> > No.  Because in practice they don't seem to matter.  Also because
+> > there's no way in which fuse could be done differently to address
+> > these issues.
+> 
+> Could you clarify, please? I hope I'm getting the wrong end of the stick
+> - it sounds to me like you and Pavel are saying that this patch breaks
+> suspending to ram (and hibernating?) but you want to push it anyway
+> because you haven't been able to produce an instance, don't think
+> suspending or hibernating matter and couldn't fix fuse anyway?
 
-Well, the preceding code shuts down the console side if the port is a
-console - so this printk should never make it back to the UART in that
-case.
+This patch has nothing to do with suspend or hibernate.  What this
+patchset does, is help get rid of fusermount, a suid-root mount
+helper.  It also opens up new possibilities, which are not fuse
+related.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Fuse has bad interactions with the freezer, theoretically.  In
+practice, I remember just one bug report (that sparked off this whole
+"do we need freezer, or don't we" flamefest), that actually got fixed
+fairly quickly, ...maybe.  Rafael probably remembers better.
+
+> > The 'kill -9' thing is basically due to VFS level locking not being
+> > interruptible.  It could be changed, but I'm not sure it's worth it.
+> > 
+> > For the suspend issue, there are also no easy solutions.
+> 
+> What are the non-easy solutions?
+
+The ability to freeze tasks in uninterruptible sleep, or more
+generally at any preempt point (except when drivers are poking
+hardware).
+
+I know this doesn't play well with userspace hibernate, and I don't
+think it can be resolved without going the kexec way.
+
+Miklos
