@@ -1,116 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753959AbYAIJKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754210AbYAIJMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753959AbYAIJKb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 04:10:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbYAIJKP
+	id S1754210AbYAIJMR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 04:12:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbYAIJMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 04:10:15 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35116 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750796AbYAIJKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 04:10:12 -0500
-Date: Wed, 9 Jan 2008 10:09:56 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: More breakage in native_rdtsc out of line in git-x86
-Message-ID: <20080109090956.GA14274@elte.hu>
-References: <20080109035534.GA30321@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080109035534.GA30321@basil.nowhere.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 9 Jan 2008 04:12:06 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:31580
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752093AbYAIJMD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 04:12:03 -0500
+Message-Id: <47849E00.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Wed, 09 Jan 2008 09:12:16 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <mingo@elte.hu>, <pq@iki.fi>, <torvalds@linux-foundation.org>,
+       "Dave Airlie" <airlied@linux.ie>, <hch@lst.de>, <ak@suse.de>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Revert "x86: optimize page faults like all other
+	achitectures and kill notifier cruft"
+References: <alpine.DEB.0.82.0801090226240.9570@skynet.skynet.ie>
+ <20080108190611.3b9c0760.akpm@linux-foundation.org>
+ <alpine.DEB.0.82.0801090308230.9570@skynet.skynet.ie>
+ <20080108192951.a4dc394f.akpm@linux-foundation.org>
+In-Reply-To: <20080108192951.a4dc394f.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="=__PartC4E20AE0.6__="
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a MIME message. If you are reading this text, you may want to 
+consider changing to a mail reader or gateway that understands how to 
+properly handle MIME multipart messages.
 
-* Andi Kleen <andi@firstfloor.org> wrote:
+--=__PartC4E20AE0.6__=
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Unfortunately simply adding __vsyscall_fn to native_read_tsc doesn't 
-> work -- causes early kernel faults like
-> 
-> PANIC: early exception rip ffffffffff600105 error 10 cr2 ffffffffff600105
-> Pid: 0, comm: swapper Not tainted 2.6.24-rc6 #58
-> 
-> Call Trace:
->  [<ffffffff80211dec>] native_sched_clock+0x9/0x3f
->  [<ffffffff8022b758>] init_idle+0x33/0xd1
->  [<ffffffff80825449>] sched_init+0x26d/0x283
->  [<ffffffff80815899>] start_kernel+0x10b/0x2bd
->  [<ffffffff80815114>] _sinittext+0x114/0x11b
-> 
-> Not sure why that is -- in theory the vsyscall functions should be 
-> callable from the main kernel. Might be a binutils problem or another 
-> code regression.
+>That change has been in the mainline tree for nearly three months.  All
+>these affected parties have left it until the eve of 2.6.24 to actually
+>tell us about it.  This is causing me sympathy problems :(
 
-nope, it's a 64-bit setup/dependency bug/problem: the vsyscall mappings 
-are installed via an __initcall, and that's too late for early use. The 
-combo patch below fixed the crash for me, does it work on your box too?
+Not true - I complained about this on Dec 3rd (attached), with the result =
+of
+not getting a response from anyone but Andi (agreeing to restore these
+notifiers).
 
-	Ingo
+Jan
 
-Index: linux-x86.q/arch/x86/kernel/rtc.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/rtc.c
-+++ linux-x86.q/arch/x86/kernel/rtc.c
-@@ -195,7 +195,7 @@ int update_persistent_clock(struct times
- 	return set_rtc_mmss(now.tv_sec);
- }
- 
--unsigned long long native_read_tsc(void)
-+unsigned long long __vsyscall_fn native_read_tsc(void)
- {
- 	DECLARE_ARGS(val, low, high);
- 
-Index: linux-x86.q/arch/x86/kernel/setup_64.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/setup_64.c
-+++ linux-x86.q/arch/x86/kernel/setup_64.c
-@@ -46,6 +46,7 @@
- #include <asm/mtrr.h>
- #include <asm/uaccess.h>
- #include <asm/system.h>
-+#include <asm/vsyscall.h>
- #include <asm/io.h>
- #include <asm/smp.h>
- #include <asm/msr.h>
-@@ -464,6 +465,7 @@ void __init setup_arch(char **cmdline_p)
- #endif
- 	reserve_crashkernel();
- 	paging_init();
-+	map_vsyscall();
- 
- 	early_quirks();
- 
-Index: linux-x86.q/arch/x86/kernel/vsyscall_64.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/vsyscall_64.c
-+++ linux-x86.q/arch/x86/kernel/vsyscall_64.c
-@@ -319,7 +319,7 @@ cpu_vsyscall_notifier(struct notifier_bl
- 	return NOTIFY_DONE;
- }
- 
--static void __init map_vsyscall(void)
-+void __init map_vsyscall(void)
- {
- 	extern char __vsyscall_0;
- 	unsigned long physaddr_page0 = __pa_symbol(&__vsyscall_0);
-@@ -335,7 +335,6 @@ static int __init vsyscall_init(void)
- 	BUG_ON((unsigned long) &vtime != VSYSCALL_ADDR(__NR_vtime));
- 	BUG_ON((VSYSCALL_ADDR(0) != __fix_to_virt(VSYSCALL_FIRST_PAGE)));
- 	BUG_ON((unsigned long) &vgetcpu != VSYSCALL_ADDR(__NR_vgetcpu));
--	map_vsyscall();
- #ifdef CONFIG_SYSCTL
- 	register_sysctl_table(kernel_root_table2);
- #endif
+--=__PartC4E20AE0.6__=
+Content-Type: message/rfc822
+
+Date: Mon, 03 Dec 2007 13:31:07 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <akpm@linux-foundation.org>,<torvalds@linux-foundation.org>,
+	<hch@lst.de>
+Cc: <ananth@in.ibm.com>,<prasanna@in.ibm.com>,
+	<anil.s.keshavamurthy@intel.com>, <ak@suse.de>,
+	<linux-arch@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: x86: optimize page faults like all other achitectures and
+	kill notifier cruft
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+Ever since I started to try to get at least some fundamental infrastructure=
+
+pieces merged for using NLKD on Linux I was told that direct calls out of
+exception handlers for the sake of an individual (and perhaps even small)
+sub-system is undesirable.
+
+Making the exception notifiers report the right (correct) information =
+(and,
+specific to x86, ensuring they get called in the right place) was one of =
+the
+fundamental things, and just now I see that this is being reverted for (in
+my eyes) no good reason: Instead of adding direct calls to x86, all the
+other architectures should have followed the notifier model in order for
+the infrastructure to be usable by external components, especially if
+these aren't allowed into the kernel.
+
+Am I to conclude that replacing direct calls elsewhere in the tree (in =
+order
+to e.g. avoid all kinds of small sub-components leaving their footprint in
+core files like kernel/fork.c) is no longer a desirable goal, thereby =
+making
+it almost impossible to ever host a kernel debugger *without* having to
+patch core files.
+
+Thanks, Jan
+
+
+--=__PartC4E20AE0.6__=--
