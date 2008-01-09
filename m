@@ -1,108 +1,294 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbYAIDf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbYAIDiH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756176AbYAIDf3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 22:35:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbYAIDfU
+	id S1755868AbYAIDiH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 22:38:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbYAIDhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 22:35:20 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45366 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752448AbYAIDfR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 22:35:17 -0500
-Date: Tue, 8 Jan 2008 19:33:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: mingo@elte.hu, kyle@mcmartin.ca, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@redhat.com
-Subject: Re: [PATCH] call sysrq_timer_list_show from a workqueue
-Message-Id: <20080108193350.ffc94e44.akpm@linux-foundation.org>
-In-Reply-To: <200801091420.19273.rusty@rustcorp.com.au>
-References: <20080108063113.GA21287@fattire.cabal.ca>
-	<200801082250.06828.rusty@rustcorp.com.au>
-	<20080108162159.9f37d856.akpm@linux-foundation.org>
-	<200801091420.19273.rusty@rustcorp.com.au>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Jan 2008 22:37:54 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:33771 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752349AbYAIDhx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 22:37:53 -0500
+Date: Wed, 9 Jan 2008 03:37:50 +0000 (GMT)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: Kevin Winchester <kjwinchester@gmail.com>
+cc: dri-devel@lists.sourceforge.net, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [patch 1/1] Convert drivers in drivers/char/drm to use
+ .unlocked_ioctl
+In-Reply-To: <20080109005443.227306069@gmail.com>
+Message-ID: <alpine.DEB.0.82.0801090336000.9570@skynet.skynet.ie>
+References: <20080109005416.039551758@gmail.com>
+ <20080109005443.227306069@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Jan 2008 14:20:18 +1100 Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-> On Wednesday 09 January 2008 11:21:59 Andrew Morton wrote:
-> > The string handling in here has become a bit scruffy.
+> The drm drivers in this patch all used drm_ioctl to perform their
+> ioctl calls.  The common function is converted to use lock_kernel()
+> and unlock_kernel() and the drivers are converted to use .unlocked_ioctl
 > 
-> Yes, that patch also evokes a const warning.  Fixed below.
 
-No patch was included.
+NAK
 
->  I assume you've
-> queued these because you're thinking of applying them before 2.6.24?  I'd say
-> only modules-de-mutex-more-symbol-lookup-paths-in-the-module-code.patch
-> warrants that (the other is unlikely and not a regression).
+I've started looking at this already in the drm git tree, I'm going to 
+provide both locked and unlocked paths for drivers to choose, as we need 
+to audit the drivers on a per-driver basis, the other option is to provide 
+wrappers in each driver to do the lock/unlock kernel and leave drm_ioctl 
+alone..
 
-Actually I was thinking 2.6.25 on both.
+I'll take a look kmalloc failure case sounds like a bug though..
 
-<looks>
+Dave.
 
-   Kyle McMartin reports sysrq_timer_list_show() can hit the module
-   mutex; these paths don't need to though, since we long ago changed all
-   the module list manipulation to occur via stop_machine().
-
-   Disabling preemption is enough.
-
-Ah.  sysrq_timer_list_show() is called from interrupt.
-
-<fixes changelog, thwaps its author>
-
-OK, 2.6.24 seems reasonable.
-
-> > afacit the `namebuf[KSYM_NAME_LEN - 1] = 0;' would be unneeded if we were
-> > to use strlcpy() and I suspect the `namebuf[0] = 0;' isn't needed either.
-> >
-> > And the use of strlcpy() means we don't need to subtract 1 from
-> > KSYM_NAME_LEN and we don't need to fret about weird strncpy semantics when
-> > the input string is too large.
-> >
-> >
-> > And the fact that incoming arg `namebuf' MUST point at a
-> > KSYM_NAME_LEN-sized buffer could be better communicated by using a
-> > dedicated struct for this, or by giving the arg a type of `char
-> > namebuf[KSYM_NAME_LEN]'.  Or by adding a comment. Or by just ignoring
-> > me and doing something more useful.
+> Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
 > 
-> Or better, rework all the name lookup interfaces, rather than having: 
+> ---
 > 
-> struct module *module_text_address(unsigned long addr);
-> struct module *__module_text_address(unsigned long addr);
-> int is_module_address(unsigned long addr);
-> int module_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
-> 			char *name, char *module_name, int *exported);
-> char *module_address_lookup(unsigned long addr,
-> 			    unsigned long *symbolsize,
-> 			    unsigned long *offset,
-> 			    char **modname,
-> 			    char *namebuf);
-> int lookup_module_symbol_name(unsigned long addr, char *symname);
-> int lookup_module_symbol_attrs(unsigned long addr, unsigned long *size,
-> 			       unsigned long *offset, char *modname, char *name);
-> unsigned long module_kallsyms_lookup_name(const char *name);
+> I also noted that in the failed kmalloc case in drm_ioctl(), the function
+> immediately returns -ENOMEM, rather than following the error path that
+> calls atomic_dec(&dev->ioctl_count);.  I'm not sure if the ioctl_count
+> is just not important in the -ENOMEM case, or if this is a bug.
 > 
-> unsigned long kallsyms_lookup_name(const char *name);
-> extern int kallsyms_lookup_size_offset(unsigned long addr,
-> 				  unsigned long *symbolsize,
-> 				  unsigned long *offset);
-> const char *kallsyms_lookup(unsigned long addr,
-> 			    unsigned long *symbolsize,
-> 			    unsigned long *offset,
-> 			    char **modname, char *namebuf);
-> extern int sprint_symbol(char *buffer, unsigned long address);
-> extern void __print_symbol(const char *fmt, unsigned long address);
-> int lookup_symbol_name(unsigned long addr, char *symname);
-> int lookup_symbol_attrs(unsigned long addr, unsigned long *size,
-> 		        unsigned long *offset, char *modname, char *name);
-
-Yes, it could all do with a revisit.
+>  drivers/char/drm/drmP.h       |    3 +--
+>  drivers/char/drm/drm_drv.c    |   10 ++++++----
+>  drivers/char/drm/i810_dma.c   |    2 +-
+>  drivers/char/drm/i810_drv.c   |    2 +-
+>  drivers/char/drm/i830_dma.c   |    2 +-
+>  drivers/char/drm/i830_drv.c   |    2 +-
+>  drivers/char/drm/i915_drv.c   |    2 +-
+>  drivers/char/drm/mga_drv.c    |    2 +-
+>  drivers/char/drm/r128_drv.c   |    2 +-
+>  drivers/char/drm/radeon_drv.c |    2 +-
+>  drivers/char/drm/savage_drv.c |    2 +-
+>  drivers/char/drm/sis_drv.c    |    2 +-
+>  drivers/char/drm/tdfx_drv.c   |    2 +-
+>  drivers/char/drm/via_drv.c    |    2 +-
+>  14 files changed, 19 insertions(+), 18 deletions(-)
+> 
+> Index: v2.6.24-rc7/drivers/char/drm/drmP.h
+> ===================================================================
+> --- v2.6.24-rc7.orig/drivers/char/drm/drmP.h
+> +++ v2.6.24-rc7/drivers/char/drm/drmP.h
+> @@ -833,8 +833,7 @@ static inline int drm_mtrr_del(int handl
+>  				/* Driver support (drm_drv.h) */
+>  extern int drm_init(struct drm_driver *driver);
+>  extern void drm_exit(struct drm_driver *driver);
+> -extern int drm_ioctl(struct inode *inode, struct file *filp,
+> -		     unsigned int cmd, unsigned long arg);
+> +extern long drm_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
+>  extern long drm_compat_ioctl(struct file *filp,
+>  			     unsigned int cmd, unsigned long arg);
+>  extern int drm_lastclose(struct drm_device *dev);
+> Index: v2.6.24-rc7/drivers/char/drm/drm_drv.c
+> ===================================================================
+> --- v2.6.24-rc7.orig/drivers/char/drm/drm_drv.c
+> +++ v2.6.24-rc7/drivers/char/drm/drm_drv.c
+> @@ -438,7 +438,6 @@ static int drm_version(struct drm_device
+>  /**
+>   * Called whenever a process performs an ioctl on /dev/drm.
+>   *
+> - * \param inode device inode.
+>   * \param file_priv DRM file private.
+>   * \param cmd command.
+>   * \param arg user argument.
+> @@ -447,8 +446,7 @@ static int drm_version(struct drm_device
+>   * Looks up the ioctl function in the ::ioctls table, checking for root
+>   * previleges if so required, and dispatches to the respective function.
+>   */
+> -int drm_ioctl(struct inode *inode, struct file *filp,
+> -	      unsigned int cmd, unsigned long arg)
+> +long drm_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+>  {
+>  	struct drm_file *file_priv = filp->private_data;
+>  	struct drm_device *dev = file_priv->head->dev;
+> @@ -458,6 +456,7 @@ int drm_ioctl(struct inode *inode, struc
+>  	int retcode = -EINVAL;
+>  	char *kdata = NULL;
+>  
+> +	lock_kernel();
+>  	atomic_inc(&dev->ioctl_count);
+>  	atomic_inc(&dev->counts[_DRM_STAT_IOCTLS]);
+>  	++file_priv->ioctl_count;
+> @@ -494,8 +493,10 @@ int drm_ioctl(struct inode *inode, struc
+>  	} else {
+>  		if (cmd & (IOC_IN | IOC_OUT)) {
+>  			kdata = kmalloc(_IOC_SIZE(cmd), GFP_KERNEL);
+> -			if (!kdata)
+> +			if (!kdata) {
+> +				unlock_kernel();
+>  				return -ENOMEM;
+> +			}
+>  		}
+>  
+>  		if (cmd & IOC_IN) {
+> @@ -520,6 +521,7 @@ int drm_ioctl(struct inode *inode, struc
+>  	atomic_dec(&dev->ioctl_count);
+>  	if (retcode)
+>  		DRM_DEBUG("ret = %x\n", retcode);
+> +	unlock_kernel();
+>  	return retcode;
+>  }
+>  
+> Index: v2.6.24-rc7/drivers/char/drm/i810_dma.c
+> ===================================================================
+> --- v2.6.24-rc7.orig/drivers/char/drm/i810_dma.c
+> +++ v2.6.24-rc7/drivers/char/drm/i810_dma.c
+> @@ -115,7 +115,7 @@ static int i810_mmap_buffers(struct file
+>  static const struct file_operations i810_buffer_fops = {
+>  	.open = drm_open,
+>  	.release = drm_release,
+> -	.ioctl = drm_ioctl,
+> +	.unlocked_ioctl = drm_ioctl,
+>  	.mmap = i810_mmap_buffers,
+>  	.fasync = drm_fasync,
+>  };
+> Index: v2.6.24-rc7/drivers/char/drm/i810_drv.c
+> ===================================================================
+> --- v2.6.24-rc7.orig/drivers/char/drm/i810_drv.c
+> +++ v2.6.24-rc7/drivers/char/drm/i810_drv.c
+> @@ -59,7 +59,7 @@ static struct drm_driver driver = {
+>  		 .owner = THIS_MODULE,
+>  		 .open = drm_open,
+>  		 .release = drm_release,
+> -		 .ioctl = drm_ioctl,
+> +		 .unlocked_ioctl = drm_ioctl,
+>  		 .mmap = drm_mmap,
+>  		 .poll = drm_poll,
+>  		 .fasync = drm_fasync,
+> Index: v2.6.24-rc7/drivers/char/drm/i830_dma.c
+> ===================================================================
+> --- v2.6.24-rc7.orig/drivers/char/drm/i830_dma.c
+> +++ v2.6.24-rc7/drivers/char/drm/i830_dma.c
+> @@ -117,7 +117,7 @@ static int i830_mmap_buffers(struct file
+>  static const struct file_operations i830_buffer_fops = {
+>  	.open = drm_open,
+>  	.release = drm_release,
+> -	.ioctl = drm_ioctl,
+> +	.unlocked_ioctl = drm_ioctl,
+>  	.mmap = i830_mmap_buffers,
+>  	.fasync = drm_fasync,
+>  };
+> Index: v2.6.24-rc7/drivers/char/drm/i830_drv.c
+> ===================================================================
+> --- v2.6.24-rc7.orig/drivers/char/drm/i830_drv.c
+> +++ v2.6.24-rc7/drivers/char/drm/i830_drv.c
+> @@ -70,7 +70,7 @@ static struct drm_driver driver = {
+>  		 .owner = THIS_MODULE,
+>  		 .open = drm_open,
+>  		 .release = drm_release,
+> -		 .ioctl = drm_ioctl,
+> +		 .unlocked_ioctl = drm_ioctl,
+>  		 .mmap = drm_mmap,
+>  		 .poll = drm_poll,
+>  		 .fasync = drm_fasync,
+> Index: v2.6.24-rc7/drivers/char/drm/i915_drv.c
+> ===================================================================
+> --- v2.6.24-rc7.orig/drivers/char/drm/i915_drv.c
+> +++ v2.6.24-rc7/drivers/char/drm/i915_drv.c
+> @@ -64,7 +64,7 @@ static struct drm_driver driver = {
+>  		 .owner = THIS_MODULE,
+>  		 .open = drm_open,
+>  		 .release = drm_release,
+> -		 .ioctl = drm_ioctl,
+> +		 .unlocked_ioctl = drm_ioctl,
+>  		 .mmap = drm_mmap,
+>  		 .poll = drm_poll,
+>  		 .fasync = drm_fasync,
+> Index: v2.6.24-rc7/drivers/char/drm/mga_drv.c
+> ===================================================================
+> --- v2.6.24-rc7.orig/drivers/char/drm/mga_drv.c
+> +++ v2.6.24-rc7/drivers/char/drm/mga_drv.c
+> @@ -67,7 +67,7 @@ static struct drm_driver driver = {
+>  		 .owner = THIS_MODULE,
+>  		 .open = drm_open,
+>  		 .release = drm_release,
+> -		 .ioctl = drm_ioctl,
+> +		 .unlocked_ioctl = drm_ioctl,
+>  		 .mmap = drm_mmap,
+>  		 .poll = drm_poll,
+>  		 .fasync = drm_fasync,
+> Index: v2.6.24-rc7/drivers/char/drm/r128_drv.c
+> ===================================================================
+> --- v2.6.24-rc7.orig/drivers/char/drm/r128_drv.c
+> +++ v2.6.24-rc7/drivers/char/drm/r128_drv.c
+> @@ -62,7 +62,7 @@ static struct drm_driver driver = {
+>  		 .owner = THIS_MODULE,
+>  		 .open = drm_open,
+>  		 .release = drm_release,
+> -		 .ioctl = drm_ioctl,
+> +		 .unlocked_ioctl = drm_ioctl,
+>  		 .mmap = drm_mmap,
+>  		 .poll = drm_poll,
+>  		 .fasync = drm_fasync,
+> Index: v2.6.24-rc7/drivers/char/drm/radeon_drv.c
+> ===================================================================
+> --- v2.6.24-rc7.orig/drivers/char/drm/radeon_drv.c
+> +++ v2.6.24-rc7/drivers/char/drm/radeon_drv.c
+> @@ -85,7 +85,7 @@ static struct drm_driver driver = {
+>  		 .owner = THIS_MODULE,
+>  		 .open = drm_open,
+>  		 .release = drm_release,
+> -		 .ioctl = drm_ioctl,
+> +		 .unlocked_ioctl = drm_ioctl,
+>  		 .mmap = drm_mmap,
+>  		 .poll = drm_poll,
+>  		 .fasync = drm_fasync,
+> Index: v2.6.24-rc7/drivers/char/drm/savage_drv.c
+> ===================================================================
+> --- v2.6.24-rc7.orig/drivers/char/drm/savage_drv.c
+> +++ v2.6.24-rc7/drivers/char/drm/savage_drv.c
+> @@ -50,7 +50,7 @@ static struct drm_driver driver = {
+>  		 .owner = THIS_MODULE,
+>  		 .open = drm_open,
+>  		 .release = drm_release,
+> -		 .ioctl = drm_ioctl,
+> +		 .unlocked_ioctl = drm_ioctl,
+>  		 .mmap = drm_mmap,
+>  		 .poll = drm_poll,
+>  		 .fasync = drm_fasync,
+> Index: v2.6.24-rc7/drivers/char/drm/sis_drv.c
+> ===================================================================
+> --- v2.6.24-rc7.orig/drivers/char/drm/sis_drv.c
+> +++ v2.6.24-rc7/drivers/char/drm/sis_drv.c
+> @@ -80,7 +80,7 @@ static struct drm_driver driver = {
+>  		 .owner = THIS_MODULE,
+>  		 .open = drm_open,
+>  		 .release = drm_release,
+> -		 .ioctl = drm_ioctl,
+> +		 .unlocked_ioctl = drm_ioctl,
+>  		 .mmap = drm_mmap,
+>  		 .poll = drm_poll,
+>  		 .fasync = drm_fasync,
+> Index: v2.6.24-rc7/drivers/char/drm/tdfx_drv.c
+> ===================================================================
+> --- v2.6.24-rc7.orig/drivers/char/drm/tdfx_drv.c
+> +++ v2.6.24-rc7/drivers/char/drm/tdfx_drv.c
+> @@ -48,7 +48,7 @@ static struct drm_driver driver = {
+>  		 .owner = THIS_MODULE,
+>  		 .open = drm_open,
+>  		 .release = drm_release,
+> -		 .ioctl = drm_ioctl,
+> +		 .unlocked_ioctl = drm_ioctl,
+>  		 .mmap = drm_mmap,
+>  		 .poll = drm_poll,
+>  		 .fasync = drm_fasync,
+> Index: v2.6.24-rc7/drivers/char/drm/via_drv.c
+> ===================================================================
+> --- v2.6.24-rc7.orig/drivers/char/drm/via_drv.c
+> +++ v2.6.24-rc7/drivers/char/drm/via_drv.c
+> @@ -62,7 +62,7 @@ static struct drm_driver driver = {
+>  		 .owner = THIS_MODULE,
+>  		 .open = drm_open,
+>  		 .release = drm_release,
+> -		 .ioctl = drm_ioctl,
+> +		 .unlocked_ioctl = drm_ioctl,
+>  		 .mmap = drm_mmap,
+>  		 .poll = drm_poll,
+>  		 .fasync = drm_fasync,
+> 
+> 
