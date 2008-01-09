@@ -1,88 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbYAIDGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbYAIDLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754027AbYAIDGx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 22:06:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbYAIDGq
+	id S1753510AbYAIDLT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 22:11:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbYAIDLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 22:06:46 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57393 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751091AbYAIDGp (ORCPT
+	Tue, 8 Jan 2008 22:11:10 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:60990 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751601AbYAIDLJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 22:06:45 -0500
-Date: Tue, 8 Jan 2008 19:06:11 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Airlie <airlied@linux.ie>
-Cc: torvalds@linux-foundation.org, hch@lst.de, ak@suse.de, pq@iki.fi,
-       jbeulich@novell.com, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Revert
- "x86: optimize page faults like all other achitectures and kill notifier cruft"
-Message-Id: <20080108190611.3b9c0760.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.0.82.0801090226240.9570@skynet.skynet.ie>
-References: <alpine.DEB.0.82.0801090226240.9570@skynet.skynet.ie>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 8 Jan 2008 22:11:09 -0500
+X-Sasl-enc: 0R98kMR1PIidFraxqpHn1zqAH+zgMEAyc7fi6ggbc550 1199848268
+Subject: Re: umount -l <path>, getcwd and /proc/<pid>/cwd inconsistent
+From: Ian Kent <raven@themaw.net>
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <1199675850.3156.15.camel@raven.themaw.net>
+References: <1199675850.3156.15.camel@raven.themaw.net>
+Content-Type: text/plain
+Date: Wed, 09 Jan 2008 12:10:30 +0900
+Message-Id: <1199848230.23076.14.camel@raven.themaw.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Jan 2008 02:34:46 +0000 (GMT) Dave Airlie <airlied@linux.ie> wrote:
-
+On Mon, 2008-01-07 at 12:17 +0900, Ian Kent wrote:
 > 
-> [This an initial RFC but I'd like to have this patch in before 2.6.24 goes 
-> final as it really breaks this useful feature]
+> Basically, from a bash shell, setting working directory to a mounted
+> directory all is fine with "pwd" and "/proc/<pid>/cwd". Following a
+> "umount - l" on the mount "pwd" continues to return the expected string
+> but "/proc/<pid>/cwd" returns an empty string.
 > 
-> mmiotrace the MMIO access tracer used to reverse engineer binary blobs
-> used this notifier interface and is planned on being pushed upstream.
-> 
-> Having users able to just use the tracer module without having to rebuild 
-> their kernel to add in a page fault handler hack means we get a lot 
-> greater coverage for reverse engineering efforts.
+> What I'm really after is why this happens because sys_getcwd and
+> proc_pid_readlink appear to do essentially the same thing to get the
+> string.
 
-Sorry, but that's a really really small benefit.  This very small number of
-fairly (or very) technical users will be able to work out a way of getting
-this to work in 2.6.24.  And in 2.6.25 with a merged mmiotrace we can do
-something different.
+I think I understand what happens here now.
 
-It's a modest convenience to a very small number of people.  And the cost? 
-Multiple functions calls and multiple cachelines hit for every pagefault
-on, what?  Tens of millions of machines?
+Basically, following a "umount -l", anything that calls d_path from
+within the unlinked mount and doesn't have a d_name dentry ops method
+can no longer walk back up to the root to get the path.
 
-Plus the code which is getting restored isn't even very good.  For every
-pagefault it populates a struct on the stack, passes that around for a
-while, does a bit of RCU stuff only to find that there was nothing to do. 
-Surely we should at least be doing something along the lines of
+Of course this makes perfect sense as the mount has been unlinked from
+the tree.
 
-	if (unlikely(notify_page_fault_chain.notifier_call != NULL)) {
-		all that crap
-	}
+But it can also prevent processes still using the mount from
+successfully running through to completion to release the mount. I
+expect this was never the intent of the functionality but I think it
+should be. Especially since the VFS appears to handle this really well
+otherwise.
 
+So, I'm after suggestions:
+Does anyone feel strongly that this case shouldn't be handled for some
+reason? Why?
+Does anyone have any suggestions about how this should be done?
+Does anyone have any concerns about what shouldn't be done to deal with
+this?
 
-But that's all speculation.  Has anyone actually measured the pagefault
-latency impact of this change?
+Ian
 
-> +/*
-> + * These are only here because kprobes.c wants them to implement a
-> + * blatant layering violation.  Will hopefully go away soon once all
-> + * architectures are updated.
-> + */
-> +static inline int register_page_fault_notifier(struct notifier_block *nb)
-> +{
-> +	return 0;
-> +}
-> +static inline int unregister_page_fault_notifier(struct notifier_block *nb)
-> +{
-> +	return 0;
-> +}
-> +
-
-And this doesn't look very good either.  For how long did this fixme remain
-unfixed?
-
-
-So I'd suggest that we leave things as they are for 2.6.24 - mmiotrace
-people will work something out, I'm sure.  For 2.6.25 if we merge mmiotrace
-we can look at doing something which is vaguely efficient and tasteful.
 
