@@ -1,40 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbYAIOVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754388AbYAIOYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754134AbYAIOVj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 09:21:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbYAIOVc
+	id S1754388AbYAIOYR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 09:24:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbYAIOYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 09:21:32 -0500
-Received: from ns2.suse.de ([195.135.220.15]:60345 "EHLO mx2.suse.de"
+	Wed, 9 Jan 2008 09:24:08 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:60853 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750828AbYAIOVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 09:21:32 -0500
+	id S1751157AbYAIOYH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 09:24:07 -0500
 From: Andi Kleen <ak@suse.de>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] Revert "x86: optimize page faults like all other achitectures and kill notifier cruft"
-Date: Wed, 9 Jan 2008 15:23:34 +0100
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 00 of 10] x86: unify asm/pgtable.h
+Date: Wed, 9 Jan 2008 15:26:11 +0100
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: hch@lst.de, airlied@linux.ie, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, pq@iki.fi, jbeulich@novell.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org
-References: <alpine.DEB.0.82.0801090226240.9570@skynet.skynet.ie> <20080109071727.GA10695@lst.de> <20080108.232223.211829980.davem@davemloft.net>
-In-Reply-To: <20080108.232223.211829980.davem@davemloft.net>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jan Beulich <jbeulich@novell.com>
+References: <20080109002803.GA3732@elte.hu> <20080109021124.GH25945@bingen.suse.de> <20080109104711.GA14041@elte.hu>
+In-Reply-To: <20080109104711.GA14041@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801091523.35845.ak@suse.de>
+Message-Id: <200801091526.12040.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 09 January 2008 11:47:11 Ingo Molnar wrote:
+> * Andi Kleen <ak@suse.de> wrote:
+> > There's one Jan pointed out: iounmap does not subtract the guard page
+> > size so it ends up resetting one page too much. That is probably what
+> > causes your problem. But again you should be passing in G in the first
+> > place.
+> >
+> > -Andi
+> >
+> > Here was Jan's patch; it incidently fixes the G problem too
+>
+> thanks, applied. I changed:
 
-> You can set a kprobe on the x86 fault handler to do things like
-> mmiotrace.
-
-That would mean that if the kprobe faults it goes into an endless loop.
-Most of do_page_fault() is not really safe for kprobes.
+FWIW Without the reference counting fixes in the cpa series that will
+likely cause leaked small page mappings at boot because the reference
+counting cannot deal with it.
 
 -Andi
-
