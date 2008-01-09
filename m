@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758450AbYAIXfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757795AbYAIXgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758450AbYAIXfw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 18:35:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757045AbYAIXbJ
+	id S1757795AbYAIXgO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 18:36:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755273AbYAIXbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 18:31:09 -0500
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:37804 "EHLO
+	Wed, 9 Jan 2008 18:31:11 -0500
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:37810 "EHLO
 	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756080AbYAIXay (ORCPT
+	with ESMTP id S1756133AbYAIXay (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 9 Jan 2008 18:30:54 -0500
-Message-Id: <20080109233043.974444280@goodmis.org>
+Message-Id: <20080109233044.934722953@goodmis.org>
 References: <20080109232914.676624725@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 Jan 2008 18:29:25 -0500
+Date: Wed, 09 Jan 2008 18:29:31 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -27,50 +27,78 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
        Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [RFC PATCH 11/22 -v2] Reset the tracer when started
-Content-Disposition: inline; filename=mcount-tracer-clear-buffer.patch
+Subject: [RFC PATCH 17/22 -v2] Add timestamps to tracer
+Content-Disposition: inline; filename=mcount-tracer-timestamp.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch resets the trace when it is started by the user.
+Add timestamps to trace entries.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- lib/tracing/tracer.c |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ lib/tracing/tracer.c |   16 ++++++++++++++++
+ lib/tracing/tracer.h |    1 +
+ 2 files changed, 17 insertions(+)
 
 Index: linux-compile-i386.git/lib/tracing/tracer.c
 ===================================================================
---- linux-compile-i386.git.orig/lib/tracing/tracer.c	2008-01-09 14:14:02.000000000 -0500
-+++ linux-compile-i386.git/lib/tracing/tracer.c	2008-01-09 15:17:36.000000000 -0500
-@@ -78,6 +78,16 @@ static notrace void trace_function(const
- 	raw_local_irq_restore(flags);
- }
+--- linux-compile-i386.git.orig/lib/tracing/tracer.c	2008-01-09 14:16:05.000000000 -0500
++++ linux-compile-i386.git/lib/tracing/tracer.c	2008-01-09 15:17:27.000000000 -0500
+@@ -19,12 +19,18 @@
+ #include <linux/percpu.h>
+ #include <linux/debugfs.h>
+ #include <linux/kallsyms.h>
++#include <linux/clocksource.h>
+ #include <linux/uaccess.h>
+ #include <linux/mcount.h>
  
-+static notrace void mctracer_reset(struct mctracer_trace *tr)
+ #include "tracer.h"
+ #include "tracer_interface.h"
+ 
++static inline notrace cycle_t now(void)
 +{
-+	int cpu;
-+
-+	for_each_online_cpu(cpu) {
-+		tr->trace_idx[cpu] = 0;
-+		atomic_set(&tr->underrun[cpu], 0);
-+	}
++	return get_monotonic_cycles();
 +}
 +
- #ifdef CONFIG_DEBUG_FS
- enum trace_iterator {
- 	TRACE_ITER_SYM_ONLY	= 1,
-@@ -324,6 +334,10 @@ static ssize_t mctracer_ctrl_write(struc
+ static struct mctracer_trace mctracer_trace;
+ static DEFINE_PER_CPU(struct mctracer_trace_cpu, mctracer_trace_cpu);
  
- 	val = !!simple_strtoul(buf, NULL, 10);
+@@ -57,6 +63,7 @@ mctracer_add_trace_entry(struct mctracer
+ 	entry->ip	 = ip;
+ 	entry->parent_ip = parent_ip;
+ 	entry->pid	 = tsk->pid;
++	entry->t	 = now();
+ 	memcpy(entry->comm, tsk->comm, TASK_COMM_LEN);
+ }
  
-+	/* When starting a new trace, reset the buffers */
-+	if (val)
-+		mctracer_reset(tr);
+@@ -240,6 +247,15 @@ static int s_show(struct seq_file *m, vo
+ 	if (iter->ent == NULL) {
+ 		seq_printf(m, "mctracer:\n");
+ 	} else {
++		unsigned long long t;
++		unsigned long usec_rem;
++		unsigned long secs;
 +
- 	if (tr->ctrl ^ val) {
- 		if (val)
- 			register_mcount_function(trace_function);
++		t = cycles_to_usecs(iter->ent->t);
++		usec_rem = do_div(t, 1000000ULL);
++		secs = (unsigned long)t;
++
++		seq_printf(m, "[%5lu.%06lu] ", secs, usec_rem);
+ 		seq_printf(m, "CPU %d: ", iter->cpu);
+ 		seq_printf(m, "%s:%d ", iter->ent->comm, iter->ent->pid);
+ 		seq_print_ip_sym(m, iter->ent->ip, sym_only);
+Index: linux-compile-i386.git/lib/tracing/tracer.h
+===================================================================
+--- linux-compile-i386.git.orig/lib/tracing/tracer.h	2008-01-09 14:16:05.000000000 -0500
++++ linux-compile-i386.git/lib/tracing/tracer.h	2008-01-09 15:17:27.000000000 -0500
+@@ -5,6 +5,7 @@
+ #include <linux/sched.h>
+ 
+ struct mctracer_entry {
++	unsigned long long t;
+ 	unsigned long idx;
+ 	unsigned long ip;
+ 	unsigned long parent_ip;
 
 -- 
