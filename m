@@ -1,82 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752598AbYAIHPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752261AbYAIHSg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752598AbYAIHPx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 02:15:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751157AbYAIHPo
+	id S1752261AbYAIHSg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 02:18:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbYAIHS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 02:15:44 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38657 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750867AbYAIHPn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 02:15:43 -0500
-Date: Tue, 8 Jan 2008 23:15:07 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Fries <david@fries.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] system timer: fix crash in <100Hz system timer
-Message-Id: <20080108231507.ff34862f.akpm@linux-foundation.org>
-In-Reply-To: <20080105221653.GA10065@spacedout.fries.net>
-References: <20080105221653.GA10065@spacedout.fries.net>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 9 Jan 2008 02:18:29 -0500
+Received: from verein.lst.de ([213.95.11.210]:33965 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750824AbYAIHS2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 02:18:28 -0500
+Date: Wed, 9 Jan 2008 08:17:27 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Dave Airlie <airlied@linux.ie>
+Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       hch@lst.de, ak@suse.de, pq@iki.fi, jbeulich@novell.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Revert "x86: optimize page faults like all other achitectures and kill notifier cruft"
+Message-ID: <20080109071727.GA10695@lst.de>
+References: <alpine.DEB.0.82.0801090226240.9570@skynet.skynet.ie>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.0.82.0801090226240.9570@skynet.skynet.ie>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 5 Jan 2008 16:16:55 -0600 David Fries <david@fries.net> wrote:
+On Wed, Jan 09, 2008 at 02:34:46AM +0000, Dave Airlie wrote:
+> 
+> [This an initial RFC but I'd like to have this patch in before 2.6.24 goes 
+> final as it really breaks this useful feature]
+> 
+> mmiotrace the MMIO access tracer used to reverse engineer binary blobs
+> used this notifier interface and is planned on being pushed upstream.
+> 
+> Having users able to just use the tracer module without having to rebuild 
+> their kernel to add in a page fault handler hack means we get a lot 
+> greater coverage for reverse engineering efforts.
+> 
+> Signed-off-by: David Airlie <airlied@linux.ie>
+> 
+> This reverts commit 74a0b5762713a26496db72eac34fbbed46f20fce.
+> Conflicts:
 
-> --- a/kernel/time.c
-> +++ b/kernel/time.c
-> @@ -565,7 +565,11 @@ EXPORT_SYMBOL(jiffies_to_timeval);
->  clock_t jiffies_to_clock_t(long x)
->  {
->  #if (TICK_NSEC % (NSEC_PER_SEC / USER_HZ)) == 0
-> +	#if HZ < USER_HZ
-> +	return x * (USER_HZ / HZ);
-> +	#else
->  	return x / (HZ / USER_HZ);
-> +	#endif
->  #else
->  	u64 tmp = (u64)x * TICK_NSEC;
->  	do_div(tmp, (NSEC_PER_SEC / USER_HZ));
-> @@ -598,7 +602,12 @@ EXPORT_SYMBOL(clock_t_to_jiffies);
->  u64 jiffies_64_to_clock_t(u64 x)
->  {
->  #if (TICK_NSEC % (NSEC_PER_SEC / USER_HZ)) == 0
-> -	do_div(x, HZ / USER_HZ);
-> +	#if HZ < USER_HZ
-> +		x *= USER_HZ;
-> +		do_div(x, HZ);
-> +	#else
-> +		do_div(x, HZ / USER_HZ);
-> +	#endif
->  #else
-
-Somwhat off-topic:
-
-I guess HZ=USER_HZ is a not-uncommon case, and it's pretty silly calling
-do_div(x, 1) all the time.  How about we optimise that case?
-
-Perhaps there are other places...
-
-
---- a/kernel/time.c~speed-up-jiffies-conversion-functions-if-hz==user_hz
-+++ a/kernel/time.c
-@@ -618,8 +618,10 @@ u64 jiffies_64_to_clock_t(u64 x)
- # if HZ < USER_HZ
- 	x *= USER_HZ;
- 	do_div(x, HZ);
--# else
-+# elif HZ > USER_HZ
- 	do_div(x, HZ / USER_HZ);
-+# else
-+	/* Nothing to do */
- # endif
- #else
- 	/*
-_
+NACK.   If you want to do it you'll need a much better reason and an
+in-tree user.  And if you want to redo it it should be available for
+all platforms with a consistant API.
 
