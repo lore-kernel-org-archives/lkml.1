@@ -1,53 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbYAIRw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755723AbYAIRxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755449AbYAIRw1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 12:52:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbYAIRwR
+	id S1755723AbYAIRxq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 12:53:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbYAIRxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 12:52:17 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.155]:37102 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752306AbYAIRwQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 12:52:16 -0500
-Message-ID: <47850A03.5090805@ru.mvista.com>
-Date: Wed, 09 Jan 2008 20:53:07 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Wed, 9 Jan 2008 12:53:38 -0500
+Received: from ns.gsystems.sk ([62.176.172.50]:56106 "EHLO www.gsystems.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751152AbYAIRxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 12:53:37 -0500
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH] libata and starting/stopping ATAPI floppy devices
+Date: Wed, 9 Jan 2008 18:53:13 +0100
+User-Agent: KMail/1.9.7
+Cc: jgarzik@pobox.com, linux-ide@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+References: <200801051647.58866.linux@rainbow-software.org> <4784344C.5060208@gmail.com>
+In-Reply-To: <4784344C.5060208@gmail.com>
 MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/15] ide: move wait_hwif_ready() documentation in the
- right place
-References: <20080104212424.6978.93646.sendpatchset@localhost.localdomain> <20080104212439.6978.95269.sendpatchset@localhost.localdomain> <478508BD.9030307@ru.mvista.com>
-In-Reply-To: <478508BD.9030307@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+X-Length: 2472
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200801091853.15601.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, I wrote:
+On Wednesday 09 January 2008 03:41:16 Tejun Heo wrote:
+> Ondrej Zary wrote:
+> > Hello,
+> > I switched to libata drivers for my onboard PATA controller (PIIX4)
+> > recently. Everything works fine except that kernel tries to start not
+> > only my hard drive (sda) but also LS-120 floppy drive (sdb) which does
+> > not like it:
+> >
+> > sd 0:0:0:0: [sda] Starting disk
+> > ata1.00: configured for UDMA/33
+> > sd 0:0:0:0: [sda] 58633344 512-byte hardware sectors (30020 MB)
+> > sd 0:0:0:0: [sda] Write Protect is off
+> > sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
+> > support DPO or FUA
+> > sd 1:0:1:0: [sdb] Starting disk
+> > ata2.00: configured for UDMA/33
+> > ata2.01: configured for PIO2
+> > sd 1:0:1:0: [sdb] Result: hostbyte=0x00 driverbyte=0x08
+> > sd 1:0:1:0: [sdb] Sense Key : 0x2 [current]
+> > sd 1:0:1:0: [sdb] ASC=0x3a ASCQ=0x0
+> >
+> >
+> > The question is: is it correct? Or a patch like this should be applied?
+>
+> Yeah, looks good to me.  Please reformat the message w/ S-O-B.
+>
+> Acked-by: Tejun Heo <htejun@gmail.com>
 
->> * Move wait_hwif_ready() documentation before this function.
+Prevent libata from starting/stopping non-ATA devices (like ATAPI floppy 
+drives) as they don't seem to like it:
 
->> * Fix trailing whitespaces.
+sd 1:0:1:0: [sdb] Starting disk
+ata2.01: configured for PIO2
+sd 1:0:1:0: [sdb] Result: hostbyte=0x00 driverbyte=0x08
+sd 1:0:1:0: [sdb] Sense Key : 0x2 [current]
+sd 1:0:1:0: [sdb] ASC=0x3a ASCQ=0x0
 
->> * s/wait-for-busy/wait-for-non-busy/
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 
->> * Remove no longer valid comment about the current code behavior.
+--- linux-2.6.23-orig/drivers/ata/libata-scsi.c	2007-10-09 22:31:38.000000000 +0200
++++ linux-2.6.23-pentium/drivers/ata/libata-scsi.c	2008-01-05 15:50:16.000000000 +0100
+@@ -802,7 +802,8 @@
+ 
+ 	blk_queue_max_phys_segments(sdev->request_queue, LIBATA_MAX_PRD);
+ 
+-	sdev->manage_start_stop = 1;
++	if (dev->class == ATA_DEV_ATA)
++		sdev->manage_start_stop = 1;
+ 
+ 	if (dev)
+ 		ata_scsi_dev_config(sdev, dev);
 
->> * Docbook-ize it.
 
->> * Rename wait_hwif_ready() to ide_port_wait_ready().
-
->> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-
-    Oops, forgot to stamp:
-
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
-MBR, Sergei
+-- 
+Ondrej Zary
