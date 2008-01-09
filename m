@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756431AbYAIWDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbYAIWER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756431AbYAIWDS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 17:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbYAIWDG
+	id S1756669AbYAIWER (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 17:04:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbYAIWEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 17:03:06 -0500
-Received: from odyssey.analogic.com ([204.178.40.5]:1170 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753904AbYAIWDF convert rfc822-to-8bit (ORCPT
+	Wed, 9 Jan 2008 17:04:06 -0500
+Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:60959 "EHLO
+	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752651AbYAIWEF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 17:03:05 -0500
+	Wed, 9 Jan 2008 17:04:05 -0500
+Date: Wed, 9 Jan 2008 23:04:03 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: mingo@elte.hu, jason.wessel@windriver.com, tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org
+Subject: 67a385d9ac12e5940989362333b8fa8511e2ec37 in git-x86
+Message-ID: <20080109220403.GA18304@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 09 Jan 2008 22:02:03.0662 (UTC) FILETIME=[445B02E0:01C8530B]
-Content-class: urn:content-classes:message
-Subject: Re: uml and -regparm=3
-Date: Wed, 9 Jan 2008 17:01:52 -0500
-Message-ID: <Pine.LNX.4.61.0801091659060.29624@chaos.analogic.com>
-in-reply-to: <E1JCi3M-0006hO-7i@pomaz-ex.szeredi.hu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: uml and -regparm=3
-thread-index: AchTC0RkfidEhyu7RPOxa0k3Li/hWg==
-References: <E1JCi3M-0006hO-7i@pomaz-ex.szeredi.hu>
-From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-To: "Miklos Szeredi" <miklos@szeredi.hu>
-Cc: <jdike@addtoit.com>, <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>,
-       <user-mode-linux-devel@lists.sourceforge.net>
-Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 09 Jan 2008 21:57:54.0666 (UTC) FILETIME=[AFF13CA0:01C8530A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 9 Jan 2008, Miklos Szeredi wrote:
+ommit 67a385d9ac12e5940989362333b8fa8511e2ec37
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Wed Jan 9 13:31:08 2008 +0100
 
-> FASTCALL is defined empty in -mm, but UML is not compiled with
-> -mregparm=3 and so this breaks things (I noticed problems with
-> rwsem_down_write_failed).
->
-> Tried recompiling UML with -mregparm=3, but that resulted in a strange
-> failure immediately after startup:
->
-> |%Gÿÿÿÿÿÿ%@: Invalid argument
->
-> What's up?
->
-> Miklos
-> --
+    x86: fix up merge conflict
+    
+    fix up kgdb merge conflict.
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-UML gets linked with the 'C' runtime library. It doesn't
-pass parameters in registers unless you get the source and
-recompile the whole thing --and then you would have to
-recompile all your applications, too. Yikes!
+diff --git a/include/asm-x86/system.h b/include/asm-x86/system.h
+index d3c225b..72bbaff 100644
+--- a/include/asm-x86/system.h
++++ b/include/asm-x86/system.h
+@@ -63,7 +63,9 @@ extern struct task_struct *FASTCALL(__switch_to(struct task_struct *prev,
+ 
+ /* Save restore flags to clear handle leaking NT */
+ #define switch_to(prev, next, last) \
+-       asm volatile(SAVE_CONTEXT                                                   \
++       asm volatile(".globl __switch_to_begin\n\t"                     \
++            "__switch_to_begin:\n\t"                           \
++            SAVE_CONTEXT                                       \
+             "movq %%rsp,%P[threadrsp](%[prev])\n\t" /* save
 
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
+AK: 
 
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+Can't remember how often I reject similar patches. They usually point
+to someone implementing backtraces wrong.
 
-Thank you.
+Anyways, the label seems to be completely unused in the current kgdb
+code the change can just go completely:
+
+% grep -r switch_to_begin *
+include/asm-x86/system.h:       asm volatile(".globl __switch_to_begin\n\t"                     \
+include/asm-x86/system.h:            "__switch_to_begin:\n\t"                  
+
+-Andi
