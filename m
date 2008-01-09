@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbYAIXc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757788AbYAIXd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755963AbYAIXc6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 18:32:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756301AbYAIXa4
+	id S1757788AbYAIXd1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 18:33:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756402AbYAIXa5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 18:30:56 -0500
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:33564 "EHLO
+	Wed, 9 Jan 2008 18:30:57 -0500
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:33560 "EHLO
 	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755801AbYAIXav (ORCPT
+	with ESMTP id S1755775AbYAIXav (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 9 Jan 2008 18:30:51 -0500
-Message-Id: <20080109233043.810685700@goodmis.org>
+Message-Id: <20080109233042.700978988@goodmis.org>
 References: <20080109232914.676624725@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 Jan 2008 18:29:24 -0500
+Date: Wed, 09 Jan 2008 18:29:17 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -27,162 +27,69 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
        Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [RFC PATCH 10/22 -v2] Add a symbol only trace output
-Content-Disposition: inline; filename=mcount-tracer-symbol-only.patch
+Subject: [RFC PATCH 03/22 -v2] x86_64: notrace annotations
+Content-Disposition: inline; filename=mcount-add-x86_64-notrace-annotations.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The trace output is very verbose with outputing both the
-IP address (Instruction Pointer not Internet Protocol!)
-and the kallsyms symbol. So if kallsyms is configured into
-the kernel, another file is created in the debugfs system.
-This is the trace_symonly file that leaves out the IP address.
+Add "notrace" annotation to x86_64 specific files.
 
-Here's an example:
-
-CPU 1: swapper:0 smp_apic_timer_interrupt+0xc/0x58 <-- apic_timer_interrupt+0x66/0x70
-CPU 1: swapper:0 exit_idle+0x9/0x22 <-- smp_apic_timer_interrupt+0x35/0x58
-CPU 0: sshd:2611 _spin_unlock+0x9/0x38 <-- __qdisc_run+0xb2/0x1a1
-CPU 1: swapper:0 __exit_idle+0x9/0x2e <-- exit_idle+0x20/0x22
-CPU 0: sshd:2611 _spin_lock+0xe/0x7a <-- __qdisc_run+0xba/0x1a1
-CPU 1: swapper:0 atomic_notifier_call_chain+0x9/0x16 <-- __exit_idle+0x2c/0x2e
-CPU 1: swapper:0 __atomic_notifier_call_chain+0xe/0x56 <-- atomic_notifier_call_chain+0x14/0x16
-
-
+Signed-off-by: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- lib/tracing/tracer.c |   65 +++++++++++++++++++++++++++++++++++++++++++++++----
- lib/tracing/tracer.h |    1 
- 2 files changed, 62 insertions(+), 4 deletions(-)
+ arch/x86/kernel/head64.c     |    2 +-
+ arch/x86/kernel/setup64.c    |    4 ++--
+ arch/x86/kernel/smpboot_64.c |    2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-Index: linux-compile-i386.git/lib/tracing/tracer.c
+Index: linux-compile-i386.git/arch/x86/kernel/head64.c
 ===================================================================
---- linux-compile-i386.git.orig/lib/tracing/tracer.c	2008-01-09 14:13:46.000000000 -0500
-+++ linux-compile-i386.git/lib/tracing/tracer.c	2008-01-09 15:17:37.000000000 -0500
-@@ -79,6 +79,10 @@ static notrace void trace_function(const
- }
- 
- #ifdef CONFIG_DEBUG_FS
-+enum trace_iterator {
-+	TRACE_ITER_SYM_ONLY	= 1,
-+};
-+
- struct mctracer_iterator {
- 	struct mctracer_trace *tr;
- 	struct mctracer_entry *ent;
-@@ -207,25 +211,29 @@ static void seq_print_symbol(struct seq_
- #endif
- 
- static void notrace seq_print_ip_sym(struct seq_file *m,
--				     unsigned long ip)
-+				     unsigned long ip,
-+				     int sym_only)
- {
- 	seq_print_symbol(m, "%s", ip);
--	seq_printf(m, " <" IP_FMT ">", ip);
-+	if (!sym_only)
-+		seq_printf(m, " <" IP_FMT ">", ip);
- }
- 
- static int s_show(struct seq_file *m, void *v)
- {
- 	struct mctracer_iterator *iter = v;
-+	int sym_only = !!(iter->tr->iter_flags & TRACE_ITER_SYM_ONLY);
- 
- 	if (iter->ent == NULL) {
- 		seq_printf(m, "mctracer:\n");
- 	} else {
- 		seq_printf(m, "CPU %d: ", iter->cpu);
- 		seq_printf(m, "%s:%d ", iter->ent->comm, iter->ent->pid);
--		seq_print_ip_sym(m, iter->ent->ip);
-+		seq_print_ip_sym(m, iter->ent->ip, sym_only);
- 		if (iter->ent->parent_ip) {
- 			seq_printf(m, " <-- ");
--			seq_print_ip_sym(m, iter->ent->parent_ip);
-+			seq_print_ip_sym(m, iter->ent->parent_ip,
-+					 sym_only);
- 		}
- 		seq_printf(m, "\n");
+--- linux-compile-i386.git.orig/arch/x86/kernel/head64.c	2008-01-09 14:09:35.000000000 -0500
++++ linux-compile-i386.git/arch/x86/kernel/head64.c	2008-01-09 14:10:14.000000000 -0500
+@@ -46,7 +46,7 @@ static void __init copy_bootdata(char *r
  	}
-@@ -335,6 +343,50 @@ static struct file_operations mctracer_c
- 	.write = mctracer_ctrl_write,
- };
- 
-+static ssize_t mctracer_iter_ctrl_read(struct file *filp, char __user *ubuf,
-+				       size_t cnt, loff_t *ppos)
-+{
-+	struct mctracer_trace *tr = filp->private_data;
-+	char buf[64];
-+	int r = 0;
-+
-+	if (tr->iter_flags & TRACE_ITER_SYM_ONLY)
-+		r = sprintf(buf, "%s", "symonly ");
-+	r += sprintf(buf+r, "\n");
-+
-+	return simple_read_from_buffer(ubuf, cnt, ppos,
-+				       buf, r);
-+}
-+
-+static ssize_t mctracer_iter_ctrl_write(struct file *filp,
-+					const char __user *ubuf,
-+					size_t cnt, loff_t *ppos)
-+{
-+	struct mctracer_trace *tr = filp->private_data;
-+	char buf[64];
-+
-+	if (cnt > 63)
-+		cnt = 63;
-+
-+	if (copy_from_user(&buf, ubuf, cnt))
-+		return -EFAULT;
-+
-+	buf[cnt] = 0;
-+
-+	if (strncmp(buf, "symonly", 7) == 0)
-+		tr->iter_flags |= TRACE_ITER_SYM_ONLY;
-+
-+	filp->f_pos += cnt;
-+
-+	return cnt;
-+}
-+
-+static struct file_operations mctracer_iter_fops = {
-+	.open = mctracer_open_generic,
-+	.read = mctracer_iter_ctrl_read,
-+	.write = mctracer_iter_ctrl_write,
-+};
-+
- static void mctrace_init_debugfs(void)
- {
- 	struct dentry *d_mctracer;
-@@ -351,10 +403,15 @@ static void mctrace_init_debugfs(void)
- 	if (!entry)
- 		pr_warning("Could not create debugfs 'ctrl' entry\n");
- 
-+	entry = debugfs_create_file("iter_ctrl", 0644, d_mctracer,
-+				    &mctracer_trace, &mctracer_iter_fops);
-+	if (!entry)
-+		pr_warning("Could not create debugfs 'iter_ctrl' entry\n");
- 	entry = debugfs_create_file("trace", 0444, d_mctracer,
- 				    &mctracer_trace, &mctrace_fops);
- 	if (!entry)
- 		pr_warning("Could not create debugfs 'trace' entry\n");
-+
  }
- #else /* CONFIG_DEBUG_FS */
- static void mctrace_init_debugfs(void)
-Index: linux-compile-i386.git/lib/tracing/tracer.h
+ 
+-void __init x86_64_start_kernel(char * real_mode_data)
++notrace void __init x86_64_start_kernel(char *real_mode_data)
+ {
+ 	int i;
+ 
+Index: linux-compile-i386.git/arch/x86/kernel/setup64.c
 ===================================================================
---- linux-compile-i386.git.orig/lib/tracing/tracer.h	2008-01-09 14:13:46.000000000 -0500
-+++ linux-compile-i386.git/lib/tracing/tracer.h	2008-01-09 15:17:36.000000000 -0500
-@@ -17,6 +17,7 @@ struct mctracer_trace {
- 	unsigned long trace_idx[NR_CPUS];
- 	unsigned long entries;
- 	long	      ctrl;
-+	unsigned long iter_flags;
- 	atomic_t      cnt;
- 	atomic_t      disabled[NR_CPUS];
- 	atomic_t      underrun[NR_CPUS];
+--- linux-compile-i386.git.orig/arch/x86/kernel/setup64.c	2008-01-09 14:09:35.000000000 -0500
++++ linux-compile-i386.git/arch/x86/kernel/setup64.c	2008-01-09 14:10:14.000000000 -0500
+@@ -114,7 +114,7 @@ void __init setup_per_cpu_areas(void)
+ 	}
+ } 
+ 
+-void pda_init(int cpu)
++notrace void pda_init(int cpu)
+ { 
+ 	struct x8664_pda *pda = cpu_pda(cpu);
+ 
+@@ -197,7 +197,7 @@ DEFINE_PER_CPU(struct orig_ist, orig_ist
+  * 'CPU state barrier', nothing should get across.
+  * A lot of state is already set up in PDA init.
+  */
+-void __cpuinit cpu_init (void)
++notrace void __cpuinit cpu_init(void)
+ {
+ 	int cpu = stack_smp_processor_id();
+ 	struct tss_struct *t = &per_cpu(init_tss, cpu);
+Index: linux-compile-i386.git/arch/x86/kernel/smpboot_64.c
+===================================================================
+--- linux-compile-i386.git.orig/arch/x86/kernel/smpboot_64.c	2008-01-09 14:09:35.000000000 -0500
++++ linux-compile-i386.git/arch/x86/kernel/smpboot_64.c	2008-01-09 14:10:14.000000000 -0500
+@@ -317,7 +317,7 @@ static inline void set_cpu_sibling_map(i
+ /*
+  * Setup code on secondary processor (after comming out of the trampoline)
+  */
+-void __cpuinit start_secondary(void)
++notrace __cpuinit void start_secondary(void)
+ {
+ 	/*
+ 	 * Dont put anything before smp_callin(), SMP
 
 -- 
