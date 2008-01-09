@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753516AbYAIBcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754291AbYAIBck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753516AbYAIBcX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 20:32:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbYAIBcP
+	id S1754291AbYAIBck (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 20:32:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756680AbYAIBc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 20:32:15 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60604 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752791AbYAIBcO (ORCPT
+	Tue, 8 Jan 2008 20:32:26 -0500
+Received: from mu-out-0910.google.com ([209.85.134.190]:40393 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756404AbYAIBcZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 20:32:14 -0500
-Date: Wed, 9 Jan 2008 01:29:47 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH: 2/2] [SERIAL] avoid stalling suspend if serial port
- won't drain
-Message-ID: <20080109012947.166e975b@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080108160610.53694773.akpm@linux-foundation.org>
-References: <20080108115148.GB10546@flint.arm.linux.org.uk>
-	<20080108115703.GA27179@flint.arm.linux.org.uk>
-	<20080108160610.53694773.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Jan 2008 20:32:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Vp4SahVpEM/k53XZqd1PEEpaizKEpo1zPbpwjrElbbm+v9Oq1IhCK9nCKIDW8pJKXKx/kSY5tCPAdL+G2n/iCs8/VTfSHxjCUKoULSOWmbzAOjsVwqOrSiEmpPg6JxxJ+USnCbh0PZzVR2809zZRwfrtZcB/NN0Ll05za9G9T3w=
+Message-ID: <3aa654a40801081732y4a658d96x2498b5cbbd22bb60@mail.gmail.com>
+Date: Tue, 8 Jan 2008 17:32:20 -0800
+From: "Avuton Olrich" <avuton@gmail.com>
+To: "=?ISO-8859-1?Q?J.A._Magall=F3n?=" <jamagallon@ono.com>
+Subject: Re: Linux 2.6.24-rc7
+Cc: "Linux-Kernel," <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080108015012.2e518dd4@werewolf>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org>
+	 <20080108015012.2e518dd4@werewolf>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Give a port 30ms to drain; this is an arbitary value chosen to avoid
-> > long delays if there are many such ports in the system, while giving a
-> > reasonable chance for a single port to drain.  Should a port not drain
-> > within this timeout, issue a warning.
+On Jan 7, 2008 4:50 PM, J.A. Magallón <jamagallon@ono.com> wrote:
+> HI all...
+>
+> On Sun, 6 Jan 2008 14:19:16 -0800 (PST), Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>
+> >
+> > It's been two weeks since rc6, but let's face it, with xmas and new years
+> > (and birthdays) in between, there hasn't actually been a lot of working
+> > days, and the incremental patch from -rc6 is about half the size of the
+> > one from rc5->rc6.
+> With this kernel I'm getting frequent temporary freezes (system comes
+> back responsive after a minute or so...). I see this in dmesg:
+>
+> ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> ata3.00: cmd ca/00:08:67:10:18/00:00:00:00:00/e2 tag 0 dma 4096 out
+>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> ata3.00: status: { DRDY }
+> ata3: soft resetting link
+> ata3.00: configured for UDMA/133
+> ata3: EH complete
 
-30mS is a bit short at low baud rates - could we set the timeout based on
-baud + fifo size ?
-
-ACK anyway - its clearly better than hanging if hardware flow control has
-halted the uart!
-
+Reminds me of my 2.6.24 regression bug:
+http://bugzilla.kernel.org/show_bug.cgi?id=9393
+-- 
+avuton
+--
+ Anyone who quotes me in their sig is an idiot. -- Rusty Russell.
