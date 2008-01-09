@@ -1,228 +1,288 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758175AbYAIBDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758770AbYAIBDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758175AbYAIBDY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 20:03:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757037AbYAIAzp
+	id S1758770AbYAIBDl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 20:03:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755665AbYAIAzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 19:55:45 -0500
-Received: from ms0.nttdata.co.jp ([163.135.193.231]:51988 "EHLO
-	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755966AbYAIAyb (ORCPT
+	Tue, 8 Jan 2008 19:55:48 -0500
+Received: from py-out-1112.google.com ([64.233.166.177]:51874 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755175AbYAIAyy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 19:54:31 -0500
-Message-Id: <20080109005428.432672212@nttdata.co.jp>
-References: <20080109005320.323184643@nttdata.co.jp>
+	Tue, 8 Jan 2008 19:54:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:references:user-agent:date:from:to:cc:subject:content-disposition;
+        b=ZX7BGj290iBefK8T3xrTnH4EP7euaGJTaMz73AMlEd+D9YQlz85GkBetfy+vQCSmhmPrlFHTdseMRHDcSvDfWzyBaVQwdEyW+XHKl2uT4TiBz+yKiYHi0N0n+SqxVZDI8q4lAq8lkyFhkuNcfLesQmRoq5540MZipBmpEIJ52MY=
+Message-Id: <20080109005443.227306069@gmail.com>
+References: <20080109005416.039551758@gmail.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 Jan 2008 09:53:41 +0900
-From: Kentaro Takeda <takedakn@nttdata.co.jp>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Kentaro Takeda <takedakn@nttdata.co.jp>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #6 retry 21/21] Add signal hooks at sleepable location.
-X-OriginalArrivalTime: 09 Jan 2008 00:54:28.0646 (UTC) FILETIME=[30088C60:01C8525A]
+Date: Tue, 08 Jan 2008 20:54:17 -0400
+From: Kevin Winchester <kjwinchester@gmail.com>
+To: David Airlie <airlied@linux.ie>
+Cc: dri-devel@lists.sourceforge.net, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       Kevin Winchester <kjwinchester@gmail.com>
+Subject: [patch 1/1] Convert drivers in drivers/char/drm to use .unlocked_ioctl
+Content-Disposition: inline; filename=drm_ioctl-unlocked_ioctl.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds LSM hooks for sending signal.
+To: David Airlie <airlied@linux.ie>
+Cc: dri-devel@lists.sourceforge.net
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org
 
-   * task_kill_unlocked is added in sys_kill
-   * task_tkill_unlocked is added in sys_tkill
-   * task_tgkill_unlocked is added in sys_tgkill
+The drm drivers in this patch all used drm_ioctl to perform their
+ioctl calls.  The common function is converted to use lock_kernel()
+and unlock_kernel() and the drivers are converted to use .unlocked_ioctl
 
-We know sleepable hooks are racy.
-But we want to add sleepable hooks because TOMOYO Linux supports
-"delayed enforcing" mode which allows administrator judge interactively.
+Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
 
-You can try TOMOYO Linux without this patch, but in that case, you
-can't use access control functionality for restricting signal transmission.
-
-Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 ---
- include/linux/security.h |   41 +++++++++++++++++++++++++++++++++++++++++
- kernel/signal.c          |   17 +++++++++++++++++
- security/dummy.c         |   18 ++++++++++++++++++
- security/security.c      |   15 +++++++++++++++
- 4 files changed, 91 insertions(+)
 
---- linux-2.6-mm.orig/include/linux/security.h
-+++ linux-2.6-mm/include/linux/security.h
-@@ -674,6 +674,25 @@ struct request_sock;
-  *	@sig contains the signal value.
-  *	@secid contains the sid of the process where the signal originated
-  *	Return 0 if permission is granted.
-+ * @task_kill_unlocked:
-+ *	Check permission before sending signal @sig to the process of @pid
-+ *	with sys_kill.
-+ *	@pid contains the pid of target process.
-+ *	@sig contains the signal value.
-+ *	Return 0 if permission is granted.
-+ * @task_tkill_unlocked:
-+ *	Check permission before sending signal @sig to the process of @pid
-+ *	with sys_tkill.
-+ *	@pid contains the pid of target process.
-+ *	@sig contains the signal value.
-+ *	Return 0 if permission is granted.
-+ * @task_tgkill_unlocked:
-+ *	Check permission before sending signal @sig to the process of @pid
-+ *	with sys_tgkill.
-+ *	@tgid contains the thread group id.
-+ *	@pid contains the pid of target process.
-+ *	@sig contains the signal value.
-+ *	Return 0 if permission is granted.
-  * @task_wait:
-  *	Check permission before allowing a process to reap a child process @p
-  *	and collect its status information.
-@@ -1364,6 +1383,9 @@ struct security_operations {
- 	int (*task_movememory) (struct task_struct * p);
- 	int (*task_kill) (struct task_struct * p,
- 			  struct siginfo * info, int sig, u32 secid);
-+	int (*task_kill_unlocked) (int pid, int sig);
-+	int (*task_tkill_unlocked) (int pid, int sig);
-+	int (*task_tgkill_unlocked) (int tgid, int pid, int sig);
- 	int (*task_wait) (struct task_struct * p);
- 	int (*task_prctl) (int option, unsigned long arg2,
- 			   unsigned long arg3, unsigned long arg4,
-@@ -1622,6 +1644,10 @@ int security_task_getscheduler(struct ta
- int security_task_movememory(struct task_struct *p);
- int security_task_kill(struct task_struct *p, struct siginfo *info,
- 			int sig, u32 secid);
-+#define __HAVE_LSM_TASK_KILL_UNLOCKED
-+int security_task_kill_unlocked(int pid, int sig);
-+int security_task_tkill_unlocked(int pid, int sig);
-+int security_task_tgkill_unlocked(int tgid, int pid, int sig);
- int security_task_wait(struct task_struct *p);
- int security_task_prctl(int option, unsigned long arg2, unsigned long arg3,
- 			 unsigned long arg4, unsigned long arg5);
-@@ -2168,6 +2194,21 @@ static inline int security_task_kill (st
- 	return cap_task_kill(p, info, sig, secid);
- }
- 
-+static inline int security_task_kill_unlocked(int pid, int sig)
-+{
-+	return 0;
-+}
-+
-+static inline int security_task_tkill_unlocked(int pid, int sig)
-+{
-+	return 0;
-+}
-+
-+static inline int security_task_tgkill_unlocked(int tgid, int pid, int sig)
-+{
-+	return 0;
-+}
-+
- static inline int security_task_wait (struct task_struct *p)
- {
- 	return 0;
---- linux-2.6-mm.orig/kernel/signal.c
-+++ linux-2.6-mm/kernel/signal.c
-@@ -2219,6 +2219,11 @@ asmlinkage long
- sys_kill(int pid, int sig)
- {
- 	struct siginfo info;
-+	int ret;
-+
-+	ret = security_task_kill_unlocked(pid, sig);
-+	if (ret)
-+		return ret;
- 
- 	info.si_signo = sig;
- 	info.si_errno = 0;
-@@ -2274,10 +2279,16 @@ static int do_tkill(int tgid, int pid, i
+I also noted that in the failed kmalloc case in drm_ioctl(), the function
+immediately returns -ENOMEM, rather than following the error path that
+calls atomic_dec(&dev->ioctl_count);.  I'm not sure if the ioctl_count
+is just not important in the -ENOMEM case, or if this is a bug.
+
+ drivers/char/drm/drmP.h       |    3 +--
+ drivers/char/drm/drm_drv.c    |   10 ++++++----
+ drivers/char/drm/i810_dma.c   |    2 +-
+ drivers/char/drm/i810_drv.c   |    2 +-
+ drivers/char/drm/i830_dma.c   |    2 +-
+ drivers/char/drm/i830_drv.c   |    2 +-
+ drivers/char/drm/i915_drv.c   |    2 +-
+ drivers/char/drm/mga_drv.c    |    2 +-
+ drivers/char/drm/r128_drv.c   |    2 +-
+ drivers/char/drm/radeon_drv.c |    2 +-
+ drivers/char/drm/savage_drv.c |    2 +-
+ drivers/char/drm/sis_drv.c    |    2 +-
+ drivers/char/drm/tdfx_drv.c   |    2 +-
+ drivers/char/drm/via_drv.c    |    2 +-
+ 14 files changed, 19 insertions(+), 18 deletions(-)
+
+Index: v2.6.24-rc7/drivers/char/drm/drmP.h
+===================================================================
+--- v2.6.24-rc7.orig/drivers/char/drm/drmP.h
++++ v2.6.24-rc7/drivers/char/drm/drmP.h
+@@ -833,8 +833,7 @@ static inline int drm_mtrr_del(int handl
+ 				/* Driver support (drm_drv.h) */
+ extern int drm_init(struct drm_driver *driver);
+ extern void drm_exit(struct drm_driver *driver);
+-extern int drm_ioctl(struct inode *inode, struct file *filp,
+-		     unsigned int cmd, unsigned long arg);
++extern long drm_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
+ extern long drm_compat_ioctl(struct file *filp,
+ 			     unsigned int cmd, unsigned long arg);
+ extern int drm_lastclose(struct drm_device *dev);
+Index: v2.6.24-rc7/drivers/char/drm/drm_drv.c
+===================================================================
+--- v2.6.24-rc7.orig/drivers/char/drm/drm_drv.c
++++ v2.6.24-rc7/drivers/char/drm/drm_drv.c
+@@ -438,7 +438,6 @@ static int drm_version(struct drm_device
+ /**
+  * Called whenever a process performs an ioctl on /dev/drm.
+  *
+- * \param inode device inode.
+  * \param file_priv DRM file private.
+  * \param cmd command.
+  * \param arg user argument.
+@@ -447,8 +446,7 @@ static int drm_version(struct drm_device
+  * Looks up the ioctl function in the ::ioctls table, checking for root
+  * previleges if so required, and dispatches to the respective function.
   */
- asmlinkage long sys_tgkill(int tgid, int pid, int sig)
+-int drm_ioctl(struct inode *inode, struct file *filp,
+-	      unsigned int cmd, unsigned long arg)
++long drm_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
  {
-+	int ret;
-+
- 	/* This is only valid for single tasks */
- 	if (pid <= 0 || tgid <= 0)
- 		return -EINVAL;
+ 	struct drm_file *file_priv = filp->private_data;
+ 	struct drm_device *dev = file_priv->head->dev;
+@@ -458,6 +456,7 @@ int drm_ioctl(struct inode *inode, struc
+ 	int retcode = -EINVAL;
+ 	char *kdata = NULL;
  
-+	ret = security_task_tgkill_unlocked(tgid, pid, sig);
-+	if (ret)
-+		return ret;
-+
- 	return do_tkill(tgid, pid, sig);
++	lock_kernel();
+ 	atomic_inc(&dev->ioctl_count);
+ 	atomic_inc(&dev->counts[_DRM_STAT_IOCTLS]);
+ 	++file_priv->ioctl_count;
+@@ -494,8 +493,10 @@ int drm_ioctl(struct inode *inode, struc
+ 	} else {
+ 		if (cmd & (IOC_IN | IOC_OUT)) {
+ 			kdata = kmalloc(_IOC_SIZE(cmd), GFP_KERNEL);
+-			if (!kdata)
++			if (!kdata) {
++				unlock_kernel();
+ 				return -ENOMEM;
++			}
+ 		}
+ 
+ 		if (cmd & IOC_IN) {
+@@ -520,6 +521,7 @@ int drm_ioctl(struct inode *inode, struc
+ 	atomic_dec(&dev->ioctl_count);
+ 	if (retcode)
+ 		DRM_DEBUG("ret = %x\n", retcode);
++	unlock_kernel();
+ 	return retcode;
  }
  
-@@ -2287,10 +2298,16 @@ asmlinkage long sys_tgkill(int tgid, int
- asmlinkage long
- sys_tkill(int pid, int sig)
- {
-+	int ret;
-+
- 	/* This is only valid for single tasks */
- 	if (pid <= 0)
- 		return -EINVAL;
- 
-+	ret = security_task_tkill_unlocked(pid, sig);
-+	if (ret)
-+		return ret;
-+
- 	return do_tkill(0, pid, sig);
- }
- 
---- linux-2.6-mm.orig/security/dummy.c
-+++ linux-2.6-mm/security/dummy.c
-@@ -599,6 +599,21 @@ static int dummy_task_kill (struct task_
- 	return 0;
- }
- 
-+static int dummy_task_kill_unlocked(int pid, int sig)
-+{
-+	return 0;
-+}
-+
-+static int dummy_task_tkill_unlocked(int pid, int sig)
-+{
-+	return 0;
-+}
-+
-+static int dummy_task_tgkill_unlocked(int tgid, int pid, int sig)
-+{
-+	return 0;
-+}
-+
- static int dummy_task_prctl (int option, unsigned long arg2, unsigned long arg3,
- 			     unsigned long arg4, unsigned long arg5)
- {
-@@ -1104,6 +1119,9 @@ void security_fixup_ops (struct security
- 	set_to_dummy_if_null(ops, task_movememory);
- 	set_to_dummy_if_null(ops, task_wait);
- 	set_to_dummy_if_null(ops, task_kill);
-+	set_to_dummy_if_null(ops, task_kill_unlocked);
-+	set_to_dummy_if_null(ops, task_tkill_unlocked);
-+	set_to_dummy_if_null(ops, task_tgkill_unlocked);
- 	set_to_dummy_if_null(ops, task_prctl);
- 	set_to_dummy_if_null(ops, task_reparent_to_init);
-  	set_to_dummy_if_null(ops, task_to_inode);
---- linux-2.6-mm.orig/security/security.c
-+++ linux-2.6-mm/security/security.c
-@@ -682,6 +682,21 @@ int security_task_kill(struct task_struc
- 	return security_ops->task_kill(p, info, sig, secid);
- }
- 
-+int security_task_kill_unlocked(int pid, int sig)
-+{
-+	return security_ops->task_kill_unlocked(pid, sig);
-+}
-+
-+int security_task_tkill_unlocked(int pid, int sig)
-+{
-+	return security_ops->task_tkill_unlocked(pid, sig);
-+}
-+
-+int security_task_tgkill_unlocked(int tgid, int pid, int sig)
-+{
-+	return security_ops->task_tgkill_unlocked(tgid, pid, sig);
-+}
-+
- int security_task_wait(struct task_struct *p)
- {
- 	return security_ops->task_wait(p);
+Index: v2.6.24-rc7/drivers/char/drm/i810_dma.c
+===================================================================
+--- v2.6.24-rc7.orig/drivers/char/drm/i810_dma.c
++++ v2.6.24-rc7/drivers/char/drm/i810_dma.c
+@@ -115,7 +115,7 @@ static int i810_mmap_buffers(struct file
+ static const struct file_operations i810_buffer_fops = {
+ 	.open = drm_open,
+ 	.release = drm_release,
+-	.ioctl = drm_ioctl,
++	.unlocked_ioctl = drm_ioctl,
+ 	.mmap = i810_mmap_buffers,
+ 	.fasync = drm_fasync,
+ };
+Index: v2.6.24-rc7/drivers/char/drm/i810_drv.c
+===================================================================
+--- v2.6.24-rc7.orig/drivers/char/drm/i810_drv.c
++++ v2.6.24-rc7/drivers/char/drm/i810_drv.c
+@@ -59,7 +59,7 @@ static struct drm_driver driver = {
+ 		 .owner = THIS_MODULE,
+ 		 .open = drm_open,
+ 		 .release = drm_release,
+-		 .ioctl = drm_ioctl,
++		 .unlocked_ioctl = drm_ioctl,
+ 		 .mmap = drm_mmap,
+ 		 .poll = drm_poll,
+ 		 .fasync = drm_fasync,
+Index: v2.6.24-rc7/drivers/char/drm/i830_dma.c
+===================================================================
+--- v2.6.24-rc7.orig/drivers/char/drm/i830_dma.c
++++ v2.6.24-rc7/drivers/char/drm/i830_dma.c
+@@ -117,7 +117,7 @@ static int i830_mmap_buffers(struct file
+ static const struct file_operations i830_buffer_fops = {
+ 	.open = drm_open,
+ 	.release = drm_release,
+-	.ioctl = drm_ioctl,
++	.unlocked_ioctl = drm_ioctl,
+ 	.mmap = i830_mmap_buffers,
+ 	.fasync = drm_fasync,
+ };
+Index: v2.6.24-rc7/drivers/char/drm/i830_drv.c
+===================================================================
+--- v2.6.24-rc7.orig/drivers/char/drm/i830_drv.c
++++ v2.6.24-rc7/drivers/char/drm/i830_drv.c
+@@ -70,7 +70,7 @@ static struct drm_driver driver = {
+ 		 .owner = THIS_MODULE,
+ 		 .open = drm_open,
+ 		 .release = drm_release,
+-		 .ioctl = drm_ioctl,
++		 .unlocked_ioctl = drm_ioctl,
+ 		 .mmap = drm_mmap,
+ 		 .poll = drm_poll,
+ 		 .fasync = drm_fasync,
+Index: v2.6.24-rc7/drivers/char/drm/i915_drv.c
+===================================================================
+--- v2.6.24-rc7.orig/drivers/char/drm/i915_drv.c
++++ v2.6.24-rc7/drivers/char/drm/i915_drv.c
+@@ -64,7 +64,7 @@ static struct drm_driver driver = {
+ 		 .owner = THIS_MODULE,
+ 		 .open = drm_open,
+ 		 .release = drm_release,
+-		 .ioctl = drm_ioctl,
++		 .unlocked_ioctl = drm_ioctl,
+ 		 .mmap = drm_mmap,
+ 		 .poll = drm_poll,
+ 		 .fasync = drm_fasync,
+Index: v2.6.24-rc7/drivers/char/drm/mga_drv.c
+===================================================================
+--- v2.6.24-rc7.orig/drivers/char/drm/mga_drv.c
++++ v2.6.24-rc7/drivers/char/drm/mga_drv.c
+@@ -67,7 +67,7 @@ static struct drm_driver driver = {
+ 		 .owner = THIS_MODULE,
+ 		 .open = drm_open,
+ 		 .release = drm_release,
+-		 .ioctl = drm_ioctl,
++		 .unlocked_ioctl = drm_ioctl,
+ 		 .mmap = drm_mmap,
+ 		 .poll = drm_poll,
+ 		 .fasync = drm_fasync,
+Index: v2.6.24-rc7/drivers/char/drm/r128_drv.c
+===================================================================
+--- v2.6.24-rc7.orig/drivers/char/drm/r128_drv.c
++++ v2.6.24-rc7/drivers/char/drm/r128_drv.c
+@@ -62,7 +62,7 @@ static struct drm_driver driver = {
+ 		 .owner = THIS_MODULE,
+ 		 .open = drm_open,
+ 		 .release = drm_release,
+-		 .ioctl = drm_ioctl,
++		 .unlocked_ioctl = drm_ioctl,
+ 		 .mmap = drm_mmap,
+ 		 .poll = drm_poll,
+ 		 .fasync = drm_fasync,
+Index: v2.6.24-rc7/drivers/char/drm/radeon_drv.c
+===================================================================
+--- v2.6.24-rc7.orig/drivers/char/drm/radeon_drv.c
++++ v2.6.24-rc7/drivers/char/drm/radeon_drv.c
+@@ -85,7 +85,7 @@ static struct drm_driver driver = {
+ 		 .owner = THIS_MODULE,
+ 		 .open = drm_open,
+ 		 .release = drm_release,
+-		 .ioctl = drm_ioctl,
++		 .unlocked_ioctl = drm_ioctl,
+ 		 .mmap = drm_mmap,
+ 		 .poll = drm_poll,
+ 		 .fasync = drm_fasync,
+Index: v2.6.24-rc7/drivers/char/drm/savage_drv.c
+===================================================================
+--- v2.6.24-rc7.orig/drivers/char/drm/savage_drv.c
++++ v2.6.24-rc7/drivers/char/drm/savage_drv.c
+@@ -50,7 +50,7 @@ static struct drm_driver driver = {
+ 		 .owner = THIS_MODULE,
+ 		 .open = drm_open,
+ 		 .release = drm_release,
+-		 .ioctl = drm_ioctl,
++		 .unlocked_ioctl = drm_ioctl,
+ 		 .mmap = drm_mmap,
+ 		 .poll = drm_poll,
+ 		 .fasync = drm_fasync,
+Index: v2.6.24-rc7/drivers/char/drm/sis_drv.c
+===================================================================
+--- v2.6.24-rc7.orig/drivers/char/drm/sis_drv.c
++++ v2.6.24-rc7/drivers/char/drm/sis_drv.c
+@@ -80,7 +80,7 @@ static struct drm_driver driver = {
+ 		 .owner = THIS_MODULE,
+ 		 .open = drm_open,
+ 		 .release = drm_release,
+-		 .ioctl = drm_ioctl,
++		 .unlocked_ioctl = drm_ioctl,
+ 		 .mmap = drm_mmap,
+ 		 .poll = drm_poll,
+ 		 .fasync = drm_fasync,
+Index: v2.6.24-rc7/drivers/char/drm/tdfx_drv.c
+===================================================================
+--- v2.6.24-rc7.orig/drivers/char/drm/tdfx_drv.c
++++ v2.6.24-rc7/drivers/char/drm/tdfx_drv.c
+@@ -48,7 +48,7 @@ static struct drm_driver driver = {
+ 		 .owner = THIS_MODULE,
+ 		 .open = drm_open,
+ 		 .release = drm_release,
+-		 .ioctl = drm_ioctl,
++		 .unlocked_ioctl = drm_ioctl,
+ 		 .mmap = drm_mmap,
+ 		 .poll = drm_poll,
+ 		 .fasync = drm_fasync,
+Index: v2.6.24-rc7/drivers/char/drm/via_drv.c
+===================================================================
+--- v2.6.24-rc7.orig/drivers/char/drm/via_drv.c
++++ v2.6.24-rc7/drivers/char/drm/via_drv.c
+@@ -62,7 +62,7 @@ static struct drm_driver driver = {
+ 		 .owner = THIS_MODULE,
+ 		 .open = drm_open,
+ 		 .release = drm_release,
+-		 .ioctl = drm_ioctl,
++		 .unlocked_ioctl = drm_ioctl,
+ 		 .mmap = drm_mmap,
+ 		 .poll = drm_poll,
+ 		 .fasync = drm_fasync,
 
 -- 
