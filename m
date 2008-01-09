@@ -1,263 +1,307 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbYAIA4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756963AbYAIA45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757328AbYAIA4h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 19:56:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbYAIAyd
+	id S1756963AbYAIA45 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 19:56:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756177AbYAIAyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 19:54:33 -0500
-Received: from ms0.nttdata.co.jp ([163.135.193.231]:51873 "EHLO
+	Tue, 8 Jan 2008 19:54:36 -0500
+Received: from ms0.nttdata.co.jp ([163.135.193.231]:51879 "EHLO
 	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752925AbYAIAyX (ORCPT
+	with ESMTP id S1751480AbYAIAyX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 8 Jan 2008 19:54:23 -0500
-Message-Id: <20080109005419.494892830@nttdata.co.jp>
+Message-Id: <20080109005419.951580769@nttdata.co.jp>
 References: <20080109005320.323184643@nttdata.co.jp>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 Jan 2008 09:53:24 +0900
+Date: Wed, 09 Jan 2008 09:53:25 +0900
 From: Kentaro Takeda <takedakn@nttdata.co.jp>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #6 retry 04/21] Replace VFS with wrapper functions.
-X-OriginalArrivalTime: 09 Jan 2008 00:54:20.0021 (UTC) FILETIME=[2AE47A50:01C8525A]
+Subject: [TOMOYO #6 retry 05/21] Add packet filtering based on processs security context.
+X-OriginalArrivalTime: 09 Jan 2008 00:54:20.0303 (UTC) FILETIME=[2B0F81F0:01C8525A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch replaces VFS helper function calls caused by
-userland process's request with VFS wrapper functions call.
-I don't have a plan to control VFS helper function calls
-caused by the kernel. Therefore, this patch doesn't modify
-individual filesystems in fs/*/ directory.
+This patch allows LSM modules filter incoming connections/datagrams
+based on the process's security context who is attempting to pick up.
 
-I need to know the vfsmount parameter from LSM hooks so that
-I can calculate the pathname of a given dentry.
+There are already hooks to filter incoming connections/datagrams
+based on the socket's security context, but these hooks are not
+applicable when one wants to do TCP Wrapper-like filtering
+(e.g. App1 is permitted to accept TCP connections from 192.168.0.0/16).
 
-Scanning the caller process's namespace list cannot reliably
-determine which vfsmount the given dentry belongs to
-because the corresponding vfsmount parameter appears for
-multiple times when bind mounts are used.
+Precautions: This approach has a side effect which unlikely occurs.
 
-What is worse, accessing namespace_sem from LSM hooks triggers
-AB-BA deadlock. Therefore, I definitely need either AppArmor's
-"Add struct vfsmount parameter to ..." patches or this patch.
+If a socket is shared by multiple processes with differnt policy,
+the process who should be able to accept this connection
+will not be able to accept this connection
+because socket_post_accept() aborts this connection.
+But if socket_post_accept() doesn't abort this connection,
+the process who must not be able to accept this connection
+will repeat accept() forever, which is a worse side effect.
 
+Similarly, if a socket is shared by multiple processes with differnt policy,
+the process who should be able to pick up this datagram
+will not be able to pick up this datagram
+because socket_post_recv_datagram() discards this datagram.
+But if socket_post_recv_datagram() doesn't discard this datagram,
+the process who must not be able to pick up this datagram
+will repeat recvmsg() forever, which is a worse side effect.
+
+So, don't give different permissions between processes who shares one socket.
+Otherwise, some connections/datagrams cannot be delivered to intended process.
+
+Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 ---
- fs/namei.c         |   34 +++++++++++++++++++---------------
- fs/open.c          |   23 +++++++++++++----------
- net/unix/af_unix.c |    3 ++-
- 3 files changed, 34 insertions(+), 26 deletions(-)
+ include/linux/security.h |   34 +++++++++++++++++++++++++++++-----
+ net/core/datagram.c      |   29 ++++++++++++++++++++++++++++-
+ net/socket.c             |    7 +++++--
+ security/dummy.c         |   13 ++++++++++---
+ security/security.c      |   10 ++++++++--
+ 5 files changed, 80 insertions(+), 13 deletions(-)
 
---- linux-2.6-mm.orig/fs/open.c
-+++ linux-2.6-mm/fs/open.c
-@@ -271,7 +271,8 @@ static long do_sys_truncate(const char _
- 	error = locks_verify_truncate(inode, NULL, length);
- 	if (!error) {
- 		DQUOT_INIT(inode);
--		error = do_truncate(nd.path.dentry, length, 0, NULL);
-+		error = do_truncate2(nd.path.dentry, nd.path.mnt, length, 0,
-+				     NULL);
- 	}
- 
- put_write_and_out:
-@@ -326,7 +327,8 @@ static long do_sys_ftruncate(unsigned in
- 
- 	error = locks_verify_truncate(inode, file, length);
- 	if (!error)
--		error = do_truncate(dentry, length, ATTR_MTIME|ATTR_CTIME, file);
-+		error = do_truncate2(dentry, file->f_path.mnt, length,
-+				     ATTR_MTIME|ATTR_CTIME, file);
- out_putf:
- 	fput(file);
- out:
-@@ -589,7 +591,7 @@ asmlinkage long sys_fchmod(unsigned int 
- 		mode = inode->i_mode;
- 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
- 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
--	err = notify_change(dentry, &newattrs);
-+	err = notify_change2(dentry, file->f_path.mnt, &newattrs);
- 	mutex_unlock(&inode->i_mutex);
- 
- out_drop_write:
-@@ -626,7 +628,7 @@ asmlinkage long sys_fchmodat(int dfd, co
- 		mode = inode->i_mode;
- 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
- 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
--	error = notify_change(nd.path.dentry, &newattrs);
-+	error = notify_change2(nd.path.dentry, nd.path.mnt, &newattrs);
- 	mutex_unlock(&inode->i_mutex);
- 
- out_drop_write:
-@@ -642,7 +644,8 @@ asmlinkage long sys_chmod(const char __u
- 	return sys_fchmodat(AT_FDCWD, filename, mode);
+--- linux-2.6-mm.orig/include/linux/security.h
++++ linux-2.6-mm/include/linux/security.h
+@@ -795,8 +795,12 @@ struct request_sock;
+  * @socket_post_accept:
+  *	This hook allows a security module to copy security
+  *	information into the newly created socket's inode.
++ *	This hook also allows a security module to filter connections
++ *	from unwanted peers based on the process accepting this connection.
++ *	The connection will be aborted if this hook returns nonzero.
+  *	@sock contains the listening socket structure.
+  *	@newsock contains the newly created server socket for connection.
++ *	Return 0 if permission is granted.
+  * @socket_sendmsg:
+  *	Check permission before transmitting a message to another socket.
+  *	@sock contains the socket structure.
+@@ -810,6 +814,15 @@ struct request_sock;
+  *	@size contains the size of message structure.
+  *	@flags contains the operational flags.
+  *	Return 0 if permission is granted.  
++ * @socket_post_recv_datagram:
++ *	Check permission after receiving a datagram.
++ *	This hook allows a security module to filter packets
++ *	from unwanted peers based on the process receiving this datagram.
++ *	The packet will be discarded if this hook returns nonzero.
++ *	@sk contains the socket.
++ *	@skb contains the socket buffer.
++ *	@flags contains the operational flags.
++ *	Return 0 if permission is granted.
+  * @socket_getsockname:
+  *	Check permission before the local address (name) of the socket object
+  *	@sock is retrieved.
+@@ -1417,12 +1430,13 @@ struct security_operations {
+ 			       struct sockaddr * address, int addrlen);
+ 	int (*socket_listen) (struct socket * sock, int backlog);
+ 	int (*socket_accept) (struct socket * sock, struct socket * newsock);
+-	void (*socket_post_accept) (struct socket * sock,
+-				    struct socket * newsock);
++	int (*socket_post_accept) (struct socket *sock, struct socket *newsock);
+ 	int (*socket_sendmsg) (struct socket * sock,
+ 			       struct msghdr * msg, int size);
+ 	int (*socket_recvmsg) (struct socket * sock,
+ 			       struct msghdr * msg, int size, int flags);
++	int (*socket_post_recv_datagram) (struct sock *sk, struct sk_buff *skb,
++					  unsigned int flags);
+ 	int (*socket_getsockname) (struct socket * sock);
+ 	int (*socket_getpeername) (struct socket * sock);
+ 	int (*socket_getsockopt) (struct socket * sock, int level, int optname);
+@@ -2343,10 +2357,12 @@ int security_socket_bind(struct socket *
+ int security_socket_connect(struct socket *sock, struct sockaddr *address, int addrlen);
+ int security_socket_listen(struct socket *sock, int backlog);
+ int security_socket_accept(struct socket *sock, struct socket *newsock);
+-void security_socket_post_accept(struct socket *sock, struct socket *newsock);
++int security_socket_post_accept(struct socket *sock, struct socket *newsock);
+ int security_socket_sendmsg(struct socket *sock, struct msghdr *msg, int size);
+ int security_socket_recvmsg(struct socket *sock, struct msghdr *msg,
+ 			    int size, int flags);
++int security_socket_post_recv_datagram(struct sock *sk, struct sk_buff *skb,
++				       unsigned int flags);
+ int security_socket_getsockname(struct socket *sock);
+ int security_socket_getpeername(struct socket *sock);
+ int security_socket_getsockopt(struct socket *sock, int level, int optname);
+@@ -2423,9 +2439,10 @@ static inline int security_socket_accept
+ 	return 0;
  }
  
--static int chown_common(struct dentry * dentry, uid_t user, gid_t group)
-+static int chown_common(struct dentry *dentry, struct vfsmount *mnt,
-+			uid_t user, gid_t group)
+-static inline void security_socket_post_accept(struct socket * sock, 
+-					       struct socket * newsock)
++static inline int security_socket_post_accept(struct socket *sock,
++					      struct socket *newsock)
  {
- 	struct inode * inode;
- 	int error;
-@@ -669,7 +672,7 @@ static int chown_common(struct dentry * 
- 		newattrs.ia_valid |=
- 			ATTR_KILL_SUID | ATTR_KILL_SGID | ATTR_KILL_PRIV;
- 	mutex_lock(&inode->i_mutex);
--	error = notify_change(dentry, &newattrs);
-+	error = notify_change2(dentry, mnt, &newattrs);
- 	mutex_unlock(&inode->i_mutex);
- out:
- 	return error;
-@@ -686,7 +689,7 @@ asmlinkage long sys_chown(const char __u
- 	error = mnt_want_write(nd.path.mnt);
- 	if (error)
- 		goto out_release;
--	error = chown_common(nd.path.dentry, user, group);
-+	error = chown_common(nd.path.dentry, nd.path.mnt, user, group);
- 	mnt_drop_write(nd.path.mnt);
- out_release:
- 	path_put(&nd.path);
-@@ -711,7 +714,7 @@ asmlinkage long sys_fchownat(int dfd, co
- 	error = mnt_want_write(nd.path.mnt);
- 	if (error)
- 		goto out_release;
--	error = chown_common(nd.path.dentry, user, group);
-+	error = chown_common(nd.path.dentry, nd.path.mnt, user, group);
- 	mnt_drop_write(nd.path.mnt);
- out_release:
- 	path_put(&nd.path);
-@@ -730,7 +733,7 @@ asmlinkage long sys_lchown(const char __
- 	error = mnt_want_write(nd.path.mnt);
- 	if (error)
- 		goto out_release;
--	error = chown_common(nd.path.dentry, user, group);
-+	error = chown_common(nd.path.dentry, nd.path.mnt, user, group);
- 	mnt_drop_write(nd.path.mnt);
- out_release:
- 	path_put(&nd.path);
-@@ -754,7 +757,7 @@ asmlinkage long sys_fchown(unsigned int 
- 		goto out_fput;
- 	dentry = file->f_path.dentry;
- 	audit_inode(NULL, dentry);
--	error = chown_common(dentry, user, group);
-+	error = chown_common(dentry, file->f_vfsmnt, user, group);
- 	mnt_drop_write(file->f_vfsmnt);
- out_fput:
- 	fput(file);
---- linux-2.6-mm.orig/fs/namei.c
-+++ linux-2.6-mm/fs/namei.c
-@@ -1663,7 +1663,7 @@ int may_open(struct nameidata *nd, int a
- 		if (!error) {
- 			DQUOT_INIT(inode);
++	return 0;
+ }
  
--			error = do_truncate(dentry, 0,
-+			error = do_truncate2(dentry, nd->path.mnt, 0,
- 					    ATTR_MTIME|ATTR_CTIME|ATTR_OPEN,
- 					    NULL);
- 		}
-@@ -1690,7 +1690,7 @@ static int __open_namei_create(struct na
+ static inline int security_socket_sendmsg(struct socket * sock, 
+@@ -2441,6 +2458,13 @@ static inline int security_socket_recvms
+ 	return 0;
+ }
  
- 	if (!IS_POSIXACL(dir->d_inode))
- 		mode &= ~current->fs->umask;
--	error = vfs_create(dir->d_inode, path->dentry, mode, nd);
-+	error = vfs_create2(dir->d_inode, path->dentry, mode, nd);
- 	mutex_unlock(&dir->d_inode->i_mutex);
- 	dput(nd->path.dentry);
- 	nd->path.dentry = path->dentry;
-@@ -2078,16 +2078,17 @@ asmlinkage long sys_mknodat(int dfd, con
- 		goto out_dput;
- 	switch (mode & S_IFMT) {
- 		case 0: case S_IFREG:
--			error = vfs_create(nd.path.dentry->d_inode, dentry,
--						mode, &nd);
-+			error = vfs_create2(nd.path.dentry->d_inode, dentry,
-+					    mode, &nd);
- 			break;
- 		case S_IFCHR: case S_IFBLK:
--			error = vfs_mknod(nd.path.dentry->d_inode, dentry, mode,
--					new_decode_dev(dev));
-+			error = vfs_mknod2(nd.path.dentry->d_inode, dentry,
-+					   nd.path.mnt, mode,
-+					   new_decode_dev(dev));
- 			break;
- 		case S_IFIFO: case S_IFSOCK:
--			error = vfs_mknod(nd.path.dentry->d_inode, dentry,
--						mode, 0);
-+			error = vfs_mknod2(nd.path.dentry->d_inode, dentry,
-+					   nd.path.mnt, mode, 0);
- 			break;
++static inline int security_socket_post_recv_datagram(struct sock *sk,
++						     struct sk_buff *skb,
++						     unsigned int flags)
++{
++	return 0;
++}
++
+ static inline int security_socket_getsockname(struct socket * sock)
+ {
+ 	return 0;
+--- linux-2.6-mm.orig/net/socket.c
++++ linux-2.6-mm/net/socket.c
+@@ -1454,13 +1454,16 @@ asmlinkage long sys_accept(int fd, struc
+ 			goto out_fd;
  	}
- 	mnt_drop_write(nd.path.mnt);
-@@ -2154,7 +2155,7 @@ asmlinkage long sys_mkdirat(int dfd, con
- 	error = mnt_want_write(nd.path.mnt);
- 	if (error)
- 		goto out_dput;
--	error = vfs_mkdir(nd.path.dentry->d_inode, dentry, mode);
-+	error = vfs_mkdir2(nd.path.dentry->d_inode, dentry, nd.path.mnt, mode);
- 	mnt_drop_write(nd.path.mnt);
- out_dput:
- 	dput(dentry);
-@@ -2266,7 +2267,7 @@ static long do_rmdir(int dfd, const char
- 	error = mnt_want_write(nd.path.mnt);
- 	if (error)
- 		goto exit3;
--	error = vfs_rmdir(nd.path.dentry->d_inode, dentry);
-+	error = vfs_rmdir2(nd.path.dentry->d_inode, dentry, nd.path.mnt);
- 	mnt_drop_write(nd.path.mnt);
- exit3:
- 	dput(dentry);
-@@ -2352,7 +2353,8 @@ static long do_unlinkat(int dfd, const c
- 		error = mnt_want_write(nd.path.mnt);
- 		if (error)
- 			goto exit2;
--		error = vfs_unlink(nd.path.dentry->d_inode, dentry);
-+		error = vfs_unlink2(nd.path.dentry->d_inode, dentry,
-+				    nd.path.mnt);
- 		mnt_drop_write(nd.path.mnt);
- 	exit2:
- 		dput(dentry);
-@@ -2437,7 +2439,8 @@ asmlinkage long sys_symlinkat(const char
- 	error = mnt_want_write(nd.path.mnt);
- 	if (error)
- 		goto out_dput;
--	error = vfs_symlink(nd.path.dentry->d_inode, dentry, from, S_IALLUGO);
-+	error = vfs_symlink2(nd.path.dentry->d_inode, dentry, nd.path.mnt, from,
-+			     S_IALLUGO);
- 	mnt_drop_write(nd.path.mnt);
- out_dput:
- 	dput(dentry);
-@@ -2537,7 +2540,8 @@ asmlinkage long sys_linkat(int olddfd, c
- 	error = mnt_want_write(nd.path.mnt);
- 	if (error)
- 		goto out_dput;
--	error = vfs_link(old_nd.path.dentry, nd.path.dentry->d_inode, new_dentry);
-+	error = vfs_link2(old_nd.path.dentry, nd.path.dentry->d_inode,
-+			  new_dentry, nd.path.mnt);
- 	mnt_drop_write(nd.path.mnt);
- out_dput:
- 	dput(new_dentry);
-@@ -2768,8 +2772,8 @@ static int do_rename(int olddfd, const c
- 	error = mnt_want_write(oldnd.path.mnt);
- 	if (error)
- 		goto exit5;
--	error = vfs_rename(old_dir->d_inode, old_dentry,
--				   new_dir->d_inode, new_dentry);
-+	error = vfs_rename2(old_dir->d_inode, old_dentry,
-+			    new_dir->d_inode, new_dentry, newnd.path.mnt);
- 	mnt_drop_write(oldnd.path.mnt);
- exit5:
- 	dput(new_dentry);
---- linux-2.6-mm.orig/net/unix/af_unix.c
-+++ linux-2.6-mm/net/unix/af_unix.c
-@@ -822,7 +822,8 @@ static int unix_bind(struct socket *sock
- 		err = mnt_want_write(nd.path.mnt);
- 		if (err)
- 			goto out_mknod_dput;
--		err = vfs_mknod(nd.path.dentry->d_inode, dentry, mode, 0);
-+		err = vfs_mknod2(nd.path.dentry->d_inode, dentry, nd.path.mnt,
-+				 mode, 0);
- 		mnt_drop_write(nd.path.mnt);
- 		if (err)
- 			goto out_mknod_dput;
+ 
++	/* Filter connections from unwanted peers. */
++	err = security_socket_post_accept(sock, newsock);
++	if (err)
++		goto out_fd;
++
+ 	/* File flags are not inherited via accept() unlike another OSes. */
+ 
+ 	fd_install(newfd, newfile);
+ 	err = newfd;
+ 
+-	security_socket_post_accept(sock, newsock);
+-
+ out_put:
+ 	fput_light(sock->file, fput_needed);
+ out:
+--- linux-2.6-mm.orig/security/dummy.c
++++ linux-2.6-mm/security/dummy.c
+@@ -776,10 +776,10 @@ static int dummy_socket_accept (struct s
+ 	return 0;
+ }
+ 
+-static void dummy_socket_post_accept (struct socket *sock, 
+-				      struct socket *newsock)
++static int dummy_socket_post_accept(struct socket *sock,
++				    struct socket *newsock)
+ {
+-	return;
++	return 0;
+ }
+ 
+ static int dummy_socket_sendmsg (struct socket *sock, struct msghdr *msg,
+@@ -794,6 +794,12 @@ static int dummy_socket_recvmsg (struct 
+ 	return 0;
+ }
+ 
++static int dummy_socket_post_recv_datagram(struct sock *sk, struct sk_buff *skb,
++					   unsigned int flags)
++{
++	return 0;
++}
++
+ static int dummy_socket_getsockname (struct socket *sock)
+ {
+ 	return 0;
+@@ -1141,6 +1147,7 @@ void security_fixup_ops (struct security
+ 	set_to_dummy_if_null(ops, socket_post_accept);
+ 	set_to_dummy_if_null(ops, socket_sendmsg);
+ 	set_to_dummy_if_null(ops, socket_recvmsg);
++	set_to_dummy_if_null(ops, socket_post_recv_datagram);
+ 	set_to_dummy_if_null(ops, socket_getsockname);
+ 	set_to_dummy_if_null(ops, socket_getpeername);
+ 	set_to_dummy_if_null(ops, socket_setsockopt);
+--- linux-2.6-mm.orig/net/core/datagram.c
++++ linux-2.6-mm/net/core/datagram.c
+@@ -55,6 +55,7 @@
+ #include <net/checksum.h>
+ #include <net/sock.h>
+ #include <net/tcp_states.h>
++#include <linux/security.h>
+ 
+ /*
+  *	Is a socket 'connection oriented' ?
+@@ -148,6 +149,7 @@ struct sk_buff *__skb_recv_datagram(stru
+ {
+ 	struct sk_buff *skb;
+ 	long timeo;
++	unsigned long cpu_flags;
+ 	/*
+ 	 * Caller is allowed not to check sk->sk_err before skb_recv_datagram()
+ 	 */
+@@ -165,7 +167,6 @@ struct sk_buff *__skb_recv_datagram(stru
+ 		 * Look at current nfs client by the way...
+ 		 * However, this function was corrent in any case. 8)
+ 		 */
+-		unsigned long cpu_flags;
+ 
+ 		spin_lock_irqsave(&sk->sk_receive_queue.lock, cpu_flags);
+ 		skb = skb_peek(&sk->sk_receive_queue);
+@@ -179,6 +180,14 @@ struct sk_buff *__skb_recv_datagram(stru
+ 		}
+ 		spin_unlock_irqrestore(&sk->sk_receive_queue.lock, cpu_flags);
+ 
++		/* Filter packets from unwanted peers. */
++		if (skb) {
++			error = security_socket_post_recv_datagram(sk, skb,
++								   flags);
++			if (error)
++				goto force_dequeue;
++		}
++
+ 		if (skb)
+ 			return skb;
+ 
+@@ -191,6 +200,24 @@ struct sk_buff *__skb_recv_datagram(stru
+ 
+ 	return NULL;
+ 
++force_dequeue:
++	/* Drop this packet because LSM says "Don't pass it to the caller". */
++	if (!(flags & MSG_PEEK))
++		goto no_peek;
++	/*
++	 * If this packet is MSG_PEEK'ed, dequeue it forcibly
++	 * so that this packet won't prevent the caller from picking up
++	 * next packet.
++	 */
++	spin_lock_irqsave(&sk->sk_receive_queue.lock, cpu_flags);
++	if (skb == skb_peek(&sk->sk_receive_queue)) {
++		__skb_unlink(skb, &sk->sk_receive_queue);
++		atomic_dec(&skb->users);
++		/* Do I have something to do with skb->peeked ? */
++	}
++	spin_unlock_irqrestore(&sk->sk_receive_queue.lock, cpu_flags);
++no_peek:
++	kfree_skb(skb);
+ no_packet:
+ 	*err = error;
+ 	return NULL;
+--- linux-2.6-mm.orig/security/security.c
++++ linux-2.6-mm/security/security.c
+@@ -895,9 +895,9 @@ int security_socket_accept(struct socket
+ 	return security_ops->socket_accept(sock, newsock);
+ }
+ 
+-void security_socket_post_accept(struct socket *sock, struct socket *newsock)
++int security_socket_post_accept(struct socket *sock, struct socket *newsock)
+ {
+-	security_ops->socket_post_accept(sock, newsock);
++	return security_ops->socket_post_accept(sock, newsock);
+ }
+ 
+ int security_socket_sendmsg(struct socket *sock, struct msghdr *msg, int size)
+@@ -911,6 +911,12 @@ int security_socket_recvmsg(struct socke
+ 	return security_ops->socket_recvmsg(sock, msg, size, flags);
+ }
+ 
++int security_socket_post_recv_datagram(struct sock *sk, struct sk_buff *skb,
++				       unsigned int flags)
++{
++	return security_ops->socket_post_recv_datagram(sk, skb, flags);
++}
++
+ int security_socket_getsockname(struct socket *sock)
+ {
+ 	return security_ops->socket_getsockname(sock);
 
 -- 
