@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbYAIABl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757106AbYAIACQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756916AbYAIABl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 19:01:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbYAIABc
+	id S1757106AbYAIACQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 19:02:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbYAIAB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 19:01:32 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:53018 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753092AbYAIABb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 19:01:31 -0500
-Date: Wed, 9 Jan 2008 01:03:58 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, gorcunov@gmail.com
-Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl II
-Message-ID: <20080109000358.GF2117@one.firstfloor.org>
-References: <20080108164015.GC31504@one.firstfloor.org> <4d8e3fd30801081158j3e7292d0i939776342015b12d@mail.gmail.com> <20080108204214.GA2117@one.firstfloor.org> <20080108230636.GC2117@one.firstfloor.org> <4d8e3fd30801081543l57add8bei48052bdf68730474@mail.gmail.com>
-Mime-Version: 1.0
+	Tue, 8 Jan 2008 19:01:59 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55991 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753446AbYAIAB6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 19:01:58 -0500
+Date: Wed, 9 Jan 2008 01:01:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jan Beulich <jbeulich@novell.com>
+Subject: Re: [PATCH 00 of 10] x86: unify asm/pgtable.h
+Message-ID: <20080109000146.GA29095@elte.hu>
+References: <patchbomb.1199829603@localhost> <20080108224244.GA3768@elte.hu> <20080108231226.GA10744@elte.hu> <478405DA.40303@goop.org> <20080108232803.GA19906@elte.hu> <20080108234449.GA24274@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4d8e3fd30801081543l57add8bei48052bdf68730474@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080108234449.GA24274@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.7
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.7 required=5.9 tests=BAYES_00,UPPERCASE_50_75 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.8 UPPERCASE_50_75        message body is 50-75% uppercase
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> paolo@paolo-desktop:~/linux-2.6/mm$ grep "struct file_operations" *
-> shmem.c:static const struct file_operations shmem_file_operations;
-> shmem.c:static const struct file_operations shmem_file_operations = {
-> swapfile.c:static const struct file_operations proc_swaps_operations = {
-> 
-> Am I right in saying that both the files don't need to be modified?
 
-If they don't have an ioctl handler they don't need to be modified, correct.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> 
-> There is nothing like:
-> struct file_operations xyz_ops = {
->        ...
->        .ioctl = xyz_ioctl
-> };
-> 
-> in there.
-> 
-> So I guess I need a smarter trick to find out which files need to be modified
-> as you previously suggested.
+>  #define __PAGE_KERNEL_EXEC						\
+> -	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_GLOBAL)
+> +	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED)
 
-grep -P '\.ioctl.*=' $(grep -rl 'struct file_operations' * )
+btw., __PAGE_KERNEL_EXEC should probably be _PAGE_GLOBAL - but it wasnt 
+before.
 
-should work. There are also special multiline greps iirc that might also be able
-to do this better (like sgrep)
-
--Andi
+	Ingo
