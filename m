@@ -1,37 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbYAIHUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752958AbYAIHVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753409AbYAIHUV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 02:20:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbYAIHUJ
+	id S1752958AbYAIHVo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 02:21:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbYAIHVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 02:20:09 -0500
-Received: from verein.lst.de ([213.95.11.210]:33996 "EHLO verein.lst.de"
+	Wed, 9 Jan 2008 02:21:37 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:42436 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751107AbYAIHUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 02:20:08 -0500
-Date: Wed, 9 Jan 2008 08:19:45 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Dave Airlie <airlied@linux.ie>
-Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
-       hch@lst.de, ak@suse.de, pq@iki.fi, jbeulich@novell.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Revert "x86: optimize page faults like all other achitectures and kill notifier cruft"
-Message-ID: <20080109071945.GB10695@lst.de>
-References: <alpine.DEB.0.82.0801090226240.9570@skynet.skynet.ie> <20080108190611.3b9c0760.akpm@linux-foundation.org> <alpine.DEB.0.82.0801090308230.9570@skynet.skynet.ie> <20080108192951.a4dc394f.akpm@linux-foundation.org> <alpine.DEB.0.82.0801090346370.9570@skynet.skynet.ie>
+	id S1750921AbYAIHVg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 02:21:36 -0500
+Date: Wed, 9 Jan 2008 08:21:32 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch] split MMC_CAP_4_BIT_DATA
+Message-ID: <20080109082132.001fd339@poseidon.drzeus.cx>
+In-Reply-To: <8bd0f97a0801081344i55100937qc1ad178dd94c358b@mail.gmail.com>
+References: <200801081329.39611.vapier.adi@gmail.com>
+	<20080108202157.0b8d3393@poseidon.drzeus.cx>
+	<200801081440.49683.vapier.adi@gmail.com>
+	<20080108214946.03018d95@poseidon.drzeus.cx>
+	<8bd0f97a0801081344i55100937qc1ad178dd94c358b@mail.gmail.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.0.82.0801090346370.9570@skynet.skynet.ie>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_44
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 09, 2008 at 03:55:20AM +0000, Dave Airlie wrote:
-> now because Linus said send him a patch to revert regressions rather than 
-> just complain,
+On Tue, 8 Jan 2008 16:44:08 -0500
+"Mike Frysinger" <vapier.adi@gmail.com> wrote:
 
-this is not a regression by any definition.  You were abusing exported
-symbols for out of tree junk, so you'll lose.
+> On Jan 8, 2008 3:49 PM, Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
+> > So, again, if you feel that there is a hardware difference between 4-bit MMC and 4-bit SD then please elaborate as it is my understanding that they are identical.
+> 
+> you may be 100% correct, i have no idea, i'm not really familiar with
+> MMC/SD/SDIO at all.
 
+The patch adds complexity to the system. So until you can convince me that complexity is actually needed, I'm afraid the answer is NAK.
+
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
