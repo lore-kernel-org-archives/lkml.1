@@ -1,110 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756102AbYAISIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbYAISMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756102AbYAISIe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 13:08:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbYAISI0
+	id S1756032AbYAISMP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 13:12:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbYAISL7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 13:08:26 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:37336 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751893AbYAISIY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 13:08:24 -0500
-Date: Wed, 9 Jan 2008 13:08:11 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: akpm@linux-foundation.org, neilb@suse.de, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/6] NLM: Convert lockd to use kthreads
-Message-ID: <20080109130811.6ea2cca7@tleilax.poochiereds.net>
-In-Reply-To: <20080109174506.GB30523@infradead.org>
-References: <1199820798-5289-1-git-send-email-jlayton@redhat.com>
-	<1199820798-5289-2-git-send-email-jlayton@redhat.com>
-	<1199820798-5289-3-git-send-email-jlayton@redhat.com>
-	<1199820798-5289-4-git-send-email-jlayton@redhat.com>
-	<1199820798-5289-5-git-send-email-jlayton@redhat.com>
-	<1199820798-5289-6-git-send-email-jlayton@redhat.com>
-	<20080109174506.GB30523@infradead.org>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+	Wed, 9 Jan 2008 13:11:59 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:49399 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752092AbYAISL6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 13:11:58 -0500
+Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
+	I/O delay override.
+From: Zachary Amsden <zach@vmware.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Christer Weinigel <christer@weinigel.se>,
+       "David P. Reed" <dpreed@reed.com>, Avi Kivity <avi@qumranet.com>,
+       Ondrej Zary <linux@rainbow-software.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Bodo Eggert <7eggert@gmx.de>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Paul Rolland <rol@as2917.net>, Pavel Machek <pavel@ucw.cz>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, rol <rol@witbe.net>
+In-Reply-To: <4784E7E1.4060308@keyaccess.nl>
+References: <9BdU5-1YW-9@gated-at.bofh.it>
+	 <200801081810.58904.linux@rainbow-software.org>	<4783B1B2.6070005@reed.com>
+	 <200801081838.16241.linux@rainbow-software.org>	<4783C4A6.9060402@reed.com>
+	 <20080108185120.3ff7ed18@lxorguk.ukuu.org.uk>	<4783CBD9.7020709@reed.com>
+	 <1199847162.7369.323.camel@bodhitayantram.eng.vmware.com>
+	 <20080109063052.48a5709c@weinigel.se>  <4784E7E1.4060308@keyaccess.nl>
+Content-Type: text/plain
+Date: Wed, 09 Jan 2008 10:17:24 -0800
+Message-Id: <1199902644.7369.355.camel@bodhitayantram.eng.vmware.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Jan 2008 17:45:06 +0000
-Christoph Hellwig <hch@infradead.org> wrote:
+On Wed, 2008-01-09 at 16:27 +0100, Rene Herman wrote:
+> On 09-01-08 06:30, Christer Weinigel wrote:
+> I'd not expect very time crtical. The current outb_p use gives a delay 
+> somewhere between .5 and 2 microseconds as per earlier survey meaning a 
+> udelay(1) or 2 would be enough -- again, at the point that udelay() is sensible.
+> 
+> New machines don't use the legacy PIC anymore anyway.
+> 
+> > The floppy controller code uses outb_p.  Even though there might be
+> > floppy controllers on modern systems, I'd rather leave the floppy code
+> > alone since it's supposed to be very fragile.  If you still use
+> > floppies you deserve what you get.
+> 
+> Floppies forever. In practice, leaving it alone isn't going to matter, but 
+> in that same practice changing it to udelay() probably doesn't either. The 
+> ones to leave alone are the ones that are clumsy/impossible to test and the 
+> ones such as in NIC drivers that were specifically tuned.
 
-> On Tue, Jan 08, 2008 at 02:33:17PM -0500, Jeff Layton wrote:
-> > -	struct svc_serv *	serv;
-> > -	int			error = 0;
-> > +	struct svc_serv *serv;
-> > +	struct svc_rqst *rqstp;
-> > +	int		error = 0;
-> >  
-> >  	mutex_lock(&nlmsvc_mutex);
-> >  	/*
-> >  	 * Check whether we're already up and running.
-> >  	 */
-> > -	if (nlmsvc_pid) {
-> > +	if (nlmsvc_task) {
-> >  		if (proto)
-> >  			error = make_socks(nlmsvc_serv, proto);
-> 
-> While equivalent I think it would be clener to check for nlmsvc_serv
-> above as that'swhat we're passing to make_socks.  But I think the
-> whole of lockd_up could use a little makeover, but that's for later.
-> 
+I'm speaking specifically in terms of 64-bit platforms here.  Shouldn't
+we unconditionally drop outb_p doing extra port I/O on 64-bit
+architectures?  Especially considering they don't even have an ISA bus
+where the decode timing could even matter?
 
-Probably so. If I respin, I'll plan to fix that too.
+> If simple outb_p() deprecation is considered enough instead, no need to 
+> touch anything in drivers/, only changes to "outb(); udelay()" outside drivers/.
+> 
+> I'd let Alan decide here.
 
-> >  void
-> >  lockd_down(void)
-> >  {
-> >  	mutex_lock(&nlmsvc_mutex);
-> >  	if (nlmsvc_users) {
-> >  		if (--nlmsvc_users)
-> >  			goto out;
-> > +	} else {
-> > +		printk(KERN_ERR "lockd_down: no users! task=%p\n",
-> > +			nlmsvc_task);
-> > +		BUG();
-> >  	}
-> > +	if (!nlmsvc_task) {
-> > +		printk(KERN_ERR "lockd_down: no lockd running.\n");
-> > +		BUG();
-> >  	}
-> > +	kthread_stop(nlmsvc_task);
-> 
-> I think all this user/foo checking here should be BUG_ONs as it's
-> quite fatal errors.
-> 
-> e.g.
-> 
-> void
-> lockd_down(void)
-> {
->  	mutex_lock(&nlmsvc_mutex);
-> 
-> 	BUG_ON(!nlmsvc_task);
-> 	BUG_ON(!nlmsvc_users);
-> 
-> 	if (!--nlmsvc_users)
-> 		kthread_stop(nlmsvc_task);
-> 	mutex_unlock(&nlmsvc_mutex);
-> }
-> 
-> 
-> same applies for similar checks in lockd_up aswell.
-> 	
+Agree.
 
-With this patch the lockd_down checks should now be BUGs. I decided
-not to do that in lockd_up. If there's an error within the main
-lockd loop, it can exit without being requested to do so. If someone
-then calls lockd_up then the counts will be off and the check will fire.
+Zach
 
-It seems like if we're going to make the check in lockd_up be a BUG,
-then we should also BUG rather than letting lockd exit prematurely.
-
--- 
-Jeff Layton <jlayton@redhat.com>
