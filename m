@@ -1,250 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755845AbYAIDes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbYAIDf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755845AbYAIDes (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 22:34:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbYAIDel
+	id S1756176AbYAIDf3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 22:35:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbYAIDfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 22:34:41 -0500
-Received: from rv-out-0910.google.com ([209.85.198.191]:9878 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752360AbYAIDek (ORCPT
+	Tue, 8 Jan 2008 22:35:20 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45366 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752448AbYAIDfR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 22:34:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ZGkc2FaVpItFVTZzPRsk2OTTwrwHdItKPQ/f3/dprjQKscdUn/8dRJQ908T6fbKtazffYkS9s9cNe1hP4SCM5pC4pttQMKnYKIIY3oME2NWvsx7DDLjcyppawDeinux1gmTylJ1+rx6g+c86YHKx5srZz5Vafby9ceao8fv4Kzw=
-Subject: [RFC] x86: Add oops_begin, oops_end to X86_32
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain
-Date: Tue, 08 Jan 2008 19:34:41 -0800
-Message-Id: <1199849681.6424.34.camel@brick>
+	Tue, 8 Jan 2008 22:35:17 -0500
+Date: Tue, 8 Jan 2008 19:33:50 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: mingo@elte.hu, kyle@mcmartin.ca, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@redhat.com
+Subject: Re: [PATCH] call sysrq_timer_list_show from a workqueue
+Message-Id: <20080108193350.ffc94e44.akpm@linux-foundation.org>
+In-Reply-To: <200801091420.19273.rusty@rustcorp.com.au>
+References: <20080108063113.GA21287@fattire.cabal.ca>
+	<200801082250.06828.rusty@rustcorp.com.au>
+	<20080108162159.9f37d856.akpm@linux-foundation.org>
+	<200801091420.19273.rusty@rustcorp.com.au>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some more work is needed on this patch, but I'm looking for
-some feedback about the general direction.  X86_64's
-implementation seems nicer and it would be useful to use
-a common base for further unification in the oops handling.
+On Wed, 9 Jan 2008 14:20:18 +1100 Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-Modify the X86_32 implementation of die() using helpers
-oops_begin()/oops_end().  Small whitespace change in
-traps_64.c for easier comparison between the two.
+> On Wednesday 09 January 2008 11:21:59 Andrew Morton wrote:
+> > The string handling in here has become a bit scruffy.
+> 
+> Yes, that patch also evokes a const warning.  Fixed below.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- arch/x86/kernel/traps_32.c |  137 +++++++++++++++++++++++---------------------
- arch/x86/kernel/traps_64.c |   11 +--
- 2 files changed, 76 insertions(+), 72 deletions(-)
+No patch was included.
 
-diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
-index 5f2b38e..a4092ed 100644
---- a/arch/x86/kernel/traps_32.c
-+++ b/arch/x86/kernel/traps_32.c
-@@ -352,10 +352,61 @@ int is_valid_bugaddr(unsigned long ip)
- 	return ud2 == 0x0b0f;
- }
- 
--static int die_counter;
-+static raw_spinlock_t die_lock = __RAW_SPIN_LOCK_UNLOCKED;
-+static int die_owner = -1;
-+static unsigned int die_nest_count;
-+
-+unsigned long __kprobes oops_begin(void)
-+{
-+	int cpu;
-+	unsigned long flags;
-+
-+	oops_enter();
-+
-+	raw_local_irq_save(flags);
-+	cpu = smp_processor_id();
-+	/* racy, but better than risking deadlock. */
-+	if (!__raw_spin_trylock(&die_lock) && cpu != die_owner) {
-+		__raw_spin_lock(&die_lock);
-+	}
-+	die_nest_count++;
-+	die_owner = cpu;
-+	console_verbose();
-+	bust_spinlocks(1);
-+	return flags;
-+}
-+
-+void __kprobes oops_end(unsigned long flags, struct pt_regs *regs, int signr)
-+{ 
-+	die_owner = -1;
-+	bust_spinlocks(0);
-+	die_nest_count--;
-+	if (!die_nest_count)
-+		/* Nest count reaches zero, release the lock. */
-+		__raw_spin_unlock(&die_lock);
-+	raw_local_irq_restore(flags);
-+
-+	if (!regs) {
-+		oops_exit();
-+		return;
-+	}
-+
-+	if (kexec_should_crash(current))
-+		crash_kexec(regs);
-+
-+	if (in_interrupt())
-+		panic("Fatal exception in interrupt");
-+
-+	if (panic_on_oops)
-+		panic("Fatal exception");
-+
-+	oops_exit();
-+	do_exit(signr);
-+}
- 
- int __kprobes __die(const char * str, struct pt_regs * regs, long err)
- {
-+	static int die_counter;
- 	unsigned long sp;
- 	unsigned short ss;
- 
-@@ -371,24 +422,23 @@ int __kprobes __die(const char * str, struct pt_regs * regs, long err)
- #endif
- 	printk("\n");
- 
--	if (notify_die(DIE_OOPS, str, regs, err,
--				current->thread.trap_no, SIGSEGV) !=
--			NOTIFY_STOP) {
--		show_registers(regs);
--		/* Executive summary in case the oops scrolled away */
--		sp = (unsigned long) (&regs->sp);
--		savesegment(ss, ss);
--		if (user_mode(regs)) {
--			sp = regs->sp;
--			ss = regs->ss & 0xffff;
--		}
--		printk(KERN_EMERG "EIP: [<%08lx>] ", regs->ip);
--		print_symbol("%s", regs->ip);
--		printk(" SS:ESP %04x:%08lx\n", ss, sp);
--		return 0;
--	} else {
-+	if (notify_die(DIE_OOPS, str, regs, err, current->thread.trap_no,
-+	    SIGSEGV) == NOTIFY_STOP)
- 		return 1;
-+
-+	show_registers(regs);
-+	add_taint(TAINT_DIE);
-+	/* Executive summary in case the oops scrolled away */
-+	sp = (unsigned long) (&regs->sp);
-+	savesegment(ss, ss);
-+	if (user_mode(regs)) {
-+		sp = regs->sp;
-+		ss = regs->ss & 0xffff;
- 	}
-+	printk(KERN_EMERG "EIP: [<%08lx>] ", regs->ip);
-+	print_symbol("%s", regs->ip);
-+	printk(" SS:ESP %04x:%08lx\n", ss, sp);
-+	return 0;
- }
- 
- /*
-@@ -397,58 +447,15 @@ int __kprobes __die(const char * str, struct pt_regs * regs, long err)
-  */
- void die(const char * str, struct pt_regs * regs, long err)
- {
--	static struct {
--		raw_spinlock_t lock;
--		u32 lock_owner;
--		int lock_owner_depth;
--	} die = {
--		.lock =			__RAW_SPIN_LOCK_UNLOCKED,
--		.lock_owner =		-1,
--		.lock_owner_depth =	0
--	};
--	unsigned long flags;
-+	unsigned long flags = oops_begin();
- 
--	oops_enter();
--
--	if (die.lock_owner != raw_smp_processor_id()) {
--		console_verbose();
--		raw_local_irq_save(flags);
--		__raw_spin_lock(&die.lock);
--		die.lock_owner = smp_processor_id();
--		die.lock_owner_depth = 0;
--		bust_spinlocks(1);
--	} else
--		raw_local_irq_save(flags);
--
--	if (++die.lock_owner_depth < 3) {
-+	if (!user_mode(regs))
- 		report_bug(regs->ip, regs);
- 
--		if (__die(str, regs, err))
--			regs = NULL;
--	} else {
--		printk(KERN_EMERG "Recursive die() failure, output suppressed\n");
--	}
-+	if (__die(str, regs, err))
-+		regs = NULL;
- 
--	bust_spinlocks(0);
--	die.lock_owner = -1;
--	add_taint(TAINT_DIE);
--	__raw_spin_unlock(&die.lock);
--	raw_local_irq_restore(flags);
--
--	if (!regs)
--		return;
--
--	if (kexec_should_crash(current))
--		crash_kexec(regs);
--
--	if (in_interrupt())
--		panic("Fatal exception in interrupt");
--
--	if (panic_on_oops)
--		panic("Fatal exception");
--
--	oops_exit();
--	do_exit(SIGSEGV);
-+	oops_end(flags, regs, SIGSEGV);
- }
- 
- static inline void die_if_kernel(const char * str, struct pt_regs * regs, long err)
-diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
-index c173687..c50549e 100644
---- a/arch/x86/kernel/traps_64.c
-+++ b/arch/x86/kernel/traps_64.c
-@@ -465,21 +465,18 @@ static raw_spinlock_t die_lock = __RAW_SPIN_LOCK_UNLOCKED;
- static int die_owner = -1;
- static unsigned int die_nest_count;
- 
--unsigned __kprobes long oops_begin(void)
-+unsigned long __kprobes oops_begin(void)
- {
- 	int cpu;
- 	unsigned long flags;
- 
- 	oops_enter();
- 
--	/* racy, but better than risking deadlock. */
- 	raw_local_irq_save(flags);
- 	cpu = smp_processor_id();
--	if (!__raw_spin_trylock(&die_lock)) {
--		if (cpu == die_owner) 
--			/* nested oops. should stop eventually */;
--		else
--			__raw_spin_lock(&die_lock);
-+	/* racy, but better than risking deadlock. */
-+	if (!__raw_spin_trylock(&die_lock) && cpu != die_owner) {
-+		__raw_spin_lock(&die_lock);
- 	}
- 	die_nest_count++;
- 	die_owner = cpu;
--- 
-1.5.4.rc2.1164.g6451
+>  I assume you've
+> queued these because you're thinking of applying them before 2.6.24?  I'd say
+> only modules-de-mutex-more-symbol-lookup-paths-in-the-module-code.patch
+> warrants that (the other is unlikely and not a regression).
 
+Actually I was thinking 2.6.25 on both.
+
+<looks>
+
+   Kyle McMartin reports sysrq_timer_list_show() can hit the module
+   mutex; these paths don't need to though, since we long ago changed all
+   the module list manipulation to occur via stop_machine().
+
+   Disabling preemption is enough.
+
+Ah.  sysrq_timer_list_show() is called from interrupt.
+
+<fixes changelog, thwaps its author>
+
+OK, 2.6.24 seems reasonable.
+
+> > afacit the `namebuf[KSYM_NAME_LEN - 1] = 0;' would be unneeded if we were
+> > to use strlcpy() and I suspect the `namebuf[0] = 0;' isn't needed either.
+> >
+> > And the use of strlcpy() means we don't need to subtract 1 from
+> > KSYM_NAME_LEN and we don't need to fret about weird strncpy semantics when
+> > the input string is too large.
+> >
+> >
+> > And the fact that incoming arg `namebuf' MUST point at a
+> > KSYM_NAME_LEN-sized buffer could be better communicated by using a
+> > dedicated struct for this, or by giving the arg a type of `char
+> > namebuf[KSYM_NAME_LEN]'.  Or by adding a comment. Or by just ignoring
+> > me and doing something more useful.
+> 
+> Or better, rework all the name lookup interfaces, rather than having: 
+> 
+> struct module *module_text_address(unsigned long addr);
+> struct module *__module_text_address(unsigned long addr);
+> int is_module_address(unsigned long addr);
+> int module_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
+> 			char *name, char *module_name, int *exported);
+> char *module_address_lookup(unsigned long addr,
+> 			    unsigned long *symbolsize,
+> 			    unsigned long *offset,
+> 			    char **modname,
+> 			    char *namebuf);
+> int lookup_module_symbol_name(unsigned long addr, char *symname);
+> int lookup_module_symbol_attrs(unsigned long addr, unsigned long *size,
+> 			       unsigned long *offset, char *modname, char *name);
+> unsigned long module_kallsyms_lookup_name(const char *name);
+> 
+> unsigned long kallsyms_lookup_name(const char *name);
+> extern int kallsyms_lookup_size_offset(unsigned long addr,
+> 				  unsigned long *symbolsize,
+> 				  unsigned long *offset);
+> const char *kallsyms_lookup(unsigned long addr,
+> 			    unsigned long *symbolsize,
+> 			    unsigned long *offset,
+> 			    char **modname, char *namebuf);
+> extern int sprint_symbol(char *buffer, unsigned long address);
+> extern void __print_symbol(const char *fmt, unsigned long address);
+> int lookup_symbol_name(unsigned long addr, char *symname);
+> int lookup_symbol_attrs(unsigned long addr, unsigned long *size,
+> 		        unsigned long *offset, char *modname, char *name);
+
+Yes, it could all do with a revisit.
