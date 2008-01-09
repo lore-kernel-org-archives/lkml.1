@@ -1,45 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbYAIOQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbYAIORT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755190AbYAIOQp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 09:16:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYAIOQi
+	id S1755428AbYAIORT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 09:17:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbYAIORF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 09:16:38 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:60926 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752145AbYAIOQh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 09:16:37 -0500
-Date: Wed, 9 Jan 2008 15:19:08 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: More breakage in native_rdtsc out of line in git-x86
-Message-ID: <20080109141908.GB12855@one.firstfloor.org>
-References: <20080109035534.GA30321@basil.nowhere.org> <20080109090956.GA14274@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080109090956.GA14274@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 9 Jan 2008 09:17:05 -0500
+Received: from main.gmane.org ([80.91.229.2]:47383 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752225AbYAIORE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 09:17:04 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Tuomo Valkonen <tuomov@iki.fi>
+Subject: Re: The ext3 way of journalling
+Date: Wed, 9 Jan 2008 14:16:52 +0000 (UTC)
+Message-ID: <slrnfo9lqk.17l.tuomov@jolt.modeemi.cs.tut.fi>
+References: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi> <18307.42821.166376.732473@stoffel.org> <slrnfo7auq.6m2.tuomov@jolt.modeemi.cs.tut.fi> <871w8r6ruc.fsf@barad-dur.regala.cx>
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: jolt.modeemi.cs.tut.fi
+User-Agent: slrn/0.9.8.1pl1 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> nope, it's a 64-bit setup/dependency bug/problem: the vsyscall mappings 
-> are installed via an __initcall, and that's too late for early use. The 
-> combo patch below fixed the crash for me, does it work on your box too?
+On 2008-01-09, Mathieu SEGAUD <mathieu.segaud@regala.cx> wrote:
+> fix your hardware clock then
 
-That gives
+It displays just the right time. On boot anyway. (Linux has had some
+serious problems keeping the time after the switch from 2.6.7 to 2.6.14,
+advanding even 15 minutes a day -- that ntpd doesn't seem to be able 
+to keep up with -- requiring running adjtimexconfig every now and
+then for new settings. But the cmos clock displays the right time.)
 
-/home/lsrc/quilt/linux/arch/x86/kernel/setup_64.c: In function 'setup_arch':
-/home/lsrc/quilt/linux/arch/x86/kernel/setup_64.c:468: error: implicit declarati
-on of function 'map_vsyscall'
+-- 
+Tuomo
 
-But after I add a prototype to vsyscall.h it seems to work.
-
-Just the barriers are still broken -- you have not replied to any 
-of my emails on that topic. What's up with that?
-
--Andi
