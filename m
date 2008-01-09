@@ -1,33 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758226AbYAIBBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758340AbYAIBB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758226AbYAIBBi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 20:01:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756133AbYAIAzX
+	id S1758340AbYAIBB5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 20:01:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756932AbYAIAz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 19:55:23 -0500
-Received: from ms0.nttdata.co.jp ([163.135.193.231]:51965 "EHLO
+	Tue, 8 Jan 2008 19:55:28 -0500
+Received: from ms0.nttdata.co.jp ([163.135.193.231]:51967 "EHLO
 	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753447AbYAIAya (ORCPT
+	with ESMTP id S1756019AbYAIAya (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 8 Jan 2008 19:54:30 -0500
-Message-Id: <20080109005425.800719821@nttdata.co.jp>
+Message-Id: <20080109005426.344192310@nttdata.co.jp>
 References: <20080109005320.323184643@nttdata.co.jp>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 Jan 2008 09:53:36 +0900
+Date: Wed, 09 Jan 2008 09:53:37 +0900
 From: Kentaro Takeda <takedakn@nttdata.co.jp>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #6 retry 16/21] Signal control functions.
-X-OriginalArrivalTime: 09 Jan 2008 00:54:26.0802 (UTC) FILETIME=[2EEF2D20:01C8525A]
+Subject: [TOMOYO #6 retry 17/21] Capability access control functions.
+X-OriginalArrivalTime: 09 Jan 2008 00:54:26.0787 (UTC) FILETIME=[2EECE330:01C8525A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TOMOYO Linux checks sending signal by signal number and
-the domain of target process. In order to check signal
-permission, modification against kernel/signal.c is needed.
+TOMOYO Linux checks permission for non-POSIX capability
+so that the number of capabilities won't be limited to 32 or 64.
+
+TOMOYO Linux uses per-a-domain capability, an approach that associate
+capabilities with each domain, and assign a domain for each process.
+
+The advantages of this approach are that
+
+(1) minimum capabilities required for a process is directly given
+    compared to setting/clearing/inheriting bit fields of a process's
+    capability value.
+
+(2) it can support as many types of capabilities as you want
+    without consuming much memory because you don't need to allocate
+    memory for per-a-task basis.
+
+Although current implementation can handle up to 65536 types of capabilities.
+we don't have enough hooks for checking/distinguishing
+"What operation is requested.".
+Therefore, some of capabilities defined in this module doesn't work.
+We want to insert a new hook like operation_capable(syscall_number)
+so that we can have enough hooks for checking/distinguishing requests.
+
+May be system call auditing mechanism helps distinguish operations that are
+all-combined into capable(CAP_SYS_ADMIN) operation. But to use it,
+we think we have to enable system call auditing for all processes,
+which may cause performance and log flooding problem?
 
 Each permission can be automatically accumulated into
 the policy of each domain using 'learning mode'.
@@ -35,31 +59,193 @@ the policy of each domain using 'learning mode'.
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 ---
- security/tomoyo/signal.c |  226 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 226 insertions(+)
+ security/tomoyo/capability.c |  320 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 320 insertions(+)
 
 --- /dev/null
-+++ linux-2.6-mm/security/tomoyo/signal.c
-@@ -0,0 +1,226 @@
++++ linux-2.6-mm/security/tomoyo/capability.c
+@@ -0,0 +1,320 @@
 +/*
-+ * security/tomoyo/signal.c
++ * security/tomoyo/capability.c
 + *
-+ * Signal access contol functions for TOMOYO Linux.
++ * Capability access control functions for TOMOYO Linux.
 + */
 +
 +#include "tomoyo.h"
 +#include "realpath.h"
 +
++static struct {
++	const char *keyword;
++	unsigned int current_value;
++	const char *capability_name;
++} capability_control_array[TMY_MAX_CAPABILITY_INDEX] = {
++	[TMY_INET_STREAM_SOCKET_CREATE]  = /* OK */
++	{ "inet_tcp_create", 0, "socket(PF_INET, SOCK_STREAM)" },
++	[TMY_INET_STREAM_SOCKET_LISTEN]  = /* OK */
++	{ "inet_tcp_listen", 0, "listen(PF_INET, SOCK_STREAM)" },
++	[TMY_INET_STREAM_SOCKET_CONNECT] = /* OK */
++	{ "inet_tcp_connect", 0, "connect(PF_INET, SOCK_STREAM)" },
++	[TMY_USE_INET_DGRAM_SOCKET]      = /* OK */
++	{ "use_inet_udp", 0, "socket(PF_INET, SOCK_DGRAM)" },
++	[TMY_USE_INET_RAW_SOCKET]        = /* OK */
++	{ "use_inet_ip", 0, "socket(PF_INET, SOCK_RAW)" },
++	[TMY_USE_ROUTE_SOCKET]           = /* OK */
++	{ "use_route", 0, "socket(PF_ROUTE)" },
++	[TMY_USE_PACKET_SOCKET]          = /* OK */
++	{ "use_packet", 0, "socket(PF_PACKET)" },
++	[TMY_SYS_MOUNT]                  = /* OK */
++	{ "SYS_MOUNT", 0, "sys_mount()" },
++	[TMY_SYS_UMOUNT]                 = /* OK */
++	{ "SYS_UMOUNT", 0, "sys_umount()" },
++	[TMY_SYS_REBOOT]                 = /* Too many hooks. */
++	{ "SYS_REBOOT", 0, "sys_reboot()" },
++	[TMY_SYS_CHROOT]                 = /* OK */
++	{ "SYS_CHROOT", 0, "sys_chroot()" },
++	[TMY_SYS_KILL]                   = /* No appropriate hook. */
++	{ "SYS_KILL", 0, "sys_kill()" },
++	[TMY_SYS_VHANGUP]                = /* Too many hooks. */
++	{ "SYS_VHANGUP", 0, "sys_vhangup()" },
++	[TMY_SYS_SETTIME]                = /* Too many hooks. */
++	{ "SYS_TIME", 0, "sys_settimeofday()" },
++	[TMY_SYS_NICE]                   = /* No appropriate hook. */
++	{ "SYS_NICE", 0, "sys_nice()" },
++	[TMY_SYS_SETHOSTNAME]            = /* No appropriate hook. */
++	{ "SYS_SETHOSTNAME", 0, "sys_sethostname()" },
++	[TMY_USE_KERNEL_MODULE]          = /* Too many hooks. */
++	{ "use_kernel_module", 0, "kernel_module" },
++	[TMY_CREATE_FIFO]                = /* OK */
++	{ "create_fifo", 0, "mknod(FIFO)" },
++	[TMY_CREATE_BLOCK_DEV]           = /* OK */
++	{ "create_block_dev", 0, "mknod(BDEV)" },
++	[TMY_CREATE_CHAR_DEV]            = /* OK */
++	{ "create_char_dev", 0, "mknod(CDEV)" },
++	[TMY_CREATE_UNIX_SOCKET]         = /* OK */
++	{ "create_unix_socket", 0, "mknod(SOCKET)" },
++	[TMY_SYS_LINK]                   = /* OK */
++	{ "SYS_LINK", 0, "sys_link()" },
++	[TMY_SYS_SYMLINK]                = /* OK */
++	{ "SYS_SYMLINK", 0, "sys_symlink()" },
++	[TMY_SYS_RENAME]                 = /* OK */
++	{ "SYS_RENAME", 0, "sys_rename()" },
++	[TMY_SYS_UNLINK]                 = /* OK */
++	{ "SYS_UNLINK", 0, "sys_unlink()" },
++	[TMY_SYS_CHMOD]                  = /* OK */
++	{ "SYS_CHMOD", 0, "sys_chmod()" },
++	[TMY_SYS_CHOWN]                  = /* OK */
++	{ "SYS_CHOWN", 0, "sys_chown()" },
++	[TMY_SYS_IOCTL]                  = /* Too many hooks. */
++	{ "SYS_IOCTL", 0, "sys_ioctl()" },
++	[TMY_SYS_KEXEC_LOAD]             = /* No appropriate hook. */
++	{ "SYS_KEXEC_LOAD", 0, "sys_kexec_load()" },
++	[TMY_SYS_PIVOT_ROOT]             = /* OK */
++	{ "SYS_PIVOT_ROOT", 0, "sys_pivot_root()" },
++};
++
++struct profile {
++	unsigned char value[TMY_MAX_CAPABILITY_INDEX];
++};
++
++static struct profile *profile_ptr[TMY_MAX_PROFILES];
++
++/*************************  UTILITY FUNCTIONS  *************************/
++
++const char *tmy_capability2keyword(const unsigned int capability)
++{
++	return capability < TMY_MAX_CAPABILITY_INDEX ?
++		capability_control_array[capability].keyword : NULL;
++}
++
++static const char *tmy_capability2name(const unsigned int capability)
++{
++	return capability < TMY_MAX_CAPABILITY_INDEX ?
++		capability_control_array[capability].capability_name : NULL;
++}
++
++/* Check whether the given capability control is enabled. */
++static unsigned int tmy_capability_flags(const unsigned int index)
++{
++	const u8 profile = TMY_SECURITY->domain->profile;
++	/* All operations might sleep. See tmy_supervisor(). */
++	might_sleep();
++	if (in_interrupt())
++		return 0;
++	return sbin_init_started && index < TMY_MAX_CAPABILITY_INDEX
++#if TMY_MAX_PROFILES != 256
++		&& profile < TMY_MAX_PROFILES
++#endif
++		&& profile_ptr[profile] ?
++		profile_ptr[profile]->value[index] : 0;
++}
++
++static struct profile *tmy_new_capability_profile(const unsigned int profile)
++{
++	static DEFINE_MUTEX(mutex);
++	struct profile *ptr;
++	int i;
++	if (profile >= TMY_MAX_PROFILES)
++		return NULL;
++	mutex_lock(&mutex);
++	ptr = profile_ptr[profile];
++	if (ptr)
++		goto ok;
++	ptr = tmy_alloc_element(sizeof(*ptr));
++	if (!ptr)
++		goto ok;
++	for (i = 0; i < TMY_MAX_CAPABILITY_INDEX; i++)
++		ptr->value[i] = capability_control_array[i].current_value;
++	mb(); /* Avoid out-of-order execution. */
++	profile_ptr[profile] = ptr;
++ok: ;
++	mutex_unlock(&mutex);
++	return ptr;
++}
++
++int tmy_set_capability_profile(const char *data, unsigned int value,
++			       const unsigned int profile)
++{
++	int i;
++	struct profile *ptr;
++	ptr = tmy_new_capability_profile(profile);
++	if (!ptr)
++		return -EINVAL;
++	for (i = 0; i < TMY_MAX_CAPABILITY_INDEX; i++) {
++		if (strcmp(data, capability_control_array[i].keyword))
++			continue;
++		if (value > 3)
++			value = 3;
++		ptr->value[i] = value;
++		return 0;
++	}
++	return -EINVAL;
++}
++
++int tmy_read_capability_profile(struct io_buffer *head)
++{
++	int step;
++	for (step = head->read_step;
++	     step < TMY_MAX_PROFILES * TMY_MAX_CAPABILITY_INDEX; step++) {
++		const int i = step / TMY_MAX_CAPABILITY_INDEX;
++		const int j = step % TMY_MAX_CAPABILITY_INDEX;
++		const struct profile *profile = profile_ptr[i];
++		head->read_step = step;
++		if (!profile)
++			continue;
++		if (tmy_io_printf(head, "%u-" TMY_MAC_FOR_CAPABILITY "%s=%u\n",
++				  i, capability_control_array[j].keyword,
++				  profile->value[j]))
++			break;
++	}
++	return step < TMY_MAX_PROFILES * TMY_MAX_CAPABILITY_INDEX ? -ENOMEM : 0;
++}
++
 +/*************************  AUDIT FUNCTIONS  *************************/
 +
-+static int tmy_audit_signal_log(const int signal,
-+				const struct path_info *dest_domain,
-+				const bool is_granted,
-+				const u8 profile,
-+				const unsigned int mode)
++static int tmy_audit_capability_log(const unsigned int capability,
++				    const bool is_granted,
++				    const u8 profile, const unsigned int mode)
 +{
 +	char *buf;
-+	int len;
++	int len = 64 ;
 +
 +	if (is_granted) {
 +		if (!tmy_audit_grant())
@@ -69,54 +255,43 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +			return 0;
 +	}
 +
-+	len = dest_domain->total_len;
 +	buf = tmy_init_audit_log(&len, profile, mode);
 +
 +	if (!buf)
 +		return -ENOMEM;
 +
-+	tmy_sncatprintf(buf, len - 1, "%s%d %s\n",
-+			TMY_ALLOW_SIGNAL, signal, dest_domain->name);
++	tmy_sncatprintf(buf, len - 1, TMY_ALLOW_CAPABILITY "%s\n",
++		 tmy_capability2keyword(capability));
 +
 +	return tmy_write_audit_log(buf, is_granted);
 +}
 +
-+/*************************  SIGNAL ACL HANDLER  *************************/
++/*************************  CAPABILITY ACL HANDLER  *************************/
 +
-+static int tmy_add_signal_entry(const u16 sig, const char *dest_pattern,
-+				struct domain_info *domain,
-+				const struct condition_list *cond,
-+				const bool is_delete)
++static int tmy_add_capability_acl(const unsigned int capability,
++				  struct domain_info *domain,
++				  const struct condition_list *condition,
++				  const bool is_delete)
 +{
 +	struct acl_info *ptr;
-+	struct signal_acl *acl;
-+	const struct path_info *saved_dest_pattern;
++	struct capability_acl *acl;
 +	int error = -ENOMEM;
-+
++	const u16 hash = capability;
 +	if (!domain)
 +		return -EINVAL;
-+	if (!dest_pattern ||
-+	    !tmy_is_correct_domain(dest_pattern, __FUNCTION__))
-+		return -EINVAL;
-+
-+	saved_dest_pattern = tmy_save_name(dest_pattern);
-+	if (!saved_dest_pattern)
-+		return -ENOMEM;
-+
 +	mutex_lock(&domain_acl_lock);
-+
 +	if (is_delete)
 +		goto remove;
 +
 +	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		acl = container_of(ptr, struct signal_acl, head);
-+
-+		if (ptr->type == TMY_TYPE_SIGNAL_ACL && acl->sig == sig
-+		    && ptr->cond == cond
-+		    && !tmy_pathcmp(acl->domainname, saved_dest_pattern)) {
++		acl = container_of(ptr, struct capability_acl, head);
++		if (ptr->type == TMY_TYPE_CAPABILITY_ACL
++		    && acl->capability == hash
++		    && ptr->cond == condition) {
 +			ptr->is_deleted = 0;
 +			/* Found. Nothing to do. */
 +			error = 0;
++			tmy_update_counter(TMY_UPDATE_DOMAINPOLICY);
 +			goto ok;
 +		}
 +	}
@@ -124,126 +299,70 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +	acl = tmy_alloc_element(sizeof(*acl));
 +	if (!acl)
 +		goto ok;
-+
-+	acl->head.type = TMY_TYPE_SIGNAL_ACL;
-+	acl->head.cond = cond;
-+	acl->sig = sig;
-+	acl->domainname = saved_dest_pattern;
++	acl->head.type = TMY_TYPE_CAPABILITY_ACL;
++	acl->head.cond = condition;
++	acl->capability = hash;
 +	error = tmy_add_acl(domain, &acl->head);
 +	goto ok;
 +remove: ;
 +	error = -ENOENT;
 +	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		acl = container_of(ptr, struct signal_acl, head);
-+		if (ptr->type != TMY_TYPE_SIGNAL_ACL || ptr->cond != cond ||
-+		    ptr->is_deleted || acl->sig != sig ||
-+		    tmy_pathcmp(acl->domainname, saved_dest_pattern))
++		acl = container_of(ptr, struct capability_acl, head);
++		if (ptr->type != TMY_TYPE_CAPABILITY_ACL || ptr->is_deleted ||
++		    acl->capability != hash || ptr->cond != condition)
 +			continue;
 +		error = tmy_del_acl(ptr);
 +		break;
 +	}
-+
 +ok: ;
 +	mutex_unlock(&domain_acl_lock);
-+
 +	return error;
 +}
 +
 +/**
-+ * tmy_signal_acl - check permission for kill(2)/tkill(2)/tgkill(2).
-+ * @sig:  signal number.
-+ * @pid:  pid of destination process.
++ * tmy_capable - check permission for capability.
++ * @capability: capability index.
 + *
 + * Returns zero if permission granted.
 + * Returns nonzero if permission denied.
 + */
-+int tmy_signal_acl(const int sig, const int pid)
++int tmy_capable(const unsigned int capability)
 +{
-+	struct domain_info *domain = TMY_SECURITY->domain;
-+	struct domain_info *dest = NULL;
-+	const char *dest_pattern;
++	struct domain_info * const domain = TMY_SECURITY->domain;
 +	struct acl_info *ptr;
-+	const u16 hash = sig;
 +	const u8 profile = domain->profile;
-+	const unsigned int mode = tmy_flags(TMY_MAC_FOR_SIGNAL);
++	const unsigned int mode = tmy_capability_flags(capability);
 +	const bool is_enforce = (mode == 3);
-+	bool found = 0;
-+
++	const u16 hash = capability;
 +	if (!mode)
 +		return 0;
-+	if (!sig)
-+		return 0; /* No check for NULL signal. */
-+	if (current->pid == pid) {
-+		tmy_audit_signal_log(sig, domain->domainname, 1, profile, mode);
-+		return 0; /* No check for self. */
-+	}
-+
-+	{ /* Simplified checking. */
-+		struct task_struct *p = NULL;
-+		read_lock(&tasklist_lock);
-+		if (pid > 0)
-+			p = find_task_by_pid((pid_t) pid);
-+		else if (pid == 0)
-+			p = current;
-+		else if (pid == -1)
-+			dest = &KERNEL_DOMAIN;
-+		else
-+			p = find_task_by_pid((pid_t) -pid);
-+		if (p)
-+			/* "struct task_struct"->security is not NULL. */
-+			dest = ((struct tmy_security *) p->security)->domain;
-+		read_unlock(&tasklist_lock);
-+		if (!dest)
-+			return 0; /* I can't find destinatioin. */
-+	}
-+
-+	if (domain == dest) {
-+		tmy_audit_signal_log(sig, dest->domainname, 1, profile, mode);
-+		return 0;
-+	}
-+
-+	dest_pattern = dest->domainname->name;
 +	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		struct signal_acl *acl;
-+		acl = container_of(ptr, struct signal_acl, head);
-+
-+		if (ptr->type == TMY_TYPE_SIGNAL_ACL && ptr->is_deleted == 0
-+		    && acl->sig == hash &&
-+		    tmy_check_condition(ptr->cond, NULL) == 0) {
-+			const int len = acl->domainname->total_len;
-+
-+			if (strncmp(acl->domainname->name,
-+				    dest_pattern, len) == 0
-+			    && (dest_pattern[len] == ' ' ||
-+				dest_pattern[len] == '\0')) {
-+				found = 1;
-+				break;
-+			}
-+		}
-+	}
-+
-+	tmy_audit_signal_log(sig, dest->domainname, found, profile, mode);
-+
-+	if (found)
++		struct capability_acl *acl;
++		acl = container_of(ptr, struct capability_acl, head);
++		if (ptr->type != TMY_TYPE_CAPABILITY_ACL || ptr->is_deleted
++		    || acl->capability != hash
++		    || tmy_check_condition(ptr->cond, NULL))
++			continue;
++		tmy_audit_capability_log(capability, 1, profile, mode);
 +		return 0;
-+
++	}
 +	if (tmy_flags(TMY_VERBOSE))
-+		tmy_audit("TOMOYO-%s: Signal %d to %s denied for %s\n",
-+			  tmy_getmsg(is_enforce), sig,
-+			  tmy_lastname(dest), tmy_lastname(domain));
-+
++		tmy_audit("TOMOYO-%s: %s denied for %s\n",
++			  tmy_getmsg(is_enforce),
++			  tmy_capability2name(capability),
++			  tmy_lastname(domain));
++	tmy_audit_capability_log(capability, 0, profile, mode);
 +	if (is_enforce)
-+		return tmy_supervisor("%s\n" TMY_ALLOW_SIGNAL "%d %s\n",
++		return tmy_supervisor("%s\n" TMY_ALLOW_CAPABILITY "%s\n",
 +				      domain->domainname->name,
-+				      sig, dest_pattern);
++				      tmy_capability2keyword(capability));
 +	if (mode == 1 && tmy_quota())
-+		tmy_add_signal_entry(sig, dest_pattern, domain, NULL, 0);
-+
++		tmy_add_capability_acl(capability, domain, NULL, 0);
 +	return 0;
 +}
 +
 +/**
-+ * tmy_add_signal_policy - add or delete signal policy.
++ * tmy_add_capability_policy - add or delete capability policy.
 + * @data:      a line to parse.
 + * @domain:    pointer to "struct domain_info".
 + * @cond:      pointer to "struct condition_list". May be NULL.
@@ -252,19 +371,18 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 + * Returns zero on success.
 + * Returns nonzero on failure.
 + */
-+int tmy_add_signal_policy(char *data,
-+			  struct domain_info *domain,
-+			  const struct condition_list *cond,
-+			  const bool is_delete)
++int tmy_add_capability_policy(char *data, struct domain_info *domain,
++			      const struct condition_list *cond,
++			      const bool is_delete)
 +{
-+	int sig;
-+	char *domainname = strchr(data, ' ');
-+
-+	if (sscanf(data, "%d", &sig) == 1 && domainname &&
-+	    tmy_is_domain_def(domainname + 1))
-+		return tmy_add_signal_entry(sig, domainname + 1, domain,
-+					    cond, is_delete);
-+
++	unsigned int capability;
++	for (capability = 0; capability < TMY_MAX_CAPABILITY_INDEX;
++	     capability++) {
++		if (strcmp(data, capability_control_array[capability].keyword))
++			continue;
++		return tmy_add_capability_acl(capability, domain,
++					      cond, is_delete);
++	}
 +	return -EINVAL;
 +}
 
