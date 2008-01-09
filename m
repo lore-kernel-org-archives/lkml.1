@@ -1,51 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759230AbYAIBGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbYAIBIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759230AbYAIBGA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 20:06:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758011AbYAIA7f
+	id S1756747AbYAIBIo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 20:08:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYAIBIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 19:59:35 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53326 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757884AbYAIA7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 19:59:32 -0500
-Date: Wed, 9 Jan 2008 01:59:15 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH 00 of 10] x86: unify asm/pgtable.h
-Message-ID: <20080109005914.GA24228@elte.hu>
-References: <20080108231226.GA10744@elte.hu> <478405DA.40303@goop.org> <20080108232803.GA19906@elte.hu> <20080108234449.GA24274@elte.hu> <20080109000146.GA29095@elte.hu> <47841194.2010208@goop.org> <20080109002014.GB31289@elte.hu> <20080109002803.GA3732@elte.hu> <20080109003034.GA4658@elte.hu> <47841B09.3020507@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47841B09.3020507@goop.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 8 Jan 2008 20:08:34 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39158 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751084AbYAIBIc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 20:08:32 -0500
+Date: Tue, 8 Jan 2008 17:07:21 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, just.for.lkml@googlemail.com,
+       tomof@acm.org, jarkao2@gmail.com, herbert@gondor.apana.org.au,
+       linux-kernel@vger.kernel.org, neilb@suse.de, bfields@fieldses.org,
+       netdev@vger.kernel.org, tom@opengridcomputing.com
+Subject: Re: 2.6.24-rc6-mm1
+Message-Id: <20080108170721.8f4c7412.akpm@linux-foundation.org>
+In-Reply-To: <20080109095445N.fujita.tomonori@lab.ntt.co.jp>
+References: <20080108155948.GC26114@elte.hu>
+	<20080109085753O.fujita.tomonori@lab.ntt.co.jp>
+	<20080108162739.f2f577ce.akpm@linux-foundation.org>
+	<20080109095445N.fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 09 Jan 2008 09:54:45 +0900
+FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> > > --- a/lib/iommu-helper.c~a
+> > > +++ a/lib/iommu-helper.c
+> > > @@ -8,15 +8,20 @@
+> > >  static unsigned long find_next_zero_area(unsigned long *map,
+> > >  					 unsigned long size,
+> > >  					 unsigned long start,
+> > > -					 unsigned int nr)
+> > > +					 unsigned int nr,
+> > > +					 unsigned long align_mask)
+> > >  {
+> > >  	unsigned long index, end, i;
+> > >  again:
+> > >  	index = find_next_zero_bit(map, size, start);
+> > > +
+> > > +	/* Align allocation */
+> > > +	index = (index + align_mask) & ~align_mask;
+> > 
+> > The ALIGN() macro is the approved way of doing this.
+> > 
+> > (I don't think ALIGN adds much value really, especially given that you've
+> > commented what's going on, but I guess it does make reviewing and reading a
+> > little easier).
+> 
+> Would be better to use __ALIGN_MASK? I can find only one user who
+> directly use __ALIGN_MASK. The POWER IOMMU calculates align_mask by
+> itself so it's easier to pass align_mask as an argument.
 
-> In other words, prot and ref_prot can never be equal, so this path is 
-> always taken, and the other branch which tests pte_huge() is never 
-> run.
->
-> Andi?  Jan?  Is this code just buggy, or is there something else going 
-> on here?
+ALIGN() should be OK - its aditional type coercion isn't useful in this
+case but ALIGN() is the official interface.
 
-this code is plain buggy but fixing it triggered driver bugs in the past 
-so we've been procrastinating it forever ...
+I don't see any reason why vermilion.c had to reach for __ALIGN_MASK.  I'll
+switch it to ALIGN().
 
-	Ingo
