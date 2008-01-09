@@ -1,57 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbYAIOM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbYAIOM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753369AbYAIOM2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 09:12:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbYAIOMT
+	id S1754829AbYAIOM7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 09:12:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbYAIOMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 09:12:19 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:55242 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750756AbYAIOMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 09:12:18 -0500
-Date: Wed, 9 Jan 2008 15:12:11 +0100 (CET)
-From: Jiri Kosina <jikos@jikos.cz>
-To: "Adolfo R. Brandes" <arbrandes@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: USB HID: Missing keys on Gyration Media Center Universal Remote
- Control
-In-Reply-To: <b4292e150712280848h36a5bbf5k76e121168e8bfd12@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0801091509280.25041@twin.jikos.cz>
-References: <b4292e150712280848h36a5bbf5k76e121168e8bfd12@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 9 Jan 2008 09:12:49 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:48970 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750828AbYAIOMs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 09:12:48 -0500
+Subject: Re: Top 10 kernel oopses for the week ending January 5th, 2008
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       NetDev <netdev@vger.kernel.org>
+In-Reply-To: <477FF149.4070609@linux.intel.com> (sfid-20080105_210825_521052_738F2802)
+References: <477FF149.4070609@linux.intel.com>
+	 (sfid-20080105_210825_521052_738F2802)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-TTKhLXJV/h/4QlCiToUm"
+Date: Wed, 09 Jan 2008 15:12:30 +0100
+Message-Id: <1199887950.6762.26.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Dec 2007, Adolfo R. Brandes wrote:
 
->   It is a 2.4 Ghz RF remote, and its receiver connects via USB to the
-> computer, registering two devices, a keyboard and a mouse.  From
-> /proc/bus/input/devices:
-> I: Bus=0003 Vendor=0c16 Product=0002 Version=0110
-> N: Name="Gyration Gyration RF Technology Receiver"
-> 1) The power button, which is actually a Sleep or Suspend button, when
-> pressed repeats endlessly.  One must disconnect the receiver for it to
-> stop.  I suspect this is because the key press event registers
-> correctly, but not the key release.
-> 2) Four of the buttons ("TV", "SETUP MENU", "LAST", and "INPUT") are
-> not recognized and do not register any events.
->   I generated a log using a 2.6.24-rc6 kernel with
-> CONFIG_HID_DEBUG=yes and evbug loaded, and saw that:
-> * "SETUP MENU", "LAST", and "INPUT" keys do absolutely nothing.
-> * "TV" registers something, but apparently not enough for an event.
-> * "Power" correctly registers a Sleep event, but repeats endlessly.
+--=-TTKhLXJV/h/4QlCiToUm
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Hi Adolfo,
 
-thanks a lot for the detailed and accurate report. Yes, this device would 
-require a mapping quirk for the non-working keys. The endlessly repeating 
-key might need something more sophisticated. I will look into your report 
-and send you a patch to test in a few days. Currently, I am overloaded 
-with other things, sorry.
+> Rank 1: __ieee80211_rx
+> 	Warning at net/mac80211/rx.c:1672
+> 	Reported 6 times (11 total reports)
+> 	Same issue that was ranked 2nd last week
+> 	Johannes has diagnosed this as a driver bug in the iwlwifi drivers
+> 	More info: http://www.kerneloops.org/search.php?search=3D__ieee80211_rx
 
-Thanks,
+Note that because we don't get the module list for WARN_ON, we don't
+actually know whether all of these instances are from the iwlwifi
+drivers. A few other drivers suffer from the same problem. In one of
+these cases, iwlwifi was contained in the stack trace, but in the common
+case that isn't happening because packet processing is delayed to a
+tasklet.
 
--- 
-Jiri Kosina
+johannes
+
+--=-TTKhLXJV/h/4QlCiToUm
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR4TWTKVg1VMiehFYAQKSoxAAggDMC6OMjaonL+Brec/ocoeUSZBWv0th
+fbAyM/etIQu+miJLr4CfwyRAk/dNN//Gugrw5L8MmwNuVjVQlI5Gc4UqlT93K424
+aZqdpN7PYKFGsWpWW2XsgFd5pdCEGv2WcfEXNEJkHs7aefNnRmLHoQ5/bejMwkMp
+rj0n4UHnXELIw1sH3wrJqDksF6+EzgslumsiDULAilryWB3TIHkgqPEnY2vIW0Wq
+ywlmq2ep4o9cqCy10ddqjfdE2H1F1Fd8prN5HjJvmVyZruaRtLFr8TT+/hlV3ht/
+tT9dKbVbVJanZ+YbhsmBaRo/ODeaoxE5oMu9UxMriXg7+vtitDXr3dIu/ltbdYIq
+/X5IniKLcsE6NdbNGC0A+i/sk5yjM+RAhhkzOpgvnMLYVjrDjkyilh3EYx79w0Ik
+mpOlJjPnocpkZ7Sx3KdYwZ0n+4dO3VhgKk32MNCvwWtn+Vlyju0yHh5/Z6cyi6oU
+56h0YTFpWr7du8ldQtLeuOXc93UR/MKD+R3hr4kWm0qizbbVHAXc2l9c9JkIPlVR
+5gFjAA4AW9mthF765tcnCv4LaPJs8cYRhE0yVgsns1Y8iF7h124tHMBX94IDb7zJ
+SWXbI4/i/TIsxd8dIvtZXtqgZ5Rj8cqIUgyqRQEmzZtLbX7JTUbk+fif+eWdim3F
+OuS66Vjlo9c=
+=BLrg
+-----END PGP SIGNATURE-----
+
+--=-TTKhLXJV/h/4QlCiToUm--
+
