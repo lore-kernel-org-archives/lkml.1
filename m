@@ -1,103 +1,410 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbYAIPpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbYAIPqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754837AbYAIPpA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 10:45:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYAIPox
+	id S1755463AbYAIPqU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 10:46:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbYAIPqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 10:44:53 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:49220 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751844AbYAIPow (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 10:44:52 -0500
-From: Hans-Peter Jansen <hpj@urpla.net>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: [GIT PATCHES] V4L/DVB fixes
-Date: Wed, 9 Jan 2008 16:43:51 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-References: <20080107073818.368243b9@gaivota>
-In-Reply-To: <20080107073818.368243b9@gaivota>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801091643.52658.hpj@urpla.net>
-X-Provags-ID: V01U2FsdGVkX1/MJRdEGo+Q/CuS/DcX1iBt+zo2/+vNcZw9AQC
- r37Au41yVdUvZsyaDregblEUWwUaW40OzZGg0Y9zO3KGYLB1vG
- rCKTaVNrycrrtHqqhqFIg==
+	Wed, 9 Jan 2008 10:46:09 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:40656 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751157AbYAIPqG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 10:46:06 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <200801091252.37565.nickpiggin@yahoo.com.au>
+References: <200801091252.37565.nickpiggin@yahoo.com.au> <200801081401.11975.nickpiggin@yahoo.com.au> <7972.1199711343@redhat.com> <31207.1199836284@redhat.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: dhowells@redhat.com, viro@ftp.linux.org.uk, hch@infradead.org,
+       Trond.Myklebust@netapp.com, sds@tycho.nsa.gov, casey@schaufler-ca.com,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 10/28] FS-Cache: Recruit a couple of page flags for cache management [try #2]
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Wed, 09 Jan 2008 15:45:33 +0000
+Message-ID: <654.1199893533@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 7. Januar 2008 schrieb Mauro Carvalho Chehab:
->
-> Hans Verkuil (1):
->       V4L/DVB (6916): ivtv: udelay has to be changed *after* the eeprom
-> was read, not before
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-boils down to this patch:
+> It is to make everybody happy. Especially in code that everyone works
+> on like mm/ and fs/, you can't just have everybody following their own
+> slightly different conventions.
 
-89dab3573aa1d95fd222ee4551f964bfa4c16823
- drivers/media/video/ivtv/ivtv-driver.c |    4 ++++
- drivers/media/video/ivtv/ivtv-i2c.c    |    5 +----
- 2 files changed, 5 insertions(+), 4 deletions(-)
+Conventions are what people agree they are.
 
-diff --git a/drivers/media/video/ivtv/ivtv-driver.c 
-b/drivers/media/video/ivtv/ivtv-driver.c
-index 6d2dd87..10d6faf 100644
---- a/drivers/media/video/ivtv/ivtv-driver.c
-+++ b/drivers/media/video/ivtv/ivtv-driver.c
-@@ -1076,6 +1076,10 @@ static int __devinit ivtv_probe(struct pci_dev *dev,
- 		ivtv_process_eeprom(itv);
- 	}
+Anyway, I've attached a revised page flags patch if you can take a quick look
+over that.
+
+I'll drop the AFS-caching and AFS-write-fix patches for the moment and
+concentrate on trying to get FS-Cache working with NFS.
+
+So if we can agree on the two(?) things you brought up with the remaining
+patches:
+
+ (1) Make PG_fscache overload PG_private_2 rather than PG_owner_priv_2.  Would
+     that make you happy with patch 10 of 28?
+
+ (2) Then there's patch 9 of 28 - making read_cache_pages() release private
+     data that's already attached to pages it then discards due to error.  Are
+     you still going to require that I duplicate read_cache_pages()?  Or can
+     you accept that sharing is sufficient, especially if PG_private_2 now
+     exists?
+
+David
+---
+FS-Cache: Recruit a couple of page flags for cache management
+
+From: David Howells <dhowells@redhat.com>
+
+Recruit a couple of page flags to aid in cache management.  The following extra
+flags are defined:
+
+ (1) PG_fscache (PG_private_2)
+
+     The marked page is backed by a local cache and is pinning resources in the
+     cache driver.
+
+ (2) PG_fscache_write (PG_owner_priv_2)
+
+     The marked page is being written to the local cache.  The page may not be
+     modified whilst this is in progress.
+
+If PG_fscache is set, then things that checked for PG_private will now also
+check for that.  This includes things like truncation and page invalidation.
+The function page_has_private() had been added to make the checks for both
+PG_private and PG_private_2 at the same time.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ fs/splice.c                |    2 +-
+ include/linux/page-flags.h |   40 ++++++++++++++++++++++++++++++++++++++--
+ include/linux/pagemap.h    |   11 +++++++++++
+ mm/filemap.c               |   16 ++++++++++++++++
+ mm/migrate.c               |    2 +-
+ mm/page_alloc.c            |    3 +++
+ mm/readahead.c             |    9 +++++----
+ mm/swap.c                  |    4 ++--
+ mm/swap_state.c            |    4 ++--
+ mm/truncate.c              |   10 +++++-----
+ mm/vmscan.c                |    2 +-
+ 11 files changed, 85 insertions(+), 18 deletions(-)
+
+
+diff --git a/fs/splice.c b/fs/splice.c
+index 6bdcb61..61edad7 100644
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -58,7 +58,7 @@ static int page_cache_pipe_buf_steal(struct pipe_inode_info *pipe,
+ 		 */
+ 		wait_on_page_writeback(page);
  
-+	/* The mspx4xx chips need a longer delay for some reason */
-+	if (!(itv->hw_flags & IVTV_HW_MSP34XX))
-+		itv->i2c_algo.udelay = 5;
+-		if (PagePrivate(page))
++		if (page_has_private(page))
+ 			try_to_release_page(page, GFP_KERNEL);
+ 
+ 		/*
+diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
+index 209d3a4..364f8f9 100644
+--- a/include/linux/page-flags.h
++++ b/include/linux/page-flags.h
+@@ -77,25 +77,32 @@
+ #define PG_active		 6
+ #define PG_slab			 7	/* slab debug (Suparna wants this) */
+ 
+-#define PG_owner_priv_1		 8	/* Owner use. If pagecache, fs may use*/
++#define PG_owner_priv_1		 8	/* Owner use. fs may use in pagecache */
+ #define PG_arch_1		 9
+ #define PG_reserved		10
+ #define PG_private		11	/* If pagecache, has fs-private data */
+ 
+ #define PG_writeback		12	/* Page is under writeback */
++#define PG_private_2		13	/* If pagecache, has fs aux data */
+ #define PG_compound		14	/* Part of a compound page */
+ #define PG_swapcache		15	/* Swap page: swp_entry_t in private */
+ 
+ #define PG_mappedtodisk		16	/* Has blocks allocated on-disk */
+ #define PG_reclaim		17	/* To be reclaimed asap */
++#define PG_owner_priv_2		18	/* Owner use. fs may use in pagecache */
+ #define PG_buddy		19	/* Page is free, on buddy lists */
+ 
+ /* PG_readahead is only used for file reads; PG_reclaim is only for writes */
+ #define PG_readahead		PG_reclaim /* Reminder to do async read-ahead */
+ 
+-/* PG_owner_priv_1 users should have descriptive aliases */
++/* PG_owner_priv_1/2 users should have descriptive aliases */
+ #define PG_checked		PG_owner_priv_1 /* Used by some filesystems */
+ #define PG_pinned		PG_owner_priv_1	/* Xen pinned pagetable */
++#define PG_fscache_write	PG_owner_priv_2	/* Writing to local cache */
 +
- 	if (itv->std == 0) {
- 		itv->std = V4L2_STD_NTSC_M;
- 	}
-diff --git a/drivers/media/video/ivtv/ivtv-i2c.c 
-b/drivers/media/video/ivtv/ivtv-i2c.c
-index 44678fe..36e54f7 100644
---- a/drivers/media/video/ivtv/ivtv-i2c.c
-+++ b/drivers/media/video/ivtv/ivtv-i2c.c
-@@ -541,7 +541,7 @@ static const struct i2c_algo_bit_data 
-ivtv_i2c_algo_template = {
- 	.setscl		= ivtv_setscl_old,
- 	.getsda		= ivtv_getsda_old,
- 	.getscl		= ivtv_getscl_old,
--	.udelay		= 5,
-+	.udelay		= 10,
- 	.timeout	= 200,
- };
++/* PG_private_2 causes releasepage() and co to be invoked */
++#define PG_fscache		PG_private_2	/* Backed by local cache */
++
  
-@@ -718,9 +718,6 @@ int init_ivtv_i2c(struct ivtv *itv)
- 		       sizeof(struct i2c_adapter));
- 		memcpy(&itv->i2c_algo, &ivtv_i2c_algo_template,
- 		       sizeof(struct i2c_algo_bit_data));
--		/* The mspx4xx chips need a longer delay for some reason */
--		if (itv->hw_flags & IVTV_HW_MSP34XX)
--			itv->i2c_algo.udelay = 10;
- 		itv->i2c_algo.data = itv;
- 		itv->i2c_adap.algo_data = &itv->i2c_algo;
- 	}
-
-where the logic in hunk #1 was switched, resulting in a now misleading 
-comment over there.
-
-How about something in the line of:
-
-	/* 
-	 * We started with a bigger udelay in order to fulfill the needs of the
-	 * mspx4xx chips: cut it down here for all other members of the family.
-	 */
-
-Cheers,
-Pete
+ #if (BITS_PER_LONG > 32)
+ /*
+@@ -199,6 +206,24 @@ static inline void SetPageUptodate(struct page *page)
+ #define TestClearPageWriteback(page) test_and_clear_bit(PG_writeback,	\
+ 							&(page)->flags)
+ 
++#define PageFsCache(page)	test_bit(PG_fscache, &(page)->flags)
++#define SetPageFsCache(page)	set_bit(PG_fscache, &(page)->flags)
++#define ClearPageFsCache(page)	clear_bit(PG_fscache, &(page)->flags)
++#define TestSetPageFsCache(page) test_and_set_bit(PG_fscache, &(page)->flags)
++#define TestClearPageFsCache(page) test_and_clear_bit(PG_fscache, \
++						      &(page)->flags)
++
++#define PageFsCacheWrite(page)		test_bit(PG_fscache_write, \
++						 &(page)->flags)
++#define SetPageFsCacheWrite(page)	set_bit(PG_fscache_write, \
++						&(page)->flags)
++#define ClearPageFsCacheWrite(page)	clear_bit(PG_fscache_write, \
++						  &(page)->flags)
++#define TestSetPageFsCacheWrite(page)	test_and_set_bit(PG_fscache_write, \
++							 &(page)->flags)
++#define TestClearPageFsCacheWrite(page)	test_and_clear_bit(PG_fscache_write, \
++							   &(page)->flags)
++
+ #define PageBuddy(page)		test_bit(PG_buddy, &(page)->flags)
+ #define __SetPageBuddy(page)	__set_bit(PG_buddy, &(page)->flags)
+ #define __ClearPageBuddy(page)	__clear_bit(PG_buddy, &(page)->flags)
+@@ -272,4 +297,15 @@ static inline void set_page_writeback(struct page *page)
+ 	test_set_page_writeback(page);
+ }
+ 
++/**
++ * page_has_private - Determine if page has private stuff
++ * @page: The page to be checked
++ *
++ * Determine if a page has private stuff, indicating that release routines
++ * should be invoked upon it.
++ */
++#define page_has_private(page)			\
++	((page)->flags & ((1 << PG_private) |	\
++			  (1 << PG_private_2)))
++
+ #endif	/* PAGE_FLAGS_H */
+diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
+index db8a410..6a1b317 100644
+--- a/include/linux/pagemap.h
++++ b/include/linux/pagemap.h
+@@ -212,6 +212,17 @@ static inline void wait_on_page_writeback(struct page *page)
+ extern void end_page_writeback(struct page *page);
+ 
+ /*
++ * Wait for a page to finish being written to a local cache
++ */
++static inline void wait_on_page_fscache_write(struct page *page)
++{
++	if (PageFsCacheWrite(page))
++		wait_on_page_bit(page, PG_fscache_write);
++}
++
++extern void end_page_fscache_write(struct page *page);
++
++/*
+  * Fault a userspace page into pagetables.  Return non-zero on a fault.
+  *
+  * This assumes that two userspace pages are always sufficient.  That's
+diff --git a/mm/filemap.c b/mm/filemap.c
+index f4d0cde..a86569f 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -572,6 +572,19 @@ void end_page_writeback(struct page *page)
+ EXPORT_SYMBOL(end_page_writeback);
+ 
+ /**
++ * end_page_fscache_write - End writing page to cache
++ * @page: the page
++ */
++void end_page_fscache_write(struct page *page)
++{
++	if (!TestClearPageFsCacheWrite(page))
++		BUG();
++	smp_mb__after_clear_bit();
++	wake_up_page(page, PG_fscache_write);
++}
++EXPORT_SYMBOL(end_page_fscache_write);
++
++/**
+  * __lock_page - get a lock on the page, assuming we need to sleep to get it
+  * @page: the page to lock
+  *
+@@ -2540,6 +2553,9 @@ out:
+  * (presumably at page->private).  If the release was successful, return `1'.
+  * Otherwise return zero.
+  *
++ * This may also be called if PG_fscache is set on a page, indicating that the
++ * page is known to the local caching routines.
++ *
+  * The @gfp_mask argument specifies whether I/O may be performed to release
+  * this page (__GFP_IO), and whether the call may block (__GFP_WAIT).
+  *
+diff --git a/mm/migrate.c b/mm/migrate.c
+index 6a207e8..ebaf557 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -545,7 +545,7 @@ static int fallback_migrate_page(struct address_space *mapping,
+ 	 * Buffers may be managed in a filesystem specific way.
+ 	 * We must have no buffers or drop them.
+ 	 */
+-	if (PagePrivate(page) &&
++	if (page_has_private(page) &&
+ 	    !try_to_release_page(page, GFP_KERNEL))
+ 		return -EAGAIN;
+ 
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index e1028fa..d0d356b 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -230,6 +230,7 @@ static void bad_page(struct page *page)
+ 	dump_stack();
+ 	page->flags &= ~(1 << PG_lru	|
+ 			1 << PG_private |
++			1 << PG_fscache	|
+ 			1 << PG_locked	|
+ 			1 << PG_active	|
+ 			1 << PG_dirty	|
+@@ -456,6 +457,7 @@ static inline int free_pages_check(struct page *page)
+ 		(page->flags & (
+ 			1 << PG_lru	|
+ 			1 << PG_private |
++			1 << PG_fscache	|
+ 			1 << PG_locked	|
+ 			1 << PG_active	|
+ 			1 << PG_slab	|
+@@ -605,6 +607,7 @@ static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
+ 		(page->flags & (
+ 			1 << PG_lru	|
+ 			1 << PG_private	|
++			1 << PG_fscache	|
+ 			1 << PG_locked	|
+ 			1 << PG_active	|
+ 			1 << PG_dirty	|
+diff --git a/mm/readahead.c b/mm/readahead.c
+index 75aa6b6..272ffc7 100644
+--- a/mm/readahead.c
++++ b/mm/readahead.c
+@@ -46,14 +46,15 @@ EXPORT_SYMBOL_GPL(file_ra_state_init);
+ 
+ /*
+  * see if a page needs releasing upon read_cache_pages() failure
+- * - the caller of read_cache_pages() may have set PG_private before calling,
+- *   such as the NFS fs marking pages that are cached locally on disk, thus we
+- *   need to give the fs a chance to clean up in the event of an error
++ * - the caller of read_cache_pages() may have set PG_private or PG_fscache
++ *   before calling, such as the NFS fs marking pages that are cached locally
++ *   on disk, thus we need to give the fs a chance to clean up in the event of
++ *   an error
+  */
+ static void read_cache_pages_invalidate_page(struct address_space *mapping,
+ 					     struct page *page)
+ {
+-	if (PagePrivate(page)) {
++	if (page_has_private(page)) {
+ 		if (TestSetPageLocked(page))
+ 			BUG();
+ 		page->mapping = mapping;
+diff --git a/mm/swap.c b/mm/swap.c
+index 9ac8832..22d6e03 100644
+--- a/mm/swap.c
++++ b/mm/swap.c
+@@ -455,8 +455,8 @@ void pagevec_strip(struct pagevec *pvec)
+ 	for (i = 0; i < pagevec_count(pvec); i++) {
+ 		struct page *page = pvec->pages[i];
+ 
+-		if (PagePrivate(page) && !TestSetPageLocked(page)) {
+-			if (PagePrivate(page))
++		if (page_has_private(page) && !TestSetPageLocked(page)) {
++			if (page_has_private(page))
+ 				try_to_release_page(page, 0);
+ 			unlock_page(page);
+ 		}
+diff --git a/mm/swap_state.c b/mm/swap_state.c
+index b526356..33f1e5c 100644
+--- a/mm/swap_state.c
++++ b/mm/swap_state.c
+@@ -76,7 +76,7 @@ static int __add_to_swap_cache(struct page *page, swp_entry_t entry,
+ 
+ 	BUG_ON(!PageLocked(page));
+ 	BUG_ON(PageSwapCache(page));
+-	BUG_ON(PagePrivate(page));
++	BUG_ON(page_has_private(page));
+ 	error = radix_tree_preload(gfp_mask);
+ 	if (!error) {
+ 		write_lock_irq(&swapper_space.tree_lock);
+@@ -129,7 +129,7 @@ void __delete_from_swap_cache(struct page *page)
+ 	BUG_ON(!PageLocked(page));
+ 	BUG_ON(!PageSwapCache(page));
+ 	BUG_ON(PageWriteback(page));
+-	BUG_ON(PagePrivate(page));
++	BUG_ON(page_has_private(page));
+ 
+ 	radix_tree_delete(&swapper_space.page_tree, page_private(page));
+ 	set_page_private(page, 0);
+diff --git a/mm/truncate.c b/mm/truncate.c
+index cadc156..5b7d1c5 100644
+--- a/mm/truncate.c
++++ b/mm/truncate.c
+@@ -49,7 +49,7 @@ void do_invalidatepage(struct page *page, unsigned long offset)
+ static inline void truncate_partial_page(struct page *page, unsigned partial)
+ {
+ 	zero_user_page(page, partial, PAGE_CACHE_SIZE - partial, KM_USER0);
+-	if (PagePrivate(page))
++	if (page_has_private(page))
+ 		do_invalidatepage(page, partial);
+ }
+ 
+@@ -100,7 +100,7 @@ truncate_complete_page(struct address_space *mapping, struct page *page)
+ 
+ 	cancel_dirty_page(page, PAGE_CACHE_SIZE);
+ 
+-	if (PagePrivate(page))
++	if (page_has_private(page))
+ 		do_invalidatepage(page, 0);
+ 
+ 	remove_from_page_cache(page);
+@@ -125,7 +125,7 @@ invalidate_complete_page(struct address_space *mapping, struct page *page)
+ 	if (page->mapping != mapping)
+ 		return 0;
+ 
+-	if (PagePrivate(page) && !try_to_release_page(page, 0))
++	if (page_has_private(page) && !try_to_release_page(page, 0))
+ 		return 0;
+ 
+ 	ret = remove_mapping(mapping, page);
+@@ -347,14 +347,14 @@ invalidate_complete_page2(struct address_space *mapping, struct page *page)
+ 	if (page->mapping != mapping)
+ 		return 0;
+ 
+-	if (PagePrivate(page) && !try_to_release_page(page, GFP_KERNEL))
++	if (page_has_private(page) && !try_to_release_page(page, GFP_KERNEL))
+ 		return 0;
+ 
+ 	write_lock_irq(&mapping->tree_lock);
+ 	if (PageDirty(page))
+ 		goto failed;
+ 
+-	BUG_ON(PagePrivate(page));
++	BUG_ON(page_has_private(page));
+ 	__remove_from_page_cache(page);
+ 	write_unlock_irq(&mapping->tree_lock);
+ 	ClearPageUptodate(page);
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index e5a9597..ff2fa2d 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -578,7 +578,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+ 		 * process address space (page_count == 1) it can be freed.
+ 		 * Otherwise, leave the page on the LRU so it is swappable.
+ 		 */
+-		if (PagePrivate(page)) {
++		if (page_has_private(page)) {
+ 			if (!try_to_release_page(page, sc->gfp_mask))
+ 				goto activate_locked;
+ 			if (!mapping && page_count(page) == 1)
