@@ -1,63 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756988AbYAIAJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbYAIALn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756988AbYAIAJT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 19:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbYAIAJF
+	id S1756028AbYAIALn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 19:11:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbYAIALe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 19:09:05 -0500
-Received: from gw.goop.org ([64.81.55.164]:37118 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752672AbYAIAJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 19:09:03 -0500
-Message-ID: <4784102F.4080702@goop.org>
-Date: Tue, 08 Jan 2008 16:07:11 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH 00 of 10] x86: unify asm/pgtable.h
-References: <patchbomb.1199829603@localhost> <20080108224244.GA3768@elte.hu> <20080108231226.GA10744@elte.hu> <478405DA.40303@goop.org> <20080108232803.GA19906@elte.hu>
-In-Reply-To: <20080108232803.GA19906@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Tue, 8 Jan 2008 19:11:34 -0500
+Received: from tama50.ecl.ntt.co.jp ([129.60.39.147]:45255 "EHLO
+	tama50.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753168AbYAIALd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 19:11:33 -0500
+To: pw@osc.edu
+Cc: tomof@acm.org, deepakrc@gmail.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH] bsg : Add support for io vectors in bsg
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080108220918.GA9484@osc.edu>
+References: <Pine.LNX.4.64.0801042137350.7836@localhost>
+	<200801050501.m0551LFB030667@mbox.iij4u.or.jp>
+	<20080108220918.GA9484@osc.edu>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080109091118N.fujita.tomonori@lab.ntt.co.jp>
+Date: Wed, 09 Jan 2008 09:11:18 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> right now i'm trying to bisect this crash on 64-bit:
->
->  Calling initcall 0xffffffff80395877: pci_init+0x0/0x2b()
->  ------------[ cut here ]------------
->  kernel BUG at arch/x86/mm/pageattr_64.c:176!
->  [...]
->  Call Trace:
->   [<ffffffff8021db68>] change_page_attr_addr+0x9e/0x119
->   [<ffffffff8021d44f>] ioremap_change_attr+0x49/0x58
->   [<ffffffff8021d626>] iounmap+0xbe/0xe0
->   [<ffffffff804dfc95>] quirk_usb_early_handoff+0x396/0x3a5
->   [<ffffffff80396ea0>] pci_fixup_device+0x90/0x9e
->   [<ffffffff80395889>] pci_init+0x12/0x2b
->   [<ffffffff808c9545>] kernel_init+0xd0/0x23c
->   [<ffffffff8020bec8>] child_rip+0xa/0x12
->   [<ffffffff808c9475>] kernel_init+0x0/0x23c
->   [<ffffffff8020bebe>] child_rip+0x0/0x12
->
-> config and bootlog attached.
->
-> it's one of these patches:
->
->  Subject: x86: move all asm/pgtable constants into one place
->  Subject: x86: avoid name conflict for Voyager leave_mm
->  Subject: x86/pgtable: unify pagetable accessors
->   
+On Tue, 8 Jan 2008 17:09:18 -0500
+Pete Wyckoff <pw@osc.edu> wrote:
 
-Hm, you got the same crash the with my last attempt at this.   I'll take 
-a closer look at that first patch.  The global flag differences between 
-32 and 64 bit was a bit weird.
+> tomof@acm.org wrote on Sat, 05 Jan 2008 14:01 +0900:
+> > From: Deepak Colluru <deepakrc@gmail.com>
+> > Subject: [PATCH] bsg : Add support for io vectors in bsg
+> > Date: Fri, 4 Jan 2008 21:47:34 +0530 (IST)
+> > 
+> > > From: Deepak Colluru <deepakrc@gmail.com>
+> > > 
+> > > Add support for io vectors in bsg.
+> > > 
+> > > Signed-off-by: Deepak Colluru <deepakrc@gmail.com>
+> > > ---
+> > >   bsg.c |   52 +++++++++++++++++++++++++++++++++++++++++++++++++---
+> > >   1 file changed, 49 insertions(+), 3 deletions(-)
+> > 
+> > Thanks, but I have to NACK this.
+> > 
+> > You can find the discussion about bsg io vector support and a similar
+> > patch in linux-scsi archive. I have no plan to support it since it
+> > needs the compat hack.
+> 
+> You may recall this is one of the patches I need to use bsg with OSD
+> devices.  OSDs overload the SCSI buffer model to put mulitple fields
+> in dataout and datain.  Some is user data, but some is more
+> logically created by a library.  Memcpying in userspace to wedge all
+> the segments into a single buffer is painful, and is required both
+> on outgoing and incoming data buffers.
+> 
+> There are two approaches to add iovec to bsg.
+> 
+> 1.  Define a new sg_iovec_v4 that uses constant width types.  Both
+>     32- and 64-bit userspace would hand arrays of this to the kernel.
+> 
+>     struct sg_v4_iovec {
+> 	    __u64 iov_base;
+> 	    __u32 iov_len;
+> 	    __u32 __pad1;
+>     };
+> 
+>     Old patch here:  http://article.gmane.org/gmane.linux.scsi/30461/
 
-    J
+As I said before, I don't think that inventing a new "iovec" is a good
+idea. sgv3 use the common "iovec". In addition, sg_io_v4 can be used
+by other OSes like sg_io_v3.
+
+
+> 2.  Do as Deepak has done, using the existing sg_iovec, but then
+>     also work around the compat issue.  Old v3 sg_iovec is:
+> 
+>     typedef struct sg_iovec /* same structure as used by readv() Linux system */
+>     {                       /* call. It defines one scatter-gather element. */
+> 	void __user *iov_base;      /* Starting address  */
+> 	size_t iov_len;             /* Length in bytes  */
+>     } sg_iovec_t;
+> 
+>     Old patch here:  http://article.gmane.org/gmane.linux.scsi/30460/
+> 
+> I took another look at the compat approach, to see if it is feasible
+> to keep the compat handling somewhere else, without the use of #ifdef
+> CONFIG_COMPAT and size-comparison code inside bsg.c.  I don't see how.
+> The use of iovec is within a write operation on a char device.  It's
+> not amenable to a compat_sys_ or a .compat_ioctl approach.
+> 
+> I'm partial to #1 because the use of architecture-independent fields
+> matches the rest of struct sg_io_v4.  But if you don't want to have
+> another iovec type in the kernel, could we do #2 but just return
+> -EINVAL if the need for compat is detected?  I.e. change
+> dout_iovec_count to dout_iovec_length and do the math?
+
+If you are ok with removing the write/read interface and just have
+ioctl, we could can handle comapt stuff like others do. But I think
+that you (OSD people) really want to keep the write/read
+interface. Sorry, I think that there is no workaround to support iovec
+in bsg.
