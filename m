@@ -1,159 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756601AbYAIU3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754460AbYAIU3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756601AbYAIU3g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 15:29:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbYAIU32
+	id S1754460AbYAIU3t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 15:29:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754544AbYAIU3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 15:29:28 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:56606 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752942AbYAIU31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 15:29:27 -0500
-Subject: Re: [PATCH] Kprobes: Add kprobes smoke tests that run on boot
-From: Jim Keniston <jkenisto@us.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: ananth@in.ibm.com, akpm@linux-foundation.org,
-       lkml <linux-kernel@vger.kernel.org>, mingo@elte.hu, mhiramat@redhat.com,
-       davem@davemloft.net, hskinnemoen@atmel.com
-In-Reply-To: <20080108232841.GD2117@one.firstfloor.org>
-References: <20080108063334.GA29385@in.ibm.com>
-	 <p73zlvgowwn.fsf@bingen.suse.de>
-	 <1199833842.3914.33.camel@dyn9047018096.beaverton.ibm.com>
-	 <20080108232841.GD2117@one.firstfloor.org>
-Content-Type: text/plain
-Date: Wed, 09 Jan 2008 12:24:00 -0800
-Message-Id: <1199910240.4162.31.camel@dyn9047018096.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Jan 2008 15:29:30 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:37699 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753115AbYAIU33 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 15:29:29 -0500
+Date: Wed, 09 Jan 2008 12:34:48 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] x86_64: cleanup setup_node_zones called by paging_init v3
+In-reply-to: <Pine.LNX.4.64.0801091117430.11317@schroedinger.engr.sgi.com>
+To: Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Message-id: <200801091234.49003.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <200801081934.33964.yinghai.lu@sun.com>
+ <200801091030.40545.yinghai.lu@sun.com>
+ <Pine.LNX.4.64.0801091117430.11317@schroedinger.engr.sgi.com>
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-01-09 at 00:28 +0100, Andi Kleen wrote:
-> > I have no problem with that, but if we want to make it buildable as a
-> > module, the call to get_kprobe() needs to be replaced with some other
-> > gcc-inline-defeating mechanism, or we need to export get_probe().  I
-> 
-> It's still unclear where noinline does not work (do you have details on that? 
-> It sounds a little dubious) ...
+[PATCH] x86_64: cleanup setup_node_zones called by paging_init v3
 
-Here's a simplified version of a module we've used to gauge kprobes
-performance.  On my system (i386, 2.6.23-rc8 at the moment, gcc version
-4.1.2), the module calls the (empty) probed function (probeme) niter
-times, but reports zero probe hits -- indicating probeme was inlined
-even though it was declared noinline.
+setup_node_zones calcuates some variables but only use them when FLAT_NODE_MEM_MAP is set
 
-If I change probeme to a varargs function, per your suggestion -- see
-diffs below -- the proper number of probe hits are reported.
------ noinline.c -----
-#include <linux/module.h>
-#include <linux/kernel.h>
-#include <linux/init.h>
-#include <linux/jiffies.h>
-#include <linux/kprobes.h>
+so change the MACRO postion to avoid calculating.
 
-/*
- * Sample usage: insmod noinline.ko niter=5000000
- * printk should report 5000000 calls.
- */
+also change it to static, rename it to flat_setup_node_zones
 
-static int niter = 0;
-module_param(niter, int, 0);
-MODULE_PARM_DESC(niter, "iterations");
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-static int ncalls = 0;
-
-static int counter_hdlr(struct kprobe *p, struct pt_regs *regs)
-{
-	ncalls++;
-	return 0;
-}
-
-// #define noinline __attribute__((noinline))
-noinline static void probeme(void)
-{
-}
-
-struct kprobe kp = {
-	.addr = (kprobe_opcode_t*) probeme,
-	.pre_handler = counter_hdlr
-};
-
-static int __init noinline_init(void)
-{
-	int ret;
-	int i;
-	u64 start, stop;
-
-	ret = register_kprobe(&kp);
-	if (ret != 0) {
-		printk(KERN_ERR "register_kprobe returns %d\n", ret);
-		return ret;
-	}
-
-	start = get_jiffies_64();
-	for (i = 1; i <= niter; i++)
-		probeme();
-	stop = get_jiffies_64();
-	printk(KERN_INFO "noinline test: %d iterations in %lld jiffies\n",
-		niter, stop-start);
-	printk(KERN_INFO "Counted %d calls\n", ncalls);
-	return 0;
-}
-
-static void __exit noinline_exit(void)
-{
-	unregister_kprobe(&kp);
-	printk(KERN_INFO "noinline test: exiting...\n");
-}
-
-module_init(noinline_init);
-module_exit(noinline_exit);
-MODULE_LICENSE("GPL");
------ Change probeme to a varargs function -----
---- noinline.c	2008-01-09 11:26:09.000000000 -0800
-+++ noinline2.c	2008-01-09 11:59:54.000000000 -0800
-@@ -22,8 +22,13 @@
- }
+Index: linux-2.6/arch/x86/mm/numa_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/numa_64.c
++++ linux-2.6/arch/x86/mm/numa_64.c
+@@ -229,8 +229,9 @@ void __init setup_node_bootmem(int nodei
+ 	node_set_online(nodeid);
+ } 
  
- // #define noinline __attribute__((noinline))
--noinline static void probeme(void)
-+noinline static void probeme(int nargs, ...)
++#ifdef CONFIG_FLAT_NODE_MEM_MAP
+ /* Initialize final allocator for a zone */
+-void __init setup_node_zones(int nodeid)
++static void __init flat_setup_node_zones(int nodeid)
+ { 
+ 	unsigned long start_pfn, end_pfn, memmapsize, limit;
+ 
+@@ -244,14 +245,16 @@ void __init setup_node_zones(int nodeid)
+ 	   memory. */
+ 	memmapsize = sizeof(struct page) * (end_pfn-start_pfn);
+ 	limit = end_pfn << PAGE_SHIFT;
+-#ifdef CONFIG_FLAT_NODE_MEM_MAP
++
+ 	NODE_DATA(nodeid)->node_mem_map = 
+ 		__alloc_bootmem_core(NODE_DATA(nodeid)->bdata, 
+ 				memmapsize, SMP_CACHE_BYTES, 
+ 				round_down(limit - memmapsize, PAGE_SIZE), 
+ 				limit);
++}
++#else
++#define flat_setup_node_zones(i) do {} while (0)
+ #endif
+-} 
+ 
+ void __init numa_init_array(void)
  {
-+	va_list args;
-+	va_start(args, nargs);
-+	while (nargs-- > 0)
-+		printk(KERN_INFO "%p\n", va_arg(args, char*));
-+	va_end(args);
- }
+@@ -571,7 +574,7 @@ void __init paging_init(void)
+ 	sparse_init();
  
- struct kprobe kp = {
-@@ -45,9 +50,9 @@
+ 	for_each_online_node(i) {
+-		setup_node_zones(i); 
++		flat_setup_node_zones(i);
+ 	}
  
- 	start = get_jiffies_64();
- 	for (i = 1; i <= niter; i++)
--		probeme();
-+		probeme(0);
- 	stop = get_jiffies_64();
--	printk(KERN_INFO "noinline test: %d iterations in %lld jiffies\n",
-+	printk(KERN_INFO "noinline2 test: %d iterations in %lld jiffies\n",
- 		niter, stop-start);
- 	printk(KERN_INFO "Counted %d calls\n", ncalls);
- 	return 0;
-@@ -56,7 +61,7 @@
- static void __exit noinline_exit(void)
- {
- 	unregister_kprobe(&kp);
--	printk(KERN_INFO "noinline test: exiting...\n");
-+	printk(KERN_INFO "noinline2 test: exiting...\n");
- }
- 
- module_init(noinline_init);
-
-...
-> -Andi
-
-Thanks for the suggestions.
-Jim
-
+ 	free_area_init_nodes(max_zone_pfns);
