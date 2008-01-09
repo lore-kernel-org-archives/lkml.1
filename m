@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756228AbYAISai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755883AbYAISd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756228AbYAISai (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 13:30:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbYAISab
+	id S1755883AbYAISd0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 13:33:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750926AbYAISdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 13:30:31 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42360 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751026AbYAISaa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 13:30:30 -0500
-Date: Wed, 9 Jan 2008 16:30:02 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Hans-Peter Jansen <hpj@urpla.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	Wed, 9 Jan 2008 13:33:19 -0500
+Received: from dvhart.com ([64.146.134.43]:45924 "EHLO dvhart.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750720AbYAISdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 13:33:18 -0500
+Message-ID: <4785136C.7010300@mbligh.org>
+Date: Wed, 09 Jan 2008 10:33:16 -0800
+From: Martin Bligh <mbligh@mbligh.org>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org, Hans Verkuil <hverkuil@xs4all.nl>
-Subject: Re: [GIT PATCHES] V4L/DVB fixes
-Message-ID: <20080109163002.58cb933b@gaivota>
-In-Reply-To: <200801091643.52658.hpj@urpla.net>
-References: <20080107073818.368243b9@gaivota>
-	<200801091643.52658.hpj@urpla.net>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.1; x86_64-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+       Al Viro <viro@ftp.linux.org.uk>, bugme-admin@linux-foundation.org,
+       Peter Osterlund <petero2@telia.com>
+Subject: Re: change SCSI owner in bugzilla
+References: <20080106161635.GL2082@does.not.exist> <20080108160607.GA32273@elte.hu> <200801081849.06846.rjw@sisk.pl> <200801081851.55387.rjw@sisk.pl> <20080108221136.GA21482@elte.hu>
+In-Reply-To: <20080108221136.GA21482@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Jan 2008 16:43:51 +0100
-Hans-Peter Jansen <hpj@urpla.net> wrote:
-
-> +	/* The mspx4xx chips need a longer delay for some reason */
-> +	if (!(itv->hw_flags & IVTV_HW_MSP34XX))
-> +		itv->i2c_algo.udelay = 5;
-> +
+Ingo Molnar wrote:
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > 
-> where the logic in hunk #1 was switched, resulting in a now misleading 
-> comment over there.
-
-If you notice the ! at the above line, and remind that the original value for 
-udelay is 10, you can understand the comment ;)
+>>>>   Edit / Prefs / Email Preferences / Users to watch
+>>>>
+>>>> add power-management_other@kernel-bugs.osdl.org to that list and you'll 
+>>>> be notified about new bugs and changes to existing bugs.
+>>> Still, I'd like the list to be notified, not only me (eg. I might be 
+>>> offline or or unable to respond at the moment, or someone else may 
+>>> know how to fix the problem).
+>> Ah, you mean I should create a bugzilla user for the list and add 
+>> power-management_other@kernel-bugs.osdl.org to this user's watchlist.  
+>> That will make sense. :-)
 > 
-> How about something in the line of:
-> 
-> 	/* 
-> 	 * We started with a bigger udelay in order to fulfill the needs of the
-> 	 * mspx4xx chips: cut it down here for all other members of the family.
-> 	 */
+> yep, and this way the special users have consistent layout as well. I 
+> suspect the SCSI thing should be done this way as well. Martin, do you 
+> agree with that, or is there some other issue?
 
-Your suggestion seems clearer to my eyes. Still the other possibilities are not
-from Micronas msp34xx family, but audio decoder chips from other vendors - as
-weel as other kind of i2c devices, like IR chips, video encoders, etc.
-
-So, IMO, a better comment would be something like:
-
- 	/* 
- 	 * We started with a bigger udelay in order to avoid troubles with some
- 	 * msp34xx chips. Boards without msp34xx are known to work with the full
-	 * i2c 100 kHz speed.
-	 */
-
-I'm C/C the patch author (Hans) for his comments about this, since he is
-the one who faced with the problems with msp34xx and ivtv.
+I can try to do that, yes. Would be more consistent. Only concern is
+Bugzilla's tendency to email passwords to the user, etc.
 
 
-Cheers,
-Mauro
