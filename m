@@ -1,74 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757346AbYAICrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbYAICxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757346AbYAICrg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 21:47:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756326AbYAICrT
+	id S1756570AbYAICxx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 21:53:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbYAICxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 21:47:19 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:59828 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756226AbYAICrS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 21:47:18 -0500
-Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
-	I/O delay override.
-From: Zachary Amsden <zach@vmware.com>
-To: "David P. Reed" <dpreed@reed.com>, Avi Kivity <avi@quramnet.com>
-Cc: Christer Weinigel <christer@weinigel.se>,
-       Ondrej Zary <linux@rainbow-software.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Rene Herman <rene.herman@keyaccess.nl>, Bodo Eggert <7eggert@gmx.de>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Paul Rolland <rol@as2917.net>, Pavel Machek <pavel@ucw.cz>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>, rol <rol@witbe.net>
-In-Reply-To: <4783CBD9.7020709@reed.com>
-References: <9BdU5-1YW-9@gated-at.bofh.it>
-	 <200801081810.58904.linux@rainbow-software.org>	<4783B1B2.6070005@reed.com>
-	 <200801081838.16241.linux@rainbow-software.org>	<4783C4A6.9060402@reed.com>
-	 <20080108185120.3ff7ed18@lxorguk.ukuu.org.uk>  <4783CBD9.7020709@reed.com>
-Content-Type: text/plain
-Date: Tue, 08 Jan 2008 18:52:42 -0800
-Message-Id: <1199847162.7369.323.camel@bodhitayantram.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+	Tue, 8 Jan 2008 21:53:43 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:53200 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752024AbYAICxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 21:53:42 -0500
+Message-ID: <47843730.80707@redhat.com>
+Date: Tue, 08 Jan 2008 21:53:36 -0500
+From: Tony Camuso <tcamuso@redhat.com>
+Reply-To: Greg KH <gregkh@suse.de>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: tcamuso@redhat.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, prarit@redhat.com,
+       tcamuso@redhat.com
+Subject: Re: [PATCH 0/5][V2]PCI: x86 MMCONFIG: Preamble
+References: <20080108195159.26344.96298.sendpatchset@dhcp83-188.boston.redhat.com>
+In-Reply-To: <20080108195159.26344.96298.sendpatchset@dhcp83-188.boston.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-01-08 at 14:15 -0500, David P. Reed wrote:
-> Alan Cox wrote:
-> > The natsemi docs here say otherwise. I trust them not you.
-> >   
-> As well you should. I am honestly curious (for my own satisfaction) as 
-> to what the natsemi docs say the delay code should do  (can't imagine 
-> they say "use io port 80 because it is unused").  I don't have any 
+Greg,
 
-What is the outcome of this thread?  Are we going to use timing based
-port delays, or can we finally drop these things entirely on 64-bit
-architectures?
+Let me know what you think, and if there's anything you want me
+to fix/change.
 
-I a have a doubly vested interest in this, both as the owner of an
-affected HP dv9210us laptop and as a maintainer of paravirt code - and
-would like 64-bit Linux code to stop using I/O to port 0x80 in both
-cases (as I suspect would every other person involved with
-virtualization).
 
-BTW, it isn't ever safe to pass port 0x80 through to hardware from a
-virtual machine; some OSes use port 0x80 as a hardware available scratch
-register (I believe Darwin/x86 did/does this during boot).  This means
-simultaneous execution of two virtual machines can interleave port 0x80
-values or share data with a hardware provided covert channel.  This
-means KVM should be trapping port 0x80 access, which is really
-expensive, or alternatively, Linux should not be using port 0x80 for
-timing bus access on modern (64-bit) hardware.
-
-I've tried to follow this thread, but with all the jabs, 1-ups, and
-obscure legacy hardware pageantry going on, it isn't clear what we're
-really doing.
-
-Thanks,
-
-Zach
+tcamuso@redhat.com wrote:
+> OVERVIEW
+> ========
+> 
+> This patch-set is being resubmitted after some discussion
+> and in response to critiques of the original submission
+> made by the lkml community.
+> 
+> The patches should be applied in sequence to obviate any
+> possible build problems.
+> 
+> The patch-set was built against 2.6.24-rc6
+> 
+> The large amount of text in the explanation below is due to
+> the nature of the problem and the discussion engendered on
+> lkml by my first submission.
+> 
+>  arch/x86/pci/common.c          |   69 ++++++++++++++++++++++++++++++++++++++++
+>  arch/x86/pci/direct.c          |   49 ++++++++++++++++++++++++----
+>  arch/x86/pci/init.c            |   18 +++++++++--
+>  arch/x86/pci/mmconfig-shared.c |    3 +-
+>  arch/x86/pci/pci.h             |    3 ++
+>  drivers/pci/pci.c              |    9 +++++
+>  drivers/pci/pci.h              |    1 +
+>  drivers/pci/probe.c            |    5 +++
+>  8 files changed, 146 insertions(+), 11 deletions(-)
+> 
+> Description
+> ===========
+> 
+> There exist northbridges that do not respond correctly to
+> PCI MMCONFIG accesses in x86 platforms. Among them are
+> the AMD 8132. Here is an excerpt from an errata page
+> published by AMD at the following link.
+> http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/30801.pdf
+> 
+> 	The base configuration space of the AMD-8132 and
+> 	PCI(-X) devices attached to it are accessible using
+> 	only the mechanism defined in PCI 2.3. Registers of
+> 	PCI-X Mode 2 devices attached to the AMD-8132 in the
+> 	extended configuration space are not accessible. The
+> 	AMD-8132 has no registers in the extended onfiguration
+> 	space.
+> 
+> 	Fix Planned
+> 	No
+> 
+> On bus numbers above that defined by PCI_MAX_CHECK_BUS, and
+> whose pci_ops field points to the mmconf ops, each device is
+> checked for mmconf compliance by comparing an MMCONFIG read
+> to a Legacy PCI config read of the vendor/device dword.
+> 
+> A miscompare means that a device does not correctly respond
+> to MMCONFIG accesses. When the patch code detects this
+> condition, the bus that serves this device, and all
+> subordinate buses, will be programmed to use Legacy PCI
+> Config accesses.
+> 
+> This patch set does not scan the first few buses, a number
+> defined by PCI_MMCFG_MAX_CHECK_BUS, because the routine
+> unreachable_devices() in arch/x86/pci/mmconfig-shared.c
+> already does this with device granularity using a bitmap.
+> 
+> 
+> Alternatives Considered
+> =======================
+> 
+> We chose not to extend the bitmap mechanism, since it would
+> have become too large in order to cover all possible buses
+> on all possible segments, and having the lookup into such a
+> large bitmap inline with every pci config access would
+> have had an adverse affect on performance.
+> 
+> An alternative would have been to allocate a bitmap on a
+> per-bus basis, so every bus would have a bitmap of its own
+> unreachable devices. This could be done with a new field
+> in the pci_bus struct.
+> 
+> However, the only devices that need to perform a mmconfig
+> translation, and have problems with it, are northbridges.
+> Once the translation is made and forwarded on the pci bus,
+> the consumers of the pci config address do not know or care
+> whether it was generated by an mmconfig or legacy pci access
+> mechanism.
+> 
+> This being the case, the secondary and subordinate buses
+> also require legacy pci access, even though they are not
+> aware of the mechanism, because the pci config access must
+> still be translateed by the root bridge to get to them.
+> 
+> Also considered in the discusson on lkml was a suggestion
+> by Loic Prylli to always use legacy pci configuration for
+> the first 256 bytes of config space. This would certainly
+> have fixed the problem of configuring and booting.
+> 
+> It would also have fixed the problem with bus sizing code
+> programming devices to claim MMIO space that beloongs to
+> MMCONFIG and thereby hang the system (see below).
+> 
+> However, there are devices (tg3) that make a lot of runtime
+> use of that area of pci config space, so forcing legacy pci
+> config access on all devices for the few situations where
+> such a measure would be necessary, when in most situations
+> mmconfig works just fine, was a performance penalty the
+> consensus was unwilling to permit.
+> 
+> 
+> What this patch set does not fix
+> ================================
+> 
+> This patch-set does not detect or fix the conditon where bus
+> sizing code programs a device to consume MMIO space that also
+> happens to include the MMCONFIG address range. This is a
+> BIOS bug that we have seen in more than one system.
+> 
+> When BIOS maps MMCONFIG space into an MMIO region below 4GB,
+> some devices, typically graphics chips that want 256 MB or more
+> of MMIO, will be inadvertently programmed by bus sizing code
+> to claim this space. At that point, no further boot progress
+> can be made.
+> 
+> Up to now, the workaround for such systems is to type
+> "pci=nommconf" at the boot command line.
+> 
+> There was a suggestion made by Ivan Kokshaysky to limit accesses
+> to pci config space at offsets within the pci config header
+> (< 0x40) to legacy pci config mechanism. That would fix this
+> problem without impacting devices that use control and satus
+> register space above the header.
+> 
+> I tried that, and it worked, but I believe that such a patch
+> is beyond the scope of the problem this patch-set is intended
+> to confront.
+> 
+> Perhaps such a patch will be added after more discussion on
+> lkml.
+> 
+> Of course, the correct solution would be for the BIOS to assure
+> that MMCONFIG space, and other such reserved MMIO areas, are
+> well out of the reach of MMIO that can be claimed by any PCI
+> device.
+> 
+> 
+> Why this patch-set is needed
+> ============================
+> 
+> MMCONFIG accesses are necessary to reach extended PCI config
+> space of PCI Express (PCIe) devices. Systems that cannot do
+> this are not PCIe compliant.
+> 
+> Using "pci=nommconf" when only a subset of the buses on a
+> given platform need to be constrained to Legacy PCI Config
+> accesses, takes the whole platform out of compliance with
+> the PCI Express spec.
+> 
+> In most cases, only Legacy PCI buses need to be constrained
+> to Legacy PCI Config accesses, so that the PCI Express buses
+> in the platform could comply with the Express spec.
+> 
+> This patch set provides a method whereby the Express buses can
+> still employ MMCONFIG accesses while the Legacy buses are
+> constrained to Legacy PCI Config accesess.
+> 
+> This patch is not capable of detecting devices that throw
+> machine checks when using MMCONFIG to access them. For example,
+> he 830M/Mg graphics chipset throws a machine check exception
+> when writing to its Base Address Register at offset 0x18 in its
+> PCI config space.
+> 
+> There may be, and probably are, other devices that misbehave
+> in this manner.
+> 
+> The solution for systems using such devices is to use
+> "pci=nommconf" at the boot command as a workaround. This limits
+> the whole system to Legacy PCI Config access, and puts PCIe
+> extended configuration space out of reach, but at least the
+> system can boot.
+> 
+> 
+> Testing
+> =======
+> 
+> This patch-set was tested on a variety of x86 platforms. Code
+> was instrumented to trace execution to certify that the patch
+> did what it was intended to do. The patch-set successfully
+> detected non-compliant devices and was able to correctly
+> assign Legacy PCI Config access to buses serving these devices
+> while allowing other buses in the system to continue to use
+>  of every device discovered during the PCI probing sequence.
+> MMCONFIG.
+> 
+> The patch was also tested on non-x86 platforms to assure that
+> there were no build problems or regressions.
+> 
+> Signed-off-by: Tony Camuso <tcamuso@redhat.com>
+> 
 
