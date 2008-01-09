@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753782AbYAIKMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbYAIKUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753782AbYAIKMr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 05:12:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYAIKMj
+	id S1752842AbYAIKUn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 05:20:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbYAIKUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 05:12:39 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:60625 "EHLO twin.jikos.cz"
+	Wed, 9 Jan 2008 05:20:34 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34520 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752213AbYAIKMh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 05:12:37 -0500
-Date: Wed, 9 Jan 2008 11:11:53 +0100 (CET)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: Dmitry Torokhov <dtor@mail.ru>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org
-Subject: Re: evdev soft lockup 2.6.24-rc5-mm1
-In-Reply-To: <47848CF5.8000107@gmail.com>
-Message-ID: <Pine.LNX.4.64.0801091107200.25041@twin.jikos.cz>
-References: <47848CF5.8000107@gmail.com>
+	id S1750793AbYAIKUd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 05:20:33 -0500
+Date: Wed, 9 Jan 2008 11:20:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] Change x86 Machine check handler to use unlocked_iocl
+	instead of ioctl
+Message-ID: <20080109102017.GA8041@elte.hu>
+References: <4785B342.2070501@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4785B342.2070501@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Jan 2008, Jiri Slaby wrote:
 
-> BUG: soft lockup - CPU#1 stuck for 11s! [X:2887]
-[ ... ]
-> Call Trace:
->  [<ffffffff804e7648>] __mutex_lock_slowpath+0x38/0xd0
->  [<ffffffff804e747e>] mutex_lock+0x1e/0x30
->  [<ffffffff8040c497>] input_release_device+0x27/0x50
->  [<ffffffff804102aa>] evdev_ungrab+0x3a/0x50
->  [<ffffffff804103eb>] evdev_release+0xcb/0xd0
->  [<ffffffff80293460>] __fput+0xc0/0x230
->  [<ffffffff802938a6>] fput+0x16/0x20
->  [<ffffffff80290296>] filp_close+0x56/0x90
->  [<ffffffff80291afa>] sys_close+0x9a/0xf0
->  [<ffffffff8020ba4e>] system_call+0x7e/0x83
-> I was not able to use sysrq keys, the keyboard is obviously defunct. If 
-> this is not known, I'll try to turn lockdep on and maybe connect through 
-> ssh next time it happens.
+* Nikanth Karthikesan <knikanth@suse.de> wrote:
 
-Is this reproducible on your side? 
+> The Machine check handler registers ioctl handler that is called with 
+> the BKL held. Changing to register unlocked_ioctl instead. Also mce 
+> ioctl handler does not seem to need any lock protection.
+> 
+> Change the Machine check handler to use unlocked_ioctl instead of 
+> ioctl handler. Also the mce ioctl handler does not need any lock 
+> protection.
 
-Running with lockdep would be really helpful, so that we possibly know who 
-is holding the other instance of dev->mutex.
+thanks, applied to x86.git. Mcelog functionality uses cmpxchg so no need 
+for the BKL there. The ioctl still being BKL is purely historic and it 
+was never relied on.
 
--- 
-Jiri Kosina
+	Ingo
