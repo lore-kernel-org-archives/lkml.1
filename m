@@ -1,63 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753782AbYAIBw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753631AbYAIB4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753782AbYAIBw6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 20:52:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbYAIBwt
+	id S1753631AbYAIB4X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 20:56:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbYAIB4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 20:52:49 -0500
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:22203 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751122AbYAIBws (ORCPT
+	Tue, 8 Jan 2008 20:56:15 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:46601 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750867AbYAIB4O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 20:52:48 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=u16bU3gJmRYNeYU6i5RMA7apskcrt9LDBs3hJdQRGcb4W0tOjMlq1BiWiyOLpcwQ9WBYru3NZuI5ILZkiVrtW7PHxyErAIC2bpytENgsIi6CDn27OFKbV/YAdDLsOgg4ow7toy4tIGu6cUSSpmgXb7/J+bBzvPoU4E+OqWBjEHc=  ;
-X-YMail-OSG: MA.8_ZQVM1nI9UYxJbsg1KuxP.9epvxAlhslGgZqkleHoTXd3sBrbAVdSvK6x9GAFRMFzpMNDQ--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 10/28] FS-Cache: Recruit a couple of page flags for cache management [try #2]
-Date: Wed, 9 Jan 2008 12:52:37 +1100
-User-Agent: KMail/1.9.5
-Cc: viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
-       sds@tycho.nsa.gov, casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
-       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
-References: <200801081401.11975.nickpiggin@yahoo.com.au> <7972.1199711343@redhat.com> <31207.1199836284@redhat.com>
-In-Reply-To: <31207.1199836284@redhat.com>
+	Tue, 8 Jan 2008 20:56:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=P2n/LIOWfkg2iuOkizFs37Ggo58DSruTimYkRZP+acveahuFeF4j4hBzvn4qBMuxh7GZEQKCHyF9fVlabHakfz2C5h/VCKAg+47fXQbZPeXpcIp+cbbSHzVlgz7rCNFxtQoB0Vj1+o5vvkpqxIqedkVUn472yh7HDqUyw/f2a8I=
+Message-ID: <478429B2.2030002@gmail.com>
+Date: Wed, 09 Jan 2008 10:56:02 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801091252.37565.nickpiggin@yahoo.com.au>
+To: =?ISO-8859-1?Q?=22J=2EA=2E_Magall=F3n=22?= <jamagallon@ono.com>
+CC: "Linux-Kernel, " <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.24-rc7
+References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org> <20080108015012.2e518dd4@werewolf>
+In-Reply-To: <20080108015012.2e518dd4@werewolf>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 09 January 2008 10:51, David Howells wrote:
-> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > > Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > > > No. I mean call the bit PG_private2. That way non-pagecache and
-> > > > filesystems that don't use fscache can use it.
-> > >
-> > > The bit is called PG_owner_priv_2, and then 'subclassed' to PG_fscache,
-> > > much like PG_owner_priv_1 is 'subclassed' to PG_checked as was
-> > > recommended.
-> >
-> > It is not owner_priv if you're putting checks and tests into core
-> > kernel pagecache code for it. owner_priv means a filesystem has it
-> > _all_ to itself.
->
-> Okay, I'll change it if it makes you happy.
+J.A. Magallón wrote:
+> HI all...
+> 
+> On Sun, 6 Jan 2008 14:19:16 -0800 (PST), Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+>> It's been two weeks since rc6, but let's face it, with xmas and new years 
+>> (and birthdays) in between, there hasn't actually been a lot of working 
+>> days, and the incremental patch from -rc6 is about half the size of the 
+>> one from rc5->rc6.
+>>
+>> And I'll be charitable and claim it's because it's all stabilizing, and 
+>> not because we've all been in a drunken stupor over the holidays.
+>>
+>> The shortlog (appended below) is short and fairly informative. It's all 
+>> really just a lot of rather small changes. The diffstat shows a lot of 
+>> one- and two-liners, with just a few drivers (and the Cell platform) 
+>> getting a bit more attention, and the SLUB support of /proc/slabinfo 
+>> showing up as a blip.
+>>
+> 
+> With this kernel I'm getting frequent temporary freezes (system comes
+> back responsive after a minute or so...). I see this in dmesg:
+> 
+> ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> ata3.00: cmd ca/00:08:67:10:18/00:00:00:00:00/e2 tag 0 dma 4096 out
+>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> ata3.00: status: { DRDY }
+> ata3: soft resetting link
+> ata3.00: configured for UDMA/133
+> ata3: EH complete
+> sd 2:0:0:0: [sdb] 390721968 512-byte hardware sectors (200050 MB)
+> sd 2:0:0:0: [sdb] Write Protect is off
+> sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+> sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> 
+> ata4.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> ata4.00: cmd c8/00:08:ef:0b:c7/00:00:00:00:00/e7 tag 0 dma 4096 in
+>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> ata4.00: status: { DRDY }
+> ata4: soft resetting link
+> ata4.00: configured for UDMA/133
+> ata4: EH complete
+> sd 3:0:0:0: [sdc] 625142448 512-byte hardware sectors (320073 MB)
+> sd 3:0:0:0: [sdc] Write Protect is off
+> sd 3:0:0:0: [sdc] Mode Sense: 00 3a 00 00
+> sd 3:0:0:0: [sdc] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> 
+> See this are two different drives, I doubt both drives have gone nuts
+> at the same time...
 
-It is to make everybody happy. Especially in code that everyone works
-on like mm/ and fs/, you can't just have everybody following their own
-slightly different conventions.
+That's weird.  There hasn't been any related changes.  Does going back
+to 2.6.24-rc6 fix the problem?
 
-
-> Bear in mind, though, you're 
-> dictating instructions that conflict with those other people have dictated.
-
-Can you point me to the posts. Thanks.
+-- 
+tejun
