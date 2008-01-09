@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbYAIB72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbYAICEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754189AbYAIB72 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 20:59:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbYAIB7V
+	id S1753308AbYAICEb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 21:04:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbYAICEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 20:59:21 -0500
-Received: from gw.goop.org ([64.81.55.164]:53650 "EHLO mail.goop.org"
+	Tue, 8 Jan 2008 21:04:23 -0500
+Received: from ozlabs.org ([203.10.76.45]:58217 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751831AbYAIB7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 20:59:20 -0500
-Message-ID: <478429DE.1090901@goop.org>
-Date: Tue, 08 Jan 2008 17:56:46 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1750830AbYAICEW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 21:04:22 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Zach Brown <zach.brown@oracle.com>
+Subject: Re: [PATCH 5/6] syslets: add generic syslets infrastructure
+Date: Wed, 9 Jan 2008 13:03:57 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dan Williams <dan.j.williams@gmail.com>, Jeff Moyer <jmoyer@redhat.com>,
+       Simon Holm Thogersen <odie@cs.aau.dk>, suresh.b.siddha@intel.com
+References: <1196983219534-git-send-email-zach.brown@oracle.com> <1196983219370-git-send-email-zach.brown@oracle.com> <11969832192130-git-send-email-zach.brown@oracle.com>
+In-Reply-To: <11969832192130-git-send-email-zach.brown@oracle.com>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH 00 of 10] x86: unify asm/pgtable.h
-References: <20080109000146.GA29095@elte.hu> <47841194.2010208@goop.org> <20080109002014.GB31289@elte.hu> <20080109002803.GA3732@elte.hu> <20080109003034.GA4658@elte.hu> <47841B09.3020507@goop.org> <20080109005914.GA24228@elte.hu> <47841E3C.9020106@goop.org> <20080109011233.GD25945@bingen.suse.de> <478424DE.3030609@goop.org> <20080109014233.GG25945@bingen.suse.de>
-In-Reply-To: <20080109014233.GG25945@bingen.suse.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801091303.58920.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> Or to put it another way, what's the underlying rationale for making 
->> __PAGE_KERNEL_* not include the GLOBAL flag, but including it in the pgprot 
->> versions?  It means that code like this in ioremap_64.c:
->>     
->
-> There is none, but that is not what change_page_attr() cares about.
-> It just cares that you pass in the correct bits and you don't currently.
->
-> I think you're missing the forrest because of all the trees currently.
->   
+On Friday 07 December 2007 10:20:18 Zach Brown wrote:
+> The indirect syslet arguments specify where to store the completion and
+> what function in userspcae to return to once the syslet has been executed. 
+> The details of how we pass the indirect syslet arguments needs help.
 
-Yeah, that may be true, but this particular tree is weird, and I'm 
-trying to understand what's going on here.  Specifically, 64-bit 
-ioremap()s *don't* set _PAGE_GLOBAL, which appears to be an accident 
-resulting from the strange definitions of __PAGE_KERNEL_* vs 
-PAGE_KERNEL_*. 
+Hi Zach,
 
-For example, ioremap_64.c:__ioremap() creates a vma for the io mapping, 
-and explicitly sets _PAGE_GLOBAL in the vma's version of pgprot - but 
-then it calls ioremap_page_range() to actually create the mapping, which 
-ends up making a non-global mapping, because its rolling its own version 
-of PAGE_KERNEL by using pgprot(__PAGE_KERNEL) - which is not the actual 
-definition of PAGE_KERNEL.
+    Firstly, why not just specify an address for the return value and be done 
+with it?  This infrastructure seems overkill, and you can always extend later 
+if required.
 
-I think there's a bug around here, but I think its currently being 
-hidden by accident.  I think my changes are correct, and they're 
-exposing some other bug.  But I don't really understand how all this 
-stuff is supposed to fit together, so I'm looking for an explanation of 
-what's supposed to be happening - and ideally - why the current code 
-isn't actually buggy.
+Secondly, you really should allow integration with an eventfd so you don't 
+make the posix AIO mistake of providing a poll-incompatible interface.
 
-For example: is ioremap_change_attr() actually *deliberately* creating 
-non-global mappings?  Or is it an accident?  And if it really intends to 
-create non-global mappings, why?  And why is it buggy for it to create 
-global mappings?
+Finally, and probably most alarmingly, AFAICT randomly changing TID will break 
+all threaded programs, which means this won't be fitted into existing code 
+bases, making it YA niche Linux-only API 8(
 
-    J
+Cheers,
+Rusty.
