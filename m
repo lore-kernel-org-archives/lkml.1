@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756409AbYAIVGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbYAIVH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756409AbYAIVGt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 16:06:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbYAIVGm
+	id S1756667AbYAIVH1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 16:07:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbYAIVHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 16:06:42 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:44926 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752262AbYAIVGl (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 16:06:41 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Rik van Riel <riel@redhat.com>
-Cc: Anton Salikhmetov <salikhmetov@gmail.com>, linux-mm@kvack.org,
+	Wed, 9 Jan 2008 16:07:12 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:33375 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752755AbYAIVHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 16:07:10 -0500
+From: akepner@sgi.com
+Date: Wed, 9 Jan 2008 13:05:42 -0800
+To: Roland Dreier <rdreier@cisco.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Tony Luck <tony.luck@intel.com>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       David Miller <davem@davemloft.net>, Muli Ben-Yehuda <muli@il.ibm.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RFC][BUG] updating the ctime and mtime time stamps in msync()
-In-Reply-To: Your message of "Wed, 09 Jan 2008 15:50:15 EST."
-             <20080109155015.4d2d4c1d@cuia.boston.redhat.com>
-From: Valdis.Kletnieks@vt.edu
-References: <1199728459.26463.11.camel@codedot>
-            <20080109155015.4d2d4c1d@cuia.boston.redhat.com>
+Subject: Re: [RFC/PARTIAL PATCH 0/3] dma: passing "attributes" to dma_map_* routines
+Message-ID: <20080109210542.GP23661@sgi.com>
+References: <20080108023222.GP23661@sgi.com> <1199809628.3534.34.camel@localhost.localdomain> <ada63y4kycs.fsf@cisco.com> <1199814853.3534.39.camel@localhost.localdomain> <adawsqkjipz.fsf@cisco.com> <1199816504.3534.59.camel@localhost.localdomain> <adaprwa7lzd.fsf@cisco.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1199912777_3223P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 09 Jan 2008 16:06:17 -0500
-Message-ID: <26932.1199912777@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <adaprwa7lzd.fsf@cisco.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1199912777_3223P
-Content-Type: text/plain; charset=us-ascii
-
-On Wed, 09 Jan 2008 15:50:15 EST, Rik van Riel said:
-
-> Could you explain (using short words and simple sentences) what the
-> exact problem is?
+On Wed, Jan 09, 2008 at 01:00:38PM -0800, Roland Dreier wrote:
+> .....
+> The reason this hasn't been an issue until now is that almost all
+> drivers work correctly if the Altix code just sets the "flush" bit for
+> memory allocated via the consistent/coherent allocators.  However, if
+> we want the device to write to userspace memory, this doesn't work
+> (and mapping coherent memory allocated in the kernel into userspace is
+> a mess on other platforms, because it unnecessarily consumes lowmem
+> and/or kernel address space).
 > 
-> Eg.
-> 
-> 1) program mmaps file
-> 2) program writes to mmaped area
-> 3) ???                   <=== this part, in equally simple words :)
-> 4) data loss
 
-It's like this:
+And the only way that user level CQs work on Altix now is 
+that we apply our own patches to allocate them in the 
+kernel (with dma_alloc_coherent()) them mmap() them back 
+to user space. A bug in one of these patches recently led  
+to considerable drama with several customers - I'd love 
+to get a fix in mainline so we can drop our patches and 
+avoid the possibility such theatrics in the future ;-)
 
-Monday  9:04AM:  System boots, database server starts up, mmaps file
-Monday  9:06AM:  Database server writes to mmap area, updates mtime/ctime
-Monday <many times> Database server writes to mmap area, no further update..
-Monday 11:45PM:  Backup sees "file modified 9:06AM, let's back it up"
-Tuesday 9:00AM-5:00PM: Database server touches it another 5,398 times, no mtime
-Tuesday 11:45PM: Backup sees "file modified back on Monday, we backed this up..
-Wed  9:00AM-5:00PM: More updates, more not touching the mtime
-Wed  11:45PM: *yawn* It hasn't been touched in 2 days, no sense in backing it up..
+-- 
+Arthur
 
-Lather, rinse, repeat....
-
---==_Exmh_1199912777_3223P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHhTdJcC3lWbTT17ARAtytAKCxm4JJmxFMV7xD6Lhqad5vNk0sxgCgzb0V
-m5TQFMylvvkifttlOXMEypE=
-=9BM7
------END PGP SIGNATURE-----
-
---==_Exmh_1199912777_3223P--
