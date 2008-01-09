@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbYAINyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbYAINz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753376AbYAINyR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 08:54:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbYAINyD
+	id S1753946AbYAINz5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 08:55:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbYAINzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 08:54:03 -0500
-Received: from py-out-1112.google.com ([64.233.166.183]:40659 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751787AbYAINyB (ORCPT
+	Wed, 9 Jan 2008 08:55:50 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:12920 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751157AbYAINzt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 08:54:01 -0500
+	Wed, 9 Jan 2008 08:55:49 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ViqQwKDq0TNFMlb6DCuH1lhYLeLw+zlcf9rWPJMG0+DxlTSniUNWxiKpX9clLtOL4LTKKJo69FGpl4yWrkmyxH1bNfLfzDUvfGkpRlD1Xz9ZejZIBV7fRHsbrwKrGSOKQZd2pbl2X9XF9DuaDTonWkHOkUUuIwdWKP9gCIhrV74=
-Message-ID: <6e0cfd1d0801090553r4187dfa2lb8cb6b848f06669f@mail.gmail.com>
-Date: Wed, 9 Jan 2008 14:53:58 +0100
-From: "Martin Schwidefsky" <schwidefsky@googlemail.com>
-To: "Theodore Tso" <tytso@mit.edu>,
-       "Martin Schwidefsky" <schwidefsky@googlemail.com>,
-       "Tuomo Valkonen" <tuomov@iki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: The ext3 way of journalling
-In-Reply-To: <20080109122556.GL21097@mit.edu>
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
+        b=r2jn4EdL4pbNExKKN7M+OXdf+QLhBxlEmW84bnIa0NRibodthpR/aekNe2petnGhgFqlJXQoModVuV8cxxzcDw1rGIMY7kNIPlVlOdSidayYnv2V2AwzayvG1GgDx9w8KPjl4MIjgTRuta4xTb/U85WveeDXf/t05oUTSb/t4zc=
+Message-ID: <4784D2E1.5020701@gmail.com>
+Date: Wed, 09 Jan 2008 16:57:53 +0300
+From: Konstantin Kalin <konstantin.kalin@gmail.com>
+Reply-To: konstantin.kalin@gmail.com
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+Subject: Strange freeze on 2.6.21
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi>
-	 <p73odbwqmx2.fsf@bingen.suse.de>
-	 <slrnfo7b3a.6m2.tuomov@jolt.modeemi.cs.tut.fi>
-	 <20080108181525.GL27800@mit.edu>
-	 <6e0cfd1d0801090154r75c9ca93v5361aea45fe41bb5@mail.gmail.com>
-	 <20080109122556.GL21097@mit.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 9, 2008 1:25 PM, Theodore Tso <tytso@mit.edu> wrote:
-> On Wed, Jan 09, 2008 at 10:54:11AM +0100, Martin Schwidefsky wrote:
-> > Actually you can force Windows to accept a hardware clock in UTC:
-> > HKEY_LOCAL_MACHINE/SYSTEMCurrentControlSetControl/TimeZoneInformation/RealTimeIsUniversal
->
-> Oh, so cool!!!  Do you know off hand what version of Windows started
-> honoring that registry setting?
+Hello,
 
-I have a Windows XP next to Linux on my home box. So I can say from
-experience that Windows XP works. I have no idea if older versions had
-that registry entry as well.
+I'd like to ask your help with strange behavior of kernel 2.6.21-7. 
+Sometimes it becomes to inoperable state and the system time stops. Also 
+I couldn't ping the system that moment. But if I try to use keyboard the 
+system will wake up and begin working. In other words all programs are 
+continuing work normally - there are only one thing - the system time is 
+slow on delay between moments when the system had stopped and I used the 
+keyboard. It happens on several computers but they have similar hardware 
+(AMD64 X2, ASUS M2NPV-VM).
 
-> And what do you set that registry value to?  Just a boolean "true"?
+I need an advice how I may collect information about the moment when the 
+system stops. /var/log/messages doesn't contain any useful information 
+near the time of stopping. There are nothing strange.
 
-I can check my dual-boot machine when I get home. I think it was just "1".
-
-> Now, how to convince Ubuntu to put this in their FAQ so I stop having
-> their ahhh, less than clueful dual-booting Windows users who happen to
-> live in Europe stop submitting bugs on this issue....
-
-An entry in some FAQ would indeed be helpful. It would have saved me
-some hassle.
-
--- 
-blue skies,
-  Martin
+Thank you,
+Kostya.
