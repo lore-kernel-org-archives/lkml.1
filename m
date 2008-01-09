@@ -1,135 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbYAILdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753898AbYAILgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754184AbYAILdg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 06:33:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbYAILdY
+	id S1753898AbYAILgS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 06:36:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbYAILgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 06:33:24 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39851 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752772AbYAILdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 06:33:22 -0500
-Date: Wed, 9 Jan 2008 12:33:25 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
-       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
-Subject: Re: [patch 7/9] unprivileged mounts: allow unprivileged fuse mounts
-Message-ID: <20080109113325.GC9735@elf.ucw.cz>
-References: <20080108113502.184459371@szeredi.hu> <20080108113630.861045063@szeredi.hu> <20080108214625.GE5050@ucw.cz> <E1JCN9I-0004DB-DF@pomaz-ex.szeredi.hu> <20080108225820.GA9735@elf.ucw.cz> <E1JCWxm-0005Fn-36@pomaz-ex.szeredi.hu>
+	Wed, 9 Jan 2008 06:36:10 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49104 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751883AbYAILgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 06:36:08 -0500
+Date: Wed, 9 Jan 2008 12:35:07 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, discuss@LessWatts.org,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>, venkatesh.pallipadi@intel.com,
+       tglx@linutronix.de, Arjan van de Ven <arjan@infradead.org>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Chanda Sethia <chanda.sethia@in.ibm.com>
+Subject: Re: Analysis of sched_mc_power_savings
+Message-ID: <20080109113507.GA29721@elte.hu>
+References: <20080108173815.GA7793@dirshya.in.ibm.com> <20080108212400.GA8903@linux-os.sc.intel.com> <20080109111302.GC7793@dirshya.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1JCWxm-0005Fn-36@pomaz-ex.szeredi.hu>
-X-Warning: Reading this can be dangerous to your mental health.
+In-Reply-To: <20080109111302.GC7793@dirshya.in.ibm.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> > > AFAIR there were two security vulnerabilities in fuse's history, one
-> > > of them an information leak in the kernel module, and the other one an
-> > > mtab corruption issue in the fusermount utility.  I don't think this
-> > > is such a bad track record.
-> > 
-> > Not bad indeed. But I'd consider 'kill -9 not working' to be DoS
-> > vulnerability...
-> 
-> The worst that can happen is that a sysadmin doesn't read the docs
-> (likely) before enabling fuse on a multiuser system, and is surprised
-> by a user doing funny things.  And _then_ has to go read the docs, or
-> google for some info.  This is basically how things normally work, and
-> I don't consider it a DoS.
+* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
 
-No, this is not normal. Kill -9 has been estabilished long time ago,
-and we should not be documenting its now-brokenness in
-Documentation/filesystems/fuse.txt .
+> How do we take this technique to the next step where we can 
+> consolidate short running jobs as well?  Did you face any difficulty 
+> biasing the CPU for short running jobs?
 
-For example, my /etc/inittab currently has:
+are you sure your measurement tasks do not impact the measurement 
+workload? If you use something like 'top' then try running it reniced to 
++19. (or perhaps even bound to a particular CPU, say #3, to make its 
+impact isolated)
 
-kb::kbrequest:/etc/rc/rc.reboot 2 0
-
-#
-# This file handles system shutdown and reboot.
-#
-
-PATH=/sbin:/bin:/usr/sbin:/usr/bin
-sync &
-
-# Kill all processes.
-wall System is going down NOW\!
-echo -n -e "\rSystem is going down: processes."
-killall5 -15
-echo -n "."
-sleep 1
-echo -n ". "
-killall5 -9
-
-# Before unmounting file systems write a reboot record to wtmp.
-echo -n "wtmp "
-halt -w
-
-# Swap needs to be unmounted because otherwise busy filesystems
-remain.
-echo -n "swap "
-swapoff -a
-swapoff /c/swap
-swapoff /c/swap2
-
-# Unmount file systems
-echo -n "umount."
-umount -a || (
-	sync &
-	echo -n "umount-retry."
-	sleep 1
-	umount -a || sulogin
-)
-echo -n ". "
-mount -n -o remount,ro /
-
-# Now halt or reboot.
-if [ "$2" = "0" ] ; then
-	swapoff -a
-	echo "halted."
-	halt -p -f
-else
-	echo "rebooting..."
-	reboot -d -f
-fi
-
-...this will break with FUSE enabled, right? (Minor security hole by
-allowing users to stop c-a-delete, where none existed before?)
-
-I'm currently suspending by 'echo "mem" > /sys/power/state'. How
-should I do that _safely_ with FUSE enabled?
-
-If I want to get rid of nasty user in multiuser system, I do 
-su nastyuser 'kill -9 -1' . How do I do the equivalent with FUSE
-enabled? (Without affecting other users?)
-
-Load average was never really meaningful number, but with FUSE
-enabled, users can set it to 666 without actually eating any CPU.
-
-SIGSTOP used to work, allowing you to prevent user processes from
-working while you examine them. Now SIGSTOP can be delayed for
-arbitrary time.
-
-Heck, imagine malicious user process misbehaves. Before FUSE, you
-could at least attach it with gdb to look what it is doing. Now you
-can't.
-
-I really believe FUSE vs. signals needs fixing. Either that, or
-updating all the manpages
-
-man 1 kill:
--       KILL       9   exit      this signal may not be blocked
-+       KILL       9   exit      this signal may not be blocked, except by FUSE user mount
-
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	Ingo
