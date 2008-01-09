@@ -1,97 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755108AbYAILLc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755289AbYAILMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755108AbYAILLc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 06:11:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYAILLZ
+	id S1755289AbYAILMp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 06:12:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbYAILMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 06:11:25 -0500
-Received: from mail.gmx.net ([213.165.64.20]:37957 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751424AbYAILLX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 06:11:23 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/65vcqTAT6DoH9BKQZt9J7OpzjWkBHyKr/G3N5r4
-	3WTg/XmG3PwzBJ
-Subject: Re: [vm] writing to UDF DVD+RW (/dev/sr0) while under memory
-	pressure: box ==> doorstop
-From: Mike Galbraith <efault@gmx.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-In-Reply-To: <1199806071.4174.2.camel@homer.simson.net>
-References: <1199447212.4529.13.camel@homer.simson.net>
-	 <1199612533.4384.54.camel@homer.simson.net>
-	 <1199642470.3927.12.camel@homer.simson.net>
-	 <20080106122954.d8f04c98.akpm@linux-foundation.org>
-	 <1199790316.4094.57.camel@homer.simson.net>
-	 <20080108033801.40d0043a.akpm@linux-foundation.org>
-	 <1199805713.3571.12.camel@homer.simson.net>
-	 <1199806071.4174.2.camel@homer.simson.net>
-Content-Type: text/plain
-Date: Wed, 09 Jan 2008 12:11:20 +0100
-Message-Id: <1199877080.4340.19.camel@homer.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Wed, 9 Jan 2008 06:12:33 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59380 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751424AbYAILMb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 06:12:31 -0500
+Date: Wed, 9 Jan 2008 12:11:20 +0100
+From: Karel Zak <kzak@redhat.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
+       viro@ftp.linux.org.uk, ebiederm@xmission.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
+Subject: Re: [patch 6/9] unprivileged mounts: allow unprivileged mounts
+Message-ID: <20080109111120.GI3926@petra.dvoda.cz>
+References: <20080108113502.184459371@szeredi.hu> <20080108113629.192719163@szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080108113629.192719163@szeredi.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-01-08 at 16:27 +0100, Mike Galbraith wrote:
-> On Tue, 2008-01-08 at 16:21 +0100, Mike Galbraith wrote:
-> > On Tue, 2008-01-08 at 03:38 -0800, Andrew Morton wrote:
-> > > 
-> > > Well.  From your earlier trace it appeared that something was causing
-> > > the filesystem to perform synchronous inode writes - sync_dirty_buffer() was
-> > > called.
-> > > 
-> > > This will cause many more seeks than would occur if we were doing full
-> > > delayed writing, with obvious throughput implications.
-> > 
-> > Yes, with UDF, the IO was _incredibly_ slow.  With ext2, it was better,
-> > though still very bad.  I tested with that other OS, and it gets ~same
-> > throughput with UDF as I got with ext2 (ick).
-> > 
-> > UDF does udf_clear_inode() -> write_inode_now(inode, 1)
-> > 
-> > I suppose I could try write_inode_now(inode, 0).  Might unstick the box.
+On Tue, Jan 08, 2008 at 12:35:08PM +0100, Miklos Szeredi wrote:
+> Define a new fs flag FS_SAFE, which denotes, that unprivileged mounting of
+> this filesystem may not constitute a security problem.
 > 
-> (nope, still sync, UDF still deadly)
+> Since most filesystems haven't been designed with unprivileged mounting in
+> mind, a thorough audit is needed before setting this flag.
+> 
+> For "safe" filesystems also allow unprivileged forced unmounting.
 
-write_inode_now() is a fibber.
+ What about to list "safe" filesystems anywhere in /proc/fs/ ? I think
+ it's very important information for admins.
 
-The below seems to fix it in that writes dribbling to the DVD+RW at the
-whopping 1 to 10 pages/sec I'm seeing no longer turn box into a
-doorstop.  It's probably busted as heck.
+ Note, your patch for mount(8) is always trying to use unprivileged
+ mount(2) for non-root users. It's overkill when unprivileged mounts are
+ supported for bind mounts and fuse only. It would be nice to check
+ if FS is "safe" before switch to unprivileged mode.
 
-Think I'll cc linux-mm, and go find something safer to play with.
+ The "safe" definition is also very subjective and it depends on your
+ level of paranoia. There should be a way (e.g. /proc) how control and
+ modify the list of "safe" filesystems. For example I have no problem
+ to mark cifs as "safe" for my home server.
 
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index 0fca820..f1cce24 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -657,7 +657,7 @@ int write_inode_now(struct inode *inode, int sync)
- 	int ret;
- 	struct writeback_control wbc = {
- 		.nr_to_write = LONG_MAX,
--		.sync_mode = WB_SYNC_ALL,
-+		.sync_mode = sync ? WB_SYNC_ALL : WB_SYNC_NONE,
- 		.range_start = 0,
- 		.range_end = LLONG_MAX,
- 	};
-diff --git a/fs/udf/inode.c b/fs/udf/inode.c
-index 6ff8151..d1fc116 100644
---- a/fs/udf/inode.c
-+++ b/fs/udf/inode.c
-@@ -117,7 +117,7 @@ void udf_clear_inode(struct inode *inode)
- 		udf_discard_prealloc(inode);
- 		udf_truncate_tail_extent(inode);
- 		unlock_kernel();
--		write_inode_now(inode, 1);
-+		write_inode_now(inode, 0);
- 	}
- 	kfree(UDF_I_DATA(inode));
- 	UDF_I_DATA(inode) = NULL;
+    Karel
 
-
+-- 
+ Karel Zak  <kzak@redhat.com>
