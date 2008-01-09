@@ -1,107 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753474AbYAIDRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754101AbYAIDUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753474AbYAIDRs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 22:17:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbYAIDRk
+	id S1754101AbYAIDUh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 22:20:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbYAIDU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 22:17:40 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:56445 "EHLO gir.skynet.ie"
+	Tue, 8 Jan 2008 22:20:29 -0500
+Received: from ozlabs.org ([203.10.76.45]:45240 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751883AbYAIDRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 22:17:39 -0500
-Date: Wed, 9 Jan 2008 03:17:37 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
+	id S1751354AbYAIDU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 22:20:28 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: torvalds@linux-foundation.org, hch@lst.de, ak@suse.de, pq@iki.fi,
-       jbeulich@novell.com, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Revert "x86: optimize page faults like all other
- achitectures and kill notifier cruft"
-In-Reply-To: <20080108190611.3b9c0760.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.0.82.0801090308230.9570@skynet.skynet.ie>
-References: <alpine.DEB.0.82.0801090226240.9570@skynet.skynet.ie>
- <20080108190611.3b9c0760.akpm@linux-foundation.org>
+Subject: Re: [PATCH] call sysrq_timer_list_show from a workqueue
+Date: Wed, 9 Jan 2008 14:20:18 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: mingo@elte.hu, kyle@mcmartin.ca, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@redhat.com
+References: <20080108063113.GA21287@fattire.cabal.ca> <200801082250.06828.rusty@rustcorp.com.au> <20080108162159.9f37d856.akpm@linux-foundation.org>
+In-Reply-To: <20080108162159.9f37d856.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801091420.19273.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 09 January 2008 11:21:59 Andrew Morton wrote:
+> The string handling in here has become a bit scruffy.
 
-> On Wed, 9 Jan 2008 02:34:46 +0000 (GMT) Dave Airlie <airlied@linux.ie> wrote:
-> 
-> > 
-> > [This an initial RFC but I'd like to have this patch in before 2.6.24 goes 
-> > final as it really breaks this useful feature]
-> > 
-> > mmiotrace the MMIO access tracer used to reverse engineer binary blobs
-> > used this notifier interface and is planned on being pushed upstream.
-> > 
-> > Having users able to just use the tracer module without having to rebuild 
-> > their kernel to add in a page fault handler hack means we get a lot 
-> > greater coverage for reverse engineering efforts.
-> 
-> Sorry, but that's a really really small benefit.  This very small number of
-> fairly (or very) technical users will be able to work out a way of getting
-> this to work in 2.6.24.  And in 2.6.25 with a merged mmiotrace we can do
-> something different.
+Yes, that patch also evokes a const warning.  Fixed below.  I assume you've
+queued these because you're thinking of applying them before 2.6.24?  I'd say
+only modules-de-mutex-more-symbol-lookup-paths-in-the-module-code.patch
+warrants that (the other is unlikely and not a regression).
 
-mmiotrace isn't targetted at fairly or technical users, its whole 
-usefulness is that you don't need a kernel re-build, the distro kernels 
-all contain enough support for us to just get a user to grab mmiotrace, 
-run make and get a trace.... so in my eyes this a major feature regression 
-to have to go back to custom kernel builds...
+> afacit the `namebuf[KSYM_NAME_LEN - 1] = 0;' would be unneeded if we were
+> to use strlcpy() and I suspect the `namebuf[0] = 0;' isn't needed either.
+>
+> And the use of strlcpy() means we don't need to subtract 1 from
+> KSYM_NAME_LEN and we don't need to fret about weird strncpy semantics when
+> the input string is too large.
+>
+>
+> And the fact that incoming arg `namebuf' MUST point at a
+> KSYM_NAME_LEN-sized buffer could be better communicated by using a
+> dedicated struct for this, or by giving the arg a type of `char
+> namebuf[KSYM_NAME_LEN]'.  Or by adding a comment. Or by just ignoring
+> me and doing something more useful.
 
-> It's a modest convenience to a very small number of people.  And the cost? 
-> Multiple functions calls and multiple cachelines hit for every pagefault
-> on, what?  Tens of millions of machines?
+Or better, rework all the name lookup interfaces, rather than having: 
 
-Which has been happening for how many months? perhaps if we merge 
-mmiotrace in 2.6.25 we can clean up this function, otherwise I just count 
-it as a feature regression...
+struct module *module_text_address(unsigned long addr);
+struct module *__module_text_address(unsigned long addr);
+int is_module_address(unsigned long addr);
+int module_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
+			char *name, char *module_name, int *exported);
+char *module_address_lookup(unsigned long addr,
+			    unsigned long *symbolsize,
+			    unsigned long *offset,
+			    char **modname,
+			    char *namebuf);
+int lookup_module_symbol_name(unsigned long addr, char *symname);
+int lookup_module_symbol_attrs(unsigned long addr, unsigned long *size,
+			       unsigned long *offset, char *modname, char *name);
+unsigned long module_kallsyms_lookup_name(const char *name);
 
-> pagefault it populates a struct on the stack, passes that around for a
-> while, does a bit of RCU stuff only to find that there was nothing to do. 
-> Surely we should at least be doing something along the lines of
-> 
-> 	if (unlikely(notify_page_fault_chain.notifier_call != NULL)) {
-> 		all that crap
-> 	}
-> 
-> 
-> But that's all speculation.  Has anyone actually measured the pagefault
-> latency impact of this change?
-> 
-> > +/*
-> > + * These are only here because kprobes.c wants them to implement a
-> > + * blatant layering violation.  Will hopefully go away soon once all
-> > + * architectures are updated.
-> > + */
-> > +static inline int register_page_fault_notifier(struct notifier_block *nb)
-> > +{
-> > +	return 0;
-> > +}
-> > +static inline int unregister_page_fault_notifier(struct notifier_block *nb)
-> > +{
-> > +	return 0;
-> > +}
-> > +
-> 
-> And this doesn't look very good either.  For how long did this fixme remain
-> unfixed?
-> 
-> 
-> So I'd suggest that we leave things as they are for 2.6.24 - mmiotrace
-> people will work something out, I'm sure.  For 2.6.25 if we merge mmiotrace
-> we can look at doing something which is vaguely efficient and tasteful.
-> 
+unsigned long kallsyms_lookup_name(const char *name);
+extern int kallsyms_lookup_size_offset(unsigned long addr,
+				  unsigned long *symbolsize,
+				  unsigned long *offset);
+const char *kallsyms_lookup(unsigned long addr,
+			    unsigned long *symbolsize,
+			    unsigned long *offset,
+			    char **modname, char *namebuf);
+extern int sprint_symbol(char *buffer, unsigned long address);
+extern void __print_symbol(const char *fmt, unsigned long address);
+int lookup_symbol_name(unsigned long addr, char *symname);
+int lookup_symbol_attrs(unsigned long addr, unsigned long *size,
+		        unsigned long *offset, char *modname, char *name);
 
-I just reverted Christophs patch I didn't try and work out if the old code 
-had problems no one has fixed...
+Cheers,
+Rusty.
 
-So all distros with 2.6.24 kernels are useless to mmiotrace I don't see 
-why leaving things as is until a suitable replacement mechanism can be 
-used.. I've heard others give out about this also madwifi and SuSE kernel 
-folks...
-
-Dave.
