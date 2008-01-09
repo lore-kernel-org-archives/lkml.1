@@ -1,41 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755033AbYAITFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbYAITHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755033AbYAITFW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 14:05:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbYAITFK
+	id S1755721AbYAITHa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 14:07:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYAITHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 14:05:10 -0500
-Received: from gw.goop.org ([64.81.55.164]:59799 "EHLO mail.goop.org"
+	Wed, 9 Jan 2008 14:07:23 -0500
+Received: from cantor.suse.de ([195.135.220.2]:40708 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752625AbYAITFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 14:05:08 -0500
-Message-ID: <47851AD1.2040604@goop.org>
-Date: Wed, 09 Jan 2008 11:04:49 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1751026AbYAITHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 14:07:22 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH] Revert "x86: optimize page faults like all other achitectures and kill notifier cruft"
+Date: Wed, 9 Jan 2008 20:07:13 +0100
+User-Agent: KMail/1.9.6
+Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       hch@lst.de, airlied@linux.ie, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, pq@iki.fi, jbeulich@novell.com,
+       linux-kernel@vger.kernel.org,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+References: <20080108192951.a4dc394f.akpm@linux-foundation.org> <20080109104149.GB8041@elte.hu> <20080109165254.GA4912@Krystal>
+In-Reply-To: <20080109165254.GA4912@Krystal>
 MIME-Version: 1.0
-To: Jan Beulich <jbeulich@novell.com>
-CC: Ingo Molnar <mingo@elte.hu>, Glauber de Oliveira Costa <glommer@gmail.com>,
-       Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 10 of 10] xen: mask out PWT too
-References: <patchbomb.1199829603@localhost> <ce684ed89b75370a4cfe.1199829613@localhost> <47849F29.76E4.0078.0@novell.com>
-In-Reply-To: <47849F29.76E4.0078.0@novell.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801092007.13414.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
-> That's somewhat ugly, as it will need to be undone/modified for Dom0 and
-> physical device access support. Jan
->   
 
-Yes, I know, but its a quick workaround for a silent change in 
-hypervisor behaviour.
+> Probing vmalloc faults is _really_ tricky : it also implies that the
+> handler (let's call it probe) connected to the probe point (marker or
+> kprobe) should _never_ cause a vmalloc page fault, 
 
-The proper fix would probably mask them out of the supported_pte_flags, 
-but that's a little more subtle to get right.
+That is why vmalloc_sync_all() was invented. It might make sense
+to just call that on kprobe registration.
 
-    J
+But I agree the other problems makes it a bad idea.
+
+I think the better solution is to keep the notifier, but make 
+it cheaper (e.g. by using constant patching ...)
+
+-Andi
