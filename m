@@ -1,31 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570AbYAIKmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbYAIKrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754570AbYAIKmz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 05:42:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbYAIKmo
+	id S1754272AbYAIKrd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 05:47:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbYAIKr0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 05:42:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50866 "EHLO mx2.mail.elte.hu"
+	Wed, 9 Jan 2008 05:47:26 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39032 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752202AbYAIKmm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 05:42:42 -0500
-Date: Wed, 9 Jan 2008 11:41:49 +0100
+	id S1750793AbYAIKr0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 05:47:26 -0500
+Date: Wed, 9 Jan 2008 11:47:11 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: hch@lst.de, airlied@linux.ie, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, ak@suse.de, pq@iki.fi,
-       jbeulich@novell.com, linux-kernel@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH] Revert "x86: optimize page faults like all other
-	achitectures and kill notifier cruft"
-Message-ID: <20080109104149.GB8041@elte.hu>
-References: <20080108192951.a4dc394f.akpm@linux-foundation.org> <alpine.DEB.0.82.0801090346370.9570@skynet.skynet.ie> <20080109071945.GB10695@lst.de> <20080108.232311.79648776.davem@davemloft.net>
+To: Andi Kleen <ak@suse.de>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jan Beulich <jbeulich@novell.com>
+Subject: Re: [PATCH 00 of 10] x86: unify asm/pgtable.h
+Message-ID: <20080109104711.GA14041@elte.hu>
+References: <20080109002803.GA3732@elte.hu> <20080109003034.GA4658@elte.hu> <47841B09.3020507@goop.org> <20080109005914.GA24228@elte.hu> <47841E3C.9020106@goop.org> <20080109011233.GD25945@bingen.suse.de> <478424DE.3030609@goop.org> <20080109014233.GG25945@bingen.suse.de> <478429DE.1090901@goop.org> <20080109021124.GH25945@bingen.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080108.232311.79648776.davem@davemloft.net>
+In-Reply-To: <20080109021124.GH25945@bingen.suse.de>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,34 +36,23 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-(kprobes folks Cc:-ed)
+* Andi Kleen <ak@suse.de> wrote:
 
-* David Miller <davem@davemloft.net> wrote:
-
-> From: Christoph Hellwig <hch@lst.de>
-> Date: Wed, 9 Jan 2008 08:19:45 +0100
+> There's one Jan pointed out: iounmap does not subtract the guard page 
+> size so it ends up resetting one page too much. That is probably what 
+> causes your problem. But again you should be passing in G in the first 
+> place.
 > 
-> > On Wed, Jan 09, 2008 at 03:55:20AM +0000, Dave Airlie wrote:
-> > > now because Linus said send him a patch to revert regressions rather than 
-> > > just complain,
-> > 
-> > this is not a regression by any definition.  You were abusing 
-> > exported symbols for out of tree junk, so you'll lose.
+> -Andi
 > 
-> And furthermore, they don't even need it, use a kprobe.
+> Here was Jan's patch; it incidently fixes the G problem too
 
-i agree. There a few practical complication on x86: the do_page_fault() 
-function is currently excluded from kprobe probing, for recursion 
-reasons. handle_mm_fault() can be probed OTOH - but that does not catch 
-vmalloc()-ed faults. The middle of do_page_fault() [line 348] should 
-work better [the point after notify_page_fault()] - but it's usually 
-more fragile to insert probes to such middle-of-the-function places.
+thanks, applied. I changed:
 
-So probing pagefaults is not as easy as it should/could be. We should 
-put a practical NOP marker to around line 348, to make it easier (and 
-faster) for systemtap to probe there.
+  From: Andi Kleen <ak@suse.de>
 
-(__kprobes is a highly confusing newspeak name btw - it should be 
-__noprobe instead.)
+to:
+
+  From: Jan Beulich <jbeulich@novell.com>
 
 	Ingo
