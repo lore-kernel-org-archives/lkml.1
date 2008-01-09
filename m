@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbYAITyv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbYAIT7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754951AbYAITyv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 14:54:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbYAITym
+	id S1755837AbYAIT7T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 14:59:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbYAIT7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 14:54:42 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:33411 "EHLO e6.ny.us.ibm.com"
+	Wed, 9 Jan 2008 14:59:11 -0500
+Received: from gate.crashing.org ([63.228.1.57]:46750 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752481AbYAITyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 14:54:41 -0500
-Subject: Re: [PATCH 10/10] x86: Unify percpu.h
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: travis@sgi.com, Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       Andi Kleen <ak@suse.de>, Jack Steiner <steiner@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>, tglx@linutronix.de,
-       mingo@redhat.com
-In-Reply-To: <Pine.LNX.4.64.0801091130420.11317@schroedinger.engr.sgi.com>
-References: <20080108211023.923047000@sgi.com>
-	 <20080108211025.293924000@sgi.com> <1199906905.9834.101.camel@localhost>
-	 <Pine.LNX.4.64.0801091130420.11317@schroedinger.engr.sgi.com>
+	id S1753229AbYAIT7L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 14:59:11 -0500
+Subject: Re: Replacement for page fault notifiers?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Pavel Roskin <proski@gnu.org>, Dave Airlie <airlied@gmail.com>,
+       Pekka Paalanen <pq@iki.fi>, linux-kernel@vger.kernel.org,
+       jbeulich@novell.com
+In-Reply-To: <20080109182157.GA32754@infradead.org>
+References: <20080108210638.5c9e093a@daedalus.pq.iki.fi>
+	 <20080108203235.GA772@infradead.org>
+	 <21d7e9970801081413n307ab07aq462a9fff014143ae@mail.gmail.com>
+	 <1199838407.6734.83.camel@pasglop> <1199902724.8050.11.camel@dv>
+	 <20080109182157.GA32754@infradead.org>
 Content-Type: text/plain
-Date: Wed, 09 Jan 2008 11:53:50 -0800
-Message-Id: <1199908430.9834.104.camel@localhost>
+Date: Thu, 10 Jan 2008 06:58:23 +1100
+Message-Id: <1199908703.6734.133.camel@pasglop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-01-09 at 11:31 -0800, Christoph Lameter wrote:
-> Well this is only the first patchset. The next one will unify this even 
-> more (and make percpu functions work consistent between the two arches) 
-> but it requires changes to the way the %gs register is used in 
-> x86_64. So we only do the simplest thing here to have one file to patch 
-> against later.
 
-Then I really think this particular patch belongs in that other patch
-set.  Here, it makes very little sense, and it's on the end anyway.
+On Wed, 2008-01-09 at 18:21 +0000, Christoph Hellwig wrote:
+> On Wed, Jan 09, 2008 at 01:18:44PM -0500, Pavel Roskin wrote:
+> > notification without patching the kernel.  But if no such solution is
+> > found, I would also support reverting the patch that removed fault
+> > notifiers on i386.
+> 
+> With your fixation on not patching the kernel you sound like a windows
+> developer.  There is no problem with patching the kernel, but the best
+> patching of that kernel is that which happens upstream so please folks
+> start submitting an mmiotrace variant for kernel inclusion.
+> 
+> Then again I don't quite get why you absolutely want to track pagefaults
+> anyway.  Just hooking into ioremap and read*/write* and iomap +
+> ioread*/iowrite* would be much easier and also a lot faster.  It would
+> also allow adding a nice sysfs attribute to enable this per-device.
 
--- Dave
+Because binary drivers don't use ioread/iowrite/readX/writeX (or if they
+do, they've long been inlined in the blob). The only solution is to map
+things as non-accessible and trap the page faults.
+
+It's a sane thing to do, Christoph, I don't think it's a unreasonable
+request to put the hooks back in.
+
+Cheers,
+Ben.
+
 
