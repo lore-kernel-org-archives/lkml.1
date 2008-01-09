@@ -1,375 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754826AbYAIET2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbYAIEV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754826AbYAIET2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 23:19:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYAIETU
+	id S1755509AbYAIEV5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 23:21:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbYAIEVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 23:19:20 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:19490 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752104AbYAIETT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 23:19:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=h8RIyzukC+blF5UH4wo3Cd3T4g0S1jbzLgVaZlc63WYEfmcawg4ocsq2DncKELOPeAFokw624+oZQH6boKfUdJ+HVqqTkbDyjnUx/J3avTZbNFzR8loXOelcXHx0odOyemzyg3BSdp/71qMIEkVlUkiG+8w2ZyPjjZptcdu9ZE4=
-Subject: [PATCHv3] kprobes: Introduce kprobe_handle_fault()
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       David Miller <davem@davemloft.net>, hskinnemoen@atmel.com,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, tony.luck@intel.com,
-       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>
-In-Reply-To: <1199833324.6424.12.camel@brick>
-References: <1199737486.7666.12.camel@brick>
-	 <18307.64807.204087.375733@cargo.ozlabs.ibm.com>
-	 <1199833324.6424.12.camel@brick>
-Content-Type: text/plain
-Date: Tue, 08 Jan 2008 20:19:20 -0800
-Message-Id: <1199852360.6424.39.camel@brick>
+	Tue, 8 Jan 2008 23:21:50 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:50294 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752154AbYAIEVt (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Jan 2008 23:21:49 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Thanasis <thanasis@asyr.hopto.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: NIC as RS232
+In-Reply-To: Your message of "Tue, 08 Jan 2008 08:48:35 +0200."
+             <47831CC3.9080604@asyr.hopto.org>
+From: Valdis.Kletnieks@vt.edu
+References: <47831CC3.9080604@asyr.hopto.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: multipart/signed; boundary="==_Exmh_1199852504_3703P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Tue, 08 Jan 2008 23:21:44 -0500
+Message-ID: <9263.1199852504@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use a central kprobe_handle_fault() inline in kprobes.h to remove
-all of the arch-dependant, practically identical implementations in
-avr32, ia64, powerpc, s390, sparc64, and x86.
+--==_Exmh_1199852504_3703P
+Content-Type: text/plain; charset=us-ascii
 
-avr32 was the only arch without the preempt_disable/enable pair
-in its notify_page_fault implementation.
+On Tue, 08 Jan 2008 08:48:35 +0200, Thanasis said:
 
-This uncovered a possible bug in the s390 version as that purely
-copied the x86 version unconditionally passing 14 as the trapnr
-rather than the error_code parameter.
+> Is there a kernel driver that would make a NIC's port work as a RS232
+> port, using the serial cables that are RJ45 on one side and DB9 or DB25
+> on the other? Maybe null modem cables of that type ? Or for example
+> those used by cisco as console port cables?
+> 
+> (or may be I'm dreaming ;-)
 
-powerpc:
-Tested-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+What I *have* seen are connectors that go from DB9/25 to RJ11, not RJ45.
+Basically, using the RJ11 to terminate a 4-conductor cable wired up for
+serial use.  It's often hard to tell an 11 from a 45 unless you look at
+it *real* close....
 
-X86-64
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+--==_Exmh_1199852504_3703P
+Content-Type: application/pgp-signature
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- arch/avr32/mm/fault.c   |   21 +--------------------
- arch/ia64/mm/fault.c    |   24 +-----------------------
- arch/powerpc/mm/fault.c |   25 +------------------------
- arch/s390/mm/fault.c    |   25 +------------------------
- arch/sparc64/mm/fault.c |   23 +----------------------
- arch/x86/mm/fault_64.c  |   26 ++------------------------
- include/linux/kprobes.h |   19 +++++++++++++++++++
- 7 files changed, 26 insertions(+), 137 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-diff --git a/arch/avr32/mm/fault.c b/arch/avr32/mm/fault.c
-index 6560cb1..e41953e 100644
---- a/arch/avr32/mm/fault.c
-+++ b/arch/avr32/mm/fault.c
-@@ -20,25 +20,6 @@
- #include <asm/tlb.h>
- #include <asm/uaccess.h>
- 
--#ifdef CONFIG_KPROBES
--static inline int notify_page_fault(struct pt_regs *regs, int trap)
--{
--	int ret = 0;
--
--	if (!user_mode(regs)) {
--		if (kprobe_running() && kprobe_fault_handler(regs, trap))
--			ret = 1;
--	}
--
--	return ret;
--}
--#else
--static inline int notify_page_fault(struct pt_regs *regs, int trap)
--{
--	return 0;
--}
--#endif
--
- int exception_trace = 1;
- 
- /*
-@@ -66,7 +47,7 @@ asmlinkage void do_page_fault(unsigned long ecr, struct pt_regs *regs)
- 	int code;
- 	int fault;
- 
--	if (notify_page_fault(regs, ecr))
-+	if (kprobe_handle_fault(regs, ecr))
- 		return;
- 
- 	address = sysreg_read(TLBEAR);
-diff --git a/arch/ia64/mm/fault.c b/arch/ia64/mm/fault.c
-index 7571076..bfc83e8 100644
---- a/arch/ia64/mm/fault.c
-+++ b/arch/ia64/mm/fault.c
-@@ -18,28 +18,6 @@
- 
- extern void die (char *, struct pt_regs *, long);
- 
--#ifdef CONFIG_KPROBES
--static inline int notify_page_fault(struct pt_regs *regs, int trap)
--{
--	int ret = 0;
--
--	if (!user_mode(regs)) {
--		/* kprobe_running() needs smp_processor_id() */
--		preempt_disable();
--		if (kprobe_running() && kprobes_fault_handler(regs, trap))
--			ret = 1;
--		preempt_enable();
--	}
--
--	return ret;
--}
--#else
--static inline int notify_page_fault(struct pt_regs *regs, int trap)
--{
--	return 0;
--}
--#endif
--
- /*
-  * Return TRUE if ADDRESS points at a page in the kernel's mapped segment
-  * (inside region 5, on ia64) and that page is present.
-@@ -106,7 +84,7 @@ ia64_do_page_fault (unsigned long address, unsigned long isr, struct pt_regs *re
- 	/*
- 	 * This is to handle the kprobes on user space access instructions
- 	 */
--	if (notify_page_fault(regs, TRAP_BRKPT))
-+	if (kprobe_handle_fault(regs, TRAP_BRKPT))
- 		return;
- 
- 	down_read(&mm->mmap_sem);
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 8135da0..ff64bd3 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -39,29 +39,6 @@
- #include <asm/tlbflush.h>
- #include <asm/siginfo.h>
- 
--
--#ifdef CONFIG_KPROBES
--static inline int notify_page_fault(struct pt_regs *regs)
--{
--	int ret = 0;
--
--	/* kprobe_running() needs smp_processor_id() */
--	if (!user_mode(regs)) {
--		preempt_disable();
--		if (kprobe_running() && kprobe_fault_handler(regs, 11))
--			ret = 1;
--		preempt_enable();
--	}
--
--	return ret;
--}
--#else
--static inline int notify_page_fault(struct pt_regs *regs)
--{
--	return 0;
--}
--#endif
--
- /*
-  * Check whether the instruction at regs->nip is a store using
-  * an update addressing form which will update r1.
-@@ -164,7 +141,7 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
- 	is_write = error_code & ESR_DST;
- #endif /* CONFIG_4xx || CONFIG_BOOKE */
- 
--	if (notify_page_fault(regs))
-+	if (kprobe_handle_fault(regs, 11))
- 		return 0;
- 
- 	if (trap == 0x300) {
-diff --git a/arch/s390/mm/fault.c b/arch/s390/mm/fault.c
-index 2456b52..a9033cf 100644
---- a/arch/s390/mm/fault.c
-+++ b/arch/s390/mm/fault.c
-@@ -51,29 +51,6 @@ extern int sysctl_userprocess_debug;
- 
- extern void die(const char *,struct pt_regs *,long);
- 
--#ifdef CONFIG_KPROBES
--static inline int notify_page_fault(struct pt_regs *regs, long err)
--{
--	int ret = 0;
--
--	/* kprobe_running() needs smp_processor_id() */
--	if (!user_mode(regs)) {
--		preempt_disable();
--		if (kprobe_running() && kprobe_fault_handler(regs, 14))
--			ret = 1;
--		preempt_enable();
--	}
--
--	return ret;
--}
--#else
--static inline int notify_page_fault(struct pt_regs *regs, long err)
--{
--	return 0;
--}
--#endif
--
--
- /*
-  * Unlock any spinlocks which will prevent us from getting the
-  * message out.
-@@ -309,7 +286,7 @@ do_exception(struct pt_regs *regs, unsigned long error_code, int write)
- 	int si_code;
- 	int fault;
- 
--	if (notify_page_fault(regs, error_code))
-+	if (kprobe_handle_fault(regs, 14))
- 		return;
- 
- 	tsk = current;
-diff --git a/arch/sparc64/mm/fault.c b/arch/sparc64/mm/fault.c
-index e2027f2..8467dd6 100644
---- a/arch/sparc64/mm/fault.c
-+++ b/arch/sparc64/mm/fault.c
-@@ -31,27 +31,6 @@
- #include <asm/sections.h>
- #include <asm/mmu_context.h>
- 
--#ifdef CONFIG_KPROBES
--static inline int notify_page_fault(struct pt_regs *regs)
--{
--	int ret = 0;
--
--	/* kprobe_running() needs smp_processor_id() */
--	if (!user_mode(regs)) {
--		preempt_disable();
--		if (kprobe_running() && kprobe_fault_handler(regs, 0))
--			ret = 1;
--		preempt_enable();
--	}
--	return ret;
--}
--#else
--static inline int notify_page_fault(struct pt_regs *regs)
--{
--	return 0;
--}
--#endif
--
- /*
-  * To debug kernel to catch accesses to certain virtual/physical addresses.
-  * Mode = 0 selects physical watchpoints, mode = 1 selects virtual watchpoints.
-@@ -280,7 +259,7 @@ asmlinkage void __kprobes do_sparc64_fault(struct pt_regs *regs)
- 
- 	fault_code = get_thread_fault_code();
- 
--	if (notify_page_fault(regs))
-+	if (kprobe_handle_fault(regs, 0))
- 		return;
- 
- 	si_code = SEGV_MAPERR;
-diff --git a/arch/x86/mm/fault_64.c b/arch/x86/mm/fault_64.c
-index 0e26230..c29e462 100644
---- a/arch/x86/mm/fault_64.c
-+++ b/arch/x86/mm/fault_64.c
-@@ -41,28 +41,6 @@
- #define PF_RSVD	(1<<3)
- #define PF_INSTR	(1<<4)
- 
--#ifdef CONFIG_KPROBES
--static inline int notify_page_fault(struct pt_regs *regs)
--{
--	int ret = 0;
--
--	/* kprobe_running() needs smp_processor_id() */
--	if (!user_mode(regs)) {
--		preempt_disable();
--		if (kprobe_running() && kprobe_fault_handler(regs, 14))
--			ret = 1;
--		preempt_enable();
--	}
--
--	return ret;
--}
--#else
--static inline int notify_page_fault(struct pt_regs *regs)
--{
--	return 0;
--}
--#endif
--
- /* Sometimes the CPU reports invalid exceptions on prefetch.
-    Check that here and ignore.
-    Opcode checker based on code by Richard Brunner */
-@@ -343,7 +321,7 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
- 			if (vmalloc_fault(address) >= 0)
- 				return;
- 		}
--		if (notify_page_fault(regs))
-+		if (kprobe_handle_fault(regs, 14))
- 			return;
- 		/*
- 		 * Don't take the mm semaphore here. If we fixup a prefetch
-@@ -352,7 +330,7 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
- 		goto bad_area_nosemaphore;
- 	}
- 
--	if (notify_page_fault(regs))
-+	if (kprobe_handle_fault(regs, 14))
- 		return;
- 
- 	if (likely(regs->eflags & X86_EFLAGS_IF))
-diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
-index 8189158..a1ca019 100644
---- a/include/linux/kprobes.h
-+++ b/include/linux/kprobes.h
-@@ -36,6 +36,7 @@
- #include <linux/spinlock.h>
- #include <linux/rcupdate.h>
- #include <linux/mutex.h>
-+#include <linux/hardirq.h>
- 
- #ifdef CONFIG_KPROBES
- #include <asm/kprobes.h>
-@@ -203,6 +204,20 @@ static inline struct kprobe *kprobe_running(void)
- 	return (__get_cpu_var(current_kprobe));
- }
- 
-+/*
-+ * If it is a kprobe pagefault we can not be premptible so return before
-+ * calling kprobe_running() as it will assert on smp_processor_id if
-+ * preemption is enabled.
-+ */
-+static inline int kprobe_handle_fault(struct pt_regs *regs, int trapnr)
-+{
-+	if (!user_mode(regs) && !preemptible() && kprobe_running() &&
-+	    kprobe_fault_handler(regs, trapnr))
-+		return 1;
-+	else
-+		return 0;
-+}
-+
- static inline void reset_current_kprobe(void)
- {
- 	__get_cpu_var(current_kprobe) = NULL;
-@@ -237,6 +252,10 @@ static inline struct kprobe *kprobe_running(void)
- {
- 	return NULL;
- }
-+static inline int kprobe_handle_fault(struct pt_regs *regs, int trapnr)
-+{
-+	return 0;
-+}
- static inline int register_kprobe(struct kprobe *p)
- {
- 	return -ENOSYS;
--- 
-1.5.4.rc2.1164.g6451
+iD8DBQFHhEvYcC3lWbTT17ARApMhAJ9Mc4lp+COEvbbMoE/twY2XMOyolQCg1oCG
+CS9TwtWFYobCE+JIeFQbs7M=
+=0k5/
+-----END PGP SIGNATURE-----
 
-
-
+--==_Exmh_1199852504_3703P--
