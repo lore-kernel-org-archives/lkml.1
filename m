@@ -1,95 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbYAIQpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbYAIQqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754188AbYAIQpj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 11:45:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYAIQpb
+	id S1755176AbYAIQqr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 11:46:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbYAIQqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 11:45:31 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:33908 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750882AbYAIQpa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 11:45:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GGMU6PGxLl4EOi57HXCXO51aRDuTqTuqGoT7GNTJrB7HJqFxa48G6HqRLIJwH9kxtRHv3AbxT6EW06yyR0Vz5g0Td7Zuozlrlv2JThsEGdKUJfhnfszRpn5DdWjrkCQy6NK7uoTcRYcIFmTAzEaa4lzV5imEzO7sWSGHMgG7t3Y=
-Message-ID: <386072610801090845r14510fb8tbcca76d605458a96@mail.gmail.com>
-Date: Thu, 10 Jan 2008 00:45:27 +0800
-From: "Bryan Wu" <cooloney.lkml@gmail.com>
-To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>
-Subject: Re: [patch] split MMC_CAP_4_BIT_DATA
-Cc: "Cai, Cliff" <Cliff.Cai@analog.com>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080109082325.212ec90d@poseidon.drzeus.cx>
+	Wed, 9 Jan 2008 11:46:39 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34569 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750882AbYAIQqh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 11:46:37 -0500
+Date: Wed, 9 Jan 2008 17:45:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       "William L. Irwin" <sparclinux@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 10/11] mcount tracer show task comm and pid
+Message-ID: <20080109164538.GJ17739@elte.hu>
+References: <20080103071609.478486470@goodmis.org> <20080103072228.212967487@goodmis.org> <20080103175650.GE30582@Krystal> <20080106153758.GA27863@elte.hu> <20080107044506.GA1798@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <386072610801081832w2befcbafwe9215067f022ed5d@mail.gmail.com>
-	 <0F1B54C89D5F954D8535DB252AF412FA014FAD4A@chinexm1.ad.analog.com>
-	 <20080109082325.212ec90d@poseidon.drzeus.cx>
+In-Reply-To: <20080107044506.GA1798@Krystal>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 9, 2008 3:23 PM, Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
-> On Wed, 9 Jan 2008 11:21:40 +0800
-> "Cai, Cliff" <Cliff.Cai@analog.com> wrote:
->
-> >
-> >  Hi,all
-> >
-> > I'd like to say something about this issue.
-> > Currently,the blackfin on chip SD host ONLY support 1-bit MMC while
-> > support 1-bit/4-bit SD/SDIO.
-> > And we want our driver to support both 1-bit MMC and 4-bit SD/SDIO.but
-> > the current MMC driver framework
-> > Only allow us to set one kind of bus width,either 1-bit or 4-bit.So in
-> > order to meet our case,we need more flexible mechanism
-> > To inform the upper commom driver to know our situation.
-> >
->
-> That's just iterating what's already been said. My claim is that 4-bit is 4-bit, regardless if it's MMC or SD. So if you want this patch to go in you need to explain why there is a difference for the blackfin controller.
->
 
-Actually, Blackfin BF54x on-chip SDIO host controller is supposed to
-support 1-bit and 4-bit MMC or SD. But in the real platform, when MMC
-works at 4-bit mode there will be a FIFO underrun error
-(http://blackfin.uclinux.org/gf/project/uclinux-dist/tracker/?action=TrackerItemEdit&tracker_item_id=3535).
-While SD works at 4-bit mode is OK. We believe this is a hardware
-issue of the SDIO host controller of BF54x.
+* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-We intend to workaround in our own BF54x SDIO host controller driver,
-but there is no place for us to determine MMC or SD. One choice is to
-hack common code like this:
-----
---- a/drivers/mmc/core/mmc.c
-+++ b/drivers/mmc/core/mmc.c
-@@ -358,6 +358,9 @@
- 	/*
- 	 * Activate wide bus (if supported).
- 	 */
-+/*Currently,Blackfin 54x only support 1 bit MMC,while support 4 bit SD */
-+/*So if card type is MMC don't enable 4 bit mode*/
-+#if !defined(CONFIG_BF54x)
- 	if ((card->csd.mmca_vsn >= CSD_SPEC_VER_4) &&
- 		(host->caps & MMC_CAP_4_BIT_DATA)) {
- 		err = mmc_switch(card, EXT_CSD_CMD_SET_NORMAL,
-@@ -367,7 +370,7 @@
+> static inline int vmalloc_fault(unsigned long address)
+> {
+>         unsigned long pgd_paddr;
+>         pmd_t *pmd_k;
+>         pte_t *pte_k;
+>         /*
+>          * Synchronize this task's top level page-table
+>          * with the 'reference' page table.
+>          *
+> ---->    * Do _not_ use "current" here. We might be inside
+>          * an interrupt in the middle of a task switch..
+>          */
+>         pgd_paddr = read_cr3();
+>         pmd_k = vmalloc_sync_one(__va(pgd_paddr), address);
+>         if (!pmd_k)
+>                 return -1;
+>         pte_k = pte_offset_kernel(pmd_k, address);
+>         if (!pte_present(*pte_k))
+>                 return -1;
+>         return 0;
+> }
+> 
+> At context switch on x86, loading the registers is done first, and 
+> only after the is the current pointer set. However, for vmalloc 
+> faults, it's the value in the cr3 register that is important, which 
+> may not correspond to the cr3 value saved in "current".
+> 
+> So, I think using the "pid" and "comm" fields of current, even in NMI 
+> context, is not a problem, just as you said. For early boot, the 
+> current task will be init_task, which has pid = 0 and comm = 
+> "swapper", still ok.
 
- 		mmc_set_bus_width(card->host, MMC_BUS_WIDTH_4);
- 	}
--
-+#endif
- 	if (!oldcard)
- 		host->card = card;
+yeah - during the context-switch the value of 'current' might be 'stale' 
+in a number of ways, but it's always atomically and coherently either 
+pointing to the previous task or the next task. So from a tracing POV 
+it's perfectly safe to use it (and we've been doing that for ages with 
+the mcount stuff).
 
-----
+(The notrace mcount exclusions arent really to avoid any tracing 
+badness, they are mostly to make the trace less spammy and more 
+readable.)
 
-Another choice is to use Mike's patch to split the 4-bit mode into
-MMC-4-BIT and SD-4-BIT. So we can support 1-bit and 4-bit SD as well
-as 1-bit MMC.
-
-Thanks
--Bryan Wu
+	Ingo
