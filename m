@@ -1,33 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757293AbYAIBAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758081AbYAIBAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757293AbYAIBAY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 20:00:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756777AbYAIAzJ
+	id S1758081AbYAIBAv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 20:00:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756003AbYAIAzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 19:55:09 -0500
-Received: from ms0.nttdata.co.jp ([163.135.193.231]:51932 "EHLO
+	Tue, 8 Jan 2008 19:55:14 -0500
+Received: from ms0.nttdata.co.jp ([163.135.193.231]:51943 "EHLO
 	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753187AbYAIAy2 (ORCPT
+	with ESMTP id S1751321AbYAIAy2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 8 Jan 2008 19:54:28 -0500
-Message-Id: <20080109005424.181008871@nttdata.co.jp>
+Message-Id: <20080109005424.662567261@nttdata.co.jp>
 References: <20080109005320.323184643@nttdata.co.jp>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 Jan 2008 09:53:33 +0900
+Date: Wed, 09 Jan 2008 09:53:34 +0900
 From: Kentaro Takeda <takedakn@nttdata.co.jp>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #6 retry 13/21] environment variable name check functions.
-X-OriginalArrivalTime: 09 Jan 2008 00:54:24.0631 (UTC) FILETIME=[2DA3E870:01C8525A]
+Subject: [TOMOYO #6 retry 14/21] Network access control functions.
+X-OriginalArrivalTime: 09 Jan 2008 00:54:25.0271 (UTC) FILETIME=[2E059070:01C8525A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TOMOYO Linux checks environment variable's names passed to execve()
-because some envorinment variables affects to the behavior of program
-like argv[0].
+TOMOYO Linux checks permission by the following four parameters.
+  * protocol type (TCP, UDP, RAW)
+  * access type (bind, listen, connect, accept)
+  * IP address (Both IPv4 and IPv6 are available)
+  * port number
+In order to check 'TCP accept' and 'UDP connect',
+modification against net/socket.c and net/core/datagram.c is needed.
 
 Each permission can be automatically accumulated into
 the policy of each domain using 'learning mode'.
@@ -35,16 +39,16 @@ the policy of each domain using 'learning mode'.
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 ---
- security/tomoyo/environ.c |  274 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 274 insertions(+)
+ security/tomoyo/net.c |  934 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 934 insertions(+)
 
 --- /dev/null
-+++ linux-2.6-mm/security/tomoyo/environ.c
-@@ -0,0 +1,274 @@
++++ linux-2.6-mm/security/tomoyo/net.c
+@@ -0,0 +1,934 @@
 +/*
-+ * security/tomoyo/environ.c
++ * security/tomoyo/net.c
 + *
-+ * Environment variable access control functions for TOMOYO Linux.
++ * Network access control functions for TOMOYO Linux.
 + */
 +
 +#include "tomoyo.h"
@@ -52,13 +56,16 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +
 +/*************************  AUDIT FUNCTIONS  *************************/
 +
-+static int tmy_audit_env_log(const char *env,
-+			     const bool is_granted,
-+			     const u8 profile,
-+			     const unsigned int mode)
++static int tmy_audit_network_log(const bool is_ipv6,
++				 const char *operation,
++				 const u8 *address,
++				 const u16 port,
++				 const bool is_granted,
++				 const u8 profile,
++				 const unsigned int mode)
 +{
 +	char *buf;
-+	int len;
++	int len = 256;
 +
 +	if (is_granted) {
 +		if (!tmy_audit_grant())
@@ -68,115 +75,457 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +			return 0;
 +	}
 +
-+	len = strlen(env) + 8;
 +	buf = tmy_init_audit_log(&len, profile, mode);
-+
 +	if (!buf)
 +		return -ENOMEM;
 +
-+	tmy_sncatprintf(buf, len - 1, TMY_ALLOW_ENV "%s", env);
++	tmy_sncatprintf(buf, len - 1, TMY_ALLOW_NETWORK "%s ", operation);
++
++	if (is_ipv6)
++		tmy_print_ipv6(buf + strlen(buf), len - strlen(buf),
++			       (const struct in6_addr *) address);
++	else {
++		u32 ip = *address;
++		tmy_sncatprintf(buf, len - 1, NIPQUAD_FMT, NIPQUAD(ip));
++	}
++
++	tmy_sncatprintf(buf, len - 1, " %u\n", port);
 +
 +	return tmy_write_audit_log(buf, is_granted);
 +}
 +
-+/***** The structure for globally usable environments. *****/
++/*************************  UTILITY FUNCTIONS  *************************/
 +
-+struct globally_usable_env_entry {
-+	struct list_head list;
-+	const struct path_info *env;
-+	bool is_deleted;
-+};
-+
-+/*******************  GLOBALLY USABLE ENVIRONMENT HANDLER  ********************/
-+
-+static LIST_HEAD(globally_usable_env_list);
-+
-+static int tmy_add_globally_usable_env_entry(const char *env,
-+					     const bool is_delete)
++static const struct in6_addr *tmy_save_ipv6_address(const struct in6_addr *addr)
 +{
-+	struct globally_usable_env_entry *new_entry;
-+	struct globally_usable_env_entry *ptr;
++	static const int block_size = 16;
++	struct addr_list {
++		struct in6_addr addr[block_size];
++		struct addr_list *next;
++		u32 in_use_count;
++	};
++	static struct addr_list *list;
++	struct addr_list *ptr;
 +	static DEFINE_MUTEX(lock);
-+	const struct path_info *saved_env;
-+	int error = -ENOMEM;
-+	if (!tmy_correct_path(env, 0, 0, 0, __FUNCTION__))
-+		return -EINVAL;
-+	saved_env = tmy_save_name(env);
-+	if (!saved_env)
-+		return -ENOMEM;
++	int i = block_size;
++	if (!addr)
++		return NULL;
 +	mutex_lock(&lock);
-+	list_for_each_entry(ptr, &globally_usable_env_list, list) {
-+		if (ptr->env == saved_env) {
-+			ptr->is_deleted = is_delete;
++	for (ptr = list; ptr; ptr = ptr->next) {
++		for (i = 0; i < ptr->in_use_count; i++)
++			if (memcmp(&ptr->addr[i], addr, sizeof(*addr)) == 0)
++				goto out;
++		if (i < block_size)
++			break;
++	}
++	if (i == block_size) {
++		struct addr_list *p = list;
++		ptr = tmy_alloc_element(sizeof(*ptr));
++		if (!ptr)
++			goto out;
++		if (p) {
++			while (p->next)
++				p = p->next;
++			p->next = ptr;
++		} else
++			list = ptr;
++		i = 0;
++	}
++	ptr->addr[ptr->in_use_count++] = *addr;
++out:
++	mutex_unlock(&lock);
++	return ptr ? &ptr->addr[i] : NULL;
++}
++
++/*************************  ADDRESS GROUP HANDLER  *************************/
++
++/* List of address group. */
++static LIST_HEAD(address_group_list);
++
++static int tmy_add_address_group_entry(const char *group_name,
++				       const bool is_ipv6,
++				       const u8 *min_address,
++				       const u8 *max_address,
++				       const bool is_delete)
++{
++	static DEFINE_MUTEX(mutex);
++	struct address_group_entry *new_group;
++	struct address_group_entry *group;
++	struct address_group_member *new_member;
++	struct address_group_member *member;
++	const struct path_info *saved_group_name;
++	int error = -ENOMEM;
++	bool found = 0;
++	const u32 min_ip = ntohl(*(u32 *) min_address);
++	const u32 max_ip = ntohl(*(u32 *) max_address);
++	const struct in6_addr *saved_min_address = NULL;
++	const struct in6_addr *saved_max_address = NULL;
++	if (is_ipv6) {
++		saved_min_address =
++			tmy_save_ipv6_address((struct in6_addr *) min_address);
++		saved_max_address =
++			tmy_save_ipv6_address((struct in6_addr *) max_address);
++		if (!saved_min_address || !saved_max_address)
++			return -ENOMEM;
++	}
++
++	if (!tmy_correct_path(group_name, 0, 0, 0, __FUNCTION__) ||
++	    !group_name[0])
++		return -EINVAL;
++
++	saved_group_name = tmy_save_name(group_name);
++	if (!saved_group_name)
++		return -ENOMEM;
++
++	mutex_lock(&mutex);
++
++	list_for_each_entry(group, &address_group_list, list) {
++		if (saved_group_name != group->group_name)
++			continue;
++		list_for_each_entry(member, &group->address_group_member_list,
++				    list) {
++			if (member->is_ipv6 != is_ipv6)
++				continue;
++			if (is_ipv6) {
++				if (member->min.ipv6 != saved_min_address ||
++				    member->max.ipv6 != saved_max_address)
++					continue;
++			} else {
++				if (member->min.ipv4 != min_ip ||
++				    member->max.ipv4 != max_ip)
++					continue;
++			}
++			member->is_deleted = is_delete;
 +			error = 0;
 +			goto out;
 +		}
++		found = 1;
++		break;
 +	}
++
 +	if (is_delete) {
 +		error = -ENOENT;
 +		goto out;
 +	}
-+	new_entry = tmy_alloc_element(sizeof(*new_entry));
-+	if (!new_entry)
++
++	if (!found) {
++		new_group = tmy_alloc_element(sizeof(*new_group));
++		if (!new_group)
++			goto out;
++		INIT_LIST_HEAD(&new_group->address_group_member_list);
++		new_group->group_name = saved_group_name;
++		list_add_tail_mb(&new_group->list, &address_group_list);
++		group = new_group;
++	}
++
++	new_member = tmy_alloc_element(sizeof(*new_member));
++	if (!new_member)
 +		goto out;
-+	new_entry->env = saved_env;
-+	list_add_tail_mb(&new_entry->list, &globally_usable_env_list);
++
++	new_member->is_ipv6 = is_ipv6;
++
++	if (is_ipv6) {
++		new_member->min.ipv6 = saved_min_address;
++		new_member->max.ipv6 = saved_max_address;
++	} else {
++		new_member->min.ipv4 = min_ip;
++		new_member->max.ipv4 = max_ip;
++	}
++
++	list_add_tail_mb(&new_member->list, &group->address_group_member_list);
 +	error = 0;
-+out:
-+	mutex_unlock(&lock);
++out: ;
++	mutex_unlock(&mutex);
++
 +	return error;
 +}
 +
-+static bool tmy_is_globally_usable_env(const struct path_info *env)
++/**
++ * tmy_add_address_group_policy - add or delete address group policy.
++ * @data: a line to parse.
++ * @is_delete: is this delete request?
++ *
++ * Returns zero on success.
++ * Returns nonzero on failure.
++ */
++int tmy_add_address_group_policy(char *data, const bool is_delete)
 +{
-+	struct globally_usable_env_entry *ptr;
-+	list_for_each_entry(ptr, &globally_usable_env_list, list) {
-+		if (!ptr->is_deleted && tmy_path_match(env, ptr->env))
-+			return 1;
++	int count;
++	bool is_ipv6;
++	u8 min_address[16];
++	u8 max_address[16];
++	char *cp = strchr(data, ' ');
++
++	/*** Parse address_group_name part ***/
++	if (!cp)
++		return -EINVAL;
++	*cp++ = '\0';
++
++	/*** Parse address part ***/
++	/* single IPv6 or IPv6 range */
++	count = strcspn(cp, "-");
++	if (!in6_pton(cp, count, min_address, -1, NULL))
++		goto no_ipv6;
++	is_ipv6 = 1;
++	cp += count;
++	if (*cp++ != '-')
++		goto copy_address;
++	if (!in6_pton(cp, -1, max_address, -1, NULL))
++		goto out;
++	goto ok;
++no_ipv6:
++	/* single IPv4 or IPv4 range */
++	if (!in4_pton(cp, count, min_address, -1, NULL))
++		goto out;
++	is_ipv6 = 0;
++	cp += count;
++	if (*cp++ != '-')
++		goto copy_address;
++	if (!in4_pton(cp, -1, max_address, -1, NULL))
++		goto out;
++	goto ok;
++copy_address:
++	memmove(max_address, min_address, sizeof(max_address));
++ok: ;
++	return tmy_add_address_group_entry(data, is_ipv6,
++					   min_address,
++					   max_address, is_delete);
++out:
++	return -EINVAL;
++}
++
++static struct address_group_entry *tmy_new_address_group(const char *name)
++{
++	int i;
++	struct address_group_entry *group;
++
++	for (i = 0; i <= 1; i++) {
++		list_for_each_entry(group, &address_group_list, list) {
++			if (strcmp(name, group->group_name->name) == 0)
++				return group;
++		}
++
++		if (i == 0) {
++			/*
++			 * Add a dummy entry to create new address group
++			 * and delete that entry.
++			 */
++			const u8 dum[4] = { 0, 0, 0, 0 };
++			tmy_add_address_group_entry(name, 0, dum, dum, 0);
++			tmy_add_address_group_entry(name, 0, dum, dum, 1);
++		}
 +	}
-+	return 0;
++
++	return NULL;
 +}
 +
-+int tmy_add_globally_usable_env_policy(char *env, const bool is_delete)
++static int tmy_address_match_group(const bool is_ipv6,
++				   const u8 *address,
++				   const struct address_group_entry *group)
 +{
-+	return tmy_add_globally_usable_env_entry(env, is_delete);
-+}
++	struct address_group_member *member;
++	const u32 ip = ntohl(*(u32 *) address);
 +
-+int tmy_read_globally_usable_env_policy(struct io_buffer *head)
-+{
-+	struct list_head *pos;
-+	list_for_each_cookie(pos, head->read_var2, &globally_usable_env_list) {
-+		struct globally_usable_env_entry *ptr;
-+		ptr = list_entry(pos, struct globally_usable_env_entry, list);
-+		if (ptr->is_deleted)
++	list_for_each_entry(member, &group->address_group_member_list, list) {
++		if (member->is_deleted)
 +			continue;
-+		if (tmy_io_printf(head, TMY_ALLOW_ENV "%s\n",
-+				  ptr->env->name))
-+			return -ENOMEM;
++
++		if (member->is_ipv6) {
++
++			if (is_ipv6 &&
++			    memcmp(member->min.ipv6, address, 16) <= 0 &&
++			    memcmp(address, member->max.ipv6, 16) <= 0)
++				return 1;
++
++		} else {
++
++			if (!is_ipv6 &&
++			    member->min.ipv4 <= ip &&
++			    ip <= member->max.ipv4)
++				return 1;
++
++		}
++	}
++
++	return 0;
++}
++
++static int tmy_read_address_group(struct io_buffer *head,
++			       struct address_group_entry *group,
++			       struct address_group_member *member)
++{
++	char buf[128];
++	if (!member)
++		return 0;
++
++	if (member->is_ipv6) {
++
++		const struct in6_addr *min_addr = member->min.ipv6;
++		const struct in6_addr *max_addr = member->max.ipv6;
++
++		tmy_print_ipv6(buf, sizeof(buf), min_addr);
++
++		if (min_addr != max_addr) {
++			char *cp = strchr(buf, '\0');
++			int len = sizeof(buf) - strlen(buf) - 1;
++
++			*cp++ = '-';
++			tmy_print_ipv6(cp, len, max_addr);
++		}
++
++	} else {
++
++		const u32 min_addr = member->min.ipv4;
++		const u32 max_addr = member->max.ipv4;
++
++		memset(buf, 0, sizeof(buf));
++		snprintf(buf, sizeof(buf) - 1,
++			 NIPQUAD_FMT, HIPQUAD(min_addr));
++
++		if (min_addr != max_addr)
++			tmy_sncatprintf(buf, sizeof(buf) - 1,
++					"-" NIPQUAD_FMT, HIPQUAD(max_addr));
++	}
++
++	return tmy_io_printf(head, TMY_ADDRESS_GROUP "%s %s\n",
++			     group->group_name->name, buf);
++}
++
++/**
++ * tmy_read_address_group_policy - read address group policy
++ * @head: pointer to "struct io_buffer".
++ *
++ * Returns nonzero if reading incomplete.
++ * Returns zero otherwise.
++ */
++int tmy_read_address_group_policy(struct io_buffer *head)
++{
++	struct list_head *gpos;
++	struct list_head *mpos;
++	list_for_each_cookie(gpos, head->read_var1, &address_group_list) {
++		struct address_group_entry *group;
++		group = list_entry(gpos, struct address_group_entry, list);
++		list_for_each_cookie(mpos, head->read_var2,
++				     &group->address_group_member_list) {
++			struct address_group_member *member;
++			member = list_entry(mpos, struct address_group_member,
++					    list);
++			if (member->is_deleted)
++				continue;
++			if (tmy_read_address_group(head, group, member))
++				return -ENOMEM;
++		}
 +	}
 +	return 0;
 +}
 +
-+/******************  ENVIRONMENT VARIABLE Checking HANDLER  *******************/
++/***********************  NETWORK NETWORK ACL HANDLER  ***********************/
 +
-+static int tmy_add_env_entry(const char *env,
-+			     struct domain_info *domain,
-+			     const struct condition_list *cond,
-+			     const bool is_delete)
++/**
++ * tmy_print_ipv6 - print ipv6 address
++ * @buffer:     pointer to buffer to save the result.
++ * @buffer_len: sizeof @buffer .
++ * @ip:         pointer to an IPv6 address in network byte order.
++ *
++ * Returns @buffer .
++ */
++char *tmy_print_ipv6(char *buffer, const int buffer_len,
++		     const struct in6_addr *ip)
++{
++	memset(buffer, 0, buffer_len);
++	snprintf(buffer, buffer_len - 1, NIP6_FMT, NIP6(*ip));
++	return buffer;
++}
++
++/**
++ * tmy_network2keyword - get keyword from access control index.
++ * @operation: index number.
++ *
++ * Returns keyword that corresponds with @operation .
++ */
++const char *tmy_network2keyword(const unsigned int operation)
++{
++	const char *keyword = "unknown";
++	switch (operation) {
++	case TMY_NETWORK_ACL_UDP_BIND:
++		keyword = "UDP bind";
++		break;
++	case TMY_NETWORK_ACL_UDP_CONNECT:
++		keyword = "UDP connect";
++		break;
++	case TMY_NETWORK_ACL_TCP_BIND:
++		keyword = "TCP bind";
++		break;
++	case TMY_NETWORK_ACL_TCP_LISTEN:
++		keyword = "TCP listen";
++		break;
++	case TMY_NETWORK_ACL_TCP_CONNECT:
++		keyword = "TCP connect";
++		break;
++	case TMY_NETWORK_ACL_TCP_ACCEPT:
++		keyword = "TCP accept";
++		break;
++	case TMY_NETWORK_ACL_RAW_BIND:
++		keyword = "RAW bind";
++		break;
++	case TMY_NETWORK_ACL_RAW_CONNECT:
++		keyword = "RAW connect";
++		break;
++	}
++	return keyword;
++}
++
++/* Compare IPv4/IPv6 address. */
++static int tmy_cmp_network_entry(const u8 record_type,
++				 struct net_acl *acl,
++				 const struct address_group_entry *group,
++				 const u32 min_ip,
++				 const u32 max_ip,
++				 const struct in6_addr *saved_min_address,
++				 const struct in6_addr *saved_max_address)
++{
++	switch (record_type) {
++	case TMY_TYPE_ADDRESS_GROUP:
++		return acl->u.group == group;
++	case TMY_TYPE_IPv4:
++		return acl->u.ipv4.min == min_ip &&
++			max_ip == acl->u.ipv4.max;
++	default:
++		return acl->u.ipv6.min == saved_min_address &&
++			saved_max_address ==  acl->u.ipv6.max;
++	}
++}
++
++static int tmy_add_network_entry(const u8 operation,
++				 const u8 record_type,
++				 const struct address_group_entry *group,
++				 const u8 *min_address,
++				 const u8 *max_address,
++				 const u16 min_port,
++				 const u16 max_port,
++				 struct domain_info *domain,
++				 const struct condition_list *cond,
++				 const bool is_delete)
 +{
 +	struct acl_info *ptr;
-+	struct env_acl *acl;
-+	const struct path_info *saved_env;
++	struct net_acl *acl;
 +	int error = -ENOMEM;
-+
-+	if (!tmy_correct_path(env, 0, 0, 0, __FUNCTION__))
++	/* using host byte order to allow u32 comparison than memcmp().*/
++	const u32 min_ip = ntohl(*(u32 *) min_address);
++	const u32 max_ip = ntohl(*(u32 *) max_address);
++	const struct in6_addr *saved_min_address = NULL;
++	const struct in6_addr *saved_max_address = NULL;
++	if (!domain)
 +		return -EINVAL;
 +
-+	saved_env = tmy_save_name(env);
-+	if (!saved_env)
-+		return -ENOMEM;
-+	if (!is_delete && tmy_is_globally_usable_env(saved_env))
-+		return 0;
++	if (record_type == TMY_TYPE_IPv6) {
++		saved_min_address =
++			tmy_save_ipv6_address((struct in6_addr *) min_address);
++		saved_max_address =
++			tmy_save_ipv6_address((struct in6_addr *) max_address);
++		if (!saved_min_address || !saved_max_address)
++			return -ENOMEM;
++	}
 +
 +	mutex_lock(&domain_acl_lock);
 +
@@ -184,35 +533,62 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +		goto remove;
 +
 +	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		acl = container_of(ptr, struct env_acl, head);
-+		if (ptr->type == TMY_TYPE_ENV_ACL && ptr->cond == cond &&
-+		    acl->env == saved_env) {
++		acl = container_of(ptr, struct net_acl, head);
++		if (ptr->type == TMY_TYPE_IP_NETWORK_ACL &&
++		    ptr->cond == cond &&
++		    acl->operation_type == operation &&
++		    acl->record_type == record_type &&
++		    acl->min_port == min_port &&
++		    max_port == acl->max_port &&
++		    tmy_cmp_network_entry(record_type, acl,
++					  group, min_ip, max_ip,
++					  saved_min_address,
++					  saved_max_address)) {
 +			ptr->is_deleted = 0;
-+			/* Found. Nothing to do. */
 +			error = 0;
 +			goto ok;
 +		}
 +	}
-+
 +	/* Not found. Append it to the tail. */
 +	acl = tmy_alloc_element(sizeof(*acl));
 +	if (!acl)
 +		goto ok;
 +
-+	acl->head.type = TMY_TYPE_ENV_ACL;
++	acl->head.type = TMY_TYPE_IP_NETWORK_ACL;
 +	acl->head.cond = cond;
-+	acl->env = saved_env;
++	acl->operation_type = operation;
++	acl->record_type = record_type;
++
++	if (record_type == TMY_TYPE_ADDRESS_GROUP)
++		acl->u.group = group;
++	else if (record_type == TMY_TYPE_IPv4) {
++		acl->u.ipv4.min = min_ip;
++		acl->u.ipv4.max = max_ip;
++	} else {
++		acl->u.ipv6.min = saved_min_address;
++		acl->u.ipv6.max = saved_max_address;
++	}
++
++	acl->min_port = min_port;
++	acl->max_port = max_port;
 +	error = tmy_add_acl(domain, &acl->head);
 +	goto ok;
 +remove: ;
 +	error = -ENOENT;
 +	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		acl = container_of(ptr, struct env_acl, head);
-+		if (ptr->type != TMY_TYPE_ENV_ACL ||
-+		    ptr->cond != cond || ptr->is_deleted ||
-+		    acl->env != saved_env)
++		acl = container_of(ptr, struct net_acl, head);
++		if (ptr->type != TMY_TYPE_IP_NETWORK_ACL ||
++		    ptr->cond != cond ||
++		    ptr->is_deleted ||
++		    acl->operation_type != operation ||
++		    acl->record_type != record_type ||
++		    acl->min_port != min_port ||
++		    acl->max_port != max_port ||
++		    !tmy_cmp_network_entry(record_type, acl,
++					   group, min_ip, max_ip,
++					   saved_min_address,
++					   saved_max_address))
 +			continue;
-+
 +		error = tmy_del_acl(ptr);
 +		break;
 +	}
@@ -222,83 +598,112 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +	return error;
 +}
 +
-+static int tmy_env_acl(const char *env_)
++/* Check network permission. */
++static int tmy_network_entry(const bool is_ipv6,
++			     const int operation,
++			     const u8 *address,
++			     const u16 port)
 +{
-+	const struct domain_info *domain = TMY_SECURITY->domain;
-+	int error = -EPERM;
++	struct domain_info * const domain = TMY_SECURITY->domain;
++	const u8 profile = domain->profile;
++	const unsigned int mode = tmy_flags(TMY_MAC_FOR_NETWORK);
 +	struct acl_info *ptr;
-+	struct path_info env;
-+
-+	if (!tmy_flags(TMY_MAC_FOR_ENV))
-+		return 0;
-+
-+	env.name = env_;
-+	tmy_fill_path_info(&env);
-+	if (tmy_is_globally_usable_env(&env))
-+		return 0;
-+
-+	list_for_each_entry(ptr, &domain->acl_info_list, list) {
-+		struct env_acl *acl;
-+		acl = container_of(ptr, struct env_acl, head);
-+
-+		if (ptr->type == TMY_TYPE_ENV_ACL &&
-+		    ptr->is_deleted == 0 &&
-+		    tmy_check_condition(ptr->cond, NULL) == 0 &&
-+		    tmy_path_match(&env, acl->env)) {
-+			error = 0;
-+			break;
-+		}
-+	}
-+
-+	return error;
-+}
-+
-+/**
-+ * tmy_env_perm - check for environment variable permission.
-+ * @env:    pointer to environment variable.
-+ *
-+ * Returns zero if permission granted.
-+ * Returns nonzero if permission denied.
-+ */
-+int tmy_env_perm(const char *env, const u8 profile, const unsigned int mode)
-+{
-+	int error = 0;
++	const char *keyword = tmy_network2keyword(operation);
 +	const bool is_enforce = (mode == 3);
++	/* using host byte order to allow u32 comparison than memcmp().*/
++	const u32 ip = ntohl(*(u32 *) address);
++	bool found = 0;
 +
 +	if (!mode)
 +		return 0;
-+	if (!env || !*env)
-+		return 0;
 +
-+	error = tmy_env_acl(env);
++	list_for_each_entry(ptr, &domain->acl_info_list, list) {
++		struct net_acl *acl;
++		acl = container_of(ptr, struct net_acl, head);
++		if (ptr->type != TMY_TYPE_IP_NETWORK_ACL ||
++		    ptr->is_deleted ||
++		    acl->operation_type != operation ||
++		    port < acl->min_port ||
++		    acl->max_port < port ||
++		    tmy_check_condition(ptr->cond, NULL))
++			continue;
 +
-+	tmy_audit_env_log(env, !error, profile, mode);
-+
-+	if (error) {
-+		struct domain_info * const domain = TMY_SECURITY->domain;
-+
-+		if (tmy_flags(TMY_VERBOSE))
-+			tmy_audit("TOMOYO-%s: Environment variable %s "
-+				  "denied for %s\n",
-+				  tmy_getmsg(is_enforce), env,
-+				  tmy_lastname(domain));
-+
-+		if (is_enforce)
-+			error = tmy_supervisor("%s\n" TMY_ALLOW_ENV "%s\n",
-+					       domain->domainname->name, env);
-+
-+		else if (mode == 1 && tmy_quota())
-+			tmy_add_env_entry(env, domain, NULL, 0);
-+
-+		if (!is_enforce)
-+			error = 0;
++		if (acl->record_type == TMY_TYPE_ADDRESS_GROUP) {
++			if (tmy_address_match_group(is_ipv6, address,
++						    acl->u.group)) {
++				found = 1;
++				break;
++			}
++		} else if (acl->record_type == TMY_TYPE_IPv4) {
++			if (!is_ipv6 &&
++			    (acl->u.ipv4.min <= ip && ip <= acl->u.ipv4.max)) {
++				found = 1;
++				break;
++			}
++		} else {
++			if (is_ipv6 &&
++			    memcmp(acl->u.ipv6.min, address, 16) <= 0 &&
++			    memcmp(address, acl->u.ipv6.max, 16) <= 0) {
++				found = 1;
++				break;
++			}
++		}
 +	}
 +
-+	return error;
++	tmy_audit_network_log(is_ipv6, keyword, address,
++			      port, found, profile, mode);
++
++	if (found)
++		return 0;
++
++	if (tmy_flags(TMY_VERBOSE)) {
++		if (is_ipv6) {
++			char buf[64];
++			tmy_print_ipv6(buf, sizeof(buf),
++				       (const struct in6_addr *) address);
++			tmy_audit("TOMOYO-%s: %s to %s %u denied for %s\n",
++				  tmy_getmsg(is_enforce), keyword, buf, port,
++				  tmy_lastname(domain));
++		} else {
++			tmy_audit("TOMOYO-%s: %s to %u.%u.%u.%u %u denied for "
++				  "%s\n", tmy_getmsg(is_enforce), keyword,
++				  HIPQUAD(ip), port, tmy_lastname(domain));
++		}
++	}
++
++	if (is_enforce) {
++
++		if (is_ipv6) {
++
++			char buf[64];
++
++			tmy_print_ipv6(buf, sizeof(buf),
++				       (const struct in6_addr *) address);
++			return tmy_supervisor("%s\n" TMY_ALLOW_NETWORK
++					      "%s %s %u\n",
++					      domain->domainname->name, keyword,
++					      buf, port);
++
++		}
++
++		return tmy_supervisor("%s\n" TMY_ALLOW_NETWORK
++				      "%s " NIPQUAD_FMT " %u\n",
++				      domain->domainname->name, keyword,
++				      HIPQUAD(ip), port);
++
++	}
++
++	if (mode == 1 && tmy_quota())
++		tmy_add_network_entry(operation,
++				      is_ipv6 ? TMY_TYPE_IPv6 : TMY_TYPE_IPv4,
++				      NULL, address, address,
++				      port, port, domain, NULL, 0);
++
++	return 0;
 +}
 +
 +/**
-+ * tmy_add_env_policy - add or delete environment variable policy.
++ * tmy_add_network_policy - add or delete network policy.
 + * @data:      a line to parse.
 + * @domain:    pointer to "struct domain_info".
 + * @cond:      pointer to "struct condition_list". May be NULL.
@@ -307,13 +712,272 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 + * Returns zero on success.
 + * Returns nonzero on failure.
 + */
-+int tmy_add_env_policy(char *data,
-+			 struct domain_info *domain,
-+			 const struct condition_list *cond,
-+			 const bool is_delete)
++int tmy_add_network_policy(char *data,
++			   struct domain_info *domain,
++			   const struct condition_list *cond,
++			   const bool is_delete)
 +{
-+	return tmy_add_env_entry(data, domain, cond,
-+				 is_delete);
++	u8 sock_type;
++	u8 operation;
++	u8 record_type;
++	u8 min_address[16];
++	u8 max_address[16];
++	struct address_group_entry *group = NULL;
++	u16 min_port;
++	u16 max_port;
++	int count;
++	char *cp1 = NULL;
++	char *cp2 = NULL;
++
++	cp1 = strchr(data, ' ');
++	if (!cp1)
++		goto out;
++	cp1++;
++
++	if (strncmp(data, "TCP ", 4) == 0)
++		sock_type = SOCK_STREAM;
++	else if (strncmp(data, "UDP ", 4) == 0)
++		sock_type = SOCK_DGRAM;
++	else if (strncmp(data, "RAW ", 4) == 0)
++		sock_type = SOCK_RAW;
++	else
++		goto out;
++
++	cp2 = strchr(cp1, ' ');
++	if (!cp2)
++		goto out;
++	cp2++;
++
++	if (strncmp(cp1, "bind ", 5) == 0) {
++		switch (sock_type) {
++		case SOCK_STREAM:
++			operation = TMY_NETWORK_ACL_TCP_BIND;
++			break;
++		case SOCK_DGRAM:
++			operation = TMY_NETWORK_ACL_UDP_BIND;
++			break;
++		default:
++			operation = TMY_NETWORK_ACL_RAW_BIND;
++			break;
++		}
++	} else if (strncmp(cp1, "connect ", 8) == 0) {
++		switch (sock_type) {
++		case SOCK_STREAM:
++			operation = TMY_NETWORK_ACL_TCP_CONNECT;
++			break;
++		case SOCK_DGRAM:
++			operation = TMY_NETWORK_ACL_UDP_CONNECT;
++			break;
++		default:
++			operation = TMY_NETWORK_ACL_RAW_CONNECT;
++			break;
++		}
++	} else if (sock_type == SOCK_STREAM &&
++		   strncmp(cp1, "listen ", 7) == 0)
++		operation = TMY_NETWORK_ACL_TCP_LISTEN;
++
++	else if (sock_type == SOCK_STREAM &&
++		 strncmp(cp1, "accept ", 7) == 0)
++		operation = TMY_NETWORK_ACL_TCP_ACCEPT;
++
++	else
++		goto out;
++
++	/*** Parse port part. ***/
++	cp1 = strchr(cp2, ' ');
++	if (!cp1)
++		goto out;
++	*cp1++ = '\0';
++	if (strchr(cp1, ' '))
++		goto out;
++	count = sscanf(cp1, "%hu-%hu", &min_port, &max_port);
++	if (count != 1 && count != 2)
++		goto out;
++	if (count == 1)
++		max_port = min_port;
++
++	/*** Parse address part. ***/
++	if (*cp2 != '@')
++		goto no_address_group;
++	/* @address_group_name */
++	group = tmy_new_address_group(cp2 + 1);
++	if (!group)
++		return -ENOMEM;
++	record_type = TMY_TYPE_ADDRESS_GROUP;
++	goto ok;
++no_address_group:
++	count = strcspn(cp2, "-");
++	if (!in6_pton(cp2, count, min_address, -1, NULL))
++		goto no_ipv6;
++	/* single IPv6 or IPv6 range */
++	record_type = TMY_TYPE_IPv6;
++	cp2 += count;
++	if (*cp2++ != '-')
++		goto copy_address;
++	if (!in6_pton(cp2, -1, max_address, -1, NULL))
++		goto out;
++	goto ok;
++no_ipv6:
++	if (!in4_pton(cp2, count, min_address, -1, NULL))
++		goto out;
++	/* single IPv4 or IPv4 range */
++	record_type = TMY_TYPE_IPv4;
++	cp2 += count;
++	if (*cp2++ != '-')
++		goto copy_address;
++	if (!in4_pton(cp2, -1, max_address, -1, NULL))
++		goto out;
++	goto ok;
++copy_address:
++	memmove(max_address, min_address, sizeof(max_address));
++ok: ;
++	return tmy_add_network_entry(operation, record_type, group,
++				     min_address, max_address,
++				     min_port, max_port, domain,
++				     cond, is_delete);
++out: ;
++	return -EINVAL;
++}
++
++/**
++ * tmy_network_listen_acl - check permission for listen(2) operation.
++ * @is_ipv6: is @address an IPv6 address?
++ * @address: pointer to IPv4/IPv6 address in network byte order.
++ * @port:    TCP or UDP's port number.
++ *
++ * Returns zero if permission granted.
++ * Returns nonzero if permission denied.
++ */
++int tmy_network_listen_acl(const bool is_ipv6,
++			   const u8 *address,
++			   const u16 port)
++{
++	return tmy_network_entry(is_ipv6, TMY_NETWORK_ACL_TCP_LISTEN,
++				 address, ntohs(port));
++}
++
++/**
++ * tmy_network_connect_acl - check permission for connect(2) operation.
++ * @is_ipv6:   is @address an IPv6 address?
++ * @sock_type: socket type (TCP, UDP or IP).
++ * @address:   pointer to IPv4/IPv6 address in network byte order.
++ * @port:      TCP or UDP's port number or IP's protocol number.
++ *
++ * Returns zero if permission granted.
++ * Returns nonzero if permission denied.
++ */
++int tmy_network_connect_acl(const bool is_ipv6,
++			    const int sock_type,
++			    const u8 *address,
++			    const u16 port)
++{
++	int type;
++
++	switch (sock_type) {
++	case SOCK_STREAM:
++		type = TMY_NETWORK_ACL_TCP_CONNECT;
++		break;
++	case SOCK_DGRAM:
++		type = TMY_NETWORK_ACL_UDP_CONNECT;
++		break;
++	default:
++		type = TMY_NETWORK_ACL_RAW_CONNECT;
++		break;
++	}
++
++	return tmy_network_entry(is_ipv6, type, address, ntohs(port));
++}
++
++/**
++ * tmy_network_bind_acl - check permission for bind(2) operation.
++ * @is_ipv6:   is @address an IPv6 address?
++ * @sock_type: socket type (TCP, UDP or IP).
++ * @address:   pointer to IPv4/IPv6 address in network byte order.
++ * @port:      TCP or UDP's port number or IP's protocol number.
++ *
++ * Returns zero if permission granted.
++ * Returns nonzero if permission denied.
++ */
++int tmy_network_bind_acl(const bool is_ipv6,
++			 const int sock_type,
++			 const u8 *address,
++			 const u16 port)
++{
++	int type;
++
++	switch (sock_type) {
++	case SOCK_STREAM:
++		type = TMY_NETWORK_ACL_TCP_BIND;
++		break;
++	case SOCK_DGRAM:
++		type = TMY_NETWORK_ACL_UDP_BIND;
++		break;
++	default:
++		type = TMY_NETWORK_ACL_RAW_BIND;
++		break;
++	}
++
++	return tmy_network_entry(is_ipv6, type, address, ntohs(port));
++}
++
++/**
++ * tmy_network_sendmsg_acl - check permission for sendmsg(2) operation.
++ * @is_ipv6:   is @address an IPv6 address?
++ * @sock_type: socket type (UDP or IP).
++ * @address:   pointer to IPv4/IPv6 address in network byte order.
++ * @port:      UDP's port number or IP's protocol number.
++ *
++ * Returns zero if permission granted.
++ * Returns nonzero if permission denied.
++ */
++int tmy_network_sendmsg_acl(const bool is_ipv6,
++			    const int sock_type,
++			    const u8 *address,
++			    const u16 port)
++{
++	int type;
++
++	if (sock_type == SOCK_DGRAM)
++		type = TMY_NETWORK_ACL_UDP_CONNECT;
++	else
++		type = TMY_NETWORK_ACL_RAW_CONNECT;
++
++	return tmy_network_entry(is_ipv6, type, address, ntohs(port));
++}
++
++/**
++ * tmy_network_accept_acl - check permission for accept(2) operation.
++ * @is_ipv6:   is @address an IPv6 address?
++ * @address:   pointer to IPv4/IPv6 address in network byte order.
++ * @port:      TCP client's port number.
++ *
++ * Returns zero if permission granted.
++ * Returns nonzero if permission denied.
++ */
++int tmy_network_accept_acl(const bool is_ipv6, const u8 *address,
++			   const u16 port)
++{
++	return tmy_network_entry(is_ipv6, TMY_NETWORK_ACL_TCP_ACCEPT,
++				 address, ntohs(port));
++}
++
++/**
++ * tmy_network_recvmsg_acl - check permission for recvmsg(2) operation.
++ * @is_ipv6:   is @address an IPv6 address?
++ * @sock_type: socket type (UDP or IP).
++ * @address:   pointer to IPv4/IPv6 address in network byte order.
++ * @port:      UDP's port number or IP's protocol number.
++ *
++ * Returns zero if permission granted.
++ * Returns nonzero if permission denied.
++ */
++int tmy_network_recvmsg_acl(const bool is_ipv6, const int sock_type,
++			    const u8 *address, const u16 port)
++{
++	return tmy_network_entry(is_ipv6, sock_type == SOCK_DGRAM ?
++				 TMY_NETWORK_ACL_UDP_CONNECT :
++				 TMY_NETWORK_ACL_RAW_CONNECT,
++				 address, ntohs(port));
 +}
 
 -- 
