@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048AbYAIUiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756004AbYAIUlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756048AbYAIUiK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 15:38:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753661AbYAIUh5
+	id S1756004AbYAIUlT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 15:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbYAIUlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 15:37:57 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:38214 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753567AbYAIUh4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 15:37:56 -0500
-Date: Wed, 9 Jan 2008 21:40:28 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: More breakage in native_rdtsc out of line in git-x86
-Message-ID: <20080109204028.GA15612@one.firstfloor.org>
-References: <20080109035534.GA30321@basil.nowhere.org> <20080109090956.GA14274@elte.hu> <20080109141908.GB12855@one.firstfloor.org> <20080109152208.GA21280@elte.hu> <20080109155124.GB12923@one.firstfloor.org> <20080109163017.GG17739@elte.hu> <20080109174800.GA15346@one.firstfloor.org> <20080109122559.38bc8c33@laptopd505.fenrus.org>
+	Wed, 9 Jan 2008 15:41:11 -0500
+Received: from c60.cesmail.net ([216.154.195.49]:41073 "EHLO c60.cesmail.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750720AbYAIUlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 15:41:10 -0500
+Subject: Re: Replacement for page fault notifiers?
+From: Pavel Roskin <proski@gnu.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: benh@kernel.crashing.org, Dave Airlie <airlied@gmail.com>,
+       Pekka Paalanen <pq@iki.fi>, linux-kernel@vger.kernel.org,
+       jbeulich@novell.com
+In-Reply-To: <20080109202644.GA5514@infradead.org>
+References: <20080108210638.5c9e093a@daedalus.pq.iki.fi>
+	 <20080108203235.GA772@infradead.org>
+	 <21d7e9970801081413n307ab07aq462a9fff014143ae@mail.gmail.com>
+	 <1199838407.6734.83.camel@pasglop> <1199902724.8050.11.camel@dv>
+	 <20080109182157.GA32754@infradead.org> <1199908703.6734.133.camel@pasglop>
+	 <1199910256.11485.14.camel@dv>  <20080109202644.GA5514@infradead.org>
+Content-Type: text/plain
+Date: Wed, 09 Jan 2008 15:41:08 -0500
+Message-Id: <1199911268.11485.18.camel@dv>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080109122559.38bc8c33@laptopd505.fenrus.org>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 09, 2008 at 12:25:59PM -0800, Arjan van de Ven wrote:
-> On Wed, 9 Jan 2008 18:48:00 +0100
-> > And after all that's still by far the most common system call
-> > (not only for databases; i profiled this using systemtap in some
-> > loads some time ago and it usually came up with >50%) 
-> > and quite important for many workloads.
-> > 
+
+On Wed, 2008-01-09 at 20:26 +0000, Christoph Hellwig wrote:
+> On Wed, Jan 09, 2008 at 03:24:16PM -0500, Pavel Roskin wrote:
+> > I just assumed (wrongly, as it seems) that the API change didn't remove
+> > any useful functionality.
 > 
-> btw be careful with this; the X server uses gettimeofday in it's equivalent of udelay()...
-> (and we all know how useful it is to make the delay loops faster ;-)
+> No, this was exactly the correct assumption.  Out of tree modules simply
+> don't count.
+> 
+> > The problem is that mmiotrace only makes sense in combination with
+> > non-free drivers, and I'm not sure it would be welcome in the kernel
+> > even if you say so.
+> 
+> It can trace every driver in theory although it's of course not
+> really interesting for free drivers.  But it's not actually
+> functionality used by the drivers but functionlity to trace the drivers
+> so it's quite different anyway.
 
-People tend to make jokes about optimizing the idle loop too, but they're
-actually wrong. Exit latency for the idle loop is important -- it 
-decides how quickly you can react to load changes on idle CPUs.
+OK, that's reassuring.  Maybe it could be used for profiling or to find
+bugs that are not obvious otherwise.
 
-For short udelays I suspect shorter exit latency is also moderately useful.
-
-But anyways there are plenty of gtod users outside the X server.
-
-e.g. common not user space case is packet timestamps.
-
--Andi
+-- 
+Regards,
+Pavel Roskin
