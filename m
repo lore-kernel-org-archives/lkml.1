@@ -1,74 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbYAIS7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755033AbYAITFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755421AbYAIS7o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 13:59:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbYAIS7g
+	id S1755033AbYAITFW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 14:05:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbYAITFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 13:59:36 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:44364 "EHLO mx1.redhat.com"
+	Wed, 9 Jan 2008 14:05:10 -0500
+Received: from gw.goop.org ([64.81.55.164]:59799 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752033AbYAIS7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 13:59:35 -0500
-Date: Wed, 9 Jan 2008 13:59:20 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: akpm@linux-foundation.org, neilb@suse.de, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/6] NLM: Add reference counting to lockd
-Message-ID: <20080109135920.70eb82cb@tleilax.poochiereds.net>
-In-Reply-To: <20080109184814.GA1562@infradead.org>
-References: <1199820798-5289-1-git-send-email-jlayton@redhat.com>
-	<1199820798-5289-2-git-send-email-jlayton@redhat.com>
-	<1199820798-5289-3-git-send-email-jlayton@redhat.com>
-	<1199820798-5289-4-git-send-email-jlayton@redhat.com>
-	<1199820798-5289-5-git-send-email-jlayton@redhat.com>
-	<1199820798-5289-6-git-send-email-jlayton@redhat.com>
-	<1199820798-5289-7-git-send-email-jlayton@redhat.com>
-	<20080109174707.GC30523@infradead.org>
-	<20080109133621.72f611ec@tleilax.poochiereds.net>
-	<20080109184814.GA1562@infradead.org>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1752625AbYAITFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 14:05:08 -0500
+Message-ID: <47851AD1.2040604@goop.org>
+Date: Wed, 09 Jan 2008 11:04:49 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Jan Beulich <jbeulich@novell.com>
+CC: Ingo Molnar <mingo@elte.hu>, Glauber de Oliveira Costa <glommer@gmail.com>,
+       Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 10 of 10] xen: mask out PWT too
+References: <patchbomb.1199829603@localhost> <ce684ed89b75370a4cfe.1199829613@localhost> <47849F29.76E4.0078.0@novell.com>
+In-Reply-To: <47849F29.76E4.0078.0@novell.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Jan 2008 18:48:14 +0000
-Christoph Hellwig <hch@infradead.org> wrote:
+Jan Beulich wrote:
+> That's somewhat ugly, as it will need to be undone/modified for Dom0 and
+> physical device access support. Jan
+>   
 
-> On Wed, Jan 09, 2008 at 01:36:21PM -0500, Jeff Layton wrote:
-> > I don't see a good alternative though. We need to be able to drop
-> > the and check the refcount in nlmsvc_unlink_block. That function is
-> > called from lockd, and we can't have lockd call kthread_stop on
-> > itself.
-> > 
-> > If you see a better way to do this, I'm certainly open to
-> > suggestions.
-> > 
-> > I'll note that my first stab at fixing this problem was to change
-> > the svc_wake_up() call in the rpc callback to a routine to wake up
-> > any lockd on the box that happened to be up. That sidesteps this
-> > entire problem of having to make sure lockd stays up. If we decided
-> > that was the right approach we could dump the last patch in this
-> > series altogether.
-> > 
-> > That said there could be other use after free bugs lurking in the
-> > lockd code so maybe keeping lockd up until nlm_blocked is empty is
-> > the right thing to do.
-> 
-> What about just not exiting from lockd as long as nlm_blocked is not
-> empty?  lockd_down still simply calls kthread_stop, but lockd only
-> honours it when nlm_blocked is empty?
+Yes, I know, but its a quick workaround for a silent change in 
+hypervisor behaviour.
 
-lockd can basically block forever in this situation if the client
-goes away for good. With the current kthread implementation,
-kthread_stops are serialized and I don't think we want to monopolize
-the kthread_stop queue.
+The proper fix would probably mask them out of the supported_pte_flags, 
+but that's a little more subtle to get right.
 
-If kthread_stops could occur in parallel, that would be a different
-situation :-)
-
--- 
-Jeff Layton <jlayton@redhat.com>
+    J
