@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755050AbYAIAGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbYAIAHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755050AbYAIAGo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Jan 2008 19:06:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYAIAGg
+	id S1756103AbYAIAHb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Jan 2008 19:07:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753598AbYAIAHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Jan 2008 19:06:36 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50202 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752090AbYAIAGf (ORCPT
+	Tue, 8 Jan 2008 19:07:20 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:45072 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752481AbYAIAHS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Jan 2008 19:06:35 -0500
-Date: Tue, 8 Jan 2008 16:06:10 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH: 2/2] [SERIAL] avoid stalling suspend if serial port
- won't drain
-Message-Id: <20080108160610.53694773.akpm@linux-foundation.org>
-In-Reply-To: <20080108115703.GA27179@flint.arm.linux.org.uk>
-References: <20080108115148.GB10546@flint.arm.linux.org.uk>
-	<20080108115703.GA27179@flint.arm.linux.org.uk>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 8 Jan 2008 19:07:18 -0500
+Date: Wed, 9 Jan 2008 01:09:46 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Kevin Winchester <kjwinchester@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, paolo.ciarrocchi@gmail.com,
+       gorcunov@gmail.com, jgarzik@pobox.com, linux-ide@vger.kernel.org
+Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
+Message-ID: <20080109000946.GG2117@one.firstfloor.org>
+References: <20080108164015.GC31504@one.firstfloor.org> <47840C57.6000304@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47840C57.6000304@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Jan 2008 11:57:03 +0000
-Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+On Tue, Jan 08, 2008 at 07:50:47PM -0400, Kevin Winchester wrote:
+> Andi Kleen wrote:
+> > Here's a proposal for some useful code transformations the kernel janitors
+> > could do as opposed to running checkpatch.pl.
+> > 
+> <snip>
+> 
+> I notice that every driver in drivers/ata uses a .ioctl that points to
+> ata_scsi_ioctl().  I could add the BKL to that function, and then change
 
-> Some ports seem to be unable to drain their transmitters on shut down.
-> Such a problem can occur if the port is programmed for hardware imposed
-> flow control, characters are in the FIFO but the CTS signal is inactive.
-> 
-> Normally, this isn't a problem because most places where we wait for the
-> transmitter to drain have a time-out.  However, there is no timeout in
-> the suspend path.
-> 
-> Give a port 30ms to drain; this is an arbitary value chosen to avoid
-> long delays if there are many such ports in the system, while giving a
-> reasonable chance for a single port to drain.  Should a port not drain
-> within this timeout, issue a warning.
-> 
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> 
-> diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-> index 3bb5d24..4ce219c 100644
-> --- a/drivers/serial/serial_core.c
-> +++ b/drivers/serial/serial_core.c
-> @@ -1977,6 +1977,7 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *port)
->  
->  	if (state->info && state->info->flags & UIF_INITIALIZED) {
->  		const struct uart_ops *ops = port->ops;
-> +		int tries;
->  
->  		state->info->flags = (state->info->flags & ~UIF_INITIALIZED)
->  				     | UIF_SUSPENDED;
-> @@ -1990,9 +1991,14 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *port)
->  		/*
->  		 * Wait for the transmitter to empty.
->  		 */
-> -		while (!ops->tx_empty(port)) {
-> +		for (tries = 3; !ops->tx_empty(port) && tries; tries--) {
->  			msleep(10);
->  		}
-> +		if (!tries)
-> +			printk(KERN_ERR "%s%s%s%d: Unable to drain transmitter\n",
-> +			       port->dev ? port->dev->bus_id : "",
-> +			       port->dev ? ": " : "",
-> +			       drv->dev_name, port->line);
->  
->  		ops->shutdown(port);
->  	}
-> 
+This might be a little more complicated. These
+are funnelled through the block/SCSI layers which might not have separate
+unlocked ioctl callbacks yet. Would be probably not very difficult
+to add though.
 
-One hopes that doing a printk from within uart_suspend_port() will dtrt if
-that port is (was?) being used as a console.
+> all of the drivers to .unlocked_ioctl, but I assume this would be a
+> candidate to actually clean up by determining why the lock is needed and
+> removing it if necessary.  Does anyone know off-hand the reason for
+> needing the lock (I assume someone does or it wouldn't have survived
+> this long)?  If the lock is absolutely required, then I can write the
+> patch to add lock_kernel() and unlock_kernel().
 
+Just sending the patch to add lock/unlock_kernel() is probably a good idea anyways --
+Jeff will then feel bad over it and eventually remove it when he figures out
+it is safe ;-)
 
+-Andi
