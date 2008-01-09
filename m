@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbYAIJyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbYAIJ4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755146AbYAIJyX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 04:54:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbYAIJyQ
+	id S1755428AbYAIJ4Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 04:56:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbYAIJ4C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 04:54:16 -0500
-Received: from py-out-1112.google.com ([64.233.166.183]:38960 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752216AbYAIJyO (ORCPT
+	Wed, 9 Jan 2008 04:56:02 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:53156 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751788AbYAIJ4A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 04:54:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pfmGPyPYXHWTf8h8EKX7Nvn3dpsikDN4BsUD+ZymeBvat4mqHiMdUgVbsgwwAgoVSlrxGDUPatjMuOiOAsGkfEYiewy/F1tSiDM9XipGIZu+gMwoLiBDPh22QagJsJjSrRA6pr3pg/MWZWloapBhD0xIZRQvByyZQo/wtk90aJU=
-Message-ID: <6e0cfd1d0801090154r75c9ca93v5361aea45fe41bb5@mail.gmail.com>
-Date: Wed, 9 Jan 2008 10:54:11 +0100
-From: "Martin Schwidefsky" <schwidefsky@googlemail.com>
-To: "Theodore Tso" <tytso@mit.edu>, "Tuomo Valkonen" <tuomov@iki.fi>,
-       linux-kernel@vger.kernel.org
-Subject: Re: The ext3 way of journalling
-In-Reply-To: <20080108181525.GL27800@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 9 Jan 2008 04:56:00 -0500
+Subject: Re: [LTP] Container Code Coverage for 2.6.23 mainline kernel
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+Reply-To: subrata@linux.vnet.ibm.com
+To: Balbir Singh <bsingharora@gmail.com>,
+       "balbir.singh" <balbir.singh@linux.vnet.ibm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, risrajak@in.ibm.com,
+       ltp-list@lists.sourceforge.net, ltp-coverage@lists.sourceforge.net
+In-Reply-To: <661de9470801090131l3c640ac4ga3b33af846c6defa@mail.gmail.com>
+References: <1199863373.4440.9.camel@localhost.localdomain>
+	 <661de9470801090108k2e81e8fawf885d643b0aeeafe@mail.gmail.com>
+	 <1199870159.4415.24.camel@subratamodak.linux.ibm.com>
+	 <661de9470801090118y5304dab6y58592ff8dd2759b6@mail.gmail.com>
+	 <1199870509.4415.27.camel@subratamodak.linux.ibm.com>
+	 <661de9470801090131l3c640ac4ga3b33af846c6defa@mail.gmail.com>
+Content-Type: text/plain
+Organization: IBM
+Date: Wed, 09 Jan 2008 15:25:52 +0530
+Message-Id: <1199872552.4415.34.camel@subratamodak.linux.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi>
-	 <p73odbwqmx2.fsf@bingen.suse.de>
-	 <slrnfo7b3a.6m2.tuomov@jolt.modeemi.cs.tut.fi>
-	 <20080108181525.GL27800@mit.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 8, 2008 7:15 PM, Theodore Tso <tytso@mit.edu> wrote:
-> That will fix the this issue.  The problem you are facing is that you
-> have your hardware clock set to ticking localtime, instead of GMT.
-> Windows ticks localtime, which is a mistake carried over from the
-> 1970's and MS-DOS.  Ticking localtime has all sorts of problems, among
-> which is if you reboot around the transition between Summer Time (or
-> Daylight Savings Time, depending on your contry) and normal time, the
-> OS has no idea whether the DST adjustment has been applied or not.
+On Wed, 2008-01-09 at 15:01 +0530, Balbir Singh wrote:
+> > OK Balbir,
+> >
+> 
+> Thanks and textual data will also do, if it helps save space.
+> 
+> > I will find out how this can be made available to the community. I will
+> > probably upload it to sf.net and inform the community about the link to
+> > download.
+> >
+> 
+> Balbir
 
-Actually you can force Windows to accept a hardware clock in UTC:
-HKEY_LOCAL_MACHINE/SYSTEMCurrentControlSetControl/TimeZoneInformation/RealTimeIsUniversal
+Here goes the link for downloading the code coverage data:
 
-I'm using this on my dual-boot machine at home because I that stupid
-Daylight Savings Time change twice a year really annoyed me. So far
-the only downside I found is that you have to remember that the time
-you enter in the BIOS has to be UTC.
+http://prdownloads.sourceforge.net/ltp/Code_Coverage_kernel_2.6.23-Containers-UTS-SYSVIPC-NAMESPACE.tgz?download
 
--- 
-blue skies,
-  Martin
+Thanks--
+Subrata
+
