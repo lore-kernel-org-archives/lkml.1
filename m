@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbYAIPbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbYAIPcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304AbYAIPbq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 10:31:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbYAIPbi
+	id S1755044AbYAIPcx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 10:32:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbYAIPcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 10:31:38 -0500
-Received: from nz-out-0506.google.com ([64.233.162.233]:18072 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751157AbYAIPbg (ORCPT
+	Wed, 9 Jan 2008 10:32:45 -0500
+Received: from smtp-vbr17.xs4all.nl ([194.109.24.37]:1800 "EHLO
+	smtp-vbr17.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751944AbYAIPco (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 10:31:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=s6VaCPDY2vnQa0ySYFcg3wqJnID7F6WE2tm/EH2lyUxylmAPAeywrRmpwL8eTazcsbl1UMqK9z2JCPvFeNhx2EyQeYr0ENnJfM/vMpynPTCD5O1+70ZXf2LV91b5lCGE/0L1vuUQXL4z7dbUFaMyZjwYQITwIfxckbLxr/AE9/A=
-Message-ID: <4df4ef0c0801090731k505c9efds56fe38b7a284446@mail.gmail.com>
-Date: Wed, 9 Jan 2008 18:31:33 +0300
-From: "Anton Salikhmetov" <salikhmetov@gmail.com>
-To: "Jesper Juhl" <jesper.juhl@gmail.com>
-Subject: Re: [PATCH][RFC][BUG] updating the ctime and mtime time stamps in msync()
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, joe@evalesco.com
-In-Reply-To: <9a8748490801090641s41a06c1era3764091f135567d@mail.gmail.com>
+	Wed, 9 Jan 2008 10:32:44 -0500
+Date: Wed, 9 Jan 2008 16:32:42 +0100
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: linux-kernel@vger.kernel.org
+Cc: udovdh@xs4all.nl
+Subject: [RS232] setting trigger-level of fifo
+Message-ID: <20080109153242.GU8331@vanheusden.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1199728459.26463.11.camel@codedot>
-	 <4df4ef0c0801090332y345ccb67se98409edc65fd6bf@mail.gmail.com>
-	 <9a8748490801090641s41a06c1era3764091f135567d@mail.gmail.com>
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Read-Receipt-To: <folkert@vanheusden.com>
+Reply-By: Thu Jan 10 13:04:15 CET 2008
+X-Message-Flag: PGP key-id: 0x1f28d8ae - consider encrypting your e-mail to
+	me with PGP!
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/1/9, Jesper Juhl <jesper.juhl@gmail.com>:
-> I've only looked briefly at your patch but it seems resonable. I'll
-> try to do some testing with it later.
+Hi,
 
-Jesper, thank you very much for your answer!
+In windows one can configure at what point the uart will trigger an
+interrupt. E.g. 1, 4, 8 or 14 bytes received. Setserial doesn't let you
+and I saw in the sources of the serial driver no hint that it is
+supported in linux at all. Also in MAINTAINERS I saw that sreial is
+orphaned. Can someone tell how I can proceed with this? Is it at all
+possible to do this setting? 
 
-In fact, I tested my change quite extensively using test cases for the
-mmap() and msync() system calls from the LTP test suite. Please note
-that I did mention that in my previous message:
 
->>>
+Folkert van Heusden
 
-Additionally, the test cases for the msync() system call from
-the LTP test suite (msync01 - msync05, mmapstress01, mmapstress09,
-and mmapstress10) successfully passed using the kernel
-with the patch included into this email.
-
-<<<
+-- 
+Multi tail barnamaj mowahib li mora9abat attasjilat wa nataij awamir
+al 7asoub. damj, talwin, mora9abat attarchi7 wa ila akhirih.
+http://www.vanheusden.com/multitail/
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
