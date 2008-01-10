@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbYAJBTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757168AbYAJBm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758110AbYAJBTU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 20:19:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755825AbYAJBTJ
+	id S1757168AbYAJBm7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 20:42:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754713AbYAJBmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 20:19:09 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37768 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755695AbYAJBTH (ORCPT
+	Wed, 9 Jan 2008 20:42:49 -0500
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:22712 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754402AbYAJBms (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 20:19:07 -0500
-Date: Wed, 9 Jan 2008 19:19:04 -0600 (CST)
-From: Brent Casavant <bcasavan@sgi.com>
-Reply-To: Brent Casavant <bcasavan@sgi.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-cc: penguin-kernel@i-love.sakura.ne.jp, netdev@vger.kernel.org,
-       davem@davemloft.net, linux-kernel@vger.kernel.org
-Subject: Re: AF_UNIX MSG_PEEK bug?
-In-Reply-To: <E1JCkrp-0000vX-00@gondolin.me.apana.org.au>
-Message-ID: <alpine.BSF.1.00.0801091914220.35527@pkunk.americas.sgi.com>
-References: <E1JCkrp-0000vX-00@gondolin.me.apana.org.au>
-User-Agent: Alpine 1.00 (BSF 882 2007-12-20)
-Organization: "Silicon Graphics, Inc."
+	Wed, 9 Jan 2008 20:42:48 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=4VxXtiXnB6XzxmBYbASQ7XLTnfjkvDgVn4oprJv9C+Qtw+wSCMGiVSG/pSOGvufozyPhvFQTYx0K4Zbt6j0Qyq6fiz17pbvqsBMLaf4kwZImkM5Z/LeZsggyIR6mTPcH5xgcxdJKVdFiifLeQuooJBAVWP1Cv6Uw9zzaGkUdueo=  ;
+X-YMail-OSG: JmgMxVMVM1lsECklkiD5eK94I_fRkYOksmcenpAFZDdoVtaiOAsxxnkQA3R1nhbRRQRtky5Zvg--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH][RFC] fast file mapping for loop
+Date: Thu, 10 Jan 2008 12:42:25 +1100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, chris.mason@oracle.com,
+       linux-fsdevel@vger.kernel.org
+References: <20080109085231.GE6650@kernel.dk>
+In-Reply-To: <20080109085231.GE6650@kernel.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801101242.25671.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jan 2008, Herbert Xu wrote:
+On Wednesday 09 January 2008 19:52, Jens Axboe wrote:
 
-> The POSIX text for MSG_WAITALL actually says that when used in
-> conjunction with MSG_PEEK it may not return the full data.
+> So how does it work? Instead of punting IO to a thread and passing it
+> through the page cache, we instead attempt to send the IO directly to the
+> filesystem block that it maps to.
 
-That's fine.  The problem is that the peek operation returns less
-data than requested even when sufficient data is available on the
-receive queue.
+You told Christoph that just using direct-IO from kernel still doesn't
+give you the required behaviour... What about queueing the IO directly
+*and* using direct-IO? I guess it still has to go through the underlying
+filesystem, but that's probably a good thing.
 
-> However, if you really want this to
-> happen it would help if you had attached a patch :)
+> loop maintains a prio tree of known 
+> extents in the file (populated lazily on demand, as needed).
 
-A patch is definitely in progress.  I'm a little confused as
-to the difference between unix_detach_fds() and scm_fp_dup()
-in the MSG_PEEK versus !MSG_PEEK paths in unix_stream_recvmsg(),
-however once I figure that out a patch should be forthcoming.
-
-Brent
-
--- 
-Brent Casavant                          All music is folk music.  I ain't
-bcasavan@sgi.com                        never heard a horse sing a song.
-Silicon Graphics, Inc.                    -- Louis Armstrong
+Just a quick question (I haven't looked closely at the code): how come
+you are using a prio tree for extents? I don't think they could be
+overlapping?
