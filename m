@@ -1,134 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751719AbYAJFZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbYAJFln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751719AbYAJFZu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 00:25:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758104AbYAJFZk
+	id S1753904AbYAJFln (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 00:41:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750780AbYAJFle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 00:25:40 -0500
-Received: from ns2.suse.de ([195.135.220.15]:50944 "EHLO mx2.suse.de"
+	Thu, 10 Jan 2008 00:41:34 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:53100 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757101AbYAJFZe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 00:25:34 -0500
-Subject: Re: [PATCH] Change paride driver to use unlocked_ioctl instead of
-	ioctl
-From: Nikanth Karthikesan <knikanth@suse.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jiri Kosina <jikos@jikos.cz>, Matthew Wilcox <matthew@wil.cx>,
-       grant@torque.net, tim@cyberelk.net, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-In-Reply-To: <47854BF3.BANGALORE.BLR.100.174746A.1.EB89.1@1:7.BANGALORE.BLR.100.0.1.0.1@16>
-References: <4785B7BC.5040106@suse.de> <4785C7D8.2020808@suse.de>
-	 <20080109123311.GP16309@parisc-linux.org>
-	 <Pine.LNX.4.64.0801091425100.25041@twin.jikos.cz>
-	 <47854BF3.BANGALORE.BLR.100.174746A.1.EB89.1@1:7.BANGALORE.BLR.100.0.1.0.1@16>
-Content-Type: text/plain
-Date: Thu, 10 Jan 2008 10:59:06 +0530
-Message-Id: <1199942946.4474.18.camel@nikanth-laptop.blr.novell.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	id S1750720AbYAJFld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 00:41:33 -0500
+Message-ID: <4785AFFA.30906@garzik.org>
+Date: Thu, 10 Jan 2008 00:41:14 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Zach Brown <zach.brown@oracle.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dan Williams <dan.j.williams@gmail.com>, Jeff Moyer <jmoyer@redhat.com>,
+       Simon Holm Thogersen <odie@cs.aau.dk>, suresh.b.siddha@intel.com
+Subject: Re: [PATCH 5/6] syslets: add generic syslets infrastructure
+References: <1196983219534-git-send-email-zach.brown@oracle.com> <200801091303.58920.rusty@rustcorp.com.au> <478438B4.6010101@oracle.com> <200801091448.46241.rusty@rustcorp.com.au> <47850F99.5020001@oracle.com>
+In-Reply-To: <47850F99.5020001@oracle.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-01-09 at 16:56 +0000, Alan Cox wrote:
-> On Wed, 9 Jan 2008 14:26:26 +0100 (CET)
-> Jiri Kosina <jikos@jikos.cz> wrote:
-> 
-> > On Wed, 9 Jan 2008, Matthew Wilcox wrote:
-> > 
-> > > >  	default:
-> > > >  		printk("%s: Unimplemented ioctl 0x%x\n", tape->name, cmd);
-> > > > +		unlock_kernel();
-> > > >  		return -EINVAL;
-> > > Surely a bug ... shouldn't this return -ENOTTY?
-> 
-> Agreed - ENOTTY. The printk is wrong as well, but this is just getting
-> shown up by the other changes.
-> 
-> Does anyone even use parallel IDE devices any more ?
+So my radical ultra tired rant o the week...
 
-Resending the patch. Also made the locks a little tighter, but I am not
-sure whether the locks are required.
+Rather than adding sys_indirect and syslets as is,
 
-The ioctl handler is called with the BKL held. Registering
-unlocked_ioctl handler instead of registering ioctl handler.
-Also changed the return value to -ENOTTY for invalid ioctls.
+* admit that this is beginning to look like a new ABI.  explore the 
+freedoms that that avenue opens...
 
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+* (even more radical)  I wonder what a tiny, SANE register-based 
+bytecode interface might look like.  Have a single page shared between 
+kernel and userland, for each thread.  Userland fills that page with 
+bytecode, for a virtual machines with 256 registers -- where 
+instructions roughly equate to syscalls.
 
----
+The common case -- a single syscall like open(2) -- would be a single 
+byte bytecode, plus a couple VM register stores.  The result is stored 
+in another VM register.
+
+But this format enables more complex cases, where userland programs can 
+pass strings of syscalls into the kernel, and let them execute until 
+some exceptional condition occurs.  Results would be stored in VM 
+registers (or userland addresses stored in VM registers...).
+
+This sort of interface would be
+* fast
+
+* equate to the current syscall regime (easy to get existing APIs 
+going... hopefully equivalent to glibc switching to a strange new 
+SYSENTER variant)
+
+* be flexible enough to support a simple implementation today
+
+* be flexible enough to enable experiments into syscall parallelism (aka 
+VM instruction parallelism <grin>)
+
+* be flexible enough to enable experiments into syscall batching
+
+One would probably want to add some simple logic opcodes in addition to 
+opcodes for syscalls and such -- but this should not turn into Forth or 
+Parrot or Java :)
+
+Thus, this new ABI can easily and immediately support all existing 
+syscalls, while enabling
+
+Now to come up with a good programming API and model(s) to match this 
+parallel, batched kernel<->userland interface...
+
+	Jeff,	very tired and delirious, so feel free to laugh at this,
+		but I've been pondering this for a while
 
 
-diff --git a/drivers/block/paride/pt.c b/drivers/block/paride/pt.c
-index b91accf..b7215fa 100644
---- a/drivers/block/paride/pt.c
-+++ b/drivers/block/paride/pt.c
-@@ -146,6 +146,7 @@ static int (*drives[4])[6] = {&drive0, &drive1, &drive2, &drive3};
- #include <linux/mtio.h>
- #include <linux/device.h>
- #include <linux/sched.h>	/* current, TASK_*, schedule_timeout() */
-+#include <linux/smp_lock.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -189,8 +190,8 @@ module_param_array(drive3, int, NULL, 0);
- #define ATAPI_LOG_SENSE		0x4d
- 
- static int pt_open(struct inode *inode, struct file *file);
--static int pt_ioctl(struct inode *inode, struct file *file,
--		    unsigned int cmd, unsigned long arg);
-+static long pt_ioctl(struct file *file, unsigned int cmd,
-+			unsigned long arg);
- static int pt_release(struct inode *inode, struct file *file);
- static ssize_t pt_read(struct file *filp, char __user *buf,
- 		       size_t count, loff_t * ppos);
-@@ -236,7 +237,7 @@ static const struct file_operations pt_fops = {
- 	.owner = THIS_MODULE,
- 	.read = pt_read,
- 	.write = pt_write,
--	.ioctl = pt_ioctl,
-+	.unlocked_ioctl = pt_ioctl,
- 	.open = pt_open,
- 	.release = pt_release,
- };
-@@ -685,8 +686,8 @@ out:
- 	return err;
- }
- 
--static int pt_ioctl(struct inode *inode, struct file *file,
--	 unsigned int cmd, unsigned long arg)
-+static long pt_ioctl(struct file *file, unsigned int cmd,
-+	unsigned long arg)
- {
- 	struct pt_unit *tape = file->private_data;
- 	struct mtop __user *p = (void __user *)arg;
-@@ -700,11 +701,15 @@ static int pt_ioctl(struct inode *inode, struct file *file,
- 		switch (mtop.mt_op) {
- 
- 		case MTREW:
-+			lock_kernel();
- 			pt_rewind(tape);
-+			unlock_kernel();
- 			return 0;
- 
- 		case MTWEOF:
-+			lock_kernel();
- 			pt_write_fm(tape);
-+			unlock_kernel();
- 			return 0;
- 
- 		default:
-@@ -714,8 +719,8 @@ static int pt_ioctl(struct inode *inode, struct file *file,
- 		}
- 
- 	default:
--		printk("%s: Unimplemented ioctl 0x%x\n", tape->name, cmd);
--		return -EINVAL;
-+		printk("%s: Invalid ioctl 0x%x\n", tape->name, cmd);
-+		return -ENOTTY;
- 
- 	}
- }
 
 
