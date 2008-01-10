@@ -1,70 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760208AbYAJTrB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757047AbYAJTrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760208AbYAJTrB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 14:47:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756345AbYAJTqw
+	id S1757047AbYAJTrX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 14:47:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759306AbYAJTq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 14:46:52 -0500
-Received: from systemlinux.org ([83.151.29.59]:34845 "EHLO m18s25.vlinux.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756303AbYAJTqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 14:46:50 -0500
-Date: Thu, 10 Jan 2008 20:45:50 +0100
-From: Andre Noll <maan@systemlinux.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       kernel-janitors@vger.kernel.org,
-       Richard Knutsson <ricknu-0@student.ltu.se>
-Subject: Re: [patch 1/1] Switch ioctl functions of drivers/scsi/sg.c to unlocked_ioctl
-Message-ID: <20080110194550.GB20152@skl-net.de>
-References: <20080110180529.GA32640@skl-net.de> <1199991298.3141.75.camel@localhost.localdomain> <20080110185944.GA1690@one.firstfloor.org> <20080110190748.GA20152@skl-net.de> <20080110192950.GG747@one.firstfloor.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="5/uDoXvLw7AC5HRs"
-Content-Disposition: inline
-In-Reply-To: <20080110192950.GG747@one.firstfloor.org>
-User-Agent: Mutt/1.5.9i
+	Thu, 10 Jan 2008 14:46:59 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:50483 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758691AbYAJTq5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 14:46:57 -0500
+Date: Thu, 10 Jan 2008 11:46:56 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Matt Mackall <mpm@selenic.com>, Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Ingo Molnar <mingo@elte.hu>, Hugh Dickins <hugh@veritas.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH] greatly reduce SLOB external fragmentation
+In-Reply-To: <alpine.LFD.1.00.0801101124140.3148@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0801101143180.20926@schroedinger.engr.sgi.com>
+References: <alpine.LFD.1.00.0801101124140.3148@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 10 Jan 2008, Linus Torvalds wrote:
 
---5/uDoXvLw7AC5HRs
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> It's not even clear that a buddy allocator even for the high-order pages 
+> is at all the right choice. Almost nobody actually wants >64kB blocks, and 
+> the ones that *do* want bigger allocations tend to want *much* bigger 
+> ones, so it's quite possible that it could be worth it to have something 
+> like a three-level allocator:
 
-On 20:29, Andi Kleen wrote:
+Excellent! I am definitely on board with this.
 
-> > Sure, I can do that if James likes the idea. Since not all case
-> > statements need the BKL, we could add it only to those for which it
-> > isn't clear that it is unnecessary.
-> >=20
-> > And this would actually improve something.
->=20
-> I still think it would be a good strategy to first add it to all
-> (in a essentially nop semantics patch) and then later eliminate
-> it from the cases that obviously don't need it.=20
+>  - huge pages (superpages for those crazy db people)
+> 
+>    Just a simple linked list of these things is fine, we'd never care 
+>    about coalescing large pages together anyway.
+> 
+>  - "large pages" (on the order of ~64kB) - with *perhaps* a buddy bitmap 
+>    setup to try to coalesce back into huge-pages, but more likely just 
+>    admitting that you'd need something like migration to ever get back a 
+>    hugepage that got split into large-pages.
+> 
+>    So maybe a simple bitmap allocator per huge-page for large pages. Say 
+>    you have a 4MB huge-page, and just a 64-bit free-bitmap per huge-page 
+>    when you split it into large pages.
+> 
+>  - slab/slub/slob for anything else, and "get_free_page()" ends up being 
+>    just a shorthand for saying "naturally aligned kmalloc of size 
+>    "PAGE_SIZE<<order"
+> 
+> and maybe it would all work out ok. 
 
-James, would you accept such a patch?
+Hmmm... a 3 level allocator? Basically we would have BASE_PAGE 
+STANDARD_PAGE and HUGE_PAGE? We could simply extend the page allocator to 
+have 3 pcp lists for these sizes and go from there?
 
-Andre
---=20
-The only person who always got his work done by Friday was Robinson Crusoe
+Thinking about the arches this would mean
 
---5/uDoXvLw7AC5HRs
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+	BASE_PAGE	STANDARD_PAGE	HUGE_PAGE
+x86_64	4k		64k		2M
+i386	4k		16k		4M
+ia64	16k		256k		1G
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
+?
 
-iD8DBQFHhnXuWto1QDEAkw8RAluDAJ4i4avyxYwAI9e/FJSSEvpb+12IOACgpiCz
-RQnRIpdQjM4i/8RVo+nVnEA=
-=/fp3
------END PGP SIGNATURE-----
-
---5/uDoXvLw7AC5HRs--
