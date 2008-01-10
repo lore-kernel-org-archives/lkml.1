@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759994AbYAJPlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760056AbYAJPmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759994AbYAJPlk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 10:41:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758434AbYAJPlX
+	id S1760056AbYAJPmT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 10:42:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756593AbYAJPmB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 10:41:23 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:50756 "EHLO pasmtpB.tele.dk"
+	Thu, 10 Jan 2008 10:42:01 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56243 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757984AbYAJPlW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 10:41:22 -0500
-Date: Thu, 10 Jan 2008 16:41:18 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Dmitry Torokhov <dtor@mail.ru>, linux-input@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org,
-       Liam Girdwood <liam.girdwood@wolfsonmicro.com>
-Subject: Re: [PATCH 6/6] Build system and MAINTAINERS entry for WM97xx touchscreen drivers
-Message-ID: <20080110154118.GC15361@uranus.ravnborg.org>
-References: <1199965870-4629-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-2-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-3-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-4-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-5-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-6-git-send-email-broonie@opensource.wolfsonmicro.com>
+	id S1756354AbYAJPmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 10:42:00 -0500
+Date: Thu, 10 Jan 2008 10:41:55 -0500
+From: Rik van Riel <riel@redhat.com>
+To: "Mike Snitzer" <snitzer@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 00/19] VM pageout scalability improvements
+Message-ID: <20080110104155.34b5cede@bree.surriel.com>
+In-Reply-To: <170fa0d20801092039w22584e2fw6821e70157f55cae@mail.gmail.com>
+References: <20080108205939.323955454@redhat.com>
+	<170fa0d20801092039w22584e2fw6821e70157f55cae@mail.gmail.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1199965870-4629-6-git-send-email-broonie@opensource.wolfsonmicro.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mark.
+On Wed, 9 Jan 2008 23:39:02 -0500
+"Mike Snitzer" <snitzer@gmail.com> wrote:
 
-On Thu, Jan 10, 2008 at 11:51:10AM +0000, Mark Brown wrote:
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> Signed-off-by: Liam Girdwood <liam.girdwood@wolfsonmicro.com>
-> ---
->  MAINTAINERS                        |    9 ++++++
->  drivers/input/touchscreen/Kconfig  |   52 ++++++++++++++++++++++++++++++++++++
->  drivers/input/touchscreen/Makefile |   17 +++++++++++
->  3 files changed, 78 insertions(+), 0 deletions(-)
+> How much trouble am I asking for if I were to try to get your patchset
+> to fly on a fairly recent "stable" kernel (e.g. 2.6.22.15)?  If
+> workable, is such an effort before it's time relative to your TODO?
+
+Quite a bit :)
+
+The -mm kernel has the memory controller code, which means the
+mm/ directory is fairly different.  My patch set sits on top
+of that.
+
+Chances are that once the -mm kernel goes upstream (in 2.6.25-rc1),
+I can start building on top of that.
+
+OTOH, maybe I could get my patch series onto a recent 2.6.23.X with
+minimal chainsaw effort.
+
+> I see that you have an old port to a FC7-based 2.6.21 here:
+> http://people.redhat.com/riel/vmsplit/
 > 
-> diff --git a/drivers/input/touchscreen/Makefile b/drivers/input/touchscreen/Makefile
-> index 35d4097..864d3b7 100644
-> --- a/drivers/input/touchscreen/Makefile
-> +++ b/drivers/input/touchscreen/Makefile
-> @@ -4,6 +4,8 @@
->  
->  # Each configuration option enables a list of files.
->  
-> +wm97xx-ts-objs := wm97xx-core.o
-Use 
-wm97xx-ts-y := wm97xx-core.o
+> Also, do you have a public git repo that you regularly publish to for
+> this patchset?  If not a git repo do you put the raw patchset on some
+> http/ftp server?
 
-> +
->  obj-$(CONFIG_TOUCHSCREEN_ADS7846)	+= ads7846.o
->  obj-$(CONFIG_TOUCHSCREEN_BITSY)		+= h3600_ts_input.o
->  obj-$(CONFIG_TOUCHSCREEN_CORGI)		+= corgi_ts.o
-> @@ -19,3 +21,18 @@ obj-$(CONFIG_TOUCHSCREEN_PENMOUNT)	+= penmount.o
->  obj-$(CONFIG_TOUCHSCREEN_TOUCHRIGHT)	+= touchright.o
->  obj-$(CONFIG_TOUCHSCREEN_TOUCHWIN)	+= touchwin.o
->  obj-$(CONFIG_TOUCHSCREEN_UCB1400)	+= ucb1400_ts.o
-> +obj-$(CONFIG_TOUCHSCREEN_WM97XX)	+= wm97xx-ts.o
-> +obj-$(CONFIG_TOUCHSCREEN_WM97XX_PXA)	+= pxa-wm97xx.o
-> +
-> +ifeq ($(CONFIG_TOUCHSCREEN_WM9713),y)
-> +wm97xx-ts-objs += wm9713.o
-> +endif
-So this becomes:
-wm97xx-ts-$(CONFIG_TOUCHSCREEN_WM9713) += wm9713.o
+Up to now I have only emailed out the patches. Since there is demand
+for them to be downloadable from somewhere, I'll also start putting
+them on http://people.redhat.com/riel/
 
-Same for the other two assignments.
-
-	Sam
-
-
-> +
-> +ifeq ($(CONFIG_TOUCHSCREEN_WM9712),y)
-> +wm97xx-ts-objs += wm9712.o
-> +endif
-> +
-> +ifeq ($(CONFIG_TOUCHSCREEN_WM9705),y)
-> +wm97xx-ts-objs += wm9705.o
-> +endif
-> +
+-- 
+All rights reversed.
