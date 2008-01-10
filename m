@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760989AbYAJPLK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761892AbYAJPL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760989AbYAJPLK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 10:11:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759626AbYAJPCB
+	id S1761892AbYAJPL2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 10:11:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759160AbYAJPCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 10:02:01 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:57049 "EHLO
+	Thu, 10 Jan 2008 10:02:05 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:57104 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758642AbYAJPAw (ORCPT
+	with ESMTP id S1756326AbYAJPBN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 10:00:52 -0500
+	Thu, 10 Jan 2008 10:01:13 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: torvalds@linux-foundation.org, akpm@linux-foundation.org,
        hch@infradead.org, viro@ftp.linux.org.uk
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 06/29] Unionfs: main header file
-Date: Thu, 10 Jan 2008 09:59:25 -0500
-Message-Id: <11999771911116-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 20/29] Unionfs: super_block operations
+Date: Thu, 10 Jan 2008 09:59:39 -0500
+Message-Id: <1199977200950-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11999771882152-git-send-email-ezk@cs.sunysb.edu>
@@ -26,22 +26,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Includes read_inode, delete_inode, put_super, statfs, remount_fs (which
+supports branch-management ops), clear_inode, alloc_inode, destroy_inode,
+write_inode, umount_begin, and show_options.
+
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/union.h |  602 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 602 insertions(+), 0 deletions(-)
- create mode 100644 fs/unionfs/union.h
+ fs/unionfs/super.c | 1025 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 1025 insertions(+), 0 deletions(-)
+ create mode 100644 fs/unionfs/super.c
 
-diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
+diff --git a/fs/unionfs/super.c b/fs/unionfs/super.c
 new file mode 100644
-index 0000000..d324f83
+index 0000000..986c980
 --- /dev/null
-+++ b/fs/unionfs/union.h
-@@ -0,0 +1,602 @@
++++ b/fs/unionfs/super.c
+@@ -0,0 +1,1025 @@
 +/*
 + * Copyright (c) 2003-2007 Erez Zadok
 + * Copyright (c) 2003-2006 Charles P. Wright
 + * Copyright (c) 2005-2007 Josef 'Jeff' Sipek
++ * Copyright (c) 2005-2006 Junjiro Okajima
 + * Copyright (c) 2005      Arun M. Krishnakumar
 + * Copyright (c) 2004-2006 David P. Quigley
 + * Copyright (c) 2003-2004 Mohammad Nayyer Zubair
@@ -55,591 +60,1013 @@ index 0000000..d324f83
 + * published by the Free Software Foundation.
 + */
 +
-+#ifndef _UNION_H_
-+#define _UNION_H_
-+
-+#include <linux/dcache.h>
-+#include <linux/file.h>
-+#include <linux/list.h>
-+#include <linux/fs.h>
-+#include <linux/mm.h>
-+#include <linux/module.h>
-+#include <linux/mount.h>
-+#include <linux/namei.h>
-+#include <linux/page-flags.h>
-+#include <linux/pagemap.h>
-+#include <linux/poll.h>
-+#include <linux/security.h>
-+#include <linux/seq_file.h>
-+#include <linux/slab.h>
-+#include <linux/spinlock.h>
-+#include <linux/smp_lock.h>
-+#include <linux/statfs.h>
-+#include <linux/string.h>
-+#include <linux/vmalloc.h>
-+#include <linux/writeback.h>
-+#include <linux/buffer_head.h>
-+#include <linux/xattr.h>
-+#include <linux/fs_stack.h>
-+#include <linux/magic.h>
-+#include <linux/log2.h>
-+#include <linux/poison.h>
-+#include <linux/mman.h>
-+#include <linux/backing-dev.h>
-+
-+#include <asm/system.h>
-+
-+#include <linux/union_fs.h>
-+
-+/* the file system name */
-+#define UNIONFS_NAME "unionfs"
-+
-+/* unionfs root inode number */
-+#define UNIONFS_ROOT_INO     1
-+
-+/* number of times we try to get a unique temporary file name */
-+#define GET_TMPNAM_MAX_RETRY	5
-+
-+/* maximum number of branches we support, to avoid memory blowup */
-+#define UNIONFS_MAX_BRANCHES	128
-+
-+/* minimum time (seconds) required for time-based cache-coherency */
-+#define UNIONFS_MIN_CC_TIME	3
-+
-+/* Operations vectors defined in specific files. */
-+extern struct file_operations unionfs_main_fops;
-+extern struct file_operations unionfs_dir_fops;
-+extern struct inode_operations unionfs_main_iops;
-+extern struct inode_operations unionfs_dir_iops;
-+extern struct inode_operations unionfs_symlink_iops;
-+extern struct super_operations unionfs_sops;
-+extern struct dentry_operations unionfs_dops;
-+extern struct address_space_operations unionfs_aops;
-+
-+/* How long should an entry be allowed to persist */
-+#define RDCACHE_JIFFIES	(5*HZ)
-+
-+/* file private data. */
-+struct unionfs_file_info {
-+	int bstart;
-+	int bend;
-+	atomic_t generation;
-+
-+	struct unionfs_dir_state *rdstate;
-+	struct file **lower_files;
-+	int *saved_branch_ids; /* IDs of branches when file was opened */
-+};
-+
-+/* unionfs inode data in memory */
-+struct unionfs_inode_info {
-+	int bstart;
-+	int bend;
-+	atomic_t generation;
-+	int stale;
-+	/* Stuff for readdir over NFS. */
-+	spinlock_t rdlock;
-+	struct list_head readdircache;
-+	int rdcount;
-+	int hashsize;
-+	int cookie;
-+
-+	/* The lower inodes */
-+	struct inode **lower_inodes;
-+
-+	struct inode vfs_inode;
-+};
-+
-+/* unionfs dentry data in memory */
-+struct unionfs_dentry_info {
-+	/*
-+	 * The semaphore is used to lock the dentry as soon as we get into a
-+	 * unionfs function from the VFS.  Our lock ordering is that children
-+	 * go before their parents.
-+	 */
-+	struct mutex lock;
-+	int bstart;
-+	int bend;
-+	int bopaque;
-+	int bcount;
-+	atomic_t generation;
-+	struct path *lower_paths;
-+};
-+
-+/* These are the pointers to our various objects. */
-+struct unionfs_data {
-+	struct super_block *sb;
-+	atomic_t open_files;	/* number of open files on branch */
-+	int branchperms;
-+	int branch_id;		/* unique branch ID at re/mount time */
-+};
-+
-+/* unionfs super-block data in memory */
-+struct unionfs_sb_info {
-+	int bend;
-+
-+	atomic_t generation;
-+
-+	/*
-+	 * This rwsem is used to make sure that a branch management
-+	 * operation...
-+	 *   1) will not begin before all currently in-flight operations
-+	 *      complete.
-+	 *   2) any new operations do not execute until the currently
-+	 *      running branch management operation completes.
-+	 *
-+	 * The write_lock_owner records the PID of the task which grabbed
-+	 * the rw_sem for writing.  If the same task also tries to grab the
-+	 * read lock, we allow it.  This prevents a self-deadlock when
-+	 * branch-management is used on a pivot_root'ed union, because we
-+	 * have to ->lookup paths which belong to the same union.
-+	 */
-+	struct rw_semaphore rwsem;
-+	pid_t write_lock_owner;	/* PID of rw_sem owner (write lock) */
-+	int high_branch_id;	/* last unique branch ID given */
-+	struct unionfs_data *data;
-+};
++#include "union.h"
 +
 +/*
-+ * structure for making the linked list of entries by readdir on left branch
-+ * to compare with entries on right branch
++ * The inode cache is used with alloc_inode for both our inode info and the
++ * vfs inode.
 + */
-+struct filldir_node {
-+	struct list_head file_list;	/* list for directory entries */
-+	char *name;		/* name entry */
-+	int hash;		/* name hash */
-+	int namelen;		/* name len since name is not 0 terminated */
++static struct kmem_cache *unionfs_inode_cachep;
 +
-+	/*
-+	 * we can check for duplicate whiteouts and files in the same branch
-+	 * in order to return -EIO.
-+	 */
-+	int bindex;
-+
-+	/* is this a whiteout entry? */
-+	int whiteout;
-+
-+	/* Inline name, so we don't need to separately kmalloc small ones */
-+	char iname[DNAME_INLINE_LEN_MIN];
-+};
-+
-+/* Directory hash table. */
-+struct unionfs_dir_state {
-+	unsigned int cookie;	/* the cookie, based off of rdversion */
-+	unsigned int offset;	/* The entry we have returned. */
-+	int bindex;
-+	loff_t dirpos;		/* offset within the lower level directory */
-+	int size;		/* How big is the hash table? */
-+	int hashentries;	/* How many entries have been inserted? */
-+	unsigned long access;
-+
-+	/* This cache list is used when the inode keeps us around. */
-+	struct list_head cache;
-+	struct list_head list[0];
-+};
-+
-+/* externs needed for fanout.h or sioq.h */
-+extern int unionfs_get_nlinks(const struct inode *inode);
-+
-+/* include miscellaneous macros */
-+#include "fanout.h"
-+#include "sioq.h"
-+
-+/* externs for cache creation/deletion routines */
-+extern void unionfs_destroy_filldir_cache(void);
-+extern int unionfs_init_filldir_cache(void);
-+extern int unionfs_init_inode_cache(void);
-+extern void unionfs_destroy_inode_cache(void);
-+extern int unionfs_init_dentry_cache(void);
-+extern void unionfs_destroy_dentry_cache(void);
-+
-+/* Initialize and free readdir-specific  state. */
-+extern int init_rdstate(struct file *file);
-+extern struct unionfs_dir_state *alloc_rdstate(struct inode *inode,
-+					       int bindex);
-+extern struct unionfs_dir_state *find_rdstate(struct inode *inode,
-+					      loff_t fpos);
-+extern void free_rdstate(struct unionfs_dir_state *state);
-+extern int add_filldir_node(struct unionfs_dir_state *rdstate,
-+			    const char *name, int namelen, int bindex,
-+			    int whiteout);
-+extern struct filldir_node *find_filldir_node(struct unionfs_dir_state *rdstate,
-+					      const char *name, int namelen,
-+					      int is_whiteout);
-+
-+extern struct dentry **alloc_new_dentries(int objs);
-+extern struct unionfs_data *alloc_new_data(int objs);
-+
-+/* We can only use 32-bits of offset for rdstate --- blech! */
-+#define DIREOF (0xfffff)
-+#define RDOFFBITS 20		/* This is the number of bits in DIREOF. */
-+#define MAXRDCOOKIE (0xfff)
-+/* Turn an rdstate into an offset. */
-+static inline off_t rdstate2offset(struct unionfs_dir_state *buf)
++static void unionfs_read_inode(struct inode *inode)
 +{
-+	off_t tmp;
++	int size;
++	struct unionfs_inode_info *info = UNIONFS_I(inode);
 +
-+	tmp = ((buf->cookie & MAXRDCOOKIE) << RDOFFBITS)
-+		| (buf->offset & DIREOF);
-+	return tmp;
-+}
++	memset(info, 0, offsetof(struct unionfs_inode_info, vfs_inode));
++	info->bstart = -1;
++	info->bend = -1;
++	atomic_set(&info->generation,
++		   atomic_read(&UNIONFS_SB(inode->i_sb)->generation));
++	spin_lock_init(&info->rdlock);
++	info->rdcount = 1;
++	info->hashsize = -1;
++	INIT_LIST_HEAD(&info->readdircache);
 +
-+/* Macros for locking a super_block. */
-+enum unionfs_super_lock_class {
-+	UNIONFS_SMUTEX_NORMAL,
-+	UNIONFS_SMUTEX_PARENT,	/* when locking on behalf of file */
-+	UNIONFS_SMUTEX_CHILD,	/* when locking on behalf of dentry */
-+};
-+static inline void unionfs_read_lock(struct super_block *sb, int subclass)
-+{
-+	if (UNIONFS_SB(sb)->write_lock_owner &&
-+	    UNIONFS_SB(sb)->write_lock_owner == current->pid)
-+		return;
-+	down_read_nested(&UNIONFS_SB(sb)->rwsem, subclass);
-+}
-+static inline void unionfs_read_unlock(struct super_block *sb)
-+{
-+	if (UNIONFS_SB(sb)->write_lock_owner &&
-+	    UNIONFS_SB(sb)->write_lock_owner == current->pid)
-+		return;
-+	up_read(&UNIONFS_SB(sb)->rwsem);
-+}
-+static inline void unionfs_write_lock(struct super_block *sb)
-+{
-+	down_write(&UNIONFS_SB(sb)->rwsem);
-+	UNIONFS_SB(sb)->write_lock_owner = current->pid;
-+}
-+static inline void unionfs_write_unlock(struct super_block *sb)
-+{
-+	up_write(&UNIONFS_SB(sb)->rwsem);
-+	UNIONFS_SB(sb)->write_lock_owner = 0;
-+}
-+
-+static inline void unionfs_double_lock_dentry(struct dentry *d1,
-+					      struct dentry *d2)
-+{
-+	BUG_ON(d1 == d2);
-+	if (d1 < d2) {
-+		unionfs_lock_dentry(d1, UNIONFS_DMUTEX_PARENT);
-+		unionfs_lock_dentry(d2, UNIONFS_DMUTEX_CHILD);
-+	} else {
-+		unionfs_lock_dentry(d2, UNIONFS_DMUTEX_PARENT);
-+		unionfs_lock_dentry(d1, UNIONFS_DMUTEX_CHILD);
++	size = sbmax(inode->i_sb) * sizeof(struct inode *);
++	info->lower_inodes = kzalloc(size, GFP_KERNEL);
++	if (unlikely(!info->lower_inodes)) {
++		printk(KERN_CRIT "unionfs: no kernel memory when allocating "
++		       "lower-pointer array!\n");
++		BUG();
 +	}
-+}
 +
-+extern int new_dentry_private_data(struct dentry *dentry, int subclass);
-+extern void free_dentry_private_data(struct dentry *dentry);
-+extern void update_bstart(struct dentry *dentry);
-+extern int init_lower_nd(struct nameidata *nd, unsigned int flags);
-+extern void release_lower_nd(struct nameidata *nd, int err);
++	inode->i_version++;
++	inode->i_op = &unionfs_main_iops;
++	inode->i_fop = &unionfs_main_fops;
 +
-+/*
-+ * EXTERNALS:
-+ */
++	inode->i_mapping->a_ops = &unionfs_aops;
 +
-+/* replicates the directory structure up to given dentry in given branch */
-+extern struct dentry *create_parents(struct inode *dir, struct dentry *dentry,
-+				     const char *name, int bindex);
-+extern int make_dir_opaque(struct dentry *dir, int bindex);
-+
-+/* partial lookup */
-+extern int unionfs_partial_lookup(struct dentry *dentry);
-+
-+/*
-+ * Pass an unionfs dentry and an index and it will try to create a whiteout
-+ * in branch 'index'.
-+ *
-+ * On error, it will proceed to a branch to the left
-+ */
-+extern int create_whiteout(struct dentry *dentry, int start);
-+/* copies a file from dbstart to newbindex branch */
-+extern int copyup_file(struct inode *dir, struct file *file, int bstart,
-+		       int newbindex, loff_t size);
-+extern int copyup_named_file(struct inode *dir, struct file *file,
-+			     char *name, int bstart, int new_bindex,
-+			     loff_t len);
-+/* copies a dentry from dbstart to newbindex branch */
-+extern int copyup_dentry(struct inode *dir, struct dentry *dentry,
-+			 int bstart, int new_bindex, const char *name,
-+			 int namelen, struct file **copyup_file, loff_t len);
-+/* helper functions for post-copyup actions */
-+extern void unionfs_postcopyup_setmnt(struct dentry *dentry);
-+extern void unionfs_postcopyup_release(struct dentry *dentry);
-+
-+extern int remove_whiteouts(struct dentry *dentry,
-+			    struct dentry *lower_dentry, int bindex);
-+
-+extern int do_delete_whiteouts(struct dentry *dentry, int bindex,
-+			       struct unionfs_dir_state *namelist);
-+
-+/* Is this directory empty: 0 if it is empty, -ENOTEMPTY if not. */
-+extern int check_empty(struct dentry *dentry,
-+		       struct unionfs_dir_state **namelist);
-+/* Delete whiteouts from this directory in branch bindex. */
-+extern int delete_whiteouts(struct dentry *dentry, int bindex,
-+			    struct unionfs_dir_state *namelist);
-+
-+/* Re-lookup a lower dentry. */
-+extern int unionfs_refresh_lower_dentry(struct dentry *dentry, int bindex);
-+
-+extern void unionfs_reinterpose(struct dentry *this_dentry);
-+extern struct super_block *unionfs_duplicate_super(struct super_block *sb);
-+
-+/* Locking functions. */
-+extern int unionfs_setlk(struct file *file, int cmd, struct file_lock *fl);
-+extern int unionfs_getlk(struct file *file, struct file_lock *fl);
-+
-+/* Common file operations. */
-+extern int unionfs_file_revalidate(struct file *file, bool willwrite);
-+extern int unionfs_open(struct inode *inode, struct file *file);
-+extern int unionfs_file_release(struct inode *inode, struct file *file);
-+extern int unionfs_flush(struct file *file, fl_owner_t id);
-+extern long unionfs_ioctl(struct file *file, unsigned int cmd,
-+			  unsigned long arg);
-+extern int unionfs_fsync(struct file *file, struct dentry *dentry,
-+			 int datasync);
-+extern int unionfs_fasync(int fd, struct file *file, int flag);
-+
-+/* Inode operations */
-+extern int unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
-+			  struct inode *new_dir, struct dentry *new_dentry);
-+extern int unionfs_unlink(struct inode *dir, struct dentry *dentry);
-+extern int unionfs_rmdir(struct inode *dir, struct dentry *dentry);
-+
-+extern bool __unionfs_d_revalidate_chain(struct dentry *dentry,
-+					 struct nameidata *nd, bool willwrite);
-+extern bool is_newer_lower(const struct dentry *dentry);
-+extern void purge_sb_data(struct super_block *sb);
-+
-+/* The values for unionfs_interpose's flag. */
-+#define INTERPOSE_DEFAULT	0
-+#define INTERPOSE_LOOKUP	1
-+#define INTERPOSE_REVAL		2
-+#define INTERPOSE_REVAL_NEG	3
-+#define INTERPOSE_PARTIAL	4
-+
-+extern struct dentry *unionfs_interpose(struct dentry *this_dentry,
-+					struct super_block *sb, int flag);
-+
-+#ifdef CONFIG_UNION_FS_XATTR
-+/* Extended attribute functions. */
-+extern void *unionfs_xattr_alloc(size_t size, size_t limit);
-+static inline void unionfs_xattr_kfree(const void *p)
-+{
-+	kfree(p);
-+}
-+extern ssize_t unionfs_getxattr(struct dentry *dentry, const char *name,
-+				void *value, size_t size);
-+extern int unionfs_removexattr(struct dentry *dentry, const char *name);
-+extern ssize_t unionfs_listxattr(struct dentry *dentry, char *list,
-+				 size_t size);
-+extern int unionfs_setxattr(struct dentry *dentry, const char *name,
-+			    const void *value, size_t size, int flags);
-+#endif /* CONFIG_UNION_FS_XATTR */
-+
-+/* The root directory is unhashed, but isn't deleted. */
-+static inline int d_deleted(struct dentry *d)
-+{
-+	return d_unhashed(d) && (d != d->d_sb->s_root);
-+}
-+
-+struct dentry *unionfs_lookup_backend(struct dentry *dentry,
-+				      struct nameidata *nd, int lookupmode);
-+
-+/* unionfs_permission, check if we should bypass error to facilitate copyup */
-+#define IS_COPYUP_ERR(err) ((err) == -EROFS)
-+
-+/* unionfs_open, check if we need to copyup the file */
-+#define OPEN_WRITE_FLAGS (O_WRONLY | O_RDWR | O_APPEND)
-+#define IS_WRITE_FLAG(flag) ((flag) & OPEN_WRITE_FLAGS)
-+
-+static inline int branchperms(const struct super_block *sb, int index)
-+{
-+	BUG_ON(index < 0);
-+	return UNIONFS_SB(sb)->data[index].branchperms;
-+}
-+
-+static inline int set_branchperms(struct super_block *sb, int index, int perms)
-+{
-+	BUG_ON(index < 0);
-+	UNIONFS_SB(sb)->data[index].branchperms = perms;
-+	return perms;
-+}
-+
-+/* Is this file on a read-only branch? */
-+static inline int is_robranch_super(const struct super_block *sb, int index)
-+{
-+	int ret;
-+
-+	ret = (!(branchperms(sb, index) & MAY_WRITE)) ? -EROFS : 0;
-+	return ret;
-+}
-+
-+/* Is this file on a read-only branch? */
-+static inline int is_robranch_idx(const struct dentry *dentry, int index)
-+{
-+	struct super_block *lower_sb;
-+
-+	BUG_ON(index < 0);
-+
-+	if (!(branchperms(dentry->d_sb, index) & MAY_WRITE))
-+		return -EROFS;
-+
-+	lower_sb = unionfs_lower_super_idx(dentry->d_sb, index);
-+	BUG_ON(lower_sb == NULL);
 +	/*
-+	 * test sb flags directly, not IS_RDONLY(lower_inode) because the
-+	 * lower_dentry could be a negative.
++	 * reset times so unionfs_copy_attr_all can keep out time invariants
++	 * right (upper inode time being the max of all lower ones).
 +	 */
-+	if (lower_sb->s_flags & MS_RDONLY)
-+		return -EROFS;
++	inode->i_atime.tv_sec = inode->i_atime.tv_nsec = 0;
++	inode->i_mtime.tv_sec = inode->i_mtime.tv_nsec = 0;
++	inode->i_ctime.tv_sec = inode->i_ctime.tv_nsec = 0;
++
++}
++
++/*
++ * we now define delete_inode, because there are two VFS paths that may
++ * destroy an inode: one of them calls clear inode before doing everything
++ * else that's needed, and the other is fine.  This way we truncate the inode
++ * size (and its pages) and then clear our own inode, which will do an iput
++ * on our and the lower inode.
++ *
++ * No need to lock sb info's rwsem.
++ */
++static void unionfs_delete_inode(struct inode *inode)
++{
++#if BITS_PER_LONG == 32 && defined(CONFIG_SMP)
++	spin_lock(&inode->i_lock);
++#endif
++	i_size_write(inode, 0);	/* every f/s seems to do that */
++#if BITS_PER_LONG == 32 && defined(CONFIG_SMP)
++	spin_unlock(&inode->i_lock);
++#endif
++
++	if (inode->i_data.nrpages)
++		truncate_inode_pages(&inode->i_data, 0);
++
++	clear_inode(inode);
++}
++
++/*
++ * final actions when unmounting a file system
++ *
++ * No need to lock rwsem.
++ */
++static void unionfs_put_super(struct super_block *sb)
++{
++	int bindex, bstart, bend;
++	struct unionfs_sb_info *spd;
++	int leaks = 0;
++
++	spd = UNIONFS_SB(sb);
++	if (!spd)
++		return;
++
++	bstart = sbstart(sb);
++	bend = sbend(sb);
++
++	/* Make sure we have no leaks of branchget/branchput. */
++	for (bindex = bstart; bindex <= bend; bindex++)
++		if (unlikely(branch_count(sb, bindex) != 0)) {
++			printk(KERN_CRIT
++			       "unionfs: branch %d has %d references left!\n",
++			       bindex, branch_count(sb, bindex));
++			leaks = 1;
++		}
++	BUG_ON(leaks != 0);
++
++	kfree(spd->data);
++	kfree(spd);
++	sb->s_fs_info = NULL;
++}
++
++/*
++ * Since people use this to answer the "How big of a file can I write?"
++ * question, we report the size of the highest priority branch as the size of
++ * the union.
++ */
++static int unionfs_statfs(struct dentry *dentry, struct kstatfs *buf)
++{
++	int err	= 0;
++	struct super_block *sb;
++	struct dentry *lower_dentry;
++
++	sb = dentry->d_sb;
++
++	unionfs_read_lock(sb, UNIONFS_SMUTEX_CHILD);
++	unionfs_lock_dentry(dentry, UNIONFS_DMUTEX_CHILD);
++
++	if (unlikely(!__unionfs_d_revalidate_chain(dentry, NULL, false))) {
++		err = -ESTALE;
++		goto out;
++	}
++	unionfs_check_dentry(dentry);
++
++	lower_dentry = unionfs_lower_dentry(sb->s_root);
++	err = vfs_statfs(lower_dentry, buf);
++
++	/* set return buf to our f/s to avoid confusing user-level utils */
++	buf->f_type = UNIONFS_SUPER_MAGIC;
++	/*
++	 * Our maximum file name can is shorter by a few bytes because every
++	 * file name could potentially be whited-out.
++	 *
++	 * XXX: this restriction goes away with ODF.
++	 */
++	buf->f_namelen -= UNIONFS_WHLEN;
++
++	/*
++	 * reset two fields to avoid confusing user-land.
++	 * XXX: is this still necessary?
++	 */
++	memset(&buf->f_fsid, 0, sizeof(__kernel_fsid_t));
++	memset(&buf->f_spare, 0, sizeof(buf->f_spare));
++
++out:
++	unionfs_check_dentry(dentry);
++	unionfs_unlock_dentry(dentry);
++	unionfs_read_unlock(sb);
++	return err;
++}
++
++/* handle mode changing during remount */
++static noinline int do_remount_mode_option(char *optarg, int cur_branches,
++					   struct unionfs_data *new_data,
++					   struct path *new_lower_paths)
++{
++	int err = -EINVAL;
++	int perms, idx;
++	char *modename = strchr(optarg, '=');
++	struct nameidata nd;
++
++	/* by now, optarg contains the branch name */
++	if (!*optarg) {
++		printk(KERN_ERR
++		       "unionfs: no branch specified for mode change\n");
++		goto out;
++	}
++	if (!modename) {
++		printk(KERN_ERR "unionfs: branch \"%s\" requires a mode\n",
++		       optarg);
++		goto out;
++	}
++	*modename++ = '\0';
++	err = parse_branch_mode(modename, &perms);
++	if (err) {
++		printk(KERN_ERR "unionfs: invalid mode \"%s\" for \"%s\"\n",
++		       modename, optarg);
++		goto out;
++	}
++
++	/*
++	 * Find matching branch index.  For now, this assumes that nothing
++	 * has been mounted on top of this Unionfs stack.  Once we have /odf
++	 * and cache-coherency resolved, we'll address the branch-path
++	 * uniqueness.
++	 */
++	err = path_lookup(optarg, LOOKUP_FOLLOW, &nd);
++	if (err) {
++		printk(KERN_ERR "unionfs: error accessing "
++		       "lower directory \"%s\" (error %d)\n",
++		       optarg, err);
++		goto out;
++	}
++	for (idx = 0; idx < cur_branches; idx++)
++		if (nd.mnt == new_lower_paths[idx].mnt &&
++		    nd.dentry == new_lower_paths[idx].dentry)
++			break;
++	path_release(&nd);	/* no longer needed */
++	if (idx == cur_branches) {
++		err = -ENOENT;	/* err may have been reset above */
++		printk(KERN_ERR "unionfs: branch \"%s\" "
++		       "not found\n", optarg);
++		goto out;
++	}
++	/* check/change mode for existing branch */
++	/* we don't warn if perms==branchperms */
++	new_data[idx].branchperms = perms;
++	err = 0;
++out:
++	return err;
++}
++
++/* handle branch deletion during remount */
++static noinline int do_remount_del_option(char *optarg, int cur_branches,
++					  struct unionfs_data *new_data,
++					  struct path *new_lower_paths)
++{
++	int err = -EINVAL;
++	int idx;
++	struct nameidata nd;
++
++	/* optarg contains the branch name to delete */
++
++	/*
++	 * Find matching branch index.  For now, this assumes that nothing
++	 * has been mounted on top of this Unionfs stack.  Once we have /odf
++	 * and cache-coherency resolved, we'll address the branch-path
++	 * uniqueness.
++	 */
++	err = path_lookup(optarg, LOOKUP_FOLLOW, &nd);
++	if (err) {
++		printk(KERN_ERR "unionfs: error accessing "
++		       "lower directory \"%s\" (error %d)\n",
++		       optarg, err);
++		goto out;
++	}
++	for (idx = 0; idx < cur_branches; idx++)
++		if (nd.mnt == new_lower_paths[idx].mnt &&
++		    nd.dentry == new_lower_paths[idx].dentry)
++			break;
++	path_release(&nd);	/* no longer needed */
++	if (idx == cur_branches) {
++		printk(KERN_ERR "unionfs: branch \"%s\" "
++		       "not found\n", optarg);
++		err = -ENOENT;
++		goto out;
++	}
++	/* check if there are any open files on the branch to be deleted */
++	if (atomic_read(&new_data[idx].open_files) > 0) {
++		err = -EBUSY;
++		goto out;
++	}
++
++	/*
++	 * Now we have to delete the branch.  First, release any handles it
++	 * has.  Then, move the remaining array indexes past "idx" in
++	 * new_data and new_lower_paths one to the left.  Finally, adjust
++	 * cur_branches.
++	 */
++	pathput(&new_lower_paths[idx]);
++
++	if (idx < cur_branches - 1) {
++		/* if idx==cur_branches-1, we delete last branch: easy */
++		memmove(&new_data[idx], &new_data[idx+1],
++			(cur_branches - 1 - idx) *
++			sizeof(struct unionfs_data));
++		memmove(&new_lower_paths[idx], &new_lower_paths[idx+1],
++			(cur_branches - 1 - idx) * sizeof(struct path));
++	}
++
++	err = 0;
++out:
++	return err;
++}
++
++/* handle branch insertion during remount */
++static noinline int do_remount_add_option(char *optarg, int cur_branches,
++					  struct unionfs_data *new_data,
++					  struct path *new_lower_paths,
++					  int *high_branch_id)
++{
++	int err = -EINVAL;
++	int perms;
++	int idx = 0;		/* default: insert at beginning */
++	char *new_branch , *modename = NULL;
++	struct nameidata nd;
++
++	/*
++	 * optarg can be of several forms:
++	 *
++	 * /bar:/foo		insert /foo before /bar
++	 * /bar:/foo=ro		insert /foo in ro mode before /bar
++	 * /foo			insert /foo in the beginning (prepend)
++	 * :/foo		insert /foo at the end (append)
++	 */
++	if (*optarg == ':') {	/* append? */
++		new_branch = optarg + 1; /* skip ':' */
++		idx = cur_branches;
++		goto found_insertion_point;
++	}
++	new_branch = strchr(optarg, ':');
++	if (!new_branch) {	/* prepend? */
++		new_branch = optarg;
++		goto found_insertion_point;
++	}
++	*new_branch++ = '\0';	/* holds path+mode of new branch */
++
++	/*
++	 * Find matching branch index.  For now, this assumes that nothing
++	 * has been mounted on top of this Unionfs stack.  Once we have /odf
++	 * and cache-coherency resolved, we'll address the branch-path
++	 * uniqueness.
++	 */
++	err = path_lookup(optarg, LOOKUP_FOLLOW, &nd);
++	if (err) {
++		printk(KERN_ERR "unionfs: error accessing "
++		       "lower directory \"%s\" (error %d)\n",
++		       optarg, err);
++		goto out;
++	}
++	for (idx = 0; idx < cur_branches; idx++)
++		if (nd.mnt == new_lower_paths[idx].mnt &&
++		    nd.dentry == new_lower_paths[idx].dentry)
++			break;
++	path_release(&nd);	/* no longer needed */
++	if (idx == cur_branches) {
++		printk(KERN_ERR "unionfs: branch \"%s\" "
++		       "not found\n", optarg);
++		err = -ENOENT;
++		goto out;
++	}
++
++	/*
++	 * At this point idx will hold the index where the new branch should
++	 * be inserted before.
++	 */
++found_insertion_point:
++	/* find the mode for the new branch */
++	if (new_branch)
++		modename = strchr(new_branch, '=');
++	if (modename)
++		*modename++ = '\0';
++	if (!new_branch || !*new_branch) {
++		printk(KERN_ERR "unionfs: null new branch\n");
++		err = -EINVAL;
++		goto out;
++	}
++	err = parse_branch_mode(modename, &perms);
++	if (err) {
++		printk(KERN_ERR "unionfs: invalid mode \"%s\" for "
++		       "branch \"%s\"\n", modename, new_branch);
++		goto out;
++	}
++	err = path_lookup(new_branch, LOOKUP_FOLLOW, &nd);
++	if (err) {
++		printk(KERN_ERR "unionfs: error accessing "
++		       "lower directory \"%s\" (error %d)\n",
++		       new_branch, err);
++		goto out;
++	}
++	/*
++	 * It's probably safe to check_mode the new branch to insert.  Note:
++	 * we don't allow inserting branches which are unionfs's by
++	 * themselves (check_branch returns EINVAL in that case).  This is
++	 * because this code base doesn't support stacking unionfs: the ODF
++	 * code base supports that correctly.
++	 */
++	err = check_branch(&nd);
++	if (err) {
++		printk(KERN_ERR "unionfs: lower directory "
++		       "\"%s\" is not a valid branch\n", optarg);
++		path_release(&nd);
++		goto out;
++	}
++
++	/*
++	 * Now we have to insert the new branch.  But first, move the bits
++	 * to make space for the new branch, if needed.  Finally, adjust
++	 * cur_branches.
++	 * We don't release nd here; it's kept until umount/remount.
++	 */
++	if (idx < cur_branches) {
++		/* if idx==cur_branches, we append: easy */
++		memmove(&new_data[idx+1], &new_data[idx],
++			(cur_branches - idx) * sizeof(struct unionfs_data));
++		memmove(&new_lower_paths[idx+1], &new_lower_paths[idx],
++			(cur_branches - idx) * sizeof(struct path));
++	}
++	new_lower_paths[idx].dentry = nd.dentry;
++	new_lower_paths[idx].mnt = nd.mnt;
++
++	new_data[idx].sb = nd.dentry->d_sb;
++	atomic_set(&new_data[idx].open_files, 0);
++	new_data[idx].branchperms = perms;
++	new_data[idx].branch_id = ++*high_branch_id; /* assign new branch ID */
++
++	err = 0;
++out:
++	return err;
++}
++
++
++/*
++ * Support branch management options on remount.
++ *
++ * See Documentation/filesystems/unionfs/ for details.
++ *
++ * @flags: numeric mount options
++ * @options: mount options string
++ *
++ * This function can rearrange a mounted union dynamically, adding and
++ * removing branches, including changing branch modes.  Clearly this has to
++ * be done safely and atomically.  Luckily, the VFS already calls this
++ * function with lock_super(sb) and lock_kernel() held, preventing
++ * concurrent mixing of new mounts, remounts, and unmounts.  Moreover,
++ * do_remount_sb(), our caller function, already called shrink_dcache_sb(sb)
++ * to purge dentries/inodes from our superblock, and also called
++ * fsync_super(sb) to purge any dirty pages.  So we're good.
++ *
++ * XXX: however, our remount code may also need to invalidate mapped pages
++ * so as to force them to be re-gotten from the (newly reconfigured) lower
++ * branches.  This has to wait for proper mmap and cache coherency support
++ * in the VFS.
++ *
++ */
++static int unionfs_remount_fs(struct super_block *sb, int *flags,
++			      char *options)
++{
++	int err = 0;
++	int i;
++	char *optionstmp, *tmp_to_free;	/* kstrdup'ed of "options" */
++	char *optname;
++	int cur_branches = 0;	/* no. of current branches */
++	int new_branches = 0;	/* no. of branches actually left in the end */
++	int add_branches;	/* est. no. of branches to add */
++	int del_branches;	/* est. no. of branches to del */
++	int max_branches;	/* max possible no. of branches */
++	struct unionfs_data *new_data = NULL, *tmp_data = NULL;
++	struct path *new_lower_paths = NULL, *tmp_lower_paths = NULL;
++	struct inode **new_lower_inodes = NULL;
++	int new_high_branch_id;	/* new high branch ID */
++	int size;		/* memory allocation size, temp var */
++	int old_ibstart, old_ibend;
++
++	unionfs_write_lock(sb);
++
++	/*
++	 * The VFS will take care of "ro" and "rw" flags, and we can safely
++	 * ignore MS_SILENT, but anything else left over is an error.  So we
++	 * need to check if any other flags may have been passed (none are
++	 * allowed/supported as of now).
++	 */
++	if ((*flags & ~(MS_RDONLY | MS_SILENT)) != 0) {
++		printk(KERN_ERR
++		       "unionfs: remount flags 0x%x unsupported\n", *flags);
++		err = -EINVAL;
++		goto out_error;
++	}
++
++	/*
++	 * If 'options' is NULL, it's probably because the user just changed
++	 * the union to a "ro" or "rw" and the VFS took care of it.  So
++	 * nothing to do and we're done.
++	 */
++	if (!options || options[0] == '\0')
++		goto out_error;
++
++	/*
++	 * Find out how many branches we will have in the end, counting
++	 * "add" and "del" commands.  Copy the "options" string because
++	 * strsep modifies the string and we need it later.
++	 */
++	tmp_to_free = kstrdup(options, GFP_KERNEL);
++	optionstmp = tmp_to_free;
++	if (unlikely(!optionstmp)) {
++		err = -ENOMEM;
++		goto out_free;
++	}
++	cur_branches = sbmax(sb); /* current no. branches */
++	new_branches = sbmax(sb);
++	del_branches = 0;
++	add_branches = 0;
++	new_high_branch_id = sbhbid(sb); /* save current high_branch_id */
++	while ((optname = strsep(&optionstmp, ",")) != NULL) {
++		char *optarg;
++
++		if (!optname || !*optname)
++			continue;
++
++		optarg = strchr(optname, '=');
++		if (optarg)
++			*optarg++ = '\0';
++
++		if (!strcmp("add", optname))
++			add_branches++;
++		else if (!strcmp("del", optname))
++			del_branches++;
++	}
++	kfree(tmp_to_free);
++	/* after all changes, will we have at least one branch left? */
++	if ((new_branches + add_branches - del_branches) < 1) {
++		printk(KERN_ERR
++		       "unionfs: no branches left after remount\n");
++		err = -EINVAL;
++		goto out_free;
++	}
++
++	/*
++	 * Since we haven't actually parsed all the add/del options, nor
++	 * have we checked them for errors, we don't know for sure how many
++	 * branches we will have after all changes have taken place.  In
++	 * fact, the total number of branches left could be less than what
++	 * we have now.  So we need to allocate space for a temporary
++	 * placeholder that is at least as large as the maximum number of
++	 * branches we *could* have, which is the current number plus all
++	 * the additions.  Once we're done with these temp placeholders, we
++	 * may have to re-allocate the final size, copy over from the temp,
++	 * and then free the temps (done near the end of this function).
++	 */
++	max_branches = cur_branches + add_branches;
++	/* allocate space for new pointers to lower dentry */
++	tmp_data = kcalloc(max_branches,
++			   sizeof(struct unionfs_data), GFP_KERNEL);
++	if (unlikely(!tmp_data)) {
++		err = -ENOMEM;
++		goto out_free;
++	}
++	/* allocate space for new pointers to lower paths */
++	tmp_lower_paths = kcalloc(max_branches,
++				  sizeof(struct path), GFP_KERNEL);
++	if (unlikely(!tmp_lower_paths)) {
++		err = -ENOMEM;
++		goto out_free;
++	}
++	/* copy current info into new placeholders, incrementing refcnts */
++	memcpy(tmp_data, UNIONFS_SB(sb)->data,
++	       cur_branches * sizeof(struct unionfs_data));
++	memcpy(tmp_lower_paths, UNIONFS_D(sb->s_root)->lower_paths,
++	       cur_branches * sizeof(struct path));
++	for (i = 0; i < cur_branches; i++)
++		pathget(&tmp_lower_paths[i]); /* drop refs at end of fxn */
++
++	/*******************************************************************
++	 * For each branch command, do path_lookup on the requested branch,
++	 * and apply the change to a temp branch list.  To handle errors, we
++	 * already dup'ed the old arrays (above), and increased the refcnts
++	 * on various f/s objects.  So now we can do all the path_lookups
++	 * and branch-management commands on the new arrays.  If it fail mid
++	 * way, we free the tmp arrays and *put all objects.  If we succeed,
++	 * then we free old arrays and *put its objects, and then replace
++	 * the arrays with the new tmp list (we may have to re-allocate the
++	 * memory because the temp lists could have been larger than what we
++	 * actually needed).
++	 *******************************************************************/
++
++	while ((optname = strsep(&options, ",")) != NULL) {
++		char *optarg;
++
++		if (!optname || !*optname)
++			continue;
++		/*
++		 * At this stage optname holds a comma-delimited option, but
++		 * without the commas.  Next, we need to break the string on
++		 * the '=' symbol to separate CMD=ARG, where ARG itself can
++		 * be KEY=VAL.  For example, in mode=/foo=rw, CMD is "mode",
++		 * KEY is "/foo", and VAL is "rw".
++		 */
++		optarg = strchr(optname, '=');
++		if (optarg)
++			*optarg++ = '\0';
++		/* incgen remount option (instead of old ioctl) */
++		if (!strcmp("incgen", optname)) {
++			err = 0;
++			goto out_no_change;
++		}
++
++		/*
++		 * All of our options take an argument now.  (Insert ones
++		 * that don't above this check.)  So at this stage optname
++		 * contains the CMD part and optarg contains the ARG part.
++		 */
++		if (!optarg || !*optarg) {
++			printk(KERN_ERR "unionfs: all remount options require "
++			       "an argument (%s)\n", optname);
++			err = -EINVAL;
++			goto out_release;
++		}
++
++		if (!strcmp("add", optname)) {
++			err = do_remount_add_option(optarg, new_branches,
++						    tmp_data,
++						    tmp_lower_paths,
++						    &new_high_branch_id);
++			if (err)
++				goto out_release;
++			new_branches++;
++			if (new_branches > UNIONFS_MAX_BRANCHES) {
++				printk(KERN_ERR "unionfs: command exceeds "
++				       "%d branches\n", UNIONFS_MAX_BRANCHES);
++				err = -E2BIG;
++				goto out_release;
++			}
++			continue;
++		}
++		if (!strcmp("del", optname)) {
++			err = do_remount_del_option(optarg, new_branches,
++						    tmp_data,
++						    tmp_lower_paths);
++			if (err)
++				goto out_release;
++			new_branches--;
++			continue;
++		}
++		if (!strcmp("mode", optname)) {
++			err = do_remount_mode_option(optarg, new_branches,
++						     tmp_data,
++						     tmp_lower_paths);
++			if (err)
++				goto out_release;
++			continue;
++		}
++
++		/*
++		 * When you use "mount -o remount,ro", mount(8) will
++		 * reportedly pass the original dirs= string from
++		 * /proc/mounts.  So for now, we have to ignore dirs= and
++		 * not consider it an error, unless we want to allow users
++		 * to pass dirs= in remount.  Note that to allow the VFS to
++		 * actually process the ro/rw remount options, we have to
++		 * return 0 from this function.
++		 */
++		if (!strcmp("dirs", optname)) {
++			printk(KERN_WARNING
++			       "unionfs: remount ignoring option \"%s\"\n",
++			       optname);
++			continue;
++		}
++
++		err = -EINVAL;
++		printk(KERN_ERR
++		       "unionfs: unrecognized option \"%s\"\n", optname);
++		goto out_release;
++	}
++
++out_no_change:
++
++	/******************************************************************
++	 * WE'RE ALMOST DONE: check if leftmost branch might be read-only,
++	 * see if we need to allocate a small-sized new vector, copy the
++	 * vectors to their correct place, release the refcnt of the older
++	 * ones, and return.  Also handle invalidating any pages that will
++	 * have to be re-read.
++	 *******************************************************************/
++
++	if (!(tmp_data[0].branchperms & MAY_WRITE)) {
++		printk(KERN_ERR "unionfs: leftmost branch cannot be read-only "
++		       "(use \"remount,ro\" to create a read-only union)\n");
++		err = -EINVAL;
++		goto out_release;
++	}
++
++	/* (re)allocate space for new pointers to lower dentry */
++	size = new_branches * sizeof(struct unionfs_data);
++	new_data = krealloc(tmp_data, size, GFP_KERNEL);
++	if (unlikely(!new_data)) {
++		err = -ENOMEM;
++		goto out_release;
++	}
++
++	/* allocate space for new pointers to lower paths */
++	size = new_branches * sizeof(struct path);
++	new_lower_paths = krealloc(tmp_lower_paths, size, GFP_KERNEL);
++	if (unlikely(!new_lower_paths)) {
++		err = -ENOMEM;
++		goto out_release;
++	}
++
++	/* allocate space for new pointers to lower inodes */
++	new_lower_inodes = kcalloc(new_branches,
++				   sizeof(struct inode *), GFP_KERNEL);
++	if (unlikely(!new_lower_inodes)) {
++		err = -ENOMEM;
++		goto out_release;
++	}
++
++	/*
++	 * OK, just before we actually put the new set of branches in place,
++	 * we need to ensure that our own f/s has no dirty objects left.
++	 * Luckily, do_remount_sb() already calls shrink_dcache_sb(sb) and
++	 * fsync_super(sb), taking care of dentries, inodes, and dirty
++	 * pages.  So all that's left is for us to invalidate any leftover
++	 * (non-dirty) pages to ensure that they will be re-read from the
++	 * new lower branches (and to support mmap).
++	 */
++
++	/*
++	 * Once we finish the remounting successfully, our superblock
++	 * generation number will have increased.  This will be detected by
++	 * our dentry-revalidation code upon subsequent f/s operations
++	 * through unionfs.  The revalidation code will rebuild the union of
++	 * lower inodes for a given unionfs inode and invalidate any pages
++	 * of such "stale" inodes (by calling our purge_inode_data
++	 * function).  This revalidation will happen lazily and
++	 * incrementally, as users perform operations on cached inodes.  We
++	 * would like to encourage this revalidation to happen sooner if
++	 * possible, so we try to invalidate as many other pages in our
++	 * superblock as we can.
++	 */
++	purge_sb_data(sb);
++
++	/* copy new vectors into their correct place */
++	tmp_data = UNIONFS_SB(sb)->data;
++	UNIONFS_SB(sb)->data = new_data;
++	new_data = NULL;	/* so don't free good pointers below */
++	tmp_lower_paths = UNIONFS_D(sb->s_root)->lower_paths;
++	UNIONFS_D(sb->s_root)->lower_paths = new_lower_paths;
++	new_lower_paths = NULL;	/* so don't free good pointers below */
++
++	/* update our unionfs_sb_info and root dentry index of last branch */
++	i = sbmax(sb);		/* save no. of branches to release at end */
++	sbend(sb) = new_branches - 1;
++	set_dbend(sb->s_root, new_branches - 1);
++	old_ibstart = ibstart(sb->s_root->d_inode);
++	old_ibend = ibend(sb->s_root->d_inode);
++	ibend(sb->s_root->d_inode) = new_branches - 1;
++	UNIONFS_D(sb->s_root)->bcount = new_branches;
++	new_branches = i; /* no. of branches to release below */
++
++	/*
++	 * Update lower inodes: 3 steps
++	 * 1. grab ref on all new lower inodes
++	 */
++	for (i = dbstart(sb->s_root); i <= dbend(sb->s_root); i++) {
++		struct dentry *lower_dentry =
++			unionfs_lower_dentry_idx(sb->s_root, i);
++		igrab(lower_dentry->d_inode);
++		new_lower_inodes[i] = lower_dentry->d_inode;
++	}
++	/* 2. release reference on all older lower inodes */
++	for (i = old_ibstart; i <= old_ibend; i++) {
++		iput(unionfs_lower_inode_idx(sb->s_root->d_inode, i));
++		unionfs_set_lower_inode_idx(sb->s_root->d_inode, i, NULL);
++	}
++	kfree(UNIONFS_I(sb->s_root->d_inode)->lower_inodes);
++	/* 3. update root dentry's inode to new lower_inodes array */
++	UNIONFS_I(sb->s_root->d_inode)->lower_inodes = new_lower_inodes;
++	new_lower_inodes = NULL;
++
++	/* maxbytes may have changed */
++	sb->s_maxbytes = unionfs_lower_super_idx(sb, 0)->s_maxbytes;
++	/* update high branch ID */
++	sbhbid(sb) = new_high_branch_id;
++
++	/* update our sb->generation for revalidating objects */
++	i = atomic_inc_return(&UNIONFS_SB(sb)->generation);
++	atomic_set(&UNIONFS_D(sb->s_root)->generation, i);
++	atomic_set(&UNIONFS_I(sb->s_root->d_inode)->generation, i);
++	if (!(*flags & MS_SILENT))
++		pr_info("unionfs: new generation number %d\n", i);
++	/* finally, update the root dentry's times */
++	unionfs_copy_attr_times(sb->s_root->d_inode);
++	err = 0;		/* reset to success */
++
++	/*
++	 * The code above falls through to the next label, and releases the
++	 * refcnts of the older ones (stored in tmp_*): if we fell through
++	 * here, it means success.  However, if we jump directly to this
++	 * label from any error above, then an error occurred after we
++	 * grabbed various refcnts, and so we have to release the
++	 * temporarily constructed structures.
++	 */
++out_release:
++	/* no need to cleanup/release anything in tmp_data */
++	if (tmp_lower_paths)
++		for (i = 0; i < new_branches; i++)
++			pathput(&tmp_lower_paths[i]);
++out_free:
++	kfree(tmp_lower_paths);
++	kfree(tmp_data);
++	kfree(new_lower_paths);
++	kfree(new_data);
++	kfree(new_lower_inodes);
++out_error:
++	unionfs_check_dentry(sb->s_root);
++	unionfs_write_unlock(sb);
++	return err;
++}
++
++/*
++ * Called by iput() when the inode reference count reached zero
++ * and the inode is not hashed anywhere.  Used to clear anything
++ * that needs to be, before the inode is completely destroyed and put
++ * on the inode free list.
++ *
++ * No need to lock sb info's rwsem.
++ */
++static void unionfs_clear_inode(struct inode *inode)
++{
++	int bindex, bstart, bend;
++	struct inode *lower_inode;
++	struct list_head *pos, *n;
++	struct unionfs_dir_state *rdstate;
++
++	list_for_each_safe(pos, n, &UNIONFS_I(inode)->readdircache) {
++		rdstate = list_entry(pos, struct unionfs_dir_state, cache);
++		list_del(&rdstate->cache);
++		free_rdstate(rdstate);
++	}
++
++	/*
++	 * Decrement a reference to a lower_inode, which was incremented
++	 * by our read_inode when it was created initially.
++	 */
++	bstart = ibstart(inode);
++	bend = ibend(inode);
++	if (bstart >= 0) {
++		for (bindex = bstart; bindex <= bend; bindex++) {
++			lower_inode = unionfs_lower_inode_idx(inode, bindex);
++			if (!lower_inode)
++				continue;
++			unionfs_set_lower_inode_idx(inode, bindex, NULL);
++			/* see Documentation/filesystems/unionfs/issues.txt */
++			lockdep_off();
++			iput(lower_inode);
++			lockdep_on();
++		}
++	}
++
++	kfree(UNIONFS_I(inode)->lower_inodes);
++	UNIONFS_I(inode)->lower_inodes = NULL;
++}
++
++static struct inode *unionfs_alloc_inode(struct super_block *sb)
++{
++	struct unionfs_inode_info *i;
++
++	i = kmem_cache_alloc(unionfs_inode_cachep, GFP_KERNEL);
++	if (unlikely(!i))
++		return NULL;
++
++	/* memset everything up to the inode to 0 */
++	memset(i, 0, offsetof(struct unionfs_inode_info, vfs_inode));
++
++	i->vfs_inode.i_version = 1;
++	return &i->vfs_inode;
++}
++
++static void unionfs_destroy_inode(struct inode *inode)
++{
++	kmem_cache_free(unionfs_inode_cachep, UNIONFS_I(inode));
++}
++
++/* unionfs inode cache constructor */
++static void init_once(struct kmem_cache *cachep, void *obj)
++{
++	struct unionfs_inode_info *i = obj;
++
++	inode_init_once(&i->vfs_inode);
++}
++
++int unionfs_init_inode_cache(void)
++{
++	int err = 0;
++
++	unionfs_inode_cachep =
++		kmem_cache_create("unionfs_inode_cache",
++				  sizeof(struct unionfs_inode_info), 0,
++				  SLAB_RECLAIM_ACCOUNT, init_once);
++	if (unlikely(!unionfs_inode_cachep))
++		err = -ENOMEM;
++	return err;
++}
++
++/* unionfs inode cache destructor */
++void unionfs_destroy_inode_cache(void)
++{
++	if (unionfs_inode_cachep)
++		kmem_cache_destroy(unionfs_inode_cachep);
++}
++
++/*
++ * Called when we have a dirty inode, right here we only throw out
++ * parts of our readdir list that are too old.
++ *
++ * No need to grab sb info's rwsem.
++ */
++static int unionfs_write_inode(struct inode *inode, int sync)
++{
++	struct list_head *pos, *n;
++	struct unionfs_dir_state *rdstate;
++
++	spin_lock(&UNIONFS_I(inode)->rdlock);
++	list_for_each_safe(pos, n, &UNIONFS_I(inode)->readdircache) {
++		rdstate = list_entry(pos, struct unionfs_dir_state, cache);
++		/* We keep this list in LRU order. */
++		if ((rdstate->access + RDCACHE_JIFFIES) > jiffies)
++			break;
++		UNIONFS_I(inode)->rdcount--;
++		list_del(&rdstate->cache);
++		free_rdstate(rdstate);
++	}
++	spin_unlock(&UNIONFS_I(inode)->rdlock);
 +
 +	return 0;
 +}
 +
-+static inline int is_robranch(const struct dentry *dentry)
-+{
-+	int index;
-+
-+	index = UNIONFS_D(dentry)->bstart;
-+	BUG_ON(index < 0);
-+
-+	return is_robranch_idx(dentry, index);
-+}
-+
-+/* What do we use for whiteouts. */
-+#define UNIONFS_WHPFX ".wh."
-+#define UNIONFS_WHLEN 4
 +/*
-+ * If a directory contains this file, then it is opaque.  We start with the
-+ * .wh. flag so that it is blocked by lookup.
++ * Used only in nfs, to kill any pending RPC tasks, so that subsequent
++ * code can actually succeed and won't leave tasks that need handling.
 + */
-+#define UNIONFS_DIR_OPAQUE_NAME "__dir_opaque"
-+#define UNIONFS_DIR_OPAQUE UNIONFS_WHPFX UNIONFS_DIR_OPAQUE_NAME
-+
-+/*
-+ * EXTERNALS:
-+ */
-+extern char *alloc_whname(const char *name, int len);
-+extern int check_branch(struct nameidata *nd);
-+extern int parse_branch_mode(const char *name, int *perms);
-+
-+/* locking helpers */
-+static inline struct dentry *lock_parent(struct dentry *dentry)
++static void unionfs_umount_begin(struct vfsmount *mnt, int flags)
 +{
-+	struct dentry *dir = dget(dentry->d_parent);
-+	mutex_lock_nested(&dir->d_inode->i_mutex, I_MUTEX_PARENT);
-+	return dir;
-+}
-+static inline struct dentry *lock_parent_wh(struct dentry *dentry)
-+{
-+	struct dentry *dir = dget(dentry->d_parent);
++	struct super_block *sb, *lower_sb;
++	struct vfsmount *lower_mnt;
++	int bindex, bstart, bend;
 +
-+	mutex_lock_nested(&dir->d_inode->i_mutex, UNIONFS_DMUTEX_WHITEOUT);
-+	return dir;
-+}
-+
-+static inline void unlock_dir(struct dentry *dir)
-+{
-+	mutex_unlock(&dir->d_inode->i_mutex);
-+	dput(dir);
-+}
-+
-+static inline struct vfsmount *unionfs_mntget(struct dentry *dentry,
-+					      int bindex)
-+{
-+	struct vfsmount *mnt;
-+
-+	BUG_ON(!dentry || bindex < 0);
-+
-+	mnt = mntget(unionfs_lower_mnt_idx(dentry, bindex));
-+#ifdef CONFIG_UNION_FS_DEBUG
-+	if (!mnt)
-+		pr_debug("unionfs: mntget: mnt=%p bindex=%d\n",
-+			 mnt, bindex);
-+#endif /* CONFIG_UNION_FS_DEBUG */
-+
-+	return mnt;
-+}
-+
-+static inline void unionfs_mntput(struct dentry *dentry, int bindex)
-+{
-+	struct vfsmount *mnt;
-+
-+	if (!dentry && bindex < 0)
++	if (!(flags & MNT_FORCE))
++		/*
++		 * we are not being MNT_FORCE'd, therefore we should emulate
++		 * old behavior
++		 */
 +		return;
-+	BUG_ON(!dentry || bindex < 0);
 +
-+	mnt = unionfs_lower_mnt_idx(dentry, bindex);
-+#ifdef CONFIG_UNION_FS_DEBUG
-+	/*
-+	 * Directories can have NULL lower objects in between start/end, but
-+	 * NOT if at the start/end range.  We cannot verify that this dentry
-+	 * is a type=DIR, because it may already be a negative dentry.  But
-+	 * if dbstart is greater than dbend, we know that this couldn't have
-+	 * been a regular file: it had to have been a directory.
-+	 */
-+	if (!mnt && !(bindex > dbstart(dentry) && bindex < dbend(dentry)))
-+		pr_debug("unionfs: mntput: mnt=%p bindex=%d\n", mnt, bindex);
-+#endif /* CONFIG_UNION_FS_DEBUG */
-+	mntput(mnt);
++	sb = mnt->mnt_sb;
++
++	unionfs_read_lock(sb, UNIONFS_SMUTEX_CHILD);
++
++	bstart = sbstart(sb);
++	bend = sbend(sb);
++	for (bindex = bstart; bindex <= bend; bindex++) {
++		lower_mnt = unionfs_lower_mnt_idx(sb->s_root, bindex);
++		lower_sb = unionfs_lower_super_idx(sb, bindex);
++
++		if (lower_mnt && lower_sb && lower_sb->s_op &&
++		    lower_sb->s_op->umount_begin)
++			lower_sb->s_op->umount_begin(lower_mnt, flags);
++	}
++
++	unionfs_read_unlock(sb);
 +}
 +
-+#ifdef CONFIG_UNION_FS_DEBUG
++static int unionfs_show_options(struct seq_file *m, struct vfsmount *mnt)
++{
++	struct super_block *sb = mnt->mnt_sb;
++	int ret = 0;
++	char *tmp_page;
++	char *path;
++	int bindex, bstart, bend;
++	int perms;
 +
-+/* useful for tracking code reachability */
-+#define UDBG pr_debug("DBG:%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__)
++	unionfs_read_lock(sb, UNIONFS_SMUTEX_CHILD);
 +
-+#define unionfs_check_inode(i)	__unionfs_check_inode((i),	\
-+	__FILE__, __FUNCTION__, __LINE__)
-+#define unionfs_check_dentry(d)	__unionfs_check_dentry((d),	\
-+	__FILE__, __FUNCTION__, __LINE__)
-+#define unionfs_check_file(f)	__unionfs_check_file((f),	\
-+	__FILE__, __FUNCTION__, __LINE__)
-+#define unionfs_check_nd(n)	__unionfs_check_nd((n),		\
-+	__FILE__, __FUNCTION__, __LINE__)
-+#define show_branch_counts(sb)	__show_branch_counts((sb),	\
-+	__FILE__, __FUNCTION__, __LINE__)
-+#define show_inode_times(i)	__show_inode_times((i),		\
-+	__FILE__, __FUNCTION__, __LINE__)
-+#define show_dinode_times(d)	__show_dinode_times((d),	\
-+	__FILE__, __FUNCTION__, __LINE__)
-+#define show_inode_counts(i)	__show_inode_counts((i),	\
-+	__FILE__, __FUNCTION__, __LINE__)
++	unionfs_lock_dentry(sb->s_root, UNIONFS_DMUTEX_CHILD);
 +
-+extern void __unionfs_check_inode(const struct inode *inode, const char *fname,
-+				  const char *fxn, int line);
-+extern void __unionfs_check_dentry(const struct dentry *dentry,
-+				   const char *fname, const char *fxn,
-+				   int line);
-+extern void __unionfs_check_file(const struct file *file,
-+				 const char *fname, const char *fxn, int line);
-+extern void __unionfs_check_nd(const struct nameidata *nd,
-+			       const char *fname, const char *fxn, int line);
-+extern void __show_branch_counts(const struct super_block *sb,
-+				 const char *file, const char *fxn, int line);
-+extern void __show_inode_times(const struct inode *inode,
-+			       const char *file, const char *fxn, int line);
-+extern void __show_dinode_times(const struct dentry *dentry,
-+				const char *file, const char *fxn, int line);
-+extern void __show_inode_counts(const struct inode *inode,
-+				const char *file, const char *fxn, int line);
++	tmp_page = (char *) __get_free_page(GFP_KERNEL);
++	if (unlikely(!tmp_page)) {
++		ret = -ENOMEM;
++		goto out;
++	}
 +
-+#else /* not CONFIG_UNION_FS_DEBUG */
++	bstart = sbstart(sb);
++	bend = sbend(sb);
 +
-+/* we leave useful hooks for these check functions throughout the code */
-+#define unionfs_check_inode(i)		do { } while (0)
-+#define unionfs_check_dentry(d)		do { } while (0)
-+#define unionfs_check_file(f)		do { } while (0)
-+#define unionfs_check_nd(n)		do { } while (0)
-+#define show_branch_counts(sb)		do { } while (0)
-+#define show_inode_times(i)		do { } while (0)
-+#define show_dinode_times(d)		do { } while (0)
-+#define show_inode_counts(i)		do { } while (0)
++	seq_printf(m, ",dirs=");
++	for (bindex = bstart; bindex <= bend; bindex++) {
++		path = d_path(unionfs_lower_dentry_idx(sb->s_root, bindex),
++			      unionfs_lower_mnt_idx(sb->s_root, bindex),
++			      tmp_page, PAGE_SIZE);
++		if (IS_ERR(path)) {
++			ret = PTR_ERR(path);
++			goto out;
++		}
 +
-+#endif /* not CONFIG_UNION_FS_DEBUG */
++		perms = branchperms(sb, bindex);
 +
-+#endif	/* not _UNION_H_ */
++		seq_printf(m, "%s=%s", path,
++			   perms & MAY_WRITE ? "rw" : "ro");
++		if (bindex != bend)
++			seq_printf(m, ":");
++	}
++
++out:
++	free_page((unsigned long) tmp_page);
++
++	unionfs_unlock_dentry(sb->s_root);
++
++	unionfs_read_unlock(sb);
++
++	return ret;
++}
++
++struct super_operations unionfs_sops = {
++	.read_inode	= unionfs_read_inode,
++	.delete_inode	= unionfs_delete_inode,
++	.put_super	= unionfs_put_super,
++	.statfs		= unionfs_statfs,
++	.remount_fs	= unionfs_remount_fs,
++	.clear_inode	= unionfs_clear_inode,
++	.umount_begin	= unionfs_umount_begin,
++	.show_options	= unionfs_show_options,
++	.write_inode	= unionfs_write_inode,
++	.alloc_inode	= unionfs_alloc_inode,
++	.destroy_inode	= unionfs_destroy_inode,
++};
 -- 
 1.5.2.2
 
