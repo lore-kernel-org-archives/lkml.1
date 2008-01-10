@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758350AbYAJSAL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759180AbYAJSCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758350AbYAJSAL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 13:00:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755491AbYAJR7u
+	id S1759180AbYAJSCd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 13:02:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755624AbYAJSCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 12:59:50 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:55519 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754504AbYAJR7s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 12:59:48 -0500
-Date: Thu, 10 Jan 2008 19:02:25 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: John Reiser <jreiser@BitWagon.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Andi Kleen <andi@firstfloor.org>,
-       mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: STT_FUNC for assembler checksum and semaphore ops" in git-x86
-Message-ID: <20080110180225.GA747@one.firstfloor.org>
-References: <20080109215725.GA18185@basil.nowhere.org> <20080110074201.GA12585@uranus.ravnborg.org> <478649D8.9080209@BitWagon.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <478649D8.9080209@BitWagon.com>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 10 Jan 2008 13:02:22 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:42079 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755491AbYAJSCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 13:02:21 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: akpm@linux-foundation.org, neilb@suse.de
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 5/5] NLM: have nlm_shutdown_hosts kill off all NLM RPC tasks
+Date: Thu, 10 Jan 2008 13:01:36 -0500
+Message-Id: <1199988096-19700-6-git-send-email-jlayton@redhat.com>
+X-Mailer: git-send-email 1.5.3.3
+In-Reply-To: <1199988096-19700-5-git-send-email-jlayton@redhat.com>
+References: <1199988096-19700-1-git-send-email-jlayton@redhat.com>
+ <1199988096-19700-2-git-send-email-jlayton@redhat.com>
+ <1199988096-19700-3-git-send-email-jlayton@redhat.com>
+ <1199988096-19700-4-git-send-email-jlayton@redhat.com>
+ <1199988096-19700-5-git-send-email-jlayton@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It does look ugly.  But .size and .type are oriented towards static
-> description, while the dwarf2 CurrentFrameInfo (CFI) annotations
-> are oriented towards dynamic traceback and unwinding.  Forcing the
+The main problem is this:
 
-ENTRY/ENDPROC have nothing to do with dwarf2. That is CFI_STARTPROC/ENDPROC.
+When a lock that a client is blocking on comes free, lockd does this in
+nlmsvc_grant_blocked():
 
-But actually checking the default implementation in linkage.h already
-implements size:
+    nlm_async_call(block->b_call, NLMPROC_GRANTED_MSG, &nlmsvc_grant_ops);
 
-#ifndef END
-#define END(name) \
-  .size name, .-name
-#endif
+the callback from this call is nlmsvc_grant_callback(). That function
+does this at the end to wake up lockd:
 
-#ifndef ENDPROC
-#define ENDPROC(name) \
-  .type name, @function; \
-  END(name)
-#endif
+    svc_wake_up(block->b_daemon);
 
-Are you sure it doesn't work?  Your patch should be not needed. If it's
-still wrong then just ENDPROCs() need to be added.
+However there is no guarantee that lockd will be up when this happens.
+If someone shuts down or restarts lockd before the async call completes,
+then the b_daemon pointer will point to freed memory and the kernel may
+oops.
 
--Andi
+If we're shutting down all the nlm_hosts anyway, then it doesn't make
+sense to allow RPC calls to linger. Allowing them to do so can mean
+that the RPC calls can outlive the currently running lockd and can lead
+to the above use after free situation and possibly others.
+
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+---
+ fs/lockd/host.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/fs/lockd/host.c b/fs/lockd/host.c
+index 572601e..8771484 100644
+--- a/fs/lockd/host.c
++++ b/fs/lockd/host.c
+@@ -377,8 +377,10 @@ nlm_shutdown_hosts(void)
+ 	/* First, make all hosts eligible for gc */
+ 	dprintk("lockd: nuking all hosts...\n");
+ 	for (chain = nlm_hosts; chain < nlm_hosts + NLM_HOST_NRHASH; ++chain) {
+-		hlist_for_each_entry(host, pos, chain, h_hash)
++		hlist_for_each_entry(host, pos, chain, h_hash) {
+ 			host->h_expires = jiffies - 1;
++			rpc_killall_tasks(host->h_rpcclnt);
++		}
+ 	}
+ 
+ 	/* Then, perform a garbage collection pass */
+-- 
+1.5.3.7
 
