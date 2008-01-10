@@ -1,161 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758760AbYAJHnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758904AbYAJHni@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758760AbYAJHnX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 02:43:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbYAJHnP
+	id S1758904AbYAJHni (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 02:43:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbYAJHnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 10 Jan 2008 02:43:17 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:23326 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753597AbYAJHnP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 10 Jan 2008 02:43:15 -0500
-Received: from rex.snapgear.com ([203.143.235.140]:49386 "EHLO snapgear.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752770AbYAJHnO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 02:43:14 -0500
-Date: Thu, 10 Jan 2008 17:42:25 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-Message-Id: <200801100742.m0A7gPrg007440@goober>
-To: linux-kernel@vger.kernel.org
-Subject: [M68KNOMMU]: use GENERIC_TIME for ColdFire PIT timer
-Cc: gerg@uclinux.org
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=uY4qq5nDNQFtgkBEMPJVsHfgRSpFkrUaof/doZu3fHy/a86mYoxrpgELSfRFIL1/2PnLIHoM8Cxd1b8kmNQ40h1BhxCh3xZ6lMFQVRckN9jq2nJMigzy2pH5A5ndCvVrL/f/gl3EoHlkdFXm/6EgpiJXkzmbIu+nIAQNEbQExKk=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: yi.y.yang@intel.com
+Subject: Re: [PATCH] ACPI: Add sysfs interface for acpi device wakeup
+Date: Thu, 10 Jan 2008 09:43:08 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, lenb@kernel.org,
+       acpi-bugzilla@lists.sourceforge.net
+References: <1198738022.8950.3.camel@yangyi-dev.bj.intel.com> <1199688961.3551.19.camel@yangyi-dev.bj.intel.com> <1199917306.9596.3.camel@yangyi-dev.bj.intel.com>
+In-Reply-To: <1199917306.9596.3.camel@yangyi-dev.bj.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801100943.08780.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A first attempt at switching the m68knommu/ColdFire PIT timer to
-use GENERIC_TIME.
+On Thursday, 10 January 2008 00:21:46 Yi Yang wrote:
+> Subject: ACPI: convert procfs to sysfs for /proc/acpi/wakeup
+> From: Yi Yang <yi.y.yang@intel.com>
+> 
+> /proc/acpi/wakeup is deprecated but it has to exist because
+> we haven't a sysfs interface to replace it yet, this patch
+> converts /proc/acpi/wakeup to sysfs interface, under every
+> acpi device sysfs node, a user can see a directory "wakeup"
+> if the acpi device can support wakeup, there are six files
+> under this directory:
+> 
+> acpi_bus_id  bus_id  pci_id  run_wakeup  sleep_state  status
+> 
+> All the files are read-only exclude "status" which is used
+> to enable or disable wakeup of the acpi device.
+> 
+> "acpi_bus_id" is acpi bus ID of the acpi device.
+> 
+> "bus_id" is pci bus id of the device associated to the acpi
+> device, it will be empty if there isn't any device associated
+> to it.
+> 
+> "pci_id" is PCI ID of the pci device associated to the acpi
+> device, it will be empty if there isn't any device associated
+> to it.
+> 
+> "run_wake" is a flag indicating if a wakeup process is being
+> handled.
+> 
+> "sleep_state" is sleep state of the acpi device such as "S0".
+> 
+> "status" is wakeup status of the acpi device, it is enabled
+> or disabled, a user can change it be echoing "0", "1",
+> "disabled" or "enabled" to /sys/devices/.../wakeup/status. 
+> 
+> Here is the test result:
+> 
+> [root@localhost ~]# cat /proc/acpi/wakeup
+> Device  S-state   Status   Sysfs node           PCI ID
+> C093      S5     disabled  pci:0000:00:1e.0     0x2448
+> C0E8      S3     disabled  pci:0000:00:1d.0     0x27c8
+> C0EF      S3     disabled  pci:0000:00:1d.1     0x27c9
+> C0F0      S3     disabled  pci:0000:00:1d.2     0x27ca
+> C0F1      S3     disabled  pci:0000:00:1d.3     0x27cb
+> C0F2      S3     disabled  pci:0000:00:1d.7     0x27cc
+> C0F9      S0     disabled  pci:0000:00:1c.0     0x27d0
+> C21D      S0     disabled  pci:0000:08:00.0     0x16fd
+> C109      S5     disabled  pci:0000:00:1c.1     0x27d2
+> C228      S5     disabled  pci:0000:10:00.0     0x4222
+> C10F      S5     disabled  pci:0000:00:1c.3     0x27d6
+> C229      S5     disabled
+> [root@localhost ~]# find /sys -name "*" | grep sleep_state
+> /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:05/wakeup/sleep_state
+> /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:0d/wakeup/sleep_state
+> /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:11/wakeup/sleep_state
+> /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:15/wakeup/sleep_state
+> /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:19/wakeup/sleep_state
+> /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:1d/wakeup/sleep_state
+> /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:2b/wakeup/sleep_state
+> /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:2b/device:2c/wakeup/sleep_state
+> /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:2d/wakeup/sleep_state
+> /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:2d/device:2e/wakeup/sleep_state
+> /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:2f/wakeup/sleep_state
+> /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:2f/device:30/wakeup/sleep_state
+> [root@localhost ~]# ls /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:2f/device:30/wakeup
+> acpi_bus_id  bus_id  pci_id  run_wakeup  sleep_state  status
+> [root@localhost ~]# cat /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:2f/device:30/acpi_bus_id
+> cat: /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:2f/device:30/acpi_bus_id: No such file or directory
+> [root@localhost ~]# cat /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:2f/device:30/wakeup/acpi_bus_id
+> C229
+> [root@localhost ~]# cat /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:2f/device:30/wakeup/sleep_state
+> S5
+> [root@localhost ~]# cat /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:2f/device:30/wakeup/status
+> disabled
+> [root@localhost ~]# cat /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:2f/device:30/wakeup/bus_id
+> 
+> [root@localhost ~]# cat /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:2f/device:30/wakeup/pci_id
+> 
+> [root@localhost ~]# echo 1 > /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:2f/device:30/wakeup/status
+> [root@localhost ~]# cat /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:2f/device:30/wakeup/status
+> enabled
+> [root@localhost ~]# cat /proc/acpi/wakeup
+> Device  S-state   Status   Sysfs node           PCI ID
+> C093      S5     disabled  pci:0000:00:1e.0     0x2448
+> C0E8      S3     disabled  pci:0000:00:1d.0     0x27c8
+> C0EF      S3     disabled  pci:0000:00:1d.1     0x27c9
+> C0F0      S3     disabled  pci:0000:00:1d.2     0x27ca
+> C0F1      S3     disabled  pci:0000:00:1d.3     0x27cb
+> C0F2      S3     disabled  pci:0000:00:1d.7     0x27cc
+> C0F9      S0     enabled   pci:0000:00:1c.0     0x27d0
+> C21D      S0     enabled   pci:0000:08:00.0     0x16fd
+> C109      S5     enabled   pci:0000:00:1c.1     0x27d2
+> C228      S5     enabled   pci:0000:10:00.0     0x4222
+> C10F      S5     enabled   pci:0000:00:1c.3     0x27d6
+> C229      S5     enabled
+> [root@localhost ~]# vi /var/log/dmesg
+> [root@localhost ~]# dmesg | grep "same GPE"
+> ACPI: 'C0F9' and 'C229' have the same GPE, can't disable/enable one seperately
+> ACPI: 'C21D' and 'C229' have the same GPE, can't disable/enable one seperately
+> ACPI: 'C109' and 'C229' have the same GPE, can't disable/enable one seperately
+> ACPI: 'C228' and 'C229' have the same GPE, can't disable/enable one seperately
+> ACPI: 'C10F' and 'C229' have the same GPE, can't disable/enable one seperately
+> [root@localhost ~]# cat /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/*/wakeup/status
+> disabled
+> disabled
+> disabled
+> disabled
+> disabled
+> disabled
+> enabled
+> enabled
+> enabled
+> [root@localhost ~]# cat /sys/devices/LNXSYSTM:00/device:00/PNP0A08:00/*/*/wakeup/status
+> enabled
+> enabled
+> enabled
+> [root@localhost ~]#
 
-Signed-of-by: Greg Ungerer <gerg@uclinux.org>
 
---- arch/m68knommu/platform/5307/pit.c	10 Oct 2007 06:46:56 -0000	1.11
-+++ arch/m68knommu/platform/5307/pit.c	10 Jan 2008 07:17:34 -0000
-@@ -3,9 +3,10 @@
- /*
-  *	pit.c -- Freescale ColdFire PIT timer. Currently this type of
-  *	         hardware timer only exists in the Freescale ColdFire
-- *		 5270/5271, 5282 and other CPUs.
-+ *		 5270/5271, 5282 and 5208 CPUs. No doubt newer ColdFire
-+ *		 family members will probably use it too.
-  *
-- *	Copyright (C) 1999-2007, Greg Ungerer (gerg@snapgear.com)
-+ *	Copyright (C) 1999-2008, Greg Ungerer (gerg@snapgear.com)
-  *	Copyright (C) 2001-2004, SnapGear Inc. (www.snapgear.com)
-  */
- 
-@@ -17,6 +18,7 @@
- #include <linux/init.h>
- #include <linux/interrupt.h>
- #include <linux/irq.h>
-+#include <linux/clocksource.h>
- #include <asm/machdep.h>
- #include <asm/io.h>
- #include <asm/coldfire.h>
-@@ -28,35 +30,69 @@
- /*
-  *	By default use timer1 as the system clock timer.
-  */
-+#define	FREQ	((MCF_CLK / 2) / 64)
- #define	TA(a)	(MCF_IPSBAR + MCFPIT_BASE1 + (a))
- #define	INTC0	(MCF_IPSBAR + MCFICM_INTC0)
- 
-+static u32 pit_cycles_per_jiffy;
-+static u32 pit_cnt;
-+
- /***************************************************************************/
- 
--static irqreturn_t hw_tick(int irq, void *dummy)
-+static irqreturn_t pit_tick(int irq, void *dummy)
- {
--	unsigned short pcsr;
-+	u16 pcsr;
- 
- 	/* Reset the ColdFire timer */
- 	pcsr = __raw_readw(TA(MCFPIT_PCSR));
- 	__raw_writew(pcsr | MCFPIT_PCSR_PIF, TA(MCFPIT_PCSR));
- 
-+	pit_cnt += pit_cycles_per_jiffy;
- 	return arch_timer_interrupt(irq, dummy);
- }
- 
- /***************************************************************************/
- 
--static struct irqaction coldfire_pit_irq = {
-+static struct irqaction pit_irq = {
- 	.name	 = "timer",
- 	.flags	 = IRQF_DISABLED | IRQF_TIMER,
--	.handler = hw_tick,
-+	.handler = pit_tick,
- };
- 
-+/***************************************************************************/
-+
-+static cycle_t pit_read_clk(void)
-+{
-+	unsigned long flags;
-+	u32 pmr, pcntr, cycles;
-+
-+	local_irq_save(flags);
-+	pmr = __raw_readw(TA(MCFPIT_PMR));
-+	pcntr = __raw_readw(TA(MCFPIT_PCNTR));
-+	cycles = pit_cnt;
-+	local_irq_restore(flags);
-+
-+	return cycles + pmr - pcntr;
-+}
-+
-+/***************************************************************************/
-+
-+static struct clocksource pit_clk = {
-+	.name	= "pit",
-+	.rating	= 250,
-+	.read	= pit_read_clk,
-+	.shift	= 20,
-+	.mask	= CLOCKSOURCE_MASK(32),
-+	.flags	= CLOCK_SOURCE_IS_CONTINUOUS,
-+};
-+
-+/***************************************************************************/
-+
- void hw_timer_init(void)
- {
- 	u32 imr;
- 
--	setup_irq(MCFINT_VECBASE + MCFINT_PIT1, &coldfire_pit_irq);
-+	setup_irq(MCFINT_VECBASE + MCFINT_PIT1, &pit_irq);
- 
- 	__raw_writeb(ICR_INTRCONF, INTC0 + MCFINTC_ICR0 + MCFINT_PIT1);
- 	imr = __raw_readl(INTC0 + MCFPIT_IMR);
-@@ -64,32 +100,14 @@
- 	__raw_writel(imr, INTC0 + MCFPIT_IMR);
- 
- 	/* Set up PIT timer 1 as poll clock */
-+	pit_cycles_per_jiffy = FREQ / HZ;
- 	__raw_writew(MCFPIT_PCSR_DISABLE, TA(MCFPIT_PCSR));
--	__raw_writew(((MCF_CLK / 2) / 64) / HZ, TA(MCFPIT_PMR));
-+	__raw_writew(pit_cycles_per_jiffy, TA(MCFPIT_PMR));
- 	__raw_writew(MCFPIT_PCSR_EN | MCFPIT_PCSR_PIE | MCFPIT_PCSR_OVW |
- 		MCFPIT_PCSR_RLD | MCFPIT_PCSR_CLK64, TA(MCFPIT_PCSR));
--}
--
--/***************************************************************************/
--
--unsigned long hw_timer_offset(void)
--{
--	volatile unsigned long *ipr;
--	unsigned long pmr, pcntr, offset;
--
--	ipr = (volatile unsigned long *) (MCF_IPSBAR + MCFICM_INTC0 + MCFPIT_IMR);
--
--	pmr = __raw_readw(TA(MCFPIT_PMR));
--	pcntr = __raw_readw(TA(MCFPIT_PCNTR));
- 
--	/*
--	 * If we are still in the first half of the upcount and a
--	 * timer interupt is pending, then add on a ticks worth of time.
--	 */
--	offset = ((pmr - pcntr) * (1000000 / HZ)) / pmr;
--	if ((offset < (1000000 / HZ / 2)) && (*ipr & MCFPIT_IMR_IBIT))
--		offset += 1000000 / HZ;
--	return offset;	
-+	pit_clk.mult = clocksource_hz2mult(FREQ, pit_clk.shift);
-+	clocksource_register(&pit_clk);
- }
- 
- /***************************************************************************/
+I think that it would be much much better to place wake-up attributes under
+corresponding PCI and PNP devices.
+
+Probably it is even better to link this code to PCI code, so PCI drivers will be aware of ACPI.
+For example it will fix the 'EHCI instantly wakes up the system from S4' on my system, since here USB doesn't wake
+up anything from S4, and ACPI tables correctly show that.
+
+If ehci driver was aware of that it could disable #PME on entrance to S4.
+And we even can reuse its 'wakeup' attribute, thus enabling wakeup automatically.
+
+Going ever further, I think that it will be great to get rid of ACPI device tree, since
+most acpi devices are ether PCI of PNP ones.
+
+Or, even better have a small ACPI tree, that will contain 'true' ACPI devices, like cpus
+thermal sensors, buttons, etc. 
+
+Best regards,
+	Maxim Levitsky
