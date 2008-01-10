@@ -1,82 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760548AbYAJTTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760858AbYAJTTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760548AbYAJTTW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 14:19:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYAJTTL
+	id S1760858AbYAJTTl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 14:19:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbYAJTTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 14:19:11 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:34230 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752770AbYAJTTJ (ORCPT
+	Thu, 10 Jan 2008 14:19:33 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:31412 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753563AbYAJTTb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 14:19:09 -0500
-Date: Thu, 10 Jan 2008 20:21:43 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andre Noll <maan@systemlinux.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       kernel-janitors@vger.kernel.org,
-       Richard Knutsson <ricknu-0@student.ltu.se>
-Subject: Re: [patch 1/1] Switch ioctl functions of drivers/scsi/sg.c to unlocked_ioctl
-Message-ID: <20080110192143.GE747@one.firstfloor.org>
-References: <20080110180529.GA32640@skl-net.de> <1199991298.3141.75.camel@localhost.localdomain> <20080110185944.GA1690@one.firstfloor.org> <20080110190324.GG18741@parisc-linux.org>
+	Thu, 10 Jan 2008 14:19:31 -0500
+Date: Thu, 10 Jan 2008 11:19:18 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: Help needed to fix section mismatch warnings
+Message-Id: <20080110111918.42e4fa0b.randy.dunlap@oracle.com>
+In-Reply-To: <20080109222542.422c90e0.randy.dunlap@oracle.com>
+References: <20080106140728.GA3504@uranus.ravnborg.org>
+	<20080109222542.422c90e0.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080110190324.GG18741@parisc-linux.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 10, 2008 at 12:03:24PM -0700, Matthew Wilcox wrote:
-> On Thu, Jan 10, 2008 at 07:59:44PM +0100, Andi Kleen wrote:
-> > > Really, all this is doing is open coding what the ioctl handler is doing
-> > > anyway, isn't it? in which case, why bother to change it at all?
-> > 
-> > Because once it's open coded it is visible and can then be eliminated.
-> > Does SCSI need the BKL at all?
-> > 
-> > But perhaps for such a long ioctl handler it would be better to move
-> > the lock/unlock_kernel()s into the individual case ...: statements;
-> > then it could be eliminated step by step.
+On Wed, 9 Jan 2008 22:25:42 -0800 Randy Dunlap wrote:
+
+> On Sun, 6 Jan 2008 15:07:28 +0100 Sam Ravnborg wrote:
 > 
-> This style of conversion is going to cause a lot of churn --
-
-If he pushes the lock_kernels() into the cases then not.
-
-But even a few refactorings are not that bad if they result in
-a BKL less SCSI.
-
-> re-architecting this function to be single-exit, then presumably when
-> the lock_kernel calls are pushed further down or eliminated, turning it
-> back into a multiple-exit function.
 > 
-> I suggest that for complex ioctl handlers, it be left to the maintainers
-
-Which have had years to convert their drivers, but they mostly didn't
-do it. They need more incentive.
-
-> to handle, and handle it properly all at once, rather than a gradual
-> pushdown.
+> > This is the current list of warnings
 > 
-> You could argue that unlocked_ioctl has been around for a long time and
-> people haven't made that move yet.  But there's been no pressure before
+> Sam,
+> 
+> Several of these are due to driver variable names not matching
+> the whitelisted names in modpost.  I have patches for the ones
+> that I have identified so far.  And I have patches for a few of
+> the others that are true section mismatch problems (total of 8
+> patches ready for now).
+> 
+> The whitelisted names will always be a (small) problem.
+> Can __init_refok be used in these cases.. or some other new
+> attribute, instead of forever adding to the whitelist or
+> modifying variable names?
 
-Yes I argue exactly that.
+Sam (or anyone :),
 
-> now to do so, and I think people would rather convert their own code
-> than have somebody else do it.
+I guess that I'm a little confused.  Instead of changing
+variable names to match the modpost whitelist, I tested adding
+__init_refok or __initdata_refok to these (driver) structs that
+generated the modpost warnings.
 
-Has been proven to not work.
+Example:  drivers/char/tpm/tpm_infineon.c
 
-I don't really blame the maintainers too much. The implicit BKL in ioctl
-is actually pretty obscure. But making it explicit will force their
-hand.
+--- linux-2.6.24-rc7-git1.orig/drivers/char/tpm/tpm_infineon.c
++++ linux-2.6.24-rc7-git1/drivers/char/tpm/tpm_infineon.c
+@@ -611,7 +611,7 @@ static __devexit void tpm_inf_pnp_remove
+ 	}
+ }
+ 
+-static struct pnp_driver tpm_inf_pnp = {
++static struct pnp_driver __init_refok tpm_inf_pnp = {
+ 	.name = "tpm_inf_pnp",
+ 	.driver = {
+ 		.owner = THIS_MODULE,
 
-So in short I'm sorry, but you're wrong on that.
+This has a build warning with my toolchain:
 
--Andi
+  CC      drivers/char/tpm/tpm_infineon.o
+linux-2.6.24-rc7-git1/drivers/char/tpm/tpm_infineon.c:614: warning: 'noinline' attribute ignored
+{standard input}: Assembler messages:
+{standard input}:2315: Warning: setting incorrect section attributes for .text.init.refok
+
+but otherwise no section mismatch warning.
+
+OTOH, using __initdata_refok has no build warning and no section
+mismatch warning... but it (__initdata_refok) doesn't make sense
+to me.  Should it (make sense/be used)?
+Is there a __refok that should be used here, instead of having
+to modify variable names?
+
+
+> > WARNING: vmlinux.o(.data+0x7e9b8): Section mismatch: reference to .init.text:tpm_inf_pnp_probe (between 'tpm_inf_pnp' and 'cn_idx')
+
+Thanks,
+---
+~Randy
