@@ -1,75 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbYAJKCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219AbYAJKCp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756100AbYAJKCa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 05:02:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbYAJKCU
+	id S1755219AbYAJKCp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 05:02:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755289AbYAJKC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 05:02:20 -0500
-Received: from mail.sf-mail.de ([62.27.20.61]:56291 "EHLO mail.sf-mail.de"
+	Thu, 10 Jan 2008 05:02:26 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:14528 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752560AbYAJKCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 05:02:19 -0500
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
-Date: Thu, 10 Jan 2008 11:02:11 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       paolo.ciarrocchi@gmail.com, gorcunov@gmail.com
-References: <20080108164015.GC31504@one.firstfloor.org> <200801100952.55039.eike-kernel@sf-tec.de> <20080110092528.GA25076@one.firstfloor.org>
-In-Reply-To: <20080110092528.GA25076@one.firstfloor.org>
+	id S1754951AbYAJKCY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 05:02:24 -0500
+Date: Thu, 10 Jan 2008 11:02:21 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
+       chris.mason@oracle.com, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH][RFC] fast file mapping for loop
+Message-ID: <20080110100221.GW6258@kernel.dk>
+References: <20080109085231.GE6650@kernel.dk> <200801101242.25671.nickpiggin@yahoo.com.au> <20080110083753.GB10745@infradead.org> <1199957821.29498.2.camel@twins> <20080110094941.GV6258@kernel.dk> <1199958771.29498.4.camel@twins>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1917247.SFkLrUkPMR";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200801101102.16971.eike-kernel@sf-tec.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1199958771.29498.4.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1917247.SFkLrUkPMR
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Thu, Jan 10 2008, Peter Zijlstra wrote:
+> 
+> On Thu, 2008-01-10 at 10:49 +0100, Jens Axboe wrote:
+> > On Thu, Jan 10 2008, Peter Zijlstra wrote:
+> > > 
+> > > On Thu, 2008-01-10 at 08:37 +0000, Christoph Hellwig wrote:
+> > > 
+> > > > Peter, any chance you could chime in here?
+> > > 
+> > > I have this patch to add swap_out/_in methods. I expect we can loosen
+> > > the requirement for swapcache pages and change the name a little.
+> > > 
+> > > previously posted here:
+> > >   http://lkml.org/lkml/2007/5/4/143
+> > > 
+> > > --- 
+> > > Subject: mm: add support for non block device backed swap files
+> > > 
+> > > New addres_space_operations methods are added:
+> > >   int swapfile(struct address_space *, int);
+> > >   int swap_out(struct file *, struct page *, struct writeback_control *);
+> > >   int swap_in(struct file *, struct page *);
+> > > 
+> > > When during sys_swapon() the swapfile() method is found and returns no error
+> > > the swapper_space.a_ops will proxy to sis->swap_file->f_mapping->a_ops, and
+> > > make use of swap_{out,in}() to write/read swapcache pages.
+> > > 
+> > > The swapfile method will be used to communicate to the address_space that the
+> > > VM relies on it, and the address_space should take adequate measures (like 
+> > > reserving memory for mempools or the like).
+> > > 
+> > > This new interface can be used to obviate the need for ->bmap in the swapfile
+> > > code. A filesystem would need to load (and maybe even allocate) the full block
+> > > map for a file into memory and pin it there on ->swapfile(,1) so that
+> > > ->swap_{out,in}() have instant access to it. It can be released on
+> > > ->swapfile(,0).
+> > 
+> > So this is where I don't think that's good enough, you cannot require a
+> > full block/extent mapping of a file on setup. It can take quite some
+> > time, a little testing I did here easily took 5 seconds for only a
+> > couple of gigabytes. And that wasn't even worst case for that size. It
+> > also wastes memory by populating extents that we may never read or
+> > write.
+> > 
+> > If you look at the loop addition I did, it populates lazily as needed
+> > with some very simple logic to populate-ahead. In practice that performs
+> > as well as a pre-populated map, the first IO to a given range will just
+> > be a little slower since we have to bmap() it.
+> > 
+> > Do you have plans to improve this area?
+> 
+> Nope, for swap it _must_ be there, there is just no way we can do block
+> allocation on swapout.
 
-Andi Kleen wrote:
-> > Can you explain the rationale behind that running on the BKL? What type
-> > of
->
-> It used to always run with the BKL because everything used to
-> and originally nobody wanted to review all ioctl handlers in tree to see =
-if
-> they can run with more fine grained locking. A lot probably can though.
->
-> > things needs to be protected so that this huge hammer is needed? What
-> > would be an earlier point to release the BKL?
->
-> That depends on the driver. A lot don't need BKL at all and
-> in others it can be easily eliminated. But it needs case-by-case
-> review of the locking situation.
->
-> The goal of the proposal here is just to make it more visible.
+I appreciate that fact, just saying that we could have more flexibility
+for other uses.
 
-So if I write my own driver and have never heard of ioctls running on BKL=20
-before I can rather be sure that I just can change the interface of the ioc=
-tl=20
-function, put it in unlocked_ioctl and are fine? Cool.
+> That said, the swapfile() interface can be used to pre-populate the
+> extend/block mapping, and when using swap_(in/out) without it, it can be
+> done lazily.
 
-Eike
+I think the interface is too simple, I would much rather have a way to
+dig into the file mappings and be allowed to request population and so
+on. Without that, it can't be used for eg loop.
 
---nextPart1917247.SFkLrUkPMR
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+-- 
+Jens Axboe
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-
-iD8DBQBHhe0oXKSJPmm5/E4RAq3uAJsFlnx+08+XJY9BBJtHkg4VexHQ+ACeLPrG
-U5WoilQvBD9/qfJ9EF+K0w0=
-=e7EC
------END PGP SIGNATURE-----
-
---nextPart1917247.SFkLrUkPMR--
