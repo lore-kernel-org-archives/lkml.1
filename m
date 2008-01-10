@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbYAJIa5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbYAJIbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754767AbYAJIa5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 03:30:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751010AbYAJIas
+	id S1756212AbYAJIbn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 03:31:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750733AbYAJIbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 03:30:48 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:49194 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750733AbYAJIas (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 03:30:48 -0500
-Message-ID: <4785D7B2.3030201@bull.net>
-Date: Thu, 10 Jan 2008 09:30:42 +0100
-From: Pierre Peiffer <pierre.peiffer@bull.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 10 Jan 2008 03:31:35 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:27869 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751010AbYAJIbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 03:31:34 -0500
+Date: Thu, 10 Jan 2008 09:31:31 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org, chris.mason@oracle.com,
+       linux-fsdevel@vger.kernel.org,
+       Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
+       "Bryn M. Reeves" <breeves@redhat.com>
+Subject: Re: [PATCH][RFC] fast file mapping for loop
+Message-ID: <20080110083130.GP6258@kernel.dk>
+References: <20080109085231.GE6650@kernel.dk> <20080109231628.GB4039@agk.fab.redhat.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: ricknu-0@student.ltu.se, nadia.derbey@bull.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [-mm] new warning in ipc/msg.c
-References: <4784EB6A.5020604@bull.net> <20080109151319.edff136c.akpm@linux-foundation.org>
-In-Reply-To: <20080109151319.edff136c.akpm@linux-foundation.org>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 10/01/2008 09:38:58,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 10/01/2008 09:39:02,
-	Serialize complete at 10/01/2008 09:39:02
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080109231628.GB4039@agk.fab.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
+On Wed, Jan 09 2008, Alasdair G Kergon wrote:
+> Here's the latest version of dm-loop, for comparison.
+> 
+> To try it out, 
+>   ln -s dmsetup dmlosetup
+> and supply similar basic parameters to losetup.
+> (using dmsetup version 1.02.11 or higher)
 
-> Doing this in a piecemeal through-a-pinhole fashion won't work very well
-> and is a bit risky.
+Why oh why does dm always insist to reinvent everything? That's bad
+enough in itself, but on top of that most of the extra stuff ends up
+being essentially unmaintained.
 
-Yes, agree, that's also my feeling.
+If we instead improve loop, everyone wins.
+
+Sorry to sound a bit harsh, but sometimes it doesn't hurt to think a bit
+outside your own sandbox.
 
 -- 
-Pierre Peiffer
+Jens Axboe
+
