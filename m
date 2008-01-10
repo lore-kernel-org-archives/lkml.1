@@ -1,65 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758296AbYAJNqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756309AbYAJNrD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758296AbYAJNqT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 08:46:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755030AbYAJNqL
+	id S1756309AbYAJNrD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 08:47:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755562AbYAJNqw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 08:46:11 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39101 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755028AbYAJNqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 08:46:10 -0500
-Date: Thu, 10 Jan 2008 14:45:43 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Brown, Len" <len.brown@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Adam Belay <abelay@novell.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH] Kick CPUS that might be sleeping in cpus_idle_wait
-Message-ID: <20080110134539.GD5886@elte.hu>
-References: <1199759244.26343.35.camel@localhost.localdomain> <20080108033329.GI2998@bingen.suse.de> <1199911330.975.3.camel@localhost.localdomain> <1199916725.975.6.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1199916725.975.6.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 10 Jan 2008 08:46:52 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:64672 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754079AbYAJNqv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 08:46:51 -0500
+Date: Thu, 10 Jan 2008 08:46:18 -0500
+From: Chris Mason <chris.mason@oracle.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH][RFC] fast file mapping for loop
+Message-ID: <20080110084618.6ca457f8@think.oraclecorp.com>
+In-Reply-To: <20080110130324.GZ6258@kernel.dk>
+References: <20080109085231.GE6650@kernel.dk>
+	<200801101242.25671.nickpiggin@yahoo.com.au>
+	<20080110083753.GB10745@infradead.org>
+	<20080110084457.GT6258@kernel.dk>
+	<20080110085459.GA11966@infradead.org>
+	<20080110075359.18622548@think.oraclecorp.com>
+	<20080110130324.GZ6258@kernel.dk>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 10 Jan 2008 14:03:24 +0100
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> On Wed, 2008-01-09 at 15:42 -0500, Steven Rostedt wrote:
-> > This patch is different than the first patch I sent out.
-> > This one just sends an IPI to all CPUS that don't check in after 1 sec.
+> On Thu, Jan 10 2008, Chris Mason wrote:
+> > On Thu, 10 Jan 2008 08:54:59 +0000
+> > Christoph Hellwig <hch@infradead.org> wrote:
 > > 
+> > > On Thu, Jan 10, 2008 at 09:44:57AM +0100, Jens Axboe wrote:
+> > > > > IMHO this shouldn't be done in the loop driver anyway.
+> > > > > Filesystems have their own effricient extent lookup trees
+> > > > > (well, at least xfs and btrfs do), and we should leverage
+> > > > > that instead of reinventing it.
+> > > > 
+> > > > Completely agree, it's just needed right now for this solution
+> > > > since all we have is a crappy bmap() interface to get at those
+> > > > mappings.
+> > > 
+> > > So let's fix the interface instead of piling crap ontop of it.
+> > > As I said I think Peter has something to start with so let's beat
+> > > on it until we have something suitable.   If we aren't done by
+> > > end of Feb I'm happy to host a hackfest to get it sorted around
+> > > the fs/storage summit..
+> > > 
 > > 
-> > Sometimes cpu_idle_wait gets stuck because it might miss CPUS that are
-> > already in idle, have no tasks waiting to run and have no interrupts
-> > going to them.  This is common on bootup when switching cpu idle
-> > governors.
-> > 
-> > This patch gives those CPUS that don't check in an IPI kick.
+> > Ok, I've been meaning to break my extent_map code up, and this is a
+> > very good reason.  I'll work up a sample today based on Jens' code.
 > 
-> FYI, I just hit this hang on 2.6.24-rc6 without any extra patches. So, 
-> unless 2.6.24-rc7 did anything to fix this issue, this is a high 
-> priority bug (IMHO).
+> Great!
 
-i'm wondering why this only triggered now. Is this something new in 
-2.6.24?
+Grin, we'll see how the sample looks.
 
-	Ingo
+> 
+> > The basic goals:
+> > 
+> > * Loop (swap) calls into the FS for each mapping. Any caching
+> > happens on the FS side.
+> > * The FS returns an extent, filling any holes
+> 
+> We don't want to fill holes for a read, but I guess that's a given?
+
+Right.
+
+> 
+> > Swap would need to use an extra call early on for preallocation.
+> > 
+> > Step two is having a call back into the FS allow the FS to delay the
+> > bios until commit completion so that COW and delalloc blocks can be
+> > fully on disk when the bios are reported as done.  Jens, can you add
+> > some way to queue the bio completions up?
+> 
+> Sure, a function to save a completed bio and a function to execute
+> completions on those already stored?
+> 
+
+Sounds right, I'm mostly looking for a way to aggregate a few writes to
+make the commits a little larger.
+
+-chris
