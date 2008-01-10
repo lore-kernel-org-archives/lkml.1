@@ -1,83 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753174AbYAJKUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756215AbYAJKVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753174AbYAJKUn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 05:20:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754461AbYAJKU3
+	id S1756215AbYAJKVA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 05:21:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbYAJKUp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 05:20:29 -0500
-Received: from py-out-1112.google.com ([64.233.166.181]:51877 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753998AbYAJKU1 (ORCPT
+	Thu, 10 Jan 2008 05:20:45 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46360 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753184AbYAJKUn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 05:20:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gST1FjElLY4w11PW7kSmIjEyC4PTx3nywKnR5Sq4/nmOby3Nk55tyFwm28hupuOQ5soC+Vb1HWQOxYKDMxoqsdNB6sOD0nM1jVk04LFDmRPX2yzmJdqkTXDLISilDxUC+b2yzKBuMkxRmflAXLRESF2GJHEFexR4HKZFu26LORg=
-Message-ID: <21d7e9970801100220p406b25d8qf523388042531855@mail.gmail.com>
-Date: Thu, 10 Jan 2008 20:20:26 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Andi Kleen" <ak@suse.de>
-Subject: Re: CPA patchset
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Venki Pallipadi" <venkatesh.pallipadi@intel.com>,
-       suresh.b.siddha@intel.com, "Arjan van de Ven" <arjan@infradead.org>,
-       "Dave Jones" <davej@redhat.com>
-In-Reply-To: <20080110095501.GL25945@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 10 Jan 2008 05:20:43 -0500
+Subject: Re: [PATCH][RFC] fast file mapping for loop
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
+       chris.mason@oracle.com, linux-fsdevel@vger.kernel.org
+In-Reply-To: <20080110100221.GW6258@kernel.dk>
+References: <20080109085231.GE6650@kernel.dk>
+	 <200801101242.25671.nickpiggin@yahoo.com.au>
+	 <20080110083753.GB10745@infradead.org> <1199957821.29498.2.camel@twins>
+	 <20080110094941.GV6258@kernel.dk> <1199958771.29498.4.camel@twins>
+	 <20080110100221.GW6258@kernel.dk>
+Content-Type: text/plain
+Date: Thu, 10 Jan 2008 11:20:38 +0100
+Message-Id: <1199960438.29498.8.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080103424.989432000@suse.de> <20080110093126.GA360@elte.hu>
-	 <21d7e9970801100144x63b02e1bga548acd3c5bed441@mail.gmail.com>
-	 <20080110095501.GL25945@bingen.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 10, 2008 7:55 PM, Andi Kleen <ak@suse.de> wrote:
-> On Thu, Jan 10, 2008 at 07:44:03PM +1000, Dave Airlie wrote:
-> > >
-> > > finally managed to get the time to review your CPA patchset, and i
-> > > fundamentally agree with most of the detail changes done in it. But here
-> > > are a few structural high-level observations:
-> > >
-> > > - firstly, there's no rationale given. So we'll change ioremap()/etc.
-> > >   from doing a cflush-range instruction instead of a WBINVD. But why?
-> > >   WBINVD isnt particular fast (takes a few msecs), but why is that a
-> > >   problem? Drivers dont do high-frequency ioremap-ing. It's typically
-> > >   only done at driver/device startup and that's it. Whether module load
-> > >   time takes 1254 msecs instead of 1250 msecs is no big deal.
-> >
-> > read graphics drivers, even though I think we may avoid the whole path
->
-> You mean avoid change_page_attr() ?
 
-yes in some cases...
+On Thu, 2008-01-10 at 11:02 +0100, Jens Axboe wrote:
+> On Thu, Jan 10 2008, Peter Zijlstra wrote:
+> > 
+> > On Thu, 2008-01-10 at 10:49 +0100, Jens Axboe wrote:
+> > > On Thu, Jan 10 2008, Peter Zijlstra wrote:
+> > > > 
+> > > > On Thu, 2008-01-10 at 08:37 +0000, Christoph Hellwig wrote:
+> > > > 
+> > > > > Peter, any chance you could chime in here?
+> > > > 
+> > > > I have this patch to add swap_out/_in methods. I expect we can loosen
+> > > > the requirement for swapcache pages and change the name a little.
+> > > > 
+> > > > previously posted here:
+> > > >   http://lkml.org/lkml/2007/5/4/143
+> > > > 
+> > > > --- 
+> > > > Subject: mm: add support for non block device backed swap files
+> > > > 
+> > > > New addres_space_operations methods are added:
+> > > >   int swapfile(struct address_space *, int);
+> > > >   int swap_out(struct file *, struct page *, struct writeback_control *);
+> > > >   int swap_in(struct file *, struct page *);
+> > > > 
+> > > > When during sys_swapon() the swapfile() method is found and returns no error
+> > > > the swapper_space.a_ops will proxy to sis->swap_file->f_mapping->a_ops, and
+> > > > make use of swap_{out,in}() to write/read swapcache pages.
+> > > > 
+> > > > The swapfile method will be used to communicate to the address_space that the
+> > > > VM relies on it, and the address_space should take adequate measures (like 
+> > > > reserving memory for mempools or the like).
+> > > > 
+> > > > This new interface can be used to obviate the need for ->bmap in the swapfile
+> > > > code. A filesystem would need to load (and maybe even allocate) the full block
+> > > > map for a file into memory and pin it there on ->swapfile(,1) so that
+> > > > ->swap_{out,in}() have instant access to it. It can be released on
+> > > > ->swapfile(,0).
+> > > 
+> > > So this is where I don't think that's good enough, you cannot require a
+> > > full block/extent mapping of a file on setup. It can take quite some
+> > > time, a little testing I did here easily took 5 seconds for only a
+> > > couple of gigabytes. And that wasn't even worst case for that size. It
+> > > also wastes memory by populating extents that we may never read or
+> > > write.
+> > > 
+> > > If you look at the loop addition I did, it populates lazily as needed
+> > > with some very simple logic to populate-ahead. In practice that performs
+> > > as well as a pre-populated map, the first IO to a given range will just
+> > > be a little slower since we have to bmap() it.
+> > > 
+> > > Do you have plans to improve this area?
+> > 
+> > Nope, for swap it _must_ be there, there is just no way we can do block
+> > allocation on swapout.
+> 
+> I appreciate that fact, just saying that we could have more flexibility
+> for other uses.
+> 
+> > That said, the swapfile() interface can be used to pre-populate the
+> > extend/block mapping, and when using swap_(in/out) without it, it can be
+> > done lazily.
+> 
+> I think the interface is too simple, I would much rather have a way to
+> dig into the file mappings and be allowed to request population and so
+> on. Without that, it can't be used for eg loop.
 
->
-> > if we can and end up doing some of this in the drivers
-> > when they know more about the situation so can avoid safeties..
->
-> Please explain, but it sounds very dubious.
+I'm open to suggestions :-), if you can propose an interface we both can
+use I'm all ears.
 
-So on Intel 9xx hardware we know how to flush the whole pipe from chip
-to chipset to RAM, so when in the Intel
- driver we can leave pages mapped cached, and just flush all stages
-before having the GPU access them,
+Although poking at the extends sounds like bmap and we were just trying
+to get rid of that.
 
-This is only possible as long as we know all the parts involved, for
-example on AMD we have problems with that
-over-eager prefetching so for drivers on AMD chipsets we have to do
-something else more than likely using change_page_attr.
+Perhaps something like badvise(), where you can suggest loading/dropping
+extend information on a voluntary basis.
 
->
-> Well GARTs and those are widely used even without AGP busses.
 
-Yes mainly we have used this scheme with Intel GARTs (also the only
-driver we have done with the new GPU system) by working closely with
-Intel engineers..
-
-Dave.
