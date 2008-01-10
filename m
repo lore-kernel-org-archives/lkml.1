@@ -1,75 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758298AbYAJNDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbYAJNK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758298AbYAJNDj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 08:03:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754606AbYAJND2
+	id S1756781AbYAJNK1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 08:10:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbYAJNKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 08:03:28 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:26959 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753971AbYAJND2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 08:03:28 -0500
-Date: Thu, 10 Jan 2008 14:03:24 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH][RFC] fast file mapping for loop
-Message-ID: <20080110130324.GZ6258@kernel.dk>
-References: <20080109085231.GE6650@kernel.dk> <200801101242.25671.nickpiggin@yahoo.com.au> <20080110083753.GB10745@infradead.org> <20080110084457.GT6258@kernel.dk> <20080110085459.GA11966@infradead.org> <20080110075359.18622548@think.oraclecorp.com>
+	Thu, 10 Jan 2008 08:10:16 -0500
+Received: from nz-out-0506.google.com ([64.233.162.236]:4932 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752564AbYAJNKO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 08:10:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=GGj7Ink6XVnGcTErMj8qIP/k45V5EqSVDo7mwEqqcCkTI4JtNwXtbLYyzWC65rZEcTattAI5cFoqfElSR/TIatgLE+4ilxFOWCisQQxRB875ZnJN0PrUK27ADA8BHrOGDqIqJH5XVGv+JpatJyrDZzFFIswGAZKPXOevuXe7xjU=
+Message-ID: <47861930.7010708@gmail.com>
+Date: Thu, 10 Jan 2008 22:10:08 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080110075359.18622548@think.oraclecorp.com>
+To: =?UTF-8?B?IkouQS4gTWFnYWxsw7NuIg==?= <jamagallon@ono.com>
+CC: "Linux-Kernel, " <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.24-rc7
+References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org>	<20080108015012.2e518dd4@werewolf>	<478429B2.2030002@gmail.com> <20080110102505.62097da1@werewolf>
+In-Reply-To: <20080110102505.62097da1@werewolf>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 10 2008, Chris Mason wrote:
-> On Thu, 10 Jan 2008 08:54:59 +0000
-> Christoph Hellwig <hch@infradead.org> wrote:
+Hi,
+
+J.A. Magallón wrote:
+> It reproduces also with 2.6.23.13.
+> Finally I think the problematic disk is sdc:
+
+Okay, then, it's less likely a regression and more likely a newly
+developed hardware problem.
+
+> ICH5 PATA -> sda
+> ICH5 SATA0 -> sdb
+> ICH5 SATA1 -> sdc
+> Promise SATA -> sdd
 > 
-> > On Thu, Jan 10, 2008 at 09:44:57AM +0100, Jens Axboe wrote:
-> > > > IMHO this shouldn't be done in the loop driver anyway.
-> > > > Filesystems have their own effricient extent lookup trees (well,
-> > > > at least xfs and btrfs do), and we should leverage that instead
-> > > > of reinventing it.
-> > > 
-> > > Completely agree, it's just needed right now for this solution
-> > > since all we have is a crappy bmap() interface to get at those
-> > > mappings.
-> > 
-> > So let's fix the interface instead of piling crap ontop of it.  As I
-> > said I think Peter has something to start with so let's beat on it
-> > until we have something suitable.   If we aren't done by end of Feb
-> > I'm happy to host a hackfest to get it sorted around the fs/storage
-> > summit..
-> > 
-> 
-> Ok, I've been meaning to break my extent_map code up, and this is a
-> very good reason.  I'll work up a sample today based on Jens' code.
+> The problem is that even I have commented out the entry for sdc in fstab,
+> the system is still giving me errors. An my guess is that errors in sdc makes
+> the ICH5 sata controller go nuts, and then I get errors also in sdb.
+> Just a couple questions...
 
-Great!
+I've never seen ICHs or any other SATA controllers act that way.
 
-> The basic goals:
-> 
-> * Loop (swap) calls into the FS for each mapping. Any caching happens
-> on the FS side.
-> * The FS returns an extent, filling any holes
+> - Can I say to ata_piix something like 'please, detect first SATA ports before
+>   ATA', so my system disk (sdb) becomes sda ?
 
-We don't want to fill holes for a read, but I guess that's a given?
+You do that using LABEL, UUID or device ID.  Just run 'ls -l
+/dev/disk/by-*/' and see the result.
 
-> Swap would need to use an extra call early on for preallocation.
-> 
-> Step two is having a call back into the FS allow the FS to delay the
-> bios until commit completion so that COW and delalloc blocks can be
-> fully on disk when the bios are reported as done.  Jens, can you add
-> some way to queue the bio completions up?
+> - Can I say 'plz, ignore port 1', so it does not try to detect/start/spin sdc ?
+>   So I ban be sure it is the one to blame, before start to remove hardware...
 
-Sure, a function to save a completed bio and a function to execute
-completions on those already stored?
+Unfortunately not but you can boot into single mode where there's
+nothing trying to access the disk without your explicit command and
+verify access to each hard disk.
+
+Hmm... You are seeing timeouts from multiple harddisks.  The first thing
+I would try is to reseat the cables and connect the SATA hard drives to
+a separate power supply and see whether that changes anything.
 
 -- 
-Jens Axboe
-
+tejun
