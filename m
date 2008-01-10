@@ -1,73 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759231AbYAJM7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758298AbYAJNDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759231AbYAJM7p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 07:59:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbYAJM7i
+	id S1758298AbYAJNDj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 08:03:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754606AbYAJND2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 07:59:38 -0500
-Received: from wr-out-0506.google.com ([64.233.184.238]:22340 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753510AbYAJM7h convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 07:59:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=igRCW7i5rZbey/Dg0USJg5FMDda4FzCZlYGyBvrgfQaelEQWesoAHvq8v8qnmePNG1EP1zf+RQGASrh7bsK/e5EUtZM9QGhisr2HetMrDCq5P8QiQwgoLCc9O0PQRQVVbpbEsBzHLoqCg24lkGanA9CPqjA3uKGYLBDQg9mivqc=
-Message-ID: <e85b9d30801100459t499bf874xab359dc9f1497845@mail.gmail.com>
-Date: Thu, 10 Jan 2008 13:59:35 +0100
-From: Matthew <jackdachef@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: Fwd: Fwd: laptop / computer hardlocks during execution of 32bit applications(binaries) on 64bit system (Gentoo)
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <20080110124810.GA20579@elte.hu>
+	Thu, 10 Jan 2008 08:03:28 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:26959 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753971AbYAJND2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 08:03:28 -0500
+Date: Thu, 10 Jan 2008 14:03:24 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH][RFC] fast file mapping for loop
+Message-ID: <20080110130324.GZ6258@kernel.dk>
+References: <20080109085231.GE6650@kernel.dk> <200801101242.25671.nickpiggin@yahoo.com.au> <20080110083753.GB10745@infradead.org> <20080110084457.GT6258@kernel.dk> <20080110085459.GA11966@infradead.org> <20080110075359.18622548@think.oraclecorp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <e85b9d30712291157v113f5e73yd830ae3c3429092d@mail.gmail.com>
-	 <200712300128.35476.mboton@gmail.com> <20080102084002.GA13636@elte.hu>
-	 <e85b9d30801080333y3d6668ccgf20f9666d0326884@mail.gmail.com>
-	 <e85b9d30801080340y43fbd4c0sa9b6c9811c7391a1@mail.gmail.com>
-	 <47841C41.4060401@zytor.com>
-	 <e85b9d30801100105s60ad675ey1ba939491d01a649@mail.gmail.com>
-	 <20080110094219.GC17808@elte.hu>
-	 <e85b9d30801100443s50ab2b69wbf1a7b4dbd09f002@mail.gmail.com>
-	 <20080110124810.GA20579@elte.hu>
+In-Reply-To: <20080110075359.18622548@think.oraclecorp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
-> > this also happens with rc7-based kernels, btw
->
-> hm, exactly what rc7 based kernel? Vanilla 2.6.24-rc7, built by you? Or
-> any patches ontop of it? (x86.git perhaps?)
+On Thu, Jan 10 2008, Chris Mason wrote:
+> On Thu, 10 Jan 2008 08:54:59 +0000
+> Christoph Hellwig <hch@infradead.org> wrote:
+> 
+> > On Thu, Jan 10, 2008 at 09:44:57AM +0100, Jens Axboe wrote:
+> > > > IMHO this shouldn't be done in the loop driver anyway.
+> > > > Filesystems have their own effricient extent lookup trees (well,
+> > > > at least xfs and btrfs do), and we should leverage that instead
+> > > > of reinventing it.
+> > > 
+> > > Completely agree, it's just needed right now for this solution
+> > > since all we have is a crappy bmap() interface to get at those
+> > > mappings.
+> > 
+> > So let's fix the interface instead of piling crap ontop of it.  As I
+> > said I think Peter has something to start with so let's beat on it
+> > until we have something suitable.   If we aren't done by end of Feb
+> > I'm happy to host a hackfest to get it sorted around the fs/storage
+> > summit..
+> > 
+> 
+> Ok, I've been meaning to break my extent_map code up, and this is a
+> very good reason.  I'll work up a sample today based on Jens' code.
 
-see first post / mail (there are a few additional patches / trees
-included:  badram, wireless, alsa, tuxonice, madwifi, reiser4,
-sched-devel, realtime-lsm, powertop, mactel)
+Great!
 
->since yesterday my laptop kept on hard-locking when launching 32bit
->binaries / apps
->I didn't know what to do but
+> The basic goals:
+> 
+> * Loop (swap) calls into the FS for each mapping. Any caching happens
+> on the FS side.
+> * The FS returns an extent, filling any holes
 
->miguel botón was the one pointing me in the right direction, namely bisect :)
+We don't want to fill holes for a read, but I guess that's a given?
 
->kudos to him & the others involved in his zen-sources project:
->http://repo.or.cz/w/linux-2.6/zen-sources.git
+> Swap would need to use an extra call early on for preallocation.
+> 
+> Step two is having a call back into the FS allow the FS to delay the
+> bios until commit completion so that COW and delalloc blocks can be
+> fully on disk when the bios are reported as done.  Jens, can you add
+> some way to queue the bio completions up?
 
->bisect said the following is the causer:
+Sure, a function to save a completed bio and a function to execute
+completions on those already stored?
 
-so I guess I need to counter-check it against your realtime-tree:
-is it the following ?
-http://git.eu.kernel.org/?p=linux/kernel/git/cloos/rt-2.6.git;a=summary
-(it's currently at rc5 ?)
+-- 
+Jens Axboe
 
-or is hardirq / softirq also included in your sched-devel tree ?
-http://git.eu.kernel.org/?p=linux/kernel/git/mingo/linux-2.6-sched-devel.git;a=summary
-
->         Ingo
-
-Mat
