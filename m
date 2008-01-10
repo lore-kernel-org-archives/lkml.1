@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757168AbYAJBm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbYAJB4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757168AbYAJBm7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 20:42:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754713AbYAJBmt
+	id S1756916AbYAJB4O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 20:56:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbYAJB4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 20:42:49 -0500
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:22712 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754402AbYAJBms (ORCPT
+	Wed, 9 Jan 2008 20:56:05 -0500
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:45182 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753458AbYAJB4E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 20:42:48 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=4VxXtiXnB6XzxmBYbASQ7XLTnfjkvDgVn4oprJv9C+Qtw+wSCMGiVSG/pSOGvufozyPhvFQTYx0K4Zbt6j0Qyq6fiz17pbvqsBMLaf4kwZImkM5Z/LeZsggyIR6mTPcH5xgcxdJKVdFiifLeQuooJBAVWP1Cv6Uw9zzaGkUdueo=  ;
-X-YMail-OSG: JmgMxVMVM1lsECklkiD5eK94I_fRkYOksmcenpAFZDdoVtaiOAsxxnkQA3R1nhbRRQRtky5Zvg--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH][RFC] fast file mapping for loop
-Date: Thu, 10 Jan 2008 12:42:25 +1100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, chris.mason@oracle.com,
-       linux-fsdevel@vger.kernel.org
-References: <20080109085231.GE6650@kernel.dk>
-In-Reply-To: <20080109085231.GE6650@kernel.dk>
+	Wed, 9 Jan 2008 20:56:04 -0500
+Message-ID: <47857A82.4050005@keyaccess.nl>
+Date: Thu, 10 Jan 2008 02:53:06 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Ondrej Zary <linux@rainbow-software.org>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>, alsa-devel@alsa-project.org,
+       Jaroslav Kysela <perex@suse.cz>, Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [alsa-devel] PNP_DRIVER_RES_DISABLE breaks swsusp at least with
+ snd_cs4236
+References: <200801092343.48726.linux@rainbow-software.org>
+In-Reply-To: <200801092343.48726.linux@rainbow-software.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801101242.25671.nickpiggin@yahoo.com.au>
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 09 January 2008 19:52, Jens Axboe wrote:
+On 09-01-08 23:43, Ondrej Zary wrote:
 
-> So how does it work? Instead of punting IO to a thread and passing it
-> through the page cache, we instead attempt to send the IO directly to the
-> filesystem block that it maps to.
+Jaroslav -- in your role as ISA-PnP maintainer and Bjorn, in yours as having 
+been foollish enough to touch PnP recently:
 
-You told Christoph that just using direct-IO from kernel still doesn't
-give you the required behaviour... What about queueing the IO directly
-*and* using direct-IO? I guess it still has to go through the underlying
-filesystem, but that's probably a good thing.
+> as hibernation (swsusp) started to work with my CPU, I found that my Turtle 
+> Beach Malibu stops working after resume from hibernation. It's caused by fact 
+> that the card is not enabled on the pnp layer during resume - and thus card 
+> registers are inaccessible (reads return FFs, writes go nowhere).
+> 
+> During resume, pnp_bus_resume() in drivers/pnp/driver.c is called for each pnp 
+> device. This function calls pnp_start_dev() only when the 
+> PNP_DRIVER_RES_DO_NOT_CHANGE bit is NOT seting pnp_drv->flags. But the cs4236 
+> driver in sound/isa/cs423x/cs4236.c explicitly sets the .flags to 
+> PNP_DRIVER_RES_DISABLE - it's value is 3 and that includes 
+> PNP_DRIVER_RES_DO_NOT_CHANGE bit.
 
-> loop maintains a prio tree of known 
-> extents in the file (populated lazily on demand, as needed).
+Ehm. Isn't that a bit unexpected:
 
-Just a quick question (I haven't looked closely at the code): how come
-you are using a prio tree for extents? I don't think they could be
-overlapping?
+#define PNP_DRIVER_RES_DO_NOT_CHANGE    0x0001  /* do not change the state 
+of the device */
+#define PNP_DRIVER_RES_DISABLE          0x0003  /* ensure the device is 
+disabled */
+
+I'd say that disabling is changing, so isn't this just a braino where 
+someone meant to write 2 instead of 3?
+
+> The same .flags value is present in many of the ALSA ISA sound drivers.
+> 
+> Removing that .flags line caused this to appear inlog when loading snd_cs4236 
+> module:
+> CS4236+ WSS PnP manual resources are invalid, using auto config
+> CS4236+ CTRL PnP manual resources are invalid, using auto config
+> CS4236+ MPU401 PnP manual resources are invalid, using auto config
+> 
+> and the sound now works after resume!
+> 
+> So the question is: why is this line present?
+> 
+> Is this a bug? What's the correct fix?
+
+Rene.
+
