@@ -1,37 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbYAJFln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753458AbYAJFp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753904AbYAJFln (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 00:41:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750780AbYAJFle
+	id S1753458AbYAJFp7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 00:45:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbYAJFpv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 00:41:34 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:53100 "EHLO mail.dvmed.net"
+	Thu, 10 Jan 2008 00:45:51 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:34628 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750720AbYAJFld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 00:41:33 -0500
-Message-ID: <4785AFFA.30906@garzik.org>
-Date: Thu, 10 Jan 2008 00:41:14 -0500
+	id S1750962AbYAJFpu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 00:45:50 -0500
+Message-ID: <4785B10C.3040107@garzik.org>
+Date: Thu, 10 Jan 2008 00:45:48 -0500
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Zach Brown <zach.brown@oracle.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dan Williams <dan.j.williams@gmail.com>, Jeff Moyer <jmoyer@redhat.com>,
-       Simon Holm Thogersen <odie@cs.aau.dk>, suresh.b.siddha@intel.com
-Subject: Re: [PATCH 5/6] syslets: add generic syslets infrastructure
-References: <1196983219534-git-send-email-zach.brown@oracle.com> <200801091303.58920.rusty@rustcorp.com.au> <478438B4.6010101@oracle.com> <200801091448.46241.rusty@rustcorp.com.au> <47850F99.5020001@oracle.com>
-In-Reply-To: <47850F99.5020001@oracle.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Matthew Hall <mhall@mhcomputing.net>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: sata_nv does not function in kernel > 2.6.20.21
+References: <20080110024733.GC9461@mhcomputing.net> <4785A1CF.7050006@garzik.org> <20080110052520.GA9901@mhcomputing.net>
+In-Reply-To: <20080110052520.GA9901@mhcomputing.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
 X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
@@ -40,55 +28,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So my radical ultra tired rant o the week...
+Matthew Hall wrote:
+> On Wed, Jan 09, 2008 at 11:40:47PM -0500, Jeff Garzik wrote:
+>> Error -16 is EBUSY, which causes the driver load to fail due to the "Unable 
+>> to reserve mem region" message.
+>>
+>> This means that the sata_nv driver needed to use PCI BAR 6, but was unable 
+>> to for some reason.  Given that sata_nv uses devres like other libata 
+>> drivers, IMO the likely cause is outside the ATA subsystem (PCI? ACPI?).
+> 
+> I will follow up on this with the appropriate subsystem lists ASAP. 
+> Thanks for getting me redirected appropriately.
+> 
+>> One workaround to try is setting sata_nv module option 'adma' to zero (0), 
+>> in the hopes that it ignores that final region and work anyway.
+> 
+> I am not quite sure what to do about this part... my boot device for the 
+> system is on one of the sata_nv channels which remains functional and 
+> does not get disabled by the resource conflict.
+> 
+> How shall I best attempt the suggested workaround without having to 
+> delete the sata_nv driver from the kernel thus rendering the kernel 
+> unbootable on this machine? Is there some way to pass the appropriate 
+> option at boot instead of at module load time or some file I could 
+> modify to enable the specified option in the code?
 
-Rather than adding sys_indirect and syslets as is,
+If you build the driver into the kernel, then pass "sata_nv.adma=0" on 
+the kernel command line.
 
-* admit that this is beginning to look like a new ABI.  explore the 
-freedoms that that avenue opens...
+Otherwise, look into how your distro sets module options... probably 
+editing /etc/modprobe.conf.  You may need to regenerate critical boot 
+files such as initramfs (aka initrd) afterwards, again distro specific 
+(try mkinitrd).  Set module option "adma=0" for the sata_nv module.
 
-* (even more radical)  I wonder what a tiny, SANE register-based 
-bytecode interface might look like.  Have a single page shared between 
-kernel and userland, for each thread.  Userland fills that page with 
-bytecode, for a virtual machines with 256 registers -- where 
-instructions roughly equate to syscalls.
-
-The common case -- a single syscall like open(2) -- would be a single 
-byte bytecode, plus a couple VM register stores.  The result is stored 
-in another VM register.
-
-But this format enables more complex cases, where userland programs can 
-pass strings of syscalls into the kernel, and let them execute until 
-some exceptional condition occurs.  Results would be stored in VM 
-registers (or userland addresses stored in VM registers...).
-
-This sort of interface would be
-* fast
-
-* equate to the current syscall regime (easy to get existing APIs 
-going... hopefully equivalent to glibc switching to a strange new 
-SYSENTER variant)
-
-* be flexible enough to support a simple implementation today
-
-* be flexible enough to enable experiments into syscall parallelism (aka 
-VM instruction parallelism <grin>)
-
-* be flexible enough to enable experiments into syscall batching
-
-One would probably want to add some simple logic opcodes in addition to 
-opcodes for syscalls and such -- but this should not turn into Forth or 
-Parrot or Java :)
-
-Thus, this new ABI can easily and immediately support all existing 
-syscalls, while enabling
-
-Now to come up with a good programming API and model(s) to match this 
-parallel, batched kernel<->userland interface...
-
-	Jeff,	very tired and delirious, so feel free to laugh at this,
-		but I've been pondering this for a while
-
+	Jeff
 
 
 
