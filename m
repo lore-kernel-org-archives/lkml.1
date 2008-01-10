@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758529AbYAJDoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758350AbYAJDq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758529AbYAJDoR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 22:44:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbYAJDoI
+	id S1758350AbYAJDq0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 22:46:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756228AbYAJDqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 22:44:08 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:26310 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754428AbYAJDoH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 22:44:07 -0500
-Message-ID: <47859486.30609@ct.jp.nec.com>
-Date: Wed, 09 Jan 2008 19:44:06 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Wed, 9 Jan 2008 22:46:19 -0500
+Received: from mx1.suse.de ([195.135.220.2]:49515 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756210AbYAJDqS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 22:46:18 -0500
+Date: Wed, 9 Jan 2008 19:49:52 -0800
+From: Greg KH <gregkh@suse.de>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org,
+       Zhao Yakui <yakui.zhao@intel.com>, Li Shaohua <shaohua.li@intel.com>,
+       Thomas Renninger <trenn@suse.de>, Adam Belay <ambx1@neo.rr.com>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: Linux 2.6.23.12
+Message-ID: <20080110034952.GC20448@suse.de>
+References: <20071218224559.GA12696@kroah.com> <20071218224635.GB12696@kroah.com> <200801021342.23763.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
-To: mingo@elte.hu
-Cc: tglx@linutronix.de, hpa@zytor.com, chrisw@sous-sol.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] x86_64: move out tick_nohz_stop_sched_tick() call from the
- loop
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200801021342.23763.bjorn.helgaas@hp.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, Jan 02, 2008 at 01:42:23PM -0700, Bjorn Helgaas wrote:
+> The patch below was put in 2.6.23.12 as a fix for
+> http://bugzilla.kernel.org/show_bug.cgi?id=9514.  It apparently
+> does make 9514 go away, but only by coincidence.  There are a
+> couple other ideas about fixing 9514.  My proposed patch is
+> attached in the bugzilla.
+> 
+> The .12 patch reduces the number of resources we reserve from
+> 24 to 8 ioport regions and from 12 to 4 mmio regions per PNP device.
+> It also removes a warning about regions we ignore.
 
-tick_nohz_stop_sched_tick() and tick_nohz_restart_sched_tick()
-pair in cpu_idle() is different from 32-bit version.
+That patch was merely a revert of a prior patch, it did not "do"
+anything new at all :)
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Subject: [PATCH] x86_64: move out tick_nohz_stop_sched_tick() call from the loop
+> Obviously, we want to reserve ALL the regions for PNP devices,
+> and Thomas is working on a patch for that (which I hope will be
+> ready for 2.6.25).  But in the meantime, the .12 patch makes it
+> more likely that we will have resource conflicts with PNP devices.
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=9630 appears to be
+> such a conflict.
+> 
+> I think the patch below should be removed from the stable series.
 
-Move out tick_nohz_stop_sched_tick() call from the loop in cpu_idle
-same as 32-bit version.
+What do you mean "removed"?  It was a revert of a prior patch, as this
+patch was reported to cause real problems.
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- arch/x86/kernel/process_64.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+Do you want me to add it back, and then add another patch?  If so, can
+you please send the requested patches to stable@kernel.org so I can do
+it?
 
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index 93ce4f3..6870208 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -170,14 +170,13 @@ void cpu_idle(void)
- 	current_thread_info()->status |= TS_POLLING;
- 	/* endless idle loop with no priority at all */
- 	while (1) {
-+		tick_nohz_stop_sched_tick();
- 		while (!need_resched()) {
- 			void (*idle)(void);
- 
- 			if (__get_cpu_var(cpu_idle_state))
- 				__get_cpu_var(cpu_idle_state) = 0;
- 
--			tick_nohz_stop_sched_tick();
--
- 			rmb();
- 			idle = pm_idle;
- 			if (!idle)
--- 
-1.5.3.6
+thanks,
 
-
+greg k-h
