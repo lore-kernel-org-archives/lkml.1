@@ -1,93 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755901AbYAJKp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbYAJKu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755901AbYAJKp0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 05:45:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbYAJKpN
+	id S1755205AbYAJKu1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 05:50:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbYAJKuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 05:45:13 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50173 "EHLO mx1.redhat.com"
+	Thu, 10 Jan 2008 05:50:18 -0500
+Received: from mx1.suse.de ([195.135.220.2]:55319 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752638AbYAJKpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 05:45:11 -0500
-Message-ID: <4785F6A1.5020202@redhat.com>
-Date: Thu, 10 Jan 2008 05:42:41 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1752882AbYAJKuR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 05:50:17 -0500
+Date: Thu, 10 Jan 2008 11:50:15 +0100
+From: Andi Kleen <ak@suse.de>
+To: Dave Airlie <airlied@gmail.com>
+Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       suresh.b.siddha@intel.com, Arjan van de Ven <arjan@infradead.org>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: CPA patchset
+Message-ID: <20080110105015.GP25945@bingen.suse.de>
+References: <20080103424.989432000@suse.de> <20080110093126.GA360@elte.hu> <21d7e9970801100144x63b02e1bga548acd3c5bed441@mail.gmail.com> <20080110095501.GL25945@bingen.suse.de> <21d7e9970801100220p406b25d8qf523388042531855@mail.gmail.com>
 MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>
-Subject: Re: [PATCH] x86: trivial whitespace in kprobes.c
-References: <1199954157.19760.22.camel@brick>
-In-Reply-To: <1199954157.19760.22.camel@brick>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <21d7e9970801100220p406b25d8qf523388042531855@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harvey Harrison wrote:
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+On Thu, Jan 10, 2008 at 08:20:26PM +1000, Dave Airlie wrote:
+> This is only possible as long as we know all the parts involved, for
+> example on AMD we have problems with that
+> over-eager prefetching so for drivers on AMD chipsets we have to do
+> something else more than likely using change_page_attr.
 
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+What over eager prefetching? AFAIK AMD chips don't do any prefetching
+that Intel chips don't do. In fact P4 does more aggressive speculation
+than any AMD chip. 
 
-> ---
-> Ingo, you could/should probably fold this into Masami's kprobe
-> unification patch.
+One problem I see is that the CPU (both AMD and Intel) can follow random 
+addresses even from speculative execution and then there is a window between
+your CLFLUSH and eventual use where the data could be forced back
+into cache behind your back. Then eventually the cache gets flushed
+and overwrites the data in memory.
 
-The original code had these whitespace, because (I think)
-kretprobe_trampoline_holder() had just hold a memory space
-for hooking function return. And now, it has actual code.
-So the whitespace can be removed.
+The only way to prevent that is to unmap or remap to uncached.
 
-Thank you.
+Might happen only rarely of course, but it can. We've had reports
+over the years for bugs which were tracked down to such cases. Each
+was a bitch to debug usually keeping people busy for a long time.
 
 > 
-> commit 17735e04f7f18bea4dcbe4daa31c34acac55b332
-> Author: Masami Hiramatsu <mhiramat@redhat.com>
-> Date:   Wed Jan 9 13:30:50 2008 +0100
+> >
+> > Well GARTs and those are widely used even without AGP busses.
 > 
->     kprobes code for x86 unification
-> 
-> in current(ish) x86.git
-> 
->  arch/x86/kernel/kprobes.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-> index 53ba6a5..93aff49 100644
-> --- a/arch/x86/kernel/kprobes.c
-> +++ b/arch/x86/kernel/kprobes.c
-> @@ -583,8 +583,8 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
->   * When a retprobed function returns, this code saves registers and
->   * calls trampoline_handler() runs, which calls the kretprobe's handler.
->   */
-> - void __kprobes kretprobe_trampoline_holder(void)
-> - {
-> +void __kprobes kretprobe_trampoline_holder(void)
-> +{
->  	asm volatile (
->  			".global kretprobe_trampoline\n"
->  			"kretprobe_trampoline: \n"
-> @@ -670,7 +670,7 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
->  			"	popf\n"
->  #endif
->  			"	ret\n");
-> - }
-> +}
->  
->  /*
->   * Called from kretprobe_trampoline
+> Yes mainly we have used this scheme with Intel GARTs (also the only
+> driver we have done with the new GPU system) by working closely with
+> Intel engineers..
 
--- 
-Masami Hiramatsu
+Have you discussed the case above?
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+Also BTW even if you can solve it for Intel GPUs there are others too
+who really rely on WC/UC.
 
-e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
+-Andi
 
