@@ -1,125 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759890AbYAJTmy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757895AbYAJTnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759890AbYAJTmy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 14:42:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755794AbYAJTmi
+	id S1757895AbYAJTnV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 14:43:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755028AbYAJTnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 14:42:38 -0500
-Received: from s36.avahost.net ([74.53.95.194]:54538 "EHLO s36.avahost.net"
+	Thu, 10 Jan 2008 14:43:08 -0500
+Received: from mail.suse.de ([195.135.220.2]:55903 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756823AbYAJTmg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 14:42:36 -0500
-X-Greylist: delayed 4610 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Jan 2008 14:42:36 EST
-Message-ID: <47866327.8090905@katalix.com>
-Date: Thu, 10 Jan 2008 18:25:43 +0000
-From: James Chapman <jchapman@katalix.com>
-Organization: Katalix Systems Ltd
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	id S1755950AbYAJTnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 14:43:05 -0500
+Date: Thu, 10 Jan 2008 11:43:06 -0800
+From: Greg KH <gregkh@suse.de>
+To: venkatesh.pallipadi@intel.com
+Cc: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com,
+       torvalds@linux-foundation.org, airlied@skynet.ie, davej@redhat.com,
+       mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com,
+       davem@davemloft.net, linux-kernel@vger.kernel.org,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [patch 11/11] PAT x86: Expose uc and wc interfaces in /sysfs
+	vor pci_mmap_resource
+Message-ID: <20080110194306.GA21357@suse.de>
+References: <20080110184840.927409000@intel.com> <20080110184856.859264000@intel.com>
 MIME-Version: 1.0
-To: Chris Friesen <cfriesen@nortel.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: questions on NAPI processing latency and dropped network packets
-References: <478654C3.60806@nortel.com>
-In-Reply-To: <478654C3.60806@nortel.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - s36.avahost.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - katalix.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080110184856.859264000@intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Friesen wrote:
-> Hi all,
+On Thu, Jan 10, 2008 at 10:48:51AM -0800, venkatesh.pallipadi@intel.com wrote:
+> New interfaces exported for uc and wc accesses. Apps has to change to use
+> these new interfaces.
 > 
-> I've got an issue that's popped up with a deployed system running
-> 2.6.10.  I'm looking for some help figuring out why incoming network
-> packets aren't being processed fast enough.
-> 
-> After a recent userspace app change, we've started seeing packets being
-> dropped by the ethernet hardware (e1000, NAPI is enabled).
+> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 
-What's changed in your application? Any real-time threads in there?
+Please update the documentation for this change, as well as adding
+something to Documentation/ABI/ for these new sysfs files.
 
->From the top output below, looks like SigtranServices is consuming all
-your CPU...
+thanks,
 
-> The
-> error/dropped/fifo counts are going up in ethtool:
-> 
->      rx_packets: 32180834
->      rx_bytes: 5480756958
->      rx_errors: 862506
->      rx_dropped: 771345
->      rx_length_errors: 0
->      rx_over_errors: 0
->      rx_crc_errors: 0
->      rx_frame_errors: 0
->      rx_fifo_errors: 91161
->      rx_missed_errors: 91161
-> 
-> This link is receiving roughly 13K packets/sec, and we're dropping
-> roughly 51 packets/sec due to fifo errors.
-> 
-> Increasing the rx descriptor ring size from 256 up to around 3000 or so
-> seems to make the problem stop, but it seems to me that this is just a
-> workaround for the latency in processing the incoming packets.
-> 
-> So, I'm looking for some suggestions on how to fix this or to figure out
-> where the latency is coming from.
-> 
-> Some additional information:
-> 
-> 
-> 1) Interrupts are being processed on both cpus:
-> 
-> root@base0-0-0-13-0-11-1:/root> cat /proc/interrupts
->            CPU0       CPU1
->  30:    1703756    4530785  U3-MPIC Level     eth0
-> 
-> 
-> 
-> 
-> 2) "top" shows a fair amount of time processing softirqs, but very
-> little time in ksoftirqd (or is that a sampling artifact?).
-> 
-> 
-> Tasks: 79 total, 1 running, 78 sleeping, 0 stopped, 0 zombie
-> Cpu0: 23.6% us, 30.9% sy, 0.0% ni, 36.9% id, 0.0% wa, 0.3% hi, 8.3% si
-> Cpu1: 30.4% us, 24.1% sy, 0.0% ni, 5.9% id, 0.0% wa, 0.7% hi, 38.9% si
-> Mem:  4007812k total, 2199148k used,  1808664k free,     0k buffers
-> Swap:   0k total,       0k used,      0k free,   219844k cached
-> 
->   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
->  5375 root      15   0 2682m 1.8g 6640 S 99.9 46.7  31:17.68
-> SigtranServices
->  7696 root      17   0  6952 3212 1192 S  7.3  0.1   0:15.75
-> schedmon.ppc210
->  7859 root      16   0  2688 1228  964 R  0.7  0.0   0:00.04 top
->  2956 root       8  -8 18940 7436 5776 S  0.3  0.2   0:01.35 blademtc
->     1 root      16   0  1660  620  532 S  0.0  0.0   0:30.62 init
->     2 root      RT   0     0    0    0 S  0.0  0.0   0:00.01 migration/0
->     3 root      15   0     0    0    0 S  0.0  0.0   0:00.55 ksoftirqd/0
->     4 root      RT   0     0    0    0 S  0.0  0.0   0:00.01 migration/1
->     5 root      15   0     0    0    0 S  0.0  0.0   0:00.43 ksoftirqd/1
-> 
-> 
-> 3) /proc/sys/net/core/netdev_max_backlog is set to the default of 300
-> 
-> 
-> So...anyone have any ideas/suggestions?
-> 
-> Thanks,
-> 
-> Chris
-
--- 
-James Chapman
-Katalix Systems Ltd
-http://www.katalix.com
-Catalysts for your Embedded Linux software development
-
+greg k-h
