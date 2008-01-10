@@ -1,91 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758169AbYAJJxL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758935AbYAJJxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758169AbYAJJxL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 04:53:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754218AbYAJJw4
+	id S1758935AbYAJJxs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 04:53:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbYAJJxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 04:52:56 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:53257 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753457AbYAJJwz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 04:52:55 -0500
-Subject: Re: [PATCH][RFC] fast file mapping for loop
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
-       chris.mason@oracle.com, linux-fsdevel@vger.kernel.org
-In-Reply-To: <20080110094941.GV6258@kernel.dk>
-References: <20080109085231.GE6650@kernel.dk>
-	 <200801101242.25671.nickpiggin@yahoo.com.au>
-	 <20080110083753.GB10745@infradead.org> <1199957821.29498.2.camel@twins>
-	 <20080110094941.GV6258@kernel.dk>
-Content-Type: text/plain
-Date: Thu, 10 Jan 2008 10:52:51 +0100
-Message-Id: <1199958771.29498.4.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Jan 2008 04:53:40 -0500
+Received: from cantor.suse.de ([195.135.220.2]:43892 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751691AbYAJJxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 04:53:39 -0500
+Date: Thu, 10 Jan 2008 10:53:37 +0100
+From: Andi Kleen <ak@suse.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       suresh.b.siddha@intel.com, Arjan van de Ven <arjan@infradead.org>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: CPA patchset
+Message-ID: <20080110095337.GK25945@bingen.suse.de>
+References: <20080103424.989432000@suse.de> <20080110093126.GA360@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080110093126.GA360@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2008-01-10 at 10:49 +0100, Jens Axboe wrote:
-> On Thu, Jan 10 2008, Peter Zijlstra wrote:
-> > 
-> > On Thu, 2008-01-10 at 08:37 +0000, Christoph Hellwig wrote:
-> > 
-> > > Peter, any chance you could chime in here?
-> > 
-> > I have this patch to add swap_out/_in methods. I expect we can loosen
-> > the requirement for swapcache pages and change the name a little.
-> > 
-> > previously posted here:
-> >   http://lkml.org/lkml/2007/5/4/143
-> > 
-> > --- 
-> > Subject: mm: add support for non block device backed swap files
-> > 
-> > New addres_space_operations methods are added:
-> >   int swapfile(struct address_space *, int);
-> >   int swap_out(struct file *, struct page *, struct writeback_control *);
-> >   int swap_in(struct file *, struct page *);
-> > 
-> > When during sys_swapon() the swapfile() method is found and returns no error
-> > the swapper_space.a_ops will proxy to sis->swap_file->f_mapping->a_ops, and
-> > make use of swap_{out,in}() to write/read swapcache pages.
-> > 
-> > The swapfile method will be used to communicate to the address_space that the
-> > VM relies on it, and the address_space should take adequate measures (like 
-> > reserving memory for mempools or the like).
-> > 
-> > This new interface can be used to obviate the need for ->bmap in the swapfile
-> > code. A filesystem would need to load (and maybe even allocate) the full block
-> > map for a file into memory and pin it there on ->swapfile(,1) so that
-> > ->swap_{out,in}() have instant access to it. It can be released on
-> > ->swapfile(,0).
+On Thu, Jan 10, 2008 at 10:31:26AM +0100, Ingo Molnar wrote:
 > 
-> So this is where I don't think that's good enough, you cannot require a
-> full block/extent mapping of a file on setup. It can take quite some
-> time, a little testing I did here easily took 5 seconds for only a
-> couple of gigabytes. And that wasn't even worst case for that size. It
-> also wastes memory by populating extents that we may never read or
-> write.
+> Andi,
 > 
-> If you look at the loop addition I did, it populates lazily as needed
-> with some very simple logic to populate-ahead. In practice that performs
-> as well as a pre-populated map, the first IO to a given range will just
-> be a little slower since we have to bmap() it.
+> finally managed to get the time to review your CPA patchset, and i 
+> fundamentally agree with most of the detail changes done in it. But here 
+> are a few structural high-level observations:
+
+I have a few changes and will post a updated version shortly.
+There's also unfortunately still one outstanding bug (triggeredb y
+some recent changes) on 32bit that makes the self test suite not pass
+currently.
+
+> - firstly, there's no rationale given. So we'll change ioremap()/etc.
+>   from doing a cflush-range instruction instead of a WBINVD. But why?
+
+- WBINVD is a very nasty operation. I was talking to some CPU people
+and they really recommended to get rid of it as far as possible.
+Stopping the CPU for msecs is just wrong and there are apparently
+even some theoretical live lock situations.
+- It is not interruptible in earlier VT versions and messes up
+real time in the hypervisor. Some people were doing KVM on rt 
+kernels and had latency spikes from that.
+
+I'll add that to the changelog.
+
+>   WBINVD isnt particular fast (takes a few msecs), but why is that a
+>   problem? Drivers dont do high-frequency ioremap-ing. It's typically
+
+Actually graphics drivers can do higher frequency allocation of WC
+memory (with PAT) support.
+
+>   only done at driver/device startup and that's it. Whether module load
+>   time takes 1254 msecs instead of 1250 msecs is no big deal.
 > 
-> Do you have plans to improve this area?
+> - secondly, obviously doing a 'flush some' instead of a 'flush all' 
+>   operation is risky. There's not many ways we can get the 'flush all'
 
-Nope, for swap it _must_ be there, there is just no way we can do block
-allocation on swapout.
+Yes, that is why it took so long. But it's eventually needed
+to make PAT actually useful for once.
 
-That said, the swapfile() interface can be used to pre-populate the
-extend/block mapping, and when using swap_(in/out) without it, it can be
-done lazily.
+>   WBINVD instruction wrong (as long as we do it on all cpus, etc.). But 
+>   with this specific range flush we've got all the risks of accidentally
+>   not flushing _enough_. Especially if some boundary of a mapped area is 
+>   imprecisely.
 
+Not sure what you mean here? If someone doesn't pass in the correct
+area then not everything will be uncached in the first place. 
+Using something as cached that should be uncached is usually
+noticed because it tends to be quite slow or corrupt data.
 
+I don't think you have thought that concern through.
+
+>   asking for trouble as it's very hard to debug and the operations here
+>   (ioremap) are typically done only once per system bootup. So we'll add
+
+change_page_attr() is used for more than just ioremap (e.g. a common
+case is mapping memory into AGP apertures which still happens in
+many graphics drivers). I also expect it will be used even more
+in the future when PAT usage will become more wide spread.
+
+> - the bugfixes and cleanups to pgattr.c i like very much - but shouldnt
+>   they come first in the series, instead of being mixed into it?
+
+It all depends on each other; I don't think any of the changes can
+be easily reordered.
+
+-Andi
