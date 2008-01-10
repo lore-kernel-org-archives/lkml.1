@@ -1,69 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760215AbYAJP6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759984AbYAJQA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760215AbYAJP6V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 10:58:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758588AbYAJP6K
+	id S1759984AbYAJQA6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 11:00:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755065AbYAJQAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 10:58:10 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:33770 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757143AbYAJP6J (ORCPT
+	Thu, 10 Jan 2008 11:00:51 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:42260 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756136AbYAJQAu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 10:58:09 -0500
-Date: Thu, 10 Jan 2008 10:57:46 -0500
-Message-Id: <200801101557.m0AFvkoU024149@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, viro@ftp.linux.org.uk,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [UNIONFS] 00/29 Unionfs and related patches pre-merge review (v2) 
-In-reply-to: Your message of "Thu, 10 Jan 2008 15:08:08 GMT."
-             <20080110150808.GA32080@infradead.org> 
-X-MailKey: Erez_Zadok
+	Thu, 10 Jan 2008 11:00:50 -0500
+Date: Thu, 10 Jan 2008 16:00:48 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Dmitry Torokhov <dtor@mail.ru>, linux-input@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org,
+       Liam Girdwood <liam.girdwood@wolfsonmicro.com>
+Subject: Re: [PATCH 6/6] Build system and MAINTAINERS entry for WM97xx
+	touchscreen drivers
+Message-ID: <20080110160047.GA811@rakim.wolfsonmicro.main>
+Mail-Followup-To: Sam Ravnborg <sam@ravnborg.org>,
+	Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	Dmitry Torokhov <dtor@mail.ru>,
+	linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+	Liam Girdwood <liam.girdwood@wolfsonmicro.com>
+References: <1199965870-4629-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-2-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-3-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-4-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-5-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-6-git-send-email-broonie@opensource.wolfsonmicro.com> <20080110154118.GC15361@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080110154118.GC15361@uranus.ravnborg.org>
+X-Cookie: McDonald's -- Because you're worth it.
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20080110150808.GA32080@infradead.org>, Christoph Hellwig writes:
-> On Thu, Jan 10, 2008 at 09:59:19AM -0500, Erez Zadok wrote:
-> > 
-> > Dear Linus, Al, Christoph, and Andrew,
-> > 
-> > As per your request, I'm posting for review the unionfs code (and related
-> > code) that's in my korg tree against mainline (v2.6.24-rc7-71-gfd0b45d).
-> > This is in preparation for merge in 2.6.25.
-> 
-> Huh?  There's still aboslutely not fix to the underlying problems of
-> the whole idea.   I think we made it pretty clear that unionfs is not
-> the way to go, and that we'll get the union mount patches clear once
-> the per-mountpoint r/o and unprivilegued mount patches series are in
-> and stable.
+On Thu, Jan 10, 2008 at 04:41:18PM +0100, Sam Ravnborg wrote:
+> On Thu, Jan 10, 2008 at 11:51:10AM +0000, Mark Brown wrote:
 
-I'll reiterate what I've said before: unionfs is used today by many users,
-it works, and is stable.  After years of working with unionfs, we've settled
-on a set of features that users actually use.  This functionality can be in
-mainline today.
+> > +wm97xx-ts-objs := wm97xx-core.o
 
-Unioning at the VFS level, will take a long time to reach the same level of
-maturity and support the same set of features.  Based on my years of
-practical experience with it, unioning directories seems like a simple idea,
-but in practice it's quite hard no matter the approach taken to implement
-it.
+> Use 
+> wm97xx-ts-y := wm97xx-core.o
 
-Existing users of unioning aren't likely to switch to Union Mounts unless it
-supports the same set of features.  How long will it realistically take to
-get whiteout support in every lower file system that's used by Unionfs
-users?  How will Union Mounts support persistent inode numbers at the VFS
-level?  Those are just a few of the questions.
+> > +wm97xx-ts-objs += wm9713.o
+> > +endif
 
-I think a better approach would be to start with Unionfs (a standalone file
-system that doesn't touch the rest of the kernel).  And as Linux gradually
-starts supporting more and more features that help unioning/stacking in
-general, to change Unionfs to use those features (e.g., native whiteout
-support).  Eventually there could be basic unioning support at the VFS
-level, and concurrently a file-system which offers the extra features (e.g.,
-persistency).  This can be done w/o affecting user-visible APIs.
+> So this becomes:
+> wm97xx-ts-$(CONFIG_TOUCHSCREEN_WM9713) += wm9713.o
 
-Cheers,
-Erez.
+> Same for the other two assignments.
+
+Ah, that's much nicer - thanks!  I've made this change in our git tree:
+
+>From 550829a5933d4cf4f667530cdd275faf800d2188 Mon Sep 17 00:00:00 2001
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Date: Tue, 13 Nov 2007 22:36:50 +0000
+Subject: [PATCH] Build system and MAINTAINERS entry for WM97xx touchscreen drivers
+
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Signed-off-by: Liam Girdwood <liam.girdwood@wolfsonmicro.com>
+---
+ MAINTAINERS                        |    9 ++++++
+ drivers/input/touchscreen/Kconfig  |   52 ++++++++++++++++++++++++++++++++++++
+ drivers/input/touchscreen/Makefile |    7 +++++
+ 3 files changed, 68 insertions(+), 0 deletions(-)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index b4f611c..62131fe 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4196,6 +4196,15 @@ L:	linux-wireless@vger.kernel.org
+ W:	http://oops.ghostprotocols.net:81/blog
+ S:	Maintained
+ 
++WM97XX TOUCHSCREEN DRIVERS
++P:	Mark Brown
++M:	broonie@opensource.wolfsonmicro.com
++P:	Liam Girdwood
++M:	liam.girdwood@wolfsonmicro.com
++L:	linux-input@vger.kernel.org
++T:	git git://opensource.wolfsonmicro.com/linux-2.6-touch
++S:	Supported
++
+ X.25 NETWORK LAYER
+ P:	Henner Eisen
+ M:	eis@baty.hanse.de
+diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
+index fa8442b..89fa468 100644
+--- a/drivers/input/touchscreen/Kconfig
++++ b/drivers/input/touchscreen/Kconfig
+@@ -160,6 +160,58 @@ config TOUCHSCREEN_TOUCHRIGHT
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called touchright.
+ 
++config TOUCHSCREEN_WM97XX
++	tristate "Support for WM97xx AC97 touchscreen controllers"
++	depends on AC97_BUS
++
++config TOUCHSCREEN_WM9705
++	bool "WM9705 Touchscreen interface support"
++	depends on TOUCHSCREEN_WM97XX
++	help
++	  Say Y here if you have a Wolfson Microelectronics WM9705 touchscreen
++	  controller connected to your system.
++
++	  If unsure, say N.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called wm9705.
++
++config TOUCHSCREEN_WM9712
++	bool "WM9712 Touchscreen interface support"
++	depends on TOUCHSCREEN_WM97XX
++	help
++	  Say Y here if you have a Wolfson Microelectronics WM9712 touchscreen
++	  controller connected to your system.
++
++	  If unsure, say N.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called wm9712.
++
++config TOUCHSCREEN_WM9713
++	bool "WM9713 Touchscreen interface support"
++	depends on TOUCHSCREEN_WM97XX
++	help
++	  Say Y here if you have a Wolfson Microelectronics WM9713 touchscreen
++	  controller connected to your system.
++
++	  If unsure, say N.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called wm9713.
++
++config TOUCHSCREEN_WM97XX_PXA
++	tristate "WM97xx PXA accelerated touch"
++	depends on TOUCHSCREEN_WM97XX && ARCH_PXA
++	help
++	  Say Y here for support for streaming mode with WM97xx touchscreens
++	  on systems with PXA2xx series processors.
++
++	  If unsure, say N
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called pxa-wm97xx
++
+ config TOUCHSCREEN_TOUCHWIN
+ 	tristate "Touchwin serial touchscreen"
+ 	select SERIO
+diff --git a/drivers/input/touchscreen/Makefile b/drivers/input/touchscreen/Makefile
+index 35d4097..ade9dc1 100644
+--- a/drivers/input/touchscreen/Makefile
++++ b/drivers/input/touchscreen/Makefile
+@@ -4,6 +4,8 @@
+ 
+ # Each configuration option enables a list of files.
+ 
++wm97xx-ts-y := wm97xx-core.o
++
+ obj-$(CONFIG_TOUCHSCREEN_ADS7846)	+= ads7846.o
+ obj-$(CONFIG_TOUCHSCREEN_BITSY)		+= h3600_ts_input.o
+ obj-$(CONFIG_TOUCHSCREEN_CORGI)		+= corgi_ts.o
+@@ -19,3 +21,8 @@ obj-$(CONFIG_TOUCHSCREEN_PENMOUNT)	+= penmount.o
+ obj-$(CONFIG_TOUCHSCREEN_TOUCHRIGHT)	+= touchright.o
+ obj-$(CONFIG_TOUCHSCREEN_TOUCHWIN)	+= touchwin.o
+ obj-$(CONFIG_TOUCHSCREEN_UCB1400)	+= ucb1400_ts.o
++obj-$(CONFIG_TOUCHSCREEN_WM97XX)	+= wm97xx-ts.o
++obj-$(CONFIG_TOUCHSCREEN_WM97XX_PXA)	+= pxa-wm97xx.o
++wm97xx-ts-$(CONFIG_TOUCHSCREEN_WM9705)  += wm9705.o
++wm97xx-ts-$(CONFIG_TOUCHSCREEN_WM9712)  += wm9712.o
++wm97xx-ts-$(CONFIG_TOUCHSCREEN_WM9713)  += wm9713.o
+-- 
+1.5.3.8
