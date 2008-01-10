@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758947AbYAJIkw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759018AbYAJImT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758947AbYAJIkw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 03:40:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbYAJIko
+	id S1759018AbYAJImT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 03:42:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbYAJImK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 03:40:44 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42957 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751367AbYAJIko (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 03:40:44 -0500
-Date: Thu, 10 Jan 2008 08:40:41 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Evgeniy Dushistov <dushistov@mail.ru>, Steven <stevenaaus@yahoo.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]: ufs: fix symlink creation on ufs2
-Message-ID: <20080110084040.GD10745@infradead.org>
-References: <20080102204649.GA16373@rain> <20080109235148.d5896897.akpm@linux-foundation.org>
+	Thu, 10 Jan 2008 03:42:10 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:25891 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754179AbYAJImJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 03:42:09 -0500
+Date: Thu, 10 Jan 2008 09:42:06 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org, chris.mason@oracle.com,
+       linux-fsdevel@vger.kernel.org,
+       Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
+       "Bryn M. Reeves" <breeves@redhat.com>
+Subject: Re: [PATCH][RFC] fast file mapping for loop
+Message-ID: <20080110084206.GR6258@kernel.dk>
+References: <20080109085231.GE6650@kernel.dk> <20080109231628.GB4039@agk.fab.redhat.com> <20080110083130.GP6258@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080109235148.d5896897.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20080110083130.GP6258@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 09, 2008 at 11:51:48PM -0800, Andrew Morton wrote:
-> > +++ b/fs/ufs/super.c
-> > @@ -131,6 +131,8 @@ static void ufs_print_super_stuff(struct super_block *sb,
-> >  		printk(KERN_INFO"  cs_nffree(Num of free frags): %llu\n",
-> >  		       (unsigned long long)
-> >  		       fs64_to_cpu(sb, usb3->fs_un1.fs_u2.cs_nffree));
-> > +		printk(KERN_INFO"  fs_maxsymlinklen: %u\n",
-> > +		       usb3->fs_un2.fs_44.fs_maxsymlinklen);
+On Thu, Jan 10 2008, Jens Axboe wrote:
+> On Wed, Jan 09 2008, Alasdair G Kergon wrote:
+> > Here's the latest version of dm-loop, for comparison.
+> > 
+> > To try it out, 
+> >   ln -s dmsetup dmlosetup
+> > and supply similar basic parameters to losetup.
+> > (using dmsetup version 1.02.11 or higher)
 > 
-> I assume this needs conversion via fs32_to_cpu() before we print it.
+> Why oh why does dm always insist to reinvent everything? That's bad
+> enough in itself, but on top of that most of the extra stuff ends up
+> being essentially unmaintained.
+> 
+> If we instead improve loop, everyone wins.
+> 
+> Sorry to sound a bit harsh, but sometimes it doesn't hurt to think a bit
+> outside your own sandbox.
 
-Yes, it does.  I wish people would run sparse before submitting patches :P
+So I looked at the code - it seems you build a full extent of the blocks
+in the file, filling holes as you go along. I initally did that as well,
+but that is to slow to be usable in real life.
+
+You also don't support sparse files, falling back to normal fs
+read/write paths. Supporting sparse files properly is a must, people
+generally don't want to prealloc a huge disk backing.
+
+-- 
+Jens Axboe
 
