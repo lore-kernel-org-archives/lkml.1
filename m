@@ -1,100 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757702AbYAJS2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758291AbYAJS2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757702AbYAJS2Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 13:28:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755212AbYAJS2Q
+	id S1758291AbYAJS2q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 13:28:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755212AbYAJS2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 13:28:16 -0500
-Received: from rayleigh.systella.fr ([213.41.184.253]:49671 "EHLO
-	rayleigh.systella.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754616AbYAJS2P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 13:28:15 -0500
-Message-ID: <478663B0.8040505@systella.fr>
-Date: Thu, 10 Jan 2008 19:28:00 +0100
-From: =?ISO-8859-1?Q?BERTRAND_Jo=EBl?= <joel.bertrand@systella.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux sparc64; fr-FR; rv:1.8.1.11) Gecko/20071119 Iceape/1.1.7 (Debian-1.1.7-1)
-MIME-Version: 1.0
-To: Paul Rolland <rol@as2917.net>
-CC: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, rol@witbe.net
-Subject: Re: 3Com NIC
-References: <4786592E.6080303@systella.fr> <20080110191658.49c49412@tux.DEF.witbe.net>
-In-Reply-To: <20080110191658.49c49412@tux.DEF.witbe.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-3.1.8 (rayleigh.systella.fr [192.168.254.1]); Thu, 10 Jan 2008 19:28:06 +0100 (CET)
+	Thu, 10 Jan 2008 13:28:36 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:50006 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755909AbYAJS2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 13:28:35 -0500
+Date: Thu, 10 Jan 2008 19:28:28 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 01/22 -v2] Add basic support for gcc profiler instrumentation
+Message-ID: <20080110182828.GA19399@uranus.ravnborg.org>
+References: <20080109232914.676624725@goodmis.org> <20080109233042.386384204@goodmis.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080109233042.386384204@goodmis.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Rolland wrote:
-> Hello,
-> 
-> On Thu, 10 Jan 2008 18:43:10 +0100
-> BERTRAND Joël <joel.bertrand@systella.fr> wrote:
-> 
->> 	ifconfig returns :
->>
->> eth2      Link encap:Ethernet  HWaddr 00:04:75:df:1c:6d
->>            inet adr:192.168.253.1  Bcast:192.168.253.255 
->> Masque:255.255.255.0
->>            UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
->>            RX packets:1019611 errors:0 dropped:0 overruns:782 frame:0
->>            TX packets:1244862 errors:4389 dropped:0 overruns:0 carrier:0
->>            collisions:0 lg file transmission:1000
->>            RX bytes:111193503 (106.0 MiB)  TX bytes:1119932615 (1.0 GiB)
->>            Interruption:17 Adresse de base:0x8000
->>
->> 	and dmesg :
->>
->> NETDEV WATCHDOG: eth2: transmit timed out
->> eth2: transmit timed out, tx_status 00 status 8601.
->>    diagnostics: net 0ccc media 8880 dma 0000003a fifo 0000
->> eth2: Interrupt posted but not delivered -- IRQ blocked by another device?
->>    Flags; bus-master 1, dirty 224(0) current 224(0)
->>    Transmit list 00000000 vs. fffff800a05ce200.
->>    0: @fffff800a05ce200  length 8000007d status 0001007d
->>    1: @fffff800a05ce260  length 8000004e status 0001004e
->>    2: @fffff800a05ce2c0  length 8000004a status 0001004a
->>    3: @fffff800a05ce320  length 80000048 status 00010048
->>    4: @fffff800a05ce380  length 8000004a status 0001004a
->>    5: @fffff800a05ce3e0  length 80000042 status 00010042
->>    6: @fffff800a05ce440  length 8000004e status 0001004e
->>    7: @fffff800a05ce4a0  length 80000042 status 00010042
->>    8: @fffff800a05ce500  length 8000004e status 0001004e
->>    9: @fffff800a05ce560  length 80000048 status 00010048
->>    10: @fffff800a05ce5c0  length 8000004a status 0001004a
->>    11: @fffff800a05ce620  length 8000004e status 0001004e
->>    12: @fffff800a05ce680  length 80000042 status 00010042
->>    13: @fffff800a05ce6e0  length 80000042 status 00010042
->>    14: @fffff800a05ce740  length 80000042 status 80010042
->>    15: @fffff800a05ce7a0  length 80000052 status 80010052
->> eth2: Resetting the Tx ring pointer.
->>
->> rayleigh:[~] > cat /proc/interrupts
->>             CPU0       CPU2
->>    0:  561601936  561601824     <NULL>  timer
->>    1:          0          0      sun4u  PSYCHO_PCIERR
->>    2:          0          0      sun4u  PSYCHO_UE
->>    3:          0          0      sun4u  PSYCHO_CE
->>    8:     461146          0      sun4u  su(kbd)
->>    9:          0    3350888      sun4u  su(mouse)
->>   10:          0          0      sun4u  parport0
->>   11:          2          0      sun4u  floppy
->>   12:          0          0      sun4u  cs4231(capture)
->>   13:     360263          0      sun4u  cs4231(play)
->>   14:          0   36484826      sun4u  eth0
->>   15:          0   27118288      sun4u  sym53c8xx
->>   16:         30          0      sun4u  sym53c8xx
->>   17:     906177    1171078      sun4u  eth2
->>   18:   19345145          0      sun4u  aic7xxx
->>   19:          1     584788      sun4u  ohci_hcd:usb2
->>   20:          0          0      sun4u  ohci_hcd:usb3
->>   21:          1        467      sun4u  ehci_hcd:usb1
->>   22:          0          0      sun4u  PSYCHO_PCIERR
->>   24:   27308743          0      sun4u  eth1
->> rayleigh:[~] >
+Hi Steven.
 
-	Only with eth2.
+> Index: linux-compile-i386.git/arch/x86/Kconfig
+> ===================================================================
+> --- linux-compile-i386.git.orig/arch/x86/Kconfig	2008-01-09 14:09:36.000000000 -0500
+> +++ linux-compile-i386.git/arch/x86/Kconfig	2008-01-09 14:10:07.000000000 -0500
+> @@ -28,6 +28,10 @@ config GENERIC_CMOS_UPDATE
+>  	bool
+>  	default y
+>  
+> +config ARCH_HAS_MCOUNT
+> +       bool
+> +       default y
+> +
 
-	JKB
+Please use the following scheme:
+
+arch/x86/Kconfig:
+ config X86
++	select HAVE_MCOUNT
+
+lib/tracing/Kconfig
+
++ # ARCH shall select HAVE_MCOUNT if they provide this function
++ config HAVE_MCOUNT
++	bool
++
++ config MCOUNT
++	bool
++	select FRAME_POINTER
+
+And then in your later patches:
++config MCOUNT_TRACER
++       bool "Profiler instrumentation based tracer"
++       depends on DEBUG_KERNEL && HAVE_MCOUNT
++       select MCOUNT
++       help
++         Use profiler....
+
+The "default n" is a noop since this is the default.
+And note that the depends on is removed from MCOUNT
+because you use it as a select target (so dependencies
+are not checked anyway).
+
+With this scheme implmented you:
+- Use new naming convention (HAVE_*)
+- Avoid defining one config variable per arch
+- Do not have dependencies on selected symbols
+- More compact representation in arch Kconfig files
+
+	Sam
