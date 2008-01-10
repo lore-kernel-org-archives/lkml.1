@@ -1,76 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759601AbYAJPfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756637AbYAJPfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759601AbYAJPfa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 10:35:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755785AbYAJPfW
+	id S1756637AbYAJPfz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 10:35:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759669AbYAJPfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 10:35:22 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:50040 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755764AbYAJPfV (ORCPT
+	Thu, 10 Jan 2008 10:35:42 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:44873 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755785AbYAJPfk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 10:35:21 -0500
-Date: Thu, 10 Jan 2008 10:35:19 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Johannes Berg <johannes@sipsolutions.net>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH] PM: Acquire device locks on suspend
-In-Reply-To: <200801100029.26465.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0801101033390.4267-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 10 Jan 2008 10:35:40 -0500
+Subject: [GIT PATCH] another SCSI bug fix for 2.6.24-rc7
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 10 Jan 2008 09:35:35 -0600
+Message-Id: <1199979335.3141.34.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jan 2008, Rafael J. Wysocki wrote:
+This one's a fatal bug in the qla1280 32 bit descriptor handling, since
+the unitialised req_cnt variable is used to count the number of
+descriptor slots.  It turns out that qla1280 only uses 32 bit
+descriptors on x86 if HIGHMEM isn't enabled, which is why it's taken so
+long to find someone with a configuration that actually saw the problem.
 
-> On Wednesday, 9 of January 2008, Alan Stern wrote:
-> > On Wed, 9 Jan 2008, Rafael J. Wysocki wrote:
-> > 
-> > > > In dpm_resume() you shouldn't need to use dpm_list_mtx at all, because
-> > > > the list_move_tail() comes before the resume_device().  It's the same
-> > > > as in dpm_power_up().
-> > > 
-> > > Still, device_pm_schedule_removal() can (in theory) be called concurrently
-> > > with dpm_resume() by another thread and this might corrupt the list without
-> > > the locking.
-> > 
-> > Any thread doing that would be in violation of the restrictions you're 
-> > going to add to the kerneldoc for destroy_suspended_device().
-> > 
-> > However the overhead for the locking isn't critical.  There won't be
-> > any contention (if everything is working right) and it isn't a hot path
-> > anyway.  So you can leave the extra locking in if you want.  But then
-> > you should put it in all the routines where the lists get manipulated,
-> > not just some of them.  That is: device_power_down(), dpm_power_up(),
-> > and even unregister_dropped_devices().
-> 
-> Except for those run on one CPU with interrupts disabled, I think.
+The patch is available from:
 
-Not unregister_dropped_devices()!
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
 
-> > > > Also, the kerneldoc for destroy_suspended_device() should contain an 
-> > > > extra paragraph warning that the routine should never be called except 
-> > > > within the scope of a system sleep transition.  In practice this means 
-> > > > it has to be directly or indirectly invoked by a suspend or resume 
-> > > > method.
-> > > 
-> > > Or by a CPU hotplug notifier (that will be the majority of cases, IMO).
-> > 
-> > In your patch the call is made in response to a CPU_UP_CANCELED_FROZEN
-> > notification.  Isn't it true that this notification is issued only as
-> > part of a system sleep transition?
-> 
-> Yes, it is.
+I've also attached it below for convenience.
 
-So it counts as being indirectly invoked by a resume method.
+James
 
-Alan Stern
+---
+
+>From 3a43e69ce50d467ded2f17f6e571e831d3677ab5 Mon Sep 17 00:00:00 2001
+From: FUJITA Tomonori <tomof@acm.org>
+Date: Tue, 8 Jan 2008 23:07:01 +0900
+Subject: [SCSI] qla1280: fix 32 bit segment code
+
+There's an error remaining in the 32 bit descriptor code after the
+conversion to dma accessors:  req_cnt is left uninitialised.
+
+qla1280_32bit_start_scsi gives the following warnings:
+
+drivers/scsi/qla1280.c: In function 'qla1280_32bit_start_scsi':
+drivers/scsi/qla1280.c:3044: warning: unused variable 'dma_handle'
+drivers/scsi/qla1280.c: In function 'qla1280_queuecommand':
+drivers/scsi/qla1280.c:3060: warning: 'req_cnt' is used uninitialized in this function
+drivers/scsi/qla1280.c:3042: note: 'req_cnt' was declared here
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+---
+ drivers/scsi/qla1280.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/scsi/qla1280.c b/drivers/scsi/qla1280.c
+index 146d540..2886407 100644
+--- a/drivers/scsi/qla1280.c
++++ b/drivers/scsi/qla1280.c
+@@ -3041,7 +3041,6 @@ qla1280_32bit_start_scsi(struct scsi_qla_host *ha, struct srb * sp)
+ 	int cnt;
+ 	int req_cnt;
+ 	int seg_cnt;
+-	dma_addr_t dma_handle;
+ 	u8 dir;
+ 
+ 	ENTER("qla1280_32bit_start_scsi");
+@@ -3050,6 +3049,7 @@ qla1280_32bit_start_scsi(struct scsi_qla_host *ha, struct srb * sp)
+ 		cmd->cmnd[0]);
+ 
+ 	/* Calculate number of entries and segments required. */
++	req_cnt = 1;
+ 	seg_cnt = scsi_dma_map(cmd);
+ 	if (seg_cnt) {
+ 		/*
+-- 
+1.5.3.7
+
+
+
 
