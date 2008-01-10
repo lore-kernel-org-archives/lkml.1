@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758434AbYAJIgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758644AbYAJIiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758434AbYAJIgO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 03:36:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbYAJIf7
+	id S1758644AbYAJIiO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 03:38:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbYAJIh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 03:35:59 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:32108 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752214AbYAJIf6 (ORCPT
+	Thu, 10 Jan 2008 03:37:57 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55226 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752098AbYAJIh4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 03:35:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=SPoCrQ6YENUfF9iocjT13A77wG3c/5zbZ7z0XnBPJXYappokSVUjMnNRk0o8VT8jgLCjTAp/U7Bf/QM3rsz4FrJwaUETnc5hfWUwsz/Gb/mdjSnZeAzE+2DoNPIn97NUbMQAMFafig3RyVZa2551/vrtMlzKthInuoqOZZib8uw=
-Subject: [PATCH] x86: trivial whitespace in kprobes.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Masami Hiramatsu <mhiramat@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Content-Type: text/plain
-Date: Thu, 10 Jan 2008 00:35:57 -0800
-Message-Id: <1199954157.19760.22.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Jan 2008 03:37:56 -0500
+Date: Thu, 10 Jan 2008 08:37:53 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       chris.mason@oracle.com, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH][RFC] fast file mapping for loop
+Message-ID: <20080110083753.GB10745@infradead.org>
+References: <20080109085231.GE6650@kernel.dk> <200801101242.25671.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200801101242.25671.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Ingo, you could/should probably fold this into Masami's kprobe
-unification patch.
+On Thu, Jan 10, 2008 at 12:42:25PM +1100, Nick Piggin wrote:
+> > So how does it work? Instead of punting IO to a thread and passing it
+> > through the page cache, we instead attempt to send the IO directly to the
+> > filesystem block that it maps to.
+> 
+> You told Christoph that just using direct-IO from kernel still doesn't
+> give you the required behaviour... What about queueing the IO directly
+> *and* using direct-IO? I guess it still has to go through the underlying
+> filesystem, but that's probably a good thing.
 
-commit 17735e04f7f18bea4dcbe4daa31c34acac55b332
-Author: Masami Hiramatsu <mhiramat@redhat.com>
-Date:   Wed Jan 9 13:30:50 2008 +0100
+We defintively need to go through the filesystem for I/O submission,
+and also for I/O completion.  Thinking of the async submission might be
+what Peter actually implemented for his network swapping patches as
+you really wouldn't want to write it out synchronously.
 
-    kprobes code for x86 unification
 
-in current(ish) x86.git
+Peter, any chance you could chime in here?
+> 
+> > loop maintains a prio tree of known 
+> > extents in the file (populated lazily on demand, as needed).
+> 
+> Just a quick question (I haven't looked closely at the code): how come
+> you are using a prio tree for extents? I don't think they could be
+> overlapping?
 
- arch/x86/kernel/kprobes.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index 53ba6a5..93aff49 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -583,8 +583,8 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
-  * When a retprobed function returns, this code saves registers and
-  * calls trampoline_handler() runs, which calls the kretprobe's handler.
-  */
-- void __kprobes kretprobe_trampoline_holder(void)
-- {
-+void __kprobes kretprobe_trampoline_holder(void)
-+{
- 	asm volatile (
- 			".global kretprobe_trampoline\n"
- 			"kretprobe_trampoline: \n"
-@@ -670,7 +670,7 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
- 			"	popf\n"
- #endif
- 			"	ret\n");
-- }
-+}
- 
- /*
-  * Called from kretprobe_trampoline
--- 
-1.5.4.rc2.1164.g6451
-
+IMHO this shouldn't be done in the loop driver anyway.  Filesystems have
+their own effricient extent lookup trees (well, at least xfs and btrfs
+do), and we should leverage that instead of reinventing it.
