@@ -1,70 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757260AbYAJSjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbYAJSmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757260AbYAJSjX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 13:39:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754596AbYAJSjM
+	id S1757547AbYAJSmR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 13:42:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755530AbYAJSl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 13:39:12 -0500
-Received: from mx2.suse.de ([195.135.220.15]:55359 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753887AbYAJSjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 13:39:11 -0500
-Date: Thu, 10 Jan 2008 10:39:17 -0800
-From: Greg KH <gregkh@suse.de>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       James.Bottomley@hansenpartnership.com, linux-scsi@vger.kernel.org,
-       a.zummo@towertech.it, peterz@infradead.org, cbou@mail.ru,
-       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-       krh@redhat.com, stern@rowland.harvard.edu, rtc-linux@googlegroups.com,
-       spi-devel-general@lists.sourceforge.net,
-       linux1394-devel@lists.sourceforge.net, dwmw2@infradead.org,
-       davem@davemloft.net, jarkao2@gmail.com
-Subject: Re: [PATCH 0/7] convert semaphore to mutex in struct class
-Message-ID: <20080110183917.GA20188@suse.de>
-References: <20080107154404.GA10880@suse.de> <47825DC1.3090102@s5r6.in-berlin.de> <20080107172009.GA25943@suse.de> <a8e1da0801072305x3378c195qeb0bb7027030254c@mail.gmail.com> <20080108224837.GA19623@suse.de> <a8e1da0801081732i3677245chef1fda1fea65f7cf@mail.gmail.com> <20080109061316.GA3249@darkstar.te-china.tietoenator.com> <a8e1da0801082237x37d2a56eqee6db19017499dbc@mail.gmail.com> <a8e1da0801082239h198c4d45i5cd7cf183472a166@mail.gmail.com> <20080110094843.GA3014@darkstar.te-china.tietoenator.com>
+	Thu, 10 Jan 2008 13:41:59 -0500
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:19966 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754313AbYAJSl6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 13:41:58 -0500
+Message-ID: <478666F4.50405@hp.com>
+Date: Thu, 10 Jan 2008 10:41:56 -0800
+From: Rick Jones <rick.jones2@hp.com>
+User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080110094843.GA3014@darkstar.te-china.tietoenator.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Chris Friesen <cfriesen@nortel.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: questions on NAPI processing latency and dropped network packets
+References: <478654C3.60806@nortel.com>
+In-Reply-To: <478654C3.60806@nortel.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 10, 2008 at 05:48:43PM +0800, Dave Young wrote:
-> The patches are done on my side, please help to check. 
-
-Along with all of the other comments from people, I have a few.
-
-> This is the first one of the series about driver core changes. 
-> If this one is accepted and there's no other problem I will post the others for maintainer's review (they need your comment and help because I don't know well about the specific driver logic).
+> 1) Interrupts are being processed on both cpus:
 > 
-> Thanks a lot in advance.
-> ---
-> 
-> 1. convert class semaphore to mutex.
-> 2. add class iterater functions to encapsulate the detail of class devices/children list iterating :
-> 	class_for_each_device
-> 	class_find_device
-> 	class_for_each_child
-> 	class_find_child
+> root@base0-0-0-13-0-11-1:/root> cat /proc/interrupts
+>            CPU0       CPU1
+>  30:    1703756    4530785  U3-MPIC Level     eth0
 
-No, please create 1 patch per type-of-change.
+IIRC none of the e1000 driven cards are multi-queue, so while the above 
+shows that interrupts from eth0 have been processed on both CPUs at 
+various points in the past, it doesn't necessarily mean that they are 
+being processed on both CPUs at the same time right?
 
-So in this case you would have a series of patches:
-	1) add the class iterator functions
-	2-n) convert the existing places in the kernel using the
-	     class->semaphore to use the new iterator functions
-	n+1) convert class semaphore to mutex, which should only touch
-	     the driver core
-
-That way everything builds along the way, and it's easy to understand
-and review.
-
-Oh, and please start a new thread when you create a new patch like this
-so it doesn't get burried in people's inboxes...
-
-thanks,
-
-greg k-h
+rick jones
