@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756389AbYAJUsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757787AbYAJUs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756389AbYAJUsm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 15:48:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbYAJUse
+	id S1757787AbYAJUs7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 15:48:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755851AbYAJUsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 15:48:34 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:1414 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751023AbYAJUsd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 15:48:33 -0500
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Viets@web.de (Torben Viets)
-Subject: Re: LRW/XTS + Via Padlock Bug in 2.6.24-rc7?
-Cc: herbert@gondor.apana.org.au, linux-crypto@vger.kernel.org,
+	Thu, 10 Jan 2008 15:48:50 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:59714 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752752AbYAJUst (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 15:48:49 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Rik van Riel <riel@redhat.com>
+Cc: Jakob Oestergaard <jakob@unthought.net>,
+       Anton Salikhmetov <salikhmetov@gmail.com>, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org
-Organization: Core
-In-Reply-To: <285479690@web.de>
-X-Newsgroups: apana.lists.os.linux.cryptoapi,apana.lists.os.linux.kernel
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1JD4KF-0004T4-00@gondolin.me.apana.org.au>
-Date: Fri, 11 Jan 2008 07:48:31 +1100
+Subject: Re: [PATCH][RFC][BUG] updating the ctime and mtime time stamps in msync()
+In-Reply-To: Your message of "Wed, 09 Jan 2008 18:41:41 EST."
+             <20080109184141.287189b8@bree.surriel.com>
+From: Valdis.Kletnieks@vt.edu
+References: <1199728459.26463.11.camel@codedot> <20080109155015.4d2d4c1d@cuia.boston.redhat.com> <26932.1199912777@turing-police.cc.vt.edu> <20080109170633.292644dc@cuia.boston.redhat.com> <20080109223340.GH25527@unthought.net>
+            <20080109184141.287189b8@bree.surriel.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1199998102_2824P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Thu, 10 Jan 2008 15:48:22 -0500
+Message-ID: <5273.1199998102@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Torben Viets <Viets@web.de> wrote:
-> 
-> After rebuilding the kernel, I tried: cryptsetup -c aes-xts-plain -s 256 luksFormat /dev/raid/test
-> 
-> It does the same as before, dmesg says:
-> 
-> general protection fault: 0000 [#1] 
-> Modules linked in: xt_TCPMSS xt_tcpmss iptable_mangle ipt_MASQUERADE xt_tcpudp pppoe pppox xt_mark xt_state iptable_nat nf_nat nf_conntrack_ipv4 iptable_filter ip_tables x_tables af_packet ppp_generic slhc aes_i586 dm_crypt dm_mod
-> 
-> Pid: 4409, comm: kcryptd Not tainted (2.6.24-rc7 #2)
-> EIP: 0060:[<c03599cc>] EFLAGS: 00010282 CPU: 0
-> EIP is at aes_crypt_copy+0x2c/0x50
-> EAX: f62e1ff0 EBX: f60ab850 ECX: 00000001 EDX: f60ab830
-> ESI: f620dda8 EDI: f620dda8 EBP: f62e1ff0 ESP: f620dda8
+--==_Exmh_1199998102_2824P
+Content-Type: text/plain; charset=us-ascii
 
-Oh I see.  I misdiagnosed the problem.  The problem is that for some
-reason gcc cannot guarantee 16-byte alignment for variables on the
-stack in the kernel.  As you can see from ESI/EDI above the temporary
-buffer is unaligned.
+On Wed, 09 Jan 2008 18:41:41 EST, Rik van Riel said:
 
-Please try this patch instead.
+> I guess a third possible time (if we want to minimize the number of
+> updates) would be when natural syncing of the file data to disk, by
+> other things in the VM, would be about to clear the I_DIRTY_PAGES
+> flag on the inode.  That way we do not need to remember any special
+> "we already flushed all dirty data, but we have not updated the mtime
+> and ctime yet" state.
+> 
+> Does this sound reasonable?
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-diff --git a/drivers/crypto/padlock-aes.c b/drivers/crypto/padlock-aes.c
-index a337b69..5f7e718 100644
---- a/drivers/crypto/padlock-aes.c
-+++ b/drivers/crypto/padlock-aes.c
-@@ -429,8 +429,8 @@ static inline void padlock_xcrypt(const u8 *input, u8 *output, void *key,
- 
- static void aes_crypt_copy(const u8 *in, u8 *out, u32 *key, struct cword *cword)
- {
--	u8 tmp[AES_BLOCK_SIZE * 2]
--		__attribute__ ((__aligned__(PADLOCK_ALIGNMENT)));
-+	u8 buf[AES_BLOCK_SIZE * 2 + PADLOCK_ALIGNMENT - 1];
-+	u8 *tmp = PTR_ALIGN(&buf[0], PADLOCK_ALIGNMENT);
- 
- 	memcpy(tmp, in, AES_BLOCK_SIZE);
- 	padlock_xcrypt(tmp, out, key, cword);
+Is it possible that a *very* large file (multi-gigabyte or even bigger database,
+for example) would never get out of I_DIRTY_PAGES, because there's always a
+few dozen just-recently dirtied pages that haven't made it out to disk yet?
+
+Of course, getting a *consistent* backup of a file like that is quite the
+challenge already, because of the high likelyhood of the file being changed
+while the backup runs - that's why big sites often do a 'quiesce/snapshot/wakeup'
+on a database and then backup the snapshot...
+
+
+--==_Exmh_1199998102_2824P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFHhoSWcC3lWbTT17ARAn1mAJ48AjVv7lCnK64HDWknbOZPhx4kZgCeNAAx
+1fx+ay5cVP3Trm0CcZPIZO8=
+=DyL9
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1199998102_2824P--
