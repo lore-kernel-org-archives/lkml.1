@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760217AbYAJPDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759106AbYAJPEH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760217AbYAJPDs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 10:03:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758467AbYAJPAs
+	id S1759106AbYAJPEH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 10:04:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755680AbYAJPAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 10:00:48 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:57007 "EHLO
+	Thu, 10 Jan 2008 10:00:50 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:57021 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754603AbYAJPAd (ORCPT
+	with ESMTP id S1757501AbYAJPAl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 10:00:33 -0500
+	Thu, 10 Jan 2008 10:00:41 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: torvalds@linux-foundation.org, akpm@linux-foundation.org,
        hch@infradead.org, viro@ftp.linux.org.uk
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 15/29] Unionfs: readdir state helpers
-Date: Thu, 10 Jan 2008 09:59:34 -0500
-Message-Id: <11999771961683-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 08/29] Unionfs: basic file operations
+Date: Thu, 10 Jan 2008 09:59:27 -0500
+Message-Id: <11999771922373-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11999771882152-git-send-email-ezk@cs.sunysb.edu>
@@ -26,20 +26,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Includes duplicate name elimination and whiteout-handling code.
+Includes read, write, mmap, fsync, and fasync.
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/rdstate.c |  285 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 285 insertions(+), 0 deletions(-)
- create mode 100644 fs/unionfs/rdstate.c
+ fs/unionfs/file.c |  184 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 184 insertions(+), 0 deletions(-)
+ create mode 100644 fs/unionfs/file.c
 
-diff --git a/fs/unionfs/rdstate.c b/fs/unionfs/rdstate.c
+diff --git a/fs/unionfs/file.c b/fs/unionfs/file.c
 new file mode 100644
-index 0000000..7ba1e1a
+index 0000000..0c424f6
 --- /dev/null
-+++ b/fs/unionfs/rdstate.c
-@@ -0,0 +1,285 @@
++++ b/fs/unionfs/file.c
+@@ -0,0 +1,184 @@
 +/*
 + * Copyright (c) 2003-2007 Erez Zadok
 + * Copyright (c) 2003-2006 Charles P. Wright
@@ -60,271 +60,170 @@ index 0000000..7ba1e1a
 +
 +#include "union.h"
 +
-+/* This file contains the routines for maintaining readdir state. */
-+
-+/*
-+ * There are two structures here, rdstate which is a hash table
-+ * of the second structure which is a filldir_node.
-+ */
-+
-+/*
-+ * This is a struct kmem_cache for filldir nodes, because we allocate a lot
-+ * of them and they shouldn't waste memory.  If the node has a small name
-+ * (as defined by the dentry structure), then we use an inline name to
-+ * preserve kmalloc space.
-+ */
-+static struct kmem_cache *unionfs_filldir_cachep;
-+
-+int unionfs_init_filldir_cache(void)
++static int unionfs_file_readdir(struct file *file, void *dirent,
++				filldir_t filldir)
 +{
-+	unionfs_filldir_cachep =
-+		kmem_cache_create("unionfs_filldir",
-+				  sizeof(struct filldir_node), 0,
-+				  SLAB_RECLAIM_ACCOUNT, NULL);
-+
-+	return (unionfs_filldir_cachep ? 0 : -ENOMEM);
++	return -ENOTDIR;
 +}
 +
-+void unionfs_destroy_filldir_cache(void)
++static int unionfs_mmap(struct file *file, struct vm_area_struct *vma)
 +{
-+	if (unionfs_filldir_cachep)
-+		kmem_cache_destroy(unionfs_filldir_cachep);
-+}
-+
-+/*
-+ * This is a tuning parameter that tells us roughly how big to make the
-+ * hash table in directory entries per page.  This isn't perfect, but
-+ * at least we get a hash table size that shouldn't be too overloaded.
-+ * The following averages are based on my home directory.
-+ * 14.44693	Overall
-+ * 12.29	Single Page Directories
-+ * 117.93	Multi-page directories
-+ */
-+#define DENTPAGE 4096
-+#define DENTPERONEPAGE 12
-+#define DENTPERPAGE 118
-+#define MINHASHSIZE 1
-+static int guesstimate_hash_size(struct inode *inode)
-+{
-+	struct inode *lower_inode;
-+	int bindex;
-+	int hashsize = MINHASHSIZE;
-+
-+	if (UNIONFS_I(inode)->hashsize > 0)
-+		return UNIONFS_I(inode)->hashsize;
-+
-+	for (bindex = ibstart(inode); bindex <= ibend(inode); bindex++) {
-+		lower_inode = unionfs_lower_inode_idx(inode, bindex);
-+		if (!lower_inode)
-+			continue;
-+
-+		if (i_size_read(lower_inode) == DENTPAGE)
-+			hashsize += DENTPERONEPAGE;
-+		else
-+			hashsize += (i_size_read(lower_inode) / DENTPAGE) *
-+				DENTPERPAGE;
-+	}
-+
-+	return hashsize;
-+}
-+
-+int init_rdstate(struct file *file)
-+{
-+	BUG_ON(sizeof(loff_t) !=
-+	       (sizeof(unsigned int) + sizeof(unsigned int)));
-+	BUG_ON(UNIONFS_F(file)->rdstate != NULL);
-+
-+	UNIONFS_F(file)->rdstate = alloc_rdstate(file->f_path.dentry->d_inode,
-+						 fbstart(file));
-+
-+	return (UNIONFS_F(file)->rdstate ? 0 : -ENOMEM);
-+}
-+
-+struct unionfs_dir_state *find_rdstate(struct inode *inode, loff_t fpos)
-+{
-+	struct unionfs_dir_state *rdstate = NULL;
-+	struct list_head *pos;
-+
-+	spin_lock(&UNIONFS_I(inode)->rdlock);
-+	list_for_each(pos, &UNIONFS_I(inode)->readdircache) {
-+		struct unionfs_dir_state *r =
-+			list_entry(pos, struct unionfs_dir_state, cache);
-+		if (fpos == rdstate2offset(r)) {
-+			UNIONFS_I(inode)->rdcount--;
-+			list_del(&r->cache);
-+			rdstate = r;
-+			break;
-+		}
-+	}
-+	spin_unlock(&UNIONFS_I(inode)->rdlock);
-+	return rdstate;
-+}
-+
-+struct unionfs_dir_state *alloc_rdstate(struct inode *inode, int bindex)
-+{
-+	int i = 0;
-+	int hashsize;
-+	unsigned long mallocsize = sizeof(struct unionfs_dir_state);
-+	struct unionfs_dir_state *rdstate;
-+
-+	hashsize = guesstimate_hash_size(inode);
-+	mallocsize += hashsize * sizeof(struct list_head);
-+	mallocsize = __roundup_pow_of_two(mallocsize);
-+
-+	/* This should give us about 500 entries anyway. */
-+	if (mallocsize > PAGE_SIZE)
-+		mallocsize = PAGE_SIZE;
-+
-+	hashsize = (mallocsize - sizeof(struct unionfs_dir_state)) /
-+		sizeof(struct list_head);
-+
-+	rdstate = kmalloc(mallocsize, GFP_KERNEL);
-+	if (unlikely(!rdstate))
-+		return NULL;
-+
-+	spin_lock(&UNIONFS_I(inode)->rdlock);
-+	if (UNIONFS_I(inode)->cookie >= (MAXRDCOOKIE - 1))
-+		UNIONFS_I(inode)->cookie = 1;
-+	else
-+		UNIONFS_I(inode)->cookie++;
-+
-+	rdstate->cookie = UNIONFS_I(inode)->cookie;
-+	spin_unlock(&UNIONFS_I(inode)->rdlock);
-+	rdstate->offset = 1;
-+	rdstate->access = jiffies;
-+	rdstate->bindex = bindex;
-+	rdstate->dirpos = 0;
-+	rdstate->hashentries = 0;
-+	rdstate->size = hashsize;
-+	for (i = 0; i < rdstate->size; i++)
-+		INIT_LIST_HEAD(&rdstate->list[i]);
-+
-+	return rdstate;
-+}
-+
-+static void free_filldir_node(struct filldir_node *node)
-+{
-+	if (node->namelen >= DNAME_INLINE_LEN_MIN)
-+		kfree(node->name);
-+	kmem_cache_free(unionfs_filldir_cachep, node);
-+}
-+
-+void free_rdstate(struct unionfs_dir_state *state)
-+{
-+	struct filldir_node *tmp;
-+	int i;
-+
-+	for (i = 0; i < state->size; i++) {
-+		struct list_head *head = &(state->list[i]);
-+		struct list_head *pos, *n;
-+
-+		/* traverse the list and deallocate space */
-+		list_for_each_safe(pos, n, head) {
-+			tmp = list_entry(pos, struct filldir_node, file_list);
-+			list_del(&tmp->file_list);
-+			free_filldir_node(tmp);
-+		}
-+	}
-+
-+	kfree(state);
-+}
-+
-+struct filldir_node *find_filldir_node(struct unionfs_dir_state *rdstate,
-+				       const char *name, int namelen,
-+				       int is_whiteout)
-+{
-+	int index;
-+	unsigned int hash;
-+	struct list_head *head;
-+	struct list_head *pos;
-+	struct filldir_node *cursor = NULL;
-+	int found = 0;
-+
-+	BUG_ON(namelen <= 0);
-+
-+	hash = full_name_hash(name, namelen);
-+	index = hash % rdstate->size;
-+
-+	head = &(rdstate->list[index]);
-+	list_for_each(pos, head) {
-+		cursor = list_entry(pos, struct filldir_node, file_list);
-+
-+		if (cursor->namelen == namelen && cursor->hash == hash &&
-+		    !strncmp(cursor->name, name, namelen)) {
-+			/*
-+			 * a duplicate exists, and hence no need to create
-+			 * entry to the list
-+			 */
-+			found = 1;
-+
-+			/*
-+			 * if a duplicate is found in this branch, and is
-+			 * not due to the caller looking for an entry to
-+			 * whiteout, then the file system may be corrupted.
-+			 */
-+			if (unlikely(!is_whiteout &&
-+				     cursor->bindex == rdstate->bindex))
-+				printk(KERN_ERR "unionfs: filldir: possible "
-+				       "I/O error: a file is duplicated "
-+				       "in the same branch %d: %s\n",
-+				       rdstate->bindex, cursor->name);
-+			break;
-+		}
-+	}
-+
-+	if (!found)
-+		cursor = NULL;
-+
-+	return cursor;
-+}
-+
-+int add_filldir_node(struct unionfs_dir_state *rdstate, const char *name,
-+		     int namelen, int bindex, int whiteout)
-+{
-+	struct filldir_node *new;
-+	unsigned int hash;
-+	int index;
 +	int err = 0;
-+	struct list_head *head;
++	bool willwrite;
++	struct file *lower_file;
 +
-+	BUG_ON(namelen <= 0);
++	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
 +
-+	hash = full_name_hash(name, namelen);
-+	index = hash % rdstate->size;
-+	head = &(rdstate->list[index]);
-+
-+	new = kmem_cache_alloc(unionfs_filldir_cachep, GFP_KERNEL);
-+	if (unlikely(!new)) {
-+		err = -ENOMEM;
++	/* This might be deferred to mmap's writepage */
++	willwrite = ((vma->vm_flags | VM_SHARED | VM_WRITE) == vma->vm_flags);
++	err = unionfs_file_revalidate(file, willwrite);
++	if (unlikely(err))
 +		goto out;
-+	}
++	unionfs_check_file(file);
 +
-+	INIT_LIST_HEAD(&new->file_list);
-+	new->namelen = namelen;
-+	new->hash = hash;
-+	new->bindex = bindex;
-+	new->whiteout = whiteout;
-+
-+	if (namelen < DNAME_INLINE_LEN_MIN) {
-+		new->name = new->iname;
++	/*
++	 * File systems which do not implement ->writepage may use
++	 * generic_file_readonly_mmap as their ->mmap op.  If you call
++	 * generic_file_readonly_mmap with VM_WRITE, you'd get an -EINVAL.
++	 * But we cannot call the lower ->mmap op, so we can't tell that
++	 * writeable mappings won't work.  Therefore, our only choice is to
++	 * check if the lower file system supports the ->writepage, and if
++	 * not, return EINVAL (the same error that
++	 * generic_file_readonly_mmap returns in that case).
++	 */
++	lower_file = unionfs_lower_file(file);
++	if (willwrite && !lower_file->f_mapping->a_ops->writepage) {
++		err = -EINVAL;
++		printk(KERN_ERR "unionfs: branch %d file system does not "
++		       "support writeable mmap\n", fbstart(file));
 +	} else {
-+		new->name = kmalloc(namelen + 1, GFP_KERNEL);
-+		if (unlikely(!new->name)) {
-+			kmem_cache_free(unionfs_filldir_cachep, new);
-+			new = NULL;
-+			goto out;
-+		}
++		err = generic_file_mmap(file, vma);
++		if (err)
++			printk(KERN_ERR
++			       "unionfs: generic_file_mmap failed %d\n", err);
 +	}
 +
-+	memcpy(new->name, name, namelen);
-+	new->name[namelen] = '\0';
-+
-+	rdstate->hashentries++;
-+
-+	list_add(&(new->file_list), head);
 +out:
++	if (!err) {
++		/* copyup could cause parent dir times to change */
++		unionfs_copy_attr_times(file->f_path.dentry->d_parent->d_inode);
++		unionfs_check_file(file);
++	}
++	unionfs_read_unlock(file->f_path.dentry->d_sb);
 +	return err;
 +}
++
++int unionfs_fsync(struct file *file, struct dentry *dentry, int datasync)
++{
++	int bindex, bstart, bend;
++	struct file *lower_file;
++	struct dentry *lower_dentry;
++	struct inode *lower_inode, *inode;
++	int err = -EINVAL;
++
++	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
++	err = unionfs_file_revalidate(file, true);
++	if (unlikely(err))
++		goto out;
++	unionfs_check_file(file);
++
++	bstart = fbstart(file);
++	bend = fbend(file);
++	if (bstart < 0 || bend < 0)
++		goto out;
++
++	inode = dentry->d_inode;
++	if (unlikely(!inode)) {
++		printk(KERN_ERR
++		       "unionfs: null lower inode in unionfs_fsync\n");
++		goto out;
++	}
++	for (bindex = bstart; bindex <= bend; bindex++) {
++		lower_inode = unionfs_lower_inode_idx(inode, bindex);
++		if (!lower_inode || !lower_inode->i_fop->fsync)
++			continue;
++		lower_file = unionfs_lower_file_idx(file, bindex);
++		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
++		mutex_lock(&lower_inode->i_mutex);
++		err = lower_inode->i_fop->fsync(lower_file,
++						lower_dentry,
++						datasync);
++		mutex_unlock(&lower_inode->i_mutex);
++		if (err)
++			goto out;
++	}
++
++	unionfs_copy_attr_times(inode);
++
++out:
++	unionfs_check_file(file);
++	unionfs_read_unlock(file->f_path.dentry->d_sb);
++	return err;
++}
++
++int unionfs_fasync(int fd, struct file *file, int flag)
++{
++	int bindex, bstart, bend;
++	struct file *lower_file;
++	struct dentry *dentry;
++	struct inode *lower_inode, *inode;
++	int err = 0;
++
++	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
++	err = unionfs_file_revalidate(file, true);
++	if (unlikely(err))
++		goto out;
++	unionfs_check_file(file);
++
++	bstart = fbstart(file);
++	bend = fbend(file);
++	if (bstart < 0 || bend < 0)
++		goto out;
++
++	dentry = file->f_path.dentry;
++	inode = dentry->d_inode;
++	if (unlikely(!inode)) {
++		printk(KERN_ERR
++		       "unionfs: null lower inode in unionfs_fasync\n");
++		goto out;
++	}
++	for (bindex = bstart; bindex <= bend; bindex++) {
++		lower_inode = unionfs_lower_inode_idx(inode, bindex);
++		if (!lower_inode || !lower_inode->i_fop->fasync)
++			continue;
++		lower_file = unionfs_lower_file_idx(file, bindex);
++		mutex_lock(&lower_inode->i_mutex);
++		err = lower_inode->i_fop->fasync(fd, lower_file, flag);
++		mutex_unlock(&lower_inode->i_mutex);
++		if (err)
++			goto out;
++	}
++
++	unionfs_copy_attr_times(inode);
++
++out:
++	unionfs_check_file(file);
++	unionfs_read_unlock(file->f_path.dentry->d_sb);
++	return err;
++}
++
++struct file_operations unionfs_main_fops = {
++	.llseek		= generic_file_llseek,
++	.read		= do_sync_read,
++	.aio_read	= generic_file_aio_read,
++	.write		= do_sync_write,
++	.aio_write	= generic_file_aio_write,
++	.readdir	= unionfs_file_readdir,
++	.unlocked_ioctl	= unionfs_ioctl,
++	.mmap		= unionfs_mmap,
++	.open		= unionfs_open,
++	.flush		= unionfs_flush,
++	.release	= unionfs_file_release,
++	.fsync		= unionfs_fsync,
++	.fasync		= unionfs_fasync,
++	.splice_read	= generic_file_splice_read,
++	.splice_write	= generic_file_splice_write,
++};
 -- 
 1.5.2.2
 
