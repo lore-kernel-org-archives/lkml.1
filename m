@@ -1,77 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbYAJUfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754521AbYAJUlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755568AbYAJUfZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 15:35:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbYAJUfN
+	id S1754521AbYAJUlU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 15:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbYAJUlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 15:35:13 -0500
-Received: from mga03.intel.com ([143.182.124.21]:2741 "EHLO mga03.intel.com"
+	Thu, 10 Jan 2008 15:41:07 -0500
+Received: from systemlinux.org ([83.151.29.59]:54851 "EHLO m18s25.vlinux.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751023AbYAJUfL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 15:35:11 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,267,1196668800"; 
-   d="scan'208";a="363729162"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [patch 07/11] PAT x86: pat-conflict resolution using linear list
-Date: Thu, 10 Jan 2008 12:08:16 -0800
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE5A2890@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <p73r6gpmr3v.fsf@bingen.suse.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch 07/11] PAT x86: pat-conflict resolution using linear list
-Thread-Index: AchTvXmh8KV5hX4pTDa/E9dm2jTlzQAASHKA
-References: <20080110184840.927409000@intel.com><20080110184855.906407000@intel.com> <p73r6gpmr3v.fsf@bingen.suse.de>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Cc: <ebiederm@xmission.com>, <rdreier@cisco.com>,
-       <torvalds@linux-foundation.org>, <gregkh@suse.de>, <airlied@skynet.ie>,
-       <davej@redhat.com>, <mingo@elte.hu>, <tglx@linutronix.de>,
-       <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-X-OriginalArrivalTime: 10 Jan 2008 20:07:22.0697 (UTC) FILETIME=[6964D390:01C853C4]
+	id S1751116AbYAJUlG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 15:41:06 -0500
+Date: Thu, 10 Jan 2008 21:40:20 +0100
+From: Andre Noll <maan@systemlinux.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       kernel-janitors@vger.kernel.org,
+       Richard Knutsson <ricknu-0@student.ltu.se>
+Subject: Re: [patch 1/1] Switch ioctl functions of drivers/scsi/sg.c to unlocked_ioctl
+Message-ID: <20080110204020.GC20152@skl-net.de>
+References: <20080110180529.GA32640@skl-net.de> <1199991298.3141.75.camel@localhost.localdomain> <20080110185944.GA1690@one.firstfloor.org> <20080110190748.GA20152@skl-net.de> <20080110192950.GG747@one.firstfloor.org> <20080110194550.GB20152@skl-net.de> <47867C7E.3000100@panasas.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="xesSdrSSBC0PokLI"
+Content-Disposition: inline
+In-Reply-To: <47867C7E.3000100@panasas.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->-----Original Message-----
->From: Andi Kleen [mailto:andi@firstfloor.org] 
->Sent: Thursday, January 10, 2008 11:13 AM
->To: Pallipadi, Venkatesh
->Cc: ebiederm@xmission.com; rdreier@cisco.com; 
->torvalds@linux-foundation.org; gregkh@suse.de; 
->airlied@skynet.ie; davej@redhat.com; mingo@elte.hu; 
->tglx@linutronix.de; hpa@zytor.co; 
->linux-kernel@vger.kernel.org; Siddha, Suresh B
->Subject: Re: [patch 07/11] PAT x86: pat-conflict resolution 
->using linear list
->
->venkatesh.pallipadi@intel.com writes:
->>  
->>  	/* Reset the direct mapping. Can block */
->> -	if (p->flags >> 20)
->> -		ioremap_change_attr(p->phys_addr, p->size, 0);
->> +	if (p->flags >> 20) {
->> +		free_mattr(p->phys_addr, p->phys_addr + 
->get_vm_area_size(p),
->> +		           p->flags>>20);
->> +		ioremap_change_attr(p->phys_addr, 
->get_vm_area_size(p), 0);
->
->If you really unmap all holes and forbid (or let it just return the
->__va address) ioremap on anything mapped (which is probably ok) then
->you can eliminate that completely.
->
+--xesSdrSSBC0PokLI
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-We heard X can allocate a page and then map it UC using it through gart.
-So, I don't we can forbid all ioremaps for RAM.
+On 22:13, Boaz Harrosh wrote:
 
-Thanks,
-Venki
+> All the scsi calls do not need any locks. The scsi LLDS never
+> see these threads since commands are queued through the block
+> layer.
+
+That's what everybody believes, but nobody seems to know for sure.
+Therefore I did what Andi suggested: Make a zero-semantics change
+that moves the lock_kernel() to sg_ioctl() to make people aware of
+the fact that this function runs under the BKL. At least the latter
+has already succeeded.
+
+> What's left is what you see, here in sg.c. you must have the best=20
+> knowledge about the possible races between ioctl and open/release
+> and probe/remove. And all these put_user() copy_user() etc...
+> Why don't you have a hard look and fix them properly.
+
+Because that requires much more knowledge. Al is looking into this
+which indicates that it is non-trivial issue. I am clearly not the
+right person to decide this question.
+
+> please don't *lock_kernel();* for scsi's sake.
+
+The BKL was there all the time. My patch just made it more visable
+to the scsi people by moving it into sg.c.
+
+Andre
+--=20
+The only person who always got his work done by Friday was Robinson Crusoe
+
+--xesSdrSSBC0PokLI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFHhoK0Wto1QDEAkw8RAkcKAJ4+vNpx4NrOss6bK2yatia7dHNz1gCfXeCe
+37GBqDPeAUgRejyC1oXJ7fw=
+=IJPr
+-----END PGP SIGNATURE-----
+
+--xesSdrSSBC0PokLI--
