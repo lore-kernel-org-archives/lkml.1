@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759018AbYAJImT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759045AbYAJInt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759018AbYAJImT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 03:42:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbYAJImK
+	id S1759045AbYAJInt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 03:43:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbYAJInj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 03:42:10 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:25891 "EHLO kernel.dk"
+	Thu, 10 Jan 2008 03:43:39 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:24987 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754179AbYAJImJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 03:42:09 -0500
-Date: Thu, 10 Jan 2008 09:42:06 +0100
+	id S1751193AbYAJIni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 03:43:38 -0500
+Date: Thu, 10 Jan 2008 09:43:36 +0100
 From: Jens Axboe <jens.axboe@oracle.com>
-To: linux-kernel@vger.kernel.org, chris.mason@oracle.com,
-       linux-fsdevel@vger.kernel.org,
-       Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
-       "Bryn M. Reeves" <breeves@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, chris.mason@oracle.com,
+       linux-fsdevel@vger.kernel.org
 Subject: Re: [PATCH][RFC] fast file mapping for loop
-Message-ID: <20080110084206.GR6258@kernel.dk>
-References: <20080109085231.GE6650@kernel.dk> <20080109231628.GB4039@agk.fab.redhat.com> <20080110083130.GP6258@kernel.dk>
+Message-ID: <20080110084336.GS6258@kernel.dk>
+References: <20080109085231.GE6650@kernel.dk> <p73k5mjovwg.fsf@bingen.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080110083130.GP6258@kernel.dk>
+In-Reply-To: <p73k5mjovwg.fsf@bingen.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 10 2008, Jens Axboe wrote:
-> On Wed, Jan 09 2008, Alasdair G Kergon wrote:
-> > Here's the latest version of dm-loop, for comparison.
-> > 
-> > To try it out, 
-> >   ln -s dmsetup dmlosetup
-> > and supply similar basic parameters to losetup.
-> > (using dmsetup version 1.02.11 or higher)
+On Wed, Jan 09 2008, Andi Kleen wrote:
+> Jens Axboe <jens.axboe@oracle.com> writes:
+> >
+> > So how does it work? Instead of punting IO to a thread and passing it
+> > through the page cache, we instead attempt to send the IO directly to the
 > 
-> Why oh why does dm always insist to reinvent everything? That's bad
-> enough in itself, but on top of that most of the extra stuff ends up
-> being essentially unmaintained.
+> Great -- something like this was needed for a long time.
 > 
-> If we instead improve loop, everyone wins.
+> > - The file block mappings must not change while loop is using the file.
+> >   This means that we have to ensure exclusive access to the file and
+> >   this is the bit that is currently missing in the implementation. It
+> >   would be nice if we could just do this via open(), ideas welcome...
 > 
-> Sorry to sound a bit harsh, but sometimes it doesn't hurt to think a bit
-> outside your own sandbox.
+> get_write_access()/put_write_access() will block other writers.
+> 
+> But as pointed out by others that is not enough for this.
 
-So I looked at the code - it seems you build a full extent of the blocks
-in the file, filling holes as you go along. I initally did that as well,
-but that is to slow to be usable in real life.
+Yeah, basically allowing O_RDONLY | O_DIRECT opens should be ok, but we
+can't allow writes and we can't allow page cache to exist for this file
+outside of loop.
 
-You also don't support sparse files, falling back to normal fs
-read/write paths. Supporting sparse files properly is a must, people
-generally don't want to prealloc a huge disk backing.
+> I suppose you could use a white list like a special flag for file systems 
+> (like ext2/ext3) that do not reallocate blocks.
+
+Irk, but yeah we probably need something like that for now until Chris
+proposes his API addition.
 
 -- 
 Jens Axboe
