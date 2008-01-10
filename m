@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757538AbYAJL4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757007AbYAJL5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757538AbYAJL4e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 06:56:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753681AbYAJL40
+	id S1757007AbYAJL5q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 06:57:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753681AbYAJL5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 06:56:26 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:42356 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752810AbYAJL4X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 06:56:23 -0500
-Date: Thu, 10 Jan 2008 17:26:31 +0530
+	Thu, 10 Jan 2008 06:57:36 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:53144 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752810AbYAJL5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 06:57:33 -0500
+Date: Thu, 10 Jan 2008 17:27:51 +0530
 From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 To: lkml <linux-kernel@vger.kernel.org>
 Cc: akpm@linux-foundation.org, mingo@elte.hu, ak@suse.de, sam@ravnborg.org,
-       arjan@linux.intel.com
-Subject: [PATCH 2/7] Move locking-selftest to tests/
-Message-ID: <20080110115631.GC26577@in.ibm.com>
+       paulmck@linux.vnet.ibm.com, Dipankar Sarma <dipankar@in.ibm.com>,
+       josh@kernel.org, ego@in.ibm.com
+Subject: [PATCH 3/7] Move rcutorture to tests/
+Message-ID: <20080110115751.GD26577@in.ibm.com>
 Reply-To: ananth@in.ibm.com
 References: <20080110115428.GA26577@in.ibm.com>
 Mime-Version: 1.0
@@ -30,1477 +30,1074 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
-Move the locking-selftest infrastructure to tests/
+Move the rcutorture infrastructure to tests/
 
 Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 ---
- lib/locking-selftest-hardirq.h         |    9 
- lib/locking-selftest-mutex.h           |   11 
- lib/locking-selftest-rlock-hardirq.h   |    2 
- lib/locking-selftest-rlock-softirq.h   |    2 
- lib/locking-selftest-rlock.h           |   14 
- lib/locking-selftest-rsem.h            |   14 
- lib/locking-selftest-softirq.h         |    9 
- lib/locking-selftest-spin-hardirq.h    |    2 
- lib/locking-selftest-spin-softirq.h    |    2 
- lib/locking-selftest-spin.h            |   11 
- lib/locking-selftest-wlock-hardirq.h   |    2 
- lib/locking-selftest-wlock-softirq.h   |    2 
- lib/locking-selftest-wlock.h           |   14 
- lib/locking-selftest-wsem.h            |   14 
- lib/locking-selftest.c                 | 1218 ---------------------------------
- lib/Kconfig.debug                      |   11 
- lib/Makefile                           |    1 
- tests/Kconfig                          |   11 
- tests/Makefile                         |    2 
- tests/locking-selftest-hardirq.h       |    9 
- tests/locking-selftest-mutex.h         |   11 
- tests/locking-selftest-rlock-hardirq.h |    2 
- tests/locking-selftest-rlock-softirq.h |    2 
- tests/locking-selftest-rlock.h         |   14 
- tests/locking-selftest-rsem.h          |   14 
- tests/locking-selftest-softirq.h       |    9 
- tests/locking-selftest-spin-hardirq.h  |    2 
- tests/locking-selftest-spin-softirq.h  |    2 
- tests/locking-selftest-spin.h          |   11 
- tests/locking-selftest-wlock-hardirq.h |    2 
- tests/locking-selftest-wlock-softirq.h |    2 
- tests/locking-selftest-wlock.h         |   14 
- tests/locking-selftest-wsem.h          |   14 
- tests/locking-selftest.c               | 1218 +++++++++++++++++++++++++++++++++
- 34 files changed, 1339 insertions(+), 1338 deletions(-)
+ kernel/rcutorture.c |  995 ----------------------------------------------------
+ kernel/Makefile     |    1 
+ lib/Kconfig.debug   |   13 
+ tests/Kconfig       |   13 
+ tests/Makefile      |    1 
+ tests/rcutorture.c  |  995 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 1009 insertions(+), 1009 deletions(-)
 
-Index: linux-2.6.24-rc6/lib/Makefile
+Index: linux-2.6.24-rc6/kernel/Makefile
 ===================================================================
---- linux-2.6.24-rc6.orig/lib/Makefile
-+++ linux-2.6.24-rc6/lib/Makefile
-@@ -25,7 +25,6 @@ lib-$(CONFIG_HOTPLUG) += kobject_uevent.
- obj-$(CONFIG_GENERIC_IOMAP) += iomap.o
- obj-$(CONFIG_HAS_IOMEM) += iomap_copy.o devres.o
- obj-$(CONFIG_CHECK_SIGNATURE) += check_signature.o
--obj-$(CONFIG_DEBUG_LOCKING_API_SELFTESTS) += locking-selftest.o
- obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock_debug.o
- lib-$(CONFIG_RWSEM_GENERIC_SPINLOCK) += rwsem-spinlock.o
- lib-$(CONFIG_RWSEM_XCHGADD_ALGORITHM) += rwsem.o
-Index: linux-2.6.24-rc6/lib/locking-selftest-hardirq.h
+--- linux-2.6.24-rc6.orig/kernel/Makefile
++++ linux-2.6.24-rc6/kernel/Makefile
+@@ -56,7 +56,6 @@ obj-$(CONFIG_DETECT_SOFTLOCKUP) += softl
+ obj-$(CONFIG_GENERIC_HARDIRQS) += irq/
+ obj-$(CONFIG_SECCOMP) += seccomp.o
+ obj-$(CONFIG_DEBUG_SYNCHRO_TEST) += synchro-test.o
+-obj-$(CONFIG_RCU_TORTURE_TEST) += rcutorture.o
+ obj-$(CONFIG_CLASSIC_RCU) += rcuclassic.o
+ obj-$(CONFIG_PREEMPT_RCU) += rcupreempt.o
+ ifeq ($(CONFIG_PREEMPT_RCU),y)
+Index: linux-2.6.24-rc6/kernel/rcutorture.c
 ===================================================================
---- linux-2.6.24-rc6.orig/lib/locking-selftest-hardirq.h
+--- linux-2.6.24-rc6.orig/kernel/rcutorture.c
 +++ /dev/null
-@@ -1,9 +0,0 @@
--#undef IRQ_DISABLE
--#undef IRQ_ENABLE
--#undef IRQ_ENTER
--#undef IRQ_EXIT
--
--#define IRQ_ENABLE		HARDIRQ_ENABLE
--#define IRQ_DISABLE		HARDIRQ_DISABLE
--#define IRQ_ENTER		HARDIRQ_ENTER
--#define IRQ_EXIT		HARDIRQ_EXIT
-Index: linux-2.6.24-rc6/lib/locking-selftest-mutex.h
-===================================================================
---- linux-2.6.24-rc6.orig/lib/locking-selftest-mutex.h
-+++ /dev/null
-@@ -1,11 +0,0 @@
--#undef LOCK
--#define LOCK		ML
--
--#undef UNLOCK
--#define UNLOCK		MU
--
--#undef RLOCK
--#undef WLOCK
--
--#undef INIT
--#define INIT		MI
-Index: linux-2.6.24-rc6/lib/locking-selftest-rlock-hardirq.h
-===================================================================
---- linux-2.6.24-rc6.orig/lib/locking-selftest-rlock-hardirq.h
-+++ /dev/null
-@@ -1,2 +0,0 @@
--#include "locking-selftest-rlock.h"
--#include "locking-selftest-hardirq.h"
-Index: linux-2.6.24-rc6/lib/locking-selftest-rlock-softirq.h
-===================================================================
---- linux-2.6.24-rc6.orig/lib/locking-selftest-rlock-softirq.h
-+++ /dev/null
-@@ -1,2 +0,0 @@
--#include "locking-selftest-rlock.h"
--#include "locking-selftest-softirq.h"
-Index: linux-2.6.24-rc6/lib/locking-selftest-rlock.h
-===================================================================
---- linux-2.6.24-rc6.orig/lib/locking-selftest-rlock.h
-+++ /dev/null
-@@ -1,14 +0,0 @@
--#undef LOCK
--#define LOCK		RL
--
--#undef UNLOCK
--#define UNLOCK		RU
--
--#undef RLOCK
--#define RLOCK		RL
--
--#undef WLOCK
--#define WLOCK		WL
--
--#undef INIT
--#define INIT		RWI
-Index: linux-2.6.24-rc6/lib/locking-selftest-rsem.h
-===================================================================
---- linux-2.6.24-rc6.orig/lib/locking-selftest-rsem.h
-+++ /dev/null
-@@ -1,14 +0,0 @@
--#undef LOCK
--#define LOCK		RSL
--
--#undef UNLOCK
--#define UNLOCK		RSU
--
--#undef RLOCK
--#define RLOCK		RSL
--
--#undef WLOCK
--#define WLOCK		WSL
--
--#undef INIT
--#define INIT		RWSI
-Index: linux-2.6.24-rc6/lib/locking-selftest-softirq.h
-===================================================================
---- linux-2.6.24-rc6.orig/lib/locking-selftest-softirq.h
-+++ /dev/null
-@@ -1,9 +0,0 @@
--#undef IRQ_DISABLE
--#undef IRQ_ENABLE
--#undef IRQ_ENTER
--#undef IRQ_EXIT
--
--#define IRQ_DISABLE		SOFTIRQ_DISABLE
--#define IRQ_ENABLE		SOFTIRQ_ENABLE
--#define IRQ_ENTER		SOFTIRQ_ENTER
--#define IRQ_EXIT		SOFTIRQ_EXIT
-Index: linux-2.6.24-rc6/lib/locking-selftest-spin-hardirq.h
-===================================================================
---- linux-2.6.24-rc6.orig/lib/locking-selftest-spin-hardirq.h
-+++ /dev/null
-@@ -1,2 +0,0 @@
--#include "locking-selftest-spin.h"
--#include "locking-selftest-hardirq.h"
-Index: linux-2.6.24-rc6/lib/locking-selftest-spin-softirq.h
-===================================================================
---- linux-2.6.24-rc6.orig/lib/locking-selftest-spin-softirq.h
-+++ /dev/null
-@@ -1,2 +0,0 @@
--#include "locking-selftest-spin.h"
--#include "locking-selftest-softirq.h"
-Index: linux-2.6.24-rc6/lib/locking-selftest-spin.h
-===================================================================
---- linux-2.6.24-rc6.orig/lib/locking-selftest-spin.h
-+++ /dev/null
-@@ -1,11 +0,0 @@
--#undef LOCK
--#define LOCK		L
--
--#undef UNLOCK
--#define UNLOCK		U
--
--#undef RLOCK
--#undef WLOCK
--
--#undef INIT
--#define INIT		SI
-Index: linux-2.6.24-rc6/lib/locking-selftest-wlock-hardirq.h
-===================================================================
---- linux-2.6.24-rc6.orig/lib/locking-selftest-wlock-hardirq.h
-+++ /dev/null
-@@ -1,2 +0,0 @@
--#include "locking-selftest-wlock.h"
--#include "locking-selftest-hardirq.h"
-Index: linux-2.6.24-rc6/lib/locking-selftest-wlock-softirq.h
-===================================================================
---- linux-2.6.24-rc6.orig/lib/locking-selftest-wlock-softirq.h
-+++ /dev/null
-@@ -1,2 +0,0 @@
--#include "locking-selftest-wlock.h"
--#include "locking-selftest-softirq.h"
-Index: linux-2.6.24-rc6/lib/locking-selftest-wlock.h
-===================================================================
---- linux-2.6.24-rc6.orig/lib/locking-selftest-wlock.h
-+++ /dev/null
-@@ -1,14 +0,0 @@
--#undef LOCK
--#define LOCK		WL
--
--#undef UNLOCK
--#define UNLOCK		WU
--
--#undef RLOCK
--#define RLOCK		RL
--
--#undef WLOCK
--#define WLOCK		WL
--
--#undef INIT
--#define INIT		RWI
-Index: linux-2.6.24-rc6/lib/locking-selftest-wsem.h
-===================================================================
---- linux-2.6.24-rc6.orig/lib/locking-selftest-wsem.h
-+++ /dev/null
-@@ -1,14 +0,0 @@
--#undef LOCK
--#define LOCK		WSL
--
--#undef UNLOCK
--#define UNLOCK		WSU
--
--#undef RLOCK
--#define RLOCK		RSL
--
--#undef WLOCK
--#define WLOCK		WSL
--
--#undef INIT
--#define INIT		RWSI
-Index: linux-2.6.24-rc6/lib/locking-selftest.c
-===================================================================
---- linux-2.6.24-rc6.orig/lib/locking-selftest.c
-+++ /dev/null
-@@ -1,1218 +0,0 @@
+@@ -1,995 +0,0 @@
 -/*
-- * lib/locking-selftest.c
+- * Read-Copy Update module-based torture test facility
 - *
-- * Testsuite for various locking APIs: spinlocks, rwlocks,
-- * mutexes and rw-semaphores.
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
 - *
-- * It is checking both false positives and false negatives.
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
 - *
-- * Started by Ingo Molnar:
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 - *
-- *  Copyright (C) 2006 Red Hat, Inc., Ingo Molnar <mingo@redhat.com>
+- * Copyright (C) IBM Corporation, 2005, 2006
+- *
+- * Authors: Paul E. McKenney <paulmck@us.ibm.com>
+- *          Josh Triplett <josh@freedesktop.org>
+- *
+- * See also:  Documentation/RCU/torture.txt
 - */
--#include <linux/rwsem.h>
--#include <linux/mutex.h>
--#include <linux/sched.h>
--#include <linux/delay.h>
+-#include <linux/types.h>
+-#include <linux/kernel.h>
+-#include <linux/init.h>
 -#include <linux/module.h>
--#include <linux/lockdep.h>
+-#include <linux/kthread.h>
+-#include <linux/err.h>
 -#include <linux/spinlock.h>
--#include <linux/kallsyms.h>
+-#include <linux/smp.h>
+-#include <linux/rcupdate.h>
 -#include <linux/interrupt.h>
--#include <linux/debug_locks.h>
--#include <linux/irqflags.h>
+-#include <linux/sched.h>
+-#include <asm/atomic.h>
+-#include <linux/bitops.h>
+-#include <linux/completion.h>
+-#include <linux/moduleparam.h>
+-#include <linux/percpu.h>
+-#include <linux/notifier.h>
+-#include <linux/freezer.h>
+-#include <linux/cpu.h>
+-#include <linux/delay.h>
+-#include <linux/byteorder/swabb.h>
+-#include <linux/stat.h>
+-#include <linux/srcu.h>
+-
+-MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("Paul E. McKenney <paulmck@us.ibm.com> and "
+-              "Josh Triplett <josh@freedesktop.org>");
+-
+-static int nreaders = -1;	/* # reader threads, defaults to 2*ncpus */
+-static int nfakewriters = 4;	/* # fake writer threads */
+-static int stat_interval;	/* Interval between stats, in seconds. */
+-				/*  Defaults to "only at end of test". */
+-static int verbose;		/* Print more debug info. */
+-static int test_no_idle_hz;	/* Test RCU's support for tickless idle CPUs. */
+-static int shuffle_interval = 5; /* Interval between shuffles (in sec)*/
+-static char *torture_type = "rcu"; /* What RCU implementation to torture. */
+-
+-module_param(nreaders, int, 0444);
+-MODULE_PARM_DESC(nreaders, "Number of RCU reader threads");
+-module_param(nfakewriters, int, 0444);
+-MODULE_PARM_DESC(nfakewriters, "Number of RCU fake writer threads");
+-module_param(stat_interval, int, 0444);
+-MODULE_PARM_DESC(stat_interval, "Number of seconds between stats printk()s");
+-module_param(verbose, bool, 0444);
+-MODULE_PARM_DESC(verbose, "Enable verbose debugging printk()s");
+-module_param(test_no_idle_hz, bool, 0444);
+-MODULE_PARM_DESC(test_no_idle_hz, "Test support for tickless idle CPUs");
+-module_param(shuffle_interval, int, 0444);
+-MODULE_PARM_DESC(shuffle_interval, "Number of seconds between shuffles");
+-module_param(torture_type, charp, 0444);
+-MODULE_PARM_DESC(torture_type, "Type of RCU to torture (rcu, rcu_bh, srcu)");
+-
+-#define TORTURE_FLAG "-torture:"
+-#define PRINTK_STRING(s) \
+-	do { printk(KERN_ALERT "%s" TORTURE_FLAG s "\n", torture_type); } while (0)
+-#define VERBOSE_PRINTK_STRING(s) \
+-	do { if (verbose) printk(KERN_ALERT "%s" TORTURE_FLAG s "\n", torture_type); } while (0)
+-#define VERBOSE_PRINTK_ERRSTRING(s) \
+-	do { if (verbose) printk(KERN_ALERT "%s" TORTURE_FLAG "!!! " s "\n", torture_type); } while (0)
+-
+-static char printk_buf[4096];
+-
+-static int nrealreaders;
+-static struct task_struct *writer_task;
+-static struct task_struct **fakewriter_tasks;
+-static struct task_struct **reader_tasks;
+-static struct task_struct *stats_task;
+-static struct task_struct *shuffler_task;
+-
+-#define RCU_TORTURE_PIPE_LEN 10
+-
+-struct rcu_torture {
+-	struct rcu_head rtort_rcu;
+-	int rtort_pipe_count;
+-	struct list_head rtort_free;
+-	int rtort_mbtest;
+-};
+-
+-static int fullstop = 0;	/* stop generating callbacks at test end. */
+-static LIST_HEAD(rcu_torture_freelist);
+-static struct rcu_torture *rcu_torture_current = NULL;
+-static long rcu_torture_current_version = 0;
+-static struct rcu_torture rcu_tortures[10 * RCU_TORTURE_PIPE_LEN];
+-static DEFINE_SPINLOCK(rcu_torture_lock);
+-static DEFINE_PER_CPU(long [RCU_TORTURE_PIPE_LEN + 1], rcu_torture_count) =
+-	{ 0 };
+-static DEFINE_PER_CPU(long [RCU_TORTURE_PIPE_LEN + 1], rcu_torture_batch) =
+-	{ 0 };
+-static atomic_t rcu_torture_wcount[RCU_TORTURE_PIPE_LEN + 1];
+-static atomic_t n_rcu_torture_alloc;
+-static atomic_t n_rcu_torture_alloc_fail;
+-static atomic_t n_rcu_torture_free;
+-static atomic_t n_rcu_torture_mberror;
+-static atomic_t n_rcu_torture_error;
+-static struct list_head rcu_torture_removed;
 -
 -/*
-- * Change this to 1 if you want to see the failure printouts:
+- * Allocate an element from the rcu_tortures pool.
 - */
--static unsigned int debug_locks_verbose;
--
--static int __init setup_debug_locks_verbose(char *str)
+-static struct rcu_torture *
+-rcu_torture_alloc(void)
 -{
--	get_option(&str, &debug_locks_verbose);
--
--	return 1;
--}
--
--__setup("debug_locks_verbose=", setup_debug_locks_verbose);
--
--#define FAILURE		0
--#define SUCCESS		1
--
--#define LOCKTYPE_SPIN	0x1
--#define LOCKTYPE_RWLOCK	0x2
--#define LOCKTYPE_MUTEX	0x4
--#define LOCKTYPE_RWSEM	0x8
--
--/*
-- * Normal standalone locks, for the circular and irq-context
-- * dependency tests:
-- */
--static DEFINE_SPINLOCK(lock_A);
--static DEFINE_SPINLOCK(lock_B);
--static DEFINE_SPINLOCK(lock_C);
--static DEFINE_SPINLOCK(lock_D);
--
--static DEFINE_RWLOCK(rwlock_A);
--static DEFINE_RWLOCK(rwlock_B);
--static DEFINE_RWLOCK(rwlock_C);
--static DEFINE_RWLOCK(rwlock_D);
--
--static DEFINE_MUTEX(mutex_A);
--static DEFINE_MUTEX(mutex_B);
--static DEFINE_MUTEX(mutex_C);
--static DEFINE_MUTEX(mutex_D);
--
--static DECLARE_RWSEM(rwsem_A);
--static DECLARE_RWSEM(rwsem_B);
--static DECLARE_RWSEM(rwsem_C);
--static DECLARE_RWSEM(rwsem_D);
--
--/*
-- * Locks that we initialize dynamically as well so that
-- * e.g. X1 and X2 becomes two instances of the same class,
-- * but X* and Y* are different classes. We do this so that
-- * we do not trigger a real lockup:
-- */
--static DEFINE_SPINLOCK(lock_X1);
--static DEFINE_SPINLOCK(lock_X2);
--static DEFINE_SPINLOCK(lock_Y1);
--static DEFINE_SPINLOCK(lock_Y2);
--static DEFINE_SPINLOCK(lock_Z1);
--static DEFINE_SPINLOCK(lock_Z2);
--
--static DEFINE_RWLOCK(rwlock_X1);
--static DEFINE_RWLOCK(rwlock_X2);
--static DEFINE_RWLOCK(rwlock_Y1);
--static DEFINE_RWLOCK(rwlock_Y2);
--static DEFINE_RWLOCK(rwlock_Z1);
--static DEFINE_RWLOCK(rwlock_Z2);
--
--static DEFINE_MUTEX(mutex_X1);
--static DEFINE_MUTEX(mutex_X2);
--static DEFINE_MUTEX(mutex_Y1);
--static DEFINE_MUTEX(mutex_Y2);
--static DEFINE_MUTEX(mutex_Z1);
--static DEFINE_MUTEX(mutex_Z2);
--
--static DECLARE_RWSEM(rwsem_X1);
--static DECLARE_RWSEM(rwsem_X2);
--static DECLARE_RWSEM(rwsem_Y1);
--static DECLARE_RWSEM(rwsem_Y2);
--static DECLARE_RWSEM(rwsem_Z1);
--static DECLARE_RWSEM(rwsem_Z2);
--
--/*
-- * non-inlined runtime initializers, to let separate locks share
-- * the same lock-class:
-- */
--#define INIT_CLASS_FUNC(class) 				\
--static noinline void					\
--init_class_##class(spinlock_t *lock, rwlock_t *rwlock, struct mutex *mutex, \
--		 struct rw_semaphore *rwsem)		\
--{							\
--	spin_lock_init(lock);				\
--	rwlock_init(rwlock);				\
--	mutex_init(mutex);				\
--	init_rwsem(rwsem);				\
--}
--
--INIT_CLASS_FUNC(X)
--INIT_CLASS_FUNC(Y)
--INIT_CLASS_FUNC(Z)
--
--static void init_shared_classes(void)
--{
--	init_class_X(&lock_X1, &rwlock_X1, &mutex_X1, &rwsem_X1);
--	init_class_X(&lock_X2, &rwlock_X2, &mutex_X2, &rwsem_X2);
--
--	init_class_Y(&lock_Y1, &rwlock_Y1, &mutex_Y1, &rwsem_Y1);
--	init_class_Y(&lock_Y2, &rwlock_Y2, &mutex_Y2, &rwsem_Y2);
--
--	init_class_Z(&lock_Z1, &rwlock_Z1, &mutex_Z1, &rwsem_Z1);
--	init_class_Z(&lock_Z2, &rwlock_Z2, &mutex_Z2, &rwsem_Z2);
--}
--
--/*
-- * For spinlocks and rwlocks we also do hardirq-safe / softirq-safe tests.
-- * The following functions use a lock from a simulated hardirq/softirq
-- * context, causing the locks to be marked as hardirq-safe/softirq-safe:
-- */
--
--#define HARDIRQ_DISABLE		local_irq_disable
--#define HARDIRQ_ENABLE		local_irq_enable
--
--#define HARDIRQ_ENTER()				\
--	local_irq_disable();			\
--	irq_enter();				\
--	WARN_ON(!in_irq());
--
--#define HARDIRQ_EXIT()				\
--	__irq_exit();				\
--	local_irq_enable();
--
--#define SOFTIRQ_DISABLE		local_bh_disable
--#define SOFTIRQ_ENABLE		local_bh_enable
--
--#define SOFTIRQ_ENTER()				\
--		local_bh_disable();		\
--		local_irq_disable();		\
--		trace_softirq_enter();		\
--		WARN_ON(!in_softirq());
--
--#define SOFTIRQ_EXIT()				\
--		trace_softirq_exit();		\
--		local_irq_enable();		\
--		local_bh_enable();
--
--/*
-- * Shortcuts for lock/unlock API variants, to keep
-- * the testcases compact:
-- */
--#define L(x)			spin_lock(&lock_##x)
--#define U(x)			spin_unlock(&lock_##x)
--#define LU(x)			L(x); U(x)
--#define SI(x)			spin_lock_init(&lock_##x)
--
--#define WL(x)			write_lock(&rwlock_##x)
--#define WU(x)			write_unlock(&rwlock_##x)
--#define WLU(x)			WL(x); WU(x)
--
--#define RL(x)			read_lock(&rwlock_##x)
--#define RU(x)			read_unlock(&rwlock_##x)
--#define RLU(x)			RL(x); RU(x)
--#define RWI(x)			rwlock_init(&rwlock_##x)
--
--#define ML(x)			mutex_lock(&mutex_##x)
--#define MU(x)			mutex_unlock(&mutex_##x)
--#define MI(x)			mutex_init(&mutex_##x)
--
--#define WSL(x)			down_write(&rwsem_##x)
--#define WSU(x)			up_write(&rwsem_##x)
--
--#define RSL(x)			down_read(&rwsem_##x)
--#define RSU(x)			up_read(&rwsem_##x)
--#define RWSI(x)			init_rwsem(&rwsem_##x)
--
--#define LOCK_UNLOCK_2(x,y)	LOCK(x); LOCK(y); UNLOCK(y); UNLOCK(x)
--
--/*
-- * Generate different permutations of the same testcase, using
-- * the same basic lock-dependency/state events:
-- */
--
--#define GENERATE_TESTCASE(name)			\
--						\
--static void name(void) { E(); }
--
--#define GENERATE_PERMUTATIONS_2_EVENTS(name)	\
--						\
--static void name##_12(void) { E1(); E2(); }	\
--static void name##_21(void) { E2(); E1(); }
--
--#define GENERATE_PERMUTATIONS_3_EVENTS(name)		\
--							\
--static void name##_123(void) { E1(); E2(); E3(); }	\
--static void name##_132(void) { E1(); E3(); E2(); }	\
--static void name##_213(void) { E2(); E1(); E3(); }	\
--static void name##_231(void) { E2(); E3(); E1(); }	\
--static void name##_312(void) { E3(); E1(); E2(); }	\
--static void name##_321(void) { E3(); E2(); E1(); }
--
--/*
-- * AA deadlock:
-- */
--
--#define E()					\
--						\
--	LOCK(X1);				\
--	LOCK(X2); /* this one should fail */
--
--/*
-- * 6 testcases:
-- */
--#include "locking-selftest-spin.h"
--GENERATE_TESTCASE(AA_spin)
--#include "locking-selftest-wlock.h"
--GENERATE_TESTCASE(AA_wlock)
--#include "locking-selftest-rlock.h"
--GENERATE_TESTCASE(AA_rlock)
--#include "locking-selftest-mutex.h"
--GENERATE_TESTCASE(AA_mutex)
--#include "locking-selftest-wsem.h"
--GENERATE_TESTCASE(AA_wsem)
--#include "locking-selftest-rsem.h"
--GENERATE_TESTCASE(AA_rsem)
--
--#undef E
--
--/*
-- * Special-case for read-locking, they are
-- * allowed to recurse on the same lock class:
-- */
--static void rlock_AA1(void)
--{
--	RL(X1);
--	RL(X1); // this one should NOT fail
--}
--
--static void rlock_AA1B(void)
--{
--	RL(X1);
--	RL(X2); // this one should NOT fail
--}
--
--static void rsem_AA1(void)
--{
--	RSL(X1);
--	RSL(X1); // this one should fail
--}
--
--static void rsem_AA1B(void)
--{
--	RSL(X1);
--	RSL(X2); // this one should fail
--}
--/*
-- * The mixing of read and write locks is not allowed:
-- */
--static void rlock_AA2(void)
--{
--	RL(X1);
--	WL(X2); // this one should fail
--}
--
--static void rsem_AA2(void)
--{
--	RSL(X1);
--	WSL(X2); // this one should fail
--}
--
--static void rlock_AA3(void)
--{
--	WL(X1);
--	RL(X2); // this one should fail
--}
--
--static void rsem_AA3(void)
--{
--	WSL(X1);
--	RSL(X2); // this one should fail
--}
--
--/*
-- * ABBA deadlock:
-- */
--
--#define E()					\
--						\
--	LOCK_UNLOCK_2(A, B);			\
--	LOCK_UNLOCK_2(B, A); /* fail */
--
--/*
-- * 6 testcases:
-- */
--#include "locking-selftest-spin.h"
--GENERATE_TESTCASE(ABBA_spin)
--#include "locking-selftest-wlock.h"
--GENERATE_TESTCASE(ABBA_wlock)
--#include "locking-selftest-rlock.h"
--GENERATE_TESTCASE(ABBA_rlock)
--#include "locking-selftest-mutex.h"
--GENERATE_TESTCASE(ABBA_mutex)
--#include "locking-selftest-wsem.h"
--GENERATE_TESTCASE(ABBA_wsem)
--#include "locking-selftest-rsem.h"
--GENERATE_TESTCASE(ABBA_rsem)
--
--#undef E
--
--/*
-- * AB BC CA deadlock:
-- */
--
--#define E()					\
--						\
--	LOCK_UNLOCK_2(A, B);			\
--	LOCK_UNLOCK_2(B, C);			\
--	LOCK_UNLOCK_2(C, A); /* fail */
--
--/*
-- * 6 testcases:
-- */
--#include "locking-selftest-spin.h"
--GENERATE_TESTCASE(ABBCCA_spin)
--#include "locking-selftest-wlock.h"
--GENERATE_TESTCASE(ABBCCA_wlock)
--#include "locking-selftest-rlock.h"
--GENERATE_TESTCASE(ABBCCA_rlock)
--#include "locking-selftest-mutex.h"
--GENERATE_TESTCASE(ABBCCA_mutex)
--#include "locking-selftest-wsem.h"
--GENERATE_TESTCASE(ABBCCA_wsem)
--#include "locking-selftest-rsem.h"
--GENERATE_TESTCASE(ABBCCA_rsem)
--
--#undef E
--
--/*
-- * AB CA BC deadlock:
-- */
--
--#define E()					\
--						\
--	LOCK_UNLOCK_2(A, B);			\
--	LOCK_UNLOCK_2(C, A);			\
--	LOCK_UNLOCK_2(B, C); /* fail */
--
--/*
-- * 6 testcases:
-- */
--#include "locking-selftest-spin.h"
--GENERATE_TESTCASE(ABCABC_spin)
--#include "locking-selftest-wlock.h"
--GENERATE_TESTCASE(ABCABC_wlock)
--#include "locking-selftest-rlock.h"
--GENERATE_TESTCASE(ABCABC_rlock)
--#include "locking-selftest-mutex.h"
--GENERATE_TESTCASE(ABCABC_mutex)
--#include "locking-selftest-wsem.h"
--GENERATE_TESTCASE(ABCABC_wsem)
--#include "locking-selftest-rsem.h"
--GENERATE_TESTCASE(ABCABC_rsem)
--
--#undef E
--
--/*
-- * AB BC CD DA deadlock:
-- */
--
--#define E()					\
--						\
--	LOCK_UNLOCK_2(A, B);			\
--	LOCK_UNLOCK_2(B, C);			\
--	LOCK_UNLOCK_2(C, D);			\
--	LOCK_UNLOCK_2(D, A); /* fail */
--
--/*
-- * 6 testcases:
-- */
--#include "locking-selftest-spin.h"
--GENERATE_TESTCASE(ABBCCDDA_spin)
--#include "locking-selftest-wlock.h"
--GENERATE_TESTCASE(ABBCCDDA_wlock)
--#include "locking-selftest-rlock.h"
--GENERATE_TESTCASE(ABBCCDDA_rlock)
--#include "locking-selftest-mutex.h"
--GENERATE_TESTCASE(ABBCCDDA_mutex)
--#include "locking-selftest-wsem.h"
--GENERATE_TESTCASE(ABBCCDDA_wsem)
--#include "locking-selftest-rsem.h"
--GENERATE_TESTCASE(ABBCCDDA_rsem)
--
--#undef E
--
--/*
-- * AB CD BD DA deadlock:
-- */
--#define E()					\
--						\
--	LOCK_UNLOCK_2(A, B);			\
--	LOCK_UNLOCK_2(C, D);			\
--	LOCK_UNLOCK_2(B, D);			\
--	LOCK_UNLOCK_2(D, A); /* fail */
--
--/*
-- * 6 testcases:
-- */
--#include "locking-selftest-spin.h"
--GENERATE_TESTCASE(ABCDBDDA_spin)
--#include "locking-selftest-wlock.h"
--GENERATE_TESTCASE(ABCDBDDA_wlock)
--#include "locking-selftest-rlock.h"
--GENERATE_TESTCASE(ABCDBDDA_rlock)
--#include "locking-selftest-mutex.h"
--GENERATE_TESTCASE(ABCDBDDA_mutex)
--#include "locking-selftest-wsem.h"
--GENERATE_TESTCASE(ABCDBDDA_wsem)
--#include "locking-selftest-rsem.h"
--GENERATE_TESTCASE(ABCDBDDA_rsem)
--
--#undef E
--
--/*
-- * AB CD BC DA deadlock:
-- */
--#define E()					\
--						\
--	LOCK_UNLOCK_2(A, B);			\
--	LOCK_UNLOCK_2(C, D);			\
--	LOCK_UNLOCK_2(B, C);			\
--	LOCK_UNLOCK_2(D, A); /* fail */
--
--/*
-- * 6 testcases:
-- */
--#include "locking-selftest-spin.h"
--GENERATE_TESTCASE(ABCDBCDA_spin)
--#include "locking-selftest-wlock.h"
--GENERATE_TESTCASE(ABCDBCDA_wlock)
--#include "locking-selftest-rlock.h"
--GENERATE_TESTCASE(ABCDBCDA_rlock)
--#include "locking-selftest-mutex.h"
--GENERATE_TESTCASE(ABCDBCDA_mutex)
--#include "locking-selftest-wsem.h"
--GENERATE_TESTCASE(ABCDBCDA_wsem)
--#include "locking-selftest-rsem.h"
--GENERATE_TESTCASE(ABCDBCDA_rsem)
--
--#undef E
--
--/*
-- * Double unlock:
-- */
--#define E()					\
--						\
--	LOCK(A);				\
--	UNLOCK(A);				\
--	UNLOCK(A); /* fail */
--
--/*
-- * 6 testcases:
-- */
--#include "locking-selftest-spin.h"
--GENERATE_TESTCASE(double_unlock_spin)
--#include "locking-selftest-wlock.h"
--GENERATE_TESTCASE(double_unlock_wlock)
--#include "locking-selftest-rlock.h"
--GENERATE_TESTCASE(double_unlock_rlock)
--#include "locking-selftest-mutex.h"
--GENERATE_TESTCASE(double_unlock_mutex)
--#include "locking-selftest-wsem.h"
--GENERATE_TESTCASE(double_unlock_wsem)
--#include "locking-selftest-rsem.h"
--GENERATE_TESTCASE(double_unlock_rsem)
--
--#undef E
--
--/*
-- * Bad unlock ordering:
-- */
--#define E()					\
--						\
--	LOCK(A);				\
--	LOCK(B);				\
--	UNLOCK(A); /* fail */			\
--	UNLOCK(B);
--
--/*
-- * 6 testcases:
-- */
--#include "locking-selftest-spin.h"
--GENERATE_TESTCASE(bad_unlock_order_spin)
--#include "locking-selftest-wlock.h"
--GENERATE_TESTCASE(bad_unlock_order_wlock)
--#include "locking-selftest-rlock.h"
--GENERATE_TESTCASE(bad_unlock_order_rlock)
--#include "locking-selftest-mutex.h"
--GENERATE_TESTCASE(bad_unlock_order_mutex)
--#include "locking-selftest-wsem.h"
--GENERATE_TESTCASE(bad_unlock_order_wsem)
--#include "locking-selftest-rsem.h"
--GENERATE_TESTCASE(bad_unlock_order_rsem)
--
--#undef E
--
--/*
-- * initializing a held lock:
-- */
--#define E()					\
--						\
--	LOCK(A);				\
--	INIT(A); /* fail */
--
--/*
-- * 6 testcases:
-- */
--#include "locking-selftest-spin.h"
--GENERATE_TESTCASE(init_held_spin)
--#include "locking-selftest-wlock.h"
--GENERATE_TESTCASE(init_held_wlock)
--#include "locking-selftest-rlock.h"
--GENERATE_TESTCASE(init_held_rlock)
--#include "locking-selftest-mutex.h"
--GENERATE_TESTCASE(init_held_mutex)
--#include "locking-selftest-wsem.h"
--GENERATE_TESTCASE(init_held_wsem)
--#include "locking-selftest-rsem.h"
--GENERATE_TESTCASE(init_held_rsem)
--
--#undef E
--
--/*
-- * locking an irq-safe lock with irqs enabled:
-- */
--#define E1()				\
--					\
--	IRQ_ENTER();			\
--	LOCK(A);			\
--	UNLOCK(A);			\
--	IRQ_EXIT();
--
--#define E2()				\
--					\
--	LOCK(A);			\
--	UNLOCK(A);
--
--/*
-- * Generate 24 testcases:
-- */
--#include "locking-selftest-spin-hardirq.h"
--GENERATE_PERMUTATIONS_2_EVENTS(irqsafe1_hard_spin)
--
--#include "locking-selftest-rlock-hardirq.h"
--GENERATE_PERMUTATIONS_2_EVENTS(irqsafe1_hard_rlock)
--
--#include "locking-selftest-wlock-hardirq.h"
--GENERATE_PERMUTATIONS_2_EVENTS(irqsafe1_hard_wlock)
--
--#include "locking-selftest-spin-softirq.h"
--GENERATE_PERMUTATIONS_2_EVENTS(irqsafe1_soft_spin)
--
--#include "locking-selftest-rlock-softirq.h"
--GENERATE_PERMUTATIONS_2_EVENTS(irqsafe1_soft_rlock)
--
--#include "locking-selftest-wlock-softirq.h"
--GENERATE_PERMUTATIONS_2_EVENTS(irqsafe1_soft_wlock)
--
--#undef E1
--#undef E2
--
--/*
-- * Enabling hardirqs with a softirq-safe lock held:
-- */
--#define E1()				\
--					\
--	SOFTIRQ_ENTER();		\
--	LOCK(A);			\
--	UNLOCK(A);			\
--	SOFTIRQ_EXIT();
--
--#define E2()				\
--					\
--	HARDIRQ_DISABLE();		\
--	LOCK(A);			\
--	HARDIRQ_ENABLE();		\
--	UNLOCK(A);
--
--/*
-- * Generate 12 testcases:
-- */
--#include "locking-selftest-spin.h"
--GENERATE_PERMUTATIONS_2_EVENTS(irqsafe2A_spin)
--
--#include "locking-selftest-wlock.h"
--GENERATE_PERMUTATIONS_2_EVENTS(irqsafe2A_wlock)
--
--#include "locking-selftest-rlock.h"
--GENERATE_PERMUTATIONS_2_EVENTS(irqsafe2A_rlock)
--
--#undef E1
--#undef E2
--
--/*
-- * Enabling irqs with an irq-safe lock held:
-- */
--#define E1()				\
--					\
--	IRQ_ENTER();			\
--	LOCK(A);			\
--	UNLOCK(A);			\
--	IRQ_EXIT();
--
--#define E2()				\
--					\
--	IRQ_DISABLE();			\
--	LOCK(A);			\
--	IRQ_ENABLE();			\
--	UNLOCK(A);
--
--/*
-- * Generate 24 testcases:
-- */
--#include "locking-selftest-spin-hardirq.h"
--GENERATE_PERMUTATIONS_2_EVENTS(irqsafe2B_hard_spin)
--
--#include "locking-selftest-rlock-hardirq.h"
--GENERATE_PERMUTATIONS_2_EVENTS(irqsafe2B_hard_rlock)
--
--#include "locking-selftest-wlock-hardirq.h"
--GENERATE_PERMUTATIONS_2_EVENTS(irqsafe2B_hard_wlock)
--
--#include "locking-selftest-spin-softirq.h"
--GENERATE_PERMUTATIONS_2_EVENTS(irqsafe2B_soft_spin)
--
--#include "locking-selftest-rlock-softirq.h"
--GENERATE_PERMUTATIONS_2_EVENTS(irqsafe2B_soft_rlock)
--
--#include "locking-selftest-wlock-softirq.h"
--GENERATE_PERMUTATIONS_2_EVENTS(irqsafe2B_soft_wlock)
--
--#undef E1
--#undef E2
--
--/*
-- * Acquiring a irq-unsafe lock while holding an irq-safe-lock:
-- */
--#define E1()				\
--					\
--	LOCK(A);			\
--	LOCK(B);			\
--	UNLOCK(B);			\
--	UNLOCK(A);			\
--
--#define E2()				\
--					\
--	LOCK(B);			\
--	UNLOCK(B);
--
--#define E3()				\
--					\
--	IRQ_ENTER();			\
--	LOCK(A);			\
--	UNLOCK(A);			\
--	IRQ_EXIT();
--
--/*
-- * Generate 36 testcases:
-- */
--#include "locking-selftest-spin-hardirq.h"
--GENERATE_PERMUTATIONS_3_EVENTS(irqsafe3_hard_spin)
--
--#include "locking-selftest-rlock-hardirq.h"
--GENERATE_PERMUTATIONS_3_EVENTS(irqsafe3_hard_rlock)
--
--#include "locking-selftest-wlock-hardirq.h"
--GENERATE_PERMUTATIONS_3_EVENTS(irqsafe3_hard_wlock)
--
--#include "locking-selftest-spin-softirq.h"
--GENERATE_PERMUTATIONS_3_EVENTS(irqsafe3_soft_spin)
--
--#include "locking-selftest-rlock-softirq.h"
--GENERATE_PERMUTATIONS_3_EVENTS(irqsafe3_soft_rlock)
--
--#include "locking-selftest-wlock-softirq.h"
--GENERATE_PERMUTATIONS_3_EVENTS(irqsafe3_soft_wlock)
--
--#undef E1
--#undef E2
--#undef E3
--
--/*
-- * If a lock turns into softirq-safe, but earlier it took
-- * a softirq-unsafe lock:
-- */
--
--#define E1()				\
--	IRQ_DISABLE();			\
--	LOCK(A);			\
--	LOCK(B);			\
--	UNLOCK(B);			\
--	UNLOCK(A);			\
--	IRQ_ENABLE();
--
--#define E2()				\
--	LOCK(B);			\
--	UNLOCK(B);
--
--#define E3()				\
--	IRQ_ENTER();			\
--	LOCK(A);			\
--	UNLOCK(A);			\
--	IRQ_EXIT();
--
--/*
-- * Generate 36 testcases:
-- */
--#include "locking-selftest-spin-hardirq.h"
--GENERATE_PERMUTATIONS_3_EVENTS(irqsafe4_hard_spin)
--
--#include "locking-selftest-rlock-hardirq.h"
--GENERATE_PERMUTATIONS_3_EVENTS(irqsafe4_hard_rlock)
--
--#include "locking-selftest-wlock-hardirq.h"
--GENERATE_PERMUTATIONS_3_EVENTS(irqsafe4_hard_wlock)
--
--#include "locking-selftest-spin-softirq.h"
--GENERATE_PERMUTATIONS_3_EVENTS(irqsafe4_soft_spin)
--
--#include "locking-selftest-rlock-softirq.h"
--GENERATE_PERMUTATIONS_3_EVENTS(irqsafe4_soft_rlock)
--
--#include "locking-selftest-wlock-softirq.h"
--GENERATE_PERMUTATIONS_3_EVENTS(irqsafe4_soft_wlock)
--
--#undef E1
--#undef E2
--#undef E3
--
--/*
-- * read-lock / write-lock irq inversion.
-- *
-- * Deadlock scenario:
-- *
-- * CPU#1 is at #1, i.e. it has write-locked A, but has not
-- * taken B yet.
-- *
-- * CPU#2 is at #2, i.e. it has locked B.
-- *
-- * Hardirq hits CPU#2 at point #2 and is trying to read-lock A.
-- *
-- * The deadlock occurs because CPU#1 will spin on B, and CPU#2
-- * will spin on A.
-- */
--
--#define E1()				\
--					\
--	IRQ_DISABLE();			\
--	WL(A);				\
--	LOCK(B);			\
--	UNLOCK(B);			\
--	WU(A);				\
--	IRQ_ENABLE();
--
--#define E2()				\
--					\
--	LOCK(B);			\
--	UNLOCK(B);
--
--#define E3()				\
--					\
--	IRQ_ENTER();			\
--	RL(A);				\
--	RU(A);				\
--	IRQ_EXIT();
--
--/*
-- * Generate 36 testcases:
-- */
--#include "locking-selftest-spin-hardirq.h"
--GENERATE_PERMUTATIONS_3_EVENTS(irq_inversion_hard_spin)
--
--#include "locking-selftest-rlock-hardirq.h"
--GENERATE_PERMUTATIONS_3_EVENTS(irq_inversion_hard_rlock)
--
--#include "locking-selftest-wlock-hardirq.h"
--GENERATE_PERMUTATIONS_3_EVENTS(irq_inversion_hard_wlock)
--
--#include "locking-selftest-spin-softirq.h"
--GENERATE_PERMUTATIONS_3_EVENTS(irq_inversion_soft_spin)
--
--#include "locking-selftest-rlock-softirq.h"
--GENERATE_PERMUTATIONS_3_EVENTS(irq_inversion_soft_rlock)
--
--#include "locking-selftest-wlock-softirq.h"
--GENERATE_PERMUTATIONS_3_EVENTS(irq_inversion_soft_wlock)
--
--#undef E1
--#undef E2
--#undef E3
--
--/*
-- * read-lock / write-lock recursion that is actually safe.
-- */
--
--#define E1()				\
--					\
--	IRQ_DISABLE();			\
--	WL(A);				\
--	WU(A);				\
--	IRQ_ENABLE();
--
--#define E2()				\
--					\
--	RL(A);				\
--	RU(A);				\
--
--#define E3()				\
--					\
--	IRQ_ENTER();			\
--	RL(A);				\
--	L(B);				\
--	U(B);				\
--	RU(A);				\
--	IRQ_EXIT();
--
--/*
-- * Generate 12 testcases:
-- */
--#include "locking-selftest-hardirq.h"
--GENERATE_PERMUTATIONS_3_EVENTS(irq_read_recursion_hard)
--
--#include "locking-selftest-softirq.h"
--GENERATE_PERMUTATIONS_3_EVENTS(irq_read_recursion_soft)
--
--#undef E1
--#undef E2
--#undef E3
--
--/*
-- * read-lock / write-lock recursion that is unsafe.
-- */
--
--#define E1()				\
--					\
--	IRQ_DISABLE();			\
--	L(B);				\
--	WL(A);				\
--	WU(A);				\
--	U(B);				\
--	IRQ_ENABLE();
--
--#define E2()				\
--					\
--	RL(A);				\
--	RU(A);				\
--
--#define E3()				\
--					\
--	IRQ_ENTER();			\
--	L(B);				\
--	U(B);				\
--	IRQ_EXIT();
--
--/*
-- * Generate 12 testcases:
-- */
--#include "locking-selftest-hardirq.h"
--// GENERATE_PERMUTATIONS_3_EVENTS(irq_read_recursion2_hard)
--
--#include "locking-selftest-softirq.h"
--// GENERATE_PERMUTATIONS_3_EVENTS(irq_read_recursion2_soft)
--
--#ifdef CONFIG_DEBUG_LOCK_ALLOC
--# define I_SPINLOCK(x)	lockdep_reset_lock(&lock_##x.dep_map)
--# define I_RWLOCK(x)	lockdep_reset_lock(&rwlock_##x.dep_map)
--# define I_MUTEX(x)	lockdep_reset_lock(&mutex_##x.dep_map)
--# define I_RWSEM(x)	lockdep_reset_lock(&rwsem_##x.dep_map)
--#else
--# define I_SPINLOCK(x)
--# define I_RWLOCK(x)
--# define I_MUTEX(x)
--# define I_RWSEM(x)
--#endif
--
--#define I1(x)					\
--	do {					\
--		I_SPINLOCK(x);			\
--		I_RWLOCK(x);			\
--		I_MUTEX(x);			\
--		I_RWSEM(x);			\
--	} while (0)
--
--#define I2(x)					\
--	do {					\
--		spin_lock_init(&lock_##x);	\
--		rwlock_init(&rwlock_##x);	\
--		mutex_init(&mutex_##x);		\
--		init_rwsem(&rwsem_##x);		\
--	} while (0)
--
--static void reset_locks(void)
--{
--	local_irq_disable();
--	I1(A); I1(B); I1(C); I1(D);
--	I1(X1); I1(X2); I1(Y1); I1(Y2); I1(Z1); I1(Z2);
--	lockdep_reset();
--	I2(A); I2(B); I2(C); I2(D);
--	init_shared_classes();
--	local_irq_enable();
--}
--
--#undef I
--
--static int testcase_total;
--static int testcase_successes;
--static int expected_testcase_failures;
--static int unexpected_testcase_failures;
--
--static void dotest(void (*testcase_fn)(void), int expected, int lockclass_mask)
--{
--	unsigned long saved_preempt_count = preempt_count();
--	int expected_failure = 0;
--
--	WARN_ON(irqs_disabled());
--
--	testcase_fn();
--	/*
--	 * Filter out expected failures:
--	 */
--#ifndef CONFIG_PROVE_LOCKING
--	if ((lockclass_mask & LOCKTYPE_SPIN) && debug_locks != expected)
--		expected_failure = 1;
--	if ((lockclass_mask & LOCKTYPE_RWLOCK) && debug_locks != expected)
--		expected_failure = 1;
--	if ((lockclass_mask & LOCKTYPE_MUTEX) && debug_locks != expected)
--		expected_failure = 1;
--	if ((lockclass_mask & LOCKTYPE_RWSEM) && debug_locks != expected)
--		expected_failure = 1;
--#endif
--	if (debug_locks != expected) {
--		if (expected_failure) {
--			expected_testcase_failures++;
--			printk("failed|");
--		} else {
--			unexpected_testcase_failures++;
--
--			printk("FAILED|");
--			dump_stack();
--		}
--	} else {
--		testcase_successes++;
--		printk("  ok  |");
+-	struct list_head *p;
+-
+-	spin_lock_bh(&rcu_torture_lock);
+-	if (list_empty(&rcu_torture_freelist)) {
+-		atomic_inc(&n_rcu_torture_alloc_fail);
+-		spin_unlock_bh(&rcu_torture_lock);
+-		return NULL;
 -	}
--	testcase_total++;
--
--	if (debug_locks_verbose)
--		printk(" lockclass mask: %x, debug_locks: %d, expected: %d\n",
--			lockclass_mask, debug_locks, expected);
--	/*
--	 * Some tests (e.g. double-unlock) might corrupt the preemption
--	 * count, so restore it:
--	 */
--	preempt_count() = saved_preempt_count;
--#ifdef CONFIG_TRACE_IRQFLAGS
--	if (softirq_count())
--		current->softirqs_enabled = 0;
--	else
--		current->softirqs_enabled = 1;
--#endif
--
--	reset_locks();
+-	atomic_inc(&n_rcu_torture_alloc);
+-	p = rcu_torture_freelist.next;
+-	list_del_init(p);
+-	spin_unlock_bh(&rcu_torture_lock);
+-	return container_of(p, struct rcu_torture, rtort_free);
 -}
--
--static inline void print_testname(const char *testname)
--{
--	printk("%33s:", testname);
--}
--
--#define DO_TESTCASE_1(desc, name, nr)				\
--	print_testname(desc"/"#nr);				\
--	dotest(name##_##nr, SUCCESS, LOCKTYPE_RWLOCK);		\
--	printk("\n");
--
--#define DO_TESTCASE_1B(desc, name, nr)				\
--	print_testname(desc"/"#nr);				\
--	dotest(name##_##nr, FAILURE, LOCKTYPE_RWLOCK);		\
--	printk("\n");
--
--#define DO_TESTCASE_3(desc, name, nr)				\
--	print_testname(desc"/"#nr);				\
--	dotest(name##_spin_##nr, FAILURE, LOCKTYPE_SPIN);	\
--	dotest(name##_wlock_##nr, FAILURE, LOCKTYPE_RWLOCK);	\
--	dotest(name##_rlock_##nr, SUCCESS, LOCKTYPE_RWLOCK);	\
--	printk("\n");
--
--#define DO_TESTCASE_3RW(desc, name, nr)				\
--	print_testname(desc"/"#nr);				\
--	dotest(name##_spin_##nr, FAILURE, LOCKTYPE_SPIN|LOCKTYPE_RWLOCK);\
--	dotest(name##_wlock_##nr, FAILURE, LOCKTYPE_RWLOCK);	\
--	dotest(name##_rlock_##nr, SUCCESS, LOCKTYPE_RWLOCK);	\
--	printk("\n");
--
--#define DO_TESTCASE_6(desc, name)				\
--	print_testname(desc);					\
--	dotest(name##_spin, FAILURE, LOCKTYPE_SPIN);		\
--	dotest(name##_wlock, FAILURE, LOCKTYPE_RWLOCK);		\
--	dotest(name##_rlock, FAILURE, LOCKTYPE_RWLOCK);		\
--	dotest(name##_mutex, FAILURE, LOCKTYPE_MUTEX);		\
--	dotest(name##_wsem, FAILURE, LOCKTYPE_RWSEM);		\
--	dotest(name##_rsem, FAILURE, LOCKTYPE_RWSEM);		\
--	printk("\n");
--
--#define DO_TESTCASE_6_SUCCESS(desc, name)			\
--	print_testname(desc);					\
--	dotest(name##_spin, SUCCESS, LOCKTYPE_SPIN);		\
--	dotest(name##_wlock, SUCCESS, LOCKTYPE_RWLOCK);		\
--	dotest(name##_rlock, SUCCESS, LOCKTYPE_RWLOCK);		\
--	dotest(name##_mutex, SUCCESS, LOCKTYPE_MUTEX);		\
--	dotest(name##_wsem, SUCCESS, LOCKTYPE_RWSEM);		\
--	dotest(name##_rsem, SUCCESS, LOCKTYPE_RWSEM);		\
--	printk("\n");
 -
 -/*
-- * 'read' variant: rlocks must not trigger.
+- * Free an element to the rcu_tortures pool.
 - */
--#define DO_TESTCASE_6R(desc, name)				\
--	print_testname(desc);					\
--	dotest(name##_spin, FAILURE, LOCKTYPE_SPIN);		\
--	dotest(name##_wlock, FAILURE, LOCKTYPE_RWLOCK);		\
--	dotest(name##_rlock, SUCCESS, LOCKTYPE_RWLOCK);		\
--	dotest(name##_mutex, FAILURE, LOCKTYPE_MUTEX);		\
--	dotest(name##_wsem, FAILURE, LOCKTYPE_RWSEM);		\
--	dotest(name##_rsem, FAILURE, LOCKTYPE_RWSEM);		\
--	printk("\n");
--
--#define DO_TESTCASE_2I(desc, name, nr)				\
--	DO_TESTCASE_1("hard-"desc, name##_hard, nr);		\
--	DO_TESTCASE_1("soft-"desc, name##_soft, nr);
--
--#define DO_TESTCASE_2IB(desc, name, nr)				\
--	DO_TESTCASE_1B("hard-"desc, name##_hard, nr);		\
--	DO_TESTCASE_1B("soft-"desc, name##_soft, nr);
--
--#define DO_TESTCASE_6I(desc, name, nr)				\
--	DO_TESTCASE_3("hard-"desc, name##_hard, nr);		\
--	DO_TESTCASE_3("soft-"desc, name##_soft, nr);
--
--#define DO_TESTCASE_6IRW(desc, name, nr)			\
--	DO_TESTCASE_3RW("hard-"desc, name##_hard, nr);		\
--	DO_TESTCASE_3RW("soft-"desc, name##_soft, nr);
--
--#define DO_TESTCASE_2x3(desc, name)				\
--	DO_TESTCASE_3(desc, name, 12);				\
--	DO_TESTCASE_3(desc, name, 21);
--
--#define DO_TESTCASE_2x6(desc, name)				\
--	DO_TESTCASE_6I(desc, name, 12);				\
--	DO_TESTCASE_6I(desc, name, 21);
--
--#define DO_TESTCASE_6x2(desc, name)				\
--	DO_TESTCASE_2I(desc, name, 123);			\
--	DO_TESTCASE_2I(desc, name, 132);			\
--	DO_TESTCASE_2I(desc, name, 213);			\
--	DO_TESTCASE_2I(desc, name, 231);			\
--	DO_TESTCASE_2I(desc, name, 312);			\
--	DO_TESTCASE_2I(desc, name, 321);
--
--#define DO_TESTCASE_6x2B(desc, name)				\
--	DO_TESTCASE_2IB(desc, name, 123);			\
--	DO_TESTCASE_2IB(desc, name, 132);			\
--	DO_TESTCASE_2IB(desc, name, 213);			\
--	DO_TESTCASE_2IB(desc, name, 231);			\
--	DO_TESTCASE_2IB(desc, name, 312);			\
--	DO_TESTCASE_2IB(desc, name, 321);
--
--#define DO_TESTCASE_6x6(desc, name)				\
--	DO_TESTCASE_6I(desc, name, 123);			\
--	DO_TESTCASE_6I(desc, name, 132);			\
--	DO_TESTCASE_6I(desc, name, 213);			\
--	DO_TESTCASE_6I(desc, name, 231);			\
--	DO_TESTCASE_6I(desc, name, 312);			\
--	DO_TESTCASE_6I(desc, name, 321);
--
--#define DO_TESTCASE_6x6RW(desc, name)				\
--	DO_TESTCASE_6IRW(desc, name, 123);			\
--	DO_TESTCASE_6IRW(desc, name, 132);			\
--	DO_TESTCASE_6IRW(desc, name, 213);			\
--	DO_TESTCASE_6IRW(desc, name, 231);			\
--	DO_TESTCASE_6IRW(desc, name, 312);			\
--	DO_TESTCASE_6IRW(desc, name, 321);
--
--
--void locking_selftest(void)
+-static void
+-rcu_torture_free(struct rcu_torture *p)
 -{
--	/*
--	 * Got a locking failure before the selftest ran?
--	 */
--	if (!debug_locks) {
--		printk("----------------------------------\n");
--		printk("| Locking API testsuite disabled |\n");
--		printk("----------------------------------\n");
+-	atomic_inc(&n_rcu_torture_free);
+-	spin_lock_bh(&rcu_torture_lock);
+-	list_add_tail(&p->rtort_free, &rcu_torture_freelist);
+-	spin_unlock_bh(&rcu_torture_lock);
+-}
+-
+-struct rcu_random_state {
+-	unsigned long rrs_state;
+-	long rrs_count;
+-};
+-
+-#define RCU_RANDOM_MULT 39916801  /* prime */
+-#define RCU_RANDOM_ADD	479001701 /* prime */
+-#define RCU_RANDOM_REFRESH 10000
+-
+-#define DEFINE_RCU_RANDOM(name) struct rcu_random_state name = { 0, 0 }
+-
+-/*
+- * Crude but fast random-number generator.  Uses a linear congruential
+- * generator, with occasional help from cpu_clock().
+- */
+-static unsigned long
+-rcu_random(struct rcu_random_state *rrsp)
+-{
+-	if (--rrsp->rrs_count < 0) {
+-		rrsp->rrs_state +=
+-			(unsigned long)cpu_clock(raw_smp_processor_id());
+-		rrsp->rrs_count = RCU_RANDOM_REFRESH;
+-	}
+-	rrsp->rrs_state = rrsp->rrs_state * RCU_RANDOM_MULT + RCU_RANDOM_ADD;
+-	return swahw32(rrsp->rrs_state);
+-}
+-
+-/*
+- * Operations vector for selecting different types of tests.
+- */
+-
+-struct rcu_torture_ops {
+-	void (*init)(void);
+-	void (*cleanup)(void);
+-	int (*readlock)(void);
+-	void (*readdelay)(struct rcu_random_state *rrsp);
+-	void (*readunlock)(int idx);
+-	int (*completed)(void);
+-	void (*deferredfree)(struct rcu_torture *p);
+-	void (*sync)(void);
+-	int (*stats)(char *page);
+-	char *name;
+-};
+-static struct rcu_torture_ops *cur_ops = NULL;
+-
+-/*
+- * Definitions for rcu torture testing.
+- */
+-
+-static int rcu_torture_read_lock(void) __acquires(RCU)
+-{
+-	rcu_read_lock();
+-	return 0;
+-}
+-
+-static void rcu_read_delay(struct rcu_random_state *rrsp)
+-{
+-	long delay;
+-	const long longdelay = 200;
+-
+-	/* We want there to be long-running readers, but not all the time. */
+-
+-	delay = rcu_random(rrsp) % (nrealreaders * 2 * longdelay);
+-	if (!delay)
+-		udelay(longdelay);
+-}
+-
+-static void rcu_torture_read_unlock(int idx) __releases(RCU)
+-{
+-	rcu_read_unlock();
+-}
+-
+-static int rcu_torture_completed(void)
+-{
+-	return rcu_batches_completed();
+-}
+-
+-static void
+-rcu_torture_cb(struct rcu_head *p)
+-{
+-	int i;
+-	struct rcu_torture *rp = container_of(p, struct rcu_torture, rtort_rcu);
+-
+-	if (fullstop) {
+-		/* Test is ending, just drop callbacks on the floor. */
+-		/* The next initialization will pick up the pieces. */
+-		return;
+-	}
+-	i = rp->rtort_pipe_count;
+-	if (i > RCU_TORTURE_PIPE_LEN)
+-		i = RCU_TORTURE_PIPE_LEN;
+-	atomic_inc(&rcu_torture_wcount[i]);
+-	if (++rp->rtort_pipe_count >= RCU_TORTURE_PIPE_LEN) {
+-		rp->rtort_mbtest = 0;
+-		rcu_torture_free(rp);
+-	} else
+-		cur_ops->deferredfree(rp);
+-}
+-
+-static void rcu_torture_deferred_free(struct rcu_torture *p)
+-{
+-	call_rcu(&p->rtort_rcu, rcu_torture_cb);
+-}
+-
+-static struct rcu_torture_ops rcu_ops = {
+-	.init = NULL,
+-	.cleanup = NULL,
+-	.readlock = rcu_torture_read_lock,
+-	.readdelay = rcu_read_delay,
+-	.readunlock = rcu_torture_read_unlock,
+-	.completed = rcu_torture_completed,
+-	.deferredfree = rcu_torture_deferred_free,
+-	.sync = synchronize_rcu,
+-	.stats = NULL,
+-	.name = "rcu"
+-};
+-
+-static void rcu_sync_torture_deferred_free(struct rcu_torture *p)
+-{
+-	int i;
+-	struct rcu_torture *rp;
+-	struct rcu_torture *rp1;
+-
+-	cur_ops->sync();
+-	list_add(&p->rtort_free, &rcu_torture_removed);
+-	list_for_each_entry_safe(rp, rp1, &rcu_torture_removed, rtort_free) {
+-		i = rp->rtort_pipe_count;
+-		if (i > RCU_TORTURE_PIPE_LEN)
+-			i = RCU_TORTURE_PIPE_LEN;
+-		atomic_inc(&rcu_torture_wcount[i]);
+-		if (++rp->rtort_pipe_count >= RCU_TORTURE_PIPE_LEN) {
+-			rp->rtort_mbtest = 0;
+-			list_del(&rp->rtort_free);
+-			rcu_torture_free(rp);
+-		}
+-	}
+-}
+-
+-static void rcu_sync_torture_init(void)
+-{
+-	INIT_LIST_HEAD(&rcu_torture_removed);
+-}
+-
+-static struct rcu_torture_ops rcu_sync_ops = {
+-	.init = rcu_sync_torture_init,
+-	.cleanup = NULL,
+-	.readlock = rcu_torture_read_lock,
+-	.readdelay = rcu_read_delay,
+-	.readunlock = rcu_torture_read_unlock,
+-	.completed = rcu_torture_completed,
+-	.deferredfree = rcu_sync_torture_deferred_free,
+-	.sync = synchronize_rcu,
+-	.stats = NULL,
+-	.name = "rcu_sync"
+-};
+-
+-/*
+- * Definitions for rcu_bh torture testing.
+- */
+-
+-static int rcu_bh_torture_read_lock(void) __acquires(RCU_BH)
+-{
+-	rcu_read_lock_bh();
+-	return 0;
+-}
+-
+-static void rcu_bh_torture_read_unlock(int idx) __releases(RCU_BH)
+-{
+-	rcu_read_unlock_bh();
+-}
+-
+-static int rcu_bh_torture_completed(void)
+-{
+-	return rcu_batches_completed_bh();
+-}
+-
+-static void rcu_bh_torture_deferred_free(struct rcu_torture *p)
+-{
+-	call_rcu_bh(&p->rtort_rcu, rcu_torture_cb);
+-}
+-
+-struct rcu_bh_torture_synchronize {
+-	struct rcu_head head;
+-	struct completion completion;
+-};
+-
+-static void rcu_bh_torture_wakeme_after_cb(struct rcu_head *head)
+-{
+-	struct rcu_bh_torture_synchronize *rcu;
+-
+-	rcu = container_of(head, struct rcu_bh_torture_synchronize, head);
+-	complete(&rcu->completion);
+-}
+-
+-static void rcu_bh_torture_synchronize(void)
+-{
+-	struct rcu_bh_torture_synchronize rcu;
+-
+-	init_completion(&rcu.completion);
+-	call_rcu_bh(&rcu.head, rcu_bh_torture_wakeme_after_cb);
+-	wait_for_completion(&rcu.completion);
+-}
+-
+-static struct rcu_torture_ops rcu_bh_ops = {
+-	.init = NULL,
+-	.cleanup = NULL,
+-	.readlock = rcu_bh_torture_read_lock,
+-	.readdelay = rcu_read_delay,  /* just reuse rcu's version. */
+-	.readunlock = rcu_bh_torture_read_unlock,
+-	.completed = rcu_bh_torture_completed,
+-	.deferredfree = rcu_bh_torture_deferred_free,
+-	.sync = rcu_bh_torture_synchronize,
+-	.stats = NULL,
+-	.name = "rcu_bh"
+-};
+-
+-static struct rcu_torture_ops rcu_bh_sync_ops = {
+-	.init = rcu_sync_torture_init,
+-	.cleanup = NULL,
+-	.readlock = rcu_bh_torture_read_lock,
+-	.readdelay = rcu_read_delay,  /* just reuse rcu's version. */
+-	.readunlock = rcu_bh_torture_read_unlock,
+-	.completed = rcu_bh_torture_completed,
+-	.deferredfree = rcu_sync_torture_deferred_free,
+-	.sync = rcu_bh_torture_synchronize,
+-	.stats = NULL,
+-	.name = "rcu_bh_sync"
+-};
+-
+-/*
+- * Definitions for srcu torture testing.
+- */
+-
+-static struct srcu_struct srcu_ctl;
+-
+-static void srcu_torture_init(void)
+-{
+-	init_srcu_struct(&srcu_ctl);
+-	rcu_sync_torture_init();
+-}
+-
+-static void srcu_torture_cleanup(void)
+-{
+-	synchronize_srcu(&srcu_ctl);
+-	cleanup_srcu_struct(&srcu_ctl);
+-}
+-
+-static int srcu_torture_read_lock(void) __acquires(&srcu_ctl)
+-{
+-	return srcu_read_lock(&srcu_ctl);
+-}
+-
+-static void srcu_read_delay(struct rcu_random_state *rrsp)
+-{
+-	long delay;
+-	const long uspertick = 1000000 / HZ;
+-	const long longdelay = 10;
+-
+-	/* We want there to be long-running readers, but not all the time. */
+-
+-	delay = rcu_random(rrsp) % (nrealreaders * 2 * longdelay * uspertick);
+-	if (!delay)
+-		schedule_timeout_interruptible(longdelay);
+-}
+-
+-static void srcu_torture_read_unlock(int idx) __releases(&srcu_ctl)
+-{
+-	srcu_read_unlock(&srcu_ctl, idx);
+-}
+-
+-static int srcu_torture_completed(void)
+-{
+-	return srcu_batches_completed(&srcu_ctl);
+-}
+-
+-static void srcu_torture_synchronize(void)
+-{
+-	synchronize_srcu(&srcu_ctl);
+-}
+-
+-static int srcu_torture_stats(char *page)
+-{
+-	int cnt = 0;
+-	int cpu;
+-	int idx = srcu_ctl.completed & 0x1;
+-
+-	cnt += sprintf(&page[cnt], "%s%s per-CPU(idx=%d):",
+-		       torture_type, TORTURE_FLAG, idx);
+-	for_each_possible_cpu(cpu) {
+-		cnt += sprintf(&page[cnt], " %d(%d,%d)", cpu,
+-			       per_cpu_ptr(srcu_ctl.per_cpu_ref, cpu)->c[!idx],
+-			       per_cpu_ptr(srcu_ctl.per_cpu_ref, cpu)->c[idx]);
+-	}
+-	cnt += sprintf(&page[cnt], "\n");
+-	return cnt;
+-}
+-
+-static struct rcu_torture_ops srcu_ops = {
+-	.init = srcu_torture_init,
+-	.cleanup = srcu_torture_cleanup,
+-	.readlock = srcu_torture_read_lock,
+-	.readdelay = srcu_read_delay,
+-	.readunlock = srcu_torture_read_unlock,
+-	.completed = srcu_torture_completed,
+-	.deferredfree = rcu_sync_torture_deferred_free,
+-	.sync = srcu_torture_synchronize,
+-	.stats = srcu_torture_stats,
+-	.name = "srcu"
+-};
+-
+-/*
+- * Definitions for sched torture testing.
+- */
+-
+-static int sched_torture_read_lock(void)
+-{
+-	preempt_disable();
+-	return 0;
+-}
+-
+-static void sched_torture_read_unlock(int idx)
+-{
+-	preempt_enable();
+-}
+-
+-static int sched_torture_completed(void)
+-{
+-	return 0;
+-}
+-
+-static void sched_torture_synchronize(void)
+-{
+-	synchronize_sched();
+-}
+-
+-static struct rcu_torture_ops sched_ops = {
+-	.init = rcu_sync_torture_init,
+-	.cleanup = NULL,
+-	.readlock = sched_torture_read_lock,
+-	.readdelay = rcu_read_delay,  /* just reuse rcu's version. */
+-	.readunlock = sched_torture_read_unlock,
+-	.completed = sched_torture_completed,
+-	.deferredfree = rcu_sync_torture_deferred_free,
+-	.sync = sched_torture_synchronize,
+-	.stats = NULL,
+-	.name = "sched"
+-};
+-
+-/*
+- * RCU torture writer kthread.  Repeatedly substitutes a new structure
+- * for that pointed to by rcu_torture_current, freeing the old structure
+- * after a series of grace periods (the "pipeline").
+- */
+-static int
+-rcu_torture_writer(void *arg)
+-{
+-	int i;
+-	long oldbatch = rcu_batches_completed();
+-	struct rcu_torture *rp;
+-	struct rcu_torture *old_rp;
+-	static DEFINE_RCU_RANDOM(rand);
+-
+-	VERBOSE_PRINTK_STRING("rcu_torture_writer task started");
+-	set_user_nice(current, 19);
+-
+-	do {
+-		schedule_timeout_uninterruptible(1);
+-		if ((rp = rcu_torture_alloc()) == NULL)
+-			continue;
+-		rp->rtort_pipe_count = 0;
+-		udelay(rcu_random(&rand) & 0x3ff);
+-		old_rp = rcu_torture_current;
+-		rp->rtort_mbtest = 1;
+-		rcu_assign_pointer(rcu_torture_current, rp);
+-		smp_wmb();
+-		if (old_rp) {
+-			i = old_rp->rtort_pipe_count;
+-			if (i > RCU_TORTURE_PIPE_LEN)
+-				i = RCU_TORTURE_PIPE_LEN;
+-			atomic_inc(&rcu_torture_wcount[i]);
+-			old_rp->rtort_pipe_count++;
+-			cur_ops->deferredfree(old_rp);
+-		}
+-		rcu_torture_current_version++;
+-		oldbatch = cur_ops->completed();
+-	} while (!kthread_should_stop() && !fullstop);
+-	VERBOSE_PRINTK_STRING("rcu_torture_writer task stopping");
+-	while (!kthread_should_stop())
+-		schedule_timeout_uninterruptible(1);
+-	return 0;
+-}
+-
+-/*
+- * RCU torture fake writer kthread.  Repeatedly calls sync, with a random
+- * delay between calls.
+- */
+-static int
+-rcu_torture_fakewriter(void *arg)
+-{
+-	DEFINE_RCU_RANDOM(rand);
+-
+-	VERBOSE_PRINTK_STRING("rcu_torture_fakewriter task started");
+-	set_user_nice(current, 19);
+-
+-	do {
+-		schedule_timeout_uninterruptible(1 + rcu_random(&rand)%10);
+-		udelay(rcu_random(&rand) & 0x3ff);
+-		cur_ops->sync();
+-	} while (!kthread_should_stop() && !fullstop);
+-
+-	VERBOSE_PRINTK_STRING("rcu_torture_fakewriter task stopping");
+-	while (!kthread_should_stop())
+-		schedule_timeout_uninterruptible(1);
+-	return 0;
+-}
+-
+-/*
+- * RCU torture reader kthread.  Repeatedly dereferences rcu_torture_current,
+- * incrementing the corresponding element of the pipeline array.  The
+- * counter in the element should never be greater than 1, otherwise, the
+- * RCU implementation is broken.
+- */
+-static int
+-rcu_torture_reader(void *arg)
+-{
+-	int completed;
+-	int idx;
+-	DEFINE_RCU_RANDOM(rand);
+-	struct rcu_torture *p;
+-	int pipe_count;
+-
+-	VERBOSE_PRINTK_STRING("rcu_torture_reader task started");
+-	set_user_nice(current, 19);
+-
+-	do {
+-		idx = cur_ops->readlock();
+-		completed = cur_ops->completed();
+-		p = rcu_dereference(rcu_torture_current);
+-		if (p == NULL) {
+-			/* Wait for rcu_torture_writer to get underway */
+-			cur_ops->readunlock(idx);
+-			schedule_timeout_interruptible(HZ);
+-			continue;
+-		}
+-		if (p->rtort_mbtest == 0)
+-			atomic_inc(&n_rcu_torture_mberror);
+-		cur_ops->readdelay(&rand);
+-		preempt_disable();
+-		pipe_count = p->rtort_pipe_count;
+-		if (pipe_count > RCU_TORTURE_PIPE_LEN) {
+-			/* Should not happen, but... */
+-			pipe_count = RCU_TORTURE_PIPE_LEN;
+-		}
+-		++__get_cpu_var(rcu_torture_count)[pipe_count];
+-		completed = cur_ops->completed() - completed;
+-		if (completed > RCU_TORTURE_PIPE_LEN) {
+-			/* Should not happen, but... */
+-			completed = RCU_TORTURE_PIPE_LEN;
+-		}
+-		++__get_cpu_var(rcu_torture_batch)[completed];
+-		preempt_enable();
+-		cur_ops->readunlock(idx);
+-		schedule();
+-	} while (!kthread_should_stop() && !fullstop);
+-	VERBOSE_PRINTK_STRING("rcu_torture_reader task stopping");
+-	while (!kthread_should_stop())
+-		schedule_timeout_uninterruptible(1);
+-	return 0;
+-}
+-
+-/*
+- * Create an RCU-torture statistics message in the specified buffer.
+- */
+-static int
+-rcu_torture_printk(char *page)
+-{
+-	int cnt = 0;
+-	int cpu;
+-	int i;
+-	long pipesummary[RCU_TORTURE_PIPE_LEN + 1] = { 0 };
+-	long batchsummary[RCU_TORTURE_PIPE_LEN + 1] = { 0 };
+-
+-	for_each_possible_cpu(cpu) {
+-		for (i = 0; i < RCU_TORTURE_PIPE_LEN + 1; i++) {
+-			pipesummary[i] += per_cpu(rcu_torture_count, cpu)[i];
+-			batchsummary[i] += per_cpu(rcu_torture_batch, cpu)[i];
+-		}
+-	}
+-	for (i = RCU_TORTURE_PIPE_LEN - 1; i >= 0; i--) {
+-		if (pipesummary[i] != 0)
+-			break;
+-	}
+-	cnt += sprintf(&page[cnt], "%s%s ", torture_type, TORTURE_FLAG);
+-	cnt += sprintf(&page[cnt],
+-		       "rtc: %p ver: %ld tfle: %d rta: %d rtaf: %d rtf: %d "
+-		       "rtmbe: %d",
+-		       rcu_torture_current,
+-		       rcu_torture_current_version,
+-		       list_empty(&rcu_torture_freelist),
+-		       atomic_read(&n_rcu_torture_alloc),
+-		       atomic_read(&n_rcu_torture_alloc_fail),
+-		       atomic_read(&n_rcu_torture_free),
+-		       atomic_read(&n_rcu_torture_mberror));
+-	if (atomic_read(&n_rcu_torture_mberror) != 0)
+-		cnt += sprintf(&page[cnt], " !!!");
+-	cnt += sprintf(&page[cnt], "\n%s%s ", torture_type, TORTURE_FLAG);
+-	if (i > 1) {
+-		cnt += sprintf(&page[cnt], "!!! ");
+-		atomic_inc(&n_rcu_torture_error);
+-	}
+-	cnt += sprintf(&page[cnt], "Reader Pipe: ");
+-	for (i = 0; i < RCU_TORTURE_PIPE_LEN + 1; i++)
+-		cnt += sprintf(&page[cnt], " %ld", pipesummary[i]);
+-	cnt += sprintf(&page[cnt], "\n%s%s ", torture_type, TORTURE_FLAG);
+-	cnt += sprintf(&page[cnt], "Reader Batch: ");
+-	for (i = 0; i < RCU_TORTURE_PIPE_LEN + 1; i++)
+-		cnt += sprintf(&page[cnt], " %ld", batchsummary[i]);
+-	cnt += sprintf(&page[cnt], "\n%s%s ", torture_type, TORTURE_FLAG);
+-	cnt += sprintf(&page[cnt], "Free-Block Circulation: ");
+-	for (i = 0; i < RCU_TORTURE_PIPE_LEN + 1; i++) {
+-		cnt += sprintf(&page[cnt], " %d",
+-			       atomic_read(&rcu_torture_wcount[i]));
+-	}
+-	cnt += sprintf(&page[cnt], "\n");
+-	if (cur_ops->stats)
+-		cnt += cur_ops->stats(&page[cnt]);
+-	return cnt;
+-}
+-
+-/*
+- * Print torture statistics.  Caller must ensure that there is only
+- * one call to this function at a given time!!!  This is normally
+- * accomplished by relying on the module system to only have one copy
+- * of the module loaded, and then by giving the rcu_torture_stats
+- * kthread full control (or the init/cleanup functions when rcu_torture_stats
+- * thread is not running).
+- */
+-static void
+-rcu_torture_stats_print(void)
+-{
+-	int cnt;
+-
+-	cnt = rcu_torture_printk(printk_buf);
+-	printk(KERN_ALERT "%s", printk_buf);
+-}
+-
+-/*
+- * Periodically prints torture statistics, if periodic statistics printing
+- * was specified via the stat_interval module parameter.
+- *
+- * No need to worry about fullstop here, since this one doesn't reference
+- * volatile state or register callbacks.
+- */
+-static int
+-rcu_torture_stats(void *arg)
+-{
+-	VERBOSE_PRINTK_STRING("rcu_torture_stats task started");
+-	do {
+-		schedule_timeout_interruptible(stat_interval * HZ);
+-		rcu_torture_stats_print();
+-	} while (!kthread_should_stop());
+-	VERBOSE_PRINTK_STRING("rcu_torture_stats task stopping");
+-	return 0;
+-}
+-
+-static int rcu_idle_cpu;	/* Force all torture tasks off this CPU */
+-
+-/* Shuffle tasks such that we allow @rcu_idle_cpu to become idle. A special case
+- * is when @rcu_idle_cpu = -1, when we allow the tasks to run on all CPUs.
+- */
+-static void rcu_torture_shuffle_tasks(void)
+-{
+-	cpumask_t tmp_mask = CPU_MASK_ALL;
+-	int i;
+-
+-	get_online_cpus();
+-
+-	/* No point in shuffling if there is only one online CPU (ex: UP) */
+-	if (num_online_cpus() == 1) {
+-		put_online_cpus();
 -		return;
 -	}
 -
--	/*
--	 * Run the testsuite:
--	 */
--	printk("------------------------\n");
--	printk("| Locking API testsuite:\n");
--	printk("----------------------------------------------------------------------------\n");
--	printk("                                 | spin |wlock |rlock |mutex | wsem | rsem |\n");
--	printk("  --------------------------------------------------------------------------\n");
+-	if (rcu_idle_cpu != -1)
+-		cpu_clear(rcu_idle_cpu, tmp_mask);
 -
--	init_shared_classes();
--	debug_locks_silent = !debug_locks_verbose;
+-	set_cpus_allowed(current, tmp_mask);
 -
--	DO_TESTCASE_6R("A-A deadlock", AA);
--	DO_TESTCASE_6R("A-B-B-A deadlock", ABBA);
--	DO_TESTCASE_6R("A-B-B-C-C-A deadlock", ABBCCA);
--	DO_TESTCASE_6R("A-B-C-A-B-C deadlock", ABCABC);
--	DO_TESTCASE_6R("A-B-B-C-C-D-D-A deadlock", ABBCCDDA);
--	DO_TESTCASE_6R("A-B-C-D-B-D-D-A deadlock", ABCDBDDA);
--	DO_TESTCASE_6R("A-B-C-D-B-C-D-A deadlock", ABCDBCDA);
--	DO_TESTCASE_6("double unlock", double_unlock);
--	DO_TESTCASE_6("initialize held", init_held);
--	DO_TESTCASE_6_SUCCESS("bad unlock order", bad_unlock_order);
--
--	printk("  --------------------------------------------------------------------------\n");
--	print_testname("recursive read-lock");
--	printk("             |");
--	dotest(rlock_AA1, SUCCESS, LOCKTYPE_RWLOCK);
--	printk("             |");
--	dotest(rsem_AA1, FAILURE, LOCKTYPE_RWSEM);
--	printk("\n");
--
--	print_testname("recursive read-lock #2");
--	printk("             |");
--	dotest(rlock_AA1B, SUCCESS, LOCKTYPE_RWLOCK);
--	printk("             |");
--	dotest(rsem_AA1B, FAILURE, LOCKTYPE_RWSEM);
--	printk("\n");
--
--	print_testname("mixed read-write-lock");
--	printk("             |");
--	dotest(rlock_AA2, FAILURE, LOCKTYPE_RWLOCK);
--	printk("             |");
--	dotest(rsem_AA2, FAILURE, LOCKTYPE_RWSEM);
--	printk("\n");
--
--	print_testname("mixed write-read-lock");
--	printk("             |");
--	dotest(rlock_AA3, FAILURE, LOCKTYPE_RWLOCK);
--	printk("             |");
--	dotest(rsem_AA3, FAILURE, LOCKTYPE_RWSEM);
--	printk("\n");
--
--	printk("  --------------------------------------------------------------------------\n");
--
--	/*
--	 * irq-context testcases:
--	 */
--	DO_TESTCASE_2x6("irqs-on + irq-safe-A", irqsafe1);
--	DO_TESTCASE_2x3("sirq-safe-A => hirqs-on", irqsafe2A);
--	DO_TESTCASE_2x6("safe-A + irqs-on", irqsafe2B);
--	DO_TESTCASE_6x6("safe-A + unsafe-B #1", irqsafe3);
--	DO_TESTCASE_6x6("safe-A + unsafe-B #2", irqsafe4);
--	DO_TESTCASE_6x6RW("irq lock-inversion", irq_inversion);
--
--	DO_TESTCASE_6x2("irq read-recursion", irq_read_recursion);
--//	DO_TESTCASE_6x2B("irq read-recursion #2", irq_read_recursion2);
--
--	if (unexpected_testcase_failures) {
--		printk("-----------------------------------------------------------------\n");
--		debug_locks = 0;
--		printk("BUG: %3d unexpected failures (out of %3d) - debugging disabled! |\n",
--			unexpected_testcase_failures, testcase_total);
--		printk("-----------------------------------------------------------------\n");
--	} else if (expected_testcase_failures && testcase_successes) {
--		printk("--------------------------------------------------------\n");
--		printk("%3d out of %3d testcases failed, as expected. |\n",
--			expected_testcase_failures, testcase_total);
--		printk("----------------------------------------------------\n");
--		debug_locks = 1;
--	} else if (expected_testcase_failures && !testcase_successes) {
--		printk("--------------------------------------------------------\n");
--		printk("All %3d testcases failed, as expected. |\n",
--			expected_testcase_failures);
--		printk("----------------------------------------\n");
--		debug_locks = 1;
--	} else {
--		printk("-------------------------------------------------------\n");
--		printk("Good, all %3d testcases passed! |\n",
--			testcase_successes);
--		printk("---------------------------------\n");
--		debug_locks = 1;
+-	if (reader_tasks) {
+-		for (i = 0; i < nrealreaders; i++)
+-			if (reader_tasks[i])
+-				set_cpus_allowed(reader_tasks[i], tmp_mask);
 -	}
--	debug_locks_silent = 0;
+-
+-	if (fakewriter_tasks) {
+-		for (i = 0; i < nfakewriters; i++)
+-			if (fakewriter_tasks[i])
+-				set_cpus_allowed(fakewriter_tasks[i], tmp_mask);
+-	}
+-
+-	if (writer_task)
+-		set_cpus_allowed(writer_task, tmp_mask);
+-
+-	if (stats_task)
+-		set_cpus_allowed(stats_task, tmp_mask);
+-
+-	if (rcu_idle_cpu == -1)
+-		rcu_idle_cpu = num_online_cpus() - 1;
+-	else
+-		rcu_idle_cpu--;
+-
+-	put_online_cpus();
 -}
+-
+-/* Shuffle tasks across CPUs, with the intent of allowing each CPU in the
+- * system to become idle at a time and cut off its timer ticks. This is meant
+- * to test the support for such tickless idle CPU in RCU.
+- */
+-static int
+-rcu_torture_shuffle(void *arg)
+-{
+-	VERBOSE_PRINTK_STRING("rcu_torture_shuffle task started");
+-	do {
+-		schedule_timeout_interruptible(shuffle_interval * HZ);
+-		rcu_torture_shuffle_tasks();
+-	} while (!kthread_should_stop());
+-	VERBOSE_PRINTK_STRING("rcu_torture_shuffle task stopping");
+-	return 0;
+-}
+-
+-static inline void
+-rcu_torture_print_module_parms(char *tag)
+-{
+-	printk(KERN_ALERT "%s" TORTURE_FLAG
+-		"--- %s: nreaders=%d nfakewriters=%d "
+-		"stat_interval=%d verbose=%d test_no_idle_hz=%d "
+-		"shuffle_interval = %d\n",
+-		torture_type, tag, nrealreaders, nfakewriters,
+-		stat_interval, verbose, test_no_idle_hz, shuffle_interval);
+-}
+-
+-static void
+-rcu_torture_cleanup(void)
+-{
+-	int i;
+-
+-	fullstop = 1;
+-	if (shuffler_task) {
+-		VERBOSE_PRINTK_STRING("Stopping rcu_torture_shuffle task");
+-		kthread_stop(shuffler_task);
+-	}
+-	shuffler_task = NULL;
+-
+-	if (writer_task) {
+-		VERBOSE_PRINTK_STRING("Stopping rcu_torture_writer task");
+-		kthread_stop(writer_task);
+-	}
+-	writer_task = NULL;
+-
+-	if (reader_tasks) {
+-		for (i = 0; i < nrealreaders; i++) {
+-			if (reader_tasks[i]) {
+-				VERBOSE_PRINTK_STRING(
+-					"Stopping rcu_torture_reader task");
+-				kthread_stop(reader_tasks[i]);
+-			}
+-			reader_tasks[i] = NULL;
+-		}
+-		kfree(reader_tasks);
+-		reader_tasks = NULL;
+-	}
+-	rcu_torture_current = NULL;
+-
+-	if (fakewriter_tasks) {
+-		for (i = 0; i < nfakewriters; i++) {
+-			if (fakewriter_tasks[i]) {
+-				VERBOSE_PRINTK_STRING(
+-					"Stopping rcu_torture_fakewriter task");
+-				kthread_stop(fakewriter_tasks[i]);
+-			}
+-			fakewriter_tasks[i] = NULL;
+-		}
+-		kfree(fakewriter_tasks);
+-		fakewriter_tasks = NULL;
+-	}
+-
+-	if (stats_task) {
+-		VERBOSE_PRINTK_STRING("Stopping rcu_torture_stats task");
+-		kthread_stop(stats_task);
+-	}
+-	stats_task = NULL;
+-
+-	/* Wait for all RCU callbacks to fire.  */
+-	rcu_barrier();
+-
+-	rcu_torture_stats_print();  /* -After- the stats thread is stopped! */
+-
+-	if (cur_ops->cleanup)
+-		cur_ops->cleanup();
+-	if (atomic_read(&n_rcu_torture_error))
+-		rcu_torture_print_module_parms("End of test: FAILURE");
+-	else
+-		rcu_torture_print_module_parms("End of test: SUCCESS");
+-}
+-
+-static int __init
+-rcu_torture_init(void)
+-{
+-	int i;
+-	int cpu;
+-	int firsterr = 0;
+-	static struct rcu_torture_ops *torture_ops[] =
+-		{ &rcu_ops, &rcu_sync_ops, &rcu_bh_ops, &rcu_bh_sync_ops,
+-		  &srcu_ops, &sched_ops, };
+-
+-	/* Process args and tell the world that the torturer is on the job. */
+-	for (i = 0; i < ARRAY_SIZE(torture_ops); i++) {
+-		cur_ops = torture_ops[i];
+-		if (strcmp(torture_type, cur_ops->name) == 0)
+-			break;
+-	}
+-	if (i == ARRAY_SIZE(torture_ops)) {
+-		printk(KERN_ALERT "rcutorture: invalid torture type: \"%s\"\n",
+-		       torture_type);
+-		return (-EINVAL);
+-	}
+-	if (cur_ops->init)
+-		cur_ops->init(); /* no "goto unwind" prior to this point!!! */
+-
+-	if (nreaders >= 0)
+-		nrealreaders = nreaders;
+-	else
+-		nrealreaders = 2 * num_online_cpus();
+-	rcu_torture_print_module_parms("Start of test");
+-	fullstop = 0;
+-
+-	/* Set up the freelist. */
+-
+-	INIT_LIST_HEAD(&rcu_torture_freelist);
+-	for (i = 0; i < ARRAY_SIZE(rcu_tortures); i++) {
+-		rcu_tortures[i].rtort_mbtest = 0;
+-		list_add_tail(&rcu_tortures[i].rtort_free,
+-			      &rcu_torture_freelist);
+-	}
+-
+-	/* Initialize the statistics so that each run gets its own numbers. */
+-
+-	rcu_torture_current = NULL;
+-	rcu_torture_current_version = 0;
+-	atomic_set(&n_rcu_torture_alloc, 0);
+-	atomic_set(&n_rcu_torture_alloc_fail, 0);
+-	atomic_set(&n_rcu_torture_free, 0);
+-	atomic_set(&n_rcu_torture_mberror, 0);
+-	atomic_set(&n_rcu_torture_error, 0);
+-	for (i = 0; i < RCU_TORTURE_PIPE_LEN + 1; i++)
+-		atomic_set(&rcu_torture_wcount[i], 0);
+-	for_each_possible_cpu(cpu) {
+-		for (i = 0; i < RCU_TORTURE_PIPE_LEN + 1; i++) {
+-			per_cpu(rcu_torture_count, cpu)[i] = 0;
+-			per_cpu(rcu_torture_batch, cpu)[i] = 0;
+-		}
+-	}
+-
+-	/* Start up the kthreads. */
+-
+-	VERBOSE_PRINTK_STRING("Creating rcu_torture_writer task");
+-	writer_task = kthread_run(rcu_torture_writer, NULL,
+-				  "rcu_torture_writer");
+-	if (IS_ERR(writer_task)) {
+-		firsterr = PTR_ERR(writer_task);
+-		VERBOSE_PRINTK_ERRSTRING("Failed to create writer");
+-		writer_task = NULL;
+-		goto unwind;
+-	}
+-	fakewriter_tasks = kzalloc(nfakewriters * sizeof(fakewriter_tasks[0]),
+-	                           GFP_KERNEL);
+-	if (fakewriter_tasks == NULL) {
+-		VERBOSE_PRINTK_ERRSTRING("out of memory");
+-		firsterr = -ENOMEM;
+-		goto unwind;
+-	}
+-	for (i = 0; i < nfakewriters; i++) {
+-		VERBOSE_PRINTK_STRING("Creating rcu_torture_fakewriter task");
+-		fakewriter_tasks[i] = kthread_run(rcu_torture_fakewriter, NULL,
+-		                                  "rcu_torture_fakewriter");
+-		if (IS_ERR(fakewriter_tasks[i])) {
+-			firsterr = PTR_ERR(fakewriter_tasks[i]);
+-			VERBOSE_PRINTK_ERRSTRING("Failed to create fakewriter");
+-			fakewriter_tasks[i] = NULL;
+-			goto unwind;
+-		}
+-	}
+-	reader_tasks = kzalloc(nrealreaders * sizeof(reader_tasks[0]),
+-			       GFP_KERNEL);
+-	if (reader_tasks == NULL) {
+-		VERBOSE_PRINTK_ERRSTRING("out of memory");
+-		firsterr = -ENOMEM;
+-		goto unwind;
+-	}
+-	for (i = 0; i < nrealreaders; i++) {
+-		VERBOSE_PRINTK_STRING("Creating rcu_torture_reader task");
+-		reader_tasks[i] = kthread_run(rcu_torture_reader, NULL,
+-					      "rcu_torture_reader");
+-		if (IS_ERR(reader_tasks[i])) {
+-			firsterr = PTR_ERR(reader_tasks[i]);
+-			VERBOSE_PRINTK_ERRSTRING("Failed to create reader");
+-			reader_tasks[i] = NULL;
+-			goto unwind;
+-		}
+-	}
+-	if (stat_interval > 0) {
+-		VERBOSE_PRINTK_STRING("Creating rcu_torture_stats task");
+-		stats_task = kthread_run(rcu_torture_stats, NULL,
+-					"rcu_torture_stats");
+-		if (IS_ERR(stats_task)) {
+-			firsterr = PTR_ERR(stats_task);
+-			VERBOSE_PRINTK_ERRSTRING("Failed to create stats");
+-			stats_task = NULL;
+-			goto unwind;
+-		}
+-	}
+-	if (test_no_idle_hz) {
+-		rcu_idle_cpu = num_online_cpus() - 1;
+-		/* Create the shuffler thread */
+-		shuffler_task = kthread_run(rcu_torture_shuffle, NULL,
+-					  "rcu_torture_shuffle");
+-		if (IS_ERR(shuffler_task)) {
+-			firsterr = PTR_ERR(shuffler_task);
+-			VERBOSE_PRINTK_ERRSTRING("Failed to create shuffler");
+-			shuffler_task = NULL;
+-			goto unwind;
+-		}
+-	}
+-	return 0;
+-
+-unwind:
+-	rcu_torture_cleanup();
+-	return firsterr;
+-}
+-
+-module_init(rcu_torture_init);
+-module_exit(rcu_torture_cleanup);
+Index: linux-2.6.24-rc6/lib/Kconfig.debug
+===================================================================
+--- linux-2.6.24-rc6.orig/lib/Kconfig.debug
++++ linux-2.6.24-rc6/lib/Kconfig.debug
+@@ -487,19 +487,6 @@ config DEBUG_SYNCHRO_TEST
+ 
+ 	  See Documentation/synchro-test.txt.
+ 
+-config RCU_TORTURE_TEST
+-	tristate "torture tests for RCU"
+-	depends on DEBUG_KERNEL
+-	depends on m
+-	default n
+-	help
+-	  This option provides a kernel module that runs torture tests
+-	  on the RCU infrastructure.  The kernel module may be built
+-	  after the fact on the running kernel to be tested, if desired.
+-
+-	  Say M if you want the RCU torture tests to build as a module.
+-	  Say N if you are unsure.
+-
+ config LKDTM
+ 	tristate "Linux Kernel Dump Test Tool Module"
+ 	depends on DEBUG_KERNEL
 Index: linux-2.6.24-rc6/tests/Kconfig
 ===================================================================
 --- linux-2.6.24-rc6.orig/tests/Kconfig
 +++ linux-2.6.24-rc6/tests/Kconfig
-@@ -7,5 +7,16 @@ menuconfig KERNEL_TESTS
+@@ -18,5 +18,18 @@ config DEBUG_LOCKING_API_SELFTESTS
+ 	  The following locking APIs are covered: spinlocks, rwlocks,
+ 	  mutexes and rwsems.
  
- if KERNEL_TESTS
- 
-+config DEBUG_LOCKING_API_SELFTESTS
-+	bool "Locking API boot-time self-tests"
++config RCU_TORTURE_TEST
++	tristate "torture tests for RCU"
 +	depends on DEBUG_KERNEL
++	depends on m
++	default n
 +	help
-+	  Say Y here if you want the kernel to run a short self-test during
-+	  bootup. The self-test checks whether common types of locking bugs
-+	  are detected by debugging mechanisms or not. (if you disable
-+	  lock debugging then those bugs wont be detected of course.)
-+	  The following locking APIs are covered: spinlocks, rwlocks,
-+	  mutexes and rwsems.
++	  This option provides a kernel module that runs torture tests
++	  on the RCU infrastructure.  The kernel module may be built
++	  after the fact on the running kernel to be tested, if desired.
++
++	  Say M if you want the RCU torture tests to build as a module.
++	  Say N if you are unsure.
 +
  endif # KERNEL_TESTS
  
@@ -1508,1432 +1105,1008 @@ Index: linux-2.6.24-rc6/tests/Makefile
 ===================================================================
 --- linux-2.6.24-rc6.orig/tests/Makefile
 +++ linux-2.6.24-rc6/tests/Makefile
-@@ -1,3 +1,5 @@
+@@ -3,3 +3,4 @@
  #
- # Makefile for kernel subsystem specific tests
- #
-+
-+obj-$(CONFIG_DEBUG_LOCKING_API_SELFTESTS) += locking-selftest.o
-Index: linux-2.6.24-rc6/tests/locking-selftest-hardirq.h
+ 
+ obj-$(CONFIG_DEBUG_LOCKING_API_SELFTESTS) += locking-selftest.o
++obj-$(CONFIG_RCU_TORTURE_TEST) += rcutorture.o
+Index: linux-2.6.24-rc6/tests/rcutorture.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc6/tests/locking-selftest-hardirq.h
-@@ -0,0 +1,9 @@
-+#undef IRQ_DISABLE
-+#undef IRQ_ENABLE
-+#undef IRQ_ENTER
-+#undef IRQ_EXIT
-+
-+#define IRQ_ENABLE		HARDIRQ_ENABLE
-+#define IRQ_DISABLE		HARDIRQ_DISABLE
-+#define IRQ_ENTER		HARDIRQ_ENTER
-+#define IRQ_EXIT		HARDIRQ_EXIT
-Index: linux-2.6.24-rc6/tests/locking-selftest-mutex.h
-===================================================================
---- /dev/null
-+++ linux-2.6.24-rc6/tests/locking-selftest-mutex.h
-@@ -0,0 +1,11 @@
-+#undef LOCK
-+#define LOCK		ML
-+
-+#undef UNLOCK
-+#define UNLOCK		MU
-+
-+#undef RLOCK
-+#undef WLOCK
-+
-+#undef INIT
-+#define INIT		MI
-Index: linux-2.6.24-rc6/tests/locking-selftest-rlock-hardirq.h
-===================================================================
---- /dev/null
-+++ linux-2.6.24-rc6/tests/locking-selftest-rlock-hardirq.h
-@@ -0,0 +1,2 @@
-+#include "locking-selftest-rlock.h"
-+#include "locking-selftest-hardirq.h"
-Index: linux-2.6.24-rc6/tests/locking-selftest-rlock-softirq.h
-===================================================================
---- /dev/null
-+++ linux-2.6.24-rc6/tests/locking-selftest-rlock-softirq.h
-@@ -0,0 +1,2 @@
-+#include "locking-selftest-rlock.h"
-+#include "locking-selftest-softirq.h"
-Index: linux-2.6.24-rc6/tests/locking-selftest-rlock.h
-===================================================================
---- /dev/null
-+++ linux-2.6.24-rc6/tests/locking-selftest-rlock.h
-@@ -0,0 +1,14 @@
-+#undef LOCK
-+#define LOCK		RL
-+
-+#undef UNLOCK
-+#define UNLOCK		RU
-+
-+#undef RLOCK
-+#define RLOCK		RL
-+
-+#undef WLOCK
-+#define WLOCK		WL
-+
-+#undef INIT
-+#define INIT		RWI
-Index: linux-2.6.24-rc6/tests/locking-selftest-rsem.h
-===================================================================
---- /dev/null
-+++ linux-2.6.24-rc6/tests/locking-selftest-rsem.h
-@@ -0,0 +1,14 @@
-+#undef LOCK
-+#define LOCK		RSL
-+
-+#undef UNLOCK
-+#define UNLOCK		RSU
-+
-+#undef RLOCK
-+#define RLOCK		RSL
-+
-+#undef WLOCK
-+#define WLOCK		WSL
-+
-+#undef INIT
-+#define INIT		RWSI
-Index: linux-2.6.24-rc6/tests/locking-selftest-softirq.h
-===================================================================
---- /dev/null
-+++ linux-2.6.24-rc6/tests/locking-selftest-softirq.h
-@@ -0,0 +1,9 @@
-+#undef IRQ_DISABLE
-+#undef IRQ_ENABLE
-+#undef IRQ_ENTER
-+#undef IRQ_EXIT
-+
-+#define IRQ_DISABLE		SOFTIRQ_DISABLE
-+#define IRQ_ENABLE		SOFTIRQ_ENABLE
-+#define IRQ_ENTER		SOFTIRQ_ENTER
-+#define IRQ_EXIT		SOFTIRQ_EXIT
-Index: linux-2.6.24-rc6/tests/locking-selftest-spin-hardirq.h
-===================================================================
---- /dev/null
-+++ linux-2.6.24-rc6/tests/locking-selftest-spin-hardirq.h
-@@ -0,0 +1,2 @@
-+#include "locking-selftest-spin.h"
-+#include "locking-selftest-hardirq.h"
-Index: linux-2.6.24-rc6/tests/locking-selftest-spin-softirq.h
-===================================================================
---- /dev/null
-+++ linux-2.6.24-rc6/tests/locking-selftest-spin-softirq.h
-@@ -0,0 +1,2 @@
-+#include "locking-selftest-spin.h"
-+#include "locking-selftest-softirq.h"
-Index: linux-2.6.24-rc6/tests/locking-selftest-spin.h
-===================================================================
---- /dev/null
-+++ linux-2.6.24-rc6/tests/locking-selftest-spin.h
-@@ -0,0 +1,11 @@
-+#undef LOCK
-+#define LOCK		L
-+
-+#undef UNLOCK
-+#define UNLOCK		U
-+
-+#undef RLOCK
-+#undef WLOCK
-+
-+#undef INIT
-+#define INIT		SI
-Index: linux-2.6.24-rc6/tests/locking-selftest-wlock-hardirq.h
-===================================================================
---- /dev/null
-+++ linux-2.6.24-rc6/tests/locking-selftest-wlock-hardirq.h
-@@ -0,0 +1,2 @@
-+#include "locking-selftest-wlock.h"
-+#include "locking-selftest-hardirq.h"
-Index: linux-2.6.24-rc6/tests/locking-selftest-wlock-softirq.h
-===================================================================
---- /dev/null
-+++ linux-2.6.24-rc6/tests/locking-selftest-wlock-softirq.h
-@@ -0,0 +1,2 @@
-+#include "locking-selftest-wlock.h"
-+#include "locking-selftest-softirq.h"
-Index: linux-2.6.24-rc6/tests/locking-selftest-wlock.h
-===================================================================
---- /dev/null
-+++ linux-2.6.24-rc6/tests/locking-selftest-wlock.h
-@@ -0,0 +1,14 @@
-+#undef LOCK
-+#define LOCK		WL
-+
-+#undef UNLOCK
-+#define UNLOCK		WU
-+
-+#undef RLOCK
-+#define RLOCK		RL
-+
-+#undef WLOCK
-+#define WLOCK		WL
-+
-+#undef INIT
-+#define INIT		RWI
-Index: linux-2.6.24-rc6/tests/locking-selftest-wsem.h
-===================================================================
---- /dev/null
-+++ linux-2.6.24-rc6/tests/locking-selftest-wsem.h
-@@ -0,0 +1,14 @@
-+#undef LOCK
-+#define LOCK		WSL
-+
-+#undef UNLOCK
-+#define UNLOCK		WSU
-+
-+#undef RLOCK
-+#define RLOCK		RSL
-+
-+#undef WLOCK
-+#define WLOCK		WSL
-+
-+#undef INIT
-+#define INIT		RWSI
-Index: linux-2.6.24-rc6/tests/locking-selftest.c
-===================================================================
---- /dev/null
-+++ linux-2.6.24-rc6/tests/locking-selftest.c
-@@ -0,0 +1,1218 @@
++++ linux-2.6.24-rc6/tests/rcutorture.c
+@@ -0,0 +1,995 @@
 +/*
-+ * lib/locking-selftest.c
++ * Read-Copy Update module-based torture test facility
 + *
-+ * Testsuite for various locking APIs: spinlocks, rwlocks,
-+ * mutexes and rw-semaphores.
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
 + *
-+ * It is checking both false positives and false negatives.
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
 + *
-+ * Started by Ingo Molnar:
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 + *
-+ *  Copyright (C) 2006 Red Hat, Inc., Ingo Molnar <mingo@redhat.com>
++ * Copyright (C) IBM Corporation, 2005, 2006
++ *
++ * Authors: Paul E. McKenney <paulmck@us.ibm.com>
++ *          Josh Triplett <josh@freedesktop.org>
++ *
++ * See also:  Documentation/RCU/torture.txt
 + */
-+#include <linux/rwsem.h>
-+#include <linux/mutex.h>
-+#include <linux/sched.h>
-+#include <linux/delay.h>
++#include <linux/types.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
 +#include <linux/module.h>
-+#include <linux/lockdep.h>
++#include <linux/kthread.h>
++#include <linux/err.h>
 +#include <linux/spinlock.h>
-+#include <linux/kallsyms.h>
++#include <linux/smp.h>
++#include <linux/rcupdate.h>
 +#include <linux/interrupt.h>
-+#include <linux/debug_locks.h>
-+#include <linux/irqflags.h>
++#include <linux/sched.h>
++#include <asm/atomic.h>
++#include <linux/bitops.h>
++#include <linux/completion.h>
++#include <linux/moduleparam.h>
++#include <linux/percpu.h>
++#include <linux/notifier.h>
++#include <linux/freezer.h>
++#include <linux/cpu.h>
++#include <linux/delay.h>
++#include <linux/byteorder/swabb.h>
++#include <linux/stat.h>
++#include <linux/srcu.h>
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Paul E. McKenney <paulmck@us.ibm.com> and "
++              "Josh Triplett <josh@freedesktop.org>");
++
++static int nreaders = -1;	/* # reader threads, defaults to 2*ncpus */
++static int nfakewriters = 4;	/* # fake writer threads */
++static int stat_interval;	/* Interval between stats, in seconds. */
++				/*  Defaults to "only at end of test". */
++static int verbose;		/* Print more debug info. */
++static int test_no_idle_hz;	/* Test RCU's support for tickless idle CPUs. */
++static int shuffle_interval = 5; /* Interval between shuffles (in sec)*/
++static char *torture_type = "rcu"; /* What RCU implementation to torture. */
++
++module_param(nreaders, int, 0444);
++MODULE_PARM_DESC(nreaders, "Number of RCU reader threads");
++module_param(nfakewriters, int, 0444);
++MODULE_PARM_DESC(nfakewriters, "Number of RCU fake writer threads");
++module_param(stat_interval, int, 0444);
++MODULE_PARM_DESC(stat_interval, "Number of seconds between stats printk()s");
++module_param(verbose, bool, 0444);
++MODULE_PARM_DESC(verbose, "Enable verbose debugging printk()s");
++module_param(test_no_idle_hz, bool, 0444);
++MODULE_PARM_DESC(test_no_idle_hz, "Test support for tickless idle CPUs");
++module_param(shuffle_interval, int, 0444);
++MODULE_PARM_DESC(shuffle_interval, "Number of seconds between shuffles");
++module_param(torture_type, charp, 0444);
++MODULE_PARM_DESC(torture_type, "Type of RCU to torture (rcu, rcu_bh, srcu)");
++
++#define TORTURE_FLAG "-torture:"
++#define PRINTK_STRING(s) \
++	do { printk(KERN_ALERT "%s" TORTURE_FLAG s "\n", torture_type); } while (0)
++#define VERBOSE_PRINTK_STRING(s) \
++	do { if (verbose) printk(KERN_ALERT "%s" TORTURE_FLAG s "\n", torture_type); } while (0)
++#define VERBOSE_PRINTK_ERRSTRING(s) \
++	do { if (verbose) printk(KERN_ALERT "%s" TORTURE_FLAG "!!! " s "\n", torture_type); } while (0)
++
++static char printk_buf[4096];
++
++static int nrealreaders;
++static struct task_struct *writer_task;
++static struct task_struct **fakewriter_tasks;
++static struct task_struct **reader_tasks;
++static struct task_struct *stats_task;
++static struct task_struct *shuffler_task;
++
++#define RCU_TORTURE_PIPE_LEN 10
++
++struct rcu_torture {
++	struct rcu_head rtort_rcu;
++	int rtort_pipe_count;
++	struct list_head rtort_free;
++	int rtort_mbtest;
++};
++
++static int fullstop = 0;	/* stop generating callbacks at test end. */
++static LIST_HEAD(rcu_torture_freelist);
++static struct rcu_torture *rcu_torture_current = NULL;
++static long rcu_torture_current_version = 0;
++static struct rcu_torture rcu_tortures[10 * RCU_TORTURE_PIPE_LEN];
++static DEFINE_SPINLOCK(rcu_torture_lock);
++static DEFINE_PER_CPU(long [RCU_TORTURE_PIPE_LEN + 1], rcu_torture_count) =
++	{ 0 };
++static DEFINE_PER_CPU(long [RCU_TORTURE_PIPE_LEN + 1], rcu_torture_batch) =
++	{ 0 };
++static atomic_t rcu_torture_wcount[RCU_TORTURE_PIPE_LEN + 1];
++static atomic_t n_rcu_torture_alloc;
++static atomic_t n_rcu_torture_alloc_fail;
++static atomic_t n_rcu_torture_free;
++static atomic_t n_rcu_torture_mberror;
++static atomic_t n_rcu_torture_error;
++static struct list_head rcu_torture_removed;
 +
 +/*
-+ * Change this to 1 if you want to see the failure printouts:
++ * Allocate an element from the rcu_tortures pool.
 + */
-+static unsigned int debug_locks_verbose;
-+
-+static int __init setup_debug_locks_verbose(char *str)
++static struct rcu_torture *
++rcu_torture_alloc(void)
 +{
-+	get_option(&str, &debug_locks_verbose);
-+
-+	return 1;
-+}
-+
-+__setup("debug_locks_verbose=", setup_debug_locks_verbose);
-+
-+#define FAILURE		0
-+#define SUCCESS		1
-+
-+#define LOCKTYPE_SPIN	0x1
-+#define LOCKTYPE_RWLOCK	0x2
-+#define LOCKTYPE_MUTEX	0x4
-+#define LOCKTYPE_RWSEM	0x8
-+
-+/*
-+ * Normal standalone locks, for the circular and irq-context
-+ * dependency tests:
-+ */
-+static DEFINE_SPINLOCK(lock_A);
-+static DEFINE_SPINLOCK(lock_B);
-+static DEFINE_SPINLOCK(lock_C);
-+static DEFINE_SPINLOCK(lock_D);
-+
-+static DEFINE_RWLOCK(rwlock_A);
-+static DEFINE_RWLOCK(rwlock_B);
-+static DEFINE_RWLOCK(rwlock_C);
-+static DEFINE_RWLOCK(rwlock_D);
-+
-+static DEFINE_MUTEX(mutex_A);
-+static DEFINE_MUTEX(mutex_B);
-+static DEFINE_MUTEX(mutex_C);
-+static DEFINE_MUTEX(mutex_D);
-+
-+static DECLARE_RWSEM(rwsem_A);
-+static DECLARE_RWSEM(rwsem_B);
-+static DECLARE_RWSEM(rwsem_C);
-+static DECLARE_RWSEM(rwsem_D);
-+
-+/*
-+ * Locks that we initialize dynamically as well so that
-+ * e.g. X1 and X2 becomes two instances of the same class,
-+ * but X* and Y* are different classes. We do this so that
-+ * we do not trigger a real lockup:
-+ */
-+static DEFINE_SPINLOCK(lock_X1);
-+static DEFINE_SPINLOCK(lock_X2);
-+static DEFINE_SPINLOCK(lock_Y1);
-+static DEFINE_SPINLOCK(lock_Y2);
-+static DEFINE_SPINLOCK(lock_Z1);
-+static DEFINE_SPINLOCK(lock_Z2);
-+
-+static DEFINE_RWLOCK(rwlock_X1);
-+static DEFINE_RWLOCK(rwlock_X2);
-+static DEFINE_RWLOCK(rwlock_Y1);
-+static DEFINE_RWLOCK(rwlock_Y2);
-+static DEFINE_RWLOCK(rwlock_Z1);
-+static DEFINE_RWLOCK(rwlock_Z2);
-+
-+static DEFINE_MUTEX(mutex_X1);
-+static DEFINE_MUTEX(mutex_X2);
-+static DEFINE_MUTEX(mutex_Y1);
-+static DEFINE_MUTEX(mutex_Y2);
-+static DEFINE_MUTEX(mutex_Z1);
-+static DEFINE_MUTEX(mutex_Z2);
-+
-+static DECLARE_RWSEM(rwsem_X1);
-+static DECLARE_RWSEM(rwsem_X2);
-+static DECLARE_RWSEM(rwsem_Y1);
-+static DECLARE_RWSEM(rwsem_Y2);
-+static DECLARE_RWSEM(rwsem_Z1);
-+static DECLARE_RWSEM(rwsem_Z2);
-+
-+/*
-+ * non-inlined runtime initializers, to let separate locks share
-+ * the same lock-class:
-+ */
-+#define INIT_CLASS_FUNC(class) 				\
-+static noinline void					\
-+init_class_##class(spinlock_t *lock, rwlock_t *rwlock, struct mutex *mutex, \
-+		 struct rw_semaphore *rwsem)		\
-+{							\
-+	spin_lock_init(lock);				\
-+	rwlock_init(rwlock);				\
-+	mutex_init(mutex);				\
-+	init_rwsem(rwsem);				\
-+}
-+
-+INIT_CLASS_FUNC(X)
-+INIT_CLASS_FUNC(Y)
-+INIT_CLASS_FUNC(Z)
-+
-+static void init_shared_classes(void)
-+{
-+	init_class_X(&lock_X1, &rwlock_X1, &mutex_X1, &rwsem_X1);
-+	init_class_X(&lock_X2, &rwlock_X2, &mutex_X2, &rwsem_X2);
-+
-+	init_class_Y(&lock_Y1, &rwlock_Y1, &mutex_Y1, &rwsem_Y1);
-+	init_class_Y(&lock_Y2, &rwlock_Y2, &mutex_Y2, &rwsem_Y2);
-+
-+	init_class_Z(&lock_Z1, &rwlock_Z1, &mutex_Z1, &rwsem_Z1);
-+	init_class_Z(&lock_Z2, &rwlock_Z2, &mutex_Z2, &rwsem_Z2);
-+}
-+
-+/*
-+ * For spinlocks and rwlocks we also do hardirq-safe / softirq-safe tests.
-+ * The following functions use a lock from a simulated hardirq/softirq
-+ * context, causing the locks to be marked as hardirq-safe/softirq-safe:
-+ */
-+
-+#define HARDIRQ_DISABLE		local_irq_disable
-+#define HARDIRQ_ENABLE		local_irq_enable
-+
-+#define HARDIRQ_ENTER()				\
-+	local_irq_disable();			\
-+	irq_enter();				\
-+	WARN_ON(!in_irq());
-+
-+#define HARDIRQ_EXIT()				\
-+	__irq_exit();				\
-+	local_irq_enable();
-+
-+#define SOFTIRQ_DISABLE		local_bh_disable
-+#define SOFTIRQ_ENABLE		local_bh_enable
-+
-+#define SOFTIRQ_ENTER()				\
-+		local_bh_disable();		\
-+		local_irq_disable();		\
-+		trace_softirq_enter();		\
-+		WARN_ON(!in_softirq());
-+
-+#define SOFTIRQ_EXIT()				\
-+		trace_softirq_exit();		\
-+		local_irq_enable();		\
-+		local_bh_enable();
-+
-+/*
-+ * Shortcuts for lock/unlock API variants, to keep
-+ * the testcases compact:
-+ */
-+#define L(x)			spin_lock(&lock_##x)
-+#define U(x)			spin_unlock(&lock_##x)
-+#define LU(x)			L(x); U(x)
-+#define SI(x)			spin_lock_init(&lock_##x)
-+
-+#define WL(x)			write_lock(&rwlock_##x)
-+#define WU(x)			write_unlock(&rwlock_##x)
-+#define WLU(x)			WL(x); WU(x)
-+
-+#define RL(x)			read_lock(&rwlock_##x)
-+#define RU(x)			read_unlock(&rwlock_##x)
-+#define RLU(x)			RL(x); RU(x)
-+#define RWI(x)			rwlock_init(&rwlock_##x)
-+
-+#define ML(x)			mutex_lock(&mutex_##x)
-+#define MU(x)			mutex_unlock(&mutex_##x)
-+#define MI(x)			mutex_init(&mutex_##x)
-+
-+#define WSL(x)			down_write(&rwsem_##x)
-+#define WSU(x)			up_write(&rwsem_##x)
-+
-+#define RSL(x)			down_read(&rwsem_##x)
-+#define RSU(x)			up_read(&rwsem_##x)
-+#define RWSI(x)			init_rwsem(&rwsem_##x)
-+
-+#define LOCK_UNLOCK_2(x,y)	LOCK(x); LOCK(y); UNLOCK(y); UNLOCK(x)
-+
-+/*
-+ * Generate different permutations of the same testcase, using
-+ * the same basic lock-dependency/state events:
-+ */
-+
-+#define GENERATE_TESTCASE(name)			\
-+						\
-+static void name(void) { E(); }
-+
-+#define GENERATE_PERMUTATIONS_2_EVENTS(name)	\
-+						\
-+static void name##_12(void) { E1(); E2(); }	\
-+static void name##_21(void) { E2(); E1(); }
-+
-+#define GENERATE_PERMUTATIONS_3_EVENTS(name)		\
-+							\
-+static void name##_123(void) { E1(); E2(); E3(); }	\
-+static void name##_132(void) { E1(); E3(); E2(); }	\
-+static void name##_213(void) { E2(); E1(); E3(); }	\
-+static void name##_231(void) { E2(); E3(); E1(); }	\
-+static void name##_312(void) { E3(); E1(); E2(); }	\
-+static void name##_321(void) { E3(); E2(); E1(); }
-+
-+/*
-+ * AA deadlock:
-+ */
-+
-+#define E()					\
-+						\
-+	LOCK(X1);				\
-+	LOCK(X2); /* this one should fail */
-+
-+/*
-+ * 6 testcases:
-+ */
-+#include "locking-selftest-spin.h"
-+GENERATE_TESTCASE(AA_spin)
-+#include "locking-selftest-wlock.h"
-+GENERATE_TESTCASE(AA_wlock)
-+#include "locking-selftest-rlock.h"
-+GENERATE_TESTCASE(AA_rlock)
-+#include "locking-selftest-mutex.h"
-+GENERATE_TESTCASE(AA_mutex)
-+#include "locking-selftest-wsem.h"
-+GENERATE_TESTCASE(AA_wsem)
-+#include "locking-selftest-rsem.h"
-+GENERATE_TESTCASE(AA_rsem)
-+
-+#undef E
-+
-+/*
-+ * Special-case for read-locking, they are
-+ * allowed to recurse on the same lock class:
-+ */
-+static void rlock_AA1(void)
-+{
-+	RL(X1);
-+	RL(X1); // this one should NOT fail
-+}
-+
-+static void rlock_AA1B(void)
-+{
-+	RL(X1);
-+	RL(X2); // this one should NOT fail
-+}
-+
-+static void rsem_AA1(void)
-+{
-+	RSL(X1);
-+	RSL(X1); // this one should fail
-+}
-+
-+static void rsem_AA1B(void)
-+{
-+	RSL(X1);
-+	RSL(X2); // this one should fail
-+}
-+/*
-+ * The mixing of read and write locks is not allowed:
-+ */
-+static void rlock_AA2(void)
-+{
-+	RL(X1);
-+	WL(X2); // this one should fail
-+}
-+
-+static void rsem_AA2(void)
-+{
-+	RSL(X1);
-+	WSL(X2); // this one should fail
-+}
-+
-+static void rlock_AA3(void)
-+{
-+	WL(X1);
-+	RL(X2); // this one should fail
-+}
-+
-+static void rsem_AA3(void)
-+{
-+	WSL(X1);
-+	RSL(X2); // this one should fail
-+}
-+
-+/*
-+ * ABBA deadlock:
-+ */
-+
-+#define E()					\
-+						\
-+	LOCK_UNLOCK_2(A, B);			\
-+	LOCK_UNLOCK_2(B, A); /* fail */
-+
-+/*
-+ * 6 testcases:
-+ */
-+#include "locking-selftest-spin.h"
-+GENERATE_TESTCASE(ABBA_spin)
-+#include "locking-selftest-wlock.h"
-+GENERATE_TESTCASE(ABBA_wlock)
-+#include "locking-selftest-rlock.h"
-+GENERATE_TESTCASE(ABBA_rlock)
-+#include "locking-selftest-mutex.h"
-+GENERATE_TESTCASE(ABBA_mutex)
-+#include "locking-selftest-wsem.h"
-+GENERATE_TESTCASE(ABBA_wsem)
-+#include "locking-selftest-rsem.h"
-+GENERATE_TESTCASE(ABBA_rsem)
-+
-+#undef E
-+
-+/*
-+ * AB BC CA deadlock:
-+ */
-+
-+#define E()					\
-+						\
-+	LOCK_UNLOCK_2(A, B);			\
-+	LOCK_UNLOCK_2(B, C);			\
-+	LOCK_UNLOCK_2(C, A); /* fail */
-+
-+/*
-+ * 6 testcases:
-+ */
-+#include "locking-selftest-spin.h"
-+GENERATE_TESTCASE(ABBCCA_spin)
-+#include "locking-selftest-wlock.h"
-+GENERATE_TESTCASE(ABBCCA_wlock)
-+#include "locking-selftest-rlock.h"
-+GENERATE_TESTCASE(ABBCCA_rlock)
-+#include "locking-selftest-mutex.h"
-+GENERATE_TESTCASE(ABBCCA_mutex)
-+#include "locking-selftest-wsem.h"
-+GENERATE_TESTCASE(ABBCCA_wsem)
-+#include "locking-selftest-rsem.h"
-+GENERATE_TESTCASE(ABBCCA_rsem)
-+
-+#undef E
-+
-+/*
-+ * AB CA BC deadlock:
-+ */
-+
-+#define E()					\
-+						\
-+	LOCK_UNLOCK_2(A, B);			\
-+	LOCK_UNLOCK_2(C, A);			\
-+	LOCK_UNLOCK_2(B, C); /* fail */
-+
-+/*
-+ * 6 testcases:
-+ */
-+#include "locking-selftest-spin.h"
-+GENERATE_TESTCASE(ABCABC_spin)
-+#include "locking-selftest-wlock.h"
-+GENERATE_TESTCASE(ABCABC_wlock)
-+#include "locking-selftest-rlock.h"
-+GENERATE_TESTCASE(ABCABC_rlock)
-+#include "locking-selftest-mutex.h"
-+GENERATE_TESTCASE(ABCABC_mutex)
-+#include "locking-selftest-wsem.h"
-+GENERATE_TESTCASE(ABCABC_wsem)
-+#include "locking-selftest-rsem.h"
-+GENERATE_TESTCASE(ABCABC_rsem)
-+
-+#undef E
-+
-+/*
-+ * AB BC CD DA deadlock:
-+ */
-+
-+#define E()					\
-+						\
-+	LOCK_UNLOCK_2(A, B);			\
-+	LOCK_UNLOCK_2(B, C);			\
-+	LOCK_UNLOCK_2(C, D);			\
-+	LOCK_UNLOCK_2(D, A); /* fail */
-+
-+/*
-+ * 6 testcases:
-+ */
-+#include "locking-selftest-spin.h"
-+GENERATE_TESTCASE(ABBCCDDA_spin)
-+#include "locking-selftest-wlock.h"
-+GENERATE_TESTCASE(ABBCCDDA_wlock)
-+#include "locking-selftest-rlock.h"
-+GENERATE_TESTCASE(ABBCCDDA_rlock)
-+#include "locking-selftest-mutex.h"
-+GENERATE_TESTCASE(ABBCCDDA_mutex)
-+#include "locking-selftest-wsem.h"
-+GENERATE_TESTCASE(ABBCCDDA_wsem)
-+#include "locking-selftest-rsem.h"
-+GENERATE_TESTCASE(ABBCCDDA_rsem)
-+
-+#undef E
-+
-+/*
-+ * AB CD BD DA deadlock:
-+ */
-+#define E()					\
-+						\
-+	LOCK_UNLOCK_2(A, B);			\
-+	LOCK_UNLOCK_2(C, D);			\
-+	LOCK_UNLOCK_2(B, D);			\
-+	LOCK_UNLOCK_2(D, A); /* fail */
-+
-+/*
-+ * 6 testcases:
-+ */
-+#include "locking-selftest-spin.h"
-+GENERATE_TESTCASE(ABCDBDDA_spin)
-+#include "locking-selftest-wlock.h"
-+GENERATE_TESTCASE(ABCDBDDA_wlock)
-+#include "locking-selftest-rlock.h"
-+GENERATE_TESTCASE(ABCDBDDA_rlock)
-+#include "locking-selftest-mutex.h"
-+GENERATE_TESTCASE(ABCDBDDA_mutex)
-+#include "locking-selftest-wsem.h"
-+GENERATE_TESTCASE(ABCDBDDA_wsem)
-+#include "locking-selftest-rsem.h"
-+GENERATE_TESTCASE(ABCDBDDA_rsem)
-+
-+#undef E
-+
-+/*
-+ * AB CD BC DA deadlock:
-+ */
-+#define E()					\
-+						\
-+	LOCK_UNLOCK_2(A, B);			\
-+	LOCK_UNLOCK_2(C, D);			\
-+	LOCK_UNLOCK_2(B, C);			\
-+	LOCK_UNLOCK_2(D, A); /* fail */
-+
-+/*
-+ * 6 testcases:
-+ */
-+#include "locking-selftest-spin.h"
-+GENERATE_TESTCASE(ABCDBCDA_spin)
-+#include "locking-selftest-wlock.h"
-+GENERATE_TESTCASE(ABCDBCDA_wlock)
-+#include "locking-selftest-rlock.h"
-+GENERATE_TESTCASE(ABCDBCDA_rlock)
-+#include "locking-selftest-mutex.h"
-+GENERATE_TESTCASE(ABCDBCDA_mutex)
-+#include "locking-selftest-wsem.h"
-+GENERATE_TESTCASE(ABCDBCDA_wsem)
-+#include "locking-selftest-rsem.h"
-+GENERATE_TESTCASE(ABCDBCDA_rsem)
-+
-+#undef E
-+
-+/*
-+ * Double unlock:
-+ */
-+#define E()					\
-+						\
-+	LOCK(A);				\
-+	UNLOCK(A);				\
-+	UNLOCK(A); /* fail */
-+
-+/*
-+ * 6 testcases:
-+ */
-+#include "locking-selftest-spin.h"
-+GENERATE_TESTCASE(double_unlock_spin)
-+#include "locking-selftest-wlock.h"
-+GENERATE_TESTCASE(double_unlock_wlock)
-+#include "locking-selftest-rlock.h"
-+GENERATE_TESTCASE(double_unlock_rlock)
-+#include "locking-selftest-mutex.h"
-+GENERATE_TESTCASE(double_unlock_mutex)
-+#include "locking-selftest-wsem.h"
-+GENERATE_TESTCASE(double_unlock_wsem)
-+#include "locking-selftest-rsem.h"
-+GENERATE_TESTCASE(double_unlock_rsem)
-+
-+#undef E
-+
-+/*
-+ * Bad unlock ordering:
-+ */
-+#define E()					\
-+						\
-+	LOCK(A);				\
-+	LOCK(B);				\
-+	UNLOCK(A); /* fail */			\
-+	UNLOCK(B);
-+
-+/*
-+ * 6 testcases:
-+ */
-+#include "locking-selftest-spin.h"
-+GENERATE_TESTCASE(bad_unlock_order_spin)
-+#include "locking-selftest-wlock.h"
-+GENERATE_TESTCASE(bad_unlock_order_wlock)
-+#include "locking-selftest-rlock.h"
-+GENERATE_TESTCASE(bad_unlock_order_rlock)
-+#include "locking-selftest-mutex.h"
-+GENERATE_TESTCASE(bad_unlock_order_mutex)
-+#include "locking-selftest-wsem.h"
-+GENERATE_TESTCASE(bad_unlock_order_wsem)
-+#include "locking-selftest-rsem.h"
-+GENERATE_TESTCASE(bad_unlock_order_rsem)
-+
-+#undef E
-+
-+/*
-+ * initializing a held lock:
-+ */
-+#define E()					\
-+						\
-+	LOCK(A);				\
-+	INIT(A); /* fail */
-+
-+/*
-+ * 6 testcases:
-+ */
-+#include "locking-selftest-spin.h"
-+GENERATE_TESTCASE(init_held_spin)
-+#include "locking-selftest-wlock.h"
-+GENERATE_TESTCASE(init_held_wlock)
-+#include "locking-selftest-rlock.h"
-+GENERATE_TESTCASE(init_held_rlock)
-+#include "locking-selftest-mutex.h"
-+GENERATE_TESTCASE(init_held_mutex)
-+#include "locking-selftest-wsem.h"
-+GENERATE_TESTCASE(init_held_wsem)
-+#include "locking-selftest-rsem.h"
-+GENERATE_TESTCASE(init_held_rsem)
-+
-+#undef E
-+
-+/*
-+ * locking an irq-safe lock with irqs enabled:
-+ */
-+#define E1()				\
-+					\
-+	IRQ_ENTER();			\
-+	LOCK(A);			\
-+	UNLOCK(A);			\
-+	IRQ_EXIT();
-+
-+#define E2()				\
-+					\
-+	LOCK(A);			\
-+	UNLOCK(A);
-+
-+/*
-+ * Generate 24 testcases:
-+ */
-+#include "locking-selftest-spin-hardirq.h"
-+GENERATE_PERMUTATIONS_2_EVENTS(irqsafe1_hard_spin)
-+
-+#include "locking-selftest-rlock-hardirq.h"
-+GENERATE_PERMUTATIONS_2_EVENTS(irqsafe1_hard_rlock)
-+
-+#include "locking-selftest-wlock-hardirq.h"
-+GENERATE_PERMUTATIONS_2_EVENTS(irqsafe1_hard_wlock)
-+
-+#include "locking-selftest-spin-softirq.h"
-+GENERATE_PERMUTATIONS_2_EVENTS(irqsafe1_soft_spin)
-+
-+#include "locking-selftest-rlock-softirq.h"
-+GENERATE_PERMUTATIONS_2_EVENTS(irqsafe1_soft_rlock)
-+
-+#include "locking-selftest-wlock-softirq.h"
-+GENERATE_PERMUTATIONS_2_EVENTS(irqsafe1_soft_wlock)
-+
-+#undef E1
-+#undef E2
-+
-+/*
-+ * Enabling hardirqs with a softirq-safe lock held:
-+ */
-+#define E1()				\
-+					\
-+	SOFTIRQ_ENTER();		\
-+	LOCK(A);			\
-+	UNLOCK(A);			\
-+	SOFTIRQ_EXIT();
-+
-+#define E2()				\
-+					\
-+	HARDIRQ_DISABLE();		\
-+	LOCK(A);			\
-+	HARDIRQ_ENABLE();		\
-+	UNLOCK(A);
-+
-+/*
-+ * Generate 12 testcases:
-+ */
-+#include "locking-selftest-spin.h"
-+GENERATE_PERMUTATIONS_2_EVENTS(irqsafe2A_spin)
-+
-+#include "locking-selftest-wlock.h"
-+GENERATE_PERMUTATIONS_2_EVENTS(irqsafe2A_wlock)
-+
-+#include "locking-selftest-rlock.h"
-+GENERATE_PERMUTATIONS_2_EVENTS(irqsafe2A_rlock)
-+
-+#undef E1
-+#undef E2
-+
-+/*
-+ * Enabling irqs with an irq-safe lock held:
-+ */
-+#define E1()				\
-+					\
-+	IRQ_ENTER();			\
-+	LOCK(A);			\
-+	UNLOCK(A);			\
-+	IRQ_EXIT();
-+
-+#define E2()				\
-+					\
-+	IRQ_DISABLE();			\
-+	LOCK(A);			\
-+	IRQ_ENABLE();			\
-+	UNLOCK(A);
-+
-+/*
-+ * Generate 24 testcases:
-+ */
-+#include "locking-selftest-spin-hardirq.h"
-+GENERATE_PERMUTATIONS_2_EVENTS(irqsafe2B_hard_spin)
-+
-+#include "locking-selftest-rlock-hardirq.h"
-+GENERATE_PERMUTATIONS_2_EVENTS(irqsafe2B_hard_rlock)
-+
-+#include "locking-selftest-wlock-hardirq.h"
-+GENERATE_PERMUTATIONS_2_EVENTS(irqsafe2B_hard_wlock)
-+
-+#include "locking-selftest-spin-softirq.h"
-+GENERATE_PERMUTATIONS_2_EVENTS(irqsafe2B_soft_spin)
-+
-+#include "locking-selftest-rlock-softirq.h"
-+GENERATE_PERMUTATIONS_2_EVENTS(irqsafe2B_soft_rlock)
-+
-+#include "locking-selftest-wlock-softirq.h"
-+GENERATE_PERMUTATIONS_2_EVENTS(irqsafe2B_soft_wlock)
-+
-+#undef E1
-+#undef E2
-+
-+/*
-+ * Acquiring a irq-unsafe lock while holding an irq-safe-lock:
-+ */
-+#define E1()				\
-+					\
-+	LOCK(A);			\
-+	LOCK(B);			\
-+	UNLOCK(B);			\
-+	UNLOCK(A);			\
-+
-+#define E2()				\
-+					\
-+	LOCK(B);			\
-+	UNLOCK(B);
-+
-+#define E3()				\
-+					\
-+	IRQ_ENTER();			\
-+	LOCK(A);			\
-+	UNLOCK(A);			\
-+	IRQ_EXIT();
-+
-+/*
-+ * Generate 36 testcases:
-+ */
-+#include "locking-selftest-spin-hardirq.h"
-+GENERATE_PERMUTATIONS_3_EVENTS(irqsafe3_hard_spin)
-+
-+#include "locking-selftest-rlock-hardirq.h"
-+GENERATE_PERMUTATIONS_3_EVENTS(irqsafe3_hard_rlock)
-+
-+#include "locking-selftest-wlock-hardirq.h"
-+GENERATE_PERMUTATIONS_3_EVENTS(irqsafe3_hard_wlock)
-+
-+#include "locking-selftest-spin-softirq.h"
-+GENERATE_PERMUTATIONS_3_EVENTS(irqsafe3_soft_spin)
-+
-+#include "locking-selftest-rlock-softirq.h"
-+GENERATE_PERMUTATIONS_3_EVENTS(irqsafe3_soft_rlock)
-+
-+#include "locking-selftest-wlock-softirq.h"
-+GENERATE_PERMUTATIONS_3_EVENTS(irqsafe3_soft_wlock)
-+
-+#undef E1
-+#undef E2
-+#undef E3
-+
-+/*
-+ * If a lock turns into softirq-safe, but earlier it took
-+ * a softirq-unsafe lock:
-+ */
-+
-+#define E1()				\
-+	IRQ_DISABLE();			\
-+	LOCK(A);			\
-+	LOCK(B);			\
-+	UNLOCK(B);			\
-+	UNLOCK(A);			\
-+	IRQ_ENABLE();
-+
-+#define E2()				\
-+	LOCK(B);			\
-+	UNLOCK(B);
-+
-+#define E3()				\
-+	IRQ_ENTER();			\
-+	LOCK(A);			\
-+	UNLOCK(A);			\
-+	IRQ_EXIT();
-+
-+/*
-+ * Generate 36 testcases:
-+ */
-+#include "locking-selftest-spin-hardirq.h"
-+GENERATE_PERMUTATIONS_3_EVENTS(irqsafe4_hard_spin)
-+
-+#include "locking-selftest-rlock-hardirq.h"
-+GENERATE_PERMUTATIONS_3_EVENTS(irqsafe4_hard_rlock)
-+
-+#include "locking-selftest-wlock-hardirq.h"
-+GENERATE_PERMUTATIONS_3_EVENTS(irqsafe4_hard_wlock)
-+
-+#include "locking-selftest-spin-softirq.h"
-+GENERATE_PERMUTATIONS_3_EVENTS(irqsafe4_soft_spin)
-+
-+#include "locking-selftest-rlock-softirq.h"
-+GENERATE_PERMUTATIONS_3_EVENTS(irqsafe4_soft_rlock)
-+
-+#include "locking-selftest-wlock-softirq.h"
-+GENERATE_PERMUTATIONS_3_EVENTS(irqsafe4_soft_wlock)
-+
-+#undef E1
-+#undef E2
-+#undef E3
-+
-+/*
-+ * read-lock / write-lock irq inversion.
-+ *
-+ * Deadlock scenario:
-+ *
-+ * CPU#1 is at #1, i.e. it has write-locked A, but has not
-+ * taken B yet.
-+ *
-+ * CPU#2 is at #2, i.e. it has locked B.
-+ *
-+ * Hardirq hits CPU#2 at point #2 and is trying to read-lock A.
-+ *
-+ * The deadlock occurs because CPU#1 will spin on B, and CPU#2
-+ * will spin on A.
-+ */
-+
-+#define E1()				\
-+					\
-+	IRQ_DISABLE();			\
-+	WL(A);				\
-+	LOCK(B);			\
-+	UNLOCK(B);			\
-+	WU(A);				\
-+	IRQ_ENABLE();
-+
-+#define E2()				\
-+					\
-+	LOCK(B);			\
-+	UNLOCK(B);
-+
-+#define E3()				\
-+					\
-+	IRQ_ENTER();			\
-+	RL(A);				\
-+	RU(A);				\
-+	IRQ_EXIT();
-+
-+/*
-+ * Generate 36 testcases:
-+ */
-+#include "locking-selftest-spin-hardirq.h"
-+GENERATE_PERMUTATIONS_3_EVENTS(irq_inversion_hard_spin)
-+
-+#include "locking-selftest-rlock-hardirq.h"
-+GENERATE_PERMUTATIONS_3_EVENTS(irq_inversion_hard_rlock)
-+
-+#include "locking-selftest-wlock-hardirq.h"
-+GENERATE_PERMUTATIONS_3_EVENTS(irq_inversion_hard_wlock)
-+
-+#include "locking-selftest-spin-softirq.h"
-+GENERATE_PERMUTATIONS_3_EVENTS(irq_inversion_soft_spin)
-+
-+#include "locking-selftest-rlock-softirq.h"
-+GENERATE_PERMUTATIONS_3_EVENTS(irq_inversion_soft_rlock)
-+
-+#include "locking-selftest-wlock-softirq.h"
-+GENERATE_PERMUTATIONS_3_EVENTS(irq_inversion_soft_wlock)
-+
-+#undef E1
-+#undef E2
-+#undef E3
-+
-+/*
-+ * read-lock / write-lock recursion that is actually safe.
-+ */
-+
-+#define E1()				\
-+					\
-+	IRQ_DISABLE();			\
-+	WL(A);				\
-+	WU(A);				\
-+	IRQ_ENABLE();
-+
-+#define E2()				\
-+					\
-+	RL(A);				\
-+	RU(A);				\
-+
-+#define E3()				\
-+					\
-+	IRQ_ENTER();			\
-+	RL(A);				\
-+	L(B);				\
-+	U(B);				\
-+	RU(A);				\
-+	IRQ_EXIT();
-+
-+/*
-+ * Generate 12 testcases:
-+ */
-+#include "locking-selftest-hardirq.h"
-+GENERATE_PERMUTATIONS_3_EVENTS(irq_read_recursion_hard)
-+
-+#include "locking-selftest-softirq.h"
-+GENERATE_PERMUTATIONS_3_EVENTS(irq_read_recursion_soft)
-+
-+#undef E1
-+#undef E2
-+#undef E3
-+
-+/*
-+ * read-lock / write-lock recursion that is unsafe.
-+ */
-+
-+#define E1()				\
-+					\
-+	IRQ_DISABLE();			\
-+	L(B);				\
-+	WL(A);				\
-+	WU(A);				\
-+	U(B);				\
-+	IRQ_ENABLE();
-+
-+#define E2()				\
-+					\
-+	RL(A);				\
-+	RU(A);				\
-+
-+#define E3()				\
-+					\
-+	IRQ_ENTER();			\
-+	L(B);				\
-+	U(B);				\
-+	IRQ_EXIT();
-+
-+/*
-+ * Generate 12 testcases:
-+ */
-+#include "locking-selftest-hardirq.h"
-+// GENERATE_PERMUTATIONS_3_EVENTS(irq_read_recursion2_hard)
-+
-+#include "locking-selftest-softirq.h"
-+// GENERATE_PERMUTATIONS_3_EVENTS(irq_read_recursion2_soft)
-+
-+#ifdef CONFIG_DEBUG_LOCK_ALLOC
-+# define I_SPINLOCK(x)	lockdep_reset_lock(&lock_##x.dep_map)
-+# define I_RWLOCK(x)	lockdep_reset_lock(&rwlock_##x.dep_map)
-+# define I_MUTEX(x)	lockdep_reset_lock(&mutex_##x.dep_map)
-+# define I_RWSEM(x)	lockdep_reset_lock(&rwsem_##x.dep_map)
-+#else
-+# define I_SPINLOCK(x)
-+# define I_RWLOCK(x)
-+# define I_MUTEX(x)
-+# define I_RWSEM(x)
-+#endif
-+
-+#define I1(x)					\
-+	do {					\
-+		I_SPINLOCK(x);			\
-+		I_RWLOCK(x);			\
-+		I_MUTEX(x);			\
-+		I_RWSEM(x);			\
-+	} while (0)
-+
-+#define I2(x)					\
-+	do {					\
-+		spin_lock_init(&lock_##x);	\
-+		rwlock_init(&rwlock_##x);	\
-+		mutex_init(&mutex_##x);		\
-+		init_rwsem(&rwsem_##x);		\
-+	} while (0)
-+
-+static void reset_locks(void)
-+{
-+	local_irq_disable();
-+	I1(A); I1(B); I1(C); I1(D);
-+	I1(X1); I1(X2); I1(Y1); I1(Y2); I1(Z1); I1(Z2);
-+	lockdep_reset();
-+	I2(A); I2(B); I2(C); I2(D);
-+	init_shared_classes();
-+	local_irq_enable();
-+}
-+
-+#undef I
-+
-+static int testcase_total;
-+static int testcase_successes;
-+static int expected_testcase_failures;
-+static int unexpected_testcase_failures;
-+
-+static void dotest(void (*testcase_fn)(void), int expected, int lockclass_mask)
-+{
-+	unsigned long saved_preempt_count = preempt_count();
-+	int expected_failure = 0;
-+
-+	WARN_ON(irqs_disabled());
-+
-+	testcase_fn();
-+	/*
-+	 * Filter out expected failures:
-+	 */
-+#ifndef CONFIG_PROVE_LOCKING
-+	if ((lockclass_mask & LOCKTYPE_SPIN) && debug_locks != expected)
-+		expected_failure = 1;
-+	if ((lockclass_mask & LOCKTYPE_RWLOCK) && debug_locks != expected)
-+		expected_failure = 1;
-+	if ((lockclass_mask & LOCKTYPE_MUTEX) && debug_locks != expected)
-+		expected_failure = 1;
-+	if ((lockclass_mask & LOCKTYPE_RWSEM) && debug_locks != expected)
-+		expected_failure = 1;
-+#endif
-+	if (debug_locks != expected) {
-+		if (expected_failure) {
-+			expected_testcase_failures++;
-+			printk("failed|");
-+		} else {
-+			unexpected_testcase_failures++;
-+
-+			printk("FAILED|");
-+			dump_stack();
-+		}
-+	} else {
-+		testcase_successes++;
-+		printk("  ok  |");
++	struct list_head *p;
++
++	spin_lock_bh(&rcu_torture_lock);
++	if (list_empty(&rcu_torture_freelist)) {
++		atomic_inc(&n_rcu_torture_alloc_fail);
++		spin_unlock_bh(&rcu_torture_lock);
++		return NULL;
 +	}
-+	testcase_total++;
-+
-+	if (debug_locks_verbose)
-+		printk(" lockclass mask: %x, debug_locks: %d, expected: %d\n",
-+			lockclass_mask, debug_locks, expected);
-+	/*
-+	 * Some tests (e.g. double-unlock) might corrupt the preemption
-+	 * count, so restore it:
-+	 */
-+	preempt_count() = saved_preempt_count;
-+#ifdef CONFIG_TRACE_IRQFLAGS
-+	if (softirq_count())
-+		current->softirqs_enabled = 0;
-+	else
-+		current->softirqs_enabled = 1;
-+#endif
-+
-+	reset_locks();
++	atomic_inc(&n_rcu_torture_alloc);
++	p = rcu_torture_freelist.next;
++	list_del_init(p);
++	spin_unlock_bh(&rcu_torture_lock);
++	return container_of(p, struct rcu_torture, rtort_free);
 +}
-+
-+static inline void print_testname(const char *testname)
-+{
-+	printk("%33s:", testname);
-+}
-+
-+#define DO_TESTCASE_1(desc, name, nr)				\
-+	print_testname(desc"/"#nr);				\
-+	dotest(name##_##nr, SUCCESS, LOCKTYPE_RWLOCK);		\
-+	printk("\n");
-+
-+#define DO_TESTCASE_1B(desc, name, nr)				\
-+	print_testname(desc"/"#nr);				\
-+	dotest(name##_##nr, FAILURE, LOCKTYPE_RWLOCK);		\
-+	printk("\n");
-+
-+#define DO_TESTCASE_3(desc, name, nr)				\
-+	print_testname(desc"/"#nr);				\
-+	dotest(name##_spin_##nr, FAILURE, LOCKTYPE_SPIN);	\
-+	dotest(name##_wlock_##nr, FAILURE, LOCKTYPE_RWLOCK);	\
-+	dotest(name##_rlock_##nr, SUCCESS, LOCKTYPE_RWLOCK);	\
-+	printk("\n");
-+
-+#define DO_TESTCASE_3RW(desc, name, nr)				\
-+	print_testname(desc"/"#nr);				\
-+	dotest(name##_spin_##nr, FAILURE, LOCKTYPE_SPIN|LOCKTYPE_RWLOCK);\
-+	dotest(name##_wlock_##nr, FAILURE, LOCKTYPE_RWLOCK);	\
-+	dotest(name##_rlock_##nr, SUCCESS, LOCKTYPE_RWLOCK);	\
-+	printk("\n");
-+
-+#define DO_TESTCASE_6(desc, name)				\
-+	print_testname(desc);					\
-+	dotest(name##_spin, FAILURE, LOCKTYPE_SPIN);		\
-+	dotest(name##_wlock, FAILURE, LOCKTYPE_RWLOCK);		\
-+	dotest(name##_rlock, FAILURE, LOCKTYPE_RWLOCK);		\
-+	dotest(name##_mutex, FAILURE, LOCKTYPE_MUTEX);		\
-+	dotest(name##_wsem, FAILURE, LOCKTYPE_RWSEM);		\
-+	dotest(name##_rsem, FAILURE, LOCKTYPE_RWSEM);		\
-+	printk("\n");
-+
-+#define DO_TESTCASE_6_SUCCESS(desc, name)			\
-+	print_testname(desc);					\
-+	dotest(name##_spin, SUCCESS, LOCKTYPE_SPIN);		\
-+	dotest(name##_wlock, SUCCESS, LOCKTYPE_RWLOCK);		\
-+	dotest(name##_rlock, SUCCESS, LOCKTYPE_RWLOCK);		\
-+	dotest(name##_mutex, SUCCESS, LOCKTYPE_MUTEX);		\
-+	dotest(name##_wsem, SUCCESS, LOCKTYPE_RWSEM);		\
-+	dotest(name##_rsem, SUCCESS, LOCKTYPE_RWSEM);		\
-+	printk("\n");
 +
 +/*
-+ * 'read' variant: rlocks must not trigger.
++ * Free an element to the rcu_tortures pool.
 + */
-+#define DO_TESTCASE_6R(desc, name)				\
-+	print_testname(desc);					\
-+	dotest(name##_spin, FAILURE, LOCKTYPE_SPIN);		\
-+	dotest(name##_wlock, FAILURE, LOCKTYPE_RWLOCK);		\
-+	dotest(name##_rlock, SUCCESS, LOCKTYPE_RWLOCK);		\
-+	dotest(name##_mutex, FAILURE, LOCKTYPE_MUTEX);		\
-+	dotest(name##_wsem, FAILURE, LOCKTYPE_RWSEM);		\
-+	dotest(name##_rsem, FAILURE, LOCKTYPE_RWSEM);		\
-+	printk("\n");
-+
-+#define DO_TESTCASE_2I(desc, name, nr)				\
-+	DO_TESTCASE_1("hard-"desc, name##_hard, nr);		\
-+	DO_TESTCASE_1("soft-"desc, name##_soft, nr);
-+
-+#define DO_TESTCASE_2IB(desc, name, nr)				\
-+	DO_TESTCASE_1B("hard-"desc, name##_hard, nr);		\
-+	DO_TESTCASE_1B("soft-"desc, name##_soft, nr);
-+
-+#define DO_TESTCASE_6I(desc, name, nr)				\
-+	DO_TESTCASE_3("hard-"desc, name##_hard, nr);		\
-+	DO_TESTCASE_3("soft-"desc, name##_soft, nr);
-+
-+#define DO_TESTCASE_6IRW(desc, name, nr)			\
-+	DO_TESTCASE_3RW("hard-"desc, name##_hard, nr);		\
-+	DO_TESTCASE_3RW("soft-"desc, name##_soft, nr);
-+
-+#define DO_TESTCASE_2x3(desc, name)				\
-+	DO_TESTCASE_3(desc, name, 12);				\
-+	DO_TESTCASE_3(desc, name, 21);
-+
-+#define DO_TESTCASE_2x6(desc, name)				\
-+	DO_TESTCASE_6I(desc, name, 12);				\
-+	DO_TESTCASE_6I(desc, name, 21);
-+
-+#define DO_TESTCASE_6x2(desc, name)				\
-+	DO_TESTCASE_2I(desc, name, 123);			\
-+	DO_TESTCASE_2I(desc, name, 132);			\
-+	DO_TESTCASE_2I(desc, name, 213);			\
-+	DO_TESTCASE_2I(desc, name, 231);			\
-+	DO_TESTCASE_2I(desc, name, 312);			\
-+	DO_TESTCASE_2I(desc, name, 321);
-+
-+#define DO_TESTCASE_6x2B(desc, name)				\
-+	DO_TESTCASE_2IB(desc, name, 123);			\
-+	DO_TESTCASE_2IB(desc, name, 132);			\
-+	DO_TESTCASE_2IB(desc, name, 213);			\
-+	DO_TESTCASE_2IB(desc, name, 231);			\
-+	DO_TESTCASE_2IB(desc, name, 312);			\
-+	DO_TESTCASE_2IB(desc, name, 321);
-+
-+#define DO_TESTCASE_6x6(desc, name)				\
-+	DO_TESTCASE_6I(desc, name, 123);			\
-+	DO_TESTCASE_6I(desc, name, 132);			\
-+	DO_TESTCASE_6I(desc, name, 213);			\
-+	DO_TESTCASE_6I(desc, name, 231);			\
-+	DO_TESTCASE_6I(desc, name, 312);			\
-+	DO_TESTCASE_6I(desc, name, 321);
-+
-+#define DO_TESTCASE_6x6RW(desc, name)				\
-+	DO_TESTCASE_6IRW(desc, name, 123);			\
-+	DO_TESTCASE_6IRW(desc, name, 132);			\
-+	DO_TESTCASE_6IRW(desc, name, 213);			\
-+	DO_TESTCASE_6IRW(desc, name, 231);			\
-+	DO_TESTCASE_6IRW(desc, name, 312);			\
-+	DO_TESTCASE_6IRW(desc, name, 321);
-+
-+
-+void locking_selftest(void)
++static void
++rcu_torture_free(struct rcu_torture *p)
 +{
-+	/*
-+	 * Got a locking failure before the selftest ran?
-+	 */
-+	if (!debug_locks) {
-+		printk("----------------------------------\n");
-+		printk("| Locking API testsuite disabled |\n");
-+		printk("----------------------------------\n");
++	atomic_inc(&n_rcu_torture_free);
++	spin_lock_bh(&rcu_torture_lock);
++	list_add_tail(&p->rtort_free, &rcu_torture_freelist);
++	spin_unlock_bh(&rcu_torture_lock);
++}
++
++struct rcu_random_state {
++	unsigned long rrs_state;
++	long rrs_count;
++};
++
++#define RCU_RANDOM_MULT 39916801  /* prime */
++#define RCU_RANDOM_ADD	479001701 /* prime */
++#define RCU_RANDOM_REFRESH 10000
++
++#define DEFINE_RCU_RANDOM(name) struct rcu_random_state name = { 0, 0 }
++
++/*
++ * Crude but fast random-number generator.  Uses a linear congruential
++ * generator, with occasional help from cpu_clock().
++ */
++static unsigned long
++rcu_random(struct rcu_random_state *rrsp)
++{
++	if (--rrsp->rrs_count < 0) {
++		rrsp->rrs_state +=
++			(unsigned long)cpu_clock(raw_smp_processor_id());
++		rrsp->rrs_count = RCU_RANDOM_REFRESH;
++	}
++	rrsp->rrs_state = rrsp->rrs_state * RCU_RANDOM_MULT + RCU_RANDOM_ADD;
++	return swahw32(rrsp->rrs_state);
++}
++
++/*
++ * Operations vector for selecting different types of tests.
++ */
++
++struct rcu_torture_ops {
++	void (*init)(void);
++	void (*cleanup)(void);
++	int (*readlock)(void);
++	void (*readdelay)(struct rcu_random_state *rrsp);
++	void (*readunlock)(int idx);
++	int (*completed)(void);
++	void (*deferredfree)(struct rcu_torture *p);
++	void (*sync)(void);
++	int (*stats)(char *page);
++	char *name;
++};
++static struct rcu_torture_ops *cur_ops = NULL;
++
++/*
++ * Definitions for rcu torture testing.
++ */
++
++static int rcu_torture_read_lock(void) __acquires(RCU)
++{
++	rcu_read_lock();
++	return 0;
++}
++
++static void rcu_read_delay(struct rcu_random_state *rrsp)
++{
++	long delay;
++	const long longdelay = 200;
++
++	/* We want there to be long-running readers, but not all the time. */
++
++	delay = rcu_random(rrsp) % (nrealreaders * 2 * longdelay);
++	if (!delay)
++		udelay(longdelay);
++}
++
++static void rcu_torture_read_unlock(int idx) __releases(RCU)
++{
++	rcu_read_unlock();
++}
++
++static int rcu_torture_completed(void)
++{
++	return rcu_batches_completed();
++}
++
++static void
++rcu_torture_cb(struct rcu_head *p)
++{
++	int i;
++	struct rcu_torture *rp = container_of(p, struct rcu_torture, rtort_rcu);
++
++	if (fullstop) {
++		/* Test is ending, just drop callbacks on the floor. */
++		/* The next initialization will pick up the pieces. */
++		return;
++	}
++	i = rp->rtort_pipe_count;
++	if (i > RCU_TORTURE_PIPE_LEN)
++		i = RCU_TORTURE_PIPE_LEN;
++	atomic_inc(&rcu_torture_wcount[i]);
++	if (++rp->rtort_pipe_count >= RCU_TORTURE_PIPE_LEN) {
++		rp->rtort_mbtest = 0;
++		rcu_torture_free(rp);
++	} else
++		cur_ops->deferredfree(rp);
++}
++
++static void rcu_torture_deferred_free(struct rcu_torture *p)
++{
++	call_rcu(&p->rtort_rcu, rcu_torture_cb);
++}
++
++static struct rcu_torture_ops rcu_ops = {
++	.init = NULL,
++	.cleanup = NULL,
++	.readlock = rcu_torture_read_lock,
++	.readdelay = rcu_read_delay,
++	.readunlock = rcu_torture_read_unlock,
++	.completed = rcu_torture_completed,
++	.deferredfree = rcu_torture_deferred_free,
++	.sync = synchronize_rcu,
++	.stats = NULL,
++	.name = "rcu"
++};
++
++static void rcu_sync_torture_deferred_free(struct rcu_torture *p)
++{
++	int i;
++	struct rcu_torture *rp;
++	struct rcu_torture *rp1;
++
++	cur_ops->sync();
++	list_add(&p->rtort_free, &rcu_torture_removed);
++	list_for_each_entry_safe(rp, rp1, &rcu_torture_removed, rtort_free) {
++		i = rp->rtort_pipe_count;
++		if (i > RCU_TORTURE_PIPE_LEN)
++			i = RCU_TORTURE_PIPE_LEN;
++		atomic_inc(&rcu_torture_wcount[i]);
++		if (++rp->rtort_pipe_count >= RCU_TORTURE_PIPE_LEN) {
++			rp->rtort_mbtest = 0;
++			list_del(&rp->rtort_free);
++			rcu_torture_free(rp);
++		}
++	}
++}
++
++static void rcu_sync_torture_init(void)
++{
++	INIT_LIST_HEAD(&rcu_torture_removed);
++}
++
++static struct rcu_torture_ops rcu_sync_ops = {
++	.init = rcu_sync_torture_init,
++	.cleanup = NULL,
++	.readlock = rcu_torture_read_lock,
++	.readdelay = rcu_read_delay,
++	.readunlock = rcu_torture_read_unlock,
++	.completed = rcu_torture_completed,
++	.deferredfree = rcu_sync_torture_deferred_free,
++	.sync = synchronize_rcu,
++	.stats = NULL,
++	.name = "rcu_sync"
++};
++
++/*
++ * Definitions for rcu_bh torture testing.
++ */
++
++static int rcu_bh_torture_read_lock(void) __acquires(RCU_BH)
++{
++	rcu_read_lock_bh();
++	return 0;
++}
++
++static void rcu_bh_torture_read_unlock(int idx) __releases(RCU_BH)
++{
++	rcu_read_unlock_bh();
++}
++
++static int rcu_bh_torture_completed(void)
++{
++	return rcu_batches_completed_bh();
++}
++
++static void rcu_bh_torture_deferred_free(struct rcu_torture *p)
++{
++	call_rcu_bh(&p->rtort_rcu, rcu_torture_cb);
++}
++
++struct rcu_bh_torture_synchronize {
++	struct rcu_head head;
++	struct completion completion;
++};
++
++static void rcu_bh_torture_wakeme_after_cb(struct rcu_head *head)
++{
++	struct rcu_bh_torture_synchronize *rcu;
++
++	rcu = container_of(head, struct rcu_bh_torture_synchronize, head);
++	complete(&rcu->completion);
++}
++
++static void rcu_bh_torture_synchronize(void)
++{
++	struct rcu_bh_torture_synchronize rcu;
++
++	init_completion(&rcu.completion);
++	call_rcu_bh(&rcu.head, rcu_bh_torture_wakeme_after_cb);
++	wait_for_completion(&rcu.completion);
++}
++
++static struct rcu_torture_ops rcu_bh_ops = {
++	.init = NULL,
++	.cleanup = NULL,
++	.readlock = rcu_bh_torture_read_lock,
++	.readdelay = rcu_read_delay,  /* just reuse rcu's version. */
++	.readunlock = rcu_bh_torture_read_unlock,
++	.completed = rcu_bh_torture_completed,
++	.deferredfree = rcu_bh_torture_deferred_free,
++	.sync = rcu_bh_torture_synchronize,
++	.stats = NULL,
++	.name = "rcu_bh"
++};
++
++static struct rcu_torture_ops rcu_bh_sync_ops = {
++	.init = rcu_sync_torture_init,
++	.cleanup = NULL,
++	.readlock = rcu_bh_torture_read_lock,
++	.readdelay = rcu_read_delay,  /* just reuse rcu's version. */
++	.readunlock = rcu_bh_torture_read_unlock,
++	.completed = rcu_bh_torture_completed,
++	.deferredfree = rcu_sync_torture_deferred_free,
++	.sync = rcu_bh_torture_synchronize,
++	.stats = NULL,
++	.name = "rcu_bh_sync"
++};
++
++/*
++ * Definitions for srcu torture testing.
++ */
++
++static struct srcu_struct srcu_ctl;
++
++static void srcu_torture_init(void)
++{
++	init_srcu_struct(&srcu_ctl);
++	rcu_sync_torture_init();
++}
++
++static void srcu_torture_cleanup(void)
++{
++	synchronize_srcu(&srcu_ctl);
++	cleanup_srcu_struct(&srcu_ctl);
++}
++
++static int srcu_torture_read_lock(void) __acquires(&srcu_ctl)
++{
++	return srcu_read_lock(&srcu_ctl);
++}
++
++static void srcu_read_delay(struct rcu_random_state *rrsp)
++{
++	long delay;
++	const long uspertick = 1000000 / HZ;
++	const long longdelay = 10;
++
++	/* We want there to be long-running readers, but not all the time. */
++
++	delay = rcu_random(rrsp) % (nrealreaders * 2 * longdelay * uspertick);
++	if (!delay)
++		schedule_timeout_interruptible(longdelay);
++}
++
++static void srcu_torture_read_unlock(int idx) __releases(&srcu_ctl)
++{
++	srcu_read_unlock(&srcu_ctl, idx);
++}
++
++static int srcu_torture_completed(void)
++{
++	return srcu_batches_completed(&srcu_ctl);
++}
++
++static void srcu_torture_synchronize(void)
++{
++	synchronize_srcu(&srcu_ctl);
++}
++
++static int srcu_torture_stats(char *page)
++{
++	int cnt = 0;
++	int cpu;
++	int idx = srcu_ctl.completed & 0x1;
++
++	cnt += sprintf(&page[cnt], "%s%s per-CPU(idx=%d):",
++		       torture_type, TORTURE_FLAG, idx);
++	for_each_possible_cpu(cpu) {
++		cnt += sprintf(&page[cnt], " %d(%d,%d)", cpu,
++			       per_cpu_ptr(srcu_ctl.per_cpu_ref, cpu)->c[!idx],
++			       per_cpu_ptr(srcu_ctl.per_cpu_ref, cpu)->c[idx]);
++	}
++	cnt += sprintf(&page[cnt], "\n");
++	return cnt;
++}
++
++static struct rcu_torture_ops srcu_ops = {
++	.init = srcu_torture_init,
++	.cleanup = srcu_torture_cleanup,
++	.readlock = srcu_torture_read_lock,
++	.readdelay = srcu_read_delay,
++	.readunlock = srcu_torture_read_unlock,
++	.completed = srcu_torture_completed,
++	.deferredfree = rcu_sync_torture_deferred_free,
++	.sync = srcu_torture_synchronize,
++	.stats = srcu_torture_stats,
++	.name = "srcu"
++};
++
++/*
++ * Definitions for sched torture testing.
++ */
++
++static int sched_torture_read_lock(void)
++{
++	preempt_disable();
++	return 0;
++}
++
++static void sched_torture_read_unlock(int idx)
++{
++	preempt_enable();
++}
++
++static int sched_torture_completed(void)
++{
++	return 0;
++}
++
++static void sched_torture_synchronize(void)
++{
++	synchronize_sched();
++}
++
++static struct rcu_torture_ops sched_ops = {
++	.init = rcu_sync_torture_init,
++	.cleanup = NULL,
++	.readlock = sched_torture_read_lock,
++	.readdelay = rcu_read_delay,  /* just reuse rcu's version. */
++	.readunlock = sched_torture_read_unlock,
++	.completed = sched_torture_completed,
++	.deferredfree = rcu_sync_torture_deferred_free,
++	.sync = sched_torture_synchronize,
++	.stats = NULL,
++	.name = "sched"
++};
++
++/*
++ * RCU torture writer kthread.  Repeatedly substitutes a new structure
++ * for that pointed to by rcu_torture_current, freeing the old structure
++ * after a series of grace periods (the "pipeline").
++ */
++static int
++rcu_torture_writer(void *arg)
++{
++	int i;
++	long oldbatch = rcu_batches_completed();
++	struct rcu_torture *rp;
++	struct rcu_torture *old_rp;
++	static DEFINE_RCU_RANDOM(rand);
++
++	VERBOSE_PRINTK_STRING("rcu_torture_writer task started");
++	set_user_nice(current, 19);
++
++	do {
++		schedule_timeout_uninterruptible(1);
++		if ((rp = rcu_torture_alloc()) == NULL)
++			continue;
++		rp->rtort_pipe_count = 0;
++		udelay(rcu_random(&rand) & 0x3ff);
++		old_rp = rcu_torture_current;
++		rp->rtort_mbtest = 1;
++		rcu_assign_pointer(rcu_torture_current, rp);
++		smp_wmb();
++		if (old_rp) {
++			i = old_rp->rtort_pipe_count;
++			if (i > RCU_TORTURE_PIPE_LEN)
++				i = RCU_TORTURE_PIPE_LEN;
++			atomic_inc(&rcu_torture_wcount[i]);
++			old_rp->rtort_pipe_count++;
++			cur_ops->deferredfree(old_rp);
++		}
++		rcu_torture_current_version++;
++		oldbatch = cur_ops->completed();
++	} while (!kthread_should_stop() && !fullstop);
++	VERBOSE_PRINTK_STRING("rcu_torture_writer task stopping");
++	while (!kthread_should_stop())
++		schedule_timeout_uninterruptible(1);
++	return 0;
++}
++
++/*
++ * RCU torture fake writer kthread.  Repeatedly calls sync, with a random
++ * delay between calls.
++ */
++static int
++rcu_torture_fakewriter(void *arg)
++{
++	DEFINE_RCU_RANDOM(rand);
++
++	VERBOSE_PRINTK_STRING("rcu_torture_fakewriter task started");
++	set_user_nice(current, 19);
++
++	do {
++		schedule_timeout_uninterruptible(1 + rcu_random(&rand)%10);
++		udelay(rcu_random(&rand) & 0x3ff);
++		cur_ops->sync();
++	} while (!kthread_should_stop() && !fullstop);
++
++	VERBOSE_PRINTK_STRING("rcu_torture_fakewriter task stopping");
++	while (!kthread_should_stop())
++		schedule_timeout_uninterruptible(1);
++	return 0;
++}
++
++/*
++ * RCU torture reader kthread.  Repeatedly dereferences rcu_torture_current,
++ * incrementing the corresponding element of the pipeline array.  The
++ * counter in the element should never be greater than 1, otherwise, the
++ * RCU implementation is broken.
++ */
++static int
++rcu_torture_reader(void *arg)
++{
++	int completed;
++	int idx;
++	DEFINE_RCU_RANDOM(rand);
++	struct rcu_torture *p;
++	int pipe_count;
++
++	VERBOSE_PRINTK_STRING("rcu_torture_reader task started");
++	set_user_nice(current, 19);
++
++	do {
++		idx = cur_ops->readlock();
++		completed = cur_ops->completed();
++		p = rcu_dereference(rcu_torture_current);
++		if (p == NULL) {
++			/* Wait for rcu_torture_writer to get underway */
++			cur_ops->readunlock(idx);
++			schedule_timeout_interruptible(HZ);
++			continue;
++		}
++		if (p->rtort_mbtest == 0)
++			atomic_inc(&n_rcu_torture_mberror);
++		cur_ops->readdelay(&rand);
++		preempt_disable();
++		pipe_count = p->rtort_pipe_count;
++		if (pipe_count > RCU_TORTURE_PIPE_LEN) {
++			/* Should not happen, but... */
++			pipe_count = RCU_TORTURE_PIPE_LEN;
++		}
++		++__get_cpu_var(rcu_torture_count)[pipe_count];
++		completed = cur_ops->completed() - completed;
++		if (completed > RCU_TORTURE_PIPE_LEN) {
++			/* Should not happen, but... */
++			completed = RCU_TORTURE_PIPE_LEN;
++		}
++		++__get_cpu_var(rcu_torture_batch)[completed];
++		preempt_enable();
++		cur_ops->readunlock(idx);
++		schedule();
++	} while (!kthread_should_stop() && !fullstop);
++	VERBOSE_PRINTK_STRING("rcu_torture_reader task stopping");
++	while (!kthread_should_stop())
++		schedule_timeout_uninterruptible(1);
++	return 0;
++}
++
++/*
++ * Create an RCU-torture statistics message in the specified buffer.
++ */
++static int
++rcu_torture_printk(char *page)
++{
++	int cnt = 0;
++	int cpu;
++	int i;
++	long pipesummary[RCU_TORTURE_PIPE_LEN + 1] = { 0 };
++	long batchsummary[RCU_TORTURE_PIPE_LEN + 1] = { 0 };
++
++	for_each_possible_cpu(cpu) {
++		for (i = 0; i < RCU_TORTURE_PIPE_LEN + 1; i++) {
++			pipesummary[i] += per_cpu(rcu_torture_count, cpu)[i];
++			batchsummary[i] += per_cpu(rcu_torture_batch, cpu)[i];
++		}
++	}
++	for (i = RCU_TORTURE_PIPE_LEN - 1; i >= 0; i--) {
++		if (pipesummary[i] != 0)
++			break;
++	}
++	cnt += sprintf(&page[cnt], "%s%s ", torture_type, TORTURE_FLAG);
++	cnt += sprintf(&page[cnt],
++		       "rtc: %p ver: %ld tfle: %d rta: %d rtaf: %d rtf: %d "
++		       "rtmbe: %d",
++		       rcu_torture_current,
++		       rcu_torture_current_version,
++		       list_empty(&rcu_torture_freelist),
++		       atomic_read(&n_rcu_torture_alloc),
++		       atomic_read(&n_rcu_torture_alloc_fail),
++		       atomic_read(&n_rcu_torture_free),
++		       atomic_read(&n_rcu_torture_mberror));
++	if (atomic_read(&n_rcu_torture_mberror) != 0)
++		cnt += sprintf(&page[cnt], " !!!");
++	cnt += sprintf(&page[cnt], "\n%s%s ", torture_type, TORTURE_FLAG);
++	if (i > 1) {
++		cnt += sprintf(&page[cnt], "!!! ");
++		atomic_inc(&n_rcu_torture_error);
++	}
++	cnt += sprintf(&page[cnt], "Reader Pipe: ");
++	for (i = 0; i < RCU_TORTURE_PIPE_LEN + 1; i++)
++		cnt += sprintf(&page[cnt], " %ld", pipesummary[i]);
++	cnt += sprintf(&page[cnt], "\n%s%s ", torture_type, TORTURE_FLAG);
++	cnt += sprintf(&page[cnt], "Reader Batch: ");
++	for (i = 0; i < RCU_TORTURE_PIPE_LEN + 1; i++)
++		cnt += sprintf(&page[cnt], " %ld", batchsummary[i]);
++	cnt += sprintf(&page[cnt], "\n%s%s ", torture_type, TORTURE_FLAG);
++	cnt += sprintf(&page[cnt], "Free-Block Circulation: ");
++	for (i = 0; i < RCU_TORTURE_PIPE_LEN + 1; i++) {
++		cnt += sprintf(&page[cnt], " %d",
++			       atomic_read(&rcu_torture_wcount[i]));
++	}
++	cnt += sprintf(&page[cnt], "\n");
++	if (cur_ops->stats)
++		cnt += cur_ops->stats(&page[cnt]);
++	return cnt;
++}
++
++/*
++ * Print torture statistics.  Caller must ensure that there is only
++ * one call to this function at a given time!!!  This is normally
++ * accomplished by relying on the module system to only have one copy
++ * of the module loaded, and then by giving the rcu_torture_stats
++ * kthread full control (or the init/cleanup functions when rcu_torture_stats
++ * thread is not running).
++ */
++static void
++rcu_torture_stats_print(void)
++{
++	int cnt;
++
++	cnt = rcu_torture_printk(printk_buf);
++	printk(KERN_ALERT "%s", printk_buf);
++}
++
++/*
++ * Periodically prints torture statistics, if periodic statistics printing
++ * was specified via the stat_interval module parameter.
++ *
++ * No need to worry about fullstop here, since this one doesn't reference
++ * volatile state or register callbacks.
++ */
++static int
++rcu_torture_stats(void *arg)
++{
++	VERBOSE_PRINTK_STRING("rcu_torture_stats task started");
++	do {
++		schedule_timeout_interruptible(stat_interval * HZ);
++		rcu_torture_stats_print();
++	} while (!kthread_should_stop());
++	VERBOSE_PRINTK_STRING("rcu_torture_stats task stopping");
++	return 0;
++}
++
++static int rcu_idle_cpu;	/* Force all torture tasks off this CPU */
++
++/* Shuffle tasks such that we allow @rcu_idle_cpu to become idle. A special case
++ * is when @rcu_idle_cpu = -1, when we allow the tasks to run on all CPUs.
++ */
++static void rcu_torture_shuffle_tasks(void)
++{
++	cpumask_t tmp_mask = CPU_MASK_ALL;
++	int i;
++
++	get_online_cpus();
++
++	/* No point in shuffling if there is only one online CPU (ex: UP) */
++	if (num_online_cpus() == 1) {
++		put_online_cpus();
 +		return;
 +	}
 +
-+	/*
-+	 * Run the testsuite:
-+	 */
-+	printk("------------------------\n");
-+	printk("| Locking API testsuite:\n");
-+	printk("----------------------------------------------------------------------------\n");
-+	printk("                                 | spin |wlock |rlock |mutex | wsem | rsem |\n");
-+	printk("  --------------------------------------------------------------------------\n");
++	if (rcu_idle_cpu != -1)
++		cpu_clear(rcu_idle_cpu, tmp_mask);
 +
-+	init_shared_classes();
-+	debug_locks_silent = !debug_locks_verbose;
++	set_cpus_allowed(current, tmp_mask);
 +
-+	DO_TESTCASE_6R("A-A deadlock", AA);
-+	DO_TESTCASE_6R("A-B-B-A deadlock", ABBA);
-+	DO_TESTCASE_6R("A-B-B-C-C-A deadlock", ABBCCA);
-+	DO_TESTCASE_6R("A-B-C-A-B-C deadlock", ABCABC);
-+	DO_TESTCASE_6R("A-B-B-C-C-D-D-A deadlock", ABBCCDDA);
-+	DO_TESTCASE_6R("A-B-C-D-B-D-D-A deadlock", ABCDBDDA);
-+	DO_TESTCASE_6R("A-B-C-D-B-C-D-A deadlock", ABCDBCDA);
-+	DO_TESTCASE_6("double unlock", double_unlock);
-+	DO_TESTCASE_6("initialize held", init_held);
-+	DO_TESTCASE_6_SUCCESS("bad unlock order", bad_unlock_order);
-+
-+	printk("  --------------------------------------------------------------------------\n");
-+	print_testname("recursive read-lock");
-+	printk("             |");
-+	dotest(rlock_AA1, SUCCESS, LOCKTYPE_RWLOCK);
-+	printk("             |");
-+	dotest(rsem_AA1, FAILURE, LOCKTYPE_RWSEM);
-+	printk("\n");
-+
-+	print_testname("recursive read-lock #2");
-+	printk("             |");
-+	dotest(rlock_AA1B, SUCCESS, LOCKTYPE_RWLOCK);
-+	printk("             |");
-+	dotest(rsem_AA1B, FAILURE, LOCKTYPE_RWSEM);
-+	printk("\n");
-+
-+	print_testname("mixed read-write-lock");
-+	printk("             |");
-+	dotest(rlock_AA2, FAILURE, LOCKTYPE_RWLOCK);
-+	printk("             |");
-+	dotest(rsem_AA2, FAILURE, LOCKTYPE_RWSEM);
-+	printk("\n");
-+
-+	print_testname("mixed write-read-lock");
-+	printk("             |");
-+	dotest(rlock_AA3, FAILURE, LOCKTYPE_RWLOCK);
-+	printk("             |");
-+	dotest(rsem_AA3, FAILURE, LOCKTYPE_RWSEM);
-+	printk("\n");
-+
-+	printk("  --------------------------------------------------------------------------\n");
-+
-+	/*
-+	 * irq-context testcases:
-+	 */
-+	DO_TESTCASE_2x6("irqs-on + irq-safe-A", irqsafe1);
-+	DO_TESTCASE_2x3("sirq-safe-A => hirqs-on", irqsafe2A);
-+	DO_TESTCASE_2x6("safe-A + irqs-on", irqsafe2B);
-+	DO_TESTCASE_6x6("safe-A + unsafe-B #1", irqsafe3);
-+	DO_TESTCASE_6x6("safe-A + unsafe-B #2", irqsafe4);
-+	DO_TESTCASE_6x6RW("irq lock-inversion", irq_inversion);
-+
-+	DO_TESTCASE_6x2("irq read-recursion", irq_read_recursion);
-+//	DO_TESTCASE_6x2B("irq read-recursion #2", irq_read_recursion2);
-+
-+	if (unexpected_testcase_failures) {
-+		printk("-----------------------------------------------------------------\n");
-+		debug_locks = 0;
-+		printk("BUG: %3d unexpected failures (out of %3d) - debugging disabled! |\n",
-+			unexpected_testcase_failures, testcase_total);
-+		printk("-----------------------------------------------------------------\n");
-+	} else if (expected_testcase_failures && testcase_successes) {
-+		printk("--------------------------------------------------------\n");
-+		printk("%3d out of %3d testcases failed, as expected. |\n",
-+			expected_testcase_failures, testcase_total);
-+		printk("----------------------------------------------------\n");
-+		debug_locks = 1;
-+	} else if (expected_testcase_failures && !testcase_successes) {
-+		printk("--------------------------------------------------------\n");
-+		printk("All %3d testcases failed, as expected. |\n",
-+			expected_testcase_failures);
-+		printk("----------------------------------------\n");
-+		debug_locks = 1;
-+	} else {
-+		printk("-------------------------------------------------------\n");
-+		printk("Good, all %3d testcases passed! |\n",
-+			testcase_successes);
-+		printk("---------------------------------\n");
-+		debug_locks = 1;
++	if (reader_tasks) {
++		for (i = 0; i < nrealreaders; i++)
++			if (reader_tasks[i])
++				set_cpus_allowed(reader_tasks[i], tmp_mask);
 +	}
-+	debug_locks_silent = 0;
++
++	if (fakewriter_tasks) {
++		for (i = 0; i < nfakewriters; i++)
++			if (fakewriter_tasks[i])
++				set_cpus_allowed(fakewriter_tasks[i], tmp_mask);
++	}
++
++	if (writer_task)
++		set_cpus_allowed(writer_task, tmp_mask);
++
++	if (stats_task)
++		set_cpus_allowed(stats_task, tmp_mask);
++
++	if (rcu_idle_cpu == -1)
++		rcu_idle_cpu = num_online_cpus() - 1;
++	else
++		rcu_idle_cpu--;
++
++	put_online_cpus();
 +}
-Index: linux-2.6.24-rc6/lib/Kconfig.debug
-===================================================================
---- linux-2.6.24-rc6.orig/lib/Kconfig.debug
-+++ linux-2.6.24-rc6/lib/Kconfig.debug
-@@ -350,17 +350,6 @@ config DEBUG_SPINLOCK_SLEEP
- 	  If you say Y here, various routines which may sleep will become very
- 	  noisy if they are called with a spinlock held.
- 
--config DEBUG_LOCKING_API_SELFTESTS
--	bool "Locking API boot-time self-tests"
--	depends on DEBUG_KERNEL
--	help
--	  Say Y here if you want the kernel to run a short self-test during
--	  bootup. The self-test checks whether common types of locking bugs
--	  are detected by debugging mechanisms or not. (if you disable
--	  lock debugging then those bugs wont be detected of course.)
--	  The following locking APIs are covered: spinlocks, rwlocks,
--	  mutexes and rwsems.
--
- config STACKTRACE
- 	bool
- 	depends on DEBUG_KERNEL
++
++/* Shuffle tasks across CPUs, with the intent of allowing each CPU in the
++ * system to become idle at a time and cut off its timer ticks. This is meant
++ * to test the support for such tickless idle CPU in RCU.
++ */
++static int
++rcu_torture_shuffle(void *arg)
++{
++	VERBOSE_PRINTK_STRING("rcu_torture_shuffle task started");
++	do {
++		schedule_timeout_interruptible(shuffle_interval * HZ);
++		rcu_torture_shuffle_tasks();
++	} while (!kthread_should_stop());
++	VERBOSE_PRINTK_STRING("rcu_torture_shuffle task stopping");
++	return 0;
++}
++
++static inline void
++rcu_torture_print_module_parms(char *tag)
++{
++	printk(KERN_ALERT "%s" TORTURE_FLAG
++		"--- %s: nreaders=%d nfakewriters=%d "
++		"stat_interval=%d verbose=%d test_no_idle_hz=%d "
++		"shuffle_interval = %d\n",
++		torture_type, tag, nrealreaders, nfakewriters,
++		stat_interval, verbose, test_no_idle_hz, shuffle_interval);
++}
++
++static void
++rcu_torture_cleanup(void)
++{
++	int i;
++
++	fullstop = 1;
++	if (shuffler_task) {
++		VERBOSE_PRINTK_STRING("Stopping rcu_torture_shuffle task");
++		kthread_stop(shuffler_task);
++	}
++	shuffler_task = NULL;
++
++	if (writer_task) {
++		VERBOSE_PRINTK_STRING("Stopping rcu_torture_writer task");
++		kthread_stop(writer_task);
++	}
++	writer_task = NULL;
++
++	if (reader_tasks) {
++		for (i = 0; i < nrealreaders; i++) {
++			if (reader_tasks[i]) {
++				VERBOSE_PRINTK_STRING(
++					"Stopping rcu_torture_reader task");
++				kthread_stop(reader_tasks[i]);
++			}
++			reader_tasks[i] = NULL;
++		}
++		kfree(reader_tasks);
++		reader_tasks = NULL;
++	}
++	rcu_torture_current = NULL;
++
++	if (fakewriter_tasks) {
++		for (i = 0; i < nfakewriters; i++) {
++			if (fakewriter_tasks[i]) {
++				VERBOSE_PRINTK_STRING(
++					"Stopping rcu_torture_fakewriter task");
++				kthread_stop(fakewriter_tasks[i]);
++			}
++			fakewriter_tasks[i] = NULL;
++		}
++		kfree(fakewriter_tasks);
++		fakewriter_tasks = NULL;
++	}
++
++	if (stats_task) {
++		VERBOSE_PRINTK_STRING("Stopping rcu_torture_stats task");
++		kthread_stop(stats_task);
++	}
++	stats_task = NULL;
++
++	/* Wait for all RCU callbacks to fire.  */
++	rcu_barrier();
++
++	rcu_torture_stats_print();  /* -After- the stats thread is stopped! */
++
++	if (cur_ops->cleanup)
++		cur_ops->cleanup();
++	if (atomic_read(&n_rcu_torture_error))
++		rcu_torture_print_module_parms("End of test: FAILURE");
++	else
++		rcu_torture_print_module_parms("End of test: SUCCESS");
++}
++
++static int __init
++rcu_torture_init(void)
++{
++	int i;
++	int cpu;
++	int firsterr = 0;
++	static struct rcu_torture_ops *torture_ops[] =
++		{ &rcu_ops, &rcu_sync_ops, &rcu_bh_ops, &rcu_bh_sync_ops,
++		  &srcu_ops, &sched_ops, };
++
++	/* Process args and tell the world that the torturer is on the job. */
++	for (i = 0; i < ARRAY_SIZE(torture_ops); i++) {
++		cur_ops = torture_ops[i];
++		if (strcmp(torture_type, cur_ops->name) == 0)
++			break;
++	}
++	if (i == ARRAY_SIZE(torture_ops)) {
++		printk(KERN_ALERT "rcutorture: invalid torture type: \"%s\"\n",
++		       torture_type);
++		return (-EINVAL);
++	}
++	if (cur_ops->init)
++		cur_ops->init(); /* no "goto unwind" prior to this point!!! */
++
++	if (nreaders >= 0)
++		nrealreaders = nreaders;
++	else
++		nrealreaders = 2 * num_online_cpus();
++	rcu_torture_print_module_parms("Start of test");
++	fullstop = 0;
++
++	/* Set up the freelist. */
++
++	INIT_LIST_HEAD(&rcu_torture_freelist);
++	for (i = 0; i < ARRAY_SIZE(rcu_tortures); i++) {
++		rcu_tortures[i].rtort_mbtest = 0;
++		list_add_tail(&rcu_tortures[i].rtort_free,
++			      &rcu_torture_freelist);
++	}
++
++	/* Initialize the statistics so that each run gets its own numbers. */
++
++	rcu_torture_current = NULL;
++	rcu_torture_current_version = 0;
++	atomic_set(&n_rcu_torture_alloc, 0);
++	atomic_set(&n_rcu_torture_alloc_fail, 0);
++	atomic_set(&n_rcu_torture_free, 0);
++	atomic_set(&n_rcu_torture_mberror, 0);
++	atomic_set(&n_rcu_torture_error, 0);
++	for (i = 0; i < RCU_TORTURE_PIPE_LEN + 1; i++)
++		atomic_set(&rcu_torture_wcount[i], 0);
++	for_each_possible_cpu(cpu) {
++		for (i = 0; i < RCU_TORTURE_PIPE_LEN + 1; i++) {
++			per_cpu(rcu_torture_count, cpu)[i] = 0;
++			per_cpu(rcu_torture_batch, cpu)[i] = 0;
++		}
++	}
++
++	/* Start up the kthreads. */
++
++	VERBOSE_PRINTK_STRING("Creating rcu_torture_writer task");
++	writer_task = kthread_run(rcu_torture_writer, NULL,
++				  "rcu_torture_writer");
++	if (IS_ERR(writer_task)) {
++		firsterr = PTR_ERR(writer_task);
++		VERBOSE_PRINTK_ERRSTRING("Failed to create writer");
++		writer_task = NULL;
++		goto unwind;
++	}
++	fakewriter_tasks = kzalloc(nfakewriters * sizeof(fakewriter_tasks[0]),
++	                           GFP_KERNEL);
++	if (fakewriter_tasks == NULL) {
++		VERBOSE_PRINTK_ERRSTRING("out of memory");
++		firsterr = -ENOMEM;
++		goto unwind;
++	}
++	for (i = 0; i < nfakewriters; i++) {
++		VERBOSE_PRINTK_STRING("Creating rcu_torture_fakewriter task");
++		fakewriter_tasks[i] = kthread_run(rcu_torture_fakewriter, NULL,
++		                                  "rcu_torture_fakewriter");
++		if (IS_ERR(fakewriter_tasks[i])) {
++			firsterr = PTR_ERR(fakewriter_tasks[i]);
++			VERBOSE_PRINTK_ERRSTRING("Failed to create fakewriter");
++			fakewriter_tasks[i] = NULL;
++			goto unwind;
++		}
++	}
++	reader_tasks = kzalloc(nrealreaders * sizeof(reader_tasks[0]),
++			       GFP_KERNEL);
++	if (reader_tasks == NULL) {
++		VERBOSE_PRINTK_ERRSTRING("out of memory");
++		firsterr = -ENOMEM;
++		goto unwind;
++	}
++	for (i = 0; i < nrealreaders; i++) {
++		VERBOSE_PRINTK_STRING("Creating rcu_torture_reader task");
++		reader_tasks[i] = kthread_run(rcu_torture_reader, NULL,
++					      "rcu_torture_reader");
++		if (IS_ERR(reader_tasks[i])) {
++			firsterr = PTR_ERR(reader_tasks[i]);
++			VERBOSE_PRINTK_ERRSTRING("Failed to create reader");
++			reader_tasks[i] = NULL;
++			goto unwind;
++		}
++	}
++	if (stat_interval > 0) {
++		VERBOSE_PRINTK_STRING("Creating rcu_torture_stats task");
++		stats_task = kthread_run(rcu_torture_stats, NULL,
++					"rcu_torture_stats");
++		if (IS_ERR(stats_task)) {
++			firsterr = PTR_ERR(stats_task);
++			VERBOSE_PRINTK_ERRSTRING("Failed to create stats");
++			stats_task = NULL;
++			goto unwind;
++		}
++	}
++	if (test_no_idle_hz) {
++		rcu_idle_cpu = num_online_cpus() - 1;
++		/* Create the shuffler thread */
++		shuffler_task = kthread_run(rcu_torture_shuffle, NULL,
++					  "rcu_torture_shuffle");
++		if (IS_ERR(shuffler_task)) {
++			firsterr = PTR_ERR(shuffler_task);
++			VERBOSE_PRINTK_ERRSTRING("Failed to create shuffler");
++			shuffler_task = NULL;
++			goto unwind;
++		}
++	}
++	return 0;
++
++unwind:
++	rcu_torture_cleanup();
++	return firsterr;
++}
++
++module_init(rcu_torture_init);
++module_exit(rcu_torture_cleanup);
