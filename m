@@ -1,59 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbYAJGXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbYAJG0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755991AbYAJGXu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 01:23:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbYAJGXm
+	id S1756850AbYAJG0U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 01:26:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbYAJG0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 01:23:42 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47363 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751746AbYAJGXl (ORCPT
+	Thu, 10 Jan 2008 01:26:13 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:19030 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752214AbYAJG0M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 01:23:41 -0500
-Date: Wed, 9 Jan 2008 22:23:52 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] serial: speed setup failure reporting
-Message-Id: <20080109222352.c112b4eb.akpm@linux-foundation.org>
-In-Reply-To: <20080103165507.3fe5b7a4@lxorguk.ukuu.org.uk>
-References: <20080103165507.3fe5b7a4@lxorguk.ukuu.org.uk>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Thu, 10 Jan 2008 01:26:12 -0500
+Date: Wed, 9 Jan 2008 22:25:42 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Help needed to fix section mismatch warnings
+Message-Id: <20080109222542.422c90e0.randy.dunlap@oracle.com>
+In-Reply-To: <20080106140728.GA3504@uranus.ravnborg.org>
+References: <20080106140728.GA3504@uranus.ravnborg.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Jan 2008 16:55:07 +0000 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+On Sun, 6 Jan 2008 15:07:28 +0100 Sam Ravnborg wrote:
 
-> Invalid speeds are forced to 9600. Update the code for this to encode new
-> style baud rates properly.
-> 
-> Signed-off-by: Alan Cox <alan@redhat.com>
-> 
-> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.24-rc6-mm1/drivers/serial/serial_core.c linux-2.6.24-rc6-mm1/drivers/serial/serial_core.c
-> --- linux.vanilla-2.6.24-rc6-mm1/drivers/serial/serial_core.c	2008-01-02 16:04:23.000000000 +0000
-> +++ linux-2.6.24-rc6-mm1/drivers/serial/serial_core.c	2008-01-02 16:17:50.000000000 +0000
-> @@ -372,7 +372,8 @@
->  		 */
->  		termios->c_cflag &= ~CBAUD;
->  		if (old) {
-> -			termios->c_cflag |= old->c_cflag & CBAUD;
-> +			baud = tty_termios_baud_rate(old);
-> +			tty_termios_encode_baud_rate(termios, baud, baud);
->  			old = NULL;
->  			continue;
->  		}
-> @@ -381,7 +382,7 @@
->  		 * As a last resort, if the quotient is zero,
->  		 * default to 9600 bps
->  		 */
-> -		termios->c_cflag |= B9600;
-> +		tty_termios_encode_baud_rate(termios, 9600, 9600);
->  	}
->  
->  	return 0;
 
-Is this a 2.6.24 thing?
+> This is the current list of warnings
+
+Sam,
+
+Several of these are due to driver variable names not matching
+the whitelisted names in modpost.  I have patches for the ones
+that I have identified so far.  And I have patches for a few of
+the others that are true section mismatch problems (total of 8
+patches ready for now).
+
+The whitelisted names will always be a (small) problem.
+Can __init_refok be used in these cases.. or some other new
+attribute, instead of forever adding to the whitelist or
+modifying variable names?
+
+
+> WARNING: vmlinux.o(.text+0x738a): Section mismatch: reference to .init.data:ebda_addr (between 'discover_ebda' and 'get_model_name')
+> WARNING: vmlinux.o(.text+0x73c4): Section mismatch: reference to .init.data:ebda_size (between 'discover_ebda' and 'get_model_name')
+
+patch ready.
+
+> WARNING: vmlinux.o(.text+0x605e14): Section mismatch: reference to .init.text: (between 'cciss_pci_init' and 'cciss_getgeometry')
+
+patch ready.
+
+> WARNING: vmlinux.o(.exit.text+0xc64d): Section mismatch: reference to .init.data:_asc_def_iop_base (between 'advansys_isa_remove' and 'advansys_eisa_remove')
+
+patch ready.
+
+> WARNING: vmlinux.o(.data+0x7e9b8): Section mismatch: reference to .init.text:tpm_inf_pnp_probe (between 'tpm_inf_pnp' and 'cn_idx')
+
+patch ready.
+
+> WARNING: vmlinux.o(.data+0xd44d8): Section mismatch: reference to .init.data:prism2_plx_id_table (between 'prism2_plx_drv_id' and 'dev_info')
+
+patch ready.
+
+> WARNING: vmlinux.o(.data+0x149908): Section mismatch: reference to .init.text:av7110_attach (between 'av7110_extension' and 'ir_protocol')
+
+patch ready.
+
+> WARNING: vmlinux.o(.data+0x1b3ce0): Section mismatch: reference to .init.text:megaraid_probe_one (between 'megaraid_pci_driver_g' and 'class_device_attr_megaraid_mbox_app_hndl')
+
+patch ready.
+
+> WARNING: vmlinux.o(.text+0xb0c71d): Section mismatch: reference to .exit.text: (between 'qla2xxx_pci_error_detected' and 'qla2xxx_pci_mmio_enabled')
+
+patch ready.
+
+> WARNING: vmlinux.o(.text+0xb4ff4b): Section mismatch: reference to .exit.text: (between 'sym2_io_error_detected' and 'sym2_io_slot_dump')
+
+Patch sent by /me on 2007.OCT.29 to linux-scsi & akpm.
+
+I will send the ready patches sometime on THU 2008.JAN.10.
+
+---
+~Randy
