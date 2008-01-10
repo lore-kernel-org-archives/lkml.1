@@ -1,66 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758450AbYAJDRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758517AbYAJDR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758450AbYAJDRU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 22:17:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757177AbYAJDQx
+	id S1758517AbYAJDR5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 22:17:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754613AbYAJDRr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 22:16:53 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55593 "EHLO mx1.redhat.com"
+	Wed, 9 Jan 2008 22:17:47 -0500
+Received: from ns1.suse.de ([195.135.220.2]:45310 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756608AbYAJDQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 22:16:50 -0500
-Message-ID: <47858DD9.8020007@redhat.com>
-Date: Wed, 09 Jan 2008 22:15:37 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	id S1754030AbYAJDRq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 22:17:46 -0500
+Date: Wed, 9 Jan 2008 16:05:31 -0800
+From: Greg KH <gregkh@suse.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, vatsa@linux.vnet.ibm.com,
        LKML <linux-kernel@vger.kernel.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       David Miller <davem@davemloft.net>, hskinnemoen@atmel.com,
-       schwidefsky@de.ibm.com, tony.luck@intel.com,
-       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       David Wilder <dwilder@us.ibm.com>, jkenisto@us.ibm.com
-Subject: Re: [PATCH 1/2] kprobes: Introduce kprobe_handle_fault()
-References: <1199737486.7666.12.camel@brick>	 <18307.64807.204087.375733@cargo.ozlabs.ibm.com>	 <1199833324.6424.12.camel@brick> <1199852360.6424.39.camel@brick>	 <20080109061408.GA9486@osiris.ibm.com> <1199859742.6424.44.camel@brick>	 <1199916062.6424.60.camel@brick>  <20080109231620.GA9002@osiris.ibm.com> <1199925898.6424.85.camel@brick>
-In-Reply-To: <1199925898.6424.85.camel@brick>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+       Balbir Singh <balbir@linux.vnet.ibm.com>, dmitry.adamushko@gmail.com,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 12/11] sched: rt-group: uid-group interface
+Message-ID: <20080110000531.GA18069@suse.de>
+References: <20080106161128.152634000@chello.nl> <1199703080.7143.24.camel@twins> <20080107122330.GB25945@linux.vnet.ibm.com> <1199725063.31975.53.camel@lappy> <20080108105733.GA2569@linux.vnet.ibm.com> <1199790150.7143.57.camel@twins> <3ae72650801080631p2b2c50a6q3d59badf06b62684@mail.gmail.com> <1199835332.31975.66.camel@lappy> <20080108235846.GA17067@suse.de> <20080108235750.GA27248@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080108235750.GA27248@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harvey Harrison wrote:
-> Use a central kprobe_handle_fault() inline in kprobes.h to remove
-> all of the arch-dependant, practically identical implementations in
-> avr32, ia64, powerpc, s390, sparc64, and x86.
+On Wed, Jan 09, 2008 at 12:57:50AM +0100, Ingo Molnar wrote:
 > 
-> avr32 was the only arch without the preempt_disable/enable pair
-> in its notify_page_fault implementation.
+> * Greg KH <gregkh@suse.de> wrote:
 > 
-> This uncovered a possible bug in the s390 version as that purely
-> copied the x86 version unconditionally passing 14 as the trapnr
-> rather than the error_code parameter.  s390 is changed to pass
-> error_code in this patch.
+> > On Wed, Jan 09, 2008 at 12:35:32AM +0100, Peter Zijlstra wrote:
+> > > 
+> > > On Tue, 2008-01-08 at 15:31 +0100, Kay Sievers wrote:
+> > > > On Jan 8, 2008 12:02 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > > > >
+> > > > > On Tue, 2008-01-08 at 16:27 +0530, Dhaval Giani wrote:
+> > > > > > On Mon, Jan 07, 2008 at 05:57:42PM +0100, Peter Zijlstra wrote:
+> > > > > > >
+> > > > > > > Subject: sched: rt-group: add uid-group interface
+> > > > > > >
+> > > > > > > Extend the /sys/kernel/uids/<uid>/ interface to allow setting
+> > > > > > > the group's rt_period and rt_runtime.
+> > > > > > >
+> > > > > >
+> > > > > > Hi Peter,
+> > > > > >
+> > > > > > Cool stuff! I will try out these patches and try to give you some
+> > > > > > feedback.
+> > > > >
+> > > > > Thanks, much appreciated!
+> > > > >
+> > > > > > One request though, could you please add some documentation to
+> > > > > > Documentation/ABI/testing/sysfs-kernel-uids?
+> > > > >
+> > > > > I already have documentation on the todo list, I'll add this file to
+> > > > > that list :-)
+> > > > 
+> > > > Care to rebase the patch against -mm, we fixed the mixed-up usage
+> > > > of ksets and kobjects, and this can not apply anymore:
+> > > >   http://git.kernel.org/?p=linux/kernel/git/gregkh/patches.git;a=blob;f=driver/struct-user_info-sysfs.patch;hb=HEAD
+> > > > 
+> > > > There is also an attribute group now which makes it much easier to add
+> > > > new files.
+> > > 
+> > > Ingo, Greg,
+> > > 
+> > > What would be the easiest way to carry this forward? sched-devel and
+> > > greg's tree would intersect at this point and leave poor akpm with the
+> > > resulting mess. Should I just make an incremental patch akpm can carry
+> > > and push? Or can we base one tree off the other?
+> > 
+> > If it's just a single patch for this, I'd be glad to take it.  But by 
+> > looking at the [11/12] above, I doubt this is so...
+> > 
+> > If it's not that rough (12 patches is not a big deal), I'd be glad to 
+> > take these through my tree, after you fix up Kay's requests above :)
 > 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> hm, i'd really like to see this tested and go through sched.git. It's 
+> only the few sysfs bits which interfere, right?
 
-I tested it on x86-64.
+Yes, that should be it.
 
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+So why not put the majority of this through sched.git, then when my
+sysfs changes go in at the beginning of the .25 merge cycle, you can
+then add the sysfs changes through your tree or anywhere else.
 
-Thank you!
+Unless you are relying on the sysfs changes for this whole feature, and
+without them it just doesn't make any sense at all?
 
--- 
-Masami Hiramatsu
+thanks,
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
-
+greg k-h
