@@ -1,140 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758449AbYAJUwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758943AbYAJUwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758449AbYAJUwX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 15:52:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755141AbYAJUwK
+	id S1758943AbYAJUwg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 15:52:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758331AbYAJUwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 15:52:10 -0500
-Received: from mx2.netapp.com ([216.240.18.37]:16676 "EHLO mx2.netapp.com"
+	Thu, 10 Jan 2008 15:52:22 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36146 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752558AbYAJUwH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 15:52:07 -0500
-X-IronPort-AV: E=Sophos;i="4.24,267,1196668800"; 
-   d="dif'208?scan'208,208";a="141999164"
-Subject: Re: major NFSv4 client regression (-rc7)
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080110204119.GA714@havoc.gtf.org>
-References: <20080110204119.GA714@havoc.gtf.org>
-Content-Type: multipart/mixed; boundary="=-xcpsnVMcrna6VQjIv6xR"
-Organization: Network Appliance Inc
-Date: Thu, 10 Jan 2008 15:51:34 -0500
-Message-Id: <1199998294.13775.8.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-X-OriginalArrivalTime: 10 Jan 2008 20:51:35.0171 (UTC) FILETIME=[96643D30:01C853CA]
+	id S1758238AbYAJUwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 15:52:20 -0500
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] remove task_ppid_nr_ns
+Emacs: there's a reason it comes with a built-in psychotherapist.
+Message-Id: <20080110205210.67B0326F9A6@magilla.localdomain>
+Date: Thu, 10 Jan 2008 12:52:04 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+task_ppid_nr_ns is called in three places.  One of these should never
+have called it.  In the other two, using it broke the existing
+semantics.  This was presumably accidental.  If the function had not
+been there, it would have been much more obvious to the eye that those
+patches were changing the behavior.  We don't need this function.
 
---=-xcpsnVMcrna6VQjIv6xR
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+In task_state, the pid of the ptracer is not the ppid of the ptracer.
 
+In do_task_stat, ppid is the tgid of the real_parent, not its pid.
+I also moved the call outside of lock_task_sighand, since it doesn't
+need it.
 
-On Thu, 2008-01-10 at 15:41 -0500, Jeff Garzik wrote:
-> Server:		Linux 2.6.24-rc6 (x86-64/Fedora 8)
-> Good client:	Linux 2.6.24-rc6-ge697789d (x86-64/Fedora 7)
-> Bad client:	Linux 2.6.24-rc7-gfd0b45df (x86-64/Fedora 7)
-> Situation:	home dir via NFS
-> 
-> My home setup is a standard homedir-over-NFS setup, using NFSv4 on both
-> client and server.  I just rebooted into the latest upstream kernel, and
-> I am getting NFS client hangs all over the place:
-> 
-> 	[jgarzik@core firefox]$ cat profiles.ini 
-> 
-> 	hangs here, for 15 minutes so far and counting...
-> 	('core' is the client machine)
-> 
-> and I first noticed this when firefox and thunderbird were hanging, when
-> I tried to start them after rebooting into the latest kernel.  stracing
-> firefox yielding a hang in open:
-> 
-> 	("/g" is the NFS-mounted volume)
-> 
-> 	access("/usr/lib64/firefox-2.0.0.10/updates", F_OK) = -1 ENOENT (No such file or directory)
-> 	access("/g/g/.mozilla/firefox", F_OK)   = 0
-> 	access("/g/g/.mozilla/firefox", F_OK)   = 0
-> 	stat("/g/g/.mozilla/firefox/profiles.ini", {st_mode=S_IFREG|0664, st_size=94, ...}) = 0
-> 	open("/g/g/.mozilla/firefox/profiles.ini", O_RDONLY
-> 
-> 	hangs here, for 20 minutes so far and counting...
-> 
-> As you can see from the trace, and as I can report simply by being able
-> to send this message, SOME file accesses over NFS work just fine.
-> 
-> Accessing the file works when logged into the server, so its not disk
-> corruption or something like that.
-> 
-> Neither client nor server have anything interesting in dmesg -- in fact
-> nothing in dmesg beyond the normal boot messages have been printed.
-> 
-> Let me know what info I can provide...  This is a 100% reproducible
-> regression, and this latest NFS client revision has made my local
-> NFS-over-homedir setup completely unusable.  I am forced to return to
-> the known working client (Linux 2.6.24-rc6-ge697789d) just to run basic
-> apps.
+In sys_getppid, ppid is the tgid of the real_parent, not its pid.
 
-This looks as if it might be the same issue that was reported as bug
-9712 in bugzilla (http://bugzilla.kernel.org/show_bug.cgi?id=9712).
-
-The fix is attached. Please could you confirm that it fixes the hang?
-
-Cheers
-  Trond
-
---=-xcpsnVMcrna6VQjIv6xR
-Content-Disposition: inline; filename*0=linux-2.6.24-001-fix_locking_deadlock_in_nfs4_lock_prepare.di; filename*1=f
-Content-Type: message/rfc822; name=linux-2.6.24-001-fix_locking_deadlock_in_nfs4_lock_prepare.dif
-
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date: Tue, 8 Jan 2008 19:26:49 -0500
-NFSv4: Give the lock stateid its own sequence queue
-Subject: No Subject
-Message-Id: <1199998291.13775.7.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-
-Sharing the open sequence queue causes a deadlock when we try to take both
-a lock sequence id and and open sequence id.
-
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
+ fs/proc/array.c       |    4 ++--
+ include/linux/sched.h |   13 -------------
+ kernel/timer.c        |    2 +-
+ 3 files changed, 3 insertions(+), 16 deletions(-)
 
- fs/nfs/nfs4_fs.h   |    1 +
- fs/nfs/nfs4state.c |    5 ++++-
- 2 files changed, 5 insertions(+), 1 deletions(-)
-
-diff --git a/fs/nfs/nfs4_fs.h b/fs/nfs/nfs4_fs.h
-index b35069a..bd1b9d6 100644
---- a/fs/nfs/nfs4_fs.h
-+++ b/fs/nfs/nfs4_fs.h
-@@ -115,6 +115,7 @@ struct nfs4_lock_state {
- #define NFS_LOCK_INITIALIZED 1
- 	int			ls_flags;
- 	struct nfs_seqid_counter	ls_seqid;
-+	struct rpc_sequence	ls_sequence;
- 	struct nfs_unique_id	ls_id;
- 	nfs4_stateid		ls_stateid;
- 	atomic_t		ls_count;
-diff --git a/fs/nfs/nfs4state.c b/fs/nfs/nfs4state.c
-index 23a9a36..5a39c6f 100644
---- a/fs/nfs/nfs4state.c
-+++ b/fs/nfs/nfs4state.c
-@@ -509,7 +509,10 @@ static struct nfs4_lock_state *nfs4_alloc_lock_state(struct nfs4_state *state, f
- 	lsp = kzalloc(sizeof(*lsp), GFP_KERNEL);
- 	if (lsp == NULL)
- 		return NULL;
--	lsp->ls_seqid.sequence = &state->owner->so_sequence;
-+	rpc_init_wait_queue(&lsp->ls_sequence.wait, "lock_seqid_waitqueue");
-+	spin_lock_init(&lsp->ls_sequence.lock);
-+	INIT_LIST_HEAD(&lsp->ls_sequence.list);
-+	lsp->ls_seqid.sequence = &lsp->ls_sequence;
- 	atomic_set(&lsp->ls_count, 1);
- 	lsp->ls_owner = fl_owner;
- 	spin_lock(&clp->cl_lock);
-
---=-xcpsnVMcrna6VQjIv6xR--
+diff --git a/fs/proc/array.c b/fs/proc/array.c
+index 65c62e1..0000000 100644  
+--- a/fs/proc/array.c
++++ b/fs/proc/array.c
+@@ -169,7 +169,7 @@ static inline char *task_state(struct ta
+ 	ppid = pid_alive(p) ?
+ 		task_tgid_nr_ns(rcu_dereference(p->real_parent), ns) : 0;
+ 	tpid = pid_alive(p) && p->ptrace ?
+-		task_ppid_nr_ns(rcu_dereference(p->parent), ns) : 0;
++		task_pid_nr_ns(rcu_dereference(p->parent), ns) : 0;
+ 	buffer += sprintf(buffer,
+ 		"State:\t%s\n"
+ 		"Tgid:\t%d\n"
+@@ -426,6 +426,7 @@ static int do_task_stat(struct task_stru
+ 	cgtime = gtime = cputime_zero;
+ 
+ 	rcu_read_lock();
++	ppid = task_tgid_nr_ns(task->real_parent, ns);
+ 	if (lock_task_sighand(task, &flags)) {
+ 		struct signal_struct *sig = task->signal;
+ 
+@@ -465,7 +466,6 @@ static int do_task_stat(struct task_stru
+ 
+ 		sid = task_session_nr_ns(task, ns);
+ 		pgid = task_pgrp_nr_ns(task, ns);
+-		ppid = task_ppid_nr_ns(task, ns);
+ 
+ 		unlock_task_sighand(task, &flags);
+ 	}
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 80cb536..0000000 100644  
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1255,13 +1255,6 @@ struct pid_namespace;
+  *
+  * set_task_vxid()   : assigns a virtual id to a task;
+  *
+- * task_ppid_nr_ns() : the parent's id as seen from the namespace specified.
+- *                     the result depends on the namespace and whether the
+- *                     task in question is the namespace's init. e.g. for the
+- *                     namespace's init this will return 0 when called from
+- *                     the namespace of this init, or appropriate id otherwise.
+- *
+- *
+  * see also pid_nr() etc in include/linux/pid.h
+  */
+ 
+@@ -1317,12 +1310,6 @@ static inline pid_t task_session_vnr(str
+ }
+ 
+ 
+-static inline pid_t task_ppid_nr_ns(struct task_struct *tsk,
+-		struct pid_namespace *ns)
+-{
+-	return pid_nr_ns(task_pid(rcu_dereference(tsk->real_parent)), ns);
+-}
+-
+ /**
+  * pid_alive - check that a task structure is not stale
+  * @p: Task structure to be checked.
+diff --git a/kernel/timer.c b/kernel/timer.c
+index 0bffb87..0000000 100644  
+--- a/kernel/timer.c
++++ b/kernel/timer.c
+@@ -976,7 +976,7 @@ asmlinkage long sys_getppid(void)
+ 	int pid;
+ 
+ 	rcu_read_lock();
+-	pid = task_ppid_nr_ns(current, current->nsproxy->pid_ns);
++	pid = task_tgid_nr_ns(current->real_parent, current->nsproxy->pid_ns);
+ 	rcu_read_unlock();
+ 
+ 	return pid;
