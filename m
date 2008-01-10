@@ -1,56 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760329AbYAJPug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759678AbYAJPyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760329AbYAJPug (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 10:50:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758152AbYAJPuI
+	id S1759678AbYAJPyX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 10:54:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756451AbYAJPyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 10:50:08 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:49123 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756740AbYAJPuF (ORCPT
+	Thu, 10 Jan 2008 10:54:14 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:35779 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754129AbYAJPyN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 10:50:05 -0500
-Date: Thu, 10 Jan 2008 08:50:03 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: Jiri Kosina <jikos@jikos.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       grant@torque.net, tim@cyberelk.net, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] Change paride driver to use unlocked_ioctl instead of ioctl
-Message-ID: <20080110155003.GD18741@parisc-linux.org>
-References: <4785B7BC.5040106@suse.de> <4785C7D8.2020808@suse.de> <20080109123311.GP16309@parisc-linux.org> <Pine.LNX.4.64.0801091425100.25041@twin.jikos.cz> <20080109165641.668838af@lxorguk.ukuu.org.uk> <1199979101.4474.89.camel@nikanth-laptop.blr.novell.com>
-MIME-Version: 1.0
+	Thu, 10 Jan 2008 10:54:13 -0500
+Date: Thu, 10 Jan 2008 21:24:20 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       mingo@elte.hu, ak@suse.de
+Subject: Re: [PATCH 1/7] Add tests/ directory
+Message-ID: <20080110155420.GA8138@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20080110115428.GA26577@in.ibm.com> <20080110115537.GB26577@in.ibm.com> <20080110151635.GA15361@uranus.ravnborg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1199979101.4474.89.camel@nikanth-laptop.blr.novell.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080110151635.GA15361@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 10, 2008 at 09:01:41PM +0530, Nikanth Karthikesan wrote:
-> On Thu, 2008-01-10 at 16:01 +0100, Jiri Kosina wrote:
-> > On Wed, 9 Jan 2008, Alan Cox wrote:
+On Thu, Jan 10, 2008 at 04:16:35PM +0100, Sam Ravnborg wrote:
+> On Thu, Jan 10, 2008 at 05:25:37PM +0530, Ananth N Mavinakayanahalli wrote:
+> > From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 > > 
-> > > > > >  	default:
-> > > > > >  		printk("%s: Unimplemented ioctl 0x%x\n", tape->name, cmd);
-> > > > > > +		unlock_kernel();
-> > > > > >  		return -EINVAL;
-> > > > > Surely a bug ... shouldn't this return -ENOTTY?
-> > > Agreed - ENOTTY. 
+> > Create a toplevel tests/ directory to house in-kernel subsystem specific
+> > tests.
 > > 
-> > Just out of curiosity, where does POSIX happen to specify ENOTTY as the 
-> > correct one for unimplemented ioctl?
+> > PS: I am not sure if I've gotten the Makefile change right.
 > > 
+> > Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> > ---
+> >  Makefile          |    3 +++
+> >  lib/Kconfig.debug |    2 ++
+> >  tests/Kconfig     |   11 +++++++++++
+> >  tests/Makefile    |    3 +++
+> >  4 files changed, 19 insertions(+)
+> > 
+> > Index: linux-2.6.24-rc6/lib/Kconfig.debug
+> > ===================================================================
+> > --- linux-2.6.24-rc6.orig/lib/Kconfig.debug
+> > +++ linux-2.6.24-rc6/lib/Kconfig.debug
+> > @@ -596,3 +596,5 @@ config PROVIDE_OHCI1394_DMA_INIT
+> >  	  See Documentation/debugging-via-ohci1394.txt for more information.
+> >  
+> >  source "samples/Kconfig"
+> > +
+> > +source "tests/Kconfig"
+> > Index: linux-2.6.24-rc6/tests/Kconfig
+> > ===================================================================
+> > --- /dev/null
+> > +++ linux-2.6.24-rc6/tests/Kconfig
+> > @@ -0,0 +1,11 @@
+> > +# tests/Kconfig
+> > +
+> > +menuconfig KERNEL_TESTS
+> > +	bool "Kernel subsystem tests"
+> > +	help
+> > +	  You can build kernel subsystem specific tests.
+> > +
+> > +if KERNEL_TESTS
+> > +
+> > +endif # KERNEL_TESTS
+> > +
+> > Index: linux-2.6.24-rc6/tests/Makefile
+> > ===================================================================
+> > --- /dev/null
+> > +++ linux-2.6.24-rc6/tests/Makefile
+> > @@ -0,0 +1,3 @@
+> > +#
+> > +# Makefile for kernel subsystem specific tests
+> > +#
+> > Index: linux-2.6.24-rc6/Makefile
+> > ===================================================================
+> > --- linux-2.6.24-rc6.orig/Makefile
+> > +++ linux-2.6.24-rc6/Makefile
+> > @@ -598,6 +598,9 @@ export mod_strip_cmd
+> >  
+> >  ifeq ($(KBUILD_EXTMOD),)
+> >  core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/
+> > +ifdef CONFIG_KERNEL_TESTS
+> > +core-y		+= tests/
+> > +endif
 > 
-> The printk is also wrong, It should have been, Invalid ioctl for the
-> device
+> CONFIG_KERNEL_TESTS is a bool so this should be written as:
+> core-$(CONFIG_KERNEL_TESTS) += tests/
+> 
+> With this change:
+> Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
-It shouldn't print anything.  That printk lets unprivileged users DoS
-the syslog.
+Thanks Sam!
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Updated patch below...
+
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+
+Create a toplevel tests/ directory to house in-kernel subsystem specific
+tests.
+
+PS: I am not sure if I've gotten the Makefile change right.
+
+Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
+---
+ Makefile          |    1 +
+ lib/Kconfig.debug |    2 ++
+ tests/Kconfig     |   11 +++++++++++
+ tests/Makefile    |    3 +++
+ 4 files changed, 17 insertions(+)
+
+Index: linux-2.6.24-rc6/lib/Kconfig.debug
+===================================================================
+--- linux-2.6.24-rc6.orig/lib/Kconfig.debug
++++ linux-2.6.24-rc6/lib/Kconfig.debug
+@@ -596,3 +596,5 @@ config PROVIDE_OHCI1394_DMA_INIT
+ 	  See Documentation/debugging-via-ohci1394.txt for more information.
+ 
+ source "samples/Kconfig"
++
++source "tests/Kconfig"
+Index: linux-2.6.24-rc6/tests/Kconfig
+===================================================================
+--- /dev/null
++++ linux-2.6.24-rc6/tests/Kconfig
+@@ -0,0 +1,11 @@
++# tests/Kconfig
++
++menuconfig KERNEL_TESTS
++	bool "Kernel subsystem tests"
++	help
++	  You can build kernel subsystem specific tests.
++
++if KERNEL_TESTS
++
++endif # KERNEL_TESTS
++
+Index: linux-2.6.24-rc6/tests/Makefile
+===================================================================
+--- /dev/null
++++ linux-2.6.24-rc6/tests/Makefile
+@@ -0,0 +1,3 @@
++#
++# Makefile for kernel subsystem specific tests
++#
+Index: linux-2.6.24-rc6/Makefile
+===================================================================
+--- linux-2.6.24-rc6.orig/Makefile
++++ linux-2.6.24-rc6/Makefile
+@@ -598,6 +598,7 @@ export mod_strip_cmd
+ 
+ ifeq ($(KBUILD_EXTMOD),)
+ core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/
++core-$(CONFIG_KERNEL_TESTS) += tests/
+ 
+ vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, $(init-y) $(init-m) \
+ 		     $(core-y) $(core-m) $(drivers-y) $(drivers-m) \
