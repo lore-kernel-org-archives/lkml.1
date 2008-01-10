@@ -1,116 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758921AbYAJI6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759267AbYAJI7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758921AbYAJI6W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 03:58:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbYAJI6O
+	id S1759267AbYAJI7n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 03:59:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbYAJI7e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 03:58:14 -0500
-Received: from mail29.messagelabs.com ([216.82.249.147]:44980 "HELO
-	mail29.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752421AbYAJI6N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 03:58:13 -0500
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-7.tower-29.messagelabs.com!1199955490!3192044!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.21]
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: linux-kernel@vger.kernel.org
-Cc: trivial@kernel.org, Marc Singer <elf@buici.com>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: [PATCH] fix typo 'the same the\>'
-Date: Thu, 10 Jan 2008 09:58:06 +0100
-Message-Id: <1199955486-21733-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-X-Mailer: git-send-email 1.5.3.6
+	Thu, 10 Jan 2008 03:59:34 -0500
+Received: from mail.sf-mail.de ([62.27.20.61]:51700 "EHLO mail.sf-mail.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751586AbYAJI7d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 03:59:33 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Jan 2008 03:59:33 EST
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
+Date: Thu, 10 Jan 2008 09:52:49 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       paolo.ciarrocchi@gmail.com, gorcunov@gmail.com
+References: <20080108164015.GC31504@one.firstfloor.org>
+In-Reply-To: <20080108164015.GC31504@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 10 Jan 2008 08:58:06.0564 (UTC) FILETIME=[EA793240:01C85366]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.000.1023-15658.003
-X-TM-AS-Result: No--8.149900-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+Content-Type: multipart/signed;
+  boundary="nextPart13956404.uocKkaVyG2";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200801100952.55039.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
-Cc: Marc Singer <elf@buici.com>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>
----
- Documentation/arm/Sharp-LH/IOBarrier  |    2 +-
- drivers/mtd/devices/doc2000.c         |    2 +-
- include/asm-arm/arch-realview/irqs.h  |    2 +-
- include/asm-arm/arch-versatile/irqs.h |    4 ++--
- 4 files changed, 5 insertions(+), 5 deletions(-)
+--nextPart13956404.uocKkaVyG2
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I'm not a native English speaker, but 'the same the' sounds wrong to me.
+Andi Kleen wrote:
+> Here's a proposal for some useful code transformations the kernel janitors
+> could do as opposed to running checkpatch.pl.
+>
+> Most ioctl handlers still running implicitely under the big kernel
+> lock (BKL). But long term Linux is trying to get away from that. There is=
+ a
+> new ->unlocked_ioctl entry point that allows ioctls without BKL, but the
+> code needs to be explicitely converted to use this.
+>
+> The first step of getting rid of the BKL is typically to make it visible
+> in the source. Once it is visible people will have incentive to eliminate
+> it. That is how the BKL conversion project for Linux long ago started too.
+> On 2.0 all system calls were still implicitely BKL and in 2.1 the
+> lock/unlock_kernel()s were moved into the various syscall functions and
+> then step by step eliminated.
 
-Best regards
-Uwe
+Can you explain the rationale behind that running on the BKL? What type of=
+=20
+things needs to be protected so that this huge hammer is needed? What would=
+=20
+be an earlier point to release the BKL?
 
-diff --git a/Documentation/arm/Sharp-LH/IOBarrier b/Documentation/arm/Sharp-LH/IOBarrier
-index c0d8853..2e953e2 100644
---- a/Documentation/arm/Sharp-LH/IOBarrier
-+++ b/Documentation/arm/Sharp-LH/IOBarrier
-@@ -32,7 +32,7 @@ BARRIER IO before the access to the SMC chip because the AEN latch
- only needs occurs after the SMC IO write cycle.  The routines that
- implement this work-around make an additional concession which is to
- disable interrupts during the IO sequence.  Other hardware devices
--(the LogicPD CPLD) have registers in the same the physical memory
-+(the LogicPD CPLD) have registers in the same physical memory
- region as the SMC chip.  An interrupt might allow an access to one of
- those registers while SMC IO is being performed.
- 
-diff --git a/drivers/mtd/devices/doc2000.c b/drivers/mtd/devices/doc2000.c
-index c73e96b..90acf57 100644
---- a/drivers/mtd/devices/doc2000.c
-+++ b/drivers/mtd/devices/doc2000.c
-@@ -376,7 +376,7 @@ static int DoC_IdentChip(struct DiskOnChip *doc, int floor, int chip)
- 	 * hardware restriction. */
- 	if (doc->mfr) {
- 		if (doc->mfr == mfr && doc->id == id)
--			return 1;	/* This is another the same the first */
-+			return 1;	/* This is the same as the first */
- 		else
- 			printk(KERN_WARNING
- 			       "Flash chip at floor %d, chip %d is different:\n",
-diff --git a/include/asm-arm/arch-realview/irqs.h b/include/asm-arm/arch-realview/irqs.h
-index 5a5db56..012a1f8 100644
---- a/include/asm-arm/arch-realview/irqs.h
-+++ b/include/asm-arm/arch-realview/irqs.h
-@@ -25,7 +25,7 @@
- #define IRQ_LOCALWDOG			30
- 
- /* 
-- *  IRQ interrupts definitions are the same the INT definitions
-+ *  IRQ interrupts definitions are the same as the INT definitions
-  *  held within platform.h
-  */
- #define IRQ_GIC_START		32
-diff --git a/include/asm-arm/arch-versatile/irqs.h b/include/asm-arm/arch-versatile/irqs.h
-index 745aa84..f7263b9 100644
---- a/include/asm-arm/arch-versatile/irqs.h
-+++ b/include/asm-arm/arch-versatile/irqs.h
-@@ -22,7 +22,7 @@
- #include <asm/arch/platform.h>
- 
- /* 
-- *  IRQ interrupts definitions are the same the INT definitions
-+ *  IRQ interrupts definitions are the same as the INT definitions
-  *  held within platform.h
-  */
- #define IRQ_VIC_START		0
-@@ -94,7 +94,7 @@
- #define IRQMASK_VICSOURCE31	INTMASK_VICSOURCE31
- 
- /* 
-- *  FIQ interrupts definitions are the same the INT definitions.
-+ *  FIQ interrupts definitions are the same as the INT definitions.
-  */
- #define FIQ_WDOGINT		INT_WDOGINT
- #define FIQ_SOFTINT		INT_SOFTINT
--- 
-1.5.3.6
+Greetings,
 
+Eike
+
+--nextPart13956404.uocKkaVyG2
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+
+iD8DBQBHhdzmXKSJPmm5/E4RAqvlAJ4kM4eYK8Qzk4fKVWfsunJulEvjTgCgpafm
+GCNInwxY+HQB19+3/bYGVro=
+=EJpp
+-----END PGP SIGNATURE-----
+
+--nextPart13956404.uocKkaVyG2--
