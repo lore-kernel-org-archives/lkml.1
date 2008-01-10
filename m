@@ -1,310 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757435AbYAJA0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757391AbYAJAbK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757435AbYAJA0d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 19:26:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbYAJA0Z
+	id S1757391AbYAJAbK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 19:31:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754304AbYAJAa5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 19:26:25 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:57256 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754117AbYAJA0X (ORCPT
+	Wed, 9 Jan 2008 19:30:57 -0500
+Received: from mga03.intel.com ([143.182.124.21]:60354 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753919AbYAJAa4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 19:26:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YdDMyevlAOCuTuA7K9mB2WdXpmDDb9WCl0olbeYRytNUe4iKOBVfS6p+N3zKELnoYbgLAd7AYaOgtBW2A5m7bBH80sYqCF8ta4jzOAAlAJDnW4KJ2r7/rJ/LnTMZEW9aalkEYaluGThQUzb6xMFhkyB8hvkVZe0orx+e1dmiKIw=
-Message-ID: <4df4ef0c0801091626u47ad255bj5e989dcecdade56f@mail.gmail.com>
-Date: Thu, 10 Jan 2008 03:26:20 +0300
-From: "Anton Salikhmetov" <salikhmetov@gmail.com>
-To: "Peter Staubach" <staubach@redhat.com>
-Subject: Re: [PATCH] updating the ctime and mtime time stamps in msync()
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <47852E45.6000905@redhat.com>
+	Wed, 9 Jan 2008 19:30:56 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,264,1196668800"; 
+   d="scan'208";a="363019828"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1199499596.23064.50.camel@codedot> <47852E45.6000905@redhat.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] Kick CPUS that might be sleeping in cpus_idle_wait
+Date: Wed, 9 Jan 2008 16:12:23 -0800
+Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE554130@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <1199911330.975.3.camel@localhost.localdomain>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] Kick CPUS that might be sleeping in cpus_idle_wait
+Thread-Index: AchTAMulN41K/Qv0Qn6o6r2yA3G1fgAGog+A
+References: <1199759244.26343.35.camel@localhost.localdomain> <20080108033329.GI2998@bingen.suse.de> <1199911330.975.3.camel@localhost.localdomain>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>,
+       "LKML" <linux-kernel@vger.kernel.org>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Brown, Len" <len.brown@intel.com>, "Adam Belay" <abelay@novell.com>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>, "Andi Kleen" <ak@suse.de>
+X-OriginalArrivalTime: 10 Jan 2008 00:11:33.0625 (UTC) FILETIME=[5B9D4690:01C8531D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/1/9, Peter Staubach <staubach@redhat.com>:
-> Anton Salikhmetov wrote:
-> > From: Anton Salikhmetov <salikhmetov@gmail.com>
-> >
-> > I would like to propose my solution for the bug #2645 from the kernel bug tracker:
-> >
-> > http://bugzilla.kernel.org/show_bug.cgi?id=2645
-> >
-> > The Open Group defines the behavior of the mmap() function as follows.
-> >
-> > The st_ctime and st_mtime fields of a file that is mapped with MAP_SHARED
-> > and PROT_WRITE shall be marked for update at some point in the interval
-> > between a write reference to the mapped region and the next call to msync()
-> > with MS_ASYNC or MS_SYNC for that portion of the file by any process.
-> > If there is no such call and if the underlying file is modified as a result
-> > of a write reference, then these fields shall be marked for update at some
-> > time after the write reference.
-> >
-> > The above citation was taken from the following link:
-> >
-> > http://www.opengroup.org/onlinepubs/009695399/functions/mmap.html
-> >
-> > Therefore, the msync() function should be called before verifying the time
-> > stamps st_mtime and st_ctime in the test program Badari wrote in the context
-> > of the bug #2645. Otherwise, the time stamps may be updated
-> > at some unspecified moment according to the POSIX standard.
-> >
-> > I changed his test program a little. The changed unit test can be downloaded
-> > using the following link:
-> >
-> > http://pygx.sourceforge.net/mmap.c
-> >
-> > This program showed that the msync() function had a bug:
-> > it did not update the st_mtime and st_ctime fields.
-> >
-> > The program shows the appropriate behavior of the msync()
-> > function using the kernel with the proposed patch applied.
-> > Specifically, the ctime and mtime time stamps do change
-> > when modifying the mapped memory and do not change when
-> > there have been no write references between the mmap()
-> > and msync() system calls.
-> >
-> >
->
-> Sorry, I don't see where the test program shows that the file
-> times did not change if there had not been an intervening
-> modification to the mmap'd region.  It appears to me that it
-> just shows the file times changing or not when there has been
-> intervening modification after the mmap call and before the
-> fstat call.
->
-> Or am I looking in the wrong place?  :-)
+ 
 
-No, you are looking at the right place, but there was one thing missing
-from my unit test: namely, that the "no write reference" case was
-tested by commenting out the "for" loop. I should have written this
-explicitly, sorry for its not having been done. The next version of
-the unit test will be cleaner, I hope.
+>-----Original Message-----
+>From: Steven Rostedt [mailto:rostedt@goodmis.org] 
+>Sent: Wednesday, January 09, 2008 12:42 PM
+>To: LKML
+>Cc: Linus Torvalds; Andrew Morton; Ingo Molnar; Thomas 
+>Gleixner; Brown, Len; Pallipadi, Venkatesh; Adam Belay; Peter 
+>Zijlstra; Andi Kleen
+>Subject: [PATCH] Kick CPUS that might be sleeping in cpus_idle_wait
+>
+>This patch is different than the first patch I sent out.
+>This one just sends an IPI to all CPUS that don't check in after 1 sec.
+>
+>
+>Sometimes cpu_idle_wait gets stuck because it might miss CPUS that are
+>already in idle, have no tasks waiting to run and have no interrupts
+>going to them.  This is common on bootup when switching cpu idle
+>governors.
+>
+>This patch gives those CPUS that don't check in an IPI kick.
+>
 
->
-> > Additionally, the test cases for the msync() system call from
-> > the LTP test suite (msync01 - msync05, mmapstress01, mmapstress09,
-> > and mmapstress10) successfully passed using the kernel
-> > with the patch included into this email.
-> >
-> > The patch adds a call to the file_update_time() function to change
-> > the file metadata before syncing. The patch also contains
-> > substantial code cleanup: consolidated error check
-> > for function parameters, using the PAGE_ALIGN() macro instead of
-> > "manual" alignment check, improved readability of the loop,
-> > which traverses the process memory regions, updated comments.
-> >
-> >
->
-> These changes catch the simple case, where the file is mmap'd,
-> modified via the mmap'd region, and then an msync is done,
-> all on a mostly quiet system.
->
-> However, I don't see how they will work if there has been
-> something like a sync(2) done after the mmap'd region is
-> modified and the msync call.  When the inode is written out
-> as part of the sync process, I_DIRTY_PAGES will be cleared,
-> thus causing a miss in this code.
+I think your RFC patch is the right solution here. As I see it, there is
+no race with your RFC patch.
+As long as you call a dummy smp_call_function on all CPUs, we should be
+OK. We can get rid of cpu_idle_state
+and the current wait forever logic altogether with dummy
+smp_call_function. And so there wont be any wait forever scenario.
 
-Good catch, thanks! I totally missed the intervening sync() case.
-Now I understand why the I_DIRTY_PAGES flag is not a reliable way
-to detect whether there have been any write references in the
-mapped area.
+The whole point of cpu_idle_wait() is to make all CPUs come out of idle
+loop atleast once.
+The caller will use cpu_idle_wait something like this.
 
->
-> The I_DIRTY_PAGES check here is good, but I think that there
-> needs to be some code elsewhere too, to catch the case where
-> I_DIRTY_PAGES is being cleared, but the time fields still need
-> to be updated.
->
-> --
->
-> A better architecture would be to arrange for the file times
-> to be updated when the page makes the transition from being
-> unmodified to modified.  This is not straightforward due to
-> the current locking, but should be doable, I think.  Perhaps
-> recording the current time and then using it to update the
-> file times at a more suitable time (no pun intended) might
-> work.
->
->     Thanx...
->
->        ps
+// Want to change idle handler
+- Switch global idle handler to always present default_idle
+- call cpu_idle_wait so that all cpus come out of idle for an instant
+and stop using old idle pointer and start using default idle
+- Change the idle handler to a new handler
+- optional cpu_idle_wait if you want all cpus to start using the new
+handler immediately.
 
-OK, I'll think over it. I believe I'll make another attempt to
-fix this bug and will post a new solution for review.
+May be the below 1s patch is safe bet for .24. But for .25, I would say
+we just replace all complicated logic by simple dummy smp_call_function
+and remove cpu_idle_state altogether.
 
+Thanks,
+Venki
+
+>Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+>---
+> arch/x86/kernel/process_32.c |   11 +++++++++++
+> arch/x86/kernel/process_64.c |   11 +++++++++++
+> 2 files changed, 22 insertions(+)
 >
+>Index: linux-compile-i386.git/arch/x86/kernel/process_32.c
+>===================================================================
+>--- linux-compile-i386.git.orig/arch/x86/kernel/process_32.c	
+>2008-01-09 14:09:36.000000000 -0500
+>+++ linux-compile-i386.git/arch/x86/kernel/process_32.c	
+>2008-01-09 14:09:45.000000000 -0500
+>@@ -204,6 +204,10 @@ void cpu_idle(void)
+> 	}
+> }
+> 
+>+static void do_nothing(void *unused)
+>+{
+>+}
+>+
+> void cpu_idle_wait(void)
+> {
+> 	unsigned int cpu, this_cpu = get_cpu();
+>@@ -228,6 +232,13 @@ void cpu_idle_wait(void)
+> 				cpu_clear(cpu, map);
+> 		}
+> 		cpus_and(map, map, cpu_online_map);
+>+		/*
+>+		 * We waited 1 sec, if a CPU still did not call idle
+>+		 * it may be because it is in idle and not waking up
+>+		 * because it has nothing to do.
+>+		 * Give all the remaining CPUS a kick.
+>+		 */
+>+		smp_call_function_mask(map, do_nothing, 0, 0);
+> 	} while (!cpus_empty(map));
+> 
+> 	set_cpus_allowed(current, tmp);
+>Index: linux-compile-i386.git/arch/x86/kernel/process_64.c
+>===================================================================
+>--- linux-compile-i386.git.orig/arch/x86/kernel/process_64.c	
+>2008-01-09 14:09:36.000000000 -0500
+>+++ linux-compile-i386.git/arch/x86/kernel/process_64.c	
+>2008-01-09 15:17:20.000000000 -0500
+>@@ -135,6 +135,10 @@ static void poll_idle (void)
+> 	cpu_relax();
+> }
+> 
+>+static void do_nothing(void *unused)
+>+{
+>+}
+>+
+> void cpu_idle_wait(void)
+> {
+> 	unsigned int cpu, this_cpu = get_cpu();
+>@@ -160,6 +164,13 @@ void cpu_idle_wait(void)
+> 				cpu_clear(cpu, map);
+> 		}
+> 		cpus_and(map, map, cpu_online_map);
+>+		/*
+>+		 * We waited 1 sec, if a CPU still did not call idle
+>+		 * it may be because it is in idle and not waking up
+>+		 * because it has nothing to do.
+>+		 * Give all the remaining CPUS a kick.
+>+		 */
+>+		smp_call_function_mask(map, do_nothing, 0, 0);
+> 	} while (!cpus_empty(map));
+> 
+> 	set_cpus_allowed(current, tmp);
 >
-> > Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
-> >
-> > ---
-> >
-> > diff --git a/mm/msync.c b/mm/msync.c
-> > index 144a757..cb973eb 100644
-> > --- a/mm/msync.c
-> > +++ b/mm/msync.c
-> > @@ -1,26 +1,32 @@
-> >  /*
-> >   *   linux/mm/msync.c
-> >   *
-> > + * The msync() system call.
-> >   * Copyright (C) 1994-1999  Linus Torvalds
-> > + *
-> > + * Updating the mtime and ctime stamps for mapped files
-> > + * and code cleanup.
-> > + * Copyright (C) 2008 Anton Salikhmetov <salikhmetov@gmail.com>
-> >   */
-> >
-> > -/*
-> > - * The msync() system call.
-> > - */
-> > +#include <linux/file.h>
-> >  #include <linux/fs.h>
-> >  #include <linux/mm.h>
-> >  #include <linux/mman.h>
-> > -#include <linux/file.h>
-> > -#include <linux/syscalls.h>
-> >  #include <linux/sched.h>
-> > +#include <linux/syscalls.h>
-> >
-> >  /*
-> >   * MS_SYNC syncs the entire file - including mappings.
-> >   *
-> >   * MS_ASYNC does not start I/O (it used to, up to 2.5.67).
-> > - * Nor does it marks the relevant pages dirty (it used to up to 2.6.17).
-> > + * Nor does it mark the relevant pages dirty (it used to up to 2.6.17).
-> >   * Now it doesn't do anything, since dirty pages are properly tracked.
-> >   *
-> > + * The msync() system call updates the ctime and mtime fields for
-> > + * the mapped file when called with the MS_SYNC or MS_ASYNC flags
-> > + * according to the POSIX standard.
-> > + *
-> >   * The application may now run fsync() to
-> >   * write out the dirty pages and wait on the writeout and check the result.
-> >   * Or the application may run fadvise(FADV_DONTNEED) against the fd to start
-> > @@ -33,70 +39,68 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
-> >       unsigned long end;
-> >       struct mm_struct *mm = current->mm;
-> >       struct vm_area_struct *vma;
-> > -     int unmapped_error = 0;
-> > -     int error = -EINVAL;
-> > +     int error = 0, unmapped_error = 0;
-> >
-> > -     if (flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC))
-> > -             goto out;
-> > -     if (start & ~PAGE_MASK)
-> > +     if ((flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC)) ||
-> > +                     (start & ~PAGE_MASK) ||
-> > +                     ((flags & MS_ASYNC) && (flags & MS_SYNC))) {
-> > +             error = -EINVAL;
-> >               goto out;
-> > -     if ((flags & MS_ASYNC) && (flags & MS_SYNC))
-> > -             goto out;
-> > -     error = -ENOMEM;
-> > -     len = (len + ~PAGE_MASK) & PAGE_MASK;
-> > +     }
-> > +
-> > +     len = PAGE_ALIGN(len);
-> >       end = start + len;
-> > -     if (end < start)
-> > +     if (end < start) {
-> > +             error = -ENOMEM;
-> >               goto out;
-> > -     error = 0;
-> > +     }
-> >       if (end == start)
-> >               goto out;
-> > +
-> >       /*
-> >        * If the interval [start,end) covers some unmapped address ranges,
-> >        * just ignore them, but return -ENOMEM at the end.
-> >        */
-> >       down_read(&mm->mmap_sem);
-> >       vma = find_vma(mm, start);
-> > -     for (;;) {
-> > +     do {
-> >               struct file *file;
-> >
-> > -             /* Still start < end. */
-> > -             error = -ENOMEM;
-> > -             if (!vma)
-> > -                     goto out_unlock;
-> > -             /* Here start < vma->vm_end. */
-> > +             if (!vma) {
-> > +                     error = -ENOMEM;
-> > +                     break;
-> > +             }
-> >               if (start < vma->vm_start) {
-> >                       start = vma->vm_start;
-> > -                     if (start >= end)
-> > -                             goto out_unlock;
-> > +                     if (start >= end) {
-> > +                             error = -ENOMEM;
-> > +                             break;
-> > +                     }
-> >                       unmapped_error = -ENOMEM;
-> >               }
-> > -             /* Here vma->vm_start <= start < vma->vm_end. */
-> >               if ((flags & MS_INVALIDATE) &&
-> >                               (vma->vm_flags & VM_LOCKED)) {
-> >                       error = -EBUSY;
-> > -                     goto out_unlock;
-> > +                     break;
-> >               }
-> >               file = vma->vm_file;
-> > -             start = vma->vm_end;
-> > -             if ((flags & MS_SYNC) && file &&
-> > -                             (vma->vm_flags & VM_SHARED)) {
-> > +             if (file && (vma->vm_flags & VM_SHARED)) {
-> >                       get_file(file);
-> > -                     up_read(&mm->mmap_sem);
-> > -                     error = do_fsync(file, 0);
-> > -                     fput(file);
-> > -                     if (error || start >= end)
-> > -                             goto out;
-> > -                     down_read(&mm->mmap_sem);
-> > -                     vma = find_vma(mm, start);
-> > -             } else {
-> > -                     if (start >= end) {
-> > -                             error = 0;
-> > -                             goto out_unlock;
-> > +                     if (file->f_mapping->host->i_state & I_DIRTY_PAGES)
-> > +                             file_update_time(file);
-> > +                     if (flags & MS_SYNC) {
-> > +                             up_read(&mm->mmap_sem);
-> > +                             error = do_fsync(file, 0);
-> > +                             down_read(&mm->mmap_sem);
-> >                       }
-> > -                     vma = vma->vm_next;
-> > +                     fput(file);
-> > +                     if (error)
-> > +                             break;
-> >               }
-> > -     }
-> > -out_unlock:
-> > +
-> > +             start = vma->vm_end;
-> > +             vma = vma->vm_next;
-> > +     } while (start < end);
-> >       up_read(&mm->mmap_sem);
-> >  out:
-> >       return error ? : unmapped_error;
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> >
 >
 >
