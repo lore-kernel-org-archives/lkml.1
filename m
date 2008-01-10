@@ -1,125 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758660AbYAJXbE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760090AbYAJXdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758660AbYAJXbE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 18:31:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754108AbYAJXax
+	id S1760090AbYAJXdS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 18:33:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755823AbYAJXdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 18:30:53 -0500
-Received: from styx.suse.cz ([82.119.242.94]:49008 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760050AbYAJXaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 18:30:52 -0500
-Date: Fri, 11 Jan 2008 00:30:51 +0100
-From: Jan Kara <jack@suse.cz>
-To: marcin.slusarz@gmail.com
-Cc: LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 16/16] udf: improve readability of udf_load_partition
-Message-ID: <20080110233051.GI17430@duck.suse.cz>
-References: <1200002792-8449-1-git-send-email-marcin.slusarz@gmail.com> <1200002792-8449-17-git-send-email-marcin.slusarz@gmail.com>
+	Thu, 10 Jan 2008 18:33:08 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:56393 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752270AbYAJXdH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 18:33:07 -0500
+Message-ID: <4786AB1B.4030004@zytor.com>
+Date: Thu, 10 Jan 2008 15:32:43 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1200002792-8449-17-git-send-email-marcin.slusarz@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Kevin Winchester <kjwinchester@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: hwclock failure in x86.git
+References: <4786AA11.5010805@gmail.com>
+In-Reply-To: <4786AA11.5010805@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 10-01-08 23:06:32, marcin.slusarz@gmail.com wrote:
-> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> CC: Jan Kara <jack@suse.cz>
-> CC: Christoph Hellwig <hch@infradead.org>
-  Acked-by: Jan Kara <jack@suse.cz>
-
-> ---
->  fs/udf/super.c |   59 ++++++++++++++++++++++++++++---------------------------
->  1 files changed, 30 insertions(+), 29 deletions(-)
+Kevin Winchester wrote:
+> My first time building and booting the mm branch of x86.git was pretty
+> successful.  The only error I noticed was the following in my dmesg:
 > 
-> diff --git a/fs/udf/super.c b/fs/udf/super.c
-> index 52d2c32..2048351 100644
-> --- a/fs/udf/super.c
-> +++ b/fs/udf/super.c
-> @@ -1447,44 +1447,45 @@ static int udf_load_partition(struct super_block *sb, kernel_lb_addr *fileset)
->  	sbi = UDF_SB(sb);
->  
->  	for (i = 0; i < ARRAY_SIZE(sbi->s_anchor); i++) {
-> -		if (sbi->s_anchor[i] &&
-> -		    (bh = udf_read_tagged(sb, sbi->s_anchor[i],
-> -					  sbi->s_anchor[i], &ident))) {
-> -			anchor = (struct anchorVolDescPtr *)bh->b_data;
-> -
-> -			/* Locate the main sequence */
-> -			main_s = le32_to_cpu(
-> -					anchor->mainVolDescSeqExt.extLocation);
-> -			main_e = le32_to_cpu(
-> -					anchor->mainVolDescSeqExt.extLength);
-> -			main_e = main_e >> sb->s_blocksize_bits;
-> -			main_e += main_s;
-> -
-> -			/* Locate the reserve sequence */
-> -			reserve_s = le32_to_cpu(
-> +		if (!sbi->s_anchor[i])
-> +			continue;
-> +		bh = udf_read_tagged(sb, sbi->s_anchor[i], sbi->s_anchor[i],
-> +				     &ident);
-> +		if (!bh)
-> +			continue;
-> +
-> +		anchor = (struct anchorVolDescPtr *)bh->b_data;
-> +
-> +		/* Locate the main sequence */
-> +		main_s = le32_to_cpu(anchor->mainVolDescSeqExt.extLocation);
-> +		main_e = le32_to_cpu(anchor->mainVolDescSeqExt.extLength);
-> +		main_e = main_e >> sb->s_blocksize_bits;
-> +		main_e += main_s;
-> +
-> +		/* Locate the reserve sequence */
-> +		reserve_s = le32_to_cpu(
->  				anchor->reserveVolDescSeqExt.extLocation);
-> -			reserve_e = le32_to_cpu(
-> +		reserve_e = le32_to_cpu(
->  				anchor->reserveVolDescSeqExt.extLength);
-> -			reserve_e = reserve_e >> sb->s_blocksize_bits;
-> -			reserve_e += reserve_s;
-> +		reserve_e = reserve_e >> sb->s_blocksize_bits;
-> +		reserve_e += reserve_s;
->  
-> -			brelse(bh);
-> +		brelse(bh);
->  
-> -			/* Process the main & reserve sequences */
-> -			/* responsible for finding the PartitionDesc(s) */
-> -			if (!(udf_process_sequence(sb, main_s, main_e,
-> -						   fileset) &&
-> -			      udf_process_sequence(sb, reserve_s, reserve_e,
-> -						   fileset)))
-> -				break;
-> -		}
-> +		/* Process the main & reserve sequences */
-> +		/* responsible for finding the PartitionDesc(s) */
-> +		if (!(udf_process_sequence(sb, main_s, main_e,
-> +					   fileset) &&
-> +		      udf_process_sequence(sb, reserve_s, reserve_e,
-> +					   fileset)))
-> +			break;
->  	}
->  
->  	if (i == ARRAY_SIZE(sbi->s_anchor)) {
->  		udf_debug("No Anchor block found\n");
->  		return 1;
-> -	} else
-> -		udf_debug("Using anchor in block %d\n", sbi->s_anchor[i]);
-> +	}
-> +	udf_debug("Using anchor in block %d\n", sbi->s_anchor[i]);
->  
->  	for (i = 0; i < sbi->s_partitions; i++) {
->  		kernel_lb_addr uninitialized_var(ino);
-> -- 
-> 1.5.3.7
+>  hwclock[622] general protection ip:804b226 sp:bff43e30 error:0
+> 
+> I'm not sure exactly how to debug this.  I could bisect, but there seems
+> to be some useful debug information in there, so there might be
+> something better to try first.
 > 
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+That's a userspace IP; it implies the userspace hwclock binary did 
+something bad, or the kernel didn't permit it to do something it should 
+have.  The best thing to do would probably to strace hwclock and see 
+what it did when it died.
+
+	-hpa
