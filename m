@@ -1,48 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbYAJJtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758844AbYAJJt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757349AbYAJJtk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 04:49:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbYAJJtc
+	id S1758844AbYAJJt7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 04:49:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757522AbYAJJtt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 04:49:32 -0500
-Received: from phunq.net ([64.81.85.152]:46616 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752463AbYAJJtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 04:49:31 -0500
-From: Daniel Phillips <phillips@phunq.net>
-To: Alasdair G Kergon <agk@redhat.com>
-Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
-Date: Thu, 10 Jan 2008 01:49:15 -0800
-User-Agent: KMail/1.9.5
-Cc: Matt Mackall <mpm@selenic.com>,
-       Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, gorcunov@gmail.com
-References: <20080108164015.GC31504@one.firstfloor.org> <1199909560.6245.67.camel@cinder.waste.org> <20080109224026.GA4039@agk.fab.redhat.com>
-In-Reply-To: <20080109224026.GA4039@agk.fab.redhat.com>
+	Thu, 10 Jan 2008 04:49:49 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:20136 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753457AbYAJJts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 04:49:48 -0500
+Date: Thu, 10 Jan 2008 10:49:45 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
+       chris.mason@oracle.com, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH][RFC] fast file mapping for loop
+Message-ID: <20080110094941.GV6258@kernel.dk>
+References: <20080109085231.GE6650@kernel.dk> <200801101242.25671.nickpiggin@yahoo.com.au> <20080110083753.GB10745@infradead.org> <1199957821.29498.2.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801100149.16301.phillips@phunq.net>
+In-Reply-To: <1199957821.29498.2.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alasdair,
+On Thu, Jan 10 2008, Peter Zijlstra wrote:
+> 
+> On Thu, 2008-01-10 at 08:37 +0000, Christoph Hellwig wrote:
+> 
+> > Peter, any chance you could chime in here?
+> 
+> I have this patch to add swap_out/_in methods. I expect we can loosen
+> the requirement for swapcache pages and change the name a little.
+> 
+> previously posted here:
+>   http://lkml.org/lkml/2007/5/4/143
+> 
+> --- 
+> Subject: mm: add support for non block device backed swap files
+> 
+> New addres_space_operations methods are added:
+>   int swapfile(struct address_space *, int);
+>   int swap_out(struct file *, struct page *, struct writeback_control *);
+>   int swap_in(struct file *, struct page *);
+> 
+> When during sys_swapon() the swapfile() method is found and returns no error
+> the swapper_space.a_ops will proxy to sis->swap_file->f_mapping->a_ops, and
+> make use of swap_{out,in}() to write/read swapcache pages.
+> 
+> The swapfile method will be used to communicate to the address_space that the
+> VM relies on it, and the address_space should take adequate measures (like 
+> reserving memory for mempools or the like).
+> 
+> This new interface can be used to obviate the need for ->bmap in the swapfile
+> code. A filesystem would need to load (and maybe even allocate) the full block
+> map for a file into memory and pin it there on ->swapfile(,1) so that
+> ->swap_{out,in}() have instant access to it. It can be released on
+> ->swapfile(,0).
 
-On Wednesday 09 January 2008 14:40, Alasdair G Kergon wrote:
-> Device-mapper for example in dm_blk_ioctl(), has no need for BKL so
-> drops it immediately, but it does need the inode parameter, so it is
-> unable to switch as things stand.
+So this is where I don't think that's good enough, you cannot require a
+full block/extent mapping of a file on setup. It can take quite some
+time, a little testing I did here easily took 5 seconds for only a
+couple of gigabytes. And that wasn't even worst case for that size. It
+also wastes memory by populating extents that we may never read or
+write.
 
-So what stops you from changing to unlocked_ioctl for the main device 
-mapper ctl_ioctl?  You aren't using the inode parameter, or the file 
-parameter:
+If you look at the loop addition I did, it populates lazily as needed
+with some very simple logic to populate-ahead. In practice that performs
+as well as a pre-populated map, the first IO to a given range will just
+be a little slower since we have to bmap() it.
 
-   http://lxr.linux.no/linux+v2.6.23.12/drivers/md/dm-ioctl.c#L1402
+Do you have plans to improve this area?
 
-Regards,
+-- 
+Jens Axboe
 
-Daniel
