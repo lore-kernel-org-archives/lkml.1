@@ -1,95 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758873AbYAJHxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757258AbYAJH6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758873AbYAJHxr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 02:53:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753939AbYAJHxj
+	id S1757258AbYAJH6n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 02:58:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbYAJH6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 02:53:39 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42594 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753883AbYAJHxh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 02:53:37 -0500
-Date: Wed, 9 Jan 2008 23:42:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, miklos@szeredi.hu, hch@infradead.org,
-       serue@us.ibm.com
-Subject: Re: [PATCH] track number of mnts writing to superblocks
-Message-Id: <20080109234250.baa3b13b.akpm@linux-foundation.org>
-In-Reply-To: <20080102215110.F3A0B1DC@kernel>
-References: <20080102215110.F3A0B1DC@kernel>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Jan 2008 02:58:35 -0500
+Received: from mail1.perex.cz ([212.20.107.53]:60859 "EHLO mail1.perex.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753597AbYAJH6e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 02:58:34 -0500
+Date: Thu, 10 Jan 2008 08:58:28 +0100 (CET)
+From: Jaroslav Kysela <perex@perex.cz>
+X-X-Sender: perex@tm8103.perex-int.cz
+To: Rene Herman <rene.herman@keyaccess.nl>
+cc: Ondrej Zary <linux@rainbow-software.org>,
+       ALSA development <alsa-devel@alsa-project.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [alsa-devel] PNP_DRIVER_RES_DISABLE breaks swsusp at least with
+ snd_cs4236
+In-Reply-To: <47857A82.4050005@keyaccess.nl>
+Message-ID: <Pine.LNX.4.61.0801100849290.30240@tm8103.perex-int.cz>
+References: <200801092343.48726.linux@rainbow-software.org>
+ <47857A82.4050005@keyaccess.nl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 02 Jan 2008 13:51:10 -0800 Dave Hansen <haveblue@us.ibm.com> wrote:
+On Thu, 10 Jan 2008, Rene Herman wrote:
 
+> On 09-01-08 23:43, Ondrej Zary wrote:
 > 
-> One of the benefits of the r/o bind mount patches is that they
-> make it explicit when a write to a superblock might occur.
-> We currently search sb->s_files when remounting rw->ro to look
-> for writable files.  But, that search is not comprehensive, and
-> it is racy.  This replaces that search.
+> Jaroslav -- in your role as ISA-PnP maintainer and Bjorn, in yours as 
+> having been foollish enough to touch PnP recently:
 > 
-> The idea is to keep a bit in each mount saying whether the
-> mount has any writers on it.  When the bit is set the first
-> time, we also increment a counter in the superblock.  That
-> sb counter is the number of mounts with that bit set and
-> thus, potential writers.
+> > as hibernation (swsusp) started to work with my CPU, I found that my Turtle 
+> > Beach Malibu stops working after resume from hibernation. It's caused by fact 
+> > that the card is not enabled on the pnp layer during resume - and thus card 
+> > registers are inaccessible (reads return FFs, writes go nowhere).
+> > 
+> > During resume, pnp_bus_resume() in drivers/pnp/driver.c is called for each pnp 
+> > device. This function calls pnp_start_dev() only when the 
+> > PNP_DRIVER_RES_DO_NOT_CHANGE bit is NOT seting pnp_drv->flags. But the cs4236 
+> > driver in sound/isa/cs423x/cs4236.c explicitly sets the .flags to 
+> > PNP_DRIVER_RES_DISABLE - it's value is 3 and that includes 
+> > PNP_DRIVER_RES_DO_NOT_CHANGE bit.
 > 
-> The other problem is that, after we make this check for
-> the number of writable mounts, we need to exclude all new
-> writers on those mounts.  We do this by requring that the
-> superblock mnt writer count be incremented under a
-> lock_super() and also holding that lock over the remount
-> operation.  Effectively, this keeps us from *adding* to
-> the sb's writable mounts during a remount.
+> Ehm. Isn't that a bit unexpected:
 > 
-> The alternative to doing this is to do a much simpler list
-> of mounts for each superblock.  I could also code that up
-> to see what it look like.  Shouldn't be too bad.
+> #define PNP_DRIVER_RES_DO_NOT_CHANGE    0x0001  /* do not change the state 
+> of the device */
+> #define PNP_DRIVER_RES_DISABLE          0x0003  /* ensure the device is 
+> disabled */
 > 
->  ...
->
-> -static inline void __clear_mnt_count(struct mnt_writer *cpu_writer)
-> +static int mark_mnt_has_writer(struct vfsmount *mnt,
-> +			       struct mnt_writer *cpu_writer)
-> +{
-> +	/*
-> +	 * Ensure that if there are people racing to set
-> +	 * the bit that only one of them succeeds and can
-> +	 * increment the sb count.
-> +	 */
-> +	if (test_and_set_bit(ilog2(MNT_MAY_HAVE_WRITERS), &mnt->mnt_flags))
-> +		return 0;
+> I'd say that disabling is changing, so isn't this just a braino where 
+> someone meant to write 2 instead of 3?
 
-boggle.
+It's irrelevant. I think that condition in driver.c in suspend and resume 
+callbacks is invalid, because PNP_DRIVER_RES_DO_NOT_CHANGE means that 
+resources should not be changed in the pnp core but only in the driver, 
+but in suspend/resume process are resources preserved, so the condition 
+should be removed.
 
-a) bitops are to be used on unsigned long only, and mnt_flags is int.
+Author of this code is:
 
-b) nowhere else is mnt_flags used as a bitfield.  Presumably (hopefully)
-   it already has some locking.  Suggest that the same locking be used
-   here.
+author Pierre Ossman <drzeus-list@drzeus.cx> Tue, 29 Nov 2005 09:09:32 +0100
+committer Jaroslav Kysela <perex@suse.cz> Tue, 03 Jan 2006 12:31:30 +0100
 
-c) Given that all other modifiers of mnt_flags are using non-atomic
-   rmw's, they can trash this function's rmw.  What happens then?
+    [ALSA] [PATCH] alsa: Improved PnP suspend support
 
-> +static void __mark_sb_if_writable(struct vfsmount *mnt)
-> +{
-> +	int bitnr = ilog2(MNT_MAY_HAVE_WRITERS);
-> +
-> +	if (atomic_read(&mnt->__mnt_writers))
-> +		mark_mnt_has_writer(mnt, NULL);
-> +	else if (test_and_clear_bit(bitnr, &mnt->mnt_flags))
-> +		atomic_dec(&mnt->mnt_sb->__s_mnt_writers);
-> +}
+    Also use the PnP functions to start/stop the devices during the suspend so
+    that drivers will not have to duplicate this code.
 
-and elsewhere.
+    Cc: Adam Belay <ambx1@neo.rr.com>
+    Cc: Jaroslav Kysela <perex@suse.cz>
+    Cc: Takashi Iwai <tiwai@suse.de>
+
+    Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+    Signed-off-by: Andrew Morton <akpm@osdl.org>
+    Signed-off-by: Takashi Iwai <tiwai@suse.de>
 
 
-I'm a bit surprised to see such a thing coming from your direction, Dave.
+						Jaroslav
+
+-----
+Jaroslav Kysela <perex@perex.cz>
+Linux Kernel Sound Maintainer
+ALSA Project, Red Hat, Inc.
+
