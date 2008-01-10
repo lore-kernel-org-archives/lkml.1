@@ -1,46 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756982AbYAJMsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759354AbYAJMtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756982AbYAJMsc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 07:48:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754511AbYAJMsY
+	id S1759354AbYAJMtV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 07:49:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755430AbYAJMtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 07:48:24 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53661 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754098AbYAJMsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 07:48:24 -0500
-Date: Thu, 10 Jan 2008 13:48:10 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Matthew <jackdachef@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Fwd: Fwd: laptop / computer hardlocks during execution of
-	32bit applications(binaries) on 64bit system (Gentoo)
-Message-ID: <20080110124810.GA20579@elte.hu>
-References: <e85b9d30712291157v113f5e73yd830ae3c3429092d@mail.gmail.com> <e85b9d30712291504r2f4ef991w33f501ccf0d41c2b@mail.gmail.com> <200712300128.35476.mboton@gmail.com> <20080102084002.GA13636@elte.hu> <e85b9d30801080333y3d6668ccgf20f9666d0326884@mail.gmail.com> <e85b9d30801080340y43fbd4c0sa9b6c9811c7391a1@mail.gmail.com> <47841C41.4060401@zytor.com> <e85b9d30801100105s60ad675ey1ba939491d01a649@mail.gmail.com> <20080110094219.GC17808@elte.hu> <e85b9d30801100443s50ab2b69wbf1a7b4dbd09f002@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e85b9d30801100443s50ab2b69wbf1a7b4dbd09f002@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0005]
+	Thu, 10 Jan 2008 07:49:09 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:30067 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754511AbYAJMtH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 07:49:07 -0500
+Date: Thu, 10 Jan 2008 07:47:38 -0500
+From: Chris Mason <chris.mason@oracle.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
+       "Bryn M. Reeves" <breeves@redhat.com>
+Subject: Re: [PATCH][RFC] fast file mapping for loop
+Message-ID: <20080110074738.6be1c1ad@think.oraclecorp.com>
+In-Reply-To: <20080110083130.GP6258@kernel.dk>
+References: <20080109085231.GE6650@kernel.dk>
+	<20080109231628.GB4039@agk.fab.redhat.com>
+	<20080110083130.GP6258@kernel.dk>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 10 Jan 2008 09:31:31 +0100
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-* Matthew <jackdachef@gmail.com> wrote:
+> On Wed, Jan 09 2008, Alasdair G Kergon wrote:
+> > Here's the latest version of dm-loop, for comparison.
+> > 
+> > To try it out, 
+> >   ln -s dmsetup dmlosetup
+> > and supply similar basic parameters to losetup.
+> > (using dmsetup version 1.02.11 or higher)
+> 
+> Why oh why does dm always insist to reinvent everything? That's bad
+> enough in itself, but on top of that most of the extra stuff ends up
+> being essentially unmaintained.
 
-> this also happens with rc7-based kernels, btw
+I don't quite get how the dm version is reinventing things.  They use
+the dmsetup command that they use for everything else and provide a
+small and fairly clean module for bio specific loop instead of piling
+it onto loop.c....
 
-hm, exactly what rc7 based kernel? Vanilla 2.6.24-rc7, built by you? Or 
-any patches ontop of it? (x86.git perhaps?)
+Their code doesn't have the fancy hole handling that yours does, but
+neither did yours 4 days ago ;)
 
-	Ingo
+> 
+> If we instead improve loop, everyone wins.
+> 
+> Sorry to sound a bit harsh, but sometimes it doesn't hurt to think a
+> bit outside your own sandbox.
+> 
+
+It is a natural fit in either place, as both loop and dm have a good
+infrastructure for it.  I'm not picky about where it ends up, but dm
+wouldn't be a bad place.
+
+-chris
