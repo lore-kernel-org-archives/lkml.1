@@ -1,76 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758458AbYAJUxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757916AbYAJUzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758458AbYAJUxz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 15:53:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbYAJUxs
+	id S1757916AbYAJUzv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 15:55:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752820AbYAJUzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 15:53:48 -0500
-Received: from mga11.intel.com ([192.55.52.93]:11757 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753970AbYAJUxr convert rfc822-to-8bit (ORCPT
+	Thu, 10 Jan 2008 15:55:42 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:46593 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751317AbYAJUzl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 15:53:47 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,267,1196668800"; 
-   d="scan'208";a="493692545"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [patch 11/11] PAT x86: Expose uc and wc interfaces in /sysfsvor pci_mmap_resource
-Date: Thu, 10 Jan 2008 12:54:15 -0800
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE5A28D7@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <20080110194306.GA21357@suse.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch 11/11] PAT x86: Expose uc and wc interfaces in /sysfsvor pci_mmap_resource
-Thread-Index: AchTwQwjBMJv+wyoTZGtDjouQ8jpzAACd2wA
-References: <20080110184840.927409000@intel.com> <20080110184856.859264000@intel.com> <20080110194306.GA21357@suse.de>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Greg KH" <gregkh@suse.de>
-Cc: <ak@muc.de>, <ebiederm@xmission.com>, <rdreier@cisco.com>,
-       <torvalds@linux-foundation.org>, <airlied@skynet.ie>,
-       <davej@redhat.com>, <mingo@elte.hu>, <tglx@linutronix.de>,
-       <akpm@linux-foundation.org>, <arjan@infradead.org>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>, <davem@davemloft.net>,
-       <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-X-OriginalArrivalTime: 10 Jan 2008 20:53:22.0019 (UTC) FILETIME=[D613F330:01C853CA]
+	Thu, 10 Jan 2008 15:55:41 -0500
+Subject: Re: [PATCH] bsg : Add support for io vectors in bsg
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Pete Wyckoff <pw@osc.edu>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, tomof@acm.org,
+       deepakrc@gmail.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080110204325.GC1928@osc.edu>
+References: <Pine.LNX.4.64.0801042137350.7836@localhost>
+	 <200801050501.m0551LFB030667@mbox.iij4u.or.jp>
+	 <20080108220918.GA9484@osc.edu>
+	 <20080109091118N.fujita.tomonori@lab.ntt.co.jp>
+	 <20080110204325.GC1928@osc.edu>
+Content-Type: text/plain
+Date: Thu, 10 Jan 2008 14:55:31 -0600
+Message-Id: <1199998531.3141.96.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
 
->-----Original Message-----
->From: Greg KH [mailto:gregkh@suse.de] 
->Sent: Thursday, January 10, 2008 11:43 AM
->To: Pallipadi, Venkatesh
->Cc: ak@muc.de; ebiederm@xmission.com; rdreier@cisco.com; 
->torvalds@linux-foundation.org; airlied@skynet.ie; 
->davej@redhat.com; mingo@elte.hu; tglx@linutronix.de; 
->hpa@zytor.com; akpm@linux-foundation.org; arjan@infradead.org; 
->Barnes, Jesse; davem@davemloft.net; 
->linux-kernel@vger.kernel.org; Siddha, Suresh B
->Subject: Re: [patch 11/11] PAT x86: Expose uc and wc 
->interfaces in /sysfsvor pci_mmap_resource
->
->On Thu, Jan 10, 2008 at 10:48:51AM -0800, 
->venkatesh.pallipadi@intel.com wrote:
->> New interfaces exported for uc and wc accesses. Apps has to 
->change to use
->> these new interfaces.
->> 
->> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
->> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
->
->Please update the documentation for this change, as well as adding
->something to Documentation/ABI/ for these new sysfs files.
->
+On Thu, 2008-01-10 at 15:43 -0500, Pete Wyckoff wrote:
+> fujita.tomonori@lab.ntt.co.jp wrote on Wed, 09 Jan 2008 09:11 +0900:
+> > On Tue, 8 Jan 2008 17:09:18 -0500
+> > Pete Wyckoff <pw@osc.edu> wrote:
+> > > I took another look at the compat approach, to see if it is feasible
+> > > to keep the compat handling somewhere else, without the use of #ifdef
+> > > CONFIG_COMPAT and size-comparison code inside bsg.c.  I don't see how.
+> > > The use of iovec is within a write operation on a char device.  It's
+> > > not amenable to a compat_sys_ or a .compat_ioctl approach.
+> > > 
+> > > I'm partial to #1 because the use of architecture-independent fields
+> > > matches the rest of struct sg_io_v4.  But if you don't want to have
+> > > another iovec type in the kernel, could we do #2 but just return
+> > > -EINVAL if the need for compat is detected?  I.e. change
+> > > dout_iovec_count to dout_iovec_length and do the math?
+> > 
+> > If you are ok with removing the write/read interface and just have
+> > ioctl, we could can handle comapt stuff like others do. But I think
+> > that you (OSD people) really want to keep the write/read
+> > interface. Sorry, I think that there is no workaround to support iovec
+> > in bsg.
+> 
+> I don't care about read/write in particular.  But we do need some
+> way to launch asynchronous SCSI commands, and currently read/write
+> are the only way to do that in bsg.  The reason is to keep multiple
+> spindles busy at the same time.
 
-OK. Will do.
+Won't multi-threading the ioctl calls achieve the same effect?  Or do
+you trip over BKL there?
 
-Thanks,
-Venki
+> How about these new ioctls instead of read/write:
+> 
+>     SG_IO_SUBMIT - start a new blk_execute_rq_nowait()
+>     SG_IO_TEST   - complete and return a previous req
+>     SG_IO_WAIT   - wait for a req to finish, interruptibly
+> 
+> Then old write users will instead do ioctl SUBMIT.  Read users will
+> do TEST for non-blocking fd, or WAIT for blocking.  And SG_IO could
+> be implemented as SUBMIT + WAIT.
+> 
+> Then we can do compat_ioctl and convert up iovecs out-of-line before
+> calling the normal functions.
+> 
+> Let me know if you want a patch for this.
+
+Really, the thought of re-inventing yet another async I/O interface
+isn't very appealing.
+
+James
+
+
