@@ -1,98 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758935AbYAJJxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759024AbYAJJzG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758935AbYAJJxs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 04:53:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbYAJJxk
+	id S1759024AbYAJJzG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 04:55:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbYAJJy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 04:53:40 -0500
-Received: from cantor.suse.de ([195.135.220.2]:43892 "EHLO mx1.suse.de"
+	Thu, 10 Jan 2008 04:54:56 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:37892 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751691AbYAJJxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 04:53:39 -0500
-Date: Thu, 10 Jan 2008 10:53:37 +0100
-From: Andi Kleen <ak@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       suresh.b.siddha@intel.com, Arjan van de Ven <arjan@infradead.org>,
-       Dave Jones <davej@redhat.com>
-Subject: Re: CPA patchset
-Message-ID: <20080110095337.GK25945@bingen.suse.de>
-References: <20080103424.989432000@suse.de> <20080110093126.GA360@elte.hu>
+	id S1751944AbYAJJyz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 04:54:55 -0500
+Date: Thu, 10 Jan 2008 11:54:07 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Andi Kleen <ak@suse.de>
+Cc: rjw@sisk.pl, pavel@suse.cz, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without
+	HOTPLUG_CPU
+Message-ID: <20080110095407.GB28740@does.not.exist>
+References: <20080103442.621670000@suse.de> <20080103154229.9723F14DDD@wotan.suse.de> <20080103181438.GA7141@does.not.exist> <200801031943.43828.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080110093126.GA360@elte.hu>
+In-Reply-To: <200801031943.43828.ak@suse.de>
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 10, 2008 at 10:31:26AM +0100, Ingo Molnar wrote:
+On Thu, Jan 03, 2008 at 07:43:43PM +0100, Andi Kleen wrote:
+> On Thursday 03 January 2008 19:14:38 Adrian Bunk wrote:
+> > On Thu, Jan 03, 2008 at 04:42:29PM +0100, Andi Kleen wrote:
+> > > 
+> > > This avoids the requirement to mark a lot of initialization functions not 
+> > > __cpuinit just for resume from RAM.
+> > > 
+> > > More functions could be converted now, didn't do all.
+> > >...
+> > 
+> > Shouldn't this aready be handled by the following?
+> > 
+> > config PM_SLEEP_SMP
+> >         bool
+> >         depends on SUSPEND_SMP_POSSIBLE || HIBERNATION_SMP_POSSIBLE
+> >         depends on PM_SLEEP
+> >         select HOTPLUG_CPU
+> >         default y
 > 
-> Andi,
-> 
-> finally managed to get the time to review your CPA patchset, and i 
-> fundamentally agree with most of the detail changes done in it. But here 
-> are a few structural high-level observations:
+> Won't help for UP at least. 
 
-I have a few changes and will post a updated version shortly.
-There's also unfortunately still one outstanding bug (triggeredb y
-some recent changes) on 32bit that makes the self test suite not pass
-currently.
+I know that it's not popular to care about the kernel size, but your 
+patch will cost precious memory in the common case of UP embedded 
+systems with CONFIG_PM=y.
 
-> - firstly, there's no rationale given. So we'll change ioremap()/etc.
->   from doing a cflush-range instruction instead of a WBINVD. But why?
+It seems the correct solution would be not to hijack __cpuinit
+(as your patch does), but to create a new annotation.
 
-- WBINVD is a very nasty operation. I was talking to some CPU people
-and they really recommended to get rid of it as far as possible.
-Stopping the CPU for msecs is just wrong and there are apparently
-even some theoretical live lock situations.
-- It is not interruptible in earlier VT versions and messes up
-real time in the hypervisor. Some people were doing KVM on rt 
-kernels and had latency spikes from that.
+> -Andi
 
-I'll add that to the changelog.
+cu
+Adrian
 
->   WBINVD isnt particular fast (takes a few msecs), but why is that a
->   problem? Drivers dont do high-frequency ioremap-ing. It's typically
+BTW: Is there any good reason why your patch is x86 only?
+     No matter how this gets handled, it should be an architecture 
+     independent issue.
 
-Actually graphics drivers can do higher frequency allocation of WC
-memory (with PAT) support.
+-- 
 
->   only done at driver/device startup and that's it. Whether module load
->   time takes 1254 msecs instead of 1250 msecs is no big deal.
-> 
-> - secondly, obviously doing a 'flush some' instead of a 'flush all' 
->   operation is risky. There's not many ways we can get the 'flush all'
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Yes, that is why it took so long. But it's eventually needed
-to make PAT actually useful for once.
-
->   WBINVD instruction wrong (as long as we do it on all cpus, etc.). But 
->   with this specific range flush we've got all the risks of accidentally
->   not flushing _enough_. Especially if some boundary of a mapped area is 
->   imprecisely.
-
-Not sure what you mean here? If someone doesn't pass in the correct
-area then not everything will be uncached in the first place. 
-Using something as cached that should be uncached is usually
-noticed because it tends to be quite slow or corrupt data.
-
-I don't think you have thought that concern through.
-
->   asking for trouble as it's very hard to debug and the operations here
->   (ioremap) are typically done only once per system bootup. So we'll add
-
-change_page_attr() is used for more than just ioremap (e.g. a common
-case is mapping memory into AGP apertures which still happens in
-many graphics drivers). I also expect it will be used even more
-in the future when PAT usage will become more wide spread.
-
-> - the bugfixes and cleanups to pgattr.c i like very much - but shouldnt
->   they come first in the series, instead of being mixed into it?
-
-It all depends on each other; I don't think any of the changes can
-be easily reordered.
-
--Andi
