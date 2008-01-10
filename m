@@ -1,139 +1,337 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758658AbYAJHcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757238AbYAJHhM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758658AbYAJHcy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 02:32:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbYAJHcr
+	id S1757238AbYAJHhM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 02:37:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbYAJHhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 02:32:47 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43319 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751719AbYAJHcq convert rfc822-to-8bit (ORCPT
+	Thu, 10 Jan 2008 02:37:00 -0500
+Received: from rv-out-0910.google.com ([209.85.198.190]:57018 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752218AbYAJHg7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 02:32:46 -0500
-Date: Thu, 10 Jan 2008 08:32:16 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: jdike@addtoit.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: uml and -regparm=3
-Message-ID: <20080110073215.GA11506@elte.hu>
-References: <E1JCi3M-0006hO-7i@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <E1JCi3M-0006hO-7i@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 10 Jan 2008 02:36:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=uaLuGDlruGLUyPrPK+OmMYQk29fwrYtXoLDhYz3cW6mUvchIB/kf3QiR6UdPdeQH9cVUCvTOMy+ZPctQRPE9Wl7oInQlBQClKV76lBumhicRvQ9uhpuo7HWBgUOIewv/ptP6sLKt2Pe9LHsfOQaVWo0YUltC0SVLoNYLNLK3NsQ=
+Subject: [PATCH] x86: Move get_segment_eip() to step.c
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain
+Date: Wed, 09 Jan 2008 23:36:54 -0800
+Message-Id: <1199950614.19760.16.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+get_segment_eip has similarities to convert_rip_to_linear(),
+and is used in a similar context.  Move get_segment_eip to
+step.c to allow easier consolidation.
 
-* Miklos Szeredi <miklos@szeredi.hu> wrote:
-
-> FASTCALL is defined empty in -mm, but UML is not compiled with 
-> -mregparm=3 and so this breaks things (I noticed problems with 
-> rwsem_down_write_failed).
-> 
-> Tried recompiling UML with -mregparm=3, but that resulted in a strange 
-> failure immediately after startup:
-> 
-> |%G�%@: Invalid argument
-> 
-> What's up?
-
-Miklos, could you try the fix below?
-
-In general most FASTCALL/fastcall uses are bogus, except for code where 
-a function that takes parameters is implemented in assembly with a 
-regparm calling convention. The fix is to introduce the "asmregparm" 
-attribute to mark such function prototypes with regparm(3). This is the 
-opposite of asmlinkage. [asmlinkage forced regparm(0)]
-
-	Ingo
-
------------->
-Subject: x86: fix UML calling convention
-From: Ingo Molnar <mingo@elte.hu>
-
-introduce the "asmregparm" calling convention: for functions
-implemented in assembly with a fixed regparm input parameters
-calling convention.
-
-mark the semaphore and rwsem slowpath functions with that.
-
-Reported-by: Miklos Szeredi <miklos@szeredi.hu>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- include/asm-x86/linkage.h      |    5 +++++
- include/asm-x86/rwsem.h        |   12 ++++++++----
- include/asm-x86/semaphore_32.h |    8 ++++----
- 3 files changed, 17 insertions(+), 8 deletions(-)
+Ingo, you may want to fold this into my previous patch:
 
-Index: linux-x86.q/include/asm-x86/linkage.h
-===================================================================
---- linux-x86.q.orig/include/asm-x86/linkage.h
-+++ linux-x86.q/include/asm-x86/linkage.h
-@@ -9,6 +9,11 @@
+x86: begin fault_{32|64}.c unification
+
+it was a mistake to add the 32-bit version to X86_64 when it
+could be moved to step.c, I'll follow along with a bit of
+factoring of get_segment_eip and convert_rip_to_linear.  This
+should allow elimination of many (all?) of the nasty #ifdefs in
+fault_32|64.c in is_prefetch().
+
+ arch/x86/kernel/step.c   |   81 ++++++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/mm/fault_32.c   |   77 -------------------------------------------
+ arch/x86/mm/fault_64.c   |   77 -------------------------------------------
+ include/asm-x86/ptrace.h |    2 +
+ 4 files changed, 83 insertions(+), 154 deletions(-)
+
+diff --git a/arch/x86/kernel/step.c b/arch/x86/kernel/step.c
+index d73c537..bf7819e 100644
+--- a/arch/x86/kernel/step.c
++++ b/arch/x86/kernel/step.c
+@@ -6,6 +6,87 @@
+ #include <linux/ptrace.h>
+ 
  #ifdef CONFIG_X86_32
- #define asmlinkage CPP_ASMLINKAGE __attribute__((regparm(0)))
- #define prevent_tail_call(ret) __asm__ ("" : "=r" (ret) : "0" (ret))
++#include <linux/uaccess.h>
++
++#include <asm/desc.h>
++
 +/*
-+ * For 32-bit UML - mark functions implemented in assembly that use
-+ * regparm input parameters:
++ * Return EIP plus the CS segment base.  The segment limit is also
++ * adjusted, clamped to the kernel/user address space (whichever is
++ * appropriate), and returned in *eip_limit.
++ *
++ * The segment is checked, because it might have been changed by another
++ * task between the original faulting instruction and here.
++ *
++ * If CS is no longer a valid code segment, or if EIP is beyond the
++ * limit, or if it is a kernel address when CS is not a kernel segment,
++ * then the returned value will be greater than *eip_limit.
++ *
++ * This is slow, but is very rarely executed.
 + */
-+#define asmregparm __attribute__((regparm(3)))
++unsigned long get_segment_eip(struct pt_regs *regs,
++					    unsigned long *eip_limit)
++{
++	unsigned long ip = regs->ip;
++	unsigned seg = regs->cs & 0xffff;
++	u32 seg_ar, seg_limit, base, *desc;
++
++	/* Unlikely, but must come before segment checks. */
++	if (unlikely(regs->flags & VM_MASK)) {
++		base = seg << 4;
++		*eip_limit = base + 0xffff;
++		return base + (ip & 0xffff);
++	}
++
++	/* The standard kernel/user address space limit. */
++	*eip_limit = user_mode(regs) ? USER_DS.seg : KERNEL_DS.seg;
++
++	/* By far the most common cases. */
++	if (likely(SEGMENT_IS_FLAT_CODE(seg)))
++		return ip;
++
++	/* Check the segment exists, is within the current LDT/GDT size,
++	   that kernel/user (ring 0..3) has the appropriate privilege,
++	   that it's a code segment, and get the limit. */
++	__asm__("larl %3,%0; lsll %3,%1"
++		 : "=&r" (seg_ar), "=r" (seg_limit) : "0" (0), "rm" (seg));
++	if ((~seg_ar & 0x9800) || ip > seg_limit) {
++		*eip_limit = 0;
++		return 1;	 /* So that returned ip > *eip_limit. */
++	}
++
++	/* Get the GDT/LDT descriptor base.
++	   When you look for races in this code remember that
++	   LDT and other horrors are only used in user space. */
++	if (seg & (1<<2)) {
++		/* Must lock the LDT while reading it. */
++		mutex_lock(&current->mm->context.lock);
++		desc = current->mm->context.ldt;
++		desc = (void *)desc + (seg & ~7);
++	} else {
++		/* Must disable preemption while reading the GDT. */
++		desc = (u32 *)get_cpu_gdt_table(get_cpu());
++		desc = (void *)desc + (seg & ~7);
++	}
++
++	/* Decode the code segment base from the descriptor */
++	base = get_desc_base((struct desc_struct *)desc);
++
++	if (seg & (1<<2))
++		mutex_unlock(&current->mm->context.lock);
++	else
++		put_cpu();
++
++	/* Adjust EIP and segment limit, and clamp at the kernel limit.
++	   It's legitimate for segments to wrap at 0xffffffff. */
++	seg_limit += base;
++	if (seg_limit < *eip_limit && seg_limit >= base)
++		*eip_limit = seg_limit;
++	return ip + base;
++}
++#endif
++
++#ifdef CONFIG_X86_32
+ static
  #endif
- 
- #ifdef CONFIG_X86_ALIGNMENT_16
-Index: linux-x86.q/include/asm-x86/rwsem.h
-===================================================================
---- linux-x86.q.orig/include/asm-x86/rwsem.h
-+++ linux-x86.q/include/asm-x86/rwsem.h
-@@ -44,10 +44,14 @@
- 
- struct rwsem_waiter;
- 
--extern struct rw_semaphore *FASTCALL(rwsem_down_read_failed(struct rw_semaphore *sem));
--extern struct rw_semaphore *FASTCALL(rwsem_down_write_failed(struct rw_semaphore *sem));
--extern struct rw_semaphore *FASTCALL(rwsem_wake(struct rw_semaphore *));
--extern struct rw_semaphore *FASTCALL(rwsem_downgrade_wake(struct rw_semaphore *sem));
-+extern asmregparm struct rw_semaphore *
-+ rwsem_down_read_failed(struct rw_semaphore *sem);
-+extern asmregparm struct rw_semaphore *
-+ rwsem_down_write_failed(struct rw_semaphore *sem);
-+extern asmregparm struct rw_semaphore *
-+ rwsem_wake(struct rw_semaphore *);
-+extern asmregparm struct rw_semaphore *
-+ rwsem_downgrade_wake(struct rw_semaphore *sem);
- 
- /*
-  * the semaphore definition
-Index: linux-x86.q/include/asm-x86/semaphore_32.h
-===================================================================
---- linux-x86.q.orig/include/asm-x86/semaphore_32.h
-+++ linux-x86.q/include/asm-x86/semaphore_32.h
-@@ -83,10 +83,10 @@ static inline void init_MUTEX_LOCKED (st
- 	sema_init(sem, 0);
+ unsigned long convert_rip_to_linear(struct task_struct *child, struct pt_regs *regs)
+diff --git a/arch/x86/mm/fault_32.c b/arch/x86/mm/fault_32.c
+index 50a9930..2caf5bc 100644
+--- a/arch/x86/mm/fault_32.c
++++ b/arch/x86/mm/fault_32.c
+@@ -61,83 +61,6 @@ static inline int notify_page_fault(struct pt_regs *regs)
+ #endif
  }
  
--void __down_failed(void /* special register calling convention */);
--int  __down_failed_interruptible(void  /* params in registers */);
--int  __down_failed_trylock(void  /* params in registers */);
--void __up_wakeup(void /* special register calling convention */);
-+extern asmregparm void __down_failed(atomic_t *count_ptr);
-+extern asmregparm int  __down_failed_interruptible(atomic_t *count_ptr);
-+extern asmregparm int  __down_failed_trylock(atomic_t *count_ptr);
-+extern asmregparm void __up_wakeup(atomic_t *count_ptr);
- 
+-#ifdef CONFIG_X86_32
+-/*
+- * Return EIP plus the CS segment base.  The segment limit is also
+- * adjusted, clamped to the kernel/user address space (whichever is
+- * appropriate), and returned in *eip_limit.
+- *
+- * The segment is checked, because it might have been changed by another
+- * task between the original faulting instruction and here.
+- *
+- * If CS is no longer a valid code segment, or if EIP is beyond the
+- * limit, or if it is a kernel address when CS is not a kernel segment,
+- * then the returned value will be greater than *eip_limit.
+- *
+- * This is slow, but is very rarely executed.
+- */
+-static inline unsigned long get_segment_eip(struct pt_regs *regs,
+-					    unsigned long *eip_limit)
+-{
+-	unsigned long ip = regs->ip;
+-	unsigned seg = regs->cs & 0xffff;
+-	u32 seg_ar, seg_limit, base, *desc;
+-
+-	/* Unlikely, but must come before segment checks. */
+-	if (unlikely(regs->flags & VM_MASK)) {
+-		base = seg << 4;
+-		*eip_limit = base + 0xffff;
+-		return base + (ip & 0xffff);
+-	}
+-
+-	/* The standard kernel/user address space limit. */
+-	*eip_limit = user_mode(regs) ? USER_DS.seg : KERNEL_DS.seg;
+-
+-	/* By far the most common cases. */
+-	if (likely(SEGMENT_IS_FLAT_CODE(seg)))
+-		return ip;
+-
+-	/* Check the segment exists, is within the current LDT/GDT size,
+-	   that kernel/user (ring 0..3) has the appropriate privilege,
+-	   that it's a code segment, and get the limit. */
+-	__asm__ ("larl %3,%0; lsll %3,%1"
+-		 : "=&r" (seg_ar), "=r" (seg_limit) : "0" (0), "rm" (seg));
+-	if ((~seg_ar & 0x9800) || ip > seg_limit) {
+-		*eip_limit = 0;
+-		return 1;	 /* So that returned ip > *eip_limit. */
+-	}
+-
+-	/* Get the GDT/LDT descriptor base.
+-	   When you look for races in this code remember that
+-	   LDT and other horrors are only used in user space. */
+-	if (seg & (1<<2)) {
+-		/* Must lock the LDT while reading it. */
+-		mutex_lock(&current->mm->context.lock);
+-		desc = current->mm->context.ldt;
+-		desc = (void *)desc + (seg & ~7);
+-	} else {
+-		/* Must disable preemption while reading the GDT. */
+-		desc = (u32 *)get_cpu_gdt_table(get_cpu());
+-		desc = (void *)desc + (seg & ~7);
+-	}
+-
+-	/* Decode the code segment base from the descriptor */
+-	base = get_desc_base((struct desc_struct *)desc);
+-
+-	if (seg & (1<<2))
+-		mutex_unlock(&current->mm->context.lock);
+-	else
+-		put_cpu();
+-
+-	/* Adjust EIP and segment limit, and clamp at the kernel limit.
+-	   It's legitimate for segments to wrap at 0xffffffff. */
+-	seg_limit += base;
+-	if (seg_limit < *eip_limit && seg_limit >= base)
+-		*eip_limit = seg_limit;
+-	return ip + base;
+-}
+-#endif
+-
  /*
-  * This is ugly, but we want the default case to fall through.
+  * X86_32
+  * Sometimes AMD Athlon/Opteron CPUs report invalid exceptions on prefetch.
+diff --git a/arch/x86/mm/fault_64.c b/arch/x86/mm/fault_64.c
+index f681ff8..d866d19 100644
+--- a/arch/x86/mm/fault_64.c
++++ b/arch/x86/mm/fault_64.c
+@@ -64,83 +64,6 @@ static inline int notify_page_fault(struct pt_regs *regs)
+ #endif
+ }
+ 
+-#ifdef CONFIG_X86_32
+-/*
+- * Return EIP plus the CS segment base.  The segment limit is also
+- * adjusted, clamped to the kernel/user address space (whichever is
+- * appropriate), and returned in *eip_limit.
+- *
+- * The segment is checked, because it might have been changed by another
+- * task between the original faulting instruction and here.
+- *
+- * If CS is no longer a valid code segment, or if EIP is beyond the
+- * limit, or if it is a kernel address when CS is not a kernel segment,
+- * then the returned value will be greater than *eip_limit.
+- *
+- * This is slow, but is very rarely executed.
+- */
+-static inline unsigned long get_segment_eip(struct pt_regs *regs,
+-					    unsigned long *eip_limit)
+-{
+-	unsigned long ip = regs->ip;
+-	unsigned seg = regs->cs & 0xffff;
+-	u32 seg_ar, seg_limit, base, *desc;
+-
+-	/* Unlikely, but must come before segment checks. */
+-	if (unlikely(regs->flags & VM_MASK)) {
+-		base = seg << 4;
+-		*eip_limit = base + 0xffff;
+-		return base + (ip & 0xffff);
+-	}
+-
+-	/* The standard kernel/user address space limit. */
+-	*eip_limit = user_mode(regs) ? USER_DS.seg : KERNEL_DS.seg;
+-
+-	/* By far the most common cases. */
+-	if (likely(SEGMENT_IS_FLAT_CODE(seg)))
+-		return ip;
+-
+-	/* Check the segment exists, is within the current LDT/GDT size,
+-	   that kernel/user (ring 0..3) has the appropriate privilege,
+-	   that it's a code segment, and get the limit. */
+-	__asm__("larl %3,%0; lsll %3,%1"
+-		 : "=&r" (seg_ar), "=r" (seg_limit) : "0" (0), "rm" (seg));
+-	if ((~seg_ar & 0x9800) || ip > seg_limit) {
+-		*eip_limit = 0;
+-		return 1;	 /* So that returned ip > *eip_limit. */
+-	}
+-
+-	/* Get the GDT/LDT descriptor base.
+-	   When you look for races in this code remember that
+-	   LDT and other horrors are only used in user space. */
+-	if (seg & (1<<2)) {
+-		/* Must lock the LDT while reading it. */
+-		mutex_lock(&current->mm->context.lock);
+-		desc = current->mm->context.ldt;
+-		desc = (void *)desc + (seg & ~7);
+-	} else {
+-		/* Must disable preemption while reading the GDT. */
+-		desc = (u32 *)get_cpu_gdt_table(get_cpu());
+-		desc = (void *)desc + (seg & ~7);
+-	}
+-
+-	/* Decode the code segment base from the descriptor */
+-	base = get_desc_base((struct desc_struct *)desc);
+-
+-	if (seg & (1<<2))
+-		mutex_unlock(&current->mm->context.lock);
+-	else
+-		put_cpu();
+-
+-	/* Adjust EIP and segment limit, and clamp at the kernel limit.
+-	   It's legitimate for segments to wrap at 0xffffffff. */
+-	seg_limit += base;
+-	if (seg_limit < *eip_limit && seg_limit >= base)
+-		*eip_limit = seg_limit;
+-	return ip + base;
+-}
+-#endif
+-
+ /*
+  * X86_32
+  * Sometimes AMD Athlon/Opteron CPUs report invalid exceptions on prefetch.
+diff --git a/include/asm-x86/ptrace.h b/include/asm-x86/ptrace.h
+index 61946fe..cc44566 100644
+--- a/include/asm-x86/ptrace.h
++++ b/include/asm-x86/ptrace.h
+@@ -184,6 +184,8 @@ convert_rip_to_linear(struct task_struct *child, struct pt_regs *regs);
+ 
+ #ifdef __KERNEL__
+ 
++unsigned long get_segment_eip(struct pt_regs *regs, unsigned long *eip_limit);
++
+ /*
+  * These are defined as per linux/ptrace.h, which see.
+  */
+-- 
+1.5.4.rc2.1164.g6451
 
