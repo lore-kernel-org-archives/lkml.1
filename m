@@ -1,332 +1,596 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759220AbYAJWna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbYAJWqB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759220AbYAJWna (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 17:43:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755581AbYAJWnT
+	id S1757378AbYAJWqB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 17:46:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbYAJWpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 17:43:19 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:54193 "EHLO havoc.gtf.org"
+	Thu, 10 Jan 2008 17:45:52 -0500
+Received: from smtp3-g19.free.fr ([212.27.42.29]:48103 "EHLO smtp3-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754626AbYAJWnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 17:43:17 -0500
-Date: Thu, 10 Jan 2008 17:43:16 -0500
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] libata fixes
-Message-ID: <20080110224315.GA6125@havoc.gtf.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	id S1752770AbYAJWpu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 17:45:50 -0500
+Date: Thu, 10 Jan 2008 23:44:38 +0100
+From: Guillaume Chazarain <guichaz@yahoo.fr>
+To: David Dillow <dillowda@ornl.gov>
+Cc: linux-kernel@vger.kernel.org, linux-btrace@vger.kernel.org,
+       mingo@redhat.com, tglx@linutronix.de
+Subject: Re: CONFIG_NO_HZ breaks blktrace timestamps
+Message-ID: <20080110234438.4826f658@inria.fr>
+In-Reply-To: <1199996752.9159.46.camel@lap75545.ornl.gov>
+References: <1199918912.8388.13.camel@lap75545.ornl.gov>
+	<1199996752.9159.46.camel@lap75545.ornl.gov>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Dillow <dillowda@ornl.gov> wrote:
 
-Still working through the backlog, but this is most of the immediate
-libata stuff.  I asked DaveM to help out with netdev fixes, so there
-shouldn't be much of a 2.6.24-rc backlog at all there (thanks again David).
+> At the moment, I'm not sure how to track this farther, or how to fix it
+> properly. Any advice would be appreciated.
 
-Please pull from 'upstream-linus' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+Just out of curiosity, could you try the appended cumulative patch and
+report .clock_warps, .clock_overflows and .clock_underflows as you did.
 
-to receive the following updates:
+Thanks.
 
- Documentation/kernel-parameters.txt |    8 +++++++
- drivers/ata/libata-eh.c             |   24 +++++++++++++++-------
- drivers/ata/libata-pmp.c            |   12 ++++------
- drivers/ata/libata-scsi.c           |    3 +-
- drivers/ata/libata-sff.c            |    7 ++++-
- drivers/ata/pata_ixp4xx_cf.c        |    3 +-
- drivers/ata/pata_pdc202xx_old.c     |   15 ++++++++++++-
- drivers/ata/sata_qstor.c            |    2 +-
- drivers/ata/sata_sil24.c            |   37 ++++++++++++++++++++++++----------
- 9 files changed, 78 insertions(+), 33 deletions(-)
+commit 20fa02359d971bdb820d238184fabd42d8018e4f
+Author: Guillaume Chazarain <guichaz@yahoo.fr>
+Date:   Thu Jan 10 23:36:43 2008 +0100
 
-Alan Cox (2):
-      libata-sff: PCI IRQ handling fix
-      pata_pdc202xx_old: Further fixups
+    sched: monitor clock underflows in /proc/sched_debug
+    
+    We monitor clock overflows, let's also monitor clock underflows.
+    
+    Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
 
-FD Cami (1):
-      Update kernel parameter document for libata DMA mode setting knobs.
-
-Gwendal Grignou (1):
-      sata_sil24: prevent hba lockup when pass-through ATA commands are used
-
-Ondrej Zary (1):
-      libata and starting/stopping ATAPI floppy devices
-
-Rod Whitby (1):
-      pata_ixp4xx_cf: fix compilation introduced by ata_port_desc() conversion
-
-Tejun Heo (4):
-      sata_qstor: use hardreset instead of softreset
-      libata-pmp: 4726 hates SRST
-      libata-pmp: propagate timeout to host link
-      libata: don't normalize UNKNOWN to NONE after reset
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index e5b447a..c417877 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -883,6 +883,14 @@ and is between 256 and 4096 characters. It is defined in the file
- 	lapic_timer_c2_ok	[X86-32,x86-64,APIC] trust the local apic timer in
- 			C2 power state.
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 37cf07a..cab9756 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -317,7 +317,7 @@ struct rq {
+ 	u64 clock, prev_clock_raw;
+ 	s64 clock_max_delta;
  
-+	libata.dma=	[LIBATA] DMA control
-+			libata.dma=0	  Disable all PATA and SATA DMA
-+			libata.dma=1	  PATA and SATA Disk DMA only
-+			libata.dma=2	  ATAPI (CDROM) DMA only
-+			libata.dma=4	  Compact Flash DMA only 
-+			Combinations also work, so libata.dma=3 enables DMA
-+			for disks and CDROMs, but not CFs.
-+
- 	libata.noacpi	[LIBATA] Disables use of ACPI in libata suspend/resume
- 			when set.
- 			Format: <int>
-diff --git a/drivers/ata/libata-eh.c b/drivers/ata/libata-eh.c
-index f0124a8..21a81cd 100644
---- a/drivers/ata/libata-eh.c
-+++ b/drivers/ata/libata-eh.c
-@@ -1733,11 +1733,15 @@ static void ata_eh_link_autopsy(struct ata_link *link)
- 		ehc->i.action &= ~ATA_EH_PERDEV_MASK;
- 	}
- 
--	/* consider speeding down */
-+	/* propagate timeout to host link */
-+	if ((all_err_mask & AC_ERR_TIMEOUT) && !ata_is_host_link(link))
-+		ap->link.eh_context.i.err_mask |= AC_ERR_TIMEOUT;
-+
-+	/* record error and consider speeding down */
- 	dev = ehc->i.dev;
--	if (!dev && ata_link_max_devices(link) == 1 &&
--	    ata_dev_enabled(link->device))
--		dev = link->device;
-+	if (!dev && ((ata_link_max_devices(link) == 1 &&
-+		      ata_dev_enabled(link->device))))
-+	    dev = link->device;
- 
- 	if (dev)
- 		ehc->i.action |= ata_eh_speed_down(dev, is_io, all_err_mask);
-@@ -1759,8 +1763,14 @@ void ata_eh_autopsy(struct ata_port *ap)
- {
- 	struct ata_link *link;
- 
--	__ata_port_for_each_link(link, ap)
-+	ata_port_for_each_link(link, ap)
- 		ata_eh_link_autopsy(link);
-+
-+	/* Autopsy of fanout ports can affect host link autopsy.
-+	 * Perform host link autopsy last.
-+	 */
-+	if (ap->nr_pmp_links)
-+		ata_eh_link_autopsy(&ap->link);
- }
- 
- /**
-@@ -2157,13 +2167,11 @@ int ata_eh_reset(struct ata_link *link, int classify,
- 		if (ata_link_offline(link))
- 			continue;
- 
--		/* apply class override and convert UNKNOWN to NONE */
-+		/* apply class override */
- 		if (lflags & ATA_LFLAG_ASSUME_ATA)
- 			classes[dev->devno] = ATA_DEV_ATA;
- 		else if (lflags & ATA_LFLAG_ASSUME_SEMB)
- 			classes[dev->devno] = ATA_DEV_SEMB_UNSUP; /* not yet */
--		else if (classes[dev->devno] == ATA_DEV_UNKNOWN)
--			classes[dev->devno] = ATA_DEV_NONE;
- 	}
- 
- 	/* record current link speed */
-diff --git a/drivers/ata/libata-pmp.c b/drivers/ata/libata-pmp.c
-index c0c4dbc..caef2bb 100644
---- a/drivers/ata/libata-pmp.c
-+++ b/drivers/ata/libata-pmp.c
-@@ -495,14 +495,12 @@ static void sata_pmp_quirks(struct ata_port *ap)
- 			/* SError.N need a kick in the ass to get working */
- 			link->flags |= ATA_LFLAG_HRST_TO_RESUME;
- 
--			/* class code report is unreliable */
--			if (link->pmp < 5)
--				link->flags |= ATA_LFLAG_ASSUME_ATA;
--
--			/* The config device, which can be either at
--			 * port 0 or 5, locks up on SRST.
-+			/* Class code report is unreliable and SRST
-+			 * times out under certain configurations.
-+			 * Config device can be at port 0 or 5 and
-+			 * locks up on SRST.
- 			 */
--			if (link->pmp == 0 || link->pmp == 5)
-+			if (link->pmp <= 5)
- 				link->flags |= ATA_LFLAG_NO_SRST |
- 					       ATA_LFLAG_ASSUME_ATA;
- 
-diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-index a883bb0..264ae60 100644
---- a/drivers/ata/libata-scsi.c
-+++ b/drivers/ata/libata-scsi.c
-@@ -872,7 +872,8 @@ int ata_scsi_slave_config(struct scsi_device *sdev)
- 
- 	ata_scsi_sdev_config(sdev);
- 
--	sdev->manage_start_stop = 1;
-+	if (dev->class == ATA_DEV_ATA)
-+		sdev->manage_start_stop = 1;
- 
- 	if (dev)
- 		ata_scsi_dev_config(sdev, dev);
-diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
-index 48acc09..b7ac80b 100644
---- a/drivers/ata/libata-sff.c
-+++ b/drivers/ata/libata-sff.c
-@@ -806,7 +806,10 @@ int ata_pci_init_one(struct pci_dev *pdev,
- 	if (rc)
- 		goto err_out;
- 
--	if (!legacy_mode) {
-+	if (!legacy_mode && pdev->irq) {
-+		/* We may have no IRQ assigned in which case we can poll. This
-+		   shouldn't happen on a sane system but robustness is cheap
-+		   in this case */
- 		rc = devm_request_irq(dev, pdev->irq, pi->port_ops->irq_handler,
- 				      IRQF_SHARED, DRV_NAME, host);
- 		if (rc)
-@@ -814,7 +817,7 @@ int ata_pci_init_one(struct pci_dev *pdev,
- 
- 		ata_port_desc(host->ports[0], "irq %d", pdev->irq);
- 		ata_port_desc(host->ports[1], "irq %d", pdev->irq);
--	} else {
-+	} else if (legacy_mode) {
- 		if (!ata_port_is_dummy(host->ports[0])) {
- 			rc = devm_request_irq(dev, ATA_PRIMARY_IRQ(pdev),
- 					      pi->port_ops->irq_handler,
-diff --git a/drivers/ata/pata_ixp4xx_cf.c b/drivers/ata/pata_ixp4xx_cf.c
-index fcd532a..120b5bf 100644
---- a/drivers/ata/pata_ixp4xx_cf.c
-+++ b/drivers/ata/pata_ixp4xx_cf.c
-@@ -130,10 +130,11 @@ static struct ata_port_operations ixp4xx_port_ops = {
- 	.port_start		= ata_port_start,
- };
- 
--static void ixp4xx_setup_port(struct ata_ioports *ioaddr,
-+static void ixp4xx_setup_port(struct ata_port *ap,
- 			      struct ixp4xx_pata_data *data,
- 			      unsigned long raw_cs0, unsigned long raw_cs1)
- {
-+	struct ata_ioports *ioaddr = &ap->ioaddr;
- 	unsigned long raw_cmd = raw_cs0;
- 	unsigned long raw_ctl = raw_cs1 + 0x06;
- 
-diff --git a/drivers/ata/pata_pdc202xx_old.c b/drivers/ata/pata_pdc202xx_old.c
-index bc7c2d5..8f28156 100644
---- a/drivers/ata/pata_pdc202xx_old.c
-+++ b/drivers/ata/pata_pdc202xx_old.c
-@@ -215,8 +215,8 @@ static void pdc2026x_bmdma_stop(struct ata_queued_cmd *qc)
- 	/* Flip back to 33Mhz for PIO */
- 	if (adev->dma_mode >= XFER_UDMA_2)
- 		iowrite8(ioread8(clock) & ~sel66, clock);
--
- 	ata_bmdma_stop(qc);
-+	pdc202xx_set_piomode(ap, adev);
- }
- 
- /**
-@@ -233,6 +233,17 @@ static void pdc2026x_dev_config(struct ata_device *adev)
- 	adev->max_sectors = 256;
- }
- 
-+static int pdc2026x_port_start(struct ata_port *ap)
-+{
-+	void __iomem *bmdma = ap->ioaddr.bmdma_addr;
-+	if (bmdma) {
-+		/* Enable burst mode */
-+		u8 burst = ioread8(bmdma + 0x1f);
-+		iowrite8(burst | 0x01, bmdma + 0x1f);
+-	unsigned int clock_warps, clock_overflows;
++	unsigned int clock_warps, clock_overflows, clock_underflows;
+ 	u64 idle_clock;
+ 	unsigned int clock_deep_idle_events;
+ 	u64 tick_timestamp;
+@@ -3485,8 +3485,10 @@ void scheduler_tick(void)
+ 	/*
+ 	 * Let rq->clock advance by at least TICK_NSEC:
+ 	 */
+-	if (unlikely(rq->clock < next_tick))
++	if (unlikely(rq->clock < next_tick)) {
+ 		rq->clock = next_tick;
++		rq->clock_underflows++;
 +	}
-+	return ata_sff_port_start(ap);
-+}
-+
- static struct scsi_host_template pdc202xx_sht = {
- 	.module			= THIS_MODULE,
- 	.name			= DRV_NAME,
-@@ -313,7 +324,7 @@ static struct ata_port_operations pdc2026x_port_ops = {
- 	.irq_clear	= ata_bmdma_irq_clear,
- 	.irq_on		= ata_irq_on,
+ 	rq->tick_timestamp = rq->clock;
+ 	update_cpu_load(rq);
+ 	if (curr != rq->idle) /* FIXME: needed? */
+diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
+index 80fbbfc..9e5de09 100644
+--- a/kernel/sched_debug.c
++++ b/kernel/sched_debug.c
+@@ -179,6 +179,7 @@ static void print_cpu(struct seq_file *m, int cpu)
+ 	PN(prev_clock_raw);
+ 	P(clock_warps);
+ 	P(clock_overflows);
++	P(clock_underflows);
+ 	P(clock_deep_idle_events);
+ 	PN(clock_max_delta);
+ 	P(cpu_load[0]);
+
+commit c146421cae64bb626714dc951fa39b55d2f819c1
+Author: Guillaume Chazarain <guichaz@yahoo.fr>
+Date:   Wed Jan 2 14:10:17 2008 +0100
+
+    commit 60c6397ce4e8c9fd7feaeaef4167ace71c3949c8
+    
+        x86: scale cyc_2_nsec according to CPU frequency
+    
+        scale the sched_clock() cyc_2_nsec scaling factor according to
+        CPU frequency changes.
+    
+        [ mingo@elte.hu: simplified it and fixed it for SMP. ]
+    
+        Signed-off-by: Ingo Molnar <mingo@elte.hu>
+        Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+
+diff --git a/arch/x86/kernel/tsc_32.c b/arch/x86/kernel/tsc_32.c
+index 9ebc0da..00bb4c1 100644
+--- a/arch/x86/kernel/tsc_32.c
++++ b/arch/x86/kernel/tsc_32.c
+@@ -5,6 +5,7 @@
+ #include <linux/jiffies.h>
+ #include <linux/init.h>
+ #include <linux/dmi.h>
++#include <linux/percpu.h>
  
--	.port_start	= ata_sff_port_start,
-+	.port_start	= pdc2026x_port_start,
- };
+ #include <asm/delay.h>
+ #include <asm/tsc.h>
+@@ -80,13 +81,31 @@ EXPORT_SYMBOL_GPL(check_tsc_unstable);
+  *
+  *			-johnstul@us.ibm.com "math is hard, lets go shopping!"
+  */
+-unsigned long cyc2ns_scale __read_mostly;
  
- static int pdc202xx_init_one(struct pci_dev *dev, const struct pci_device_id *id)
-diff --git a/drivers/ata/sata_qstor.c b/drivers/ata/sata_qstor.c
-index 2f1de6e..c68b241 100644
---- a/drivers/ata/sata_qstor.c
-+++ b/drivers/ata/sata_qstor.c
-@@ -270,7 +270,7 @@ static int qs_scr_read(struct ata_port *ap, unsigned int sc_reg, u32 *val)
- static void qs_error_handler(struct ata_port *ap)
+-#define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
++DEFINE_PER_CPU(unsigned long, cyc2ns);
+ 
+-static inline void set_cyc2ns_scale(unsigned long cpu_khz)
++static void set_cyc2ns_scale(unsigned long cpu_khz, int cpu)
  {
- 	qs_enter_reg_mode(ap);
--	ata_do_eh(ap, qs_prereset, ata_std_softreset, NULL,
-+	ata_do_eh(ap, qs_prereset, NULL, sata_std_hardreset,
- 		  ata_std_postreset);
- }
- 
-diff --git a/drivers/ata/sata_sil24.c b/drivers/ata/sata_sil24.c
-index 96fd526..b4c674d 100644
---- a/drivers/ata/sata_sil24.c
-+++ b/drivers/ata/sata_sil24.c
-@@ -832,16 +832,31 @@ static int sil24_qc_defer(struct ata_queued_cmd *qc)
- 	struct ata_link *link = qc->dev->link;
- 	struct ata_port *ap = link->ap;
- 	u8 prot = qc->tf.protocol;
--	int is_atapi = (prot == ATA_PROT_ATAPI ||
--			prot == ATA_PROT_ATAPI_NODATA ||
--			prot == ATA_PROT_ATAPI_DMA);
--
--	/* ATAPI commands completing with CHECK_SENSE cause various
--	 * weird problems if other commands are active.  PMP DMA CS
--	 * errata doesn't cover all and HSM violation occurs even with
--	 * only one other device active.  Always run an ATAPI command
--	 * by itself.
--	 */
+-	cyc2ns_scale = (1000000 << CYC2NS_SCALE_FACTOR)/cpu_khz;
++	unsigned long flags, prev_scale, *scale;
++	unsigned long long tsc_now, ns_now;
++
++	local_irq_save(flags);
++	sched_clock_idle_sleep_event();
++
++	scale = &per_cpu(cyc2ns, cpu);
++
++	rdtscll(tsc_now);
++	ns_now = __cycles_2_ns(tsc_now);
++
++	prev_scale = *scale;
++	if (cpu_khz)
++		*scale = (NSEC_PER_MSEC << CYC2NS_SCALE_FACTOR)/cpu_khz;
 +
 +	/*
-+	 * There is a bug in the chip:
-+	 * Port LRAM Causes the PRB/SGT Data to be Corrupted
-+	 * If the host issues a read request for LRAM and SActive registers
-+	 * while active commands are available in the port, PRB/SGT data in
-+	 * the LRAM can become corrupted. This issue applies only when
-+	 * reading from, but not writing to, the LRAM.
-+	 *
-+	 * Therefore, reading LRAM when there is no particular error [and
-+	 * other commands may be outstanding] is prohibited.
-+	 *
-+	 * To avoid this bug there are two situations where a command must run
-+	 * exclusive of any other commands on the port:
-+	 *
-+	 * - ATAPI commands which check the sense data
-+	 * - Passthrough ATA commands which always have ATA_QCFLAG_RESULT_TF
-+	 *   set.
-+	 *
-+ 	 */
-+	int is_excl = (prot == ATA_PROT_ATAPI ||
-+		       prot == ATA_PROT_ATAPI_NODATA ||
-+		       prot == ATA_PROT_ATAPI_DMA ||
-+		       (qc->flags & ATA_QCFLAG_RESULT_TF));
++	 * Start smoothly with the new frequency:
++	 */
++	sched_clock_idle_wakeup_event(0);
++	local_irq_restore(flags);
+ }
+ 
+ /*
+@@ -239,7 +258,9 @@ time_cpufreq_notifier(struct notifier_block *nb, unsigned long val, void *data)
+ 						ref_freq, freq->new);
+ 			if (!(freq->flags & CPUFREQ_CONST_LOOPS)) {
+ 				tsc_khz = cpu_khz;
+-				set_cyc2ns_scale(cpu_khz);
++				preempt_disable();
++				set_cyc2ns_scale(cpu_khz, smp_processor_id());
++				preempt_enable();
+ 				/*
+ 				 * TSC based sched_clock turns
+ 				 * to junk w/ cpufreq
+@@ -367,6 +388,8 @@ static inline void check_geode_tsc_reliable(void) { }
+ 
+ void __init tsc_init(void)
+ {
++	int cpu;
 +
- 	if (unlikely(ap->excl_link)) {
- 		if (link == ap->excl_link) {
- 			if (ap->nr_active_links)
-@@ -849,7 +864,7 @@ static int sil24_qc_defer(struct ata_queued_cmd *qc)
- 			qc->flags |= ATA_QCFLAG_CLEAR_EXCL;
- 		} else
- 			return ATA_DEFER_PORT;
--	} else if (unlikely(is_atapi)) {
-+	} else if (unlikely(is_excl)) {
- 		ap->excl_link = link;
- 		if (ap->nr_active_links)
- 			return ATA_DEFER_PORT;
+ 	if (!cpu_has_tsc || tsc_disable)
+ 		goto out_no_tsc;
+ 
+@@ -380,7 +403,15 @@ void __init tsc_init(void)
+ 				(unsigned long)cpu_khz / 1000,
+ 				(unsigned long)cpu_khz % 1000);
+ 
+-	set_cyc2ns_scale(cpu_khz);
++	/*
++	 * Secondary CPUs do not run through tsc_init(), so set up
++	 * all the scale factors for all CPUs, assuming the same
++	 * speed as the bootup CPU. (cpufreq notifiers will fix this
++	 * up if their speed diverges)
++	 */
++	for_each_possible_cpu(cpu)
++		set_cyc2ns_scale(cpu_khz, cpu);
++
+ 	use_tsc_delay();
+ 
+ 	/* Check and install the TSC clocksource */
+diff --git a/arch/x86/kernel/tsc_64.c b/arch/x86/kernel/tsc_64.c
+index 9c70af4..32edd2c 100644
+--- a/arch/x86/kernel/tsc_64.c
++++ b/arch/x86/kernel/tsc_64.c
+@@ -10,6 +10,7 @@
+ 
+ #include <asm/hpet.h>
+ #include <asm/timex.h>
++#include <asm/timer.h>
+ 
+ static int notsc __initdata = 0;
+ 
+@@ -18,16 +19,48 @@ EXPORT_SYMBOL(cpu_khz);
+ unsigned int tsc_khz;
+ EXPORT_SYMBOL(tsc_khz);
+ 
+-static unsigned int cyc2ns_scale __read_mostly;
++/* Accelerators for sched_clock()
++ * convert from cycles(64bits) => nanoseconds (64bits)
++ *  basic equation:
++ *		ns = cycles / (freq / ns_per_sec)
++ *		ns = cycles * (ns_per_sec / freq)
++ *		ns = cycles * (10^9 / (cpu_khz * 10^3))
++ *		ns = cycles * (10^6 / cpu_khz)
++ *
++ *	Then we use scaling math (suggested by george@mvista.com) to get:
++ *		ns = cycles * (10^6 * SC / cpu_khz) / SC
++ *		ns = cycles * cyc2ns_scale / SC
++ *
++ *	And since SC is a constant power of two, we can convert the div
++ *  into a shift.
++ *
++ *  We can use khz divisor instead of mhz to keep a better precision, since
++ *  cyc2ns_scale is limited to 10^6 * 2^10, which fits in 32 bits.
++ *  (mathieu.desnoyers@polymtl.ca)
++ *
++ *			-johnstul@us.ibm.com "math is hard, lets go shopping!"
++ */
++DEFINE_PER_CPU(unsigned long, cyc2ns);
+ 
+-static inline void set_cyc2ns_scale(unsigned long khz)
++static void set_cyc2ns_scale(unsigned long cpu_khz, int cpu)
+ {
+-	cyc2ns_scale = (NSEC_PER_MSEC << NS_SCALE) / khz;
+-}
++	unsigned long flags, prev_scale, *scale;
++	unsigned long long tsc_now, ns_now;
+ 
+-static unsigned long long cycles_2_ns(unsigned long long cyc)
+-{
+-	return (cyc * cyc2ns_scale) >> NS_SCALE;
++	local_irq_save(flags);
++	sched_clock_idle_sleep_event();
++
++	scale = &per_cpu(cyc2ns, cpu);
++
++	rdtscll(tsc_now);
++	ns_now = __cycles_2_ns(tsc_now);
++
++	prev_scale = *scale;
++	if (cpu_khz)
++		*scale = (NSEC_PER_MSEC << CYC2NS_SCALE_FACTOR)/cpu_khz;
++
++	sched_clock_idle_wakeup_event(0);
++	local_irq_restore(flags);
+ }
+ 
+ unsigned long long sched_clock(void)
+@@ -100,7 +133,9 @@ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+ 			mark_tsc_unstable("cpufreq changes");
+ 	}
+ 
+-	set_cyc2ns_scale(tsc_khz_ref);
++	preempt_disable();
++	set_cyc2ns_scale(tsc_khz_ref, smp_processor_id());
++	preempt_enable();
+ 
+ 	return 0;
+ }
+@@ -151,7 +186,7 @@ static unsigned long __init tsc_read_refs(unsigned long *pm,
+ void __init tsc_calibrate(void)
+ {
+ 	unsigned long flags, tsc1, tsc2, tr1, tr2, pm1, pm2, hpet1, hpet2;
+-	int hpet = is_hpet_enabled();
++	int hpet = is_hpet_enabled(), cpu;
+ 
+ 	local_irq_save(flags);
+ 
+@@ -206,7 +241,9 @@ void __init tsc_calibrate(void)
+ 	}
+ 
+ 	tsc_khz = tsc2 / tsc1;
+-	set_cyc2ns_scale(tsc_khz);
++
++	for_each_possible_cpu(cpu)
++		set_cyc2ns_scale(tsc_khz, cpu);
+ }
+ 
+ /*
+diff --git a/include/asm-x86/timer.h b/include/asm-x86/timer.h
+index 0db7e99..4f6fcb0 100644
+--- a/include/asm-x86/timer.h
++++ b/include/asm-x86/timer.h
+@@ -2,6 +2,7 @@
+ #define _ASMi386_TIMER_H
+ #include <linux/init.h>
+ #include <linux/pm.h>
++#include <linux/percpu.h>
+ 
+ #define TICK_SIZE (tick_nsec / 1000)
+ 
+@@ -16,7 +17,7 @@ extern int recalibrate_cpu_khz(void);
+ #define calculate_cpu_khz() native_calculate_cpu_khz()
+ #endif
+ 
+-/* Accellerators for sched_clock()
++/* Accelerators for sched_clock()
+  * convert from cycles(64bits) => nanoseconds (64bits)
+  *  basic equation:
+  *		ns = cycles / (freq / ns_per_sec)
+@@ -31,20 +32,32 @@ extern int recalibrate_cpu_khz(void);
+  *	And since SC is a constant power of two, we can convert the div
+  *  into a shift.
+  *
+- *  We can use khz divisor instead of mhz to keep a better percision, since
++ *  We can use khz divisor instead of mhz to keep a better precision, since
+  *  cyc2ns_scale is limited to 10^6 * 2^10, which fits in 32 bits.
+  *  (mathieu.desnoyers@polymtl.ca)
+  *
+  *			-johnstul@us.ibm.com "math is hard, lets go shopping!"
+  */
+-extern unsigned long cyc2ns_scale __read_mostly;
++
++DECLARE_PER_CPU(unsigned long, cyc2ns);
+ 
+ #define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
+ 
+-static inline unsigned long long cycles_2_ns(unsigned long long cyc)
++static inline unsigned long long __cycles_2_ns(unsigned long long cyc)
+ {
+-	return (cyc * cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
++	return cyc * per_cpu(cyc2ns, smp_processor_id()) >> CYC2NS_SCALE_FACTOR;
+ }
+ 
++static inline unsigned long long cycles_2_ns(unsigned long long cyc)
++{
++	unsigned long long ns;
++	unsigned long flags;
++
++	local_irq_save(flags);
++	ns = __cycles_2_ns(cyc);
++	local_irq_restore(flags);
++
++	return ns;
++}
+ 
+ #endif
+
+commit 235fdf2d607e7139d3a7392506996a476229d12e
+Author: Guillaume Chazarain <guichaz@yahoo.fr>
+Date:   Thu Jan 10 23:36:44 2008 +0100
+
+    sched: fix rq->clock warps on frequency changes
+    
+    Fix 2bacec8c318ca0418c0ee9ac662ee44207765dd4
+    (sched: touch softlockup watchdog after idling) that reintroduced warps
+    on frequency changes. touch_softlockup_watchdog() calls __update_rq_clock
+    that checks rq->clock for warps, so call it after adjusting rq->clock.
+    
+    Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index cab9756..eee610d 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -668,7 +668,6 @@ void sched_clock_idle_wakeup_event(u64 delta_ns)
+ 	struct rq *rq = cpu_rq(smp_processor_id());
+ 	u64 now = sched_clock();
+ 
+-	touch_softlockup_watchdog();
+ 	rq->idle_clock += delta_ns;
+ 	/*
+ 	 * Override the previous timestamp and ignore all
+@@ -680,6 +679,7 @@ void sched_clock_idle_wakeup_event(u64 delta_ns)
+ 	rq->prev_clock_raw = now;
+ 	rq->clock += delta_ns;
+ 	spin_unlock(&rq->lock);
++	touch_softlockup_watchdog();
+ }
+ EXPORT_SYMBOL_GPL(sched_clock_idle_wakeup_event);
+ 
+
+commit 241a8c3fb4d6fd452518a8e4e8eeabe9696c82aa
+Author: Guillaume Chazarain <guichaz@yahoo.fr>
+Date:   Thu Jan 10 23:36:45 2008 +0100
+
+    sched: Fix rq->clock overflows detection with CONFIG_NO_HZ
+    
+    When using CONFIG_NO_HZ, rq->tick_timestamp is not updated every TICK_NSEC.
+    We check that the number of skipped ticks matches the clock jump seen in
+    __update_rq_clock().
+    
+    
+    Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index eee610d..6f1271d 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -288,6 +288,7 @@ struct rq {
+ 	unsigned long cpu_load[CPU_LOAD_IDX_MAX];
+ 	unsigned char idle_at_tick;
+ #ifdef CONFIG_NO_HZ
++	unsigned long last_tick_seen;
+ 	unsigned char in_nohz_recently;
+ #endif
+ 	/* capture load from *all* tasks on this cpu: */
+@@ -379,6 +380,32 @@ static inline int cpu_of(struct rq *rq)
+ #endif
+ }
+ 
++#ifdef CONFIG_NO_HZ
++static inline bool nohz_on(int cpu)
++{
++	return tick_get_tick_sched(cpu)->nohz_mode != NOHZ_MODE_INACTIVE;
++}
++
++static inline u64 max_skipped_ticks(struct rq *rq)
++{
++	return nohz_on(cpu_of(rq)) ? jiffies - rq->last_tick_seen + 2 : 1;
++}
++
++static inline void update_last_tick_seen(struct rq *rq)
++{
++	rq->last_tick_seen = jiffies;
++}
++#else
++static inline u64 max_skipped_ticks(struct rq *rq)
++{
++	return 1;
++}
++
++static inline void update_last_tick_seen(struct rq *rq)
++{
++}
++#endif
++
+ /*
+  * Update the per-runqueue clock, as finegrained as the platform can give
+  * us, but without assuming monotonicity, etc.:
+@@ -403,9 +430,12 @@ static void __update_rq_clock(struct rq *rq)
+ 		/*
+ 		 * Catch too large forward jumps too:
+ 		 */
+-		if (unlikely(clock + delta > rq->tick_timestamp + TICK_NSEC)) {
+-			if (clock < rq->tick_timestamp + TICK_NSEC)
+-				clock = rq->tick_timestamp + TICK_NSEC;
++		u64 max_jump = max_skipped_ticks(rq) * TICK_NSEC;
++		u64 max_time = rq->tick_timestamp + max_jump;
++
++		if (unlikely(clock + delta > max_time)) {
++			if (clock < max_time)
++				clock = max_time;
+ 			else
+ 				clock++;
+ 			rq->clock_overflows++;
+@@ -3490,6 +3520,7 @@ void scheduler_tick(void)
+ 		rq->clock_underflows++;
+ 	}
+ 	rq->tick_timestamp = rq->clock;
++	update_last_tick_seen(rq);
+ 	update_cpu_load(rq);
+ 	if (curr != rq->idle) /* FIXME: needed? */
+ 		curr->sched_class->task_tick(rq, curr);
+@@ -6762,6 +6793,7 @@ void __init sched_init(void)
+ 		lockdep_set_class(&rq->lock, &rq->rq_lock_key);
+ 		rq->nr_running = 0;
+ 		rq->clock = 1;
++		update_last_tick_seen(rq);
+ 		init_cfs_rq(&rq->cfs, rq);
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ 		INIT_LIST_HEAD(&rq->leaf_cfs_rq_list);
+
+commit 437f7a5480a0916e5b0877e04ca87f998ef3f3e2
+Author: Guillaume Chazarain <guichaz@yahoo.fr>
+Date:   Thu Jan 10 23:36:45 2008 +0100
+
+    sched: make sure jiffies is up to date before calling __update_rq_clock()
+    
+    Now that __update_rq_clock() uses jiffies to detect clock overflows, make sure
+    jiffies are up to date before touch_softlockup_watchdog().
+    
+    Removed a touch_softlockup_watchdog() call becoming redundant with the added
+    tick_nohz_update_jiffies().
+    
+    Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 6f1271d..f6b3160 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -63,6 +63,7 @@
+ #include <linux/reciprocal_div.h>
+ #include <linux/unistd.h>
+ #include <linux/pagemap.h>
++#include <linux/tick.h>
+ 
+ #include <asm/tlb.h>
+ #include <asm/irq_regs.h>
+@@ -709,7 +710,7 @@ void sched_clock_idle_wakeup_event(u64 delta_ns)
+ 	rq->prev_clock_raw = now;
+ 	rq->clock += delta_ns;
+ 	spin_unlock(&rq->lock);
+-	touch_softlockup_watchdog();
++	tick_nohz_update_jiffies();
+ }
+ EXPORT_SYMBOL_GPL(sched_clock_idle_wakeup_event);
+ 
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index cb89fa8..2190593 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -133,14 +133,13 @@ void tick_nohz_update_jiffies(void)
+ 	if (!ts->tick_stopped)
+ 		return;
+ 
+-	touch_softlockup_watchdog();
+-
+ 	cpu_clear(cpu, nohz_cpu_mask);
+ 	now = ktime_get();
+ 
+ 	local_irq_save(flags);
+ 	tick_do_update_jiffies64(now);
+ 	local_irq_restore(flags);
++	touch_softlockup_watchdog();
+ }
+ 
+ /**
+
+commit 63a885d40031190e17860c899446376b0fceefa8
+Author: Guillaume Chazarain <guichaz@yahoo.fr>
+Date:   Thu Jan 10 23:36:45 2008 +0100
+
+    scheduler_tick() is not called every jiffies
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index f6b3160..9f73005 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -387,6 +387,11 @@ static inline bool nohz_on(int cpu)
+ 	return tick_get_tick_sched(cpu)->nohz_mode != NOHZ_MODE_INACTIVE;
+ }
+ 
++static inline u64 min_skipped_ticks(struct rq *rq)
++{
++	return nohz_on(cpu_of(rq)) ? jiffies - rq->last_tick_seen : 1;
++}
++
+ static inline u64 max_skipped_ticks(struct rq *rq)
+ {
+ 	return nohz_on(cpu_of(rq)) ? jiffies - rq->last_tick_seen + 2 : 1;
+@@ -397,6 +402,11 @@ static inline void update_last_tick_seen(struct rq *rq)
+ 	rq->last_tick_seen = jiffies;
+ }
+ #else
++static inline u64 min_skipped_ticks(struct rq *rq)
++{
++	return 1;
++}
++
+ static inline u64 max_skipped_ticks(struct rq *rq)
+ {
+ 	return 1;
+@@ -3498,25 +3508,23 @@ void account_steal_time(struct task_struct *p, cputime_t steal)
+ }
+ 
+ /*
+- * This function gets called by the timer code, with HZ frequency.
++ * This function gets called by the timer code with HZ frequency or less when
++ * using CONFIG_NO_HZ.
+  * We call it with interrupts disabled.
+- *
+- * It also gets called by the fork code, when changing the parent's
+- * timeslices.
+  */
+ void scheduler_tick(void)
+ {
+ 	int cpu = smp_processor_id();
+ 	struct rq *rq = cpu_rq(cpu);
+ 	struct task_struct *curr = rq->curr;
+-	u64 next_tick = rq->tick_timestamp + TICK_NSEC;
++	u64 next_tick = rq->tick_timestamp + min_skipped_ticks(rq) * TICK_NSEC;
+ 
+ 	spin_lock(&rq->lock);
+ 	__update_rq_clock(rq);
+ 	/*
+-	 * Let rq->clock advance by at least TICK_NSEC:
++	 * Let rq->clock advance by at least the number of elapsed ticks:
+ 	 */
+-	if (unlikely(rq->clock < next_tick)) {
++	if (unlikely(rq->clock < next_tick - nohz_on(cpu) * TICK_NSEC)) {
+ 		rq->clock = next_tick;
+ 		rq->clock_underflows++;
+ 	}
+
+
+-- 
+Guillaume
