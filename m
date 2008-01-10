@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758439AbYAJCRk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758595AbYAJCR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758439AbYAJCRk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 21:17:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757305AbYAJCRB
+	id S1758595AbYAJCR5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 21:17:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757289AbYAJCRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 21:17:01 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37446 "EHLO
+	Wed, 9 Jan 2008 21:17:07 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37451 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756608AbYAJCQ7 (ORCPT
+	with ESMTP id S1757547AbYAJCRC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 21:16:59 -0500
+	Wed, 9 Jan 2008 21:17:02 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 2/4] Unionfs: mmap fixes
-Date: Wed,  9 Jan 2008 21:16:30 -0500
-Message-Id: <1199931393738-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 4/4] Unionfs: ensure we have lower dentries in d_iput
+Date: Wed,  9 Jan 2008 21:16:32 -0500
+Message-Id: <11999313941523-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <1199931392670-git-send-email-ezk@cs.sunysb.edu>
@@ -26,67 +26,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ensure we have lower inodes in prepare/commit_write.
-
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/mmap.c |   26 +++++++++++++++++++++-----
- 1 files changed, 21 insertions(+), 5 deletions(-)
+ fs/unionfs/dentry.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/fs/unionfs/mmap.c b/fs/unionfs/mmap.c
-index a0e654b..ad770ac 100644
---- a/fs/unionfs/mmap.c
-+++ b/fs/unionfs/mmap.c
-@@ -224,13 +224,26 @@ out:
- static int unionfs_prepare_write(struct file *file, struct page *page,
- 				 unsigned from, unsigned to)
+diff --git a/fs/unionfs/dentry.c b/fs/unionfs/dentry.c
+index d969640..cd15243 100644
+--- a/fs/unionfs/dentry.c
++++ b/fs/unionfs/dentry.c
+@@ -507,9 +507,10 @@ static void unionfs_d_iput(struct dentry *dentry, struct inode *inode)
  {
-+	int err;
-+
-+	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
- 	/*
--	 * Just copy lower inode attributes and return success.  Not much
--	 * else to do here.  No need to lock either (lockdep won't like it).
--	 * Let commit_write do all the hard work instead.
-+	 * This is the only place where we unconditionally copy the lower
-+	 * attribute times before calling unionfs_file_revalidate.  The
-+	 * reason is that our ->write calls do_sync_write which in turn will
-+	 * call our ->prepare_write and then ->commit_write.  Before our
-+	 * ->write is called, the lower mtimes are in sync, but by the time
-+	 * the VFS calls our ->commit_write, the lower mtimes have changed.
-+	 * Therefore, the only reasonable time for us to sync up from the
-+	 * changed lower mtimes, and avoid an invariant violation warning,
-+	 * is here, in ->prepare_write.
- 	 */
- 	unionfs_copy_attr_times(file->f_path.dentry->d_inode);
--	return 0;
-+	err = unionfs_file_revalidate(file, true);
-+	unionfs_check_file(file);
-+	unionfs_read_unlock(file->f_path.dentry->d_sb);
-+
-+	return err;
- }
+ 	int bindex, rc;
  
- static int unionfs_commit_write(struct file *file, struct page *page,
-@@ -252,7 +265,6 @@ static int unionfs_commit_write(struct file *file, struct page *page,
- 	unionfs_check_file(file);
++	BUG_ON(!dentry);
+ 	unionfs_read_lock(dentry->d_sb, UNIONFS_SMUTEX_CHILD);
  
- 	inode = page->mapping->host;
--	lower_inode = unionfs_lower_inode(inode);
- 
- 	if (UNIONFS_F(file) != NULL)
- 		lower_file = unionfs_lower_file(file);
-@@ -282,6 +294,10 @@ static int unionfs_commit_write(struct file *file, struct page *page,
- 		goto out;
- 
- 	/* if vfs_write succeeded above, sync up our times/sizes */
-+	lower_inode = lower_file->f_path.dentry->d_inode;
-+	if (!lower_inode)
-+		lower_inode = unionfs_lower_inode(inode);
-+	BUG_ON(!lower_inode);
- 	fsstack_copy_inode_size(inode, lower_inode);
- 	unionfs_copy_attr_times(inode);
- 	mark_inode_dirty_sync(inode);
+-	if (dbstart(dentry) < 0)
++	if (!UNIONFS_D(dentry) || dbstart(dentry) < 0)
+ 		goto drop_lower_inodes;
+ 	for (bindex = dbstart(dentry); bindex <= dbend(dentry); bindex++) {
+ 		if (unionfs_lower_mnt_idx(dentry, bindex)) {
 -- 
 1.5.2.2
 
