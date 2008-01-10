@@ -1,101 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758517AbYAJDR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757919AbYAJD1D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758517AbYAJDR5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 22:17:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754613AbYAJDRr
+	id S1757919AbYAJD1D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 22:27:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbYAJD0w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 22:17:47 -0500
-Received: from ns1.suse.de ([195.135.220.2]:45310 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754030AbYAJDRq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 22:17:46 -0500
-Date: Wed, 9 Jan 2008 16:05:31 -0800
-From: Greg KH <gregkh@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, vatsa@linux.vnet.ibm.com,
-       LKML <linux-kernel@vger.kernel.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, dmitry.adamushko@gmail.com,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 12/11] sched: rt-group: uid-group interface
-Message-ID: <20080110000531.GA18069@suse.de>
-References: <20080106161128.152634000@chello.nl> <1199703080.7143.24.camel@twins> <20080107122330.GB25945@linux.vnet.ibm.com> <1199725063.31975.53.camel@lappy> <20080108105733.GA2569@linux.vnet.ibm.com> <1199790150.7143.57.camel@twins> <3ae72650801080631p2b2c50a6q3d59badf06b62684@mail.gmail.com> <1199835332.31975.66.camel@lappy> <20080108235846.GA17067@suse.de> <20080108235750.GA27248@elte.hu>
+	Wed, 9 Jan 2008 22:26:52 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:36993 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753822AbYAJD0v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 22:26:51 -0500
+Date: Thu, 10 Jan 2008 08:56:31 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Subject: Re: [patch 05/19] split LRU lists into anon & file sets
+Message-ID: <20080110032631.GE15547@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org, Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+References: <20080108205939.323955454@redhat.com> <20080108210002.638347207@redhat.com> <20080109134132.ba7bb33c.kamezawa.hiroyu@jp.fujitsu.com> <20080110022133.GC15547@balbir.in.ibm.com> <20080110113618.f967d215.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20080108235750.GA27248@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080110113618.f967d215.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 09, 2008 at 12:57:50AM +0100, Ingo Molnar wrote:
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2008-01-10 11:36:18]:
+
+> On Thu, 10 Jan 2008 07:51:33 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 > 
-> * Greg KH <gregkh@suse.de> wrote:
-> 
-> > On Wed, Jan 09, 2008 at 12:35:32AM +0100, Peter Zijlstra wrote:
-> > > 
-> > > On Tue, 2008-01-08 at 15:31 +0100, Kay Sievers wrote:
-> > > > On Jan 8, 2008 12:02 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > > > >
-> > > > > On Tue, 2008-01-08 at 16:27 +0530, Dhaval Giani wrote:
-> > > > > > On Mon, Jan 07, 2008 at 05:57:42PM +0100, Peter Zijlstra wrote:
-> > > > > > >
-> > > > > > > Subject: sched: rt-group: add uid-group interface
-> > > > > > >
-> > > > > > > Extend the /sys/kernel/uids/<uid>/ interface to allow setting
-> > > > > > > the group's rt_period and rt_runtime.
-> > > > > > >
-> > > > > >
-> > > > > > Hi Peter,
-> > > > > >
-> > > > > > Cool stuff! I will try out these patches and try to give you some
-> > > > > > feedback.
-> > > > >
-> > > > > Thanks, much appreciated!
-> > > > >
-> > > > > > One request though, could you please add some documentation to
-> > > > > > Documentation/ABI/testing/sysfs-kernel-uids?
-> > > > >
-> > > > > I already have documentation on the todo list, I'll add this file to
-> > > > > that list :-)
+> > > >  #define PAGE_CGROUP_FLAG_CACHE	(0x1)	/* charged as cache */
+> > > >  #define PAGE_CGROUP_FLAG_ACTIVE (0x2)	/* page is active in this cgroup */
+> > > > +#define PAGE_CGROUP_FLAG_FILE	(0x4)	/* page is file system backed */
 > > > > 
-> > > > Care to rebase the patch against -mm, we fixed the mixed-up usage
-> > > > of ksets and kobjects, and this can not apply anymore:
-> > > >   http://git.kernel.org/?p=linux/kernel/git/gregkh/patches.git;a=blob;f=driver/struct-user_info-sysfs.patch;hb=HEAD
-> > > > 
-> > > > There is also an attribute group now which makes it much easier to add
-> > > > new files.
 > > > 
-> > > Ingo, Greg,
-> > > 
-> > > What would be the easiest way to carry this forward? sched-devel and
-> > > greg's tree would intersect at this point and leave poor akpm with the
-> > > resulting mess. Should I just make an incremental patch akpm can carry
-> > > and push? Or can we base one tree off the other?
+> > > Now, we don't have control_type and a feature for accounting only CACHE.
+> > > Balbir-san, do you have some new plan ?
+> > >
 > > 
-> > If it's just a single patch for this, I'd be glad to take it.  But by 
-> > looking at the [11/12] above, I doubt this is so...
+> > Hi, KAMEZAWA-San,
 > > 
-> > If it's not that rough (12 patches is not a big deal), I'd be glad to 
-> > take these through my tree, after you fix up Kay's requests above :)
+> > The control_type feature is gone. We still have cached page
+> > accounting, but we do not allow control of only RSS pages anymore. We
+> > need to control both RSS+cached pages. I do not understand your
+> > question about new plan? Is it about adding back control_type?
+> > 
+> Ah, just wanted to confirm that we can drop PAGE_CGROUP_FLAG_CACHE
+> if page_file_cache() function and split-LRU is introduced.
 > 
-> hm, i'd really like to see this tested and go through sched.git. It's 
-> only the few sysfs bits which interfere, right?
 
-Yes, that should be it.
+Earlier we would have had a problem, since we even accounted for swap
+cache with PAGE_CGROUP_FLAG_CACHE and I think page_file_cache() does
+not account swap cache pages with page_file_cache(). Our accounting
+is based on mapped vs unmapped whereas the new code from Rik accounts
+file vs anonymous. I suspect we could live a little while longer
+with PAGE_CGROUP_FLAG_CACHE and then if we do not need it at all,
+we can mark it down for removal. What do you think?
 
-So why not put the majority of this through sched.git, then when my
-sysfs changes go in at the beginning of the .25 merge cycle, you can
-then add the sysfs changes through your tree or anywhere else.
 
-Unless you are relying on the sysfs changes for this whole feature, and
-without them it just doesn't make any sense at all?
-
-thanks,
-
-greg k-h
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
