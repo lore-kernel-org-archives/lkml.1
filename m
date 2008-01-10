@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758528AbYAJChm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757400AbYAJCqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758528AbYAJChm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 21:37:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbYAJChf
+	id S1757400AbYAJCqj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 21:46:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbYAJCq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 21:37:35 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:51261 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753906AbYAJChe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 21:37:34 -0500
-Date: Wed, 9 Jan 2008 21:37:21 -0500
-From: Rik van Riel <riel@redhat.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: Re: [patch 05/19] split LRU lists into anon & file sets
-Message-ID: <20080109213721.2ef2e5f3@bree.surriel.com>
-In-Reply-To: <20080110112849.d54721ac.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080108205939.323955454@redhat.com>
-	<20080108210002.638347207@redhat.com>
-	<20080110112849.d54721ac.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 9 Jan 2008 21:46:29 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:54262 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754676AbYAJCq2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 21:46:28 -0500
+Message-ID: <478586E1.8010709@zytor.com>
+Date: Wed, 09 Jan 2008 18:45:53 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Jeff Dike <jdike@addtoit.com>, Miklos Szeredi <miklos@szeredi.hu>,
+       harvey.harrison@gmail.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: uml and -regparm=3
+References: <E1JCi3M-0006hO-7i@pomaz-ex.szeredi.hu> <p734pdmput0.fsf@bingen.suse.de> <E1JCiLx-0006lI-HR@pomaz-ex.szeredi.hu> <20080109213258.GC15612@one.firstfloor.org> <E1JCioy-0006os-6i@pomaz-ex.szeredi.hu> <20080110021404.GA11287@c2.user-mode-linux.org> <20080110023701.GB20813@one.firstfloor.org>
+In-Reply-To: <20080110023701.GB20813@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jan 2008 11:28:49 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Andi Kleen wrote:
+> On Wed, Jan 09, 2008 at 09:14:04PM -0500, Jeff Dike wrote:
+>> On Wed, Jan 09, 2008 at 10:50:48PM +0100, Miklos Szeredi wrote:
+>>>> FASTCALL is useless and should not make a difference. It enables
+>>>> regparm on specific functions, but that should not make a difference
+>>>> if it works or not.
+>>> __down_write() in include/asm-x86/rwsem.h seems to assume, that the
+>>> semaphore pointer is passed in %eax down to rwsem_down_write_failed(),
+>>> so regparm does make a difference there.
+>> And rwsem_down_write_failed seems to think it's getting the pointer in
+>> %eax:
+> 
+> That's a left over from when it was called by magic inline assembly.
+> I suspect it would be better to switch it just over to stack args
+> for consistent and then declare it asmlinkage
+> 
 
-> Hmm, it seems..
-> 
-> When a program copies large amount of files, recent_rotated_file increases
-> rapidly and 
-> 
->     rotate_sum
->     ----------
-> recent_rotated_anon
-> 
-> will be very big.
-> 
-> And %ap will be big regardless of vm_swappiness  if it's not 0.
-> 
-> I think # of recent_successful_pageout(anon/file) should be took into account...
-> 
-> I'm sorry if I miss something.
+That seems to go in the wrong direction to me.  It would make more sense 
+to gradually shift to asmlinkage actually being regparm=3.  This, of 
+course, would require a different name (such as FASTCALL) until the 
+conversion is complete -- even if done as a single patch series.
 
-You are right.  I wonder if this, again, is a case of myself or
-Lee forward porting old code.  I remember having (had) a very
-different version of get_scan_ratio() at some point in the past,
-but I cannot remember if we discarded this version for that other
-version, or the other way around :(
-
-Lee, would you by any chance still have some alternative versions
-of get_scan_ratio() around?  I'm searching through my systems, but
-have not found it yet...
-
--- 
-All rights reversed.
+	-hpa
