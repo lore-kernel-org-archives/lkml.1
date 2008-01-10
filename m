@@ -1,86 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbYAIGKS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219AbYAIGLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754863AbYAIGKS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 01:10:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbYAIGJ7
+	id S1755219AbYAIGLA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 01:11:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbYAIGKo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 01:09:59 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:16421 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752197AbYAIGJ6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 01:09:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=cXsW4OUa/kdl9T0jHEx0KfejMCYw04HXIttIDgLOKxkHK7LqSfLqQ4xAvJ4tH1hnnL5EumxVY55f1omVF+ytxFPSChbty4MCMabe8SHrOmU8dLmHnKWgIxXhVcuRXArAubC+/ViW00OzeJtwlgnG470NYb/yymCrMCR9DbQMXW0=
-Date: Wed, 9 Jan 2008 14:13:16 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       James.Bottomley@hansenpartnership.com, dbrownell@users.sourceforge.net,
-       linux-scsi@vger.kernel.org, a.zummo@towertech.it, peterz@infradead.org,
-       cbou@mail.ru, linux-kernel@vger.kernel.org,
-       David Brownell <david-b@pacbell.net>, krh@redhat.com,
-       stern@rowland.harvard.edu, rtc-linux@googlegroups.com,
-       spi-devel-general@lists.sourceforge.net,
-       linux1394-devel@lists.sourceforge.net, dwmw2@infradead.org,
-       davem@davemloft.net, jarkao2@gmail.com
-Subject: Re: [PATCH 0/7] convert semaphore to mutex in struct class
-Message-ID: <20080109061316.GA3249@darkstar.te-china.tietoenator.com>
-References: <20080107020944.GA3637@darkstar.te-china.tietoenator.com> <20080107084528.GA8365@suse.de> <200801070101.15168.david-b@pacbell.net> <478227D5.8050402@s5r6.in-berlin.de> <20080107154404.GA10880@suse.de> <47825DC1.3090102@s5r6.in-berlin.de> <20080107172009.GA25943@suse.de> <a8e1da0801072305x3378c195qeb0bb7027030254c@mail.gmail.com> <20080108224837.GA19623@suse.de> <a8e1da0801081732i3677245chef1fda1fea65f7cf@mail.gmail.com>
+	Wed, 9 Jan 2008 01:10:44 -0500
+Received: from ns1.suse.de ([195.135.220.2]:42458 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751558AbYAIGKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 01:10:42 -0500
+Message-ID: <4785B7BC.5040106@suse.de>
+Date: Thu, 10 Jan 2008 11:44:20 +0530
+From: Nikanth Karthikesan <knikanth@suse.de>
+User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a8e1da0801081732i3677245chef1fda1fea65f7cf@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: grant@torque.net, tim@cyberelk.net
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH] Change paride driver to use unlocked_ioctl instead of ioctl
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 09, 2008 at 09:32:48AM +0800, Dave Young wrote:
-> On Jan 9, 2008 6:48 AM, Greg KH <gregkh@suse.de> wrote:
-> > On Tue, Jan 08, 2008 at 03:05:10PM +0800, Dave Young wrote:
-> > > On Jan 8, 2008 1:20 AM, Greg KH <gregkh@suse.de> wrote:
-> > > > On Mon, Jan 07, 2008 at 06:13:37PM +0100, Stefan Richter wrote:
-> > > > > It's already in the driver core to the most part.  It remains to be seen
-> > > > > what is less complicated in the end:  Transparent mutex-protected list
-> > > > > accesses provided by driver core (requires the iterator), or all the
-> > > > > necessary locking done by the drivers themselves (requires some more
-> > > > > lock-taking but perhaps fewer lock instances overall in the drivers, and
-> > > > > respective redefinitions and documentation of the driver core API).
-> > > >
-> > > > I favor changing the driver core api and doing this kind of thing there.
-> > > > It keeps the drivers simpler and should hopefully make their lives
-> > > > easier.
-> > >
-> > > What about this?
-> > >
-> > > #define class_for_each_dev(pos, head, member) \
-> > >         for (mutex_lock(&(container_of(head, struct class, devices))->mutex), po
-> > > s = list_entry((head)->next, typeof(*pos), member); \
-> > >         prefetch(pos->member.next), &pos->member != (head) ? 1 : (mutex_unlock(&
-> > > (container_of(head, struct class, devices))->mutex), 0); \
-> > >         pos = list_entry(pos->member.next, typeof(*pos), member))
-> >
-> I'm wrong, it's same as before indeed.
-> 
-> > Eeek, just make the thing a function please, where you pass the iterator
-> > function in, like the driver core has (driver_for_each_device)
-> 
-> Ok, so need a new member of knode_class, I will update the patch later.
-> Thanks.
+The ioctl handler is called with the BKL held. Registering
+unlocked_ioctl handler instead of registering ioctl handler.
 
-Withdraw my post, sorry :)
 
-For now the mutex patch, I will only use the mutex to lock the devices list and write an iterater function. 
-Most of the iterating is for finding some device in the list, so maybe need a match function just like drivers do?
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
 
-Regards
-dave
-> 
-> >
-> > thanks,
-> >
-> > greg k-h
-> >
+---
+
+diff --git a/arch/x86/kernel/cpu/mcheck/mce_64.c
+b/arch/x86/kernel/cpu/mcheck/mce_64.c
+diff --git a/drivers/block/paride/pt.c b/drivers/block/paride/pt.c
+index b91accf..d4fa468 100644
+--- a/drivers/block/paride/pt.c
++++ b/drivers/block/paride/pt.c
+@@ -236,7 +236,7 @@ static const struct file_operations pt_fops = {
+ 	.owner = THIS_MODULE,
+ 	.read = pt_read,
+ 	.write = pt_write,
+-	.ioctl = pt_ioctl,
++	.unlocked_ioctl = pt_ioctl,
+ 	.open = pt_open,
+ 	.release = pt_release,
+ };
+@@ -685,36 +685,43 @@ out:
+ 	return err;
+ }
+
+-static int pt_ioctl(struct inode *inode, struct file *file,
+-	 unsigned int cmd, unsigned long arg)
++static long pt_ioctl(struct file *file, unsigned int cmd, unsigned long
+arg)
+ {
+ 	struct pt_unit *tape = file->private_data;
+ 	struct mtop __user *p = (void __user *)arg;
+ 	struct mtop mtop;
+
++	lock_kernel();
++
+ 	switch (cmd) {
+ 	case MTIOCTOP:
+-		if (copy_from_user(&mtop, p, sizeof(struct mtop)))
++		if (copy_from_user(&mtop, p, sizeof(struct mtop))) {
++			unlock_kernel();
+ 			return -EFAULT;
++		}
+
+ 		switch (mtop.mt_op) {
+
+ 		case MTREW:
+ 			pt_rewind(tape);
++			unlock_kernel();
+ 			return 0;
+
+ 		case MTWEOF:
+ 			pt_write_fm(tape);
++			unlock_kernel();
+ 			return 0;
+
+ 		default:
+ 			printk("%s: Unimplemented mt_op %d\n", tape->name,
+ 			       mtop.mt_op);
++			unlock_kernel();
+ 			return -EINVAL;
+ 		}
+
+ 	default:
+ 		printk("%s: Unimplemented ioctl 0x%x\n", tape->name, cmd);
++		unlock_kernel();
+ 		return -EINVAL;
+
+ 	}
