@@ -1,150 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759847AbYAJXXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759365AbYAJXYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759847AbYAJXXp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 18:23:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755065AbYAJXXL
+	id S1759365AbYAJXYz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 18:24:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755885AbYAJXYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 18:23:11 -0500
-Received: from gw.goop.org ([64.81.55.164]:35215 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753382AbYAJXXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 18:23:09 -0500
-Content-Type: text/plain; charset="us-ascii"
+	Thu, 10 Jan 2008 18:24:46 -0500
+Received: from fmmailgate02.web.de ([217.72.192.227]:34100 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755096AbYAJXYp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 18:24:45 -0500
+Message-ID: <4786A88E.4020503@web.de>
+Date: Fri, 11 Jan 2008 00:21:50 +0100
+From: Torben Viets <viets@web.de>
+User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
 MIME-Version: 1.0
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: LRW/XTS + Via Padlock Bug in 2.6.24-rc7?
+References: <E1JD4KF-0004T4-00@gondolin.me.apana.org.au>
+In-Reply-To: <E1JD4KF-0004T4-00@gondolin.me.apana.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 2 of 2] x86: use common _PAGE_NOCACHE
-X-Mercurial-Node: 232ab35d54b0240c2f5385bc41fe609c1f30e8cd
-Message-Id: <232ab35d54b0240c2f53.1200004571@localhost>
-In-Reply-To: <patchbomb.1200004569@localhost>
-Date: Thu, 10 Jan 2008 14:36:11 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jan Beulich <jbeulich@novell.com>
+X-Provags-ID: V01U2FsdGVkX180uTtsgq2UGv8ktwVth6smqTIcO7i13NUAvXcV
+	FwsndG79PDprZbOPG1GCW9DJgFM6k8ldr5RQbNvmaVW/QIHHL/
+	ELZpDal6o=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since it seems that every use of _PAGE_PCD also sets _PAGE_PWT, define
-_PAGE_NOCACHE with this combination.
+Woot,
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+it works, in XTS and LRW mode thanks, but I have one last question (it 
+sounds like I'm columbo ;) )
 
----
- arch/x86/mm/ioremap_32.c     |    2 +-
- arch/x86/mm/ioremap_64.c     |    2 +-
- arch/x86/pci/i386.c          |    2 +-
- arch/x86/xen/mmu.c           |    4 ++--
- include/asm-x86/pgtable.h    |    6 ++++--
- include/asm-x86/pgtable_32.h |    2 +-
- include/asm-x86/pgtable_64.h |    2 +-
- 7 files changed, 11 insertions(+), 9 deletions(-)
+Why I can't see both in /proc/crypto and of course not use in int 
+cryptsetup, till I make a /etc/init.d/udev restart ist ths a kernel bug, 
+or a ubuntu bug?
 
-diff --git a/arch/x86/mm/ioremap_32.c b/arch/x86/mm/ioremap_32.c
---- a/arch/x86/mm/ioremap_32.c
-+++ b/arch/x86/mm/ioremap_32.c
-@@ -119,7 +119,7 @@ void __iomem *ioremap_nocache (unsigned 
- void __iomem *ioremap_nocache (unsigned long phys_addr, unsigned long size)
- {
- 	unsigned long last_addr;
--	void __iomem *p = __ioremap(phys_addr, size, _PAGE_PCD | _PAGE_PWT);
-+	void __iomem *p = __ioremap(phys_addr, size, _PAGE_NOCACHE);
- 	if (!p) 
- 		return p; 
- 
-diff --git a/arch/x86/mm/ioremap_64.c b/arch/x86/mm/ioremap_64.c
---- a/arch/x86/mm/ioremap_64.c
-+++ b/arch/x86/mm/ioremap_64.c
-@@ -142,7 +142,7 @@ EXPORT_SYMBOL(__ioremap);
- 
- void __iomem *ioremap_nocache (unsigned long phys_addr, unsigned long size)
- {
--	return __ioremap(phys_addr, size, _PAGE_PCD | _PAGE_PWT);
-+	return __ioremap(phys_addr, size, _PAGE_NOCACHE);
- }
- EXPORT_SYMBOL(ioremap_nocache);
- 
-diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
---- a/arch/x86/pci/i386.c
-+++ b/arch/x86/pci/i386.c
-@@ -313,7 +313,7 @@ int pci_mmap_page_range(struct pci_dev *
- 	 */
- 	prot = pgprot_val(vma->vm_page_prot);
- 	if (boot_cpu_data.x86 > 3)
--		prot |= _PAGE_PCD | _PAGE_PWT;
-+		prot |= _PAGE_NOCACHE;
- 	vma->vm_page_prot = __pgprot(prot);
- 
- 	/* Write-combine setting is ignored, it is changed via the mtrr
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -244,7 +244,7 @@ pte_t xen_make_pte(unsigned long long pt
- 	if (pte & 1)
- 		pte = phys_to_machine(XPADDR(pte)).maddr;
- 
--	pte &= ~(_PAGE_PCD | _PAGE_PWT);
-+	pte &= ~_PAGE_NOCACHE;
- 
- 	return (pte_t){ .pte = pte };
- }
-@@ -293,7 +293,7 @@ pte_t xen_make_pte(unsigned long pte)
- 	if (pte & _PAGE_PRESENT)
- 		pte = phys_to_machine(XPADDR(pte)).maddr;
- 
--	pte &= ~(_PAGE_PCD | _PAGE_PWT);
-+	pte &= ~_PAGE_NOCACHE;
- 
- 	return (pte_t){ pte };
- }
-diff --git a/include/asm-x86/pgtable.h b/include/asm-x86/pgtable.h
---- a/include/asm-x86/pgtable.h
-+++ b/include/asm-x86/pgtable.h
-@@ -31,6 +31,8 @@
- #define _PAGE_UNUSED1	(_AC(1, UL)<<_PAGE_BIT_UNUSED1)
- #define _PAGE_UNUSED2	(_AC(1, UL)<<_PAGE_BIT_UNUSED2)
- #define _PAGE_UNUSED3	(_AC(1, UL)<<_PAGE_BIT_UNUSED3)
-+
-+#define _PAGE_NOCACHE	(_PAGE_PCD | _PAGE_PWT)
- 
- #if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
- #define _PAGE_NX	(_AC(1, ULL) << _PAGE_BIT_NX)
-@@ -74,9 +76,9 @@ extern unsigned long long __PAGE_KERNEL,
- 
- #define __PAGE_KERNEL_RO		(__PAGE_KERNEL & ~_PAGE_RW)
- #define __PAGE_KERNEL_RX		(__PAGE_KERNEL_EXEC & ~_PAGE_RW)
--#define __PAGE_KERNEL_NOCACHE		(__PAGE_KERNEL | _PAGE_PCD | _PAGE_PWT)
-+#define __PAGE_KERNEL_NOCACHE		(__PAGE_KERNEL | _PAGE_NOCACHE)
- #define __PAGE_KERNEL_VSYSCALL		(__PAGE_KERNEL_RX | _PAGE_USER)
--#define __PAGE_KERNEL_VSYSCALL_NOCACHE	(__PAGE_KERNEL_VSYSCALL | _PAGE_PCD | _PAGE_PWT)
-+#define __PAGE_KERNEL_VSYSCALL_NOCACHE	(__PAGE_KERNEL_VSYSCALL | _PAGE_NOCACHE)
- #define __PAGE_KERNEL_LARGE		(__PAGE_KERNEL | _PAGE_PSE)
- #define __PAGE_KERNEL_LARGE_EXEC	(__PAGE_KERNEL_EXEC | _PAGE_PSE)
- 
-diff --git a/include/asm-x86/pgtable_32.h b/include/asm-x86/pgtable_32.h
---- a/include/asm-x86/pgtable_32.h
-+++ b/include/asm-x86/pgtable_32.h
-@@ -121,7 +121,7 @@ static inline void clone_pgd_range(pgd_t
-  * it, this is a no-op.
-  */
- #define pgprot_noncached(prot)	((boot_cpu_data.x86 > 3)					  \
--				 ? (__pgprot(pgprot_val(prot) | _PAGE_PCD | _PAGE_PWT)) : (prot))
-+				 ? (__pgprot(pgprot_val(prot) | _PAGE_NOCACHE)) : (prot))
- 
- /*
-  * Conversion functions: convert a page and protection to a page entry,
-diff --git a/include/asm-x86/pgtable_64.h b/include/asm-x86/pgtable_64.h
---- a/include/asm-x86/pgtable_64.h
-+++ b/include/asm-x86/pgtable_64.h
-@@ -167,7 +167,7 @@ static inline unsigned long pmd_bad(pmd_
- /*
-  * Macro to mark a page protection value as "uncacheable".
-  */
--#define pgprot_noncached(prot)	(__pgprot(pgprot_val(prot) | _PAGE_PCD | _PAGE_PWT))
-+#define pgprot_noncached(prot)	(__pgprot(pgprot_val(prot) | _PAGE_NOCACHE))
- 
- 
- /*
+Thanks
 
+Torben Viets
+
+Herbert Xu wrote:
+> Torben Viets <Viets@web.de> wrote:
+>   
+>> After rebuilding the kernel, I tried: cryptsetup -c aes-xts-plain -s 256 luksFormat /dev/raid/test
+>>
+>> It does the same as before, dmesg says:
+>>
+>> general protection fault: 0000 [#1] 
+>> Modules linked in: xt_TCPMSS xt_tcpmss iptable_mangle ipt_MASQUERADE xt_tcpudp pppoe pppox xt_mark xt_state iptable_nat nf_nat nf_conntrack_ipv4 iptable_filter ip_tables x_tables af_packet ppp_generic slhc aes_i586 dm_crypt dm_mod
+>>
+>> Pid: 4409, comm: kcryptd Not tainted (2.6.24-rc7 #2)
+>> EIP: 0060:[<c03599cc>] EFLAGS: 00010282 CPU: 0
+>> EIP is at aes_crypt_copy+0x2c/0x50
+>> EAX: f62e1ff0 EBX: f60ab850 ECX: 00000001 EDX: f60ab830
+>> ESI: f620dda8 EDI: f620dda8 EBP: f62e1ff0 ESP: f620dda8
+>>     
+>
+> Oh I see.  I misdiagnosed the problem.  The problem is that for some
+> reason gcc cannot guarantee 16-byte alignment for variables on the
+> stack in the kernel.  As you can see from ESI/EDI above the temporary
+> buffer is unaligned.
+>
+> Please try this patch instead.
+>
+> Thanks,
+>   
 
