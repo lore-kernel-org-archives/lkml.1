@@ -1,63 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755750AbYAJVgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbYAJVlL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755750AbYAJVgp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 16:36:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752511AbYAJVgi
+	id S1755482AbYAJVlL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 16:41:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbYAJVk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 16:36:38 -0500
-Received: from mga11.intel.com ([192.55.52.93]:62630 "EHLO mga11.intel.com"
+	Thu, 10 Jan 2008 16:40:57 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:59815 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751421AbYAJVgh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 16:36:37 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,268,1196668800"; 
-   d="scan'208";a="283538780"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [RFC PATCH 13/22 -v2] handle accurate time keeping over longdelays
-Date: Thu, 10 Jan 2008 13:33:09 -0800
-Message-ID: <1FE6DD409037234FAB833C420AA843EC48842F@orsmsx424.amr.corp.intel.com>
-In-Reply-To: <1199996959.6108.18.camel@localhost.localdomain>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [RFC PATCH 13/22 -v2] handle accurate time keeping over longdelays
-Thread-Index: AchTx499B/YJDmGUTsq8vtqFAfqDGwAB+3Rg
-References: <20080109232914.676624725@goodmis.org> <20080109233044.288563621@goodmis.org> <1199923219.6350.16.camel@localhost.localdomain> <12c511ca0801101154q224c7a43sa016190cf209d304@mail.gmail.com> <1199996959.6108.18.camel@localhost.localdomain>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "john stultz" <johnstul@us.ibm.com>, <bob.picco@hp.com>
-Cc: "Steven Rostedt" <rostedt@goodmis.org>,
-       "LKML" <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>,
-       "Gregory Haskins" <ghaskins@novell.com>,
-       "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Tim Bird" <tim.bird@am.sony.com>, "Sam Ravnborg" <sam@ravnborg.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       "Steven Rostedt" <srostedt@redhat.com>
-X-OriginalArrivalTime: 10 Jan 2008 21:33:10.0239 (UTC) FILETIME=[659166F0:01C853D0]
+	id S1753184AbYAJVk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 16:40:57 -0500
+Date: Fri, 11 Jan 2008 00:39:32 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Petr Tesarik <ptesarik@suse.cz>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] ptrace_stop: remove the wrong ->group_stop_count bookkeeping
+Message-ID: <20080110213932.GA3396@tv-sign.ru>
+References: <20071208183801.GA9943@tv-sign.ru> <m1wsroogi0.fsf@ebiederm.dsl.xmission.com> <20071209140525.GA131@tv-sign.ru> <4785F675.3070709@suse.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4785F675.3070709@suse.cz>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If you noticed in my email, the fix for ppc was a bit easier, as it has
-> only a 64bit counter that is quite unlikely to wrap twice between calls
-> to update_wall_time().
+On 01/10, Petr Tesarik wrote:
+>
+> I can actually see a bug which may be related:
+>
+>   1. a process creates a thread (or more threads)
+>   2. I attach/detach to that thread with strace several times
+>      (each time pressing CTRL-C to quit strace)
+>   3. the whole thread group (except the traced thread) ends in
+>      TASK_STOPPED
+>
+> I looked at what strace was doing to that thread, and it sometimes sends
+> SIGSTOP shortly before detaching. This is done when the thread is
+> running, i.e. not waiting in ptrace_stop. Then PTRACE_DETACH returns
+> - -ESRCH because it requires the tracee to be stopped -- just like all
+> PTRACE_* requests except TRACEME and ATTACH. So, strace has no other
+> option than to send an explicit SIGSTOP to the thread to stop it and
+> discard it afterwards.
+>
+> Could this be related?
 
-"quite unlikely" ...
+Perhaps yes. But there are so many oddities in this area. I don't know what
+really happens with your test-case, but afaics this can happen even without
+ptrace_stop() playing with the group stop.
 
-Hmmm just how fast are you driving the clocks on your ppc?  Even at 100GHz
-It is almost SIX YEARS between wrap-arounds of a 64-bit counter.
-Perhaps you could just have a cron job that forces a call to update_wall_time()
-every January 1st, rather than add extra code overhead to a hot path :-) ?
+Let's suppose that strace detached all sub-threads except T which is running,
+and now strace does ptrace(PTRACE_DETACH, T). This fails, so strace does
+kill(T, SIGSTOP).
 
-But I agree that narrower counters are a problem.
+Note that it use kill(), not tkill(). This means another sub-thread can
+dequeue this signal and initiate the group stop (remember, it was already
+detached and thus it is not traced any longer).
 
--Tony
+Now strace does wait4(T, __WALL). T notices the group stop in progress,
+calls handle_group_stop(), and notifies its parent - strace.
+
+wait4() returns success, strace does ptrace(PTRACE_DETACH, T) again. Now
+T is TASK_STOPPED, ptrace() changes the state to TASK_TRACED and finally
+does ptrace_untrace().
+
+ptrace_untrace() sees TASK_TRACED. But it is possible that the group stop
+is not completed yet (some sub-thread didn't pass handle_group_stop()), in
+that case we are doing signal_wake_up(T, 1) so it becomes running.
+
+
+I still think this series makes sense even if not complete.
+
+Oleg.
+
