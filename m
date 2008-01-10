@@ -1,110 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbYAJJZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbYAJJb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757511AbYAJJZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 04:25:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbYAJJZU
+	id S1755878AbYAJJb6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 04:31:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbYAJJbu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 04:25:20 -0500
-Received: from smtp.ono.com ([62.42.230.12]:44456 "EHLO resmaa05.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751575AbYAJJZS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 04:25:18 -0500
-Date: Thu, 10 Jan 2008 10:25:05 +0100
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: "Linux-Kernel, " <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.24-rc7
-Message-ID: <20080110102505.62097da1@werewolf>
-In-Reply-To: <478429B2.2030002@gmail.com>
-References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org>
-	<20080108015012.2e518dd4@werewolf>
-	<478429B2.2030002@gmail.com>
-X-Mailer: Claws Mail 3.2.0cvs34 (GTK+ 2.12.5; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 10 Jan 2008 04:31:50 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58001 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753907AbYAJJbt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 04:31:49 -0500
+Date: Thu, 10 Jan 2008 10:31:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       suresh.b.siddha@intel.com, Arjan van de Ven <arjan@infradead.org>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: CPA patchset
+Message-ID: <20080110093126.GA360@elte.hu>
+References: <20080103424.989432000@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080103424.989432000@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 09 Jan 2008 10:56:02 +0900, Tejun Heo <htejun@gmail.com> wrote:
 
-> J.A. Magallón wrote:
-> > HI all...
-> > 
-> > On Sun, 6 Jan 2008 14:19:16 -0800 (PST), Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > 
-> >> It's been two weeks since rc6, but let's face it, with xmas and new years 
-> >> (and birthdays) in between, there hasn't actually been a lot of working 
-> >> days, and the incremental patch from -rc6 is about half the size of the 
-> >> one from rc5->rc6.
-> >>
-> >> And I'll be charitable and claim it's because it's all stabilizing, and 
-> >> not because we've all been in a drunken stupor over the holidays.
-> >>
-> >> The shortlog (appended below) is short and fairly informative. It's all 
-> >> really just a lot of rather small changes. The diffstat shows a lot of 
-> >> one- and two-liners, with just a few drivers (and the Cell platform) 
-> >> getting a bit more attention, and the SLUB support of /proc/slabinfo 
-> >> showing up as a blip.
-> >>
-> > 
-> > With this kernel I'm getting frequent temporary freezes (system comes
-> > back responsive after a minute or so...). I see this in dmesg:
-> > 
-> > ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> > ata3.00: cmd ca/00:08:67:10:18/00:00:00:00:00/e2 tag 0 dma 4096 out
-> >          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> > ata3.00: status: { DRDY }
-> > ata3: soft resetting link
-> > ata3.00: configured for UDMA/133
-> > ata3: EH complete
-> > sd 2:0:0:0: [sdb] 390721968 512-byte hardware sectors (200050 MB)
-> > sd 2:0:0:0: [sdb] Write Protect is off
-> > sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-> > sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> > 
-> > ata4.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> > ata4.00: cmd c8/00:08:ef:0b:c7/00:00:00:00:00/e7 tag 0 dma 4096 in
-> >          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> > ata4.00: status: { DRDY }
-> > ata4: soft resetting link
-> > ata4.00: configured for UDMA/133
-> > ata4: EH complete
-> > sd 3:0:0:0: [sdc] 625142448 512-byte hardware sectors (320073 MB)
-> > sd 3:0:0:0: [sdc] Write Protect is off
-> > sd 3:0:0:0: [sdc] Mode Sense: 00 3a 00 00
-> > sd 3:0:0:0: [sdc] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> > 
-> > See this are two different drives, I doubt both drives have gone nuts
-> > at the same time...
-> 
-> That's weird.  There hasn't been any related changes.  Does going back
-> to 2.6.24-rc6 fix the problem?
-> 
+Andi,
 
-It reproduces also with 2.6.23.13.
-Finally I think the problematic disk is sdc:
+finally managed to get the time to review your CPA patchset, and i 
+fundamentally agree with most of the detail changes done in it. But here 
+are a few structural high-level observations:
 
-ICH5 PATA -> sda
-ICH5 SATA0 -> sdb
-ICH5 SATA1 -> sdc
-Promise SATA -> sdd
+- firstly, there's no rationale given. So we'll change ioremap()/etc.
+  from doing a cflush-range instruction instead of a WBINVD. But why?
+  WBINVD isnt particular fast (takes a few msecs), but why is that a
+  problem? Drivers dont do high-frequency ioremap-ing. It's typically
+  only done at driver/device startup and that's it. Whether module load
+  time takes 1254 msecs instead of 1250 msecs is no big deal.
 
-The problem is that even I have commented out the entry for sdc in fstab,
-the system is still giving me errors. An my guess is that errors in sdc makes
-the ICH5 sata controller go nuts, and then I get errors also in sdb.
-Just a couple questions...
+- secondly, obviously doing a 'flush some' instead of a 'flush all' 
+  operation is risky. There's not many ways we can get the 'flush all'
+  WBINVD instruction wrong (as long as we do it on all cpus, etc.). But 
+  with this specific range flush we've got all the risks of accidentally
+  not flushing _enough_. Especially if some boundary of a mapped area is 
+  imprecisely. Accidentally leaving aliases around in the cache is
+  asking for trouble as it's very hard to debug and the operations here
+  (ioremap) are typically done only once per system bootup. So we'll add
+  _fundamental_ fragility to an already historically fragile and 
+  bug-ridden piece of code. That does not sound too smart to me and you 
+  do not analyze these concerns in your submission.
 
-- Can I say to ata_piix something like 'please, detect first SATA ports before
-  ATA', so my system disk (sdb) becomes sda ?
-- Can I say 'plz, ignore port 1', so it does not try to detect/start/spin sdc ?
-  So I ban be sure it is the one to blame, before start to remove hardware...
+- the bugfixes and cleanups to pgattr.c i like very much - but shouldnt
+  they come first in the series, instead of being mixed into it?
 
-TIA
+so i'd suggest for you to reshape this ontop of the PAT patchset done by 
+Venki and Suresh, with the cflush stuff kept at the very end of the 
+series, and even that should be boot and .config configurable, with 
+default off - at least initially. The cflush performance advantages seem 
+dubious at best, and they bring in very real regression dangers.
 
---
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2008.1 (Cooker) for i586
-Linux 2.6.23-jam05 (gcc 4.2.2 20071128 (4.2.2-2mdv2008.1)) SMP PREEMPT
+	Ingo
