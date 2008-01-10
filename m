@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758097AbYAJVKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757776AbYAJVLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758097AbYAJVKr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 16:10:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756307AbYAJVKi
+	id S1757776AbYAJVLk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 16:11:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbYAJVLd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 16:10:38 -0500
-Received: from hs-out-0708.google.com ([64.233.178.247]:51740 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753458AbYAJVKh (ORCPT
+	Thu, 10 Jan 2008 16:11:33 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43812 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751741AbYAJVLc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 16:10:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=d5PSFK5oN2toRxQEgVa8D/BdAKm4Fdf32m8/c1EfOXf3yWW5CV497R2vhmOE9yMvPzYIBTU0RBYas7JUDseIkiE20wsS6nxRljhBaaRgAk6pP8kirRrqh/IVQdfp6B5KAe3mrFOhMgioPYPXe0FMHsOxFrL2RvLKN+6yaef8ymA=
-Message-ID: <e85b9d30801101310p485c7686o30b7cd581043712@mail.gmail.com>
-Date: Thu, 10 Jan 2008 22:10:34 +0100
-From: Matthew <jackdachef@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Fwd: Fwd: laptop / computer hardlocks during execution of 32bit applications(binaries) on 64bit system (Gentoo)
-Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@redhat.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Ed Tomlinson" <edt@aei.ca>
-In-Reply-To: <47841C41.4060401@zytor.com>
+	Thu, 10 Jan 2008 16:11:32 -0500
+Date: Thu, 10 Jan 2008 13:05:08 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+cc: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com, gregkh@suse.de,
+       airlied@skynet.ie, davej@redhat.com, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com, akpm@linux-foundation.org, arjan@infradead.org,
+       jesse.barnes@intel.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [patch 02/11] PAT x86: Map only usable memory in x86_64 identity
+ map and kernel text
+In-Reply-To: <20080110184854.787474000@intel.com>
+Message-ID: <alpine.LFD.1.00.0801101303570.3148@woody.linux-foundation.org>
+References: <20080110184840.927409000@intel.com> <20080110184854.787474000@intel.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <e85b9d30712291157v113f5e73yd830ae3c3429092d@mail.gmail.com>
-	 <e85b9d30712291504r2f4ef991w33f501ccf0d41c2b@mail.gmail.com>
-	 <200712300128.35476.mboton@gmail.com> <20080102084002.GA13636@elte.hu>
-	 <e85b9d30801080333y3d6668ccgf20f9666d0326884@mail.gmail.com>
-	 <e85b9d30801080340y43fbd4c0sa9b6c9811c7391a1@mail.gmail.com>
-	 <47841C41.4060401@zytor.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If you *do* reproduce the problem that way, it would be extremely
-> helpful if you could enable CONFIG_DEBUG_INFO and provide the vmlinux
-> (not vmlinuz/bzImage) file that goes with the crash dump screenshot.
 
-I *did* reproduce it that way and enabled the above mentioned option
-and the CONFIG_DEBUG_BUGVERBOSE=y thingy and CONFIG_FRAME_POINTER=y,
-too
-hope that's enough
 
-here you go: http://kerneloftruth.neucode.org/other/crash_ia32_64/not_tainted/vmlinux
-(I hope it was uploaded completely):
-
-md5sum: 0be124557bafebaebd69be2138329ef6
-sha256sum: 638d7a0dc36caa8eedd77e2ebeae6e8b54db74466f9d28f769c9cacf2ace0e0e
-
-updated kernel-config:
-http://omploader.org/vYWhw/2.6.24-rc6-zen0_bisect%20(latest_config)
-
->          -hpa
+On Thu, 10 Jan 2008, venkatesh.pallipadi@intel.com wrote:
 >
+> x86_64: Map only usable memory in identity map. All reserved memory maps to a
+> zero page.
 
-Mat
+I don't mind this horribly per se, but why a zero page?
+
+Accessing that page without mapping it explicitly would be a bug with 
+your change - if only because you'd get the wrong value!
+
+So why map it at all? The only thing mapping it can do is to hide bugs.
+
+			Linus
