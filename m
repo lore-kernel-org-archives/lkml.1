@@ -1,76 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759581AbYAJSvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759621AbYAJSwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759581AbYAJSvW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 13:51:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756924AbYAJSvF
+	id S1759621AbYAJSwS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 13:52:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756449AbYAJSwA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 13:51:05 -0500
-Received: from mga03.intel.com ([143.182.124.21]:23350 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756253AbYAJSvC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 13:51:02 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,267,1196668800"; 
-   d="scan'208";a="363671660"
-Message-ID: <47866364.1010501@intel.com>
-Date: Thu, 10 Jan 2008 10:26:44 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
-MIME-Version: 1.0
-To: Chris Friesen <cfriesen@nortel.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: questions on NAPI processing latency and dropped network packets
-References: <478654C3.60806@nortel.com> <478657C1.8040107@intel.com> <47865FFD.2010407@nortel.com>
-In-Reply-To: <47865FFD.2010407@nortel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 10 Jan 2008 13:52:00 -0500
+Received: from mx1.ukfsn.org ([77.75.108.10]:45019 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755944AbYAJSv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 13:51:59 -0500
+Date: Thu, 10 Jan 2008 18:51:51 +0000
+From: Nick Warne <nick@ukfsn.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: Driver 'sd' needs updating
+Message-ID: <20080110185151.5945f650@linuxamd.linicks.net>
+In-Reply-To: <1199989642.3141.66.camel@localhost.localdomain>
+References: <20080110085150.53addacf@linuxamd.linicks.net>
+	<20080110203845E.fujita.tomonori@lab.ntt.co.jp>
+	<1199989642.3141.66.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.10.14; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Jan 2008 18:27:31.0211 (UTC) FILETIME=[76309DB0:01C853B6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Friesen wrote:
-> Kok, Auke wrote:
+On Thu, 10 Jan 2008 12:27:22 -0600
+James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+
+
+> > > OK, updated to git rc7 yesterday - I now see this in syslog:
+>
+>    "Driver 'sd' needs updating - please use bus_type methods"
+>
+> > > Do I need to fix up something here?
+> > 
+> > No, you don't. It's harmless, a side effect of:
+> > 
+> > commit 751bf4d7865e4ced406be93b04c7436d866d3684
+> > Author: James Bottomley <James.Bottomley@HansenPartnership.com>
+> > Date:   Wed Jan 2 11:14:30 2008 -0600
+> > 
+> >     [SCSI] scsi_sysfs: restore prep_fn when ULD is removed
+> > 
+> > 
+> > It would be better to silence this warning.
+> > 
+> > James, we need to reset prep_fn in each ULD? though it's not nice...
 > 
->> You're using 2.6.10... you can always replace the e1000 module with the
->> out-of-tree version from e1000.sf.net, this might help a bit - the
->> version in the
->> 2.6.10 kernel is very very old.
+> Really not nice ... to the extent that we shouldn't do it.  The reset
+> is in exactly the correct place currently.  If we make it a
+> requirement of the ULDs its duplication and someone is bound to
+> forget.
 > 
-> Do you have any reason to believe this would improve things?  It seems
-> like the problem lies in the NAPI/softirq code rather than in the e1000
-> driver itself, no?
+> It looks like the problem is the warning in
+> base/driver.c:driver_register() apparently it wants an either/or for
+> ->remove methods (either bus type or driver).  We're actually using
+> the bus_type methods, but we also have a driver component, sigh.  I
+> suppose what it's wanting is for me to add a scsi_driver type with
+> remove methods ... which looks a bit silly since all of the SCSI
+> drivers want different remove methods.
 
-your real issue is that your userspace app is hogging the CPU. While network is
-not really cpu intensive, it does require that ample time at many intervals is
-given to the CPU to run cleanups and prevent FIFO issues.
+OK, actually, this is wierd for me now.  Is this warning ONLY generated
+on modules?
 
-alternatively, you can increase your rx/tx ring descriptor count (with ethtool),
-which basically makes it easier for the hardware not to be serviced for a longer
-period, since there are more buffers available and the card can go longer on when
-userspace is hogging the CPU.
+I build with no modules, but do have modules enabled due to nVidia.  I
+did post about a module called 'scsi_wait' being built, even though I
+didn't want it/need it but can't stop it - please refer:
 
->> it also appears that your app is eating up CPU time. perhaps setting
->> the app to a
->> nicer nice level might mitigate things a bit.
-> 
-> If we're not handling the softirq work from ksoftirqd how would changing
-> scheduler settings affect anything?
+http://marc.info/?t=119705493500007&r=1&w=2
 
-correct, it might not.
+If this is true, what I have now is a module being built I don't
+want/need and can't stop it being built, and a warning about it not
+using bus_type methods anyway.
 
->> Also turn off the in-kernel irq
->> mitigation, it just causes cache misses and you really need the
->> network irq to sit
->> on a single cpu at most (if not all) the time to get the best
->> performance. Use the
->> userspace irqbalance daemon instead to achieve this.
-> 
-> Using userspace irqbalance would be some effort to test and deploy
-> properly.  However, as a quick test I tried setting the irq affinity for
-> this device and it didn't help.
-
-irqbalance is a simple userspace app that drops into any system seemlessly and
-does the best job all around - often it beats manual tuning of smp_affinity even ;)
-
-Auke
+Nick
+-- 
+Free Software Foundation Associate Member 5508
