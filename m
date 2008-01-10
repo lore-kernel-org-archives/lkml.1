@@ -1,75 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758159AbYAJMzL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758748AbYAJM5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758159AbYAJMzL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 07:55:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbYAJMy6
+	id S1758748AbYAJM5x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 07:57:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbYAJM5p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 07:54:58 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:38619 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753985AbYAJMy4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 07:54:56 -0500
-Date: Thu, 10 Jan 2008 07:53:59 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Christoph Hellwig <hch@infradead.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+	Thu, 10 Jan 2008 07:57:45 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:13026 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753995AbYAJM5o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 07:57:44 -0500
+Date: Thu, 10 Jan 2008 13:57:41 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
+       "Bryn M. Reeves" <breeves@redhat.com>
 Subject: Re: [PATCH][RFC] fast file mapping for loop
-Message-ID: <20080110075359.18622548@think.oraclecorp.com>
-In-Reply-To: <20080110085459.GA11966@infradead.org>
-References: <20080109085231.GE6650@kernel.dk>
-	<200801101242.25671.nickpiggin@yahoo.com.au>
-	<20080110083753.GB10745@infradead.org>
-	<20080110084457.GT6258@kernel.dk>
-	<20080110085459.GA11966@infradead.org>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Message-ID: <20080110125740.GY6258@kernel.dk>
+References: <20080109085231.GE6650@kernel.dk> <20080109231628.GB4039@agk.fab.redhat.com> <20080110083130.GP6258@kernel.dk> <20080110074738.6be1c1ad@think.oraclecorp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080110074738.6be1c1ad@think.oraclecorp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jan 2008 08:54:59 +0000
-Christoph Hellwig <hch@infradead.org> wrote:
-
-> On Thu, Jan 10, 2008 at 09:44:57AM +0100, Jens Axboe wrote:
-> > > IMHO this shouldn't be done in the loop driver anyway.
-> > > Filesystems have their own effricient extent lookup trees (well,
-> > > at least xfs and btrfs do), and we should leverage that instead
-> > > of reinventing it.
+On Thu, Jan 10 2008, Chris Mason wrote:
+> On Thu, 10 Jan 2008 09:31:31 +0100
+> Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > On Wed, Jan 09 2008, Alasdair G Kergon wrote:
+> > > Here's the latest version of dm-loop, for comparison.
+> > > 
+> > > To try it out, 
+> > >   ln -s dmsetup dmlosetup
+> > > and supply similar basic parameters to losetup.
+> > > (using dmsetup version 1.02.11 or higher)
 > > 
-> > Completely agree, it's just needed right now for this solution
-> > since all we have is a crappy bmap() interface to get at those
-> > mappings.
+> > Why oh why does dm always insist to reinvent everything? That's bad
+> > enough in itself, but on top of that most of the extra stuff ends up
+> > being essentially unmaintained.
 > 
-> So let's fix the interface instead of piling crap ontop of it.  As I
-> said I think Peter has something to start with so let's beat on it
-> until we have something suitable.   If we aren't done by end of Feb
-> I'm happy to host a hackfest to get it sorted around the fs/storage
-> summit..
+> I don't quite get how the dm version is reinventing things.  They use
+
+Things like raid, now file mapping functionality. I'm sure there are
+more examples, it's how dm was always developed probably originating
+back to when they developed mostly out of tree. And I think it's a bad
+idea, we don't want duplicate functionality. If something is wrong with
+loop, fix it, don't write dm-loop.
+
+> the dmsetup command that they use for everything else and provide a
+> small and fairly clean module for bio specific loop instead of piling
+> it onto loop.c....
+
+If loop.c is a problem, I'd rather see a newloop.c (with a better name,
+of course) that we can transition to.
+
+> Their code doesn't have the fancy hole handling that yours does, but
+> neither did yours 4 days ago ;)
+
+Well mine didn't exist 4 days ago, I was just listing missing
+functionality.
+
 > 
+> > 
+> > If we instead improve loop, everyone wins.
+> > 
+> > Sorry to sound a bit harsh, but sometimes it doesn't hurt to think a
+> > bit outside your own sandbox.
+> > 
+> 
+> It is a natural fit in either place, as both loop and dm have a good
+> infrastructure for it.  I'm not picky about where it ends up, but dm
+> wouldn't be a bad place.
 
-Ok, I've been meaning to break my extent_map code up, and this is a
-very good reason.  I'll work up a sample today based on Jens' code.
+I know that's your opinion, I reserve the right to have my own on where
+this functionality belongs :)
 
-The basic goals:
+-- 
+Jens Axboe
 
-* Loop (swap) calls into the FS for each mapping. Any caching happens
-on the FS side.
-* The FS returns an extent, filling any holes
-
-Swap would need to use an extra call early on for preallocation.
-
-Step two is having a call back into the FS allow the FS to delay the
-bios until commit completion so that COW and delalloc blocks can be
-fully on disk when the bios are reported as done.  Jens, can you add
-some way to queue the bio completions up?
-
--chris
