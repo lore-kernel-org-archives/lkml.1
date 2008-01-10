@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757989AbYAJCei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758175AbYAJCgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757989AbYAJCei (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 21:34:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbYAJCeb
+	id S1758175AbYAJCgR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 21:36:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbYAJCgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 21:34:31 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:41575 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752935AbYAJCea (ORCPT
+	Wed, 9 Jan 2008 21:36:07 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:57690 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754110AbYAJCgG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 21:34:30 -0500
-Date: Thu, 10 Jan 2008 03:37:01 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, andi@firstfloor.org,
-       harvey.harrison@gmail.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: uml and -regparm=3
-Message-ID: <20080110023701.GB20813@one.firstfloor.org>
-References: <E1JCi3M-0006hO-7i@pomaz-ex.szeredi.hu> <p734pdmput0.fsf@bingen.suse.de> <E1JCiLx-0006lI-HR@pomaz-ex.szeredi.hu> <20080109213258.GC15612@one.firstfloor.org> <E1JCioy-0006os-6i@pomaz-ex.szeredi.hu> <20080110021404.GA11287@c2.user-mode-linux.org>
+	Wed, 9 Jan 2008 21:36:06 -0500
+Date: Thu, 10 Jan 2008 11:36:18 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Subject: Re: [patch 05/19] split LRU lists into anon & file sets
+Message-Id: <20080110113618.f967d215.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080110022133.GC15547@balbir.in.ibm.com>
+References: <20080108205939.323955454@redhat.com>
+	<20080108210002.638347207@redhat.com>
+	<20080109134132.ba7bb33c.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080110022133.GC15547@balbir.in.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080110021404.GA11287@c2.user-mode-linux.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 09, 2008 at 09:14:04PM -0500, Jeff Dike wrote:
-> On Wed, Jan 09, 2008 at 10:50:48PM +0100, Miklos Szeredi wrote:
-> > > FASTCALL is useless and should not make a difference. It enables
-> > > regparm on specific functions, but that should not make a difference
-> > > if it works or not.
+On Thu, 10 Jan 2008 07:51:33 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+
+> > >  #define PAGE_CGROUP_FLAG_CACHE	(0x1)	/* charged as cache */
+> > >  #define PAGE_CGROUP_FLAG_ACTIVE (0x2)	/* page is active in this cgroup */
+> > > +#define PAGE_CGROUP_FLAG_FILE	(0x4)	/* page is file system backed */
+> > > 
 > > 
-> > __down_write() in include/asm-x86/rwsem.h seems to assume, that the
-> > semaphore pointer is passed in %eax down to rwsem_down_write_failed(),
-> > so regparm does make a difference there.
+> > Now, we don't have control_type and a feature for accounting only CACHE.
+> > Balbir-san, do you have some new plan ?
+> >
 > 
-> And rwsem_down_write_failed seems to think it's getting the pointer in
-> %eax:
+> Hi, KAMEZAWA-San,
+> 
+> The control_type feature is gone. We still have cached page
+> accounting, but we do not allow control of only RSS pages anymore. We
+> need to control both RSS+cached pages. I do not understand your
+> question about new plan? Is it about adding back control_type?
+> 
+Ah, just wanted to confirm that we can drop PAGE_CGROUP_FLAG_CACHE
+if page_file_cache() function and split-LRU is introduced.
 
-That's a left over from when it was called by magic inline assembly.
-I suspect it would be better to switch it just over to stack args
-for consistent and then declare it asmlinkage
 
--Andi
+Thanks you.
+
+-Kame
+
