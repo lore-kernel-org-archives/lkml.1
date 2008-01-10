@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759106AbYAJPEH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760391AbYAJPEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759106AbYAJPEH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 10:04:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755680AbYAJPAu
+	id S1760391AbYAJPEf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 10:04:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757691AbYAJPAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 10:00:50 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:57021 "EHLO
+	Thu, 10 Jan 2008 10:00:55 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:57023 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757501AbYAJPAl (ORCPT
+	with ESMTP id S1757835AbYAJPAm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 10:00:41 -0500
+	Thu, 10 Jan 2008 10:00:42 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: torvalds@linux-foundation.org, akpm@linux-foundation.org,
        hch@infradead.org, viro@ftp.linux.org.uk
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 08/29] Unionfs: basic file operations
-Date: Thu, 10 Jan 2008 09:59:27 -0500
-Message-Id: <11999771922373-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 22/29] Unionfs: async I/O queue
+Date: Thu, 10 Jan 2008 09:59:41 -0500
+Message-Id: <11999772023947-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11999771882152-git-send-email-ezk@cs.sunysb.edu>
@@ -26,32 +26,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Includes read, write, mmap, fsync, and fasync.
-
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/file.c |  184 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 184 insertions(+), 0 deletions(-)
- create mode 100644 fs/unionfs/file.c
+ fs/unionfs/sioq.c |  119 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/unionfs/sioq.h |   92 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 211 insertions(+), 0 deletions(-)
+ create mode 100644 fs/unionfs/sioq.c
+ create mode 100644 fs/unionfs/sioq.h
 
-diff --git a/fs/unionfs/file.c b/fs/unionfs/file.c
+diff --git a/fs/unionfs/sioq.c b/fs/unionfs/sioq.c
 new file mode 100644
-index 0000000..0c424f6
+index 0000000..2a8c88e
 --- /dev/null
-+++ b/fs/unionfs/file.c
-@@ -0,0 +1,184 @@
++++ b/fs/unionfs/sioq.c
+@@ -0,0 +1,119 @@
 +/*
-+ * Copyright (c) 2003-2007 Erez Zadok
-+ * Copyright (c) 2003-2006 Charles P. Wright
-+ * Copyright (c) 2005-2007 Josef 'Jeff' Sipek
-+ * Copyright (c) 2005-2006 Junjiro Okajima
-+ * Copyright (c) 2005      Arun M. Krishnakumar
-+ * Copyright (c) 2004-2006 David P. Quigley
-+ * Copyright (c) 2003-2004 Mohammad Nayyer Zubair
-+ * Copyright (c) 2003      Puja Gupta
-+ * Copyright (c) 2003      Harikesavan Krishnan
-+ * Copyright (c) 2003-2007 Stony Brook University
-+ * Copyright (c) 2003-2007 The Research Foundation of SUNY
++ * Copyright (c) 2006-2007 Erez Zadok
++ * Copyright (c) 2006      Charles P. Wright
++ * Copyright (c) 2006-2007 Josef 'Jeff' Sipek
++ * Copyright (c) 2006      Junjiro Okajima
++ * Copyright (c) 2006      David P. Quigley
++ * Copyright (c) 2006-2007 Stony Brook University
++ * Copyright (c) 2006-2007 The Research Foundation of SUNY
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
@@ -60,170 +56,207 @@ index 0000000..0c424f6
 +
 +#include "union.h"
 +
-+static int unionfs_file_readdir(struct file *file, void *dirent,
-+				filldir_t filldir)
++/*
++ * Super-user IO work Queue - sometimes we need to perform actions which
++ * would fail due to the unix permissions on the parent directory (e.g.,
++ * rmdir a directory which appears empty, but in reality contains
++ * whiteouts).
++ */
++
++static struct workqueue_struct *superio_workqueue;
++
++int __init init_sioq(void)
 +{
-+	return -ENOTDIR;
-+}
++	int err;
 +
-+static int unionfs_mmap(struct file *file, struct vm_area_struct *vma)
-+{
-+	int err = 0;
-+	bool willwrite;
-+	struct file *lower_file;
++	superio_workqueue = create_workqueue("unionfs_siod");
++	if (!IS_ERR(superio_workqueue))
++		return 0;
 +
-+	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
-+
-+	/* This might be deferred to mmap's writepage */
-+	willwrite = ((vma->vm_flags | VM_SHARED | VM_WRITE) == vma->vm_flags);
-+	err = unionfs_file_revalidate(file, willwrite);
-+	if (unlikely(err))
-+		goto out;
-+	unionfs_check_file(file);
-+
-+	/*
-+	 * File systems which do not implement ->writepage may use
-+	 * generic_file_readonly_mmap as their ->mmap op.  If you call
-+	 * generic_file_readonly_mmap with VM_WRITE, you'd get an -EINVAL.
-+	 * But we cannot call the lower ->mmap op, so we can't tell that
-+	 * writeable mappings won't work.  Therefore, our only choice is to
-+	 * check if the lower file system supports the ->writepage, and if
-+	 * not, return EINVAL (the same error that
-+	 * generic_file_readonly_mmap returns in that case).
-+	 */
-+	lower_file = unionfs_lower_file(file);
-+	if (willwrite && !lower_file->f_mapping->a_ops->writepage) {
-+		err = -EINVAL;
-+		printk(KERN_ERR "unionfs: branch %d file system does not "
-+		       "support writeable mmap\n", fbstart(file));
-+	} else {
-+		err = generic_file_mmap(file, vma);
-+		if (err)
-+			printk(KERN_ERR
-+			       "unionfs: generic_file_mmap failed %d\n", err);
-+	}
-+
-+out:
-+	if (!err) {
-+		/* copyup could cause parent dir times to change */
-+		unionfs_copy_attr_times(file->f_path.dentry->d_parent->d_inode);
-+		unionfs_check_file(file);
-+	}
-+	unionfs_read_unlock(file->f_path.dentry->d_sb);
++	err = PTR_ERR(superio_workqueue);
++	printk(KERN_ERR "unionfs: create_workqueue failed %d\n", err);
++	superio_workqueue = NULL;
 +	return err;
 +}
 +
-+int unionfs_fsync(struct file *file, struct dentry *dentry, int datasync)
++void stop_sioq(void)
 +{
-+	int bindex, bstart, bend;
-+	struct file *lower_file;
-+	struct dentry *lower_dentry;
-+	struct inode *lower_inode, *inode;
-+	int err = -EINVAL;
-+
-+	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
-+	err = unionfs_file_revalidate(file, true);
-+	if (unlikely(err))
-+		goto out;
-+	unionfs_check_file(file);
-+
-+	bstart = fbstart(file);
-+	bend = fbend(file);
-+	if (bstart < 0 || bend < 0)
-+		goto out;
-+
-+	inode = dentry->d_inode;
-+	if (unlikely(!inode)) {
-+		printk(KERN_ERR
-+		       "unionfs: null lower inode in unionfs_fsync\n");
-+		goto out;
-+	}
-+	for (bindex = bstart; bindex <= bend; bindex++) {
-+		lower_inode = unionfs_lower_inode_idx(inode, bindex);
-+		if (!lower_inode || !lower_inode->i_fop->fsync)
-+			continue;
-+		lower_file = unionfs_lower_file_idx(file, bindex);
-+		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
-+		mutex_lock(&lower_inode->i_mutex);
-+		err = lower_inode->i_fop->fsync(lower_file,
-+						lower_dentry,
-+						datasync);
-+		mutex_unlock(&lower_inode->i_mutex);
-+		if (err)
-+			goto out;
-+	}
-+
-+	unionfs_copy_attr_times(inode);
-+
-+out:
-+	unionfs_check_file(file);
-+	unionfs_read_unlock(file->f_path.dentry->d_sb);
-+	return err;
++	if (superio_workqueue)
++		destroy_workqueue(superio_workqueue);
 +}
 +
-+int unionfs_fasync(int fd, struct file *file, int flag)
++void run_sioq(work_func_t func, struct sioq_args *args)
 +{
-+	int bindex, bstart, bend;
-+	struct file *lower_file;
++	INIT_WORK(&args->work, func);
++
++	init_completion(&args->comp);
++	while (!queue_work(superio_workqueue, &args->work)) {
++		/* TODO: do accounting if needed */
++		schedule();
++	}
++	wait_for_completion(&args->comp);
++}
++
++void __unionfs_create(struct work_struct *work)
++{
++	struct sioq_args *args = container_of(work, struct sioq_args, work);
++	struct create_args *c = &args->create;
++
++	args->err = vfs_create(c->parent, c->dentry, c->mode, c->nd);
++	complete(&args->comp);
++}
++
++void __unionfs_mkdir(struct work_struct *work)
++{
++	struct sioq_args *args = container_of(work, struct sioq_args, work);
++	struct mkdir_args *m = &args->mkdir;
++
++	args->err = vfs_mkdir(m->parent, m->dentry, m->mode);
++	complete(&args->comp);
++}
++
++void __unionfs_mknod(struct work_struct *work)
++{
++	struct sioq_args *args = container_of(work, struct sioq_args, work);
++	struct mknod_args *m = &args->mknod;
++
++	args->err = vfs_mknod(m->parent, m->dentry, m->mode, m->dev);
++	complete(&args->comp);
++}
++
++void __unionfs_symlink(struct work_struct *work)
++{
++	struct sioq_args *args = container_of(work, struct sioq_args, work);
++	struct symlink_args *s = &args->symlink;
++
++	args->err = vfs_symlink(s->parent, s->dentry, s->symbuf, s->mode);
++	complete(&args->comp);
++}
++
++void __unionfs_unlink(struct work_struct *work)
++{
++	struct sioq_args *args = container_of(work, struct sioq_args, work);
++	struct unlink_args *u = &args->unlink;
++
++	args->err = vfs_unlink(u->parent, u->dentry);
++	complete(&args->comp);
++}
++
++void __delete_whiteouts(struct work_struct *work)
++{
++	struct sioq_args *args = container_of(work, struct sioq_args, work);
++	struct deletewh_args *d = &args->deletewh;
++
++	args->err = do_delete_whiteouts(d->dentry, d->bindex, d->namelist);
++	complete(&args->comp);
++}
++
++void __is_opaque_dir(struct work_struct *work)
++{
++	struct sioq_args *args = container_of(work, struct sioq_args, work);
++
++	args->ret = lookup_one_len(UNIONFS_DIR_OPAQUE, args->is_opaque.dentry,
++				   sizeof(UNIONFS_DIR_OPAQUE) - 1);
++	complete(&args->comp);
++}
+diff --git a/fs/unionfs/sioq.h b/fs/unionfs/sioq.h
+new file mode 100644
+index 0000000..afb71ee
+--- /dev/null
++++ b/fs/unionfs/sioq.h
+@@ -0,0 +1,92 @@
++/*
++ * Copyright (c) 2006-2007 Erez Zadok
++ * Copyright (c) 2006      Charles P. Wright
++ * Copyright (c) 2006-2007 Josef 'Jeff' Sipek
++ * Copyright (c) 2006      Junjiro Okajima
++ * Copyright (c) 2006      David P. Quigley
++ * Copyright (c) 2006-2007 Stony Brook University
++ * Copyright (c) 2006-2007 The Research Foundation of SUNY
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _SIOQ_H
++#define _SIOQ_H
++
++struct deletewh_args {
++	struct unionfs_dir_state *namelist;
 +	struct dentry *dentry;
-+	struct inode *lower_inode, *inode;
-+	int err = 0;
-+
-+	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
-+	err = unionfs_file_revalidate(file, true);
-+	if (unlikely(err))
-+		goto out;
-+	unionfs_check_file(file);
-+
-+	bstart = fbstart(file);
-+	bend = fbend(file);
-+	if (bstart < 0 || bend < 0)
-+		goto out;
-+
-+	dentry = file->f_path.dentry;
-+	inode = dentry->d_inode;
-+	if (unlikely(!inode)) {
-+		printk(KERN_ERR
-+		       "unionfs: null lower inode in unionfs_fasync\n");
-+		goto out;
-+	}
-+	for (bindex = bstart; bindex <= bend; bindex++) {
-+		lower_inode = unionfs_lower_inode_idx(inode, bindex);
-+		if (!lower_inode || !lower_inode->i_fop->fasync)
-+			continue;
-+		lower_file = unionfs_lower_file_idx(file, bindex);
-+		mutex_lock(&lower_inode->i_mutex);
-+		err = lower_inode->i_fop->fasync(fd, lower_file, flag);
-+		mutex_unlock(&lower_inode->i_mutex);
-+		if (err)
-+			goto out;
-+	}
-+
-+	unionfs_copy_attr_times(inode);
-+
-+out:
-+	unionfs_check_file(file);
-+	unionfs_read_unlock(file->f_path.dentry->d_sb);
-+	return err;
-+}
-+
-+struct file_operations unionfs_main_fops = {
-+	.llseek		= generic_file_llseek,
-+	.read		= do_sync_read,
-+	.aio_read	= generic_file_aio_read,
-+	.write		= do_sync_write,
-+	.aio_write	= generic_file_aio_write,
-+	.readdir	= unionfs_file_readdir,
-+	.unlocked_ioctl	= unionfs_ioctl,
-+	.mmap		= unionfs_mmap,
-+	.open		= unionfs_open,
-+	.flush		= unionfs_flush,
-+	.release	= unionfs_file_release,
-+	.fsync		= unionfs_fsync,
-+	.fasync		= unionfs_fasync,
-+	.splice_read	= generic_file_splice_read,
-+	.splice_write	= generic_file_splice_write,
++	int bindex;
 +};
++
++struct is_opaque_args {
++	struct dentry *dentry;
++};
++
++struct create_args {
++	struct inode *parent;
++	struct dentry *dentry;
++	umode_t mode;
++	struct nameidata *nd;
++};
++
++struct mkdir_args {
++	struct inode *parent;
++	struct dentry *dentry;
++	umode_t mode;
++};
++
++struct mknod_args {
++	struct inode *parent;
++	struct dentry *dentry;
++	umode_t mode;
++	dev_t dev;
++};
++
++struct symlink_args {
++	struct inode *parent;
++	struct dentry *dentry;
++	char *symbuf;
++	umode_t mode;
++};
++
++struct unlink_args {
++	struct inode *parent;
++	struct dentry *dentry;
++};
++
++
++struct sioq_args {
++	struct completion comp;
++	struct work_struct work;
++	int err;
++	void *ret;
++
++	union {
++		struct deletewh_args deletewh;
++		struct is_opaque_args is_opaque;
++		struct create_args create;
++		struct mkdir_args mkdir;
++		struct mknod_args mknod;
++		struct symlink_args symlink;
++		struct unlink_args unlink;
++	};
++};
++
++/* Extern definitions for SIOQ functions */
++extern int __init init_sioq(void);
++extern void stop_sioq(void);
++extern void run_sioq(work_func_t func, struct sioq_args *args);
++
++/* Extern definitions for our privilege escalation helpers */
++extern void __unionfs_create(struct work_struct *work);
++extern void __unionfs_mkdir(struct work_struct *work);
++extern void __unionfs_mknod(struct work_struct *work);
++extern void __unionfs_symlink(struct work_struct *work);
++extern void __unionfs_unlink(struct work_struct *work);
++extern void __delete_whiteouts(struct work_struct *work);
++extern void __is_opaque_dir(struct work_struct *work);
++
++#endif /* not _SIOQ_H */
 -- 
 1.5.2.2
 
