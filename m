@@ -1,117 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760574AbYAJTIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760243AbYAJTJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760574AbYAJTIv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 14:08:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbYAJTH3
+	id S1760243AbYAJTJQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 14:09:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759131AbYAJTId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 14:07:29 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:57561 "EHLO e1.ny.us.ibm.com"
+	Thu, 10 Jan 2008 14:08:33 -0500
+Received: from systemlinux.org ([83.151.29.59]:55295 "EHLO m18s25.vlinux.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758099AbYAJTHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 14:07:24 -0500
-Subject: [RFC][PATCH 2/4] change mnt_writers underflow protection logic
-To: linux-kernel@vger.kernel.org
-Cc: miklos@szeredi.hu, hch@infradead.org, serue@us.ibm.com,
-       Dave Hansen <haveblue@us.ibm.com>
-From: Dave Hansen <haveblue@us.ibm.com>
-Date: Thu, 10 Jan 2008 11:07:00 -0800
-References: <20080110190657.92A8B61F@kernel>
-In-Reply-To: <20080110190657.92A8B61F@kernel>
-Message-Id: <20080110190700.961C885D@kernel>
+	id S1760352AbYAJTIb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 14:08:31 -0500
+Date: Thu, 10 Jan 2008 20:07:48 +0100
+From: Andre Noll <maan@systemlinux.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       kernel-janitors@vger.kernel.org,
+       Richard Knutsson <ricknu-0@student.ltu.se>
+Subject: Re: [patch 1/1] Switch ioctl functions of drivers/scsi/sg.c to unlocked_ioctl
+Message-ID: <20080110190748.GA20152@skl-net.de>
+References: <20080110180529.GA32640@skl-net.de> <1199991298.3141.75.camel@localhost.localdomain> <20080110185944.GA1690@one.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="k+w/mQv8wyuph6w0"
+Content-Disposition: inline
+In-Reply-To: <20080110185944.GA1690@one.firstfloor.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-The comment tells most of the story.  I want to make the
-spinlock in this case into a mutex, and the current
-underflow protection mechanism uses preempt disabling from
-put/get_cpu_Var(). I can't use that with a mutex.
+--k+w/mQv8wyuph6w0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Without the preempt disabling, there is no limit to the
-number of cpus that might get to:
+On 19:59, Andi Kleen wrote:
 
-        use_cpu_writer_for_mount(cpu_writer, mnt);
-        if (cpu_writer->count > 0) {
-                cpu_writer->count--;
-        } else {
-                atomic_dec(&mnt->__mnt_writers);
-        }
-        spin_unlock(&cpu_writer->lock);
----->HERE
-        if (must_check_underflow)
-                handle_write_count_underflow(mnt);
+> But perhaps for such a long ioctl handler it would be better to move
+> the lock/unlock_kernel()s into the individual case ...: statements;
+> then it could be eliminated step by step.
 
-because they get preempted once the spinlock is unlocked.
+Sure, I can do that if James likes the idea. Since not all case
+statements need the BKL, we could add it only to those for which it
+isn't clear that it is unnecessary.
 
-So, there's no limit on how many times __mnt_writers may
-be decremented.  (I know the limit is still the number of
-tasks on the system, but that's a heck of a lot higher
-than the number of cpus.)  Doing the simple check in this
-patch before the decrement and under a lock removes the
-possibility that this can happen.
+And this would actually improve something.
 
-Since there are only NR_CPUS mnt_writer[]s, we can only
-have NR_CPUS lock holders in the critical section at a
-time, __mnt_writers can only underflow by
-MNT_WRITER_UNDERFLOW_LIMIT+NR_CPUS.
+Andre
+--=20
+The only person who always got his work done by Friday was Robinson Crusoe
 
-Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
----
+--k+w/mQv8wyuph6w0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
- linux-2.6.git-dave/fs/namespace.c |   28 +++++++++++++++++-----------
- 1 file changed, 17 insertions(+), 11 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
 
-diff -puN fs/namespace.c~change-underflow-protection-logic fs/namespace.c
---- linux-2.6.git/fs/namespace.c~change-underflow-protection-logic	2008-01-10 10:36:37.000000000 -0800
-+++ linux-2.6.git-dave/fs/namespace.c	2008-01-10 10:36:37.000000000 -0800
-@@ -267,15 +267,30 @@ void mnt_drop_write(struct vfsmount *mnt
- 	int must_check_underflow = 0;
- 	struct mnt_writer *cpu_writer;
- 
--	cpu_writer = &get_cpu_var(mnt_writers);
-+retry:
-+	cpu_writer = &__get_cpu_var(mnt_writers);
- 	spin_lock(&cpu_writer->lock);
- 
- 	use_cpu_writer_for_mount(cpu_writer, mnt);
- 	if (cpu_writer->count > 0) {
- 		cpu_writer->count--;
- 	} else {
--		must_check_underflow = 1;
-+		/* Without this check, it is theoretically
-+		 * possible to underflow __mnt_writers.
-+		 * An unlimited number of processes could
-+		 * all do this decrement, unlock, and then
-+		 * stall before the underflow handling.
-+		 * Doing this check limits the underflow
-+		 * to the number of cpu_writer->lock
-+		 * holders (NR_CPUS).
-+		 */
-+		if (atomic_read(&mnt->__mnt_writers) <
-+		    MNT_WRITER_UNDERFLOW_LIMIT) {
-+			spin_unlock(&cpu_writer->lock);
-+			goto retry;
-+		}
- 		atomic_dec(&mnt->__mnt_writers);
-+		must_check_underflow = 1;
- 	}
- 
- 	spin_unlock(&cpu_writer->lock);
-@@ -286,15 +301,6 @@ void mnt_drop_write(struct vfsmount *mnt
- 	 */
- 	if (must_check_underflow)
- 		handle_write_count_underflow(mnt);
--	/*
--	 * This could be done right after the spinlock
--	 * is taken because the spinlock keeps us on
--	 * the cpu, and disables preemption.  However,
--	 * putting it here bounds the amount that
--	 * __mnt_writers can underflow.  Without it,
--	 * we could theoretically wrap __mnt_writers.
--	 */
--	put_cpu_var(mnt_writers);
- }
- EXPORT_SYMBOL_GPL(mnt_drop_write);
- 
-_
+iD8DBQFHhm0EWto1QDEAkw8RAnHLAKCVzJIQO3qkNpYDADIwByWgXWCKBQCeIHoX
+3jVTY6J2pWn+rpEc/A84rUE=
+=KeEV
+-----END PGP SIGNATURE-----
+
+--k+w/mQv8wyuph6w0--
