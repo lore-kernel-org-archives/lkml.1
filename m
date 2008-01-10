@@ -1,248 +1,329 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757591AbYAKADf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758229AbYAKAH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757591AbYAKADf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 19:03:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664AbYAKAD3
+	id S1758229AbYAKAH2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 19:07:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbYAKAHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 19:03:29 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:54736 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754607AbYAKAD2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 19:03:28 -0500
-Subject: Re: [x86] list of style offenders
-From: Daniel Walker <dwalker@mvista.com>
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4d8e3fd30801101540l264068f1i2475f53d6ea11f70@mail.gmail.com>
-References: <1199995391.29897.26.camel@imap.mvista.com>
-	 <4d8e3fd30801101435l228a0d0ydd0174e4073400e6@mail.gmail.com>
-	 <1200006481.29897.48.camel@imap.mvista.com>
-	 <4d8e3fd30801101540l264068f1i2475f53d6ea11f70@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 10 Jan 2008 16:01:48 -0800
-Message-Id: <1200009708.29897.55.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+	Thu, 10 Jan 2008 19:07:20 -0500
+Received: from lizzard.sbs.de ([194.138.37.39]:17112 "EHLO lizzard.sbs.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754012AbYAKAHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 19:07:19 -0500
+X-Greylist: delayed 20760 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Jan 2008 19:07:18 EST
+Message-ID: <478661B9.7050406@siemens.com>
+Date: Thu, 10 Jan 2008 19:19:37 +0100
+From: Jan Kiszka <jan.kiszka@siemens.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>, Philippe Gerum <rpm@xenomai.org>
+Subject: Re: [RFC PATCH 01/22 -v2] Add basic support for gcc profiler instrumentation
+References: <20080109232914.676624725@goodmis.org> <20080109233042.386384204@goodmis.org>
+In-Reply-To: <20080109233042.386384204@goodmis.org>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Steven Rostedt wrote:
+> Index: linux-compile-i386.git/Makefile
+> ===================================================================
+> --- linux-compile-i386.git.orig/Makefile	2008-01-09 14:09:36.000000000 -0500
+> +++ linux-compile-i386.git/Makefile	2008-01-09 14:10:07.000000000 -0500
+> @@ -509,6 +509,10 @@ endif
+>  
+>  include $(srctree)/arch/$(SRCARCH)/Makefile
+>  
+> +# MCOUNT expects frame pointer
 
-On Fri, 2008-01-11 at 00:40 +0100, Paolo Ciarrocchi wrote:
-> On Jan 11, 2008 12:08 AM, Daniel Walker <dwalker@mvista.com> wrote:
-> 
-> > The git logs also show that arch/x86/math-emu/fpu_trig.c hasn't been
-> > modified since it was pull in on Oct. 11 ..
-> 
-> Daniel,
-> are we looking at the same tree?
-> fpu_trig.c has been modified (and cleaned up) by Ingo 35 hours ago:
-> http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=history;f=arch/x86/math-emu/fpu_trig.c;h=ecd06680581c51cbb7631cd0240708e92d9ef919;hb=mm
+This comment looks stray.
 
-Here's another set of, which shows significant improvement over the last
-one..
+> +ifdef CONFIG_MCOUNT
+> +KBUILD_CFLAGS	+= -pg
+> +endif
+>  ifdef CONFIG_FRAME_POINTER
+>  KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
+>  else
+> Index: linux-compile-i386.git/arch/x86/Kconfig
+> ===================================================================
+> --- linux-compile-i386.git.orig/arch/x86/Kconfig	2008-01-09 14:09:36.000000000 -0500
+> +++ linux-compile-i386.git/arch/x86/Kconfig	2008-01-09 14:10:07.000000000 -0500
+> @@ -28,6 +28,10 @@ config GENERIC_CMOS_UPDATE
+>  	bool
+>  	default y
+>  
+> +config ARCH_HAS_MCOUNT
+> +       bool
+> +       default y
+> +
+>  config CLOCKSOURCE_WATCHDOG
+>  	bool
+>  	default y
+> Index: linux-compile-i386.git/arch/x86/kernel/Makefile_32
+> ===================================================================
+> --- linux-compile-i386.git.orig/arch/x86/kernel/Makefile_32	2008-01-09 14:09:36.000000000 -0500
+> +++ linux-compile-i386.git/arch/x86/kernel/Makefile_32	2008-01-09 14:10:07.000000000 -0500
+> @@ -23,6 +23,7 @@ obj-$(CONFIG_APM)		+= apm_32.o
+>  obj-$(CONFIG_X86_SMP)		+= smp_32.o smpboot_32.o tsc_sync.o
+>  obj-$(CONFIG_SMP)		+= smpcommon_32.o
+>  obj-$(CONFIG_X86_TRAMPOLINE)	+= trampoline_32.o
+> +obj-$(CONFIG_MCOUNT)		+= mcount-wrapper.o
 
-./arch/x86/kernel/cpu/centaur.c
-		total: 152 errors, 11 warnings, 471 lines checked
-./arch/x86/crypto/aes_32.c
-		total: 113 errors, 0 warnings, 515 lines checked
-./arch/x86/kernel/traps_64.c
-		total: 103 errors, 24 warnings, 1211 lines checked
-./arch/x86/kernel/io_apic_32.c
-		total: 97 errors, 69 warnings, 2889 lines checked
-./arch/x86/kernel/traps_32.c
-		total: 86 errors, 21 warnings, 1200 lines checked
-./arch/x86/oprofile/op_model_p4.c
-		total: 86 errors, 10 warnings, 722 lines checked
-./arch/x86/kernel/process_64.c
-		total: 70 errors, 19 warnings, 902 lines checked
-./arch/x86/kernel/mpparse_32.c
-		total: 69 errors, 36 warnings, 1137 lines checked
-./arch/x86/kernel/mpparse_64.c
-		total: 69 errors, 27 warnings, 865 lines checked
-./arch/x86/lib/mmx_32.c
-		total: 68 errors, 3 warnings, 403 lines checked
-./arch/x86/mm/init_64.c
-		total: 67 errors, 18 warnings, 763 lines checked
-./arch/x86/kernel/vm86_32.c
-		total: 64 errors, 16 warnings, 840 lines checked
-./arch/x86/lib/usercopy_32.c
-		total: 63 errors, 2 warnings, 882 lines checked
-./arch/x86/pci/irq.c
-		total: 61 errors, 83 warnings, 1224 lines checked
-./arch/x86/boot/compressed/misc_32.c
-		total: 61 errors, 8 warnings, 383 lines checked
-./arch/x86/boot/compressed/misc_64.c
-		total: 60 errors, 8 warnings, 378 lines checked
-./arch/x86/kernel/cpu/common.c
-		total: 57 errors, 15 warnings, 729 lines checked
-./arch/x86/kernel/signal_64.c
-		total: 55 errors, 14 warnings, 489 lines checked
-./arch/x86/kernel/cpu/mtrr/main.c
-		total: 53 errors, 23 warnings, 762 lines checked
-./arch/x86/lib/csum-wrappers_64.c
-		total: 51 errors, 6 warnings, 135 lines checked
-./arch/x86/kernel/io_apic_64.c
-		total: 49 errors, 50 warnings, 2384 lines checked
-./arch/x86/kernel/cpu/cyrix.c
-		total: 49 errors, 11 warnings, 461 lines checked
-./arch/x86/mach-voyager/voyager_cat.c
-		total: 46 errors, 49 warnings, 1199 lines checked
-./arch/x86/lib/string_32.c
-		total: 45 errors, 0 warnings, 237 lines checked
-./arch/x86/kernel/setup64.c
-		total: 43 errors, 16 warnings, 300 lines checked
-./arch/x86/kernel/cpu/amd.c
-		total: 42 errors, 26 warnings, 350 lines checked
-./arch/x86/kernel/mca_32.c
-		total: 42 errors, 3 warnings, 469 lines checked
-./arch/x86/kernel/i8259_64.c
-		total: 38 errors, 2 warnings, 510 lines checked
-./arch/x86/kernel/cpu/intel.c
-		total: 37 errors, 16 warnings, 368 lines checked
-./arch/x86/kernel/cpu/intel_cacheinfo.c
-		total: 36 errors, 49 warnings, 832 lines checked
-./arch/x86/oprofile/op_model_ppro.c
-		total: 34 errors, 3 warnings, 192 lines checked
-./arch/x86/oprofile/op_model_athlon.c
-		total: 33 errors, 4 warnings, 190 lines checked
-./arch/x86/kernel/cpu/mcheck/mce_64.c
-		total: 32 errors, 3 warnings, 899 lines checked
-./arch/x86/boot/cpucheck.c
-		total: 30 errors, 0 warnings, 262 lines checked
-./arch/x86/kernel/smpboot_32.c
-		total: 29 errors, 46 warnings, 1338 lines checked
-./arch/x86/boot/compressed/relocs.c
-		total: 28 errors, 48 warnings, 626 lines checked
-./arch/x86/kernel/cpu/cpufreq/longhaul.h
-		total: 28 errors, 0 warnings, 353 lines checked
-./arch/x86/kernel/vmi_32.c
-		total: 27 errors, 30 warnings, 1014 lines checked
-./arch/x86/kernel/signal_32.c
-		total: 27 errors, 10 warnings, 669 lines checked
-./arch/x86/math-emu/errors.c
-		total: 26 errors, 36 warnings, 689 lines checked
-./arch/x86/math-emu/fpu_emu.h
-		total: 25 errors, 3 warnings, 217 lines checked
-./arch/x86/kernel/e820_32.c
-		total: 24 errors, 34 warnings, 751 lines checked
-./arch/x86/kernel/smpboot_64.c
-		total: 24 errors, 30 warnings, 1119 lines checked
-./arch/x86/kernel/cpu/cpufreq/powernow-k7.c
-		total: 23 errors, 88 warnings, 701 lines checked
-./arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
-		total: 23 errors, 20 warnings, 633 lines checked
-./arch/x86/kernel/cpu/cpufreq/powernow-k7.h
-		total: 23 errors, 0 warnings, 44 lines checked
-./arch/x86/kernel/cpu/cpufreq/cpufreq-nforce2.c
-		total: 22 errors, 8 warnings, 440 lines checked
-./arch/x86/kernel/cpu/cpufreq/longhaul.c
-		total: 21 errors, 36 warnings, 1027 lines checked
-./arch/x86/kernel/smp_32.c
-		total: 21 errors, 6 warnings, 712 lines checked
-./arch/x86/kernel/pci-dma_64.c
-		total: 21 errors, 3 warnings, 349 lines checked
-./arch/x86/pci/fixup.c
-		total: 20 errors, 35 warnings, 493 lines checked
-./arch/x86/kernel/summit_32.c
-		total: 20 errors, 11 warnings, 180 lines checked
-./arch/x86/mm/ioremap_32.c
-		total: 20 errors, 7 warnings, 274 lines checked
-./arch/x86/mach-generic/probe.c
-		total: 20 errors, 7 warnings, 125 lines checked
-./arch/x86/kernel/sys_i386_32.c
-		total: 18 errors, 23 warnings, 263 lines checked
-./arch/x86/kernel/cpu/mcheck/p4.c
-		total: 17 errors, 34 warnings, 257 lines checked
-./arch/x86/kernel/irq_32.c
-		total: 17 errors, 5 warnings, 376 lines checked
-./arch/x86/kernel/early_printk.c
-		total: 17 errors, 3 warnings, 254 lines checked
-./arch/x86/lib/csum-partial_64.c
-		total: 17 errors, 1 warnings, 150 lines checked
-./arch/x86/kernel/cpu/mtrr/generic.c
-		total: 16 errors, 19 warnings, 508 lines checked
-./arch/x86/kernel/cpu/mcheck/p6.c
-		total: 16 errors, 13 warnings, 122 lines checked
-./arch/x86/power/cpu.c
-		total: 16 errors, 3 warnings, 133 lines checked
-./arch/x86/kernel/cpu/perfctr-watchdog.c
-		total: 15 errors, 7 warnings, 722 lines checked
-./arch/x86/kernel/pci-calgary_64.c
-		total: 15 errors, 6 warnings, 1586 lines checked
-./arch/x86/kernel/sys_x86_64.c
-		total: 15 errors, 3 warnings, 253 lines checked
-./arch/x86/math-emu/fpu_system.h
-		total: 15 errors, 2 warnings, 90 lines checked
-./arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-		total: 14 errors, 104 warnings, 1316 lines checked
-./arch/x86/kernel/microcode.c
-		total: 14 errors, 15 warnings, 850 lines checked
-./arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-		total: 14 errors, 5 warnings, 798 lines checked
-./arch/x86/kernel/vsyscall_64.c
-		total: 14 errors, 4 warnings, 346 lines checked
-./arch/x86/kernel/cpu/transmeta.c
-		total: 14 errors, 3 warnings, 116 lines checked
-./arch/x86/kernel/cpu/cpufreq/elanfreq.c
-		total: 13 errors, 7 warnings, 308 lines checked
-./arch/x86/kernel/irq_64.c
-		total: 13 errors, 5 warnings, 266 lines checked
-./arch/x86/kernel/ptrace.c
-		total: 13 errors, 4 warnings, 1546 lines checked
-./arch/x86/kernel/module_64.c
-		total: 13 errors, 2 warnings, 185 lines checked
-./arch/x86/kernel/cpu/mcheck/mce_amd_64.c
-		total: 13 errors, 1 warnings, 690 lines checked
-./arch/x86/kernel/suspend_64.c
-		total: 12 errors, 7 warnings, 316 lines checked
-./arch/x86/kernel/nmi_64.c
-		total: 12 errors, 4 warnings, 481 lines checked
-./arch/x86/lib/bitstr_64.c
-		total: 12 errors, 1 warnings, 28 lines checked
-./arch/x86/kernel/cpu/proc.c
-		total: 12 errors, 1 warnings, 196 lines checked
-./arch/x86/boot/boot.h
-		total: 12 errors, 1 warnings, 296 lines checked
-./arch/x86/kernel/x8664_ksyms_64.c
-		total: 11 errors, 31 warnings, 61 lines checked
-./arch/x86/kernel/process_32.c
-		total: 11 errors, 28 warnings, 871 lines checked
-./arch/x86/kernel/acpi/boot.c
-		total: 11 errors, 27 warnings, 1358 lines checked
-./arch/x86/pci/mmconfig_64.c
-		total: 11 errors, 2 warnings, 157 lines checked
-./arch/x86/mm/hugetlbpage.c
-		total: 11 errors, 0 warnings, 391 lines checked
-./arch/x86/kernel/cpu/cpufreq/gx-suspmod.c
-		total: 10 errors, 33 warnings, 494 lines checked
-./arch/x86/kernel/cpu/cpufreq/powernow-k6.c
-		total: 10 errors, 13 warnings, 255 lines checked
-./arch/x86/kernel/cpu/mtrr/centaur.c
-		total: 10 errors, 4 warnings, 224 lines checked
-./arch/x86/kernel/cpu/mcheck/p5.c
-		total: 10 errors, 4 warnings, 53 lines checked
-./arch/x86/mm/pgtable_32.c
-		total: 10 errors, 3 warnings, 375 lines checked
-./arch/x86/kernel/cpu/mcheck/mce_32.c
-		total: 10 errors, 3 warnings, 90 lines checked
-./arch/x86/lib/io_64.c
-		total: 10 errors, 1 warnings, 23 lines checked
-./arch/x86/pci/mmconfig_32.c
-		total: 10 errors, 0 warnings, 148 lines checked
-./arch/x86/kernel/cpu/cpufreq/speedstep-smi.c
-		total: 9 errors, 34 warnings, 423 lines checked
-./arch/x86/mach-es7000/es7000plat.c
-		total: 9 errors, 9 warnings, 307 lines checked
-./arch/x86/kernel/i8259_32.c
-		total: 9 errors, 9 warnings, 422 lines checked
-./arch/x86/pci/common.c
-		total: 9 errors, 8 warnings, 544 lines checked
-./arch/x86/lib/bitops_64.c
-		total: 9 errors, 8 warnings, 175 lines checked
-./arch/x86/mm/ioremap_64.c
-		total: 9 errors, 6 warnings, 194 lines checked
+So far the code organization is different for 32 and 64 bit. I would
+suggest to either
 
+ o move both trampolines into entry_*.S or
+ o put them in something like mcount-wrapper_32/64.S.
+
+>  obj-$(CONFIG_X86_MPPARSE)	+= mpparse_32.o
+>  obj-$(CONFIG_X86_LOCAL_APIC)	+= apic_32.o nmi_32.o
+>  obj-$(CONFIG_X86_IO_APIC)	+= io_apic_32.o
+> Index: linux-compile-i386.git/arch/x86/kernel/mcount-wrapper.S
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-compile-i386.git/arch/x86/kernel/mcount-wrapper.S	2008-01-09 14:10:07.000000000 -0500
+> @@ -0,0 +1,25 @@
+> +/*
+> + *  linux/arch/x86/mcount-wrapper.S
+> + *
+> + *  Copyright (C) 2004 Ingo Molnar
+> + */
+> +
+> +.globl mcount
+> +mcount:
+> +	cmpl $0, mcount_enabled
+> +	jz out
+> +
+> +	push %ebp
+> +	mov %esp, %ebp
+
+What is the benefit of having a call frame in this trampoline? We used
+to carry this in the i386 mcount tracer for Adeos/I-pipe too (it was
+derived from the -rt code), but I just successfully tested a removal
+patch. Also glibc [1] doesn't include it.
+
+> +	pushl %eax
+> +	pushl %ecx
+> +	pushl %edx
+> +
+> +	call __mcount
+
+I think this indirection should be avoided, just like the 64-bit version
+and glibc do.
+
+> +
+> +	popl %edx
+> +	popl %ecx
+> +	popl %eax
+> +	popl %ebp
+> +out:
+> +	ret
+
+...
+
+> Index: linux-compile-i386.git/lib/tracing/mcount.c
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-compile-i386.git/lib/tracing/mcount.c	2008-01-09 14:10:07.000000000 -0500
+> @@ -0,0 +1,77 @@
+> +/*
+> + * Infrastructure for profiling code inserted by 'gcc -pg'.
+> + *
+> + * Copyright (C) 2007 Arnaldo Carvalho de Melo <acme@redhat.com>
+> + *
+> + * Converted to be more generic:
+> + *   Copyright (C) 2007-2008 Steven Rostedt <srostedt@redhat.com>
+> + *
+> + * From code in the latency_tracer, that is:
+> + *
+> + *  Copyright (C) 2004-2006 Ingo Molnar
+> + *  Copyright (C) 2004 William Lee Irwin III
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/mcount.h>
+> +
+> +/*
+> + * Since we have nothing protecting between the test of
+> + * mcount_trace_function and the call to it, we can't
+> + * set it to NULL without risking a race that will have
+> + * the kernel call the NULL pointer. Instead, we just
+> + * set the function pointer to a dummy function.
+> + */
+> +notrace void dummy_mcount_tracer(unsigned long ip,
+> +				 unsigned long parent_ip)
+> +{
+> +	/* do nothing */
+> +}
+> +
+> +mcount_func_t mcount_trace_function __read_mostly = dummy_mcount_tracer;
+> +int mcount_enabled __read_mostly;
+> +
+> +/** __mcount - hook for profiling
+> + *
+> + * This routine is called from the arch specific mcount routine, that in turn is
+> + * called from code inserted by gcc -pg.
+> + */
+> +notrace void __mcount(void)
+> +{
+> +	mcount_trace_function(CALLER_ADDR1, CALLER_ADDR2);
+> +}
+
+mcount_trace_function should always be called from the assembly
+trampoline, IMO.
+
+> +EXPORT_SYMBOL_GPL(mcount);
+> +/*
+> + * The above EXPORT_SYMBOL is for the gcc call of mcount and not the
+> + * function __mcount that it is underneath. I put the export there
+> + * to fool checkpatch.pl. It wants that export to be with the
+> + * function, but that function happens to be in assembly.
+> + */
+> +
+> +/**
+> + * register_mcount_function - register a function for profiling
+> + * @func - the function for profiling.
+> + *
+> + * Register a function to be called by all functions in the
+> + * kernel.
+> + *
+> + * Note: @func and all the functions it calls must be labeled
+> + *       with "notrace", otherwise it will go into a
+> + *       recursive loop.
+> + */
+> +int register_mcount_function(mcount_func_t func)
+> +{
+> +	mcount_trace_function = func;
+> +	return 0;
+> +}
+> +
+> +/**
+> + * clear_mcount_function - reset the mcount function
+> + *
+> + * This NULLs the mcount function and in essence stops
+> + * tracing.  There may be lag
+> + */
+> +void clear_mcount_function(void)
+> +{
+> +	mcount_trace_function = dummy_mcount_tracer;
+> +}
+> Index: linux-compile-i386.git/include/linux/mcount.h
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-compile-i386.git/include/linux/mcount.h	2008-01-09 15:17:20.000000000 -0500
+> @@ -0,0 +1,21 @@
+> +#ifndef _LINUX_MCOUNT_H
+> +#define _LINUX_MCOUNT_H
+> +
+> +#ifdef CONFIG_MCOUNT
+> +extern int mcount_enabled;
+> +
+> +#include <linux/linkage.h>
+> +
+> +#define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
+> +#define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
+> +#define CALLER_ADDR2 ((unsigned long)__builtin_return_address(2))
+
+Still used when __mcount would be gone?
+
+> +
+> +typedef void (*mcount_func_t)(unsigned long ip, unsigned long parent_ip);
+> +
+> +extern void mcount(void);
+> +
+> +int register_mcount_function(mcount_func_t func);
+> +void clear_mcount_function(void);
+> +
+> +#endif /* CONFIG_MCOUNT */
+> +#endif /* _LINUX_MCOUNT_H */
+> Index: linux-compile-i386.git/arch/x86/kernel/entry_64.S
+> ===================================================================
+> --- linux-compile-i386.git.orig/arch/x86/kernel/entry_64.S	2008-01-09 14:09:36.000000000 -0500
+> +++ linux-compile-i386.git/arch/x86/kernel/entry_64.S	2008-01-09 14:10:07.000000000 -0500
+> @@ -53,6 +53,46 @@
+>  
+>  	.code64
+>  
+> +#ifdef CONFIG_MCOUNT
+> +
+> +ENTRY(mcount)
+> +	cmpl $0, mcount_enabled
+> +	jz out
+> +
+> +	push %rbp
+> +	mov %rsp,%rbp
+
+Same as for x86_32.
+
+> +
+> +	push %r11
+> +	push %r10
+
+glibc [2] doesn't save those two, and we were also happy without them so
+far. Or are there nasty corner-cases in the kernel?
+
+> +	push %r9
+> +	push %r8
+> +	push %rdi
+> +	push %rsi
+> +	push %rdx
+> +	push %rcx
+> +	push %rax
+
+SAVE_ARGS/RESTORE_ARGS and glibc use explicit rsp manipulation + movq
+instead of push/pop. I wonder if there is a small advantage, but I'm not
+that deep into this arch.
+
+> +
+> +	mov 0x0(%rbp),%rax
+> +	mov 0x8(%rbp),%rdi
+> +	mov 0x8(%rax),%rsi
+
+See [2] for saving one instruction here. :)
+
+> +
+> +	call   *mcount_trace_function
+> +
+> +	pop %rax
+> +	pop %rcx
+> +	pop %rdx
+> +	pop %rsi
+> +	pop %rdi
+> +	pop %r8
+> +	pop %r9
+> +	pop %r10
+> +	pop %r11
+> +
+> +	pop %rbp
+> +out:
+> +	ret
+> +#endif
+> +
+>  #ifndef CONFIG_PREEMPT
+>  #define retint_kernel retint_restore_args
+>  #endif	
+
+This generic approach is very appreciated here as well. It would take
+away the burden of maintaining the arch-dependent stubs within I-pipe.
+
+What we could contribute later on is a blackfin trampoline, there is
+just still a bug in their toolchain which breaks mcount for modules. But
+I could check with the bfin guys again about the progress and underline
+the importance of this long-pending issue.
+
+Jan
+
+[1]http://sources.redhat.com/cgi-bin/cvsweb.cgi/libc/sysdeps/i386/i386-mcount.S?rev=1.6&content-type=text/x-cvsweb-markup&cvsroot=glibc
+[2]http://sources.redhat.com/cgi-bin/cvsweb.cgi/libc/sysdeps/x86_64/_mcount.S?rev=1.5&content-type=text/x-cvsweb-markup&cvsroot=glibc
 
