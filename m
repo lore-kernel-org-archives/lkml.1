@@ -1,113 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758170AbYAJCUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758294AbYAJCVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758170AbYAJCUW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 21:20:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754714AbYAJCUH
+	id S1758294AbYAJCVo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 21:21:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754714AbYAJCVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 21:20:07 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37648 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754131AbYAJCUF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 21:20:05 -0500
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       viro@ftp.linux.org.uk, hch@infradead.org,
-       Erez Zadok <ezk@cs.sunysb.edu>, Joe Perches <joe@perches.com>
-Subject: [PATCH 1/4] Unionfs: merged several printk KERN_CONT together into one pr_debug
-Date: Wed,  9 Jan 2008 21:16:29 -0500
-Message-Id: <11999313932160-git-send-email-ezk@cs.sunysb.edu>
-X-Mailer: git-send-email 1.5.2.2
-X-MailKey: Erez_Zadok
-In-Reply-To: <1199931392670-git-send-email-ezk@cs.sunysb.edu>
-References: <1199931392670-git-send-email-ezk@cs.sunysb.edu>
+	Wed, 9 Jan 2008 21:21:37 -0500
+Received: from c60.cesmail.net ([216.154.195.49]:12588 "EHLO c60.cesmail.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753900AbYAJCVg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 21:21:36 -0500
+Subject: Re: Replacement for page fault notifiers?
+From: Pavel Roskin <proski@gnu.org>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Dave Airlie <airlied@gmail.com>, Pekka Paalanen <pq@iki.fi>,
+       linux-kernel@vger.kernel.org, jbeulich@novell.com
+In-Reply-To: <1199930590.6245.104.camel@cinder.waste.org>
+References: <20080108210638.5c9e093a@daedalus.pq.iki.fi>
+	 <20080108203235.GA772@infradead.org>
+	 <21d7e9970801081413n307ab07aq462a9fff014143ae@mail.gmail.com>
+	 <1199838407.6734.83.camel@pasglop> <1199902724.8050.11.camel@dv>
+	 <20080109182157.GA32754@infradead.org> <1199908703.6734.133.camel@pasglop>
+	 <20080109202254.GA5279@infradead.org>
+	 <20080109164241.7daa5770@laptopd505.fenrus.org>
+	 <1199930590.6245.104.camel@cinder.waste.org>
+Content-Type: text/plain
+Date: Wed, 09 Jan 2008 21:21:33 -0500
+Message-Id: <1199931693.21499.11.camel@dv>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC: Joe Perches <joe@perches.com>
+On Wed, 2008-01-09 at 20:03 -0600, Matt Mackall wrote:
 
-Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
----
- fs/unionfs/debug.c |   51 +++++++++++++++++++++++++--------------------------
- 1 files changed, 25 insertions(+), 26 deletions(-)
+> That makes it way too easy for drivers of questionable legality to just
+> clear that bit. Also, we've got a shortage of page bits, etc.
 
-diff --git a/fs/unionfs/debug.c b/fs/unionfs/debug.c
-index 5f1d887..d154c32 100644
---- a/fs/unionfs/debug.c
-+++ b/fs/unionfs/debug.c
-@@ -472,16 +472,16 @@ void __show_inode_times(const struct inode *inode,
- 		lower_inode = unionfs_lower_inode_idx(inode, bindex);
- 		if (unlikely(!lower_inode))
- 			continue;
--		pr_debug("IT(%lu:%d): ", inode->i_ino, bindex);
--		printk(KERN_CONT "%s:%s:%d ", file, fxn, line);
--		printk(KERN_CONT "um=%lu/%lu lm=%lu/%lu ",
--		       inode->i_mtime.tv_sec, inode->i_mtime.tv_nsec,
--		       lower_inode->i_mtime.tv_sec,
--		       lower_inode->i_mtime.tv_nsec);
--		printk(KERN_CONT "uc=%lu/%lu lc=%lu/%lu\n",
--		       inode->i_ctime.tv_sec, inode->i_ctime.tv_nsec,
--		       lower_inode->i_ctime.tv_sec,
--		       lower_inode->i_ctime.tv_nsec);
-+		pr_debug("IT(%lu:%d): %s:%s:%d "
-+			 "um=%lu/%lu lm=%lu/%lu uc=%lu/%lu lc=%lu/%lu\n",
-+			 inode->i_ino, bindex,
-+			 file, fxn, line,
-+			 inode->i_mtime.tv_sec, inode->i_mtime.tv_nsec,
-+			 lower_inode->i_mtime.tv_sec,
-+			 lower_inode->i_mtime.tv_nsec,
-+			 inode->i_ctime.tv_sec, inode->i_ctime.tv_nsec,
-+			 lower_inode->i_ctime.tv_sec,
-+			 lower_inode->i_ctime.tv_nsec);
- 	}
- }
- 
-@@ -496,17 +496,16 @@ void __show_dinode_times(const struct dentry *dentry,
- 		lower_inode = unionfs_lower_inode_idx(inode, bindex);
- 		if (!lower_inode)
- 			continue;
--		pr_debug("DT(%s:%lu:%d): ", dentry->d_name.name, inode->i_ino,
--			 bindex);
--		printk(KERN_CONT "%s:%s:%d ", file, fxn, line);
--		printk(KERN_CONT "um=%lu/%lu lm=%lu/%lu ",
--		       inode->i_mtime.tv_sec, inode->i_mtime.tv_nsec,
--		       lower_inode->i_mtime.tv_sec,
--		       lower_inode->i_mtime.tv_nsec);
--		printk(KERN_CONT "uc=%lu/%lu lc=%lu/%lu\n",
--		       inode->i_ctime.tv_sec, inode->i_ctime.tv_nsec,
--		       lower_inode->i_ctime.tv_sec,
--		       lower_inode->i_ctime.tv_nsec);
-+		pr_debug("DT(%s:%lu:%d): %s:%s:%d "
-+			 "um=%lu/%lu lm=%lu/%lu uc=%lu/%lu lc=%lu/%lu\n",
-+			 dentry->d_name.name, inode->i_ino, bindex,
-+			 file, fxn, line,
-+			 inode->i_mtime.tv_sec, inode->i_mtime.tv_nsec,
-+			 lower_inode->i_mtime.tv_sec,
-+			 lower_inode->i_mtime.tv_nsec,
-+			 inode->i_ctime.tv_sec, inode->i_ctime.tv_nsec,
-+			 lower_inode->i_ctime.tv_sec,
-+			 lower_inode->i_ctime.tv_nsec);
- 	}
- }
- 
-@@ -525,10 +524,10 @@ void __show_inode_counts(const struct inode *inode,
- 		lower_inode = unionfs_lower_inode_idx(inode, bindex);
- 		if (unlikely(!lower_inode))
- 			continue;
--		printk(KERN_CONT "SIC(%lu:%d:%d): ", inode->i_ino, bindex,
--		       atomic_read(&(inode)->i_count));
--		printk(KERN_CONT "lc=%d ",
--		       atomic_read(&(lower_inode)->i_count));
--		printk(KERN_CONT "%s:%s:%d\n", file, fxn, line);
-+		pr_debug("SIC(%lu:%d:%d): lc=%d %s:%s:%d\n",
-+			 inode->i_ino, bindex,
-+			 atomic_read(&(inode)->i_count),
-+			 atomic_read(&(lower_inode)->i_count),
-+			 file, fxn, line);
- 	}
- }
+If we ever have this problem, the bit can be changed in the kernel to
+fool those drivers (I hope the shortage is not so dire that there will
+be no more bits left).
+
+I don't think evil drivers should be a problem per se.  There are
+existing non-free drivers that still need to be traced over and over
+again.  I guess ndiswrapper could use tracing for Windows drivers that
+don't know anything about Linux page flags.
+
+Last but not least, mmiotrace should be useful for free drivers in the
+first place to have a legitimate reason to be in the kernel.
+
 -- 
-1.5.2.2
-
+Regards,
+Pavel Roskin
