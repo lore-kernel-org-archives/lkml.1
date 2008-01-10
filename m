@@ -1,74 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756776AbYAJUld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757314AbYAJUls@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756776AbYAJUld (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 15:41:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567AbYAJUlW
+	id S1757314AbYAJUls (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 15:41:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755945AbYAJUl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 15:41:22 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:43788 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754457AbYAJUlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 15:41:20 -0500
-Date: Thu, 10 Jan 2008 15:41:19 -0500
-From: Jeff Garzik <jeff@garzik.org>
-To: Trond.Myklebust@netapp.com
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: major NFSv4 client regression (-rc7)
-Message-ID: <20080110204119.GA714@havoc.gtf.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 10 Jan 2008 15:41:27 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:49999 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755750AbYAJUl0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 15:41:26 -0500
+Subject: Re: [RFC PATCH 13/22 -v2] handle accurate time keeping over long
+	delays
+From: john stultz <johnstul@us.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Tony Luck <tony.luck@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+In-Reply-To: <Pine.LNX.4.58.0801101510210.15391@gandalf.stny.rr.com>
+References: <20080109232914.676624725@goodmis.org>
+	 <20080109233044.288563621@goodmis.org>
+	 <1199923219.6350.16.camel@localhost.localdomain>
+	 <12c511ca0801101154q224c7a43sa016190cf209d304@mail.gmail.com>
+	 <Pine.LNX.4.58.0801101510210.15391@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Thu, 10 Jan 2008 12:41:17 -0800
+Message-Id: <1199997677.6108.31.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Server:		Linux 2.6.24-rc6 (x86-64/Fedora 8)
-Good client:	Linux 2.6.24-rc6-ge697789d (x86-64/Fedora 7)
-Bad client:	Linux 2.6.24-rc7-gfd0b45df (x86-64/Fedora 7)
-Situation:	home dir via NFS
+On Thu, 2008-01-10 at 15:15 -0500, Steven Rostedt wrote:
+> > I'm trying to figure out all the ramifications of the new
+> > "cycle_accumulated" field.  Does it really need to be
+> 
+> John,
+> 
+> Before we hardcode these names, can we change them?  Later in the series I
+> use something called 'cycle_raw' which really should be called
+> 'cycle_accumulated'. Since cycle_accumulated IIRC can go backwards.
 
-My home setup is a standard homedir-over-NFS setup, using NFSv4 on both
-client and server.  I just rebooted into the latest upstream kernel, and
-I am getting NFS client hangs all over the place:
+Err... I don't think the current cycle_accumulated can go backwards. Or
+maybe I'm missing what you mean.
 
-	[jgarzik@core firefox]$ cat profiles.ini 
+> Or do you think I should rename cycle_raw to cycle_monotonic?
 
-	hangs here, for 15 minutes so far and counting...
-	('core' is the client machine)
+That's fine by me either way.
 
-and I first noticed this when firefox and thunderbird were hanging, when
-I tried to start them after rebooting into the latest kernel.  stracing
-firefox yielding a hang in open:
-
-	("/g" is the NFS-mounted volume)
-
-	access("/usr/lib64/firefox-2.0.0.10/updates", F_OK) = -1 ENOENT (No such file or directory)
-	access("/g/g/.mozilla/firefox", F_OK)   = 0
-	access("/g/g/.mozilla/firefox", F_OK)   = 0
-	stat("/g/g/.mozilla/firefox/profiles.ini", {st_mode=S_IFREG|0664, st_size=94, ...}) = 0
-	open("/g/g/.mozilla/firefox/profiles.ini", O_RDONLY
-
-	hangs here, for 20 minutes so far and counting...
-
-As you can see from the trace, and as I can report simply by being able
-to send this message, SOME file accesses over NFS work just fine.
-
-Accessing the file works when logged into the server, so its not disk
-corruption or something like that.
-
-Neither client nor server have anything interesting in dmesg -- in fact
-nothing in dmesg beyond the normal boot messages have been printed.
-
-Let me know what info I can provide...  This is a 100% reproducible
-regression, and this latest NFS client revision has made my local
-NFS-over-homedir setup completely unusable.  I am forced to return to
-the known working client (Linux 2.6.24-rc6-ge697789d) just to run basic
-apps.
-
-	Jeff
-
+thanks
+-john
 
 
