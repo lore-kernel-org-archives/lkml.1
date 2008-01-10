@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760611AbYAJPFI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760102AbYAJPFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760611AbYAJPFI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 10:05:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758948AbYAJPA7
+	id S1760102AbYAJPFg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 10:05:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759069AbYAJPBD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 10:00:59 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:57033 "EHLO
+	Thu, 10 Jan 2008 10:01:03 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:57035 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754032AbYAJPAp (ORCPT
+	with ESMTP id S1758340AbYAJPAr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 10:00:45 -0500
+	Thu, 10 Jan 2008 10:00:47 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: torvalds@linux-foundation.org, akpm@linux-foundation.org,
        hch@infradead.org, viro@ftp.linux.org.uk
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 23/29] Unionfs: miscellaneous helper routines
-Date: Thu, 10 Jan 2008 09:59:42 -0500
-Message-Id: <11999772042675-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 05/29] Unionfs: fanout header definitions
+Date: Thu, 10 Jan 2008 09:59:24 -0500
+Message-Id: <11999771902203-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11999771882152-git-send-email-ezk@cs.sunysb.edu>
@@ -26,25 +26,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mostly related to whiteouts.
-
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/subr.c |  242 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 242 insertions(+), 0 deletions(-)
- create mode 100644 fs/unionfs/subr.c
+ fs/unionfs/fanout.h |  366 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 366 insertions(+), 0 deletions(-)
+ create mode 100644 fs/unionfs/fanout.h
 
-diff --git a/fs/unionfs/subr.c b/fs/unionfs/subr.c
+diff --git a/fs/unionfs/fanout.h b/fs/unionfs/fanout.h
 new file mode 100644
-index 0000000..0a0fce9
+index 0000000..4d9a45f
 --- /dev/null
-+++ b/fs/unionfs/subr.c
-@@ -0,0 +1,242 @@
++++ b/fs/unionfs/fanout.h
+@@ -0,0 +1,366 @@
 +/*
 + * Copyright (c) 2003-2007 Erez Zadok
 + * Copyright (c) 2003-2006 Charles P. Wright
 + * Copyright (c) 2005-2007 Josef 'Jeff' Sipek
-+ * Copyright (c) 2005-2006 Junjiro Okajima
 + * Copyright (c) 2005      Arun M. Krishnakumar
 + * Copyright (c) 2004-2006 David P. Quigley
 + * Copyright (c) 2003-2004 Mohammad Nayyer Zubair
@@ -58,230 +55,355 @@ index 0000000..0a0fce9
 + * published by the Free Software Foundation.
 + */
 +
-+#include "union.h"
++#ifndef _FANOUT_H_
++#define _FANOUT_H_
 +
 +/*
-+ * Pass an unionfs dentry and an index.  It will try to create a whiteout
-+ * for the filename in dentry, and will try in branch 'index'.  On error,
-+ * it will proceed to a branch to the left.
++ * Inode to private data
++ *
++ * Since we use containers and the struct inode is _inside_ the
++ * unionfs_inode_info structure, UNIONFS_I will always (given a non-NULL
++ * inode pointer), return a valid non-NULL pointer.
 + */
-+int create_whiteout(struct dentry *dentry, int start)
++static inline struct unionfs_inode_info *UNIONFS_I(const struct inode *inode)
 +{
-+	int bstart, bend, bindex;
-+	struct dentry *lower_dir_dentry;
-+	struct dentry *lower_dentry;
-+	struct dentry *lower_wh_dentry;
-+	struct nameidata nd;
-+	char *name = NULL;
-+	int err = -EINVAL;
++	return container_of(inode, struct unionfs_inode_info, vfs_inode);
++}
 +
-+	verify_locked(dentry);
++#define ibstart(ino) (UNIONFS_I(ino)->bstart)
++#define ibend(ino) (UNIONFS_I(ino)->bend)
 +
-+	bstart = dbstart(dentry);
-+	bend = dbend(dentry);
++/* Superblock to private data */
++#define UNIONFS_SB(super) ((struct unionfs_sb_info *)(super)->s_fs_info)
++#define sbstart(sb) 0
++#define sbend(sb) (UNIONFS_SB(sb)->bend)
++#define sbmax(sb) (UNIONFS_SB(sb)->bend + 1)
++#define sbhbid(sb) (UNIONFS_SB(sb)->high_branch_id)
 +
-+	/* create dentry's whiteout equivalent */
-+	name = alloc_whname(dentry->d_name.name, dentry->d_name.len);
-+	if (unlikely(IS_ERR(name))) {
-+		err = PTR_ERR(name);
-+		goto out;
-+	}
++/* File to private Data */
++#define UNIONFS_F(file) ((struct unionfs_file_info *)((file)->private_data))
++#define fbstart(file) (UNIONFS_F(file)->bstart)
++#define fbend(file) (UNIONFS_F(file)->bend)
 +
-+	for (bindex = start; bindex >= 0; bindex--) {
-+		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
++/* macros to manipulate branch IDs in stored in our superblock */
++static inline int branch_id(struct super_block *sb, int index)
++{
++	BUG_ON(!sb || index < 0);
++	return UNIONFS_SB(sb)->data[index].branch_id;
++}
 +
-+		if (!lower_dentry) {
-+			/*
-+			 * if lower dentry is not present, create the
-+			 * entire lower dentry directory structure and go
-+			 * ahead.  Since we want to just create whiteout, we
-+			 * only want the parent dentry, and hence get rid of
-+			 * this dentry.
-+			 */
-+			lower_dentry = create_parents(dentry->d_inode,
-+						      dentry,
-+						      dentry->d_name.name,
-+						      bindex);
-+			if (!lower_dentry || IS_ERR(lower_dentry)) {
-+				int ret = PTR_ERR(lower_dentry);
-+				if (!IS_COPYUP_ERR(ret))
-+					printk(KERN_ERR
-+					       "unionfs: create_parents for "
-+					       "whiteout failed: bindex=%d "
-+					       "err=%d\n", bindex, ret);
-+				continue;
-+			}
-+		}
++static inline void set_branch_id(struct super_block *sb, int index, int val)
++{
++	BUG_ON(!sb || index < 0);
++	UNIONFS_SB(sb)->data[index].branch_id = val;
++}
 +
-+		lower_wh_dentry =
-+			lookup_one_len(name, lower_dentry->d_parent,
-+				       dentry->d_name.len + UNIONFS_WHLEN);
-+		if (IS_ERR(lower_wh_dentry))
-+			continue;
-+
-+		/*
-+		 * The whiteout already exists. This used to be impossible,
-+		 * but now is possible because of opaqueness.
-+		 */
-+		if (lower_wh_dentry->d_inode) {
-+			dput(lower_wh_dentry);
-+			err = 0;
-+			goto out;
-+		}
-+
-+		err = init_lower_nd(&nd, LOOKUP_CREATE);
-+		if (unlikely(err < 0))
-+			goto out;
-+		lower_dir_dentry = lock_parent_wh(lower_wh_dentry);
-+		err = is_robranch_super(dentry->d_sb, bindex);
-+		if (!err)
-+			err = vfs_create(lower_dir_dentry->d_inode,
-+					 lower_wh_dentry,
-+					 ~current->fs->umask & S_IRWXUGO,
-+					 &nd);
-+		unlock_dir(lower_dir_dentry);
-+		dput(lower_wh_dentry);
-+		release_lower_nd(&nd, err);
-+
-+		if (!err || !IS_COPYUP_ERR(err))
-+			break;
-+	}
-+
-+	/* set dbopaque so that lookup will not proceed after this branch */
-+	if (!err)
-+		set_dbopaque(dentry, bindex);
-+
-+out:
-+	kfree(name);
-+	return err;
++static inline void new_branch_id(struct super_block *sb, int index)
++{
++	BUG_ON(!sb || index < 0);
++	set_branch_id(sb, index, ++UNIONFS_SB(sb)->high_branch_id);
 +}
 +
 +/*
-+ * This is a helper function for rename, which ends up with hosed over
-+ * dentries when it needs to revert.
++ * Find new index of matching branch with an existing superblock of a known
++ * (possibly old) id.  This is needed because branches could have been
++ * added/deleted causing the branches of any open files to shift.
++ *
++ * @sb: the new superblock which may have new/different branch IDs
++ * @id: the old/existing id we're looking for
++ * Returns index of newly found branch (0 or greater), -1 otherwise.
 + */
-+int unionfs_refresh_lower_dentry(struct dentry *dentry, int bindex)
++static inline int branch_id_to_idx(struct super_block *sb, int id)
 +{
-+	struct dentry *lower_dentry;
-+	struct dentry *lower_parent;
-+	int err = 0;
-+
-+	verify_locked(dentry);
-+
-+	unionfs_lock_dentry(dentry->d_parent, UNIONFS_DMUTEX_CHILD);
-+	lower_parent = unionfs_lower_dentry_idx(dentry->d_parent, bindex);
-+	unionfs_unlock_dentry(dentry->d_parent);
-+
-+	BUG_ON(!S_ISDIR(lower_parent->d_inode->i_mode));
-+
-+	lower_dentry = lookup_one_len(dentry->d_name.name, lower_parent,
-+				      dentry->d_name.len);
-+	if (IS_ERR(lower_dentry)) {
-+		err = PTR_ERR(lower_dentry);
-+		goto out;
++	int i;
++	for (i = 0; i < sbmax(sb); i++) {
++		if (branch_id(sb, i) == id)
++			return i;
 +	}
-+
-+	dput(unionfs_lower_dentry_idx(dentry, bindex));
-+	iput(unionfs_lower_inode_idx(dentry->d_inode, bindex));
-+	unionfs_set_lower_inode_idx(dentry->d_inode, bindex, NULL);
-+
-+	if (!lower_dentry->d_inode) {
-+		dput(lower_dentry);
-+		unionfs_set_lower_dentry_idx(dentry, bindex, NULL);
-+	} else {
-+		unionfs_set_lower_dentry_idx(dentry, bindex, lower_dentry);
-+		unionfs_set_lower_inode_idx(dentry->d_inode, bindex,
-+					    igrab(lower_dentry->d_inode));
-+	}
-+
-+out:
-+	return err;
++	/* in the non-ODF code, this should really never happen */
++	printk(KERN_WARNING "unionfs: cannot find branch with id %d\n", id);
++	return -1;
 +}
 +
-+int make_dir_opaque(struct dentry *dentry, int bindex)
++/* File to lower file. */
++static inline struct file *unionfs_lower_file(const struct file *f)
 +{
-+	int err = 0;
-+	struct dentry *lower_dentry, *diropq;
-+	struct inode *lower_dir;
-+	struct nameidata nd;
-+	kernel_cap_t orig_cap;
++	BUG_ON(!f);
++	return UNIONFS_F(f)->lower_files[fbstart(f)];
++}
++
++static inline struct file *unionfs_lower_file_idx(const struct file *f,
++						  int index)
++{
++	BUG_ON(!f || index < 0);
++	return UNIONFS_F(f)->lower_files[index];
++}
++
++static inline void unionfs_set_lower_file_idx(struct file *f, int index,
++					      struct file *val)
++{
++	BUG_ON(!f || index < 0);
++	UNIONFS_F(f)->lower_files[index] = val;
++	/* save branch ID (may be redundant?) */
++	UNIONFS_F(f)->saved_branch_ids[index] =
++		branch_id((f)->f_path.dentry->d_sb, index);
++}
++
++static inline void unionfs_set_lower_file(struct file *f, struct file *val)
++{
++	BUG_ON(!f);
++	unionfs_set_lower_file_idx((f), fbstart(f), (val));
++}
++
++/* Inode to lower inode. */
++static inline struct inode *unionfs_lower_inode(const struct inode *i)
++{
++	BUG_ON(!i);
++	return UNIONFS_I(i)->lower_inodes[ibstart(i)];
++}
++
++static inline struct inode *unionfs_lower_inode_idx(const struct inode *i,
++						    int index)
++{
++	BUG_ON(!i || index < 0);
++	return UNIONFS_I(i)->lower_inodes[index];
++}
++
++static inline void unionfs_set_lower_inode_idx(struct inode *i, int index,
++					       struct inode *val)
++{
++	BUG_ON(!i || index < 0);
++	UNIONFS_I(i)->lower_inodes[index] = val;
++}
++
++static inline void unionfs_set_lower_inode(struct inode *i, struct inode *val)
++{
++	BUG_ON(!i);
++	UNIONFS_I(i)->lower_inodes[ibstart(i)] = val;
++}
++
++/* Superblock to lower superblock. */
++static inline struct super_block *unionfs_lower_super(
++					const struct super_block *sb)
++{
++	BUG_ON(!sb);
++	return UNIONFS_SB(sb)->data[sbstart(sb)].sb;
++}
++
++static inline struct super_block *unionfs_lower_super_idx(
++					const struct super_block *sb,
++					int index)
++{
++	BUG_ON(!sb || index < 0);
++	return UNIONFS_SB(sb)->data[index].sb;
++}
++
++static inline void unionfs_set_lower_super_idx(struct super_block *sb,
++					       int index,
++					       struct super_block *val)
++{
++	BUG_ON(!sb || index < 0);
++	UNIONFS_SB(sb)->data[index].sb = val;
++}
++
++static inline void unionfs_set_lower_super(struct super_block *sb,
++					   struct super_block *val)
++{
++	BUG_ON(!sb);
++	UNIONFS_SB(sb)->data[sbstart(sb)].sb = val;
++}
++
++/* Branch count macros. */
++static inline int branch_count(const struct super_block *sb, int index)
++{
++	BUG_ON(!sb || index < 0);
++	return atomic_read(&UNIONFS_SB(sb)->data[index].open_files);
++}
++
++static inline void set_branch_count(struct super_block *sb, int index, int val)
++{
++	BUG_ON(!sb || index < 0);
++	atomic_set(&UNIONFS_SB(sb)->data[index].open_files, val);
++}
++
++static inline void branchget(struct super_block *sb, int index)
++{
++	BUG_ON(!sb || index < 0);
++	atomic_inc(&UNIONFS_SB(sb)->data[index].open_files);
++}
++
++static inline void branchput(struct super_block *sb, int index)
++{
++	BUG_ON(!sb || index < 0);
++	atomic_dec(&UNIONFS_SB(sb)->data[index].open_files);
++}
++
++/* Dentry macros */
++static inline struct unionfs_dentry_info *UNIONFS_D(const struct dentry *dent)
++{
++	BUG_ON(!dent);
++	return dent->d_fsdata;
++}
++
++static inline int dbstart(const struct dentry *dent)
++{
++	BUG_ON(!dent);
++	return UNIONFS_D(dent)->bstart;
++}
++
++static inline void set_dbstart(struct dentry *dent, int val)
++{
++	BUG_ON(!dent);
++	UNIONFS_D(dent)->bstart = val;
++}
++
++static inline int dbend(const struct dentry *dent)
++{
++	BUG_ON(!dent);
++	return UNIONFS_D(dent)->bend;
++}
++
++static inline void set_dbend(struct dentry *dent, int val)
++{
++	BUG_ON(!dent);
++	UNIONFS_D(dent)->bend = val;
++}
++
++static inline int dbopaque(const struct dentry *dent)
++{
++	BUG_ON(!dent);
++	return UNIONFS_D(dent)->bopaque;
++}
++
++static inline void set_dbopaque(struct dentry *dent, int val)
++{
++	BUG_ON(!dent);
++	UNIONFS_D(dent)->bopaque = val;
++}
++
++static inline void unionfs_set_lower_dentry_idx(struct dentry *dent, int index,
++						struct dentry *val)
++{
++	BUG_ON(!dent || index < 0);
++	UNIONFS_D(dent)->lower_paths[index].dentry = val;
++}
++
++static inline struct dentry *unionfs_lower_dentry_idx(
++				const struct dentry *dent,
++				int index)
++{
++	BUG_ON(!dent || index < 0);
++	return UNIONFS_D(dent)->lower_paths[index].dentry;
++}
++
++static inline struct dentry *unionfs_lower_dentry(const struct dentry *dent)
++{
++	BUG_ON(!dent);
++	return unionfs_lower_dentry_idx(dent, dbstart(dent));
++}
++
++static inline void unionfs_set_lower_mnt_idx(struct dentry *dent, int index,
++					     struct vfsmount *mnt)
++{
++	BUG_ON(!dent || index < 0);
++	UNIONFS_D(dent)->lower_paths[index].mnt = mnt;
++}
++
++static inline struct vfsmount *unionfs_lower_mnt_idx(
++					const struct dentry *dent,
++					int index)
++{
++	BUG_ON(!dent || index < 0);
++	return UNIONFS_D(dent)->lower_paths[index].mnt;
++}
++
++static inline struct vfsmount *unionfs_lower_mnt(const struct dentry *dent)
++{
++	BUG_ON(!dent);
++	return unionfs_lower_mnt_idx(dent, dbstart(dent));
++}
++
++/* Macros for locking a dentry. */
++enum unionfs_dentry_lock_class {
++	UNIONFS_DMUTEX_NORMAL,
++	UNIONFS_DMUTEX_ROOT,
++	UNIONFS_DMUTEX_PARENT,
++	UNIONFS_DMUTEX_CHILD,
++	UNIONFS_DMUTEX_WHITEOUT,
++	UNIONFS_DMUTEX_REVAL_PARENT, /* for file/dentry revalidate */
++	UNIONFS_DMUTEX_REVAL_CHILD,   /* for file/dentry revalidate */
++};
++
++static inline void unionfs_lock_dentry(struct dentry *d,
++				       unsigned int subclass)
++{
++	BUG_ON(!d);
++	mutex_lock_nested(&UNIONFS_D(d)->lock, subclass);
++}
++
++static inline void unionfs_unlock_dentry(struct dentry *d)
++{
++	BUG_ON(!d);
++	mutex_unlock(&UNIONFS_D(d)->lock);
++}
++
++static inline void verify_locked(struct dentry *d)
++{
++	BUG_ON(!d);
++	BUG_ON(!mutex_is_locked(&UNIONFS_D(d)->lock));
++}
++
++/* copy a/m/ctime from the lower branch with the newest times */
++static inline void unionfs_copy_attr_times(struct inode *upper)
++{
++	int bindex;
++	struct inode *lower;
++
++	if (!upper || ibstart(upper) < 0)
++		return;
++	for (bindex = ibstart(upper); bindex <= ibend(upper); bindex++) {
++		lower = unionfs_lower_inode_idx(upper, bindex);
++		if (!lower)
++			continue; /* not all lower dir objects may exist */
++		if (unlikely(timespec_compare(&upper->i_mtime,
++					      &lower->i_mtime) < 0))
++			upper->i_mtime = lower->i_mtime;
++		if (unlikely(timespec_compare(&upper->i_ctime,
++					      &lower->i_ctime) < 0))
++			upper->i_ctime = lower->i_ctime;
++		if (unlikely(timespec_compare(&upper->i_atime,
++					      &lower->i_atime) < 0))
++			upper->i_atime = lower->i_atime;
++	}
++}
++
++/*
++ * A unionfs/fanout version of fsstack_copy_attr_all.  Uses a
++ * unionfs_get_nlinks to properly calcluate the number of links to a file.
++ * Also, copies the max() of all a/m/ctimes for all lower inodes (which is
++ * important if the lower inode is a directory type)
++ */
++static inline void unionfs_copy_attr_all(struct inode *dest,
++					 const struct inode *src)
++{
++	dest->i_mode = src->i_mode;
++	dest->i_uid = src->i_uid;
++	dest->i_gid = src->i_gid;
++	dest->i_rdev = src->i_rdev;
++
++	unionfs_copy_attr_times(dest);
++
++	dest->i_blkbits = src->i_blkbits;
++	dest->i_flags = src->i_flags;
 +
 +	/*
-+	 * Opaque directory whiteout markers are special files (like regular
-+	 * whiteouts), and should appear to the users as if they don't
-+	 * exist.  They should be created/deleted regardless of directory
-+	 * search/create permissions, but only for the duration of this
-+	 * creation of the .wh.__dir_opaque: file.  Note, this does not
-+	 * circumvent normal ->permission).
++	 * Update the nlinks AFTER updating the above fields, because the
++	 * get_links callback may depend on them.
 +	 */
-+	orig_cap = current->cap_effective;
-+	cap_raise(current->cap_effective, CAP_DAC_READ_SEARCH);
-+	cap_raise(current->cap_effective, CAP_DAC_OVERRIDE);
-+
-+	lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
-+	lower_dir = lower_dentry->d_inode;
-+	BUG_ON(!S_ISDIR(dentry->d_inode->i_mode) ||
-+	       !S_ISDIR(lower_dir->i_mode));
-+
-+	mutex_lock(&lower_dir->i_mutex);
-+	diropq = lookup_one_len(UNIONFS_DIR_OPAQUE, lower_dentry,
-+				sizeof(UNIONFS_DIR_OPAQUE) - 1);
-+	if (IS_ERR(diropq)) {
-+		err = PTR_ERR(diropq);
-+		goto out;
-+	}
-+
-+	err = init_lower_nd(&nd, LOOKUP_CREATE);
-+	if (unlikely(err < 0))
-+		goto out;
-+	if (!diropq->d_inode)
-+		err = vfs_create(lower_dir, diropq, S_IRUGO, &nd);
-+	if (!err)
-+		set_dbopaque(dentry, bindex);
-+	release_lower_nd(&nd, err);
-+
-+	dput(diropq);
-+
-+out:
-+	mutex_unlock(&lower_dir->i_mutex);
-+	current->cap_effective = orig_cap;
-+	return err;
++	dest->i_nlink = unionfs_get_nlinks(dest);
 +}
 +
-+/*
-+ * returns the right n_link value based on the inode type
-+ */
-+int unionfs_get_nlinks(const struct inode *inode)
-+{
-+	/* don't bother to do all the work since we're unlinked */
-+	if (inode->i_nlink == 0)
-+		return 0;
-+
-+	if (!S_ISDIR(inode->i_mode))
-+		return unionfs_lower_inode(inode)->i_nlink;
-+
-+	/*
-+	 * For directories, we return 1. The only place that could cares
-+	 * about links is readdir, and there's d_type there so even that
-+	 * doesn't matter.
-+	 */
-+	return 1;
-+}
-+
-+/* construct whiteout filename */
-+char *alloc_whname(const char *name, int len)
-+{
-+	char *buf;
-+
-+	buf = kmalloc(len + UNIONFS_WHLEN + 1, GFP_KERNEL);
-+	if (unlikely(!buf))
-+		return ERR_PTR(-ENOMEM);
-+
-+	strcpy(buf, UNIONFS_WHPFX);
-+	strlcat(buf, name, len + UNIONFS_WHLEN + 1);
-+
-+	return buf;
-+}
++#endif	/* not _FANOUT_H */
 -- 
 1.5.2.2
 
