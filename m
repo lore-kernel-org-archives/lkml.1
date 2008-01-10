@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760102AbYAJPFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760730AbYAJPFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760102AbYAJPFg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 10:05:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759069AbYAJPBD
+	id S1760730AbYAJPFy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 10:05:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759254AbYAJPBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 10:01:03 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:57035 "EHLO
+	Thu, 10 Jan 2008 10:01:06 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:57054 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758340AbYAJPAr (ORCPT
+	with ESMTP id S1758803AbYAJPAy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 10:00:47 -0500
+	Thu, 10 Jan 2008 10:00:54 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: torvalds@linux-foundation.org, akpm@linux-foundation.org,
        hch@infradead.org, viro@ftp.linux.org.uk
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 05/29] Unionfs: fanout header definitions
-Date: Thu, 10 Jan 2008 09:59:24 -0500
-Message-Id: <11999771902203-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 18/29] Unionfs: address-space operations
+Date: Thu, 10 Jan 2008 09:59:37 -0500
+Message-Id: <1199977198166-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11999771882152-git-send-email-ezk@cs.sunysb.edu>
@@ -26,22 +26,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Includes writepage, writepages, readpage, prepare_write, and commit_write.
+
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/fanout.h |  366 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 366 insertions(+), 0 deletions(-)
- create mode 100644 fs/unionfs/fanout.h
+ fs/unionfs/mmap.c |  343 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 343 insertions(+), 0 deletions(-)
+ create mode 100644 fs/unionfs/mmap.c
 
-diff --git a/fs/unionfs/fanout.h b/fs/unionfs/fanout.h
+diff --git a/fs/unionfs/mmap.c b/fs/unionfs/mmap.c
 new file mode 100644
-index 0000000..4d9a45f
+index 0000000..ad770ac
 --- /dev/null
-+++ b/fs/unionfs/fanout.h
-@@ -0,0 +1,366 @@
++++ b/fs/unionfs/mmap.c
+@@ -0,0 +1,343 @@
 +/*
 + * Copyright (c) 2003-2007 Erez Zadok
 + * Copyright (c) 2003-2006 Charles P. Wright
 + * Copyright (c) 2005-2007 Josef 'Jeff' Sipek
++ * Copyright (c) 2005-2006 Junjiro Okajima
++ * Copyright (c) 2006      Shaya Potter
 + * Copyright (c) 2005      Arun M. Krishnakumar
 + * Copyright (c) 2004-2006 David P. Quigley
 + * Copyright (c) 2003-2004 Mohammad Nayyer Zubair
@@ -55,355 +59,330 @@ index 0000000..4d9a45f
 + * published by the Free Software Foundation.
 + */
 +
-+#ifndef _FANOUT_H_
-+#define _FANOUT_H_
++#include "union.h"
 +
-+/*
-+ * Inode to private data
-+ *
-+ * Since we use containers and the struct inode is _inside_ the
-+ * unionfs_inode_info structure, UNIONFS_I will always (given a non-NULL
-+ * inode pointer), return a valid non-NULL pointer.
-+ */
-+static inline struct unionfs_inode_info *UNIONFS_I(const struct inode *inode)
++static int unionfs_writepage(struct page *page, struct writeback_control *wbc)
 +{
-+	return container_of(inode, struct unionfs_inode_info, vfs_inode);
-+}
++	int err = -EIO;
++	struct inode *inode;
++	struct inode *lower_inode;
++	struct page *lower_page;
++	struct address_space *lower_mapping; /* lower inode mapping */
++	gfp_t mask;
 +
-+#define ibstart(ino) (UNIONFS_I(ino)->bstart)
-+#define ibend(ino) (UNIONFS_I(ino)->bend)
-+
-+/* Superblock to private data */
-+#define UNIONFS_SB(super) ((struct unionfs_sb_info *)(super)->s_fs_info)
-+#define sbstart(sb) 0
-+#define sbend(sb) (UNIONFS_SB(sb)->bend)
-+#define sbmax(sb) (UNIONFS_SB(sb)->bend + 1)
-+#define sbhbid(sb) (UNIONFS_SB(sb)->high_branch_id)
-+
-+/* File to private Data */
-+#define UNIONFS_F(file) ((struct unionfs_file_info *)((file)->private_data))
-+#define fbstart(file) (UNIONFS_F(file)->bstart)
-+#define fbend(file) (UNIONFS_F(file)->bend)
-+
-+/* macros to manipulate branch IDs in stored in our superblock */
-+static inline int branch_id(struct super_block *sb, int index)
-+{
-+	BUG_ON(!sb || index < 0);
-+	return UNIONFS_SB(sb)->data[index].branch_id;
-+}
-+
-+static inline void set_branch_id(struct super_block *sb, int index, int val)
-+{
-+	BUG_ON(!sb || index < 0);
-+	UNIONFS_SB(sb)->data[index].branch_id = val;
-+}
-+
-+static inline void new_branch_id(struct super_block *sb, int index)
-+{
-+	BUG_ON(!sb || index < 0);
-+	set_branch_id(sb, index, ++UNIONFS_SB(sb)->high_branch_id);
-+}
-+
-+/*
-+ * Find new index of matching branch with an existing superblock of a known
-+ * (possibly old) id.  This is needed because branches could have been
-+ * added/deleted causing the branches of any open files to shift.
-+ *
-+ * @sb: the new superblock which may have new/different branch IDs
-+ * @id: the old/existing id we're looking for
-+ * Returns index of newly found branch (0 or greater), -1 otherwise.
-+ */
-+static inline int branch_id_to_idx(struct super_block *sb, int id)
-+{
-+	int i;
-+	for (i = 0; i < sbmax(sb); i++) {
-+		if (branch_id(sb, i) == id)
-+			return i;
++	BUG_ON(!PageUptodate(page));
++	inode = page->mapping->host;
++	/* if no lower inode, nothing to do */
++	if (!inode || !UNIONFS_I(inode) || UNIONFS_I(inode)->lower_inodes) {
++		err = 0;
++		goto out;
 +	}
-+	/* in the non-ODF code, this should really never happen */
-+	printk(KERN_WARNING "unionfs: cannot find branch with id %d\n", id);
-+	return -1;
-+}
-+
-+/* File to lower file. */
-+static inline struct file *unionfs_lower_file(const struct file *f)
-+{
-+	BUG_ON(!f);
-+	return UNIONFS_F(f)->lower_files[fbstart(f)];
-+}
-+
-+static inline struct file *unionfs_lower_file_idx(const struct file *f,
-+						  int index)
-+{
-+	BUG_ON(!f || index < 0);
-+	return UNIONFS_F(f)->lower_files[index];
-+}
-+
-+static inline void unionfs_set_lower_file_idx(struct file *f, int index,
-+					      struct file *val)
-+{
-+	BUG_ON(!f || index < 0);
-+	UNIONFS_F(f)->lower_files[index] = val;
-+	/* save branch ID (may be redundant?) */
-+	UNIONFS_F(f)->saved_branch_ids[index] =
-+		branch_id((f)->f_path.dentry->d_sb, index);
-+}
-+
-+static inline void unionfs_set_lower_file(struct file *f, struct file *val)
-+{
-+	BUG_ON(!f);
-+	unionfs_set_lower_file_idx((f), fbstart(f), (val));
-+}
-+
-+/* Inode to lower inode. */
-+static inline struct inode *unionfs_lower_inode(const struct inode *i)
-+{
-+	BUG_ON(!i);
-+	return UNIONFS_I(i)->lower_inodes[ibstart(i)];
-+}
-+
-+static inline struct inode *unionfs_lower_inode_idx(const struct inode *i,
-+						    int index)
-+{
-+	BUG_ON(!i || index < 0);
-+	return UNIONFS_I(i)->lower_inodes[index];
-+}
-+
-+static inline void unionfs_set_lower_inode_idx(struct inode *i, int index,
-+					       struct inode *val)
-+{
-+	BUG_ON(!i || index < 0);
-+	UNIONFS_I(i)->lower_inodes[index] = val;
-+}
-+
-+static inline void unionfs_set_lower_inode(struct inode *i, struct inode *val)
-+{
-+	BUG_ON(!i);
-+	UNIONFS_I(i)->lower_inodes[ibstart(i)] = val;
-+}
-+
-+/* Superblock to lower superblock. */
-+static inline struct super_block *unionfs_lower_super(
-+					const struct super_block *sb)
-+{
-+	BUG_ON(!sb);
-+	return UNIONFS_SB(sb)->data[sbstart(sb)].sb;
-+}
-+
-+static inline struct super_block *unionfs_lower_super_idx(
-+					const struct super_block *sb,
-+					int index)
-+{
-+	BUG_ON(!sb || index < 0);
-+	return UNIONFS_SB(sb)->data[index].sb;
-+}
-+
-+static inline void unionfs_set_lower_super_idx(struct super_block *sb,
-+					       int index,
-+					       struct super_block *val)
-+{
-+	BUG_ON(!sb || index < 0);
-+	UNIONFS_SB(sb)->data[index].sb = val;
-+}
-+
-+static inline void unionfs_set_lower_super(struct super_block *sb,
-+					   struct super_block *val)
-+{
-+	BUG_ON(!sb);
-+	UNIONFS_SB(sb)->data[sbstart(sb)].sb = val;
-+}
-+
-+/* Branch count macros. */
-+static inline int branch_count(const struct super_block *sb, int index)
-+{
-+	BUG_ON(!sb || index < 0);
-+	return atomic_read(&UNIONFS_SB(sb)->data[index].open_files);
-+}
-+
-+static inline void set_branch_count(struct super_block *sb, int index, int val)
-+{
-+	BUG_ON(!sb || index < 0);
-+	atomic_set(&UNIONFS_SB(sb)->data[index].open_files, val);
-+}
-+
-+static inline void branchget(struct super_block *sb, int index)
-+{
-+	BUG_ON(!sb || index < 0);
-+	atomic_inc(&UNIONFS_SB(sb)->data[index].open_files);
-+}
-+
-+static inline void branchput(struct super_block *sb, int index)
-+{
-+	BUG_ON(!sb || index < 0);
-+	atomic_dec(&UNIONFS_SB(sb)->data[index].open_files);
-+}
-+
-+/* Dentry macros */
-+static inline struct unionfs_dentry_info *UNIONFS_D(const struct dentry *dent)
-+{
-+	BUG_ON(!dent);
-+	return dent->d_fsdata;
-+}
-+
-+static inline int dbstart(const struct dentry *dent)
-+{
-+	BUG_ON(!dent);
-+	return UNIONFS_D(dent)->bstart;
-+}
-+
-+static inline void set_dbstart(struct dentry *dent, int val)
-+{
-+	BUG_ON(!dent);
-+	UNIONFS_D(dent)->bstart = val;
-+}
-+
-+static inline int dbend(const struct dentry *dent)
-+{
-+	BUG_ON(!dent);
-+	return UNIONFS_D(dent)->bend;
-+}
-+
-+static inline void set_dbend(struct dentry *dent, int val)
-+{
-+	BUG_ON(!dent);
-+	UNIONFS_D(dent)->bend = val;
-+}
-+
-+static inline int dbopaque(const struct dentry *dent)
-+{
-+	BUG_ON(!dent);
-+	return UNIONFS_D(dent)->bopaque;
-+}
-+
-+static inline void set_dbopaque(struct dentry *dent, int val)
-+{
-+	BUG_ON(!dent);
-+	UNIONFS_D(dent)->bopaque = val;
-+}
-+
-+static inline void unionfs_set_lower_dentry_idx(struct dentry *dent, int index,
-+						struct dentry *val)
-+{
-+	BUG_ON(!dent || index < 0);
-+	UNIONFS_D(dent)->lower_paths[index].dentry = val;
-+}
-+
-+static inline struct dentry *unionfs_lower_dentry_idx(
-+				const struct dentry *dent,
-+				int index)
-+{
-+	BUG_ON(!dent || index < 0);
-+	return UNIONFS_D(dent)->lower_paths[index].dentry;
-+}
-+
-+static inline struct dentry *unionfs_lower_dentry(const struct dentry *dent)
-+{
-+	BUG_ON(!dent);
-+	return unionfs_lower_dentry_idx(dent, dbstart(dent));
-+}
-+
-+static inline void unionfs_set_lower_mnt_idx(struct dentry *dent, int index,
-+					     struct vfsmount *mnt)
-+{
-+	BUG_ON(!dent || index < 0);
-+	UNIONFS_D(dent)->lower_paths[index].mnt = mnt;
-+}
-+
-+static inline struct vfsmount *unionfs_lower_mnt_idx(
-+					const struct dentry *dent,
-+					int index)
-+{
-+	BUG_ON(!dent || index < 0);
-+	return UNIONFS_D(dent)->lower_paths[index].mnt;
-+}
-+
-+static inline struct vfsmount *unionfs_lower_mnt(const struct dentry *dent)
-+{
-+	BUG_ON(!dent);
-+	return unionfs_lower_mnt_idx(dent, dbstart(dent));
-+}
-+
-+/* Macros for locking a dentry. */
-+enum unionfs_dentry_lock_class {
-+	UNIONFS_DMUTEX_NORMAL,
-+	UNIONFS_DMUTEX_ROOT,
-+	UNIONFS_DMUTEX_PARENT,
-+	UNIONFS_DMUTEX_CHILD,
-+	UNIONFS_DMUTEX_WHITEOUT,
-+	UNIONFS_DMUTEX_REVAL_PARENT, /* for file/dentry revalidate */
-+	UNIONFS_DMUTEX_REVAL_CHILD,   /* for file/dentry revalidate */
-+};
-+
-+static inline void unionfs_lock_dentry(struct dentry *d,
-+				       unsigned int subclass)
-+{
-+	BUG_ON(!d);
-+	mutex_lock_nested(&UNIONFS_D(d)->lock, subclass);
-+}
-+
-+static inline void unionfs_unlock_dentry(struct dentry *d)
-+{
-+	BUG_ON(!d);
-+	mutex_unlock(&UNIONFS_D(d)->lock);
-+}
-+
-+static inline void verify_locked(struct dentry *d)
-+{
-+	BUG_ON(!d);
-+	BUG_ON(!mutex_is_locked(&UNIONFS_D(d)->lock));
-+}
-+
-+/* copy a/m/ctime from the lower branch with the newest times */
-+static inline void unionfs_copy_attr_times(struct inode *upper)
-+{
-+	int bindex;
-+	struct inode *lower;
-+
-+	if (!upper || ibstart(upper) < 0)
-+		return;
-+	for (bindex = ibstart(upper); bindex <= ibend(upper); bindex++) {
-+		lower = unionfs_lower_inode_idx(upper, bindex);
-+		if (!lower)
-+			continue; /* not all lower dir objects may exist */
-+		if (unlikely(timespec_compare(&upper->i_mtime,
-+					      &lower->i_mtime) < 0))
-+			upper->i_mtime = lower->i_mtime;
-+		if (unlikely(timespec_compare(&upper->i_ctime,
-+					      &lower->i_ctime) < 0))
-+			upper->i_ctime = lower->i_ctime;
-+		if (unlikely(timespec_compare(&upper->i_atime,
-+					      &lower->i_atime) < 0))
-+			upper->i_atime = lower->i_atime;
-+	}
-+}
-+
-+/*
-+ * A unionfs/fanout version of fsstack_copy_attr_all.  Uses a
-+ * unionfs_get_nlinks to properly calcluate the number of links to a file.
-+ * Also, copies the max() of all a/m/ctimes for all lower inodes (which is
-+ * important if the lower inode is a directory type)
-+ */
-+static inline void unionfs_copy_attr_all(struct inode *dest,
-+					 const struct inode *src)
-+{
-+	dest->i_mode = src->i_mode;
-+	dest->i_uid = src->i_uid;
-+	dest->i_gid = src->i_gid;
-+	dest->i_rdev = src->i_rdev;
-+
-+	unionfs_copy_attr_times(dest);
-+
-+	dest->i_blkbits = src->i_blkbits;
-+	dest->i_flags = src->i_flags;
++	lower_inode = unionfs_lower_inode(inode);
++	lower_mapping = lower_inode->i_mapping;
 +
 +	/*
-+	 * Update the nlinks AFTER updating the above fields, because the
-+	 * get_links callback may depend on them.
++	 * find lower page (returns a locked page)
++	 *
++	 * We turn off __GFP_FS while we look for or create a new lower
++	 * page.  This prevents a recursion into the file system code, which
++	 * under memory pressure conditions could lead to a deadlock.  This
++	 * is similar to how the loop driver behaves (see loop_set_fd in
++	 * drivers/block/loop.c).  If we can't find the lower page, we
++	 * redirty our page and return "success" so that the VM will call us
++	 * again in the (hopefully near) future.
 +	 */
-+	dest->i_nlink = unionfs_get_nlinks(dest);
++	mask = mapping_gfp_mask(lower_mapping) & ~(__GFP_FS);
++	lower_page = find_or_create_page(lower_mapping, page->index, mask);
++	if (!lower_page) {
++		err = 0;
++		set_page_dirty(page);
++		goto out;
++	}
++
++	/* copy page data from our upper page to the lower page */
++	copy_highpage(lower_page, page);
++	flush_dcache_page(lower_page);
++	SetPageUptodate(lower_page);
++	set_page_dirty(lower_page);
++
++	/*
++	 * Call lower writepage (expects locked page).  However, if we are
++	 * called with wbc->for_reclaim, then the VFS/VM just wants to
++	 * reclaim our page.  Therefore, we don't need to call the lower
++	 * ->writepage: just copy our data to the lower page (already done
++	 * above), then mark the lower page dirty and unlock it, and return
++	 * success.
++	 */
++	if (wbc->for_reclaim) {
++		unlock_page(lower_page);
++		goto out_release;
++	}
++
++	BUG_ON(!lower_mapping->a_ops->writepage);
++	wait_on_page_writeback(lower_page); /* prevent multiple writers */
++	clear_page_dirty_for_io(lower_page); /* emulate VFS behavior */
++	err = lower_mapping->a_ops->writepage(lower_page, wbc);
++	if (err < 0)
++		goto out_release;
++
++	/*
++	 * Lower file systems such as ramfs and tmpfs, may return
++	 * AOP_WRITEPAGE_ACTIVATE so that the VM won't try to (pointlessly)
++	 * write the page again for a while.  But those lower file systems
++	 * also set the page dirty bit back again.  Since we successfully
++	 * copied our page data to the lower page, then the VM will come
++	 * back to the lower page (directly) and try to flush it.  So we can
++	 * save the VM the hassle of coming back to our page and trying to
++	 * flush too.  Therefore, we don't re-dirty our own page, and we
++	 * never return AOP_WRITEPAGE_ACTIVATE back to the VM (we consider
++	 * this a success).
++	 *
++	 * We also unlock the lower page if the lower ->writepage returned
++	 * AOP_WRITEPAGE_ACTIVATE.  (This "anomalous" behaviour may be
++	 * addressed in future shmem/VM code.)
++	 */
++	if (err == AOP_WRITEPAGE_ACTIVATE) {
++		err = 0;
++		unlock_page(lower_page);
++	}
++
++	/* all is well */
++
++	/* lower mtimes have changed: update ours */
++	unionfs_copy_attr_times(inode);
++
++out_release:
++	/* b/c find_or_create_page increased refcnt */
++	page_cache_release(lower_page);
++out:
++	/*
++	 * We unlock our page unconditionally, because we never return
++	 * AOP_WRITEPAGE_ACTIVATE.
++	 */
++	unlock_page(page);
++	return err;
 +}
 +
-+#endif	/* not _FANOUT_H */
++static int unionfs_writepages(struct address_space *mapping,
++			      struct writeback_control *wbc)
++{
++	int err = 0;
++	struct inode *lower_inode;
++	struct inode *inode;
++
++	inode = mapping->host;
++	if (ibstart(inode) < 0 && ibend(inode) < 0)
++		goto out;
++	lower_inode = unionfs_lower_inode(inode);
++	if (!lower_inode)
++		goto out;
++
++	err = generic_writepages(mapping, wbc);
++	if (!err)
++		unionfs_copy_attr_times(inode);
++out:
++	return err;
++}
++
++/* Readpage expects a locked page, and must unlock it */
++static int unionfs_readpage(struct file *file, struct page *page)
++{
++	int err;
++	struct file *lower_file;
++	struct inode *inode;
++	mm_segment_t old_fs;
++	char *page_data = NULL;
++	mode_t orig_mode;
++
++	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
++	err = unionfs_file_revalidate(file, false);
++	if (unlikely(err))
++		goto out;
++	unionfs_check_file(file);
++
++	if (!UNIONFS_F(file)) {
++		err = -ENOENT;
++		goto out;
++	}
++
++	lower_file = unionfs_lower_file(file);
++	/* FIXME: is this assertion right here? */
++	BUG_ON(lower_file == NULL);
++
++	inode = file->f_path.dentry->d_inode;
++
++	page_data = (char *) kmap(page);
++	/*
++	 * Use vfs_read because some lower file systems don't have a
++	 * readpage method, and some file systems (esp. distributed ones)
++	 * don't like their pages to be accessed directly.  Using vfs_read
++	 * may be a little slower, but a lot safer, as the VFS does a lot of
++	 * the necessary magic for us.
++	 */
++	lower_file->f_pos = page_offset(page);
++	old_fs = get_fs();
++	set_fs(KERNEL_DS);
++	/*
++	 * generic_file_splice_write may call us on a file not opened for
++	 * reading, so temporarily allow reading.
++	 */
++	orig_mode = lower_file->f_mode;
++	lower_file->f_mode |= FMODE_READ;
++	err = vfs_read(lower_file, page_data, PAGE_CACHE_SIZE,
++		       &lower_file->f_pos);
++	lower_file->f_mode = orig_mode;
++	set_fs(old_fs);
++	if (err >= 0 && err < PAGE_CACHE_SIZE)
++		memset(page_data + err, 0, PAGE_CACHE_SIZE - err);
++	kunmap(page);
++
++	if (err < 0)
++		goto out;
++	err = 0;
++
++	/* if vfs_read succeeded above, sync up our times */
++	unionfs_copy_attr_times(inode);
++
++	flush_dcache_page(page);
++
++	/*
++	 * we have to unlock our page, b/c we _might_ have gotten a locked
++	 * page.  but we no longer have to wakeup on our page here, b/c
++	 * UnlockPage does it
++	 */
++out:
++	if (err == 0)
++		SetPageUptodate(page);
++	else
++		ClearPageUptodate(page);
++
++	unlock_page(page);
++	unionfs_check_file(file);
++	unionfs_read_unlock(file->f_path.dentry->d_sb);
++
++	return err;
++}
++
++static int unionfs_prepare_write(struct file *file, struct page *page,
++				 unsigned from, unsigned to)
++{
++	int err;
++
++	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
++	/*
++	 * This is the only place where we unconditionally copy the lower
++	 * attribute times before calling unionfs_file_revalidate.  The
++	 * reason is that our ->write calls do_sync_write which in turn will
++	 * call our ->prepare_write and then ->commit_write.  Before our
++	 * ->write is called, the lower mtimes are in sync, but by the time
++	 * the VFS calls our ->commit_write, the lower mtimes have changed.
++	 * Therefore, the only reasonable time for us to sync up from the
++	 * changed lower mtimes, and avoid an invariant violation warning,
++	 * is here, in ->prepare_write.
++	 */
++	unionfs_copy_attr_times(file->f_path.dentry->d_inode);
++	err = unionfs_file_revalidate(file, true);
++	unionfs_check_file(file);
++	unionfs_read_unlock(file->f_path.dentry->d_sb);
++
++	return err;
++}
++
++static int unionfs_commit_write(struct file *file, struct page *page,
++				unsigned from, unsigned to)
++{
++	int err = -ENOMEM;
++	struct inode *inode, *lower_inode;
++	struct file *lower_file = NULL;
++	unsigned bytes = to - from;
++	char *page_data = NULL;
++	mm_segment_t old_fs;
++
++	BUG_ON(file == NULL);
++
++	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
++	err = unionfs_file_revalidate(file, true);
++	if (unlikely(err))
++		goto out;
++	unionfs_check_file(file);
++
++	inode = page->mapping->host;
++
++	if (UNIONFS_F(file) != NULL)
++		lower_file = unionfs_lower_file(file);
++
++	/* FIXME: is this assertion right here? */
++	BUG_ON(lower_file == NULL);
++
++	page_data = (char *)kmap(page);
++	lower_file->f_pos = page_offset(page) + from;
++
++	/*
++	 * We use vfs_write instead of copying page data and the
++	 * prepare_write/commit_write combo because file system's like
++	 * GFS/OCFS2 don't like things touching those directly,
++	 * calling the underlying write op, while a little bit slower, will
++	 * call all the FS specific code as well
++	 */
++	old_fs = get_fs();
++	set_fs(KERNEL_DS);
++	err = vfs_write(lower_file, page_data + from, bytes,
++			&lower_file->f_pos);
++	set_fs(old_fs);
++
++	kunmap(page);
++
++	if (err < 0)
++		goto out;
++
++	/* if vfs_write succeeded above, sync up our times/sizes */
++	lower_inode = lower_file->f_path.dentry->d_inode;
++	if (!lower_inode)
++		lower_inode = unionfs_lower_inode(inode);
++	BUG_ON(!lower_inode);
++	fsstack_copy_inode_size(inode, lower_inode);
++	unionfs_copy_attr_times(inode);
++	mark_inode_dirty_sync(inode);
++
++out:
++	if (err < 0)
++		ClearPageUptodate(page);
++
++	unionfs_check_file(file);
++	unionfs_read_unlock(file->f_path.dentry->d_sb);
++	return err;		/* assume all is ok */
++}
++
++/*
++ * Although unionfs isn't a block-based file system, it may stack on one.
++ * ->bmap is needed, for example, to swapon(2) files.
++ */
++sector_t unionfs_bmap(struct address_space *mapping, sector_t block)
++{
++	int err = -EINVAL;
++	struct inode *inode, *lower_inode;
++	sector_t (*bmap)(struct address_space *, sector_t);
++
++	inode = (struct inode *)mapping->host;
++	lower_inode = unionfs_lower_inode(inode);
++	if (!lower_inode)
++		goto out;
++	bmap = lower_inode->i_mapping->a_ops->bmap;
++	if (bmap)
++		err = bmap(lower_inode->i_mapping, block);
++out:
++	return err;
++}
++
++
++struct address_space_operations unionfs_aops = {
++	.writepage	= unionfs_writepage,
++	.writepages	= unionfs_writepages,
++	.readpage	= unionfs_readpage,
++	.prepare_write	= unionfs_prepare_write,
++	.commit_write	= unionfs_commit_write,
++	.bmap		= unionfs_bmap,
++};
 -- 
 1.5.2.2
 
