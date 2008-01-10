@@ -1,58 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758294AbYAJCVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756009AbYAJCWD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758294AbYAJCVo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 21:21:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754714AbYAJCVh
+	id S1756009AbYAJCWD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 21:22:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758416AbYAJCVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 21:21:37 -0500
-Received: from c60.cesmail.net ([216.154.195.49]:12588 "EHLO c60.cesmail.net"
+	Wed, 9 Jan 2008 21:21:52 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:50016 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753900AbYAJCVg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 21:21:36 -0500
-Subject: Re: Replacement for page fault notifiers?
-From: Pavel Roskin <proski@gnu.org>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Dave Airlie <airlied@gmail.com>, Pekka Paalanen <pq@iki.fi>,
-       linux-kernel@vger.kernel.org, jbeulich@novell.com
-In-Reply-To: <1199930590.6245.104.camel@cinder.waste.org>
-References: <20080108210638.5c9e093a@daedalus.pq.iki.fi>
-	 <20080108203235.GA772@infradead.org>
-	 <21d7e9970801081413n307ab07aq462a9fff014143ae@mail.gmail.com>
-	 <1199838407.6734.83.camel@pasglop> <1199902724.8050.11.camel@dv>
-	 <20080109182157.GA32754@infradead.org> <1199908703.6734.133.camel@pasglop>
-	 <20080109202254.GA5279@infradead.org>
-	 <20080109164241.7daa5770@laptopd505.fenrus.org>
-	 <1199930590.6245.104.camel@cinder.waste.org>
-Content-Type: text/plain
-Date: Wed, 09 Jan 2008 21:21:33 -0500
-Message-Id: <1199931693.21499.11.camel@dv>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
-Content-Transfer-Encoding: 7bit
+	id S1758372AbYAJCVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 21:21:51 -0500
+Date: Thu, 10 Jan 2008 07:51:33 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Subject: Re: [patch 05/19] split LRU lists into anon & file sets
+Message-ID: <20080110022133.GC15547@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org, Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+References: <20080108205939.323955454@redhat.com> <20080108210002.638347207@redhat.com> <20080109134132.ba7bb33c.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20080109134132.ba7bb33c.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-01-09 at 20:03 -0600, Matt Mackall wrote:
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2008-01-09 13:41:32]:
 
-> That makes it way too easy for drivers of questionable legality to just
-> clear that bit. Also, we've got a shortage of page bits, etc.
+> I like this patch set thank you.
+> 
+> On Tue, 08 Jan 2008 15:59:44 -0500
+> Rik van Riel <riel@redhat.com> wrote:
+> > Index: linux-2.6.24-rc6-mm1/mm/memcontrol.c
+> > ===================================================================
+> > --- linux-2.6.24-rc6-mm1.orig/mm/memcontrol.c	2008-01-07 11:55:09.000000000 -0500
+> > +++ linux-2.6.24-rc6-mm1/mm/memcontrol.c	2008-01-07 17:32:53.000000000 -0500
+> <snip>
+> 
+> > -enum mem_cgroup_zstat_index {
+> > -	MEM_CGROUP_ZSTAT_ACTIVE,
+> > -	MEM_CGROUP_ZSTAT_INACTIVE,
+> > -
+> > -	NR_MEM_CGROUP_ZSTAT,
+> > -};
+> > -
+> >  struct mem_cgroup_per_zone {
+> >  	/*
+> >  	 * spin_lock to protect the per cgroup LRU
+> >  	 */
+> >  	spinlock_t		lru_lock;
+> > -	struct list_head	active_list;
+> > -	struct list_head	inactive_list;
+> > -	unsigned long count[NR_MEM_CGROUP_ZSTAT];
+> > +	struct list_head	lists[NR_LRU_LISTS];
+> > +	unsigned long		count[NR_LRU_LISTS];
+> >  };
+> >  /* Macro for accessing counter */
+> >  #define MEM_CGROUP_ZSTAT(mz, idx)	((mz)->count[(idx)])
+> > @@ -160,6 +152,7 @@ struct page_cgroup {
+> >  };
+> >  #define PAGE_CGROUP_FLAG_CACHE	(0x1)	/* charged as cache */
+> >  #define PAGE_CGROUP_FLAG_ACTIVE (0x2)	/* page is active in this cgroup */
+> > +#define PAGE_CGROUP_FLAG_FILE	(0x4)	/* page is file system backed */
+> > 
+> 
+> Now, we don't have control_type and a feature for accounting only CACHE.
+> Balbir-san, do you have some new plan ?
+>
 
-If we ever have this problem, the bit can be changed in the kernel to
-fool those drivers (I hope the shortage is not so dire that there will
-be no more bits left).
+Hi, KAMEZAWA-San,
 
-I don't think evil drivers should be a problem per se.  There are
-existing non-free drivers that still need to be traced over and over
-again.  I guess ndiswrapper could use tracing for Windows drivers that
-don't know anything about Linux page flags.
+The control_type feature is gone. We still have cached page
+accounting, but we do not allow control of only RSS pages anymore. We
+need to control both RSS+cached pages. I do not understand your
+question about new plan? Is it about adding back control_type?
 
-Last but not least, mmiotrace should be useful for free drivers in the
-first place to have a legitimate reason to be in the kernel.
+ 
+> BTW, is it better to use PageSwapBacked(pc->page) rather than adding a new flag
+> PAGE_CGROUP_FLAG_FILE ?
+> 
+> 
+> PAGE_CGROUP_FLAG_ACTIVE is used because global reclaim can change
+> ACTIVE/INACTIVE attribute without accessing memory cgroup.
+> (Then, we cannot trust PageActive(pc->page))
+> 
+
+Yes, correct. A page active on the node's zone LRU need not be active
+in the memory cgroup.
+
+> ANON <-> FILE attribute can be changed dinamically (after added to LRU) ?
+> 
+> If no, using page_file_cache(pc->page) will be easy.
+> 
+> Thanks,
+> -Kame
+> 
 
 -- 
-Regards,
-Pavel Roskin
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
