@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760124AbYAJTEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbYAJTHO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760124AbYAJTEQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 14:04:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757069AbYAJTD6
+	id S1756213AbYAJTHO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 14:07:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbYAJTHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 14:03:58 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:36895 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756253AbYAJTD4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 14:03:56 -0500
-Subject: Re: [patch 1/1] Switch ioctl functions of drivers/scsi/sg.c to
-	unlocked_ioctl
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andre Noll <maan@systemlinux.org>, linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       kernel-janitors@vger.kernel.org,
-       Richard Knutsson <ricknu-0@student.ltu.se>
-In-Reply-To: <20080110185944.GA1690@one.firstfloor.org>
-References: <20080110180529.GA32640@skl-net.de>
-	 <1199991298.3141.75.camel@localhost.localdomain>
-	 <20080110185944.GA1690@one.firstfloor.org>
-Content-Type: text/plain
-Date: Thu, 10 Jan 2008 13:03:48 -0600
-Message-Id: <1199991828.3141.82.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Jan 2008 14:07:00 -0500
+Received: from cantor.suse.de ([195.135.220.2]:50653 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751010AbYAJTG7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 14:06:59 -0500
+To: venkatesh.pallipadi@intel.com
+Cc: ebiederm@xmission.com, rdreier@cisco.com, torvalds@linux-foundation.org,
+       gregkh@suse.de, airlied@skynet.ie, davej@redhat.com, mingo@elte.hu,
+       tglx@linutronix.de, hpa@zytor.co, linux-kernel@vger.kernel.org,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [patch 02/11] PAT x86: Map only usable memory in x86_64 identity map and kernel text
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080110184840.927409000@intel.com>
+	<20080110184854.787474000@intel.com>
+Date: Thu, 10 Jan 2008 20:06:53 +0100
+In-Reply-To: <20080110184854.787474000@intel.com> (venkatesh pallipadi's message of "Thu\, 10 Jan 2008 10\:48\:42 -0800")
+Message-ID: <p737iiho5yq.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+venkatesh.pallipadi@intel.com writes:
 
-On Thu, 2008-01-10 at 19:59 +0100, Andi Kleen wrote:
-> > Really, all this is doing is open coding what the ioctl handler is doing
-> > anyway, isn't it? in which case, why bother to change it at all?
-> 
-> Because once it's open coded it is visible and can then be eliminated.
-> Does SCSI need the BKL at all?
+> x86_64: Map only usable memory in identity map. 
 
-No, of course not ... it hasn't for ages, otherwise linux performance
-would be in the tank.  If we require the BKL at all in the ioctl path it
-will be to protect the non-SCSI structures we have to use.  Is there any
-guide to which structures in the kernel still require the BKL?
+I don't think that is needed or makes sense for reserved/ACPI * etc. 
+Only e820 holes should be truly unmapped because only those should
+contain mmio.
 
-> But perhaps for such a long ioctl handler it would be better to move
-> the lock/unlock_kernel()s into the individual case ...: statements;
-> then it could be eliminated step by step.
+> All reserved memory maps to a
+> zero page. 
 
-James
+Why zero page?  Why not unmap.
 
+Anyways you could make that a zillion times more simple by just rounding
+the e820 areas to 2MB -- for the holes only that should be ok I think; 
+i would expect them to be near always already suitably aligned.
 
+In short this can be all done much simpler.
+
+-Andi
