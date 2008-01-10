@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759508AbYAJTwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759210AbYAJTx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759508AbYAJTwR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 14:52:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755289AbYAJTwE
+	id S1759210AbYAJTx6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 14:53:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbYAJTxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 14:52:04 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:38009 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755450AbYAJTwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 14:52:03 -0500
-Date: Thu, 10 Jan 2008 11:52:02 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Ingo Molnar <mingo@elte.hu>, Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH] greatly reduce SLOB external fragmentation
-In-Reply-To: <20080110195329.GB2120@one.firstfloor.org>
-Message-ID: <Pine.LNX.4.64.0801101151230.20926@schroedinger.engr.sgi.com>
-References: <1199906151.6245.57.camel@cinder.waste.org>
- <Pine.LNX.4.64.0801100037230.3071@sbz-30.cs.Helsinki.FI>
- <1199919548.6245.74.camel@cinder.waste.org> <Pine.LNX.4.64.0801101156150.10271@sbz-30.cs.Helsinki.FI>
- <Pine.LNX.4.64.0801101251200.14402@sbz-30.cs.Helsinki.FI>
- <alpine.LFD.1.00.0801100749000.3148@woody.linux-foundation.org>
- <1199987366.5331.92.camel@cinder.waste.org>
- <alpine.LFD.1.00.0801101013310.3148@woody.linux-foundation.org>
- <1199990565.5331.130.camel@cinder.waste.org>
- <alpine.LFD.1.00.0801101124140.3148@woody.linux-foundation.org>
- <20080110195329.GB2120@one.firstfloor.org>
+	Thu, 10 Jan 2008 14:53:51 -0500
+Received: from mx2.suse.de ([195.135.220.15]:38260 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753939AbYAJTxu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 14:53:50 -0500
+Date: Thu, 10 Jan 2008 11:54:03 -0800
+From: Greg KH <gregkh@suse.de>
+To: Kevin Lloyd <klloyd@sierrawireless.com>
+Cc: linux-kernel@vger.kernel.org, linux@sierrawireless.com,
+       linux-usb@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: Re: [PATCH] usb-serial: Sierra driver - add devices and update dtr
+Message-ID: <20080110195403.GA29384@suse.de>
+References: <1199992265.9266.19.camel@linux-z60t>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1199992265.9266.19.camel@linux-z60t>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jan 2008, Andi Kleen wrote:
+On Thu, Jan 10, 2008 at 11:11:04AM -0800, Kevin Lloyd wrote:
+> From: Kevin Lloyd <linux@sierrawireless.com>
+> 
+> This patch is targeted for the 2.6.24-rc7 kernel.
+> 
+> The following improvements were made:
+>  - Added new product support: MC5725, AC 880 U, MP 3G (UMTS & CDMA)
+>  - Fixed control line issue where asserting DTR on ep5 would close ep2
+>  - Added support for calc_num_ports (will help support future composite devices)
+> 
+> This also covers the devices added by j@twu.net and
+> agilmore@wirelessbeehive.com since their patches were not committed to
+> the 2.6.23-rc7 kernel.
 
-> I did essentially that for my GBpages hugetlbfs patchkit. GB pages are already
-> beyond MAX_ORDER and increasing MAX_ORDER didn't seem attractive because
-> it would require aligning the zones all to 1GB which would quite nasty.
+Those device ids are already in my tree, as it was my understanding that
+you would not be sending me patches for them :)
 
-I am very very interested in that work and I could not find it when I 
-looked for it a couple of weeks back. Can you sent me a copy?
+I'll split this patch up into something that updates the device ids and
+then does all of the other changes.  The device ids can go into 2.6.24
+(and -stable if I miss the merge window), but the other changes should
+wait until 2.6.25.
 
+Any objection to this?
+
+thanks,
+
+greg k-h
