@@ -1,49 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757586AbYAJXpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758159AbYAJXuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757586AbYAJXpl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 18:45:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752820AbYAJXpe
+	id S1758159AbYAJXuz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 18:50:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754317AbYAJXur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 18:45:34 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:44406 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752564AbYAJXpe (ORCPT
+	Thu, 10 Jan 2008 18:50:47 -0500
+Received: from simmts7-qfe0.srvr.bell.ca ([206.47.199.165]:48267 "EHLO
+	simmts7-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754390AbYAJXuq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 18:45:34 -0500
-Subject: Re: [x86] list of style offenders
-From: Daniel Walker <dwalker@mvista.com>
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4d8e3fd30801101540l264068f1i2475f53d6ea11f70@mail.gmail.com>
-References: <1199995391.29897.26.camel@imap.mvista.com>
-	 <4d8e3fd30801101435l228a0d0ydd0174e4073400e6@mail.gmail.com>
-	 <1200006481.29897.48.camel@imap.mvista.com>
-	 <4d8e3fd30801101540l264068f1i2475f53d6ea11f70@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 10 Jan 2008 15:43:52 -0800
-Message-Id: <1200008632.29897.51.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+	Thu, 10 Jan 2008 18:50:46 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgAAAKw+hkecIpyl/2dsb2JhbAAIkWiYAw
+Message-ID: <4786AF4C.6050509@gmail.com>
+Date: Thu, 10 Jan 2008 19:50:36 -0400
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: hwclock failure in x86.git
+References: <4786AA11.5010805@gmail.com> <4786AB1B.4030004@zytor.com>
+In-Reply-To: <4786AB1B.4030004@zytor.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 2008-01-11 at 00:40 +0100, Paolo Ciarrocchi wrote:
-> On Jan 11, 2008 12:08 AM, Daniel Walker <dwalker@mvista.com> wrote:
+H. Peter Anvin wrote:
+> Kevin Winchester wrote:
+>> My first time building and booting the mm branch of x86.git was pretty
+>> successful.  The only error I noticed was the following in my dmesg:
+>>
+>>  hwclock[622] general protection ip:804b226 sp:bff43e30 error:0
+>>
+>> I'm not sure exactly how to debug this.  I could bisect, but there seems
+>> to be some useful debug information in there, so there might be
+>> something better to try first.
+>>
 > 
-> > The git logs also show that arch/x86/math-emu/fpu_trig.c hasn't been
-> > modified since it was pull in on Oct. 11 ..
+> That's a userspace IP; it implies the userspace hwclock binary did 
+> something bad, or the kernel didn't permit it to do something it should 
+> have.  The best thing to do would probably to strace hwclock and see 
+> what it did when it died.
 > 
-> Daniel,
-> are we looking at the same tree?
-> fpu_trig.c has been modified (and cleaned up) by Ingo 35 hours ago:
-> http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=history;f=arch/x86/math-emu/fpu_trig.c;h=ecd06680581c51cbb7631cd0240708e92d9ef919;hb=mm
 
-Not it's appears we aren't .. The tree I was using was a straight pull
-of the repository above .. I guess there's a separate repository, and
-branch for x86 ..
+Unfortunately, but the time I can get a chance to run hwclock, the
+problem seems to have fixed itself.  I tried booting into single user
+mode, but `/etc/init.d/hwclock.sh restart` succeeds once I have my prompt.
 
-Daniel
+A few other facts:
+
+- This is an Athlon64 box running X83_32
+- I use hpet=force for the Via chipset
+- A little more of the demsg is:
+
+[   17.511262] rtc_cmos 00:05: setting system clock to 2008-01-10
+23:44:16 UTC (1200008656)
+[   17.545948] EXT3-fs: mounted filesystem with ordered data mode.
+[   17.545986] VFS: Mounted root (ext3 filesystem) readonly.
+[   17.546142] Freeing unused kernel memory: 144k freed
+[   17.546260] kjournald starting.  Commit interval 5 seconds
+[   21.861249] hwclock[622] general protection ip:804b226 sp:bfd98480
+error:0
+[   22.416442] Velocity is AUTO mode
+[   23.093416] Adding 1502036k swap on /dev/sda5.  Priority:-1 extents:1
+across:1502036k
+[   23.416756] EXT3 FS on sda1, internal journal
+[   24.009669] kjournald starting.  Commit interval 5 seconds
+[   24.009889] EXT3 FS on sda6, internal journal
+[   24.009899] EXT3-fs: mounted filesystem with ordered data mode.
+[   24.053164] eth0: Link auto-negotiation speed 100M bps full duplex
+[   28.733360] agpgart: Found an AGP 3.0 compliant device at 0000:00:00.0.
+[   28.733872] agpgart: Putting AGP V3 device at 0000:00:00.0 into 8x mode
+[   28.734354] agpgart: Putting AGP V3 device at 0000:01:00.0 into 8x mode
+[   29.089412] [drm] Setting GART location based on new memory map
+[   29.089842] [drm] Loading R200 Microcode
+[   29.090172] [drm] writeback test succeeded in 1 usecs
+[  143.076821] Marking TSC unstable due to: cpufreq changes.
+[  143.084910] Time: hpet clocksource has been installed.
+[  143.670905] Clocksource tsc unstable (delta = -231086796 ns)
+
+So the TSC is being marked unstable because of cpufreq changes. I have
+no idea when it comes to TSCs and HPETs and how the RTC works (other
+than what the abbreviations stand for), so this all may be meaningless.
+ I'll try disabling cpufreq to see if that has an effect.
+
+-- 
+Kevin Winchester
 
