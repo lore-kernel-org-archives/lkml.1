@@ -1,98 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756309AbYAJNrD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758885AbYAJNtb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756309AbYAJNrD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 08:47:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755562AbYAJNqw
+	id S1758885AbYAJNtb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 08:49:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755149AbYAJNtY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 08:46:52 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:64672 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754079AbYAJNqv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 08:46:51 -0500
-Date: Thu, 10 Jan 2008 08:46:18 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH][RFC] fast file mapping for loop
-Message-ID: <20080110084618.6ca457f8@think.oraclecorp.com>
-In-Reply-To: <20080110130324.GZ6258@kernel.dk>
-References: <20080109085231.GE6650@kernel.dk>
-	<200801101242.25671.nickpiggin@yahoo.com.au>
-	<20080110083753.GB10745@infradead.org>
-	<20080110084457.GT6258@kernel.dk>
-	<20080110085459.GA11966@infradead.org>
-	<20080110075359.18622548@think.oraclecorp.com>
-	<20080110130324.GZ6258@kernel.dk>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 10 Jan 2008 08:49:24 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40210 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753978AbYAJNtX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 08:49:23 -0500
+Date: Thu, 10 Jan 2008 14:48:35 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Dave Hansen <haveblue@us.ibm.com>, travis@sgi.com,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Jack Steiner <steiner@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       tglx@linutronix.de, mingo@redhat.com
+Subject: Re: [PATCH 10/10] x86: Unify percpu.h
+Message-ID: <20080110134835.GE5886@elte.hu>
+References: <20080108211023.923047000@sgi.com> <20080108211025.293924000@sgi.com> <1199906905.9834.101.camel@localhost> <Pine.LNX.4.64.0801091130420.11317@schroedinger.engr.sgi.com> <1199908430.9834.104.camel@localhost> <Pine.LNX.4.64.0801091210300.11709@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0801091210300.11709@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jan 2008 14:03:24 +0100
-Jens Axboe <jens.axboe@oracle.com> wrote:
 
-> On Thu, Jan 10 2008, Chris Mason wrote:
-> > On Thu, 10 Jan 2008 08:54:59 +0000
-> > Christoph Hellwig <hch@infradead.org> wrote:
-> > 
-> > > On Thu, Jan 10, 2008 at 09:44:57AM +0100, Jens Axboe wrote:
-> > > > > IMHO this shouldn't be done in the loop driver anyway.
-> > > > > Filesystems have their own effricient extent lookup trees
-> > > > > (well, at least xfs and btrfs do), and we should leverage
-> > > > > that instead of reinventing it.
-> > > > 
-> > > > Completely agree, it's just needed right now for this solution
-> > > > since all we have is a crappy bmap() interface to get at those
-> > > > mappings.
-> > > 
-> > > So let's fix the interface instead of piling crap ontop of it.
-> > > As I said I think Peter has something to start with so let's beat
-> > > on it until we have something suitable.   If we aren't done by
-> > > end of Feb I'm happy to host a hackfest to get it sorted around
-> > > the fs/storage summit..
-> > > 
-> > 
-> > Ok, I've been meaning to break my extent_map code up, and this is a
-> > very good reason.  I'll work up a sample today based on Jens' code.
+* Christoph Lameter <clameter@sgi.com> wrote:
+
+> On Wed, 9 Jan 2008, Dave Hansen wrote:
 > 
-> Great!
-
-Grin, we'll see how the sample looks.
-
+> > Then I really think this particular patch belongs in that other 
+> > patch set.  Here, it makes very little sense, and it's on the end 
+> > anyway.
 > 
-> > The basic goals:
-> > 
-> > * Loop (swap) calls into the FS for each mapping. Any caching
-> > happens on the FS side.
-> > * The FS returns an extent, filling any holes
-> 
-> We don't want to fill holes for a read, but I guess that's a given?
+> It makes sense in that both percpu_32/64 are very small as a result of 
+> earlier patches and so its justifiable to put them together to 
+> simplify the next patchset.
 
-Right.
+i'd agree with this - lets just keep the existing flow of patches 
+intact. It's not like the percpu code is in any danger of becoming 
+unclean or quirky - it's one of the best-maintained pieces of kernel 
+code :)
 
-> 
-> > Swap would need to use an extra call early on for preallocation.
-> > 
-> > Step two is having a call back into the FS allow the FS to delay the
-> > bios until commit completion so that COW and delalloc blocks can be
-> > fully on disk when the bios are reported as done.  Jens, can you add
-> > some way to queue the bio completions up?
-> 
-> Sure, a function to save a completed bio and a function to execute
-> completions on those already stored?
-> 
-
-Sounds right, I'm mostly looking for a way to aggregate a few writes to
-make the commits a little larger.
-
--chris
+	Ingo
