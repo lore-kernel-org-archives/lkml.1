@@ -1,77 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756097AbYAJLM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756561AbYAJLOL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756097AbYAJLM6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 06:12:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbYAJLMv
+	id S1756561AbYAJLOL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 06:14:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbYAJLN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 06:12:51 -0500
-Received: from ns1.suse.de ([195.135.220.2]:58510 "EHLO mx1.suse.de"
+	Thu, 10 Jan 2008 06:13:58 -0500
+Received: from hazard.jcu.cz ([160.217.1.6]:42856 "EHLO hazard.jcu.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753373AbYAJLMu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 06:12:50 -0500
-Date: Thu, 10 Jan 2008 12:12:48 +0100
-From: Andi Kleen <ak@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       suresh.b.siddha@intel.com, Arjan van de Ven <arjan@infradead.org>,
-       Dave Jones <davej@redhat.com>
-Subject: Re: CPA patchset
-Message-ID: <20080110111248.GR25945@bingen.suse.de>
-References: <20080103424.989432000@suse.de> <20080110093126.GA360@elte.hu> <20080110095337.GK25945@bingen.suse.de> <20080110100443.GB28209@elte.hu> <20080110100712.GO25945@bingen.suse.de> <20080110105726.GD28209@elte.hu>
+	id S1751741AbYAJLN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 06:13:57 -0500
+X-Greylist: delayed 501 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Jan 2008 06:13:57 EST
+Date: Thu, 10 Jan 2008 12:05:35 +0100
+From: Jan Marek <linux@hazard.jcu.cz>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: Is it possible to change IRQ for certain device?
+Message-ID: <20080110110535.GA25706@hazard.jcu.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080110105726.GD28209@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 10, 2008 at 11:57:26AM +0100, Ingo Molnar wrote:
-> 
-> > > > >   WBINVD isnt particular fast (takes a few msecs), but why is 
-> > > > >   that a problem? Drivers dont do high-frequency ioremap-ing. 
-> > > > >   It's typically only done at driver/device startup and that's 
-> > > > >   it.
-> > > > 
-> > > > Actually graphics drivers can do higher frequency allocation of WC 
-> > > > memory (with PAT) support.
-> > > 
-> > > but that's not too smart: why dont they use WB plus cflush instead?
-> > 
-> > Because they need to access it WC for performance.
-> 
-> I think you have it fundamentally backwards: the best for performance is 
-> WB + cflush. What would WC offer for performance that cflush cannot do?
+Hello lkml,
 
-Cached requires the cache line to be read first before you can write it.
+I have problem with my computer: I have motherboard with AMD690G chipset
+and nVidia VGA card. But I cannot set BIOS, to assign for VGA unique
+IRQ. VGA card is sharing IRQ with two ohci_hcd (USB 1.1 controllers).
+But when I want use for X proprietary nvidia driver, X didn't work with
+this errors:
 
-WC on the other hand does not allocate a cache line and just dumps
-the data into a special write combining buffer.  It was invented originally 
-because reads from AGP were incredibly slow.
+In dmesg:
 
-And it's race less regarding the caching protocol (assuming you flush
-the caches and TLBs correctly). 
+NVRM: RmInitAdapter failed! (0x23:0xffffffff:678)
+NVRM: rm_init_adapter(0) failed
 
-Another typical problem is that if something
-is uncached then you can't have it in any other caches because if that
-cache eventually flushes it will corrupt the data.
-That can happen with remapping apertures for example which remap data
-behind the CPUs back.
+and in /var/log/Xorg.0.log:
 
-CLFLUSH is really only a hint but it cannot be used if UC is needed
-for correctness.
+(II) Setting vga for screen 0.
+(**) NVIDIA(0): Depth 24, (--) framebuffer bpp 32
+(==) NVIDIA(0): RGB weight 888
+(==) NVIDIA(0): Default visual is TrueColor
+(==) NVIDIA(0): Using gamma correction (1.0, 1.0, 1.0)
+(**) NVIDIA(0): Enabling RENDER acceleration
+(II) NVIDIA(0): Support for GLX with the Damage and Composite X
+extensions is
+(II) NVIDIA(0):     enabled.
+(EE) NVIDIA(0): Failed to initialize the NVIDIA graphics device
+PCI:1:0:0.
+(EE) NVIDIA(0):     Please see the COMMON PROBLEMS section in the
+README for
+(EE) NVIDIA(0):     additional information.
+(EE) NVIDIA(0): Failed to initialize the NVIDIA graphics device!
+(EE) NVIDIA(0):  *** Aborting ***
+(II) UnloadModule: "nvidia"
+(II) UnloadModule: "fb"
+(EE) Screen(s) found, but none have a usable configuration.
 
-> also, it's irrelevant to change_page_attr() call frequency. Just map in 
-> everything from the card and use it. In graphics, if you remap anything 
-> on the fly and it's not a slowpath you've lost the performance game even 
-> before you began it.
+Fatal server error:
+no screens found
 
-The typical case would be lots of user space DRI clients supplying
-their own buffers on the fly. There's not really a fixed pool 
-in this case, but it all varies dynamically. In some scenarios
-that could happen quite often.
+I've found in README for NVIDIA, that VGA has to have unique IRQ. I've
+tried to set INTERRUPT_LINE and INTERRUPT_PIN with setpci tool, set
+pci=routeirq, pci=noacpi as the kernel boot parameters, but IRQ
+is still the same.
 
--Andi
+Is there a way to change IRQ for VGA (or for ohci_hcd instead of VGA)
+directly in Linux?
 
+Thanks a lot.
+
+Sincerely
+Jan Marek
