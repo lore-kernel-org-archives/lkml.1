@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759453AbYAJKDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759516AbYAJKEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759453AbYAJKDn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 05:03:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756669AbYAJKD1
+	id S1759516AbYAJKEA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 05:04:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758035AbYAJKDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 05:03:27 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39057 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759329AbYAJKD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 05:03:26 -0500
-Date: Thu, 10 Jan 2008 11:02:54 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Dave Airlie <airlied@gmail.com>
-Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       suresh.b.siddha@intel.com, Arjan van de Ven <arjan@infradead.org>,
-       Dave Jones <davej@redhat.com>
-Subject: Re: CPA patchset
-Message-ID: <20080110100254.GA28209@elte.hu>
-References: <20080103424.989432000@suse.de> <20080110093126.GA360@elte.hu> <21d7e9970801100144x63b02e1bga548acd3c5bed441@mail.gmail.com>
-MIME-Version: 1.0
+	Thu, 10 Jan 2008 05:03:43 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:45525 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759448AbYAJKDm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 05:03:42 -0500
+Date: Thu, 10 Jan 2008 12:03:41 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Matt Mackall <mpm@selenic.com>
+cc: Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>, Andi Kleen <andi@firstfloor.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH] greatly reduce SLOB external fragmentation
+In-Reply-To: <1199906151.6245.57.camel@cinder.waste.org>
+Message-ID: <Pine.LNX.4.64.0801101202540.10271@sbz-30.cs.Helsinki.FI>
+References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com> 
+ <84144f020801021109v78e06c6k10d26af0e330fc85@mail.gmail.com> 
+ <alpine.LFD.1.00.0801021130210.32517@woody.linux-foundation.org> 
+ <1199314218.4497.109.camel@cinder.waste.org>  <20080103085239.GA10813@elte.hu>
+  <1199378818.8274.25.camel@cinder.waste.org> 
+ <Pine.LNX.4.64.0801031808470.7244@schroedinger.engr.sgi.com> 
+ <1199419890.4608.77.camel@cinder.waste.org>  <Pine.LNX.4.64.0801051816490.22821@sbz-30.cs.Helsinki.FI>
+  <1199641910.8215.28.camel@cinder.waste.org> 
+ <Pine.LNX.4.64.0801072005380.23932@sbz-30.cs.Helsinki.FI>
+ <1199906151.6245.57.camel@cinder.waste.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <21d7e9970801100144x63b02e1bga548acd3c5bed441@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Dave Airlie <airlied@gmail.com> wrote:
-
-> > - firstly, there's no rationale given. So we'll change ioremap()/etc.
-> >   from doing a cflush-range instruction instead of a WBINVD. But why?
-> >   WBINVD isnt particular fast (takes a few msecs), but why is that a
-> >   problem? Drivers dont do high-frequency ioremap-ing. It's typically
-> >   only done at driver/device startup and that's it. Whether module load
-> >   time takes 1254 msecs instead of 1250 msecs is no big deal.
+On Wed, 9 Jan 2008, Matt Mackall wrote:
+> ------------
+> slob: split free list by size
 > 
-> read graphics drivers, even though I think we may avoid the whole path 
-> if we can and end up doing some of this in the drivers when they know 
-> more about the situation so can avoid safeties..
 
-by 'read graphics drivers' do you mean direct framebuffer access? In any 
-case, a driver (or even userspace) can use cflush just fine, it's an 
-unprivileged instruction. But this is about the ioremap() implementation 
-using cflush instead of WBINVD, and that is a slowpath and is up to the 
-kernel anyway - i'm not aware of many high-frequency ioremap() users, so 
-robustness concerns control the policy here. So could you please explain 
-your point in more detail?
+[snip]
 
-	Ingo
+Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
