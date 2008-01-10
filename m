@@ -1,39 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756360AbYAJSKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756936AbYAJSMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756360AbYAJSKs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 13:10:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbYAJSKj
+	id S1756936AbYAJSMu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 13:12:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754526AbYAJSMj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 13:10:39 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:46636 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753458AbYAJSKi (ORCPT
+	Thu, 10 Jan 2008 13:12:39 -0500
+Received: from zcars04f.nortel.com ([47.129.242.57]:56270 "EHLO
+	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753781AbYAJSMh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 13:10:38 -0500
-Date: Thu, 10 Jan 2008 19:13:15 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Pekka J Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
-       Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Hugh Dickins <hugh@veritas.com>, Andi Kleen <andi@firstfloor.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH] greatly reduce SLOB external fragmentation
-Message-ID: <20080110181315.GA1047@one.firstfloor.org>
-References: <1199419890.4608.77.camel@cinder.waste.org> <Pine.LNX.4.64.0801051816490.22821@sbz-30.cs.Helsinki.FI> <1199641910.8215.28.camel@cinder.waste.org> <Pine.LNX.4.64.0801072005380.23932@sbz-30.cs.Helsinki.FI> <1199906151.6245.57.camel@cinder.waste.org> <Pine.LNX.4.64.0801100037230.3071@sbz-30.cs.Helsinki.FI> <1199919548.6245.74.camel@cinder.waste.org> <Pine.LNX.4.64.0801101156150.10271@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0801101251200.14402@sbz-30.cs.Helsinki.FI> <alpine.LFD.1.00.0801100749000.3148@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0801100749000.3148@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 10 Jan 2008 13:12:37 -0500
+Message-ID: <47865FFD.2010407@nortel.com>
+Date: Thu, 10 Jan 2008 12:12:13 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: questions on NAPI processing latency and dropped network packets
+References: <478654C3.60806@nortel.com> <478657C1.8040107@intel.com>
+In-Reply-To: <478657C1.8040107@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Jan 2008 18:12:16.0790 (UTC) FILETIME=[55270B60:01C853B4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I would suggest that if you guys are really serious about memory use, try 
-> to do a size-based heap thing, and do best-fit in that heap. Or just some 
+Kok, Auke wrote:
 
-iirc best fit usually also has some nasty long term fragmentation behaviour.
-That is why it is usually also not used.
+> You're using 2.6.10... you can always replace the e1000 module with the
+> out-of-tree version from e1000.sf.net, this might help a bit - the version in the
+> 2.6.10 kernel is very very old.
 
--Andi
+Do you have any reason to believe this would improve things?  It seems 
+like the problem lies in the NAPI/softirq code rather than in the e1000 
+driver itself, no?
+
+> it also appears that your app is eating up CPU time. perhaps setting the app to a
+> nicer nice level might mitigate things a bit.
+
+If we're not handling the softirq work from ksoftirqd how would changing 
+scheduler settings affect anything?
+
+ > Also turn off the in-kernel irq
+> mitigation, it just causes cache misses and you really need the network irq to sit
+> on a single cpu at most (if not all) the time to get the best performance. Use the
+> userspace irqbalance daemon instead to achieve this.
+
+Using userspace irqbalance would be some effort to test and deploy 
+properly.  However, as a quick test I tried setting the irq affinity for 
+this device and it didn't help.
+
+One thing that might be of interest is that it seems to be bursty rather 
+than gradual.  Here are some timestamps (in seconds) along with the 
+number of overruns on eth0:
+
+6552.15  overruns:260097
+6552.69  overruns:260097
+6553.32  overruns:260097
+6553.83  overruns:260097
+6554.35  overruns:260097
+6554.87  overruns:260097
+6555.41  overruns:260097
+6555.94  overruns:260097
+6556.51  overruns:260097
+6557.07  overruns:260282
+6557.58  overruns:260282
+6558.23  overruns:260282
+
+
+Chris
