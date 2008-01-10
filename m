@@ -1,145 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759019AbYAJP1b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759485AbYAJPdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759019AbYAJP1b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 10:27:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbYAJP1Q
+	id S1759485AbYAJPdT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 10:33:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755764AbYAJPdG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 10:27:16 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:54311 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753712AbYAJP1O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 10:27:14 -0500
-Subject: Re: [PATCH 0/7] sg_ring: a ring of scatterlist arrays
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       Tejun Heo <htejun@gmail.com>
-In-Reply-To: <200801101301.03846.rusty@rustcorp.com.au>
-References: <200712191731.26512.rusty@rustcorp.com.au>
-	 <200801081139.14748.rusty@rustcorp.com.au>
-	 <1199916637.3493.72.camel@localhost.localdomain>
-	 <200801101301.03846.rusty@rustcorp.com.au>
+	Thu, 10 Jan 2008 10:33:06 -0500
+Received: from ns2.suse.de ([195.135.220.15]:45479 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755592AbYAJPdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 10:33:04 -0500
+Subject: Re: [PATCH] Change paride driver to use unlocked_ioctl instead of
+	ioctl
+From: Nikanth Karthikesan <knikanth@suse.de>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Matthew Wilcox <matthew@wil.cx>,
+       grant@torque.net, tim@cyberelk.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+In-Reply-To: <478681FE.BANGALORE.BLR.100.174746A.1.ECB1.1@1:7.BANGALORE.BLR.100.0.1.0.1@16>
+References: <4785B7BC.5040106@suse.de> <4785C7D8.2020808@suse.de>
+	 <20080109123311.GP16309@parisc-linux.org>
+	 <Pine.LNX.4.64.0801091425100.25041@twin.jikos.cz>
+	 <20080109165641.668838af@lxorguk.ukuu.org.uk>
+	 <478681FE.BANGALORE.BLR.100.174746A.1.ECB1.1@1:7.BANGALORE.BLR.100.0.1.0.1@16>
 Content-Type: text/plain
-Date: Thu, 10 Jan 2008 09:27:08 -0600
-Message-Id: <1199978828.3141.27.camel@localhost.localdomain>
+Date: Thu, 10 Jan 2008 21:01:41 +0530
+Message-Id: <1199979101.4474.89.camel@nikanth-laptop.blr.novell.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-01-10 at 13:01 +1100, Rusty Russell wrote: 
-> On Thursday 10 January 2008 09:10:37 James Bottomley wrote:
-> > On Tue, 2008-01-08 at 11:39 +1100, Rusty Russell wrote:
-> > > On Tuesday 08 January 2008 02:48:23 James Bottomley wrote:
-> > > > We're always open to new APIs (or more powerful and expanded old ones).
-> > > > The way we've been doing the sg_chain conversion is to slide API layers
-> > > > into the drivers so sg_chain becomes a simple API flip when we turn it
-> > > > on.  Unfortunately sg_ring doesn't quite fit nicely into this.
-> > >
-> > > Hi James,
-> > >
-> > >    Well, it didn't touch any drivers.  The only ones which needed
-> > > altering were those which wanted to use large scatter-gather lists.  You
-> > > think of the subtlety of sg-chain conversion as a feature; it's a bug :)
-> >
-> > No, I think of the side effect of hiding scatterlist manipulations
-> > inside accessors as a feature because it insulates the drivers from the
-> > details of the implementation.
+On Thu, 2008-01-10 at 16:01 +0100, Jiri Kosina wrote:
+> On Wed, 9 Jan 2008, Alan Cox wrote:
 > 
-> I completely disagree.  Abstractions add complexity, and that costs.  They 
-> steal information from their users, and as they build up like sediment they 
-> make debugging and understanding harder.
-
-Don't be silly ... abstractions are the core of how we program something
-as complex as platform hardware.  By design, abstractions hide
-information.  Good abstractions hide information you don't need to know.
-Take the DMA API for instance: dma_map_sg() hides all of the platform
-specifics of whether or not you have an IOMMU and how it is programmed.
-That's a good abstraction ... drivers would be a complete mess if they
-had to do it themselves.
-
-> For example, an array is simple and well understood.   An abstraction would 
-> just buy confusion and YA thing to learn.
-
-> When a single array was no longer sufficient, I figured a linked-list of 
-> arrays was the simplest replacement.  Easy to understand and accepted 
-> practice (tho rings are a bit exotic).  Because the implementation is the 
-> interface, authors can see what is legal.
-
-Really, I don't buy this at all.  The first thing you complained about
-when you came up with sg_ring was how painful it was to update the 30
-odd SCSI drivers.  That was also my reaction when the scatterlist
-chaining idea came along.  My second was supposing this isn't quite
-right and we modify the way chaining is done ... do I have to update all
-the drivers all over again?  Hence one of the input requirements to the
-update was a consumer abstraction to insulate drivers from the
-implementation.
-
-Thinking about information that the drivers don't need to know, the
-obvious thing is how the actual scatterlist is implemented, whether its
-a list based ring, a pointer/mark based chain or an as yet to be
-invented annulus.  All I think most consumers need is:
-
-     1. A way to get the first scatterlist element
-     2. A way to get the next scatterlist element
-     3. An iterator over the entire scatterlist
-     4. A way to tell if they've reached the last scatterlist element.
-
-Actually 1,2,4 satisfy 3 but it's such a common operation in most
-drivers that it was a good simplification.  Other things are sizing and
-element count.
-
-> More concretely, you're already regarding your abstractions as too expensive, 
-> which is why sg_chain() doesn't handle chained sgs.
-
-sg_chain isn't part of the consumer interface it's part of the
-producer/manipulator interface.  I care a lot less about getting that
-one right first time because it only occurs in one place in the SCSI
-mid-layer and is easy to update and fix.
-
-My principal concern at the moment is the consumer interface ... if
-there's a fault in that we need to know now.
-
-> Result: you've got a complex implementation and a complex interface with a 
-> complex abstraction.
+> > > > >  	default:
+> > > > >  		printk("%s: Unimplemented ioctl 0x%x\n", tape->name, cmd);
+> > > > > +		unlock_kernel();
+> > > > >  		return -EINVAL;
+> > > > Surely a bug ... shouldn't this return -ENOTTY?
+> > Agreed - ENOTTY. 
 > 
-> > > sg_chains suck for manipulation, and AFAICT that's inherent.  Here, take
-> > > a look at the sg_ring conversion of scsi_alloc_sgtable and
-> > > scsi_free_sgtable and you can see why I'm unhappy with the sg_chain code:
-> > [...]
-> >
-> > > Hope that clarifies,
-> >
-> > Actually, not really.  If I want to continue the competition, I can just
-> > point out that your sg_ring code is bigger than those corresponding
-> > segments are after the sg_table conversion of scsi_lib.c ...
-> >
-> > However, this is pointless.
+> Just out of curiosity, where does POSIX happen to specify ENOTTY as the 
+> correct one for unimplemented ioctl?
 > 
-> No, it's exactly the point.  These details *matter*.  The implementation 
-> *matters*.  sg_table moves this code out of scsi_lib (good!), but still 
-> demonstrates how much of a PITA they are to manipulate.
-> 
-> As for being able to make arbitrary changes in future without hitting drivers: 
-> this is the Kernel ABI pipe dream writ small.
 
-No, the kernel ABI is about preserving binary semantics for proprietary
-drivers.  We're talking about an API here which is a totally different
-thing.  I don't believe I said anywhere that it should be a fixed API
-for all time ... that would also be silly.  However, that doesn't mean
-you don't take the best care you can to get an API as right as you can.
-If it's wrong, it will be altered, but it is much nicer to get it right
-first time so it doesn't have to be.
-
-James
-
-> OK, I give in with -ETIMEDOUT.  I'll go away now and do something 
-> productive :)
-> 
-> Cheers,
-> Rusty.
+The printk is also wrong, It should have been, Invalid ioctl for the
+device
 
