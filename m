@@ -1,81 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758615AbYAJWfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759598AbYAJWgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758615AbYAJWfu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 17:35:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbYAJWfn
+	id S1759598AbYAJWgR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 17:36:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759135AbYAJWf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 17:35:43 -0500
-Received: from hs-out-0708.google.com ([64.233.178.241]:49721 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754688AbYAJWfm (ORCPT
+	Thu, 10 Jan 2008 17:35:58 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42544 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756136AbYAJWf5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 17:35:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qqnsAH5h9lVxr1E1w0fdnKkC9WylADP6HL4E0mnf2VdFBSMBFkVG5dsujQ0V/AvseUY96AmgHdjbtk2QPCKr9mhsKnpQLqKkTtv/umeXM6S574vKeJhoRzgNpkEg81sBbrFZWCC7e+iTner0vAIC7afITGeid85ka7XvUw/TbAc=
-Message-ID: <4d8e3fd30801101435l228a0d0ydd0174e4073400e6@mail.gmail.com>
-Date: Thu, 10 Jan 2008 23:35:39 +0100
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "Daniel Walker" <dwalker@mvista.com>
-Subject: Re: [x86] list of style offenders
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1199995391.29897.26.camel@imap.mvista.com>
+	Thu, 10 Jan 2008 17:35:57 -0500
+Date: Thu, 10 Jan 2008 16:35:55 -0600 (CST)
+From: Brent Casavant <bcasavan@sgi.com>
+Reply-To: Brent Casavant <bcasavan@sgi.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+cc: penguin-kernel@i-love.sakura.ne.jp, netdev@vger.kernel.org,
+       davem@davemloft.net, linux-kernel@vger.kernel.org
+Subject: Re: AF_UNIX MSG_PEEK bug?
+In-Reply-To: <alpine.BSF.1.00.0801092031290.35527@pkunk.americas.sgi.com>
+Message-ID: <alpine.BSF.1.00.0801101554100.52456@pkunk.americas.sgi.com>
+References: <E1JCkrp-0000vX-00@gondolin.me.apana.org.au> <alpine.BSF.1.00.0801092031290.35527@pkunk.americas.sgi.com>
+User-Agent: Alpine 1.00 (BSF 882 2007-12-20)
+Organization: "Silicon Graphics, Inc."
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1199995391.29897.26.camel@imap.mvista.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 10, 2008 9:03 PM, Daniel Walker <dwalker@mvista.com> wrote:
->
->
-> I was playing with checkpatch.pl ;) .. I made a list of style offenders
-> inside the arch/x86/ sub-directory. I thought it might be helpful to
-> prioritize any style clean ups that people might want to do for x86 ..
-> OTOH some of these might show imperfections in checkpatch.pl .. Either
-> way I thought it was interesting to review ..
->
-> These are sorted by errors, then warnings.. I only included the first
-> hundred files which includes about the top %30 of the list .. The
-> kprobes_64.c error rate is a little miss-leading because several errors
-> are found on a single line ..
+Here's what I think is a better patch.  Or maybe just simpler.
 
-I just pulled
-git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86 mm
+However, I'm still unsure what the effect of this patch on
+file descriptor passing might be.  Reading the prior code,
+and the parallel portions/comments in unix_dgram_recvmsg(),
+it looks like there's been a lot of uncertainty as to how
+file descriptor passing should be handled durning MSG_PEEK
+operations.  To quote:
 
-> ./arch/x86/math-emu/fpu_trig.c
->                 total: 649 errors, 11 warnings, 1845 lines checked
+	/* It is questionable: on PEEK we could:
+	   - do not return fds - good, but too simple 8)
+	   - return fds, and do not return them on read (old strategy,
+	     apparently wrong)
+	   - clone fds (I chose it for now, it is the most universal
+	     solution)
 
-On that tree checkpatch reports:
-total: 5 errors, 54 warnings, 1643 lines checked
+	   POSIX 1003.1g does not actually define this clearly
+	   at all. POSIX 1003.1g doesn't define a lot of things
+	   clearly however!
+	*/
 
-> ./arch/x86/kernel/kprobes_64.c
->                 total: 528 errors, 9 warnings, 749 lines checked
+With this patch, passed file descriptors are ignored during MSG_PEEK.
+This is essentially the first case in the comment above.  What I
+can't seem to figure out is why this is incorrect.  I suspect there's
+some history here that I can't find via Google, mailing list archives,
+or revision logs.
 
-total: 0 errors, 0 warnings, 1 lines checked
+So, that said, here's a cleaner patch.  It's still not ready for
+application until the file descriptor passing is better understood.
 
-> ./arch/x86/math-emu/reg_ld_str.c
->                 total: 392 errors, 17 warnings, 1375 lines checked
+Thanks,
+Brent
 
-total: 8 errors, 39 warnings, 1224 lines checked
-
-> ./arch/x86/kernel/kprobes_32.c
->                 total: 271 errors, 8 warnings, 756 lines checked
-
-total: 1 errors, 0 warnings, 0 lines checked
-
-> ./arch/x86/math-emu/errors.c
->                 total: 214 errors, 28 warnings, 739 lines checked
-
-total: 26 errors, 36 warnings, 689 lines checked
-
-So it looks like a lot of errors are fixed in the x86 git tree.
-
-Regards,
--- 
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
+diff --git a/net/unix/af_unix.c b/net/unix/af_unix.c
+index 060bba4..6d6cdb4 100644
+--- a/net/unix/af_unix.c
++++ b/net/unix/af_unix.c
+@@ -1750,6 +1750,8 @@ static int unix_stream_recvmsg(struct ki
+ 	int target;
+ 	int err = 0;
+ 	long timeo;
++	struct sk_buff *skb;
++	struct sk_buff_head peek_stack;
+ 
+ 	err = -EINVAL;
+ 	if (sk->sk_state != TCP_ESTABLISHED)
+@@ -1759,6 +1761,9 @@ static int unix_stream_recvmsg(struct ki
+ 	if (flags&MSG_OOB)
+ 		goto out;
+ 
++	if (flags & MSG_PEEK)
++		skb_queue_head_init(&peek_stack);
++
+ 	target = sock_rcvlowat(sk, flags&MSG_WAITALL, size);
+ 	timeo = sock_rcvtimeo(sk, flags&MSG_DONTWAIT);
+ 
+@@ -1778,7 +1783,6 @@ static int unix_stream_recvmsg(struct ki
+ 	do
+ 	{
+ 		int chunk;
+-		struct sk_buff *skb;
+ 
+ 		unix_state_lock(sk);
+ 		skb = skb_dequeue(&sk->sk_receive_queue);
+@@ -1864,19 +1868,14 @@ static int unix_stream_recvmsg(struct ki
+ 
+ 			if (siocb->scm->fp)
+ 				break;
+-		}
+-		else
+-		{
+-			/* It is questionable, see note in unix_dgram_recvmsg.
+-			 */
+-			if (UNIXCB(skb).fp)
+-				siocb->scm->fp = scm_fp_dup(UNIXCB(skb).fp);
++		} else
++			__skb_queue_head(&peek_stack, skb);
++	} while (size);
+ 
+-			/* put message back and return */
++	/* Push all peeked skbs back onto receive queue */
++	if (flags & MSG_PEEK)
++		while ((skb = __skb_dequeue(&peek_stack)))
+ 			skb_queue_head(&sk->sk_receive_queue, skb);
+-			break;
+-		}
+-	} while (size);
+ 
+ 	mutex_unlock(&u->readlock);
+ 	scm_recv(sock, msg, siocb->scm, flags);
