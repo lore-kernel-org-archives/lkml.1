@@ -1,189 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754986AbYAJKnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755462AbYAJKo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754986AbYAJKnT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 05:43:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbYAJKnI
+	id S1755462AbYAJKo1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 05:44:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbYAJKoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 05:43:08 -0500
-Received: from fmmailgate05.web.de ([217.72.192.243]:54503 "EHLO
-	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752141AbYAJKnG convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 05:43:06 -0500
-Date: Thu, 10 Jan 2008 11:43:03 +0100
-Message-Id: <285479690@web.de>
+	Thu, 10 Jan 2008 05:44:19 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42478 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752638AbYAJKoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 05:44:17 -0500
+Date: Thu, 10 Jan 2008 11:43:51 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       suresh.b.siddha@intel.com, Arjan van de Ven <arjan@infradead.org>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: CPA patchset
+Message-ID: <20080110104351.GC28209@elte.hu>
+References: <20080103424.989432000@suse.de> <20080110093126.GA360@elte.hu> <20080110095337.GK25945@bingen.suse.de>
 MIME-Version: 1.0
-From: Torben Viets <Viets@web.de>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: LRW/XTS + Via Padlock Bug in 2.6.24-rc7?
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX1+pID4+xqtEZB4T6II9okCy90njFEFDZJP1gSTRtInticR2s
- l9ax2NFSZ2GQLp2fFPf7LCl2agOBjU81vuxyYAbZo+VsPYdKKo=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080110095337.GK25945@bingen.suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for the reply,
 
-the patch doesn't work witch the patch utility, so I did it manually, hope this was rigth:
+* Andi Kleen <ak@suse.de> wrote:
 
-static void aes_crypt_copy(const u8 *in, u8 *out, u32 *key, struct cword *cword)
-{
-        u8 tmp[AES_BLOCK_SIZE * 2]
-                __attribute__ ((__aligned__(PADLOCK_ALIGNMENT)));
+> There's also unfortunately still one outstanding bug (triggeredb y 
+> some recent changes) on 32bit that makes the self test suite not pass 
+> currently.
 
-        memcpy(tmp, in, AES_BLOCK_SIZE);
-//      padlock_xcrypt(tmp, out, key, cword);
-        padlock_xcrypt(tmp, tmp, key, cword);
-        memcpy(out, tmp, AES_BLOCK_SIZE);
-}
+ok. I'd expect there to be a whole lot of bugs triggered in this area. 
+We have to shape it in a way that puts the most useful bits to the head 
+and the riskiest bits to the end, so that we can do reverts in a 
+sensible and least destructive way - if the need arises.
 
-After rebuilding the kernel, I tried: cryptsetup -c aes-xts-plain -s 256 luksFormat /dev/raid/test
-
-It does the same as before, dmesg says:
-
-general protection fault: 0000 [#1] 
-Modules linked in: xt_TCPMSS xt_tcpmss iptable_mangle ipt_MASQUERADE xt_tcpudp pppoe pppox xt_mark xt_state iptable_nat nf_nat nf_conntrack_ipv4 iptable_filter ip_tables x_tables af_packet ppp_generic slhc aes_i586 dm_crypt dm_mod
-
-Pid: 4409, comm: kcryptd Not tainted (2.6.24-rc7 #2)
-EIP: 0060:[<c03599cc>] EFLAGS: 00010282 CPU: 0
-EIP is at aes_crypt_copy+0x2c/0x50
-EAX: f62e1ff0 EBX: f60ab850 ECX: 00000001 EDX: f60ab830
-ESI: f620dda8 EDI: f620dda8 EBP: f62e1ff0 ESP: f620dda8
- DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
-Process kcryptd (pid: 4409, ti=f620c000 task=f61f5030 task.ti=f620c000)
-Stack: 638522f6 b587b135 a30487c5 d57aa809 f620de50 f620defc c02613e1 0000007b 
-       f60ab850 f62e1ff0 f62e1ff0 f620de00 c0359ad6 f60ab830 f62e1ff0 f62e1ff0 
-       00000010 c0267cfc f6edf6e0 f620de34 f620dea8 00000010 8f88b41a 3ba46549 
-Call Trace:
- [<c02613e1>] blkcipher_walk_next+0x151/0x320
- [<c0359ad6>] aes_decrypt+0x56/0x60
- [<c0267cfc>] crypt+0xdc/0x110
- [<c0359a80>] aes_decrypt+0x0/0x60
- [<c0267e22>] decrypt+0x42/0x50
- [<c035a1c0>] aes_encrypt+0x0/0x60
- [<c0359a80>] aes_decrypt+0x0/0x60
- [<f886a7de>] crypt_convert_scatterlist+0x6e/0xe0 [dm_crypt]
- [<f886a9ea>] crypt_convert+0x19a/0x1c0 [dm_crypt]
- [<f886aa10>] kcryptd_do_crypt+0x0/0x260 [dm_crypt]
- [<f886aa59>] kcryptd_do_crypt+0x49/0x260 [dm_crypt]
- [<c011964a>] update_curr+0xfa/0x110
- [<f886aa10>] kcryptd_do_crypt+0x0/0x260 [dm_crypt]
- [<c012aeb6>] run_workqueue+0x66/0xe0
- [<c03f3339>] schedule+0x149/0x270
- [<c012b620>] worker_thread+0x0/0x100
- [<c012b6bd>] worker_thread+0x9d/0x100
- [<c012e4c0>] autoremove_wake_function+0x0/0x50
- [<c012b620>] worker_thread+0x0/0x100
- [<c012e182>] kthread+0x42/0x70
- [<c012e140>] kthread+0x0/0x70
- [<c0104acf>] kernel_thread_helper+0x7/0x18
- =======================
-Code: ec 30 89 5c 24 20 89 cb 89 74 24 24 89 c6 89 7c 24 28 89 e7 89 6c 24 2c 89 d5 8b 54 24 34 a5 a5 a5 a5 b9 01 00 00 00 89 e6 89 e7 <f3> 0f a7 c8 89 ef 89 e6 a5 a5 a5 a5 8b 5c 24 20 8b 74 24 24 8b 
-EIP: [<c03599cc>] aes_crypt_copy+0x2c/0x50 SS:ESP 0068:f620dda8
----[ end trace 927124c395b6378a ]---
-note: kcryptd[4409] exited with preempt_count 1
-
-One other strange thing ist, that after rebooting the entry:
-
- name         : xts(aes)
-driver       : xts(aes-padlock)
-module       : kernel
-priority     : 300
-refcnt       : 2
-type         : blkcipher
-blocksize    : 16
-min keysize  : 32
-max keysize  : 64
-ivsize       : 16
-
-is not visible in /proc/crypt (and of course not useable with cryptsetup), till I use /etc/init.d/udev restart. 
-
-Sorry I don't no why this happens. I guess it is because of reloading the modules, these are my modules:
-
-xt_TCPMSS               3840  1 
-xt_tcpmss               2176  1 
-iptable_mangle          2752  1 
-ipt_MASQUERADE          3456  1 
-xt_tcpudp               3136  6 
-pppoe                  12800  2 
-pppox                   3852  1 pppoe
-xt_mark                 1792  1 
-xt_state                2368  1 
-iptable_nat             7236  1 
-nf_nat                 17964  2 ipt_MASQUERADE,iptable_nat
-nf_conntrack_ipv4       9988  3 iptable_nat
-iptable_filter          2880  1 
-ip_tables              12232  3 iptable_mangle,iptable_nat,iptable_filter
-x_tables               14724  8 xt_TCPMSS,xt_tcpmss,ipt_MASQUERADE,xt_tcpudp,xt_mark,xt_state,iptable_nat,ip_tables
-af_packet              21188  4 
-ppp_generic            23700  6 pppoe,pppox
-slhc                    6464  1 ppp_generic
-aes_i586               33280  0 
-dm_crypt               13956  1 
-dm_mod                 54976  14 dm_crypt
-
-
-grettings 
-Torben Viets
-
-> -----Ursprüngliche Nachricht-----
-> Von: "Herbert Xu" <herbert@gondor.apana.org.au>
-> Gesendet: 10.01.08 04:03:26
-> An: Torben Viets <viets@web.de>
-> CC: linux-kernel@vger.kernel.org, Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-> Betreff: Re: LRW/XTS + Via Padlock Bug in 2.6.24-rc7?
-
-
+> > - firstly, there's no rationale given. So we'll change ioremap()/etc.
+> >   from doing a cflush-range instruction instead of a WBINVD. But why?
 > 
-> On Wed, Jan 09, 2008 at 10:55:27PM +0000, Torben Viets wrote:
-> > 
-> > eneral protection fault: 0000 [#1]
-> > Modules linked in: xt_TCPMSS xt_tcpmss iptable_mangle ipt_MASQUERADE 
-> > xt_tcpudp xt_mark xt_state iptable_nat nf_nat nf_conntrack_ipv4 
-> > iptable_filter ip_tables x_tables pppoe pppox af_packet ppp_generic slhc 
-> > aes_i586
-> > CPU:    0
-> > EIP:    0060:[<c035b828>]    Not tainted VLI
-> > EFLAGS: 00010292   (2.6.23.12 #7)
-> > EIP is at aes_crypt_copy+0x28/0x40
-> > eax: f7639ff0   ebx: f6c24050   ecx: 00000001   edx: f6c24030
-> > esi: f7e89dc8   edi: f7639ff0   ebp: 00010000   esp: f7e89dc8
-> 
-> Thanks for the report.  It would appear that your CPU goes one step
-> further than the other report and insists on having two blocks in the
-> destination too.
-> 
-> Please let me know whether this patch fixes the problem.
-> 
-> Thanks,
-> -- 
-> Visit Openswan at http://www.openswan.org/
-> Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-> Home Page: http://gondor.apana.org.au/~herbert/
-> PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
-> --
-> diff --git a/drivers/crypto/padlock-aes.c b/drivers/crypto/padlock-aes.c
-> index a337b69..ed3ae47 100644
-> --- a/drivers/crypto/padlock-aes.c
-> +++ b/drivers/crypto/padlock-aes.c
-> @@ -433,7 +433,8 @@ static void aes_crypt_copy(const u8 *in, u8 *out, u32 *key, struct cword *cword)
->  		__attribute__ ((__aligned__(PADLOCK_ALIGNMENT)));
->  
->  	memcpy(tmp, in, AES_BLOCK_SIZE);
-> -	padlock_xcrypt(tmp, out, key, cword);
-> +	padlock_xcrypt(tmp, tmp, key, cword);
-> +	memcpy(out, tmp, AES_BLOCK_SIZE);
->  }
->  
->  static inline void aes_crypt(const u8 *in, u8 *out, u32 *key,
-> 
+> - WBINVD is a very nasty operation. I was talking to some CPU people 
+> and they really recommended to get rid of it as far as possible. 
+> Stopping the CPU for msecs is just wrong and there are apparently even 
+> some theoretical live lock situations. - It is not interruptible in 
+> earlier VT versions and messes up real time in the hypervisor. Some 
+> people were doing KVM on rt kernels and had latency spikes from that.
 
+ok, i thought you might have had some higher rationale too. Frankly, 
+WBINVD wont ever go away from the x86 instruction set, and while i am 
+very symphathetic to rt and latency issues, it's still a risky change in 
+a historically fragile area of code.
 
-_______________________________________________________________________
-Jetzt neu! Schützen Sie Ihren PC mit McAfee und WEB.DE. 30 Tage
-kostenlos testen. http://www.pc-sicherheit.web.de/startseite/?mc=022220
+What is very real though are the hard limitations of MTRRs. So i'd 
+rather first like to see a clean PAT approach (which all other modern 
+OSs have already migrated to in the past 10 years), with all the 
+structural cleanups and bugfixes you did as well, which would allow us 
+to phase out MTRR use (of the DRM drivers, etc.), and _then_ layer an 
+(optional) cflush approach basically as the final step. Right now cflush 
+is mixed inextractably into the CPA patchset. WBINVD latency is really 
+the last of our problems here.
 
+> >   WBINVD isnt particular fast (takes a few msecs), but why is that a 
+> >   problem? Drivers dont do high-frequency ioremap-ing. It's 
+> >   typically
+> 
+> Actually graphics drivers can do higher frequency allocation of WC 
+> memory (with PAT) support.
+
+but that is plain stupid. If it can be WC mapped, why not map it WB and 
+use cflush when updating memory? That gives cache-coherency on demand 
+_and_ true read side caching - so it's faster as well. Modern GX cards 
+can take that just fine. The best of both worlds. Unconditional WC is 
+way overrated.
+
+> > - secondly, obviously doing a 'flush some' instead of a 'flush all'
+> >   operation is risky. There's not many ways we can get the 'flush 
+> >   all'
+> 
+> Yes, that is why it took so long. But it's eventually needed to make 
+> PAT actually useful for once.
+
+as i see it, the utility of PAT comes from going away from MTRRs, and 
+the resulting flexibility it gives system designers to shape memory and 
+IO BARs.
+
+> >   WBINVD instruction wrong (as long as we do it on all cpus, etc.). 
+> >   But with this specific range flush we've got all the risks of 
+> >   accidentally not flushing _enough_. Especially if some boundary of 
+> >   a mapped area is imprecisely.
+> 
+> Not sure what you mean here? If someone doesn't pass in the correct 
+> area then not everything will be uncached in the first place. Using 
+> something as cached that should be uncached is usually noticed because 
+> it tends to be quite slow or corrupt data.
+
+yes, 'quite slow or corrupt data' is what i meant:
+
+> >   asking for trouble as it's very hard to debug and the operations 
+                                 ^^^^^^^^^^^^^^^^^^
+> >   here (ioremap) are typically done only once per system bootup. 
+> >   [...]
+> 
+> change_page_attr() is used for more than just ioremap (e.g. a common 
+> case is mapping memory into AGP apertures which still happens in many 
+> graphics drivers). I also expect it will be used even more in the 
+> future when PAT usage will become more wide spread.
+
+i expect usage to not change in pattern. ioremap()ping on the fly is not 
+too smart.
+
+[ quoting this from the top: ]
+
+> > finally managed to get the time to review your CPA patchset, and i 
+> > fundamentally agree with most of the detail changes done in it. But 
+> > here are a few structural high-level observations:
+> 
+> I have a few changes and will post a updated version shortly.
+
+thanks. I've test-merged the PAT patchset from Venki/Suresh to have a 
+look, and to me the most logical way to layer these changes would be:
+
+ - PAT
+ - non-cflush bits of CPA
+ - cflush bits of CPA
+ - GBPAGES
+
+hm?
+
+	Ingo
