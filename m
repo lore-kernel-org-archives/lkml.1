@@ -1,91 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757292AbYAJW2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbYAJW2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757292AbYAJW2V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 17:28:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855AbYAJW2O
+	id S1756169AbYAJW2j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 17:28:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758182AbYAJW23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 17:28:14 -0500
-Received: from mga02.intel.com ([134.134.136.20]:38760 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754596AbYAJW2N convert rfc822-to-8bit (ORCPT
+	Thu, 10 Jan 2008 17:28:29 -0500
+Received: from wx-out-0506.google.com ([66.249.82.229]:37943 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757982AbYAJW22 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 17:28:13 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,268,1196668800"; 
-   d="scan'208";a="320860814"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 10 Jan 2008 17:28:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=o4mDaHqzIybwgo7mwj58WG975xwN25mZOsWCMyXgghC5oDZwrKY/oUStqzjEb96keAjGTqEBLxOeCjPYYXGqR26PtczL13nOsOpRi/QOvmmI/wBM9PUS1nYhnXNkrg2Bgs1nwJOimZJp4GPhU5XKjzpAChcKV2/Jkpq1Gr3K2HY=
+Message-ID: <e85b9d30801101428s1c760cb1i5ee415738dffb90f@mail.gmail.com>
+Date: Thu, 10 Jan 2008 23:28:23 +0100
+From: Matthew <jackdachef@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Fwd: Fwd: laptop / computer hardlocks during execution of 32bit applications(binaries) on 64bit system (Gentoo)
+Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@redhat.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Ed Tomlinson" <edt@aei.ca>
+In-Reply-To: <478694CB.4000306@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [patch 02/11] PAT x86: Map only usable memory in x86_64 identity map and kernel text
-Date: Thu, 10 Jan 2008 14:27:10 -0800
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE5A29A5@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <alpine.LFD.1.00.0801101413490.3148@woody.linux-foundation.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch 02/11] PAT x86: Map only usable memory in x86_64 identity map and kernel text
-Thread-Index: AchT1vutDkseaWHxSx+H9vyaOSC7agAAMqiw
-References: <20080110184840.927409000@intel.com> <20080110184854.787474000@intel.com> <alpine.LFD.1.00.0801101303570.3148@woody.linux-foundation.org> <924EFEDD5F540B4284297C4DC59F3DEE5A2958@orsmsx423.amr.corp.intel.com> <alpine.LFD.1.00.0801101413490.3148@woody.linux-foundation.org>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Cc: <ak@muc.de>, <ebiederm@xmission.com>, <rdreier@cisco.com>,
-       <gregkh@suse.de>, <airlied@skynet.ie>, <davej@redhat.com>,
-       <mingo@elte.hu>, <tglx@linutronix.de>, <akpm@linux-foundation.org>,
-       <arjan@infradead.org>, "Barnes, Jesse" <jesse.barnes@intel.com>,
-       <davem@davemloft.net>, <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-X-OriginalArrivalTime: 10 Jan 2008 22:26:19.0793 (UTC) FILETIME=[D2B0B810:01C853D7]
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <e85b9d30712291157v113f5e73yd830ae3c3429092d@mail.gmail.com>
+	 <200712300128.35476.mboton@gmail.com> <20080102084002.GA13636@elte.hu>
+	 <e85b9d30801080333y3d6668ccgf20f9666d0326884@mail.gmail.com>
+	 <e85b9d30801080340y43fbd4c0sa9b6c9811c7391a1@mail.gmail.com>
+	 <47841C41.4060401@zytor.com>
+	 <e85b9d30801101310p485c7686o30b7cd581043712@mail.gmail.com>
+	 <47868B6D.6030208@zytor.com>
+	 <e85b9d30801101352hf66826eqe436e61310c96f14@mail.gmail.com>
+	 <478694CB.4000306@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
-
->-----Original Message-----
->From: Linus Torvalds [mailto:torvalds@linux-foundation.org] 
->Sent: Thursday, January 10, 2008 2:15 PM
->To: Pallipadi, Venkatesh
->Cc: ak@muc.de; ebiederm@xmission.com; rdreier@cisco.com; 
->gregkh@suse.de; airlied@skynet.ie; davej@redhat.com; 
->mingo@elte.hu; tglx@linutronix.de; akpm@linux-foundation.org; 
->arjan@infradead.org; Barnes, Jesse; davem@davemloft.net; 
->linux-kernel@vger.kernel.org; Siddha, Suresh B
->Subject: RE: [patch 02/11] PAT x86: Map only usable memory in 
->x86_64 identity map and kernel text
 >
->
->
->On Thu, 10 Jan 2008, Pallipadi, Venkatesh wrote:
->> 
->> Yes. I had those pages not mapped at all earlier. The reason 
->I switched
->> to zero page is to continue support cases like:
->>  BIOS-e820: 0000000000000000 - 000000000009cc00 (usable)
->>  BIOS-e820: 000000000009cc00 - 00000000000a0000 (reserved)
->>  BIOS-e820: 00000000000cc000 - 00000000000d0000 (reserved)
->>  BIOS-e820: 00000000000e4000 - 0000000000100000 (reserved)
->>  BIOS-e820: 0000000000100000 - 00000000cff60000 (usable)
->> 
->> In this case if some one does a dd of /dev/mem before they 
->can read the
->> contents of usable memory in 0x100000-0xcff60000 range.
->
->Well, I think that /dev/mem should simply give them the right 
->info. That's 
->what people use /dev/mem for - doing things like reading BIOS 
->images etc. 
->
->So returning *either* a zero page *or* stopping at the first 
->hole is both 
->equally wrong. 
+> That's fine, but that was collected with the vmlinux image you sent me,
+> right?
 >
 
-I was not fully clear in my earlier email. Mapping /dev/mem would still
-work with our changes. As they go through proper map interface. It is
-the dd of dev mem which does the read that has the problem. I was
-wondering of apps using dd.
+no, but now it is:
+http://kerneloftruth.neucode.org/other/crash_ia32_64/not_tainted/latest/
+(the other one was taken before I added/selected the demanded features)
 
-Thanks,
-Venki
+what puzzles me is that it doesn't say "tainted" (not tainted) in the
+upper part & "tainted" in the lower part
+I apologize for the bad quality of the pictures ...
+
+luckily there was also an additional call trace this time (syslog-ng
+Tainted: G   D) (don't know what it means), nvidia-module wasn't
+loaded and no other additional proprietary modules were loaded AFAIK
+
+>         -hpa
+>
+
+Mat
