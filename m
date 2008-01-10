@@ -1,135 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758880AbYAJWc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759285AbYAJWd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758880AbYAJWc6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 17:32:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752521AbYAJWcv
+	id S1759285AbYAJWd0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 17:33:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758384AbYAJWdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 17:32:51 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:36106 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751023AbYAJWcv (ORCPT
+	Thu, 10 Jan 2008 17:33:13 -0500
+Received: from py-out-1112.google.com ([64.233.166.180]:23926 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757596AbYAJWdL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 17:32:51 -0500
-Date: Thu, 10 Jan 2008 23:35:27 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, ebiederm@xmission.com, rdreier@cisco.com,
-       torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
-       davej@redhat.com, mingo@elte.hu, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Subject: Re: [patch 02/11] PAT x86: Map only usable memory in x86_64 identity map and kernel text
-Message-ID: <20080110223527.GA3973@one.firstfloor.org>
-References: <p737iiho5yq.fsf@bingen.suse.de> <924EFEDD5F540B4284297C4DC59F3DEE5A2805@orsmsx423.amr.corp.intel.com> <20080110192808.GF747@one.firstfloor.org> <924EFEDD5F540B4284297C4DC59F3DEE5A28CE@orsmsx423.amr.corp.intel.com> <20080110211658.GA3145@one.firstfloor.org> <924EFEDD5F540B4284297C4DC59F3DEE5A29A1@orsmsx423.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE5A29A1@orsmsx423.amr.corp.intel.com>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 10 Jan 2008 17:33:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=cc:message-id:to:in-reply-to:content-type:content-transfer-encoding:mime-version:subject:date:references:x-mailer:from;
+        b=JL00vCsewvvrBwPMi/YQDhGq7lLF+RtZYhfUUN8HkCJSYALrervBXlgfpKU/JrRCecwMAUL4v/yhFgewc1IxKclw2sPl9Idv+kqRQFFzlAMpZlEcVXLS06/Ug95cyK+Klcs+73NWyouak+su/FnCiyp+v65un119ieF0WC3TqnM=
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, tomof@acm.org,
+       deepakrc@gmail.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Message-Id: <622A3567-4665-48DE-8C2C-B9297BBD9A83@gmail.com>
+To: Pete Wyckoff <pw@osc.edu>
+In-Reply-To: <20080110214605.GD1928@osc.edu>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH] bsg : Add support for io vectors in bsg
+Date: Thu, 10 Jan 2008 16:33:07 -0600
+References: <Pine.LNX.4.64.0801042137350.7836@localhost> <200801050501.m0551LFB030667@mbox.iij4u.or.jp> <20080108220918.GA9484@osc.edu> <20080109091118N.fujita.tomonori@lab.ntt.co.jp> <20080110204325.GC1928@osc.edu> <1199998531.3141.96.camel@localhost.localdomain> <20080110214605.GD1928@osc.edu>
+X-Mailer: Apple Mail (2.915)
+From: Mark Rustad <mrustad@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 10, 2008 at 02:25:29PM -0800, Pallipadi, Venkatesh wrote:
->  
-> 
-> >-----Original Message-----
-> >From: linux-kernel-owner@vger.kernel.org 
-> >[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Andi Kleen
-> >Sent: Thursday, January 10, 2008 1:17 PM
-> >To: Pallipadi, Venkatesh
-> >Cc: Andi Kleen; ebiederm@xmission.com; rdreier@cisco.com; 
-> >torvalds@linux-foundation.org; gregkh@suse.de; 
-> >airlied@skynet.ie; davej@redhat.com; mingo@elte.hu; 
-> >tglx@linutronix.de; linux-kernel@vger.kernel.org; Siddha, Suresh B
-> >Subject: Re: [patch 02/11] PAT x86: Map only usable memory in 
-> >x86_64 identity map and kernel text
-> >
-> >> I think it is unsafe to access any reserved areas through 
-> >"WB" not just
-> >> mmio regions. In the above case 0xe0000000-0xf0000000 is one such
-> >> region.
-> >
-> >That is 2MB aligned.
-> 
-> That e820 also has a reserved here at 0x9d000.
+On Jan 10, 2008, at 3:46 PM, Pete Wyckoff wrote:
 
-That's not a hole
+> I'm fine with read/write, except Tomo is against handling iovecs
+> because of the compat complexity with struct iovec being different
+> on 32- vs 64-bit.  There is a standard way to do "compat" ioctl that
+> hides this handling in a different file (not bsg.c), which is the
+> only reason I'm even considering these ioctls.  I don't care about
+> compat setups per se.
 
-> 
->  BIOS-e820: 0000000000000000 - 000000000009cc00 (usable)
->  BIOS-e820: 000000000009cc00 - 00000000000a0000 (reserved)
->  BIOS-e820: 00000000000cc000 - 00000000000d0000 (reserved)
-> 
-> If we keep mapping for such pages, it will be problematic as if a driver
-> later does a ioremap, then we have to go through split-pages and cpa.
+That is what I was thinking. Is it really necessary to support  
+something like bsg for 32 on 64 bit? Yes, it is a userspace interface,  
+but it isn't the kind of thing that normal user programs would use. It  
+is a new interface for newly-written programs and I would expect those  
+to be native. At least it doesn't strike me as overly-restrictive for  
+that to be the case for this kind of interface.
 
-It should not do ioremap uncacheable from reserved because there
-shouldn't be a MMIO hole in there. It can do ioremap_cachable()
-but that is ok.
-
-> 
-> Most of the holes/reserved areas will be 2M aligned, other than initial
-> 2M and possible 2M around ACPI region. So, we may end up mapping some of
-> those pages with small pages. Even though it was not enforced until now,
-> I feel that is required for correctness.
-
-If it's rare enough mapping in 2MB chunks around the holes is ok.
-> 
-> >> >
-> >> >Exactly it's already broken.
-> >> >
-> >> >Anyways if someone accesses mmio through /dev/mem I think they 
-> >> >definitely
-> >> >want the real mappings, not a zero page.  And dev/mem 
-> >should provide.
-> >> >The trick is just to do it without caching attribute violations, 
-> >> >but with mattr it is possible.
-> >> 
-> >> I don't like /dev/mem supporting access to mmio. We do not know what
-> >
-> >But it always did that. I'm sure you'll break stuff if you forbid
-> >it suddenly.
-> >
-> >> attributes to use for these regions.  We can potentially map 
-> >all these
-> >> pages uncacheable. 
-> >
-> >That is what current /dev/mem does.
-> 
-> May be I am missing something. But, I don't think I saw /dev/mem
-> checking whether some region is reserved and mapping those pages as
-> uncacheable. 
-
-It relies partly on the MTRRs and partly checks for >= end_pfn.
-Yes it's a gross hack, but it works.
-
-> As I though, its mostly done as MTRR has such setting. If I
-> do dd of devmem which ends up reading all reserved regions today, I see
-> one of my systems dying horribly with NMI dazed and confused and the
-> other gets SCSI errors etc. I am not sure how can some apps depend on
-> reading mmio regions through /dev/mem. Any particular app you are
-> thinking about?
-
-The older X servers for once or x86emu in user space and likely various 
-others. There are all kind of scary utilities using /dev/mem around
-(like BIOS flash updaters etc.) 
-
-I know some people who don't trust the VM for large memory ares 
-like to boot with small mem=...  and then grab memory through /dev/mem.
-I suspect if that didn't work anymore there would be eventually
-complaints too although there might be a case be made for not 
-supporting that anymore.
-
-BUt really /dev/mem is widely used and full compatibility is fairly
-important.
+> Is there another async I/O mechanism?  Userspace builds the CDBs,
+> just needs some way to drop them in SCSI ML.  BSG is almost perfect
+> for this, but doesn't do iovec, leading to lots of memcpy.
 
 
-> Other than the complicated code, do you see any issues of identity
-> mapping only "usable" and "ACPI" regions as per e820? We can possible
-> try to simplify the code, if that is the only concern.
+Precisely.
 
-The basic idea is fine.
+-- 
+Mark Rustad, MRustad@gmail.com
 
--Andi
 
