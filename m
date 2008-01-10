@@ -1,157 +1,816 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759209AbYAJMBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759247AbYAJMCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759209AbYAJMBz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 07:01:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758888AbYAJMAT
+	id S1759247AbYAJMCQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 07:02:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758157AbYAJMAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 07:00:19 -0500
-Received: from [80.75.67.52] ([80.75.67.52]:44994 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756074AbYAJMAG (ORCPT
+	Thu, 10 Jan 2008 07:00:22 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:47341 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758585AbYAJMAN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 07:00:06 -0500
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Dmitry Torokhov <dtor@mail.ru>
-Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Liam Girdwood <liam.girdwood@wolfsonmicro.com>
-Subject: [PATCH 6/6] Build system and MAINTAINERS entry for WM97xx touchscreen drivers
-Date: Thu, 10 Jan 2008 11:51:10 +0000
-Message-Id: <1199965870-4629-6-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.5.3.8
-In-Reply-To: <1199965870-4629-5-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <1199965870-4629-1-git-send-email-broonie@opensource.wolfsonmicro.com>
- <1199965870-4629-2-git-send-email-broonie@opensource.wolfsonmicro.com>
- <1199965870-4629-3-git-send-email-broonie@opensource.wolfsonmicro.com>
- <1199965870-4629-4-git-send-email-broonie@opensource.wolfsonmicro.com>
- <1199965870-4629-5-git-send-email-broonie@opensource.wolfsonmicro.com>
+	Thu, 10 Jan 2008 07:00:13 -0500
+Date: Thu, 10 Jan 2008 17:30:27 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm@linux-foundation.org, mingo@elte.hu, ak@suse.de, sam@ravnborg.org,
+       Maneesh Soni <maneesh@linux.vnet.ibm.com>, ankita@in.ibm.com
+Subject: [PATCH 6/7] Move lkdtm under tests/
+Message-ID: <20080110120027.GG26577@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20080110115428.GA26577@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080110115428.GA26577@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Signed-off-by: Liam Girdwood <liam.girdwood@wolfsonmicro.com>
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+
+Move the lkdtm infrastructure to tests/
+
+Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 ---
- MAINTAINERS                        |    9 ++++++
- drivers/input/touchscreen/Kconfig  |   52 ++++++++++++++++++++++++++++++++++++
- drivers/input/touchscreen/Makefile |   17 +++++++++++
- 3 files changed, 78 insertions(+), 0 deletions(-)
+ drivers/misc/lkdtm.c  |  345 --------------------------------------------------
+ drivers/misc/Makefile |    1 
+ lib/Kconfig.debug     |   15 --
+ tests/Kconfig         |   15 ++
+ tests/Makefile        |    1 
+ tests/lkdtm.c         |  345 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 361 insertions(+), 361 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index b4f611c..62131fe 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4196,6 +4196,15 @@ L:	linux-wireless@vger.kernel.org
- W:	http://oops.ghostprotocols.net:81/blog
- S:	Maintained
+Index: linux-2.6.24-rc6/drivers/misc/Makefile
+===================================================================
+--- linux-2.6.24-rc6.orig/drivers/misc/Makefile
++++ linux-2.6.24-rc6/drivers/misc/Makefile
+@@ -8,7 +8,6 @@ obj-$(CONFIG_HDPU_FEATURES)	+= hdpuftrs/
+ obj-$(CONFIG_MSI_LAPTOP)     += msi-laptop.o
+ obj-$(CONFIG_ASUS_LAPTOP)     += asus-laptop.o
+ obj-$(CONFIG_ATMEL_SSC)		+= atmel-ssc.o
+-obj-$(CONFIG_LKDTM)		+= lkdtm.o
+ obj-$(CONFIG_TIFM_CORE)       	+= tifm_core.o
+ obj-$(CONFIG_TIFM_7XX1)       	+= tifm_7xx1.o
+ obj-$(CONFIG_PHANTOM)		+= phantom.o
+Index: linux-2.6.24-rc6/drivers/misc/lkdtm.c
+===================================================================
+--- linux-2.6.24-rc6.orig/drivers/misc/lkdtm.c
++++ /dev/null
+@@ -1,345 +0,0 @@
+-/*
+- * Kprobe module for testing crash dumps
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+- *
+- * Copyright (C) IBM Corporation, 2006
+- *
+- * Author: Ankita Garg <ankita@in.ibm.com>
+- *
+- * This module induces system failures at predefined crashpoints to
+- * evaluate the reliability of crash dumps obtained using different dumping
+- * solutions.
+- *
+- * It is adapted from the Linux Kernel Dump Test Tool by
+- * Fernando Luis Vazquez Cao <http://lkdtt.sourceforge.net>
+- *
+- * Usage :  insmod lkdtm.ko [recur_count={>0}] cpoint_name=<> cpoint_type=<>
+- *							[cpoint_count={>0}]
+- *
+- * recur_count : Recursion level for the stack overflow test. Default is 10.
+- *
+- * cpoint_name : Crash point where the kernel is to be crashed. It can be
+- *		 one of INT_HARDWARE_ENTRY, INT_HW_IRQ_EN, INT_TASKLET_ENTRY,
+- *		 FS_DEVRW, MEM_SWAPOUT, TIMERADD, SCSI_DISPATCH_CMD,
+- *		 IDE_CORE_CP
+- *
+- * cpoint_type : Indicates the action to be taken on hitting the crash point.
+- *		 It can be one of PANIC, BUG, EXCEPTION, LOOP, OVERFLOW
+- *
+- * cpoint_count : Indicates the number of times the crash point is to be hit
+- *		  to trigger an action. The default is 10.
+- */
+-
+-#include <linux/kernel.h>
+-#include <linux/fs.h>
+-#include <linux/module.h>
+-#include <linux/buffer_head.h>
+-#include <linux/kprobes.h>
+-#include <linux/list.h>
+-#include <linux/init.h>
+-#include <linux/interrupt.h>
+-#include <linux/hrtimer.h>
+-#include <scsi/scsi_cmnd.h>
+-
+-#ifdef CONFIG_IDE
+-#include <linux/ide.h>
+-#endif
+-
+-#define NUM_CPOINTS 8
+-#define NUM_CPOINT_TYPES 5
+-#define DEFAULT_COUNT 10
+-#define REC_NUM_DEFAULT 10
+-
+-enum cname {
+-	INVALID,
+-	INT_HARDWARE_ENTRY,
+-	INT_HW_IRQ_EN,
+-	INT_TASKLET_ENTRY,
+-	FS_DEVRW,
+-	MEM_SWAPOUT,
+-	TIMERADD,
+-	SCSI_DISPATCH_CMD,
+-	IDE_CORE_CP
+-};
+-
+-enum ctype {
+-	NONE,
+-	PANIC,
+-	BUG,
+-	EXCEPTION,
+-	LOOP,
+-	OVERFLOW
+-};
+-
+-static char* cp_name[] = {
+-	"INT_HARDWARE_ENTRY",
+-	"INT_HW_IRQ_EN",
+-	"INT_TASKLET_ENTRY",
+-	"FS_DEVRW",
+-	"MEM_SWAPOUT",
+-	"TIMERADD",
+-	"SCSI_DISPATCH_CMD",
+-	"IDE_CORE_CP"
+-};
+-
+-static char* cp_type[] = {
+-	"PANIC",
+-	"BUG",
+-	"EXCEPTION",
+-	"LOOP",
+-	"OVERFLOW"
+-};
+-
+-static struct jprobe lkdtm;
+-
+-static int lkdtm_parse_commandline(void);
+-static void lkdtm_handler(void);
+-
+-static char* cpoint_name;
+-static char* cpoint_type;
+-static int cpoint_count = DEFAULT_COUNT;
+-static int recur_count = REC_NUM_DEFAULT;
+-
+-static enum cname cpoint = INVALID;
+-static enum ctype cptype = NONE;
+-static int count = DEFAULT_COUNT;
+-
+-module_param(recur_count, int, 0644);
+-MODULE_PARM_DESC(recur_count, " Recursion level for the stack overflow test, "\
+-				 "default is 10");
+-module_param(cpoint_name, charp, 0644);
+-MODULE_PARM_DESC(cpoint_name, " Crash Point, where kernel is to be crashed");
+-module_param(cpoint_type, charp, 0644);
+-MODULE_PARM_DESC(cpoint_type, " Crash Point Type, action to be taken on "\
+-				"hitting the crash point");
+-module_param(cpoint_count, int, 0644);
+-MODULE_PARM_DESC(cpoint_count, " Crash Point Count, number of times the "\
+-				"crash point is to be hit to trigger action");
+-
+-static unsigned int jp_do_irq(unsigned int irq)
+-{
+-	lkdtm_handler();
+-	jprobe_return();
+-	return 0;
+-}
+-
+-static irqreturn_t jp_handle_irq_event(unsigned int irq,
+-				       struct irqaction *action)
+-{
+-	lkdtm_handler();
+-	jprobe_return();
+-	return 0;
+-}
+-
+-static void jp_tasklet_action(struct softirq_action *a)
+-{
+-	lkdtm_handler();
+-	jprobe_return();
+-}
+-
+-static void jp_ll_rw_block(int rw, int nr, struct buffer_head *bhs[])
+-{
+-	lkdtm_handler();
+-	jprobe_return();
+-}
+-
+-struct scan_control;
+-
+-static unsigned long jp_shrink_inactive_list(unsigned long max_scan,
+-					     struct zone *zone,
+-					     struct scan_control *sc)
+-{
+-	lkdtm_handler();
+-	jprobe_return();
+-	return 0;
+-}
+-
+-static int jp_hrtimer_start(struct hrtimer *timer, ktime_t tim,
+-			    const enum hrtimer_mode mode)
+-{
+-	lkdtm_handler();
+-	jprobe_return();
+-	return 0;
+-}
+-
+-static int jp_scsi_dispatch_cmd(struct scsi_cmnd *cmd)
+-{
+-	lkdtm_handler();
+-	jprobe_return();
+-	return 0;
+-}
+-
+-#ifdef CONFIG_IDE
+-int jp_generic_ide_ioctl(ide_drive_t *drive, struct file *file,
+-			struct block_device *bdev, unsigned int cmd,
+-			unsigned long arg)
+-{
+-	lkdtm_handler();
+-	jprobe_return();
+-	return 0;
+-}
+-#endif
+-
+-static int lkdtm_parse_commandline(void)
+-{
+-	int i;
+-
+-	if (cpoint_name == INVALID || cpoint_type == NONE ||
+-					cpoint_count < 1 || recur_count < 1)
+-		return -EINVAL;
+-
+-	for (i = 0; i < NUM_CPOINTS; ++i) {
+-		if (!strcmp(cpoint_name, cp_name[i])) {
+-			cpoint = i + 1;
+-			break;
+-		}
+-	}
+-
+-	for (i = 0; i < NUM_CPOINT_TYPES; ++i) {
+-		if (!strcmp(cpoint_type, cp_type[i])) {
+-			cptype = i + 1;
+-			break;
+-		}
+-	}
+-
+-	if (cpoint == INVALID || cptype == NONE)
+-                return -EINVAL;
+-
+-	count = cpoint_count;
+-
+-	return 0;
+-}
+-
+-static int recursive_loop(int a)
+-{
+-	char buf[1024];
+-
+-	memset(buf,0xFF,1024);
+-	recur_count--;
+-	if (!recur_count)
+-		return 0;
+-	else
+-        	return recursive_loop(a);
+-}
+-
+-void lkdtm_handler(void)
+-{
+-	printk(KERN_INFO "lkdtm : Crash point %s of type %s hit\n",
+-					 cpoint_name, cpoint_type);
+-	--count;
+-
+-	if (count == 0) {
+-		switch (cptype) {
+-		case NONE:
+-			break;
+-		case PANIC:
+-			printk(KERN_INFO "lkdtm : PANIC\n");
+-			panic("dumptest");
+-			break;
+-		case BUG:
+-			printk(KERN_INFO "lkdtm : BUG\n");
+-			BUG();
+-			break;
+-		case EXCEPTION:
+-			printk(KERN_INFO "lkdtm : EXCEPTION\n");
+-			*((int *) 0) = 0;
+-			break;
+-		case LOOP:
+-			printk(KERN_INFO "lkdtm : LOOP\n");
+-			for (;;);
+-			break;
+-		case OVERFLOW:
+-			printk(KERN_INFO "lkdtm : OVERFLOW\n");
+-			(void) recursive_loop(0);
+-			break;
+-		default:
+-			break;
+-		}
+-		count = cpoint_count;
+-	}
+-}
+-
+-static int __init lkdtm_module_init(void)
+-{
+-	int ret;
+-
+-	if (lkdtm_parse_commandline() == -EINVAL) {
+-		printk(KERN_INFO "lkdtm : Invalid command\n");
+-		return -EINVAL;
+-	}
+-
+-	switch (cpoint) {
+-	case INT_HARDWARE_ENTRY:
+-		lkdtm.kp.symbol_name = "__do_IRQ";
+-		lkdtm.entry = (kprobe_opcode_t*) jp_do_irq;
+-		break;
+-	case INT_HW_IRQ_EN:
+-		lkdtm.kp.symbol_name = "handle_IRQ_event";
+-		lkdtm.entry = (kprobe_opcode_t*) jp_handle_irq_event;
+-		break;
+-	case INT_TASKLET_ENTRY:
+-		lkdtm.kp.symbol_name = "tasklet_action";
+-		lkdtm.entry = (kprobe_opcode_t*) jp_tasklet_action;
+-		break;
+-	case FS_DEVRW:
+-		lkdtm.kp.symbol_name = "ll_rw_block";
+-		lkdtm.entry = (kprobe_opcode_t*) jp_ll_rw_block;
+-		break;
+-	case MEM_SWAPOUT:
+-		lkdtm.kp.symbol_name = "shrink_inactive_list";
+-		lkdtm.entry = (kprobe_opcode_t*) jp_shrink_inactive_list;
+-		break;
+-	case TIMERADD:
+-		lkdtm.kp.symbol_name = "hrtimer_start";
+-		lkdtm.entry = (kprobe_opcode_t*) jp_hrtimer_start;
+-		break;
+-	case SCSI_DISPATCH_CMD:
+-		lkdtm.kp.symbol_name = "scsi_dispatch_cmd";
+-		lkdtm.entry = (kprobe_opcode_t*) jp_scsi_dispatch_cmd;
+-		break;
+-	case IDE_CORE_CP:
+-#ifdef CONFIG_IDE
+-		lkdtm.kp.symbol_name = "generic_ide_ioctl";
+-		lkdtm.entry = (kprobe_opcode_t*) jp_generic_ide_ioctl;
+-#else
+-		printk(KERN_INFO "lkdtm : Crash point not available\n");
+-#endif
+-		break;
+-	default:
+-		printk(KERN_INFO "lkdtm : Invalid Crash Point\n");
+-		break;
+-	}
+-
+-	if ((ret = register_jprobe(&lkdtm)) < 0) {
+-                printk(KERN_INFO "lkdtm : Couldn't register jprobe\n");
+-                return ret;
+-	}
+-
+-	printk(KERN_INFO "lkdtm : Crash point %s of type %s registered\n",
+-						cpoint_name, cpoint_type);
+-	return 0;
+-}
+-
+-static void __exit lkdtm_module_exit(void)
+-{
+-        unregister_jprobe(&lkdtm);
+-        printk(KERN_INFO "lkdtm : Crash point unregistered\n");
+-}
+-
+-module_init(lkdtm_module_init);
+-module_exit(lkdtm_module_exit);
+-
+-MODULE_LICENSE("GPL");
+Index: linux-2.6.24-rc6/lib/Kconfig.debug
+===================================================================
+--- linux-2.6.24-rc6.orig/lib/Kconfig.debug
++++ linux-2.6.24-rc6/lib/Kconfig.debug
+@@ -467,21 +467,6 @@ config BOOT_PRINTK_DELAY
+ 	  BOOT_PRINTK_DELAY also may cause DETECT_SOFTLOCKUP to detect
+ 	  what it believes to be lockup conditions.
  
-+WM97XX TOUCHSCREEN DRIVERS
-+P:	Mark Brown
-+M:	broonie@opensource.wolfsonmicro.com
-+P:	Liam Girdwood
-+M:	liam.girdwood@wolfsonmicro.com
-+L:	linux-input@vger.kernel.org
-+T:	git git://opensource.wolfsonmicro.com/linux-2.6-touch
-+S:	Supported
-+
- X.25 NETWORK LAYER
- P:	Henner Eisen
- M:	eis@baty.hanse.de
-diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
-index fa8442b..89fa468 100644
---- a/drivers/input/touchscreen/Kconfig
-+++ b/drivers/input/touchscreen/Kconfig
-@@ -160,6 +160,58 @@ config TOUCHSCREEN_TOUCHRIGHT
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called touchright.
+-config LKDTM
+-	tristate "Linux Kernel Dump Test Tool Module"
+-	depends on DEBUG_KERNEL
+-	depends on KPROBES
+-	default n
+-	help
+-	This module enables testing of the different dumping mechanisms by
+-	inducing system failures at predefined crash points.
+-	If you don't need it: say N
+-	Choose M here to compile this code as a module. The module will be
+-	called lkdtm.
+-
+-	Documentation on how to use the module can be found in
+-	drivers/misc/lkdtm.c
+-
+ config FAULT_INJECTION
+ 	bool "Fault-injection framework"
+ 	depends on DEBUG_KERNEL
+Index: linux-2.6.24-rc6/tests/Kconfig
+===================================================================
+--- linux-2.6.24-rc6.orig/tests/Kconfig
++++ linux-2.6.24-rc6/tests/Kconfig
+@@ -51,5 +51,20 @@ config DEBUG_SYNCHRO_TEST
  
-+config TOUCHSCREEN_WM97XX
-+	tristate "Support for WM97xx AC97 touchscreen controllers"
-+	depends on AC97_BUS
-+
-+config TOUCHSCREEN_WM9705
-+	bool "WM9705 Touchscreen interface support"
-+	depends on TOUCHSCREEN_WM97XX
-+	help
-+	  Say Y here if you have a Wolfson Microelectronics WM9705 touchscreen
-+	  controller connected to your system.
-+
-+	  If unsure, say N.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called wm9705.
-+
-+config TOUCHSCREEN_WM9712
-+	bool "WM9712 Touchscreen interface support"
-+	depends on TOUCHSCREEN_WM97XX
-+	help
-+	  Say Y here if you have a Wolfson Microelectronics WM9712 touchscreen
-+	  controller connected to your system.
-+
-+	  If unsure, say N.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called wm9712.
-+
-+config TOUCHSCREEN_WM9713
-+	bool "WM9713 Touchscreen interface support"
-+	depends on TOUCHSCREEN_WM97XX
-+	help
-+	  Say Y here if you have a Wolfson Microelectronics WM9713 touchscreen
-+	  controller connected to your system.
-+
-+	  If unsure, say N.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called wm9713.
-+
-+config TOUCHSCREEN_WM97XX_PXA
-+	tristate "WM97xx PXA accelerated touch"
-+	depends on TOUCHSCREEN_WM97XX && ARCH_PXA
-+	help
-+	  Say Y here for support for streaming mode with WM97xx touchscreens
-+	  on systems with PXA2xx series processors.
-+
-+	  If unsure, say N
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called pxa-wm97xx
-+
- config TOUCHSCREEN_TOUCHWIN
- 	tristate "Touchwin serial touchscreen"
- 	select SERIO
-diff --git a/drivers/input/touchscreen/Makefile b/drivers/input/touchscreen/Makefile
-index 35d4097..864d3b7 100644
---- a/drivers/input/touchscreen/Makefile
-+++ b/drivers/input/touchscreen/Makefile
-@@ -4,6 +4,8 @@
+ 	  See Documentation/synchro-test.txt.
  
- # Each configuration option enables a list of files.
++config LKDTM
++	tristate "Linux Kernel Dump Test Tool Module"
++	depends on DEBUG_KERNEL
++	depends on KPROBES
++	default n
++	help
++	This module enables testing of the different dumping mechanisms by
++	inducing system failures at predefined crash points.
++	If you don't need it: say N
++	Choose M here to compile this code as a module. The module will be
++	called lkdtm.
++
++	Documentation on how to use the module can be found in
++	drivers/misc/lkdtm.c
++
+ endif # KERNEL_TESTS
  
-+wm97xx-ts-objs := wm97xx-core.o
+Index: linux-2.6.24-rc6/tests/Makefile
+===================================================================
+--- linux-2.6.24-rc6.orig/tests/Makefile
++++ linux-2.6.24-rc6/tests/Makefile
+@@ -6,3 +6,4 @@ obj-$(CONFIG_DEBUG_LOCKING_API_SELFTESTS
+ obj-$(CONFIG_RCU_TORTURE_TEST) += rcutorture.o
+ obj-$(CONFIG_RT_MUTEX_TESTER) += rtmutex-tester.o
+ obj-$(CONFIG_DEBUG_SYNCHRO_TEST) += synchro-test.o
++obj-$(CONFIG_LKDTM) += lkdtm.o
+Index: linux-2.6.24-rc6/tests/lkdtm.c
+===================================================================
+--- /dev/null
++++ linux-2.6.24-rc6/tests/lkdtm.c
+@@ -0,0 +1,345 @@
++/*
++ * Kprobe module for testing crash dumps
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ * Copyright (C) IBM Corporation, 2006
++ *
++ * Author: Ankita Garg <ankita@in.ibm.com>
++ *
++ * This module induces system failures at predefined crashpoints to
++ * evaluate the reliability of crash dumps obtained using different dumping
++ * solutions.
++ *
++ * It is adapted from the Linux Kernel Dump Test Tool by
++ * Fernando Luis Vazquez Cao <http://lkdtt.sourceforge.net>
++ *
++ * Usage :  insmod lkdtm.ko [recur_count={>0}] cpoint_name=<> cpoint_type=<>
++ *							[cpoint_count={>0}]
++ *
++ * recur_count : Recursion level for the stack overflow test. Default is 10.
++ *
++ * cpoint_name : Crash point where the kernel is to be crashed. It can be
++ *		 one of INT_HARDWARE_ENTRY, INT_HW_IRQ_EN, INT_TASKLET_ENTRY,
++ *		 FS_DEVRW, MEM_SWAPOUT, TIMERADD, SCSI_DISPATCH_CMD,
++ *		 IDE_CORE_CP
++ *
++ * cpoint_type : Indicates the action to be taken on hitting the crash point.
++ *		 It can be one of PANIC, BUG, EXCEPTION, LOOP, OVERFLOW
++ *
++ * cpoint_count : Indicates the number of times the crash point is to be hit
++ *		  to trigger an action. The default is 10.
++ */
 +
- obj-$(CONFIG_TOUCHSCREEN_ADS7846)	+= ads7846.o
- obj-$(CONFIG_TOUCHSCREEN_BITSY)		+= h3600_ts_input.o
- obj-$(CONFIG_TOUCHSCREEN_CORGI)		+= corgi_ts.o
-@@ -19,3 +21,18 @@ obj-$(CONFIG_TOUCHSCREEN_PENMOUNT)	+= penmount.o
- obj-$(CONFIG_TOUCHSCREEN_TOUCHRIGHT)	+= touchright.o
- obj-$(CONFIG_TOUCHSCREEN_TOUCHWIN)	+= touchwin.o
- obj-$(CONFIG_TOUCHSCREEN_UCB1400)	+= ucb1400_ts.o
-+obj-$(CONFIG_TOUCHSCREEN_WM97XX)	+= wm97xx-ts.o
-+obj-$(CONFIG_TOUCHSCREEN_WM97XX_PXA)	+= pxa-wm97xx.o
++#include <linux/kernel.h>
++#include <linux/fs.h>
++#include <linux/module.h>
++#include <linux/buffer_head.h>
++#include <linux/kprobes.h>
++#include <linux/list.h>
++#include <linux/init.h>
++#include <linux/interrupt.h>
++#include <linux/hrtimer.h>
++#include <scsi/scsi_cmnd.h>
 +
-+ifeq ($(CONFIG_TOUCHSCREEN_WM9713),y)
-+wm97xx-ts-objs += wm9713.o
-+endif
++#ifdef CONFIG_IDE
++#include <linux/ide.h>
++#endif
 +
-+ifeq ($(CONFIG_TOUCHSCREEN_WM9712),y)
-+wm97xx-ts-objs += wm9712.o
-+endif
++#define NUM_CPOINTS 8
++#define NUM_CPOINT_TYPES 5
++#define DEFAULT_COUNT 10
++#define REC_NUM_DEFAULT 10
 +
-+ifeq ($(CONFIG_TOUCHSCREEN_WM9705),y)
-+wm97xx-ts-objs += wm9705.o
-+endif
++enum cname {
++	INVALID,
++	INT_HARDWARE_ENTRY,
++	INT_HW_IRQ_EN,
++	INT_TASKLET_ENTRY,
++	FS_DEVRW,
++	MEM_SWAPOUT,
++	TIMERADD,
++	SCSI_DISPATCH_CMD,
++	IDE_CORE_CP
++};
 +
--- 
-1.5.3.8
-
++enum ctype {
++	NONE,
++	PANIC,
++	BUG,
++	EXCEPTION,
++	LOOP,
++	OVERFLOW
++};
++
++static char* cp_name[] = {
++	"INT_HARDWARE_ENTRY",
++	"INT_HW_IRQ_EN",
++	"INT_TASKLET_ENTRY",
++	"FS_DEVRW",
++	"MEM_SWAPOUT",
++	"TIMERADD",
++	"SCSI_DISPATCH_CMD",
++	"IDE_CORE_CP"
++};
++
++static char* cp_type[] = {
++	"PANIC",
++	"BUG",
++	"EXCEPTION",
++	"LOOP",
++	"OVERFLOW"
++};
++
++static struct jprobe lkdtm;
++
++static int lkdtm_parse_commandline(void);
++static void lkdtm_handler(void);
++
++static char* cpoint_name;
++static char* cpoint_type;
++static int cpoint_count = DEFAULT_COUNT;
++static int recur_count = REC_NUM_DEFAULT;
++
++static enum cname cpoint = INVALID;
++static enum ctype cptype = NONE;
++static int count = DEFAULT_COUNT;
++
++module_param(recur_count, int, 0644);
++MODULE_PARM_DESC(recur_count, " Recursion level for the stack overflow test, "\
++				 "default is 10");
++module_param(cpoint_name, charp, 0644);
++MODULE_PARM_DESC(cpoint_name, " Crash Point, where kernel is to be crashed");
++module_param(cpoint_type, charp, 0644);
++MODULE_PARM_DESC(cpoint_type, " Crash Point Type, action to be taken on "\
++				"hitting the crash point");
++module_param(cpoint_count, int, 0644);
++MODULE_PARM_DESC(cpoint_count, " Crash Point Count, number of times the "\
++				"crash point is to be hit to trigger action");
++
++static unsigned int jp_do_irq(unsigned int irq)
++{
++	lkdtm_handler();
++	jprobe_return();
++	return 0;
++}
++
++static irqreturn_t jp_handle_irq_event(unsigned int irq,
++				       struct irqaction *action)
++{
++	lkdtm_handler();
++	jprobe_return();
++	return 0;
++}
++
++static void jp_tasklet_action(struct softirq_action *a)
++{
++	lkdtm_handler();
++	jprobe_return();
++}
++
++static void jp_ll_rw_block(int rw, int nr, struct buffer_head *bhs[])
++{
++	lkdtm_handler();
++	jprobe_return();
++}
++
++struct scan_control;
++
++static unsigned long jp_shrink_inactive_list(unsigned long max_scan,
++					     struct zone *zone,
++					     struct scan_control *sc)
++{
++	lkdtm_handler();
++	jprobe_return();
++	return 0;
++}
++
++static int jp_hrtimer_start(struct hrtimer *timer, ktime_t tim,
++			    const enum hrtimer_mode mode)
++{
++	lkdtm_handler();
++	jprobe_return();
++	return 0;
++}
++
++static int jp_scsi_dispatch_cmd(struct scsi_cmnd *cmd)
++{
++	lkdtm_handler();
++	jprobe_return();
++	return 0;
++}
++
++#ifdef CONFIG_IDE
++int jp_generic_ide_ioctl(ide_drive_t *drive, struct file *file,
++			struct block_device *bdev, unsigned int cmd,
++			unsigned long arg)
++{
++	lkdtm_handler();
++	jprobe_return();
++	return 0;
++}
++#endif
++
++static int lkdtm_parse_commandline(void)
++{
++	int i;
++
++	if (cpoint_name == INVALID || cpoint_type == NONE ||
++					cpoint_count < 1 || recur_count < 1)
++		return -EINVAL;
++
++	for (i = 0; i < NUM_CPOINTS; ++i) {
++		if (!strcmp(cpoint_name, cp_name[i])) {
++			cpoint = i + 1;
++			break;
++		}
++	}
++
++	for (i = 0; i < NUM_CPOINT_TYPES; ++i) {
++		if (!strcmp(cpoint_type, cp_type[i])) {
++			cptype = i + 1;
++			break;
++		}
++	}
++
++	if (cpoint == INVALID || cptype == NONE)
++                return -EINVAL;
++
++	count = cpoint_count;
++
++	return 0;
++}
++
++static int recursive_loop(int a)
++{
++	char buf[1024];
++
++	memset(buf,0xFF,1024);
++	recur_count--;
++	if (!recur_count)
++		return 0;
++	else
++        	return recursive_loop(a);
++}
++
++void lkdtm_handler(void)
++{
++	printk(KERN_INFO "lkdtm : Crash point %s of type %s hit\n",
++					 cpoint_name, cpoint_type);
++	--count;
++
++	if (count == 0) {
++		switch (cptype) {
++		case NONE:
++			break;
++		case PANIC:
++			printk(KERN_INFO "lkdtm : PANIC\n");
++			panic("dumptest");
++			break;
++		case BUG:
++			printk(KERN_INFO "lkdtm : BUG\n");
++			BUG();
++			break;
++		case EXCEPTION:
++			printk(KERN_INFO "lkdtm : EXCEPTION\n");
++			*((int *) 0) = 0;
++			break;
++		case LOOP:
++			printk(KERN_INFO "lkdtm : LOOP\n");
++			for (;;);
++			break;
++		case OVERFLOW:
++			printk(KERN_INFO "lkdtm : OVERFLOW\n");
++			(void) recursive_loop(0);
++			break;
++		default:
++			break;
++		}
++		count = cpoint_count;
++	}
++}
++
++static int __init lkdtm_module_init(void)
++{
++	int ret;
++
++	if (lkdtm_parse_commandline() == -EINVAL) {
++		printk(KERN_INFO "lkdtm : Invalid command\n");
++		return -EINVAL;
++	}
++
++	switch (cpoint) {
++	case INT_HARDWARE_ENTRY:
++		lkdtm.kp.symbol_name = "__do_IRQ";
++		lkdtm.entry = (kprobe_opcode_t*) jp_do_irq;
++		break;
++	case INT_HW_IRQ_EN:
++		lkdtm.kp.symbol_name = "handle_IRQ_event";
++		lkdtm.entry = (kprobe_opcode_t*) jp_handle_irq_event;
++		break;
++	case INT_TASKLET_ENTRY:
++		lkdtm.kp.symbol_name = "tasklet_action";
++		lkdtm.entry = (kprobe_opcode_t*) jp_tasklet_action;
++		break;
++	case FS_DEVRW:
++		lkdtm.kp.symbol_name = "ll_rw_block";
++		lkdtm.entry = (kprobe_opcode_t*) jp_ll_rw_block;
++		break;
++	case MEM_SWAPOUT:
++		lkdtm.kp.symbol_name = "shrink_inactive_list";
++		lkdtm.entry = (kprobe_opcode_t*) jp_shrink_inactive_list;
++		break;
++	case TIMERADD:
++		lkdtm.kp.symbol_name = "hrtimer_start";
++		lkdtm.entry = (kprobe_opcode_t*) jp_hrtimer_start;
++		break;
++	case SCSI_DISPATCH_CMD:
++		lkdtm.kp.symbol_name = "scsi_dispatch_cmd";
++		lkdtm.entry = (kprobe_opcode_t*) jp_scsi_dispatch_cmd;
++		break;
++	case IDE_CORE_CP:
++#ifdef CONFIG_IDE
++		lkdtm.kp.symbol_name = "generic_ide_ioctl";
++		lkdtm.entry = (kprobe_opcode_t*) jp_generic_ide_ioctl;
++#else
++		printk(KERN_INFO "lkdtm : Crash point not available\n");
++#endif
++		break;
++	default:
++		printk(KERN_INFO "lkdtm : Invalid Crash Point\n");
++		break;
++	}
++
++	if ((ret = register_jprobe(&lkdtm)) < 0) {
++                printk(KERN_INFO "lkdtm : Couldn't register jprobe\n");
++                return ret;
++	}
++
++	printk(KERN_INFO "lkdtm : Crash point %s of type %s registered\n",
++						cpoint_name, cpoint_type);
++	return 0;
++}
++
++static void __exit lkdtm_module_exit(void)
++{
++        unregister_jprobe(&lkdtm);
++        printk(KERN_INFO "lkdtm : Crash point unregistered\n");
++}
++
++module_init(lkdtm_module_init);
++module_exit(lkdtm_module_exit);
++
++MODULE_LICENSE("GPL");
