@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754749AbYAJLjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbYAJLk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754749AbYAJLjU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 06:39:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbYAJLjH
+	id S1755929AbYAJLk0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 06:40:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753419AbYAJLkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 06:39:07 -0500
-Received: from tama555.ecl.ntt.co.jp ([129.60.39.106]:50222 "EHLO
-	tama555.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752421AbYAJLjF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 06:39:05 -0500
-To: nick@ukfsn.org, James.Bottomley@HansenPartnership.com
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: Driver 'sd' needs updating
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080110085150.53addacf@linuxamd.linicks.net>
-References: <20080110085150.53addacf@linuxamd.linicks.net>
+	Thu, 10 Jan 2008 06:40:11 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43437 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752810AbYAJLkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 06:40:08 -0500
+Date: Thu, 10 Jan 2008 11:39:54 +0000
+From: Alasdair G Kergon <agk@redhat.com>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: Matt Mackall <mpm@selenic.com>,
+       Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, gorcunov@gmail.com
+Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
+Message-ID: <20080110113954.GL3510@agk.fab.redhat.com>
+Mail-Followup-To: Alasdair G Kergon <agk@redhat.com>,
+	Daniel Phillips <phillips@phunq.net>,
+	Matt Mackall <mpm@selenic.com>,
+	Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>,
+	Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+	kernel-janitors@vger.kernel.org, gorcunov@gmail.com
+References: <20080108164015.GC31504@one.firstfloor.org> <1199909560.6245.67.camel@cinder.waste.org> <20080109224026.GA4039@agk.fab.redhat.com> <200801100149.16301.phillips@phunq.net>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080110203845E.fujita.tomonori@lab.ntt.co.jp>
-Date: Thu, 10 Jan 2008 20:38:45 +0900
-X-Dispatcher: imput version 20040704(IM147)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200801100149.16301.phillips@phunq.net>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC'ed linux-scsi and James,
+On Thu, Jan 10, 2008 at 01:49:15AM -0800, Daniel Phillips wrote:
+> So what stops you from changing to unlocked_ioctl for the main device 
+> mapper ctl_ioctl?  
 
-On Thu, 10 Jan 2008 08:51:50 +0000
-Nick Warne <nick@ukfsn.org> wrote:
+Nothing - patches to do this are queued for 2.6.25:
 
-> 
-> Hi everybody - Happy New Year to you all!
-> 
-> OK, updated to git rc7 yesterday - I now see this in syslog:
-> 
->    "Driver 'sd' needs updating - please use bus_type methods"
-> 
-> The warning never appeared in RC6, and all google reveals are other
-> peoples logs that are posted about other issues.
-> 
-> Do I need to fix up something here?
+  http://www.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/dm-ioctl-remove-lock_kernel.patch
+  http://www.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/dm-ioctl-move-compat-code.patch
 
-No, you don't. It's harmless, a side effect of:
-
-commit 751bf4d7865e4ced406be93b04c7436d866d3684
-Author: James Bottomley <James.Bottomley@HansenPartnership.com>
-Date:   Wed Jan 2 11:14:30 2008 -0600
-
-    [SCSI] scsi_sysfs: restore prep_fn when ULD is removed
-
-
-It would be better to silence this warning.
-
-James, we need to reset prep_fn in each ULD? though it's not nice...
+Alasdair
+-- 
+agk@redhat.com
