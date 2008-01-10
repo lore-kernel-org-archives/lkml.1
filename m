@@ -1,77 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756776AbYAJS1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757702AbYAJS2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756776AbYAJS1h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 13:27:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754603AbYAJS11
+	id S1757702AbYAJS2Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 13:28:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755212AbYAJS2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 13:27:27 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:53826 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754429AbYAJS10 (ORCPT
+	Thu, 10 Jan 2008 13:28:16 -0500
+Received: from rayleigh.systella.fr ([213.41.184.253]:49671 "EHLO
+	rayleigh.systella.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754616AbYAJS2P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 13:27:26 -0500
-Subject: Re: Driver 'sd' needs updating
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: nick@ukfsn.org, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>
-In-Reply-To: <20080110203845E.fujita.tomonori@lab.ntt.co.jp>
-References: <20080110085150.53addacf@linuxamd.linicks.net>
-	 <20080110203845E.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain
-Date: Thu, 10 Jan 2008 12:27:22 -0600
-Message-Id: <1199989642.3141.66.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Jan 2008 13:28:15 -0500
+Message-ID: <478663B0.8040505@systella.fr>
+Date: Thu, 10 Jan 2008 19:28:00 +0100
+From: =?ISO-8859-1?Q?BERTRAND_Jo=EBl?= <joel.bertrand@systella.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux sparc64; fr-FR; rv:1.8.1.11) Gecko/20071119 Iceape/1.1.7 (Debian-1.1.7-1)
+MIME-Version: 1.0
+To: Paul Rolland <rol@as2917.net>
+CC: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, rol@witbe.net
+Subject: Re: 3Com NIC
+References: <4786592E.6080303@systella.fr> <20080110191658.49c49412@tux.DEF.witbe.net>
+In-Reply-To: <20080110191658.49c49412@tux.DEF.witbe.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-3.1.8 (rayleigh.systella.fr [192.168.254.1]); Thu, 10 Jan 2008 19:28:06 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Paul Rolland wrote:
+> Hello,
+> 
+> On Thu, 10 Jan 2008 18:43:10 +0100
+> BERTRAND Joël <joel.bertrand@systella.fr> wrote:
+> 
+>> 	ifconfig returns :
+>>
+>> eth2      Link encap:Ethernet  HWaddr 00:04:75:df:1c:6d
+>>            inet adr:192.168.253.1  Bcast:192.168.253.255 
+>> Masque:255.255.255.0
+>>            UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+>>            RX packets:1019611 errors:0 dropped:0 overruns:782 frame:0
+>>            TX packets:1244862 errors:4389 dropped:0 overruns:0 carrier:0
+>>            collisions:0 lg file transmission:1000
+>>            RX bytes:111193503 (106.0 MiB)  TX bytes:1119932615 (1.0 GiB)
+>>            Interruption:17 Adresse de base:0x8000
+>>
+>> 	and dmesg :
+>>
+>> NETDEV WATCHDOG: eth2: transmit timed out
+>> eth2: transmit timed out, tx_status 00 status 8601.
+>>    diagnostics: net 0ccc media 8880 dma 0000003a fifo 0000
+>> eth2: Interrupt posted but not delivered -- IRQ blocked by another device?
+>>    Flags; bus-master 1, dirty 224(0) current 224(0)
+>>    Transmit list 00000000 vs. fffff800a05ce200.
+>>    0: @fffff800a05ce200  length 8000007d status 0001007d
+>>    1: @fffff800a05ce260  length 8000004e status 0001004e
+>>    2: @fffff800a05ce2c0  length 8000004a status 0001004a
+>>    3: @fffff800a05ce320  length 80000048 status 00010048
+>>    4: @fffff800a05ce380  length 8000004a status 0001004a
+>>    5: @fffff800a05ce3e0  length 80000042 status 00010042
+>>    6: @fffff800a05ce440  length 8000004e status 0001004e
+>>    7: @fffff800a05ce4a0  length 80000042 status 00010042
+>>    8: @fffff800a05ce500  length 8000004e status 0001004e
+>>    9: @fffff800a05ce560  length 80000048 status 00010048
+>>    10: @fffff800a05ce5c0  length 8000004a status 0001004a
+>>    11: @fffff800a05ce620  length 8000004e status 0001004e
+>>    12: @fffff800a05ce680  length 80000042 status 00010042
+>>    13: @fffff800a05ce6e0  length 80000042 status 00010042
+>>    14: @fffff800a05ce740  length 80000042 status 80010042
+>>    15: @fffff800a05ce7a0  length 80000052 status 80010052
+>> eth2: Resetting the Tx ring pointer.
+>>
+>> rayleigh:[~] > cat /proc/interrupts
+>>             CPU0       CPU2
+>>    0:  561601936  561601824     <NULL>  timer
+>>    1:          0          0      sun4u  PSYCHO_PCIERR
+>>    2:          0          0      sun4u  PSYCHO_UE
+>>    3:          0          0      sun4u  PSYCHO_CE
+>>    8:     461146          0      sun4u  su(kbd)
+>>    9:          0    3350888      sun4u  su(mouse)
+>>   10:          0          0      sun4u  parport0
+>>   11:          2          0      sun4u  floppy
+>>   12:          0          0      sun4u  cs4231(capture)
+>>   13:     360263          0      sun4u  cs4231(play)
+>>   14:          0   36484826      sun4u  eth0
+>>   15:          0   27118288      sun4u  sym53c8xx
+>>   16:         30          0      sun4u  sym53c8xx
+>>   17:     906177    1171078      sun4u  eth2
+>>   18:   19345145          0      sun4u  aic7xxx
+>>   19:          1     584788      sun4u  ohci_hcd:usb2
+>>   20:          0          0      sun4u  ohci_hcd:usb3
+>>   21:          1        467      sun4u  ehci_hcd:usb1
+>>   22:          0          0      sun4u  PSYCHO_PCIERR
+>>   24:   27308743          0      sun4u  eth1
+>> rayleigh:[~] >
 
-On Thu, 2008-01-10 at 20:38 +0900, FUJITA Tomonori wrote:
-> CC'ed linux-scsi and James,
-> 
-> On Thu, 10 Jan 2008 08:51:50 +0000
-> Nick Warne <nick@ukfsn.org> wrote:
-> 
-> > 
-> > Hi everybody - Happy New Year to you all!
-> > 
-> > OK, updated to git rc7 yesterday - I now see this in syslog:
-> > 
-> >    "Driver 'sd' needs updating - please use bus_type methods"
-> > 
-> > The warning never appeared in RC6, and all google reveals are other
-> > peoples logs that are posted about other issues.
-> > 
-> > Do I need to fix up something here?
-> 
-> No, you don't. It's harmless, a side effect of:
-> 
-> commit 751bf4d7865e4ced406be93b04c7436d866d3684
-> Author: James Bottomley <James.Bottomley@HansenPartnership.com>
-> Date:   Wed Jan 2 11:14:30 2008 -0600
-> 
->     [SCSI] scsi_sysfs: restore prep_fn when ULD is removed
-> 
-> 
-> It would be better to silence this warning.
-> 
-> James, we need to reset prep_fn in each ULD? though it's not nice...
+	Only with eth2.
 
-Really not nice ... to the extent that we shouldn't do it.  The reset is
-in exactly the correct place currently.  If we make it a requirement of
-the ULDs its duplication and someone is bound to forget.
-
-It looks like the problem is the warning in
-base/driver.c:driver_register() apparently it wants an either/or for
-->remove methods (either bus type or driver).  We're actually using the
-bus_type methods, but we also have a driver component, sigh.  I suppose
-what it's wanting is for me to add a scsi_driver type with remove
-methods ... which looks a bit silly since all of the SCSI drivers want
-different remove methods.
-
-James
-
-
+	JKB
