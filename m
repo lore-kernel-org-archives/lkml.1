@@ -1,154 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbYAJCuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757372AbYAJDDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758117AbYAJCuZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 21:50:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755090AbYAJCuK
+	id S1757372AbYAJDDW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 22:03:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753792AbYAJDDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 21:50:10 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:46921 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754137AbYAJCuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 21:50:09 -0500
-Date: Wed, 9 Jan 2008 20:50:06 -0600 (CST)
-From: Brent Casavant <bcasavan@sgi.com>
-Reply-To: Brent Casavant <bcasavan@sgi.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-cc: penguin-kernel@i-love.sakura.ne.jp, netdev@vger.kernel.org,
-       davem@davemloft.net, linux-kernel@vger.kernel.org
-Subject: Re: AF_UNIX MSG_PEEK bug?
-In-Reply-To: <E1JCkrp-0000vX-00@gondolin.me.apana.org.au>
-Message-ID: <alpine.BSF.1.00.0801092031290.35527@pkunk.americas.sgi.com>
-References: <E1JCkrp-0000vX-00@gondolin.me.apana.org.au>
-User-Agent: Alpine 1.00 (BSF 882 2007-12-20)
-Organization: "Silicon Graphics, Inc."
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 9 Jan 2008 22:03:13 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:4782 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753333AbYAJDDM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 22:03:12 -0500
+Date: Thu, 10 Jan 2008 14:03:02 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Torben Viets <viets@web.de>
+Cc: linux-kernel@vger.kernel.org,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Re: LRW/XTS + Via Padlock Bug in 2.6.24-rc7?
+Message-ID: <20080110030302.GB4570@gondor.apana.org.au>
+References: <47841152.8080705@web.de> <478550DF.3070908@web.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <478550DF.3070908@web.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jan 2008, Herbert Xu wrote:
+On Wed, Jan 09, 2008 at 10:55:27PM +0000, Torben Viets wrote:
+> 
+> eneral protection fault: 0000 [#1]
+> Modules linked in: xt_TCPMSS xt_tcpmss iptable_mangle ipt_MASQUERADE 
+> xt_tcpudp xt_mark xt_state iptable_nat nf_nat nf_conntrack_ipv4 
+> iptable_filter ip_tables x_tables pppoe pppox af_packet ppp_generic slhc 
+> aes_i586
+> CPU:    0
+> EIP:    0060:[<c035b828>]    Not tainted VLI
+> EFLAGS: 00010292   (2.6.23.12 #7)
+> EIP is at aes_crypt_copy+0x28/0x40
+> eax: f7639ff0   ebx: f6c24050   ecx: 00000001   edx: f6c24030
+> esi: f7e89dc8   edi: f7639ff0   ebp: 00010000   esp: f7e89dc8
 
-> Having said that, I do agree that having TCP and AF_UNIX behave
-> in the same way is a plus.  However, if you really want this to
-> happen it would help if you had attached a patch :)
+Thanks for the report.  It would appear that your CPU goes one step
+further than the other report and insists on having two blocks in the
+destination too.
 
-The following patch appears to fix the problem.  However, I would
-really appreciate if someone more familiar with UNIX credential
-passing could review what I did here and provide some feedback.
-It wasn't at all clear to me why the MSG_PEEK and !MSG_PEEK code
-paths were taking different actions regarding credentials, so I
-unified them to behave the same way as the !MSG_PEEK code path.
+Please let me know whether this patch fixes the problem.
 
-I haven't tested credential passing under this new code yet, but
-hope to do so tomorrow.  Again, a review with an eye towards
-that area would be most appreciated.
-
-The various test cases I had which tripped this bug now pass without
-incident.  Also, if netstat is to be believed, quite a few programs
-which utilize AF_UNIX sockets (e.g. hald, dbus, acpid) are running
-very contentedly on the test system, so at least I didn't severely
-break anything, possible UNIX credential issues notwithstanding.
-
-Note: I'm not proposing this patch be integrated yet -- I'm throwing
-it out here as a starting point.
-
-diff --git a/net/unix/af_unix.c b/net/unix/af_unix.c
-index 060bba4..2ffdf5b 100644
---- a/net/unix/af_unix.c
-+++ b/net/unix/af_unix.c
-@@ -50,6 +50,9 @@
-  *	     Arnaldo C. Melo	:	Remove MOD_{INC,DEC}_USE_COUNT,
-  *	     				the core infrastructure is doing that
-  *	     				for all net proto families now (2.5.69+)
-+ *		Brent Casavant	:	SOCK_STREAM MSG_PEEK should peek
-+ *					far enough ahead to satisfy the request
-+ *					rather than stop after the first skb.
-  *
-  *
-  * Known differences from reference BSD that was tested:
-@@ -1750,6 +1753,8 @@ static int unix_stream_recvmsg(struct ki
- 	int target;
- 	int err = 0;
- 	long timeo;
-+	struct sk_buff *skb;
-+	struct sk_buff_head peek_stack;
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+diff --git a/drivers/crypto/padlock-aes.c b/drivers/crypto/padlock-aes.c
+index a337b69..ed3ae47 100644
+--- a/drivers/crypto/padlock-aes.c
++++ b/drivers/crypto/padlock-aes.c
+@@ -433,7 +433,8 @@ static void aes_crypt_copy(const u8 *in, u8 *out, u32 *key, struct cword *cword)
+ 		__attribute__ ((__aligned__(PADLOCK_ALIGNMENT)));
  
- 	err = -EINVAL;
- 	if (sk->sk_state != TCP_ESTABLISHED)
-@@ -1759,6 +1764,9 @@ static int unix_stream_recvmsg(struct ki
- 	if (flags&MSG_OOB)
- 		goto out;
+ 	memcpy(tmp, in, AES_BLOCK_SIZE);
+-	padlock_xcrypt(tmp, out, key, cword);
++	padlock_xcrypt(tmp, tmp, key, cword);
++	memcpy(out, tmp, AES_BLOCK_SIZE);
+ }
  
-+	if (flags & MSG_PEEK)
-+		skb_queue_head_init(&peek_stack);
-+
- 	target = sock_rcvlowat(sk, flags&MSG_WAITALL, size);
- 	timeo = sock_rcvtimeo(sk, flags&MSG_DONTWAIT);
- 
-@@ -1778,7 +1786,6 @@ static int unix_stream_recvmsg(struct ki
- 	do
- 	{
- 		int chunk;
--		struct sk_buff *skb;
- 
- 		unix_state_lock(sk);
- 		skb = skb_dequeue(&sk->sk_receive_queue);
-@@ -1845,39 +1852,31 @@ static int unix_stream_recvmsg(struct ki
- 		copied += chunk;
- 		size -= chunk;
- 
--		/* Mark read part of skb as used */
--		if (!(flags & MSG_PEEK))
--		{
--			skb_pull(skb, chunk);
--
--			if (UNIXCB(skb).fp)
--				unix_detach_fds(siocb->scm, skb);
-+		/* Credential passing */
-+		if (UNIXCB(skb).fp)
-+			unix_detach_fds(siocb->scm, skb);
- 
--			/* put the skb back if we didn't use it up.. */
-+		if (!(flags & MSG_PEEK)) {
-+			/* Mark read part of skb as used */
-+			skb_pull(skb, chunk);
-+			/* Return unused portion or free skb */
- 			if (skb->len)
--			{
- 				skb_queue_head(&sk->sk_receive_queue, skb);
--				break;
--			}
--
--			kfree_skb(skb);
--
--			if (siocb->scm->fp)
--				break;
--		}
--		else
--		{
--			/* It is questionable, see note in unix_dgram_recvmsg.
--			 */
--			if (UNIXCB(skb).fp)
--				siocb->scm->fp = scm_fp_dup(UNIXCB(skb).fp);
-+			else
-+				kfree_skb(skb);
-+		} else
-+			__skb_queue_head(&peek_stack, skb);
- 
--			/* put message back and return */
--			skb_queue_head(&sk->sk_receive_queue, skb);
-+		/* Stop early when passed credentials are encountered */
-+		if (siocb->scm->fp)
- 			break;
--		}
- 	} while (size);
- 
-+	/* Push all peeked skbs back onto receive queue */
-+	if (flags & MSG_PEEK)
-+		while ((skb = __skb_dequeue(&peek_stack)))
-+			skb_queue_head(&sk->sk_receive_queue, skb);
-+
- 	mutex_unlock(&u->readlock);
- 	scm_recv(sock, msg, siocb->scm, flags);
- out:
+ static inline void aes_crypt(const u8 *in, u8 *out, u32 *key,
