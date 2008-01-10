@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759011AbYAJL6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbYAJL7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759011AbYAJL6w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 06:58:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756512AbYAJL61
+	id S1758729AbYAJL7g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 06:59:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbYAJL70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 06:58:27 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:48246 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758260AbYAJL6Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 06:58:24 -0500
-Date: Thu, 10 Jan 2008 17:28:43 +0530
+	Thu, 10 Jan 2008 06:59:26 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:43522 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754096AbYAJL7Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 06:59:24 -0500
+Date: Thu, 10 Jan 2008 17:29:43 +0530
 From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 To: lkml <linux-kernel@vger.kernel.org>
 Cc: akpm@linux-foundation.org, mingo@elte.hu, ak@suse.de, sam@ravnborg.org,
-       arjan@linux.intel.com, tglx@linutronix.de
-Subject: [PATCH 4/7] Move rtmutex tests under tests/
-Message-ID: <20080110115843.GE26577@in.ibm.com>
+       dhowells@redhat.com
+Subject: [PATCH 5/7] Move synchro-test under tests/
+Message-ID: <20080110115943.GF26577@in.ibm.com>
 Reply-To: ananth@in.ibm.com
 References: <20080110115428.GA26577@in.ibm.com>
 Mime-Version: 1.0
@@ -30,507 +29,607 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
-Move the rtmutex-tester infrastructure to tests/
+Move the synchro-test infrastructure to tests/
 
 Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 ---
- kernel/rtmutex-tester.c |  442 ------------------------------------------------
- kernel/Makefile         |    1 
- lib/Kconfig.debug       |    6 
- tests/Kconfig           |    6 
- tests/Makefile          |    1 
- tests/rtmutex-tester.c  |  442 ++++++++++++++++++++++++++++++++++++++++++++++++
- 6 files changed, 449 insertions(+), 449 deletions(-)
+ kernel/synchro-test.c |  526 --------------------------------------------------
+ kernel/Makefile       |    1 
+ lib/Kconfig.debug     |   14 -
+ tests/Kconfig         |   14 +
+ tests/Makefile        |    1 
+ tests/synchro-test.c  |  526 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 541 insertions(+), 541 deletions(-)
 
 Index: linux-2.6.24-rc6/kernel/Makefile
 ===================================================================
 --- linux-2.6.24-rc6.orig/kernel/Makefile
 +++ linux-2.6.24-rc6/kernel/Makefile
-@@ -25,7 +25,6 @@ obj-$(CONFIG_FUTEX) += futex_compat.o
- endif
- obj-$(CONFIG_RT_MUTEXES) += rtmutex.o
- obj-$(CONFIG_DEBUG_RT_MUTEXES) += rtmutex-debug.o
--obj-$(CONFIG_RT_MUTEX_TESTER) += rtmutex-tester.o
- obj-$(CONFIG_GENERIC_ISA_DMA) += dma.o
- obj-$(CONFIG_SMP) += cpu.o spinlock.o
- obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock.o
-Index: linux-2.6.24-rc6/kernel/rtmutex-tester.c
+@@ -54,7 +54,6 @@ obj-$(CONFIG_SYSFS) += ksysfs.o
+ obj-$(CONFIG_DETECT_SOFTLOCKUP) += softlockup.o
+ obj-$(CONFIG_GENERIC_HARDIRQS) += irq/
+ obj-$(CONFIG_SECCOMP) += seccomp.o
+-obj-$(CONFIG_DEBUG_SYNCHRO_TEST) += synchro-test.o
+ obj-$(CONFIG_CLASSIC_RCU) += rcuclassic.o
+ obj-$(CONFIG_PREEMPT_RCU) += rcupreempt.o
+ ifeq ($(CONFIG_PREEMPT_RCU),y)
+Index: linux-2.6.24-rc6/kernel/synchro-test.c
 ===================================================================
---- linux-2.6.24-rc6.orig/kernel/rtmutex-tester.c
+--- linux-2.6.24-rc6.orig/kernel/synchro-test.c
 +++ /dev/null
-@@ -1,442 +0,0 @@
--/*
-- * RT-Mutex-tester: scriptable tester for rt mutexes
+@@ -1,526 +0,0 @@
+-/* synchro-test.c: run some threads to test the synchronisation primitives
 - *
-- * started by Thomas Gleixner:
+- * Copyright (C) 2005, 2006 Red Hat, Inc. All Rights Reserved.
+- * Written by David Howells (dhowells@redhat.com)
 - *
-- *  Copyright (C) 2006, Timesys Corp., Thomas Gleixner <tglx@timesys.com>
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
 - *
+- * The module should be run as something like:
+- *
+- *	insmod synchro-test.ko rd=2 wr=2
+- *	insmod synchro-test.ko mx=1
+- *	insmod synchro-test.ko sm=2 ism=1
+- *	insmod synchro-test.ko sm=2 ism=2
+- *
+- * See Documentation/synchro-test.txt for more information.
 - */
--#include <linux/kthread.h>
+-
 -#include <linux/module.h>
--#include <linux/sched.h>
+-#include <linux/poll.h>
+-#include <linux/moduleparam.h>
+-#include <linux/stat.h>
+-#include <linux/init.h>
+-#include <asm/atomic.h>
+-#include <linux/personality.h>
 -#include <linux/smp_lock.h>
--#include <linux/spinlock.h>
--#include <linux/sysdev.h>
+-#include <linux/delay.h>
 -#include <linux/timer.h>
--#include <linux/freezer.h>
+-#include <linux/completion.h>
+-#include <linux/mutex.h>
 -
--#include "rtmutex.h"
--
--#define MAX_RT_TEST_THREADS	8
--#define MAX_RT_TEST_MUTEXES	8
--
--static spinlock_t rttest_lock;
--static atomic_t rttest_event;
--
--struct test_thread_data {
--	int			opcode;
--	int			opdata;
--	int			mutexes[MAX_RT_TEST_MUTEXES];
--	int			bkl;
--	int			event;
--	struct sys_device	sysdev;
--};
--
--static struct test_thread_data thread_data[MAX_RT_TEST_THREADS];
--static struct task_struct *threads[MAX_RT_TEST_THREADS];
--static struct rt_mutex mutexes[MAX_RT_TEST_MUTEXES];
--
--enum test_opcodes {
--	RTTEST_NOP = 0,
--	RTTEST_SCHEDOT,		/* 1 Sched other, data = nice */
--	RTTEST_SCHEDRT,		/* 2 Sched fifo, data = prio */
--	RTTEST_LOCK,		/* 3 Lock uninterruptible, data = lockindex */
--	RTTEST_LOCKNOWAIT,	/* 4 Lock uninterruptible no wait in wakeup, data = lockindex */
--	RTTEST_LOCKINT,		/* 5 Lock interruptible, data = lockindex */
--	RTTEST_LOCKINTNOWAIT,	/* 6 Lock interruptible no wait in wakeup, data = lockindex */
--	RTTEST_LOCKCONT,	/* 7 Continue locking after the wakeup delay */
--	RTTEST_UNLOCK,		/* 8 Unlock, data = lockindex */
--	RTTEST_LOCKBKL,		/* 9 Lock BKL */
--	RTTEST_UNLOCKBKL,	/* 10 Unlock BKL */
--	RTTEST_SIGNAL,		/* 11 Signal other test thread, data = thread id */
--	RTTEST_RESETEVENT = 98,	/* 98 Reset event counter */
--	RTTEST_RESET = 99,	/* 99 Reset all pending operations */
--};
--
--static int handle_op(struct test_thread_data *td, int lockwakeup)
--{
--	int i, id, ret = -EINVAL;
--
--	switch(td->opcode) {
--
--	case RTTEST_NOP:
--		return 0;
--
--	case RTTEST_LOCKCONT:
--		td->mutexes[td->opdata] = 1;
--		td->event = atomic_add_return(1, &rttest_event);
--		return 0;
--
--	case RTTEST_RESET:
--		for (i = 0; i < MAX_RT_TEST_MUTEXES; i++) {
--			if (td->mutexes[i] == 4) {
--				rt_mutex_unlock(&mutexes[i]);
--				td->mutexes[i] = 0;
--			}
--		}
--
--		if (!lockwakeup && td->bkl == 4) {
--			unlock_kernel();
--			td->bkl = 0;
--		}
--		return 0;
--
--	case RTTEST_RESETEVENT:
--		atomic_set(&rttest_event, 0);
--		return 0;
--
--	default:
--		if (lockwakeup)
--			return ret;
--	}
--
--	switch(td->opcode) {
--
--	case RTTEST_LOCK:
--	case RTTEST_LOCKNOWAIT:
--		id = td->opdata;
--		if (id < 0 || id >= MAX_RT_TEST_MUTEXES)
--			return ret;
--
--		td->mutexes[id] = 1;
--		td->event = atomic_add_return(1, &rttest_event);
--		rt_mutex_lock(&mutexes[id]);
--		td->event = atomic_add_return(1, &rttest_event);
--		td->mutexes[id] = 4;
--		return 0;
--
--	case RTTEST_LOCKINT:
--	case RTTEST_LOCKINTNOWAIT:
--		id = td->opdata;
--		if (id < 0 || id >= MAX_RT_TEST_MUTEXES)
--			return ret;
--
--		td->mutexes[id] = 1;
--		td->event = atomic_add_return(1, &rttest_event);
--		ret = rt_mutex_lock_interruptible(&mutexes[id], 0);
--		td->event = atomic_add_return(1, &rttest_event);
--		td->mutexes[id] = ret ? 0 : 4;
--		return ret ? -EINTR : 0;
--
--	case RTTEST_UNLOCK:
--		id = td->opdata;
--		if (id < 0 || id >= MAX_RT_TEST_MUTEXES || td->mutexes[id] != 4)
--			return ret;
--
--		td->event = atomic_add_return(1, &rttest_event);
--		rt_mutex_unlock(&mutexes[id]);
--		td->event = atomic_add_return(1, &rttest_event);
--		td->mutexes[id] = 0;
--		return 0;
--
--	case RTTEST_LOCKBKL:
--		if (td->bkl)
--			return 0;
--		td->bkl = 1;
--		lock_kernel();
--		td->bkl = 4;
--		return 0;
--
--	case RTTEST_UNLOCKBKL:
--		if (td->bkl != 4)
--			break;
--		unlock_kernel();
--		td->bkl = 0;
--		return 0;
--
--	default:
--		break;
--	}
--	return ret;
--}
+-#define MAX_THREADS 64
 -
 -/*
-- * Schedule replacement for rtsem_down(). Only called for threads with
-- * PF_MUTEX_TESTER set.
-- *
-- * This allows us to have finegrained control over the event flow.
-- *
+- * Turn on self-validation if we do a one-shot boot-time test:
 - */
--void schedule_rt_mutex_test(struct rt_mutex *mutex)
+-#ifndef MODULE
+-# define VALIDATE_OPERATORS
+-#endif
+-
+-static int nummx;
+-static int numsm, seminit = 4;
+-static int numrd, numwr, numdg;
+-static int elapse = 5, load = 2, do_sched, interval = 2;
+-static int verbose = 0;
+-
+-MODULE_AUTHOR("David Howells");
+-MODULE_DESCRIPTION("Synchronisation primitive test demo");
+-MODULE_LICENSE("GPL");
+-
+-module_param_named(v, verbose, int, 0);
+-MODULE_PARM_DESC(verbose, "Verbosity");
+-
+-module_param_named(mx, nummx, int, 0);
+-MODULE_PARM_DESC(nummx, "Number of mutex threads");
+-
+-module_param_named(sm, numsm, int, 0);
+-MODULE_PARM_DESC(numsm, "Number of semaphore threads");
+-
+-module_param_named(ism, seminit, int, 0);
+-MODULE_PARM_DESC(seminit, "Initial semaphore value");
+-
+-module_param_named(rd, numrd, int, 0);
+-MODULE_PARM_DESC(numrd, "Number of reader threads");
+-
+-module_param_named(wr, numwr, int, 0);
+-MODULE_PARM_DESC(numwr, "Number of writer threads");
+-
+-module_param_named(dg, numdg, int, 0);
+-MODULE_PARM_DESC(numdg, "Number of downgrader threads");
+-
+-module_param(elapse, int, 0);
+-MODULE_PARM_DESC(elapse, "Number of seconds to run for");
+-
+-module_param(load, int, 0);
+-MODULE_PARM_DESC(load, "Length of load in uS");
+-
+-module_param(interval, int, 0);
+-MODULE_PARM_DESC(interval, "Length of interval in uS before re-getting lock");
+-
+-module_param(do_sched, int, 0);
+-MODULE_PARM_DESC(do_sched, "True if each thread should schedule regularly");
+-
+-/* the semaphores under test */
+-static struct mutex ____cacheline_aligned mutex;
+-static struct semaphore ____cacheline_aligned sem;
+-static struct rw_semaphore ____cacheline_aligned rwsem;
+-
+-static atomic_t ____cacheline_aligned do_stuff		= ATOMIC_INIT(0);
+-
+-#ifdef VALIDATE_OPERATORS
+-static atomic_t ____cacheline_aligned mutexes		= ATOMIC_INIT(0);
+-static atomic_t ____cacheline_aligned semaphores	= ATOMIC_INIT(0);
+-static atomic_t ____cacheline_aligned readers		= ATOMIC_INIT(0);
+-static atomic_t ____cacheline_aligned writers		= ATOMIC_INIT(0);
+-#endif
+-
+-static unsigned int ____cacheline_aligned mutexes_taken		[MAX_THREADS];
+-static unsigned int ____cacheline_aligned semaphores_taken	[MAX_THREADS];
+-static unsigned int ____cacheline_aligned reads_taken		[MAX_THREADS];
+-static unsigned int ____cacheline_aligned writes_taken		[MAX_THREADS];
+-static unsigned int ____cacheline_aligned downgrades_taken	[MAX_THREADS];
+-
+-static struct completion ____cacheline_aligned mx_comp[MAX_THREADS];
+-static struct completion ____cacheline_aligned sm_comp[MAX_THREADS];
+-static struct completion ____cacheline_aligned rd_comp[MAX_THREADS];
+-static struct completion ____cacheline_aligned wr_comp[MAX_THREADS];
+-static struct completion ____cacheline_aligned dg_comp[MAX_THREADS];
+-
+-static struct timer_list ____cacheline_aligned timer;
+-
+-#define ACCOUNT(var, N) var##_taken[N]++;
+-
+-#ifdef VALIDATE_OPERATORS
+-#define TRACK(var, dir) atomic_##dir(&(var))
+-
+-#define CHECK(var, cond, val)						\
+-do {									\
+-	int x = atomic_read(&(var));					\
+-	if (unlikely(!(x cond (val))))					\
+-		printk("check [%s %s %d, == %d] failed in %s\n",	\
+-		       #var, #cond, (val), x, __func__);		\
+-} while (0)
+-
+-#else
+-#define TRACK(var, dir)		do {} while(0)
+-#define CHECK(var, cond, val)	do {} while(0)
+-#endif
+-
+-static inline void do_mutex_lock(unsigned int N)
 -{
--	int tid, op, dat;
--	struct test_thread_data *td;
+-	mutex_lock(&mutex);
 -
--	/* We have to lookup the task */
--	for (tid = 0; tid < MAX_RT_TEST_THREADS; tid++) {
--		if (threads[tid] == current)
--			break;
+-	ACCOUNT(mutexes, N);
+-	TRACK(mutexes, inc);
+-	CHECK(mutexes, ==, 1);
+-}
+-
+-static inline void do_mutex_unlock(unsigned int N)
+-{
+-	CHECK(mutexes, ==, 1);
+-	TRACK(mutexes, dec);
+-
+-	mutex_unlock(&mutex);
+-}
+-
+-static inline void do_down(unsigned int N)
+-{
+-	CHECK(mutexes, <, seminit);
+-
+-	down(&sem);
+-
+-	ACCOUNT(semaphores, N);
+-	TRACK(semaphores, inc);
+-}
+-
+-static inline void do_up(unsigned int N)
+-{
+-	CHECK(semaphores, >, 0);
+-	TRACK(semaphores, dec);
+-
+-	up(&sem);
+-}
+-
+-static inline void do_down_read(unsigned int N)
+-{
+-	down_read(&rwsem);
+-
+-	ACCOUNT(reads, N);
+-	TRACK(readers, inc);
+-	CHECK(readers, >, 0);
+-	CHECK(writers, ==, 0);
+-}
+-
+-static inline void do_up_read(unsigned int N)
+-{
+-	CHECK(readers, >, 0);
+-	CHECK(writers, ==, 0);
+-	TRACK(readers, dec);
+-
+-	up_read(&rwsem);
+-}
+-
+-static inline void do_down_write(unsigned int N)
+-{
+-	down_write(&rwsem);
+-
+-	ACCOUNT(writes, N);
+-	TRACK(writers, inc);
+-	CHECK(writers, ==, 1);
+-	CHECK(readers, ==, 0);
+-}
+-
+-static inline void do_up_write(unsigned int N)
+-{
+-	CHECK(writers, ==, 1);
+-	CHECK(readers, ==, 0);
+-	TRACK(writers, dec);
+-
+-	up_write(&rwsem);
+-}
+-
+-static inline void do_downgrade_write(unsigned int N)
+-{
+-	CHECK(writers, ==, 1);
+-	CHECK(readers, ==, 0);
+-	TRACK(writers, dec);
+-	TRACK(readers, inc);
+-
+-	downgrade_write(&rwsem);
+-
+-	ACCOUNT(downgrades, N);
+-}
+-
+-static inline void sched(void)
+-{
+-	if (do_sched)
+-		schedule();
+-}
+-
+-static int mutexer(void *arg)
+-{
+-	unsigned int N = (unsigned long) arg;
+-
+-	daemonize("Mutex%u", N);
+-	set_user_nice(current, 19);
+-
+-	while (atomic_read(&do_stuff)) {
+-		do_mutex_lock(N);
+-		if (load)
+-			udelay(load);
+-		do_mutex_unlock(N);
+-		sched();
+-		if (interval)
+-			udelay(interval);
 -	}
 -
--	BUG_ON(tid == MAX_RT_TEST_THREADS);
+-	if (verbose >= 2)
+-		printk("%s: done\n", current->comm);
+-	complete_and_exit(&mx_comp[N], 0);
+-}
 -
--	td = &thread_data[tid];
+-static int semaphorer(void *arg)
+-{
+-	unsigned int N = (unsigned long) arg;
 -
--	op = td->opcode;
--	dat = td->opdata;
+-	daemonize("Sem%u", N);
+-	set_user_nice(current, 19);
 -
--	switch (op) {
--	case RTTEST_LOCK:
--	case RTTEST_LOCKINT:
--	case RTTEST_LOCKNOWAIT:
--	case RTTEST_LOCKINTNOWAIT:
--		if (mutex != &mutexes[dat])
--			break;
--
--		if (td->mutexes[dat] != 1)
--			break;
--
--		td->mutexes[dat] = 2;
--		td->event = atomic_add_return(1, &rttest_event);
--		break;
--
--	case RTTEST_LOCKBKL:
--	default:
--		break;
+-	while (atomic_read(&do_stuff)) {
+-		do_down(N);
+-		if (load)
+-			udelay(load);
+-		do_up(N);
+-		sched();
+-		if (interval)
+-			udelay(interval);
 -	}
 -
--	schedule();
+-	if (verbose >= 2)
+-		printk("%s: done\n", current->comm);
+-	complete_and_exit(&sm_comp[N], 0);
+-}
 -
+-static int reader(void *arg)
+-{
+-	unsigned int N = (unsigned long) arg;
 -
--	switch (op) {
--	case RTTEST_LOCK:
--	case RTTEST_LOCKINT:
--		if (mutex != &mutexes[dat])
--			return;
+-	daemonize("Read%u", N);
+-	set_user_nice(current, 19);
 -
--		if (td->mutexes[dat] != 2)
--			return;
--
--		td->mutexes[dat] = 3;
--		td->event = atomic_add_return(1, &rttest_event);
--		break;
--
--	case RTTEST_LOCKNOWAIT:
--	case RTTEST_LOCKINTNOWAIT:
--		if (mutex != &mutexes[dat])
--			return;
--
--		if (td->mutexes[dat] != 2)
--			return;
--
--		td->mutexes[dat] = 1;
--		td->event = atomic_add_return(1, &rttest_event);
--		return;
--
--	case RTTEST_LOCKBKL:
--		return;
--	default:
--		return;
+-	while (atomic_read(&do_stuff)) {
+-		do_down_read(N);
+-#ifdef LOAD_TEST
+-		if (load)
+-			udelay(load);
+-#endif
+-		do_up_read(N);
+-		sched();
+-		if (interval)
+-			udelay(interval);
 -	}
 -
--	td->opcode = 0;
+-	if (verbose >= 2)
+-		printk("%s: done\n", current->comm);
+-	complete_and_exit(&rd_comp[N], 0);
+-}
 -
--	for (;;) {
--		set_current_state(TASK_INTERRUPTIBLE);
+-static int writer(void *arg)
+-{
+-	unsigned int N = (unsigned long) arg;
 -
--		if (td->opcode > 0) {
--			int ret;
+-	daemonize("Write%u", N);
+-	set_user_nice(current, 19);
 -
--			set_current_state(TASK_RUNNING);
--			ret = handle_op(td, 1);
--			set_current_state(TASK_INTERRUPTIBLE);
--			if (td->opcode == RTTEST_LOCKCONT)
--				break;
--			td->opcode = ret;
+-	while (atomic_read(&do_stuff)) {
+-		do_down_write(N);
+-#ifdef LOAD_TEST
+-		if (load)
+-			udelay(load);
+-#endif
+-		do_up_write(N);
+-		sched();
+-		if (interval)
+-			udelay(interval);
+-	}
+-
+-	if (verbose >= 2)
+-		printk("%s: done\n", current->comm);
+-	complete_and_exit(&wr_comp[N], 0);
+-}
+-
+-static int downgrader(void *arg)
+-{
+-	unsigned int N = (unsigned long) arg;
+-
+-	daemonize("Down%u", N);
+-	set_user_nice(current, 19);
+-
+-	while (atomic_read(&do_stuff)) {
+-		do_down_write(N);
+-#ifdef LOAD_TEST
+-		if (load)
+-			udelay(load);
+-#endif
+-		do_downgrade_write(N);
+-#ifdef LOAD_TEST
+-		if (load)
+-			udelay(load);
+-#endif
+-		do_up_read(N);
+-		sched();
+-		if (interval)
+-			udelay(interval);
+-	}
+-
+-	if (verbose >= 2)
+-		printk("%s: done\n", current->comm);
+-	complete_and_exit(&dg_comp[N], 0);
+-}
+-
+-static void stop_test(unsigned long dummy)
+-{
+-	atomic_set(&do_stuff, 0);
+-}
+-
+-static unsigned int total(const char *what, unsigned int counts[], int num)
+-{
+-	unsigned int tot = 0, max = 0, min = UINT_MAX, zeros = 0, cnt;
+-	int loop;
+-
+-	for (loop = 0; loop < num; loop++) {
+-		cnt = counts[loop];
+-
+-		if (cnt == 0) {
+-			zeros++;
+-			min = 0;
+-			continue;
 -		}
 -
--		/* Wait for the next command to be executed */
--		schedule();
+-		tot += cnt;
+-		if (tot > max)
+-			max = tot;
+-		if (tot < min)
+-			min = tot;
 -	}
 -
--	/* Restore previous command and data */
--	td->opcode = op;
--	td->opdata = dat;
--}
+-	if (verbose && tot > 0) {
+-		printk("%s:", what);
 -
--static int test_func(void *data)
--{
--	struct test_thread_data *td = data;
--	int ret;
+-		for (loop = 0; loop < num; loop++) {
+-			cnt = counts[loop];
 -
--	current->flags |= PF_MUTEX_TESTER;
--	set_freezable();
--	allow_signal(SIGHUP);
--
--	for(;;) {
--
--		set_current_state(TASK_INTERRUPTIBLE);
--
--		if (td->opcode > 0) {
--			set_current_state(TASK_RUNNING);
--			ret = handle_op(td, 0);
--			set_current_state(TASK_INTERRUPTIBLE);
--			td->opcode = ret;
+-			if (cnt == 0)
+-				printk(" zzz");
+-			else
+-				printk(" %d%%", cnt * 100 / tot);
 -		}
 -
--		/* Wait for the next command to be executed */
--		schedule();
--		try_to_freeze();
--
--		if (signal_pending(current))
--			flush_signals(current);
--
--		if(kthread_should_stop())
--			break;
+-		printk("\n");
 -	}
--	return 0;
+-
+-	return tot;
 -}
 -
--/**
-- * sysfs_test_command - interface for test commands
-- * @dev:	thread reference
-- * @buf:	command for actual step
-- * @count:	length of buffer
+-/*****************************************************************************/
+-/*
 - *
-- * command syntax:
-- *
-- * opcode:data
 - */
--static ssize_t sysfs_test_command(struct sys_device *dev, const char *buf,
--				  size_t count)
+-static int __init do_tests(void)
 -{
--	struct sched_param schedpar;
--	struct test_thread_data *td;
--	char cmdbuf[32];
--	int op, dat, tid, ret;
+-	unsigned long loop;
+-	unsigned int mutex_total, sem_total, rd_total, wr_total, dg_total;
 -
--	td = container_of(dev, struct test_thread_data, sysdev);
--	tid = td->sysdev.id;
--
--	/* strings from sysfs write are not 0 terminated! */
--	if (count >= sizeof(cmdbuf))
--		return -EINVAL;
--
--	/* strip of \n: */
--	if (buf[count-1] == '\n')
--		count--;
--	if (count < 1)
--		return -EINVAL;
--
--	memcpy(cmdbuf, buf, count);
--	cmdbuf[count] = 0;
--
--	if (sscanf(cmdbuf, "%d:%d", &op, &dat) != 2)
--		return -EINVAL;
--
--	switch (op) {
--	case RTTEST_SCHEDOT:
--		schedpar.sched_priority = 0;
--		ret = sched_setscheduler(threads[tid], SCHED_NORMAL, &schedpar);
--		if (ret)
--			return ret;
--		set_user_nice(current, 0);
--		break;
--
--	case RTTEST_SCHEDRT:
--		schedpar.sched_priority = dat;
--		ret = sched_setscheduler(threads[tid], SCHED_FIFO, &schedpar);
--		if (ret)
--			return ret;
--		break;
--
--	case RTTEST_SIGNAL:
--		send_sig(SIGHUP, threads[tid], 0);
--		break;
--
--	default:
--		if (td->opcode > 0)
--			return -EBUSY;
--		td->opdata = dat;
--		td->opcode = op;
--		wake_up_process(threads[tid]);
+-	if (nummx < 0 || nummx > MAX_THREADS ||
+-	    numsm < 0 || numsm > MAX_THREADS ||
+-	    numrd < 0 || numrd > MAX_THREADS ||
+-	    numwr < 0 || numwr > MAX_THREADS ||
+-	    numdg < 0 || numdg > MAX_THREADS ||
+-	    seminit < 1 ||
+-	    elapse < 1 ||
+-	    load < 0 || load > 999 ||
+-	    interval < 0 || interval > 999
+-	    ) {
+-		printk("Parameter out of range\n");
+-		return -ERANGE;
 -	}
 -
--	return count;
--}
+-	if ((nummx | numsm | numrd | numwr | numdg) == 0) {
+-		int num = num_online_cpus();
 -
--/**
-- * sysfs_test_status - sysfs interface for rt tester
-- * @dev:	thread to query
-- * @buf:	char buffer to be filled with thread status info
-- */
--static ssize_t sysfs_test_status(struct sys_device *dev, char *buf)
--{
--	struct test_thread_data *td;
--	struct task_struct *tsk;
--	char *curr = buf;
--	int i;
+-		if (num > MAX_THREADS)
+-			num = MAX_THREADS;
+-		nummx = numsm = numrd = numwr = numdg = num;
 -
--	td = container_of(dev, struct test_thread_data, sysdev);
--	tsk = threads[td->sysdev.id];
--
--	spin_lock(&rttest_lock);
--
--	curr += sprintf(curr,
--		"O: %4d, E:%8d, S: 0x%08lx, P: %4d, N: %4d, B: %p, K: %d, M:",
--		td->opcode, td->event, tsk->state,
--			(MAX_RT_PRIO - 1) - tsk->prio,
--			(MAX_RT_PRIO - 1) - tsk->normal_prio,
--		tsk->pi_blocked_on, td->bkl);
--
--	for (i = MAX_RT_TEST_MUTEXES - 1; i >=0 ; i--)
--		curr += sprintf(curr, "%d", td->mutexes[i]);
--
--	spin_unlock(&rttest_lock);
--
--	curr += sprintf(curr, ", T: %p, R: %p\n", tsk,
--			mutexes[td->sysdev.id].owner);
--
--	return curr - buf;
--}
--
--static SYSDEV_ATTR(status, 0600, sysfs_test_status, NULL);
--static SYSDEV_ATTR(command, 0600, NULL, sysfs_test_command);
--
--static struct sysdev_class rttest_sysclass = {
--	.name = "rttest",
--};
--
--static int init_test_thread(int id)
--{
--	thread_data[id].sysdev.cls = &rttest_sysclass;
--	thread_data[id].sysdev.id = id;
--
--	threads[id] = kthread_run(test_func, &thread_data[id], "rt-test-%d", id);
--	if (IS_ERR(threads[id]))
--		return PTR_ERR(threads[id]);
--
--	return sysdev_register(&thread_data[id].sysdev);
--}
--
--static int init_rttest(void)
--{
--	int ret, i;
--
--	spin_lock_init(&rttest_lock);
--
--	for (i = 0; i < MAX_RT_TEST_MUTEXES; i++)
--		rt_mutex_init(&mutexes[i]);
--
--	ret = sysdev_class_register(&rttest_sysclass);
--	if (ret)
--		return ret;
--
--	for (i = 0; i < MAX_RT_TEST_THREADS; i++) {
--		ret = init_test_thread(i);
--		if (ret)
--			break;
--		ret = sysdev_create_file(&thread_data[i].sysdev, &attr_status);
--		if (ret)
--			break;
--		ret = sysdev_create_file(&thread_data[i].sysdev, &attr_command);
--		if (ret)
--			break;
+-		load = 1;
+-		interval = 1;
+-		do_sched = 1;
+-		printk("No parameters - using defaults.\n");
 -	}
 -
--	printk("Initializing RT-Tester: %s\n", ret ? "Failed" : "OK" );
+-	if (verbose)
+-		printk("\nStarting synchronisation primitive tests...\n");
 -
--	return ret;
--}
+-	mutex_init(&mutex);
+-	sema_init(&sem, seminit);
+-	init_rwsem(&rwsem);
+-	atomic_set(&do_stuff, 1);
 -
--device_initcall(init_rttest);
+-	/* kick off all the children */
+-	for (loop = 0; loop < MAX_THREADS; loop++) {
+-		if (loop < nummx) {
+-			init_completion(&mx_comp[loop]);
+-			kernel_thread(mutexer, (void *) loop, 0);
+-		}
+-
+-		if (loop < numsm) {
+-			init_completion(&sm_comp[loop]);
+-			kernel_thread(semaphorer, (void *) loop, 0);
+-		}
+-
+-		if (loop < numrd) {
+-			init_completion(&rd_comp[loop]);
+-			kernel_thread(reader, (void *) loop, 0);
+-		}
+-
+-		if (loop < numwr) {
+-			init_completion(&wr_comp[loop]);
+-			kernel_thread(writer, (void *) loop, 0);
+-		}
+-
+-		if (loop < numdg) {
+-			init_completion(&dg_comp[loop]);
+-			kernel_thread(downgrader, (void *) loop, 0);
+-		}
+-	}
+-
+-	/* set a stop timer */
+-	init_timer(&timer);
+-	timer.function = stop_test;
+-	timer.expires = jiffies + elapse * HZ;
+-	add_timer(&timer);
+-
+-	/* now wait until it's all done */
+-	for (loop = 0; loop < nummx; loop++)
+-		wait_for_completion(&mx_comp[loop]);
+-
+-	for (loop = 0; loop < numsm; loop++)
+-		wait_for_completion(&sm_comp[loop]);
+-
+-	for (loop = 0; loop < numrd; loop++)
+-		wait_for_completion(&rd_comp[loop]);
+-
+-	for (loop = 0; loop < numwr; loop++)
+-		wait_for_completion(&wr_comp[loop]);
+-
+-	for (loop = 0; loop < numdg; loop++)
+-		wait_for_completion(&dg_comp[loop]);
+-
+-	atomic_set(&do_stuff, 0);
+-	del_timer(&timer);
+-
+-	if (mutex_is_locked(&mutex))
+-		printk(KERN_ERR "Mutex is still locked!\n");
+-
+-	/* count up */
+-	mutex_total	= total("MTX", mutexes_taken, nummx);
+-	sem_total	= total("SEM", semaphores_taken, numsm);
+-	rd_total	= total("RD ", reads_taken, numrd);
+-	wr_total	= total("WR ", writes_taken, numwr);
+-	dg_total	= total("DG ", downgrades_taken, numdg);
+-
+-	/* print the results */
+-	if (verbose) {
+-		printk("mutexes taken: %u\n", mutex_total);
+-		printk("semaphores taken: %u\n", sem_total);
+-		printk("reads taken: %u\n", rd_total);
+-		printk("writes taken: %u\n", wr_total);
+-		printk("downgrades taken: %u\n", dg_total);
+-	}
+-	else {
+-		char buf[30];
+-
+-		sprintf(buf, "%d/%d", interval, load);
+-
+-		printk("%3d %3d %3d %3d %3d %c %5s %9u %9u %9u %9u %9u\n",
+-		       nummx, numsm, numrd, numwr, numdg,
+-		       do_sched ? 's' : '-',
+-		       buf,
+-		       mutex_total,
+-		       sem_total,
+-		       rd_total,
+-		       wr_total,
+-		       dg_total);
+-	}
+-
+-	/* tell insmod to discard the module */
+-	if (verbose)
+-		printk("Tests complete\n");
+-	return -ENOANO;
+-
+-} /* end do_tests() */
+-
+-module_init(do_tests);
 Index: linux-2.6.24-rc6/lib/Kconfig.debug
 ===================================================================
 --- linux-2.6.24-rc6.orig/lib/Kconfig.debug
 +++ linux-2.6.24-rc6/lib/Kconfig.debug
-@@ -219,12 +219,6 @@ config DEBUG_PI_LIST
- 	default y
- 	depends on DEBUG_RT_MUTEXES
+@@ -467,20 +467,6 @@ config BOOT_PRINTK_DELAY
+ 	  BOOT_PRINTK_DELAY also may cause DETECT_SOFTLOCKUP to detect
+ 	  what it believes to be lockup conditions.
  
--config RT_MUTEX_TESTER
--	bool "Built-in scriptable tester for rt-mutexes"
--	depends on DEBUG_KERNEL && RT_MUTEXES
+-config DEBUG_SYNCHRO_TEST
+-	tristate "Synchronisation primitive testing module"
+-	depends on DEBUG_KERNEL
+-	default n
 -	help
--	  This option enables a rt-mutex tester.
+-	  This option provides a kernel module that can thrash the sleepable
+-	  synchronisation primitives (mutexes and semaphores).
 -
- config DEBUG_SPINLOCK
- 	bool "Spinlock and rw-lock debugging: basic checks"
+-	  You should say N or M here. Whilst the module can be built in, it's
+-	  not recommended as it requires module parameters supplying to get it
+-	  to do anything.
+-
+-	  See Documentation/synchro-test.txt.
+-
+ config LKDTM
+ 	tristate "Linux Kernel Dump Test Tool Module"
  	depends on DEBUG_KERNEL
 Index: linux-2.6.24-rc6/tests/Kconfig
 ===================================================================
 --- linux-2.6.24-rc6.orig/tests/Kconfig
 +++ linux-2.6.24-rc6/tests/Kconfig
-@@ -31,5 +31,11 @@ config RCU_TORTURE_TEST
- 	  Say M if you want the RCU torture tests to build as a module.
- 	  Say N if you are unsure.
+@@ -37,5 +37,19 @@ config RT_MUTEX_TESTER
+ 	help
+ 	  This option enables a rt-mutex tester.
  
-+config RT_MUTEX_TESTER
-+	bool "Built-in scriptable tester for rt-mutexes"
-+	depends on DEBUG_KERNEL && RT_MUTEXES
++config DEBUG_SYNCHRO_TEST
++	tristate "Synchronisation primitive testing module"
++	depends on DEBUG_KERNEL
++	default n
 +	help
-+	  This option enables a rt-mutex tester.
++	  This option provides a kernel module that can thrash the sleepable
++	  synchronisation primitives (mutexes and semaphores).
++
++	  You should say N or M here. Whilst the module can be built in, it's
++	  not recommended as it requires module parameters supplying to get it
++	  to do anything.
++
++	  See Documentation/synchro-test.txt.
 +
  endif # KERNEL_TESTS
  
@@ -538,455 +637,539 @@ Index: linux-2.6.24-rc6/tests/Makefile
 ===================================================================
 --- linux-2.6.24-rc6.orig/tests/Makefile
 +++ linux-2.6.24-rc6/tests/Makefile
-@@ -4,3 +4,4 @@
- 
+@@ -5,3 +5,4 @@
  obj-$(CONFIG_DEBUG_LOCKING_API_SELFTESTS) += locking-selftest.o
  obj-$(CONFIG_RCU_TORTURE_TEST) += rcutorture.o
-+obj-$(CONFIG_RT_MUTEX_TESTER) += rtmutex-tester.o
-Index: linux-2.6.24-rc6/tests/rtmutex-tester.c
+ obj-$(CONFIG_RT_MUTEX_TESTER) += rtmutex-tester.o
++obj-$(CONFIG_DEBUG_SYNCHRO_TEST) += synchro-test.o
+Index: linux-2.6.24-rc6/tests/synchro-test.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc6/tests/rtmutex-tester.c
-@@ -0,0 +1,442 @@
-+/*
-+ * RT-Mutex-tester: scriptable tester for rt mutexes
++++ linux-2.6.24-rc6/tests/synchro-test.c
+@@ -0,0 +1,526 @@
++/* synchro-test.c: run some threads to test the synchronisation primitives
 + *
-+ * started by Thomas Gleixner:
++ * Copyright (C) 2005, 2006 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
 + *
-+ *  Copyright (C) 2006, Timesys Corp., Thomas Gleixner <tglx@timesys.com>
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
 + *
++ * The module should be run as something like:
++ *
++ *	insmod synchro-test.ko rd=2 wr=2
++ *	insmod synchro-test.ko mx=1
++ *	insmod synchro-test.ko sm=2 ism=1
++ *	insmod synchro-test.ko sm=2 ism=2
++ *
++ * See Documentation/synchro-test.txt for more information.
 + */
-+#include <linux/kthread.h>
++
 +#include <linux/module.h>
-+#include <linux/sched.h>
++#include <linux/poll.h>
++#include <linux/moduleparam.h>
++#include <linux/stat.h>
++#include <linux/init.h>
++#include <asm/atomic.h>
++#include <linux/personality.h>
 +#include <linux/smp_lock.h>
-+#include <linux/spinlock.h>
-+#include <linux/sysdev.h>
++#include <linux/delay.h>
 +#include <linux/timer.h>
-+#include <linux/freezer.h>
++#include <linux/completion.h>
++#include <linux/mutex.h>
 +
-+#include "../kernel/rtmutex.h"
-+
-+#define MAX_RT_TEST_THREADS	8
-+#define MAX_RT_TEST_MUTEXES	8
-+
-+static spinlock_t rttest_lock;
-+static atomic_t rttest_event;
-+
-+struct test_thread_data {
-+	int			opcode;
-+	int			opdata;
-+	int			mutexes[MAX_RT_TEST_MUTEXES];
-+	int			bkl;
-+	int			event;
-+	struct sys_device	sysdev;
-+};
-+
-+static struct test_thread_data thread_data[MAX_RT_TEST_THREADS];
-+static struct task_struct *threads[MAX_RT_TEST_THREADS];
-+static struct rt_mutex mutexes[MAX_RT_TEST_MUTEXES];
-+
-+enum test_opcodes {
-+	RTTEST_NOP = 0,
-+	RTTEST_SCHEDOT,		/* 1 Sched other, data = nice */
-+	RTTEST_SCHEDRT,		/* 2 Sched fifo, data = prio */
-+	RTTEST_LOCK,		/* 3 Lock uninterruptible, data = lockindex */
-+	RTTEST_LOCKNOWAIT,	/* 4 Lock uninterruptible no wait in wakeup, data = lockindex */
-+	RTTEST_LOCKINT,		/* 5 Lock interruptible, data = lockindex */
-+	RTTEST_LOCKINTNOWAIT,	/* 6 Lock interruptible no wait in wakeup, data = lockindex */
-+	RTTEST_LOCKCONT,	/* 7 Continue locking after the wakeup delay */
-+	RTTEST_UNLOCK,		/* 8 Unlock, data = lockindex */
-+	RTTEST_LOCKBKL,		/* 9 Lock BKL */
-+	RTTEST_UNLOCKBKL,	/* 10 Unlock BKL */
-+	RTTEST_SIGNAL,		/* 11 Signal other test thread, data = thread id */
-+	RTTEST_RESETEVENT = 98,	/* 98 Reset event counter */
-+	RTTEST_RESET = 99,	/* 99 Reset all pending operations */
-+};
-+
-+static int handle_op(struct test_thread_data *td, int lockwakeup)
-+{
-+	int i, id, ret = -EINVAL;
-+
-+	switch(td->opcode) {
-+
-+	case RTTEST_NOP:
-+		return 0;
-+
-+	case RTTEST_LOCKCONT:
-+		td->mutexes[td->opdata] = 1;
-+		td->event = atomic_add_return(1, &rttest_event);
-+		return 0;
-+
-+	case RTTEST_RESET:
-+		for (i = 0; i < MAX_RT_TEST_MUTEXES; i++) {
-+			if (td->mutexes[i] == 4) {
-+				rt_mutex_unlock(&mutexes[i]);
-+				td->mutexes[i] = 0;
-+			}
-+		}
-+
-+		if (!lockwakeup && td->bkl == 4) {
-+			unlock_kernel();
-+			td->bkl = 0;
-+		}
-+		return 0;
-+
-+	case RTTEST_RESETEVENT:
-+		atomic_set(&rttest_event, 0);
-+		return 0;
-+
-+	default:
-+		if (lockwakeup)
-+			return ret;
-+	}
-+
-+	switch(td->opcode) {
-+
-+	case RTTEST_LOCK:
-+	case RTTEST_LOCKNOWAIT:
-+		id = td->opdata;
-+		if (id < 0 || id >= MAX_RT_TEST_MUTEXES)
-+			return ret;
-+
-+		td->mutexes[id] = 1;
-+		td->event = atomic_add_return(1, &rttest_event);
-+		rt_mutex_lock(&mutexes[id]);
-+		td->event = atomic_add_return(1, &rttest_event);
-+		td->mutexes[id] = 4;
-+		return 0;
-+
-+	case RTTEST_LOCKINT:
-+	case RTTEST_LOCKINTNOWAIT:
-+		id = td->opdata;
-+		if (id < 0 || id >= MAX_RT_TEST_MUTEXES)
-+			return ret;
-+
-+		td->mutexes[id] = 1;
-+		td->event = atomic_add_return(1, &rttest_event);
-+		ret = rt_mutex_lock_interruptible(&mutexes[id], 0);
-+		td->event = atomic_add_return(1, &rttest_event);
-+		td->mutexes[id] = ret ? 0 : 4;
-+		return ret ? -EINTR : 0;
-+
-+	case RTTEST_UNLOCK:
-+		id = td->opdata;
-+		if (id < 0 || id >= MAX_RT_TEST_MUTEXES || td->mutexes[id] != 4)
-+			return ret;
-+
-+		td->event = atomic_add_return(1, &rttest_event);
-+		rt_mutex_unlock(&mutexes[id]);
-+		td->event = atomic_add_return(1, &rttest_event);
-+		td->mutexes[id] = 0;
-+		return 0;
-+
-+	case RTTEST_LOCKBKL:
-+		if (td->bkl)
-+			return 0;
-+		td->bkl = 1;
-+		lock_kernel();
-+		td->bkl = 4;
-+		return 0;
-+
-+	case RTTEST_UNLOCKBKL:
-+		if (td->bkl != 4)
-+			break;
-+		unlock_kernel();
-+		td->bkl = 0;
-+		return 0;
-+
-+	default:
-+		break;
-+	}
-+	return ret;
-+}
++#define MAX_THREADS 64
 +
 +/*
-+ * Schedule replacement for rtsem_down(). Only called for threads with
-+ * PF_MUTEX_TESTER set.
-+ *
-+ * This allows us to have finegrained control over the event flow.
-+ *
++ * Turn on self-validation if we do a one-shot boot-time test:
 + */
-+void schedule_rt_mutex_test(struct rt_mutex *mutex)
++#ifndef MODULE
++# define VALIDATE_OPERATORS
++#endif
++
++static int nummx;
++static int numsm, seminit = 4;
++static int numrd, numwr, numdg;
++static int elapse = 5, load = 2, do_sched, interval = 2;
++static int verbose = 0;
++
++MODULE_AUTHOR("David Howells");
++MODULE_DESCRIPTION("Synchronisation primitive test demo");
++MODULE_LICENSE("GPL");
++
++module_param_named(v, verbose, int, 0);
++MODULE_PARM_DESC(verbose, "Verbosity");
++
++module_param_named(mx, nummx, int, 0);
++MODULE_PARM_DESC(nummx, "Number of mutex threads");
++
++module_param_named(sm, numsm, int, 0);
++MODULE_PARM_DESC(numsm, "Number of semaphore threads");
++
++module_param_named(ism, seminit, int, 0);
++MODULE_PARM_DESC(seminit, "Initial semaphore value");
++
++module_param_named(rd, numrd, int, 0);
++MODULE_PARM_DESC(numrd, "Number of reader threads");
++
++module_param_named(wr, numwr, int, 0);
++MODULE_PARM_DESC(numwr, "Number of writer threads");
++
++module_param_named(dg, numdg, int, 0);
++MODULE_PARM_DESC(numdg, "Number of downgrader threads");
++
++module_param(elapse, int, 0);
++MODULE_PARM_DESC(elapse, "Number of seconds to run for");
++
++module_param(load, int, 0);
++MODULE_PARM_DESC(load, "Length of load in uS");
++
++module_param(interval, int, 0);
++MODULE_PARM_DESC(interval, "Length of interval in uS before re-getting lock");
++
++module_param(do_sched, int, 0);
++MODULE_PARM_DESC(do_sched, "True if each thread should schedule regularly");
++
++/* the semaphores under test */
++static struct mutex ____cacheline_aligned mutex;
++static struct semaphore ____cacheline_aligned sem;
++static struct rw_semaphore ____cacheline_aligned rwsem;
++
++static atomic_t ____cacheline_aligned do_stuff		= ATOMIC_INIT(0);
++
++#ifdef VALIDATE_OPERATORS
++static atomic_t ____cacheline_aligned mutexes		= ATOMIC_INIT(0);
++static atomic_t ____cacheline_aligned semaphores	= ATOMIC_INIT(0);
++static atomic_t ____cacheline_aligned readers		= ATOMIC_INIT(0);
++static atomic_t ____cacheline_aligned writers		= ATOMIC_INIT(0);
++#endif
++
++static unsigned int ____cacheline_aligned mutexes_taken		[MAX_THREADS];
++static unsigned int ____cacheline_aligned semaphores_taken	[MAX_THREADS];
++static unsigned int ____cacheline_aligned reads_taken		[MAX_THREADS];
++static unsigned int ____cacheline_aligned writes_taken		[MAX_THREADS];
++static unsigned int ____cacheline_aligned downgrades_taken	[MAX_THREADS];
++
++static struct completion ____cacheline_aligned mx_comp[MAX_THREADS];
++static struct completion ____cacheline_aligned sm_comp[MAX_THREADS];
++static struct completion ____cacheline_aligned rd_comp[MAX_THREADS];
++static struct completion ____cacheline_aligned wr_comp[MAX_THREADS];
++static struct completion ____cacheline_aligned dg_comp[MAX_THREADS];
++
++static struct timer_list ____cacheline_aligned timer;
++
++#define ACCOUNT(var, N) var##_taken[N]++;
++
++#ifdef VALIDATE_OPERATORS
++#define TRACK(var, dir) atomic_##dir(&(var))
++
++#define CHECK(var, cond, val)						\
++do {									\
++	int x = atomic_read(&(var));					\
++	if (unlikely(!(x cond (val))))					\
++		printk("check [%s %s %d, == %d] failed in %s\n",	\
++		       #var, #cond, (val), x, __func__);		\
++} while (0)
++
++#else
++#define TRACK(var, dir)		do {} while(0)
++#define CHECK(var, cond, val)	do {} while(0)
++#endif
++
++static inline void do_mutex_lock(unsigned int N)
 +{
-+	int tid, op, dat;
-+	struct test_thread_data *td;
++	mutex_lock(&mutex);
 +
-+	/* We have to lookup the task */
-+	for (tid = 0; tid < MAX_RT_TEST_THREADS; tid++) {
-+		if (threads[tid] == current)
-+			break;
++	ACCOUNT(mutexes, N);
++	TRACK(mutexes, inc);
++	CHECK(mutexes, ==, 1);
++}
++
++static inline void do_mutex_unlock(unsigned int N)
++{
++	CHECK(mutexes, ==, 1);
++	TRACK(mutexes, dec);
++
++	mutex_unlock(&mutex);
++}
++
++static inline void do_down(unsigned int N)
++{
++	CHECK(mutexes, <, seminit);
++
++	down(&sem);
++
++	ACCOUNT(semaphores, N);
++	TRACK(semaphores, inc);
++}
++
++static inline void do_up(unsigned int N)
++{
++	CHECK(semaphores, >, 0);
++	TRACK(semaphores, dec);
++
++	up(&sem);
++}
++
++static inline void do_down_read(unsigned int N)
++{
++	down_read(&rwsem);
++
++	ACCOUNT(reads, N);
++	TRACK(readers, inc);
++	CHECK(readers, >, 0);
++	CHECK(writers, ==, 0);
++}
++
++static inline void do_up_read(unsigned int N)
++{
++	CHECK(readers, >, 0);
++	CHECK(writers, ==, 0);
++	TRACK(readers, dec);
++
++	up_read(&rwsem);
++}
++
++static inline void do_down_write(unsigned int N)
++{
++	down_write(&rwsem);
++
++	ACCOUNT(writes, N);
++	TRACK(writers, inc);
++	CHECK(writers, ==, 1);
++	CHECK(readers, ==, 0);
++}
++
++static inline void do_up_write(unsigned int N)
++{
++	CHECK(writers, ==, 1);
++	CHECK(readers, ==, 0);
++	TRACK(writers, dec);
++
++	up_write(&rwsem);
++}
++
++static inline void do_downgrade_write(unsigned int N)
++{
++	CHECK(writers, ==, 1);
++	CHECK(readers, ==, 0);
++	TRACK(writers, dec);
++	TRACK(readers, inc);
++
++	downgrade_write(&rwsem);
++
++	ACCOUNT(downgrades, N);
++}
++
++static inline void sched(void)
++{
++	if (do_sched)
++		schedule();
++}
++
++static int mutexer(void *arg)
++{
++	unsigned int N = (unsigned long) arg;
++
++	daemonize("Mutex%u", N);
++	set_user_nice(current, 19);
++
++	while (atomic_read(&do_stuff)) {
++		do_mutex_lock(N);
++		if (load)
++			udelay(load);
++		do_mutex_unlock(N);
++		sched();
++		if (interval)
++			udelay(interval);
 +	}
 +
-+	BUG_ON(tid == MAX_RT_TEST_THREADS);
++	if (verbose >= 2)
++		printk("%s: done\n", current->comm);
++	complete_and_exit(&mx_comp[N], 0);
++}
 +
-+	td = &thread_data[tid];
++static int semaphorer(void *arg)
++{
++	unsigned int N = (unsigned long) arg;
 +
-+	op = td->opcode;
-+	dat = td->opdata;
++	daemonize("Sem%u", N);
++	set_user_nice(current, 19);
 +
-+	switch (op) {
-+	case RTTEST_LOCK:
-+	case RTTEST_LOCKINT:
-+	case RTTEST_LOCKNOWAIT:
-+	case RTTEST_LOCKINTNOWAIT:
-+		if (mutex != &mutexes[dat])
-+			break;
-+
-+		if (td->mutexes[dat] != 1)
-+			break;
-+
-+		td->mutexes[dat] = 2;
-+		td->event = atomic_add_return(1, &rttest_event);
-+		break;
-+
-+	case RTTEST_LOCKBKL:
-+	default:
-+		break;
++	while (atomic_read(&do_stuff)) {
++		do_down(N);
++		if (load)
++			udelay(load);
++		do_up(N);
++		sched();
++		if (interval)
++			udelay(interval);
 +	}
 +
-+	schedule();
++	if (verbose >= 2)
++		printk("%s: done\n", current->comm);
++	complete_and_exit(&sm_comp[N], 0);
++}
 +
++static int reader(void *arg)
++{
++	unsigned int N = (unsigned long) arg;
 +
-+	switch (op) {
-+	case RTTEST_LOCK:
-+	case RTTEST_LOCKINT:
-+		if (mutex != &mutexes[dat])
-+			return;
++	daemonize("Read%u", N);
++	set_user_nice(current, 19);
 +
-+		if (td->mutexes[dat] != 2)
-+			return;
-+
-+		td->mutexes[dat] = 3;
-+		td->event = atomic_add_return(1, &rttest_event);
-+		break;
-+
-+	case RTTEST_LOCKNOWAIT:
-+	case RTTEST_LOCKINTNOWAIT:
-+		if (mutex != &mutexes[dat])
-+			return;
-+
-+		if (td->mutexes[dat] != 2)
-+			return;
-+
-+		td->mutexes[dat] = 1;
-+		td->event = atomic_add_return(1, &rttest_event);
-+		return;
-+
-+	case RTTEST_LOCKBKL:
-+		return;
-+	default:
-+		return;
++	while (atomic_read(&do_stuff)) {
++		do_down_read(N);
++#ifdef LOAD_TEST
++		if (load)
++			udelay(load);
++#endif
++		do_up_read(N);
++		sched();
++		if (interval)
++			udelay(interval);
 +	}
 +
-+	td->opcode = 0;
++	if (verbose >= 2)
++		printk("%s: done\n", current->comm);
++	complete_and_exit(&rd_comp[N], 0);
++}
 +
-+	for (;;) {
-+		set_current_state(TASK_INTERRUPTIBLE);
++static int writer(void *arg)
++{
++	unsigned int N = (unsigned long) arg;
 +
-+		if (td->opcode > 0) {
-+			int ret;
++	daemonize("Write%u", N);
++	set_user_nice(current, 19);
 +
-+			set_current_state(TASK_RUNNING);
-+			ret = handle_op(td, 1);
-+			set_current_state(TASK_INTERRUPTIBLE);
-+			if (td->opcode == RTTEST_LOCKCONT)
-+				break;
-+			td->opcode = ret;
++	while (atomic_read(&do_stuff)) {
++		do_down_write(N);
++#ifdef LOAD_TEST
++		if (load)
++			udelay(load);
++#endif
++		do_up_write(N);
++		sched();
++		if (interval)
++			udelay(interval);
++	}
++
++	if (verbose >= 2)
++		printk("%s: done\n", current->comm);
++	complete_and_exit(&wr_comp[N], 0);
++}
++
++static int downgrader(void *arg)
++{
++	unsigned int N = (unsigned long) arg;
++
++	daemonize("Down%u", N);
++	set_user_nice(current, 19);
++
++	while (atomic_read(&do_stuff)) {
++		do_down_write(N);
++#ifdef LOAD_TEST
++		if (load)
++			udelay(load);
++#endif
++		do_downgrade_write(N);
++#ifdef LOAD_TEST
++		if (load)
++			udelay(load);
++#endif
++		do_up_read(N);
++		sched();
++		if (interval)
++			udelay(interval);
++	}
++
++	if (verbose >= 2)
++		printk("%s: done\n", current->comm);
++	complete_and_exit(&dg_comp[N], 0);
++}
++
++static void stop_test(unsigned long dummy)
++{
++	atomic_set(&do_stuff, 0);
++}
++
++static unsigned int total(const char *what, unsigned int counts[], int num)
++{
++	unsigned int tot = 0, max = 0, min = UINT_MAX, zeros = 0, cnt;
++	int loop;
++
++	for (loop = 0; loop < num; loop++) {
++		cnt = counts[loop];
++
++		if (cnt == 0) {
++			zeros++;
++			min = 0;
++			continue;
 +		}
 +
-+		/* Wait for the next command to be executed */
-+		schedule();
++		tot += cnt;
++		if (tot > max)
++			max = tot;
++		if (tot < min)
++			min = tot;
 +	}
 +
-+	/* Restore previous command and data */
-+	td->opcode = op;
-+	td->opdata = dat;
-+}
++	if (verbose && tot > 0) {
++		printk("%s:", what);
 +
-+static int test_func(void *data)
-+{
-+	struct test_thread_data *td = data;
-+	int ret;
++		for (loop = 0; loop < num; loop++) {
++			cnt = counts[loop];
 +
-+	current->flags |= PF_MUTEX_TESTER;
-+	set_freezable();
-+	allow_signal(SIGHUP);
-+
-+	for(;;) {
-+
-+		set_current_state(TASK_INTERRUPTIBLE);
-+
-+		if (td->opcode > 0) {
-+			set_current_state(TASK_RUNNING);
-+			ret = handle_op(td, 0);
-+			set_current_state(TASK_INTERRUPTIBLE);
-+			td->opcode = ret;
++			if (cnt == 0)
++				printk(" zzz");
++			else
++				printk(" %d%%", cnt * 100 / tot);
 +		}
 +
-+		/* Wait for the next command to be executed */
-+		schedule();
-+		try_to_freeze();
-+
-+		if (signal_pending(current))
-+			flush_signals(current);
-+
-+		if(kthread_should_stop())
-+			break;
++		printk("\n");
 +	}
-+	return 0;
++
++	return tot;
 +}
 +
-+/**
-+ * sysfs_test_command - interface for test commands
-+ * @dev:	thread reference
-+ * @buf:	command for actual step
-+ * @count:	length of buffer
++/*****************************************************************************/
++/*
 + *
-+ * command syntax:
-+ *
-+ * opcode:data
 + */
-+static ssize_t sysfs_test_command(struct sys_device *dev, const char *buf,
-+				  size_t count)
++static int __init do_tests(void)
 +{
-+	struct sched_param schedpar;
-+	struct test_thread_data *td;
-+	char cmdbuf[32];
-+	int op, dat, tid, ret;
++	unsigned long loop;
++	unsigned int mutex_total, sem_total, rd_total, wr_total, dg_total;
 +
-+	td = container_of(dev, struct test_thread_data, sysdev);
-+	tid = td->sysdev.id;
-+
-+	/* strings from sysfs write are not 0 terminated! */
-+	if (count >= sizeof(cmdbuf))
-+		return -EINVAL;
-+
-+	/* strip of \n: */
-+	if (buf[count-1] == '\n')
-+		count--;
-+	if (count < 1)
-+		return -EINVAL;
-+
-+	memcpy(cmdbuf, buf, count);
-+	cmdbuf[count] = 0;
-+
-+	if (sscanf(cmdbuf, "%d:%d", &op, &dat) != 2)
-+		return -EINVAL;
-+
-+	switch (op) {
-+	case RTTEST_SCHEDOT:
-+		schedpar.sched_priority = 0;
-+		ret = sched_setscheduler(threads[tid], SCHED_NORMAL, &schedpar);
-+		if (ret)
-+			return ret;
-+		set_user_nice(current, 0);
-+		break;
-+
-+	case RTTEST_SCHEDRT:
-+		schedpar.sched_priority = dat;
-+		ret = sched_setscheduler(threads[tid], SCHED_FIFO, &schedpar);
-+		if (ret)
-+			return ret;
-+		break;
-+
-+	case RTTEST_SIGNAL:
-+		send_sig(SIGHUP, threads[tid], 0);
-+		break;
-+
-+	default:
-+		if (td->opcode > 0)
-+			return -EBUSY;
-+		td->opdata = dat;
-+		td->opcode = op;
-+		wake_up_process(threads[tid]);
++	if (nummx < 0 || nummx > MAX_THREADS ||
++	    numsm < 0 || numsm > MAX_THREADS ||
++	    numrd < 0 || numrd > MAX_THREADS ||
++	    numwr < 0 || numwr > MAX_THREADS ||
++	    numdg < 0 || numdg > MAX_THREADS ||
++	    seminit < 1 ||
++	    elapse < 1 ||
++	    load < 0 || load > 999 ||
++	    interval < 0 || interval > 999
++	    ) {
++		printk("Parameter out of range\n");
++		return -ERANGE;
 +	}
 +
-+	return count;
-+}
++	if ((nummx | numsm | numrd | numwr | numdg) == 0) {
++		int num = num_online_cpus();
 +
-+/**
-+ * sysfs_test_status - sysfs interface for rt tester
-+ * @dev:	thread to query
-+ * @buf:	char buffer to be filled with thread status info
-+ */
-+static ssize_t sysfs_test_status(struct sys_device *dev, char *buf)
-+{
-+	struct test_thread_data *td;
-+	struct task_struct *tsk;
-+	char *curr = buf;
-+	int i;
++		if (num > MAX_THREADS)
++			num = MAX_THREADS;
++		nummx = numsm = numrd = numwr = numdg = num;
 +
-+	td = container_of(dev, struct test_thread_data, sysdev);
-+	tsk = threads[td->sysdev.id];
-+
-+	spin_lock(&rttest_lock);
-+
-+	curr += sprintf(curr,
-+		"O: %4d, E:%8d, S: 0x%08lx, P: %4d, N: %4d, B: %p, K: %d, M:",
-+		td->opcode, td->event, tsk->state,
-+			(MAX_RT_PRIO - 1) - tsk->prio,
-+			(MAX_RT_PRIO - 1) - tsk->normal_prio,
-+		tsk->pi_blocked_on, td->bkl);
-+
-+	for (i = MAX_RT_TEST_MUTEXES - 1; i >=0 ; i--)
-+		curr += sprintf(curr, "%d", td->mutexes[i]);
-+
-+	spin_unlock(&rttest_lock);
-+
-+	curr += sprintf(curr, ", T: %p, R: %p\n", tsk,
-+			mutexes[td->sysdev.id].owner);
-+
-+	return curr - buf;
-+}
-+
-+static SYSDEV_ATTR(status, 0600, sysfs_test_status, NULL);
-+static SYSDEV_ATTR(command, 0600, NULL, sysfs_test_command);
-+
-+static struct sysdev_class rttest_sysclass = {
-+	.name = "rttest",
-+};
-+
-+static int init_test_thread(int id)
-+{
-+	thread_data[id].sysdev.cls = &rttest_sysclass;
-+	thread_data[id].sysdev.id = id;
-+
-+	threads[id] = kthread_run(test_func, &thread_data[id], "rt-test-%d", id);
-+	if (IS_ERR(threads[id]))
-+		return PTR_ERR(threads[id]);
-+
-+	return sysdev_register(&thread_data[id].sysdev);
-+}
-+
-+static int init_rttest(void)
-+{
-+	int ret, i;
-+
-+	spin_lock_init(&rttest_lock);
-+
-+	for (i = 0; i < MAX_RT_TEST_MUTEXES; i++)
-+		rt_mutex_init(&mutexes[i]);
-+
-+	ret = sysdev_class_register(&rttest_sysclass);
-+	if (ret)
-+		return ret;
-+
-+	for (i = 0; i < MAX_RT_TEST_THREADS; i++) {
-+		ret = init_test_thread(i);
-+		if (ret)
-+			break;
-+		ret = sysdev_create_file(&thread_data[i].sysdev, &attr_status);
-+		if (ret)
-+			break;
-+		ret = sysdev_create_file(&thread_data[i].sysdev, &attr_command);
-+		if (ret)
-+			break;
++		load = 1;
++		interval = 1;
++		do_sched = 1;
++		printk("No parameters - using defaults.\n");
 +	}
 +
-+	printk("Initializing RT-Tester: %s\n", ret ? "Failed" : "OK" );
++	if (verbose)
++		printk("\nStarting synchronisation primitive tests...\n");
 +
-+	return ret;
-+}
++	mutex_init(&mutex);
++	sema_init(&sem, seminit);
++	init_rwsem(&rwsem);
++	atomic_set(&do_stuff, 1);
 +
-+device_initcall(init_rttest);
++	/* kick off all the children */
++	for (loop = 0; loop < MAX_THREADS; loop++) {
++		if (loop < nummx) {
++			init_completion(&mx_comp[loop]);
++			kernel_thread(mutexer, (void *) loop, 0);
++		}
++
++		if (loop < numsm) {
++			init_completion(&sm_comp[loop]);
++			kernel_thread(semaphorer, (void *) loop, 0);
++		}
++
++		if (loop < numrd) {
++			init_completion(&rd_comp[loop]);
++			kernel_thread(reader, (void *) loop, 0);
++		}
++
++		if (loop < numwr) {
++			init_completion(&wr_comp[loop]);
++			kernel_thread(writer, (void *) loop, 0);
++		}
++
++		if (loop < numdg) {
++			init_completion(&dg_comp[loop]);
++			kernel_thread(downgrader, (void *) loop, 0);
++		}
++	}
++
++	/* set a stop timer */
++	init_timer(&timer);
++	timer.function = stop_test;
++	timer.expires = jiffies + elapse * HZ;
++	add_timer(&timer);
++
++	/* now wait until it's all done */
++	for (loop = 0; loop < nummx; loop++)
++		wait_for_completion(&mx_comp[loop]);
++
++	for (loop = 0; loop < numsm; loop++)
++		wait_for_completion(&sm_comp[loop]);
++
++	for (loop = 0; loop < numrd; loop++)
++		wait_for_completion(&rd_comp[loop]);
++
++	for (loop = 0; loop < numwr; loop++)
++		wait_for_completion(&wr_comp[loop]);
++
++	for (loop = 0; loop < numdg; loop++)
++		wait_for_completion(&dg_comp[loop]);
++
++	atomic_set(&do_stuff, 0);
++	del_timer(&timer);
++
++	if (mutex_is_locked(&mutex))
++		printk(KERN_ERR "Mutex is still locked!\n");
++
++	/* count up */
++	mutex_total	= total("MTX", mutexes_taken, nummx);
++	sem_total	= total("SEM", semaphores_taken, numsm);
++	rd_total	= total("RD ", reads_taken, numrd);
++	wr_total	= total("WR ", writes_taken, numwr);
++	dg_total	= total("DG ", downgrades_taken, numdg);
++
++	/* print the results */
++	if (verbose) {
++		printk("mutexes taken: %u\n", mutex_total);
++		printk("semaphores taken: %u\n", sem_total);
++		printk("reads taken: %u\n", rd_total);
++		printk("writes taken: %u\n", wr_total);
++		printk("downgrades taken: %u\n", dg_total);
++	}
++	else {
++		char buf[30];
++
++		sprintf(buf, "%d/%d", interval, load);
++
++		printk("%3d %3d %3d %3d %3d %c %5s %9u %9u %9u %9u %9u\n",
++		       nummx, numsm, numrd, numwr, numdg,
++		       do_sched ? 's' : '-',
++		       buf,
++		       mutex_total,
++		       sem_total,
++		       rd_total,
++		       wr_total,
++		       dg_total);
++	}
++
++	/* tell insmod to discard the module */
++	if (verbose)
++		printk("Tests complete\n");
++	return -ENOANO;
++
++} /* end do_tests() */
++
++module_init(do_tests);
