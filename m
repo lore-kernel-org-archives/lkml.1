@@ -1,85 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759536AbYAJQOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758984AbYAJQaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759536AbYAJQOr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 11:14:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbYAJQOj
+	id S1758984AbYAJQaG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 11:30:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756378AbYAJQ3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 11:14:39 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38797 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755633AbYAJQOi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 11:14:38 -0500
-Date: Thu, 10 Jan 2008 08:13:03 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-cc: Matt Mackall <mpm@selenic.com>, Christoph Lameter <clameter@sgi.com>,
-       Ingo Molnar <mingo@elte.hu>, Hugh Dickins <hugh@veritas.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH] greatly reduce SLOB external fragmentation
-In-Reply-To: <Pine.LNX.4.64.0801101251200.14402@sbz-30.cs.Helsinki.FI>
-Message-ID: <alpine.LFD.1.00.0801100749000.3148@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com>  <84144f020801021109v78e06c6k10d26af0e330fc85@mail.gmail.com>  <alpine.LFD.1.00.0801021130210.32517@woody.linux-foundation.org>  <1199314218.4497.109.camel@cinder.waste.org> 
- <20080103085239.GA10813@elte.hu>  <1199378818.8274.25.camel@cinder.waste.org>  <Pine.LNX.4.64.0801031808470.7244@schroedinger.engr.sgi.com>  <1199419890.4608.77.camel@cinder.waste.org>  <Pine.LNX.4.64.0801051816490.22821@sbz-30.cs.Helsinki.FI> 
- <1199641910.8215.28.camel@cinder.waste.org>  <Pine.LNX.4.64.0801072005380.23932@sbz-30.cs.Helsinki.FI>  <1199906151.6245.57.camel@cinder.waste.org>  <Pine.LNX.4.64.0801100037230.3071@sbz-30.cs.Helsinki.FI> <1199919548.6245.74.camel@cinder.waste.org>
- <Pine.LNX.4.64.0801101156150.10271@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0801101251200.14402@sbz-30.cs.Helsinki.FI>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+	Thu, 10 Jan 2008 11:29:54 -0500
+Received: from mail.gmx.net ([213.165.64.20]:52921 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756309AbYAJQ3x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 11:29:53 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19XdWpFKlNXfZ7SFQldnl6Lr04dqua9YGcYfE3cLV
+	zv2mVucNS7rDg/
+Subject: Re: [vm] writing to UDF DVD+RW (/dev/sr0) while under memory
+	pressure: box ==> doorstop
+From: Mike Galbraith <efault@gmx.de>
+To: Jan Kara <jack@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, bfennema@falcon.csc.calpoly.edu
+In-Reply-To: <20080110144123.GA12331@atrey.karlin.mff.cuni.cz>
+References: <1199447212.4529.13.camel@homer.simson.net>
+	 <1199612533.4384.54.camel@homer.simson.net>
+	 <1199642470.3927.12.camel@homer.simson.net>
+	 <20080106122954.d8f04c98.akpm@linux-foundation.org>
+	 <1199790316.4094.57.camel@homer.simson.net>
+	 <20080108033801.40d0043a.akpm@linux-foundation.org>
+	 <1199805713.3571.12.camel@homer.simson.net>
+	 <1199806071.4174.2.camel@homer.simson.net>
+	 <1199877080.4340.19.camel@homer.simson.net>
+	 <20080109150139.311f68d3.akpm@linux-foundation.org>
+	 <20080110144123.GA12331@atrey.karlin.mff.cuni.cz>
+Content-Type: text/plain
+Date: Thu, 10 Jan 2008 16:29:50 +0100
+Message-Id: <1199978990.4196.53.camel@homer.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+On Thu, 2008-01-10 at 15:41 +0100, Jan Kara wrote:
+> > On Wed, 09 Jan 2008 12:11:20 +0100
+> > 
+> > 
+> > I wonder why UDF was doing a synchronous write in there.  In fact I wonder
+> > why it's writing the inode at all?  extN doesn't do that.  If for some
+> > reason it really does want to make the inode immediately reclaimable then
+> > simply shoving it down into the /dev/hda1 pagecache should be sufficient
+> > (ie: what you did)..
+>   Looking at the code, I think UDF change is correct. UDF has to call
+> write_inode_now() because by the time clear_inode() is called, inode is
+> already written by VFS and prepared to be freed. But then UDF modifies
+> it in udf_clear_inode() (removes preallocation) and for these changes to
+> get to disk you have to write the inode explicitely. 
+>   But there's really no need to wait on IO. We only have to copy all
+> data from inode structure into buffers and that happens even if we don't
+> wait on sync.
 
-On Thu, 10 Jan 2008, Pekka J Enberg wrote:
-> 
-> We probably don't have the same version of GCC which perhaps affects 
-> memory layout (struct sizes) and thus allocation patterns?
+Perhaps I should go ahead and submit it then.  There are 5 other async
+callers as well, so VM/UDF reclaim buglet can die, and those others can
+get what they asked for with net diffstat of 0.
 
-No, struct sizes will not change with compiler versions - that would 
-create binary incompatibilities for libraries etc.
+Fix udf_clear_inode() to request asynchronous writeout in icache reclaim
+path, and ensure that write_inore_now() honors that request, lest
+allocators needlessly block on iprune_mutex.
 
-So apart from the kernel itself working around some old gcc bugs by making 
-spinlocks have different size depending on the compiler version, sizes of 
-structures should be the same (as long as the configuration is the same, 
-of course).
+Signed-off-by: Mike Galbraith <efault@gmx.de>
 
-However, a greedy first-fit allocator will be *very* sensitive to 
-allocation pattern differences, so timing will probably make a big 
-difference. In contrast, SLUB and SLAB both use fixed sizes per allocation 
-queue, which makes them almost totally impervious to any allocation 
-pattern from different allocation sizes (they still end up caring about 
-the pattern *within* one size, but those tend to be much stabler).
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index 0fca820..f1cce24 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -657,7 +657,7 @@ int write_inode_now(struct inode *inode, int sync)
+ 	int ret;
+ 	struct writeback_control wbc = {
+ 		.nr_to_write = LONG_MAX,
+-		.sync_mode = WB_SYNC_ALL,
++		.sync_mode = sync ? WB_SYNC_ALL : WB_SYNC_NONE,
+ 		.range_start = 0,
+ 		.range_end = LLONG_MAX,
+ 	};
+diff --git a/fs/udf/inode.c b/fs/udf/inode.c
+index 6ff8151..d1fc116 100644
+--- a/fs/udf/inode.c
++++ b/fs/udf/inode.c
+@@ -117,7 +117,7 @@ void udf_clear_inode(struct inode *inode)
+ 		udf_discard_prealloc(inode);
+ 		udf_truncate_tail_extent(inode);
+ 		unlock_kernel();
+-		write_inode_now(inode, 1);
++		write_inode_now(inode, 0);
+ 	}
+ 	kfree(UDF_I_DATA(inode));
+ 	UDF_I_DATA(inode) = NULL;
 
-There really is a reason why traditional heaps with first-fit are almost 
-never used for any real loads.
 
-(I'm not a fan of slabs per se - I think all the constructor/destructor 
-crap is just that: total crap - but the size/type binning is a big deal, 
-and I think SLOB was naïve to think a pure first-fit makes any sense. Now 
-you guys are size-binning by just two or three bins, and it seems to make 
-a difference for some loads, but compared to SLUB/SLAB it's a total hack).
-
-I would suggest that if you guys are really serious about memory use, try 
-to do a size-based heap thing, and do best-fit in that heap. Or just some 
-really simple size-based binning, eg
-
-	if (size > 2*PAGE_SIZE)
-		goto page_allocator;
-	bin = lookup_bin[(size+31) >> 5];
-
-or whatever. Because first-fit is *known* to be bad.
-
-At try to change it to address-ordered first-fit or something (which is 
-much more complex than just plain LIFO, but hey, that's life).
-
-I haven't checked much, but I *think* SLOB is just basic first-fit 
-(perhaps the "next-fit" variation?) Next-fit is known to be EVEN WORSE 
-than the simple first-fit when it comes to fragmentation (so no, Knuth was 
-not always right - let's face it, much of Knuth is simply outdated).
-
-			Linus
