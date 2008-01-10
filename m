@@ -1,54 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757400AbYAJCqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbYAJCre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757400AbYAJCqj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 21:46:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbYAJCq3
+	id S1757983AbYAJCre (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 21:47:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbYAJCr0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 21:46:29 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:54262 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754676AbYAJCq2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 21:46:28 -0500
-Message-ID: <478586E1.8010709@zytor.com>
-Date: Wed, 09 Jan 2008 18:45:53 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Jeff Dike <jdike@addtoit.com>, Miklos Szeredi <miklos@szeredi.hu>,
-       harvey.harrison@gmail.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: uml and -regparm=3
-References: <E1JCi3M-0006hO-7i@pomaz-ex.szeredi.hu> <p734pdmput0.fsf@bingen.suse.de> <E1JCiLx-0006lI-HR@pomaz-ex.szeredi.hu> <20080109213258.GC15612@one.firstfloor.org> <E1JCioy-0006os-6i@pomaz-ex.szeredi.hu> <20080110021404.GA11287@c2.user-mode-linux.org> <20080110023701.GB20813@one.firstfloor.org>
-In-Reply-To: <20080110023701.GB20813@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 9 Jan 2008 21:47:26 -0500
+Received: from waste.org ([66.93.16.53]:35118 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754001AbYAJCrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 21:47:25 -0500
+Subject: Re: [RFC PATCH] greatly reduce SLOB external fragmentation
+From: Matt Mackall <mpm@selenic.com>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>, Andi Kleen <andi@firstfloor.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0801100037230.3071@sbz-30.cs.Helsinki.FI>
+References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com>
+	 <84144f020801021109v78e06c6k10d26af0e330fc85@mail.gmail.com>
+	 <alpine.LFD.1.00.0801021130210.32517@woody.linux-foundation.org>
+	 <1199314218.4497.109.camel@cinder.waste.org>
+	 <20080103085239.GA10813@elte.hu>
+	 <1199378818.8274.25.camel@cinder.waste.org>
+	 <Pine.LNX.4.64.0801031808470.7244@schroedinger.engr.sgi.com>
+	 <1199419890.4608.77.camel@cinder.waste.org>
+	 <Pine.LNX.4.64.0801051816490.22821@sbz-30.cs.Helsinki.FI>
+	 <1199641910.8215.28.camel@cinder.waste.org>
+	 <Pine.LNX.4.64.0801072005380.23932@sbz-30.cs.Helsinki.FI>
+	 <1199906151.6245.57.camel@cinder.waste.org>
+	 <Pine.LNX.4.64.0801100037230.3071@sbz-30.cs.Helsinki.FI>
+Content-Type: text/plain
+Date: Wed, 09 Jan 2008 20:46:36 -0600
+Message-Id: <1199933196.6245.125.camel@cinder.waste.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Wed, Jan 09, 2008 at 09:14:04PM -0500, Jeff Dike wrote:
->> On Wed, Jan 09, 2008 at 10:50:48PM +0100, Miklos Szeredi wrote:
->>>> FASTCALL is useless and should not make a difference. It enables
->>>> regparm on specific functions, but that should not make a difference
->>>> if it works or not.
->>> __down_write() in include/asm-x86/rwsem.h seems to assume, that the
->>> semaphore pointer is passed in %eax down to rwsem_down_write_failed(),
->>> so regparm does make a difference there.
->> And rwsem_down_write_failed seems to think it's getting the pointer in
->> %eax:
-> 
-> That's a left over from when it was called by magic inline assembly.
-> I suspect it would be better to switch it just over to stack args
-> for consistent and then declare it asmlinkage
-> 
 
-That seems to go in the wrong direction to me.  It would make more sense 
-to gradually shift to asmlinkage actually being regparm=3.  This, of 
-course, would require a different name (such as FASTCALL) until the 
-conversion is complete -- even if done as a single patch series.
+On Thu, 2008-01-10 at 00:43 +0200, Pekka J Enberg wrote:
+> Hi Matt,
+> 
+> On Wed, 9 Jan 2008, Matt Mackall wrote:
+> > I kicked this around for a while, slept on it, and then came up with
+> > this little hack first thing this morning:
+> > 
+> > ------------
+> > slob: split free list by size
+> > 
+> 
+> [snip]
+> 
+> > And the results are fairly miraculous, so please double-check them on
+> > your setup. The resulting statistics change to this:
+> 
+> [snip]
+>  
+> > So the average jumped by 714k from before the patch, became much more
+> > stable, and beat SLUB by 287k. There are also 7 perfectly filled pages
+> > now, up from 1 before. And we can't get a whole lot better than this:
+> > we're using 259 pages for 244 pages of actual data, so our total
+> > overhead is only 6%! For comparison, SLUB's using about 70 pages more
+> > for the same data, so its total overhead appears to be about 35%.
+> 
+> Unfortunately I only see a slight improvement to SLOB (but it still gets 
+> beaten by SLUB):
+> 
+> [ the minimum, maximum, and average are captured from 10 individual runs ]
+> 
+>                                  Free (kB)             Used (kB)
+>                     Total (kB)   min   max   average   min  max  average
+>   SLUB (no debug)   26536        23868 23892 23877.6   2644 2668 2658.4
+>   SLOB (patched)    26548        23456 23708 23603.2   2840 3092 2944.8
+>   SLOB (vanilla)    26548        23472 23640 23579.6   2908 3076 2968.4
+>   SLAB (no debug)   26544        23316 23364 23343.2   3180 3228 3200.8
+>   SLUB (with debug) 26484        23120 23136 23127.2   3348 3364 3356.8
 
-	-hpa
+With your kernel config and my lguest+busybox setup, I get:
+
+SLUB:
+MemFree:         24208 kB
+MemFree:         24212 kB
+MemFree:         24212 kB
+MemFree:         24212 kB
+MemFree:         24216 kB
+MemFree:         24216 kB
+MemFree:         24220 kB
+MemFree:         24220 kB
+MemFree:         24224 kB
+MemFree:         24232 kB
+avg:             24217.2
+
+SLOB with two lists:
+MemFree:         24204 kB
+MemFree:         24260 kB
+MemFree:         24260 kB
+MemFree:         24276 kB
+MemFree:         24288 kB
+MemFree:         24292 kB
+MemFree:         24312 kB
+MemFree:         24320 kB
+MemFree:         24336 kB
+MemFree:         24396 kB
+avg:             24294.4
+
+Not sure why this result is so different from yours.
+
+Hacked this up to three lists to experiment and we now have:
+MemFree:         24348 kB
+MemFree:         24372 kB
+MemFree:         24372 kB
+MemFree:         24372 kB
+MemFree:         24372 kB
+MemFree:         24380 kB
+MemFree:         24384 kB
+MemFree:         24404 kB
+MemFree:         24404 kB
+MemFree:         24408 kB
+avg:             24344.4
+
+Even the last version is still using about 250 pages of storage for 209
+pages of data, so it's got about 20% overhead still.
+
+
+
+-- 
+Mathematics is the supreme nostalgia of our time.
+
