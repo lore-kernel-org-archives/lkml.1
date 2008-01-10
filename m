@@ -1,1175 +1,412 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbYAJL7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759083AbYAJMAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758729AbYAJL7g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 06:59:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbYAJL70
+	id S1759083AbYAJMAZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 07:00:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756169AbYAJMAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 06:59:26 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:43522 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754096AbYAJL7Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 06:59:24 -0500
-Date: Thu, 10 Jan 2008 17:29:43 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm@linux-foundation.org, mingo@elte.hu, ak@suse.de, sam@ravnborg.org,
-       dhowells@redhat.com
-Subject: [PATCH 5/7] Move synchro-test under tests/
-Message-ID: <20080110115943.GF26577@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20080110115428.GA26577@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080110115428.GA26577@in.ibm.com>
-User-Agent: Mutt/1.5.11
+	Thu, 10 Jan 2008 07:00:07 -0500
+Received: from [80.75.67.52] ([80.75.67.52]:44969 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752820AbYAJMAC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 07:00:02 -0500
+X-Greylist: delayed 527 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Jan 2008 07:00:01 EST
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Dmitry Torokhov <dtor@mail.ru>
+Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
+       Graeme Gregory <gg@opensource.wolfsonmicro.com>,
+       Mike Arthur <mike.arthur@wolfsonmicro.com>,
+       Stanley Cai <stanley.cai@intel.com>,
+       Rodolfo Giometti <giometti@enneenne.com>,
+       Russell King <rmk@arm.linux.org.uk>,
+       Marc Kleine-Budde <mkl@penugtronix.de>, Ian Molton <spyro@f2s.com>,
+       Vince Sanders <vince@kyllikki.org>, Andrew Zabolotny <zap@homelink.ru>
+Subject: [PATCH 2/6] Add chip driver for WM9705 touchscreen
+Date: Thu, 10 Jan 2008 11:51:06 +0000
+Message-Id: <1199965870-4629-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.5.3.8
+In-Reply-To: <1199965870-4629-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1199965870-4629-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-
-Move the synchro-test infrastructure to tests/
-
-Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Signed-off-by: Liam Girdwood <liam.girdwood@wolfsonmicro.com>
+Signed-off-by: Graeme Gregory <gg@opensource.wolfsonmicro.com>
+Signed-off-by: Mike Arthur <mike.arthur@wolfsonmicro.com>
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Stanley Cai <stanley.cai@intel.com>
+Cc: Rodolfo Giometti <giometti@enneenne.com>
+Cc: Russell King <rmk@arm.linux.org.uk>
+Cc: Marc Kleine-Budde <mkl@penugtronix.de>
+Cc: Ian Molton <spyro@f2s.com>
+Cc: Vince Sanders <vince@kyllikki.org>
+Cc: Andrew Zabolotny <zap@homelink.ru>
 ---
- kernel/synchro-test.c |  526 --------------------------------------------------
- kernel/Makefile       |    1 
- lib/Kconfig.debug     |   14 -
- tests/Kconfig         |   14 +
- tests/Makefile        |    1 
- tests/synchro-test.c  |  526 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 6 files changed, 541 insertions(+), 541 deletions(-)
+ drivers/input/touchscreen/wm9705.c |  352 ++++++++++++++++++++++++++++++++++++
+ 1 files changed, 352 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/input/touchscreen/wm9705.c
 
-Index: linux-2.6.24-rc6/kernel/Makefile
-===================================================================
---- linux-2.6.24-rc6.orig/kernel/Makefile
-+++ linux-2.6.24-rc6/kernel/Makefile
-@@ -54,7 +54,6 @@ obj-$(CONFIG_SYSFS) += ksysfs.o
- obj-$(CONFIG_DETECT_SOFTLOCKUP) += softlockup.o
- obj-$(CONFIG_GENERIC_HARDIRQS) += irq/
- obj-$(CONFIG_SECCOMP) += seccomp.o
--obj-$(CONFIG_DEBUG_SYNCHRO_TEST) += synchro-test.o
- obj-$(CONFIG_CLASSIC_RCU) += rcuclassic.o
- obj-$(CONFIG_PREEMPT_RCU) += rcupreempt.o
- ifeq ($(CONFIG_PREEMPT_RCU),y)
-Index: linux-2.6.24-rc6/kernel/synchro-test.c
-===================================================================
---- linux-2.6.24-rc6.orig/kernel/synchro-test.c
-+++ /dev/null
-@@ -1,526 +0,0 @@
--/* synchro-test.c: run some threads to test the synchronisation primitives
-- *
-- * Copyright (C) 2005, 2006 Red Hat, Inc. All Rights Reserved.
-- * Written by David Howells (dhowells@redhat.com)
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of the GNU General Public License
-- * as published by the Free Software Foundation; either version
-- * 2 of the License, or (at your option) any later version.
-- *
-- * The module should be run as something like:
-- *
-- *	insmod synchro-test.ko rd=2 wr=2
-- *	insmod synchro-test.ko mx=1
-- *	insmod synchro-test.ko sm=2 ism=1
-- *	insmod synchro-test.ko sm=2 ism=2
-- *
-- * See Documentation/synchro-test.txt for more information.
-- */
--
--#include <linux/module.h>
--#include <linux/poll.h>
--#include <linux/moduleparam.h>
--#include <linux/stat.h>
--#include <linux/init.h>
--#include <asm/atomic.h>
--#include <linux/personality.h>
--#include <linux/smp_lock.h>
--#include <linux/delay.h>
--#include <linux/timer.h>
--#include <linux/completion.h>
--#include <linux/mutex.h>
--
--#define MAX_THREADS 64
--
--/*
-- * Turn on self-validation if we do a one-shot boot-time test:
-- */
--#ifndef MODULE
--# define VALIDATE_OPERATORS
--#endif
--
--static int nummx;
--static int numsm, seminit = 4;
--static int numrd, numwr, numdg;
--static int elapse = 5, load = 2, do_sched, interval = 2;
--static int verbose = 0;
--
--MODULE_AUTHOR("David Howells");
--MODULE_DESCRIPTION("Synchronisation primitive test demo");
--MODULE_LICENSE("GPL");
--
--module_param_named(v, verbose, int, 0);
--MODULE_PARM_DESC(verbose, "Verbosity");
--
--module_param_named(mx, nummx, int, 0);
--MODULE_PARM_DESC(nummx, "Number of mutex threads");
--
--module_param_named(sm, numsm, int, 0);
--MODULE_PARM_DESC(numsm, "Number of semaphore threads");
--
--module_param_named(ism, seminit, int, 0);
--MODULE_PARM_DESC(seminit, "Initial semaphore value");
--
--module_param_named(rd, numrd, int, 0);
--MODULE_PARM_DESC(numrd, "Number of reader threads");
--
--module_param_named(wr, numwr, int, 0);
--MODULE_PARM_DESC(numwr, "Number of writer threads");
--
--module_param_named(dg, numdg, int, 0);
--MODULE_PARM_DESC(numdg, "Number of downgrader threads");
--
--module_param(elapse, int, 0);
--MODULE_PARM_DESC(elapse, "Number of seconds to run for");
--
--module_param(load, int, 0);
--MODULE_PARM_DESC(load, "Length of load in uS");
--
--module_param(interval, int, 0);
--MODULE_PARM_DESC(interval, "Length of interval in uS before re-getting lock");
--
--module_param(do_sched, int, 0);
--MODULE_PARM_DESC(do_sched, "True if each thread should schedule regularly");
--
--/* the semaphores under test */
--static struct mutex ____cacheline_aligned mutex;
--static struct semaphore ____cacheline_aligned sem;
--static struct rw_semaphore ____cacheline_aligned rwsem;
--
--static atomic_t ____cacheline_aligned do_stuff		= ATOMIC_INIT(0);
--
--#ifdef VALIDATE_OPERATORS
--static atomic_t ____cacheline_aligned mutexes		= ATOMIC_INIT(0);
--static atomic_t ____cacheline_aligned semaphores	= ATOMIC_INIT(0);
--static atomic_t ____cacheline_aligned readers		= ATOMIC_INIT(0);
--static atomic_t ____cacheline_aligned writers		= ATOMIC_INIT(0);
--#endif
--
--static unsigned int ____cacheline_aligned mutexes_taken		[MAX_THREADS];
--static unsigned int ____cacheline_aligned semaphores_taken	[MAX_THREADS];
--static unsigned int ____cacheline_aligned reads_taken		[MAX_THREADS];
--static unsigned int ____cacheline_aligned writes_taken		[MAX_THREADS];
--static unsigned int ____cacheline_aligned downgrades_taken	[MAX_THREADS];
--
--static struct completion ____cacheline_aligned mx_comp[MAX_THREADS];
--static struct completion ____cacheline_aligned sm_comp[MAX_THREADS];
--static struct completion ____cacheline_aligned rd_comp[MAX_THREADS];
--static struct completion ____cacheline_aligned wr_comp[MAX_THREADS];
--static struct completion ____cacheline_aligned dg_comp[MAX_THREADS];
--
--static struct timer_list ____cacheline_aligned timer;
--
--#define ACCOUNT(var, N) var##_taken[N]++;
--
--#ifdef VALIDATE_OPERATORS
--#define TRACK(var, dir) atomic_##dir(&(var))
--
--#define CHECK(var, cond, val)						\
--do {									\
--	int x = atomic_read(&(var));					\
--	if (unlikely(!(x cond (val))))					\
--		printk("check [%s %s %d, == %d] failed in %s\n",	\
--		       #var, #cond, (val), x, __func__);		\
--} while (0)
--
--#else
--#define TRACK(var, dir)		do {} while(0)
--#define CHECK(var, cond, val)	do {} while(0)
--#endif
--
--static inline void do_mutex_lock(unsigned int N)
--{
--	mutex_lock(&mutex);
--
--	ACCOUNT(mutexes, N);
--	TRACK(mutexes, inc);
--	CHECK(mutexes, ==, 1);
--}
--
--static inline void do_mutex_unlock(unsigned int N)
--{
--	CHECK(mutexes, ==, 1);
--	TRACK(mutexes, dec);
--
--	mutex_unlock(&mutex);
--}
--
--static inline void do_down(unsigned int N)
--{
--	CHECK(mutexes, <, seminit);
--
--	down(&sem);
--
--	ACCOUNT(semaphores, N);
--	TRACK(semaphores, inc);
--}
--
--static inline void do_up(unsigned int N)
--{
--	CHECK(semaphores, >, 0);
--	TRACK(semaphores, dec);
--
--	up(&sem);
--}
--
--static inline void do_down_read(unsigned int N)
--{
--	down_read(&rwsem);
--
--	ACCOUNT(reads, N);
--	TRACK(readers, inc);
--	CHECK(readers, >, 0);
--	CHECK(writers, ==, 0);
--}
--
--static inline void do_up_read(unsigned int N)
--{
--	CHECK(readers, >, 0);
--	CHECK(writers, ==, 0);
--	TRACK(readers, dec);
--
--	up_read(&rwsem);
--}
--
--static inline void do_down_write(unsigned int N)
--{
--	down_write(&rwsem);
--
--	ACCOUNT(writes, N);
--	TRACK(writers, inc);
--	CHECK(writers, ==, 1);
--	CHECK(readers, ==, 0);
--}
--
--static inline void do_up_write(unsigned int N)
--{
--	CHECK(writers, ==, 1);
--	CHECK(readers, ==, 0);
--	TRACK(writers, dec);
--
--	up_write(&rwsem);
--}
--
--static inline void do_downgrade_write(unsigned int N)
--{
--	CHECK(writers, ==, 1);
--	CHECK(readers, ==, 0);
--	TRACK(writers, dec);
--	TRACK(readers, inc);
--
--	downgrade_write(&rwsem);
--
--	ACCOUNT(downgrades, N);
--}
--
--static inline void sched(void)
--{
--	if (do_sched)
--		schedule();
--}
--
--static int mutexer(void *arg)
--{
--	unsigned int N = (unsigned long) arg;
--
--	daemonize("Mutex%u", N);
--	set_user_nice(current, 19);
--
--	while (atomic_read(&do_stuff)) {
--		do_mutex_lock(N);
--		if (load)
--			udelay(load);
--		do_mutex_unlock(N);
--		sched();
--		if (interval)
--			udelay(interval);
--	}
--
--	if (verbose >= 2)
--		printk("%s: done\n", current->comm);
--	complete_and_exit(&mx_comp[N], 0);
--}
--
--static int semaphorer(void *arg)
--{
--	unsigned int N = (unsigned long) arg;
--
--	daemonize("Sem%u", N);
--	set_user_nice(current, 19);
--
--	while (atomic_read(&do_stuff)) {
--		do_down(N);
--		if (load)
--			udelay(load);
--		do_up(N);
--		sched();
--		if (interval)
--			udelay(interval);
--	}
--
--	if (verbose >= 2)
--		printk("%s: done\n", current->comm);
--	complete_and_exit(&sm_comp[N], 0);
--}
--
--static int reader(void *arg)
--{
--	unsigned int N = (unsigned long) arg;
--
--	daemonize("Read%u", N);
--	set_user_nice(current, 19);
--
--	while (atomic_read(&do_stuff)) {
--		do_down_read(N);
--#ifdef LOAD_TEST
--		if (load)
--			udelay(load);
--#endif
--		do_up_read(N);
--		sched();
--		if (interval)
--			udelay(interval);
--	}
--
--	if (verbose >= 2)
--		printk("%s: done\n", current->comm);
--	complete_and_exit(&rd_comp[N], 0);
--}
--
--static int writer(void *arg)
--{
--	unsigned int N = (unsigned long) arg;
--
--	daemonize("Write%u", N);
--	set_user_nice(current, 19);
--
--	while (atomic_read(&do_stuff)) {
--		do_down_write(N);
--#ifdef LOAD_TEST
--		if (load)
--			udelay(load);
--#endif
--		do_up_write(N);
--		sched();
--		if (interval)
--			udelay(interval);
--	}
--
--	if (verbose >= 2)
--		printk("%s: done\n", current->comm);
--	complete_and_exit(&wr_comp[N], 0);
--}
--
--static int downgrader(void *arg)
--{
--	unsigned int N = (unsigned long) arg;
--
--	daemonize("Down%u", N);
--	set_user_nice(current, 19);
--
--	while (atomic_read(&do_stuff)) {
--		do_down_write(N);
--#ifdef LOAD_TEST
--		if (load)
--			udelay(load);
--#endif
--		do_downgrade_write(N);
--#ifdef LOAD_TEST
--		if (load)
--			udelay(load);
--#endif
--		do_up_read(N);
--		sched();
--		if (interval)
--			udelay(interval);
--	}
--
--	if (verbose >= 2)
--		printk("%s: done\n", current->comm);
--	complete_and_exit(&dg_comp[N], 0);
--}
--
--static void stop_test(unsigned long dummy)
--{
--	atomic_set(&do_stuff, 0);
--}
--
--static unsigned int total(const char *what, unsigned int counts[], int num)
--{
--	unsigned int tot = 0, max = 0, min = UINT_MAX, zeros = 0, cnt;
--	int loop;
--
--	for (loop = 0; loop < num; loop++) {
--		cnt = counts[loop];
--
--		if (cnt == 0) {
--			zeros++;
--			min = 0;
--			continue;
--		}
--
--		tot += cnt;
--		if (tot > max)
--			max = tot;
--		if (tot < min)
--			min = tot;
--	}
--
--	if (verbose && tot > 0) {
--		printk("%s:", what);
--
--		for (loop = 0; loop < num; loop++) {
--			cnt = counts[loop];
--
--			if (cnt == 0)
--				printk(" zzz");
--			else
--				printk(" %d%%", cnt * 100 / tot);
--		}
--
--		printk("\n");
--	}
--
--	return tot;
--}
--
--/*****************************************************************************/
--/*
-- *
-- */
--static int __init do_tests(void)
--{
--	unsigned long loop;
--	unsigned int mutex_total, sem_total, rd_total, wr_total, dg_total;
--
--	if (nummx < 0 || nummx > MAX_THREADS ||
--	    numsm < 0 || numsm > MAX_THREADS ||
--	    numrd < 0 || numrd > MAX_THREADS ||
--	    numwr < 0 || numwr > MAX_THREADS ||
--	    numdg < 0 || numdg > MAX_THREADS ||
--	    seminit < 1 ||
--	    elapse < 1 ||
--	    load < 0 || load > 999 ||
--	    interval < 0 || interval > 999
--	    ) {
--		printk("Parameter out of range\n");
--		return -ERANGE;
--	}
--
--	if ((nummx | numsm | numrd | numwr | numdg) == 0) {
--		int num = num_online_cpus();
--
--		if (num > MAX_THREADS)
--			num = MAX_THREADS;
--		nummx = numsm = numrd = numwr = numdg = num;
--
--		load = 1;
--		interval = 1;
--		do_sched = 1;
--		printk("No parameters - using defaults.\n");
--	}
--
--	if (verbose)
--		printk("\nStarting synchronisation primitive tests...\n");
--
--	mutex_init(&mutex);
--	sema_init(&sem, seminit);
--	init_rwsem(&rwsem);
--	atomic_set(&do_stuff, 1);
--
--	/* kick off all the children */
--	for (loop = 0; loop < MAX_THREADS; loop++) {
--		if (loop < nummx) {
--			init_completion(&mx_comp[loop]);
--			kernel_thread(mutexer, (void *) loop, 0);
--		}
--
--		if (loop < numsm) {
--			init_completion(&sm_comp[loop]);
--			kernel_thread(semaphorer, (void *) loop, 0);
--		}
--
--		if (loop < numrd) {
--			init_completion(&rd_comp[loop]);
--			kernel_thread(reader, (void *) loop, 0);
--		}
--
--		if (loop < numwr) {
--			init_completion(&wr_comp[loop]);
--			kernel_thread(writer, (void *) loop, 0);
--		}
--
--		if (loop < numdg) {
--			init_completion(&dg_comp[loop]);
--			kernel_thread(downgrader, (void *) loop, 0);
--		}
--	}
--
--	/* set a stop timer */
--	init_timer(&timer);
--	timer.function = stop_test;
--	timer.expires = jiffies + elapse * HZ;
--	add_timer(&timer);
--
--	/* now wait until it's all done */
--	for (loop = 0; loop < nummx; loop++)
--		wait_for_completion(&mx_comp[loop]);
--
--	for (loop = 0; loop < numsm; loop++)
--		wait_for_completion(&sm_comp[loop]);
--
--	for (loop = 0; loop < numrd; loop++)
--		wait_for_completion(&rd_comp[loop]);
--
--	for (loop = 0; loop < numwr; loop++)
--		wait_for_completion(&wr_comp[loop]);
--
--	for (loop = 0; loop < numdg; loop++)
--		wait_for_completion(&dg_comp[loop]);
--
--	atomic_set(&do_stuff, 0);
--	del_timer(&timer);
--
--	if (mutex_is_locked(&mutex))
--		printk(KERN_ERR "Mutex is still locked!\n");
--
--	/* count up */
--	mutex_total	= total("MTX", mutexes_taken, nummx);
--	sem_total	= total("SEM", semaphores_taken, numsm);
--	rd_total	= total("RD ", reads_taken, numrd);
--	wr_total	= total("WR ", writes_taken, numwr);
--	dg_total	= total("DG ", downgrades_taken, numdg);
--
--	/* print the results */
--	if (verbose) {
--		printk("mutexes taken: %u\n", mutex_total);
--		printk("semaphores taken: %u\n", sem_total);
--		printk("reads taken: %u\n", rd_total);
--		printk("writes taken: %u\n", wr_total);
--		printk("downgrades taken: %u\n", dg_total);
--	}
--	else {
--		char buf[30];
--
--		sprintf(buf, "%d/%d", interval, load);
--
--		printk("%3d %3d %3d %3d %3d %c %5s %9u %9u %9u %9u %9u\n",
--		       nummx, numsm, numrd, numwr, numdg,
--		       do_sched ? 's' : '-',
--		       buf,
--		       mutex_total,
--		       sem_total,
--		       rd_total,
--		       wr_total,
--		       dg_total);
--	}
--
--	/* tell insmod to discard the module */
--	if (verbose)
--		printk("Tests complete\n");
--	return -ENOANO;
--
--} /* end do_tests() */
--
--module_init(do_tests);
-Index: linux-2.6.24-rc6/lib/Kconfig.debug
-===================================================================
---- linux-2.6.24-rc6.orig/lib/Kconfig.debug
-+++ linux-2.6.24-rc6/lib/Kconfig.debug
-@@ -467,20 +467,6 @@ config BOOT_PRINTK_DELAY
- 	  BOOT_PRINTK_DELAY also may cause DETECT_SOFTLOCKUP to detect
- 	  what it believes to be lockup conditions.
- 
--config DEBUG_SYNCHRO_TEST
--	tristate "Synchronisation primitive testing module"
--	depends on DEBUG_KERNEL
--	default n
--	help
--	  This option provides a kernel module that can thrash the sleepable
--	  synchronisation primitives (mutexes and semaphores).
--
--	  You should say N or M here. Whilst the module can be built in, it's
--	  not recommended as it requires module parameters supplying to get it
--	  to do anything.
--
--	  See Documentation/synchro-test.txt.
--
- config LKDTM
- 	tristate "Linux Kernel Dump Test Tool Module"
- 	depends on DEBUG_KERNEL
-Index: linux-2.6.24-rc6/tests/Kconfig
-===================================================================
---- linux-2.6.24-rc6.orig/tests/Kconfig
-+++ linux-2.6.24-rc6/tests/Kconfig
-@@ -37,5 +37,19 @@ config RT_MUTEX_TESTER
- 	help
- 	  This option enables a rt-mutex tester.
- 
-+config DEBUG_SYNCHRO_TEST
-+	tristate "Synchronisation primitive testing module"
-+	depends on DEBUG_KERNEL
-+	default n
-+	help
-+	  This option provides a kernel module that can thrash the sleepable
-+	  synchronisation primitives (mutexes and semaphores).
-+
-+	  You should say N or M here. Whilst the module can be built in, it's
-+	  not recommended as it requires module parameters supplying to get it
-+	  to do anything.
-+
-+	  See Documentation/synchro-test.txt.
-+
- endif # KERNEL_TESTS
- 
-Index: linux-2.6.24-rc6/tests/Makefile
-===================================================================
---- linux-2.6.24-rc6.orig/tests/Makefile
-+++ linux-2.6.24-rc6/tests/Makefile
-@@ -5,3 +5,4 @@
- obj-$(CONFIG_DEBUG_LOCKING_API_SELFTESTS) += locking-selftest.o
- obj-$(CONFIG_RCU_TORTURE_TEST) += rcutorture.o
- obj-$(CONFIG_RT_MUTEX_TESTER) += rtmutex-tester.o
-+obj-$(CONFIG_DEBUG_SYNCHRO_TEST) += synchro-test.o
-Index: linux-2.6.24-rc6/tests/synchro-test.c
-===================================================================
+diff --git a/drivers/input/touchscreen/wm9705.c b/drivers/input/touchscreen/wm9705.c
+new file mode 100644
+index 0000000..6acf41e
 --- /dev/null
-+++ linux-2.6.24-rc6/tests/synchro-test.c
-@@ -0,0 +1,526 @@
-+/* synchro-test.c: run some threads to test the synchronisation primitives
++++ b/drivers/input/touchscreen/wm9705.c
+@@ -0,0 +1,352 @@
++/*
++ * wm9705.c  --  Codec driver for Wolfson WM9705 AC97 Codec.
 + *
-+ * Copyright (C) 2005, 2006 Red Hat, Inc. All Rights Reserved.
-+ * Written by David Howells (dhowells@redhat.com)
++ * Copyright 2003, 2004, 2005, 2006 Wolfson Microelectronics PLC.
++ * Author: Liam Girdwood
++ *         liam.girdwood@wolfsonmicro.com or linux@wolfsonmicro.com
++ * Parts Copyright : Ian Molton <spyro@f2s.com>
++ *                   Andrew Zabolotny <zap@homelink.ru>
++ *                   Russell King <rmk@arm.linux.org.uk>
 + *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
++ *  This program is free software; you can redistribute  it and/or modify it
++ *  under  the terms of  the GNU General  Public License as published by the
++ *  Free Software Foundation;  either version 2 of the  License, or (at your
++ *  option) any later version.
 + *
-+ * The module should be run as something like:
-+ *
-+ *	insmod synchro-test.ko rd=2 wr=2
-+ *	insmod synchro-test.ko mx=1
-+ *	insmod synchro-test.ko sm=2 ism=1
-+ *	insmod synchro-test.ko sm=2 ism=2
-+ *
-+ * See Documentation/synchro-test.txt for more information.
 + */
 +
 +#include <linux/module.h>
-+#include <linux/poll.h>
 +#include <linux/moduleparam.h>
-+#include <linux/stat.h>
-+#include <linux/init.h>
-+#include <asm/atomic.h>
-+#include <linux/personality.h>
-+#include <linux/smp_lock.h>
++#include <linux/version.h>
++#include <linux/kernel.h>
++#include <linux/input.h>
 +#include <linux/delay.h>
-+#include <linux/timer.h>
-+#include <linux/completion.h>
-+#include <linux/mutex.h>
++#include <linux/bitops.h>
++#include <linux/wm97xx.h>
 +
-+#define MAX_THREADS 64
++#define TS_NAME			"wm97xx"
++#define WM9705_VERSION		"0.62"
++#define DEFAULT_PRESSURE	0xb0c0
 +
 +/*
-+ * Turn on self-validation if we do a one-shot boot-time test:
++ * Module parameters
 + */
-+#ifndef MODULE
-+# define VALIDATE_OPERATORS
-+#endif
 +
-+static int nummx;
-+static int numsm, seminit = 4;
-+static int numrd, numwr, numdg;
-+static int elapse = 5, load = 2, do_sched, interval = 2;
-+static int verbose = 0;
-+
-+MODULE_AUTHOR("David Howells");
-+MODULE_DESCRIPTION("Synchronisation primitive test demo");
-+MODULE_LICENSE("GPL");
-+
-+module_param_named(v, verbose, int, 0);
-+MODULE_PARM_DESC(verbose, "Verbosity");
-+
-+module_param_named(mx, nummx, int, 0);
-+MODULE_PARM_DESC(nummx, "Number of mutex threads");
-+
-+module_param_named(sm, numsm, int, 0);
-+MODULE_PARM_DESC(numsm, "Number of semaphore threads");
-+
-+module_param_named(ism, seminit, int, 0);
-+MODULE_PARM_DESC(seminit, "Initial semaphore value");
-+
-+module_param_named(rd, numrd, int, 0);
-+MODULE_PARM_DESC(numrd, "Number of reader threads");
-+
-+module_param_named(wr, numwr, int, 0);
-+MODULE_PARM_DESC(numwr, "Number of writer threads");
-+
-+module_param_named(dg, numdg, int, 0);
-+MODULE_PARM_DESC(numdg, "Number of downgrader threads");
-+
-+module_param(elapse, int, 0);
-+MODULE_PARM_DESC(elapse, "Number of seconds to run for");
-+
-+module_param(load, int, 0);
-+MODULE_PARM_DESC(load, "Length of load in uS");
-+
-+module_param(interval, int, 0);
-+MODULE_PARM_DESC(interval, "Length of interval in uS before re-getting lock");
-+
-+module_param(do_sched, int, 0);
-+MODULE_PARM_DESC(do_sched, "True if each thread should schedule regularly");
-+
-+/* the semaphores under test */
-+static struct mutex ____cacheline_aligned mutex;
-+static struct semaphore ____cacheline_aligned sem;
-+static struct rw_semaphore ____cacheline_aligned rwsem;
-+
-+static atomic_t ____cacheline_aligned do_stuff		= ATOMIC_INIT(0);
-+
-+#ifdef VALIDATE_OPERATORS
-+static atomic_t ____cacheline_aligned mutexes		= ATOMIC_INIT(0);
-+static atomic_t ____cacheline_aligned semaphores	= ATOMIC_INIT(0);
-+static atomic_t ____cacheline_aligned readers		= ATOMIC_INIT(0);
-+static atomic_t ____cacheline_aligned writers		= ATOMIC_INIT(0);
-+#endif
-+
-+static unsigned int ____cacheline_aligned mutexes_taken		[MAX_THREADS];
-+static unsigned int ____cacheline_aligned semaphores_taken	[MAX_THREADS];
-+static unsigned int ____cacheline_aligned reads_taken		[MAX_THREADS];
-+static unsigned int ____cacheline_aligned writes_taken		[MAX_THREADS];
-+static unsigned int ____cacheline_aligned downgrades_taken	[MAX_THREADS];
-+
-+static struct completion ____cacheline_aligned mx_comp[MAX_THREADS];
-+static struct completion ____cacheline_aligned sm_comp[MAX_THREADS];
-+static struct completion ____cacheline_aligned rd_comp[MAX_THREADS];
-+static struct completion ____cacheline_aligned wr_comp[MAX_THREADS];
-+static struct completion ____cacheline_aligned dg_comp[MAX_THREADS];
-+
-+static struct timer_list ____cacheline_aligned timer;
-+
-+#define ACCOUNT(var, N) var##_taken[N]++;
-+
-+#ifdef VALIDATE_OPERATORS
-+#define TRACK(var, dir) atomic_##dir(&(var))
-+
-+#define CHECK(var, cond, val)						\
-+do {									\
-+	int x = atomic_read(&(var));					\
-+	if (unlikely(!(x cond (val))))					\
-+		printk("check [%s %s %d, == %d] failed in %s\n",	\
-+		       #var, #cond, (val), x, __func__);		\
-+} while (0)
-+
-+#else
-+#define TRACK(var, dir)		do {} while(0)
-+#define CHECK(var, cond, val)	do {} while(0)
-+#endif
-+
-+static inline void do_mutex_lock(unsigned int N)
-+{
-+	mutex_lock(&mutex);
-+
-+	ACCOUNT(mutexes, N);
-+	TRACK(mutexes, inc);
-+	CHECK(mutexes, ==, 1);
-+}
-+
-+static inline void do_mutex_unlock(unsigned int N)
-+{
-+	CHECK(mutexes, ==, 1);
-+	TRACK(mutexes, dec);
-+
-+	mutex_unlock(&mutex);
-+}
-+
-+static inline void do_down(unsigned int N)
-+{
-+	CHECK(mutexes, <, seminit);
-+
-+	down(&sem);
-+
-+	ACCOUNT(semaphores, N);
-+	TRACK(semaphores, inc);
-+}
-+
-+static inline void do_up(unsigned int N)
-+{
-+	CHECK(semaphores, >, 0);
-+	TRACK(semaphores, dec);
-+
-+	up(&sem);
-+}
-+
-+static inline void do_down_read(unsigned int N)
-+{
-+	down_read(&rwsem);
-+
-+	ACCOUNT(reads, N);
-+	TRACK(readers, inc);
-+	CHECK(readers, >, 0);
-+	CHECK(writers, ==, 0);
-+}
-+
-+static inline void do_up_read(unsigned int N)
-+{
-+	CHECK(readers, >, 0);
-+	CHECK(writers, ==, 0);
-+	TRACK(readers, dec);
-+
-+	up_read(&rwsem);
-+}
-+
-+static inline void do_down_write(unsigned int N)
-+{
-+	down_write(&rwsem);
-+
-+	ACCOUNT(writes, N);
-+	TRACK(writers, inc);
-+	CHECK(writers, ==, 1);
-+	CHECK(readers, ==, 0);
-+}
-+
-+static inline void do_up_write(unsigned int N)
-+{
-+	CHECK(writers, ==, 1);
-+	CHECK(readers, ==, 0);
-+	TRACK(writers, dec);
-+
-+	up_write(&rwsem);
-+}
-+
-+static inline void do_downgrade_write(unsigned int N)
-+{
-+	CHECK(writers, ==, 1);
-+	CHECK(readers, ==, 0);
-+	TRACK(writers, dec);
-+	TRACK(readers, inc);
-+
-+	downgrade_write(&rwsem);
-+
-+	ACCOUNT(downgrades, N);
-+}
-+
-+static inline void sched(void)
-+{
-+	if (do_sched)
-+		schedule();
-+}
-+
-+static int mutexer(void *arg)
-+{
-+	unsigned int N = (unsigned long) arg;
-+
-+	daemonize("Mutex%u", N);
-+	set_user_nice(current, 19);
-+
-+	while (atomic_read(&do_stuff)) {
-+		do_mutex_lock(N);
-+		if (load)
-+			udelay(load);
-+		do_mutex_unlock(N);
-+		sched();
-+		if (interval)
-+			udelay(interval);
-+	}
-+
-+	if (verbose >= 2)
-+		printk("%s: done\n", current->comm);
-+	complete_and_exit(&mx_comp[N], 0);
-+}
-+
-+static int semaphorer(void *arg)
-+{
-+	unsigned int N = (unsigned long) arg;
-+
-+	daemonize("Sem%u", N);
-+	set_user_nice(current, 19);
-+
-+	while (atomic_read(&do_stuff)) {
-+		do_down(N);
-+		if (load)
-+			udelay(load);
-+		do_up(N);
-+		sched();
-+		if (interval)
-+			udelay(interval);
-+	}
-+
-+	if (verbose >= 2)
-+		printk("%s: done\n", current->comm);
-+	complete_and_exit(&sm_comp[N], 0);
-+}
-+
-+static int reader(void *arg)
-+{
-+	unsigned int N = (unsigned long) arg;
-+
-+	daemonize("Read%u", N);
-+	set_user_nice(current, 19);
-+
-+	while (atomic_read(&do_stuff)) {
-+		do_down_read(N);
-+#ifdef LOAD_TEST
-+		if (load)
-+			udelay(load);
-+#endif
-+		do_up_read(N);
-+		sched();
-+		if (interval)
-+			udelay(interval);
-+	}
-+
-+	if (verbose >= 2)
-+		printk("%s: done\n", current->comm);
-+	complete_and_exit(&rd_comp[N], 0);
-+}
-+
-+static int writer(void *arg)
-+{
-+	unsigned int N = (unsigned long) arg;
-+
-+	daemonize("Write%u", N);
-+	set_user_nice(current, 19);
-+
-+	while (atomic_read(&do_stuff)) {
-+		do_down_write(N);
-+#ifdef LOAD_TEST
-+		if (load)
-+			udelay(load);
-+#endif
-+		do_up_write(N);
-+		sched();
-+		if (interval)
-+			udelay(interval);
-+	}
-+
-+	if (verbose >= 2)
-+		printk("%s: done\n", current->comm);
-+	complete_and_exit(&wr_comp[N], 0);
-+}
-+
-+static int downgrader(void *arg)
-+{
-+	unsigned int N = (unsigned long) arg;
-+
-+	daemonize("Down%u", N);
-+	set_user_nice(current, 19);
-+
-+	while (atomic_read(&do_stuff)) {
-+		do_down_write(N);
-+#ifdef LOAD_TEST
-+		if (load)
-+			udelay(load);
-+#endif
-+		do_downgrade_write(N);
-+#ifdef LOAD_TEST
-+		if (load)
-+			udelay(load);
-+#endif
-+		do_up_read(N);
-+		sched();
-+		if (interval)
-+			udelay(interval);
-+	}
-+
-+	if (verbose >= 2)
-+		printk("%s: done\n", current->comm);
-+	complete_and_exit(&dg_comp[N], 0);
-+}
-+
-+static void stop_test(unsigned long dummy)
-+{
-+	atomic_set(&do_stuff, 0);
-+}
-+
-+static unsigned int total(const char *what, unsigned int counts[], int num)
-+{
-+	unsigned int tot = 0, max = 0, min = UINT_MAX, zeros = 0, cnt;
-+	int loop;
-+
-+	for (loop = 0; loop < num; loop++) {
-+		cnt = counts[loop];
-+
-+		if (cnt == 0) {
-+			zeros++;
-+			min = 0;
-+			continue;
-+		}
-+
-+		tot += cnt;
-+		if (tot > max)
-+			max = tot;
-+		if (tot < min)
-+			min = tot;
-+	}
-+
-+	if (verbose && tot > 0) {
-+		printk("%s:", what);
-+
-+		for (loop = 0; loop < num; loop++) {
-+			cnt = counts[loop];
-+
-+			if (cnt == 0)
-+				printk(" zzz");
-+			else
-+				printk(" %d%%", cnt * 100 / tot);
-+		}
-+
-+		printk("\n");
-+	}
-+
-+	return tot;
-+}
-+
-+/*****************************************************************************/
 +/*
++ * Set current used for pressure measurement.
 + *
++ * Set pil = 2 to use 400uA
++ *     pil = 1 to use 200uA and
++ *     pil = 0 to disable pressure measurement.
++ *
++ * This is used to increase the range of values returned by the adc
++ * when measureing touchpanel pressure.
 + */
-+static int __init do_tests(void)
++static int pil;
++module_param(pil, int, 0);
++MODULE_PARM_DESC(pil, "Set current used for pressure measurement.");
++
++/*
++ * Set threshold for pressure measurement.
++ *
++ * Pen down pressure below threshold is ignored.
++ */
++static int pressure = DEFAULT_PRESSURE & 0xfff;
++module_param(pressure, int, 0);
++MODULE_PARM_DESC(pressure, "Set threshold for pressure measurement.");
++
++/*
++ * Set adc sample delay.
++ *
++ * For accurate touchpanel measurements, some settling time may be
++ * required between the switch matrix applying a voltage across the
++ * touchpanel plate and the ADC sampling the signal.
++ *
++ * This delay can be set by setting delay = n, where n is the array
++ * position of the delay in the array delay_table below.
++ * Long delays > 1ms are supported for completeness, but are not
++ * recommended.
++ */
++static int delay = 4;
++module_param(delay, int, 0);
++MODULE_PARM_DESC(delay, "Set adc sample delay.");
++
++/*
++ * Pen detect comparator threshold.
++ *
++ * 0 to Vmid in 15 steps, 0 = use zero power comparator with Vmid threshold
++ * i.e. 1 =  Vmid/15 threshold
++ *      15 =  Vmid/1 threshold
++ *
++ * Adjust this value if you are having problems with pen detect not
++ * detecting any down events.
++ */
++static int pdd = 8;
++module_param(pdd, int, 0);
++MODULE_PARM_DESC(pdd, "Set pen detect comparator threshold");
++
++/*
++ * Set adc mask function.
++ *
++ * Sources of glitch noise, such as signals driving an LCD display, may feed
++ * through to the touch screen plates and affect measurement accuracy. In
++ * order to minimise this, a signal may be applied to the MASK pin to delay or
++ * synchronise the sampling.
++ *
++ * 0 = No delay or sync
++ * 1 = High on pin stops conversions
++ * 2 = Edge triggered, edge on pin delays conversion by delay param (above)
++ * 3 = Edge triggered, edge on pin starts conversion after delay param
++ */
++static int mask;
++module_param(mask, int, 0);
++MODULE_PARM_DESC(mask, "Set adc mask function.");
++
++/*
++ * ADC sample delay times in uS
++ */
++static const int delay_table[] = {
++	21,    /* 1 AC97 Link frames */
++	42,    /* 2                  */
++	84,    /* 4                  */
++	167,   /* 8                  */
++	333,   /* 16                 */
++	667,   /* 32                 */
++	1000,  /* 48                 */
++	1333,  /* 64                 */
++	2000,  /* 96                 */
++	2667,  /* 128                */
++	3333,  /* 160                */
++	4000,  /* 192                */
++	4667,  /* 224                */
++	5333,  /* 256                */
++	6000,  /* 288                */
++	0      /* No delay, switch matrix always on */
++};
++
++/*
++ * Delay after issuing a POLL command.
++ *
++ * The delay is 3 AC97 link frames + the touchpanel settling delay
++ */
++static inline void poll_delay(int d)
 +{
-+	unsigned long loop;
-+	unsigned int mutex_total, sem_total, rd_total, wr_total, dg_total;
++	udelay(3 * AC97_LINK_FRAME + delay_table[d]);
++}
 +
-+	if (nummx < 0 || nummx > MAX_THREADS ||
-+	    numsm < 0 || numsm > MAX_THREADS ||
-+	    numrd < 0 || numrd > MAX_THREADS ||
-+	    numwr < 0 || numwr > MAX_THREADS ||
-+	    numdg < 0 || numdg > MAX_THREADS ||
-+	    seminit < 1 ||
-+	    elapse < 1 ||
-+	    load < 0 || load > 999 ||
-+	    interval < 0 || interval > 999
-+	    ) {
-+		printk("Parameter out of range\n");
-+		return -ERANGE;
-+	}
++/*
++ * set up the physical settings of the WM9705
++ */
++static void wm9705_phy_init(struct wm97xx *wm)
++{
++	u16 dig1 = 0, dig2 = WM97XX_RPR;
 +
-+	if ((nummx | numsm | numrd | numwr | numdg) == 0) {
-+		int num = num_online_cpus();
++	/*
++	* mute VIDEO and AUX as they share X and Y touchscreen
++	* inputs on the WM9705
++	*/
++	wm97xx_reg_write(wm, AC97_AUX, 0x8000);
++	wm97xx_reg_write(wm, AC97_VIDEO, 0x8000);
 +
-+		if (num > MAX_THREADS)
-+			num = MAX_THREADS;
-+		nummx = numsm = numrd = numwr = numdg = num;
++	/* touchpanel pressure current*/
++	if (pil == 2) {
++		dig2 |= WM9705_PIL;
++		dev_dbg(wm->dev,
++			"setting pressure measurement current to 400uA.");
++	} else if (pil)
++		dev_dbg(wm->dev,
++			"setting pressure measurement current to 200uA.");
++	if (!pil)
++		pressure = 0;
 +
-+		load = 1;
-+		interval = 1;
-+		do_sched = 1;
-+		printk("No parameters - using defaults.\n");
-+	}
-+
-+	if (verbose)
-+		printk("\nStarting synchronisation primitive tests...\n");
-+
-+	mutex_init(&mutex);
-+	sema_init(&sem, seminit);
-+	init_rwsem(&rwsem);
-+	atomic_set(&do_stuff, 1);
-+
-+	/* kick off all the children */
-+	for (loop = 0; loop < MAX_THREADS; loop++) {
-+		if (loop < nummx) {
-+			init_completion(&mx_comp[loop]);
-+			kernel_thread(mutexer, (void *) loop, 0);
-+		}
-+
-+		if (loop < numsm) {
-+			init_completion(&sm_comp[loop]);
-+			kernel_thread(semaphorer, (void *) loop, 0);
-+		}
-+
-+		if (loop < numrd) {
-+			init_completion(&rd_comp[loop]);
-+			kernel_thread(reader, (void *) loop, 0);
-+		}
-+
-+		if (loop < numwr) {
-+			init_completion(&wr_comp[loop]);
-+			kernel_thread(writer, (void *) loop, 0);
-+		}
-+
-+		if (loop < numdg) {
-+			init_completion(&dg_comp[loop]);
-+			kernel_thread(downgrader, (void *) loop, 0);
++	/* polling mode sample settling delay */
++	if (delay != 4) {
++		if (delay < 0 || delay > 15) {
++			dev_dbg(wm->dev, "supplied delay out of range.");
++			delay = 4;
 +		}
 +	}
++	dig1 &= 0xff0f;
++	dig1 |= WM97XX_DELAY(delay);
++	dev_dbg(wm->dev, "setting adc sample delay to %d u Secs.",
++		delay_table[delay]);
 +
-+	/* set a stop timer */
-+	init_timer(&timer);
-+	timer.function = stop_test;
-+	timer.expires = jiffies + elapse * HZ;
-+	add_timer(&timer);
++	/* WM9705 pdd */
++	dig2 |= (pdd & 0x000f);
++	dev_dbg(wm->dev, "setting pdd to Vmid/%d", 1 - (pdd & 0x000f));
 +
-+	/* now wait until it's all done */
-+	for (loop = 0; loop < nummx; loop++)
-+		wait_for_completion(&mx_comp[loop]);
++	/* mask */
++	dig2 |= ((mask & 0x3) << 4);
 +
-+	for (loop = 0; loop < numsm; loop++)
-+		wait_for_completion(&sm_comp[loop]);
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER1, dig1);
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2, dig2);
++}
 +
-+	for (loop = 0; loop < numrd; loop++)
-+		wait_for_completion(&rd_comp[loop]);
++static void wm9705_dig_enable(struct wm97xx *wm, int enable)
++{
++	if (enable) {
++		wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2,
++				 wm->dig[2] | WM97XX_PRP_DET_DIG);
++		wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER_RD); /* dummy read */
++	} else
++		wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2,
++				 wm->dig[2] & ~WM97XX_PRP_DET_DIG);
++}
 +
-+	for (loop = 0; loop < numwr; loop++)
-+		wait_for_completion(&wr_comp[loop]);
++static void wm9705_aux_prepare(struct wm97xx *wm)
++{
++	memcpy(wm->dig_save, wm->dig, sizeof(wm->dig));
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER1, 0);
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2, WM97XX_PRP_DET_DIG);
++}
 +
-+	for (loop = 0; loop < numdg; loop++)
-+		wait_for_completion(&dg_comp[loop]);
++static void wm9705_dig_restore(struct wm97xx *wm)
++{
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER1, wm->dig_save[1]);
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2, wm->dig_save[2]);
++}
 +
-+	atomic_set(&do_stuff, 0);
-+	del_timer(&timer);
++static inline int is_pden(struct wm97xx *wm)
++{
++	return wm->dig[2] & WM9705_PDEN;
++}
 +
-+	if (mutex_is_locked(&mutex))
-+		printk(KERN_ERR "Mutex is still locked!\n");
++/*
++ * Read a sample from the WM9705 adc in polling mode.
++ */
++static int wm9705_poll_sample(struct wm97xx *wm, int adcsel, int *sample)
++{
++	int timeout = 5 * delay;
 +
-+	/* count up */
-+	mutex_total	= total("MTX", mutexes_taken, nummx);
-+	sem_total	= total("SEM", semaphores_taken, numsm);
-+	rd_total	= total("RD ", reads_taken, numrd);
-+	wr_total	= total("WR ", writes_taken, numwr);
-+	dg_total	= total("DG ", downgrades_taken, numdg);
-+
-+	/* print the results */
-+	if (verbose) {
-+		printk("mutexes taken: %u\n", mutex_total);
-+		printk("semaphores taken: %u\n", sem_total);
-+		printk("reads taken: %u\n", rd_total);
-+		printk("writes taken: %u\n", wr_total);
-+		printk("downgrades taken: %u\n", dg_total);
++	if (!wm->pen_probably_down) {
++		u16 data = wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER_RD);
++		if (!(data & WM97XX_PEN_DOWN))
++			return RC_PENUP;
++		wm->pen_probably_down = 1;
 +	}
-+	else {
-+		char buf[30];
 +
-+		sprintf(buf, "%d/%d", interval, load);
++	/* set up digitiser */
++	if (adcsel & 0x8000)
++		adcsel = ((adcsel & 0x7fff) + 3) << 12;
 +
-+		printk("%3d %3d %3d %3d %3d %c %5s %9u %9u %9u %9u %9u\n",
-+		       nummx, numsm, numrd, numwr, numdg,
-+		       do_sched ? 's' : '-',
-+		       buf,
-+		       mutex_total,
-+		       sem_total,
-+		       rd_total,
-+		       wr_total,
-+		       dg_total);
++	if (wm->mach_ops && wm->mach_ops->pre_sample)
++		wm->mach_ops->pre_sample(adcsel);
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER1,
++			 adcsel | WM97XX_POLL | WM97XX_DELAY(delay));
++
++	/* wait 3 AC97 time slots + delay for conversion */
++	poll_delay(delay);
++
++	/* wait for POLL to go low */
++	while ((wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER1) & WM97XX_POLL)
++	       && timeout) {
++		udelay(AC97_LINK_FRAME);
++		timeout--;
 +	}
 +
-+	/* tell insmod to discard the module */
-+	if (verbose)
-+		printk("Tests complete\n");
-+	return -ENOANO;
++	if (timeout <= 0) {
++		/* If PDEN is set, we can get a timeout when pen goes up */
++		if (is_pden(wm))
++			wm->pen_probably_down = 0;
++		else
++			dev_dbg(wm->dev, "adc sample timeout");
++		return RC_PENUP;
++	}
 +
-+} /* end do_tests() */
++	*sample = wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER_RD);
++	if (wm->mach_ops && wm->mach_ops->post_sample)
++		wm->mach_ops->post_sample(adcsel);
 +
-+module_init(do_tests);
++	/* check we have correct sample */
++	if ((*sample & WM97XX_ADCSEL_MASK) != adcsel) {
++		dev_dbg(wm->dev, "adc wrong sample, read %x got %x", adcsel,
++		*sample & WM97XX_ADCSEL_MASK);
++		return RC_PENUP;
++	}
++
++	if (!(*sample & WM97XX_PEN_DOWN)) {
++		wm->pen_probably_down = 0;
++		return RC_PENUP;
++	}
++
++	return RC_VALID;
++}
++
++/*
++ * Sample the WM9705 touchscreen in polling mode
++ */
++static int wm9705_poll_touch(struct wm97xx *wm, struct wm97xx_data *data)
++{
++	int rc;
++
++	rc = wm9705_poll_sample(wm, WM97XX_ADCSEL_X, &data->x);
++	if (rc != RC_VALID)
++		return rc;
++	rc = wm9705_poll_sample(wm, WM97XX_ADCSEL_Y, &data->y);
++	if (rc != RC_VALID)
++		return rc;
++	if (pil) {
++		rc = wm9705_poll_sample(wm, WM97XX_ADCSEL_PRES, &data->p);
++		if (rc != RC_VALID)
++			return rc;
++	} else
++		data->p = DEFAULT_PRESSURE;
++
++	return RC_VALID;
++}
++
++/*
++ * Enable WM9705 continuous mode, i.e. touch data is streamed across
++ * an AC97 slot
++ */
++static int wm9705_acc_enable(struct wm97xx *wm, int enable)
++{
++	u16 dig1, dig2;
++	int ret = 0;
++
++	dig1 = wm->dig[1];
++	dig2 = wm->dig[2];
++
++	if (enable) {
++		/* continous mode */
++		if (wm->mach_ops->acc_startup &&
++		    (ret = wm->mach_ops->acc_startup(wm)) < 0)
++			return ret;
++		dig1 &= ~(WM97XX_CM_RATE_MASK | WM97XX_ADCSEL_MASK |
++			  WM97XX_DELAY_MASK | WM97XX_SLT_MASK);
++		dig1 |= WM97XX_CTC | WM97XX_COO | WM97XX_SLEN |
++			WM97XX_DELAY(delay) |
++			WM97XX_SLT(wm->acc_slot) |
++			WM97XX_RATE(wm->acc_rate);
++		if (pil)
++			dig1 |= WM97XX_ADCSEL_PRES;
++		dig2 |= WM9705_PDEN;
++	} else {
++		dig1 &= ~(WM97XX_CTC | WM97XX_COO | WM97XX_SLEN);
++		dig2 &= ~WM9705_PDEN;
++		if (wm->mach_ops->acc_shutdown)
++			wm->mach_ops->acc_shutdown(wm);
++	}
++
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER1, dig1);
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2, dig2);
++	return ret;
++}
++
++struct wm97xx_codec_drv wm9705_codec = {
++	.id = 	WM9705_ID2,
++	.name = "wm9705",
++	.poll_sample = wm9705_poll_sample,
++	.poll_touch = wm9705_poll_touch,
++	.acc_enable = wm9705_acc_enable,
++	.phy_init = wm9705_phy_init,
++	.dig_enable = wm9705_dig_enable,
++	.dig_restore = wm9705_dig_restore,
++	.aux_prepare = wm9705_aux_prepare,
++};
++EXPORT_SYMBOL_GPL(wm9705_codec);
++
++/* Module information */
++MODULE_AUTHOR("Liam Girdwood <liam.girdwood@wolfsonmicro.com>");
++MODULE_DESCRIPTION("WM9705 Touch Screen Driver");
++MODULE_LICENSE("GPL");
+-- 
+1.5.3.8
+
