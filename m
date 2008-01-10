@@ -1,63 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbYAJLIi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757067AbYAJLKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756781AbYAJLIi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 06:08:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752820AbYAJLIb
+	id S1757067AbYAJLKX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 06:10:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbYAJLKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 06:08:31 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56341 "EHLO mx1.redhat.com"
+	Thu, 10 Jan 2008 06:10:09 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:48979 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752778AbYAJLIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 06:08:30 -0500
-Message-ID: <4785FC4A.2010108@redhat.com>
-Date: Thu, 10 Jan 2008 06:06:50 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>
-Subject: Re: [PATCH] x86: trivial whitespace in kprobes.c
-References: <1199954157.19760.22.camel@brick> <4785F6A1.5020202@redhat.com>
-In-Reply-To: <4785F6A1.5020202@redhat.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+	id S1752820AbYAJLKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 06:10:07 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1199906358.9393.324.camel@moss-spartans.epoch.ncsc.mil>
+References: <1199906358.9393.324.camel@moss-spartans.epoch.ncsc.mil> <1199902278.9393.283.camel@moss-spartans.epoch.ncsc.mil> <1197307397.18120.72.camel@moss-spartans.epoch.ncsc.mil> <1197305173.18120.60.camel@moss-spartans.epoch.ncsc.mil> <20071205193818.24617.79771.stgit@warthog.procyon.org.uk> <20071205193859.24617.36392.stgit@warthog.procyon.org.uk> <25037.1197306473@redhat.com> <17868.1199897484@redhat.com> <1316.1199904980@redhat.com> 
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: dhowells@redhat.com, Daniel J Walsh <dwalsh@redhat.com>,
+       casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM settings for task actions [try #2]
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Thu, 10 Jan 2008 11:09:58 +0000
+Message-ID: <4917.1199963398@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Masami Hiramatsu wrote:
-> Harvey Harrison wrote:
->> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> 
-> Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
-> 
->> ---
->> Ingo, you could/should probably fold this into Masami's kprobe
->> unification patch.
-> 
-> The original code had these whitespace, because (I think)
-> kretprobe_trampoline_holder() had just hold a memory space
-> for hooking function return. And now, it has actual code.
+Stephen Smalley <sds@tycho.nsa.gov> wrote:
 
-Hmm, this function still a bit special, because it is not
-called directly. kretprobe uses kretprobe_trampoline symbol,
-which is defined in this function.
-Anyway, I think the whitespace does not help us understand it...
+> If you have a "SELinux:  policy loaded with handle_unknown=allow"
+> message in your /var/log/messages, then new classes/perms that are not
+> yet known to the policy will be allowed by default, so the operation
+> will be permitted by the kernel.
 
-> So the whitespace can be removed.
+I don't.  How do I set it?
 
-Thank you,
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
-
+David
