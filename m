@@ -1,69 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbYAJLnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbYAJLuc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756169AbYAJLnQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 06:43:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087AbYAJLnC
+	id S1754781AbYAJLuc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 06:50:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752820AbYAJLuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 06:43:02 -0500
-Received: from cantor.suse.de ([195.135.220.2]:33286 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752958AbYAJLnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 06:43:00 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without HOTPLUG_CPU
-Date: Thu, 10 Jan 2008 12:42:53 +0100
-User-Agent: KMail/1.9.6
-Cc: rjw@sisk.pl, pavel@suse.cz, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-References: <20080103442.621670000@suse.de> <20080110111514.GS25945@bingen.suse.de> <20080110112607.GE28740@does.not.exist>
-In-Reply-To: <20080110112607.GE28740@does.not.exist>
+	Thu, 10 Jan 2008 06:50:23 -0500
+Received: from embla.aitel.hist.no ([158.38.50.22]:52384 "EHLO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751825AbYAJLuW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 06:50:22 -0500
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Jan 2008 06:50:21 EST
+Message-ID: <478601D7.90004@aitel.hist.no>
+Date: Thu, 10 Jan 2008 12:30:31 +0100
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Matthias Schniedermeyer <ms@citd.de>
+CC: Tuomo Valkonen <tuomov@iki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: The ext3 way of journalling
+References: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi> <20080108164847.GA16462@skl-net.de> <slrnfo7e3i.c37.tuomov@jolt.modeemi.cs.tut.fi> <20080108230600.GA9071@citd.de>
+In-Reply-To: <20080108230600.GA9071@citd.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801101242.53504.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 10 January 2008 12:26:07 Adrian Bunk wrote:
-> On Thu, Jan 10, 2008 at 12:15:15PM +0100, Andi Kleen wrote:
-> > > But your patch does:
-> > > 
-> > > +config PM_CPUINIT
-> > > +       bool
-> > > +       depends on PM
-> > 
-> > That is because arch/x86/power/cpu.c where this happens is currently
-> > 
-> > obj-$(CONFIG_PM)                += cpu.o
-> > 
-> > If it was changed to CONFIG_something else then yes that dependency
-> > should be changed too.
-> 
-> 
-> Then fix this first.
+Matthias Schniedermeyer wrote:
+>>> Don't use udev then. Good old static dev works fine if you have a fixed
+>>> set of devices.
+>>>       
+>> It doesn't, with the unpredictable SCSI mapping insanity.
+>>     
+>
+> That what LABEL und UUID-Support in mount is for.
+>
+> You label the filesystems (e2label for ext2 and ext3) and use that label to mount them
+>
+> - fstab -
+> LABEL=root  /        xfs     defaults,noatime	0 1
+> LABEL=boot  /boot    ext2    defaults,noatime	0 2
+>   
+Would've been nice if they worked, but they don't.
 
-Rafael indicated he would do that, but it is really outside the scope
-of my patch. I was just interested in fixing a linker warning.
+Disks should be so easy to identify uniquely, because they have
+storage space that can be used for that label.
 
-> 
-> And the following other points you didn't bother to reply to also still 
-> stand even after this fix:
-> - already __cpuinit code will waste memory with CONFIG_PM_SLEEP=y
+So I tried (debian linux, last year).
 
-Don't know what your point is. Anyways if you think there is a problem
-somewhere please feel free to write patches.
+Mount by label was fine, of course.
+Until the 33rd reboot, when it was decided that a
+fsck was necessary "just to be safe".  The problem was that fsck
+fail to find the correct device when /etc/fstab specifies a label
+instead of a device. The boot failed, reboot with init=/bin/sh
+and replace the dysfunctional labels with oldfashioned device names.
 
-> - change shouldn't be x86 specific
+I can live with this kind of problem on my desktop, but this machine
+was going to be a internet router for a customer, so occational
+boot failure requiring intervention was not an option.
 
-CPU initialization is deeply architecture specific. I don't see much use
-in generalizing that.
+Helge Hafting
 
--Andi
+
 
 
 
