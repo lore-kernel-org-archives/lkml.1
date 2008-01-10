@@ -1,83 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758748AbYAJM5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759231AbYAJM7p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758748AbYAJM5x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 07:57:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbYAJM5p
+	id S1759231AbYAJM7p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 07:59:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbYAJM7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 07:57:45 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:13026 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753995AbYAJM5o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 07:57:44 -0500
-Date: Thu, 10 Jan 2008 13:57:41 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
-       "Bryn M. Reeves" <breeves@redhat.com>
-Subject: Re: [PATCH][RFC] fast file mapping for loop
-Message-ID: <20080110125740.GY6258@kernel.dk>
-References: <20080109085231.GE6650@kernel.dk> <20080109231628.GB4039@agk.fab.redhat.com> <20080110083130.GP6258@kernel.dk> <20080110074738.6be1c1ad@think.oraclecorp.com>
+	Thu, 10 Jan 2008 07:59:38 -0500
+Received: from wr-out-0506.google.com ([64.233.184.238]:22340 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753510AbYAJM7h convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 07:59:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=igRCW7i5rZbey/Dg0USJg5FMDda4FzCZlYGyBvrgfQaelEQWesoAHvq8v8qnmePNG1EP1zf+RQGASrh7bsK/e5EUtZM9QGhisr2HetMrDCq5P8QiQwgoLCc9O0PQRQVVbpbEsBzHLoqCg24lkGanA9CPqjA3uKGYLBDQg9mivqc=
+Message-ID: <e85b9d30801100459t499bf874xab359dc9f1497845@mail.gmail.com>
+Date: Thu, 10 Jan 2008 13:59:35 +0100
+From: Matthew <jackdachef@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: Fwd: Fwd: laptop / computer hardlocks during execution of 32bit applications(binaries) on 64bit system (Gentoo)
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <20080110124810.GA20579@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080110074738.6be1c1ad@think.oraclecorp.com>
+References: <e85b9d30712291157v113f5e73yd830ae3c3429092d@mail.gmail.com>
+	 <200712300128.35476.mboton@gmail.com> <20080102084002.GA13636@elte.hu>
+	 <e85b9d30801080333y3d6668ccgf20f9666d0326884@mail.gmail.com>
+	 <e85b9d30801080340y43fbd4c0sa9b6c9811c7391a1@mail.gmail.com>
+	 <47841C41.4060401@zytor.com>
+	 <e85b9d30801100105s60ad675ey1ba939491d01a649@mail.gmail.com>
+	 <20080110094219.GC17808@elte.hu>
+	 <e85b9d30801100443s50ab2b69wbf1a7b4dbd09f002@mail.gmail.com>
+	 <20080110124810.GA20579@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 10 2008, Chris Mason wrote:
-> On Thu, 10 Jan 2008 09:31:31 +0100
-> Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > On Wed, Jan 09 2008, Alasdair G Kergon wrote:
-> > > Here's the latest version of dm-loop, for comparison.
-> > > 
-> > > To try it out, 
-> > >   ln -s dmsetup dmlosetup
-> > > and supply similar basic parameters to losetup.
-> > > (using dmsetup version 1.02.11 or higher)
-> > 
-> > Why oh why does dm always insist to reinvent everything? That's bad
-> > enough in itself, but on top of that most of the extra stuff ends up
-> > being essentially unmaintained.
-> 
-> I don't quite get how the dm version is reinventing things.  They use
+>
+> > this also happens with rc7-based kernels, btw
+>
+> hm, exactly what rc7 based kernel? Vanilla 2.6.24-rc7, built by you? Or
+> any patches ontop of it? (x86.git perhaps?)
 
-Things like raid, now file mapping functionality. I'm sure there are
-more examples, it's how dm was always developed probably originating
-back to when they developed mostly out of tree. And I think it's a bad
-idea, we don't want duplicate functionality. If something is wrong with
-loop, fix it, don't write dm-loop.
+see first post / mail (there are a few additional patches / trees
+included:  badram, wireless, alsa, tuxonice, madwifi, reiser4,
+sched-devel, realtime-lsm, powertop, mactel)
 
-> the dmsetup command that they use for everything else and provide a
-> small and fairly clean module for bio specific loop instead of piling
-> it onto loop.c....
+>since yesterday my laptop kept on hard-locking when launching 32bit
+>binaries / apps
+>I didn't know what to do but
 
-If loop.c is a problem, I'd rather see a newloop.c (with a better name,
-of course) that we can transition to.
+>miguel botón was the one pointing me in the right direction, namely bisect :)
 
-> Their code doesn't have the fancy hole handling that yours does, but
-> neither did yours 4 days ago ;)
+>kudos to him & the others involved in his zen-sources project:
+>http://repo.or.cz/w/linux-2.6/zen-sources.git
 
-Well mine didn't exist 4 days ago, I was just listing missing
-functionality.
+>bisect said the following is the causer:
 
-> 
-> > 
-> > If we instead improve loop, everyone wins.
-> > 
-> > Sorry to sound a bit harsh, but sometimes it doesn't hurt to think a
-> > bit outside your own sandbox.
-> > 
-> 
-> It is a natural fit in either place, as both loop and dm have a good
-> infrastructure for it.  I'm not picky about where it ends up, but dm
-> wouldn't be a bad place.
+so I guess I need to counter-check it against your realtime-tree:
+is it the following ?
+http://git.eu.kernel.org/?p=linux/kernel/git/cloos/rt-2.6.git;a=summary
+(it's currently at rc5 ?)
 
-I know that's your opinion, I reserve the right to have my own on where
-this functionality belongs :)
+or is hardirq / softirq also included in your sched-devel tree ?
+http://git.eu.kernel.org/?p=linux/kernel/git/mingo/linux-2.6-sched-devel.git;a=summary
 
--- 
-Jens Axboe
+>         Ingo
 
+Mat
