@@ -1,92 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760959AbYAJTZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761201AbYAJTZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760959AbYAJTZT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 14:25:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761021AbYAJTYx
+	id S1761201AbYAJTZr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 14:25:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760878AbYAJTZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 14:24:53 -0500
-Received: from waste.org ([66.93.16.53]:34327 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761000AbYAJTYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 14:24:51 -0500
-Subject: Re: [RFC PATCH] greatly reduce SLOB external fragmentation
-From: Matt Mackall <mpm@selenic.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       Hugh Dickins <hugh@veritas.com>, Andi Kleen <andi@firstfloor.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0801101112350.20353@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com>
-	 <84144f020801021109v78e06c6k10d26af0e330fc85@mail.gmail.com>
-	 <alpine.LFD.1.00.0801021130210.32517@woody.linux-foundation.org>
-	 <1199314218.4497.109.camel@cinder.waste.org>
-	 <20080103085239.GA10813@elte.hu>
-	 <1199378818.8274.25.camel@cinder.waste.org>
-	 <Pine.LNX.4.64.0801031808470.7244@schroedinger.engr.sgi.com>
-	 <1199419890.4608.77.camel@cinder.waste.org>
-	 <Pine.LNX.4.64.0801051816490.22821@sbz-30.cs.Helsinki.FI>
-	 <1199641910.8215.28.camel@cinder.waste.org>
-	 <Pine.LNX.4.64.0801072005380.23932@sbz-30.cs.Helsinki.FI>
-	 <1199906151.6245.57.camel@cinder.waste.org>
-	 <Pine.LNX.4.64.0801100037230.3071@sbz-30.cs.Helsinki.FI>
-	 <1199919548.6245.74.camel@cinder.waste.org>
-	 <Pine.LNX.4.64.0801101156150.10271@sbz-30.cs.Helsinki.FI>
-	 <Pine.LNX.4.64.0801101251200.14402@sbz-30.cs.Helsinki.FI>
-	 <alpine.LFD.1.00.0801100749000.3148@woody.linux-foundation.org>
-	 <1199987366.5331.92.camel@cinder.waste.org>
-	 <Pine.LNX.4.64.0801101112350.20353@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Thu, 10 Jan 2008 13:23:52 -0600
-Message-Id: <1199993032.5331.155.camel@cinder.waste.org>
+	Thu, 10 Jan 2008 14:25:33 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:45983 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760890AbYAJTZb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 14:25:31 -0500
+Date: Thu, 10 Jan 2008 20:28:08 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, ebiederm@xmission.com, rdreier@cisco.com,
+       torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
+       davej@redhat.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.co,
+       linux-kernel@vger.kernel.org,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Subject: Re: [patch 02/11] PAT x86: Map only usable memory in x86_64 identity map and kernel text
+Message-ID: <20080110192808.GF747@one.firstfloor.org>
+References: <p737iiho5yq.fsf@bingen.suse.de> <924EFEDD5F540B4284297C4DC59F3DEE5A2805@orsmsx423.amr.corp.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE5A2805@orsmsx423.amr.corp.intel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jan 10, 2008 at 11:17:07AM -0800, Pallipadi, Venkatesh wrote:
+> >I don't think that is needed or makes sense for reserved/ACPI * etc. 
+> >Only e820 holes should be truly unmapped because only those should
+> >contain mmio.
+> 
+> Do you mean just the regions that are not listed in e820 at all? We
+> should also not map anything marked "RESERVED" in e820. Right?
 
-On Thu, 2008-01-10 at 11:16 -0800, Christoph Lameter wrote:
-> On Thu, 10 Jan 2008, Matt Mackall wrote:
-> 
-> > Here I'm going to differ with you. The premises of the SLAB concept
-> > (from the original paper) are: 
-> > 
-> > a) fragmentation of conventional allocators gets worse over time
-> 
-> Even fragmentation of SLAB/SLUB gets worses over time. That is why we need 
-> a defrag solution.
-> 
-> > b) grouping objects of the same -type- (not size) together should mean
-> > they have similar lifetimes and thereby keep fragmentation low
-> 
-> I agree that is crap. The lifetimes argument is mostly only exploitable in 
-> benchmarks. That is why SLUB just groups them by size if possible.
-> 
-> > d) constructors and destructors are cache-friendly
-> 
-> I agree. Crap too. We removed the destructors. The constructors are needed 
-> so that objects in slab pages always have a definite state. That is f.e.
-> necessary for slab defragmentation because it has to be able to inspect an 
-> object at an arbitrary time and either remove it or move it to another 
-> slab page.
+RESERVED is usually memory used by the BIOS. Properly MMIO areas
+should be in holes.
 
-Are you saying that the state of -freed- objects matters for your active
-defragmentation? That's odd.
+Of course there might be buggy BIOS who violate that but the
+only way to find out is to check for the case in ioremap and warn. I would
+be still optimistic of it being correct.
 
-> Constructors also make sense because the initialization of a cache object 
-> may be expensive. Initializing list heads and spinlocks can take some code 
-> and that code can be omitted if objects have a definite state when they 
-> are free. We saw that when measuring the buffer_head constructors effect 
-> on performance.
+Another way would be to double check against the MTRRs - if it's UC then
+it should be unmapped. Maybe that would be a good idea. That should
+catch all true mmio holes unless a BIOS maps them cached but if it does
+that it's already beyond help.
 
-Hmm. SLOB proves that you don't need to segregate objects based on
-constructors, so you could combine even slabs that have constructors and
-just delay construction until allocation. I'm surprised constructors
-have measurable advantage..
+> 
+> >> All reserved memory maps to a
+> >> zero page. 
+> >
+> >Why zero page?  Why not unmap.
+> 
+> I had it unmapped first. Then thought of zero mapping for dd of devmem
+> to continue working. May be there are apps that depend on that?
+> Also, dd of devmem seems to be already broken with big memory without
+> any of these changes.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Exactly it's already broken.
+
+Anyways if someone accesses mmio through /dev/mem I think they definitely
+want the real mappings, not a zero page.  And dev/mem should provide.
+The trick is just to do it without caching attribute violations, 
+but with mattr it is possible.
+
+>  
+> >Anyways you could make that a zillion times more simple by 
+> >just rounding
+> >the e820 areas to 2MB -- for the holes only that should be ok I think; 
+> >i would expect them to be near always already suitably aligned.
+> >
+> >In short this can be all done much simpler.
+> 
+> On systems I tested, ACPI regions are typically not 2MB aligned. And on
+
+ACPI regions don't need to be unmapped.
+
+> some systems there are few 4k pages of reserved holes just before
+
+reserved shouldn't be unmapped, just holes. Do they have holes
+there or reserved areas?
+
+I still hope 2MB alignment will work out.
+
+-Andi
 
