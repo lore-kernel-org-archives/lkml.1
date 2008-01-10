@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757787AbYAJUs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757846AbYAJUtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757787AbYAJUs7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 15:48:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755851AbYAJUsu
+	id S1757846AbYAJUtu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 15:49:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754097AbYAJUtm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 15:48:50 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:59714 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752752AbYAJUst (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 15:48:49 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Rik van Riel <riel@redhat.com>
-Cc: Jakob Oestergaard <jakob@unthought.net>,
-       Anton Salikhmetov <salikhmetov@gmail.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RFC][BUG] updating the ctime and mtime time stamps in msync()
-In-Reply-To: Your message of "Wed, 09 Jan 2008 18:41:41 EST."
-             <20080109184141.287189b8@bree.surriel.com>
-From: Valdis.Kletnieks@vt.edu
-References: <1199728459.26463.11.camel@codedot> <20080109155015.4d2d4c1d@cuia.boston.redhat.com> <26932.1199912777@turing-police.cc.vt.edu> <20080109170633.292644dc@cuia.boston.redhat.com> <20080109223340.GH25527@unthought.net>
-            <20080109184141.287189b8@bree.surriel.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1199998102_2824P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Thu, 10 Jan 2008 15:49:42 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36046 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753887AbYAJUtl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 15:49:41 -0500
+Message-ID: <4786849D.4010504@redhat.com>
+Date: Thu, 10 Jan 2008 15:48:29 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Roel Kluin <12o3l@tiscali.nl>, linville@tuxdriver.com,
+       lkml <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org
+Subject: Re: [PATCH wireless/arlan] Replace logical- by bit-and
+References: <4722453E.2090801@tiscali.nl>	<472248AC.7080201@tiscali.nl>	<47866EE9.80003@tiscali.nl> <20080110122859.569b3774.randy.dunlap@oracle.com>
+In-Reply-To: <20080110122859.569b3774.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Thu, 10 Jan 2008 15:48:22 -0500
-Message-ID: <5273.1199998102@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1199998102_2824P
-Content-Type: text/plain; charset=us-ascii
-
-On Wed, 09 Jan 2008 18:41:41 EST, Rik van Riel said:
-
-> I guess a third possible time (if we want to minimize the number of
-> updates) would be when natural syncing of the file data to disk, by
-> other things in the VM, would be about to clear the I_DIRTY_PAGES
-> flag on the inode.  That way we do not need to remember any special
-> "we already flushed all dirty data, but we have not updated the mtime
-> and ctime yet" state.
+On 01/10/2008 03:28 PM, Randy Dunlap wrote:
+> On Thu, 10 Jan 2008 20:15:53 +0100 Roel Kluin wrote:
 > 
-> Does this sound reasonable?
+>> Totally untested patch below from linus' git tree. The && is incorrect, right?
+>>
+>> from drivers/net/wireless/arlan.h:390:
+>> #define ARLAN_POWER             0x40
+>> #define ARLAN_ACCESS            0x80
+>>
+>> Replace logical and by bit-and
+>>
+>> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+>> ---
+>> diff --git a/drivers/net/wireless/arlan.h b/drivers/net/wireless/arlan.h
+>> index 3ed1df7..7b7498f 100644
+>> --- a/drivers/net/wireless/arlan.h
+>> +++ b/drivers/net/wireless/arlan.h
+>> @@ -485,7 +485,7 @@ struct arlan_private {
+>>  #define clearClearInterrupt(dev){\
+>>     writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_CLEAR_INTERRUPT);}
+>>  #define setPowerOff(dev){\
+>> -   writeControlRegister(dev,readControlRegister(dev) | (ARLAN_POWER && ARLAN_ACCESS));\
+>> +   writeControlRegister(dev, readControlRegister(dev) | (ARLAN_POWER & ARLAN_ACCESS));\
+> 
+> eh?  How does that help?
+> 
+> 0x80 && 0x40 -> 0
 
-Is it possible that a *very* large file (multi-gigabyte or even bigger database,
-for example) would never get out of I_DIRTY_PAGES, because there's always a
-few dozen just-recently dirtied pages that haven't made it out to disk yet?
-
-Of course, getting a *consistent* backup of a file like that is quite the
-challenge already, because of the high likelyhood of the file being changed
-while the backup runs - that's why big sites often do a 'quiesce/snapshot/wakeup'
-on a database and then backup the snapshot...
-
-
---==_Exmh_1199998102_2824P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHhoSWcC3lWbTT17ARAn1mAJ48AjVv7lCnK64HDWknbOZPhx4kZgCeNAAx
-1fx+ay5cVP3Trm0CcZPIZO8=
-=DyL9
------END PGP SIGNATURE-----
-
---==_Exmh_1199998102_2824P--
+1
