@@ -1,74 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753013AbYAIIs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752887AbYAIIw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753013AbYAIIs4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 03:48:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbYAIIsp
+	id S1752887AbYAIIw0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 03:52:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750844AbYAIIwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 03:48:45 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:58021 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750796AbYAIIso (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 03:48:44 -0500
-To: nigel@nigel.suspend2.net
-CC: pavel@ucw.cz, akpm@linux-foundation.org, hch@infradead.org,
-       serue@us.ibm.com, viro@ftp.linux.org.uk, ebiederm@xmission.com,
-       kzak@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
-       util-linux-ng@vger.kernel.org
-In-reply-to: <47840DAC.5000108@nigel.suspend2.net> (message from Nigel
-	Cunningham on Wed, 09 Jan 2008 10:56:28 +1100)
-Subject: Re: [patch 7/9] unprivileged mounts: allow unprivileged fuse mounts
-References: <20080108113502.184459371@szeredi.hu> <20080108113630.861045063@szeredi.hu> <20080108214625.GE5050@ucw.cz> <E1JCN9I-0004DB-DF@pomaz-ex.szeredi.hu> <47840DAC.5000108@nigel.suspend2.net>
-Message-Id: <E1JCWax-0005Ck-Kg@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 09 Jan 2008 09:47:31 +0100
+	Wed, 9 Jan 2008 03:52:18 -0500
+Received: from mx2.suse.de ([195.135.220.15]:35026 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750756AbYAIIwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 03:52:17 -0500
+Subject: Re: [PATCH] Change paride driver to use unlocked_ioctl instead of
+	ioctl
+From: Nikanth Karthikesan <knikanth@suse.de>
+To: grant@torque.net, tim@cyberelk.net
+Cc: Christoph Hellwig <hch@infradead.org>, Valdis.Kletnieks@vt.edu,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+In-Reply-To: <4784D3E0.BANGALORE.BLR.100.174746A.1.EABB.1@1:7.BANGALORE.BLR.100.0.1.0.1@16>
+References: <4785B7BC.5040106@suse.de>
+	 <20080109080620.GE32560@infradead.org>
+	 <4784D3E0.BANGALORE.BLR.100.174746A.1.EABB.1@1:7.BANGALORE.BLR.100.0.1.0.1@16>
+Content-Type: text/plain
+Date: Thu, 10 Jan 2008 14:25:47 +0530
+Message-Id: <1199955347.6203.6.camel@nikanth-laptop.blr.novell.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >> On Tue 2008-01-08 12:35:09, Miklos Szeredi wrote:
-> >>> From: Miklos Szeredi <mszeredi@suse.cz>
-> >>>
-> >>> Use FS_SAFE for "fuse" fs type, but not for "fuseblk".
-> >>>
-> >>> FUSE was designed from the beginning to be safe for unprivileged users.  This
-> >>> has also been verified in practice over many years.  In addition unprivileged
-> >> Eh? So 'kill -9 no longer works' and 'suspend no longer works' is not
-> >> considered important enough to even mention?
-> > 
-> > No.  Because in practice they don't seem to matter.  Also because
-> > there's no way in which fuse could be done differently to address
-> > these issues.
+On Wed, 2008-01-09 at 03:23 -0500, Valdis.Kletnieks@vt.edu wrote:
+> On Wed, 09 Jan 2008 08:06:20 GMT, Christoph Hellwig said:
 > 
-> Could you clarify, please? I hope I'm getting the wrong end of the stick
-> - it sounds to me like you and Pavel are saying that this patch breaks
-> suspending to ram (and hibernating?) but you want to push it anyway
-> because you haven't been able to produce an instance, don't think
-> suspending or hibernating matter and couldn't fix fuse anyway?
-
-This patch has nothing to do with suspend or hibernate.  What this
-patchset does, is help get rid of fusermount, a suid-root mount
-helper.  It also opens up new possibilities, which are not fuse
-related.
-
-Fuse has bad interactions with the freezer, theoretically.  In
-practice, I remember just one bug report (that sparked off this whole
-"do we need freezer, or don't we" flamefest), that actually got fixed
-fairly quickly, ...maybe.  Rafael probably remembers better.
-
-> > The 'kill -9' thing is basically due to VFS level locking not being
-> > interruptible.  It could be changed, but I'm not sure it's worth it.
+> > It's generally considered good style to only have as few as possible
+> > return values.  And this is especially important when returning from
+> > a section that's under a lock.  So in this case it would be much better
+> > if you changes this function to have a local 'int error' variable
+> > and then just do
 > > 
-> > For the suspend issue, there are also no easy solutions.
+> > 	error = -EFOO;
+> > 	goto out_unlock;
+
+agreed. resending the patch
+
+
+> I think Christoph meant to say "as few as possible return locations".  One
+> should write the code to have as many different return values as are
+> meaningful, but return them from as few places as possible - which is what the
+> "assign error and goto end" paradigm does...
 > 
-> What are the non-easy solutions?
 
-The ability to freeze tasks in uninterruptible sleep, or more
-generally at any preempt point (except when drivers are poking
-hardware).
+Is this following coding style, fine?
 
-I know this doesn't play well with userspace hibernate, and I don't
-think it can be resolved without going the kexec way.
+The ioctl handler is called with the BKL held. Registering
+unlocked_ioctl handler instead of registering ioctl handler.
 
-Miklos
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+
+---
+
+diff --git a/drivers/block/paride/pt.c b/drivers/block/paride/pt.c
+index b91accf..17f32f0 100644
+--- a/drivers/block/paride/pt.c
++++ b/drivers/block/paride/pt.c
+@@ -146,6 +146,7 @@ static int (*drives[4])[6] = {&drive0, &drive1, &drive2, &drive3};
+ #include <linux/mtio.h>
+ #include <linux/device.h>
+ #include <linux/sched.h>	/* current, TASK_*, schedule_timeout() */
++#include <linux/smp_lock.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -189,8 +190,8 @@ module_param_array(drive3, int, NULL, 0);
+ #define ATAPI_LOG_SENSE		0x4d
+ 
+ static int pt_open(struct inode *inode, struct file *file);
+-static int pt_ioctl(struct inode *inode, struct file *file,
+-		    unsigned int cmd, unsigned long arg);
++static long pt_ioctl(struct file *file, unsigned int cmd,
++		unsigned long arg);
+ static int pt_release(struct inode *inode, struct file *file);
+ static ssize_t pt_read(struct file *filp, char __user *buf,
+ 		       size_t count, loff_t * ppos);
+@@ -236,7 +237,7 @@ static const struct file_operations pt_fops = {
+ 	.owner = THIS_MODULE,
+ 	.read = pt_read,
+ 	.write = pt_write,
+-	.ioctl = pt_ioctl,
++	.unlocked_ioctl = pt_ioctl,
+ 	.open = pt_open,
+ 	.release = pt_release,
+ };
+@@ -685,39 +686,47 @@ out:
+ 	return err;
+ }
+ 
+-static int pt_ioctl(struct inode *inode, struct file *file,
+-	 unsigned int cmd, unsigned long arg)
++static long pt_ioctl(struct file *file, unsigned int cmd,
++		unsigned long arg)
+ {
+ 	struct pt_unit *tape = file->private_data;
+ 	struct mtop __user *p = (void __user *)arg;
+ 	struct mtop mtop;
++	long err = 0;
++
++	lock_kernel();
+ 
+ 	switch (cmd) {
+ 	case MTIOCTOP:
+-		if (copy_from_user(&mtop, p, sizeof(struct mtop)))
+-			return -EFAULT;
++		if (copy_from_user(&mtop, p, sizeof(struct mtop))) {
++			err = -EFAULT;
++			break;
++		}
+ 
+ 		switch (mtop.mt_op) {
+ 
+ 		case MTREW:
+ 			pt_rewind(tape);
+-			return 0;
++			break;
+ 
+ 		case MTWEOF:
+ 			pt_write_fm(tape);
+-			return 0;
++			break;
+ 
+ 		default:
+ 			printk("%s: Unimplemented mt_op %d\n", tape->name,
+ 			       mtop.mt_op);
+-			return -EINVAL;
++			err = -EINVAL;
+ 		}
++		break;
+ 
+ 	default:
+ 		printk("%s: Unimplemented ioctl 0x%x\n", tape->name, cmd);
+-		return -EINVAL;
+-
++		err = -EINVAL;
++		
+ 	}
++	unlock_kernel();
++	return err;
+ }
+ 
+ static int
+
+
+
+
