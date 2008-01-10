@@ -1,85 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757396AbYAJTmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759890AbYAJTmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757396AbYAJTmk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 14:42:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbYAJTmc
+	id S1759890AbYAJTmy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 14:42:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755794AbYAJTmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 14:42:32 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50291 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751575AbYAJTmb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 14:42:31 -0500
-Date: Thu, 10 Jan 2008 11:41:50 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Matt Mackall <mpm@selenic.com>
-cc: Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Hugh Dickins <hugh@veritas.com>, Andi Kleen <andi@firstfloor.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH] greatly reduce SLOB external fragmentation
-In-Reply-To: <1199990565.5331.130.camel@cinder.waste.org>
-Message-ID: <alpine.LFD.1.00.0801101124140.3148@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com>  <84144f020801021109v78e06c6k10d26af0e330fc85@mail.gmail.com>  <alpine.LFD.1.00.0801021130210.32517@woody.linux-foundation.org>  <1199314218.4497.109.camel@cinder.waste.org> 
- <20080103085239.GA10813@elte.hu>  <1199378818.8274.25.camel@cinder.waste.org>  <Pine.LNX.4.64.0801031808470.7244@schroedinger.engr.sgi.com>  <1199419890.4608.77.camel@cinder.waste.org>  <Pine.LNX.4.64.0801051816490.22821@sbz-30.cs.Helsinki.FI> 
- <1199641910.8215.28.camel@cinder.waste.org>  <Pine.LNX.4.64.0801072005380.23932@sbz-30.cs.Helsinki.FI>  <1199906151.6245.57.camel@cinder.waste.org>  <Pine.LNX.4.64.0801100037230.3071@sbz-30.cs.Helsinki.FI>  <1199919548.6245.74.camel@cinder.waste.org> 
- <Pine.LNX.4.64.0801101156150.10271@sbz-30.cs.Helsinki.FI>  <Pine.LNX.4.64.0801101251200.14402@sbz-30.cs.Helsinki.FI>  <alpine.LFD.1.00.0801100749000.3148@woody.linux-foundation.org>  <1199987366.5331.92.camel@cinder.waste.org> 
- <alpine.LFD.1.00.0801101013310.3148@woody.linux-foundation.org> <1199990565.5331.130.camel@cinder.waste.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Thu, 10 Jan 2008 14:42:38 -0500
+Received: from s36.avahost.net ([74.53.95.194]:54538 "EHLO s36.avahost.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756823AbYAJTmg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 14:42:36 -0500
+X-Greylist: delayed 4610 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Jan 2008 14:42:36 EST
+Message-ID: <47866327.8090905@katalix.com>
+Date: Thu, 10 Jan 2008 18:25:43 +0000
+From: James Chapman <jchapman@katalix.com>
+Organization: Katalix Systems Ltd
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Chris Friesen <cfriesen@nortel.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: questions on NAPI processing latency and dropped network packets
+References: <478654C3.60806@nortel.com>
+In-Reply-To: <478654C3.60806@nortel.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - s36.avahost.net
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - katalix.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 10 Jan 2008, Matt Mackall wrote:
+Chris Friesen wrote:
+> Hi all,
 > 
-> One idea I've been kicking around is pushing the boundary for the buddy
-> allocator back a bit (to 64k, say) and using SL*B under that. The page
-> allocators would call into buddy for larger than 64k (rare!) and SL*B
-> otherwise. This would let us greatly improve our handling of things like
-> task structs and skbs and possibly also things like 8k stacks and jumbo
-> frames.
+> I've got an issue that's popped up with a deployed system running
+> 2.6.10.  I'm looking for some help figuring out why incoming network
+> packets aren't being processed fast enough.
+> 
+> After a recent userspace app change, we've started seeing packets being
+> dropped by the ethernet hardware (e1000, NAPI is enabled).
 
-Yes, something like that may well be reasonable. It could possibly solve 
-some of the issues for bigger page cache sizes too, but one issue is that 
-many things actually end up having those power-of-two alignment 
-constraints too - so an 8kB allocation would often still have to be 
-naturally aligned, which then removes some of the freedom.
+What's changed in your application? Any real-time threads in there?
 
-> Crazy?
+>From the top output below, looks like SigtranServices is consuming all
+your CPU...
 
-It sounds like it might be worth trying out - there's just no way to know 
-how well it would work. Buddy allocators sure as hell have problems too, 
-no question about that. It's not like the page allocator is perfect.
+> The
+> error/dropped/fifo counts are going up in ethtool:
+> 
+>      rx_packets: 32180834
+>      rx_bytes: 5480756958
+>      rx_errors: 862506
+>      rx_dropped: 771345
+>      rx_length_errors: 0
+>      rx_over_errors: 0
+>      rx_crc_errors: 0
+>      rx_frame_errors: 0
+>      rx_fifo_errors: 91161
+>      rx_missed_errors: 91161
+> 
+> This link is receiving roughly 13K packets/sec, and we're dropping
+> roughly 51 packets/sec due to fifo errors.
+> 
+> Increasing the rx descriptor ring size from 256 up to around 3000 or so
+> seems to make the problem stop, but it seems to me that this is just a
+> workaround for the latency in processing the incoming packets.
+> 
+> So, I'm looking for some suggestions on how to fix this or to figure out
+> where the latency is coming from.
+> 
+> Some additional information:
+> 
+> 
+> 1) Interrupts are being processed on both cpus:
+> 
+> root@base0-0-0-13-0-11-1:/root> cat /proc/interrupts
+>            CPU0       CPU1
+>  30:    1703756    4530785  U3-MPIC Level     eth0
+> 
+> 
+> 
+> 
+> 2) "top" shows a fair amount of time processing softirqs, but very
+> little time in ksoftirqd (or is that a sampling artifact?).
+> 
+> 
+> Tasks: 79 total, 1 running, 78 sleeping, 0 stopped, 0 zombie
+> Cpu0: 23.6% us, 30.9% sy, 0.0% ni, 36.9% id, 0.0% wa, 0.3% hi, 8.3% si
+> Cpu1: 30.4% us, 24.1% sy, 0.0% ni, 5.9% id, 0.0% wa, 0.7% hi, 38.9% si
+> Mem:  4007812k total, 2199148k used,  1808664k free,     0k buffers
+> Swap:   0k total,       0k used,      0k free,   219844k cached
+> 
+>   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+>  5375 root      15   0 2682m 1.8g 6640 S 99.9 46.7  31:17.68
+> SigtranServices
+>  7696 root      17   0  6952 3212 1192 S  7.3  0.1   0:15.75
+> schedmon.ppc210
+>  7859 root      16   0  2688 1228  964 R  0.7  0.0   0:00.04 top
+>  2956 root       8  -8 18940 7436 5776 S  0.3  0.2   0:01.35 blademtc
+>     1 root      16   0  1660  620  532 S  0.0  0.0   0:30.62 init
+>     2 root      RT   0     0    0    0 S  0.0  0.0   0:00.01 migration/0
+>     3 root      15   0     0    0    0 S  0.0  0.0   0:00.55 ksoftirqd/0
+>     4 root      RT   0     0    0    0 S  0.0  0.0   0:00.01 migration/1
+>     5 root      15   0     0    0    0 S  0.0  0.0   0:00.43 ksoftirqd/1
+> 
+> 
+> 3) /proc/sys/net/core/netdev_max_backlog is set to the default of 300
+> 
+> 
+> So...anyone have any ideas/suggestions?
+> 
+> Thanks,
+> 
+> Chris
 
-It's not even clear that a buddy allocator even for the high-order pages 
-is at all the right choice. Almost nobody actually wants >64kB blocks, and 
-the ones that *do* want bigger allocations tend to want *much* bigger 
-ones, so it's quite possible that it could be worth it to have something 
-like a three-level allocator:
+-- 
+James Chapman
+Katalix Systems Ltd
+http://www.katalix.com
+Catalysts for your Embedded Linux software development
 
- - huge pages (superpages for those crazy db people)
-
-   Just a simple linked list of these things is fine, we'd never care 
-   about coalescing large pages together anyway.
-
- - "large pages" (on the order of ~64kB) - with *perhaps* a buddy bitmap 
-   setup to try to coalesce back into huge-pages, but more likely just 
-   admitting that you'd need something like migration to ever get back a 
-   hugepage that got split into large-pages.
-
-   So maybe a simple bitmap allocator per huge-page for large pages. Say 
-   you have a 4MB huge-page, and just a 64-bit free-bitmap per huge-page 
-   when you split it into large pages.
-
- - slab/slub/slob for anything else, and "get_free_page()" ends up being 
-   just a shorthand for saying "naturally aligned kmalloc of size 
-   "PAGE_SIZE<<order"
-
-and maybe it would all work out ok. 
-
-			Linus
