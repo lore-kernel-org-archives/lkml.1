@@ -1,133 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbYAJCre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbYAJCuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757983AbYAJCre (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 21:47:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbYAJCr0
+	id S1758117AbYAJCuZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 21:50:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755090AbYAJCuK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 21:47:26 -0500
-Received: from waste.org ([66.93.16.53]:35118 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754001AbYAJCrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 21:47:25 -0500
-Subject: Re: [RFC PATCH] greatly reduce SLOB external fragmentation
-From: Matt Mackall <mpm@selenic.com>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>, Andi Kleen <andi@firstfloor.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0801100037230.3071@sbz-30.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com>
-	 <84144f020801021109v78e06c6k10d26af0e330fc85@mail.gmail.com>
-	 <alpine.LFD.1.00.0801021130210.32517@woody.linux-foundation.org>
-	 <1199314218.4497.109.camel@cinder.waste.org>
-	 <20080103085239.GA10813@elte.hu>
-	 <1199378818.8274.25.camel@cinder.waste.org>
-	 <Pine.LNX.4.64.0801031808470.7244@schroedinger.engr.sgi.com>
-	 <1199419890.4608.77.camel@cinder.waste.org>
-	 <Pine.LNX.4.64.0801051816490.22821@sbz-30.cs.Helsinki.FI>
-	 <1199641910.8215.28.camel@cinder.waste.org>
-	 <Pine.LNX.4.64.0801072005380.23932@sbz-30.cs.Helsinki.FI>
-	 <1199906151.6245.57.camel@cinder.waste.org>
-	 <Pine.LNX.4.64.0801100037230.3071@sbz-30.cs.Helsinki.FI>
-Content-Type: text/plain
-Date: Wed, 09 Jan 2008 20:46:36 -0600
-Message-Id: <1199933196.6245.125.camel@cinder.waste.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Jan 2008 21:50:10 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:46921 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754137AbYAJCuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 21:50:09 -0500
+Date: Wed, 9 Jan 2008 20:50:06 -0600 (CST)
+From: Brent Casavant <bcasavan@sgi.com>
+Reply-To: Brent Casavant <bcasavan@sgi.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+cc: penguin-kernel@i-love.sakura.ne.jp, netdev@vger.kernel.org,
+       davem@davemloft.net, linux-kernel@vger.kernel.org
+Subject: Re: AF_UNIX MSG_PEEK bug?
+In-Reply-To: <E1JCkrp-0000vX-00@gondolin.me.apana.org.au>
+Message-ID: <alpine.BSF.1.00.0801092031290.35527@pkunk.americas.sgi.com>
+References: <E1JCkrp-0000vX-00@gondolin.me.apana.org.au>
+User-Agent: Alpine 1.00 (BSF 882 2007-12-20)
+Organization: "Silicon Graphics, Inc."
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 10 Jan 2008, Herbert Xu wrote:
 
-On Thu, 2008-01-10 at 00:43 +0200, Pekka J Enberg wrote:
-> Hi Matt,
-> 
-> On Wed, 9 Jan 2008, Matt Mackall wrote:
-> > I kicked this around for a while, slept on it, and then came up with
-> > this little hack first thing this morning:
-> > 
-> > ------------
-> > slob: split free list by size
-> > 
-> 
-> [snip]
-> 
-> > And the results are fairly miraculous, so please double-check them on
-> > your setup. The resulting statistics change to this:
-> 
-> [snip]
->  
-> > So the average jumped by 714k from before the patch, became much more
-> > stable, and beat SLUB by 287k. There are also 7 perfectly filled pages
-> > now, up from 1 before. And we can't get a whole lot better than this:
-> > we're using 259 pages for 244 pages of actual data, so our total
-> > overhead is only 6%! For comparison, SLUB's using about 70 pages more
-> > for the same data, so its total overhead appears to be about 35%.
-> 
-> Unfortunately I only see a slight improvement to SLOB (but it still gets 
-> beaten by SLUB):
-> 
-> [ the minimum, maximum, and average are captured from 10 individual runs ]
-> 
->                                  Free (kB)             Used (kB)
->                     Total (kB)   min   max   average   min  max  average
->   SLUB (no debug)   26536        23868 23892 23877.6   2644 2668 2658.4
->   SLOB (patched)    26548        23456 23708 23603.2   2840 3092 2944.8
->   SLOB (vanilla)    26548        23472 23640 23579.6   2908 3076 2968.4
->   SLAB (no debug)   26544        23316 23364 23343.2   3180 3228 3200.8
->   SLUB (with debug) 26484        23120 23136 23127.2   3348 3364 3356.8
+> Having said that, I do agree that having TCP and AF_UNIX behave
+> in the same way is a plus.  However, if you really want this to
+> happen it would help if you had attached a patch :)
 
-With your kernel config and my lguest+busybox setup, I get:
+The following patch appears to fix the problem.  However, I would
+really appreciate if someone more familiar with UNIX credential
+passing could review what I did here and provide some feedback.
+It wasn't at all clear to me why the MSG_PEEK and !MSG_PEEK code
+paths were taking different actions regarding credentials, so I
+unified them to behave the same way as the !MSG_PEEK code path.
 
-SLUB:
-MemFree:         24208 kB
-MemFree:         24212 kB
-MemFree:         24212 kB
-MemFree:         24212 kB
-MemFree:         24216 kB
-MemFree:         24216 kB
-MemFree:         24220 kB
-MemFree:         24220 kB
-MemFree:         24224 kB
-MemFree:         24232 kB
-avg:             24217.2
+I haven't tested credential passing under this new code yet, but
+hope to do so tomorrow.  Again, a review with an eye towards
+that area would be most appreciated.
 
-SLOB with two lists:
-MemFree:         24204 kB
-MemFree:         24260 kB
-MemFree:         24260 kB
-MemFree:         24276 kB
-MemFree:         24288 kB
-MemFree:         24292 kB
-MemFree:         24312 kB
-MemFree:         24320 kB
-MemFree:         24336 kB
-MemFree:         24396 kB
-avg:             24294.4
+The various test cases I had which tripped this bug now pass without
+incident.  Also, if netstat is to be believed, quite a few programs
+which utilize AF_UNIX sockets (e.g. hald, dbus, acpid) are running
+very contentedly on the test system, so at least I didn't severely
+break anything, possible UNIX credential issues notwithstanding.
 
-Not sure why this result is so different from yours.
+Note: I'm not proposing this patch be integrated yet -- I'm throwing
+it out here as a starting point.
 
-Hacked this up to three lists to experiment and we now have:
-MemFree:         24348 kB
-MemFree:         24372 kB
-MemFree:         24372 kB
-MemFree:         24372 kB
-MemFree:         24372 kB
-MemFree:         24380 kB
-MemFree:         24384 kB
-MemFree:         24404 kB
-MemFree:         24404 kB
-MemFree:         24408 kB
-avg:             24344.4
-
-Even the last version is still using about 250 pages of storage for 209
-pages of data, so it's got about 20% overhead still.
-
-
-
--- 
-Mathematics is the supreme nostalgia of our time.
-
+diff --git a/net/unix/af_unix.c b/net/unix/af_unix.c
+index 060bba4..2ffdf5b 100644
+--- a/net/unix/af_unix.c
++++ b/net/unix/af_unix.c
+@@ -50,6 +50,9 @@
+  *	     Arnaldo C. Melo	:	Remove MOD_{INC,DEC}_USE_COUNT,
+  *	     				the core infrastructure is doing that
+  *	     				for all net proto families now (2.5.69+)
++ *		Brent Casavant	:	SOCK_STREAM MSG_PEEK should peek
++ *					far enough ahead to satisfy the request
++ *					rather than stop after the first skb.
+  *
+  *
+  * Known differences from reference BSD that was tested:
+@@ -1750,6 +1753,8 @@ static int unix_stream_recvmsg(struct ki
+ 	int target;
+ 	int err = 0;
+ 	long timeo;
++	struct sk_buff *skb;
++	struct sk_buff_head peek_stack;
+ 
+ 	err = -EINVAL;
+ 	if (sk->sk_state != TCP_ESTABLISHED)
+@@ -1759,6 +1764,9 @@ static int unix_stream_recvmsg(struct ki
+ 	if (flags&MSG_OOB)
+ 		goto out;
+ 
++	if (flags & MSG_PEEK)
++		skb_queue_head_init(&peek_stack);
++
+ 	target = sock_rcvlowat(sk, flags&MSG_WAITALL, size);
+ 	timeo = sock_rcvtimeo(sk, flags&MSG_DONTWAIT);
+ 
+@@ -1778,7 +1786,6 @@ static int unix_stream_recvmsg(struct ki
+ 	do
+ 	{
+ 		int chunk;
+-		struct sk_buff *skb;
+ 
+ 		unix_state_lock(sk);
+ 		skb = skb_dequeue(&sk->sk_receive_queue);
+@@ -1845,39 +1852,31 @@ static int unix_stream_recvmsg(struct ki
+ 		copied += chunk;
+ 		size -= chunk;
+ 
+-		/* Mark read part of skb as used */
+-		if (!(flags & MSG_PEEK))
+-		{
+-			skb_pull(skb, chunk);
+-
+-			if (UNIXCB(skb).fp)
+-				unix_detach_fds(siocb->scm, skb);
++		/* Credential passing */
++		if (UNIXCB(skb).fp)
++			unix_detach_fds(siocb->scm, skb);
+ 
+-			/* put the skb back if we didn't use it up.. */
++		if (!(flags & MSG_PEEK)) {
++			/* Mark read part of skb as used */
++			skb_pull(skb, chunk);
++			/* Return unused portion or free skb */
+ 			if (skb->len)
+-			{
+ 				skb_queue_head(&sk->sk_receive_queue, skb);
+-				break;
+-			}
+-
+-			kfree_skb(skb);
+-
+-			if (siocb->scm->fp)
+-				break;
+-		}
+-		else
+-		{
+-			/* It is questionable, see note in unix_dgram_recvmsg.
+-			 */
+-			if (UNIXCB(skb).fp)
+-				siocb->scm->fp = scm_fp_dup(UNIXCB(skb).fp);
++			else
++				kfree_skb(skb);
++		} else
++			__skb_queue_head(&peek_stack, skb);
+ 
+-			/* put message back and return */
+-			skb_queue_head(&sk->sk_receive_queue, skb);
++		/* Stop early when passed credentials are encountered */
++		if (siocb->scm->fp)
+ 			break;
+-		}
+ 	} while (size);
+ 
++	/* Push all peeked skbs back onto receive queue */
++	if (flags & MSG_PEEK)
++		while ((skb = __skb_dequeue(&peek_stack)))
++			skb_queue_head(&sk->sk_receive_queue, skb);
++
+ 	mutex_unlock(&u->readlock);
+ 	scm_recv(sock, msg, siocb->scm, flags);
+ out:
