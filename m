@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757372AbYAJDDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757372AbYAJDQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757372AbYAJDDW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 22:03:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753792AbYAJDDN
+	id S1757372AbYAJDQx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 22:16:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754177AbYAJDQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 22:03:13 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:4782 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753333AbYAJDDM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 22:03:12 -0500
-Date: Thu, 10 Jan 2008 14:03:02 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Torben Viets <viets@web.de>
-Cc: linux-kernel@vger.kernel.org,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: LRW/XTS + Via Padlock Bug in 2.6.24-rc7?
-Message-ID: <20080110030302.GB4570@gondor.apana.org.au>
-References: <47841152.8080705@web.de> <478550DF.3070908@web.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <478550DF.3070908@web.de>
-User-Agent: Mutt/1.5.9i
+	Wed, 9 Jan 2008 22:16:44 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:55589 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753574AbYAJDQo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 22:16:44 -0500
+Message-ID: <47858DDE.4010706@redhat.com>
+Date: Wed, 09 Jan 2008 22:15:42 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       David Miller <davem@davemloft.net>, hskinnemoen@atmel.com,
+       schwidefsky@de.ibm.com, tony.luck@intel.com,
+       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       David Wilder <dwilder@us.ibm.com>, jkenisto@us.ibm.com
+Subject: Re: [PATCH 2/2] kprobe: remove preempt_enable/disable from	kprobe_handle_fault()
+References: <1199737486.7666.12.camel@brick>	 <18307.64807.204087.375733@cargo.ozlabs.ibm.com>	 <1199833324.6424.12.camel@brick> <1199852360.6424.39.camel@brick>	 <20080109061408.GA9486@osiris.ibm.com> <1199859742.6424.44.camel@brick>	 <1199916062.6424.60.camel@brick>  <20080109231620.GA9002@osiris.ibm.com> <1199925900.6424.86.camel@brick>
+In-Reply-To: <1199925900.6424.86.camel@brick>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 09, 2008 at 10:55:27PM +0000, Torben Viets wrote:
+Harvey Harrison wrote:
+> This patch removes the preempt_disable/enable pair around kprobe_running
+> which was originally added to avoid the assertion from smp_processor_id
+> which would be hit an asertion if preemption was enabled.
 > 
-> eneral protection fault: 0000 [#1]
-> Modules linked in: xt_TCPMSS xt_tcpmss iptable_mangle ipt_MASQUERADE 
-> xt_tcpudp xt_mark xt_state iptable_nat nf_nat nf_conntrack_ipv4 
-> iptable_filter ip_tables x_tables pppoe pppox af_packet ppp_generic slhc 
-> aes_i586
-> CPU:    0
-> EIP:    0060:[<c035b828>]    Not tainted VLI
-> EFLAGS: 00010292   (2.6.23.12 #7)
-> EIP is at aes_crypt_copy+0x28/0x40
-> eax: f7639ff0   ebx: f6c24050   ecx: 00000001   edx: f6c24030
-> esi: f7e89dc8   edi: f7639ff0   ebp: 00010000   esp: f7e89dc8
+> Kprobes can not be running if we are preemptible, so test explicitly
+> for preemption and bail out before hitting kprobe_running().
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 
-Thanks for the report.  It would appear that your CPU goes one step
-further than the other report and insists on having two blocks in the
-destination too.
+Tested on x86-64.
 
-Please let me know whether this patch fixes the problem.
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
 
-Thanks,
+Thank you!
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-diff --git a/drivers/crypto/padlock-aes.c b/drivers/crypto/padlock-aes.c
-index a337b69..ed3ae47 100644
---- a/drivers/crypto/padlock-aes.c
-+++ b/drivers/crypto/padlock-aes.c
-@@ -433,7 +433,8 @@ static void aes_crypt_copy(const u8 *in, u8 *out, u32 *key, struct cword *cword)
- 		__attribute__ ((__aligned__(PADLOCK_ALIGNMENT)));
- 
- 	memcpy(tmp, in, AES_BLOCK_SIZE);
--	padlock_xcrypt(tmp, out, key, cword);
-+	padlock_xcrypt(tmp, tmp, key, cword);
-+	memcpy(out, tmp, AES_BLOCK_SIZE);
- }
- 
- static inline void aes_crypt(const u8 *in, u8 *out, u32 *key,
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
+
