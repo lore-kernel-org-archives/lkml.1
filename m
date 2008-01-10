@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757521AbYAJA53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758012AbYAJA6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757521AbYAJA53 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 19:57:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754457AbYAJA5W
+	id S1758012AbYAJA6r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 19:58:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755239AbYAJA6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 19:57:22 -0500
-Received: from gate.crashing.org ([63.228.1.57]:45608 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754319AbYAJA5V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 19:57:21 -0500
-Subject: Re: Replacement for page fault notifiers?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Pavel Roskin <proski@gnu.org>,
-       Dave Airlie <airlied@gmail.com>, Pekka Paalanen <pq@iki.fi>,
-       linux-kernel@vger.kernel.org, jbeulich@novell.com
-In-Reply-To: <20080109164241.7daa5770@laptopd505.fenrus.org>
-References: <20080108210638.5c9e093a@daedalus.pq.iki.fi>
-	 <20080108203235.GA772@infradead.org>
-	 <21d7e9970801081413n307ab07aq462a9fff014143ae@mail.gmail.com>
-	 <1199838407.6734.83.camel@pasglop> <1199902724.8050.11.camel@dv>
-	 <20080109182157.GA32754@infradead.org> <1199908703.6734.133.camel@pasglop>
-	 <20080109202254.GA5279@infradead.org>
-	 <20080109164241.7daa5770@laptopd505.fenrus.org>
-Content-Type: text/plain
-Date: Thu, 10 Jan 2008 11:56:47 +1100
-Message-Id: <1199926607.6734.158.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Jan 2008 19:58:37 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:3584 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754457AbYAJA6f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 19:58:35 -0500
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Brent Casavant <bcasavan@sgi.com>
+Subject: Re: AF_UNIX MSG_PEEK bug?
+Cc: penguin-kernel@i-love.sakura.ne.jp, netdev@vger.kernel.org,
+       davem@davemloft.net, linux-kernel@vger.kernel.org
+Organization: Core
+In-Reply-To: <alpine.BSF.1.00.0801091201180.35527@pkunk.americas.sgi.com>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1JCkrp-0000vX-00@gondolin.me.apana.org.au>
+Date: Thu, 10 Jan 2008 11:01:53 +1100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> I'm btw all in favor of making mmio tracing full fledged kernel infrastructure.
-> This doesn't mean "notifier" imo; this means a real flag in the struct page,
-> and then the page fault code can do
+Brent Casavant <bcasavan@sgi.com> wrote:
 > 
-> if (page->flags & FLAG_MMIO_TRACED)
-> 	mmio_trace(page, regs, whatever..);
+>> Did you try MSG_WAITALL flag? See "man 2 recv".
+>> A TCP socket handles data in bytes.
+>> You cannot complain if the amount received by recv() is smaller than expected
+>> unless you use MSG_WAITALL flag.
 > 
-> (probably surrounded by a CONFIG_ ifdef)
-> THis is a TON lighter than a notifier chain, and actually what you want,
-> you don't really want a notifier, you want a call back when a special kind of
-> page is touched.
-> 
+> Yes. It made no difference, as noted in the comments in the
+> provided test program.
 
-Except that MMIO has no struct page's...
+The POSIX text for MSG_WAITALL actually says that when used in
+conjunction with MSG_PEEK it may not return the full data.
 
-Cheers,
-Ben.
+Having said that, I do agree that having TCP and AF_UNIX behave
+in the same way is a plus.  However, if you really want this to
+happen it would help if you had attached a patch :)
 
-
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
