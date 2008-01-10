@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759962AbYAJQts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759705AbYAJQxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759962AbYAJQts (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 11:49:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756626AbYAJQtl
+	id S1759705AbYAJQxT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 11:53:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756075AbYAJQxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 11:49:41 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:34550 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755677AbYAJQtk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 11:49:40 -0500
-Date: Thu, 10 Jan 2008 08:49:07 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org
-Subject: Re: Make the 32 bit Frame Pointer backtracer fall back to
- traditional
-Message-ID: <20080110084907.37279d36@laptopd505.fenrus.org>
-In-Reply-To: <alpine.LFD.1.00.0801100816450.3148@woody.linux-foundation.org>
-References: <20080109220508.686bbda4@laptopd505.fenrus.org>
-	<alpine.LFD.1.00.0801100816450.3148@woody.linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 10 Jan 2008 11:53:05 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:55851 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755922AbYAJQxD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 11:53:03 -0500
+Message-ID: <47864D69.40209@redhat.com>
+Date: Thu, 10 Jan 2008 11:52:57 -0500
+From: Peter Staubach <staubach@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071018)
+MIME-Version: 1.0
+To: Anton Salikhmetov <salikhmetov@gmail.com>
+CC: Rik van Riel <riel@redhat.com>, Jakob Oestergaard <jakob@unthought.net>,
+       Valdis.Kletnieks@vt.edu, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RFC][BUG] updating the ctime and mtime time stamps in
+ msync()
+References: <1199728459.26463.11.camel@codedot>	 <20080109170633.292644dc@cuia.boston.redhat.com>	 <20080109223340.GH25527@unthought.net>	 <20080109184141.287189b8@bree.surriel.com>	 <4df4ef0c0801091603y2bf507e1q2b99971c6028d1f3@mail.gmail.com>	 <20080110085120.GK25527@unthought.net>	 <4df4ef0c0801100253m6c08e4a3t917959c030533f80@mail.gmail.com>	 <20080110104543.398baf5c@bree.surriel.com>	 <4df4ef0c0801100756v2a536cc5xa80d9d1cfdae073a@mail.gmail.com>	 <20080110110757.09ec494a@bree.surriel.com> <4df4ef0c0801100840uf84fef6g80e456fc5681193@mail.gmail.com>
+In-Reply-To: <4df4ef0c0801100840uf84fef6g80e456fc5681193@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jan 2008 08:36:57 -0800 (PST)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Anton Salikhmetov wrote:
+> 2008/1/10, Rik van Riel <riel@redhat.com>:
+>   
+>> On Thu, 10 Jan 2008 18:56:07 +0300
+>> "Anton Salikhmetov" <salikhmetov@gmail.com> wrote:
+>>
+>>     
+>>> However, I don't see how they will work if there has been
+>>> something like a sync(2) done after the mmap'd region is
+>>> modified and the msync call.  When the inode is written out
+>>> as part of the sync process, I_DIRTY_PAGES will be cleared,
+>>> thus causing a miss in this code.
+>>>
+>>> The I_DIRTY_PAGES check here is good, but I think that there
+>>> needs to be some code elsewhere too, to catch the case where
+>>> I_DIRTY_PAGES is being cleared, but the time fields still need
+>>> to be updated.
+>>>       
+>> Agreed. The mtime and ctime should probably also be updated
+>> when I_DIRTY_PAGES is cleared.
+>>
+>> The alternative would be to remember that the inode had been
+>> dirty in the past, and have the mtime and ctime updated on
+>> msync or close - which would be more complex.
+>>     
+>
+> Adding the new flag (AS_MCTIME) has been already suggested by Peter
+> Staubach in his first solution for this bug. Now I understand that the
+> AS_MCTIME flag is required for fixing the bug.
 
-> 
-> 
-> On Wed, 9 Jan 2008, Arjan van de Ven wrote:
-> >
-> > +	if (valid_stack_ptr(tinfo, frame, sizeof(*frame)))
-> > +		while (valid_stack_ptr(tinfo, frame,
-> > sizeof(*frame))) {
-> 
-> Why?
-> 
-> Why not just make this something like the appended instead?
-> 
-> This is *totally* untested, but the basic notion is very simple:
-> start off using the frame pointer until it is no longer valid (for
-> any reason - whether the return address is corrupt, or the next frame
-> info is bad), and update the stack pointer a you go.
-> 
-> When we've run out of frame pointers, we then scan any remaining
-> stack the oldfashioned way, regardless of what happened. No
-> unnecessary conditionals that will just mean that we don't show
-> enough of the stack if *part* of it is corrupt.
-> 
-> The code is simpler and more robust (assuming it works - as
-> mentioned, I didn't actually test it, so there may be some stupid
-> thinko there).
-> 
+Well, that was the approach before we had I_DIRTY_PAGES.  I am
+still wondering whether we can get this approach to work, with
+a little more support and heuristics.  PeterZ's work to better
+track dirty pages should be helpful in determining when and why
+a patch was dirty.
 
-there's still a bug in it (not updating EBP) and I need to check how 
-it reacts if you have 2 stacks, and you're at the end of the first stack,
-and EBP now jumps to the second stack (correctly).
+I keep thinking that by recording the time when a page was found
+to be dirty and the file is mmap'd and then updating the mtime
+and ctime fields in the inode during msync() and sync_single_inode()
+if that time is newer than the mtime and ctime fields, then we
+can solve the problem of when and when not to update those two
+time fields.
 
-Anyway I'll test this after (or maybe during) my meeting, and fix the EBP return bug
-and see how to deal with the 2 stack issue
+I haven't had a chance to think it all through completely or do
+the appropriate analysis yet though.
+
+       ps
