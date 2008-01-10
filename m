@@ -1,68 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757488AbYAJCDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757289AbYAJCGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757488AbYAJCDt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 21:03:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755427AbYAJCDl
+	id S1757289AbYAJCGk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 21:06:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbYAJCGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 21:03:41 -0500
-Received: from waste.org ([66.93.16.53]:39989 "EHLO waste.org"
+	Wed, 9 Jan 2008 21:06:33 -0500
+Received: from mga02.intel.com ([134.134.136.20]:56782 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754118AbYAJCDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 21:03:41 -0500
-Subject: Re: Replacement for page fault notifiers?
-From: Matt Mackall <mpm@selenic.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Pavel Roskin <proski@gnu.org>, Dave Airlie <airlied@gmail.com>,
-       Pekka Paalanen <pq@iki.fi>, linux-kernel@vger.kernel.org,
-       jbeulich@novell.com
-In-Reply-To: <20080109164241.7daa5770@laptopd505.fenrus.org>
-References: <20080108210638.5c9e093a@daedalus.pq.iki.fi>
-	 <20080108203235.GA772@infradead.org>
-	 <21d7e9970801081413n307ab07aq462a9fff014143ae@mail.gmail.com>
-	 <1199838407.6734.83.camel@pasglop> <1199902724.8050.11.camel@dv>
-	 <20080109182157.GA32754@infradead.org> <1199908703.6734.133.camel@pasglop>
-	 <20080109202254.GA5279@infradead.org>
-	 <20080109164241.7daa5770@laptopd505.fenrus.org>
+	id S1753304AbYAJCGc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 21:06:32 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,264,1196668800"; 
+   d="scan'208";a="320117754"
+Subject: Re: [PATCH -mm 1/2] kexec/i386: kexec page table code clean up -
+	add arch_kimage
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080110011423.GB23143@redhat.com>
+References: <1199847467.8126.15.camel@caritas-dev.intel.com>
+	 <20080110011423.GB23143@redhat.com>
 Content-Type: text/plain
-Date: Wed, 09 Jan 2008 20:03:10 -0600
-Message-Id: <1199930590.6245.104.camel@cinder.waste.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
+Date: Thu, 10 Jan 2008 10:06:11 +0800
+Message-Id: <1199930771.8752.4.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 10 Jan 2008 02:05:18.0607 (UTC) FILETIME=[3F9EE1F0:01C8532D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-01-09 at 16:42 -0800, Arjan van de Ven wrote:
-> On Wed, 9 Jan 2008 20:22:54 +0000
-> Christoph Hellwig <hch@infradead.org> wrote:
+On Wed, 2008-01-09 at 20:14 -0500, Vivek Goyal wrote:
+[...]
+> >  
+> > +static void alloc_page_tables(struct kimage *image)
+> > +{
 > 
-> > On Thu, Jan 10, 2008 at 06:58:23AM +1100, Benjamin Herrenschmidt
-> > wrote:
-> > > It's a sane thing to do, Christoph, I don't think it's a
-> > > unreasonable request to put the hooks back in.
-> > 
-> > As said a few times before there's simply no way we're going to put
-> > exactly that crap back.  For one the patch removed a whole lot of
-> > crud from the kprobes code that simply isn't going to come back just
-> > because there are some pagefault notifiers.  Second the page fault
-> > notifiers were horribly implemented and quite inefficient.  And third
-> > we're not going to put something in just for out of tree code.
-> > 
-> 
-> I'm btw all in favor of making mmio tracing full fledged kernel infrastructure.
-> This doesn't mean "notifier" imo; this means a real flag in the struct page,
-> and then the page fault code can do
-> 
-> if (page->flags & FLAG_MMIO_TRACED)
-> 	mmio_trace(page, regs, whatever..);
+> This is too generic a name. How about something like
+> arch_alloc_kexec_page_tables()
 
-That makes it way too easy for drivers of questionable legality to just
-clear that bit. Also, we've got a shortage of page bits, etc.
+OK, I will change it.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+> > +	image->arch_kimage.pgd = (pgd_t *)get_zeroed_page(GFP_KERNEL);
+> > +#ifdef CONFIG_X86_PAE
+> > +	image->arch_kimage.pmd0 = (pmd_t *)get_zeroed_page(GFP_KERNEL);
+> > +	image->arch_kimage.pmd1 = (pmd_t *)get_zeroed_page(GFP_KERNEL);
+> > +#endif
+> > +	image->arch_kimage.pte0 = (pte_t *)get_zeroed_page(GFP_KERNEL);
+> > +	image->arch_kimage.pte1 = (pte_t *)get_zeroed_page(GFP_KERNEL);
+> > +}
+> > +
+> > +static void free_page_tables(struct kimage *image)
+> > +{
+> 
+> How about arch_free_kexec_page_tables()
+
+OK, I will change it.
+
+> > +	free_page((unsigned long)image->arch_kimage.pgd);
+> > +#ifdef CONFIG_X86_PAE
+> > +	free_page((unsigned long)image->arch_kimage.pmd0);
+> > +	free_page((unsigned long)image->arch_kimage.pmd1);
+> > +#endif
+> > +	free_page((unsigned long)image->arch_kimage.pte0);
+> > +	free_page((unsigned long)image->arch_kimage.pte1);
+> > +}
+> > +
+> >  /*
+> >   * A architecture hook called to validate the
+> >   * proposed image and prepare the control pages
+> > @@ -83,10 +97,21 @@ static void load_segments(void)
+> >   * reboot code buffer to allow us to avoid allocations
+> >   * later.
+> >   *
+> > - * Currently nothing.
+> > + * - Allocate page tables
+> >   */
+> >  int machine_kexec_prepare(struct kimage *image)
+> >  {
+> > +	alloc_page_tables(image);
+> > +	if (!image->arch_kimage.pgd ||
+> > +#ifdef CONFIG_X86_PAE
+> > +	    !image->arch_kimage.pmd0 ||
+> > +	    !image->arch_kimage.pmd1 ||
+> > +#endif
+> > +	    !image->arch_kimage.pte0 ||
+> > +	    !image->arch_kimage.pte1) {
+> > +		free_page_tables(image);
+> > +		return -ENOMEM;
+> 
+> I think this error handling can be done in alloc_page_tables() itself and
+> following will look neater.
+
+OK, I will change it.
+
+Best Regards,
+Huang Ying
 
