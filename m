@@ -1,68 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758618AbYAJRe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758919AbYAJRiQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758618AbYAJRe3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 12:34:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756017AbYAJReS
+	id S1758919AbYAJRiQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 12:38:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756426AbYAJRh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 12:34:18 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:34754 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755495AbYAJReR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 12:34:17 -0500
-Date: Thu, 10 Jan 2008 09:34:18 -0800
-From: Greg KH <greg@kroah.com>
-To: Sudhir Kumar <skumar@linux.vnet.ibm.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
-Subject: Re: [2.6.24-rc6-mm1]Build failure in drivers/net/ehea/ehea_main.c
-Message-ID: <20080110173418.GA14728@kroah.com>
-References: <20080108163305.GB10026@in.ibm.com>
+	Thu, 10 Jan 2008 12:37:58 -0500
+Received: from mga02.intel.com ([134.134.136.20]:15119 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756253AbYAJRh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 12:37:57 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,267,1196668800"; 
+   d="scan'208";a="251974234"
+Message-ID: <478657C1.8040107@intel.com>
+Date: Thu, 10 Jan 2008 09:37:05 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080108163305.GB10026@in.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Chris Friesen <cfriesen@nortel.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: questions on NAPI processing latency and dropped network packets
+References: <478654C3.60806@nortel.com>
+In-Reply-To: <478654C3.60806@nortel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Jan 2008 17:37:54.0465 (UTC) FILETIME=[87E93910:01C853AF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 08, 2008 at 10:03:05PM +0530, Sudhir Kumar wrote:
-> Hi Andrew,
-> Kernel build fails on my machine with error :
+Chris Friesen wrote:
+> Hi all,
+> 
+> I've got an issue that's popped up with a deployed system running
+> 2.6.10.  I'm looking for some help figuring out why incoming network
+> packets aren't being processed fast enough.
+> 
+> After a recent userspace app change, we've started seeing packets being
+> dropped by the ethernet hardware (e1000, NAPI is enabled).  The
+> error/dropped/fifo counts are going up in ethtool:
+> 
+>      rx_packets: 32180834
+>      rx_bytes: 5480756958
+>      rx_errors: 862506
+>      rx_dropped: 771345
+>      rx_length_errors: 0
+>      rx_over_errors: 0
+>      rx_crc_errors: 0
+>      rx_frame_errors: 0
+>      rx_fifo_errors: 91161
+>      rx_missed_errors: 91161
+> 
+> This link is receiving roughly 13K packets/sec, and we're dropping
+> roughly 51 packets/sec due to fifo errors.
+> 
+> Increasing the rx descriptor ring size from 256 up to around 3000 or so
+> seems to make the problem stop, but it seems to me that this is just a
+> workaround for the latency in processing the incoming packets.
+> 
+> So, I'm looking for some suggestions on how to fix this or to figure out
+> where the latency is coming from.
+> 
+> Some additional information:
 > 
 > 
->   LD      drivers/net/ehea/built-in.o
->   CC [M]  drivers/net/ehea/ehea_main.o
-> drivers/net/ehea/ehea_main.c: In function ???ehea_driver_sysfs_add???:
-> drivers/net/ehea/ehea_main.c:2812: error: ???struct device_driver??? has no
-> member named ???kobj???
-> drivers/net/ehea/ehea_main.c:2815: error: ???struct device_driver??? has no
-> member named ???kobj???
-> drivers/net/ehea/ehea_main.c:2818: error: ???struct device_driver??? has no
-> member named ???kobj???
-> drivers/net/ehea/ehea_main.c: In function ???ehea_driver_sysfs_remove???:
-> drivers/net/ehea/ehea_main.c:2830: error: ???struct device_driver??? has no
-> member named ???kobj???
-> make[3]: *** [drivers/net/ehea/ehea_main.o] Error 1
-> make[2]: *** [drivers/net/ehea] Error 2
-> make[1]: *** [drivers/net] Error 2
-> make: *** [drivers] Error 2
+> 1) Interrupts are being processed on both cpus:
 > 
-> The structure device_driver(in device.h) has a member struct driver_private which
-> contains the member kobj (according to drivers/base/base.h).
-> But in device.h struct driver_private has been declared localy and 
-> neither defined nor included from base.h.
-> So my effort to use driver->driver_private->obj also does not work.
-> (I am surprised from where do you access the struct device_driver)
+> root@base0-0-0-13-0-11-1:/root> cat /proc/interrupts
+>            CPU0       CPU1
+>  30:    1703756    4530785  U3-MPIC Level     eth0
+> 
+> 
+> 
+> 
+> 2) "top" shows a fair amount of time processing softirqs, but very
+> little time in ksoftirqd (or is that a sampling artifact?).
+> 
+> 
+> Tasks: 79 total, 1 running, 78 sleeping, 0 stopped, 0 zombie
+> Cpu0: 23.6% us, 30.9% sy, 0.0% ni, 36.9% id, 0.0% wa, 0.3% hi, 8.3% si
+> Cpu1: 30.4% us, 24.1% sy, 0.0% ni, 5.9% id, 0.0% wa, 0.7% hi, 38.9% si
+> Mem:  4007812k total, 2199148k used,  1808664k free,     0k buffers
+> Swap:   0k total,       0k used,      0k free,   219844k cached
+> 
+>   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+>  5375 root      15   0 2682m 1.8g 6640 S 99.9 46.7  31:17.68
+> SigtranServices
+>  7696 root      17   0  6952 3212 1192 S  7.3  0.1   0:15.75
+> schedmon.ppc210
+>  7859 root      16   0  2688 1228  964 R  0.7  0.0   0:00.04 top
+>  2956 root       8  -8 18940 7436 5776 S  0.3  0.2   0:01.35 blademtc
+>     1 root      16   0  1660  620  532 S  0.0  0.0   0:30.62 init
+>     2 root      RT   0     0    0    0 S  0.0  0.0   0:00.01 migration/0
+>     3 root      15   0     0    0    0 S  0.0  0.0   0:00.55 ksoftirqd/0
+>     4 root      RT   0     0    0    0 S  0.0  0.0   0:00.01 migration/1
+>     5 root      15   0     0    0    0 S  0.0  0.0   0:00.43 ksoftirqd/1
+> 
+> 
+> 3) /proc/sys/net/core/netdev_max_backlog is set to the default of 300
+> 
+> 
+> So...anyone have any ideas/suggestions?
 
-That is because a driver should not be accessing such a field.
+You're using 2.6.10... you can always replace the e1000 module with the
+out-of-tree version from e1000.sf.net, this might help a bit - the version in the
+2.6.10 kernel is very very old.
 
-And especially not in this manner, why would this driver be creating a
-symlink that has already been created by the driver core?  This whole
-thing can just be removed with no problems.  Can you try just removing
-the ehea_driver_sysfs_add and ehea_driver_sysfs_remove functions to
-verify this as I don't have the hardware present to test it out.
+it also appears that your app is eating up CPU time. perhaps setting the app to a
+nicer nice level might mitigate things a bit. Also turn off the in-kernel irq
+mitigation, it just causes cache misses and you really need the network irq to sit
+on a single cpu at most (if not all) the time to get the best performance. Use the
+userspace irqbalance daemon instead to achieve this.
 
-thanks,
+Auke
 
-greg k-h
