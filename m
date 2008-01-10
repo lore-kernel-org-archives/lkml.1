@@ -1,193 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757919AbYAJHbK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758658AbYAJHcy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757919AbYAJHbK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 02:31:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbYAJHa4
+	id S1758658AbYAJHcy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 02:32:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbYAJHcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 02:30:56 -0500
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:43207 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751719AbYAJHaz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 02:30:55 -0500
-Message-ID: <399950262.02729@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Thu, 10 Jan 2008 15:30:46 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: jplatte@naasa.net
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: regression: 100% io-wait with 2.6.24-rcX
-References: <200801071151.11200.lists@naasa.net> <200801091322.35133.lists@naasa.net> <399883439.31205@ustc.edu.cn> <200801091404.30330.lists@naasa.net>
+	Thu, 10 Jan 2008 02:32:47 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43319 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751719AbYAJHcq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 02:32:46 -0500
+Date: Thu, 10 Jan 2008 08:32:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: jdike@addtoit.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: uml and -regparm=3
+Message-ID: <20080110073215.GA11506@elte.hu>
+References: <E1JCi3M-0006hO-7i@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="4Ckj6UjgE2iN1+kY"
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <200801091404.30330.lists@naasa.net>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.12-2006-07-14
-Message-Id: <E1JCrsE-0000v4-Dz@localhost.localdomain>
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <E1JCi3M-0006hO-7i@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---4Ckj6UjgE2iN1+kY
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+* Miklos Szeredi <miklos@szeredi.hu> wrote:
 
-Joerg,
+> FASTCALL is defined empty in -mm, but UML is not compiled with 
+> -mregparm=3 and so this breaks things (I noticed problems with 
+> rwsem_down_write_failed).
+> 
+> Tried recompiling UML with -mregparm=3, but that resulted in a strange 
+> failure immediately after startup:
+> 
+> |%G�%@: Invalid argument
+> 
+> What's up?
 
-Can you try the attached patches? Thank you.
-I cannot reliably reproduce the bug yet.
+Miklos, could you try the fix below?
 
-Fengguang
+In general most FASTCALL/fastcall uses are bogus, except for code where 
+a function that takes parameters is implemented in assembly with a 
+regparm calling convention. The fix is to introduce the "asmregparm" 
+attribute to mark such function prototypes with regparm(3). This is the 
+opposite of asmlinkage. [asmlinkage forced regparm(0)]
 
---4Ckj6UjgE2iN1+kY
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="writeback-ext2-fix.patch"
+	Ingo
 
- mm/filemap_xip.c |    1 +
- 1 files changed, 1 insertion(+)
+------------>
+Subject: x86: fix UML calling convention
+From: Ingo Molnar <mingo@elte.hu>
 
-Index: linux/mm/filemap_xip.c
+introduce the "asmregparm" calling convention: for functions
+implemented in assembly with a fixed regparm input parameters
+calling convention.
+
+mark the semaphore and rwsem slowpath functions with that.
+
+Reported-by: Miklos Szeredi <miklos@szeredi.hu>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/asm-x86/linkage.h      |    5 +++++
+ include/asm-x86/rwsem.h        |   12 ++++++++----
+ include/asm-x86/semaphore_32.h |    8 ++++----
+ 3 files changed, 17 insertions(+), 8 deletions(-)
+
+Index: linux-x86.q/include/asm-x86/linkage.h
 ===================================================================
---- linux.orig/mm/filemap_xip.c
-+++ linux/mm/filemap_xip.c
-@@ -431,6 +431,7 @@ xip_truncate_page(struct address_space *
- 			return PTR_ERR(page);
- 	}
- 	zero_user_page(page, offset, length, KM_USER0);
-+	set_page_dirty(page);
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(xip_truncate_page);
-
---4Ckj6UjgE2iN1+kY
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="writeback-debug.patch"
-
----
- mm/page-writeback.c |   29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
-
---- linux-2.6.24-git17.orig/mm/page-writeback.c
-+++ linux-2.6.24-git17/mm/page-writeback.c
-@@ -98,6 +98,26 @@ EXPORT_SYMBOL(laptop_mode);
+--- linux-x86.q.orig/include/asm-x86/linkage.h
++++ linux-x86.q/include/asm-x86/linkage.h
+@@ -9,6 +9,11 @@
+ #ifdef CONFIG_X86_32
+ #define asmlinkage CPP_ASMLINKAGE __attribute__((regparm(0)))
+ #define prevent_tail_call(ret) __asm__ ("" : "=r" (ret) : "0" (ret))
++/*
++ * For 32-bit UML - mark functions implemented in assembly that use
++ * regparm input parameters:
++ */
++#define asmregparm __attribute__((regparm(3)))
+ #endif
  
- /* End of sysctl-exported parameters */
+ #ifdef CONFIG_X86_ALIGNMENT_16
+Index: linux-x86.q/include/asm-x86/rwsem.h
+===================================================================
+--- linux-x86.q.orig/include/asm-x86/rwsem.h
++++ linux-x86.q/include/asm-x86/rwsem.h
+@@ -44,10 +44,14 @@
  
-+#define writeback_debug_report(n, wbc) do {                               \
-+	__writeback_debug_report(n, wbc, __FILE__, __LINE__, __FUNCTION__); \
-+} while (0)
-+
-+void __writeback_debug_report(long n, struct writeback_control *wbc,
-+		const char *file, int line, const char *func)
-+{
-+	printk(KERN_DEBUG "%s %d %s: %s(%d) %ld "
-+			"global %lu %lu %lu "
-+			"wc %c%c tw %ld sk %ld\n",
-+			file, line, func,
-+			current->comm, current->pid, n,
-+			global_page_state(NR_FILE_DIRTY),
-+			global_page_state(NR_WRITEBACK),
-+			global_page_state(NR_UNSTABLE_NFS),
-+			wbc->encountered_congestion ? 'C':'_',
-+			wbc->more_io ? 'M':'_',
-+			wbc->nr_to_write,
-+			wbc->pages_skipped);
-+}
+ struct rwsem_waiter;
  
- static void background_writeout(unsigned long _min_pages);
+-extern struct rw_semaphore *FASTCALL(rwsem_down_read_failed(struct rw_semaphore *sem));
+-extern struct rw_semaphore *FASTCALL(rwsem_down_write_failed(struct rw_semaphore *sem));
+-extern struct rw_semaphore *FASTCALL(rwsem_wake(struct rw_semaphore *));
+-extern struct rw_semaphore *FASTCALL(rwsem_downgrade_wake(struct rw_semaphore *sem));
++extern asmregparm struct rw_semaphore *
++ rwsem_down_read_failed(struct rw_semaphore *sem);
++extern asmregparm struct rw_semaphore *
++ rwsem_down_write_failed(struct rw_semaphore *sem);
++extern asmregparm struct rw_semaphore *
++ rwsem_wake(struct rw_semaphore *);
++extern asmregparm struct rw_semaphore *
++ rwsem_downgrade_wake(struct rw_semaphore *sem);
  
-@@ -395,6 +415,7 @@ static void balance_dirty_pages(struct a
- 			pages_written += write_chunk - wbc.nr_to_write;
- 			get_dirty_limits(&background_thresh, &dirty_thresh,
- 				       &bdi_thresh, bdi);
-+			writeback_debug_report(pages_written, &wbc);
- 		}
- 
- 		/*
-@@ -421,6 +442,7 @@ static void balance_dirty_pages(struct a
- 			break;		/* We've done our duty */
- 
- 		congestion_wait(WRITE, HZ/10);
-+		writeback_debug_report(-pages_written, &wbc);
- 	}
- 
- 	if (bdi_nr_reclaimable + bdi_nr_writeback < bdi_thresh &&
-@@ -515,6 +537,11 @@ void throttle_vm_writeout(gfp_t gfp_mask
- 			global_page_state(NR_WRITEBACK) <= dirty_thresh)
-                         	break;
-                 congestion_wait(WRITE, HZ/10);
-+		printk(KERN_DEBUG "throttle_vm_writeout: "
-+				"congestion_wait on %lu+%lu > %lu\n",
-+				global_page_state(NR_UNSTABLE_NFS),
-+				global_page_state(NR_WRITEBACK),
-+				dirty_thresh);
- 
- 		/*
- 		 * The caller might hold locks which can prevent IO completion
-@@ -557,6 +584,7 @@ static void background_writeout(unsigned
- 		wbc.pages_skipped = 0;
- 		writeback_inodes(&wbc);
- 		min_pages -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
-+		writeback_debug_report(min_pages, &wbc);
- 		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
- 			/* Wrote less than expected */
- 			if (wbc.encountered_congestion || wbc.more_io)
-@@ -630,6 +658,7 @@ static void wb_kupdate(unsigned long arg
- 		wbc.encountered_congestion = 0;
- 		wbc.nr_to_write = MAX_WRITEBACK_PAGES;
- 		writeback_inodes(&wbc);
-+		writeback_debug_report(nr_to_write, &wbc);
- 		if (wbc.nr_to_write > 0) {
- 			if (wbc.encountered_congestion || wbc.more_io)
- 				congestion_wait(WRITE, HZ/10);
-
---4Ckj6UjgE2iN1+kY
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="requeue_io-debug.patch"
-
-Subject: track redirty_tail() calls
-
-It helps a lot to know how redirty_tail() are called.
-
-Cc: Ken Chen <kenchen@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
----
- fs/fs-writeback.c |   16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
-
---- linux-2.6.24-git17.orig/fs/fs-writeback.c
-+++ linux-2.6.24-git17/fs/fs-writeback.c
-@@ -164,12 +164,26 @@ static void redirty_tail(struct inode *i
- 	list_move(&inode->i_list, &sb->s_dirty);
- }
- 
-+#define requeue_io(inode)						\
-+	do {								\
-+		__requeue_io(inode, __LINE__);				\
-+	} while (0)
-+
  /*
-  * requeue inode for re-scanning after sb->s_io list is exhausted.
-  */
--static void requeue_io(struct inode *inode)
-+static void __requeue_io(struct inode *inode, int line)
- {
- 	list_move(&inode->i_list, &inode->i_sb->s_more_io);
-+
-+	printk(KERN_DEBUG "requeue_io %d: inode %lu size %llu at %02x:%02x(%s)\n",
-+			line,
-+			inode->i_ino,
-+			i_size_read(inode),
-+			MAJOR(inode->i_sb->s_dev),
-+			MINOR(inode->i_sb->s_dev),
-+			inode->i_sb->s_id
-+			);
+  * the semaphore definition
+Index: linux-x86.q/include/asm-x86/semaphore_32.h
+===================================================================
+--- linux-x86.q.orig/include/asm-x86/semaphore_32.h
++++ linux-x86.q/include/asm-x86/semaphore_32.h
+@@ -83,10 +83,10 @@ static inline void init_MUTEX_LOCKED (st
+ 	sema_init(sem, 0);
  }
  
- static void inode_sync_complete(struct inode *inode)
-
---4Ckj6UjgE2iN1+kY--
+-void __down_failed(void /* special register calling convention */);
+-int  __down_failed_interruptible(void  /* params in registers */);
+-int  __down_failed_trylock(void  /* params in registers */);
+-void __up_wakeup(void /* special register calling convention */);
++extern asmregparm void __down_failed(atomic_t *count_ptr);
++extern asmregparm int  __down_failed_interruptible(atomic_t *count_ptr);
++extern asmregparm int  __down_failed_trylock(atomic_t *count_ptr);
++extern asmregparm void __up_wakeup(atomic_t *count_ptr);
+ 
+ /*
+  * This is ugly, but we want the default case to fall through.
 
