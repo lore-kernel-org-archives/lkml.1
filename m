@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757519AbYAJUQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900AbYAJU1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757519AbYAJUQT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 15:16:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751039AbYAJUQG
+	id S1754900AbYAJU1g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 15:27:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbYAJU12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 15:16:06 -0500
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:41299 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754513AbYAJUQE (ORCPT
+	Thu, 10 Jan 2008 15:27:28 -0500
+Received: from ambient.dashsystems.com ([216.27.85.7]:34182 "EHLO
+	kettle.ambient-hosting.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751296AbYAJU11 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 15:16:04 -0500
-Date: Thu, 10 Jan 2008 15:15:58 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Tony Luck <tony.luck@intel.com>
-cc: john stultz <johnstul@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 13/22 -v2] handle accurate time keeping over long
- delays
-In-Reply-To: <12c511ca0801101154q224c7a43sa016190cf209d304@mail.gmail.com>
-Message-ID: <Pine.LNX.4.58.0801101510210.15391@gandalf.stny.rr.com>
-References: <20080109232914.676624725@goodmis.org>  <20080109233044.288563621@goodmis.org>
-  <1199923219.6350.16.camel@localhost.localdomain>
- <12c511ca0801101154q224c7a43sa016190cf209d304@mail.gmail.com>
+	Thu, 10 Jan 2008 15:27:27 -0500
+X-Greylist: delayed 1626 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Jan 2008 15:27:27 EST
+From: Andy Wingo <wingo@pobox.com>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] macintosh: fix fabrication of caplock key events
+Date: Thu, 10 Jan 2008 15:06:51 +0100
+Message-ID: <87prw9n5ac.fsf@pobox.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+If the user has turned on the "restore_caplock_events" parameter, the
+code mangles the capslock events correctly, then erroneously ignores
+those events. Fix logic to allow correct fallthrough.
 
-> I'm trying to figure out all the ramifications of the new
-> "cycle_accumulated" field.  Does it really need to be
+Signed-off-by: Andy Wingo <wingo@pobox.com>
+---
 
-John,
-
-Before we hardcode these names, can we change them?  Later in the series I
-use something called 'cycle_raw' which really should be called
-'cycle_accumulated'. Since cycle_accumulated IIRC can go backwards.
-
-Or do you think I should rename cycle_raw to cycle_monotonic?
-
--- Steve
-
+diff --git a/drivers/macintosh/adbhid.c b/drivers/macintosh/adbhid.c
+index 883da72..ef4c117 100644
+--- a/drivers/macintosh/adbhid.c
++++ b/drivers/macintosh/adbhid.c
+@@ -322,8 +322,9 @@ adbhid_input_keycode(int id, int scancode, int repeat)
+ 			input_sync(ahid->input);
+ 			input_report_key(ahid->input, KEY_CAPSLOCK, 0);
+ 			input_sync(ahid->input);
++			return;
+ 		}
+-		return;
++		break;
+ #ifdef CONFIG_PPC_PMAC
+ 	case ADB_KEY_POWER_OLD: /* Power key on PBook 3400 needs remapping */
+ 		switch(pmac_call_feature(PMAC_FTR_GET_MB_INFO,
