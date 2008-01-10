@@ -1,80 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759557AbYAJQG7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759903AbYAJQIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759557AbYAJQG7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 11:06:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753922AbYAJQGx
+	id S1759903AbYAJQIa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 11:08:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754212AbYAJQIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 11:06:53 -0500
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:20399 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753437AbYAJQGv (ORCPT
+	Thu, 10 Jan 2008 11:08:23 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:56728 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753922AbYAJQIX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 11:06:51 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: Linux 2.6.23.12
-Date: Thu, 10 Jan 2008 09:06:47 -0700
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org,
-       Zhao Yakui <yakui.zhao@intel.com>, Li Shaohua <shaohua.li@intel.com>,
-       Thomas Renninger <trenn@suse.de>, Adam Belay <ambx1@neo.rr.com>,
-       Len Brown <lenb@kernel.org>
-References: <20071218224559.GA12696@kroah.com> <200801021342.23763.bjorn.helgaas@hp.com> <20080110034952.GC20448@suse.de>
-In-Reply-To: <20080110034952.GC20448@suse.de>
+	Thu, 10 Jan 2008 11:08:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pvRG5g3lLyjsgbsULwyzoSNUrBuipF2rao2HK+tExbd5La36h2A1D2mzvY278yXoI+lGOjMoSj5EEtWXWmBlRHhPGa3YbCh+CdoEiDTZXlIo/vUKoHnRsJMtzFxi3lzs9ZbcG2J8uHkUvpunaa7SnAzxVQU9eTDoj9tbK6zLSrM=
+Message-ID: <170fa0d20801100808x7330589fj8f6884f56a194e76@mail.gmail.com>
+Date: Thu, 10 Jan 2008 11:08:18 -0500
+From: "Mike Snitzer" <snitzer@gmail.com>
+To: "Rik van Riel" <riel@redhat.com>
+Subject: Re: [patch 00/19] VM pageout scalability improvements
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <20080110104155.34b5cede@bree.surriel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801100906.48288.bjorn.helgaas@hp.com>
+References: <20080108205939.323955454@redhat.com>
+	 <170fa0d20801092039w22584e2fw6821e70157f55cae@mail.gmail.com>
+	 <20080110104155.34b5cede@bree.surriel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 09 January 2008 08:49:52 pm Greg KH wrote:
-> On Wed, Jan 02, 2008 at 01:42:23PM -0700, Bjorn Helgaas wrote:
-> > The patch below was put in 2.6.23.12 as a fix for
-> > http://bugzilla.kernel.org/show_bug.cgi?id=9514.  It apparently
-> > does make 9514 go away, but only by coincidence.  There are a
-> > couple other ideas about fixing 9514.  My proposed patch is
-> > attached in the bugzilla.
-> > 
-> > The .12 patch reduces the number of resources we reserve from
-> > 24 to 8 ioport regions and from 12 to 4 mmio regions per PNP device.
-> > It also removes a warning about regions we ignore.
-> 
-> That patch was merely a revert of a prior patch, it did not "do"
-> anything new at all :)
-> 
-> > Obviously, we want to reserve ALL the regions for PNP devices,
-> > and Thomas is working on a patch for that (which I hope will be
-> > ready for 2.6.25).  But in the meantime, the .12 patch makes it
-> > more likely that we will have resource conflicts with PNP devices.
-> > 
-> > http://bugzilla.kernel.org/show_bug.cgi?id=9630 appears to be
-> > such a conflict.
-> > 
-> > I think the patch below should be removed from the stable series.
-> 
-> What do you mean "removed"?  It was a revert of a prior patch, as this
-> patch was reported to cause real problems.
-> 
-> Do you want me to add it back, and then add another patch?  If so, can
-> you please send the requested patches to stable@kernel.org so I can do
-> it?
+On Jan 10, 2008 10:41 AM, Rik van Riel <riel@redhat.com> wrote:
+>
+> On Wed, 9 Jan 2008 23:39:02 -0500
+> "Mike Snitzer" <snitzer@gmail.com> wrote:
+>
+> > How much trouble am I asking for if I were to try to get your patchset
+> > to fly on a fairly recent "stable" kernel (e.g. 2.6.22.15)?  If
+> > workable, is such an effort before it's time relative to your TODO?
+>
+> Quite a bit :)
+>
+> The -mm kernel has the memory controller code, which means the
+> mm/ directory is fairly different.  My patch set sits on top
+> of that.
+>
+> Chances are that once the -mm kernel goes upstream (in 2.6.25-rc1),
+> I can start building on top of that.
+>
+> OTOH, maybe I could get my patch series onto a recent 2.6.23.X with
+> minimal chainsaw effort.
 
-Stepping back, the biggest part of the problem is that I replaced the
-ACPI motherboard driver, which reserved all resources, with the PNP
-motherboard driver, which currently can reserve only a limited number
-of resources, because I didn't realize that restriction.
+That would be great!  I can't speak for others but -mm poses a problem
+for testing your patchset because it is so bleeding.  Let me know if
+you take the plunge on a 2.6.23.x backport; I'd really appreciate it.
 
-So we've had a variety of problems, and we've tried to address them
-with hacks like increasing the PNP limits.  I think we need to put
-back the ACPI motherboard driver until we have dynamic PNP resources.
-We will also need an it87 change to deal with
-http://bugzilla.kernel.org/show_bug.cgi?id=9514.
+Is anyone else interested in consuming a 2.6.23.x backport of Rik's
+patchset?  If so please speak up.
 
-I'll work these up and post them soon.
+> > I see that you have an old port to a FC7-based 2.6.21 here:
+> > http://people.redhat.com/riel/vmsplit/
+> >
+> > Also, do you have a public git repo that you regularly publish to for
+> > this patchset?  If not a git repo do you put the raw patchset on some
+> > http/ftp server?
+>
+> Up to now I have only emailed out the patches. Since there is demand
+> for them to be downloadable from somewhere, I'll also start putting
+> them on http://people.redhat.com/riel/
 
-Bjorn
+Great, thanks.
+
+Mike
