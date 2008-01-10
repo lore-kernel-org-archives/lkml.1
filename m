@@ -1,72 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757919AbYAJD1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758120AbYAJD3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757919AbYAJD1D (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 22:27:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbYAJD0w
+	id S1758120AbYAJD3j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 22:29:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753792AbYAJD3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 22:26:52 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:36993 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753822AbYAJD0v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 22:26:51 -0500
-Date: Thu, 10 Jan 2008 08:56:31 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: Re: [patch 05/19] split LRU lists into anon & file sets
-Message-ID: <20080110032631.GE15547@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org, Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-References: <20080108205939.323955454@redhat.com> <20080108210002.638347207@redhat.com> <20080109134132.ba7bb33c.kamezawa.hiroyu@jp.fujitsu.com> <20080110022133.GC15547@balbir.in.ibm.com> <20080110113618.f967d215.kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 9 Jan 2008 22:29:31 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:37487 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753255AbYAJD3a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 22:29:30 -0500
+From: Neil Brown <neilb@suse.de>
+To: Jeff Layton <jlayton@redhat.com>
+Date: Thu, 10 Jan 2008 14:29:22 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20080110113618.f967d215.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18309.37138.207880.305870@notabene.brown>
+Cc: akpm@linux-foundation.org, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/6] NLM: Add reference counting to lockd
+In-Reply-To: message from Jeff Layton on Tuesday January 8
+References: <1199820798-5289-1-git-send-email-jlayton@redhat.com>
+	<1199820798-5289-2-git-send-email-jlayton@redhat.com>
+	<1199820798-5289-3-git-send-email-jlayton@redhat.com>
+	<1199820798-5289-4-git-send-email-jlayton@redhat.com>
+	<1199820798-5289-5-git-send-email-jlayton@redhat.com>
+	<1199820798-5289-6-git-send-email-jlayton@redhat.com>
+	<1199820798-5289-7-git-send-email-jlayton@redhat.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2008-01-10 11:36:18]:
-
-> On Thu, 10 Jan 2008 07:51:33 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Tuesday January 8, jlayton@redhat.com wrote:
+> ...and only have lockd exit when the last reference is dropped.
 > 
-> > > >  #define PAGE_CGROUP_FLAG_CACHE	(0x1)	/* charged as cache */
-> > > >  #define PAGE_CGROUP_FLAG_ACTIVE (0x2)	/* page is active in this cgroup */
-> > > > +#define PAGE_CGROUP_FLAG_FILE	(0x4)	/* page is file system backed */
-> > > > 
-> > > 
-> > > Now, we don't have control_type and a feature for accounting only CACHE.
-> > > Balbir-san, do you have some new plan ?
-> > >
-> > 
-> > Hi, KAMEZAWA-San,
-> > 
-> > The control_type feature is gone. We still have cached page
-> > accounting, but we do not allow control of only RSS pages anymore. We
-> > need to control both RSS+cached pages. I do not understand your
-> > question about new plan? Is it about adding back control_type?
-> > 
-> Ah, just wanted to confirm that we can drop PAGE_CGROUP_FLAG_CACHE
-> if page_file_cache() function and split-LRU is introduced.
+> The problem is this:
 > 
+> When a lock that a client is blocking on comes free, lockd does this in
+> nlmsvc_grant_blocked():
+> 
+>     nlm_async_call(block->b_call, NLMPROC_GRANTED_MSG, &nlmsvc_grant_ops);
+> 
+> the callback from this call is nlmsvc_grant_callback(). That function
+> does this at the end to wake up lockd:
+> 
+>     svc_wake_up(block->b_daemon);
 
-Earlier we would have had a problem, since we even accounted for swap
-cache with PAGE_CGROUP_FLAG_CACHE and I think page_file_cache() does
-not account swap cache pages with page_file_cache(). Our accounting
-is based on mapped vs unmapped whereas the new code from Rik accounts
-file vs anonymous. I suspect we could live a little while longer
-with PAGE_CGROUP_FLAG_CACHE and then if we do not need it at all,
-we can mark it down for removal. What do you think?
+Uhmmm... Maybe there is an easier way.
+
+block->b_daemon will always be nlmsvc_serv, so can we simply make this
+
+	svc_wake_up(nlmsvc_serv);
+with a little locking to make sure nlmsvc_serv is valid?
+
+Actually svc_wake_up is only called from lockd and goes through
+various hoops to find the right rqstp, which we could have known in
+advance.
+So store the rqstp in some global wrapped in a spinlock so we can
+access it safely and just:
+
+   spin_lock(whatever)
+   if (nlmsvc_rqstp)
+	wake_up(&nlmsvc_rqstp->rq_wait)
+   spin_unlock(whatever)
 
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+That seems a somewhat simpler way of avoiding the particular problem.
+
+
+Hmmm.... I guess that nlmsvc_grant_callback could then be run after
+the 'lockd' module had been unloaded.
+Maybe nlm_shutdown_hosts could call rpc_killall_tasks(host->h_rpcclnt)
+on each host.  That should ensure the callback wont happen afterwards.
+
+Maybe?
+
+NeilBrown
+
