@@ -1,150 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757496AbYAJXAW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758601AbYAJXBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757496AbYAJXAW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 18:00:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbYAJXAL
+	id S1758601AbYAJXBh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 18:01:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217AbYAJXB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 18:00:11 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:15073 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753275AbYAJXAI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 18:00:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=Uk1RoFqlopQYDfLG5pUDhqVfJIxbLauerKmHalDSS28HELAGlsSZD8GOT3kYpUGVEmGzl3JjQz8D0DFlAD4kJpz7SndHiDWh1xThpMbBAQRMvTVeLN3IIwakTD/L8QYC85VBzR2VviHbG5cOfy8CSf+uWfPFKghA9EteSr4nQG8=
-Date: Fri, 11 Jan 2008 00:00:02 +0100
-From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: codying style fixes in ./arch/x86/math-emu/
-Message-ID: <20080111000002.009b3760@paolo-desktop>
-X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 10 Jan 2008 18:01:29 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:34512 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756039AbYAJXB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 18:01:28 -0500
+From: Neil Brown <neilb@suse.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Date: Fri, 11 Jan 2008 10:01:18 +1100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18310.41918.555194.701639@notabene.brown>
+Cc: Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
+       "Bryn M. Reeves" <breeves@redhat.com>
+Subject: Re: [PATCH][RFC] fast file mapping for loop
+In-Reply-To: message from Jens Axboe on Thursday January 10
+References: <20080109085231.GE6650@kernel.dk>
+	<20080109231628.GB4039@agk.fab.redhat.com>
+	<20080110083130.GP6258@kernel.dk>
+	<20080110074738.6be1c1ad@think.oraclecorp.com>
+	<20080110125740.GY6258@kernel.dk>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix some codying style errors in ./arch/x86/math-emu/reg_ld_str.c
+On Thursday January 10, jens.axboe@oracle.com wrote:
+> On Thu, Jan 10 2008, Chris Mason wrote:
+> > On Thu, 10 Jan 2008 09:31:31 +0100
+> > Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > On Wed, Jan 09 2008, Alasdair G Kergon wrote:
+> > > > Here's the latest version of dm-loop, for comparison.
+> > > > 
+> > > > To try it out, 
+> > > >   ln -s dmsetup dmlosetup
+> > > > and supply similar basic parameters to losetup.
+> > > > (using dmsetup version 1.02.11 or higher)
+> > > 
+> > > Why oh why does dm always insist to reinvent everything? That's bad
+> > > enough in itself, but on top of that most of the extra stuff ends up
+> > > being essentially unmaintained.
+> > 
+> > I don't quite get how the dm version is reinventing things.  They use
+> 
+> Things like raid, now file mapping functionality. I'm sure there are
+> more examples, it's how dm was always developed probably originating
+> back to when they developed mostly out of tree. And I think it's a bad
+> idea, we don't want duplicate functionality. If something is wrong with
+> loop, fix it, don't write dm-loop.
 
-total: 4 errors, 31 warnings, 1223 lines checked
+I'm with Jens here.
 
-patch is against a x86 which I pulled a few minutes ago.
+We currently have two interfaces that interesting block devices can be
+written for: 'dm' and 'block'.
+We really should aim to have just one.  I would call it 'block' and
+move anything really useful from dm into block.
 
-Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
----
- arch/x86/math-emu/reg_ld_str.c |   25 ++++++++++++-------------
- 1 files changed, 12 insertions(+), 13 deletions(-)
+As far as I can tell, the important things that 'dm' has that 'block'
+doesn't have are:
 
-diff --git a/arch/x86/math-emu/reg_ld_str.c b/arch/x86/math-emu/reg_ld_str.c
-index 799d4af..04a84d8 100644
---- a/arch/x86/math-emu/reg_ld_str.c
-+++ b/arch/x86/math-emu/reg_ld_str.c
-@@ -55,9 +55,8 @@ int FPU_tagof(FPU_REG *ptr)
- 
- 	exp = exponent16(ptr) & 0x7fff;
- 	if (exp == 0) {
--		if (!(ptr->sigh | ptr->sigl)) {
-+		if (!(ptr->sigh | ptr->sigl))
- 			return TAG_Zero;
--		}
- 		/* The number is a de-normal or pseudodenormal. */
- 		return TAG_Special;
- 	}
-@@ -334,7 +333,7 @@ int FPU_load_bcd(u_char __user *s)
- 
- /* Put a long double into user memory */
- int FPU_store_extended(FPU_REG *st0_ptr, u_char st0_tag,
--		       long double __user * d)
-+		       long double __user *d)
- {
- 	/*
- 	   The only exception raised by an attempt to store to an
-@@ -390,7 +389,7 @@ int FPU_store_double(FPU_REG *st0_ptr, u_char st0_tag, double __user *dfloat)
- 		if (exp < DOUBLE_Emin) {	/* It may be a denormal */
- 			addexponent(&tmp, -DOUBLE_Emin + 52);	/* largest exp to be 51 */
- 
--		      denormal_arg:
-+denormal_arg:
- 
- 			if ((precision_loss = FPU_round_to_int(&tmp, st0_tag))) {
- #ifdef PECULIAR_486
-@@ -467,7 +466,7 @@ int FPU_store_double(FPU_REG *st0_ptr, u_char st0_tag, double __user *dfloat)
- 			l[1] = ((tmp.sigh >> 11) & 0xfffff);
- 
- 			if (exp > DOUBLE_Emax) {
--			      overflow:
-+overflow:
- 				EXCEPTION(EX_Overflow);
- 				if (!(control_word & CW_Overflow))
- 					return 0;
-@@ -581,7 +580,7 @@ int FPU_store_single(FPU_REG *st0_ptr, u_char st0_tag, float __user *single)
- 		if (exp < SINGLE_Emin) {
- 			addexponent(&tmp, -SINGLE_Emin + 23);	/* largest exp to be 22 */
- 
--		      denormal_arg:
-+denormal_arg:
- 
- 			if ((precision_loss = FPU_round_to_int(&tmp, st0_tag))) {
- #ifdef PECULIAR_486
-@@ -614,8 +613,8 @@ int FPU_store_single(FPU_REG *st0_ptr, u_char st0_tag, float __user *single)
- 				switch (control_word & CW_RC) {
- 				case RC_RND:
- 					increment = ((sigh & 0xff) > 0x80)	/* more than half */
--					    ||(((sigh & 0xff) == 0x80) && sigl)	/* more than half */
--					    ||((sigh & 0x180) == 0x180);	/* round to even */
-+					    || (((sigh & 0xff) == 0x80) && sigl)	/* more than half */
-+					    || ((sigh & 0x180) == 0x180);	/* round to even */
- 					break;
- 				case RC_DOWN:	/* towards -infinity */
- 					increment = signpositive(&tmp)
-@@ -781,7 +780,7 @@ int FPU_store_int64(FPU_REG *st0_ptr, u_char st0_tag, long long __user *d)
- 	     !((t.sigh == 0x80000000) && (t.sigl == 0) && signnegative(&t)))) {
- 		EXCEPTION(EX_Invalid);
- 		/* This is a special case: see sec 16.2.5.1 of the 80486 book */
--	      invalid_operand:
-+invalid_operand:
- 		if (control_word & EX_Invalid) {
- 			/* Produce something like QNaN "indefinite" */
- 			tll = 0x8000000000000000LL;
-@@ -828,7 +827,7 @@ int FPU_store_int32(FPU_REG *st0_ptr, u_char st0_tag, long __user *d)
- 	     !((t.sigl == 0x80000000) && signnegative(&t)))) {
- 		EXCEPTION(EX_Invalid);
- 		/* This is a special case: see sec 16.2.5.1 of the 80486 book */
--	      invalid_operand:
-+invalid_operand:
- 		if (control_word & EX_Invalid) {
- 			/* Produce something like QNaN "indefinite" */
- 			t.sigl = 0x80000000;
-@@ -874,7 +873,7 @@ int FPU_store_int16(FPU_REG *st0_ptr, u_char st0_tag, short __user *d)
- 	     !((t.sigl == 0x8000) && signnegative(&t)))) {
- 		EXCEPTION(EX_Invalid);
- 		/* This is a special case: see sec 16.2.5.1 of the 80486 book */
--	      invalid_operand:
-+invalid_operand:
- 		if (control_word & EX_Invalid) {
- 			/* Produce something like QNaN "indefinite" */
- 			t.sigl = 0x8000;
-@@ -925,7 +924,7 @@ int FPU_store_bcd(FPU_REG *st0_ptr, u_char st0_tag, u_char __user *d)
- 	    ((t.sigh == 0x0de0b6b3) && (t.sigl > 0xa763ffff))) {
- 		EXCEPTION(EX_Invalid);
- 		/* This is a special case: see sec 16.2.5.1 of the 80486 book */
--	      invalid_operand:
-+invalid_operand:
- 		if (control_word & CW_Invalid) {
- 			/* Produce the QNaN "indefinite" */
- 			RE_ENTRANT_CHECK_OFF;
-@@ -963,7 +962,7 @@ int FPU_store_bcd(FPU_REG *st0_ptr, u_char st0_tag, u_char __user *d)
- 
- /*===========================================================================*/
- 
--/* r gets mangled such that sig is int, sign: 
-+/* r gets mangled such that sig is int, sign:
-    it is NOT normalized */
- /* The return value (in eax) is zero if the result is exact,
-    if bits are changed due to rounding, truncation, etc, then
--- 
-1.5.4.rc2.17.g257f
+  - a standard ioctl interface for assembling and creating interesting
+     devices.
+     For 'block', everybody just rolls there own. e.g. md, loop, and
+     nbd all use totally different approaches for setup and tear down
+     etc. 
 
+  - suspend/reconfigure/resume.
+    This is something that I would really like to see in 'block'.  If
+    I had a filesystem mounted on /dev/sda1 and I wanted to make it a
+    raid1, it would be cool if I could
+	suspend /dev/sda1
+	build a raid1 from sda1 and something else
+	plug tha raid1 in as 'sda1'.
+	resume sda1
+
+  - Integrated 'linear' mapping.
+    This is the bit of 'dm' that I think of as yucky.  If I read the
+    code correctly, every dm device is a linear array of a bunch of
+    targets.  Each target can be a stripe-set(raid0) or a multipath or
+    a raid1 or a plain block device or whatever.
+    Having 'linear' at a different level to everything else seems a
+    bit ugly, but it isn't really a big deal.
+
+I would really like to see every 'dm' target being just a regular
+'block' device.  Then a 'linear' block device could be used to
+assemble dm targets into a dm device.  Or the targets could be used
+directly if the 'linear' function wasn't needed.
+
+Each target/device could respond to both dm ioctls and 'adhoc'
+ioctls.  That is a bit ugly, but backwards compatibility always is,
+but it isn't a big cost.
+
+I think the way forward here is to put the important
+suspend/reconfig/resume functionality into the block layer, then
+work on making code work with multiple ioctl interfaces.
+
+I *don't* think the way forward is to duplicate current block devices
+as dm targets.  This is duplication of effort (which I admit isn't
+always a bad thing) and a maintenance headache (which is).
+
+ "Help, I'm having a problem with the loop driver"
+ "Which one, dm or regular, because if it is the 'dm' one you have to
+  ask over there ..."
+
+ It has already happened occasionally with raid1 and multipath - both
+ of which have pointless multiple implementations.
+
+
+> 
+> > the dmsetup command that they use for everything else and provide a
+> > small and fairly clean module for bio specific loop instead of piling
+> > it onto loop.c....
+
+I'm missing something here... "fairly clean module for bio specific
+loop".  Isn't that what 'loop.c' is meant to be?
+
+NeilBrown
