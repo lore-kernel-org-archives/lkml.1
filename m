@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753152AbYAIFrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519AbYAIFvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753152AbYAIFrW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 00:47:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbYAIFrN
+	id S1753519AbYAIFvr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 00:51:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbYAIFvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 00:47:13 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:53531 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750828AbYAIFrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 00:47:12 -0500
-Message-ID: <47845F27.6020305@cn.fujitsu.com>
-Date: Wed, 09 Jan 2008 13:44:07 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 9 Jan 2008 00:51:39 -0500
+Received: from mail.suse.de ([195.135.220.2]:41459 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750831AbYAIFvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 00:51:38 -0500
+Message-ID: <4785B342.2070501@suse.de>
+Date: Thu, 10 Jan 2008 11:25:14 +0530
+From: Nikanth Karthikesan <knikanth@suse.de>
+User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] CONNECTOR: don't touch queue dev after decrement of ref count
-Content-Type: text/plain; charset=UTF-8
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH] Change x86 Machine check handler to use unlocked_iocl instead
+ of ioctl
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The Machine check handler registers ioctl handler that is called
+with the BKL held. Changing to register unlocked_ioctl instead.
+Also mce ioctl handler does not seem to need any lock protection.
 
-cn_queue_free_callback() will touch 'dev'(i.e. cbq->pdev),
-so it should be called before atomic_dec(&dev->refcnt).
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Change the Machine check handler to use unlocked_ioctl instead of
+ioctl handler. Also the mce ioctl handler does not need any lock
+protection.
+
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
 
 ---
- drivers/connector/cn_queue.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/connector/cn_queue.c b/drivers/connector/cn_queue.c
-index 23cc87a..5732ca3 100644
---- a/drivers/connector/cn_queue.c
-+++ b/drivers/connector/cn_queue.c
-@@ -99,8 +99,8 @@ int cn_queue_add_callback(struct cn_queue_dev *dev, char *name, struct cb_id *id
- 	spin_unlock_bh(&dev->queue_lock);
- 
- 	if (found) {
--		atomic_dec(&dev->refcnt);
- 		cn_queue_free_callback(cbq);
-+		atomic_dec(&dev->refcnt);
- 		return -EINVAL;
- 	}
- 
--- 
-1.5.3.rc7
+diff --git a/arch/x86/kernel/cpu/mcheck/mce_64.c
+b/arch/x86/kernel/cpu/mcheck/mce_64.c
+index 4b21d29..d3baa62 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce_64.c
++++ b/arch/x86/kernel/cpu/mcheck/mce_64.c
+@@ -634,8 +634,7 @@ static unsigned int mce_poll(struct file *file,
+poll_table *wait)
+ 	return 0;
+ }
 
+-static int mce_ioctl(struct inode *i, struct file *f,unsigned int cmd,
+-		     unsigned long arg)
++static long mce_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
+ {
+ 	int __user *p = (int __user *)arg;
+
+@@ -664,7 +663,7 @@ static const struct file_operations mce_chrdev_ops = {
+ 	.release = mce_release,
+ 	.read = mce_read,
+ 	.poll = mce_poll,
+-	.ioctl = mce_ioctl,
++	.unlocked_ioctl = mce_ioctl,
+ };
+
+ static struct miscdevice mce_log_device = {
