@@ -1,93 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbYAJG0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbYAJGmo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756850AbYAJG0U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 01:26:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbYAJG0N
+	id S1754326AbYAJGmo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 01:42:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbYAJGme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 01:26:13 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:19030 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752214AbYAJG0M (ORCPT
+	Thu, 10 Jan 2008 01:42:34 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:39751 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751622AbYAJGmd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 01:26:12 -0500
-Date: Wed, 9 Jan 2008 22:25:42 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Help needed to fix section mismatch warnings
-Message-Id: <20080109222542.422c90e0.randy.dunlap@oracle.com>
-In-Reply-To: <20080106140728.GA3504@uranus.ravnborg.org>
-References: <20080106140728.GA3504@uranus.ravnborg.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Thu, 10 Jan 2008 01:42:33 -0500
+Date: Wed, 9 Jan 2008 22:42:08 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu
+Subject: [patch]  Add a simple backtrace test module
+Message-ID: <20080109224208.541a659f@laptopd505.fenrus.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 6 Jan 2008 15:07:28 +0100 Sam Ravnborg wrote:
 
+Subject: Add a simple backtrace test module
+From: Arjan van de Ven <arjan@linux.intel.com>
 
-> This is the current list of warnings
+During the work on the x86 32 and 64 bit backtrace code I found it useful
+to have a simple test module to test a process and irq context backtrace.
+Since the existing backtrace code was buggy, I figure it might be useful
+to have such a test module in the kernel so that maybe we can even
+detect such bugs earlier..
 
-Sam,
-
-Several of these are due to driver variable names not matching
-the whitelisted names in modpost.  I have patches for the ones
-that I have identified so far.  And I have patches for a few of
-the others that are true section mismatch problems (total of 8
-patches ready for now).
-
-The whitelisted names will always be a (small) problem.
-Can __init_refok be used in these cases.. or some other new
-attribute, instead of forever adding to the whitelist or
-modifying variable names?
-
-
-> WARNING: vmlinux.o(.text+0x738a): Section mismatch: reference to .init.data:ebda_addr (between 'discover_ebda' and 'get_model_name')
-> WARNING: vmlinux.o(.text+0x73c4): Section mismatch: reference to .init.data:ebda_size (between 'discover_ebda' and 'get_model_name')
-
-patch ready.
-
-> WARNING: vmlinux.o(.text+0x605e14): Section mismatch: reference to .init.text: (between 'cciss_pci_init' and 'cciss_getgeometry')
-
-patch ready.
-
-> WARNING: vmlinux.o(.exit.text+0xc64d): Section mismatch: reference to .init.data:_asc_def_iop_base (between 'advansys_isa_remove' and 'advansys_eisa_remove')
-
-patch ready.
-
-> WARNING: vmlinux.o(.data+0x7e9b8): Section mismatch: reference to .init.text:tpm_inf_pnp_probe (between 'tpm_inf_pnp' and 'cn_idx')
-
-patch ready.
-
-> WARNING: vmlinux.o(.data+0xd44d8): Section mismatch: reference to .init.data:prism2_plx_id_table (between 'prism2_plx_drv_id' and 'dev_info')
-
-patch ready.
-
-> WARNING: vmlinux.o(.data+0x149908): Section mismatch: reference to .init.text:av7110_attach (between 'av7110_extension' and 'ir_protocol')
-
-patch ready.
-
-> WARNING: vmlinux.o(.data+0x1b3ce0): Section mismatch: reference to .init.text:megaraid_probe_one (between 'megaraid_pci_driver_g' and 'class_device_attr_megaraid_mbox_app_hndl')
-
-patch ready.
-
-> WARNING: vmlinux.o(.text+0xb0c71d): Section mismatch: reference to .exit.text: (between 'qla2xxx_pci_error_detected' and 'qla2xxx_pci_mmio_enabled')
-
-patch ready.
-
-> WARNING: vmlinux.o(.text+0xb4ff4b): Section mismatch: reference to .exit.text: (between 'sym2_io_error_detected' and 'sym2_io_slot_dump')
-
-Patch sent by /me on 2007.OCT.29 to linux-scsi & akpm.
-
-I will send the ready patches sometime on THU 2008.JAN.10.
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 
 ---
-~Randy
+ kernel/Makefile        |    1 +
+ kernel/backtracetest.c |   47 +++++++++++++++++++++++++++++++++++++++++++++++
+ lib/Kconfig.debug      |   12 ++++++++++++
+ 3 files changed, 60 insertions(+)
+
+Index: linux-2.6.24-rc7/kernel/Makefile
+===================================================================
+--- linux-2.6.24-rc7.orig/kernel/Makefile
++++ linux-2.6.24-rc7/kernel/Makefile
+@@ -52,6 +52,7 @@ obj-$(CONFIG_DETECT_SOFTLOCKUP) += softl
+ obj-$(CONFIG_GENERIC_HARDIRQS) += irq/
+ obj-$(CONFIG_SECCOMP) += seccomp.o
+ obj-$(CONFIG_RCU_TORTURE_TEST) += rcutorture.o
++obj-$(BACKTRACE_SELF_TEST) += backtracetest.o
+ obj-$(CONFIG_RELAY) += relay.o
+ obj-$(CONFIG_SYSCTL) += utsname_sysctl.o
+ obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
+Index: linux-2.6.24-rc7/kernel/backtracetest.c
+===================================================================
+--- /dev/null
++++ linux-2.6.24-rc7/kernel/backtracetest.c
+@@ -0,0 +1,47 @@
++/*
++ * Simple stack backtrace regression test module
++ *
++ * (C) Copyright 2008 Intel Corporation
++ * Author: Arjan van de Ven <arjan@linux.intel.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; version 2
++ * of the License.
++ */
++
++#include <linux/module.h>
++#include <linux/sched.h>
++
++static struct timer_list backtrace_timer;
++
++static void backtrace_test_timer(unsigned long data)
++{
++	printk("Testing a backtrace from irq context.\n");
++	printk("The following trace is a kernel self test and not a bug!\n");
++	dump_stack();
++}
++static int backtrace_regression_test(void)
++{
++	printk("====[ backtrace testing ]===========\n");
++	printk("Testing a backtrace from process context.\n");
++	printk("The following trace is a kernel self test and not a bug!\n");
++	dump_stack();
++
++	init_timer(&backtrace_timer);
++	backtrace_timer.function = backtrace_test_timer;
++	mod_timer(&backtrace_timer, jiffies + 10);
++
++	msleep(10);
++	printk("====[ end of backtrace testing ]====\n");
++	return 0;
++}
++
++static void exitf(void)
++{
++}
++
++module_init(backtrace_regression_test);
++module_exit(exitf);
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Arjan van de Ven <arjan@linux.intel.com>");
+Index: linux-2.6.24-rc7/lib/Kconfig.debug
+===================================================================
+--- linux-2.6.24-rc7.orig/lib/Kconfig.debug
++++ linux-2.6.24-rc7/lib/Kconfig.debug
+@@ -462,6 +462,18 @@ config RCU_TORTURE_TEST
+ 	  Say M if you want the RCU torture tests to build as a module.
+ 	  Say N if you are unsure.
+ 
++config BACKTRACE_SELF_TEST
++	tristate "Self test for the backtrace code"
++	depends on DEBUG_KERNEL
++	default n
++	help
++	  This option provides a kernel module that can be used to test
++	  the kernel stack backtrace code. This option is not useful
++	  for distributions or general kernels, but only for kernel
++	  developers working on architecture code.
++
++	  Say N if you are unsure.
++
+ config LKDTM
+ 	tristate "Linux Kernel Dump Test Tool Module"
+ 	depends on DEBUG_KERNEL
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
