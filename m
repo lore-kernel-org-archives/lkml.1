@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760322AbYAJQik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760056AbYAJQjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760322AbYAJQik (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 11:38:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759953AbYAJQiK
+	id S1760056AbYAJQjq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 11:39:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756500AbYAJQji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 11:38:10 -0500
-Received: from mail001.aei.ca ([206.123.6.130]:56938 "EHLO mail001.aei.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759913AbYAJQiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 11:38:08 -0500
-From: Ed Tomlinson <edt@aei.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: Fwd: Fwd: laptop / computer hardlocks during execution of 32bit applications(binaries) on 64bit system (Gentoo)
-Date: Thu, 10 Jan 2008 11:38:01 -0500
-User-Agent: KMail/1.9.7
-Cc: Matthew <jackdachef@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-References: <e85b9d30712291157v113f5e73yd830ae3c3429092d@mail.gmail.com> <200801100808.42945.edt@aei.ca> <20080110133252.GB5886@elte.hu>
-In-Reply-To: <20080110133252.GB5886@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="ansi_x3.4-1968"
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Jan 2008 11:39:38 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:1225
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754027AbYAJQjh convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 11:39:37 -0500
+Message-Id: <4786586B.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Thu, 10 Jan 2008 16:39:55 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <linux-kernel@vger.kernel.org>
+Cc: <James.Bottomley@HansenPartnership.com>
+Subject: [PATCH] adjust size calculation for get_vm_area() in ioremap()
+	context
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200801101138.01387.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On January 10, 2008, Ingo Molnar wrote:
-> 
-> * Ed Tomlinson <edt@aei.ca> wrote:
-> 
-> > Matthew is not alone with this problem.  I have it too.  Its not new 
-> > here.  Its been happening as long as I have had gentoo amd64 
-> > installed.  It can be hard to reproduce but eventually, when 32 bit 
-> > apps are used, my box bricks.  There is nothing in the logs (nor on a 
-> > serial console) - the box just freezes.
-> > 
-> > My kernel is _not_ tainted. [...]
-> 
-> ok, good. A series of questions:
-> 
-> - can you reproduce it from the VGA console?
+Short of getting a reply on the query why the argument of fls() here is
+missing the decrement, here's a patch to add it (reducing the resulting
+size when the incoming size is an exact power of two).
 
-No - though I do have a serial console to see logs.
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+---
 
-> - if yes, does booting with "nmi_watchdog=2 idle=poll" give you a 
->   working NMI watchdog? (working NMI watchdog means the NMI counts 
->   increase for all cores in /proc/interrupts).
+ mm/vmalloc.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-booting with the above gives me an incrementing NMI counter in /proc/interrupts
+--- linux-2.6.24-rc7/mm/vmalloc.c	2008-01-10 16:50:54.000000000 +0100
++++ 2.6.24-rc7-vm-ioremap-size/mm/vmalloc.c	2008-01-08 12:35:11.000000000 +0100
+@@ -176,7 +176,7 @@ static struct vm_struct *__get_vm_area_n
+ 
+ 	BUG_ON(in_interrupt());
+ 	if (flags & VM_IOREMAP) {
+-		int bit = fls(size);
++		int bit = fls(size - 1);
+ 
+ 		if (bit > IOREMAP_MAX_ORDER)
+ 			bit = IOREMAP_MAX_ORDER;
 
-> if still 'yes', then try to reproduce the hard hang on the VGA text 
-> console - do you perhaps get an NMI backtrace printed within 1-2 minutes 
-> after the hard hang happens? If yes then take a photo of that or write 
-> it down.
-
-I am booted with the NMI watchdog and serial consoles active running apps that
-eventually will trigger a hang...
-
-Ed Tomlinson
 
 
