@@ -1,73 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760927AbYAJTYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760999AbYAJTYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760927AbYAJTYb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 14:24:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756710AbYAJTYP
+	id S1760999AbYAJTYu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 14:24:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760936AbYAJTYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 14:24:15 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:53170 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755495AbYAJTYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 14:24:13 -0500
-Date: Thu, 10 Jan 2008 11:24:12 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Matt Mackall <mpm@selenic.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       Hugh Dickins <hugh@veritas.com>, Andi Kleen <andi@firstfloor.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH] greatly reduce SLOB external fragmentation
-In-Reply-To: <1199990565.5331.130.camel@cinder.waste.org>
-Message-ID: <Pine.LNX.4.64.0801101118070.20353@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0801021830160.6823@blonde.wat.veritas.com> 
- <84144f020801021109v78e06c6k10d26af0e330fc85@mail.gmail.com> 
- <alpine.LFD.1.00.0801021130210.32517@woody.linux-foundation.org> 
- <1199314218.4497.109.camel@cinder.waste.org>  <20080103085239.GA10813@elte.hu>
-  <1199378818.8274.25.camel@cinder.waste.org> 
- <Pine.LNX.4.64.0801031808470.7244@schroedinger.engr.sgi.com> 
- <1199419890.4608.77.camel@cinder.waste.org>  <Pine.LNX.4.64.0801051816490.22821@sbz-30.cs.Helsinki.FI>
-  <1199641910.8215.28.camel@cinder.waste.org> 
- <Pine.LNX.4.64.0801072005380.23932@sbz-30.cs.Helsinki.FI> 
- <1199906151.6245.57.camel@cinder.waste.org>  <Pine.LNX.4.64.0801100037230.3071@sbz-30.cs.Helsinki.FI>
-  <1199919548.6245.74.camel@cinder.waste.org> 
- <Pine.LNX.4.64.0801101156150.10271@sbz-30.cs.Helsinki.FI> 
- <Pine.LNX.4.64.0801101251200.14402@sbz-30.cs.Helsinki.FI> 
- <alpine.LFD.1.00.0801100749000.3148@woody.linux-foundation.org> 
- <1199987366.5331.92.camel@cinder.waste.org> 
- <alpine.LFD.1.00.0801101013310.3148@woody.linux-foundation.org>
- <1199990565.5331.130.camel@cinder.waste.org>
+	Thu, 10 Jan 2008 14:24:34 -0500
+Received: from mga02.intel.com ([134.134.136.20]:21583 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760930AbYAJTYc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 14:24:32 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,267,1196668800"; 
+   d="scan'208";a="251997259"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [patch 09/11] PAT x86: Add ioremap_wc support
+Date: Thu, 10 Jan 2008 11:25:25 -0800
+Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE5A281A@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <p733at5o5vr.fsf@bingen.suse.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch 09/11] PAT x86: Add ioremap_wc support
+Thread-Index: AchTvDkPXeQ7IrrrTi2h9/RQ4YiGTwAAS8OQ
+References: <20080110184840.927409000@intel.com><20080110184856.379082000@intel.com> <p733at5o5vr.fsf@bingen.suse.de>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Cc: <ebiederm@xmission.com>, <rdreier@cisco.com>,
+       <torvalds@linux-foundation.org>, <gregkh@suse.de>, <airlied@skynet.ie>,
+       <davej@redhat.com>, <mingo@elte.hu>, <tglx@linutronix.de>,
+       <hpa@zytor.co>, <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+X-OriginalArrivalTime: 10 Jan 2008 19:24:31.0584 (UTC) FILETIME=[6CE41E00:01C853BE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jan 2008, Matt Mackall wrote:
 
-> One idea I've been kicking around is pushing the boundary for the buddy
-> allocator back a bit (to 64k, say) and using SL*B under that. The page
-> allocators would call into buddy for larger than 64k (rare!) and SL*B
-> otherwise. This would let us greatly improve our handling of things like
-> task structs and skbs and possibly also things like 8k stacks and jumbo
-> frames. As SL*B would never be competing with the page allocator for
-> contiguous pages (the buddy allocator's granularity would be 64k), I
-> don't think this would exacerbate the page-level fragmentation issues.
+>-----Original Message-----
+>From: Andi Kleen [mailto:andi@firstfloor.org] 
+>Sent: Thursday, January 10, 2008 11:09 AM
+>To: Pallipadi, Venkatesh
+>Cc: ebiederm@xmission.com; rdreier@cisco.com; 
+>torvalds@linux-foundation.org; gregkh@suse.de; 
+>airlied@skynet.ie; davej@redhat.com; mingo@elte.hu; 
+>tglx@linutronix.de; hpa@zytor.co; 
+>linux-kernel@vger.kernel.org; Siddha, Suresh B
+>Subject: Re: [patch 09/11] PAT x86: Add ioremap_wc support
+>
+>venkatesh.pallipadi@intel.com writes:
+>> Index: linux-2.6.git/include/asm-generic/iomap.h
+>> ===================================================================
+>> --- linux-2.6.git.orig/include/asm-generic/iomap.h	
+>2008-01-08 03:31:37.000000000 -0800
+>> +++ linux-2.6.git/include/asm-generic/iomap.h	
+>2008-01-08 05:15:56.000000000 -0800
+>> @@ -65,4 +65,8 @@
+>>  extern void __iomem *pci_iomap(struct pci_dev *dev, int 
+>bar, unsigned long max);
+>>  extern void pci_iounmap(struct pci_dev *dev, void __iomem *);
+>>  
+>> +#ifndef ioremap_wc
+>> +#define ioremap_wc ioremap_nocache
+>> +#endif
+>
+>I don't think that's a good idea. Drivers should be able to 
+>detect this somehow.
+>Handling UC mappings as WC will probably give very poor results.
+>
 
-This would create another large page size (and that would have my 
-enthusiastic support). It would decrease listlock effect drastically for 
-SLUB. Even the initial simplistic implementation of SLUB was superior on 
-the database transaction tests (I think it was up ~1%) on IA64 from the 
-get go. Likely due to the larger 16k page size there. The larger page size 
-could also be used for the page cache (ducking and running.....)? A 64k 
-page size that could be allocated without zone locks would be very good 
-for SLUB.
+It is the other way. ioremap_wc aliases to ioremap_nocache.
+This was based on earlier feedback from Roland.
+>From: Roland Dreier [mailto:rdreier@cisco.com] 
+>I think ioremap_wc() needs to be available on all archs for this to be
+>really useful to drivers.  It can be a fallback to ioremap_nocache()
+>everywhere except 64-bit x86, but it's not nice for every driver that
+>wants to use this to need an "#ifdef X86" or whatever.
 
-However, isnt this is basically confessing that the page allocator is not 
-efficient for 4k page allocations? I have seen some weaknesses there. The 
-overhead in the allocation path in particular is bad and I was thinking 
-about applying the same ideas used in SLUB also to the page allocator in 
-order to bring the cycle count down from 500-1000 to 60 or so. Since both 
-SLUB and SLOB use the page allocator for allocs >PAGE_SIZE this would not 
-only benefit the general kernel but also the slab allocations.
+Thanks,
+Venki
