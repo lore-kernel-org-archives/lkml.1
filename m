@@ -1,104 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757647AbYAJTiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757705AbYAJTku@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757647AbYAJTiT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 14:38:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbYAJTiK
+	id S1757705AbYAJTku (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 14:40:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217AbYAJTko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 14:38:10 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:59723 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751552AbYAJTiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 14:38:08 -0500
-Date: Thu, 10 Jan 2008 20:38:11 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Help needed to fix section mismatch warnings
-Message-ID: <20080110193811.GB14021@uranus.ravnborg.org>
-References: <20080106140728.GA3504@uranus.ravnborg.org> <20080109222542.422c90e0.randy.dunlap@oracle.com>
+	Thu, 10 Jan 2008 14:40:44 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:24054 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752218AbYAJTkn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 14:40:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=f0HzLbyN2RZpOmgUr7PYoFB2mbpp5RE9iat2sUDa/0rVawoeOXVaMU9wjqBbQHAl+dUZ7CVYRZpnrsrCKalEAE85fCI/yKgo8Do4YulQijo9LCij8e67ljpR6moC0GfgHq5EU3T0L93NCEdN85tjHInJUqLZTp0ndq8cpaXdNGg=
+Subject: [PATCH] x86: Use wrmsrl in kprobes.c, step.c
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080110124041.GA15156@elte.hu>
+References: <1199949482.19760.9.camel@brick>
+	 <20080110124041.GA15156@elte.hu>
+Content-Type: text/plain
+Date: Thu, 10 Jan 2008 11:40:43 -0800
+Message-Id: <1199994043.19760.31.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080109222542.422c90e0.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 09, 2008 at 10:25:42PM -0800, Randy Dunlap wrote:
-> On Sun, 6 Jan 2008 15:07:28 +0100 Sam Ravnborg wrote:
-> 
-> 
-> > This is the current list of warnings
-> 
-> Sam,
-> 
-> Several of these are due to driver variable names not matching
-> the whitelisted names in modpost.  I have patches for the ones
-> that I have identified so far.  And I have patches for a few of
-> the others that are true section mismatch problems (total of 8
-> patches ready for now).
-> 
-> The whitelisted names will always be a (small) problem.
-> Can __init_refok be used in these cases.. or some other new
-> attribute, instead of forever adding to the whitelist or
-> modifying variable names?
+Where x86_32 passed zero in the high 32 bits, use wrmsrl which
+will zero extend for us.  This allows ifdefs for 32/64 bit to
+be eliminated.
 
-We had 112 warnings with the modified allyesconfig build and
-many of these from the same module.
-So in these cases I greatly prefer to rename variables to match
-what other drivers use and thus enabling the current whitelist
-to supress the warnings.
+Eliminate ifdef in step.c.  Similar cleanup was done when unifying
+kprobes_32|64.c and wrmsr() was chosen there over wrmsrl().  This
+patch changes these to wrmsrl.
 
-The remaining bits to address is the const / non-const issue.
-Here we most likely need to invent a parallel set of section
-names (yrk).
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ arch/x86/kernel/kprobes.c |    4 ++--
+ arch/x86/kernel/step.c    |    4 ----
+ 2 files changed, 2 insertions(+), 6 deletions(-)
 
-init_refok is for me the last resort and if we need many more
-of these something else needs to be invented.
+diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+index 53ba6a5..34becd1 100644
+--- a/arch/x86/kernel/kprobes.c
++++ b/arch/x86/kernel/kprobes.c
+@@ -410,13 +410,13 @@ static void __kprobes set_current_kprobe(struct kprobe *p, struct pt_regs *regs,
+ static void __kprobes clear_btf(void)
+ {
+ 	if (test_thread_flag(TIF_DEBUGCTLMSR))
+-		wrmsr(MSR_IA32_DEBUGCTLMSR, 0, 0);
++		wrmsrl(MSR_IA32_DEBUGCTLMSR, 0L);
+ }
+ 
+ static void __kprobes restore_btf(void)
+ {
+ 	if (test_thread_flag(TIF_DEBUGCTLMSR))
+-		wrmsr(MSR_IA32_DEBUGCTLMSR, current->thread.debugctlmsr, 0);
++		wrmsrl(MSR_IA32_DEBUGCTLMSR, current->thread.debugctlmsr);
+ }
+ 
+ static void __kprobes prepare_singlestep(struct kprobe *p, struct pt_regs *regs)
+diff --git a/arch/x86/kernel/step.c b/arch/x86/kernel/step.c
+index 21ea22f..bf7047d 100644
+--- a/arch/x86/kernel/step.c
++++ b/arch/x86/kernel/step.c
+@@ -148,11 +148,7 @@ static void write_debugctlmsr(struct task_struct *child, unsigned long val)
+ 	if (child != current)
+ 		return;
+ 
+-#ifdef CONFIG_X86_64
+ 	wrmsrl(MSR_IA32_DEBUGCTLMSR, val);
+-#else
+-	wrmsr(MSR_IA32_DEBUGCTLMSR, val, 0);
+-#endif
+ }
+ 
+ /*
+-- 
+1.5.4.rc2.1164.g6451
 
 
-> 
-> 
-> > WARNING: vmlinux.o(.text+0x738a): Section mismatch: reference to .init.data:ebda_addr (between 'discover_ebda' and 'get_model_name')
-> > WARNING: vmlinux.o(.text+0x73c4): Section mismatch: reference to .init.data:ebda_size (between 'discover_ebda' and 'get_model_name')
-> 
-> patch ready.
-> 
-> > WARNING: vmlinux.o(.text+0x605e14): Section mismatch: reference to .init.text: (between 'cciss_pci_init' and 'cciss_getgeometry')
-> 
-> patch ready.
-> 
-> > WARNING: vmlinux.o(.exit.text+0xc64d): Section mismatch: reference to .init.data:_asc_def_iop_base (between 'advansys_isa_remove' and 'advansys_eisa_remove')
-> 
-> patch ready.
-> 
-> > WARNING: vmlinux.o(.data+0x7e9b8): Section mismatch: reference to .init.text:tpm_inf_pnp_probe (between 'tpm_inf_pnp' and 'cn_idx')
-> 
-> patch ready.
-> 
-> > WARNING: vmlinux.o(.data+0xd44d8): Section mismatch: reference to .init.data:prism2_plx_id_table (between 'prism2_plx_drv_id' and 'dev_info')
-> 
-> patch ready.
-> 
-> > WARNING: vmlinux.o(.data+0x149908): Section mismatch: reference to .init.text:av7110_attach (between 'av7110_extension' and 'ir_protocol')
-> 
-> patch ready.
-> 
-> > WARNING: vmlinux.o(.data+0x1b3ce0): Section mismatch: reference to .init.text:megaraid_probe_one (between 'megaraid_pci_driver_g' and 'class_device_attr_megaraid_mbox_app_hndl')
-> 
-> patch ready.
-> 
-> > WARNING: vmlinux.o(.text+0xb0c71d): Section mismatch: reference to .exit.text: (between 'qla2xxx_pci_error_detected' and 'qla2xxx_pci_mmio_enabled')
-> 
-> patch ready.
-> 
-> > WARNING: vmlinux.o(.text+0xb4ff4b): Section mismatch: reference to .exit.text: (between 'sym2_io_error_detected' and 'sym2_io_slot_dump')
-> 
-> Patch sent by /me on 2007.OCT.29 to linux-scsi & akpm.
-> 
-> I will send the ready patches sometime on THU 2008.JAN.10.
 
-Great!
-
-	Sam
