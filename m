@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbYAJWTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758057AbYAJWT6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756747AbYAJWTP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 17:19:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbYAJWTA
+	id S1758057AbYAJWT6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 17:19:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664AbYAJWTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 17:19:00 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33936 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753242AbYAJWS7 (ORCPT
+	Thu, 10 Jan 2008 17:19:50 -0500
+Received: from smtp-out1.tiscali.nl ([195.241.79.176]:39138 "EHLO
+	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751587AbYAJWTt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 17:18:59 -0500
-Date: Thu, 10 Jan 2008 14:15:25 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-cc: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com, gregkh@suse.de,
-       airlied@skynet.ie, davej@redhat.com, mingo@elte.hu, tglx@linutronix.de,
-       akpm@linux-foundation.org, arjan@infradead.org,
-       "Barnes, Jesse" <jesse.barnes@intel.com>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Subject: RE: [patch 02/11] PAT x86: Map only usable memory in x86_64 identity
- map and kernel text
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE5A2958@orsmsx423.amr.corp.intel.com>
-Message-ID: <alpine.LFD.1.00.0801101413490.3148@woody.linux-foundation.org>
-References: <20080110184840.927409000@intel.com> <20080110184854.787474000@intel.com> <alpine.LFD.1.00.0801101303570.3148@woody.linux-foundation.org> <924EFEDD5F540B4284297C4DC59F3DEE5A2958@orsmsx423.amr.corp.intel.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Thu, 10 Jan 2008 17:19:49 -0500
+Message-ID: <478699F0.9070306@tiscali.nl>
+Date: Thu, 10 Jan 2008 23:19:28 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: linville@tuxdriver.com, lkml <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org, Elmer.Joandi@ut.ee, c.jennings@ieee.org
+Subject: Re: [PATCH wireless/arlan] Replace logical- by bit-and
+References: <4722453E.2090801@tiscali.nl>	<472248AC.7080201@tiscali.nl>	<47866EE9.80003@tiscali.nl> <20080110122859.569b3774.randy.dunlap@oracle.com>
+In-Reply-To: <20080110122859.569b3774.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 10 Jan 2008, Pallipadi, Venkatesh wrote:
+Randy Dunlap wrote:
+> On Thu, 10 Jan 2008 20:15:53 +0100 Roel Kluin wrote:
 > 
-> Yes. I had those pages not mapped at all earlier. The reason I switched
-> to zero page is to continue support cases like:
->  BIOS-e820: 0000000000000000 - 000000000009cc00 (usable)
->  BIOS-e820: 000000000009cc00 - 00000000000a0000 (reserved)
->  BIOS-e820: 00000000000cc000 - 00000000000d0000 (reserved)
->  BIOS-e820: 00000000000e4000 - 0000000000100000 (reserved)
->  BIOS-e820: 0000000000100000 - 00000000cff60000 (usable)
+>> diff --git a/drivers/net/wireless/arlan.h b/drivers/net/wireless/arlan.h
+>> index 3ed1df7..7b7498f 100644
+>> --- a/drivers/net/wireless/arlan.h
+>> +++ b/drivers/net/wireless/arlan.h
+>> @@ -485,7 +485,7 @@ struct arlan_private {
+>>  #define clearClearInterrupt(dev){\
+>>     writeControlRegister(dev,readControlRegister(dev) & ~ARLAN_CLEAR_INTERRUPT);}
+>>  #define setPowerOff(dev){\
+>> -   writeControlRegister(dev,readControlRegister(dev) | (ARLAN_POWER && ARLAN_ACCESS));\
+>> +   writeControlRegister(dev, readControlRegister(dev) | (ARLAN_POWER & ARLAN_ACCESS));\
 > 
-> In this case if some one does a dd of /dev/mem before they can read the
-> contents of usable memory in 0x100000-0xcff60000 range.
+> eh?  How does that help?
 
-Well, I think that /dev/mem should simply give them the right info. That's 
-what people use /dev/mem for - doing things like reading BIOS images etc. 
+Right, sorry, please ignore my patch.
 
-So returning *either* a zero page *or* stopping at the first hole is both 
-equally wrong. 
+> Maybe it should be (ARLAN_POWER | ARLAN_ACCESS), but some
+> arlan developer or someone with specs should help here...
 
-			Linus
+I have CC'd the previous maintainers
