@@ -1,61 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757056AbYAJJGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757900AbYAJJGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757056AbYAJJGP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 04:06:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbYAJJF7
+	id S1757900AbYAJJGh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 04:06:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756353AbYAJJGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 04:05:59 -0500
-Received: from nz-out-0506.google.com ([64.233.162.229]:9094 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750802AbYAJJF5 (ORCPT
+	Thu, 10 Jan 2008 04:06:13 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:36111 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755681AbYAJJGK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 04:05:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WzONdavnOj21Ujs9oQ13xkRMmVNcckJa9P1mE0OvvzqGe+lx6uvWq2PVDTRKEZJJRCMqSfRSGPFI3dlIVcv5KD1goaiuz1JQnnieJNSN+OqzPl0i6LPxdU+9W50uiS9yxhuxBNL99xmM2/JRenNwBxk/6wDdXOwpgAkVGnnjbF4=
-Message-ID: <e85b9d30801100105s60ad675ey1ba939491d01a649@mail.gmail.com>
+	Thu, 10 Jan 2008 04:06:10 -0500
+To: mingo@elte.hu
+CC: jdike@addtoit.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net
+In-reply-to: <20080110073215.GA11506@elte.hu> (message from Ingo Molnar on
+	Thu, 10 Jan 2008 08:32:16 +0100)
+Subject: Re: uml and -regparm=3
+References: <E1JCi3M-0006hO-7i@pomaz-ex.szeredi.hu> <20080110073215.GA11506@elte.hu>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Message-Id: <E1JCtMI-0007jw-5U@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
 Date: Thu, 10 Jan 2008 10:05:54 +0100
-From: Matthew <jackdachef@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Fwd: Fwd: laptop / computer hardlocks during execution of 32bit applications(binaries) on 64bit system (Gentoo)
-Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@redhat.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <47841C41.4060401@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <e85b9d30712291157v113f5e73yd830ae3c3429092d@mail.gmail.com>
-	 <e85b9d30712291504r2f4ef991w33f501ccf0d41c2b@mail.gmail.com>
-	 <200712300128.35476.mboton@gmail.com> <20080102084002.GA13636@elte.hu>
-	 <e85b9d30801080333y3d6668ccgf20f9666d0326884@mail.gmail.com>
-	 <e85b9d30801080340y43fbd4c0sa9b6c9811c7391a1@mail.gmail.com>
-	 <47841C41.4060401@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I have been unable to reproduce your problem here, and I notice you have
-> the proprietary, highly invasive and closed-source Nvidia driver
-> installed in your kernel.
->
-> Can you try using the "nv" or "vesa" (unaccelerated) Xorg drivers and
-> reproduce the problem that way?
->
-> If you *do* reproduce the problem that way, it would be extremely
-> helpful if you could enable CONFIG_DEBUG_INFO and provide the vmlinux
-> (not vmlinuz/bzImage) file that goes with the crash dump screenshot.
->
-> Thanks!
+> * Miklos Szeredi <miklos@szeredi.hu> wrote:
+> 
+> > FASTCALL is defined empty in -mm, but UML is not compiled with 
+> > -mregparm=3 and so this breaks things (I noticed problems with 
+> > rwsem_down_write_failed).
+> > 
+> > Tried recompiling UML with -mregparm=3, but that resulted in a strange 
+> > failure immediately after startup:
+> > 
+> > |%Gï¿½%@: Invalid argument
+> > 
+> > What's up?
+> 
+> Miklos, could you try the fix below?
+> 
+> In general most FASTCALL/fastcall uses are bogus, except for code where 
+> a function that takes parameters is implemented in assembly with a 
+> regparm calling convention. The fix is to introduce the "asmregparm" 
+> attribute to mark such function prototypes with regparm(3). This is the 
+> opposite of asmlinkage. [asmlinkage forced regparm(0)]
 
-I was able to reproduce it with removed nvidia module (rmmod nvidia) &
-nv driver, and will post the pictures later if I find some time (it
-was the same function if I recall right)
-do you also need: CONFIG_DEBUG_BUGVERBOSE enabled ?
+Thanks.  Patch works, but needed to add asmregparm to the definitions
+as well, plus added default define into <linux/linkage.h> (updated
+patch below).
 
->
->          -hpa
->
+Miklos
+----
 
-Mat
+Subject: x86: fix UML calling convention
+From: Ingo Molnar <mingo@elte.hu>
+
+introduce the "asmregparm" calling convention: for functions
+implemented in assembly with a fixed regparm input parameters
+calling convention.
+
+mark the semaphore and rwsem slowpath functions with that.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
+
+Index: linux/include/asm-x86/linkage.h
+===================================================================
+--- linux.orig/include/asm-x86/linkage.h	2008-01-09 21:16:29.000000000 +0100
++++ linux/include/asm-x86/linkage.h	2008-01-10 09:38:17.000000000 +0100
+@@ -9,6 +9,11 @@
+ #ifdef CONFIG_X86_32
+ #define asmlinkage CPP_ASMLINKAGE __attribute__((regparm(0)))
+ #define prevent_tail_call(ret) __asm__ ("" : "=r" (ret) : "0" (ret))
++/*
++ * For 32-bit UML - mark functions implemented in assembly that use
++ * regparm input parameters:
++ */
++#define asmregparm __attribute__((regparm(3)))
+ #endif
+ 
+ #ifdef CONFIG_X86_ALIGNMENT_16
+Index: linux/include/asm-x86/rwsem.h
+===================================================================
+--- linux.orig/include/asm-x86/rwsem.h	2008-01-09 21:16:29.000000000 +0100
++++ linux/include/asm-x86/rwsem.h	2008-01-10 09:55:07.000000000 +0100
+@@ -44,10 +44,14 @@
+ 
+ struct rwsem_waiter;
+ 
+-extern struct rw_semaphore *FASTCALL(rwsem_down_read_failed(struct rw_semaphore *sem));
+-extern struct rw_semaphore *FASTCALL(rwsem_down_write_failed(struct rw_semaphore *sem));
+-extern struct rw_semaphore *FASTCALL(rwsem_wake(struct rw_semaphore *));
+-extern struct rw_semaphore *FASTCALL(rwsem_downgrade_wake(struct rw_semaphore *sem));
++extern asmregparm struct rw_semaphore *
++ rwsem_down_read_failed(struct rw_semaphore *sem);
++extern asmregparm struct rw_semaphore *
++ rwsem_down_write_failed(struct rw_semaphore *sem);
++extern asmregparm struct rw_semaphore *
++ rwsem_wake(struct rw_semaphore *);
++extern asmregparm struct rw_semaphore *
++ rwsem_downgrade_wake(struct rw_semaphore *sem);
+ 
+ /*
+  * the semaphore definition
+Index: linux/include/asm-x86/semaphore_32.h
+===================================================================
+--- linux.orig/include/asm-x86/semaphore_32.h	2008-01-09 21:16:29.000000000 +0100
++++ linux/include/asm-x86/semaphore_32.h	2008-01-10 09:38:17.000000000 +0100
+@@ -83,10 +83,10 @@ static inline void init_MUTEX_LOCKED (st
+ 	sema_init(sem, 0);
+ }
+ 
+-void __down_failed(void /* special register calling convention */);
+-int  __down_failed_interruptible(void  /* params in registers */);
+-int  __down_failed_trylock(void  /* params in registers */);
+-void __up_wakeup(void /* special register calling convention */);
++extern asmregparm void __down_failed(atomic_t *count_ptr);
++extern asmregparm int  __down_failed_interruptible(atomic_t *count_ptr);
++extern asmregparm int  __down_failed_trylock(atomic_t *count_ptr);
++extern asmregparm void __up_wakeup(atomic_t *count_ptr);
+ 
+ /*
+  * This is ugly, but we want the default case to fall through.
+Index: linux/lib/rwsem.c
+===================================================================
+--- linux.orig/lib/rwsem.c	2008-01-09 21:16:30.000000000 +0100
++++ linux/lib/rwsem.c	2008-01-10 09:55:55.000000000 +0100
+@@ -187,7 +187,7 @@ rwsem_down_failed_common(struct rw_semap
+ /*
+  * wait for the read lock to be granted
+  */
+-struct rw_semaphore __sched *
++asmregparm struct rw_semaphore __sched *
+ rwsem_down_read_failed(struct rw_semaphore *sem)
+ {
+ 	struct rwsem_waiter waiter;
+@@ -201,7 +201,7 @@ rwsem_down_read_failed(struct rw_semapho
+ /*
+  * wait for the write lock to be granted
+  */
+-struct rw_semaphore __sched *
++asmregparm struct rw_semaphore __sched *
+ rwsem_down_write_failed(struct rw_semaphore *sem)
+ {
+ 	struct rwsem_waiter waiter;
+@@ -216,7 +216,7 @@ rwsem_down_write_failed(struct rw_semaph
+  * handle waking up a waiter on the semaphore
+  * - up_read/up_write has decremented the active part of count if we come here
+  */
+-struct rw_semaphore *rwsem_wake(struct rw_semaphore *sem)
++asmregparm struct rw_semaphore *rwsem_wake(struct rw_semaphore *sem)
+ {
+ 	unsigned long flags;
+ 
+@@ -236,7 +236,7 @@ struct rw_semaphore *rwsem_wake(struct r
+  * - caller incremented waiting part of count and discovered it still negative
+  * - just wake up any readers at the front of the queue
+  */
+-struct rw_semaphore *rwsem_downgrade_wake(struct rw_semaphore *sem)
++asmregparm struct rw_semaphore *rwsem_downgrade_wake(struct rw_semaphore *sem)
+ {
+ 	unsigned long flags;
+ 
+Index: linux/include/linux/linkage.h
+===================================================================
+--- linux.orig/include/linux/linkage.h	2008-01-09 21:16:04.000000000 +0100
++++ linux/include/linux/linkage.h	2008-01-10 10:01:52.000000000 +0100
+@@ -13,6 +13,10 @@
+ #define asmlinkage CPP_ASMLINKAGE
+ #endif
+ 
++#ifndef asmregparm
++#define asmregparm
++#endif
++
+ #ifndef prevent_tail_call
+ # define prevent_tail_call(ret) do { } while (0)
+ #endif
