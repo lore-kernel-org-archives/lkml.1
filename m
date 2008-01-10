@@ -1,53 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757865AbYAJEAN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757906AbYAJEOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757865AbYAJEAN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 23:00:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754691AbYAJEAA
+	id S1757906AbYAJEOT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 23:14:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754857AbYAJEOB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 23:00:00 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:29000 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754244AbYAJD77 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 22:59:59 -0500
-Subject: Re: [RFC PATCH 22/22 -v2] Trace irq disabled critical timings
-From: Daniel Walker <dwalker@mvista.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>
-In-Reply-To: <20080109233045.768464295@goodmis.org>
-References: <20080109232914.676624725@goodmis.org>
-	 <20080109233045.768464295@goodmis.org>
-Content-Type: text/plain
-Date: Wed, 09 Jan 2008 19:58:22 -0800
-Message-Id: <1199937502.18203.22.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+	Wed, 9 Jan 2008 23:14:01 -0500
+Received: from ns2.suse.de ([195.135.220.15]:42421 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754701AbYAJEOA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 23:14:00 -0500
+From: Neil Brown <neilb@suse.de>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Date: Thu, 10 Jan 2008 15:13:48 +1100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18309.39804.31974.851666@notabene.brown>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Kevin Winchester <kjwinchester@gmail.com>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       NetDev <netdev@vger.kernel.org>, gregkh@suse.de
+Subject: Re: Top 10 kernel oopses for the week ending January 5th, 2008
+In-Reply-To: message from Al Viro on Tuesday January 8
+References: <477FF149.4070609@linux.intel.com>
+	<20080105213935.GN27894@ZenIV.linux.org.uk>
+	<20080107174431.GC27741@fieldses.org>
+	<4782CF9C.6000508@gmail.com>
+	<alpine.LFD.1.00.0801071851120.3148@woody.linux-foundation.org>
+	<20080108055917.GZ27894@ZenIV.linux.org.uk>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday January 8, viro@ZenIV.linux.org.uk wrote:
+> 
+> FWIW, I'm going to go through Arjan's collection and post blow-by-blow
+> analysis of some of those suckers.  Tonight, probably...
+> 
+> Let's take e.g. http://www.kerneloops.org/raw.php?rawid=2618
 
-On Wed, 2008-01-09 at 18:29 -0500, Steven Rostedt wrote:
-> +                       /* Don't trace irqs off for idle */
-> +                       stop_critical_timings();
->                         idle();
-> +                       start_critical_timings();
+Thanks for that analysis.
+...
+> 
+> Humm...  So we have kobj->parent containing crap.  What about the caller?
+> It's from drivers/md/md.c:
+> static void delayed_delete(struct work_struct *ws)
 
+This is a good argument for sticking "md_" at the from of all my
+function names, even if they are static.  I'm fairly sure I looked at
+that trace:
 
-Is there another way to hook into the idle routine? Right above these
-lines there is a call to "enter_idle()" which I'm wondering about ..
-Would be nice to have some sort of generic hook or method for this ..
+> Call Trace:
+>  [<ffffffff803b37e9>] kobject_put+0x19/0x20
+>  [<ffffffff803b389b>] kobject_del+0x2b/0x40
+>  [<ffffffff804d7d50>] delayed_delete+0x0/0xb0
+>  [<ffffffff804d7db9>] delayed_delete+0x69/0xb0
+>  [<ffffffff80249775>] run_workqueue+0x175/0x210
+>  [<ffffffff8024a411>] worker_thread+0x71/0xb0
+>  [<ffffffff8024d9e0>] autoremove_wake_function+0x0/0x40
+>  [<ffffffff8024a3a0>] worker_thread+0x0/0xb0
+>  [<ffffffff8024d5fd>] kthread+0x4d/0x80
+>  [<ffffffff8020c4b8>] child_rip+0xa/0x12
+>  [<ffffffff8020bbcf>] restore_args+0x0/0x30
+>  [<ffffffff8024d5b0>] kthread+0x0/0x80
+>  [<ffffffff8020c4ae>] child_rip+0x0/0x12
 
-Daniel
+but as it doesn't mention 'md' or 'nfs' I moved on.  My bad.
+
+> 
+> What guarantees that it doesn't happen before we get to callback?  AFAICS,
+> nothing whatsoever...
+
+Yes, that's bad isn't it :-)
+
+I think I should be using sysfs_schedule_callback here.  That makes the 
+required 'get' and 'put' calls.... but it can fail with -ENOMEM.  I
+wonder what I do if -ENOMEM???  Maybe I'll just continue to roll my
+one :-( 
+
+Thanks,
+NeilBrown
 
