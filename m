@@ -1,116 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759732AbYAJSun@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759581AbYAJSvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759732AbYAJSun (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 13:50:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756924AbYAJSuM
+	id S1759581AbYAJSvW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 13:51:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756924AbYAJSvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 13:50:12 -0500
-Received: from mga11.intel.com ([192.55.52.93]:41805 "EHLO mga11.intel.com"
+	Thu, 10 Jan 2008 13:51:05 -0500
+Received: from mga03.intel.com ([143.182.124.21]:23350 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756897AbYAJSuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 13:50:09 -0500
+	id S1756253AbYAJSvC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 13:51:02 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.24,267,1196668800"; 
-   d="scan'208";a="493433336"
-Message-Id: <20080110184856.139099000@intel.com>
-References: <20080110184840.927409000@intel.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 10 Jan 2008 10:48:48 -0800
-From: venkatesh.pallipadi@intel.com
-To: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com,
-       torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
-       davej@redhat.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com,
-       davem@davemloft.net
-Cc: linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 08/11] PAT x86: pci mmap conlfict patch
-Content-Disposition: inline; filename=pci-mmap-conflict.patch
+   d="scan'208";a="363671660"
+Message-ID: <47866364.1010501@intel.com>
+Date: Thu, 10 Jan 2008 10:26:44 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
+MIME-Version: 1.0
+To: Chris Friesen <cfriesen@nortel.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: questions on NAPI processing latency and dropped network packets
+References: <478654C3.60806@nortel.com> <478657C1.8040107@intel.com> <47865FFD.2010407@nortel.com>
+In-Reply-To: <47865FFD.2010407@nortel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Jan 2008 18:27:31.0211 (UTC) FILETIME=[76309DB0:01C853B6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Forward port of pci-mmap-conflict.patch to x86 tree.
+Chris Friesen wrote:
+> Kok, Auke wrote:
+> 
+>> You're using 2.6.10... you can always replace the e1000 module with the
+>> out-of-tree version from e1000.sf.net, this might help a bit - the
+>> version in the
+>> 2.6.10 kernel is very very old.
+> 
+> Do you have any reason to believe this would improve things?  It seems
+> like the problem lies in the NAPI/softirq code rather than in the e1000
+> driver itself, no?
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Index: linux-2.6.git/arch/x86/pci/i386.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/pci/i386.c	2008-01-08 04:30:53.000000000 -0800
-+++ linux-2.6.git/arch/x86/pci/i386.c	2008-01-08 05:15:09.000000000 -0800
-@@ -30,6 +30,8 @@
- #include <linux/init.h>
- #include <linux/ioport.h>
- #include <linux/errno.h>
-+#include <asm/pat.h>
-+#include <asm/cacheflush.h>
- 
- #include "pci.h"
- 
-@@ -297,10 +299,37 @@
- 	pci_write_config_byte(dev, PCI_LATENCY_TIMER, lat);
- }
- 
-+static void pci_unmap_page_range(struct vm_area_struct *vma)
-+{
-+	u64 adr = (u64)vma->vm_pgoff << PAGE_SHIFT;
-+	unsigned long flags = pgprot_val(vma->vm_page_prot)
-+				& _PAGE_CACHE_MASK;
-+	free_mattr(adr, adr + vma->vm_end - vma->vm_start, flags);
-+}
-+
-+static void pci_track_mmap_page_range(struct vm_area_struct *vma)
-+{
-+	u64 adr = (u64)vma->vm_pgoff << PAGE_SHIFT;
-+	unsigned long flags = pgprot_val(vma->vm_page_prot)
-+				& _PAGE_CACHE_MASK;
-+
-+	reserve_mattr(adr, adr + vma->vm_end - vma->vm_start, flags, NULL);
-+}
-+
-+static struct vm_operations_struct pci_mmap_ops = {
-+	.open  = pci_track_mmap_page_range,
-+	.close = pci_unmap_page_range
-+};
-+
- int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
- 			enum pci_mmap_state mmap_state, int write_combine)
- {
- 	unsigned long prot;
-+	u64 addr = vma->vm_pgoff << PAGE_SHIFT;
-+	unsigned long len = vma->vm_end - vma->vm_start;
-+	unsigned long attr;
-+	int err;
-+
- 	/* I/O space cannot be accessed via normal processor loads and
- 	 * stores on this platform.
- 	 */
-@@ -329,10 +358,25 @@
- 		vma->vm_page_prot = __pgprot(prot);
- 	}
- 
-+	attr = pgprot_val(vma->vm_page_prot) & _PAGE_CACHE_MASK;
-+	err = reserve_mattr(addr, addr+len, attr, NULL);
-+	if (err)
-+		return -EBUSY;
-+
-+	err = change_page_attr_addr((unsigned long)__va(addr),
-+	                            len >> PAGE_SHIFT,
-+	                            __pgprot(__PAGE_KERNEL | attr));
-+	if (err) {
-+		free_mattr(addr, addr+len, attr);
-+		return err;
-+	}
-+
- 	if (io_remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff,
- 			       vma->vm_end - vma->vm_start,
- 			       vma->vm_page_prot))
- 		return -EAGAIN;
- 
-+	vma->vm_ops = &pci_mmap_ops;
-+
- 	return 0;
- }
+your real issue is that your userspace app is hogging the CPU. While network is
+not really cpu intensive, it does require that ample time at many intervals is
+given to the CPU to run cleanups and prevent FIFO issues.
 
--- 
+alternatively, you can increase your rx/tx ring descriptor count (with ethtool),
+which basically makes it easier for the hardware not to be serviced for a longer
+period, since there are more buffers available and the card can go longer on when
+userspace is hogging the CPU.
+
+>> it also appears that your app is eating up CPU time. perhaps setting
+>> the app to a
+>> nicer nice level might mitigate things a bit.
+> 
+> If we're not handling the softirq work from ksoftirqd how would changing
+> scheduler settings affect anything?
+
+correct, it might not.
+
+>> Also turn off the in-kernel irq
+>> mitigation, it just causes cache misses and you really need the
+>> network irq to sit
+>> on a single cpu at most (if not all) the time to get the best
+>> performance. Use the
+>> userspace irqbalance daemon instead to achieve this.
+> 
+> Using userspace irqbalance would be some effort to test and deploy
+> properly.  However, as a quick test I tried setting the irq affinity for
+> this device and it didn't help.
+
+irqbalance is a simple userspace app that drops into any system seemlessly and
+does the best job all around - often it beats manual tuning of smp_affinity even ;)
+
+Auke
