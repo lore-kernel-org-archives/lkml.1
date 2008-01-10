@@ -1,155 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758624AbYAJUvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758449AbYAJUwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758624AbYAJUvo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 15:51:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758196AbYAJUv3
+	id S1758449AbYAJUwX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 15:52:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755141AbYAJUwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 15:51:29 -0500
-Received: from mga11.intel.com ([192.55.52.93]:59333 "EHLO mga11.intel.com"
+	Thu, 10 Jan 2008 15:52:10 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:16676 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758165AbYAJUv2 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 15:51:28 -0500
-X-ExtLoop1: 1
+	id S1752558AbYAJUwH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 15:52:07 -0500
 X-IronPort-AV: E=Sophos;i="4.24,267,1196668800"; 
-   d="scan'208";a="493691116"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [patch 02/11] PAT x86: Map only usable memory in x86_64 identity map and kernel text
-Date: Thu, 10 Jan 2008 12:50:55 -0800
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE5A28CE@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <20080110192808.GF747@one.firstfloor.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch 02/11] PAT x86: Map only usable memory in x86_64 identity map and kernel text
-Thread-Index: AchTvwTpMTRDPpyWSLWwGRDST98cAAACTmbg
-References: <p737iiho5yq.fsf@bingen.suse.de> <924EFEDD5F540B4284297C4DC59F3DEE5A2805@orsmsx423.amr.corp.intel.com> <20080110192808.GF747@one.firstfloor.org>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Cc: <ebiederm@xmission.com>, <rdreier@cisco.com>,
-       <torvalds@linux-foundation.org>, <gregkh@suse.de>, <airlied@skynet.ie>,
-       <davej@redhat.com>, <mingo@elte.hu>, <tglx@linutronix.de>,
-       <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-X-OriginalArrivalTime: 10 Jan 2008 20:50:01.0898 (UTC) FILETIME=[5ECBE8A0:01C853CA]
+   d="dif'208?scan'208,208";a="141999164"
+Subject: Re: major NFSv4 client regression (-rc7)
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080110204119.GA714@havoc.gtf.org>
+References: <20080110204119.GA714@havoc.gtf.org>
+Content-Type: multipart/mixed; boundary="=-xcpsnVMcrna6VQjIv6xR"
+Organization: Network Appliance Inc
+Date: Thu, 10 Jan 2008 15:51:34 -0500
+Message-Id: <1199998294.13775.8.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+X-OriginalArrivalTime: 10 Jan 2008 20:51:35.0171 (UTC) FILETIME=[96643D30:01C853CA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
 
->-----Original Message-----
->From: Andi Kleen [mailto:andi@firstfloor.org] 
->Sent: Thursday, January 10, 2008 11:28 AM
->To: Pallipadi, Venkatesh
->Cc: Andi Kleen; ebiederm@xmission.com; rdreier@cisco.com; 
->torvalds@linux-foundation.org; gregkh@suse.de; 
->airlied@skynet.ie; davej@redhat.com; mingo@elte.hu; 
->tglx@linutronix.de; hpa@zytor.co; 
->linux-kernel@vger.kernel.org; Siddha, Suresh B
->Subject: Re: [patch 02/11] PAT x86: Map only usable memory in 
->x86_64 identity map and kernel text
->
->On Thu, Jan 10, 2008 at 11:17:07AM -0800, Pallipadi, Venkatesh wrote:
->> >I don't think that is needed or makes sense for 
->reserved/ACPI * etc. 
->> >Only e820 holes should be truly unmapped because only those should
->> >contain mmio.
->> 
->> Do you mean just the regions that are not listed in e820 at all? We
->> should also not map anything marked "RESERVED" in e820. Right?
->
->RESERVED is usually memory used by the BIOS. Properly MMIO areas
->should be in holes.
->
->Of course there might be buggy BIOS who violate that but the
->only way to find out is to check for the case in ioremap and 
->warn. I would
->be still optimistic of it being correct.
->
->Another way would be to double check against the MTRRs - if 
->it's UC then
->it should be unmapped. Maybe that would be a good idea. That should
->catch all true mmio holes unless a BIOS maps them cached but if it does
->that it's already beyond help.
+--=-xcpsnVMcrna6VQjIv6xR
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-One of the test systems I have has following E820
- BIOS-e820: 0000000000000000 - 000000000009cc00 (usable)
- BIOS-e820: 000000000009cc00 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000cc000 - 00000000000d0000 (reserved)
- BIOS-e820: 00000000000e4000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 00000000cff60000 (usable)
- BIOS-e820: 00000000cff60000 - 00000000cff69000 (ACPI data)
- BIOS-e820: 00000000cff69000 - 00000000cff80000 (ACPI NVS)
- BIOS-e820: 00000000cff80000 - 00000000d0000000 (reserved)
- BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
- BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
- BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
- BIOS-e820: 00000000ff000000 - 0000000100000000 (reserved)
- BIOS-e820: 0000000100000000 - 0000000130000000 (usable)
 
-I think it is unsafe to access any reserved areas through "WB" not just
-mmio regions. In the above case 0xe0000000-0xf0000000 is one such
-region.
+On Thu, 2008-01-10 at 15:41 -0500, Jeff Garzik wrote:
+> Server:		Linux 2.6.24-rc6 (x86-64/Fedora 8)
+> Good client:	Linux 2.6.24-rc6-ge697789d (x86-64/Fedora 7)
+> Bad client:	Linux 2.6.24-rc7-gfd0b45df (x86-64/Fedora 7)
+> Situation:	home dir via NFS
+> 
+> My home setup is a standard homedir-over-NFS setup, using NFSv4 on both
+> client and server.  I just rebooted into the latest upstream kernel, and
+> I am getting NFS client hangs all over the place:
+> 
+> 	[jgarzik@core firefox]$ cat profiles.ini 
+> 
+> 	hangs here, for 15 minutes so far and counting...
+> 	('core' is the client machine)
+> 
+> and I first noticed this when firefox and thunderbird were hanging, when
+> I tried to start them after rebooting into the latest kernel.  stracing
+> firefox yielding a hang in open:
+> 
+> 	("/g" is the NFS-mounted volume)
+> 
+> 	access("/usr/lib64/firefox-2.0.0.10/updates", F_OK) = -1 ENOENT (No such file or directory)
+> 	access("/g/g/.mozilla/firefox", F_OK)   = 0
+> 	access("/g/g/.mozilla/firefox", F_OK)   = 0
+> 	stat("/g/g/.mozilla/firefox/profiles.ini", {st_mode=S_IFREG|0664, st_size=94, ...}) = 0
+> 	open("/g/g/.mozilla/firefox/profiles.ini", O_RDONLY
+> 
+> 	hangs here, for 20 minutes so far and counting...
+> 
+> As you can see from the trace, and as I can report simply by being able
+> to send this message, SOME file accesses over NFS work just fine.
+> 
+> Accessing the file works when logged into the server, so its not disk
+> corruption or something like that.
+> 
+> Neither client nor server have anything interesting in dmesg -- in fact
+> nothing in dmesg beyond the normal boot messages have been printed.
+> 
+> Let me know what info I can provide...  This is a 100% reproducible
+> regression, and this latest NFS client revision has made my local
+> NFS-over-homedir setup completely unusable.  I am forced to return to
+> the known working client (Linux 2.6.24-rc6-ge697789d) just to run basic
+> apps.
 
-Also, relying on MTRR, is like giving more importance to BIOS writer
-than required :-). I think the best way to deal with MTRR is just to not
-touch it. Leave it as it is and do not try to assume that they are
-correct, as frequently they will not be.
+This looks as if it might be the same issue that was reported as bug
+9712 in bugzilla (http://bugzilla.kernel.org/show_bug.cgi?id=9712).
 
->> >> All reserved memory maps to a
->> >> zero page. 
->> >
->> >Why zero page?  Why not unmap.
->> 
->> I had it unmapped first. Then thought of zero mapping for dd 
->of devmem
->> to continue working. May be there are apps that depend on that?
->> Also, dd of devmem seems to be already broken with big memory without
->> any of these changes.
->
->Exactly it's already broken.
->
->Anyways if someone accesses mmio through /dev/mem I think they 
->definitely
->want the real mappings, not a zero page.  And dev/mem should provide.
->The trick is just to do it without caching attribute violations, 
->but with mattr it is possible.
+The fix is attached. Please could you confirm that it fixes the hang?
 
-I don't like /dev/mem supporting access to mmio. We do not know what
-attributes to use for these regions. We can potentially map all these
-pages uncacheable. But there may be cases where reading an address can
-block too possibly?
+Cheers
+  Trond
 
->> >Anyways you could make that a zillion times more simple by 
->> >just rounding
->> >the e820 areas to 2MB -- for the holes only that should be 
->ok I think; 
->> >i would expect them to be near always already suitably aligned.
->> >
->> >In short this can be all done much simpler.
->> 
->> On systems I tested, ACPI regions are typically not 2MB 
->aligned. And on
->
->ACPI regions don't need to be unmapped.
->
->> some systems there are few 4k pages of reserved holes just before
->
->reserved shouldn't be unmapped, just holes. Do they have holes
->there or reserved areas?
->
->I still hope 2MB alignment will work out.
+--=-xcpsnVMcrna6VQjIv6xR
+Content-Disposition: inline; filename*0=linux-2.6.24-001-fix_locking_deadlock_in_nfs4_lock_prepare.di; filename*1=f
+Content-Type: message/rfc822; name=linux-2.6.24-001-fix_locking_deadlock_in_nfs4_lock_prepare.dif
 
-E820 above has a combination of reserved and holes.
-The problem is that we end up depending on specific e820s and paltform
-specific problems/workarounds. This is not a real problem for i386 at
-all, as we map only < 1G memory there. So, it is limited to x86_64
-systems which should be less in number.
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date: Tue, 8 Jan 2008 19:26:49 -0500
+NFSv4: Give the lock stateid its own sequence queue
+Subject: No Subject
+Message-Id: <1199998291.13775.7.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
 
-Thanks,
-Venki 
+Sharing the open sequence queue causes a deadlock when we try to take both
+a lock sequence id and and open sequence id.
+
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
+
+ fs/nfs/nfs4_fs.h   |    1 +
+ fs/nfs/nfs4state.c |    5 ++++-
+ 2 files changed, 5 insertions(+), 1 deletions(-)
+
+diff --git a/fs/nfs/nfs4_fs.h b/fs/nfs/nfs4_fs.h
+index b35069a..bd1b9d6 100644
+--- a/fs/nfs/nfs4_fs.h
++++ b/fs/nfs/nfs4_fs.h
+@@ -115,6 +115,7 @@ struct nfs4_lock_state {
+ #define NFS_LOCK_INITIALIZED 1
+ 	int			ls_flags;
+ 	struct nfs_seqid_counter	ls_seqid;
++	struct rpc_sequence	ls_sequence;
+ 	struct nfs_unique_id	ls_id;
+ 	nfs4_stateid		ls_stateid;
+ 	atomic_t		ls_count;
+diff --git a/fs/nfs/nfs4state.c b/fs/nfs/nfs4state.c
+index 23a9a36..5a39c6f 100644
+--- a/fs/nfs/nfs4state.c
++++ b/fs/nfs/nfs4state.c
+@@ -509,7 +509,10 @@ static struct nfs4_lock_state *nfs4_alloc_lock_state(struct nfs4_state *state, f
+ 	lsp = kzalloc(sizeof(*lsp), GFP_KERNEL);
+ 	if (lsp == NULL)
+ 		return NULL;
+-	lsp->ls_seqid.sequence = &state->owner->so_sequence;
++	rpc_init_wait_queue(&lsp->ls_sequence.wait, "lock_seqid_waitqueue");
++	spin_lock_init(&lsp->ls_sequence.lock);
++	INIT_LIST_HEAD(&lsp->ls_sequence.list);
++	lsp->ls_seqid.sequence = &lsp->ls_sequence;
+ 	atomic_set(&lsp->ls_count, 1);
+ 	lsp->ls_owner = fl_owner;
+ 	spin_lock(&clp->cl_lock);
+
+--=-xcpsnVMcrna6VQjIv6xR--
