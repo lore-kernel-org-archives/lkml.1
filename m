@@ -1,65 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbYAJVwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757470AbYAJVya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757271AbYAJVwm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 16:52:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbYAJVwf
+	id S1757470AbYAJVya (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 16:54:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978AbYAJVyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 16:52:35 -0500
-Received: from wx-out-0506.google.com ([66.249.82.231]:9187 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751023AbYAJVwe (ORCPT
+	Thu, 10 Jan 2008 16:54:21 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:49618 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753574AbYAJVyU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 16:52:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=yCek/AB3jqDNysaqQJDFQEQC7BAWiUm6TAcedbKGn8qn/ss97a0skCc43X01ivJtjkRVSFUZ5ReQQc51wXKKlpxWPq93OpB7X8vDlkFF2bINn1J51PktUSoRAQLk6KqiWla24EgRFdoi0MTMXK/Aw8afUVEutv9e+S7V40oePb4=
-Message-ID: <e85b9d30801101352hf66826eqe436e61310c96f14@mail.gmail.com>
-Date: Thu, 10 Jan 2008 22:52:31 +0100
-From: Matthew <jackdachef@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Fwd: Fwd: laptop / computer hardlocks during execution of 32bit applications(binaries) on 64bit system (Gentoo)
-Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@redhat.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Ed Tomlinson" <edt@aei.ca>
-In-Reply-To: <47868B6D.6030208@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 10 Jan 2008 16:54:20 -0500
+Subject: Re: [PATCH] bsg : Add support for io vectors in bsg
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Pete Wyckoff <pw@osc.edu>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, tomof@acm.org,
+       deepakrc@gmail.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080110214605.GD1928@osc.edu>
+References: <Pine.LNX.4.64.0801042137350.7836@localhost>
+	 <200801050501.m0551LFB030667@mbox.iij4u.or.jp>
+	 <20080108220918.GA9484@osc.edu>
+	 <20080109091118N.fujita.tomonori@lab.ntt.co.jp>
+	 <20080110204325.GC1928@osc.edu>
+	 <1199998531.3141.96.camel@localhost.localdomain>
+	 <20080110214605.GD1928@osc.edu>
+Content-Type: text/plain
+Date: Thu, 10 Jan 2008 15:54:14 -0600
+Message-Id: <1200002054.3141.103.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <e85b9d30712291157v113f5e73yd830ae3c3429092d@mail.gmail.com>
-	 <e85b9d30712291504r2f4ef991w33f501ccf0d41c2b@mail.gmail.com>
-	 <200712300128.35476.mboton@gmail.com> <20080102084002.GA13636@elte.hu>
-	 <e85b9d30801080333y3d6668ccgf20f9666d0326884@mail.gmail.com>
-	 <e85b9d30801080340y43fbd4c0sa9b6c9811c7391a1@mail.gmail.com>
-	 <47841C41.4060401@zytor.com>
-	 <e85b9d30801101310p485c7686o30b7cd581043712@mail.gmail.com>
-	 <47868B6D.6030208@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Do you have the error dump output to go along with this, too?
->
 
-no, unfortunately no kernel crash dump on disk ;( (I hope I understood
-it right, I'm pretty noobish concerning collection of error data ;) )
+On Thu, 2008-01-10 at 16:46 -0500, Pete Wyckoff wrote:
+> James.Bottomley@HansenPartnership.com wrote on Thu, 10 Jan 2008 14:55 -0600:
+> > On Thu, 2008-01-10 at 15:43 -0500, Pete Wyckoff wrote:
+> > > fujita.tomonori@lab.ntt.co.jp wrote on Wed, 09 Jan 2008 09:11 +0900:
+> > > > On Tue, 8 Jan 2008 17:09:18 -0500
+> > > > Pete Wyckoff <pw@osc.edu> wrote:
+> > > > > I took another look at the compat approach, to see if it is feasible
+> > > > > to keep the compat handling somewhere else, without the use of #ifdef
+> > > > > CONFIG_COMPAT and size-comparison code inside bsg.c.  I don't see how.
+> > > > > The use of iovec is within a write operation on a char device.  It's
+> > > > > not amenable to a compat_sys_ or a .compat_ioctl approach.
+> > > > > 
+> > > > > I'm partial to #1 because the use of architecture-independent fields
+> > > > > matches the rest of struct sg_io_v4.  But if you don't want to have
+> > > > > another iovec type in the kernel, could we do #2 but just return
+> > > > > -EINVAL if the need for compat is detected?  I.e. change
+> > > > > dout_iovec_count to dout_iovec_length and do the math?
+> > > > 
+> > > > If you are ok with removing the write/read interface and just have
+> > > > ioctl, we could can handle comapt stuff like others do. But I think
+> > > > that you (OSD people) really want to keep the write/read
+> > > > interface. Sorry, I think that there is no workaround to support iovec
+> > > > in bsg.
+> > > 
+> > > I don't care about read/write in particular.  But we do need some
+> > > way to launch asynchronous SCSI commands, and currently read/write
+> > > are the only way to do that in bsg.  The reason is to keep multiple
+> > > spindles busy at the same time.
+> > 
+> > Won't multi-threading the ioctl calls achieve the same effect?  Or do
+> > you trip over BKL there?
+> 
+> There's no BKL on (new) ioctls anymore, at least.  A thread per
+> device would be feasible perhaps.  But if you want any sort of
+> pipelining out of the device, esp. in the remote iSCSI case, you
+> need to have a good number of commands outstanding to each device.
+> So a thread per command per device.  Typical iSCSI queue depth of
+> 128 times 16 devices for a small setup is a lot of threads.
 
-I only have the console-output of the hardlock in:
-http://kerneloftruth.neucode.org/other/crash_ia32_64/not_tainted/
+I was actually thinking of a thread per outstanding command.
 
-and a call trace from an earlier crash but I don't know if it's worth anything:
-http://kerneloftruth.neucode.org/other/crash_ia32_64/moto_0040.jpg
+> The pthread/pipe latency overhead is not insignificant for fast
+> storage networks too.
+> 
+> > > How about these new ioctls instead of read/write:
+> > > 
+> > >     SG_IO_SUBMIT - start a new blk_execute_rq_nowait()
+> > >     SG_IO_TEST   - complete and return a previous req
+> > >     SG_IO_WAIT   - wait for a req to finish, interruptibly
+> > > 
+> > > Then old write users will instead do ioctl SUBMIT.  Read users will
+> > > do TEST for non-blocking fd, or WAIT for blocking.  And SG_IO could
+> > > be implemented as SUBMIT + WAIT.
+> > > 
+> > > Then we can do compat_ioctl and convert up iovecs out-of-line before
+> > > calling the normal functions.
+> > > 
+> > > Let me know if you want a patch for this.
+> > 
+> > Really, the thought of re-inventing yet another async I/O interface
+> > isn't very appealing.
+> 
+> I'm fine with read/write, except Tomo is against handling iovecs
+> because of the compat complexity with struct iovec being different
+> on 32- vs 64-bit.  There is a standard way to do "compat" ioctl that
+> hides this handling in a different file (not bsg.c), which is the
+> only reason I'm even considering these ioctls.  I don't care about
+> compat setups per se.
+> 
+> Is there another async I/O mechanism?  Userspace builds the CDBs,
+> just needs some way to drop them in SCSI ML.  BSG is almost perfect
+> for this, but doesn't do iovec, leading to lots of memcpy.
 
-just FYI: the crash also occurs with preemptible rcu disabled (classic
-rcu) (just saw that I had it enabled in that kernel ...)
+No, it's just that async interfaces in Linux have a long and fairly
+unhappy history.
+
+James
 
 
-> Huge thanks,
->
-
-:)
-
->         -hpa
->
-
-Mat
