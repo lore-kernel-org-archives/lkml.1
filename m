@@ -1,100 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758984AbYAJQaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759329AbYAJQfK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758984AbYAJQaG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 11:30:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756378AbYAJQ3y
+	id S1759329AbYAJQfK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 11:35:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754651AbYAJQe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 11:29:54 -0500
-Received: from mail.gmx.net ([213.165.64.20]:52921 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756309AbYAJQ3x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 11:29:53 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19XdWpFKlNXfZ7SFQldnl6Lr04dqua9YGcYfE3cLV
-	zv2mVucNS7rDg/
-Subject: Re: [vm] writing to UDF DVD+RW (/dev/sr0) while under memory
-	pressure: box ==> doorstop
-From: Mike Galbraith <efault@gmx.de>
-To: Jan Kara <jack@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, bfennema@falcon.csc.calpoly.edu
-In-Reply-To: <20080110144123.GA12331@atrey.karlin.mff.cuni.cz>
-References: <1199447212.4529.13.camel@homer.simson.net>
-	 <1199612533.4384.54.camel@homer.simson.net>
-	 <1199642470.3927.12.camel@homer.simson.net>
-	 <20080106122954.d8f04c98.akpm@linux-foundation.org>
-	 <1199790316.4094.57.camel@homer.simson.net>
-	 <20080108033801.40d0043a.akpm@linux-foundation.org>
-	 <1199805713.3571.12.camel@homer.simson.net>
-	 <1199806071.4174.2.camel@homer.simson.net>
-	 <1199877080.4340.19.camel@homer.simson.net>
-	 <20080109150139.311f68d3.akpm@linux-foundation.org>
-	 <20080110144123.GA12331@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain
-Date: Thu, 10 Jan 2008 16:29:50 +0100
-Message-Id: <1199978990.4196.53.camel@homer.simson.net>
+	Thu, 10 Jan 2008 11:34:58 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:54934
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752432AbYAJQe5 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 11:34:57 -0500
+Message-Id: <47865755.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Thu, 10 Jan 2008 16:35:17 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] make module_sect_attrs private to kernel/module.c
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+No-one else is using these afaics.
 
-On Thu, 2008-01-10 at 15:41 +0100, Jan Kara wrote:
-> > On Wed, 09 Jan 2008 12:11:20 +0100
-> > 
-> > 
-> > I wonder why UDF was doing a synchronous write in there.  In fact I wonder
-> > why it's writing the inode at all?  extN doesn't do that.  If for some
-> > reason it really does want to make the inode immediately reclaimable then
-> > simply shoving it down into the /dev/hda1 pagecache should be sufficient
-> > (ie: what you did)..
->   Looking at the code, I think UDF change is correct. UDF has to call
-> write_inode_now() because by the time clear_inode() is called, inode is
-> already written by VFS and prepared to be freed. But then UDF modifies
-> it in udf_clear_inode() (removes preallocation) and for these changes to
-> get to disk you have to write the inode explicitely. 
->   But there's really no need to wait on IO. We only have to copy all
-> data from inode structure into buffers and that happens even if we don't
-> wait on sync.
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+---
 
-Perhaps I should go ahead and submit it then.  There are 5 other async
-callers as well, so VM/UDF reclaim buglet can die, and those others can
-get what they asked for with net diffstat of 0.
+ include/linux/module.h |   17 -----------------
+ kernel/module.c        |   16 +++++++++++++++-
+ 2 files changed, 15 insertions(+), 18 deletions(-)
 
-Fix udf_clear_inode() to request asynchronous writeout in icache reclaim
-path, and ensure that write_inore_now() honors that request, lest
-allocators needlessly block on iprune_mutex.
+--- linux-2.6.24-rc7/include/linux/module.h	2008-01-10 16:50:52.000000000 +0100
++++ 2.6.24-rc7-private-module-sect-attrs/include/linux/module.h	2008-01-08 09:15:49.000000000 +0100
+@@ -229,23 +229,6 @@ enum module_state
+ 	MODULE_STATE_GOING,
+ };
+ 
+-/* Similar stuff for section attributes. */
+-struct module_sect_attr
+-{
+-	struct module_attribute mattr;
+-	char *name;
+-	unsigned long address;
+-};
+-
+-struct module_sect_attrs
+-{
+-	struct attribute_group grp;
+-	int nsections;
+-	struct module_sect_attr attrs[0];
+-};
+-
+-struct module_param_attrs;
+-
+ struct module
+ {
+ 	enum module_state state;
+--- linux-2.6.24-rc7/kernel/module.c	2008-01-10 16:50:54.000000000 +0100
++++ 2.6.24-rc7-private-module-sect-attrs/kernel/module.c	2008-01-08 10:12:12.000000000 +0100
+@@ -968,6 +968,20 @@ static unsigned long resolve_symbol(Elf_
+  * J. Corbet <corbet@lwn.net>
+  */
+ #ifdef CONFIG_KALLSYMS
++struct module_sect_attr
++{
++	struct module_attribute mattr;
++	char *name;
++	unsigned long address;
++};
++
++struct module_sect_attrs
++{
++	struct attribute_group grp;
++	unsigned int nsections;
++	struct module_sect_attr attrs[0];
++};
++
+ static ssize_t module_sect_show(struct module_attribute *mattr,
+ 				struct module *mod, char *buf)
+ {
+@@ -978,7 +992,7 @@ static ssize_t module_sect_show(struct m
+ 
+ static void free_sect_attrs(struct module_sect_attrs *sect_attrs)
+ {
+-	int section;
++	unsigned int section;
+ 
+ 	for (section = 0; section < sect_attrs->nsections; section++)
+ 		kfree(sect_attrs->attrs[section].name);
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index 0fca820..f1cce24 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -657,7 +657,7 @@ int write_inode_now(struct inode *inode, int sync)
- 	int ret;
- 	struct writeback_control wbc = {
- 		.nr_to_write = LONG_MAX,
--		.sync_mode = WB_SYNC_ALL,
-+		.sync_mode = sync ? WB_SYNC_ALL : WB_SYNC_NONE,
- 		.range_start = 0,
- 		.range_end = LLONG_MAX,
- 	};
-diff --git a/fs/udf/inode.c b/fs/udf/inode.c
-index 6ff8151..d1fc116 100644
---- a/fs/udf/inode.c
-+++ b/fs/udf/inode.c
-@@ -117,7 +117,7 @@ void udf_clear_inode(struct inode *inode)
- 		udf_discard_prealloc(inode);
- 		udf_truncate_tail_extent(inode);
- 		unlock_kernel();
--		write_inode_now(inode, 1);
-+		write_inode_now(inode, 0);
- 	}
- 	kfree(UDF_I_DATA(inode));
- 	UDF_I_DATA(inode) = NULL;
 
 
