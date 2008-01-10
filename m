@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758670AbYAJTto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757691AbYAJTvD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758670AbYAJTto (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 14:49:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbYAJTth
+	id S1757691AbYAJTvD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 14:51:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbYAJTux
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 14:49:37 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:49974 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750964AbYAJTtg (ORCPT
+	Thu, 10 Jan 2008 14:50:53 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:38756 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753707AbYAJTuw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 14:49:36 -0500
-Message-ID: <478676AE.9000101@zytor.com>
-Date: Thu, 10 Jan 2008 11:49:02 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: Use wrmsrl in kprobes.c, step.c
-References: <1199949482.19760.9.camel@brick>	 <20080110124041.GA15156@elte.hu> <1199994043.19760.31.camel@brick>
-In-Reply-To: <1199994043.19760.31.camel@brick>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Jan 2008 14:50:52 -0500
+Date: Thu, 10 Jan 2008 20:53:29 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Matt Mackall <mpm@selenic.com>, Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       Hugh Dickins <hugh@veritas.com>, Andi Kleen <andi@firstfloor.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH] greatly reduce SLOB external fragmentation
+Message-ID: <20080110195329.GB2120@one.firstfloor.org>
+References: <1199906151.6245.57.camel@cinder.waste.org> <Pine.LNX.4.64.0801100037230.3071@sbz-30.cs.Helsinki.FI> <1199919548.6245.74.camel@cinder.waste.org> <Pine.LNX.4.64.0801101156150.10271@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0801101251200.14402@sbz-30.cs.Helsinki.FI> <alpine.LFD.1.00.0801100749000.3148@woody.linux-foundation.org> <1199987366.5331.92.camel@cinder.waste.org> <alpine.LFD.1.00.0801101013310.3148@woody.linux-foundation.org> <1199990565.5331.130.camel@cinder.waste.org> <alpine.LFD.1.00.0801101124140.3148@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0801101124140.3148@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harvey Harrison wrote:
-> Where x86_32 passed zero in the high 32 bits, use wrmsrl which
-> will zero extend for us.  This allows ifdefs for 32/64 bit to
-> be eliminated.
+>  - huge pages (superpages for those crazy db people)
 > 
-> Eliminate ifdef in step.c.  Similar cleanup was done when unifying
-> kprobes_32|64.c and wrmsr() was chosen there over wrmsrl().  This
-> patch changes these to wrmsrl.
-> 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
->  arch/x86/kernel/kprobes.c |    4 ++--
->  arch/x86/kernel/step.c    |    4 ----
->  2 files changed, 2 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-> index 53ba6a5..34becd1 100644
-> --- a/arch/x86/kernel/kprobes.c
-> +++ b/arch/x86/kernel/kprobes.c
-> @@ -410,13 +410,13 @@ static void __kprobes set_current_kprobe(struct kprobe *p, struct pt_regs *regs,
->  static void __kprobes clear_btf(void)
->  {
->  	if (test_thread_flag(TIF_DEBUGCTLMSR))
-> -		wrmsr(MSR_IA32_DEBUGCTLMSR, 0, 0);
-> +		wrmsrl(MSR_IA32_DEBUGCTLMSR, 0L);
->  }
+>    Just a simple linked list of these things is fine, we'd never care 
+>    about coalescing large pages together anyway.
 
-Drop the L.  It doesn't buy you anything, and gcc will sign-extend for 
-you anyway.  It's just visual clutter.
+I did essentially that for my GBpages hugetlbfs patchkit. GB pages are already
+beyond MAX_ORDER and increasing MAX_ORDER didn't seem attractive because
+it would require aligning the zones all to 1GB which would quite nasty.
 
-	-hpa
+So it just grabbed them out of bootmem early and managed them in a 
+per node list.
+
+Not sure it's a good idea for 2MB pages though.
+
+-Andi
