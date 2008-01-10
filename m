@@ -1,91 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759262AbYAJTRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759538AbYAJTSu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759262AbYAJTRg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 14:17:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752511AbYAJTR2
+	id S1759538AbYAJTSu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 14:18:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbYAJTSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 14:17:28 -0500
-Received: from mga11.intel.com ([192.55.52.93]:47406 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752184AbYAJTR1 convert rfc822-to-8bit (ORCPT
+	Thu, 10 Jan 2008 14:18:43 -0500
+Received: from smtprelay06.ispgateway.de ([80.67.18.44]:32898 "EHLO
+	smtprelay06.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752463AbYAJTSm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 14:17:27 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,267,1196668800"; 
-   d="scan'208";a="283396877"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 10 Jan 2008 14:18:42 -0500
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: kinit (was: sleep before boot panic)
+Date: Thu, 10 Jan 2008 20:20:06 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Pavel Machek <pavel@ucw.cz>, Andi Kleen <andi@firstfloor.org>,
+       Bernd Schubert <bernd-schubert@gmx.de>, linux-kernel@vger.kernel.org
+References: <200801061908.43010.bernd-schubert@gmx.de> <20080108160645.GA4574@ucw.cz> <47850C89.2040805@zytor.com>
+In-Reply-To: <47850C89.2040805@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [patch 02/11] PAT x86: Map only usable memory in x86_64 identity map and kernel text
-Date: Thu, 10 Jan 2008 11:17:07 -0800
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE5A2805@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <p737iiho5yq.fsf@bingen.suse.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch 02/11] PAT x86: Map only usable memory in x86_64 identity map and kernel text
-Thread-Index: AchTvBomqeVXFlSzTPaJ53BoRaCNjwAAEaLQ
-References: <20080110184840.927409000@intel.com><20080110184854.787474000@intel.com> <p737iiho5yq.fsf@bingen.suse.de>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Cc: <ebiederm@xmission.com>, <rdreier@cisco.com>,
-       <torvalds@linux-foundation.org>, <gregkh@suse.de>, <airlied@skynet.ie>,
-       <davej@redhat.com>, <mingo@elte.hu>, <tglx@linutronix.de>,
-       <hpa@zytor.co>, <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-X-OriginalArrivalTime: 10 Jan 2008 19:16:14.0783 (UTC) FILETIME=[44C64CF0:01C853BD]
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801102020.07786.ioe-lkml@rameria.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: linux-kernel-owner@vger.kernel.org 
->[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Andi Kleen
->Sent: Thursday, January 10, 2008 11:07 AM
->To: Pallipadi, Venkatesh
->Cc: ebiederm@xmission.com; rdreier@cisco.com; 
->torvalds@linux-foundation.org; gregkh@suse.de; 
->airlied@skynet.ie; davej@redhat.com; mingo@elte.hu; 
->tglx@linutronix.de; hpa@zytor.co; 
->linux-kernel@vger.kernel.org; Siddha, Suresh B
->Subject: Re: [patch 02/11] PAT x86: Map only usable memory in 
->x86_64 identity map and kernel text
->
->venkatesh.pallipadi@intel.com writes:
->
->> x86_64: Map only usable memory in identity map. 
->
->I don't think that is needed or makes sense for reserved/ACPI * etc. 
->Only e820 holes should be truly unmapped because only those should
->contain mmio.
+On Wednesday 09 January 2008, H. Peter Anvin wrote:
+> Pavel Machek wrote:
+> > 
+> >> Of course, if we'd been using kinit, "soft panic" would 
+> >> have been done exclusively in userspace...
+> > 
+> > What's the status of kinit, btw?
+> > 							Pavel
+> 
+> It's bitrotted a bit since it was first rejected.  It wouldn't take too 
+> much work to bring it back up to speed, however.  klibc, and some of the 
+> kinit components, are used for the initramfs in Debian.
 
-Do you mean just the regions that are not listed in e820 at all? We
-should also not map anything marked "RESERVED" in e820. Right?
+Yes, and I like most of it. The only thing really missing for me 
+is LVM support. Debian (?) did a evil hack to make it work.
+Maybe one day this itches soo much, I'll even scratch it :-)
 
->> All reserved memory maps to a
->> zero page. 
->
->Why zero page?  Why not unmap.
+Then I'll be able to test kernels on a standard LVM installation again.
 
-I had it unmapped first. Then thought of zero mapping for dd of devmem
-to continue working. May be there are apps that depend on that?
-Also, dd of devmem seems to be already broken with big memory without
-any of these changes.
- 
->Anyways you could make that a zillion times more simple by 
->just rounding
->the e820 areas to 2MB -- for the holes only that should be ok I think; 
->i would expect them to be near always already suitably aligned.
->
->In short this can be all done much simpler.
+So please keep up the good work!
 
-On systems I tested, ACPI regions are typically not 2MB aligned. And on
-some systems there are few 4k pages of reserved holes just before
-0xa0000. PCI reserved regions are 2MB aligned however. I agree that
-making this 2MB aligned will make this patch a lot simpler. But, not all
-reserved regions seems to be aligned that way.
 
-Thanks,
-Venki
+Best Regards
+
+Ingo Oeser
