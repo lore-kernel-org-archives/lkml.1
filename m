@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757862AbYAJCHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757625AbYAJCOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757862AbYAJCHg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Jan 2008 21:07:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754738AbYAJCH3
+	id S1757625AbYAJCOr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Jan 2008 21:14:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbYAJCOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Jan 2008 21:07:29 -0500
-Received: from mga11.intel.com ([192.55.52.93]:27079 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753877AbYAJCH2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Jan 2008 21:07:28 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,264,1196668800"; 
-   d="scan'208";a="492204140"
-Subject: Re: [PATCH -mm 2/2] kexec/i386: kexec page table code clean up -
-	page table setup in C
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Horms <horms@verge.net.au>, magnus.damn@gmail.com
-In-Reply-To: <20080110010531.GA23143@redhat.com>
-References: <1199847470.8126.16.camel@caritas-dev.intel.com>
-	 <20080110010531.GA23143@redhat.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 10 Jan 2008 10:08:09 +0800
-Message-Id: <1199930889.8752.7.camel@caritas-dev.intel.com>
+	Wed, 9 Jan 2008 21:14:38 -0500
+Received: from saraswathi.solana.com ([198.99.130.12]:49897 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753750AbYAJCOh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Jan 2008 21:14:37 -0500
+Date: Wed, 9 Jan 2008 21:14:04 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: andi@firstfloor.org, harvey.harrison@gmail.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: uml and -regparm=3
+Message-ID: <20080110021404.GA11287@c2.user-mode-linux.org>
+References: <E1JCi3M-0006hO-7i@pomaz-ex.szeredi.hu> <p734pdmput0.fsf@bingen.suse.de> <E1JCiLx-0006lI-HR@pomaz-ex.szeredi.hu> <20080109213258.GC15612@one.firstfloor.org> <E1JCioy-0006os-6i@pomaz-ex.szeredi.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 10 Jan 2008 02:07:17.0619 (UTC) FILETIME=[868EAC30:01C8532D]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1JCioy-0006os-6i@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-01-09 at 20:05 -0500, Vivek Goyal wrote:
-> On Wed, Jan 09, 2008 at 10:57:50AM +0800, Huang, Ying wrote:
-> > This patch transforms the kexec page tables setup code from asseumbler
-> > code to iC code in machine_kexec_prepare. This improves readability and
-> > reduces code line number.
-> > 
+On Wed, Jan 09, 2008 at 10:50:48PM +0100, Miklos Szeredi wrote:
+> > FASTCALL is useless and should not make a difference. It enables
+> > regparm on specific functions, but that should not make a difference
+> > if it works or not.
 > 
-> I think this will create issues for Xen. Initially page table setup
-> was in C but Xen Guests could not modify the page tables. I think Xen
-> folks implemented a hypercall where they passed all the page table pages
-> and the control pages and then hypervisor executed the control page(which
-> in turn setup the page tables). I think that's why page table setup
-> code is on the control page in assembly.
-> 
-> You might want to go through Xen kexec implementation and dig through
-> kexec mailing list archive.
+> __down_write() in include/asm-x86/rwsem.h seems to assume, that the
+> semaphore pointer is passed in %eax down to rwsem_down_write_failed(),
+> so regparm does make a difference there.
 
-OK, I will check the Xen kexec implementation.
+And rwsem_down_write_failed seems to think it's getting the pointer in
+%eax:
 
-> CCing Magnus and Horms. They had done the page tables related changes
-> for Xen.
+Dump of assembler code for function rwsem_down_write_failed:
+0x08193599 <rwsem_down_write_failed+0>: push   %ebp
+0x0819359a <rwsem_down_write_failed+1>: mov    %esp,%ebp
+0x0819359c <rwsem_down_write_failed+3>: push   %ebx
+0x0819359d <rwsem_down_write_failed+4>: mov    %eax,%ebx
+0x0819359f <rwsem_down_write_failed+6>: sub    $0x10,%esp
+0x081935a2 <rwsem_down_write_failed+9>: push   $0xffffffff
+0x081935a4 <rwsem_down_write_failed+11>:        lea    0xffffffec(%ebp),%eax
+0x081935a7 <rwsem_down_write_failed+14>:        push   %eax
+0x081935a8 <rwsem_down_write_failed+15>:        push   %ebx
+0x081935a9 <rwsem_down_write_failed+16>:        movl   $0x2,0xfffffff8(%ebp)
+0x081935b0 <rwsem_down_write_failed+23>:        call   0x8193423 <rwsem_down_failed_common>
 
-Best Regards,
-Huang Ying
+This is clearly taking something from %eax and something on the stack
+(and a -1) and passing it to rwsem_down_failed_common, corresponding
+to this:
+	rwsem_down_failed_common(sem, &waiter,
+				RWSEM_WAITING_BIAS - RWSEM_ACTIVE_BIAS);
 
+So, this does look right to me.
+
+				Jeff
+
+-- 
+Work email - jdike at linux dot intel dot com
