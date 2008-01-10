@@ -1,87 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676AbYAJU2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756682AbYAJU3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754676AbYAJU2v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 15:28:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbYAJU2j
+	id S1756682AbYAJU3j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 15:29:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbYAJU3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 15:28:39 -0500
-Received: from emroute3.ornl.gov ([160.91.4.110]:33173 "EHLO emroute3.ornl.gov"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753255AbYAJU2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 15:28:38 -0500
-Date: Thu, 10 Jan 2008 15:25:52 -0500
-From: David Dillow <dillowda@ornl.gov>
-Subject: Re: CONFIG_NO_HZ breaks blktrace timestamps
-In-reply-to: <1199918912.8388.13.camel@lap75545.ornl.gov>
-To: linux-kernel@vger.kernel.org
-Cc: linux-btrace@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de
-Message-id: <1199996752.9159.46.camel@lap75545.ornl.gov>
-Organization: Oak Ridge National Laboratory
-MIME-version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8)
-Content-type: text/plain
-Content-transfer-encoding: 7bit
-References: <1199918912.8388.13.camel@lap75545.ornl.gov>
+	Thu, 10 Jan 2008 15:29:32 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:55254 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753800AbYAJU3a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 15:29:30 -0500
+Subject: Re: [RFC PATCH 13/22 -v2] handle accurate time keeping over long
+	delays
+From: john stultz <johnstul@us.ibm.com>
+To: Tony Luck <tony.luck@intel.com>, bob.picco@hp.com
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+In-Reply-To: <12c511ca0801101154q224c7a43sa016190cf209d304@mail.gmail.com>
+References: <20080109232914.676624725@goodmis.org>
+	 <20080109233044.288563621@goodmis.org>
+	 <1199923219.6350.16.camel@localhost.localdomain>
+	 <12c511ca0801101154q224c7a43sa016190cf209d304@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 10 Jan 2008 12:29:19 -0800
+Message-Id: <1199996959.6108.18.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo, Thomas added as I think this is related to
-sched.c:__update_rq_clock()'s checking for forward time warps.
 
-On Wed, 2008-01-09 at 17:48 -0500, David Dillow wrote:
-> While trying to gain some insight into a disk issue, I found that
-> blktrace/blkparse was giving me bogus traces -- I was seeing requests
-> complete before they were even dispatched or queued even! I had thought
-> that maybe this was an issue with SMP on the box, but when running with
-> 'maxcpus=1', it told me that my 53 second test run only took 3.5
-> seconds.
+On Thu, 2008-01-10 at 11:54 -0800, Tony Luck wrote:
+> > Tony:  ia64 also needs something like this, but I found the fsyscall asm
+> > bits a little difficult to grasp. So I'll need some assistance on how to
+> > include the accumulated cycles into the final calculation.
 > 
-> I started tracking this down, and upon looking at cpu_clock(), and found
-> that it uses sched_clock(), which is based on jiffies. At this point I
-> had an ahah! moment and remembered that I had NO_HZ enabled.
+> I'm trying to figure out all the ramifications of the new
+> "cycle_accumulated" field.  Does it really need to be
+> propagated all the way to the low level assembler (which
+> I don't want to mess with unless I really, really have to).
+> Can't I do the necessary calculations in update_vsyscall()
+> [Where I can do them in C :-)] and keep the same low
+> level assembly code.  I think I must be missing some
+> important bit of what is going on here.
 
-[I did figure out that the sched_clock() jiffies implementation in
-sched.c is a fallback.]
+(Added Bob Picco to the mail, as he was involved in the ia64 clocksource
+work).
 
-A few pieces of info I forgot in the original message -- this is on an
-quad-processor, dual core Opteron box, running 2.6.24-rc7 x86_64. I'm
-currently booting it with maxcpus=1, though at this point it is just a
-hold-over from my initial bug hunting.
+So the background on the patch is this:
 
-I can provide a full .config/dmesg if needed, but off the top:
-CONFIG_NO_HZ=y
-CONFIG_HZ=1000
-CONFIG_CPU_FREQ is not set
-CONFIG_CPU_IDLE makes no difference
+Some clocksources wrap frequently (every few seconds, for example). This
+can cause issues if we defer the update_wall_time() function where we
+accumulate time for too long (this really only happens on -rt systems
+right now). 
 
-hpet is the current clocksource
+To avoid that issue, we've added the cycle_accumulated value, which acts
+as a midpoint, where we can quickly accumulate cycles off of the
+counter, without doing the more expensive update_wall_time() function.
+This avoids issues with the clocksource wrapping, but requires that
+cycle_accumulated be added in to the gettiemofday() calculation.
 
-When booting with "nohz=off", rq->clock and rq->prev_clock_raw
-from /proc/sched_debug track nicely with ktime_get() ("now is at ...
-msecs"). rq->clock_overflows is non-zero, but increases relatively
-slowly -- 650 for ~355 seconds.
+If you noticed in my email, the fix for ppc was a bit easier, as it has
+only a 64bit counter that is quite unlikely to wrap twice between calls
+to update_wall_time(). There we could decrement the cycles_last value by
+cycles_accumulated and get the same effect of adding it in.
 
-With "nohz=on", rq->prev_clock_raw still tracks nicely with ktime_get(),
-but rq->clock is moving very slowly and rq->clock_overflows is
-incrementing fairly rapidly -- 53718 for ~357 seconds.
+Unfortunately on ia64, I suspect it will be necessary to do similar to
+the x86_64 code and add in the cycles accumulated value in
+vgettime/fgettime function, since there is the possibility of quickly
+wrapping clocksources on that architecture. 
 
-Either way gives a rq->max_delta of 0.999844 -- ms, I presume.
+So unless someone can point out a nicer trick, it likely means adding a
+new cycles_accumulated value to the fsyscall structure and the asm to do
+the addition. :(
 
-rq->clock_overflows is only incremented in sched.c:__update_rq_clock(),
-and only when delta pushes clock more than TICK_NSEC past the current
-tick_timestamp. I'm assuming this happens when the CPU's been idle for a
-bit, with everything waiting for IO (4 to 5ms in the ticked blktrace),
-so there's been no updates of rq->clock from sched_clock().
-
-At the moment, I'm not sure how to track this farther, or how to fix it
-properly. Any advice would be appreciated.
-
-Thanks!
--- 
-Dave Dillow
-National Center for Computational Science
-Oak Ridge National Laboratory
-(865) 241-6602 office
+thanks
+-john
 
 
