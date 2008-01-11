@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760483AbYAKLSQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760646AbYAKLTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760483AbYAKLSQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 06:18:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757552AbYAKLSF
+	id S1760646AbYAKLTS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 06:19:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757925AbYAKLTI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 06:18:05 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:48237 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757458AbYAKLSE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 06:18:04 -0500
-Message-ID: <4787502B.2020606@s5r6.in-berlin.de>
-Date: Fri, 11 Jan 2008 12:16:59 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
-MIME-Version: 1.0
-To: Daniel Walker <dwalker@mvista.com>
-CC: Jiri Slaby <jirislaby@gmail.com>, Bernd Petrovitsch <bernd@firmix.at>,
-       apw@shadowen.org, linux-kernel@vger.kernel.org, rdunlap@xenotime.net,
-       jschopp@austin.ibm.com
-Subject: Re: [PATCH] checkpatch.pl: allow piping
-References: <20080111041120.085610726@mvista.com>	 <47872E35.3070705@gmail.com> <1200043035.29897.62.camel@imap.mvista.com>	 <47873505.7040008@gmail.com>  <1200043399.3905.9.camel@gimli.at.home>	 <1200043827.29897.70.camel@imap.mvista.com>  <47873833.30001@gmail.com> <1200044206.29897.73.camel@imap.mvista.com>
-In-Reply-To: <1200044206.29897.73.camel@imap.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 11 Jan 2008 06:19:08 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:51040 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757552AbYAKLTH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 06:19:07 -0500
+Date: Fri, 11 Jan 2008 12:18:55 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: "Bryan Wu" <cooloney.lkml@gmail.com>
+Cc: "Mike Frysinger" <vapier.adi@gmail.com>,
+       "Cai, Cliff" <Cliff.Cai@analog.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] split MMC_CAP_4_BIT_DATA
+Message-ID: <20080111121855.4dba2a97@poseidon.drzeus.cx>
+In-Reply-To: <386072610801110222r28e66cb7i6cadb41bf565b3b4@mail.gmail.com>
+References: <386072610801081832w2befcbafwe9215067f022ed5d@mail.gmail.com>
+	<20080110095428.3b93fd18@poseidon.drzeus.cx>
+	<386072610801100122n52339488ke2b8724c390be765@mail.gmail.com>
+	<20080110125748.416ad0c5@poseidon.drzeus.cx>
+	<386072610801102217u1739d7d7v497e73a38aa876c2@mail.gmail.com>
+	<20080111094036.4c683791@poseidon.drzeus.cx>
+	<8bd0f97a0801110108l66ab2bcdjb1323573445473f@mail.gmail.com>
+	<20080111103532.2789b74f@poseidon.drzeus.cx>
+	<8bd0f97a0801110147w1cc741c3yc80ad32cd0e896c9@mail.gmail.com>
+	<20080111110505.615ae436@poseidon.drzeus.cx>
+	<386072610801110222r28e66cb7i6cadb41bf565b3b4@mail.gmail.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker wrote:
-> On Fri, 2008-01-11 at 10:34 +0100, Jiri Slaby wrote:
->> >> On Fre, 2008-01-11 at 10:21 +0100, Jiri Slaby wrote:
->> >>> git show 9914cad54c79d0b89b1f066c0894f00e1344131c
->> >> | ./scripts/checkpatch.pl -
+On Fri, 11 Jan 2008 18:22:14 +0800
+"Bryan Wu" <cooloney.lkml@gmail.com> wrote:
 
->> If somebody is hacking kernel, I think he should know the - trick used in many 
->> programs, but do not consider this as a nack.
 > 
-> I'm hacking the kernel, and I didn't know the - trick .. So you have
-> your testing case all in one with the patch submitter ..
+> I guess it is for MMC/SD card insert detection. Is it related with the
+> 4-bit MMC and 4-bit SD?
+> Actually, there are some issues about the card insert detection on
+> BF54x SDH. Following is some comments of our bfin-sdh driver which is
+> in the development.
+> 
 
-How about
+Right. As you've noticed, that pin is not a reliable way of detecting cards. It works badly, if all, for MMC cards. And some SD cards also lack the necessary pull-up.
 
- if ($#ARGV < 0) {
- 	print "usage: $P [options] patchfile\n";
- 	print "version: $V\n";
- 	print "options: -q           => quiet\n";
- 	print "         --no-tree    => run without a kernel tree\n";
- 	print "         --terse      => one line per report\n";
- 	print "         --emacs      => emacs compile window format\n";
- 	print "         --file       => check a source file\n";
- 	print "         --strict     => enable more subjective tests\n";
- 	print "         --root       => path to the kernel tree root\n";
-+	print "When patchfile is -, read standard input.\n";
- 	exit(1);
- }
+But for the matter at hand, some cards might rely on the pull-up being there, so you'll get bit-errors without it. I don't have time to double check the specs right now, but it might explain why you're seeing problems with MMC and not SD.
 
+Btw, the MMC core sends you ios information on how you should fiddle with that bit. It was needed on a Winbond controller (the wbsd driver) as some models relied on it for card detection.
+
+Rgds
 -- 
-Stefan Richter
--=====-==--- ---= -=-==
-http://arcgraph.de/sr/
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
