@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759454AbYAKGds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759740AbYAKGlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759454AbYAKGds (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 01:33:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbYAKGdi
+	id S1759740AbYAKGlT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 01:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbYAKGlK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 01:33:38 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38847
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751208AbYAKGdi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 01:33:38 -0500
-Date: Thu, 10 Jan 2008 22:33:37 -0800 (PST)
-Message-Id: <20080110.223337.96558244.davem@davemloft.net>
-To: vaf@cisco.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 001/001] ipv4: enable use of 240/4 address space
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080108011057.GA21168@cisco.com>
-References: <20080108011057.GA21168@cisco.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Jan 2008 01:41:10 -0500
+Received: from rosi.naasa.net ([212.8.0.13]:55417 "EHLO rosi.naasa.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752026AbYAKGlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 01:41:09 -0500
+From: Joerg Platte <lists@naasa.net>
+Reply-To: jplatte@naasa.net
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Subject: Re: regression: 100% io-wait with 2.6.24-rcX
+Date: Fri, 11 Jan 2008 07:41:01 +0100
+User-Agent: KMail/1.9.7
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+References: <200801071151.11200.lists@naasa.net> <400029009.12072@ustc.edu.cn> <200801110629.48569.jplatte@naasa.net>
+In-Reply-To: <200801110629.48569.jplatte@naasa.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200801110741.03028.lists@naasa.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Vince Fuller <vaf@cisco.com>
-Date: Mon, 7 Jan 2008 17:10:57 -0800
+Am Freitag, 11. Januar 2008 schrieb Joerg Platte:
 
-> from Vince Fuller <vaf@vaf.net>
-> 
-> This set of diffs modify the 2.6.20 kernel to enable use of the 240/4
-> (aka "class-E") address space as consistent with the Internet Draft
-> draft-fuller-240space-00.txt.
-> 
-> Signed-off-by: Vince Fuller <vaf@vaf.net>
+> konqueror   987    jplatte  mem       REG        8,6  2590525
+> 1336104 /var/tmp/kdecache-jplatte/ksycoca
+> konqueror   987    jplatte   12r      REG        8,6  2590525
+> 1336104 /var/tmp/kdecache-jplatte/ksycoca
+> konqueror   987    jplatte   13u      REG        8,7      579
+> 97731 /tmp/kde-jplatte/konqueror-crash-Jv2u8a.log
+> konqueror   987    jplatte   14u      REG        8,7   128289
+> 97734 /tmp/kde-jplatte/khtmlcacheA7VjAa.tmp (deleted)
+> konqueror   987    jplatte   16u      REG        8,7    43334
+> 97750 /tmp/kde-jplatte/khtmlcacheZUNlsc.tmp (deleted)
+> konqueror   987    jplatte   22u      REG        8,7      797
+> 97751 /tmp/kde-jplatte/khtmlcache76bZYa.tmp (deleted)
+> konqueror   987    jplatte   27u      REG        8,7   102347
+> 97735 /tmp/kde-jplatte/khtmlcacheMhlDJb.tmp (deleted)
+> konqueror   987    jplatte   31u      REG        8,7      354
+> 97738 /tmp/kde-jplatte/khtmlcacheq21uoc.tmp (deleted)
+> konqueror   987    jplatte   32u      REG        8,7     1360
+> 97742 /tmp/kde-jplatte/khtmlcacheo2Ms2a.tmp (deleted)
+> konqueror   987    jplatte   34u      REG        8,7     6378
+> 97745 /tmp/kde-jplatte/khtmlcacheLETtgc.tmp (deleted)
+> konqueror   987    jplatte   35u      REG        8,7    97350
+> 97746 /tmp/kde-jplatte/khtmlcache5jit8a.tmp (deleted)
+> konqueror   987    jplatte   36u      REG        8,7      354
+> 97747 /tmp/kde-jplatte/khtmlcache7VBSNa.tmp (deleted)
+> konqueror   987    jplatte   37u      REG        8,7     1360
+> 97748 /tmp/kde-jplatte/khtmlcachetSNbub.tmp (deleted)
+> konqueror   987    jplatte   38u      REG        8,7     6073
+> 97749 /tmp/kde-jplatte/khtmlcacheKAKhuc.tmp (deleted)
 
-There has been more than 90K worth of changes to the files you are
-changing since 2.6.20
+Fengguang, a few minutes after killing this konqueror process the high iowait 
+load has disappeared. Lets see if it'll come back...
 
-It is generally unwise to submit patches against such old kernel
-versions, they rarely apply, so please respin your patch against more
-current sources.
+regards,
+Jörg
 
-Please also remove the trailing whitespace, like the one found
-here:
-
-+#define	IN_CLASSE_HOST		(0xffffffff & ~IN_CLASSE_NET)
-+
-+/* 
-   ^^^^^
-
-Thanks.
+-- 
+PGP Key: send mail with subject 'SEND PGP-KEY' PGP Key-ID: FD 4E 21 1D
+PGP Fingerprint: 388A872AFC5649D3 BCEC65778BE0C605
