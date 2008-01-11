@@ -1,181 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759829AbYAKLml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759977AbYAKLsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759829AbYAKLml (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 06:42:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756823AbYAKLmd
+	id S1759977AbYAKLsc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 06:48:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757699AbYAKLsY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 06:42:33 -0500
-Received: from mail.mev.co.uk ([62.49.15.74]:36893 "EHLO mail.mev.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755107AbYAKLmb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 06:42:31 -0500
-Message-ID: <4787561F.6090100@mev.co.uk>
-Date: Fri, 11 Jan 2008 11:42:23 +0000
-From: Ian Abbott <abbotti@mev.co.uk>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071116)
+	Fri, 11 Jan 2008 06:48:24 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:53407 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757319AbYAKLsW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 06:48:22 -0500
+Date: Fri, 11 Jan 2008 17:17:31 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 00/19] VM pageout scalability improvements
+Message-ID: <20080111114731.GB19814@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: Rik van Riel <riel@redhat.com>,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org
+References: <20080108205939.323955454@redhat.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, gregkh@suse.de,
-       kristen.c.accardi@intel.com
-Subject: [PATCH] Fix fakephp deadlock
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 11 Jan 2008 11:42:24.0756 (UTC) FILETIME=[08D3AB40:01C85447]
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20080108205939.323955454@redhat.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ian Abbott <abbotti@mev.co.uk>
+* Rik van Riel <riel@redhat.com> [2008-01-08 15:59:39]:
 
-If the fakephp driver is used to emulate removal of a PCI device by
-writing text string "0" to the "power" sysfs attribute file, this causes
-its parent directory and its contents (including the "power" file) to be
-deleted before the write operation returns.  Unfortunately, it ends up
-in a deadlock waiting for itself to complete.
+> Changelog:
+> - merge memcontroller split LRU code into the main split LRU patch,
+>   since it is not functionally different (it was split up only to help
+>   people who had seen the last version of the patch series review it)
 
-The deadlock is as follows: sysfs_write_file calls flush_write_buffer
-which calls sysfs_get_active_two before calling power_write_file in
-pci_hotplug_core.c via the sysfs store operation. The power_write_file
-function calls disable_slot in fakephp.c via the slot operation.  The
-disable_slot function calls remove_slot which calls pci_hp_deregister
-(back in pci_hotplug_core.c) which calls fs_remove_slot which calls
-sysfs_remove_file to remove the "power" file. The sysfs_remove_file
-function calls sysfs_hash_and_remove which calls sysfs_addrm_finish
-which calls sysfs_deactivate. The sysfs_deactivate function sees that
-something has an active reference on the sysfs_dirent (from the
-previous call to sysfs_get_active_two back up the call stack somewhere)
-so waits for the active reference to go away, which is of course
-impossible.
+Hi, Rik,
 
-The problem has been present since 2.6.21.
+I see a strange behaviour with this patchset. I have a program
+(pagetest from Vaidy), that does the following
 
-This patch breaks the deadlock by queuing a work queue item on a single-
-threaded workqueue to do the removal from sysfs.  There is also some
-protection against performing store operations on the "power" file of a
-slot that has already been disabled.
+1. Can allocate different kinds of memory, mapped, malloc'ed or shared
+2. Allocates and touches all the memory in a loop (2 times)
 
-Signed-off-by: Ian Abbott <abbotti@mev.co.uk>
----
+I mount the memory controller and limit it to 400M and run pagetest
+and ask it to touch 1000M. Without this patchset everything runs fine,
+but with this patchset installed, I immediately see
 
---- linux-2.6.24-rc7/drivers/pci/hotplug/fakephp.c.orig	2008-01-03 16:50:05.000000000 +0000
-+++ linux-2.6.24-rc7/drivers/pci/hotplug/fakephp.c	2008-01-10 17:20:58.000000000 +0000
-@@ -39,6 +39,7 @@
- #include <linux/init.h>
- #include <linux/string.h>
- #include <linux/slab.h>
-+#include <linux/workqueue.h>
- #include "../pci.h"
- 
- #if !defined(MODULE)
-@@ -63,10 +64,13 @@
- 	struct list_head node;
- 	struct hotplug_slot *slot;
- 	struct pci_dev *dev;
-+	struct work_struct remove_work;
-+	unsigned long removed;
- };
- 
- static int debug;
- static LIST_HEAD(slot_list);
-+static struct workqueue_struct *dummyphp_wq;
- 
- static int enable_slot (struct hotplug_slot *slot);
- static int disable_slot (struct hotplug_slot *slot);
-@@ -109,7 +113,7 @@
- 	slot->name = &dev->dev.bus_id[0];
- 	dbg("slot->name = %s\n", slot->name);
- 
--	dslot = kmalloc(sizeof(struct dummy_slot), GFP_KERNEL);
-+	dslot = kzalloc(sizeof(struct dummy_slot), GFP_KERNEL);
- 	if (!dslot)
- 		goto error_info;
- 
-@@ -164,6 +168,13 @@
- 		err("Problem unregistering a slot %s\n", dslot->slot->name);
- }
- 
-+static void remove_slot_worker(struct work_struct *work)
-+{
-+	struct dummy_slot *dslot =
-+		container_of(work, struct dummy_slot, remove_work);
-+	remove_slot(dslot);
-+}
-+
- /**
-  * pci_rescan_slot - Rescan slot
-  * @temp: Device template. Should be set: bus and devfn.
-@@ -271,6 +282,20 @@
- static int enable_slot(struct hotplug_slot *hotplug_slot)
- {
- 	/* mis-use enable_slot for rescanning of the pci bus */
-+	struct dummy_slot *dslot;
-+
-+	if (hotplug_slot) {
-+		/* make sure slot is not scheduled for removal
-+		 * otherwise flush_workqueue() could deadlock */
-+		dslot = hotplug_slot->private;
-+		if (test_bit(0, &dslot->removed)) {
-+			/* FIXME: -ENODEV is also returned when function
-+			 * succeeds. */
-+			return -ENODEV;
-+		}
-+	}
-+	/* first, complete any pending removals */
-+	flush_workqueue(dummyphp_wq);
- 	pci_rescan();
- 	return -ENODEV;
- }
-@@ -306,6 +331,10 @@
- 		err("Can't remove PCI devices with other PCI devices behind it yet.\n");
- 		return -ENODEV;
- 	}
-+	if (test_and_set_bit(0, &dslot->removed)) {
-+		dbg("Slot already scheduled for removal\n");
-+		return -ENODEV;
-+	}
- 	/* search for subfunctions and disable them first */
- 	if (!(dslot->dev->devfn & 7)) {
- 		for (func = 1; func < 8; func++) {
-@@ -328,8 +357,9 @@
- 	/* remove the device from the pci core */
- 	pci_remove_bus_device(dslot->dev);
- 
--	/* blow away this sysfs entry and other parts. */
--	remove_slot(dslot);
-+	/* queue work item to blow away this sysfs entry and other parts. */
-+	INIT_WORK(&dslot->remove_work, remove_slot_worker);
-+	queue_work(dummyphp_wq, &dslot->remove_work);
- 
- 	return 0;
- }
-@@ -340,6 +370,7 @@
- 	struct list_head *next;
- 	struct dummy_slot *dslot;
- 
-+	destroy_workqueue(dummyphp_wq);
- 	list_for_each_safe (tmp, next, &slot_list) {
- 		dslot = list_entry (tmp, struct dummy_slot, node);
- 		remove_slot(dslot);
-@@ -351,6 +382,10 @@
- {
- 	info(DRIVER_DESC "\n");
- 
-+	dummyphp_wq = create_singlethread_workqueue(MY_NAME);
-+	if (!dummyphp_wq)
-+		return -ENOMEM;
-+
- 	return pci_scan_buses();
- }
+ pagetest invoked oom-killer: gfp_mask=0xd0, order=0, oomkilladj=0
+ Call Trace:
+ [c0000000e5aef400] [c00000000000eb24] .show_stack+0x70/0x1bc (unreliable)
+ [c0000000e5aef4b0] [c0000000000bbbbc] .oom_kill_process+0x80/0x260
+ [c0000000e5aef570] [c0000000000bc498] .mem_cgroup_out_of_memory+0x6c/0x98
+ [c0000000e5aef610] [c0000000000f2574] .mem_cgroup_charge_common+0x1e0/0x414
+ [c0000000e5aef6e0] [c0000000000b852c] .add_to_page_cache+0x48/0x164
+ [c0000000e5aef780] [c0000000000b8664] .add_to_page_cache_lru+0x1c/0x68
+ [c0000000e5aef810] [c00000000012db50] .mpage_readpages+0xbc/0x15c
+ [c0000000e5aef940] [c00000000018bdac] .ext3_readpages+0x28/0x40
+ [c0000000e5aef9c0] [c0000000000c3978] .__do_page_cache_readahead+0x158/0x260
+ [c0000000e5aefa90] [c0000000000bac44] .filemap_fault+0x18c/0x3d4
+ [c0000000e5aefb70] [c0000000000cd510] .__do_fault+0xb0/0x588
+ [c0000000e5aefc80] [c0000000005653cc] .do_page_fault+0x440/0x620
+ [c0000000e5aefe30] [c000000000005408] handle_page_fault+0x20/0x58
+ Mem-info:
+ Node 0 DMA per-cpu:
+ CPU    0: hi:    6, btch:   1 usd:   4
+ CPU    1: hi:    6, btch:   1 usd:   0
+ CPU    2: hi:    6, btch:   1 usd:   3
+ CPU    3: hi:    6, btch:   1 usd:   4
+ Active_anon:9099 active_file:1523 inactive_anon0
+  inactive_file:2869 noreclaim:0 dirty:20 writeback
+:0 unstable:0
+  free:44210 slab:639 mapped:1724 pagetables:475 bo
+unce:0
+ Node 0 DMA free:2829440kB min:7808kB low:9728kB hi
+gh:11712kB active_anon:582336kB inactive_anon:0kB active_file:97472kB inactive_f
+ile:183616kB noreclaim:0kB present:3813760kB pages_scanned:0 all_unreclaimable?
+no
+ lowmem_reserve[]: 0 0 0
+ Node 0 DMA: 3*64kB 5*128kB 5*256kB 4*512kB 2*1024k
+B 4*2048kB 3*4096kB 2*8192kB 170*16384kB = 2828352kB
+ Swap cache: add 0, delete 0, find 0/0
+ Free swap  = 3148608kB
+ Total swap = 3148608kB
+ Free swap:       3148608kB
+ 59648 pages of RAM
+ 677 reserved pages
+ 28165 pages shared
+ 0 pages swap cached
+ Memory cgroup out of memory: kill process 6593 (pagetest) score 1003 or a child
+ Killed process 6593 (pagetest)
 
-
----
-Note that the return values from the enable_slot function needs some
-attention.  The patch causes this to return -ENODEV if the slot has
-already been disabled, but that is also the normal return value of the
-function.  The return values should be different.  Is there any reason
-why the normal return value can't be 0?
+I am using a powerpc box with 64K size pages. I'll try and investigate further,
+just a heads up on the failure I am seeing.
 
 -- 
--=( Ian Abbott @ MEV Ltd.    E-mail: <abbotti@mev.co.uk>        )=-
--=( Tel: +44 (0)161 477 1898   FAX: +44 (0)161 718 3587         )=-
-
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
