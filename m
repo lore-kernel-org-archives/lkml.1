@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761569AbYAKQDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761781AbYAKQFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761569AbYAKQDj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 11:03:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760180AbYAKQDc
+	id S1761781AbYAKQFq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 11:05:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760397AbYAKQFj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 11:03:32 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:36987 "EHLO mx1.redhat.com"
+	Fri, 11 Jan 2008 11:05:39 -0500
+Received: from mail0.scram.de ([78.47.204.202]:39644 "EHLO mail0.scram.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759053AbYAKQDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 11:03:31 -0500
-Date: Fri, 11 Jan 2008 11:03:16 -0500
-From: Rik van Riel <riel@redhat.com>
-To: Anton Salikhmetov <salikhmetov@gmail.com>
-Cc: "dmitri.vorobiev" <dmitri.vorobiev@auriga.ru>, jakob@unthought.net,
-       linux-kernel@vger.kernel.org, Valdis.Kletnieks@vt.edu, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com
-Subject: Re: [PATCH 2/2][RFC][BUG] msync: updating ctime and mtime at
- syncing
-Message-ID: <20080111110316.6a83ed54@bree.surriel.com>
-In-Reply-To: <1200011929.19293.93.camel@codedot>
-References: <1200006638.19293.42.camel@codedot>
-	<1200011929.19293.93.camel@codedot>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1760332AbYAKQFi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 11:05:38 -0500
+X-Spam-Score: -4.177
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.2 AWL AWL: From: address is in the auto white-list
+Message-ID: <478793BF.4070709@scram.de>
+Date: Fri, 11 Jan 2008 17:05:19 +0100
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: IceDove 1.5.0.10 (X11/20070329)
+MIME-Version: 1.0
+To: Jon Smirl <jonsmirl@gmail.com>
+CC: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
+       i2c@lm-sensors.org, linux-kernel@vger.kernel.org
+Subject: Re: [i2c] [PATCH 0/5] Version 17,	series to add device tree naming
+ to i2c
+References: <20071220044136.20091.70984.stgit@terra.home>	<20080111095638.775670ed@hyperion.delvare> <9e4733910801110752k57f1fd7crd5f143900fc64f0b@mail.gmail.com>
+In-Reply-To: <9e4733910801110752k57f1fd7crd5f143900fc64f0b@mail.gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Jan 2008 03:38:49 +0300
-Anton Salikhmetov <salikhmetov@gmail.com> wrote:
+Hi Jon,
 
-> From: Anton Salikhmetov <salikhmetov@gmail.com>
-> 
-> The patch contains changes for updating the ctime and mtime fields for memory mapped files:
-> 
-> 1) adding a new flag triggering update of the inode data;
-> 2) implementing a helper function for checking that flag and updating ctime and mtime;
-> 3) updating time stamps for mapped files in sys_msync() and do_fsync().
-> 
-> Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
+>>> The following series implements standard linux module aliasing for i2c modules on arch=powerpc. It then converts the mpc i2c driver from being a platform driver to an open firmware one. I2C device names are picked up from the device tree. Module aliasing is used to translate from device tree names into to linux kernel names. Several i2c drivers are updated to use the new aliasing.
 
-Acked-by: Rik van Riel <riel@redhat.com>
+>> Now that I have read all the previous versions of this patch series
+>> and, more importantly, all objections that were raised on the way, I
+>> can start reviewing the latest iteration of your patches. I'll also do
+>> some testing, although I have no powerpc stuff here, but at least I
+>> want to make sure that there are no regressions introduced by your
+>> patches on x86.
 
--- 
-All rights reversed.
+> Various people were worried about x86. Around version 15 I altered the
+> patches so that they only impacted PowerPC. If they impact x86 in
+> current form that is a bug.
+
+I can only second this. The latest version of i2c-cpm
+(http://patchwork.ozlabs.org/linuxppc/patch?person=1023&id=15902) makes
+use of this patch, as well. On the dbox2, loading and unloading of
+modules in any order just works fine.
+
+Thanks,
+Jochen
+
