@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757857AbYAKFWI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758376AbYAKFXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757857AbYAKFWI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 00:22:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbYAKFV5
+	id S1758376AbYAKFXb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 00:23:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750934AbYAKFXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 00:21:57 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:59553 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750708AbYAKFV5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 00:21:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OHo5XoXcgkI1i1rDwVLKC7tm68OOm01aOv2WrSzZNsk3VMRNNtmJT+zV6b07169knaMNKMdojYngsUYXEfCkAlKFQIHd4WZO8Z8VuDdNQB4Dwoh4x9/Fp0g5bhaNjVjx/gwtq0Xe4+9lsKkeAxOlKLYogtMoxQOsFNtbeZBVo6Y=
-Message-ID: <aa79d98a0801102121h785dabc1y1d8982994d024eff@mail.gmail.com>
-Date: Fri, 11 Jan 2008 08:21:55 +0300
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-Subject: Re: More breakage in native_rdtsc out of line in git-x86
-Cc: "Andi Kleen" <andi@firstfloor.org>,
-       "Harvey Harrison" <harvey.harrison@gmail.com>,
-       "=?ISO-8859-1?Q?Bj=F6rn_Steinbrink?=" <B.Steinbrink@gmx.de>,
-       "Ingo Molnar" <mingo@elte.hu>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <4d8e3fd30801091537l440e396cu481093e74f0da479@mail.gmail.com>
+	Fri, 11 Jan 2008 00:23:25 -0500
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:34848 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1750911AbYAKFXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 00:23:24 -0500
+Message-ID: <400029009.12072@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Fri, 11 Jan 2008 12:43:39 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: jplatte@naasa.net
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: regression: 100% io-wait with 2.6.24-rcX
+References: <200801071151.11200.lists@naasa.net> <200801100937.56145.lists@naasa.net> <399954652.04868@ustc.edu.cn> <200801101103.06688.lists@naasa.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080109035534.GA30321@basil.nowhere.org>
-	 <20080109152208.GA21280@elte.hu>
-	 <20080109155124.GB12923@one.firstfloor.org>
-	 <20080109163017.GG17739@elte.hu>
-	 <20080109174800.GA15346@one.firstfloor.org>
-	 <20080109220948.GA2218@atjola.homenet>
-	 <20080109222804.GF15612@one.firstfloor.org>
-	 <1199918155.6424.71.camel@brick>
-	 <20080109224142.GB18480@one.firstfloor.org>
-	 <4d8e3fd30801091537l440e396cu481093e74f0da479@mail.gmail.com>
+In-Reply-To: <200801101103.06688.lists@naasa.net>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.12-2006-07-14
+Message-Id: <E1JDBk4-0000UF-03@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 10, 2008 2:37 AM, Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
-> On 1/10/08, Andi Kleen <andi@firstfloor.org> wrote:
->
-> > I'm already cloning the branches; the problem is not getting conflicts etc.
-> > when updating.
->
-> Isn't git pull --force what you are looking for?
->
-> Ciao,
-> --
-> Paolo
-> http://paolo.ciarrocchi.googlepages.com/
->
+On Thu, Jan 10, 2008 at 11:03:05AM +0100, Joerg Platte wrote:
+> Am Donnerstag, 10. Januar 2008 schrieb Fengguang Wu:
+> > > problem, because the iowait problem disappeared today after the regular
+> > > Debian update. I'll try to install the old package versions to make it
+> > > show up again. Maybe that helps to debug it.
+> >
+> > Thank you. I'm running sid, ext2 as rootfs now ;-)
+> 
+> The error is back and I'm getting thousands of messages like this with the 
+> patched kernel:
+> 
+> mm/page-writeback.c 668 wb_kupdate: pdflush(146) 21115 global 3936 0 0 wc _M > tw 1024 sk 0
+> requeue_io 301: inode 81441 size 0 at 08:07(sda7)
+> mm/page-writeback.c 668 wb_kupdate: pdflush(147) 17451 global 3936 0 0 wc _M > tw 1024 sk 2
+> requeue_io 301: inode 81441 size 0 at 08:07(sda7)
+> mm/page-writeback.c 668 wb_kupdate: pdflush(147) 17451 global 3936 0 0 wc _M > tw 1024 sk 2
+> requeue_io 301: inode 81441 size 0 at 08:07(sda7)
 
-Actually...no, it wouldn't help. Conflicts will coming up and only
-the solution for now is to use remote tracking as Harvey wrote
-in prev mail. (btw, git pull that would not conflict is when it
-called with '-s ours' but that is not good)
+Joerg, what's the output of `dumpe2fs /dev/sda7` and `lsof|grep /tmp`?
 
-- Cyrill -
