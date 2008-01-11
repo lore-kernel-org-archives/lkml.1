@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758078AbYAKBZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759054AbYAKB0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758078AbYAKBZR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 20:25:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754902AbYAKBZA
+	id S1759054AbYAKB0l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 20:26:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755068AbYAKB0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 20:25:00 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:39394 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754225AbYAKBY5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 20:24:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hYhcTgZuUJ9O2POFOEV9Ge/Me/I6T2B5UCwlxyELFPsSHKN6l0UN4Dexm/02GD2FaDpbZRdFna/Baa+PkRZLn6k/snqScKDdgqfGqUOa+xOsip7g2zUz/g5F3ZrlN6tThWaJej5YclpZjbimXABq+TWMDQsrlKVB6Dt+eAUsBlA=
-Message-ID: <b25c3fa70801101724he91d934y9db6636c68a32486@mail.gmail.com>
-Date: Fri, 11 Jan 2008 10:24:54 +0900
-From: "Joonwoo Park" <joonwpark81@gmail.com>
-To: "Chatre, Reinette" <reinette.chatre@intel.com>
-Subject: Re: [ipw3945-devel] [PATCH 2/5] iwlwifi: iwl3945 synchronize interruptand tasklet for down iwlwifi
-Cc: "Zhu, Yi" <yi.zhu@intel.com>, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-       ipw3945-devel@lists.sourceforge.net
-In-Reply-To: <D936D925018D154694D8A362EEB08920035CCD70@orsmsx416.amr.corp.intel.com>
+	Thu, 10 Jan 2008 20:26:34 -0500
+Received: from mail.tmr.com ([64.65.253.246]:42508 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754751AbYAKB0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 20:26:33 -0500
+Message-ID: <4786CB57.9060000@tmr.com>
+Date: Thu, 10 Jan 2008 20:50:15 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: righiandr@users.sourceforge.net
+CC: LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [RFC][PATCH] per-task I/O throttling
+References: <47869FFE.1050000@users.sourceforge.net>
+In-Reply-To: <47869FFE.1050000@users.sourceforge.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11998765481610-git-send-email-joonwpark81@gmail.com>
-	 <D936D925018D154694D8A362EEB08920035CCD70@orsmsx416.amr.corp.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Reinette,
+Andrea Righi wrote:
+> Allow to limit the bandwidth of I/O-intensive processes, like backup
+> tools running in background, large files copy, checksums on huge files,
+> etc.
+> 
+> This kind of processes can noticeably impact the system responsiveness
+> for some time and playing with tasks' priority is not always an
+> acceptable solution.
+> 
+> This patch allows to specify a maximum I/O rate in sectors per second
+> for each single process via /proc/<PID>/io_throttle (default is zero,
+> that specify no limit).
+> 
+It would seem to me that this would be vastly more useful in the real 
+world if there were a settable default, so that administrators could 
+avoid having to find and tune individual user processes. And it would 
+seem far less common that the admin would want to set the limit *up* for 
+a given process, and it's likely to be one known to the admin, at least 
+by name.
 
-2008/1/11, Chatre, Reinette <reinette.chatre@intel.com>:
->
-> Could synchronize_irq() be moved into iwl_disable_interrupts() ? I am
+Of course if you want to do the effort to make it fully tunable, it 
+could have a default by UID or GID. Usful on machines shared by students 
+or managers.
 
-At this time, iwl_disable_interrupts() can be called with irq
-disabled, so for do that I think additional modification would be
-needed.
-
-> also wondering if we cannot call tasklet_kill() before
-> iwl_disable_interrupts() ... thus preventing it from being scheduled
-> when we are going down.
-
-Thanks for your catch, it seems tasklet can re-enable interrupts.
-I'll handle and make an another patch for them at this weekend :)
-
-Thanks,
-Joonwoo
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
