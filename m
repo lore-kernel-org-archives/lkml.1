@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759557AbYAKLcl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759481AbYAKLgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759557AbYAKLcl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 06:32:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbYAKLce
+	id S1759481AbYAKLgT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 06:36:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbYAKLgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 06:32:34 -0500
-Received: from nessie.weebeastie.net ([220.233.7.36]:45785 "EHLO
-	bunyip.lochness.weebeastie.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754218AbYAKLcd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 06:32:33 -0500
-Date: Fri, 11 Jan 2008 22:30:37 +1100
-From: CaT <cat@zip.com.au>
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22.15: kernel processes stuck in D state
-Message-ID: <20080111113037.GC3940@zip.com.au>
-References: <20080111081233.GB3940@zip.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080111081233.GB3940@zip.com.au>
-Organisation: Furball Inc.
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 11 Jan 2008 06:36:09 -0500
+Received: from cantor.suse.de ([195.135.220.2]:47100 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753283AbYAKLgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 06:36:08 -0500
+Subject: [PATCH] Random number driver: make random_ioctl as an
+	unlocked_ioctl function
+From: Nikanth Karthikesan <knikanth@suse.de>
+To: mpm@selenic.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Content-Type: text/plain
+Date: Fri, 11 Jan 2008 17:09:52 +0530
+Message-Id: <1200051592.3844.63.camel@nikanth-laptop.blr.novell.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 11, 2008 at 07:12:33PM +1100, CaT wrote:
-> I recently upgraded from an amd 64bit system to an intel one and changed my 
-> kernekl accordingly. Everything's great except this:
-> 
-> root         6  0.0  0.0     0    0 ?        D<   17:11   0:00 [migration/1]
-> root         7  0.0  0.0     0    0 ?        D<   17:11   0:00 [ksoftirqd/1]
-> root         8  0.0  0.0     0    0 ?        D<   17:11   0:00 [watchdog/1]
-> 
-> I've tried various kernel configs and that stays the same, including a 
-> constant load of 3. My current kernel config and dmesg is attached
-> (compressed as I think the ml limit is 40k).
-> 
-> Not sure what other info to provide so if anything else would be
-> helpful, please shout.
+The random_ioctl is registered as an ioctl function but it does not
+require BKL to be held when called. Changing it as an unlocked_ioctl
+function.
 
-I'm just taking a closer look at things now that I've recovered from
-spending a day in a nice, loud server room and things are popping up
-that make me wonder if 2.6.22.15 is just too old for this motherboard.
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
 
-> MPTABLE: OEM ID: OEM00000 MPTABLE: Product ID: PROD00000000 MPTABLE: APIC at: 0xFEE00000
-> Processor #0 (Bootup-CPU)
-> Processor #1
-> I/O APIC #4 at 0xFEC00000.
-> Setting APIC routing to flat
-> Processors: 2
+---
+diff --git a/drivers/char/random.c b/drivers/char/random.c
+index 5fee056..2446e14 100644
+--- a/drivers/char/random.c
++++ b/drivers/char/random.c
+@@ -1065,9 +1065,8 @@ random_write(struct file * file, const char __user * buffer,
+ 	return (ssize_t)count;
+ }
+ 
+-static int
+-random_ioctl(struct inode * inode, struct file * file,
+-	     unsigned int cmd, unsigned long arg)
++static long
++random_ioctl(struct file * file, unsigned int cmd, unsigned long arg)
+ {
+ 	int size, ent_count;
+ 	int __user *p = (int __user *)arg;
+@@ -1131,13 +1130,13 @@ const struct file_operations random_fops = {
+ 	.read  = random_read,
+ 	.write = random_write,
+ 	.poll  = random_poll,
+-	.ioctl = random_ioctl,
++	.unlocked_ioctl = random_ioctl,
+ };
+ 
+ const struct file_operations urandom_fops = {
+ 	.read  = urandom_read,
+ 	.write = random_write,
+-	.ioctl = random_ioctl,
++	.unlocked_ioctl = random_ioctl,
+ };
+ 
+ /***************************************************************
 
-As it should be. Dual core.
 
-> Booting processor 1/2 APIC 0x1
-> Not responding.
-> Inquiring remote APIC #1...
-> ... APIC #1 ID: failed
-> ... APIC #1 VERSION: failed
-> ... APIC #1 SPIV: failed
-> Brought up 1 CPUs
-
-Ook? Shouldn't that be 2? Infact, /proc/cpuinfo confirms this. I only
-have one core up.
-
-> Initializing CPU#1
-...
-> Kernel panic - not syncing: smp_callin: CPU1 started up but did not get a callout!
-
-Eek! This doesn't look so good.
-
-So I now have a nice, brand new, spiffy motherboard and a dual core
-cpu... with one core not in use, a weird panic relating to CPUs and
-kernel processes hung in D state. Whee! :)
-
--- 
-    "To the extent that we overreact, we proffer the terrorists the
-    greatest tribute."
-    	- High Court Judge Michael Kirby
