@@ -1,70 +1,272 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762579AbYAKViw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762437AbYAKVki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762579AbYAKViw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 16:38:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761010AbYAKVio
+	id S1762437AbYAKVki (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 16:40:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760945AbYAKVkb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 16:38:44 -0500
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:46072 "HELO
-	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760054AbYAKVin (ORCPT
+	Fri, 11 Jan 2008 16:40:31 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:32379 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755592AbYAKVka (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 16:38:43 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=4BVCE4AV9f2DE4KKYo2qVJ/KRBx+ciSSnr5KOhdKIomFuIugyoSlodBWUhyVwPFG7Qa08U9ZFvNZAxRgX3GWoFTWdqPjeq5Bzcwof9SmUsG3qILY5spDKNraB8HCjVszHsNkylkCLcWH/QdV+QsZSGAdA55vwg1onxGoOlWhOwU=  ;
-X-YMail-OSG: 8j2N3VcVM1nH2xyI4lekEQSOeyLEoSsJEqjNdERTCaW1_4S_wtOfjpaEIYm2P2RSOKz8pFt3qQ--
-Date: Fri, 11 Jan 2008 13:38:40 -0800
-From: David Brownell <david-b@pacbell.net>
-To: greg@kroah.com, 640e9920@gmail.com
-Subject: Re: [RFC] libusb / in-kernel usb driver criteria
-Cc: xiaofanc@gmail.com, stern@rowland.harvard.edu, pmarques@grupopie.com,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20071229193409.GA20188@mgross-t43>
- <Pine.LNX.4.44L0.0712291714041.26261-100000@netrider.rowland.org>
- <20071230035349.GA4741@mgross-t43>
- <a276da400712292052h5808c33apd5269e773edfb592@mail.gmail.com>
- <477BED13.4060403@grupopie.com> <20080103230855.GA5892@mgross-t43>
- <20080111171006.GA6718@kroah.com>
-In-Reply-To: <20080111171006.GA6718@kroah.com>
+	Fri, 11 Jan 2008 16:40:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Mvdj1ENOb9s4sT1Pt3L0cR/KtnS/UzCmmB3iOUD7oYjN6yjHlQOTG7j3kMEACoU0Yk2wqy1wRUz8Mp6IfBuNtpbR8vrl76/S11lHW3EVt0xUhHwyim0iQP8DO4C3/m7k+pq/BS4Oz06qBNtTNvTvvaHqFm/wbY1ETqJXEnu355A=
+Message-ID: <4df4ef0c0801111340n515a3c70n4b26468ddb47ebd2@mail.gmail.com>
+Date: Sat, 12 Jan 2008 00:40:25 +0300
+From: "Anton Salikhmetov" <salikhmetov@gmail.com>
+To: "Peter Staubach" <staubach@redhat.com>
+Subject: Re: [PATCH 2/2][RFC][BUG] msync: updating ctime and mtime at syncing
+Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       Valdis.Kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       jesper.juhl@gmail.com
+In-Reply-To: <4787BC89.2010106@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080111213840.E1B9028CD74@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Content-Disposition: inline
+References: <1200006638.19293.42.camel@codedot>
+	 <1200012249.20379.2.camel@codedot> <4787BC89.2010106@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > So, to get the ball rolling, here are some factors that IMHO
-> > > help decide in which side to implement a driver:
-> > >
-> > >  - if the driver ties a hardware device to an existing
-> > >    in-kernel interface (network, block, serial, bluetooth,
-> > >    video4linux, etc.), it should probably be implemented
-> > >    in-kernel.
-> > 
-> > Agreed, I think this is clear.
+2008/1/11, Peter Staubach <staubach@redhat.com>:
+> Anton Salikhmetov wrote:
+> > From: Anton Salikhmetov <salikhmetov@gmail.com>
+> >
+> > The patch contains changes for updating the ctime and mtime fields for memory mapped files:
+> >
+> > 1) adding a new flag triggering update of the inode data;
+> > 2) implementing a helper function for checking that flag and updating ctime and mtime;
+> > 3) updating time stamps for mapped files in sys_msync() and do_fsync().
 >
-> Yes, this the primary decision point, everything after this depends on
-> lots of variables :)
-
-Including a pragmatic concern:  performance requirements.
-
-Today's usbfs-based userspace drivers don't get any zerocopy
-benefits.  So if you're passing around enough data that your
-target environment needs a zerocopy I/O model (maybe it's got
-to run on an embedded system with a small battery and not much
-spare CPU power), that can argue in favor of a kernel driver.
-
-I don't know whether the "usbfs2" work addresses that issue.
-
-- Dave
-
-
-> Agreed.  It all depends on the situation, we have kernel drivers for
-> devices that can be done in userspace, but not as cleanly or nicely, and
-> so, they stay as kernel drivers.
+> Sorry, one other issue to throw out too -- an mmap'd block device
+> should also have its inode time fields updated.  This is a little
+> tricky because the inode referenced via mapping->host isn't the
+> one that needs to have the time fields updated on.
 >
-> In the end, it comes down to individual cases, so let's handle them at
-> that level, it's easier that way.
+> I have attached the patch that I submitted last.  It is quite out
+> of date, but does show my attempt to resolve some of these issues.
+
+Thanks for your feedback!
+
+Now I'm looking at your solution and thinking about which parts of it
+I could adapt to the infrastructure I'm trying to develop.
+
+However, I would like to address the block device case within
+a separate project. But for now, I want the msync() and fsync()
+system calls to update ctime and mtime at least for memory-mapped
+regular files properly. I feel that even this little improvement could address
+many customer's troubles such as the one Jacob Oestergaard reported
+in the bug #2645.
+
+>
+>     Thanx...
+>
+>        ps
+>
+> --- linux-2.6.20.i686/fs/buffer.c.org
+> +++ linux-2.6.20.i686/fs/buffer.c
+> @@ -710,6 +710,7 @@ EXPORT_SYMBOL(mark_buffer_dirty_inode);
+>  int __set_page_dirty_buffers(struct page *page)
+>  {
+>         struct address_space * const mapping = page_mapping(page);
+> +       int ret = 0;
+>
+>         if (unlikely(!mapping))
+>                 return !TestSetPageDirty(page);
+> @@ -727,7 +728,7 @@ int __set_page_dirty_buffers(struct page
+>         spin_unlock(&mapping->private_lock);
+>
+>         if (TestSetPageDirty(page))
+> -               return 0;
+> +               goto out;
+>
+>         write_lock_irq(&mapping->tree_lock);
+>         if (page->mapping) {    /* Race with truncate? */
+> @@ -740,7 +741,11 @@ int __set_page_dirty_buffers(struct page
+>         }
+>         write_unlock_irq(&mapping->tree_lock);
+>         __mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+> -       return 1;
+> +       ret = 1;
+> +out:
+> +       if (page_mapped(page))
+> +               set_bit(AS_MCTIME, &mapping->flags);
+> +       return ret;
+>  }
+>  EXPORT_SYMBOL(__set_page_dirty_buffers);
+>
+> --- linux-2.6.20.i686/fs/fs-writeback.c.org
+> +++ linux-2.6.20.i686/fs/fs-writeback.c
+> @@ -167,6 +167,13 @@ __sync_single_inode(struct inode *inode,
+>
+>         spin_unlock(&inode_lock);
+>
+> +       if (test_and_clear_bit(AS_MCTIME, &mapping->flags)) {
+> +               if (S_ISBLK(inode->i_mode))
+> +                       bd_inode_update_time(inode);
+> +               else
+> +                       inode_update_time(inode);
+> +       }
+> +
+>         ret = do_writepages(mapping, wbc);
+>
+>         /* Don't write the inode if only I_DIRTY_PAGES was set */
+> --- linux-2.6.20.i686/fs/inode.c.org
+> +++ linux-2.6.20.i686/fs/inode.c
+> @@ -1201,8 +1201,8 @@ void touch_atime(struct vfsmount *mnt, s
+>  EXPORT_SYMBOL(touch_atime);
+>
+>  /**
+> - *     file_update_time        -       update mtime and ctime time
+> - *     @file: file accessed
+> + *     inode_update_time       -       update mtime and ctime time
+> + *     @inode: file accessed
+>   *
+>   *     Update the mtime and ctime members of an inode and mark the inode
+>   *     for writeback.  Note that this function is meant exclusively for
+> @@ -1212,9 +1212,8 @@ EXPORT_SYMBOL(touch_atime);
+>   *     timestamps are handled by the server.
+>   */
+>
+> -void file_update_time(struct file *file)
+> +void inode_update_time(struct inode *inode)
+>  {
+> -       struct inode *inode = file->f_path.dentry->d_inode;
+>         struct timespec now;
+>         int sync_it = 0;
+>
+> @@ -1238,7 +1237,7 @@ void file_update_time(struct file *file)
+>                 mark_inode_dirty_sync(inode);
+>  }
+>
+> -EXPORT_SYMBOL(file_update_time);
+> +EXPORT_SYMBOL(inode_update_time);
+>
+>  int inode_needs_sync(struct inode *inode)
+>  {
+> --- linux-2.6.20.i686/fs/block_dev.c.org
+> +++ linux-2.6.20.i686/fs/block_dev.c
+> @@ -608,6 +608,22 @@ void bdput(struct block_device *bdev)
+>
+>  EXPORT_SYMBOL(bdput);
+>
+> +void bd_inode_update_time(struct inode *inode)
+> +{
+> +       struct block_device *bdev = inode->i_bdev;
+> +       struct list_head *p;
+> +
+> +       if (bdev == NULL)
+> +               return;
+> +
+> +       spin_lock(&bdev_lock);
+> +       list_for_each(p, &bdev->bd_inodes) {
+> +               inode = list_entry(p, struct inode, i_devices);
+> +               inode_update_time(inode);
+> +       }
+> +       spin_unlock(&bdev_lock);
+> +}
+> +
+>  static struct block_device *bd_acquire(struct inode *inode)
+>  {
+>         struct block_device *bdev;
+> --- linux-2.6.20.i686/include/linux/fs.h.org
+> +++ linux-2.6.20.i686/include/linux/fs.h
+> @@ -1488,6 +1488,7 @@ extern struct block_device *bdget(dev_t)
+>  extern void bd_set_size(struct block_device *, loff_t size);
+>  extern void bd_forget(struct inode *inode);
+>  extern void bdput(struct block_device *);
+> +extern void bd_inode_update_time(struct inode *);
+>  extern struct block_device *open_by_devnum(dev_t, unsigned);
+>  extern const struct address_space_operations def_blk_aops;
+>  #else
+> @@ -1892,7 +1893,11 @@ extern int buffer_migrate_page(struct ad
+>  extern int inode_change_ok(struct inode *, struct iattr *);
+>  extern int __must_check inode_setattr(struct inode *, struct iattr *);
+>
+> -extern void file_update_time(struct file *file);
+> +extern void inode_update_time(struct inode *inode);
+> +static inline void file_update_time(struct file *file)
+> +{
+> +       inode_update_time(file->f_path.dentry->d_inode);
+> +}
+>
+>  static inline ino_t parent_ino(struct dentry *dentry)
+>  {
+> --- linux-2.6.20.i686/include/linux/pagemap.h.org
+> +++ linux-2.6.20.i686/include/linux/pagemap.h
+> @@ -16,8 +16,9 @@
+>   * Bits in mapping->flags.  The lower __GFP_BITS_SHIFT bits are the page
+>   * allocation mode flags.
+>   */
+> -#define        AS_EIO          (__GFP_BITS_SHIFT + 0)  /* IO error on async write */
+> +#define AS_EIO         (__GFP_BITS_SHIFT + 0)  /* IO error on async write */
+>  #define AS_ENOSPC      (__GFP_BITS_SHIFT + 1)  /* ENOSPC on async write */
+> +#define AS_MCTIME      (__GFP_BITS_SHIFT + 2)  /* need m/ctime change */
+>
+>  static inline gfp_t mapping_gfp_mask(struct address_space * mapping)
+>  {
+> --- linux-2.6.20.i686/mm/page-writeback.c.org
+> +++ linux-2.6.20.i686/mm/page-writeback.c
+> @@ -760,8 +760,10 @@ int __set_page_dirty_no_writeback(struct
+>   */
+>  int __set_page_dirty_nobuffers(struct page *page)
+>  {
+> +       struct address_space *mapping = page_mapping(page);
+> +       int ret = 0;
+> +
+>         if (!TestSetPageDirty(page)) {
+> -               struct address_space *mapping = page_mapping(page);
+>                 struct address_space *mapping2;
+>
+>                 if (!mapping)
+> @@ -783,9 +785,11 @@ int __set_page_dirty_nobuffers(struct pa
+>                         /* !PageAnon && !swapper_space */
+>                         __mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+>                 }
+> -               return 1;
+> +               ret = 1;
+>         }
+> -       return 0;
+> +       if (page_mapped(page))
+> +               set_bit(AS_MCTIME, &mapping->flags);
+> +       return ret;
+>  }
+>  EXPORT_SYMBOL(__set_page_dirty_nobuffers);
+>
+> --- linux-2.6.20.i686/mm/msync.c.org
+> +++ linux-2.6.20.i686/mm/msync.c
+> @@ -12,6 +12,7 @@
+>  #include <linux/mman.h>
+>  #include <linux/file.h>
+>  #include <linux/syscalls.h>
+> +#include <linux/pagemap.h>
+>
+>  /*
+>   * MS_SYNC syncs the entire file - including mappings.
+> @@ -77,11 +78,16 @@ asmlinkage long sys_msync(unsigned long
+>                 }
+>                 file = vma->vm_file;
+>                 start = vma->vm_end;
+> -               if ((flags & MS_SYNC) && file &&
+> -                               (vma->vm_flags & VM_SHARED)) {
+> +               if ((flags & (MS_SYNC|MS_ASYNC)) &&
+> +                   file && (vma->vm_flags & VM_SHARED)) {
+>                         get_file(file);
+>                         up_read(&mm->mmap_sem);
+> -                       error = do_fsync(file, 0);
+> +                       error = 0;
+> +                       if (flags & MS_SYNC)
+> +                               error = do_fsync(file, 0);
+> +                       else if (test_and_clear_bit(AS_MCTIME,
+> +                                              &file->f_mapping->flags))
+> +                               file_update_time(file);
+>                         fput(file);
+>                         if (error || start >= end)
+>                                 goto out;
+>
+>
