@@ -1,107 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752026AbYAKFQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757331AbYAKFTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752026AbYAKFQm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 00:16:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750708AbYAKFQb
+	id S1757331AbYAKFTo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 00:19:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750708AbYAKFTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 00:16:31 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:52525 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750703AbYAKFQa (ORCPT
+	Fri, 11 Jan 2008 00:19:37 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:46450 "EHLO
+	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750779AbYAKFTh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 00:16:30 -0500
-Subject: Re: INITIO scsi driver fails to work properly
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Filippos Papadopoulos <psybases@gmail.com>
-Cc: linux-scsi@vger.kernel.org, Chuck Ebbert <cebbert@redhat.com>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <9f00bd9d0801031618l324e9078i56b0679a35e27f69@mail.gmail.com>
-References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com>
-	 <20071217031841.f483e5ac.akpm@linux-foundation.org>
-	 <9f00bd9d0712170341u7fef1fc9pc9986dda1a0475cb@mail.gmail.com>
-	 <47666904.8060605@panasas.com>
-	 <9f00bd9d0712190048g60d79ma067ba85b5553459@mail.gmail.com>
-	 <476C1472.1040103@redhat.com>
-	 <1198271036.3130.60.camel@localhost.localdomain>
-	 <476C4177.3030902@redhat.com>
-	 <1198277391.3130.73.camel@localhost.localdomain>
-	 <9f00bd9d0801031618l324e9078i56b0679a35e27f69@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 10 Jan 2008 23:16:17 -0600
-Message-Id: <1200028577.5337.8.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Jan 2008 00:19:37 -0500
+Date: Thu, 10 Jan 2008 23:18:40 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Is it possible to change IRQ for certain device?
+In-reply-to: <fa.LwvfKOhzep/AjTQmtXaIiXMm6zI@ifi.uio.no>
+To: Jan Marek <linux@hazard.jcu.cz>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Message-id: <4786FC30.9000706@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.LwvfKOhzep/AjTQmtXaIiXMm6zI@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 2008-01-04 at 02:18 +0200, Filippos Papadopoulos wrote:
-> First of all let me wish a happy new year.
-> I come back from the vacations and i compiled the initio driver with
+Jan Marek wrote:
+> Hello lkml,
 > 
-> #define DEBUG_INTERRUPT 1
-> #define DEBUG_QUEUE     1
-> #define DEBUG_STATE     1
-> #define INT_DISC        1
+> I have problem with my computer: I have motherboard with AMD690G chipset
+> and nVidia VGA card. But I cannot set BIOS, to assign for VGA unique
+> IRQ. VGA card is sharing IRQ with two ohci_hcd (USB 1.1 controllers).
+> But when I want use for X proprietary nvidia driver, X didn't work with
+> this errors:
 > 
-> I used the sources from 2.6.24-rc6-git9 kernel. At kernel boot time the initio
-> driver prints the following:
+> In dmesg:
 > 
-> " scsi: Initio INI-9X00U/UW SCSI device driver
-> Find scb at c0c00000
-> Append pend scb c0c00000;"
+> NVRM: RmInitAdapter failed! (0x23:0xffffffff:678)
+> NVRM: rm_init_adapter(0) failed
 > 
-> After 3 seconds the whole system freezes there and i have to reboot.
+> and in /var/log/Xorg.0.log:
 > 
+> (II) Setting vga for screen 0.
+> (**) NVIDIA(0): Depth 24, (--) framebuffer bpp 32
+> (==) NVIDIA(0): RGB weight 888
+> (==) NVIDIA(0): Default visual is TrueColor
+> (==) NVIDIA(0): Using gamma correction (1.0, 1.0, 1.0)
+> (**) NVIDIA(0): Enabling RENDER acceleration
+> (II) NVIDIA(0): Support for GLX with the Damage and Composite X
+> extensions is
+> (II) NVIDIA(0):     enabled.
+> (EE) NVIDIA(0): Failed to initialize the NVIDIA graphics device
+> PCI:1:0:0.
+> (EE) NVIDIA(0):     Please see the COMMON PROBLEMS section in the
+> README for
+> (EE) NVIDIA(0):     additional information.
+> (EE) NVIDIA(0): Failed to initialize the NVIDIA graphics device!
+> (EE) NVIDIA(0):  *** Aborting ***
+> (II) UnloadModule: "nvidia"
+> (II) UnloadModule: "fb"
+> (EE) Screen(s) found, but none have a usable configuration.
 > 
+> Fatal server error:
+> no screens found
 > 
-> P.S  here is the info from 'lspci -vv' running 2.6.16.13 kernel:
+> I've found in README for NVIDIA, that VGA has to have unique IRQ. I've
+> tried to set INTERRUPT_LINE and INTERRUPT_PIN with setpci tool, set
+> pci=routeirq, pci=noacpi as the kernel boot parameters, but IRQ
+> is still the same.
 > 
-> "00:08.0 SCSI storage controller: Initio Corporation 360P (rev 02)
->         Subsystem: Unknown device 9292:0202
->         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
-> ParErr- Stepping- SERR- FastB2B-
->         Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium
-> >TAbort- <TAbort- <MAbort- >SERR- <PERR-
->         Latency: 32, Cache Line Size 08
->         Interrupt: pin A routed to IRQ 11
->         Region 0: I/O ports at d000 [size=256]
+> Is there a way to change IRQ for VGA (or for ohci_hcd instead of VGA)
+> directly in Linux?
 
-This proves the BAR0 to be non zero, but I also take it from your report
-that the
+The kernel has no control over IRQ assignments. Often they are hardwired 
+in the motherboard and can't be changed at all. You could check for any 
+relevant BIOS settings (Assign IRQ to VGA, also see if it has an APIC 
+mode setting that needs to be enabled).
 
-initio: I/O port range 0x0 is busy.
-
-message is also gone?
-
->         Region 1: Memory at ef000000 (32-bit, non-prefetchable) [size=4K]
->         [virtual] Expansion ROM at 50000000 [disabled] [size=128K]
-> "
-
-I think there's still one remaining bug from the sg_list conversion,
-namely that cblk->sglen is never set, but it is used to count the number
-of elements in the sg array.  Could you try this patch (on top of
-everything else) and see if the problem is finally fixed?
-
-Thanks,
-
-James
-
----
-diff --git a/drivers/scsi/initio.c b/drivers/scsi/initio.c
-index 01bf018..d038459 100644
---- a/drivers/scsi/initio.c
-+++ b/drivers/scsi/initio.c
-@@ -2603,6 +2603,7 @@ static void initio_build_scb(struct initio_host * host, struct scsi_ctrl_blk * c
- 	nseg = scsi_dma_map(cmnd);
- 	BUG_ON(nseg < 0);
- 	if (nseg) {
-+		cblk->sglen = nseg;
- 		dma_addr = dma_map_single(&host->pci_dev->dev, &cblk->sglist[0],
- 					  sizeof(struct sg_entry) * TOTAL_SG_ENTRY,
- 					  DMA_BIDIRECTIONAL);
-
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
