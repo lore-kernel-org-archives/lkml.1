@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760310AbYAKJNo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760788AbYAKJOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760310AbYAKJNo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 04:13:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757586AbYAKJN2
+	id S1760788AbYAKJOI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 04:14:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758881AbYAKJNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 04:13:28 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:39931 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754997AbYAKJN1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 04:13:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=WPNLV6gk8nleb+FSNfc8ksh8IRPxAdYAnpScx9pVyYgq1EU6PVRtBB874m9c0Ygv6+0TPByugSlQRvG+0JPldAPjMkJoK9ryXGMKdzx0wBMauNcdjD5qdvFn2GwOMJULfSz1CvdvtZYBnKBy7aUhB5j41UUmBWCljeWyoNbCGCM=
-Message-ID: <47873333.5020202@gmail.com>
-Date: Fri, 11 Jan 2008 10:13:23 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-CC: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: PCI Failed to allocate mem for PCI ROM
-References: <1B75C5A8-E512-40CB-A6F3-351640701D0D@kernel.crashing.org> <47872BC8.2040204@gmail.com> <0119CD93-D9F1-42E0-9F6A-A50B2C63B19D@kernel.crashing.org>
-In-Reply-To: <0119CD93-D9F1-42E0-9F6A-A50B2C63B19D@kernel.crashing.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Jan 2008 04:13:34 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:32220
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758369AbYAKJNc convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 04:13:32 -0500
+Message-Id: <4787415E.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Fri, 11 Jan 2008 09:13:50 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <paulus@samba.org>
+Cc: <linuxppc-dev@ozlabs.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH, ppc64] improve dedotify()
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/11/2008 10:07 AM, Kumar Gala wrote:
-> 
-> On Jan 11, 2008, at 2:41 AM, Jiri Slaby wrote:
-> 
->> On 01/11/2008 09:29 AM, Kumar Gala wrote:
->>> Greg,
->>> I'm getting the following message from the kernel on an embedded 
->>> ppc32 system:
->>> PCI: Failed to allocate mem resource #9:100000@e0000000 for 0000:00:00.0
->>> The HW setup is a PCIe host controller and an e1000 NIC card.  It 
->>> appears that pci_bus_assign_resources() is trying to call 
->>> pci_assign_resource() for the ROM and the resource for the ROM is 
->>> [100000:1fffff] where the PHB is [c0000000:dfffffff].
->>> It seems like the resno that pci_assign_resource is getting called 
->>> with is wrong and thus pci_update_resource() doesn't get called.
->>> any ideas?
->>
->> Kernel version, please.
-> 
-> Sorry, its 2.6.24-rc7 + some ppc patches queued for 2.6.25
+This completely untested patch is intended to be a suggestion only:
+Code inspection for an entirely different purpose made me stumble
+across this, and I think that modifying the string table of an ELF
+object is a bad idea, since there's nothing disallowing a linker to
+merge strings inside the table, which would result in this code
+possibly, but unintentionally screwing up other symbol names.
+Besides that, the presented alternative is both smaller and faster.
 
-Could you try this patch?
-http://git.kernel.org/?p=linux/kernel/git/gregkh/patches.git;a=blob_plain;f=pci/pci-remove-default-pci-expansion-rom-memory-allocation.patch
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-Greg: is this 2.6.25 material, please? We need this for SP2.
+---
+ arch/powerpc/kernel/module_64.c |   10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
-thanks,
--- 
-Jiri Slaby
-Faculty of Informatics, Masaryk University
-Suse Labs
+--- linux-2.6.24-rc7/arch/powerpc/kernel/module_64.c	2007-02-04 19:44:54.000000000 +0100
++++ 2.6.24-rc7-ppc64-dedotify/arch/powerpc/kernel/module_64.c	2008-01-08 13:32:33.000000000 +0100
+@@ -154,16 +154,14 @@ static void dedotify_versions(struct mod
+ }
+ 
+ /* Undefined symbols which refer to .funcname, hack to funcname */
+-static void dedotify(Elf64_Sym *syms, unsigned int numsyms, char *strtab)
++static void dedotify(Elf64_Sym *syms, unsigned int numsyms, const char *strtab)
+ {
+ 	unsigned int i;
+ 
+ 	for (i = 1; i < numsyms; i++) {
+-		if (syms[i].st_shndx == SHN_UNDEF) {
+-			char *name = strtab + syms[i].st_name;
+-			if (name[0] == '.')
+-				memmove(name, name+1, strlen(name));
+-		}
++		if (syms[i].st_shndx == SHN_UNDEF
++		    && strtab[syms[i].st_name] == '.')
++			syms[i].st_name++;
+ 	}
+ }
+ 
+
+
+
