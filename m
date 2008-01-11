@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760332AbYAKPnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761801AbYAKPnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760332AbYAKPnX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 10:43:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760440AbYAKPnN
+	id S1761801AbYAKPnm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 10:43:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761658AbYAKPn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 10:43:13 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:52709 "EHLO mx1.redhat.com"
+	Fri, 11 Jan 2008 10:43:29 -0500
+Received: from emroute1.ornl.gov ([160.91.4.119]:44445 "EHLO emroute1.ornl.gov"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760033AbYAKPnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 10:43:11 -0500
-Date: Fri, 11 Jan 2008 10:42:58 -0500
-From: Rik van Riel <riel@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: Re: [patch 05/19] split LRU lists into anon & file sets
-Message-ID: <20080111104258.2d1df3de@bree.surriel.com>
-In-Reply-To: <20080111143627.FD64.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080108205939.323955454@redhat.com>
-	<20080108210002.638347207@redhat.com>
-	<20080111143627.FD64.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1760639AbYAKPn1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 10:43:27 -0500
+Date: Fri, 11 Jan 2008 10:43:25 -0500
+From: David Dillow <dillowda@ornl.gov>
+Subject: Re: CONFIG_NO_HZ breaks blktrace timestamps
+In-reply-to: <20080111093432.GD8143@elte.hu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, linux-btrace@vger.kernel.org,
+       mingo@redhat.com, tglx@linutronix.de,
+       Jens Axboe <jens.axboe@oracle.com>
+Message-id: <1200066205.7480.8.camel@lap75545.ornl.gov>
+Organization: Oak Ridge National Laboratory
+MIME-version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8)
+Content-type: text/plain
+Content-transfer-encoding: 7bit
+References: <1199918912.8388.13.camel@lap75545.ornl.gov>
+ <1199996752.9159.46.camel@lap75545.ornl.gov> <20080111093432.GD8143@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Jan 2008 15:24:34 +0900
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-> below patch is a bit cleanup proposal.
-> i think LRU_FILE is more clarify than "/2".
+On Fri, 2008-01-11 at 10:34 +0100, Ingo Molnar wrote:
+> * David Dillow <dillowda@ornl.gov> wrote:
 > 
-> What do you think it?
+> > Ingo, Thomas added as I think this is related to 
+> > sched.c:__update_rq_clock()'s checking for forward time warps.
+> 
+> yep, we've got some fixes in this area. Do blktrace timestamps work fine 
+> in v2.6.23, with NOHZ?
 
-Thank you for the cleanup, your version looks a lot nicer.  
-I have applied your patch to my series.
-
+Do you still want this tested, given that your ktime change works? If
+so, it will likely be next week before I can devote some cycles to it --
+it'll take installing a new distro on the machines.
 -- 
-All rights reversed.
+Dave Dillow
+National Center for Computational Science
+Oak Ridge National Laboratory
+(865) 241-6602 office
+
+
