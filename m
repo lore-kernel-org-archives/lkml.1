@@ -1,116 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757989AbYAKGHV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbYAKGRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757989AbYAKGHV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 01:07:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750870AbYAKGHK
+	id S1758110AbYAKGRS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 01:17:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbYAKGRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 01:07:10 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:43485 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750846AbYAKGHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 01:07:08 -0500
+	Fri, 11 Jan 2008 01:17:05 -0500
+Received: from py-out-1112.google.com ([64.233.166.181]:19871 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751270AbYAKGRC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 01:17:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jbeM2YnJdy/OgMpmCHgEzvU65VPRyfBG27uVTmlGzK+vG25mKMFHGAP7lhQNuzKTn3tDjTgP4GtCyCX8PJ8gQB4s0fnq5kurKcjZDCIXnnjOi0mPy3AmFN/sL6++n/M8JM0M7QoCQxpUn/+ngYgWX+yoefyFuA1i/La8Fg2Ubu0=
+Message-ID: <386072610801102217u1739d7d7v497e73a38aa876c2@mail.gmail.com>
+Date: Fri, 11 Jan 2008 14:17:01 +0800
+From: "Bryan Wu" <cooloney.lkml@gmail.com>
+To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>
+Subject: Re: [patch] split MMC_CAP_4_BIT_DATA
+Cc: "Cai, Cliff" <Cliff.Cai@analog.com>,
+       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080110125748.416ad0c5@poseidon.drzeus.cx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86_64 early_idt_handler improvements
-X-Fcc: ~/Mail/linus
-X-Zippy-Says: I'm pretending I'm pulling in a TROUT!  Am I doing it correctly??
-Message-Id: <20080111060705.9EAF126F9A9@magilla.localdomain>
-Date: Thu, 10 Jan 2008 22:07:05 -0800 (PST)
+Content-Disposition: inline
+References: <386072610801081832w2befcbafwe9215067f022ed5d@mail.gmail.com>
+	 <0F1B54C89D5F954D8535DB252AF412FA014FAD4A@chinexm1.ad.analog.com>
+	 <20080109082325.212ec90d@poseidon.drzeus.cx>
+	 <386072610801090845r14510fb8tbcca76d605458a96@mail.gmail.com>
+	 <20080110095428.3b93fd18@poseidon.drzeus.cx>
+	 <386072610801100122n52339488ke2b8724c390be765@mail.gmail.com>
+	 <20080110125748.416ad0c5@poseidon.drzeus.cx>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's not too pretty, but I found this made the "PANIC: early exception"
-messages become much more reliably useful: 1. print the vector number,
-2. print the %cs value, 3. handle error-code-pushing vs non-pushing vectors.
+On Jan 10, 2008 7:57 PM, Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
+> On Thu, 10 Jan 2008 17:22:55 +0800
+> "Bryan Wu" <cooloney.lkml@gmail.com> wrote:
+>
+> >
+> > At page 4-3 of  ADSP-BF54x Blackfin(R) Processor Peripheral Hardware
+> > Reference, there is a table which guide us the SDH controller does not
+> > support 4-bit mode MMC card. Please found the table picture in the
+> > attachment or get the document at:
+> > http://www.analog.com/UploadedFiles/Associated_Docs/61460151169789ADSP_BF54x_Blackfin_Processor_Peripheral_Hardware_Reference.pdf
+> >
+>
+> Ok, but this just means the controller wasn't designed with 4-bit MMC in mind. As several other "SD-only" controller have been tested with modern MMC cards without a problem, this is not sufficient to explain any problem.
+>
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/x86/kernel/head64.c  |    6 ++++--
- arch/x86/kernel/head_64.S |   34 ++++++++++++++++++++++++++++++----
- 2 files changed, 34 insertions(+), 6 deletions(-)
+This should be some HW design issue and BF54x including SDH controller
+is in mass production.
+There is no chance to change the silicon, we just wanna use software
+driver to workaround this issue.
+So Mike's patch is here.
 
-diff --git a/arch/x86/kernel/head64.c b/arch/x86/kernel/head64.c
-index 4a1c135..0000000 100644  
---- a/arch/x86/kernel/head64.c
-+++ b/arch/x86/kernel/head64.c
-@@ -48,6 +48,8 @@ static void __init copy_bootdata(char *r
- 	}
- }
- 
-+extern const char early_idt_handlers[IDT_ENTRIES][10];
-+
- void __init x86_64_start_kernel(char * real_mode_data)
- {
- 	int i;
-@@ -59,7 +61,7 @@ void __init x86_64_start_kernel(char * r
- 	zap_identity_mappings();
- 
- 	for (i = 0; i < IDT_ENTRIES; i++)
--		set_intr_gate(i, early_idt_handler);
-+		set_intr_gate(i, &early_idt_handlers[i]);
- 	load_idt((const struct desc_ptr *)&idt_descr);
- 
- 	early_printk("Kernel alive\n");
-diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
-index c31b1c9..0000000 100644  
---- a/arch/x86/kernel/head_64.S
-+++ b/arch/x86/kernel/head_64.S
-@@ -267,14 +267,40 @@ init_rsp:
- bad_address:
- 	jmp bad_address
- 
-+.macro early_idt_tramp first, last
-+	.ifgt \last-\first
-+	early_idt_tramp \first, \last-1
-+	.endif
-+	movl $\last,%esi
-+	jmp early_idt_handler
-+.endm
-+
-+	.globl early_idt_handlers
-+early_idt_handlers:
-+	early_idt_tramp 0, 63
-+	early_idt_tramp 64, 127
-+	early_idt_tramp 128, 191
-+	early_idt_tramp 192, 255
-+	
- ENTRY(early_idt_handler)
- 	cmpl $2,early_recursion_flag(%rip)
- 	jz  1f
- 	incl early_recursion_flag(%rip)
--	xorl %eax,%eax
--	movq 8(%rsp),%rsi	# get rip
--	movq (%rsp),%rdx
- 	GET_CR2_INTO_RCX
-+	movq %rcx,%r9
-+	xorl %r8d,%r8d		# zero for error code
-+	movl %esi,%ecx		# get vector number
-+	# Test %ecx against mask of vectors that push error code.
-+	cmpl $31,%ecx
-+	ja 0f
-+	movl $1,%eax
-+	salq %cl,%rax
-+	testl $0x27d00,%eax
-+	je 0f
-+	popq %r8		# get error code
-+0:	movq 0(%rsp),%rcx	# get ip
-+	movq 8(%rsp),%rdx	# get cs
-+	xorl %eax,%eax
- 	leaq early_idt_msg(%rip),%rdi
- 	call early_printk
- 	cmpl $2,early_recursion_flag(%rip)
-@@ -291,7 +317,7 @@ early_recursion_flag:
- 	.long 0
- 
- early_idt_msg:
--	.asciz "PANIC: early exception rip %lx error %lx cr2 %lx\n"
-+	.asciz "PANIC: early exception %02lx rip %lx:%lx error %lx cr2 %lx\n"
- early_idt_ripmsg:
- 	.asciz "RIP %s\n"
- 
+> >
+> > Thanks, actually we are not yet convinced  by our hardware designer
+> > why BF54x SDH does not support 4-bit MMC.
+> >
+>
+> Please keep me informed on how it progresses. I'd like an at least plausible explanation, preferably also some empirical data, before I'm ready to accept Mike's patch.
+>
+
+We were told this is an hardware design issue, so please help us to
+workaround it in software side with Mike's patch.
+And how do you think my suggestion to Mike's patch,
+#define MMC_CAP_4_BIT_DATA ( MMC_CAP_SD_4_BIT_DATA | MMC_CAP_MMC_4_BIT_DATA)
+Then no need to change other MMC host drivers
+
+Thanks
+Regards,
+-Bryan Wu
