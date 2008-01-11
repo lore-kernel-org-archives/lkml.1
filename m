@@ -1,82 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758766AbYAKHeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757925AbYAKHgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758766AbYAKHeY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 02:34:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752197AbYAKHeS
+	id S1757925AbYAKHgR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 02:36:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753242AbYAKHgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 02:34:18 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39648 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752021AbYAKHeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 02:34:17 -0500
-Date: Fri, 11 Jan 2008 08:33:15 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       suresh.b.siddha@intel.com, Arjan van de Ven <arjan@infradead.org>,
-       Dave Jones <davej@redhat.com>
-Subject: Re: CPA patchset
-Message-ID: <20080111073314.GA24021@elte.hu>
-References: <20080103424.989432000@suse.de> <20080110093126.GA360@elte.hu> <20080110095337.GK25945@bingen.suse.de> <20080110100443.GB28209@elte.hu> <20080110100712.GO25945@bingen.suse.de> <20080110105726.GD28209@elte.hu> <20080110111248.GR25945@bingen.suse.de> <20080111071936.GA16175@elte.hu>
+	Fri, 11 Jan 2008 02:36:01 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33643 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752310AbYAKHgA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 02:36:00 -0500
+Date: Fri, 11 Jan 2008 16:35:24 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Rik van Riel <riel@redhat.com>
+Subject: Re: [patch 05/19] split LRU lists into anon & file sets
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+In-Reply-To: <20080108210002.638347207@redhat.com>
+References: <20080108205939.323955454@redhat.com> <20080108210002.638347207@redhat.com>
+Message-Id: <20080111162320.FD6A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080111071936.GA16175@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Rik
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+> @@ -1128,64 +1026,65 @@ static void shrink_active_list(unsigned 
+  (snip)
 
-> > > I think you have it fundamentally backwards: the best for 
-> > > performance is WB + cflush. What would WC offer for performance 
-> > > that cflush cannot do?
-> > 
-> > Cached requires the cache line to be read first before you can write 
-> > it.
-> 
-> nonsense, and you should know it. It is perfectly possible to 
-> construct fully written cachelines, without reading the cacheline 
-> first. MOVDQ is SSE1 so on basically in every CPU today - and it is 16 
-> byte aligned and can generate full cacheline writes, _without_ filling 
-> in the cacheline first. Bulk ops (string ops, etc.) will do full 
-> cacheline writes too, without filling in the cacheline. Especially 
-> with high performance 3D ops we do _NOT_ need any funky reads from 
-> anywhere because 3D software can stream a lot of writes out: we 
-> construct a full frame or a portion of a frame, or upload vertices or 
-> shader scripts, textures, etc.
-> 
-> ( also, _even_ when there is a cache fill pending on for a partially
->   written cacheline, that might go on in parallel and it is not 
->   necessarily holding up the CPU unless it has an actual data dependency 
->   on that. )
+> +	/*
+> +	 * For sorting active vs inactive pages, we'll use the 'anon'
+> +	 * elements of the local list[] array and sort out the file vs
+> +	 * anon pages below.
+> +	 */
+>  	while (!list_empty(&l_hold)) {
+> +		lru = LRU_INACTIVE_ANON;
+>  		cond_resched();
+>  		page = lru_to_page(&l_hold);
+>  		list_del(&page->lru);
+> -		if (page_mapped(page)) {
+> -			if (!reclaim_mapped ||
+> -			    (total_swap_pages == 0 && PageAnon(page)) ||
+> -			    page_referenced(page, 0, sc->mem_cgroup)) {
+> -				list_add(&page->lru, &list[LRU_ACTIVE]);
+> -				continue;
+> -			}
+> -		} else if (TestClearPageReferenced(page)) {
+> -			list_add(&page->lru, &list[LRU_ACTIVE]);
+> -			continue;
+> -		}
+> -		list_add(&page->lru, &list[LRU_INACTIVE]);
+> +		if (page_referenced(page, 0, sc->mem_cgroup))
+> +			lru = LRU_ACTIVE_ANON;
+> +		list_add(&page->lru, &list[lru]);
+>  	}
 
-btw., that's not to suggest that WC does not have its place - but it's 
-not where you think it is.
+Why drop (total_swap_pages == 0 && PageAnon(page)) condition?
+in embedded sysmtem, 
+CONFIG_NORECLAIM is OFF (because almost embedded cpu is 32bit) and
+that anon move to inactive list is meaningless because it doesn't have swap.
 
-Write-Combining can be very useful for devices that are behind a slow or 
-a high-latency transport, such as PCI, and which are mapped UnCached 
-today. Such as a networking card (or storage card) descriptor rings. New 
-entries in the TX ring are typically constructed on the CPU side without 
-knowing anything about their contents (and hence no need to read them, 
-the drivers typically shadow the ring on the host side already, it is 
-required for good UC performance today), so the new descriptors can be 
-streamed out efficiently with WC, instead of generating lots of small UC 
-accesses. But these descriptor rings have constant size, they have a 
-fixed place in the aperture and are ioremap()ed once during device init 
-and that's it. No high-frequency change_page_attributes() usage is done 
-or desired here.
+below code is more good, may be.
+but I don't understand yet why ignore page_referenced() result at anon page ;-)
 
-	Ingo
+
+- kosaki
+
+
+---
+ mm/vmscan.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6.24-rc6-mm1-rvr/mm/vmscan.c
+===================================================================
+--- linux-2.6.24-rc6-mm1-rvr.orig/mm/vmscan.c   2008-01-11 13:59:12.000000000 +0900
++++ linux-2.6.24-rc6-mm1-rvr/mm/vmscan.c        2008-01-11 16:16:44.000000000 +0900
+@@ -1147,7 +1147,7 @@ static void shrink_active_list(unsigned
+                }
+
+                if (page_referenced(page, 0, sc->mem_cgroup)) {
+-                       if (file)
++                       if (file || (total_swap_pages == 0))
+                                /* Referenced file pages stay active. */
+                                lru = LRU_ACTIVE_ANON;
+                        else
+
+
