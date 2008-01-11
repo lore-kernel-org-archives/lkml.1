@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761551AbYAKMHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761851AbYAKMHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761551AbYAKMHW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 07:07:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758010AbYAKMD5
+	id S1761851AbYAKMHn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 07:07:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758479AbYAKMD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 07:03:57 -0500
-Received: from smtp115.plus.mail.re1.yahoo.com ([69.147.102.78]:34571 "HELO
-	smtp115.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759053AbYAKMDj (ORCPT
+	Fri, 11 Jan 2008 07:03:59 -0500
+Received: from smtp107.plus.mail.re1.yahoo.com ([69.147.102.70]:20682 "HELO
+	smtp107.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759421AbYAKMDm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 07:03:39 -0500
+	Fri, 11 Jan 2008 07:03:42 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.de;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:In-Reply-To:References;
-  b=wV9oIjindAJ6gK63S15kXKmGjSofA4encZ9oak7fXDgM97m0MJ+6PL15DPcSIiSZClSnwAsHrWxE/k9BymkGvkrxYg/RiO9b31DCpLQ+oa1MeM35QbYrNrrLKQ0takOulUvlqQ5PbYr133Mgy/f4ggsUlIOTzyPj9kvuA2bRwPY=  ;
-X-YMail-OSG: bwvSo1EVM1mN9VuIARfe3UFGJVL_UNlSesMx1L8lgGVZ8rwhYaglr9N0N2D1gC.uWC_JRHG11A--
+  b=vggyrCq1jixtch1niBCRxYR5uj2CtaHRo8cR8m+MCRLRpzGlmG1r8P8rNByLAj9ZPMGA5osyj3p6PcT07DU6Q3hRv4pfejjaV/pal++YnN1xnwzZEYJZLtik4dZJTO/QLxRh1bWU319mxAUJo+M0YfH1HIfESMbC7jtkJYGrPLM=  ;
+X-YMail-OSG: 6lWVH.oVM1lk62yBVt2.FSNFenHR.FGHt.IbKUIKSdohciaqROP64MPaDFcoEyHz5H5h.cMczg--
 X-Yahoo-Newman-Property: ymail-3
 From: Borislav Petkov <bbpetkov@yahoo.de>
 To: Bartlomiej@gollum.tnic, Zolnierkiewicz@gollum.tnic, <bzolnier@gmail.com>
 Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
        Borislav Petkov <bbpetkov@yahoo.de>
-Subject: [PATCH 14/21] ide-floppy: mv idefloppy_{should_,}report_error
-Date: Fri, 11 Jan 2008 12:58:12 +0100
-Message-Id: <1200052699-28420-15-git-send-email-bbpetkov@yahoo.de>
+Subject: [PATCH 15/21] ide-floppy: disambiguate function names
+Date: Fri, 11 Jan 2008 12:58:13 +0100
+Message-Id: <1200052699-28420-16-git-send-email-bbpetkov@yahoo.de>
 X-Mailer: git-send-email debian.1.5.3.7.1-dirty
-In-Reply-To: <1200052699-28420-14-git-send-email-bbpetkov@yahoo.de>
+In-Reply-To: <1200052699-28420-15-git-send-email-bbpetkov@yahoo.de>
 References: <1200052699-28420-1-git-send-email-bbpetkov@yahoo.de>
  <1200052699-28420-2-git-send-email-bbpetkov@yahoo.de>
  <1200052699-28420-3-git-send-email-bbpetkov@yahoo.de>
@@ -39,87 +39,52 @@ References: <1200052699-28420-1-git-send-email-bbpetkov@yahoo.de>
  <1200052699-28420-12-git-send-email-bbpetkov@yahoo.de>
  <1200052699-28420-13-git-send-email-bbpetkov@yahoo.de>
  <1200052699-28420-14-git-send-email-bbpetkov@yahoo.de>
+ <1200052699-28420-15-git-send-email-bbpetkov@yahoo.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In addition to shortening the function name, move the printk-call into the
-function thereby saving some code lines. Also, make the function out_of_line
-since it is not on a performance critical path.
+There were two almost identical function names in ide-floppy.c, which makes their
+distinction almost impossible. While ide_floppy_release() cleans up the object
+after the last reference to it has been dropped, idefloppy_release() is the blkdev
+.release method from struct block_device_operations which releases that last reference.
+
+Rename ide_floppy_release() to idefloppy_cleanup_obj() in order to make its purpose
+more clear. There should be no functionality change resulting from this patch.
 
 Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
 ---
- drivers/ide/ide-floppy.c |   37 ++++++++++++++-----------------------
- 1 files changed, 14 insertions(+), 23 deletions(-)
+ drivers/ide/ide-floppy.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/ide/ide-floppy.c b/drivers/ide/ide-floppy.c
-index 49d83a1..b718615 100644
+index b718615..6e8926a 100644
 --- a/drivers/ide/ide-floppy.c
 +++ b/drivers/ide/ide-floppy.c
-@@ -707,16 +707,18 @@ static ide_startstop_t idefloppy_transfer_pc1(ide_drive_t *drive)
- 	return ide_started;
+@@ -234,12 +234,12 @@ static struct ide_floppy_obj *ide_floppy_get(struct gendisk *disk)
+ 	return floppy;
  }
  
--/*
-- * Suppresses error messages resulting from Medium not present.
-- */
--static inline int idefloppy_should_report_error(idefloppy_floppy_t *floppy)
-+static void idefloppy_report_error(idefloppy_floppy_t *floppy,
-+		idefloppy_pc_t *pc)
+-static void ide_floppy_release(struct kref *);
++static void idefloppy_cleanup_obj(struct kref *);
+ 
+ static void ide_floppy_put(struct ide_floppy_obj *floppy)
  {
- 	if (floppy->sense_key == 0x02 &&
- 	    floppy->asc       == 0x3a &&
- 	    floppy->ascq      == 0x00)
--		return 0;
--	return 1;
-+		return;
-+
-+	printk(KERN_ERR "ide-floppy: %s: I/O error, pc = %2x, key = %2x, "
-+			"asc = %2x, ascq = %2x\n",
-+			floppy->drive->name, pc->c[0], floppy->sense_key,
-+			floppy->asc, floppy->ascq);
+ 	mutex_lock(&idefloppy_ref_mutex);
+-	kref_put(&floppy->kref, ide_floppy_release);
++	kref_put(&floppy->kref, idefloppy_cleanup_obj);
+ 	mutex_unlock(&idefloppy_ref_mutex);
  }
  
- static ide_startstop_t idefloppy_issue_pc(ide_drive_t *drive,
-@@ -741,15 +743,8 @@ static ide_startstop_t idefloppy_issue_pc(ide_drive_t *drive,
- 		 *	a legitimate error code was received.
- 		 */
- 		if (!test_bit(PC_ABORT, &pc->flags)) {
--			if (!test_bit(PC_SUPPRESS_ERROR, &pc->flags)) {
--				if (idefloppy_should_report_error(floppy))
--					printk(KERN_ERR "ide-floppy: %s: I/O error, "
--					       "pc = %2x, key = %2x, "
--					       "asc = %2x, ascq = %2x\n",
--					       drive->name, pc->c[0],
--					       floppy->sense_key,
--					       floppy->asc, floppy->ascq);
--			}
-+			if (!test_bit(PC_SUPPRESS_ERROR, &pc->flags))
-+				idefloppy_report_error(floppy, pc);
- 			/* Giving up */
- 			pc->error = IDEFLOPPY_ERROR_GENERAL;
- 		}
-@@ -958,16 +953,12 @@ static ide_startstop_t idefloppy_do_request(ide_drive_t *drive,
- 			rq->nr_sectors, rq->current_nr_sectors);
+@@ -1431,7 +1431,7 @@ static void ide_floppy_remove(ide_drive_t *drive)
+ 	ide_floppy_put(floppy);
+ }
  
- 	if (rq->errors >= ERROR_MAX) {
--		if (floppy->failed_pc != NULL) {
--			if (idefloppy_should_report_error(floppy))
--				printk(KERN_ERR "ide-floppy: %s: I/O error, pc = %2x,"
--				       " key = %2x, asc = %2x, ascq = %2x\n",
--				       drive->name, floppy->failed_pc->c[0],
--				       floppy->sense_key, floppy->asc, floppy->ascq);
--		}
-+		if (floppy->failed_pc != NULL)
-+			idefloppy_report_error(floppy, floppy->failed_pc);
- 		else
- 			printk(KERN_ERR "ide-floppy: %s: I/O error\n",
--				drive->name);
-+					drive->name);
-+
- 		idefloppy_do_end_request(drive, 0, 0);
- 		return ide_stopped;
- 	}
+-static void ide_floppy_release(struct kref *kref)
++static void idefloppy_cleanup_obj(struct kref *kref)
+ {
+ 	struct ide_floppy_obj *floppy = to_ide_floppy(kref);
+ 	ide_drive_t *drive = floppy->drive;
 -- 
 1.5.3.7
 
