@@ -1,98 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762083AbYAKRTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762186AbYAKRT3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762083AbYAKRTR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 12:19:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759885AbYAKRTB
+	id S1762186AbYAKRT3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 12:19:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761369AbYAKRTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 12:19:01 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:1912 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759882AbYAKRTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 12:19:00 -0500
-Date: Fri, 11 Jan 2008 18:18:55 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Dillow <dillowda@ornl.gov>, Guillaume Chazarain <guichaz@yahoo.fr>,
-       linux-kernel@vger.kernel.org, linux-btrace@vger.kernel.org,
-       mingo@redhat.com, tglx@linutronix.de
-Subject: Re: [patch] block: fix blktrace timestamps
-Message-ID: <20080111171855.GX6258@kernel.dk>
-References: <20080110234438.4826f658@inria.fr> <1200020661.5099.3.camel@obelisk.thedillows.org> <20080111090723.GI6258@kernel.dk> <20080111092334.GA8143@elte.hu> <20080111092513.GO6258@kernel.dk> <20080111094205.GE8143@elte.hu> <20080111095654.GR6258@kernel.dk> <20080111102953.GA27223@elte.hu> <20080111122802.GT6258@kernel.dk> <20080111132106.GA16496@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080111132106.GA16496@elte.hu>
+	Fri, 11 Jan 2008 12:19:09 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:37886 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761253AbYAKRTH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 12:19:07 -0500
+Date: Fri, 11 Jan 2008 09:18:41 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: dean gaudet <dean@arctic.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       suresh.b.siddha@intel.com, Dave Jones <davej@redhat.com>
+Subject: Re: CPA patchset
+Message-ID: <20080111091841.04eecd54@laptopd505.fenrus.org>
+In-Reply-To: <alpine.DEB.0.999999.0801110856230.9361@twinlark.arctic.org>
+References: <20080103424.989432000@suse.de>
+	<20080110093126.GA360@elte.hu>
+	<20080110095337.GK25945@bingen.suse.de>
+	<20080110100443.GB28209@elte.hu>
+	<20080110100712.GO25945@bingen.suse.de>
+	<20080110105726.GD28209@elte.hu>
+	<20080110111248.GR25945@bingen.suse.de>
+	<20080111071936.GA16175@elte.hu>
+	<alpine.DEB.0.999999.0801110856230.9361@twinlark.arctic.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 11 2008, Ingo Molnar wrote:
+On Fri, 11 Jan 2008 09:02:46 -0800 (PST)
+dean gaudet <dean@arctic.org> wrote:
+
+> > Bulk ops (string ops, etc.) will do full cacheline writes too, 
+> > without filling in the cacheline.
 > 
-> * Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > > > If blktrace worked in 2.6.23 and it doesn't in 2.6.24 because of 
-> > > > some option that isn't immediately apparent, then it's a 
-> > > > regression. Period.
-> > > 
-> > > not completely correct. CONFIG_NO_HZ is a default-disabled option 
-> > > that became newly available on 64-bit x86. So if NO_HZ does not 
-> > > completely work on 64-bit, and if 32-bit works fine - which we dont 
-> > > know yet (my guess would be that it's similarly broken on the same 
-> > > box) then it's not a regression.
-> > 
-> > Ingo, it doesn't matter if the option is disabled by default or not! 
-> > The fact is that functionality foo works in 2.6.23 and doesn't in 
-> > 2.6.24 because of something unrelated. And that IS a regression, no 
-> > matter what kind of word play you are doing here :-)
-> 
-> argh, Jens. Really. I believe you stopped using your brain because 
-> CONFIG_BKL_IO_TRACE=y is affected by this bug and apparently you've got 
-> a weak spot for it ;)
+> on intel with fast strings enabled yes.  mind you intel gives hints in
+> the documentation these operations don't respect coherence... and i
+> asked about this when they posted their memory ordering paper but got
+> no response.
 
-I don't think so.
-
-> Think about it another way then, in the context of another, real kernel 
-> feature we introduced in v2.6.24, namely CONFIG_CPU_IDLE=y:
-> 
-> - Fact: feature CONFIG_CPU_IDLE=y did not exist in 64-bit x86 in v2.6.23.
->   It has known bugs but they are not flagged 'regressions' (because the 
->   feature did not exist before and the option is default-disabled) hence 
->   the feature can stay. Some fixes to it are too dangerous or too 
->   unproven and are delayed to v2.6.25.
-
-> 
-> and now apply the same rule to CONFIG_NO_HZ:
-> 
-> - Fact: feature CONFIG_NO_HZ=y did not exist in 64-bit x86 in v2.6.23.
->   It has known bugs but they are not flagged 'regressions' (because the 
->   feature did not exist before and the option is default-disabled) hence 
->   the feature can stay. Some fixes to it are too dangerous or too 
->   unproven and are delayed to v2.6.25.
-
-Forget about this unrelated feature, it has nothing to do with this
-situation. What if some (eg) sata driver broke because someone enabled
-CONFIG_NO_HZ. Would you say that's not a regression because it worked
-before that option was there? That's crap, no user would buy that
-argument. As far as the user is concerned, it IS a regression.
-
-Since we obviously disagree on this, lets agree to not debate it any
-further. It doesn't matter anyway, since the issue is resolved.
-
-> > [...] What is the cost of ktime_get() compared to sched_clock()?
-> 
-> compared to the costs of IO transfers it should be OK. It can be really 
-> fast but in the worst-case it can be as slow as 3-6 usecs (when we use 
-> the acpi_pm clocksource). If there's complaints then probably the 
-> networking folks will yell first :)
-
-How does that compare to sched_clock()? 3-6 usec would render blktrace
-unusable for certain types of testing, unfortunately. This isn't just
-queried per IO, it's done for every action for that IO. So you'd
-typically have up to eg 10 traces for a single IO piece, perhaps even
-more.
-
-For 2.6.24 the solution is fine, I'll revisit the impact when I can.
+I know there's an answer on the way; it just needs to get checked by
+architects for cpus we shipped in like the last 10 years ;)
 
 -- 
-Jens Axboe
-
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
