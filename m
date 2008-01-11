@@ -1,119 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760823AbYAKM1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760487AbYAKM2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760823AbYAKM1W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 07:27:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758710AbYAKM1O
+	id S1760487AbYAKM2T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 07:28:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759261AbYAKM2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 07:27:14 -0500
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:43800 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758390AbYAKM1N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 07:27:13 -0500
-Message-ID: <47876094.8030509@tiscali.nl>
-Date: Fri, 11 Jan 2008 13:27:00 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Fri, 11 Jan 2008 07:28:09 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:14101 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758715AbYAKM2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 07:28:06 -0500
+Date: Fri, 11 Jan 2008 13:28:02 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Dillow <dillowda@ornl.gov>, Guillaume Chazarain <guichaz@yahoo.fr>,
+       linux-kernel@vger.kernel.org, linux-btrace@vger.kernel.org,
+       mingo@redhat.com, tglx@linutronix.de
+Subject: Re: [patch] block: fix blktrace timestamps
+Message-ID: <20080111122802.GT6258@kernel.dk>
+References: <1199918912.8388.13.camel@lap75545.ornl.gov> <1199996752.9159.46.camel@lap75545.ornl.gov> <20080110234438.4826f658@inria.fr> <1200020661.5099.3.camel@obelisk.thedillows.org> <20080111090723.GI6258@kernel.dk> <20080111092334.GA8143@elte.hu> <20080111092513.GO6258@kernel.dk> <20080111094205.GE8143@elte.hu> <20080111095654.GR6258@kernel.dk> <20080111102953.GA27223@elte.hu>
 MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>, Roel Kluin <12o3l@tiscali.nl>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Mathieu Segaud <mathieu.segaud@regala.cx>,
-       Richard Knutsson <ricknu-0@student.ltu.se>,
-       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] [Coding Style]: fs/ext{3,4}/ext{3,4}_jbd{,2}.c
-References: <1199452896-20145-5-git-send-email-mathieu.segaud@regala.cx> <477E379F.4000103@student.ltu.se> <20080105041228.GP3351@webber.adilger.int> <20080105051817.GD27894@ZenIV.linux.org.uk> <4786883E.30604@tiscali.nl> <20080111030945.27954.qmail@cdy.org> <20080111034240.GA29861@linux-sh.org> <47873ABA.5050604@tiscali.nl> <20080111102930.GA31581@linux-sh.org> <47874D2E.2000603@tiscali.nl> <20080111112353.GA31938@linux-sh.org>
-In-Reply-To: <20080111112353.GA31938@linux-sh.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080111102953.GA27223@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mundt wrote:
-> On Fri, Jan 11, 2008 at 12:04:14PM +0100, Roel Kluin wrote:
->> Paul Mundt wrote:
->>> Take a look at how CONFIG_PCMCIA_DEBUG is handled.
->> In drivers/pcmcia/Makefile, when CONFIG_PCMCIA_DEBUG=y, it  gives
->> EXTRA_CFLAGS += -DDEBUG
->> which causes the definition of DEBUG as a macro, with definition 1.
->>
->>> With DEBUG()->pr_debug() conversion here you've silently dropped the
->>> __func__ prefixing. Note that dev_dbg() is usually preferred when you can
->>> get a hold of a struct device pointer, as it takes care of prettifying
->>> the output with the driver name and so on, rather than the convention of
->>> adding a prefix. If you can't get at the struct device pointer, you'll
->>> probably just want to insert the __func__ prefixing manually at the
->>> callsites.
+On Fri, Jan 11 2008, Ingo Molnar wrote:
+> 
+> (David, could you try the patch further below - does it fix bkltrace 
+> timestamps too?)
+> 
+> * Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > On Fri, Jan 11 2008, Ingo Molnar wrote:
+> > > 
+> > > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > 
+> > > > > they are from the scheduler git tree (except the first debug patch), 
+> > > > > but queued up for v2.6.25 at the moment.
+> > > > 
+> > > > So this means that blktrace will be broken with CONFIG_NO_HZ for 
+> > > > 2.6.24? That's clearly a regression.
+> > > 
+> > > 64-bit CONFIG_NO_HZ is a new feature in v2.6.24. If it happens on 
+> > > 32-bit too and it didnt happen in v2.6.23 32-bit then it's a 
+> > > regression.
+> > 
+> > If blktrace worked in 2.6.23 and it doesn't in 2.6.24 because of some 
+> > option that isn't immediately apparent, then it's a regression. 
+> > Period.
+> 
+> not completely correct. CONFIG_NO_HZ is a default-disabled option that 
+> became newly available on 64-bit x86. So if NO_HZ does not completely 
+> work on 64-bit, and if 32-bit works fine - which we dont know yet (my 
+> guess would be that it's similarly broken on the same box) then it's not 
+> a regression.
 
-> You're still changing the semantics here. The DEBUG() does __FUNCTION__
-> prefixing, while pr_debug() does not. This should be something like
-> pr_debug("%s: ....", __func__, ...); instead, if you want to maintain
-> consistency. Beyond that, this looks fine, yes.
+Ingo, it doesn't matter if the option is disabled by default or not!
+The fact is that functionality foo works in 2.6.23 and doesn't in 2.6.24
+because of something unrelated. And that IS a regression, no matter what
+kind of word play you are doing here :-)
 
-Somehow I overlooked your last point. Well, the original code had no
-semantics - it wasn't working - but I get your point.
+> But even if it's not "technically" a regression, it's something we want 
+> to fix in .24 if we can, so i'm all with you Jens :)
 
-Below a patch to print the __func__'s. Note that all pr_debugs are in the
-same function. Maybe the function name should be printed in the first
-pr_debug only? If desired, I'll send another patch.
---
-Replace printk wrapper - with a syntax error - by pr_debug; keep printing
-the __func__'s. (DEBUG is defined 1 when CONFIG_PCMCIA_DEBUG is set)
+That's good :)
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/drivers/pcmcia/au1000_xxs1500.c b/drivers/pcmcia/au1000_xxs1500.c
-index ce9d5c4..b4bad6e 100644
---- a/drivers/pcmcia/au1000_xxs1500.c
-+++ b/drivers/pcmcia/au1000_xxs1500.c
-@@ -55,12 +55,6 @@
- #define PCMCIA_NUM_SOCKS	(PCMCIA_MAX_SOCK + 1)
- #define PCMCIA_IRQ		AU1000_GPIO_4
- 
--#if 0
--#define DEBUG(x,args...)	printk(__FUNCTION__ ": " x,##args)
--#else
--#define DEBUG(x,args...)
--#endif
--
- static int xxs1500_pcmcia_init(struct pcmcia_init *init)
- {
- 	return PCMCIA_NUM_SOCKS;
-@@ -143,13 +137,13 @@ xxs1500_pcmcia_configure_socket(const struct pcmcia_configure *configure)
- 
- 	if(configure->sock > PCMCIA_MAX_SOCK) return -1;
- 
--	DEBUG("Vcc %dV Vpp %dV, reset %d\n",
-+	pr_debug("%s: Vcc %dV Vpp %dV, reset %d\n", __func__,
- 			configure->vcc, configure->vpp, configure->reset);
- 
- 	switch(configure->vcc){
- 		case 33: /* Vcc 3.3V */
- 			/* turn on power */
--			DEBUG("turn on power\n");
-+			pr_debug("%s: turn on power\n", __func__);
- 			au_writel((au_readl(GPIO2_PINSTATE) & ~(1<<14))|(1<<30),
- 					GPIO2_OUTPUT);
- 			au_sync_delay(100);
-@@ -166,7 +160,7 @@ xxs1500_pcmcia_configure_socket(const struct pcmcia_configure *configure)
- 	}
- 
- 	if (!configure->reset) {
--		DEBUG("deassert reset\n");
-+		pr_debug("%s: deassert reset\n", __func__);
- 		au_writel((au_readl(GPIO2_PINSTATE) & ~(1<<4))|(1<<20),
- 				GPIO2_OUTPUT);
- 		au_sync_delay(100);
-@@ -174,7 +168,7 @@ xxs1500_pcmcia_configure_socket(const struct pcmcia_configure *configure)
- 				GPIO2_OUTPUT);
- 	}
- 	else {
--		DEBUG("assert reset\n");
-+		pr_debug("%s: assert reset\n", __func__);
- 		au_writel(au_readl(GPIO2_PINSTATE) | (1<<4)|(1<<20),
- 				GPIO2_OUTPUT);
- 	}
+> ktime_get() should have been used instead, which is a proper GTOD 
+> clocksource. The patch below implements this.
 
+Will give it a whirl, it looks promising indeed and gets rid of the ugly
+cpu sync stuff. What is the cost of ktime_get() compared to
+sched_clock()?
 
+-- 
+Jens Axboe
 
