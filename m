@@ -1,67 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762857AbYAKXEd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762865AbYAKXHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762857AbYAKXEd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 18:04:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756898AbYAKXEZ
+	id S1762865AbYAKXHX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 18:07:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760249AbYAKXHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 18:04:25 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59226 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759062AbYAKXEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 18:04:25 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] x86: Change unnecessary dependencies on CONFIG_PM
-Date: Sat, 12 Jan 2008 00:06:46 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andi Kleen <ak@suse.de>, Adrian Bunk <bunk@kernel.org>,
-       Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
-References: <20080103442.621670000@suse.de> <200801101242.53504.ak@suse.de> <200801101817.23522.rjw@sisk.pl>
-In-Reply-To: <200801101817.23522.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Fri, 11 Jan 2008 18:07:11 -0500
+Received: from mail01a.mail.t-online.hu ([84.2.40.6]:61502 "EHLO
+	mail01a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759284AbYAKXHJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 18:07:09 -0500
+Subject: [PATCH 2/10] kconfig: gettext support for lxdialog
+From: EGRY Gabor <gaboregry1@t-online.hu>
+To: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-kernel@zh-kernel.org
+Content-Type: text/plain
+Date: Fri, 11 Jan 2008 23:42:54 +0100
+Message-Id: <1200091374.10603.35.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801120006.47592.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo, this patch applies on top of the mm branch, please add.]
+Gettext support for lxdialog.
+
+Signed-off-by: Egry Gabor <gaboregry1@t-online.hu>
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+
 ---
-From: Rafael J. Wysocki <rjw@sisk.pl>
 
-CONFIG_PM_CPUINIT should depend on CONFIG_PM_SLEEP rather than
-on CONFIG_PM, because it only is needed for suspend and
-hibernation.  Also, it's not necessary to compile
-arch/x86/power/cpu.c if CONFIG_PM_SLEEP is not set, for the same
-reason.
+ kbuild-szilard/scripts/kconfig/POTFILES.in          |    6 ++++++
+ kbuild-szilard/scripts/kconfig/lxdialog/checklist.c |    4 ++--
+ kbuild-szilard/scripts/kconfig/lxdialog/dialog.h    |    6 ++++++
+ kbuild-szilard/scripts/kconfig/lxdialog/inputbox.c  |    4 ++--
+ kbuild-szilard/scripts/kconfig/lxdialog/menubox.c   |    6 +++---
+ kbuild-szilard/scripts/kconfig/lxdialog/textbox.c   |    2 +-
+ kbuild-szilard/scripts/kconfig/lxdialog/yesno.c     |    4 ++--
+ 7 files changed, 22 insertions(+), 10 deletions(-)
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/x86/Kconfig        |    2 +-
- arch/x86/power/Makefile |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/arch/x86/Kconfig
-===================================================================
---- linux-2.6.orig/arch/x86/Kconfig
-+++ linux-2.6/arch/x86/Kconfig
-@@ -150,7 +150,7 @@ config GENERIC_PENDING_IRQ
+diff -puN scripts/kconfig/lxdialog/checklist.c~kconfig-i18n-03-lxdialog-i18n scripts/kconfig/lxdialog/checklist.c
+--- kbuild/scripts/kconfig/lxdialog/checklist.c~kconfig-i18n-03-lxdialog-i18n	2008-01-11 22:24:39.000000000 +0100
++++ kbuild-szilard/scripts/kconfig/lxdialog/checklist.c	2008-01-11 22:24:39.000000000 +0100
+@@ -97,8 +97,8 @@ static void print_buttons(WINDOW * dialo
+ 	int x = width / 2 - 11;
+ 	int y = height - 2;
  
- config PM_CPUINIT
- 	bool
--	depends on PM
-+	depends on PM_SLEEP
- 	default y
+-	print_button(dialog, "Select", y, x, selected == 0);
+-	print_button(dialog, " Help ", y, x + 14, selected == 1);
++	print_button(dialog, gettext("Select"), y, x, selected == 0);
++	print_button(dialog, gettext(" Help "), y, x + 14, selected == 1);
  
- config X86_SMP
-Index: linux-2.6/arch/x86/power/Makefile
-===================================================================
---- linux-2.6.orig/arch/x86/power/Makefile
-+++ linux-2.6/arch/x86/power/Makefile
-@@ -1,2 +1,2 @@
--obj-$(CONFIG_PM)		+= cpu.o
-+obj-$(CONFIG_PM_SLEEP)		+= cpu.o
- obj-$(CONFIG_HIBERNATION)	+= swsusp.o suspend.o
+ 	wmove(dialog, y, x + 1 + 14 * selected);
+ 	wrefresh(dialog);
+diff -puN scripts/kconfig/lxdialog/dialog.h~kconfig-i18n-03-lxdialog-i18n scripts/kconfig/lxdialog/dialog.h
+--- kbuild/scripts/kconfig/lxdialog/dialog.h~kconfig-i18n-03-lxdialog-i18n	2008-01-11 22:24:39.000000000 +0100
++++ kbuild-szilard/scripts/kconfig/lxdialog/dialog.h	2008-01-11 22:24:39.000000000 +0100
+@@ -26,6 +26,12 @@
+ #include <string.h>
+ #include <stdbool.h>
+ 
++#ifndef KBUILD_NO_NLS
++# include <libintl.h>
++#else
++# define gettext(Msgid) ((const char *) (Msgid))
++#endif
++
+ #ifdef __sun__
+ #define CURS_MACROS
+ #endif
+diff -puN scripts/kconfig/lxdialog/inputbox.c~kconfig-i18n-03-lxdialog-i18n scripts/kconfig/lxdialog/inputbox.c
+--- kbuild/scripts/kconfig/lxdialog/inputbox.c~kconfig-i18n-03-lxdialog-i18n	2008-01-11 22:24:39.000000000 +0100
++++ kbuild-szilard/scripts/kconfig/lxdialog/inputbox.c	2008-01-11 22:24:39.000000000 +0100
+@@ -31,8 +31,8 @@ static void print_buttons(WINDOW * dialo
+ 	int x = width / 2 - 11;
+ 	int y = height - 2;
+ 
+-	print_button(dialog, "  Ok  ", y, x, selected == 0);
+-	print_button(dialog, " Help ", y, x + 14, selected == 1);
++	print_button(dialog, gettext("  Ok  "), y, x, selected == 0);
++	print_button(dialog, gettext(" Help "), y, x + 14, selected == 1);
+ 
+ 	wmove(dialog, y, x + 1 + 14 * selected);
+ 	wrefresh(dialog);
+diff -puN scripts/kconfig/lxdialog/menubox.c~kconfig-i18n-03-lxdialog-i18n scripts/kconfig/lxdialog/menubox.c
+--- kbuild/scripts/kconfig/lxdialog/menubox.c~kconfig-i18n-03-lxdialog-i18n	2008-01-11 22:24:39.000000000 +0100
++++ kbuild-szilard/scripts/kconfig/lxdialog/menubox.c	2008-01-11 22:24:39.000000000 +0100
+@@ -157,9 +157,9 @@ static void print_buttons(WINDOW * win, 
+ 	int x = width / 2 - 16;
+ 	int y = height - 2;
+ 
+-	print_button(win, "Select", y, x, selected == 0);
+-	print_button(win, " Exit ", y, x + 12, selected == 1);
+-	print_button(win, " Help ", y, x + 24, selected == 2);
++	print_button(win, gettext("Select"), y, x, selected == 0);
++	print_button(win, gettext(" Exit "), y, x + 12, selected == 1);
++	print_button(win, gettext(" Help "), y, x + 24, selected == 2);
+ 
+ 	wmove(win, y, x + 1 + 12 * selected);
+ 	wrefresh(win);
+diff -puN scripts/kconfig/lxdialog/textbox.c~kconfig-i18n-03-lxdialog-i18n scripts/kconfig/lxdialog/textbox.c
+--- kbuild/scripts/kconfig/lxdialog/textbox.c~kconfig-i18n-03-lxdialog-i18n	2008-01-11 22:24:39.000000000 +0100
++++ kbuild-szilard/scripts/kconfig/lxdialog/textbox.c	2008-01-11 22:24:39.000000000 +0100
+@@ -114,7 +114,7 @@ do_resize:
+ 
+ 	print_title(dialog, title, width);
+ 
+-	print_button(dialog, " Exit ", height - 2, width / 2 - 4, TRUE);
++	print_button(dialog, gettext(" Exit "), height - 2, width / 2 - 4, TRUE);
+ 	wnoutrefresh(dialog);
+ 	getyx(dialog, cur_y, cur_x);	/* Save cursor position */
+ 
+diff -puN scripts/kconfig/lxdialog/yesno.c~kconfig-i18n-03-lxdialog-i18n scripts/kconfig/lxdialog/yesno.c
+--- kbuild/scripts/kconfig/lxdialog/yesno.c~kconfig-i18n-03-lxdialog-i18n	2008-01-11 22:24:39.000000000 +0100
++++ kbuild-szilard/scripts/kconfig/lxdialog/yesno.c	2008-01-11 22:24:39.000000000 +0100
+@@ -29,8 +29,8 @@ static void print_buttons(WINDOW * dialo
+ 	int x = width / 2 - 10;
+ 	int y = height - 2;
+ 
+-	print_button(dialog, " Yes ", y, x, selected == 0);
+-	print_button(dialog, "  No  ", y, x + 13, selected == 1);
++	print_button(dialog, gettext(" Yes "), y, x, selected == 0);
++	print_button(dialog, gettext("  No  "), y, x + 13, selected == 1);
+ 
+ 	wmove(dialog, y, x + 1 + 13 * selected);
+ 	wrefresh(dialog);
+diff -puN scripts/kconfig/POTFILES.in~kconfig-i18n-03-lxdialog-i18n scripts/kconfig/POTFILES.in
+--- kbuild/scripts/kconfig/POTFILES.in~kconfig-i18n-03-lxdialog-i18n	2008-01-11 22:24:39.000000000 +0100
++++ kbuild-szilard/scripts/kconfig/POTFILES.in	2008-01-11 22:27:38.000000000 +0100
+@@ -1,3 +1,9 @@
++scripts/kconfig/lxdialog/checklist.c
++scripts/kconfig/lxdialog/inputbox.c
++scripts/kconfig/lxdialog/menubox.c
++scripts/kconfig/lxdialog/textbox.c
++scripts/kconfig/lxdialog/util.c
++scripts/kconfig/lxdialog/yesno.c
+ scripts/kconfig/mconf.c
+ scripts/kconfig/conf.c
+ scripts/kconfig/confdata.c
+_
+
