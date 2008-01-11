@@ -1,98 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759646AbYAKHlD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758247AbYAKHt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759646AbYAKHlD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 02:41:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbYAKHkz
+	id S1758247AbYAKHt0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 02:49:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbYAKHtT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 02:40:55 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42195 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751028AbYAKHkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 02:40:55 -0500
-Date: Fri, 11 Jan 2008 08:40:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Roland McGrath <roland@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [x86/mm] vsyscall_fn fault in early startup
-Message-ID: <20080111074038.GA27186@elte.hu>
-References: <20080111072143.D940526F9A9@magilla.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080111072143.D940526F9A9@magilla.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 11 Jan 2008 02:49:19 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:33247 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750873AbYAKHtS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 02:49:18 -0500
+Date: Thu, 10 Jan 2008 23:54:45 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] x86-64: disable the GART early v2
+In-reply-to: <200801101914.47967.yinghai.lu@sun.com>
+To: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, ebiederm@xmission.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Message-id: <200801102354.46472.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <200801101914.47967.yinghai.lu@sun.com>
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+please check the one that can be applied to x86.git -mm
 
-* Roland McGrath <roland@redhat.com> wrote:
+YH
 
-> I bisected my startup problem down to:
+[PATCH] x86-64: disable the GART early v2
 
-i fixed this in my tree yesterday but was held up by another problem 
-from uploading it. The patch below should apply to the tree you have.
+For K8 system: 4G RAM with memory hole remapping enabled, or more than 4G RAM
+installed.
 
-	Ingo
+when try to use kexec second kernel, and the first doesn't include gart_shutdown.
+the second kernel could have different aper position than the first kernel. and second
+kernel could use that hole as RAM that is still used by GART set by the first kernel.
+esp. when try to kexec 2.6.24 with sparse mem enable from previous kernel (from RHEL 5
+or SLES 10). the new kernel will use aper by GART (set by first kernel) for vmemmap.
+and after new kernel setting one new GART. the position will be real RAM. the _mapcount
+set is lost.
 
--------------->
-Subject: x86: fix sched_clock()
-From: Ingo Molnar <mingo@elte.hu>
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/rtc.c |   12 ------------
- include/asm-x86/msr.h |   11 ++++++++++-
- 2 files changed, 10 insertions(+), 13 deletions(-)
+Bad page state in process 'swapper'
+page:ffffe2000e600020 flags:0x0000000000000000 mapping:0000000000000000 mapcount:1 count:0
+Trying to fix it up, but a reboot is needed
+Backtrace:
+Pid: 0, comm: swapper Not tainted 2.6.24-rc7-smp-gcdf71a10-dirty #13
 
-Index: linux-x86.q/arch/x86/kernel/rtc.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/rtc.c
-+++ linux-x86.q/arch/x86/kernel/rtc.c
-@@ -195,15 +195,3 @@ int update_persistent_clock(struct times
- {
- 	return set_rtc_mmss(now.tv_sec);
- }
--
--unsigned long long __vsyscall_fn native_read_tsc(void)
--{
--	DECLARE_ARGS(val, low, high);
--
--	rdtsc_barrier();
--	asm volatile("rdtsc" : EAX_EDX_RET(val, low, high));
--	rdtsc_barrier();
--
--	return EAX_EDX_VAL(val, low, high);
--}
--EXPORT_SYMBOL_GPL(native_read_tsc);
-Index: linux-x86.q/include/asm-x86/msr.h
-===================================================================
---- linux-x86.q.orig/include/asm-x86/msr.h
-+++ linux-x86.q/include/asm-x86/msr.h
-@@ -91,7 +91,16 @@ static inline int native_write_msr_safe(
- 	return err;
+Call Trace:
+ [<ffffffff8026401f>] bad_page+0x63/0x8d
+ [<ffffffff80264169>] __free_pages_ok+0x7c/0x2a5
+ [<ffffffff80ba75d1>] free_all_bootmem_core+0xd0/0x198
+ [<ffffffff80ba3a42>] numa_free_all_bootmem+0x3b/0x76
+ [<ffffffff80ba3461>] mem_init+0x3b/0x152
+ [<ffffffff80b959d3>] start_kernel+0x236/0x2c2
+ [<ffffffff80b9511a>] _sinittext+0x11a/0x121
+
+and
+ [ffffe2000e600000-ffffe2000e7fffff] PMD ->ffff81001c200000 on node 0
+phys addr is : 0x1c200000
+
+RHEL 5.1 kernel -53 said:
+PCI-DMA: aperture base @ 1c000000 size 65536 KB
+
+new kernel said:
+Mapping aperture over 65536 KB of RAM @ 3c000000
+
+So try to disable that GART as early as possible.
+
+
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+
+
+diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
+index 52d2bea..6e7af45 100644
+--- a/arch/x86/kernel/aperture_64.c
++++ b/arch/x86/kernel/aperture_64.c
+@@ -218,6 +218,73 @@ static __u32 __init search_agp_bridge(u32 *order, int *valid_agp)
+ 	return 0;
  }
  
--extern unsigned long long native_read_tsc(void);
-+static __always_inline unsigned long long native_read_tsc(void)
++void __init early_gart_iommu_disable(void)
 +{
-+	DECLARE_ARGS(val, low, high);
++	/*
++	 * disable it in case it is enabled before, esp for kexec/kdump,
++	 * previous kernel already enable that. otherwise memset called
++	 * by allocate_aperture/__alloc_bootmem_nopanic cause restart.
++	 * or second kernel have different position for GART hole. and new
++	 * kernel could use hole as RAM that is still used by GART set by
++	 * first kernel
++	 */
++	int fix, num;
++	u32 ctl;
++	u32 aper_size, aper_alloc = 0, aper_order = 0, last_aper_order = 0;
++	u64 aper_base, last_aper_base = 0;
++	int valid_agp = 0;
 +
-+	rdtsc_barrier();
-+	asm volatile("rdtsc" : EAX_EDX_RET(val, low, high));
-+	rdtsc_barrier();
++	if (!early_pci_allowed())
++		return;
 +
-+	return EAX_EDX_VAL(val, low, high);
++	fix = 0;
++	for (num = 24; num < 32; num++) {
++		if (!early_is_k8_nb(read_pci_config(0, num, 3, 0x00)))
++			continue;
++
++		aper_order = (read_pci_config(0, num, 3, 0x90) >> 1) & 7;
++		aper_size = (32 * 1024 * 1024) << aper_order;
++		aper_base = read_pci_config(0, num, 3, 0x94) & 0x7fff;
++		aper_base <<= 25;
++
++		if (!aperture_valid(aper_base, aper_size)) {
++			fix = 1;
++			break;
++		}
++
++		if ((last_aper_order && aper_order != last_aper_order) ||
++		    (last_aper_base && aper_base != last_aper_base)) {
++			fix = 1;
++			break;
++		}
++		last_aper_order = aper_order;
++		last_aper_base = aper_base;
++	}
++
++	if (!fix)
++		return;
++
++	aper_alloc = search_agp_bridge(&aper_order, &valid_agp);
++
++	if (aper_alloc) {
++		/*
++		 * could get aper later or before from the AGP bridge,
++		 * so it is safe
++		 */
++		return;
++	}
++
++	for (num = 24; num < 32; num++) {
++		if (!early_is_k8_nb(read_pci_config(0, num, 3, 0x00)))
++			continue;
++
++		ctl = read_pci_config(0, num, 3, 0x90);
++		ctl &= ~1;
++		write_pci_config(0, num, 3, 0x90, ctl);
++	}
++
 +}
- 
- static inline unsigned long long native_read_pmc(int counter)
++
+ void __init gart_iommu_hole_init(void)
  {
+ 	u32 aper_size, aper_alloc = 0, aper_order = 0, last_aper_order = 0;
+diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
+index 998ce03..da82065 100644
+--- a/arch/x86/kernel/setup_64.c
++++ b/arch/x86/kernel/setup_64.c
+@@ -54,6 +54,7 @@
+ #include <video/edid.h>
+ #include <asm/e820.h>
+ #include <asm/dma.h>
++#include <asm/gart.h>
+ #include <asm/mpspec.h>
+ #include <asm/mmu_context.h>
+ #include <asm/proto.h>
+@@ -358,6 +359,8 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	discover_ebda();
+ 
++	early_gart_iommu_disable();
++
+ 	init_memory_mapping(0, (end_pfn_map << PAGE_SHIFT));
+ 	if (efi_enabled)
+ 		efi_init();
+diff --git a/include/asm-x86/gart.h b/include/asm-x86/gart.h
+index f704c50..2ca68c6 100644
+--- a/include/asm-x86/gart.h
++++ b/include/asm-x86/gart.h
+@@ -9,6 +9,7 @@ extern int iommu_detected;
+ extern void gart_iommu_init(void);
+ extern void gart_iommu_shutdown(void);
+ extern void __init gart_parse_options(char *);
++extern void early_gart_iommu_disable(void);
+ extern void gart_iommu_hole_init(void);
+ extern int fallback_aper_order;
+ extern int fallback_aper_force;
+@@ -20,6 +21,10 @@ extern int fix_aperture;
+ #define gart_iommu_aperture 0
+ #define gart_iommu_aperture_allowed 0
+ 
++static inline void early_gart_iommu_disable(void)
++{
++}
++
+ static inline void gart_iommu_shutdown(void)
+ {
+ }
