@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762099AbYAKXpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932114AbYAKX6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762099AbYAKXpp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 18:45:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757148AbYAKXpZ
+	id S932114AbYAKX6U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 18:58:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757148AbYAKX6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 18:45:25 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47412 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762901AbYAKXpT (ORCPT
+	Fri, 11 Jan 2008 18:58:11 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:35987 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756868AbYAKX6J convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 18:45:19 -0500
-Date: Fri, 11 Jan 2008 15:45:13 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: mikael.starvik@axis.com, jesper.nilsson@axis.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] CRIS v10: Correct do_signal to fix oops and clean up
- signal handling in general.
-Message-Id: <20080111154513.43c0d414.akpm@linux-foundation.org>
-In-Reply-To: <20080111185923.GE27482@axis.com>
-References: <20080111185923.GE27482@axis.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Jan 2008 18:58:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=vT5imrGs2R7f0Jd6MIDKexP/NKDfh2vGJvjNA7FGpIlleCF3O3XF/dU31JwdfRJTjbqXlAv8/vLUkbSrcqeSIciLieEsF/2J9Or1B9Kr+R4N7vea8fhksqSUoIxPqbrR3PEtY0vnfMJ2xRc01Ix4PV5vn+73e+6BmTxaQ8jrqeU=
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: hwclock failure in x86.git
+Date: Sat, 12 Jan 2008 00:58:04 +0100
+User-Agent: KMail/1.9.7
+Cc: Kevin Winchester <kjwinchester@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <4786AA11.5010805@gmail.com> <20080110220444.4c9efdec.kjwinchester@gmail.com> <20080111140346.GA13604@elte.hu>
+In-Reply-To: <20080111140346.GA13604@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200801120058.05398.mboton@gmail.com>
+From: Miguel =?utf-8?q?Bot=C3=B3n?= <mboton.lkml@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Jan 2008 19:59:24 +0100
-Jesper Nilsson <jesper.nilsson@axis.com> wrote:
+On Friday 11 January 2008 15:03:47 Ingo Molnar wrote:
+> * Kevin Winchester <kjwinchester@gmail.com> wrote:
+> > Bisect says...
+> >
+> > 4b5ea240a0c05ff90c4959fd91f0caec7b9bef1b is first bad commit
+> > commit 4b5ea240a0c05ff90c4959fd91f0caec7b9bef1b
+> > Author: mboton@gmail.com <mboton@gmail.com>
+> > Date:   Wed Jan 9 13:31:11 2008 +0100
+> >
+> >     x86: ioport_{32|64}.c unification
+>
+> thanks for tracking it down. I pulled that commit for now. But it would
+> be nice to figure out what's going on there.
+>
+> 	Ingo
 
-> CRIS v10: Correct do_signal to fix oops and clean up signal handling in general.
-> 
-> This fixes a kernel panic on boot due to do_signal not being compatible
-> with it's callers.
-> 
+mmm, i'll try to reproduce it tomorrow and find a fix.
 
-Please sequence-number patches even if they are unrelated.  That will make
-emails like this one easier.
-
-1: CRIS v10: Correct do_signal to fix oops and clean up signal handling in general.
-2: CRIS: Define __ARCH_WANT_SYS_RT_SIGSUSPEND in unistd.h for CRIS
-3: CRIS v10: kernel/time.c needs to include linux/vmstat.h to compile.
-4: CRIS v10: Driver for ds1302 needs to include cris-specific i2c.h
-
-Patches 3 and 4 were missing your signed-off-by:.  I added it.
-
-I queued patches 1, 3 and 4 for 2.6.24 and patch 2 for 2.6.25.  Do you agree?
+thanks for notifying this problem.
+-- 
+	Miguel Botón
