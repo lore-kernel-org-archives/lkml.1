@@ -1,81 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759639AbYAKKIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760371AbYAKKK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759639AbYAKKIz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 05:08:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755637AbYAKKIs
+	id S1760371AbYAKKK0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 05:10:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755157AbYAKKKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 05:08:48 -0500
-Received: from ns.firmix.at ([62.141.48.66]:4510 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755157AbYAKKIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 05:08:47 -0500
-Subject: Re: [PATCH] checkpatch.pl: allow piping
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, apw@shadowen.org,
-       linux-kernel@vger.kernel.org, rdunlap@xenotime.net,
-       jschopp@austin.ibm.com
-In-Reply-To: <1200043827.29897.70.camel@imap.mvista.com>
-References: <20080111041120.085610726@mvista.com>
-	 <47872E35.3070705@gmail.com> <1200043035.29897.62.camel@imap.mvista.com>
-	 <47873505.7040008@gmail.com>  <1200043399.3905.9.camel@gimli.at.home>
-	 <1200043827.29897.70.camel@imap.mvista.com>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Fri, 11 Jan 2008 11:08:38 +0100
-Message-Id: <1200046118.10166.5.camel@tara.firmix.at>
+	Fri, 11 Jan 2008 05:10:15 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:35249
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754671AbYAKKKO convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 05:10:14 -0500
+Message-Id: <47874E3C.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Fri, 11 Jan 2008 10:08:44 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, <linux-kernel@vger.kernel.org>,
+       "Jeremy Fitzhardinge" <jeremy@xensource.com>
+Subject: Re: [PATCH] adjust/fix LDT handling for Xen
+References: <4787436E.76E4.0078.0@novell.com> <47873959.3000102@gmail.com>
+In-Reply-To: <47873959.3000102@gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -2.334 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.334 required=5
-X-Spam-Score: -2.334 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fre, 2008-01-11 at 01:30 -0800, Daniel Walker wrote:
-> On Fri, 2008-01-11 at 10:23 +0100, Bernd Petrovitsch wrote:
-> > On Fre, 2008-01-11 at 10:21 +0100, Jiri Slaby wrote:
-> > > On 01/11/2008 10:17 AM, Daniel Walker wrote:
-> > > > On Fri, 2008-01-11 at 09:52 +0100, Jiri Slaby wrote:
-> > > >> On 01/11/2008 05:10 AM, Daniel Walker wrote:
-[...]
-> > > > I was using it to do something like the following ,
-> > > > 
-> > > > git show 9914cad54c79d0b89b1f066c0894f00e1344131c
-> > | ./scripts/checkpatch.pl
-> > > 
-> > > Ok, and if you add a - there, it should have the same effect, but
-> > for free, 
-> > > doesn't it:
-> > > git show 9914cad54c79d0b89b1f066c0894f00e1344131c
-> > | ./scripts/checkpatch.pl -
-> > 
-> > JftSoC:
-> > git show 9914cad54c79d0b89b1f066c0894f00e1344131c
-> > | ./scripts/checkpatch.pl /dev/stdin
-> > (and there a a few others) should also do the trick.
-> 
-> Not a particularly attractive command line .. Might still be a good idea
+>> --- linux-2.6.24-rc7/arch/x86/kernel/ldt_32.c	2008-01-10 16:53:54.000000000 +0100
+>> +++ 2.6.24-rc7-x86-xen-ldt/arch/x86/kernel/ldt_32.c	2008-01-09 13:59:50.000000000 +0100
+>[...]
+>> @@ -73,7 +72,7 @@ static int alloc_ldt(mm_context_t *pc, u
+>>  		if (oldsize*LDT_ENTRY_SIZE > PAGE_SIZE)
+>>  			vfree(oldldt);
+>>  		else
+>> -			kfree(oldldt);
+>> +			put_page(virt_to_page(oldldt));
+>>  	}
+>>  	return 0;
+>>  }
+>> @@ -117,7 +116,7 @@ void destroy_context(struct mm_struct *m
+>>  		if ((unsigned)mm->context.size*LDT_ENTRY_SIZE > PAGE_SIZE)
+>>  			vfree(mm->context.ldt);
+>>  		else
+>> -			kfree(mm->context.ldt);
+>> +			put_page(virt_to_page(mm->context.ldt));
+>
+>why not free_page() with all those checks if it is correct virt address which it 
+>brings?
 
-Might be.
-But it works for (almost?) all programs (which do not need seekable
-input) which absolutely want the input file specified by a parameter.
-And if it's an proprietary program, you can't even patch it.
+I followed the combination I found elsewhere - __get_free_page/put_page
+or alloc_page/free_page. I admit that I'm unclear about when/why to use
+one vs. the other pair.
 
-> to add this since these two forms alluded me, and are likely to allude
-> people new to unix all together (who is more likely to be using this
-> particular tool)..
-
-	Bernd
--- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
-
+Jan
 
