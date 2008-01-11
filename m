@@ -1,76 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760780AbYAKOrO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761435AbYAKOrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760780AbYAKOrO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 09:47:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758444AbYAKOq6
+	id S1761435AbYAKOrc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 09:47:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759025AbYAKOrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 09:46:58 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:58772 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755764AbYAKOq5 (ORCPT
+	Fri, 11 Jan 2008 09:47:20 -0500
+Received: from hu-out-0506.google.com ([72.14.214.234]:51784 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760782AbYAKOrP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 09:46:57 -0500
-Date: Fri, 11 Jan 2008 09:46:56 -0500
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: indan@nul.nu, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       w@1wt.eu, serue@us.ibm.com
-Subject: Re: [PATCH][RFC] Simple tamper-proof device filesystem.
-Message-ID: <20080111144656.GL2310@csclub.uwaterloo.ca>
-References: <47176.81.207.0.53.1199887192.squirrel@secure.samage.net> <200801100457.m0A4vcoi024209@www262.sakura.ne.jp> <36843.81.207.0.53.1200006346.squirrel@secure.samage.net> <200801110846.m0B8kIf7088823@www262.sakura.ne.jp> <38047.81.207.0.53.1200054134.squirrel@secure.samage.net> <200801112305.BII64642.tHOJSMLVQFFOOF@I-love.SAKURA.ne.jp>
+	Fri, 11 Jan 2008 09:47:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=sO6HrLwaP5TOwCd4MV6fvO6q/k/HZ1l3PqssKmTvV1UvkWZJan96G0xDVp985UTQnD4OekKP3tMMRfvOjqzhBtHMp1ypSE6d3Q30hGEjxsJGKxc8SLKa8fuyFf521KOd+9mAUHxgZ2WfScwMouunGR5SSHLNAED/Hq/SlTZERRc=
+Message-ID: <d120d5000801110647k4b1fa49ene974898baf745aec@mail.gmail.com>
+Date: Fri, 11 Jan 2008 09:47:11 -0500
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Vegard Nossum" <vegard.nossum@gmail.com>
+Subject: Re: [BISECTED] Re: psmouse.c: GlidePoint at isa0060/serio1/input0 lost sync at byte 1
+Cc: linux-input@vger.kernel.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "William Pettersson" <william.pettersson@gmail.com>
+In-Reply-To: <19f34abd0801071224kb9cb121u244b00b274231db0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200801112305.BII64642.tHOJSMLVQFFOOF@I-love.SAKURA.ne.jp>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+References: <19f34abd0711141226n60323630rdc4833db0bfb2eeb@mail.gmail.com>
+	 <19f34abd0801071224kb9cb121u244b00b274231db0@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 11, 2008 at 11:05:07PM +0900, Tetsuo Handa wrote:
-> Not only mknod() but also rename()/unlink()/link()/mount(bind) etc. that may
-> cause filename/attribute mismatching.
-> 
-> How can the daemon know whether the request is trying to manipulate nodes
-> in /dev directory or not?
-> If "mount --bind /dev/ /var/dir/" is used, the daemon must check
-> filename/attribute pair when mknod("/var/dir/null") is requested
-> because permitting the request will modify /dev state.
-> If "mount --bind /dev/ /var/dir/" is not used, the daemon must not check
-> filename/attribute pair when mknod("/var/dir/null") is requested
-> because permitting the request will not modify /dev state.
-> 
-> 
-> 
-> What does the daemon do? It receives requests from the LD_PRELOAD library
-> using UNIX domain socket and checks filename/attribute pair and issue
-> mknodat()/renameat()/unlinkat()/linkat() etc. when the combination is appropriate?
-> 
-> What does the LD_PRELOAD library do? It intercepts all pathname related syscalls
-> (except open()) and solve directory component and determine whether the request is
-> trying to manipulate nodes in /dev direcrtory and forward request to the daemon
-> using UNIX domain socket?
-> 
-> "Make the daemon and the LD_PRELOAD library bug-and-race free and
-> develop the MAC policy for the daemon and the LD_PRELOAD library"
-> and "Make this filesystem bug-and-race free". Which one is easier?
+Hi Vegard,
 
-I think a good question is:
+On Jan 7, 2008 3:24 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> }, /* Dell Latitude D600 */
+> +       { { 0x73, 0x02, 0x50 }, 0xcf, 0xff, ALPS_FW_BK_1 } /* Dell
+> Vostro 1400 */
+>  };
+>
+>
+> After reverting, all buttons work as expected -- no lost syncs. I
+> might add that my laptop is Acer Aspire 5720ZG. Also, the button in
+> question is not truly a middle button; when operating correctly, it is
+> used for scrolling (up/down). Now what can be done to make both models
+> work correctly?
+>
 
-What kind of idiot wrote a program that thinks it is allowed to go
-messing with the contents of /dev?  There simply can't be a good reason
-for an application to do that.  Device nodes should match up with
-devices, so as long as the device nodes exist for all your devices, then
-everything should just work and no one should ever have a reason to go
-changing things for any reason.
+Thank you for identifying the problem commit. Could you please also do this:
 
-Perhaps the real solution is a preload library that blocks the idiotic
-program from touching anything in /dev with anything other than
-open/close/read/write.
+echo 1 > /sys/module/i8042/parameters/debug
+push and release left button
+push and release rigth button
+move finger on the touchpad a bit
+echo 0 > /sys/module/i8042/parameters/debug
+dmesg > dmesg.sync
+echo 1 > /sys/module/i8042/parameters/debug
+push and release middle button
+echo 0 > /sys/module/i8042/parameters/debug
+dmesg > dmesg.nosync
 
-Of course it could also help to simply tell people what this stupid
-program is actually doing and why it should be allowed to mess in places
-it doesn't belong.
+and send me both dmesg files?
 
---
-Len Sorensen
+Thank you.
+
+-- 
+Dmitry
