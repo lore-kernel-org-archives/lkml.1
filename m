@@ -1,372 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbYAKBAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757989AbYAKBBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757410AbYAKBAV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 20:00:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbYAKBAI
+	id S1757989AbYAKBBo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 20:01:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbYAKBBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 20:00:08 -0500
-Received: from jade.aracnet.com ([216.99.193.136]:42012 "EHLO jade.aracnet.com"
+	Thu, 10 Jan 2008 20:01:34 -0500
+Received: from mail.tmr.com ([64.65.253.246]:42443 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753563AbYAKBAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 20:00:06 -0500
-Message-ID: <4786BF88.5010802@BitWagon.com>
-Date: Thu, 10 Jan 2008 16:59:52 -0800
-From: John Reiser <jreiser@BitWagon.com>
-Organization: -
-User-Agent: Mozilla Thunderbird 1.0.8-1.1.fc4 (X11/20060501)
-X-Accept-Language: en-us, en
+	id S1753891AbYAKBBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 20:01:33 -0500
+Message-ID: <4786C578.3090302@tmr.com>
+Date: Thu, 10 Jan 2008 20:25:12 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu,
-       Jeff Dike <jdike@addtoit.com>
-CC: Sam Ravnborg <sam@ravnborg.org>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: STT_FUNC for assembler checksum and semaphore ops" in git-x86
-References: <20080109215725.GA18185@basil.nowhere.org> <20080110074201.GA12585@uranus.ravnborg.org> <478649D8.9080209@BitWagon.com> <20080110180225.GA747@one.firstfloor.org>
-In-Reply-To: <20080110180225.GA747@one.firstfloor.org>
-X-Enigmail-Version: 0.92.0.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org, chris.mason@oracle.com,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH][RFC] fast file mapping for loop
+References: <20080109085231.GE6650@kernel.dk>
+In-Reply-To: <20080109085231.GE6650@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> But actually checking the default implementation in linkage.h already
-> implements size: [snip]
+Jens Axboe wrote:
+> Hi,
+> 
+> loop.c currently uses the page cache interface to do IO to file backed
+> devices. This works reasonably well for simple things, like mapping an
+> iso9660 file for direct mount and other read-only workloads. Writing is
+> somewhat problematic, as anyone who has really used this feature can
+> attest to - it tends to confuse the vm (hello kswapd) since it break
+> dirty accounting and behaves very erratically on writeout. Did I mention
+> that it's pretty slow as well, for both reads and writes?
+> 
+Since you are looking for comments, I'll mention a loop-related behavior 
+I've been seeing and see if it gets comments or is useful, since it can 
+be used to tickle bad behavior on demand.
 
-> Are you sure it doesn't work?  Your patch should be not needed. If it's
-> still wrong then just ENDPROCs() need to be added.
+I have an 6GB sparse file, which I mount with cryptoloop and populate as 
+an ext3 filesystem (more later on why). I then copy ~5.8GB of data to 
+the filesystem, which is unmounted to be burnt to a DVD. Before it's 
+burned the "dvdisaster" application is used to add some ECC information 
+to the end, and make an image which fits on a DVD-DL. Media will be 
+burned and distributed to multiple locations.
 
-The ENDPROCs() were not used everywhere.  Some code used just END() instead,
-while other code used nothing.  um/sys-i386/checksum.S didn't #include
-<linux/linkage.h> .  I also got confused because gcc puts the
-.type near the ENTRY, while ENDPROC puts it on the opposite end.
+The problem:
 
-Here is a revised patch against  linux-2.6-x86.git , including a comment
-in linkage.h which explains one motivation.  PowerPC is different
-("_GLOBAL" instead of "ENTRY") and foreign to me, so I left it alone.
+When copying with rsync, the copy runs at ~25MB/s for a while, then 
+falls into a pattern of bursts of 25MB/s followed by 10-15 sec of iowait 
+with no disk activity. So I tried doing the copy by cpio
+   find . -depth | cpio -pdm /mnt/loop
+which shows exactly the same behavior. Then, for no good reason I tried
+   find . -depth | cpio -pBdm /mnt/loop
+and the copy ran at 25MB/s for the whole data set.
 
-Signed off by: John Reiser <jreiser@BitWagon.com>
+I was able to see similar results with a pure loop mount, I only mention 
+the crypto for accuracy. Because many of these have been shipped over 
+the last two years and new loop code would only be useful in this case 
+if it were compatible so old data sets could be read.
 
-diff --git a/include/linux/linkage.h b/include/linux/linkage.h
-index ff203dd..024cfab 100644
---- a/include/linux/linkage.h
-+++ b/include/linux/linkage.h
-@@ -53,6 +53,10 @@
-   .size name, .-name
- #endif
-
-+/* If symbol 'name' is treated as a subroutine (gets called, and returns)
-+ * then please use ENDPROC to mark 'name' as STT_FUNC for the benefit of
-+ * static analysis tools such as stack depth analyzer.
-+ */
- #ifndef ENDPROC
- #define ENDPROC(name) \
-   .type name, @function; \
-diff --git a/arch/x86/lib/semaphore_32.S b/arch/x86/lib/semaphore_32.S
-index 444fba4..e2c6e0d 100644
---- a/arch/x86/lib/semaphore_32.S
-+++ b/arch/x86/lib/semaphore_32.S
-@@ -49,7 +49,7 @@ ENTRY(__down_failed)
- 	ENDFRAME
- 	ret
- 	CFI_ENDPROC
--	END(__down_failed)
-+	ENDPROC(__down_failed)
-
- ENTRY(__down_failed_interruptible)
- 	CFI_STARTPROC
-@@ -70,7 +70,7 @@ ENTRY(__down_failed_interruptible)
- 	ENDFRAME
- 	ret
- 	CFI_ENDPROC
--	END(__down_failed_interruptible)
-+	ENDPROC(__down_failed_interruptible)
-
- ENTRY(__down_failed_trylock)
- 	CFI_STARTPROC
-@@ -91,7 +91,7 @@ ENTRY(__down_failed_trylock)
- 	ENDFRAME
- 	ret
- 	CFI_ENDPROC
--	END(__down_failed_trylock)
-+	ENDPROC(__down_failed_trylock)
-
- ENTRY(__up_wakeup)
- 	CFI_STARTPROC
-@@ -112,7 +112,7 @@ ENTRY(__up_wakeup)
- 	ENDFRAME
- 	ret
- 	CFI_ENDPROC
--	END(__up_wakeup)
-+	ENDPROC(__up_wakeup)
-
- /*
-  * rw spinlock fallbacks
-@@ -132,7 +132,7 @@ ENTRY(__write_lock_failed)
- 	ENDFRAME
- 	ret
- 	CFI_ENDPROC
--	END(__write_lock_failed)
-+	ENDPROC(__write_lock_failed)
-
- ENTRY(__read_lock_failed)
- 	CFI_STARTPROC
-@@ -148,7 +148,7 @@ ENTRY(__read_lock_failed)
- 	ENDFRAME
- 	ret
- 	CFI_ENDPROC
--	END(__read_lock_failed)
-+	ENDPROC(__read_lock_failed)
-
- #endif
-
-@@ -170,7 +170,7 @@ ENTRY(call_rwsem_down_read_failed)
- 	CFI_ADJUST_CFA_OFFSET -4
- 	ret
- 	CFI_ENDPROC
--	END(call_rwsem_down_read_failed)
-+	ENDPROC(call_rwsem_down_read_failed)
-
- ENTRY(call_rwsem_down_write_failed)
- 	CFI_STARTPROC
-@@ -182,7 +182,7 @@ ENTRY(call_rwsem_down_write_failed)
- 	CFI_ADJUST_CFA_OFFSET -4
- 	ret
- 	CFI_ENDPROC
--	END(call_rwsem_down_write_failed)
-+	ENDPROC(call_rwsem_down_write_failed)
-
- ENTRY(call_rwsem_wake)
- 	CFI_STARTPROC
-@@ -196,7 +196,7 @@ ENTRY(call_rwsem_wake)
- 	CFI_ADJUST_CFA_OFFSET -4
- 1:	ret
- 	CFI_ENDPROC
--	END(call_rwsem_wake)
-+	ENDPROC(call_rwsem_wake)
-
- /* Fix up special calling conventions */
- ENTRY(call_rwsem_downgrade_wake)
-@@ -214,6 +214,6 @@ ENTRY(call_rwsem_downgrade_wake)
- 	CFI_ADJUST_CFA_OFFSET -4
- 	ret
- 	CFI_ENDPROC
--	END(call_rwsem_downgrade_wake)
-+	ENDPROC(call_rwsem_downgrade_wake)
-
- #endif
-diff --git a/arch/um/sys-i386/checksum.S b/arch/um/sys-i386/checksum.S
-index 62c7e56..4f3f62b 100644
---- a/arch/um/sys-i386/checksum.S
-+++ b/arch/um/sys-i386/checksum.S
-@@ -26,6 +26,7 @@
-  */
-
- #include <asm/errno.h>
-+#include <linux/linkage.h>
- 				
- /*
-  * computes a partial checksum, e.g. for TCP/UDP fragments
-@@ -48,7 +49,7 @@ unsigned int csum_partial(const unsigned char * buff, int len, unsigned int sum)
- 	   * Fortunately, it is easy to convert 2-byte alignment to 4-byte
- 	   * alignment for the unrolled loop.
- 	   */		
--csum_partial:
-+ENTRY(csum_partial)
- 	pushl %esi
- 	pushl %ebx
- 	movl 20(%esp),%eax	# Function arg: unsigned int sum
-@@ -113,12 +114,13 @@ csum_partial:
- 	popl %ebx
- 	popl %esi
- 	ret
-+	ENDPROC(csum_partial)
-
- #else
-
- /* Version for PentiumII/PPro */
-
--csum_partial:
-+ENTRY(csum_partial)
- 	pushl %esi
- 	pushl %ebx
- 	movl 20(%esp),%eax	# Function arg: unsigned int sum
-@@ -211,6 +213,7 @@ csum_partial:
- 	popl %ebx
- 	popl %esi
- 	ret
-+	ENDPROC(csum_partial)
- 				
- #endif
-
-@@ -250,7 +253,7 @@ unsigned int csum_partial_copy_generic (const char *src, char *dst,
- #define ARGBASE 16		
- #define FP		12
- 		
--csum_partial_copy_generic_i386:
-+ENTRY(csum_partial_copy_generic_i386)
- 	subl  $4,%esp	
- 	pushl %edi
- 	pushl %esi
-@@ -368,6 +371,7 @@ DST(	movb %cl, (%edi)	)
- 	popl %edi
- 	popl %ecx			# equivalent to addl $4,%esp
- 	ret	
-+	ENDPROC(csum_partial_copy_generic_i386)
-
- #else
-
-@@ -385,7 +389,7 @@ DST(	movb %cl, (%edi)	)
-
- #define ARGBASE 12
- 		
--csum_partial_copy_generic_i386:
-+ENTRY(csum_partial_copy_generic_i386)
- 	pushl %ebx
- 	pushl %edi
- 	pushl %esi
-@@ -452,6 +456,7 @@ DST(	movb %dl, (%edi)         )
- 	popl %edi
- 	popl %ebx
- 	ret
-+	ENDPROC(csum_partial_copy_generic_i386)
- 				
- #undef ROUND
- #undef ROUND1		
-diff --git a/arch/m32r/lib/checksum.S b/arch/m32r/lib/checksum.S
-index 0af0360..2492222 100644
---- a/arch/m32r/lib/checksum.S
-+++ b/arch/m32r/lib/checksum.S
-@@ -153,6 +153,7 @@ ENTRY(csum_partial)
- 	addx	r0, r2		    ||	ldi	r2, #0
- 	addx	r0, r2
- 	jmp	r14
-+	ENDPROC(csum_partial)
-
- #else /* not CONFIG_ISA_DUAL_ISSUE */
-
-@@ -288,6 +289,7 @@ ENTRY(csum_partial)
- 	ldi	r2, #0
- 	addx	r0, r2
- 	jmp	r14
-+	ENDPROC(csum_partial)
-
- #endif /* not CONFIG_ISA_DUAL_ISSUE */
-
-@@ -316,5 +318,6 @@ ENTRY(csum_partial_copy_generic)
- 	nop
- 	nop
- 	nop
-+	ENDPROC(csum_partial_copy_generic)
-
- 	.end
-diff --git a/arch/m68k/lib/semaphore.S b/arch/m68k/lib/semaphore.S
-index 0215624..f28889c 100644
---- a/arch/m68k/lib/semaphore.S
-+++ b/arch/m68k/lib/semaphore.S
-@@ -22,6 +22,7 @@ ENTRY(__down_failed)
- 	movel (%sp)+,%a1
- 	moveml (%sp)+,%a0/%d0/%d1
- 	rts
-+	ENDPROC(__down_failed)
-
- ENTRY(__down_failed_interruptible)
- 	movel %a0,-(%sp)
-@@ -32,6 +33,7 @@ ENTRY(__down_failed_interruptible)
- 	movel (%sp)+,%d1
- 	movel (%sp)+,%a0
- 	rts
-+	ENDPROC(__down_failed_interruptible)
-
- ENTRY(__down_failed_trylock)
- 	movel %a0,-(%sp)
-@@ -42,6 +44,7 @@ ENTRY(__down_failed_trylock)
- 	movel (%sp)+,%d1
- 	movel (%sp)+,%a0
- 	rts
-+	ENDPROC(__down_failed_trylock)
-
- ENTRY(__up_wakeup)
- 	moveml %a0/%d0/%d1,-(%sp)
-@@ -50,4 +53,5 @@ ENTRY(__up_wakeup)
- 	movel (%sp)+,%a1
- 	moveml (%sp)+,%a0/%d0/%d1
- 	rts
-+	ENDPROC(__up_wakeup)
-
-diff --git a/arch/m68knommu/lib/semaphore.S b/arch/m68knommu/lib/semaphore.S
-index 87c7460..e4bcb07 100644
---- a/arch/m68knommu/lib/semaphore.S
-+++ b/arch/m68knommu/lib/semaphore.S
-@@ -30,6 +30,7 @@ ENTRY(__down_failed)
- 	movel (%sp)+,%d0
- 	movel (%sp)+,%d1
- 	rts
-+	ENDPROC(__down_failed)
-
- ENTRY(__down_failed_interruptible)
- 	movel %a0,-(%sp)
-@@ -39,6 +40,7 @@ ENTRY(__down_failed_interruptible)
- 	movel (%sp)+,%a1
- 	movel (%sp)+,%d1
- 	rts
-+	ENDPROC(__down_failed_interruptible)
-
- ENTRY(__up_wakeup)
- #ifdef CONFIG_COLDFIRE
-@@ -53,6 +55,7 @@ ENTRY(__up_wakeup)
- 	movel (%sp)+,%d0
- 	movel (%sp)+,%d1
- 	rts
-+	ENDPROC(__up_wakeup)
-
- ENTRY(__down_failed_trylock)
- 	movel %a0,-(%sp)
-@@ -63,4 +66,5 @@ ENTRY(__down_failed_trylock)
- 	movel (%sp)+,%d1
- 	movel (%sp)+,%a0
- 	rts
-+	ENDPROC(__down_failed_trylock)
-
-diff --git a/arch/sh/lib/checksum.S b/arch/sh/lib/checksum.S
-index cbdd0d4..c7a41de 100644
---- a/arch/sh/lib/checksum.S
-+++ b/arch/sh/lib/checksum.S
-@@ -143,6 +143,7 @@ ENTRY(csum_partial)
- 9:
- 	rts
- 	 mov	r6, r0
-+	ENDPROC(csum_partial)
-
- /*
- unsigned int csum_partial_copy_generic (const char *src, char *dst, int len,
-@@ -384,3 +385,4 @@ DST(	mov.b	r0,@r5	)
- 	add	#8,r15
- 	rts
- 	 mov	r7,r0
-+	ENDPROC(csum_partial_copy_generic)
-diff --git a/arch/xtensa/lib/checksum.S b/arch/xtensa/lib/checksum.S
-index 9d9cd99..9d12ade 100644
---- a/arch/xtensa/lib/checksum.S
-+++ b/arch/xtensa/lib/checksum.S
-@@ -169,6 +169,7 @@ ENTRY(csum_partial)
- 	addi	a2, a2, 2
- 3:
- 	j	5b		/* branch to handle the remaining byte */
-+	ENDPROC(csum_partial)
-
-
-
-@@ -406,4 +407,5 @@ DST(	s8i	a8, a3, 1	)
- 	retw
-
- .previous
-+	ENDPROC(csum_partial_copy_generic)
-
+> It also behaves differently than a real drive. For writes, completions
+> are done once they hit page cache. Since loop queues bio's async and
+> hands them off to a thread, you can have a huge backlog of stuff to do.
+> It's hard to attempt to guarentee data safety for file systems on top of
+> loop without making it even slower than it currently is.
+> 
+> Back when loop was only used for iso9660 mounting and other simple
+> things, this didn't matter. Now it's often used in xen (and others)
+> setups where we do care about performance AND writing. So the below is a
+> attempt at speeding up loop and making it behave like a real device.
+> It's a somewhat quick hack and is still missing one piece to be
+> complete, but I'll throw it out there for people to play with and
+> comment on.
+> 
+> So how does it work? Instead of punting IO to a thread and passing it
+> through the page cache, we instead attempt to send the IO directly to the
+> filesystem block that it maps to. loop maintains a prio tree of known
+> extents in the file (populated lazily on demand, as needed). Advantages
+> of this approach:
+> 
+> - It's fast, loop will basically work at device speed.
+> - It's fast, loop it doesn't put a huge amount of system load on the
+>   system when busy. When I did comparison tests on my notebook with an
+>   external drive, running a simple tiobench on the current in-kernel
+>   loop with a sparse file backing rendered the notebook basically
+>   unusable while the test was ongoing. The remapper version had no more
+>   impact than it did when used directly on the external drive.
+> - It behaves like a real block device.
+> - It's easy to support IO barriers, which is needed to ensure safety
+>   especially in virtualized setups.
+> 
+> Disadvantages:
+> 
+> - The file block mappings must not change while loop is using the file.
+>   This means that we have to ensure exclusive access to the file and
+>   this is the bit that is currently missing in the implementation. It
+>   would be nice if we could just do this via open(), ideas welcome...
+> - It'll tie down a bit of memory for the prio tree. This is GREATLY
+>   offset by the reduced page cache foot print though.
+> - It cannot be used with the loop encryption stuff. dm-crypt should be
+>   used instead, on top of loop (which, I think, is even the recommended
+>   way to do this today, so not a big deal).
+> 
 
 -- 
-John Reiser, jreiser@BitWagon.com
-
-
-
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
