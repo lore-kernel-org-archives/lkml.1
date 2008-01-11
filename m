@@ -1,52 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762616AbYAKT7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762285AbYAKUJb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762616AbYAKT7g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 14:59:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761786AbYAKT73
+	id S1762285AbYAKUJb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 15:09:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761462AbYAKUJV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 14:59:29 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48688 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761686AbYAKT73 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 14:59:29 -0500
-Date: Fri, 11 Jan 2008 11:58:23 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Matthew Wilcox <matthew@wil.cx>
-cc: Greg KH <gregkh@suse.de>, Arjan van de Ven <arjan@infradead.org>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Martin Mares <mj@ucw.cz>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
- opt-in
-In-Reply-To: <20080111194931.GN18741@parisc-linux.org>
-Message-ID: <alpine.LFD.1.00.0801111156230.3148@woody.linux-foundation.org>
-References: <20071225032605.29147200@laptopd505.fenrus.org> <20080111190229.GB10112@kroah.com> <20080111192820.GM18741@parisc-linux.org> <20080111114002.3e59d1ad@laptopd505.fenrus.org> <20080111194524.GA17170@suse.de>
- <20080111194931.GN18741@parisc-linux.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 11 Jan 2008 15:09:21 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:52640 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759950AbYAKUJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 15:09:21 -0500
+Date: Fri, 11 Jan 2008 21:09:26 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scripts/mkmakefile: dynamic determination of output directory
+Message-ID: <20080111200926.GD29189@uranus.ravnborg.org>
+References: <4787403C.76E4.0078.0@novell.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4787403C.76E4.0078.0@novell.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 11 Jan 2008, Matthew Wilcox wrote:
+On Fri, Jan 11, 2008 at 09:09:00AM +0000, Jan Beulich wrote:
+> Rather than fixing the output directory in the generated Makefile,
+> determine it from the placement of Makefile. This allows moving
+> the build tree around or accessing it through different mount paths.
 > 
-> So your argument is that MMCONFIG sucks, therefore Linux has to have a
-> horrible interface to extended PCI config space?
+> (The lastword definition is a compatibility one for make prior to 3.81;
+> newer make will simply ignore it and use the [faster] built-in.)
 
-What's *your* point?
+Thanks, applied.
 
-MMCONFIG is known broken. If we ever start enabling it more (ie start 
-using it even if it's not reserved in the e820 tables), all that known 
-breakage will come and bite us in the *ss.
-
-We need to have some armor-plated underwear to protect against that 
-ass-biting, and that's what Arjan's patch is. 
-
-Tell me what *other* armor plating you could have that actually works?
-
-		Linus
+	Sam
