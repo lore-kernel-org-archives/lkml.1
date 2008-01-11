@@ -1,49 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761078AbYAKJvB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761299AbYAKJvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761078AbYAKJvB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 04:51:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757826AbYAKJuy
+	id S1761299AbYAKJvv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 04:51:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756772AbYAKJvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 04:50:54 -0500
-Received: from www.tglx.de ([62.245.132.106]:39339 "EHLO www.tglx.de"
+	Fri, 11 Jan 2008 04:51:43 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38797 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754473AbYAKJux (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 04:50:53 -0500
-Date: Fri, 11 Jan 2008 10:50:07 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Parag Warudkar <parag.warudkar@gmail.com>
-cc: Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: soft lockup - CPU#1 stuck for 15s! [swapper:0]
-In-Reply-To: <82e4877d0801101631w3679188ehffdf847a4825168a@mail.gmail.com>
-Message-ID: <alpine.LFD.0.99999.0801111048550.5109@localhost.localdomain>
-References: <924EFEDD5F540B4284297C4DC59F3DEE38C3C2@orsmsx423.amr.corp.intel.com>  <82e4877d0712141651j3965fd85ged2cefed5336e1ef@mail.gmail.com>  <alpine.LFD.0.99999.0712150907180.6933@localhost.localdomain>  <Pine.LNX.4.64.0712151340060.3807@mini.warudkars.net>
-  <Pine.LNX.4.64.0712160015020.7320@mini.warudkars.net>  <82e4877d0712160543t2c7a03b1qb5c77ea6af59b5dd@mail.gmail.com>  <alpine.LFD.0.99999.0712170904120.3670@localhost.localdomain>  <82e4877d0712170508r69189409l803c8f490e65925d@mail.gmail.com> 
- <alpine.LFD.0.99999.0712172208500.3670@localhost.localdomain>  <alpine.LFD.0.99999.0801091248310.31637@localhost.localdomain> <82e4877d0801101631w3679188ehffdf847a4825168a@mail.gmail.com>
-User-Agent: Alpine 0.99999 (LFD 796 2007-11-08)
+	id S1754473AbYAKJvl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 04:51:41 -0500
+Date: Fri, 11 Jan 2008 10:51:24 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Dillow <dillowda@ornl.gov>
+Cc: Guillaume Chazarain <guichaz@yahoo.fr>, linux-kernel@vger.kernel.org,
+       linux-btrace@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de
+Subject: Re: CONFIG_NO_HZ breaks blktrace timestamps
+Message-ID: <20080111095121.GG8143@elte.hu>
+References: <1199918912.8388.13.camel@lap75545.ornl.gov> <1199996752.9159.46.camel@lap75545.ornl.gov> <20080110234438.4826f658@inria.fr> <1200020661.5099.3.camel@obelisk.thedillows.org> <20080111094441.GF8143@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080111094441.GF8143@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jan 2008, Parag Warudkar wrote:
 
-> On Jan 9, 2008 6:56 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> 
-> > Can you apply the patch below + the debug patch which prints the timer
-> > stats on softlockup and provide the output of this.
-> 
-> Applied to today's git and running for 21 hours - no recurrence yet
-> even with 1.2 wakeups per second.
-> 
-> I will re-open this thread if it bites again.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Would be interesting which commit fixed that problem. I'm a bit
-worried about self healing bugs.
+> > With those patches, CONFIG_NO_HZ works just fine.
+> 
+> could you please try the two patches below, do they fix the problem as 
+> well? They got a ton of testing in x86.git in the past ~2 months and 
+> we could perhaps still push them into v2.6.24.
 
-	tglx
+plus, if needed, perhaps this patch below from Guillaume ontop of it.
+
+	Ingo
+
+---------------->
+Subject: sched: fix rq->clock warps on frequency changes
+From: Guillaume Chazarain <guichaz@yahoo.fr>
+
+sched: fix rq->clock warps on frequency changes
+
+Fix 2bacec8c318ca0418c0ee9ac662ee44207765dd4
+(sched: touch softlockup watchdog after idling) that reintroduced warps
+on frequency changes. touch_softlockup_watchdog() calls __update_rq_clock
+that checks rq->clock for warps, so call it after adjusting rq->clock.
+
+Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/sched.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-x86.q/kernel/sched.c
+===================================================================
+--- linux-x86.q.orig/kernel/sched.c
++++ linux-x86.q/kernel/sched.c
+@@ -668,7 +668,6 @@ void sched_clock_idle_wakeup_event(u64 d
+ 	struct rq *rq = cpu_rq(smp_processor_id());
+ 	u64 now = sched_clock();
+ 
+-	touch_softlockup_watchdog();
+ 	rq->idle_clock += delta_ns;
+ 	/*
+ 	 * Override the previous timestamp and ignore all
+@@ -680,6 +679,7 @@ void sched_clock_idle_wakeup_event(u64 d
+ 	rq->prev_clock_raw = now;
+ 	rq->clock += delta_ns;
+ 	spin_unlock(&rq->lock);
++	touch_softlockup_watchdog();
+ }
+ EXPORT_SYMBOL_GPL(sched_clock_idle_wakeup_event);
+ 
