@@ -1,89 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760405AbYAKLYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760855AbYAKLYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760405AbYAKLYf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 06:24:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757655AbYAKLY2
+	id S1760855AbYAKLYz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 06:24:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760700AbYAKLYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 06:24:28 -0500
-Received: from pip15.gyao.ne.jp ([61.122.117.253]:58581 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757407AbYAKLY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 06:24:27 -0500
-Date: Fri, 11 Jan 2008 20:23:53 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>,
-       Mathieu Segaud <mathieu.segaud@regala.cx>,
-       Richard Knutsson <ricknu-0@student.ltu.se>,
-       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] [Coding Style]: fs/ext{3,4}/ext{3,4}_jbd{,2}.c
-Message-ID: <20080111112353.GA31938@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Roel Kluin <12o3l@tiscali.nl>, Al Viro <viro@ZenIV.linux.org.uk>,
-	Mathieu Segaud <mathieu.segaud@regala.cx>,
-	Richard Knutsson <ricknu-0@student.ltu.se>,
-	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org, linux-ext4@vger.kernel.org
-References: <1199452896-20145-5-git-send-email-mathieu.segaud@regala.cx> <477E379F.4000103@student.ltu.se> <20080105041228.GP3351@webber.adilger.int> <20080105051817.GD27894@ZenIV.linux.org.uk> <4786883E.30604@tiscali.nl> <20080111030945.27954.qmail@cdy.org> <20080111034240.GA29861@linux-sh.org> <47873ABA.5050604@tiscali.nl> <20080111102930.GA31581@linux-sh.org> <47874D2E.2000603@tiscali.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47874D2E.2000603@tiscali.nl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 11 Jan 2008 06:24:46 -0500
+Received: from ns.suse.de ([195.135.220.2]:45955 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759411AbYAKLYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 06:24:45 -0500
+Subject: Re: Query on lock protection in random number driver
+From: Nikanth Karthikesan <knikanth@suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, mpm@selenic.com
+In-Reply-To: <47879DA2.BANGALORE.BLR.100.174746A.1.EEA6.1@1:7.BANGALORE.BLR.100.0.1.0.1@16>
+References: <1200049691.3844.44.camel@nikanth-laptop.blr.novell.com>
+	 <47879DA2.BANGALORE.BLR.100.174746A.1.EEA6.1@1:7.BANGALORE.BLR.100.0.1.0.1@16>
+Content-Type: text/plain
+Date: Fri, 11 Jan 2008 16:58:28 +0530
+Message-Id: <1200050908.3844.56.camel@nikanth-laptop.blr.novell.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 11, 2008 at 12:04:14PM +0100, Roel Kluin wrote:
-> Paul Mundt wrote:
-> > Take a look at how CONFIG_PCMCIA_DEBUG is handled.
+On Fri, 2008-01-11 at 12:12 +0100, Andi Kleen wrote:
+> Nikanth Karthikesan <knikanth@suse.de> writes:
+> >
+> > Also the globals random_read_wakeup_thresh and
+> > random_write_wakeup_thresh are not at all protected by any locks! Why
+> > locks are not needed for these?
 > 
-> In drivers/pcmcia/Makefile, when CONFIG_PCMCIA_DEBUG=y, it  gives
-> EXTRA_CFLAGS += -DDEBUG
-> which causes the definition of DEBUG as a macro, with definition 1.
-> 
-> > With DEBUG()->pr_debug() conversion here you've silently dropped the
-> > __func__ prefixing. Note that dev_dbg() is usually preferred when you can
-> > get a hold of a struct device pointer, as it takes care of prettifying
-> > the output with the driver name and so on, rather than the convention of
-> > adding a prefix. If you can't get at the struct device pointer, you'll
-> > probably just want to insert the __func__ prefixing manually at the
-> > callsites.
-> 
-> Ah, ok, then this should be right:
-> --
-> Replace printk wrapper - with a syntax error - by pr_debug.
-> DEBUG is defined 1 when CONFIG_PCMCIA_DEBUG is set.
-> 
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> ---
-> diff --git a/drivers/pcmcia/au1000_xxs1500.c b/drivers/pcmcia/au1000_xxs1500.c
-> index ce9d5c4..8e6426b 100644
-> --- a/drivers/pcmcia/au1000_xxs1500.c
-> +++ b/drivers/pcmcia/au1000_xxs1500.c
-> @@ -55,12 +55,6 @@
->  #define PCMCIA_NUM_SOCKS	(PCMCIA_MAX_SOCK + 1)
->  #define PCMCIA_IRQ		AU1000_GPIO_4
->  
-> -#if 0
-> -#define DEBUG(x,args...)	printk(__FUNCTION__ ": " x,##args)
-> -#else
-> -#define DEBUG(x,args...)
-> -#endif
-> -
->  static int xxs1500_pcmcia_init(struct pcmcia_init *init)
->  {
->  	return PCMCIA_NUM_SOCKS;
-> @@ -143,13 +137,13 @@ xxs1500_pcmcia_configure_socket(const struct pcmcia_configure *configure)
->  
->  	if(configure->sock > PCMCIA_MAX_SOCK) return -1;
->  
-> -	DEBUG("Vcc %dV Vpp %dV, reset %d\n",
-> +	pr_debug("Vcc %dV Vpp %dV, reset %d\n",
->  			configure->vcc, configure->vpp, configure->reset);
->  
-You're still changing the semantics here. The DEBUG() does __FUNCTION__
-prefixing, while pr_debug() does not. This should be something like
-pr_debug("%s: ....", __func__, ...); instead, if you want to maintain
-consistency. Beyond that, this looks fine, yes.
+> Reading variables sizeof <= native word size (32bit or 64bit depending
+> on architecture) is atomic by itself. This is not necessarily
+> guaranteed in ISO-C or POSIX threads, but Linux can assume that.
+
+Yes, I found that by checking the implementation of atomic_read.
+
+But I didnt check the implementation of atomic_set before sending the
+mail and assumed assigning to a variable may not be atomic on all arch,
+and because of that, we may be reading a half-written, variable! But
+assigning to an int is also atomic on all arch.
+
+Thanks a lot.
+
+Thanks
+Nikanth Karthikesan
+
