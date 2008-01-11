@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760722AbYAKOOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760990AbYAKOS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760722AbYAKOOx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 09:14:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbYAKOOm
+	id S1760990AbYAKOS3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 09:18:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbYAKOSW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 09:14:42 -0500
-Received: from moutng.kundenserver.de ([212.227.126.183]:57973 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753836AbYAKOOl (ORCPT
+	Fri, 11 Jan 2008 09:18:22 -0500
+Received: from ftp.linux-mips.org ([194.74.144.162]:48052 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752043AbYAKOSU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 09:14:41 -0500
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [PATCH] Clustering indirect blocks in Ext3
-To: Abhishek Rai <abhishekrai@google.com>, ak@muc.de, ebiederm@xmission.com,
-       rdreier@cisco.com, gregkh@suse.de, airlied@skynet.ie, davej@redhat.com,
-       mingo@elte.hu, tglx@linutronix.de, akpm@linux-foundation.org,
-       arjan@infradead.org,
-       ?missing.closing.'"' in token?"Barnes",
-	Jesse <jesse.barnes@intel.com>, davem@davemloft.net,
-	linux-kernel@vger.kernel.org,
-	 ?missing closing '"'.in.token?"Siddha"@vax.1wt.eu,
-       Suresh B <suresh.b.siddha@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Illegal-Object: Syntax error in To: address found on vger.kernel.org:
-	To:	?missing closing '"' in token?"Barnes", Jesse <jesse.barnes@intel.com>, davem@davemloft.net, linux-kernel@vger.kernel.org, ?missing closing '"' in token?"Siddha"
-			^-extraneous tokens in address
-Illegal-Object: Syntax error in To: address found on vger.kernel.org:
-	To:	?missing closing '"' in token?"Barnes", Jesse <jesse.barnes@intel.com>, davem@davemloft.net, linux-kernel@vger.kernel.org, ?missing closing '"' in token?"Siddha"
-			^-extraneous tokens in address
-Reply-To: 7eggert@gmx.de
-Date: Fri, 11 Jan 2008 15:12:16 +0100
-References: <9q1CT-82L-3@gated-at.bofh.it> <9q3v2-2Br-3@gated-at.bofh.it> <9qgLE-7ds-21@gated-at.bofh.it> <9qjJx-3wE-9@gated-at.bofh.it> <9qm4D-70Q-1@gated-at.bofh.it> <9CQTt-7cr-27@gated-at.bofh.it> <9KcYS-46E-27@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Fri, 11 Jan 2008 09:18:20 -0500
+Date: Fri, 11 Jan 2008 14:17:54 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Andreas Schwab <schwab@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org
+Subject: Re: (Try #3) [Patch 2/8] MIPS: Remove 'TOPDIR' from Makefiles
+Message-ID: <20080111141754.GC19900@linux-mips.org>
+References: <20080101071311.GA2496@hacking> <20080101072238.GC2496@hacking> <20080101101540.GB28913@uranus.ravnborg.org> <jefxxhlkxb.fsf@sykes.suse.de> <20080101175754.GC31575@uranus.ravnborg.org> <20080102062135.GE2493@hacking>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1JDKcK-0003cu-Ps@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1/DMXuKMeTEVc/gB7m8nddxPuUztmahDMl5CUg
- V7McaYeXOGJRvfN7U1a1vqqtF6R/Qh2I0+asLEqAg7qsIXgdCR
- IVDu95eHCzG44hANYpkiA==
+Content-Disposition: inline
+In-Reply-To: <20080102062135.GE2493@hacking>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Abhishek Rai <abhishekrai@google.com> wrote:
+On Wed, Jan 02, 2008 at 02:21:36PM +0800, WANG Cong wrote:
 
-> Putting metacluster at the end of the block group gives slightly
-> inferior sequential read throughput compared to putting it in the
-> beginning or the middle, but the difference is very tiny and exists
-> only for large files that span multiple block groups.
+> >> Shouldn't that use $(LINUXINCLUDE), or $(KBUILD_CPPFLAGS)?
+> >It would be better to use $(LINUXINCLUDE) as we then pull in all config
+> >symbols too and do not have to hardcode kbuild internal names (include2).
+> 
+> OK. Refine this patch.
 
-Just an idea:
+LDSCRIPT also needed fixing to get builds in a separate object directory
+working again.
 
-What about putting it into the end of the previous block group (except for
-the first group, off cause) and starting to read the block group a little
-earlier (readahead/~before)? I imagine it might be about as good as placing
-it at the beginning while avoiding the fragmentation.
+I've applied below fix.
 
+  Ralf
+
+>From 8babf06e1265214116fb8ffc634c04df85597c52 Mon Sep 17 00:00:00 2001
+From: WANG Cong <xiyou.wangcong@gmail.com>
+Date: Wed, 2 Jan 2008 14:21:36 +0800
+Subject: [PATCH] [MIPS] Lasat: Fix built in separate object directory.
+
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+
+[Ralf: The LDSCRIPT script needed fixing, too]
+
+Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+
+diff --git a/arch/mips/lasat/image/Makefile b/arch/mips/lasat/image/Makefile
+index 5332449..7ccd40d 100644
+--- a/arch/mips/lasat/image/Makefile
++++ b/arch/mips/lasat/image/Makefile
+@@ -12,11 +12,11 @@ endif
+ 
+ MKLASATIMG = mklasatimg
+ MKLASATIMG_ARCH = mq2,mqpro,sp100,sp200
+-KERNEL_IMAGE = $(TOPDIR)/vmlinux
++KERNEL_IMAGE = vmlinux
+ KERNEL_START = $(shell $(NM) $(KERNEL_IMAGE) | grep " _text" | cut -f1 -d\ )
+ KERNEL_ENTRY = $(shell $(NM) $(KERNEL_IMAGE) | grep kernel_entry | cut -f1 -d\ )
+ 
+-LDSCRIPT= -L$(obj) -Tromscript.normal
++LDSCRIPT= -L$(srctree)/$(obj) -Tromscript.normal
+ 
+ HEAD_DEFINES := -D_kernel_start=0x$(KERNEL_START) \
+ 		-D_kernel_entry=0x$(KERNEL_ENTRY) \
+@@ -24,7 +24,7 @@ HEAD_DEFINES := -D_kernel_start=0x$(KERNEL_START) \
+ 		-D TIMESTAMP=$(shell date +%s)
+ 
+ $(obj)/head.o: $(obj)/head.S $(KERNEL_IMAGE)
+-	$(CC) -fno-pic $(HEAD_DEFINES) -I$(TOPDIR)/include -c -o $@ $<
++	$(CC) -fno-pic $(HEAD_DEFINES) $(LINUXINCLUDE) -c -o $@ $<
+ 
+ OBJECTS = head.o kImage.o
+ 
