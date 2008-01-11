@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760928AbYAKMms@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760702AbYAKMrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760928AbYAKMms (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 07:42:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758447AbYAKMml
+	id S1760702AbYAKMrU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 07:47:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758413AbYAKMrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 07:42:41 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:25129 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758065AbYAKMmk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 07:42:40 -0500
-Date: Fri, 11 Jan 2008 13:42:37 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Dillow <dillowda@ornl.gov>, Guillaume Chazarain <guichaz@yahoo.fr>,
-       linux-kernel@vger.kernel.org, linux-btrace@vger.kernel.org,
-       mingo@redhat.com, tglx@linutronix.de
-Subject: Re: [patch] block: fix blktrace timestamps
-Message-ID: <20080111124236.GV6258@kernel.dk>
-References: <1199996752.9159.46.camel@lap75545.ornl.gov> <20080110234438.4826f658@inria.fr> <1200020661.5099.3.camel@obelisk.thedillows.org> <20080111090723.GI6258@kernel.dk> <20080111092334.GA8143@elte.hu> <20080111092513.GO6258@kernel.dk> <20080111094205.GE8143@elte.hu> <20080111095654.GR6258@kernel.dk> <20080111102953.GA27223@elte.hu> <20080111122802.GT6258@kernel.dk>
-MIME-Version: 1.0
+	Fri, 11 Jan 2008 07:47:14 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:50712 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758159AbYAKMrN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 07:47:13 -0500
+Date: Fri, 11 Jan 2008 13:49:49 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       mpm@selenic.com
+Subject: Re: Query on lock protection in random number driver
+Message-ID: <20080111124949.GA13458@one.firstfloor.org>
+References: <1200049691.3844.44.camel@nikanth-laptop.blr.novell.com> <1200050908.3844.56.camel@nikanth-laptop.blr.novell.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080111122802.GT6258@kernel.dk>
+In-Reply-To: <1200050908.3844.56.camel@nikanth-laptop.blr.novell.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 11 2008, Jens Axboe wrote:
-> > ktime_get() should have been used instead, which is a proper GTOD 
-> > clocksource. The patch below implements this.
+On Fri, Jan 11, 2008 at 04:58:28PM +0530, Nikanth Karthikesan wrote:
+> On Fri, 2008-01-11 at 12:12 +0100, Andi Kleen wrote:
+> > Nikanth Karthikesan <knikanth@suse.de> writes:
+> > >
+> > > Also the globals random_read_wakeup_thresh and
+> > > random_write_wakeup_thresh are not at all protected by any locks! Why
+> > > locks are not needed for these?
+> > 
+> > Reading variables sizeof <= native word size (32bit or 64bit depending
+> > on architecture) is atomic by itself. This is not necessarily
+> > guaranteed in ISO-C or POSIX threads, but Linux can assume that.
 > 
-> Will give it a whirl, it looks promising indeed and gets rid of the ugly
-> cpu sync stuff. What is the cost of ktime_get() compared to
-> sched_clock()?
+> Yes, I found that by checking the implementation of atomic_read.
+> 
+> But I didnt check the implementation of atomic_set before sending the
+> mail and assumed assigning to a variable may not be atomic on all arch,
+> and because of that, we may be reading a half-written, variable! But
+> assigning to an int is also atomic on all arch.
 
-Works for me - will apply it right now, we can always evaluate any
-potential performance impact later. It's more important to have a
-functional blktrace in 2.6.24.
+For completeness this both only applies to naturally aligned variables
+for portable code.
 
-Thanks Ingo!
-
--- 
-Jens Axboe
-
+-Andi
