@@ -1,52 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760737AbYAKJIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760819AbYAKJI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760737AbYAKJIJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 04:08:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755610AbYAKJHx
+	id S1760819AbYAKJI7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 04:08:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbYAKJIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 04:07:53 -0500
-Received: from gate.crashing.org ([63.228.1.57]:53044 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752750AbYAKJHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 04:07:51 -0500
-Cc: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz
-Message-Id: <0119CD93-D9F1-42E0-9F6A-A50B2C63B19D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-In-Reply-To: <47872BC8.2040204@gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: PCI Failed to allocate mem for PCI ROM
-Date: Fri, 11 Jan 2008 03:07:29 -0600
-References: <1B75C5A8-E512-40CB-A6F3-351640701D0D@kernel.crashing.org> <47872BC8.2040204@gmail.com>
-X-Mailer: Apple Mail (2.915)
+	Fri, 11 Jan 2008 04:08:44 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:32003
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756135AbYAKJIn convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 04:08:43 -0500
+Message-Id: <4787403C.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Fri, 11 Jan 2008 09:09:00 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <sam@ravnborg.org>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] scripts/mkmakefile: dynamic determination of output
+	directory
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rather than fixing the output directory in the generated Makefile,
+determine it from the placement of Makefile. This allows moving
+the build tree around or accessing it through different mount paths.
 
-On Jan 11, 2008, at 2:41 AM, Jiri Slaby wrote:
+(The lastword definition is a compatibility one for make prior to 3.81;
+newer make will simply ignore it and use the [faster] built-in.)
 
-> On 01/11/2008 09:29 AM, Kumar Gala wrote:
->> Greg,
->> I'm getting the following message from the kernel on an embedded  
->> ppc32 system:
->> PCI: Failed to allocate mem resource #9:100000@e0000000 for  
->> 0000:00:00.0
->> The HW setup is a PCIe host controller and an e1000 NIC card.  It  
->> appears that pci_bus_assign_resources() is trying to call  
->> pci_assign_resource() for the ROM and the resource for the ROM is  
->> [100000:1fffff] where the PHB is [c0000000:dfffffff].
->> It seems like the resno that pci_assign_resource is getting called  
->> with is wrong and thus pci_update_resource() doesn't get called.
->> any ideas?
->
-> Kernel version, please.
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-Sorry, its 2.6.24-rc7 + some ppc patches queued for 2.6.25
+---
+ scripts/mkmakefile |   10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-- k
+--- linux-2.6.24-rc7/scripts/mkmakefile	2008-01-10 16:55:30.000000000 +0100
++++ 2.6.24-rc7-mkmakefile-objdir/scripts/mkmakefile	2008-01-08 12:35:11.000000000 +0100
+@@ -25,8 +25,11 @@ cat << EOF > $2/Makefile
+ VERSION = $3
+ PATCHLEVEL = $4
+ 
+-KERNELSRC    := $1
+-KERNELOUTPUT := $2
++lastword = \$(word \$(words \$(1)),\$(1))
++makedir := \$(dir \$(call lastword,\$(MAKEFILE_LIST)))
++
++MAKEARGS := -C $1
++MAKEARGS += O=\$(if \$(patsubst /%,,\$(makedir)),\$(CURDIR)/)\$(patsubst %/,%,\$(makedir))
+ 
+ MAKEFLAGS += --no-print-directory
+ 
+@@ -35,10 +38,11 @@ MAKEFLAGS += --no-print-directory
+ all	:= \$(filter-out all Makefile,\$(MAKECMDGOALS))
+ 
+ all:
+-	\$(MAKE) -C \$(KERNELSRC) O=\$(KERNELOUTPUT) \$(all)
++	\$(MAKE) \$(MAKEARGS) \$(all)
+ 
+ Makefile:;
+ 
+ \$(all) %/: all
+ 	@:
++
+ EOF
+
+
 
