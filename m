@@ -1,104 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762477AbYAKTMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762449AbYAKTN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762477AbYAKTMZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 14:12:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758019AbYAKTMS
+	id S1762449AbYAKTN6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 14:13:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758791AbYAKTNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 14:12:18 -0500
-Received: from web32615.mail.mud.yahoo.com ([68.142.207.242]:24478 "HELO
-	web32615.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756698AbYAKTMR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 14:12:17 -0500
-X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Jan 2008 14:12:17 EST
-X-YMail-OSG: Ehy3f.gVM1nXgGGqo3.r9zl7m5KZfUUXhPne9Kufm_3iSInH
-X-Mailer: YahooMailRC/818.31 YahooMailWebService/0.7.160
-Date: Fri, 11 Jan 2008 11:05:36 -0800 (PST)
-From: Martin Knoblauch <knobi@knobisoft.de>
-Subject: Re: [PATCH 00/11] writeback bug fixes and simplifications
-To: WU Fengguang <wfg@mail.ustc.edu.cn>, Hans-Peter Jansen <hpj@urpla.net>
-Cc: Sascha Warner <prx@cinatas.ath.cx>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
+	Fri, 11 Jan 2008 14:13:52 -0500
+Received: from mx1.suse.de ([195.135.220.2]:53532 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758019AbYAKTNv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 14:13:51 -0500
+Date: Fri, 11 Jan 2008 11:14:05 -0800
+From: Greg KH <gregkh@suse.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       inux-pci@atrey.karlin.mff.cuni.cz,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>, Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+	opt-in
+Message-ID: <20080111191405.GA25702@suse.de>
+References: <20071225032605.29147200@laptopd505.fenrus.org> <20080111190229.GB10112@kroah.com> <20080111110931.323ee056@laptopd505.fenrus.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <134583.81015.qm@web32615.mail.mud.yahoo.com>
+Content-Disposition: inline
+In-Reply-To: <20080111110931.323ee056@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message ----
-> From: WU Fengguang <wfg@mail.ustc.edu.cn>
-> To: Hans-Peter Jansen <hpj@urpla.net>
-> Cc: Sascha Warner <prx@cinatas.ath.cx>; Andrew Morton <akpm@linux-foundation.org>; linux-kernel@vger.kernel.org; Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Sent: Wednesday, January 9, 2008 4:33:32 AM
-> Subject: Re: [PATCH 00/11] writeback bug fixes and simplifications
+On Fri, Jan 11, 2008 at 11:09:31AM -0800, Arjan van de Ven wrote:
+> On Fri, 11 Jan 2008 11:02:29 -0800
+> Greg KH <greg@kroah.com> wrote:
 > 
-> On Sat, Dec 29, 2007 at 03:56:59PM +0100, Hans-Peter Jansen wrote:
-> > Am Freitag, 28. Dezember 2007 schrieb Sascha Warner:
-> > > Andrew Morton wrote:
-> > > > On Thu, 27 Dec 2007 23:08:40 +0100 Sascha
-> Warner
-> 
-  
-> > wrote:
-> > > >> Hi,
-> > > >>
-> > > >> I applied your patches to 2.6.24-rc6-mm1, but now I am
-> faced
-> 
- with one
-> > > >> pdflush often using 100% CPU for a long time. There seem to
-> be
-> 
- some
-> > > >> rare pauses from its 100% usage, however.
-> > > >>
-> > > >> On ~23 minutes uptime i have ~19 minutes pdflush runtime.
-> > > >>
-> > > >> This is on E6600, x86_64, 2 Gig RAM, SATA HDD, running on gentoo
-> > > >> ~x64_64
-> > > >>
-> > > >> Let me know if you need more info.
-> > > >
-> > > > (some) cc's restored.  Please, always do reply-to-all.
-> > >
-> > > Hi Wu,
+> > On Tue, Dec 25, 2007 at 03:26:05AM -0800, Arjan van de Ven wrote:
+> > > 
+> > > This patch also adds a sysfs property for each device into which
+> > > root can write a '1' to enable extended configuration space. The
+> > > kernel will print a notice into dmesg when this happens (including
+> > > the name of the app) so that if the system crashes as a result of
+> > > this action, the user can know what action/tool caused it.
 > > 
-> > Sascha, if you want to address Fengguang by his first name, note
-> that
-> 
- 
-> > chinese and bavarians (and some others I forgot now, too)
-> typically
-> 
- use the 
-> > order:
-> >   
-> >   lastname firstname 
+> > Can you send me a follow-on patch that documents this in
+> > Documentation/ABI please.
 > > 
-> > when they spell their names. Another evidence is, that the name Wu
-> is
 > 
- a 
-> > pretty common chinese family name.
-> > 
-> > Fengguang, if it's the other way around, correct me please (and
-> I'm
-> 
- going to 
-> > wear a big brown paper bag for the rest of the day..). 
-> 
-> You are right. We normally do "Fengguang" or "Mr. Wu" :-)
-> For LKML the first name is less ambiguous.
-> 
-> Thanks,
-> Fengguang
-> 
+> once it's stable enough, say after 1 kernel release, sure
 
- Just cannot resist. Hans-Peter mentions Bavarian using Lastname-Givenname as well. This is only true in a folklore context (or when you are very deep in the countryside). Officially the bavarians use the usual German Given/Lastname. Although they will never admit to be Germans, of course :-)
+That's what the Documentation/ABI/testing section is for.  If you add
+something new, it needs to be documented now, otherwise it will be
+forgotten.
 
+thanks,
 
-Cheers
-Martin
-
+greg k-h
