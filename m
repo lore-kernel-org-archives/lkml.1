@@ -1,177 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760758AbYAKMWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760823AbYAKM1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760758AbYAKMWe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 07:22:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757163AbYAKMWX
+	id S1760823AbYAKM1W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 07:27:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758710AbYAKM1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 07:22:23 -0500
-Received: from neon.samage.net ([85.17.153.66]:45549 "EHLO neon.samage.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756395AbYAKMWV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 07:22:21 -0500
-Message-ID: <38047.81.207.0.53.1200054134.squirrel@secure.samage.net>
-In-Reply-To: <200801110846.m0B8kIf7088823@www262.sakura.ne.jp>
-References: <200801011116.AFH73928.MHFLtOSOOVJFQF@I-love.SAKURA.ne.jp>
-    <200801061520.JEF52626.LFHMtSQJOOVFFO@I-love.SAKURA.ne.jp>
-    <20080106062609.GC20753@1wt.eu>
-    <200801070020.DGI17963.HOOJStVMOFFQLF@I-love.SAKURA.ne.jp>
-    <51953.81.207.0.53.1199738255.squirrel@secure.samage.net>
-    <200801082250.CBI21893.FOQMOtSJFLOHFV@I-love.SAKURA.ne.jp>
-    <45796.81.207.0.53.1199807221.squirrel@secure.samage.net>
-    <200801090439.m094d267092095@www262.sakura.ne.jp>
-    <47176.81.207.0.53.1199887192.squirrel@secure.samage.net>
-    <200801100457.m0A4vcoi024209@www262.sakura.ne.jp>
-    <36843.81.207.0.53.1200006346.squirrel@secure.samage.net>
-    <200801110846.m0B8kIf7088823@www262.sakura.ne.jp>
-Date: Fri, 11 Jan 2008 13:22:14 +0100 (CET)
-Subject: Re: [PATCH][RFC] Simple tamper-proof device filesystem.
-From: "Indan Zupancic" <indan@nul.nu>
-To: "Tetsuo Handa" <penguin-kernel@i-love.sakura.ne.jp>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, w@1wt.eu,
-       serue@us.ibm.com
-User-Agent: SquirrelMail/1.4.8
+	Fri, 11 Jan 2008 07:27:14 -0500
+Received: from smtp-out0.tiscali.nl ([195.241.79.175]:43800 "EHLO
+	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758390AbYAKM1N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 07:27:13 -0500
+Message-ID: <47876094.8030509@tiscali.nl>
+Date: Fri, 11 Jan 2008 13:27:00 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: -1.8
-X-Scan-Signature: 025acf9a139f050bc01ccdeba87e03e0
+To: Paul Mundt <lethal@linux-sh.org>, Roel Kluin <12o3l@tiscali.nl>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Mathieu Segaud <mathieu.segaud@regala.cx>,
+       Richard Knutsson <ricknu-0@student.ltu.se>,
+       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] [Coding Style]: fs/ext{3,4}/ext{3,4}_jbd{,2}.c
+References: <1199452896-20145-5-git-send-email-mathieu.segaud@regala.cx> <477E379F.4000103@student.ltu.se> <20080105041228.GP3351@webber.adilger.int> <20080105051817.GD27894@ZenIV.linux.org.uk> <4786883E.30604@tiscali.nl> <20080111030945.27954.qmail@cdy.org> <20080111034240.GA29861@linux-sh.org> <47873ABA.5050604@tiscali.nl> <20080111102930.GA31581@linux-sh.org> <47874D2E.2000603@tiscali.nl> <20080111112353.GA31938@linux-sh.org>
+In-Reply-To: <20080111112353.GA31938@linux-sh.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Paul Mundt wrote:
+> On Fri, Jan 11, 2008 at 12:04:14PM +0100, Roel Kluin wrote:
+>> Paul Mundt wrote:
+>>> Take a look at how CONFIG_PCMCIA_DEBUG is handled.
+>> In drivers/pcmcia/Makefile, when CONFIG_PCMCIA_DEBUG=y, it  gives
+>> EXTRA_CFLAGS += -DDEBUG
+>> which causes the definition of DEBUG as a macro, with definition 1.
+>>
+>>> With DEBUG()->pr_debug() conversion here you've silently dropped the
+>>> __func__ prefixing. Note that dev_dbg() is usually preferred when you can
+>>> get a hold of a struct device pointer, as it takes care of prettifying
+>>> the output with the driver name and so on, rather than the convention of
+>>> adding a prefix. If you can't get at the struct device pointer, you'll
+>>> probably just want to insert the __func__ prefixing manually at the
+>>> callsites.
 
-On Fri, January 11, 2008 09:46, Tetsuo Handa wrote:
-> It depends.
-> Some users have to continue using brain dead legacy applications
-> without modification because ...
->
->    the application's source code is not available.
+> You're still changing the semantics here. The DEBUG() does __FUNCTION__
+> prefixing, while pr_debug() does not. This should be something like
+> pr_debug("%s: ....", __func__, ...); instead, if you want to maintain
+> consistency. Beyond that, this looks fine, yes.
 
-Source isn't needed, as long as the vendor has it.
+Somehow I overlooked your last point. Well, the original code had no
+semantics - it wasn't working - but I get your point.
 
->    the distributor no longer supports the application.
+Below a patch to print the __func__'s. Note that all pr_debugs are in the
+same function. Maybe the function name should be printed in the first
+pr_debug only? If desired, I'll send another patch.
+--
+Replace printk wrapper - with a syntax error - by pr_debug; keep printing
+the __func__'s. (DEBUG is defined 1 when CONFIG_PCMCIA_DEBUG is set)
 
-Then why should anyone else support it?
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/drivers/pcmcia/au1000_xxs1500.c b/drivers/pcmcia/au1000_xxs1500.c
+index ce9d5c4..b4bad6e 100644
+--- a/drivers/pcmcia/au1000_xxs1500.c
++++ b/drivers/pcmcia/au1000_xxs1500.c
+@@ -55,12 +55,6 @@
+ #define PCMCIA_NUM_SOCKS	(PCMCIA_MAX_SOCK + 1)
+ #define PCMCIA_IRQ		AU1000_GPIO_4
+ 
+-#if 0
+-#define DEBUG(x,args...)	printk(__FUNCTION__ ": " x,##args)
+-#else
+-#define DEBUG(x,args...)
+-#endif
+-
+ static int xxs1500_pcmcia_init(struct pcmcia_init *init)
+ {
+ 	return PCMCIA_NUM_SOCKS;
+@@ -143,13 +137,13 @@ xxs1500_pcmcia_configure_socket(const struct pcmcia_configure *configure)
+ 
+ 	if(configure->sock > PCMCIA_MAX_SOCK) return -1;
+ 
+-	DEBUG("Vcc %dV Vpp %dV, reset %d\n",
++	pr_debug("%s: Vcc %dV Vpp %dV, reset %d\n", __func__,
+ 			configure->vcc, configure->vpp, configure->reset);
+ 
+ 	switch(configure->vcc){
+ 		case 33: /* Vcc 3.3V */
+ 			/* turn on power */
+-			DEBUG("turn on power\n");
++			pr_debug("%s: turn on power\n", __func__);
+ 			au_writel((au_readl(GPIO2_PINSTATE) & ~(1<<14))|(1<<30),
+ 					GPIO2_OUTPUT);
+ 			au_sync_delay(100);
+@@ -166,7 +160,7 @@ xxs1500_pcmcia_configure_socket(const struct pcmcia_configure *configure)
+ 	}
+ 
+ 	if (!configure->reset) {
+-		DEBUG("deassert reset\n");
++		pr_debug("%s: deassert reset\n", __func__);
+ 		au_writel((au_readl(GPIO2_PINSTATE) & ~(1<<4))|(1<<20),
+ 				GPIO2_OUTPUT);
+ 		au_sync_delay(100);
+@@ -174,7 +168,7 @@ xxs1500_pcmcia_configure_socket(const struct pcmcia_configure *configure)
+ 				GPIO2_OUTPUT);
+ 	}
+ 	else {
+-		DEBUG("assert reset\n");
++		pr_debug("%s: assert reset\n", __func__);
+ 		au_writel(au_readl(GPIO2_PINSTATE) | (1<<4)|(1<<20),
+ 				GPIO2_OUTPUT);
+ 	}
 
->    the application is too difficult/complicated to reconstruct.
-
-Then you can't trust it and it shouldn't have permission to do
-potentially dangerous things in /dev/ either. Even if you can
-contain the device node creation, it most likely does other
-potentially dangerous things too. As a whole it can't be trusted.
-
-> I assume "a static /dev/" means a /dev/ directory in 2.4 kernels.
-> This filesystem's advantage:
-
-I'm not talking about devfs, I'm talking about a real static /dev.
-I'm using it now and it works fine (I let udev manage /udev/ to see
-what's it's doing).
-
->   (1) Can guarantee filename/attribute pairs.
-
-Wrong. All nodes are created and thus there's never a need to create
-new nodes. So /dev/ can't be modified by anyone. This works because
-all nodes that anyone might want to create already exist.
-
->   (2) Can keep nodes that needn't to be deleted/modified for read-only.
-
-This would also be true for all nodes in a static /dev I think.
-
->   (3) Can hide unwanted device nodes.
-
-In a static /dev you only create the nodes you want. It's true that it
-can't hide nodes for hardware that doesn't exist (other than deleting
-the nodes manually), but that was the norm for years before the
-whole dynamic /dev thing catched up.
-
-> I don't know. I'm not using rare software.
-
-It doesn't have to be rare, anything is fine. You don't know
-anything else than udev? (And shell commands like mknod etc.)
-
-Then why all the talk about mysterious apps that might need to
-do all kind of crazy things in /dev?
-
-> No. The kernel must be involved.
-
-> Who can guarantee that the daemon can access all namespaces?
-> The process who requests "mknod" and the process who performs "mknod"
-> are not always using the same namespace.
-
-This is true on a theoretical level. But practically I think you can either
-run multiple daemons, one for each namespace where you want to
-control /dev/, or if you really want one daemon you can pass the
-directory fd to it where the node should be created and use mknodat().
-I believe that crosses namespaces correctly.
-
-If the daemon can't be contacted or doesn't want to do a mknod for you,
-the preloaded lib can fallback to doing the mknod itself, though normally
-that would be disallowed by MAC.
-
-But I think that the chance that any process needs to create device nodes
-in a chroot is at the level of fairy existance.
-
-> If "foo" or "bar" is a statically linked or suid-root application
-> (where LD_PRELOAD is ignored), they would attempt to create device nodes
-> directly (i.e. call sys_mknod() instead of communicating with the daemon)
-> and abort due to failure.
-> Not only applications who wants to create device nodes in /dev/ ,
-> but also all applications who wants to modify entries in /dev/ .
-
-If the preloaded library is setuid, it will also work for setuid programs.
-It's true that it won't work for statically linked apps, but so what?
-
-Device node creating apps are rare enough, let alone the ones that are
-also statically linked. Nice theoretical problem, but I don't think anyone
-will care in practice.
-
-> From the beginning, the kernel is deeply involved because in-kernel MAC
-> is essential to realize "only the tiny daemon can modify /dev/".
-> Why not do this "filename/attribute" checking in the kernel too?
-
-That "only the tiny daemon can modify /dev/" is done with MAC rules,
-the ones that should be the default for all applications except udev by
-default already. For teh kernel nothing changes.
-
->> The ammount of code will be the current parsing code + a few hundred
->> lines of code, including the preloaded library.
->
-> You will be bothered with "what is the realpath of /dev/null?" and
-> "how can I reach the realpath?" because you have to manage
-> namespace information.
-
-Or ignore the problem and see if it's a real problem or a nice theoretical
-case. And when it turns out to be a real problem, there are probably
-ways to fix it (See above). But you know what exactly is needed only
-after problems do turn up.
-
-> OK. I'll consider adding this feature.
-> But I'd like to use approach (B) to keep the advantage (3).
->
-> (A) White-listing + Black-listing approach.
->
->     "Permit any operations if the filename didn't appear
->      in the configuration file".
->
-> (B) White-listing + Wild-card approach.
->
->     "Support wildcard and permit only operations if
->      the filename-with-wildcard/attributes-with-wildcard appeared
->      in the configuration file".
-
-With this the filesystem at least adds some unique abilities.
-
-If anyone really needs it and where/how it should be implemented is
-another matter.
-
-Without it it's a glorified and complicated drop-in replacement for
-a static /dev/.
-
-Regards,
-
-Indan
 
 
