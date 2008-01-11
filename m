@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762164AbYAKTBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762229AbYAKTCl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762164AbYAKTBZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 14:01:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761172AbYAKTBS
+	id S1762229AbYAKTCl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 14:02:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761580AbYAKTCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 14:01:18 -0500
-Received: from miranda.se.axis.com ([193.13.178.8]:51155 "EHLO
-	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756422AbYAKTBR (ORCPT
+	Fri, 11 Jan 2008 14:02:34 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46051 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761569AbYAKTCd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 14:01:17 -0500
-Date: Fri, 11 Jan 2008 20:01:06 +0100
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Mikael Starvik <mikael.starvik@axis.com>,
-       Jesper Nilsson <jesper.nilsson@axis.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] CRIS: Define __ARCH_WANT_SYS_RT_SIGSUSPEND in unistd.h for CRIS
-Message-ID: <20080111190106.GF27482@axis.com>
+	Fri, 11 Jan 2008 14:02:33 -0500
+Date: Fri, 11 Jan 2008 11:02:29 -0800
+From: Greg KH <greg@kroah.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, gregkh@suse.de,
+       inux-pci@atrey.karlin.mff.cuni.cz,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>, Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+	opt-in
+Message-ID: <20080111190229.GB10112@kroah.com>
+References: <20071225032605.29147200@laptopd505.fenrus.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20071225032605.29147200@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CRIS: Define __ARCH_WANT_SYS_RT_SIGSUSPEND in unistd.h for CRIS
+On Tue, Dec 25, 2007 at 03:26:05AM -0800, Arjan van de Ven wrote:
+> 
+> This patch also adds a sysfs property for each device into which root can
+> write a '1' to enable extended configuration space. The kernel will print
+> a notice into dmesg when this happens (including the name of the app) so that
+> if the system crashes as a result of this action, the user can know what
+> action/tool caused it.
 
-This allows us to use the commong sys_rt_sigsuspend instead of
-having our own.
+Can you send me a follow-on patch that documents this in
+Documentation/ABI please.
 
-Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
----
- include/asm-cris/unistd.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+thanks,
 
-diff --git a/include/asm-cris/unistd.h b/include/asm-cris/unistd.h
-index 6f2d924..bd57a79 100644
---- a/include/asm-cris/unistd.h
-+++ b/include/asm-cris/unistd.h
-@@ -358,6 +358,7 @@
- #define __ARCH_WANT_SYS_SIGPENDING
- #define __ARCH_WANT_SYS_SIGPROCMASK
- #define __ARCH_WANT_SYS_RT_SIGACTION
-+#define __ARCH_WANT_SYS_RT_SIGSUSPEND
- 
- /*
-  * "Conditional" syscalls
--- 
-1.5.3.6.970.gd25430
-
-/^JN - Jesper Nilsson
---
-               Jesper Nilsson -- jesper.nilsson@axis.com
+greg k-h
