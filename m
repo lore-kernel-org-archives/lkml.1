@@ -1,36 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759977AbYAKLWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760405AbYAKLYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759977AbYAKLWQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 06:22:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757655AbYAKLWD
+	id S1760405AbYAKLYf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 06:24:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757655AbYAKLY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 06:22:03 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:48260 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756980AbYAKLWB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 06:22:01 -0500
-Message-ID: <4787511A.9050106@s5r6.in-berlin.de>
-Date: Fri, 11 Jan 2008 12:20:58 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
+	Fri, 11 Jan 2008 06:24:28 -0500
+Received: from pip15.gyao.ne.jp ([61.122.117.253]:58581 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757407AbYAKLY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 06:24:27 -0500
+Date: Fri, 11 Jan 2008 20:23:53 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>,
+       Mathieu Segaud <mathieu.segaud@regala.cx>,
+       Richard Knutsson <ricknu-0@student.ltu.se>,
+       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] [Coding Style]: fs/ext{3,4}/ext{3,4}_jbd{,2}.c
+Message-ID: <20080111112353.GA31938@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Roel Kluin <12o3l@tiscali.nl>, Al Viro <viro@ZenIV.linux.org.uk>,
+	Mathieu Segaud <mathieu.segaud@regala.cx>,
+	Richard Knutsson <ricknu-0@student.ltu.se>,
+	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org, linux-ext4@vger.kernel.org
+References: <1199452896-20145-5-git-send-email-mathieu.segaud@regala.cx> <477E379F.4000103@student.ltu.se> <20080105041228.GP3351@webber.adilger.int> <20080105051817.GD27894@ZenIV.linux.org.uk> <4786883E.30604@tiscali.nl> <20080111030945.27954.qmail@cdy.org> <20080111034240.GA29861@linux-sh.org> <47873ABA.5050604@tiscali.nl> <20080111102930.GA31581@linux-sh.org> <47874D2E.2000603@tiscali.nl>
 MIME-Version: 1.0
-To: CaT <cat@zip.com.au>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22.15: kernel processes stuck in D state
-References: <20080111081233.GB3940@zip.com.au>
-In-Reply-To: <20080111081233.GB3940@zip.com.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47874D2E.2000603@tiscali.nl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CaT wrote:
-> Not sure what other info to provide
-
-Is the bug present in 2.6.24-rc7?
--- 
-Stefan Richter
--=====-==--- ---= -=-==
-http://arcgraph.de/sr/
+On Fri, Jan 11, 2008 at 12:04:14PM +0100, Roel Kluin wrote:
+> Paul Mundt wrote:
+> > Take a look at how CONFIG_PCMCIA_DEBUG is handled.
+> 
+> In drivers/pcmcia/Makefile, when CONFIG_PCMCIA_DEBUG=y, it  gives
+> EXTRA_CFLAGS += -DDEBUG
+> which causes the definition of DEBUG as a macro, with definition 1.
+> 
+> > With DEBUG()->pr_debug() conversion here you've silently dropped the
+> > __func__ prefixing. Note that dev_dbg() is usually preferred when you can
+> > get a hold of a struct device pointer, as it takes care of prettifying
+> > the output with the driver name and so on, rather than the convention of
+> > adding a prefix. If you can't get at the struct device pointer, you'll
+> > probably just want to insert the __func__ prefixing manually at the
+> > callsites.
+> 
+> Ah, ok, then this should be right:
+> --
+> Replace printk wrapper - with a syntax error - by pr_debug.
+> DEBUG is defined 1 when CONFIG_PCMCIA_DEBUG is set.
+> 
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> ---
+> diff --git a/drivers/pcmcia/au1000_xxs1500.c b/drivers/pcmcia/au1000_xxs1500.c
+> index ce9d5c4..8e6426b 100644
+> --- a/drivers/pcmcia/au1000_xxs1500.c
+> +++ b/drivers/pcmcia/au1000_xxs1500.c
+> @@ -55,12 +55,6 @@
+>  #define PCMCIA_NUM_SOCKS	(PCMCIA_MAX_SOCK + 1)
+>  #define PCMCIA_IRQ		AU1000_GPIO_4
+>  
+> -#if 0
+> -#define DEBUG(x,args...)	printk(__FUNCTION__ ": " x,##args)
+> -#else
+> -#define DEBUG(x,args...)
+> -#endif
+> -
+>  static int xxs1500_pcmcia_init(struct pcmcia_init *init)
+>  {
+>  	return PCMCIA_NUM_SOCKS;
+> @@ -143,13 +137,13 @@ xxs1500_pcmcia_configure_socket(const struct pcmcia_configure *configure)
+>  
+>  	if(configure->sock > PCMCIA_MAX_SOCK) return -1;
+>  
+> -	DEBUG("Vcc %dV Vpp %dV, reset %d\n",
+> +	pr_debug("Vcc %dV Vpp %dV, reset %d\n",
+>  			configure->vcc, configure->vpp, configure->reset);
+>  
+You're still changing the semantics here. The DEBUG() does __FUNCTION__
+prefixing, while pr_debug() does not. This should be something like
+pr_debug("%s: ....", __func__, ...); instead, if you want to maintain
+consistency. Beyond that, this looks fine, yes.
