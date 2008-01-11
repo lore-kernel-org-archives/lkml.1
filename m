@@ -1,27 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760180AbYAKN7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760731AbYAKOBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760180AbYAKN7Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 08:59:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbYAKN7P
+	id S1760731AbYAKOBQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 09:01:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753168AbYAKOBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 08:59:15 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:41072 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752023AbYAKN7O (ORCPT
+	Fri, 11 Jan 2008 09:01:04 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:37981 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750870AbYAKOBD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 08:59:14 -0500
-Message-ID: <4787762B.5080201@davidnewall.com>
-Date: Sat, 12 Jan 2008 00:29:07 +1030
-From: David Newall <david@davidnewall.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+	Fri, 11 Jan 2008 09:01:03 -0500
+Date: Fri, 11 Jan 2008 07:01:02 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: mpm@selenic.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] Random number driver: make random_ioctl as an unlocked_ioctl function
+Message-ID: <20080111140101.GL18741@parisc-linux.org>
+References: <1200051592.3844.63.camel@nikanth-laptop.blr.novell.com>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Date of linux-2.4.36 wrong
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1200051592.3844.63.camel@nikanth-laptop.blr.novell.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Heads up: linux-2.4.36 on kernel.org is dated 01/01/07 (ie six months 
-before linux-2.4.35.)  Surely a mistake.
+On Fri, Jan 11, 2008 at 05:09:52PM +0530, Nikanth Karthikesan wrote:
+> The random_ioctl is registered as an ioctl function but it does not
+> require BKL to be held when called. Changing it as an unlocked_ioctl
+> function.
+> 
+> Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+
+Acked-by: Matthew Wilcox <willy@linux.intel.com>
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
