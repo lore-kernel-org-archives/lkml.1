@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761384AbYAKJft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760806AbYAKJim@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761384AbYAKJft (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 04:35:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759872AbYAKJfl
+	id S1760806AbYAKJim (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 04:38:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755761AbYAKJie
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 04:35:41 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:39130 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761392AbYAKJfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 04:35:39 -0500
-Date: Fri, 11 Jan 2008 10:35:32 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Cc: "Bryan Wu" <cooloney.lkml@gmail.com>, "Cai, Cliff" <Cliff.Cai@analog.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] split MMC_CAP_4_BIT_DATA
-Message-ID: <20080111103532.2789b74f@poseidon.drzeus.cx>
-In-Reply-To: <8bd0f97a0801110108l66ab2bcdjb1323573445473f@mail.gmail.com>
-References: <386072610801081832w2befcbafwe9215067f022ed5d@mail.gmail.com>
-	<0F1B54C89D5F954D8535DB252AF412FA014FAD4A@chinexm1.ad.analog.com>
-	<20080109082325.212ec90d@poseidon.drzeus.cx>
-	<386072610801090845r14510fb8tbcca76d605458a96@mail.gmail.com>
-	<20080110095428.3b93fd18@poseidon.drzeus.cx>
-	<386072610801100122n52339488ke2b8724c390be765@mail.gmail.com>
-	<20080110125748.416ad0c5@poseidon.drzeus.cx>
-	<386072610801102217u1739d7d7v497e73a38aa876c2@mail.gmail.com>
-	<20080111094036.4c683791@poseidon.drzeus.cx>
-	<8bd0f97a0801110108l66ab2bcdjb1323573445473f@mail.gmail.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.4; i386-redhat-linux-gnu)
+	Fri, 11 Jan 2008 04:38:34 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:43278 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755012AbYAKJid (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 04:38:33 -0500
+Subject: Re: [PATCH] checkpatch.pl: allow piping
+From: Daniel Walker <dwalker@mvista.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Bernd Petrovitsch <bernd@firmix.at>, apw@shadowen.org,
+       linux-kernel@vger.kernel.org, rdunlap@xenotime.net,
+       jschopp@austin.ibm.com
+In-Reply-To: <47873833.30001@gmail.com>
+References: <20080111041120.085610726@mvista.com>
+	 <47872E35.3070705@gmail.com> <1200043035.29897.62.camel@imap.mvista.com>
+	 <47873505.7040008@gmail.com>  <1200043399.3905.9.camel@gimli.at.home>
+	 <1200043827.29897.70.camel@imap.mvista.com>  <47873833.30001@gmail.com>
+Content-Type: text/plain
+Date: Fri, 11 Jan 2008 01:36:46 -0800
+Message-Id: <1200044206.29897.73.camel@imap.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Jan 2008 04:08:53 -0500
-"Mike Frysinger" <vapier.adi@gmail.com> wrote:
 
-> On Jan 11, 2008 3:40 AM, Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
-> > So it's far more probable that you've misdiagnosed your error than this being the actual problem.
+On Fri, 2008-01-11 at 10:34 +0100, Jiri Slaby wrote:
+> On 01/11/2008 10:30 AM, Daniel Walker wrote:
+> > On Fri, 2008-01-11 at 10:23 +0100, Bernd Petrovitsch wrote:
+> >> On Fre, 2008-01-11 at 10:21 +0100, Jiri Slaby wrote:
+> >>> git show 9914cad54c79d0b89b1f066c0894f00e1344131c
+> >> | ./scripts/checkpatch.pl -
+> >>
+> >> JftSoC:
+> >> git show 9914cad54c79d0b89b1f066c0894f00e1344131c
+> >> | ./scripts/checkpatch.pl /dev/stdin
+> >> (and there a a few others) should also do the trick.
+> > 
+> > Not a particularly attractive command line .. Might still be a good idea
+> > to add this since these two forms alluded me, and are likely to allude
+> > people new to unix all together (who is more likely to be using this
+> > particular tool)..
 > 
-> the guys who design the silicon are telling us it doesnt work.  our
-> tests show it not working.  i'm not sure what else you want here.
-> 
+> If somebody is hacking kernel, I think he should know the - trick used in many 
+> programs, but do not consider this as a nack.
 
-More information. You have not provided any speculation as to why it doesn't work, or what you've done to figure it out. You haven't even described how it fails, just that it does. No information about what cards you've tested and how you've tested them to confirm that your theory on 4-bit data is accurate.
+I'm hacking the kernel, and I didn't know the - trick .. So you have
+your testing case all in one with the patch submitter ..
 
-You have no track record with me, and you're proposing something that goes against all known information. So you have to understand that I'm sceptical about your claims. I won't dismiss them off hand, but I need to be convinced you haven't made a mistake when coming to this conclusion.
+Daniel
 
-> > The fact that 4-bit MMC support has been present for some time and you're only now seeing a problem further supports that.
-> 
-> not in the least actually.  we just started developing the driver.  it
-> has seen no real world use.  we've been testing things internally to
-> make sure the setup is sane.  4-bit MMC is coming up as not working.
-
-Fair enough. But if it's a new driver that hasn't seen real-world testing, then there might be other bugs influencing things.
-
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
