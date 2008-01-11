@@ -1,55 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761916AbYAKRFJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762079AbYAKRFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761916AbYAKRFJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 12:05:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758747AbYAKRE5
+	id S1762079AbYAKRFi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 12:05:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759704AbYAKRFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 12:04:57 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39269 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753594AbYAKREz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 12:04:55 -0500
-Date: Fri, 11 Jan 2008 17:01:22 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Filippos Papadopoulos" <psybases@gmail.com>
-Cc: "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       linux-scsi@vger.kernel.org, "Chuck Ebbert" <cebbert@redhat.com>,
-       "Boaz Harrosh" <bharrosh@panasas.com>,
+	Fri, 11 Jan 2008 12:05:31 -0500
+Received: from phunq.net ([64.81.85.152]:53304 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758747AbYAKRFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 12:05:30 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: "Abhishek Rai" <abhishekrai@google.com>
+Subject: Re: [PATCH] Clustering indirect blocks in Ext3
+Date: Fri, 11 Jan 2008 09:05:17 -0800
+User-Agent: KMail/1.9.5
+Cc: "Theodore Tso" <tytso@mit.edu>,
        "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: INITIO scsi driver fails to work properly
-Message-ID: <20080111170122.33b16e9a@lxorguk.ukuu.org.uk>
-In-Reply-To: <9f00bd9d0801110844g176acdcdle0331783f82ed866@mail.gmail.com>
-References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com>
-	<9f00bd9d0712190048g60d79ma067ba85b5553459@mail.gmail.com>
-	<476C1472.1040103@redhat.com>
-	<1198271036.3130.60.camel@localhost.localdomain>
-	<476C4177.3030902@redhat.com>
-	<1198277391.3130.73.camel@localhost.localdomain>
-	<9f00bd9d0801031618l324e9078i56b0679a35e27f69@mail.gmail.com>
-	<1200028577.5337.8.camel@localhost.localdomain>
-	<9f00bd9d0801110154i3b2f9c1flf076823747950196@mail.gmail.com>
-	<1200066295.3286.19.camel@localhost.localdomain>
-	<9f00bd9d0801110844g176acdcdle0331783f82ed866@mail.gmail.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+       "Andreas Dilger" <adilger@sun.com>, linux-kernel@vger.kernel.org,
+       "Ken Chen" <kenchen@google.com>, "Mike Waychison" <mikew@google.com>,
+       rohitseth@google.com
+References: <d9885f0f0711152102h7a8270bfvd65605d8c00e6754@mail.gmail.com> <d9885f0f0712210615h661ad458x2cf4e4d0e8868772@mail.gmail.com> <d9885f0f0801101317n48e090d6x48f1792c71dc348e@mail.gmail.com>
+In-Reply-To: <d9885f0f0801101317n48e090d6x48f1792c71dc348e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801110905.18464.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yes it works under 2.6.16.13.  See the beginning of this thread, i
-> mention there some things about newer versions.
+On Thursday 10 January 2008 13:17, Abhishek Rai wrote:
+> Benchmark 5: fsck
+> Description: Prepare a newly formated 400GB disk as follows: create
+> 200 files of 0.5GB each, 100 files of 1GB each, 40 files of 2.5GB
+> ech, and 10 files of 10GB each. fsck command line: fsck -f -n
+> 1. vanilla:
+>  Total: 11m25.3s
+>  User: 13.4s
+>  System: 13.2s
+> 2. mc:
+>  Total: 3m11.0s
+>  User: 13.1s
+>  System: 12.9s
+>
+> Note: I'll report results from kernbench and compilebench shortly.
+>
+> Observations:
+> Sequential write performance is much better with metaclustering than
+> with vanilla. To better understand it, I ran the same benchmark with
+> the new code but with the metaclustering option turned off and I got
+> the same performance as vanilla which makes me believe that there is
+> something about metaclustering that helps write performance though I
+> don't have a very good handle of what that thing might be.
 
-It worked (ish.. it has problems and always has had) before the big
-updates, and according to my tester after the big update + two patches
-that escaped somewhere in the process. Unfortunately my tester no longer
-has the card to dig further.
+Your results are very impressive.   In my opinion, the sooner this goes 
+in, the better, since everybody hates waiting for fsck.  The only issue 
+that jumps out at me is, the patch is big and changes a significant 
+amount of Ext3 code outside of the metacluster path, which is not a bad 
+thing except that these changes are going to need to be tested fairly 
+heavily.
 
-The 0x0 bug was fixed a while ago but seems to have sat in -mm for a bit.
-Don't know about further stuff.
+The way to do that is, put a big [CALL FOR TESTING] in your subject line 
+the next time you post, and use an attention-getting subject line 
+like "Make Ext3 fsck way faster".   Diff the patch against the latest 
+stable kernel to make things as easy as possible for the people who are 
+hopefully going to download your patch, try it, and report their 
+results.
+
+The other way is just to ask Andrew to put it in -mm when you feel 
+ready, but your chances are much better if you already have people 
+sending in mails saying how great your patch is.
+
+Another thing you might consider is a port to Ext4.  After all, the 
+world has waited this long for your patch, so it can likely survive 
+waiting a little longer.
+
+You somehow seem to have missed attracting the attention of Jon Corbet, 
+a rare occurrence for a patch of this significance.  With the subject 
+line modified as above, you are more likely to get the attention you 
+deserve.  Good luck!
+
+Regards,
+
+Daniel
