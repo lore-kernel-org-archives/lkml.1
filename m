@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761127AbYAKJlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761303AbYAKJme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761127AbYAKJlT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 04:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758065AbYAKJlJ
+	id S1761303AbYAKJme (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 04:42:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757447AbYAKJm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 04:41:09 -0500
-Received: from fk-out-0910.google.com ([209.85.128.185]:49222 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757941AbYAKJlH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 04:41:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=MLnVBdw6he3VQTUHYCOONEYtoTq+xv13O/NbPgQmueRIl1xIXJceytfXzXvrpr/iKllNcjlOqs0n2wUB8YXLbHJF5gmVcCj6jeRawdamWjNG4saN+foFRLad94bP/fVyNXtCVuZS2wrF4hBO4DeIv34GlCspwLKb++T74sx/gx8=
-Message-ID: <478739AD.3000005@gmail.com>
-Date: Fri, 11 Jan 2008 10:41:01 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Fri, 11 Jan 2008 04:42:27 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:32875 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754504AbYAKJm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 04:42:26 -0500
+Date: Fri, 11 Jan 2008 10:42:05 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: David Dillow <dillowda@ornl.gov>, Guillaume Chazarain <guichaz@yahoo.fr>,
+       linux-kernel@vger.kernel.org, linux-btrace@vger.kernel.org,
+       mingo@redhat.com, tglx@linutronix.de
+Subject: Re: CONFIG_NO_HZ breaks blktrace timestamps
+Message-ID: <20080111094205.GE8143@elte.hu>
+References: <1199918912.8388.13.camel@lap75545.ornl.gov> <1199996752.9159.46.camel@lap75545.ornl.gov> <20080110234438.4826f658@inria.fr> <1200020661.5099.3.camel@obelisk.thedillows.org> <20080111090723.GI6258@kernel.dk> <20080111092334.GA8143@elte.hu> <20080111092513.GO6258@kernel.dk>
 MIME-Version: 1.0
-To: Daniel Walker <dwalker@mvista.com>
-CC: Bernd Petrovitsch <bernd@firmix.at>, apw@shadowen.org,
-       linux-kernel@vger.kernel.org, rdunlap@xenotime.net,
-       jschopp@austin.ibm.com
-Subject: Re: [PATCH] checkpatch.pl: allow piping
-References: <20080111041120.085610726@mvista.com>	 <47872E35.3070705@gmail.com> <1200043035.29897.62.camel@imap.mvista.com>	 <47873505.7040008@gmail.com>  <1200043399.3905.9.camel@gimli.at.home>	 <1200043827.29897.70.camel@imap.mvista.com>  <47873833.30001@gmail.com> <1200044206.29897.73.camel@imap.mvista.com>
-In-Reply-To: <1200044206.29897.73.camel@imap.mvista.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080111092513.GO6258@kernel.dk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/11/2008 10:36 AM, Daniel Walker wrote:
-> On Fri, 2008-01-11 at 10:34 +0100, Jiri Slaby wrote:
->> If somebody is hacking kernel, I think he should know the - trick used in many 
->> programs, but do not consider this as a nack.
+
+* Jens Axboe <jens.axboe@oracle.com> wrote:
+
+> > they are from the scheduler git tree (except the first debug patch), 
+> > but queued up for v2.6.25 at the moment.
 > 
-> I'm hacking the kernel, and I didn't know the - trick .. So you have
-> your testing case all in one with the patch submitter ..
+> So this means that blktrace will be broken with CONFIG_NO_HZ for 
+> 2.6.24? That's clearly a regression.
 
-OK, maybe we should base it in doc for patch submitting then?
+64-bit CONFIG_NO_HZ is a new feature in v2.6.24. If it happens on 32-bit 
+too and it didnt happen in v2.6.23 32-bit then it's a regression.
 
-regards,
--- 
-Jiri Slaby
-Faculty of Informatics, Masaryk University
-Suse Labs
+all this comes from blktrace's original decision of using sched_clock()
+:-) It's not a global timesource and it's not trivial to turn it into a
+halfways usable global timesource.
+
+	Ingo
