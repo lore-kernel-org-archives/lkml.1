@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762149AbYAKTz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762488AbYAKT5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762149AbYAKTz1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 14:55:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761587AbYAKTzV
+	id S1762488AbYAKT5Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 14:57:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761686AbYAKT5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 14:55:21 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:39908 "EHLO
+	Fri, 11 Jan 2008 14:57:19 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:39931 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759844AbYAKTzU (ORCPT
+	with ESMTP id S1761675AbYAKT5S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 14:55:20 -0500
-Date: Fri, 11 Jan 2008 11:54:56 -0800
+	Fri, 11 Jan 2008 14:57:18 -0500
+Date: Fri, 11 Jan 2008 11:56:56 -0800
 From: Arjan van de Ven <arjan@infradead.org>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, gregkh@suse.de,
-       inux-pci@atrey.karlin.mff.cuni.cz,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Martin Mares <mj@ucw.cz>, Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
- opt-in
-Message-ID: <20080111115456.1fd83d88@laptopd505.fenrus.org>
-In-Reply-To: <20080111190229.GB10112@kroah.com>
-References: <20071225032605.29147200@laptopd505.fenrus.org>
-	<20080111190229.GB10112@kroah.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org
+Subject: Re: Make the 32 bit Frame Pointer backtracer fall back to
+ traditional
+Message-ID: <20080111115656.36048134@laptopd505.fenrus.org>
+In-Reply-To: <alpine.LFD.1.00.0801111136520.3148@woody.linux-foundation.org>
+References: <20080109220508.686bbda4@laptopd505.fenrus.org>
+	<alpine.LFD.1.00.0801100816450.3148@woody.linux-foundation.org>
+	<20080110203519.573567b7@laptopd505.fenrus.org>
+	<alpine.LFD.1.00.0801111136520.3148@woody.linux-foundation.org>
 Organization: Intel
 X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -35,71 +33,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Jan 2008 11:02:29 -0800
-Greg KH <greg@kroah.com> wrote:
+On Fri, 11 Jan 2008 11:41:40 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> On Tue, Dec 25, 2007 at 03:26:05AM -0800, Arjan van de Ven wrote:
+> 
+> 
+> On Thu, 10 Jan 2008, Arjan van de Ven wrote:
 > > 
-> > This patch also adds a sysfs property for each device into which
-> > root can write a '1' to enable extended configuration space. The
-> > kernel will print a notice into dmesg when this happens (including
-> > the name of the app) so that if the system crashes as a result of
-> > this action, the user can know what action/tool caused it.
+> > What do you think of this approach instead of your proposal?
 > 
-> Can you send me a follow-on patch that documents this in
-> Documentation/ABI please.
+> Looks ok to me. I get the feeling that we *should* be able to make the
 > 
+> 	#ifdef CONFIG_FRAME_POINTER
+> 	..
+> 
+> thing be a bit cleaner with this (since you have the
+> non-frame-pointer thing inside the loop as well), and use one common
+> routine for it all, with just certain helper functions always
+> retuning a NULL or something for the non-frame-pointer thing.
 
----
- Documentation/ABI/testing/sysfs-pci-extended-config |   39 ++++++++++++++++++++
- 1 file changed, 39 insertions(+)
+ok I'll try that; I'm also trying some other cleanups
+(right now we pick "ebp" and the stack pointer at different levels
+in the call chain, so it gets a tad messy)
 
-Index: linux-2.6.24-rc7/Documentation/ABI/testing/sysfs-pci-extended-config
-===================================================================
---- /dev/null
-+++ linux-2.6.24-rc7/Documentation/ABI/testing/sysfs-pci-extended-config
-@@ -0,0 +1,39 @@
-+What:		/sys/devices/pci<bus>/<device>/extended_config_space
-+Date:		January 11, 2008
-+Contact:	Arjan van de Ven <arjan@linux.intel.com>
-+Description:
-+		This attribute is for use for system-diagnostic software
-+		only.
-+
-+		The kernel may decide to restrict PCI configuration space
-+		access for userspace to the first 64 or 256 bytes by
-+		default, for stability reasons. This attribute, when
-+		present, can be used to request access to the full
-+		4Kb from the kernel.
-+
-+		Request to get access to the full 4Kb can be done by
-+		writing a '1' into this attribute file. All other values
-+		are reserved for future use and should not be used by
-+		software at this point.
-+
-+		The kernel may log the request to the various kernel
-+		logging services. The kernel may decide to ignore the
-+		request if the kernel deems extended configuration space
-+		access not reliable enough for the system or the device.
-+		The kernel may decide to not present this attribute
-+		if the kernel decides extended config space is reliable
-+		and made available by default, or if the kernel decides
-+		that extended configuration space will never be
-+		accessible.
-+
-+		Software needs to gracefully deal with getting the
-+		access not granted. Software also needs to gracefully deal
-+		with this attribute not being present.
-+
-+		Due to the fragility of extended configuratio space,
-+		system diagnostic software should only set this attribute
-+		on explicit user request, or in the case of GUI like tools,
-+		at least with explicit user permission.
-+
-+
-+
+> 
+> (I also wonder if we should limit the number of entries we print out. 
+> Sometimes the stack frame ends up being so deep that we lose the 
+> *important* stuff. I think it might be good idea to have some rule
+> like "the first 5 entries go to the screen, the rest will be
+> KERN_DEBUG and only go to the logs by default" - so a "dmesg" would
+> show it all, but if the machine is hung, the screen won't have been
+> scrolled away from all the other things by a long backtrace!)
+
+that's... a ton more tricky, and realistically needs the patch
+to make show_stack take a level argument in the first place.
+(I have that done, it's just touching like 125+ files, so
+I shelved it as "probably not important enough");
 
 
 -- 
 If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, visit http://www.lesswatts.org
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
