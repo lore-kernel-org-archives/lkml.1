@@ -1,83 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760990AbYAKOS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760311AbYAKOVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760990AbYAKOS3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 09:18:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbYAKOSW
+	id S1760311AbYAKOVS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 09:21:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756150AbYAKOVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 09:18:22 -0500
-Received: from ftp.linux-mips.org ([194.74.144.162]:48052 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752043AbYAKOSU (ORCPT
+	Fri, 11 Jan 2008 09:21:07 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:33058 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754177AbYAKOVG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 09:18:20 -0500
-Date: Fri, 11 Jan 2008 14:17:54 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Andreas Schwab <schwab@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org
-Subject: Re: (Try #3) [Patch 2/8] MIPS: Remove 'TOPDIR' from Makefiles
-Message-ID: <20080111141754.GC19900@linux-mips.org>
-References: <20080101071311.GA2496@hacking> <20080101072238.GC2496@hacking> <20080101101540.GB28913@uranus.ravnborg.org> <jefxxhlkxb.fsf@sykes.suse.de> <20080101175754.GC31575@uranus.ravnborg.org> <20080102062135.GE2493@hacking>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080102062135.GE2493@hacking>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 11 Jan 2008 09:21:06 -0500
+Subject: Re: [RFC][PATCH] per-task I/O throttling
+From: Peter Zijlstra <peterz@infradead.org>
+To: righiandr@users.sourceforge.net
+Cc: Bill Davidsen <davidsen@tmr.com>, LKML <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+In-Reply-To: <478744D7.2070802@users.sourceforge.net>
+References: <47869FFE.1050000@users.sourceforge.net>
+	 <4786CB57.9060000@tmr.com>  <478744D7.2070802@users.sourceforge.net>
+Content-Type: text/plain
+Date: Fri, 11 Jan 2008 15:20:59 +0100
+Message-Id: <1200061259.29498.64.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 02, 2008 at 02:21:36PM +0800, WANG Cong wrote:
 
-> >> Shouldn't that use $(LINUXINCLUDE), or $(KBUILD_CPPFLAGS)?
-> >It would be better to use $(LINUXINCLUDE) as we then pull in all config
-> >symbols too and do not have to hardcode kbuild internal names (include2).
+On Fri, 2008-01-11 at 11:28 +0100, Andrea Righi wrote:
+> Bill Davidsen wrote:
+> > Andrea Righi wrote:
+> >> Allow to limit the bandwidth of I/O-intensive processes, like backup
+> >> tools running in background, large files copy, checksums on huge files,
+> >> etc.
+> >>
+> >> This kind of processes can noticeably impact the system responsiveness
+> >> for some time and playing with tasks' priority is not always an
+> >> acceptable solution.
+> >>
+> >> This patch allows to specify a maximum I/O rate in sectors per second
+> >> for each single process via /proc/<PID>/io_throttle (default is zero,
+> >> that specify no limit).
+> >>
+> > It would seem to me that this would be vastly more useful in the real 
+> > world if there were a settable default, so that administrators could 
+> > avoid having to find and tune individual user processes. And it would 
+> > seem far less common that the admin would want to set the limit *up* for 
+> > a given process, and it's likely to be one known to the admin, at least 
+> > by name.
+> > 
+> > Of course if you want to do the effort to make it fully tunable, it 
+> > could have a default by UID or GID. Usful on machines shared by students 
+> > or managers.
 > 
-> OK. Refine this patch.
+> At the moment I'm simply using it to backup my PC by this wrapper:
+> 
+> $ cat iothrottle
+> #!/bin/sh
+> [ $# -lt 2 ] && echo "usage: $0 RATE CMD" && exit 1
+> rate=$1
+> shift
+> $* &
+> trap "kill -9 $!" SIGINT SIGTERM
+> [ -e /proc/$!/io_throttle ] && echo $rate >/proc/$!/io_throttle
+> wait %1
+> $ ./iothrottle 100 tar ...
+> 
+> But I totally agree with you that setting the limits per-UID/per-GID,
+> instead of per-task, would be actually more useful.
+> 
+> Maybe a nice approach would be to define the UID/GID upper bounds via
+> configfs (for example) and allow the users to tune the max I/O rate of
+> their single tasks according to the defined ranges. In this way it could
+> be even possible to define I/O shaping policies, i.e. give a bandwidth
+> of 10MB/s to user A, 20MB/s to user B, 30MB/s to group X, etc.
+> 
+> Anyway, I'm wondering if it's possible (and how) to already do this with
+> process containers...
 
-LDSCRIPT also needed fixing to get builds in a separate object directory
-working again.
+I think there is an IO controller somewhere based on CFQ.
 
-I've applied below fix.
+I don't like this patch, because it throttles requests/s, and that
+doesn't say much. If a task would generate a very seeky load it could
+still tie up the disk even with a relatively low setting.
 
-  Ralf
 
->From 8babf06e1265214116fb8ffc634c04df85597c52 Mon Sep 17 00:00:00 2001
-From: WANG Cong <xiyou.wangcong@gmail.com>
-Date: Wed, 2 Jan 2008 14:21:36 +0800
-Subject: [PATCH] [MIPS] Lasat: Fix built in separate object directory.
-
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-
-[Ralf: The LDSCRIPT script needed fixing, too]
-
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
-
-diff --git a/arch/mips/lasat/image/Makefile b/arch/mips/lasat/image/Makefile
-index 5332449..7ccd40d 100644
---- a/arch/mips/lasat/image/Makefile
-+++ b/arch/mips/lasat/image/Makefile
-@@ -12,11 +12,11 @@ endif
- 
- MKLASATIMG = mklasatimg
- MKLASATIMG_ARCH = mq2,mqpro,sp100,sp200
--KERNEL_IMAGE = $(TOPDIR)/vmlinux
-+KERNEL_IMAGE = vmlinux
- KERNEL_START = $(shell $(NM) $(KERNEL_IMAGE) | grep " _text" | cut -f1 -d\ )
- KERNEL_ENTRY = $(shell $(NM) $(KERNEL_IMAGE) | grep kernel_entry | cut -f1 -d\ )
- 
--LDSCRIPT= -L$(obj) -Tromscript.normal
-+LDSCRIPT= -L$(srctree)/$(obj) -Tromscript.normal
- 
- HEAD_DEFINES := -D_kernel_start=0x$(KERNEL_START) \
- 		-D_kernel_entry=0x$(KERNEL_ENTRY) \
-@@ -24,7 +24,7 @@ HEAD_DEFINES := -D_kernel_start=0x$(KERNEL_START) \
- 		-D TIMESTAMP=$(shell date +%s)
- 
- $(obj)/head.o: $(obj)/head.S $(KERNEL_IMAGE)
--	$(CC) -fno-pic $(HEAD_DEFINES) -I$(TOPDIR)/include -c -o $@ $<
-+	$(CC) -fno-pic $(HEAD_DEFINES) $(LINUXINCLUDE) -c -o $@ $<
- 
- OBJECTS = head.o kImage.o
- 
