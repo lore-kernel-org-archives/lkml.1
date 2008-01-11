@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759837AbYAKIap@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759024AbYAKIeP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759837AbYAKIap (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 03:30:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758249AbYAKIaf
+	id S1759024AbYAKIeP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 03:34:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbYAKIeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 03:30:35 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:37392 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758251AbYAKIad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 03:30:33 -0500
-Date: Fri, 11 Jan 2008 09:30:27 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Bill Gribble <grib@billgribble.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc2 libertas_sdio fails to initialize Marvell SD8686
-Message-ID: <20080111093027.6bf61af6@poseidon.drzeus.cx>
-In-Reply-To: <87y7ayvkq1.fsf@billgribble.com>
-References: <87bq9x264q.fsf@serrano.home.billgribble.com>
-	<20071114190247.4f42aa05@poseidon.drzeus.cx>
-	<87y7ayvkq1.fsf@billgribble.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.4; i386-redhat-linux-gnu)
+	Fri, 11 Jan 2008 03:34:00 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2461 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754781AbYAKId7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 03:33:59 -0500
+Date: Fri, 11 Jan 2008 08:33:45 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, gorcunov@gmail.com
+Subject: Re: [JANITOR PROPOSAL] Switch ioctl functions to ->unlocked_ioctl
+Message-ID: <20080111083345.GA3863@ucw.cz>
+References: <20080108164015.GC31504@one.firstfloor.org> <4d8e3fd30801081158j3e7292d0i939776342015b12d@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4d8e3fd30801081158j3e7292d0i939776342015b12d@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 09 Jan 2008 14:53:58 -0500
-Bill Gribble <grib@billgribble.com> wrote:
 
+> Hi Andi,
+> I grepped and tried to do what you suggested.
+> The first file that git grep reported was:
+> arch/arm/common/rtctime.c:static const struct file_operations rtc_fops = {
 > 
-> Any other sage advice?  I feel like the device is really close to
-> working, but I just can't get it there!  
->
+> So I cooked up the following patch (probably mangled, just to give you
+> a rough idea of what I did):
+> diff --git a/arch/arm/common/rtctime.c b/arch/arm/common/rtctime.c
+> index bf1075e..19dedb5 100644
+> --- a/arch/arm/common/rtctime.c
+> +++ b/arch/arm/common/rtctime.c
+> @@ -189,13 +189,16 @@ static int rtc_ioctl(struct inode *inode, struct
+> file *file, unsigned int cmd,
+>  		if (ret)
+>  			break;
+>  		ret = copy_to_user(uarg, &alrm.time, sizeof(tm));
+> -		if (ret)
+> +		if (ret) {
+> +			unlock_kernel();
+>  			ret = -EFAULT;
+> +		}
+>  		break;
 
-Since you're having problems with the very first part, I'm not sure I'd agree with your assessment. ;)
+Just put unlock kernel near return ret;...
 
-The fact is that the libertas chips are extremely moody, and Marvell has the weird attitude that there is one driver and one firmware per board/implementation, not per chip model. So friction is bound to appear when we try to have a generic driver that supports all of these different revisions.
-
-So that means there's two options for you right now; experiment wildly and hope you get lucky and find how to avoid whatever bug your particular chip has, or try to get information from Marvell or Raon about how to interface with the chip.
-
-Rgds
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
