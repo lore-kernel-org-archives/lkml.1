@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762514AbYAKVnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762215AbYAKVqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762514AbYAKVnR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 16:43:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761035AbYAKVnI
+	id S1762215AbYAKVqG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 16:46:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761289AbYAKVp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 16:43:08 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:54404 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760945AbYAKVnF (ORCPT
+	Fri, 11 Jan 2008 16:45:56 -0500
+Received: from server1.mediglia.altarisoluzione.com ([212.97.63.99]:45699 "EHLO
+	server1.mediglia.altarisoluzione.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761221AbYAKVpz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 16:43:05 -0500
-Date: Fri, 11 Jan 2008 19:42:41 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: [GIT PATCHES] V4L/DVB fixes
-Message-ID: <20080111194241.16de1e88@gaivota>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.1; x86_64-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 11 Jan 2008 16:45:55 -0500
+X-Greylist: delayed 2682 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Jan 2008 16:45:54 EST
+From: Bruno Redondi <bruno.redondi@altarisoluzione.com>
+Organization: altarisoluzione.com di Redondi Bruno
+To: greg@kroah.com
+Subject: [PATCH 001/001] USB SERIAL SIERRA: add support for Onda H600/Zte MF330 datacard to USB Driver for Sierra Wireless
+Date: Fri, 11 Jan 2008 22:00:59 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, bruno.redondi@altarisoluzione.com
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200801112200.59577.bruno.redondi@altarisoluzione.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
-
-Please pull from:
-        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git
-master
-
-For two driver fixes:
-
-   - ivtv: There are reports of regressions, due to udelay=5 on other 
-     ivtv boards. Better to be convervative than to break devices. so, 
-     stick to udelay=10 for all boards;
-
-   - av7110: fix section mismatch.
-
-Cheers,
-Mauro.
-
+Added support for Onda H600/Zte MF330 GPRS/UMTS/HSDPA datacard
+Signed-off-by: Bruno Redondi <bruno.redondi@altarisoluzione.com>
 ---
+Linux kernel is missing support for the Onda H600/Zte MF330 GPRS/UMTS/HSDPA datacard, but this card can be used adding the USB_DEVICE(0x05C6, 0x6613) to the Sierra Wireless driver.
 
- drivers/media/dvb/ttpci/av7110.c       |   10 +++++-----
- drivers/media/video/ivtv/ivtv-driver.c |    4 ----
- 2 files changed, 5 insertions(+), 9 deletions(-)
-
-Hans Verkuil (1):
-      V4L/DVB (6999): ivtv: stick to udelay=10 after all
-
-Randy Dunlap (1):
-      V4L/DVB (7001): av7110: fix section mismatch
-
----------------------------------------------------
-V4L/DVB development is hosted at http://linuxtv.org
+diff -up linux-2.6.23/drivers/usb/serial/sierra.c.orig linux-2.6.23/drivers/usb/serial/sierra.c
+--- linux-2.6.23-tuxonice-r6/drivers/usb/serial/sierra.c.orig	2008-01-01 19:23:27.399785842 +0100
++++ linux-2.6.23-tuxonice-r6/drivers/usb/serial/sierra.c	2008-01-01 19:25:53.497545598 +0100
+@@ -118,6 +118,7 @@ static struct usb_device_id id_table [] 
+ 
+ 	{ USB_DEVICE(0x1199, 0x0112), .driver_info = DEVICE_1_PORT }, /* Sierra Wireless AirCard 580 */
+ 	{ USB_DEVICE(0x0F3D, 0x0112), .driver_info = DEVICE_1_PORT }, /* Airprime/Sierra PC 5220 */
++	{ USB_DEVICE(0x05C6, 0x6613), .driver_info = DEVICE_1_PORT }, /* Onda H600/ZTE MF330 */
+ 
+ 	{ USB_DEVICE(0x1199, 0x0FFF), .driver_info = DEVICE_INSTALLER},
+ 	{ }
+@@ -127,6 +128,7 @@ MODULE_DEVICE_TABLE(usb, id_table);
+ static struct usb_device_id id_table_1port [] = {
+ 	{ USB_DEVICE(0x1199, 0x0112) }, /* Sierra Wireless AirCard 580 */
+ 	{ USB_DEVICE(0x0F3D, 0x0112) }, /* AirPrime/Sierra PC 5220 */
++	{ USB_DEVICE(0x05C6, 0x6613) }, /* Onda H600/ZTE MF330 */
+ 	{ }
+ };
+ 
