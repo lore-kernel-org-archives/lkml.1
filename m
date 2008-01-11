@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761481AbYAKPxJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761591AbYAKPzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761481AbYAKPxJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 10:53:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759342AbYAKPw6
+	id S1761591AbYAKPzU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 10:55:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755807AbYAKPzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 10:52:58 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:1885 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759137AbYAKPw5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 10:52:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HYYibhdXJsk3OrbSi0/xaPlwuPQns6WFMxD6B/GQfRGv8FLR8HbHD5O4Go+Q2qipO6pBilEnpJrwAmNyA2N0swBpo+cNi7qkIgZ7xAlq8ofSi/oUdJC8SHDfxtqhroHdVKZs26sVBBNGiYVbyN1OFgjiZfB7QBpj0dDEQ/YDNAE=
-Message-ID: <9e4733910801110752k57f1fd7crd5f143900fc64f0b@mail.gmail.com>
-Date: Fri, 11 Jan 2008 10:52:56 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: [i2c] [PATCH 0/5] Version 17, series to add device tree naming to i2c
-Cc: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080111095638.775670ed@hyperion.delvare>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 11 Jan 2008 10:55:10 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:44400 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755240AbYAKPzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 10:55:08 -0500
+Date: Fri, 11 Jan 2008 10:55:00 -0500
+From: Rik van Riel <riel@redhat.com>
+To: Anton Salikhmetov <salikhmetov@gmail.com>
+Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       Valdis.Kletnieks@vt.edu, ksm@42.dk, staubach@redhat.com,
+       jesper.juhl@gmail.com
+Subject: Re: [PATCH 1/2][RFC][BUG] msync: massive code cleanup of
+ sys_msync()
+Message-ID: <20080111105500.4a35e63f@bree.surriel.com>
+In-Reply-To: <1200011922.19293.92.camel@codedot>
+References: <1200006638.19293.42.camel@codedot>
+	<1200011922.19293.92.camel@codedot>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071220044136.20091.70984.stgit@terra.home>
-	 <20080111095638.775670ed@hyperion.delvare>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/11/08, Jean Delvare <khali@linux-fr.org> wrote:
-> Hi Jon,
->
-> On Wed, 19 Dec 2007 23:41:36 -0500, Jon Smirl wrote:
-> > Since copying i2c-mpc.c to maintain support for the ppc architecture seems to be an issue; instead rework i2c-mpc.c to use CONFIG_PPC_MERGE #ifdefs to support both the ppc and powerpc architecture. When ppc is deleted in six months these #ifdefs will need to be removed.
-> >
-> > Another rework of the i2c for powerpc device tree patch. This version implements standard alias naming only on the powerpc platform and only for the device tree names. The old naming mechanism of i2c_client.name,driver_name is left in place and not changed for non-powerpc platforms. This patch is fully capable of dynamically loading the i2c modules. You can modprobe in the i2c-mpc driver and the i2c modules described in the device tree will be automatically loaded. Modules also work if compiled in.
-> >
-> > The follow on patch to module-init-tools is also needed since the i2c subsystem has never implemented dynamic loading.
-> >
-> > The following series implements standard linux module aliasing for i2c modules on arch=powerpc. It then converts the mpc i2c driver from being a platform driver to an open firmware one. I2C device names are picked up from the device tree. Module aliasing is used to translate from device tree names into to linux kernel names. Several i2c drivers are updated to use the new aliasing.
->
-> Now that I have read all the previous versions of this patch series
-> and, more importantly, all objections that were raised on the way, I
-> can start reviewing the latest iteration of your patches. I'll also do
-> some testing, although I have no powerpc stuff here, but at least I
-> want to make sure that there are no regressions introduced by your
-> patches on x86.
+On Fri, 11 Jan 2008 03:38:42 +0300
+Anton Salikhmetov <salikhmetov@gmail.com> wrote:
 
+> @@ -33,71 +34,60 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
+>  	unsigned long end;
+>  	struct mm_struct *mm = current->mm;
+>  	struct vm_area_struct *vma;
+> -	int unmapped_error = 0;
+> -	int error = -EINVAL;
+> +	int error = 0, unmapped_error = 0;
+> +
+> +	if ((flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC)) ||
+> +			(start & ~PAGE_MASK) ||
+> +			((flags & MS_ASYNC) && (flags & MS_SYNC)))
+> +		return -EINVAL;
+>  
+> -	if (flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC))
+> -		goto out;
+> -	if (start & ~PAGE_MASK)
+> -		goto out;
+> -	if ((flags & MS_ASYNC) && (flags & MS_SYNC))
+> -		goto out;
+> -	error = -ENOMEM;
 
-Various people were worried about x86. Around version 15 I altered the
-patches so that they only impacted PowerPC. If they impact x86 in
-current form that is a bug.
+Personally I prefer having these error checks separated out,
+but that's just my opinion :)
 
-When x86 is ready for it I do think dynamic module loading should be
-implemented there also.
->
-> --
-> Jean Delvare
->
-
+I like the rest of your cleanup patch.
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+All rights reversed.
