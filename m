@@ -1,63 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932069AbYAKRdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761775AbYAKRkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932069AbYAKRdn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 12:33:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761154AbYAKRdc
+	id S1761775AbYAKRkV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 12:40:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761086AbYAKRkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 12:33:32 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:43515 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760731AbYAKRdb (ORCPT
+	Fri, 11 Jan 2008 12:40:09 -0500
+Received: from hpsmtp-eml14.KPNXCHANGE.COM ([213.75.38.114]:51893 "EHLO
+	hpsmtp-eml14.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757571AbYAKRkI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 12:33:31 -0500
-Subject: Re: INITIO scsi driver fails to work properly
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Filippos Papadopoulos <psybases@gmail.com>, linux-scsi@vger.kernel.org,
-       Chuck Ebbert <cebbert@redhat.com>, Boaz Harrosh <bharrosh@panasas.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080111170122.33b16e9a@lxorguk.ukuu.org.uk>
-References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com>
-	 <9f00bd9d0712190048g60d79ma067ba85b5553459@mail.gmail.com>
-	 <476C1472.1040103@redhat.com>
-	 <1198271036.3130.60.camel@localhost.localdomain>
-	 <476C4177.3030902@redhat.com>
-	 <1198277391.3130.73.camel@localhost.localdomain>
-	 <9f00bd9d0801031618l324e9078i56b0679a35e27f69@mail.gmail.com>
-	 <1200028577.5337.8.camel@localhost.localdomain>
-	 <9f00bd9d0801110154i3b2f9c1flf076823747950196@mail.gmail.com>
-	 <1200066295.3286.19.camel@localhost.localdomain>
-	 <9f00bd9d0801110844g176acdcdle0331783f82ed866@mail.gmail.com>
-	 <20080111170122.33b16e9a@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Date: Fri, 11 Jan 2008 11:33:25 -0600
-Message-Id: <1200072805.3286.34.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Jan 2008 12:40:08 -0500
+To: James Kosin <jkosin@intcomgrp.com>
+Subject: Re: > 100% CPU usage
+Cc: linux-kernel@vger.kernel.org
+In-reply-To: <47878566.6050508@intcomgrp.com>
+References: <47878566.6050508@intcomgrp.com>
+Message-Id: <E1JDNrP-0002Py-FH@faramir.fjphome.nl>
+From: Frans Pop <elendil@planet.nl>
+Date: Fri, 11 Jan 2008 18:40:03 +0100
+X-OriginalArrivalTime: 11 Jan 2008 17:40:05.0409 (UTC) FILETIME=[005F7110:01C85479]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+James Kosin wrote:
+> Anyone remember the patch / patches done for the 2.6 series that related
+> to top reporting > 100% CPU usage?
 
-On Fri, 2008-01-11 at 17:01 +0000, Alan Cox wrote:
-> > Yes it works under 2.6.16.13.  See the beginning of this thread, i
-> > mention there some things about newer versions.
-> 
-> It worked (ish.. it has problems and always has had) before the big
-> updates, and according to my tester after the big update + two patches
-> that escaped somewhere in the process. Unfortunately my tester no longer
-> has the card to dig further.
-> 
-> The 0x0 bug was fixed a while ago but seems to have sat in -mm for a bit.
-> Don't know about further stuff.
+Do you mean these perhaps?
+- 73a2bcb0edb9ffb0b007b3546b430e2c6e415eee
+- 9301899be75b464ef097f0b5af7af6d9bd8f68a7
 
-The statement that OpenSuse 10.3, based on 2.6.22.5, also fails
-indicates there may be something else that predates your reorganisation
-at the root of this (depending on whether the vendor kernel contains a
-back port or not).  That's why I want to see what happens on this system
-with a vanilla 2.6.22
-
-James
-
-
+Cheers,
+FJP
