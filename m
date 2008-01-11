@@ -1,85 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761372AbYAKVBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761772AbYAKVDE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761372AbYAKVBm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 16:01:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759109AbYAKVBd
+	id S1761772AbYAKVDE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 16:03:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759462AbYAKVCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 16:01:33 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:54115 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753489AbYAKVBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 16:01:33 -0500
-Date: Fri, 11 Jan 2008 23:00:44 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: linux-kernel@vger.kernel.org, len.brown@intel.com, Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH 1/4] introduce __cpuinitconst
-Message-ID: <20080111210044.GA17276@does.not.exist>
-References: <47873D40.76E4.0078.0@novell.com>
+	Fri, 11 Jan 2008 16:02:55 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56345 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759109AbYAKVCy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 16:02:54 -0500
+Date: Fri, 11 Jan 2008 12:55:56 -0800
+From: Greg KH <greg@kroah.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, gregkh@suse.de,
+       inux-pci@atrey.karlin.mff.cuni.cz,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>, Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+	opt-in
+Message-ID: <20080111205556.GA22593@kroah.com>
+References: <20071225032605.29147200@laptopd505.fenrus.org> <20080111190229.GB10112@kroah.com> <20080111115456.1fd83d88@laptopd505.fenrus.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47873D40.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.5.17 (2007-12-11)
+In-Reply-To: <20080111115456.1fd83d88@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 11, 2008 at 08:56:16AM +0000, Jan Beulich wrote:
-> The patch doesn't change all instances where 'const' could have been
-> added as a result of the base structure changes, only where the change
-> has a real effect (the module loader doesn't enforce read-only section
-> attributes at present, so only built-in files make a real difference).
+On Fri, Jan 11, 2008 at 11:54:56AM -0800, Arjan van de Ven wrote:
+> On Fri, 11 Jan 2008 11:02:29 -0800
+> Greg KH <greg@kroah.com> wrote:
 > 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: Andi Kleen <ak@suse.de>
+> > On Tue, Dec 25, 2007 at 03:26:05AM -0800, Arjan van de Ven wrote:
+> > > 
+> > > This patch also adds a sysfs property for each device into which
+> > > root can write a '1' to enable extended configuration space. The
+> > > kernel will print a notice into dmesg when this happens (including
+> > > the name of the app) so that if the system crashes as a result of
+> > > this action, the user can know what action/tool caused it.
+> > 
+> > Can you send me a follow-on patch that documents this in
+> > Documentation/ABI please.
+> > 
 > 
 > ---
->  drivers/acpi/processor_idle.c |    2 +-
->  include/linux/init.h          |    2 ++
->  2 files changed, 3 insertions(+), 1 deletion(-)
-> 
-> --- 2.6.24-rc7-initconst.orig/drivers/acpi/processor_idle.c
-> +++ 2.6.24-rc7-initconst/drivers/acpi/processor_idle.c
-> @@ -118,7 +118,7 @@ static int set_max_cstate(const struct d
->  
->  /* Actually this shouldn't be __cpuinitdata, would be better to fix the
->     callers to only run once -AK */
-> -static struct dmi_system_id __cpuinitdata processor_power_dmi_table[] = {
-> +static struct dmi_system_id __cpuinitconst processor_power_dmi_table[] = {
->  	{ set_max_cstate, "IBM ThinkPad R40e", {
->  	  DMI_MATCH(DMI_BIOS_VENDOR,"IBM"),
->  	  DMI_MATCH(DMI_BIOS_VERSION,"1SET70WW")}, (void *)1},
-> --- 2.6.24-rc7-initconst.orig/include/linux/init.h
-> +++ 2.6.24-rc7-initconst/include/linux/init.h
-> @@ -269,11 +269,13 @@ void __init parse_early_param(void);
->  #ifdef CONFIG_HOTPLUG_CPU
->  #define __cpuinit
->  #define __cpuinitdata
-> +#define __cpuinitconst const
->  #define __cpuexit
->  #define __cpuexitdata
->  #else
->  #define __cpuinit	__init
->  #define __cpuinitdata __initdata
-> +#define __cpuinitconst __initdata
->  #define __cpuexit __exit
->  #define __cpuexitdata	__exitdata
->  #endif
+>  Documentation/ABI/testing/sysfs-pci-extended-config |   39 ++++++++++++++++++++
+>  1 file changed, 39 insertions(+)
 
-__cpuinitconstdata ?
+Thanks, I've merged this with the original one.
 
-I know it's a bit long, but it would be more logically when looking at 
-the other ones.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+greg k-h
