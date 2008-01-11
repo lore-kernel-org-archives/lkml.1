@@ -1,35 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761775AbYAKRkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762047AbYAKRlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761775AbYAKRkV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 12:40:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761086AbYAKRkJ
+	id S1762047AbYAKRlw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 12:41:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761423AbYAKRlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 12:40:09 -0500
-Received: from hpsmtp-eml14.KPNXCHANGE.COM ([213.75.38.114]:51893 "EHLO
-	hpsmtp-eml14.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757571AbYAKRkI (ORCPT
+	Fri, 11 Jan 2008 12:41:45 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:51153 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761086AbYAKRlo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 12:40:08 -0500
-To: James Kosin <jkosin@intcomgrp.com>
-Subject: Re: > 100% CPU usage
-Cc: linux-kernel@vger.kernel.org
-In-reply-To: <47878566.6050508@intcomgrp.com>
-References: <47878566.6050508@intcomgrp.com>
-Message-Id: <E1JDNrP-0002Py-FH@faramir.fjphome.nl>
-From: Frans Pop <elendil@planet.nl>
-Date: Fri, 11 Jan 2008 18:40:03 +0100
-X-OriginalArrivalTime: 11 Jan 2008 17:40:05.0409 (UTC) FILETIME=[005F7110:01C85479]
+	Fri, 11 Jan 2008 12:41:44 -0500
+Subject: Re: [PATCH] checkpatch.pl: show how to read from stdin
+From: Daniel Walker <dwalker@mvista.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Andy Whitcroft <apw@shadowen.org>, Bernd Petrovitsch <bernd@firmix.at>,
+       linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, Jiri Slaby <jirislaby@gmail.com>
+In-Reply-To: <4787A787.2000503@s5r6.in-berlin.de>
+References: <20080111041120.085610726@mvista.com>
+	 <47872E35.3070705@gmail.com> <1200043035.29897.62.camel@imap.mvista.com>
+	 <47873505.7040008@gmail.com>  <1200043399.3905.9.camel@gimli.at.home>
+	 <1200043827.29897.70.camel@imap.mvista.com>  <47873833.30001@gmail.com>
+	 <1200044206.29897.73.camel@imap.mvista.com>
+	 <4787502B.2020606@s5r6.in-berlin.de> <47875809.7060301@gmail.com>
+	 <tkrat.b5ac0cacd128569b@s5r6.in-berlin.de>
+	 <1200071343.29897.86.camel@imap.mvista.com>
+	 <4787A787.2000503@s5r6.in-berlin.de>
+Content-Type: text/plain
+Date: Fri, 11 Jan 2008 09:39:51 -0800
+Message-Id: <1200073192.29897.95.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Kosin wrote:
-> Anyone remember the patch / patches done for the 2.6 series that related
-> to top reporting > 100% CPU usage?
 
-Do you mean these perhaps?
-- 73a2bcb0edb9ffb0b007b3546b430e2c6e415eee
-- 9301899be75b464ef097f0b5af7af6d9bd8f68a7
+On Fri, 2008-01-11 at 18:29 +0100, Stefan Richter wrote:
+> Daniel Walker wrote:
+> > On Fri, 2008-01-11 at 18:06 +0100, Stefan Richter wrote:
+> >> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> >> +	print "When patchfile is -, read standard input.\n";
+> 
+> > Naww .. Why add documentation when you can just make it do the right
+> > thing ..
+> 
+> Why add code for a feature which already exists?
 
-Cheers,
-FJP
+To make it simpler to use .. A good percentage (if not all) command line
+unix data processing utils accept piped data directly, without the need
+for the "-" .. That's the expect usage .. checkpatch.pl doesn't need to
+deviate from the norm, there is no size constraint, there is no line
+limit .. So we're not duplicating functionality, we're making the tool
+conform ..
+
+Daniel
+
