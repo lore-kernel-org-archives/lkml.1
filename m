@@ -1,125 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763224AbYAKVwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762858AbYAKVyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763224AbYAKVwn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 16:52:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761709AbYAKVwe
+	id S1762858AbYAKVyU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 16:54:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761372AbYAKVyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 16:52:34 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55675 "EHLO mx1.redhat.com"
+	Fri, 11 Jan 2008 16:54:05 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:55768 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760884AbYAKVwd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 16:52:33 -0500
-Date: Fri, 11 Jan 2008 16:51:27 -0500 (EST)
-Message-Id: <20080111.165127.70224812.k-ueda@ct.jp.nec.com>
-To: jens.axboe@oracle.com
-Cc: linux-kernel@vger.kernel.org, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
-Subject: [PATCH 3/3] block: remove end_{queued|dequeued}_request()
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
- =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1760884AbYAKVyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 16:54:04 -0500
+Message-ID: <4787E574.6020304@redhat.com>
+Date: Fri, 11 Jan 2008 16:53:56 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: LIBATA SCSI command validation changed in 2.6.24
+References: <4787DFE2.2000504@redhat.com> <4787E114.2030301@garzik.org>
+In-Reply-To: <4787E114.2030301@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes end_queued_request() and end_dequeued_request(),
-which are no longer used.
+On 01/11/2008 04:35 PM, Jeff Garzik wrote:
+> Chuck Ebbert wrote:
+>> commit 607126c2a21cd6e9bb807fdd415c1a992f7b9009 changed command
+>> validation
+>> to allow short commands in 16-byte CDBs, but it also made checking more
+>> strict. Before the change, a 10-byte SG_IO command could have its
+>> length set
+>> to 9 and still work. Now it fails. Not sure if this is a bug, but it has
+>> caused at least one application to fail that used to work (qpxtool.)
+>>
+>> [https://bugzilla.redhat.com/show_bug.cgi?id=428281]
+> 
+> Can you get us an example CDB?  Its unclear if the hexdump in the bug
+> report is a returned mode page or the CDB or what...?
+> 
 
-As a results, users of __end_request() became only end_request().
-So the actual code in __end_request() is moved to end_request()
-and __end_request() is removed.
+Not easily, but the maintainer of that program forced the length of
+the MODE_SENSE(10) command to 10 and that command started working.
 
-Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
----
- block/ll_rw_blk.c |   57 ++++++------------------------------------------------
- 1 files changed, 7 insertions(+), 50 deletions(-)
+By looking at the source I could tell that it was setting the command
+length to (1 + the index of the last byte written to the CDB) and
+only wrote up to offset 8 when building the command, so it must have
+been sending the command with a length of 9. (It zeroed the whole CDB
+first and only wrote what it needed to.)
 
-Index: 2.6.24-rc7/block/ll_rw_blk.c
-===================================================================
---- 2.6.24-rc7.orig/block/ll_rw_blk.c
-+++ 2.6.24-rc7/block/ll_rw_blk.c
-@@ -3650,17 +3650,6 @@ static void end_that_request_last(struct
- 	}
- }
- 
--static inline void __end_request(struct request *rq, int uptodate,
--				 unsigned int nr_bytes)
--{
--	int error = 0;
--
--	if (uptodate <= 0)
--		error = uptodate ? uptodate : -EIO;
--
--	__blk_end_request(rq, error, nr_bytes);
--}
--
- /**
-  * blk_rq_bytes - Returns bytes left to complete in the entire request
-  **/
-@@ -3689,41 +3678,6 @@ unsigned int blk_rq_cur_bytes(struct req
- EXPORT_SYMBOL_GPL(blk_rq_cur_bytes);
- 
- /**
-- * end_queued_request - end all I/O on a queued request
-- * @rq:		the request being processed
-- * @uptodate:	error value or 0/1 uptodate flag
-- *
-- * Description:
-- *     Ends all I/O on a request, and removes it from the block layer queues.
-- *     Not suitable for normal IO completion, unless the driver still has
-- *     the request attached to the block layer.
-- *
-- **/
--void end_queued_request(struct request *rq, int uptodate)
--{
--	__end_request(rq, uptodate, blk_rq_bytes(rq));
--}
--EXPORT_SYMBOL(end_queued_request);
--
--/**
-- * end_dequeued_request - end all I/O on a dequeued request
-- * @rq:		the request being processed
-- * @uptodate:	error value or 0/1 uptodate flag
-- *
-- * Description:
-- *     Ends all I/O on a request. The request must already have been
-- *     dequeued using blkdev_dequeue_request(), as is normally the case
-- *     for most drivers.
-- *
-- **/
--void end_dequeued_request(struct request *rq, int uptodate)
--{
--	__end_request(rq, uptodate, blk_rq_bytes(rq));
--}
--EXPORT_SYMBOL(end_dequeued_request);
--
--
--/**
-  * end_request - end I/O on the current segment of the request
-  * @req:	the request being processed
-  * @uptodate:	error value or 0/1 uptodate flag
-@@ -3737,14 +3691,17 @@ EXPORT_SYMBOL(end_dequeued_request);
-  *     they have a residual value to account for. For that case this function
-  *     isn't really useful, unless the residual just happens to be the
-  *     full current segment. In other words, don't use this function in new
-- *     code. Either use end_request_completely(), or the
-- *     end_that_request_chunk() (along with end_that_request_last()) for
-- *     partial completions.
-+ *     code. Instead, use blk_end_request() for entire or partial completion.
-  *
-  **/
- void end_request(struct request *req, int uptodate)
- {
--	__end_request(req, uptodate, req->hard_cur_sectors << 9);
-+	int error = 0;
-+
-+	if (uptodate <= 0)
-+		error = uptodate ? uptodate : -EIO;
-+
-+	__blk_end_request(req, error, req->hard_cur_sectors << 9);
- }
- EXPORT_SYMBOL(end_request);
- 
+(And it used the C++ operator [] to build the command, that was fun
+to trace...)
