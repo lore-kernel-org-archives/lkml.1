@@ -1,56 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762858AbYAKVyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762941AbYAKVzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762858AbYAKVyU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 16:54:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761372AbYAKVyF
+	id S1762941AbYAKVzm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 16:55:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761250AbYAKVzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 16:54:05 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55768 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760884AbYAKVyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 16:54:04 -0500
-Message-ID: <4787E574.6020304@redhat.com>
-Date: Fri, 11 Jan 2008 16:53:56 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+	Fri, 11 Jan 2008 16:55:35 -0500
+Received: from mailout04.sul.t-online.de ([194.25.134.18]:43747 "EHLO
+	mailout04.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760241AbYAKVzf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 16:55:35 -0500
+Message-ID: <4787E5D0.7000405@t-online.de>
+Date: Fri, 11 Jan 2008 22:55:28 +0100
+From: Harald Dunkel <harald.dunkel@t-online.de>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: LIBATA SCSI command validation changed in 2.6.24
-References: <4787DFE2.2000504@redhat.com> <4787E114.2030301@garzik.org>
-In-Reply-To: <4787E114.2030301@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Takashi Iwai <tiwai@suse.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc7, intel audio: alsa doesn't say a beep
+References: <4782833D.3010600@t-online.de>	<s5h3at8rd9c.wl%tiwai@suse.de>	<4783AC7C.50900@t-online.de>	<s5h63y42oy6.wl%tiwai@suse.de>	<478463A6.2070106@t-online.de>	<s5h8x2zo3ox.wl%tiwai@suse.de>	<47852A41.9020903@t-online.de>	<s5hr6gpajux.wl%tiwai@suse.de>	<4786960D.2040500@t-online.de> <s5hprw8g8m7.wl%tiwai@suse.de>
+In-Reply-To: <s5hprw8g8m7.wl%tiwai@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-ID: X7qvP+ZJwhY59n9uE+4AzqZxpzibJ1s9+iU4LtpTFH9LZgEk+8xiuieWRGEz75NwN8
+X-TOI-MSGID: 4a2f3677-e594-4b63-a6ad-6ebce4a99b2f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/11/2008 04:35 PM, Jeff Garzik wrote:
-> Chuck Ebbert wrote:
->> commit 607126c2a21cd6e9bb807fdd415c1a992f7b9009 changed command
->> validation
->> to allow short commands in 16-byte CDBs, but it also made checking more
->> strict. Before the change, a 10-byte SG_IO command could have its
->> length set
->> to 9 and still work. Now it fails. Not sure if this is a bug, but it has
->> caused at least one application to fail that used to work (qpxtool.)
->>
->> [https://bugzilla.redhat.com/show_bug.cgi?id=428281]
+Takashi Iwai wrote:
+> At Thu, 10 Jan 2008 23:02:53 +0100,
+> Harald Dunkel wrote:
+>> Takashi Iwai wrote:
+>>> Hm...  Just to be sure, try the patch below.  It's a clean up patch
+>>> that I'd like to apply later.
+>>>
+>> Sorry, no sound.
 > 
-> Can you get us an example CDB?  Its unclear if the hexdump in the bug
-> report is a returned mode page or the CDB or what...?
+> OK, but I'd like to know whether this makes no regression to rc6.
+> Could you check?
 > 
 
-Not easily, but the maintainer of that program forced the length of
-the MODE_SENSE(10) command to 10 and that command started working.
+"Regression" sounds like a test suite to me, verifying that the
+old problems didn't come back. Maybe you could send me a pointer?
 
-By looking at the source I could tell that it was setting the command
-length to (1 + the index of the last byte written to the CDB) and
-only wrote up to offset 8 when building the command, so it must have
-been sending the command with a length of 9. (It zeroed the whole CDB
-first and only wrote what it needed to.)
+Of course I didn't try that much yet. The kernel booted as expected,
+I saw XWindow running, the mouse pointer was moving, etc. There was
+just no sound, as before with rc7.
 
-(And it used the C++ operator [] to build the command, that was fun
-to trace...)
+> Also, what exactly did you test?  "No sound" means that no sound from
+> the headphone / line-out or from the speaker?
+> 
+
+Speaker and first headphone are the same on this laptop. If I plugin
+the headphone, then the tiny speakers are disconnected. But for the
+last tests no headphone was plugged in.
+
+I tested it by running gnome-alsamixer. I tried to switch off and
+on the mute buttons, change the volume and other sliders, etc.
+
+> One interesting test would be to increase the value of udelay() in the
+> reverted patch.  What happens if it's set to 500?
+> 
+
+I will try tomorrow. What exactly is this delay good for?
+
+>>> The perex/alsa.git mm branch on kernel.org has many fixes.  Could you
+>>> give it a try, too?
+>>>
+>> This version seems to work. But AFAICS it just reverts hda_intel.c back
+>> to rc6 again, so this is no surprise.
+> 
+> Use mm branch.  The main branch is just an old Linus tree.
+> 
+
+AFAICS I did use the mm branch. The command to grab the sources was
+
+git-clone git://git.kernel.org/pub/scm/linux/kernel/git/perex/alsa.git mm
+
+Is this correct?
+
+
+Regards
+
+Harri
+
