@@ -1,166 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758832AbYAKK4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758587AbYAKLEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758832AbYAKK4j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 05:56:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756897AbYAKK4b
+	id S1758587AbYAKLEh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 06:04:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755090AbYAKLE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 05:56:31 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54552 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756218AbYAKK43 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 05:56:29 -0500
-Date: Fri, 11 Jan 2008 11:55:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Guillaume Chazarain <guichaz@yahoo.fr>
-Cc: mingo@redhat.com, David Dillow <dillowda@ornl.gov>,
-       linux-kernel@vger.kernel.org, linux-btrace@vger.kernel.org,
-       tglx@linutronix.de, Jens Axboe <jens.axboe@oracle.com>,
-       nigel@suspend2.net
-Subject: Re: CONFIG_NO_HZ breaks blktrace timestamps
-Message-ID: <20080111105534.GC1589@elte.hu>
-References: <1199918912.8388.13.camel@lap75545.ornl.gov> <1199996752.9159.46.camel@lap75545.ornl.gov> <20080110234438.4826f658@inria.fr> <20080111114132.084036f2@cheypa.inria.fr>
+	Fri, 11 Jan 2008 06:04:27 -0500
+Received: from smtp-out2.tiscali.nl ([195.241.79.177]:51922 "EHLO
+	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754001AbYAKLEZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 06:04:25 -0500
+Message-ID: <47874D2E.2000603@tiscali.nl>
+Date: Fri, 11 Jan 2008 12:04:14 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080111114132.084036f2@cheypa.inria.fr>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Paul Mundt <lethal@linux-sh.org>, Roel Kluin <12o3l@tiscali.nl>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Mathieu Segaud <mathieu.segaud@regala.cx>,
+       Richard Knutsson <ricknu-0@student.ltu.se>,
+       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] [Coding Style]: fs/ext{3,4}/ext{3,4}_jbd{,2}.c
+References: <1199452896-20145-3-git-send-email-mathieu.segaud@regala.cx> <1199452896-20145-4-git-send-email-mathieu.segaud@regala.cx> <1199452896-20145-5-git-send-email-mathieu.segaud@regala.cx> <477E379F.4000103@student.ltu.se> <20080105041228.GP3351@webber.adilger.int> <20080105051817.GD27894@ZenIV.linux.org.uk> <4786883E.30604@tiscali.nl> <20080111030945.27954.qmail@cdy.org> <20080111034240.GA29861@linux-sh.org> <47873ABA.5050604@tiscali.nl> <20080111102930.GA31581@linux-sh.org>
+In-Reply-To: <20080111102930.GA31581@linux-sh.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Guillaume Chazarain <guichaz@yahoo.fr> wrote:
-
-> David Dillow <dillowda@ornl.gov> wrote:
+Paul Mundt wrote:
+> On Fri, Jan 11, 2008 at 10:45:30AM +0100, Roel Kluin wrote:
+>> Paul Mundt wrote:
+>>> On Fri, Jan 11, 2008 at 04:09:45AM +0100, Peter Stuge wrote:
+>>>> On Thu, Jan 10, 2008 at 10:03:58PM +0100, Roel Kluin wrote:
+>>>>> -#define DEBUG(x,args...)	printk(__FUNCTION__ ": " x,##args)
+>>>>> +#define DEBUG(x, args...)	printk("%s: ", __func__, x, ##args)
+>>>> Can this really be expected to work when x contains conversions?
+>>>>
+>>>> How about:
+>>>>
+>>>> #define DEBUG(x, args...) printk("%s: " x, __func__, ##args)
+>>>>
+>>> How about throwing out hand-rolled debug printk wrappers for the
+>>> brain-damage they are and using the ones the kernel provides instead?
+>>>
+>> Should it be done like this?
+>> --
+>> Replace printk wrapper - with a syntax error - by pr_debug
+>>
+>> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 > 
-> > Patched kernel, nohz=off:
-> >   .clock_underflows              : 213887
+> Close. But in this case #define DEBUG is already instrumented by the
+> subsystem-wide debug option if it's enabled, so it's preferable to use
+> that and just drop the special debug Kconfig option completely.
 > 
-> A little bit of warning about these patches, they are WIP, that's why 
-> I did not send them earlier. It regress nohz=off.
+> Take a look at how CONFIG_PCMCIA_DEBUG is handled.
 
-ok. I have applied all but this one:
+In drivers/pcmcia/Makefile, when CONFIG_PCMCIA_DEBUG=y, it  gives
+EXTRA_CFLAGS += -DDEBUG
+which causes the definition of DEBUG as a macro, with definition 1.
 
-> A bit of context: these patches aim at making sure cpu_clock() on my
-> laptop (cpufreq enabled) never overflows/underflows/warps with
-> CONFIG_NOHZ enabled. With these patches, I have a few hundreds
-> overflows and underflows during early bootup, and then nothing :-)
+> With DEBUG()->pr_debug() conversion here you've silently dropped the
+> __func__ prefixing. Note that dev_dbg() is usually preferred when you can
+> get a hold of a struct device pointer, as it takes care of prettifying
+> the output with the driver name and so on, rather than the convention of
+> adding a prefix. If you can't get at the struct device pointer, you'll
+> probably just want to insert the __func__ prefixing manually at the
+> callsites.
 
-cool :-)
+Ah, ok, then this should be right:
+--
+Replace printk wrapper - with a syntax error - by pr_debug.
+DEBUG is defined 1 when CONFIG_PCMCIA_DEBUG is set.
 
-> >     sched: Fix rq->clock overflows detection with CONFIG_NO_HZ
-> 
-> I think this one is the most important for David, but unfortunately it
-> has some problems.
-> 
-> > +static inline u64 max_skipped_ticks(struct rq *rq)
-> > +{
-> > +	return nohz_on(cpu_of(rq)) ? jiffies - rq->last_tick_seen + 2 : 1;
-> > +}
-> 
-> Here, I initially wrote rq->last_tick_seen + 1 but experiments showed
-> that +2 was needed as I really saw deltas of 2 milliseconds.
-> 
-> These patches have two objectives:
->  - taking into account that jiffies are not always incremented by 1
-> thanks to nohz
->  - as the tick is stopped and restarted it may not tick at the exact
-> expected moment, so allow a window of 1 jiffie. If the tick occurs
-> during the right jiffy, we know the TSC is more precise than the tick
-> so don't correct the clock.
-
-i think it's much simpler to do what i have below. Could you try it on 
-your box? Or if it is using ACPI idle - in that case the callbacks 
-should already be there and there should be no need for further fixups.
-
-> And the problem is that I seem to need a window of 2 jiffies, so I need
-> some help.
-> 
-> >     sched: make sure jiffies is up to date before calling __update_rq_clock()
-> 
-> This is one is needed too but I'm less confident in its validity.
-> 
-> >     scheduler_tick() is not called every jiffies
-> 
-> This one is a bit ugly and seems to break nohz=off.
-
-ok, i took this one out.
-
-	Ingo
-
--------------------->
-Subject: x86: idle wakeup event in the HLT loop
-From: Ingo Molnar <mingo@elte.hu>
-
-do a proper idle-wakeup event on HLT as well - some CPUs stop the TSC
-in HLT too, not just when going through the ACPI methods.
-
-(the ACPI idle code already does this.)
-
-[ update the 64-bit side too, as noticed by Jiri Slaby. ]
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 ---
- arch/x86/kernel/process_32.c |   15 ++++++++++++---
- arch/x86/kernel/process_64.c |   13 ++++++++++---
- 2 files changed, 22 insertions(+), 6 deletions(-)
-
-Index: linux-x86.q/arch/x86/kernel/process_32.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/process_32.c
-+++ linux-x86.q/arch/x86/kernel/process_32.c
-@@ -113,10 +113,19 @@ void default_idle(void)
- 		smp_mb();
+diff --git a/drivers/pcmcia/au1000_xxs1500.c b/drivers/pcmcia/au1000_xxs1500.c
+index ce9d5c4..8e6426b 100644
+--- a/drivers/pcmcia/au1000_xxs1500.c
++++ b/drivers/pcmcia/au1000_xxs1500.c
+@@ -55,12 +55,6 @@
+ #define PCMCIA_NUM_SOCKS	(PCMCIA_MAX_SOCK + 1)
+ #define PCMCIA_IRQ		AU1000_GPIO_4
  
- 		local_irq_disable();
--		if (!need_resched())
-+		if (!need_resched()) {
-+			ktime_t t0, t1;
-+			u64 t0n, t1n;
-+
-+			t0 = ktime_get();
-+			t0n = ktime_to_ns(t0);
- 			safe_halt();	/* enables interrupts racelessly */
--		else
--			local_irq_enable();
-+			local_irq_disable();
-+			t1 = ktime_get();
-+			t1n = ktime_to_ns(t1);
-+			sched_clock_idle_wakeup_event(t1n - t0n);
-+		}
-+		local_irq_enable();
- 		current_thread_info()->status |= TS_POLLING;
- 	} else {
- 		/* loop is done by the caller */
-Index: linux-x86.q/arch/x86/kernel/process_64.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/process_64.c
-+++ linux-x86.q/arch/x86/kernel/process_64.c
-@@ -116,9 +116,16 @@ static void default_idle(void)
- 	smp_mb();
- 	local_irq_disable();
- 	if (!need_resched()) {
--		/* Enables interrupts one instruction before HLT.
--		   x86 special cases this so there is no race. */
--		safe_halt();
-+		ktime_t t0, t1;
-+		u64 t0n, t1n;
-+
-+		t0 = ktime_get();
-+		t0n = ktime_to_ns(t0);
-+		safe_halt();	/* enables interrupts racelessly */
-+		local_irq_disable();
-+		t1 = ktime_get();
-+		t1n = ktime_to_ns(t1);
-+		sched_clock_idle_wakeup_event(t1n - t0n);
- 	} else
- 		local_irq_enable();
- 	current_thread_info()->status |= TS_POLLING;
+-#if 0
+-#define DEBUG(x,args...)	printk(__FUNCTION__ ": " x,##args)
+-#else
+-#define DEBUG(x,args...)
+-#endif
+-
+ static int xxs1500_pcmcia_init(struct pcmcia_init *init)
+ {
+ 	return PCMCIA_NUM_SOCKS;
+@@ -143,13 +137,13 @@ xxs1500_pcmcia_configure_socket(const struct pcmcia_configure *configure)
+ 
+ 	if(configure->sock > PCMCIA_MAX_SOCK) return -1;
+ 
+-	DEBUG("Vcc %dV Vpp %dV, reset %d\n",
++	pr_debug("Vcc %dV Vpp %dV, reset %d\n",
+ 			configure->vcc, configure->vpp, configure->reset);
+ 
+ 	switch(configure->vcc){
+ 		case 33: /* Vcc 3.3V */
+ 			/* turn on power */
+-			DEBUG("turn on power\n");
++			pr_debug("turn on power\n");
+ 			au_writel((au_readl(GPIO2_PINSTATE) & ~(1<<14))|(1<<30),
+ 					GPIO2_OUTPUT);
+ 			au_sync_delay(100);
+@@ -166,7 +160,7 @@ xxs1500_pcmcia_configure_socket(const struct pcmcia_configure *configure)
+ 	}
+ 
+ 	if (!configure->reset) {
+-		DEBUG("deassert reset\n");
++		pr_debug("deassert reset\n");
+ 		au_writel((au_readl(GPIO2_PINSTATE) & ~(1<<4))|(1<<20),
+ 				GPIO2_OUTPUT);
+ 		au_sync_delay(100);
+@@ -174,7 +168,7 @@ xxs1500_pcmcia_configure_socket(const struct pcmcia_configure *configure)
+ 				GPIO2_OUTPUT);
+ 	}
+ 	else {
+-		DEBUG("assert reset\n");
++		pr_debug("assert reset\n");
+ 		au_writel(au_readl(GPIO2_PINSTATE) | (1<<4)|(1<<20),
+ 				GPIO2_OUTPUT);
+ 	}
