@@ -1,70 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761435AbYAKOrc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761338AbYAKOtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761435AbYAKOrc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 09:47:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759025AbYAKOrU
+	id S1761338AbYAKOtj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 09:49:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759005AbYAKOtc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 09:47:20 -0500
-Received: from hu-out-0506.google.com ([72.14.214.234]:51784 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760782AbYAKOrP (ORCPT
+	Fri, 11 Jan 2008 09:49:32 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:3341 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758741AbYAKOtb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 09:47:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sO6HrLwaP5TOwCd4MV6fvO6q/k/HZ1l3PqssKmTvV1UvkWZJan96G0xDVp985UTQnD4OekKP3tMMRfvOjqzhBtHMp1ypSE6d3Q30hGEjxsJGKxc8SLKa8fuyFf521KOd+9mAUHxgZ2WfScwMouunGR5SSHLNAED/Hq/SlTZERRc=
-Message-ID: <d120d5000801110647k4b1fa49ene974898baf745aec@mail.gmail.com>
-Date: Fri, 11 Jan 2008 09:47:11 -0500
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Subject: Re: [BISECTED] Re: psmouse.c: GlidePoint at isa0060/serio1/input0 lost sync at byte 1
-Cc: linux-input@vger.kernel.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "William Pettersson" <william.pettersson@gmail.com>
-In-Reply-To: <19f34abd0801071224kb9cb121u244b00b274231db0@mail.gmail.com>
+	Fri, 11 Jan 2008 09:49:31 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=a2k8byY5TPwNHIeHMRRy8zn3mshcPeuQzzEC4RKq0+Yf/b8XAEhyi0FNCoGzXU61n
+	jmwmE8/kBd0zd36YtO2Cw==
+Message-ID: <d9885f0f0801110649x4bdbc082he6b6bffd9d748a6f@mail.gmail.com>
+Date: Fri, 11 Jan 2008 09:49:28 -0500
+From: "Abhishek Rai" <abhishekrai@google.com>
+To: 7eggert@gmx.de
+Subject: Re: [PATCH] Clustering indirect blocks in Ext3
+Cc: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com, gregkh@suse.de,
+       airlied@skynet.ie, davej@redhat.com, mingo@elte.hu, tglx@linutronix.de,
+       akpm@linux-foundation.org, arjan@infradead.org,
+       Jesse <jesse.barnes@intel.com>, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, "Suresh B" <suresh.b.siddha@intel.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <E1JDKcK-0003cu-Ps@be1.7eggert.dyndns.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <19f34abd0711141226n60323630rdc4833db0bfb2eeb@mail.gmail.com>
-	 <19f34abd0801071224kb9cb121u244b00b274231db0@mail.gmail.com>
+References: <9q1CT-82L-3@gated-at.bofh.it> <9q3v2-2Br-3@gated-at.bofh.it>
+	 <9qgLE-7ds-21@gated-at.bofh.it> <9qjJx-3wE-9@gated-at.bofh.it>
+	 <9qm4D-70Q-1@gated-at.bofh.it> <9CQTt-7cr-27@gated-at.bofh.it>
+	 <9KcYS-46E-27@gated-at.bofh.it>
+	 <E1JDKcK-0003cu-Ps@be1.7eggert.dyndns.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vegard,
+That will surely help sequential read performance for large
+unfragmented files and we have considered it before. There are two
+main reasons why we want the data blocks and the corresponding
+indirect blocks to share the same block group.
 
-On Jan 7, 2008 3:24 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> }, /* Dell Latitude D600 */
-> +       { { 0x73, 0x02, 0x50 }, 0xcf, 0xff, ALPS_FW_BK_1 } /* Dell
-> Vostro 1400 */
->  };
+1. When a block group runs out of a certain types of blocks (data
+blocks or indirect blocks), we use blocks of the other type for
+allocation. Consequently, if data blocks and their corresponding
+indirect blocks are sharing the same block group, we'll run out of
+data blocks in the block group exactly at the same time as we run out
+of indirect blocks, so we know we have well utilized the block group
+and can move on to the next block group. This keeps things simple and
+results in low fragmentation. However, if data blocks and their
+indirect blocks were to go into two different block groups, it is
+possible that you run out of one kind of blocks in one block group
+while you still have the other kind available in the other block group
+since these two are independent now. So now we need to decide which
+kind of allocation to move over to which block group. This requires
+slightly more advanced heuristics and I didn't want to add this
+complexity for the small gain it offers.
+
+2. I think sharing a block group the way it's done currently is a
+cleaner design since allocation is quite self-contained within a block
+group. I'd argue in the long run it's good to stick to a cleaner
+design even if it is 1-2% worse in performance in some cases. Among
+other things, cleaner designs are easier to change and enhance in the
+future. More importantly, in this case our goal is to speed up fsck
+without slowing down IO and we are comfortably achieving that goal.
+
+Thanks,
+Abhishek
+
+On Jan 11, 2008 9:12 AM, Bodo Eggert <7eggert@gmx.de> wrote:
+> Abhishek Rai <abhishekrai@google.com> wrote:
+>
+> > Putting metacluster at the end of the block group gives slightly
+> > inferior sequential read throughput compared to putting it in the
+> > beginning or the middle, but the difference is very tiny and exists
+> > only for large files that span multiple block groups.
+>
+> Just an idea:
+>
+> What about putting it into the end of the previous block group (except for
+> the first group, off cause) and starting to read the block group a little
+> earlier (readahead/~before)? I imagine it might be about as good as placing
+> it at the beginning while avoiding the fragmentation.
 >
 >
-> After reverting, all buttons work as expected -- no lost syncs. I
-> might add that my laptop is Acer Aspire 5720ZG. Also, the button in
-> question is not truly a middle button; when operating correctly, it is
-> used for scrolling (up/down). Now what can be done to make both models
-> work correctly?
->
-
-Thank you for identifying the problem commit. Could you please also do this:
-
-echo 1 > /sys/module/i8042/parameters/debug
-push and release left button
-push and release rigth button
-move finger on the touchpad a bit
-echo 0 > /sys/module/i8042/parameters/debug
-dmesg > dmesg.sync
-echo 1 > /sys/module/i8042/parameters/debug
-push and release middle button
-echo 0 > /sys/module/i8042/parameters/debug
-dmesg > dmesg.nosync
-
-and send me both dmesg files?
-
-Thank you.
-
--- 
-Dmitry
