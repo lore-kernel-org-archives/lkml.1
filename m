@@ -1,114 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761044AbYAKJp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760608AbYAKJrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761044AbYAKJp4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 04:45:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756224AbYAKJpq
+	id S1760608AbYAKJrw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 04:47:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757925AbYAKJrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 04:45:46 -0500
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:37060 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755239AbYAKJpp (ORCPT
+	Fri, 11 Jan 2008 04:47:45 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:43112 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754714AbYAKJro (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 04:45:45 -0500
-Message-ID: <47873ABA.5050604@tiscali.nl>
-Date: Fri, 11 Jan 2008 10:45:30 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Fri, 11 Jan 2008 04:47:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=kw/4ZnC29NE3aN5i3TkCAdfk/vELrbMgLkBCkqwDYTborU/bdUfEZD3sZ0HV8xKdSUHW34Z+R4MNXGLTkcBNLU1E7s3wA8cErYtN+9xOU6G+10oNdB5N0M4rm9GUoKE4BW8tVDwGt0PhEazdauTXe1PfF4c9sY7vdtOyUSrqWQ0=
+Message-ID: <8bd0f97a0801110147w1cc741c3yc80ad32cd0e896c9@mail.gmail.com>
+Date: Fri, 11 Jan 2008 04:47:44 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>
+Subject: Re: [patch] split MMC_CAP_4_BIT_DATA
+Cc: "Bryan Wu" <cooloney.lkml@gmail.com>, "Cai, Cliff" <Cliff.Cai@analog.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080111103532.2789b74f@poseidon.drzeus.cx>
 MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>, Roel Kluin <12o3l@tiscali.nl>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Mathieu Segaud <mathieu.segaud@regala.cx>,
-       Richard Knutsson <ricknu-0@student.ltu.se>,
-       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] [Coding Style]: fs/ext{3,4}/ext{3,4}_jbd{,2}.c
-References: <1199452896-20145-1-git-send-email-mathieu.segaud@regala.cx> <1199452896-20145-2-git-send-email-mathieu.segaud@regala.cx> <1199452896-20145-3-git-send-email-mathieu.segaud@regala.cx> <1199452896-20145-4-git-send-email-mathieu.segaud@regala.cx> <1199452896-20145-5-git-send-email-mathieu.segaud@regala.cx> <477E379F.4000103@student.ltu.se> <20080105041228.GP3351@webber.adilger.int> <20080105051817.GD27894@ZenIV.linux.org.uk> <4786883E.30604@tiscali.nl> <20080111030945.27954.qmail@cdy.org> <20080111034240.GA29861@linux-sh.org>
-In-Reply-To: <20080111034240.GA29861@linux-sh.org>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <386072610801081832w2befcbafwe9215067f022ed5d@mail.gmail.com>
+	 <20080109082325.212ec90d@poseidon.drzeus.cx>
+	 <386072610801090845r14510fb8tbcca76d605458a96@mail.gmail.com>
+	 <20080110095428.3b93fd18@poseidon.drzeus.cx>
+	 <386072610801100122n52339488ke2b8724c390be765@mail.gmail.com>
+	 <20080110125748.416ad0c5@poseidon.drzeus.cx>
+	 <386072610801102217u1739d7d7v497e73a38aa876c2@mail.gmail.com>
+	 <20080111094036.4c683791@poseidon.drzeus.cx>
+	 <8bd0f97a0801110108l66ab2bcdjb1323573445473f@mail.gmail.com>
+	 <20080111103532.2789b74f@poseidon.drzeus.cx>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mundt wrote:
-> On Fri, Jan 11, 2008 at 04:09:45AM +0100, Peter Stuge wrote:
->> On Thu, Jan 10, 2008 at 10:03:58PM +0100, Roel Kluin wrote:
->>> -#define DEBUG(x,args...)	printk(__FUNCTION__ ": " x,##args)
->>> +#define DEBUG(x, args...)	printk("%s: ", __func__, x, ##args)
->> Can this really be expected to work when x contains conversions?
->>
->> How about:
->>
->> #define DEBUG(x, args...) printk("%s: " x, __func__, ##args)
->>
-> How about throwing out hand-rolled debug printk wrappers for the
-> brain-damage they are and using the ones the kernel provides instead?
-> 
-Should it be done like this?
---
-Replace printk wrapper - with a syntax error - by pr_debug
+On Jan 11, 2008 4:35 AM, Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
+> "Mike Frysinger" <vapier.adi@gmail.com> wrote:
+> > On Jan 11, 2008 3:40 AM, Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
+> > > So it's far more probable that you've misdiagnosed your error than this being the actual problem.
+> >
+> > the guys who design the silicon are telling us it doesnt work.  our
+> > tests show it not working.  i'm not sure what else you want here.
+>
+> More information. You have not provided any speculation as to why it doesn't work, or what you've done to figure it out. You haven't even described how it fails, just that it does. No information about what cards you've tested and how you've tested them to confirm that your theory on 4-bit data is accurate.
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/drivers/pcmcia/au1000_xxs1500.c b/drivers/pcmcia/au1000_xxs1500.c
-index ce9d5c4..4c32389 100644
---- a/drivers/pcmcia/au1000_xxs1500.c
-+++ b/drivers/pcmcia/au1000_xxs1500.c
-@@ -25,6 +25,10 @@
-  *
-  *
-  */
-+#ifdef CONFIG_MIPS_XXS1500_DEBUG
-+#define DEBUG 1
-+#endif
-+
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/delay.h>
-@@ -55,11 +59,6 @@
- #define PCMCIA_NUM_SOCKS	(PCMCIA_MAX_SOCK + 1)
- #define PCMCIA_IRQ		AU1000_GPIO_4
- 
--#if 0
--#define DEBUG(x,args...)	printk(__FUNCTION__ ": " x,##args)
--#else
--#define DEBUG(x,args...)
--#endif
- 
- static int xxs1500_pcmcia_init(struct pcmcia_init *init)
- {
-@@ -143,13 +142,13 @@ xxs1500_pcmcia_configure_socket(const struct pcmcia_configure *configure)
- 
- 	if(configure->sock > PCMCIA_MAX_SOCK) return -1;
- 
--	DEBUG("Vcc %dV Vpp %dV, reset %d\n",
-+	pr_debug("Vcc %dV Vpp %dV, reset %d\n",
- 			configure->vcc, configure->vpp, configure->reset);
- 
- 	switch(configure->vcc){
- 		case 33: /* Vcc 3.3V */
- 			/* turn on power */
--			DEBUG("turn on power\n");
-+			pr_debug("turn on power\n");
- 			au_writel((au_readl(GPIO2_PINSTATE) & ~(1<<14))|(1<<30),
- 					GPIO2_OUTPUT);
- 			au_sync_delay(100);
-@@ -166,7 +165,7 @@ xxs1500_pcmcia_configure_socket(const struct pcmcia_configure *configure)
- 	}
- 
- 	if (!configure->reset) {
--		DEBUG("deassert reset\n");
-+		pr_debug("deassert reset\n");
- 		au_writel((au_readl(GPIO2_PINSTATE) & ~(1<<4))|(1<<20),
- 				GPIO2_OUTPUT);
- 		au_sync_delay(100);
-@@ -174,7 +173,7 @@ xxs1500_pcmcia_configure_socket(const struct pcmcia_configure *configure)
- 				GPIO2_OUTPUT);
- 	}
- 	else {
--		DEBUG("assert reset\n");
-+		pr_debug("assert reset\n");
- 		au_writel(au_readl(GPIO2_PINSTATE) | (1<<4)|(1<<20),
- 				GPIO2_OUTPUT);
- 	}
+unfortunately, i cant fill these gaps myself directly.  all i bring to
+the table is proper integration with the common frameworks.  i'm
+relying on the guys developing the drivers and the guys who actually
+designed the hardware for information.  they tell me it doesnt work, i
+just believe them ;).
 
+Cliff should be able to enumerate the cards he has tested and the
+issues he's run into.  i'll see if i cant get more in depth
+information from the hardware guys beyond the documentation on the sdh
+already available in the hardware manual (which i'm guessing has not
+been enough to appease you).
+
+> You have no track record with me, and you're proposing something that goes against all known information. So you have to understand that I'm sceptical about your claims. I won't dismiss them off hand, but I need to be convinced you haven't made a mistake when coming to this conclusion.
+
+that's fair.  i could actually be a gnome sitting outside in your
+lawn.  you have no idea.
+-mike
