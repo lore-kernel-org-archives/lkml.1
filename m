@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761498AbYAKPIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760822AbYAKPUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761498AbYAKPIh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 10:08:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758444AbYAKPIa
+	id S1760822AbYAKPUm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 10:20:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759633AbYAKPUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 10:08:30 -0500
-Received: from mho-02-bos.mailhop.org ([63.208.196.179]:56016 "EHLO
-	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756100AbYAKPI3 (ORCPT
+	Fri, 11 Jan 2008 10:20:32 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38752 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759590AbYAKPUb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 10:08:29 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 18.85.9.106
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX183mSl+oakwRA3exwvOmL8k
-Message-ID: <4787864C.1090101@reed.com>
-Date: Fri, 11 Jan 2008 10:07:56 -0500
-From: "David P. Reed" <dpreed@reed.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.9) Gecko/20071115 Fedora/2.0.0.9-1.fc8 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Rene Herman <rene.herman@keyaccess.nl>, Zachary Amsden <zach@vmware.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Christer Weinigel <christer@weinigel.se>,
-       Ondrej Zary <linux@rainbow-software.org>, Bodo Eggert <7eggert@gmx.de>,
-       Ingo Molnar <mingo@elte.hu>, Paul Rolland <rol@as2917.net>,
-       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       rol <rol@witbe.net>
-Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
- I/O delay override.
-References: <9BdU5-1YW-9@gated-at.bofh.it>	<200801081810.58904.linux@rainbow-software.org>	<4783B1B2.6070005@reed.com>	<200801081838.16241.linux@rainbow-software.org>	<4783C4A6.9060402@reed.com>	<20080108185120.3ff7ed18@lxorguk.ukuu.org.uk>	<4783CBD9.7020709@reed.com>	<1199847162.7369.323.camel@bodhitayantram.eng.vmware.com>	<47845972.9090803@zytor.com>	<1199915614.7369.367.camel@bodhitayantram.eng.vmware.com>	<47854916.4080703@reed.com>	<1200015388.6192.22.camel@bodhitayantram.eng.vmware.com>	<4786DD05.20804@keyaccess.nl>	<47877ECD.9060408@reed.com> <20080111143748.35883ff7@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080111143748.35883ff7@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+	Fri, 11 Jan 2008 10:20:31 -0500
+Date: Fri, 11 Jan 2008 15:17:58 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Matthew Hall <mhall@mhcomputing.net>, linux-scsi@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: sata_nv does not function in kernel > 2.6.20.21
+Message-ID: <20080111151758.1d702b50@lxorguk.ukuu.org.uk>
+In-Reply-To: <4785A1CF.7050006@garzik.org>
+References: <20080110024733.GC9461@mhcomputing.net>
+	<4785A1CF.7050006@garzik.org>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> bus abort on the LPC bus".   More problematic is that I would think some 
->> people might want to turn on the AMD feature that generates machine 
->> checks if a bus timeout happens.   The whole point of machine checks is 
->>     
->
-> An ISA/LPC bus timeout is fulfilled by the bridge so doesn't cause an MCE.
->
->
->   
-Good possibility, but the documentation on HyperTransport suggests 
-otherwise, even for LPC bridges in this particular modern world of 
-AMD64. I might do the experiment someday to see if my LPC bridge is 
-implemented in a way that does or doesn't support enabling MCE's. Could 
-be different between Intel and AMD - I haven't had reason to pore over 
-the Intel chipset specs, since my poking into all this stuff has been 
-driven by my personal machine's issues, and it's not got any Intel 
-compatible parts.
+> Error -16 is EBUSY, which causes the driver load to fail due to the 
+> "Unable to reserve mem region" message.
+> 
+> This means that the sata_nv driver needed to use PCI BAR 6, but was 
+> unable to for some reason.  Given that sata_nv uses devres like other 
+> libata drivers, IMO the likely cause is outside the ATA subsystem (PCI? 
+> ACPI?).
+
+Actually it looks to me like there is something very odd going on here.
+The sata_nv code checks each of the 6 resources exists (wrongly - it does
+it before pcim_enable_device so the check is probably not valid). That
+would report -ENODEV.
+
+EBUSY implies all 6 resources were assigned but one couldn't be mapped.
