@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762186AbYAKRT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761643AbYAKRXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762186AbYAKRT3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 12:19:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761369AbYAKRTJ
+	id S1761643AbYAKRXs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 12:23:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760995AbYAKRXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 12:19:09 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:37886 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761253AbYAKRTH (ORCPT
+	Fri, 11 Jan 2008 12:23:40 -0500
+Received: from carmdsmtp.sierrawireless.com ([208.81.121.7]:12412 "EHLO
+	mx1.sierrawireless.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759882AbYAKRXj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 12:19:07 -0500
-Date: Fri, 11 Jan 2008 09:18:41 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: dean gaudet <dean@arctic.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       suresh.b.siddha@intel.com, Dave Jones <davej@redhat.com>
-Subject: Re: CPA patchset
-Message-ID: <20080111091841.04eecd54@laptopd505.fenrus.org>
-In-Reply-To: <alpine.DEB.0.999999.0801110856230.9361@twinlark.arctic.org>
-References: <20080103424.989432000@suse.de>
-	<20080110093126.GA360@elte.hu>
-	<20080110095337.GK25945@bingen.suse.de>
-	<20080110100443.GB28209@elte.hu>
-	<20080110100712.GO25945@bingen.suse.de>
-	<20080110105726.GD28209@elte.hu>
-	<20080110111248.GR25945@bingen.suse.de>
-	<20080111071936.GA16175@elte.hu>
-	<alpine.DEB.0.999999.0801110856230.9361@twinlark.arctic.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 11 Jan 2008 12:23:39 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] usb-serial: Sierra driver - add devices and update dtr
+Date: Fri, 11 Jan 2008 09:24:36 -0800
+Message-ID: <3415E2A2AB26944B9159CDB22001004D022572F5@nestea.sierrawireless.local>
+In-Reply-To: <20080110195403.GA29384@suse.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] usb-serial: Sierra driver - add devices and update dtr
+Thread-Index: AchTwrCYFY65ghlmQY+2EReS+NbboQAsfX3A
+References: <1199992265.9266.19.camel@linux-z60t> <20080110195403.GA29384@suse.de>
+From: "Kevin Lloyd" <klloyd@sierrawireless.com>
+To: "Greg KH" <gregkh@suse.de>
+Cc: <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>,
+       <linux-usb-devel@lists.sourceforge.net>
+X-OriginalArrivalTime: 11 Jan 2008 17:24:39.0575 (UTC) FILETIME=[D8886270:01C85476]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Jan 2008 09:02:46 -0800 (PST)
-dean gaudet <dean@arctic.org> wrote:
+> Those device ids are already in my tree, as it was my understanding
+that
+> you would not be sending me patches for them :)
+You're right, I normally wouldn't, but since someone else already had, I
+figured it would be alright.
+> I'll split this patch up into something that updates the device ids
+and
+> then does all of the other changes.  The device ids can go into 2.6.24
+> (and -stable if I miss the merge window), but the other changes should
+> wait until 2.6.25.
+>
+> Any objection to this?
+Actually some of the added functionality (calc_num_ports) is required
+for
+device 0x0023 and will be necessary for future devices (should someone 
+want to add the VID/PID of a new device it will likely require the added
 
-> > Bulk ops (string ops, etc.) will do full cacheline writes too, 
-> > without filling in the cacheline.
-> 
-> on intel with fast strings enabled yes.  mind you intel gives hints in
-> the documentation these operations don't respect coherence... and i
-> asked about this when they posted their memory ordering paper but got
-> no response.
+support).
 
-I know there's an answer on the way; it just needs to get checked by
-architects for cpus we shipped in like the last 10 years ;)
+So my preference would be to please include the other changes in the 
+2.6.24 release.
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Thanks,
+ -Kevin
