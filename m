@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757921AbYAKIab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759837AbYAKIap@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757921AbYAKIab (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 03:30:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbYAKIaY
+	id S1759837AbYAKIap (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 03:30:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758249AbYAKIaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 03:30:24 -0500
-Received: from gate.crashing.org ([63.228.1.57]:48504 "EHLO gate.crashing.org"
+	Fri, 11 Jan 2008 03:30:35 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:37392 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753485AbYAKIaX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 03:30:23 -0500
-Message-Id: <1B75C5A8-E512-40CB-A6F3-351640701D0D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Greg KH <greg@kroah.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	id S1758251AbYAKIad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 03:30:33 -0500
+Date: Fri, 11 Jan 2008 09:30:27 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Bill Gribble <grib@billgribble.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc2 libertas_sdio fails to initialize Marvell SD8686
+Message-ID: <20080111093027.6bf61af6@poseidon.drzeus.cx>
+In-Reply-To: <87y7ayvkq1.fsf@billgribble.com>
+References: <87bq9x264q.fsf@serrano.home.billgribble.com>
+	<20071114190247.4f42aa05@poseidon.drzeus.cx>
+	<87y7ayvkq1.fsf@billgribble.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: PCI Failed to allocate mem for PCI ROM
-Date: Fri, 11 Jan 2008 02:29:28 -0600
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz
-X-Mailer: Apple Mail (2.915)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg,
+On Wed, 09 Jan 2008 14:53:58 -0500
+Bill Gribble <grib@billgribble.com> wrote:
 
-I'm getting the following message from the kernel on an embedded ppc32  
-system:
+> 
+> Any other sage advice?  I feel like the device is really close to
+> working, but I just can't get it there!  
+>
 
-PCI: Failed to allocate mem resource #9:100000@e0000000 for 0000:00:00.0
+Since you're having problems with the very first part, I'm not sure I'd agree with your assessment. ;)
 
-The HW setup is a PCIe host controller and an e1000 NIC card.  It  
-appears that pci_bus_assign_resources() is trying to call  
-pci_assign_resource() for the ROM and the resource for the ROM is  
-[100000:1fffff] where the PHB is [c0000000:dfffffff].
+The fact is that the libertas chips are extremely moody, and Marvell has the weird attitude that there is one driver and one firmware per board/implementation, not per chip model. So friction is bound to appear when we try to have a generic driver that supports all of these different revisions.
 
-It seems like the resno that pci_assign_resource is getting called  
-with is wrong and thus pci_update_resource() doesn't get called.
+So that means there's two options for you right now; experiment wildly and hope you get lucky and find how to avoid whatever bug your particular chip has, or try to get information from Marvell or Raon about how to interface with the chip.
 
-any ideas?
+Rgds
+-- 
+     -- Pierre Ossman
 
-- k
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
