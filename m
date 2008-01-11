@@ -1,75 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758055AbYAKIY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757921AbYAKIab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758055AbYAKIY3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 03:24:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbYAKIYP
+	id S1757921AbYAKIab (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 03:30:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbYAKIaY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 03:24:15 -0500
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:34107 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754167AbYAKIYF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 03:24:05 -0500
-Date: Fri, 11 Jan 2008 09:23:59 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: "Dave Young" <hidave.darkstar@gmail.com>
-Cc: "Greg KH" <gregkh@suse.de>, "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
-       James.Bottomley@hansenpartnership.com, linux-scsi@vger.kernel.org,
-       a.zummo@towertech.it, peterz@infradead.org, cbou@mail.ru,
-       linux-kernel@vger.kernel.org, "David Brownell" <david-b@pacbell.net>,
-       krh@redhat.com, stern@rowland.harvard.edu, rtc-linux@googlegroups.com,
-       spi-devel-general@lists.sourceforge.net,
-       linux1394-devel@lists.sourceforge.net, dwmw2@infradead.org,
-       davem@davemloft.net, jarkao2@gmail.com
-Subject: Re: [PATCH 0/7] convert semaphore to mutex in struct class
-Message-ID: <20080111092359.7443af68@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <a8e1da0801101833j6fd3bb56p6998e6e326858724@mail.gmail.com>
-References: <478227D5.8050402@s5r6.in-berlin.de>
-	<20080107172009.GA25943@suse.de>
-	<a8e1da0801072305x3378c195qeb0bb7027030254c@mail.gmail.com>
-	<20080108224837.GA19623@suse.de>
-	<a8e1da0801081732i3677245chef1fda1fea65f7cf@mail.gmail.com>
-	<20080109061316.GA3249@darkstar.te-china.tietoenator.com>
-	<a8e1da0801082237x37d2a56eqee6db19017499dbc@mail.gmail.com>
-	<a8e1da0801082239h198c4d45i5cd7cf183472a166@mail.gmail.com>
-	<20080110094843.GA3014@darkstar.te-china.tietoenator.com>
-	<20080110142341.71af4dc5@gondolin.boeblingen.de.ibm.com>
-	<a8e1da0801101833j6fd3bb56p6998e6e326858724@mail.gmail.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 11 Jan 2008 03:30:24 -0500
+Received: from gate.crashing.org ([63.228.1.57]:48504 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753485AbYAKIaX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 03:30:23 -0500
+Message-Id: <1B75C5A8-E512-40CB-A6F3-351640701D0D@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Greg KH <greg@kroah.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: PCI Failed to allocate mem for PCI ROM
+Date: Fri, 11 Jan 2008 02:29:28 -0600
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz
+X-Mailer: Apple Mail (2.915)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Jan 2008 10:33:16 +0800,
-"Dave Young" <hidave.darkstar@gmail.com> wrote:
+Greg,
 
+I'm getting the following message from the kernel on an embedded ppc32  
+system:
 
-> > > +struct device *class_find_device(struct class *class, void *data,
-> > > +                                int (*match)(struct device *, void *))
-> > > +{
-> > > +     struct device *dev;
-> > > +
-> > > +     if (!class)
-> > > +             return NULL;
-> > > +
-> > > +     mutex_lock(&class->mutex);
-> > > +     list_for_each_entry(dev, &class->devices, node)
-> > > +             if (match(dev, data) && get_device(dev))
-> >
-> > First get the reference and then drop it if the match function returns
-> > 0 to make this analogous to the other _find_device() functions?
-> 
-> It's just like other _find_device() functions. Are these more get/put
-> really needed?
+PCI: Failed to allocate mem resource #9:100000@e0000000 for 0000:00:00.0
 
-The other _find_device() functions operate on klists, which means that
-there is an implicit get while the element is handled. This function
-operates on a normal list, which means that getting/putting the
-reference looks a bit different if we want the same effect.
+The HW setup is a PCIe host controller and an e1000 NIC card.  It  
+appears that pci_bus_assign_resources() is trying to call  
+pci_assign_resource() for the ROM and the resource for the ROM is  
+[100000:1fffff] where the PHB is [c0000000:dfffffff].
+
+It seems like the resno that pci_assign_resource is getting called  
+with is wrong and thus pci_update_resource() doesn't get called.
+
+any ideas?
+
+- k
