@@ -1,50 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763035AbYAKWx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763189AbYAKWxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763035AbYAKWx2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 17:53:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761500AbYAKWwu
+	id S1763189AbYAKWxl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 17:53:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761955AbYAKWxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 17:52:50 -0500
-Received: from mail01d.mail.t-online.hu ([84.2.42.6]:57850 "EHLO
-	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760101AbYAKWws (ORCPT
+	Fri, 11 Jan 2008 17:53:14 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:1059 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762905AbYAKWxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 17:52:48 -0500
-Subject: [PATCH 6/10] kconfig: gconfig: symbol fix
-From: EGRY Gabor <gaboregry1@t-online.hu>
-To: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-kernel@zh-kernel.org
-Content-Type: text/plain
-Date: Fri, 11 Jan 2008 23:49:12 +0100
-Message-Id: <1200091752.10603.44.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Jan 2008 17:53:11 -0500
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: cfriesen@nortel.com (Chris Friesen)
+Subject: Re: questions on NAPI processing latency and dropped network packets
+Cc: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Organization: Core
+In-Reply-To: <4787844E.4020107@nortel.com>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1JDSNG-0008No-00@gondolin.me.apana.org.au>
+Date: Sat, 12 Jan 2008 09:29:14 +1100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Chris Friesen <cfriesen@nortel.com> wrote:
+>
+> I'd love to work on newer kernels, but we have a commitment to our 
+> customers to support multiple releases for a significant amount of time.
 
-Gettext support for symbol names are unnecessary.
+Since you've made the commitment, you should stick to it and resolve
+the issues without asking us to contribute.  After all we haven't made
+that commitment to you or your customers.
 
-Signed-off-by: Egry Gabor <gaboregry1@t-online.hu>
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
----
-
- kbuild-szilard/scripts/kconfig/gconf.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff -puN scripts/kconfig/gconf.c~kconfig-i18n-11-gconfig-symbol-fix scripts/kconfig/gconf.c
---- kbuild/scripts/kconfig/gconf.c~kconfig-i18n-11-gconfig-symbol-fix	2008-01-11 22:27:14.000000000 +0100
-+++ kbuild-szilard/scripts/kconfig/gconf.c	2008-01-11 22:27:14.000000000 +0100
-@@ -466,7 +466,7 @@ static void text_insert_help(struct menu
- 		help = _(help);
- 
- 	if (menu->sym && menu->sym->name)
--		name = g_strdup_printf(_(menu->sym->name));
-+		name = g_strdup_printf(menu->sym->name);
- 	else
- 		name = g_strdup("");
- 
-_
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
