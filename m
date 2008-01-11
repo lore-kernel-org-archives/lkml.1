@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762151AbYAKRvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762217AbYAKRxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762151AbYAKRvw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 12:51:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759502AbYAKRvp
+	id S1762217AbYAKRxf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 12:53:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761489AbYAKRx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 12:51:45 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:33529 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759283AbYAKRvn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 12:51:43 -0500
-X-IronPort-AV: E=Sophos;i="4.24,272,1196658000"; 
-   d="scan'208";a="46602007"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>
-Subject: Re: [patch] split MMC_CAP_4_BIT_DATA
-Date: Fri, 11 Jan 2008 12:52:02 -0500
-User-Agent: KMail/1.9.5
-Cc: "Mike Frysinger" <vapier.adi@gmail.com>,
-       "Bryan Wu" <cooloney.lkml@gmail.com>,
-       "Cai, Cliff" <Cliff.Cai@analog.com>, linux-kernel@vger.kernel.org
-References: <386072610801081832w2befcbafwe9215067f022ed5d@mail.gmail.com> <8bd0f97a0801110108l66ab2bcdjb1323573445473f@mail.gmail.com> <20080111103532.2789b74f@poseidon.drzeus.cx>
-In-Reply-To: <20080111103532.2789b74f@poseidon.drzeus.cx>
+	Fri, 11 Jan 2008 12:53:27 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:60309 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760707AbYAKRx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 12:53:26 -0500
+Message-ID: <4787ACF1.7040501@redhat.com>
+Date: Fri, 11 Jan 2008 12:52:49 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Filippos Papadopoulos <psybases@gmail.com>, linux-scsi@vger.kernel.org,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: INITIO scsi driver fails to work properly
+References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com>	 <9f00bd9d0712170341u7fef1fc9pc9986dda1a0475cb@mail.gmail.com>	 <47666904.8060605@panasas.com>	 <9f00bd9d0712190048g60d79ma067ba85b5553459@mail.gmail.com>	 <476C1472.1040103@redhat.com>	 <1198271036.3130.60.camel@localhost.localdomain>	 <476C4177.3030902@redhat.com>	 <1198277391.3130.73.camel@localhost.localdomain>	 <9f00bd9d0801031618l324e9078i56b0679a35e27f69@mail.gmail.com>	 <1200028577.5337.8.camel@localhost.localdomain>	 <9f00bd9d0801110154i3b2f9c1flf076823747950196@mail.gmail.com> <1200066295.3286.19.camel@localhost.localdomain>
+In-Reply-To: <1200066295.3286.19.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801111252.02285.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 11 Jan 2008 17:50:55.0054 (UTC) FILETIME=[839766E0:01C8547A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 11 Jan 2008 04:35, Pierre Ossman pondered:
-> On Fri, 11 Jan 2008 04:08:53 -0500
-> "Mike Frysinger" <vapier.adi@gmail.com> wrote:
+On 01/11/2008 10:44 AM, James Bottomley wrote:
+>>> This proves the BAR0 to be non zero, but I also take it from your report
+>>> that the
+>>>
+>>> initio: I/O port range 0x0 is busy.
+>>>
+>>> message is also gone?
+>>>
+>>
+>> I havent reported "initio: I/O port range 0x0 is busy."
 > 
-> > On Jan 11, 2008 3:40 AM, Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
-> > > So it's far more probable that you've misdiagnosed your error than
-> this being the actual problem.
-> > 
-> > the guys who design the silicon are telling us it doesnt work.  our
-> > tests show it not working.  i'm not sure what else you want here.
-> > 
+> Sorry ... we appear to have several reporters of different bugs in this
+> thread.  That message was copied by Chuck Ebbert from a Red Hat
+> bugzilla ... I was assuming it was the same problem.
 > 
-> More information. You have not provided any speculation as to why it
-> doesn't work, or what you've done to figure it out.
 
-I have been trying to get the detailed information from the hardware (silicon 
-designer) guy about why he believes support for 4-bit MMC is not there, but I 
-have not heard back yet.
-
-As soon as I hear from them - and either understand why 4-bit MMC doesn't 
-work, or if the Blackfin docs are incorrect (either is OK outcome) - I will 
-let you know.
-
-Thanks
--Robin
+Our reporter has applied patches since then and now reports the exact
+same symptoms that Filippos does. (It just hangs after loading the driver.)
