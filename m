@@ -1,91 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759704AbYAKOVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761528AbYAKOW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759704AbYAKOVy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 09:21:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761281AbYAKOVf
+	id S1761528AbYAKOW0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 09:22:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756150AbYAKOWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 09:21:35 -0500
-Received: from styx.suse.cz ([82.119.242.94]:50558 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761242AbYAKOVd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 09:21:33 -0500
-Date: Fri, 11 Jan 2008 15:21:31 +0100
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, supriyak@in.ibm.com
-Subject: Re: [PATCH] Fix private_list handling
-Message-ID: <20080111142130.GA28698@duck.suse.cz>
-References: <20080110154959.GA12697@duck.suse.cz> <20080110155513.GB12697@duck.suse.cz> <20080110163635.33e7640e.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080110163635.33e7640e.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 11 Jan 2008 09:22:03 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:16891 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758092AbYAKOWA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 09:22:00 -0500
+Date: Fri, 11 Jan 2008 09:21:06 -0500
+From: Chris Mason <chris.mason@oracle.com>
+To: Neil Brown <neilb@suse.de>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
+       "Bryn M. Reeves" <breeves@redhat.com>
+Subject: Re: [PATCH][RFC] fast file mapping for loop
+Message-ID: <20080111092106.3ff29814@think.oraclecorp.com>
+In-Reply-To: <18310.41918.555194.701639@notabene.brown>
+References: <20080109085231.GE6650@kernel.dk>
+	<20080109231628.GB4039@agk.fab.redhat.com>
+	<20080110083130.GP6258@kernel.dk>
+	<20080110074738.6be1c1ad@think.oraclecorp.com>
+	<20080110125740.GY6258@kernel.dk>
+	<18310.41918.555194.701639@notabene.brown>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 10-01-08 16:36:35, Andrew Morton wrote:
-> On Thu, 10 Jan 2008 16:55:13 +0100
-> Jan Kara <jack@suse.cz> wrote:
-> 
-> >   Hi,
-> > 
-> >   sorry for the previous empty email...
-> > 
-> >   Supriya noted in his testing that sometimes buffers removed by
-> > __remove_assoc_queue() don't have b_assoc_mapping set (and thus IO error
-> > won't be properly propagated). Actually, looking more into the code I found
-> > there are some more races. The patch below should fix them. It survived
-> > beating with LTP and fsstress on ext2 filesystem on my testing machine so
-> > it should be reasonably bugfree... Andrew, would you put the patch into
-> > -mm? Thanks.
-> > 
-> > 								Honza
-> > -- 
-> > Jan Kara <jack@suse.cz>
-> > SUSE Labs, CR
-> > ---
-> > 
-> > There are two possible races in handling of private_list in buffer cache.
-> > 1) When fsync_buffers_list() processes a private_list, it clears
-> > b_assoc_mapping and moves buffer to its private list. Now drop_buffers() comes,
-> > sees a buffer is on list so it calls __remove_assoc_queue() which complains
-> > about b_assoc_mapping being cleared (as it cannot propagate possible IO error).
-> > This race has been actually observed in the wild.
-> 
-> private_lock should prevent this race.
-> 
-> Which call to drop_buffers() is the culprit?  The first one in
-> try_to_free_buffers(), I assume?  The "can this still happen?" one?
-> 
-> If so, it can happen.  How?  Perhaps this is a bug.
-  Good question but I don't think so. The problem is that
-fsync_buffers_list() drops the private_lock() e.g. when it does
-wait_on_buffer(). And buffers on the list fsync_buffers_list() constructs
-have b_assoc_mapping set to NULL but the test
-!list_empty(bh->b_assoc_buffers) succeeds for them and thus
-__remove_assoc_queue() is called and it complains.
-  We could also silence the warning by leaving b_assoc_mapping set when we
-move the buffer to the constructed list. But given the problem below
-I've decided to do a more complete cleanup of the code.
+On Fri, 11 Jan 2008 10:01:18 +1100
+Neil Brown <neilb@suse.de> wrote:
 
-> > 2) When fsync_buffers_list() processes a private_list,
-> > mark_buffer_dirty_inode() can be called on bh which is already on the private
-> > list of fsync_buffers_list(). As buffer is on some list (note that the check is
-> > performed without private_lock), it is not readded to the mapping's
-> > private_list and after fsync_buffers_list() finishes, we have a dirty buffer
-> > which should be on private_list but it isn't. This race has not been reported,
-> > probably because most (but not all) callers of mark_buffer_dirty_inode() hold
-> > i_mutex and thus are serialized with fsync().
+> On Thursday January 10, jens.axboe@oracle.com wrote:
+> > On Thu, Jan 10 2008, Chris Mason wrote:
+> > > On Thu, 10 Jan 2008 09:31:31 +0100
+> > > Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > 
+> > > > On Wed, Jan 09 2008, Alasdair G Kergon wrote:
+> > > > > Here's the latest version of dm-loop, for comparison.
+> > > > > 
+> > > > > To try it out, 
+> > > > >   ln -s dmsetup dmlosetup
+> > > > > and supply similar basic parameters to losetup.
+> > > > > (using dmsetup version 1.02.11 or higher)
+> > > > 
+> > > > Why oh why does dm always insist to reinvent everything? That's
+> > > > bad enough in itself, but on top of that most of the extra
+> > > > stuff ends up being essentially unmaintained.
+> > > 
+> > > I don't quite get how the dm version is reinventing things.  They
+> > > use
+> > 
+> > Things like raid, now file mapping functionality. I'm sure there are
+> > more examples, it's how dm was always developed probably originating
+> > back to when they developed mostly out of tree. And I think it's a
+> > bad idea, we don't want duplicate functionality. If something is
+> > wrong with loop, fix it, don't write dm-loop.
 > 
-> Maybe fsync_buffers_list should put the buffer back onto private_list if it
-> got dirtied again.
-  Yes, that's what it does in my new version. Only the locking is a bit
-subtle if we want to avoid taking private_lock in mark_buffer_dirty_inode()
-when the buffer is already on some list...
+> I'm with Jens here.
+> 
+> We currently have two interfaces that interesting block devices can be
+> written for: 'dm' and 'block'.
+> We really should aim to have just one.  I would call it 'block' and
+> move anything really useful from dm into block.
+> 
+> As far as I can tell, the important things that 'dm' has that 'block'
+> doesn't have are:
+> 
+>   - a standard ioctl interface for assembling and creating interesting
+>      devices.
+>      For 'block', everybody just rolls there own. e.g. md, loop, and
+>      nbd all use totally different approaches for setup and tear down
+>      etc. 
+> 
+>   - suspend/reconfigure/resume.
+>     This is something that I would really like to see in 'block'.  If
+>     I had a filesystem mounted on /dev/sda1 and I wanted to make it a
+>     raid1, it would be cool if I could
+> 	suspend /dev/sda1
+> 	build a raid1 from sda1 and something else
+> 	plug tha raid1 in as 'sda1'.
+> 	resume sda1
+> 
+>   - Integrated 'linear' mapping.
+>     This is the bit of 'dm' that I think of as yucky.  If I read the
+>     code correctly, every dm device is a linear array of a bunch of
+>     targets.  Each target can be a stripe-set(raid0) or a multipath or
+>     a raid1 or a plain block device or whatever.
+>     Having 'linear' at a different level to everything else seems a
+>     bit ugly, but it isn't really a big deal.
+>
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+DM is also a framework where you can introduce completely new types of
+block devices without having to go through the associated pain of
+finding major numbers.  In terms of developing new things with greater
+flexibility, I think it is easier.
+ 
+> I would really like to see every 'dm' target being just a regular
+> 'block' device.  Then a 'linear' block device could be used to
+> assemble dm targets into a dm device.  Or the targets could be used
+> directly if the 'linear' function wasn't needed.
+> 
+> Each target/device could respond to both dm ioctls and 'adhoc'
+> ioctls.  That is a bit ugly, but backwards compatibility always is,
+> but it isn't a big cost.
+> 
+> I think the way forward here is to put the important
+> suspend/reconfig/resume functionality into the block layer, then
+> work on making code work with multiple ioctl interfaces.
+> 
+> I *don't* think the way forward is to duplicate current block devices
+> as dm targets.  This is duplication of effort (which I admit isn't
+> always a bad thing) and a maintenance headache (which is).
+> 
+
+raid in dm aside (that's an entirely different debate ;), loop is a
+pile of things which dm can nicely layer out into pieces (dm-crypt vs
+loopback crypt).  Also, dm doesn't have to jump through hoops to get a
+variable number of minors.
+
+Yes, the loop side was recently improved for # of minors, and it does
+have enough in there for userland to do variable number of minors, but
+this is one specific case where dm is just easier.
+
+At any rate, I'm all for ideas that make dm less of the evil stepchild
+of the block layer ;)  I'm not saying everything should be dm, but I
+did want to point out that dm-loop isn't entirely silly.
+
+I have a version of Jens' patch in testing here that makes a new API
+with the FS for mapping extents and hope to post it later today.
+
+-chris
