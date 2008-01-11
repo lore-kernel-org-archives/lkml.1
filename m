@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761944AbYAKURa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762615AbYAKUSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761944AbYAKURa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 15:17:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762482AbYAKURV
+	id S1762615AbYAKUSt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 15:18:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761898AbYAKUSm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 15:17:21 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:48992 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762419AbYAKURS (ORCPT
+	Fri, 11 Jan 2008 15:18:42 -0500
+Received: from mail.intcomgrp.com ([216.54.13.100]:18955 "EHLO
+	mailsrv.intcomgrp.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759032AbYAKUSm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 15:17:18 -0500
-Date: Fri, 11 Jan 2008 13:17:16 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Greg KH <gregkh@suse.de>, Arjan van de Ven <arjan@infradead.org>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Martin Mares <mj@ucw.cz>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver opt-in
-Message-ID: <20080111201716.GO18741@parisc-linux.org>
-References: <20071225032605.29147200@laptopd505.fenrus.org> <20080111190229.GB10112@kroah.com> <20080111192820.GM18741@parisc-linux.org> <20080111114002.3e59d1ad@laptopd505.fenrus.org> <20080111194524.GA17170@suse.de> <20080111194931.GN18741@parisc-linux.org> <alpine.LFD.1.00.0801111156230.3148@woody.linux-foundation.org>
+	Fri, 11 Jan 2008 15:18:42 -0500
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0801111156230.3148@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Subject: RE: > 100% CPU usage
+Date: Fri, 11 Jan 2008 15:19:08 -0500
+Message-ID: <3DBBD805E3BA064A87F551C0E8BD3674ADE5B0@MAILSRV.intcomgrp.com>
+In-Reply-To: <E1JDNrP-0002Py-FH@faramir.fjphome.nl>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: > 100% CPU usage
+Thread-Index: AchUeNXK3Be8BvIQSXmKGZQJWo7A+QAFkqmg
+References: <47878566.6050508@intcomgrp.com> <E1JDNrP-0002Py-FH@faramir.fjphome.nl>
+From: "James Kosin" <JKosin@intcomgrp.com>
+To: "Frans Pop" <elendil@planet.nl>
+Cc: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 11, 2008 at 11:58:23AM -0800, Linus Torvalds wrote:
-> On Fri, 11 Jan 2008, Matthew Wilcox wrote:
-> > 
-> > So your argument is that MMCONFIG sucks, therefore Linux has to have a
-> > horrible interface to extended PCI config space?
-> 
-> What's *your* point?
-> 
-> MMCONFIG is known broken. If we ever start enabling it more (ie start 
-> using it even if it's not reserved in the e820 tables), all that known 
-> breakage will come and bite us in the *ss.
 
-Ivan's patch doesn't start enabling MMCONFIG in more places than we
-currently do.  It makes us use conf1 accesses for all accesses below
-256 bytes.  That fixes all known problems to date.
+Thanks! 
 
-> We need to have some armor-plated underwear to protect against that 
-> ass-biting, and that's what Arjan's patch is. 
-> 
-> Tell me what *other* armor plating you could have that actually works?
 
-The armour plating that already exists -- pci=nommconf.
+-----Original Message-----
+From: Frans Pop [mailto:elendil@planet.nl] 
+Sent: Friday, January 11, 2008 12:40 PM
+To: James Kosin
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: > 100% CPU usage
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+James Kosin wrote:
+> Anyone remember the patch / patches done for the 2.6 series that 
+> related to top reporting > 100% CPU usage?
+
+Do you mean these perhaps?
+- 73a2bcb0edb9ffb0b007b3546b430e2c6e415eee
+- 9301899be75b464ef097f0b5af7af6d9bd8f68a7
+
+Cheers,
+FJP
+
