@@ -1,214 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760910AbYAKJdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761204AbYAKJdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760910AbYAKJdA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 04:33:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754694AbYAKJcv
+	id S1761204AbYAKJdW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 04:33:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759396AbYAKJdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 04:32:51 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47248 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754027AbYAKJcs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 04:32:48 -0500
-Date: Fri, 11 Jan 2008 10:32:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: nigel@nigel.suspend2.net
-Cc: Jens Axboe <jens.axboe@oracle.com>, David Dillow <dillowda@ornl.gov>,
-       Guillaume Chazarain <guichaz@yahoo.fr>, linux-kernel@vger.kernel.org,
-       linux-btrace@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de
-Subject: Re: CONFIG_NO_HZ breaks blktrace timestamps
-Message-ID: <20080111093211.GC8143@elte.hu>
-References: <1199918912.8388.13.camel@lap75545.ornl.gov> <1199996752.9159.46.camel@lap75545.ornl.gov> <20080110234438.4826f658@inria.fr> <1200020661.5099.3.camel@obelisk.thedillows.org> <20080111090723.GI6258@kernel.dk> <478736C6.3080802@suspend2.net>
+	Fri, 11 Jan 2008 04:33:10 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:39087 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758264AbYAKJdJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 04:33:09 -0500
+Date: Fri, 11 Jan 2008 09:33:07 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: marcin.slusarz@gmail.com
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 00/16] udf: cleanup
+Message-ID: <20080111093307.GB16566@infradead.org>
+References: <1200002792-8449-1-git-send-email-marcin.slusarz@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <478736C6.3080802@suspend2.net>
+In-Reply-To: <1200002792-8449-1-git-send-email-marcin.slusarz@gmail.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* nigel@suspend2.net <nigel@suspend2.net> wrote:
-
-> >>> Just out of curiosity, could you try the appended cumulative patch 
-> >>> and report .clock_warps, .clock_overflows and .clock_underflows as 
-> >>> you did.
-> >> With those patches, CONFIG_NO_HZ works just fine.
+On Thu, Jan 10, 2008 at 11:06:16PM +0100, marcin.slusarz@gmail.com wrote:
+> Hi
 > 
-> Could these patches also help with hibernation issues? I'm trying 
-> x86_64+NO_HZ, and seeing activity delayed during the atomic copy and 
-> afterwards until I manually generate interrupts (by pressing keys).
+> This patchset contains various UDF fs cleanups.
+> It deprecates two patchsets I sent lately:
+> 
+> http://lkml.org/lkml/2008/1/5/196 [PATCH 0/6] udf: improve code related to super_block v3
+> http://lkml.org/lkml/2008/1/5/211 [PATCH 0/7] udf: more cleanups
+> 
+> I hope I addressed all comments sent by Christoph Hellwig and Jan Kara.
+> Thanks for review!
 
-i dont think that should be related to cpu_clock() use. Does the patch 
-below make any difference? (or could you try x86.git to get the whole 
-stack of x86 changes that we have at the moment.) Here's the coordinates 
-for x86.git:
+The whole patch series looks fine to me.
 
---------------{ x86.git instructions }---------->
-
-# Add Linus's tree as a remote
-git remote --add linus
-git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-
-# Add Ingo's tree as a remote
-git remote --add x86
-git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
-
-# With that setup, just run the following to get any changes you
-# don't have.  It will also notice any new branches Ingo/Linus
-# add to their repo.  Look in .git/config afterwards, the format
-# to add new remotes is easy to figure out.
-git remote update
-
-	Ingo
-
------------>
-Subject: x86: kick CPUS that might be sleeping in cpus_idle_wait
-From: Steven Rostedt <rostedt@goodmis.org>
-
-Sometimes cpu_idle_wait gets stuck because it might miss CPUS that are
-already in idle, have no tasks waiting to run and have no interrupts going
-to them.  This is common on bootup when switching cpu idle governors.
-
-This patch gives those CPUS that don't check in an IPI kick.
-
-Background:
------------
-I notice this while developing the mcount patches, that every once in a
-while the system would hang. Looking deeper, the hang was always at boot
-up when registering init_menu of the cpu_idle menu governor. Talking
-with Thomas Gliexner, we discovered that one of the CPUS had no timer
-events scheduled for it and it was in idle (running with NO_HZ). So the
-CPU would not set the cpu_idle_state bit.
-
-Hitting sysrq-t a few times would eventually route the interrupt to the
-stuck CPU and the system would continue.
-
-Note, I would have used the PDA isidle but that is set after the
-cpu_idle_state bit is cleared, and would leave a window open where we
-may miss being kicked.
-
-hmm, looking closer at this, we still have a small race window between
-clearing the cpu_idle_state and disabling interrupts (hence the RFC).
-
-    CPU0:                          CPU 1:
-  ---------                       ---------
- cpu_idle_wait():                 cpu_idle():
-      |                           __cpu_cpu_var(is_idle) = 1;
-      |                           if (__get_cpu_var(cpu_idle_state)) /* == 0 */
- per_cpu(cpu_idle_state, 1) = 1;         |
- if (per_cpu(is_idle, 1)) /* == 1 */     |
- smp_call_function(1)                    |
-      |                             receives ipi and runs do_nothing.
- wait on map == empty               idle();
-   /* waits forever */
-
-So really we need interrupts off for most of this then. One might think
-that we could simply clear the cpu_idle_state from do_nothing, but I'm
-assuming that cpu_idle governors can be removed, and this might cause a
-race that a governor might be used after the module was removed.
-
-Venki said:
-
-  I think your RFC patch is the right solution here.  As I see it, there is
-  no race with your RFC patch.  As long as you call a dummy smp_call_function
-  on all CPUs, we should be OK.  We can get rid of cpu_idle_state and the
-  current wait forever logic altogether with dummy smp_call_function.  And so
-  there wont be any wait forever scenario.
-
-  The whole point of cpu_idle_wait() is to make all CPUs come out of idle
-  loop atleast once.  The caller will use cpu_idle_wait something like this.
-
-  // Want to change idle handler
-
-  - Switch global idle handler to always present default_idle
-
-  - call cpu_idle_wait so that all cpus come out of idle for an instant
-    and stop using old idle pointer and start using default idle
-
-  - Change the idle handler to a new handler
-
-  - optional cpu_idle_wait if you want all cpus to start using the new
-    handler immediately.
-
-Maybe the below 1s patch is safe bet for .24.  But for .25, I would say we
-just replace all complicated logic by simple dummy smp_call_function and
-remove cpu_idle_state altogether.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Andi Kleen <ak@suse.de>
-Cc: Len Brown <lenb@kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/process_32.c |   11 +++++++++++
- arch/x86/kernel/process_64.c |   11 +++++++++++
- 2 files changed, 22 insertions(+)
-
-Index: linux-x86.q/arch/x86/kernel/process_32.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/process_32.c
-+++ linux-x86.q/arch/x86/kernel/process_32.c
-@@ -214,6 +214,10 @@ void cpu_idle(void)
- 	}
- }
- 
-+static void do_nothing(void *unused)
-+{
-+}
-+
- void cpu_idle_wait(void)
- {
- 	unsigned int cpu, this_cpu = get_cpu();
-@@ -238,6 +242,13 @@ void cpu_idle_wait(void)
- 				cpu_clear(cpu, map);
- 		}
- 		cpus_and(map, map, cpu_online_map);
-+		/*
-+		 * We waited 1 sec, if a CPU still did not call idle
-+		 * it may be because it is in idle and not waking up
-+		 * because it has nothing to do.
-+		 * Give all the remaining CPUS a kick.
-+		 */
-+		smp_call_function_mask(map, do_nothing, 0, 0);
- 	} while (!cpus_empty(map));
- 
- 	set_cpus_allowed(current, tmp);
-Index: linux-x86.q/arch/x86/kernel/process_64.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/process_64.c
-+++ linux-x86.q/arch/x86/kernel/process_64.c
-@@ -204,6 +204,10 @@ void cpu_idle(void)
- 	}
- }
- 
-+static void do_nothing(void *unused)
-+{
-+}
-+
- void cpu_idle_wait(void)
- {
- 	unsigned int cpu, this_cpu = get_cpu();
-@@ -228,6 +232,13 @@ void cpu_idle_wait(void)
- 				cpu_clear(cpu, map);
- 		}
- 		cpus_and(map, map, cpu_online_map);
-+		/*
-+		 * We waited 1 sec, if a CPU still did not call idle
-+		 * it may be because it is in idle and not waking up
-+		 * because it has nothing to do.
-+		 * Give all the remaining CPUS a kick.
-+		 */
-+		smp_call_function_mask(map, do_nothing, 0, 0);
- 	} while (!cpus_empty(map));
- 
- 	set_cpus_allowed(current, tmp);
