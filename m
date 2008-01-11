@@ -1,82 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760738AbYAKK3H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761012AbYAKKaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760738AbYAKK3H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 05:29:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755954AbYAKK24
+	id S1761012AbYAKKaT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 05:30:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757840AbYAKKaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 05:28:56 -0500
-Received: from as4.cineca.com ([130.186.84.213]:51870 "EHLO as1.cineca.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755731AbYAKK2z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 05:28:55 -0500
-Message-ID: <478744D7.2070802@users.sourceforge.net>
-From: Andrea Righi <righiandr@users.sourceforge.net>
-Reply-To: righiandr@users.sourceforge.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070604 Thunderbird/1.5.0.12 Mnenhy/0.7.5.666
+	Fri, 11 Jan 2008 05:30:06 -0500
+Received: from pip10.gyao.ne.jp ([61.122.117.248]:31255 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755954AbYAKKaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 05:30:04 -0500
+Date: Fri, 11 Jan 2008 19:29:30 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>,
+       Mathieu Segaud <mathieu.segaud@regala.cx>,
+       Richard Knutsson <ricknu-0@student.ltu.se>,
+       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] [Coding Style]: fs/ext{3,4}/ext{3,4}_jbd{,2}.c
+Message-ID: <20080111102930.GA31581@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Roel Kluin <12o3l@tiscali.nl>, Al Viro <viro@ZenIV.linux.org.uk>,
+	Mathieu Segaud <mathieu.segaud@regala.cx>,
+	Richard Knutsson <ricknu-0@student.ltu.se>,
+	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org, linux-ext4@vger.kernel.org
+References: <1199452896-20145-3-git-send-email-mathieu.segaud@regala.cx> <1199452896-20145-4-git-send-email-mathieu.segaud@regala.cx> <1199452896-20145-5-git-send-email-mathieu.segaud@regala.cx> <477E379F.4000103@student.ltu.se> <20080105041228.GP3351@webber.adilger.int> <20080105051817.GD27894@ZenIV.linux.org.uk> <4786883E.30604@tiscali.nl> <20080111030945.27954.qmail@cdy.org> <20080111034240.GA29861@linux-sh.org> <47873ABA.5050604@tiscali.nl>
 MIME-Version: 1.0
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [RFC][PATCH] per-task I/O throttling
-References: <47869FFE.1050000@users.sourceforge.net> <4786CB57.9060000@tmr.com>
-In-Reply-To: <4786CB57.9060000@tmr.com>
-X-Enigmail-Version: 0.95.0
-OpenPGP: id=77CEF397;
-	url=keyserver.veridis.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Date: Fri, 11 Jan 2008 11:28:39 +0100 (MET)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47873ABA.5050604@tiscali.nl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Davidsen wrote:
-> Andrea Righi wrote:
->> Allow to limit the bandwidth of I/O-intensive processes, like backup
->> tools running in background, large files copy, checksums on huge files,
->> etc.
->>
->> This kind of processes can noticeably impact the system responsiveness
->> for some time and playing with tasks' priority is not always an
->> acceptable solution.
->>
->> This patch allows to specify a maximum I/O rate in sectors per second
->> for each single process via /proc/<PID>/io_throttle (default is zero,
->> that specify no limit).
->>
-> It would seem to me that this would be vastly more useful in the real 
-> world if there were a settable default, so that administrators could 
-> avoid having to find and tune individual user processes. And it would 
-> seem far less common that the admin would want to set the limit *up* for 
-> a given process, and it's likely to be one known to the admin, at least 
-> by name.
+On Fri, Jan 11, 2008 at 10:45:30AM +0100, Roel Kluin wrote:
+> Paul Mundt wrote:
+> > On Fri, Jan 11, 2008 at 04:09:45AM +0100, Peter Stuge wrote:
+> >> On Thu, Jan 10, 2008 at 10:03:58PM +0100, Roel Kluin wrote:
+> >>> -#define DEBUG(x,args...)	printk(__FUNCTION__ ": " x,##args)
+> >>> +#define DEBUG(x, args...)	printk("%s: ", __func__, x, ##args)
+> >> Can this really be expected to work when x contains conversions?
+> >>
+> >> How about:
+> >>
+> >> #define DEBUG(x, args...) printk("%s: " x, __func__, ##args)
+> >>
+> > How about throwing out hand-rolled debug printk wrappers for the
+> > brain-damage they are and using the ones the kernel provides instead?
+> > 
+> Should it be done like this?
+> --
+> Replace printk wrapper - with a syntax error - by pr_debug
 > 
-> Of course if you want to do the effort to make it fully tunable, it 
-> could have a default by UID or GID. Usful on machines shared by students 
-> or managers.
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 
-At the moment I'm simply using it to backup my PC by this wrapper:
+Close. But in this case #define DEBUG is already instrumented by the
+subsystem-wide debug option if it's enabled, so it's preferable to use
+that and just drop the special debug Kconfig option completely.
 
-$ cat iothrottle
-#!/bin/sh
-[ $# -lt 2 ] && echo "usage: $0 RATE CMD" && exit 1
-rate=$1
-shift
-$* &
-trap "kill -9 $!" SIGINT SIGTERM
-[ -e /proc/$!/io_throttle ] && echo $rate >/proc/$!/io_throttle
-wait %1
-$ ./iothrottle 100 tar ...
+Take a look at how CONFIG_PCMCIA_DEBUG is handled.
 
-But I totally agree with you that setting the limits per-UID/per-GID,
-instead of per-task, would be actually more useful.
-
-Maybe a nice approach would be to define the UID/GID upper bounds via
-configfs (for example) and allow the users to tune the max I/O rate of
-their single tasks according to the defined ranges. In this way it could
-be even possible to define I/O shaping policies, i.e. give a bandwidth
-of 10MB/s to user A, 20MB/s to user B, 30MB/s to group X, etc.
-
-Anyway, I'm wondering if it's possible (and how) to already do this with
-process containers...
-
--Andrea
+With DEBUG()->pr_debug() conversion here you've silently dropped the
+__func__ prefixing. Note that dev_dbg() is usually preferred when you can
+get a hold of a struct device pointer, as it takes care of prettifying
+the output with the driver name and so on, rather than the convention of
+adding a prefix. If you can't get at the struct device pointer, you'll
+probably just want to insert the __func__ prefixing manually at the
+callsites.
