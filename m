@@ -1,77 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbYAKGRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759069AbYAKGXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758110AbYAKGRS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 01:17:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbYAKGRF
+	id S1759069AbYAKGXc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 01:23:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbYAKGXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 01:17:05 -0500
-Received: from py-out-1112.google.com ([64.233.166.181]:19871 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751270AbYAKGRC (ORCPT
+	Fri, 11 Jan 2008 01:23:21 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46824
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751173AbYAKGXV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 01:17:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jbeM2YnJdy/OgMpmCHgEzvU65VPRyfBG27uVTmlGzK+vG25mKMFHGAP7lhQNuzKTn3tDjTgP4GtCyCX8PJ8gQB4s0fnq5kurKcjZDCIXnnjOi0mPy3AmFN/sL6++n/M8JM0M7QoCQxpUn/+ngYgWX+yoefyFuA1i/La8Fg2Ubu0=
-Message-ID: <386072610801102217u1739d7d7v497e73a38aa876c2@mail.gmail.com>
-Date: Fri, 11 Jan 2008 14:17:01 +0800
-From: "Bryan Wu" <cooloney.lkml@gmail.com>
-To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>
-Subject: Re: [patch] split MMC_CAP_4_BIT_DATA
-Cc: "Cai, Cliff" <Cliff.Cai@analog.com>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080110125748.416ad0c5@poseidon.drzeus.cx>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 11 Jan 2008 01:23:21 -0500
+Date: Thu, 10 Jan 2008 22:23:20 -0800 (PST)
+Message-Id: <20080110.222320.247508342.davem@davemloft.net>
+To: hidave.darkstar@gmail.com
+Cc: marcel@holtmann.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       bluez-devel@lists.sourceforge.net
+Subject: Re: [PATCH] bluetooth : rfcomm tty BUG_ON() code fix
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080107054122.GA4502@darkstar.te-china.tietoenator.com>
+References: <20080107054122.GA4502@darkstar.te-china.tietoenator.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <386072610801081832w2befcbafwe9215067f022ed5d@mail.gmail.com>
-	 <0F1B54C89D5F954D8535DB252AF412FA014FAD4A@chinexm1.ad.analog.com>
-	 <20080109082325.212ec90d@poseidon.drzeus.cx>
-	 <386072610801090845r14510fb8tbcca76d605458a96@mail.gmail.com>
-	 <20080110095428.3b93fd18@poseidon.drzeus.cx>
-	 <386072610801100122n52339488ke2b8724c390be765@mail.gmail.com>
-	 <20080110125748.416ad0c5@poseidon.drzeus.cx>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 10, 2008 7:57 PM, Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
-> On Thu, 10 Jan 2008 17:22:55 +0800
-> "Bryan Wu" <cooloney.lkml@gmail.com> wrote:
->
-> >
-> > At page 4-3 of  ADSP-BF54x Blackfin(R) Processor Peripheral Hardware
-> > Reference, there is a table which guide us the SDH controller does not
-> > support 4-bit mode MMC card. Please found the table picture in the
-> > attachment or get the document at:
-> > http://www.analog.com/UploadedFiles/Associated_Docs/61460151169789ADSP_BF54x_Blackfin_Processor_Peripheral_Hardware_Reference.pdf
-> >
->
-> Ok, but this just means the controller wasn't designed with 4-bit MMC in mind. As several other "SD-only" controller have been tested with modern MMC cards without a problem, this is not sufficient to explain any problem.
->
+From: Dave Young <hidave.darkstar@gmail.com>
+Date: Mon, 7 Jan 2008 13:41:22 +0800
 
-This should be some HW design issue and BF54x including SDH controller
-is in mass production.
-There is no chance to change the silicon, we just wanna use software
-driver to workaround this issue.
-So Mike's patch is here.
+> 1) In tty.c the BUG_ON at line 115 will never be called, because the the before list_del_init in this same function.
+>  115          BUG_ON(!list_empty(&dev->list));
+> So move the list_del_init to rfcomm_dev_del 
+> 
+> 2) The rfcomm_dev_del could be called from diffrent path (rfcomm_tty_hangup/rfcomm_dev_state_change/rfcomm_release_dev),
+> So add another BUG_ON when the rfcomm_dev_del is called more than one time.
+> 
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
 
-> >
-> > Thanks, actually we are not yet convinced  by our hardware designer
-> > why BF54x SDH does not support 4-bit MMC.
-> >
->
-> Please keep me informed on how it progresses. I'd like an at least plausible explanation, preferably also some empirical data, before I'm ready to accept Mike's patch.
->
-
-We were told this is an hardware design issue, so please help us to
-workaround it in software side with Mike's patch.
-And how do you think my suggestion to Mike's patch,
-#define MMC_CAP_4_BIT_DATA ( MMC_CAP_SD_4_BIT_DATA | MMC_CAP_MMC_4_BIT_DATA)
-Then no need to change other MMC host drivers
-
-Thanks
-Regards,
--Bryan Wu
+Applied, thanks Dave.
