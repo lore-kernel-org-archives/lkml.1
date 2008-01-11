@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbYAKDS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbYAKDVE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757939AbYAKDS3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Jan 2008 22:18:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756427AbYAKDSV
+	id S1758206AbYAKDVE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Jan 2008 22:21:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbYAKDUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Jan 2008 22:18:21 -0500
-Received: from foo.birdnet.se ([213.88.146.6]:40779 "HELO foo.birdnet.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755912AbYAKDSU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Jan 2008 22:18:20 -0500
-X-Greylist: delayed 511 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Jan 2008 22:18:19 EST
-Message-ID: <20080111030945.27954.qmail@cdy.org>
-Date: Fri, 11 Jan 2008 04:09:45 +0100
-From: Peter Stuge <stuge-linux-pcmcia@cdy.org>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>,
-       Mathieu Segaud <mathieu.segaud@regala.cx>,
-       Richard Knutsson <ricknu-0@student.ltu.se>,
-       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] [Coding Style]: fs/ext{3,4}/ext{3,4}_jbd{,2}.c
-Mail-Followup-To: Roel Kluin <12o3l@tiscali.nl>,
-	Al Viro <viro@ZenIV.linux.org.uk>,
-	Mathieu Segaud <mathieu.segaud@regala.cx>,
-	Richard Knutsson <ricknu-0@student.ltu.se>,
-	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org, linux-ext4@vger.kernel.org
-References: <1199452896-20145-1-git-send-email-mathieu.segaud@regala.cx> <1199452896-20145-2-git-send-email-mathieu.segaud@regala.cx> <1199452896-20145-3-git-send-email-mathieu.segaud@regala.cx> <1199452896-20145-4-git-send-email-mathieu.segaud@regala.cx> <1199452896-20145-5-git-send-email-mathieu.segaud@regala.cx> <477E379F.4000103@student.ltu.se> <20080105041228.GP3351@webber.adilger.int> <20080105051817.GD27894@ZenIV.linux.org.uk> <4786883E.30604@tiscali.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4786883E.30604@tiscali.nl>
+	Thu, 10 Jan 2008 22:20:55 -0500
+Received: from ppsw-9.csi.cam.ac.uk ([131.111.8.139]:51484 "EHLO
+	ppsw-9.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751368AbYAKDUy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Jan 2008 22:20:54 -0500
+X-Greylist: delayed 2096 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Jan 2008 22:20:54 EST
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4786D7E5.2080701@cam.ac.uk>
+Date: Fri, 11 Jan 2008 02:43:49 +0000
+From: Chris Smowton <cs448@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Splice(): exports for module programmers
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 10, 2008 at 10:03:58PM +0100, Roel Kluin wrote:
-> -#define DEBUG(x,args...)	printk(__FUNCTION__ ": " x,##args)
-> +#define DEBUG(x, args...)	printk("%s: ", __func__, x, ##args)
+Just a couple of quick questions if anyone can shed light regarding 
+functions exported for modules relating to splice():
 
-Can this really be expected to work when x contains conversions?
+* Is there a particular reason why the useful helper __splice_from_pipe 
+is exported, but not the locking equivalent splice_from_pipe or its 
+equally useful helper splice_to_pipe?
+* Similarly is there anything wrong with exporting the generic 
+pipe-buffer operations (e.g. generic_pipe_buf_map) to save effort 
+writing modules which implement splice_read and splice_write?
 
-How about:
+Are these unexported because they are unstable and not yet considered 
+suitable for use, or simply because nobody's written a module that 
+splice()s yet?
 
-#define DEBUG(x, args...) printk("%s: " x, __func__, ##args)
-
-
-//Peter
+Chris
