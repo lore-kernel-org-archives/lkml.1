@@ -1,153 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760053AbYAKNR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760455AbYAKNVv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760053AbYAKNR7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 08:17:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758413AbYAKNRt
+	id S1760455AbYAKNVv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 08:21:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758451AbYAKNVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 08:17:49 -0500
-Received: from smtp105.plus.mail.re1.yahoo.com ([69.147.102.68]:29528 "HELO
-	smtp105.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758265AbYAKNRr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 08:17:47 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:In-Reply-To:References;
-  b=5DBjmRNALVswG01SmnRbGVsaC1jZ2113nii4TZvm5DDNrmbCfumBP0SyCieJQedhnmwruf9k89DGj9WdgCLQBo/foDwEBC9hYTd+IBqUb6A8O3X7Sxjxt4V1cYsrZ3WNToJM1gLzvI4PaPDOx0y1tZ3Lu4j+PJ7bK0UKyKYrqxY=  ;
-X-YMail-OSG: 9wc4u3IVM1kDIlaxueeeiv4mLwsief7OgXuQ5_Nyenzv8z4NkgHqB0WMg7oSsYF8Scfq2JnoXA--
-X-Yahoo-Newman-Property: ymail-3
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Borislav Petkov <bbpetkov@yahoo.de>
-Subject: [PATCH 16/21] ide-floppy: use an xfer_func_t and io_buf_t typedefs in order to unify rw
-Date: Fri, 11 Jan 2008 14:14:28 +0100
-Message-Id: <1200057268-29169-1-git-send-email-bbpetkov@yahoo.de>
-X-Mailer: git-send-email debian.1.5.3.7.1-dirty
-In-Reply-To: 1200052699-28420-16-git-send-email-bbpetkov@yahoo.de
-References: 1200052699-28420-16-git-send-email-bbpetkov@yahoo.de
+	Fri, 11 Jan 2008 08:21:44 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35922 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757866AbYAKNVn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 08:21:43 -0500
+Date: Fri, 11 Jan 2008 14:21:06 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: David Dillow <dillowda@ornl.gov>, Guillaume Chazarain <guichaz@yahoo.fr>,
+       linux-kernel@vger.kernel.org, linux-btrace@vger.kernel.org,
+       mingo@redhat.com, tglx@linutronix.de
+Subject: Re: [patch] block: fix blktrace timestamps
+Message-ID: <20080111132106.GA16496@elte.hu>
+References: <1199996752.9159.46.camel@lap75545.ornl.gov> <20080110234438.4826f658@inria.fr> <1200020661.5099.3.camel@obelisk.thedillows.org> <20080111090723.GI6258@kernel.dk> <20080111092334.GA8143@elte.hu> <20080111092513.GO6258@kernel.dk> <20080111094205.GE8143@elte.hu> <20080111095654.GR6258@kernel.dk> <20080111102953.GA27223@elte.hu> <20080111122802.GT6258@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080111122802.GT6258@kernel.dk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Also, move xfer_func_t typedef to the ide.h since it is used by two drivers
-now (more coming).
 
-Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
----
- drivers/ide/ide-cd.c     |    2 --
- drivers/ide/ide-floppy.c |   37 ++++++++++++++++++-------------------
- include/linux/ide.h      |    3 +++
- 3 files changed, 21 insertions(+), 21 deletions(-)
+* Jens Axboe <jens.axboe@oracle.com> wrote:
 
-diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-index 3b3e6c1..7e53a03 100644
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -604,8 +604,6 @@ static ide_startstop_t cdrom_transfer_packet_command (ide_drive_t *drive,
-  * Block read functions.
-  */
- 
--typedef void (xfer_func_t)(ide_drive_t *, void *, u32);
--
- static void ide_cd_pad_transfer(ide_drive_t *drive, xfer_func_t *xf, int len)
- {
- 	while (len > 0) {
-diff --git a/drivers/ide/ide-floppy.c b/drivers/ide/ide-floppy.c
-index 6e8926a..c889c16 100644
---- a/drivers/ide/ide-floppy.c
-+++ b/drivers/ide/ide-floppy.c
-@@ -491,19 +491,22 @@ static void idefloppy_retry_pc(ide_drive_t *drive)
- 	idefloppy_queue_pc_head(drive, pc, rq);
- }
- 
--/*
-- * The usual interrupt handler called during a packet command.
-- */
-+typedef void (io_buf_t)(ide_drive_t *, idefloppy_pc_t *, unsigned int);
-+
-+/*  The usual interrupt handler called during a packet command. */
- static ide_startstop_t idefloppy_pc_intr(ide_drive_t *drive)
- {
- 	idefloppy_floppy_t *floppy = drive->driver_data;
- 	ide_hwif_t *hwif = drive->hwif;
- 	idefloppy_pc_t *pc = floppy->pc;
- 	struct request *rq = pc->rq;
-+	xfer_func_t *xferfunc;
-+	io_buf_t *iobuf_func;
- 	unsigned int temp;
- 	u16 bcount;
- 	u8 stat, ireason;
- 	int dma_error = 0;
-+	int write = (rq_data_dir(rq) == WRITE) ? 1 : 0;
- 
- 	debug_log("Reached %s interrupt handler\n", __FUNCTION__);
- 
-@@ -511,9 +514,7 @@ static ide_startstop_t idefloppy_pc_intr(ide_drive_t *drive)
- 		dma_error = HWIF(drive)->ide_dma_end(drive);
- 		if (dma_error) {
- 			printk(KERN_ERR "%s: DMA %s error\n", drive->name,
--					rq_data_dir(rq) == WRITE ?
--					"write" :
--					"read");
-+					write ?	"write" : "read");
- 			set_bit(PC_DMA_ERROR, &pc->flags);
- 		} else {
- 			pc->actually_transferred = pc->request_transfer;
-@@ -568,7 +569,7 @@ static ide_startstop_t idefloppy_pc_intr(ide_drive_t *drive)
- 	ireason = hwif->INB(IDE_IREASON_REG);
- 
- 	if (ireason & CD) {
--		printk(KERN_ERR "ide-floppy: CoD != 0 in idefloppy_pc_intr\n");
-+		printk(KERN_ERR "ide-floppy: CoD != 0 in %s\n", __FUNCTION__);
- 		return ide_do_reset(drive);
- 	}
- 	if (((ireason & IO) == IO) == test_bit(PC_WRITING, &pc->flags)) {
-@@ -600,20 +601,18 @@ static ide_startstop_t idefloppy_pc_intr(ide_drive_t *drive)
- 		}
- 	}
- 	if (test_bit(PC_WRITING, &pc->flags)) {
--		if (pc->buffer != NULL)
--			/* Write the current buffer */
--			hwif->atapi_output_bytes(drive, pc->current_position,
--						 bcount);
--		else
--			idefloppy_output_buffers(drive, pc, bcount);
-+		xferfunc = hwif->atapi_output_bytes;
-+		iobuf_func = &idefloppy_output_buffers;
- 	} else {
--		if (pc->buffer != NULL)
--			/* Read the current buffer */
--			hwif->atapi_input_bytes(drive, pc->current_position,
--						bcount);
--		else
--			idefloppy_input_buffers(drive, pc, bcount);
-+		xferfunc = hwif->atapi_input_bytes;
-+		iobuf_func = &idefloppy_input_buffers;
- 	}
-+
-+	if (pc->buffer != NULL)
-+		xferfunc(drive, pc->current_position, bcount);
-+	else
-+		iobuf_func(drive, pc, bcount);
-+
- 	/* Update the current position */
- 	pc->actually_transferred += bcount;
- 	pc->current_position += bcount;
-diff --git a/include/linux/ide.h b/include/linux/ide.h
-index bfbc975..a6cf280 100644
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -626,6 +626,9 @@ typedef struct hwif_s {
- typedef ide_startstop_t (ide_handler_t)(ide_drive_t *);
- typedef int (ide_expiry_t)(ide_drive_t *);
- 
-+/* used by ide-cd, ide-floppy, etc. */
-+typedef void (xfer_func_t)(ide_drive_t *, void *, u32);
-+
- typedef struct hwgroup_s {
- 		/* irq handler, if active */
- 	ide_startstop_t	(*handler)(ide_drive_t *);
--- 
-1.5.3.7
+> > > If blktrace worked in 2.6.23 and it doesn't in 2.6.24 because of 
+> > > some option that isn't immediately apparent, then it's a 
+> > > regression. Period.
+> > 
+> > not completely correct. CONFIG_NO_HZ is a default-disabled option 
+> > that became newly available on 64-bit x86. So if NO_HZ does not 
+> > completely work on 64-bit, and if 32-bit works fine - which we dont 
+> > know yet (my guess would be that it's similarly broken on the same 
+> > box) then it's not a regression.
+> 
+> Ingo, it doesn't matter if the option is disabled by default or not! 
+> The fact is that functionality foo works in 2.6.23 and doesn't in 
+> 2.6.24 because of something unrelated. And that IS a regression, no 
+> matter what kind of word play you are doing here :-)
 
+argh, Jens. Really. I believe you stopped using your brain because 
+CONFIG_BKL_IO_TRACE=y is affected by this bug and apparently you've got 
+a weak spot for it ;)
+
+Think about it another way then, in the context of another, real kernel 
+feature we introduced in v2.6.24, namely CONFIG_CPU_IDLE=y:
+
+- Fact: feature CONFIG_CPU_IDLE=y did not exist in 64-bit x86 in v2.6.23.
+  It has known bugs but they are not flagged 'regressions' (because the 
+  feature did not exist before and the option is default-disabled) hence 
+  the feature can stay. Some fixes to it are too dangerous or too 
+  unproven and are delayed to v2.6.25.
+
+and now apply the same rule to CONFIG_NO_HZ:
+
+- Fact: feature CONFIG_NO_HZ=y did not exist in 64-bit x86 in v2.6.23.
+  It has known bugs but they are not flagged 'regressions' (because the 
+  feature did not exist before and the option is default-disabled) hence 
+  the feature can stay. Some fixes to it are too dangerous or too 
+  unproven and are delayed to v2.6.25.
+
+ok?
+
+Yes, it's bad that this happened, and perhaps it _is_ a regression, but 
+not for the reason you claim. [ It might be a regression if 32-bit 
+blktrace has the same problem under NO_HZ for example _AND_ bkltrace 
+worked perfectly on the same box on v2.6.23. ]
+
+Kernel regressions have a _strict_ definition: they mean "anything that 
+worked before will work in the future too". Not: "anything that worked 
+before will work in the future too if you enable random new non-default 
+kernel features".
+
+[ If the latter was the criterium we'd probably never see new features
+  integrated! New stuff has bugs, because it's not nearly as well-tested 
+  as older stuff. What matters is to 1) not turn it on by default if it 
+  has known bugs 2) to always make positive progress on it, i.e.: to not
+  regress new features in future kernel releases. This way, in the ideal 
+  case, we'll have a monotonic series towards a perfect, bug-free kernel 
+  ;) ]
+
+> > ktime_get() should have been used instead, which is a proper GTOD 
+> > clocksource. The patch below implements this.
+> 
+> Will give it a whirl, it looks promising indeed and gets rid of the 
+> ugly cpu sync stuff. [...]
+
+fantastic! :)
+
+> [...] What is the cost of ktime_get() compared to sched_clock()?
+
+compared to the costs of IO transfers it should be OK. It can be really 
+fast but in the worst-case it can be as slow as 3-6 usecs (when we use 
+the acpi_pm clocksource). If there's complaints then probably the 
+networking folks will yell first :)
+
+	Ingo
