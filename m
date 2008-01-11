@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761965AbYAKSRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762277AbYAKSRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761965AbYAKSRh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 13:17:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760223AbYAKSR0
+	id S1762277AbYAKSRs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 13:17:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761683AbYAKSRb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 13:17:26 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58983 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760203AbYAKSRZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 13:17:25 -0500
-Date: Fri, 11 Jan 2008 18:14:34 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: akpm@osdl.org, linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: [PATCH] serverworks: IRQ routing needs no _p
-Message-ID: <20080111181434.3dec6206@lxorguk.ukuu.org.uk>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 11 Jan 2008 13:17:31 -0500
+Received: from phunq.net ([64.81.85.152]:53758 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761555AbYAKSR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 13:17:29 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH][RFC] fast file mapping for loop
+Date: Fri, 11 Jan 2008 10:17:28 -0800
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, chris.mason@oracle.com,
+       linux-fsdevel@vger.kernel.org
+References: <20080109085231.GE6650@kernel.dk>
+In-Reply-To: <20080109085231.GE6650@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801111017.28753.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I can find no reason for the _p on the serverworks IRQ routing logic, and
-a review of the documentation contains no indication that any such delay
-is needed so lets try this
+Hi Jens,
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.24-rc6-mm1/arch/x86/pci/irq.c linux-2.6.24-rc6-mm1/arch/x86/pci/irq.c
---- linux.vanilla-2.6.24-rc6-mm1/arch/x86/pci/irq.c	2008-01-02 16:04:19.000000000 +0000
-+++ linux-2.6.24-rc6-mm1/arch/x86/pci/irq.c	2008-01-11 15:21:17.000000000 +0000
-@@ -461,14 +461,14 @@
-  */
- static int pirq_serverworks_get(struct pci_dev *router, struct pci_dev *dev, int pirq)
- {
--	outb_p(pirq, 0xc00);
-+	outb(pirq, 0xc00);
- 	return inb(0xc01) & 0xf;
- }
- 
- static int pirq_serverworks_set(struct pci_dev *router, struct pci_dev *dev, int pirq, int irq)
- {
--	outb_p(pirq, 0xc00);
--	outb_p(irq, 0xc01);
-+	outb(pirq, 0xc00);
-+	outb(irq, 0xc01);
- 	return 1;
- }
- 
+This looks really useful.
+
+On Wednesday 09 January 2008 00:52, Jens Axboe wrote:
+> Disadvantages:
+>
+> - The file block mappings must not change while loop is using the
+> file. This means that we have to ensure exclusive access to the file
+> and this is the bit that is currently missing in the implementation.
+> It would be nice if we could just do this via open(), ideas
+> welcome... 
+
+Get_block methods are pretty fast and you have caching in the level 
+above you, so you might be able to get away with no cache of physical 
+addresses at all, in which case you just need i_mutex and i_alloc_sem 
+at get_block time.  This would save a pile of code and still have the 
+main benefit of avoiding double caching.
+
+If you use ->get_block instead of bmap, it will fill in file holes for 
+you, but of course get_block is not exposed, and Al is likely to bark 
+at anyone who exposes it.
+
+Instead of exposing get_block you could expose an aops method 
+like ->bio_transfer that would hide the use of *_get_block in a library 
+routine, just as __blockdev_direct_IO does.  Chances are, there are 
+other users besides loop that would be interested in a generic way of 
+performing bio transfers to files.
+
+I presume you would fall back to the existing approach for any 
+filesystem without get_block.  You could handle this transparently with 
+a default library method that does read/write.
+
+Regards,
+
+Daniel
