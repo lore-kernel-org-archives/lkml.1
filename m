@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763049AbYAKXVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762857AbYAKX00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763049AbYAKXVy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 18:21:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761029AbYAKXVq
+	id S1762857AbYAKX00 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 18:26:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761400AbYAKX0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 18:21:46 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:50712 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759573AbYAKXVp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 18:21:45 -0500
-Message-ID: <4787FA06.9090204@garzik.org>
-Date: Fri, 11 Jan 2008 18:21:42 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 11 Jan 2008 18:26:18 -0500
+Received: from a80-100-32-23.adsl.xs4all.nl ([80.100.32.23]:59826 "EHLO
+	mail.vanvergehaald.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753304AbYAKX0R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 18:26:17 -0500
+X-Greylist: delayed 1397 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Jan 2008 18:26:17 EST
+Date: Sat, 12 Jan 2008 00:02:58 +0100
+From: Toon van der Pas <toon@hout.vanvergehaald.nl>
+To: Harald Dunkel <harald.dunkel@t-online.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: howto get a melodic system beep?
+Message-ID: <20080111230258.GB11018@shuttle.vanvergehaald.nl>
+References: <4765A5ED.60605@t-online.de>
 MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: LIBATA SCSI command validation changed in 2.6.24
-References: <4787DFE2.2000504@redhat.com> <4787E114.2030301@garzik.org> <4787E574.6020304@redhat.com>
-In-Reply-To: <4787E574.6020304@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4765A5ED.60605@t-online.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
-> On 01/11/2008 04:35 PM, Jeff Garzik wrote:
->> Chuck Ebbert wrote:
->>> commit 607126c2a21cd6e9bb807fdd415c1a992f7b9009 changed command
->>> validation
->>> to allow short commands in 16-byte CDBs, but it also made checking more
->>> strict. Before the change, a 10-byte SG_IO command could have its
->>> length set
->>> to 9 and still work. Now it fails. Not sure if this is a bug, but it has
->>> caused at least one application to fail that used to work (qpxtool.)
->>>
->>> [https://bugzilla.redhat.com/show_bug.cgi?id=428281]
->> Can you get us an example CDB?  Its unclear if the hexdump in the bug
->> report is a returned mode page or the CDB or what...?
->>
-> 
-> Not easily, but the maintainer of that program forced the length of
-> the MODE_SENSE(10) command to 10 and that command started working.
-> 
-> By looking at the source I could tell that it was setting the command
-> length to (1 + the index of the last byte written to the CDB) and
-> only wrote up to offset 8 when building the command, so it must have
-> been sending the command with a length of 9. (It zeroed the whole CDB
-> first and only wrote what it needed to.)
-> 
-> (And it used the C++ operator [] to build the command, that was fun
-> to trace...)
+On Sun, Dec 16, 2007 at 11:25:49PM +0100, Harald Dunkel wrote:
+> Hi folks,
+>
+> Is there a way to replace the system beep by something more
+> melodic?
+>
+> I remember some 10 years ago there was a patch for the kernel
+> to call an external "beep daemon" playing an audio file instead
+> (no kidding). But it never worked very well. Sometimes there
+> was a huge delay, and some programs were not very nice to the
+> system beep.
 
-Even if allocation length is present in the CDB, the CDB may be missing 
-important information that is required to process the command.  So it 
-may have caught a bug in the program... depending on the CDB.
+Hi, check out the URL below.
+I use this thing on a pc that doesn't have a pc speaker:
 
-	Jeff
+http://carcosa.net/jason/software/beep/
 
+Here is a description on how to use this:
 
+http://gentoo-wiki.com/HOWTO_Virtual_PC_Speaker
+
+Regards,
+Toon.
+-- 
+"I never set out to be weird,
+ it was always other people who called me weird."
+                                        -- 1986 Frank Zappa
