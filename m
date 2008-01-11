@@ -1,59 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759916AbYAKKFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759639AbYAKKIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759916AbYAKKFZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 05:05:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755149AbYAKKFM
+	id S1759639AbYAKKIz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 05:08:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755637AbYAKKIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 05:05:12 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:53242 "EHLO smtp.drzeus.cx"
+	Fri, 11 Jan 2008 05:08:48 -0500
+Received: from ns.firmix.at ([62.141.48.66]:4510 "EHLO ns.firmix.at"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754333AbYAKKFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 05:05:10 -0500
-Date: Fri, 11 Jan 2008 11:05:05 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Cc: "Bryan Wu" <cooloney.lkml@gmail.com>, "Cai, Cliff" <Cliff.Cai@analog.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] split MMC_CAP_4_BIT_DATA
-Message-ID: <20080111110505.615ae436@poseidon.drzeus.cx>
-In-Reply-To: <8bd0f97a0801110147w1cc741c3yc80ad32cd0e896c9@mail.gmail.com>
-References: <386072610801081832w2befcbafwe9215067f022ed5d@mail.gmail.com>
-	<20080109082325.212ec90d@poseidon.drzeus.cx>
-	<386072610801090845r14510fb8tbcca76d605458a96@mail.gmail.com>
-	<20080110095428.3b93fd18@poseidon.drzeus.cx>
-	<386072610801100122n52339488ke2b8724c390be765@mail.gmail.com>
-	<20080110125748.416ad0c5@poseidon.drzeus.cx>
-	<386072610801102217u1739d7d7v497e73a38aa876c2@mail.gmail.com>
-	<20080111094036.4c683791@poseidon.drzeus.cx>
-	<8bd0f97a0801110108l66ab2bcdjb1323573445473f@mail.gmail.com>
-	<20080111103532.2789b74f@poseidon.drzeus.cx>
-	<8bd0f97a0801110147w1cc741c3yc80ad32cd0e896c9@mail.gmail.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.4; i386-redhat-linux-gnu)
+	id S1755157AbYAKKIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 05:08:47 -0500
+Subject: Re: [PATCH] checkpatch.pl: allow piping
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, apw@shadowen.org,
+       linux-kernel@vger.kernel.org, rdunlap@xenotime.net,
+       jschopp@austin.ibm.com
+In-Reply-To: <1200043827.29897.70.camel@imap.mvista.com>
+References: <20080111041120.085610726@mvista.com>
+	 <47872E35.3070705@gmail.com> <1200043035.29897.62.camel@imap.mvista.com>
+	 <47873505.7040008@gmail.com>  <1200043399.3905.9.camel@gimli.at.home>
+	 <1200043827.29897.70.camel@imap.mvista.com>
+Content-Type: text/plain
+Organization: Firmix Software GmbH
+Date: Fri, 11 Jan 2008 11:08:38 +0100
+Message-Id: <1200046118.10166.5.camel@tara.firmix.at>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -2.334 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Spam-Status: No, hits=-2.334 required=5
+X-Spam-Score: -2.334 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Envelope-From: <bernd@firmix.at>
+X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Jan 2008 04:47:44 -0500
-"Mike Frysinger" <vapier.adi@gmail.com> wrote:
-
-> Cliff should be able to enumerate the cards he has tested and the
-> issues he's run into.  i'll see if i cant get more in depth
-> information from the hardware guys beyond the documentation on the sdh
-> already available in the hardware manual (which i'm guessing has not
-> been enough to appease you).
+On Fre, 2008-01-11 at 01:30 -0800, Daniel Walker wrote:
+> On Fri, 2008-01-11 at 10:23 +0100, Bernd Petrovitsch wrote:
+> > On Fre, 2008-01-11 at 10:21 +0100, Jiri Slaby wrote:
+> > > On 01/11/2008 10:17 AM, Daniel Walker wrote:
+> > > > On Fri, 2008-01-11 at 09:52 +0100, Jiri Slaby wrote:
+> > > >> On 01/11/2008 05:10 AM, Daniel Walker wrote:
+[...]
+> > > > I was using it to do something like the following ,
+> > > > 
+> > > > git show 9914cad54c79d0b89b1f066c0894f00e1344131c
+> > | ./scripts/checkpatch.pl
+> > > 
+> > > Ok, and if you add a - there, it should have the same effect, but
+> > for free, 
+> > > doesn't it:
+> > > git show 9914cad54c79d0b89b1f066c0894f00e1344131c
+> > | ./scripts/checkpatch.pl -
+> > 
+> > JftSoC:
+> > git show 9914cad54c79d0b89b1f066c0894f00e1344131c
+> > | ./scripts/checkpatch.pl /dev/stdin
+> > (and there a a few others) should also do the trick.
 > 
+> Not a particularly attractive command line .. Might still be a good idea
 
-Great. And you're right in that the spec did not give any indication that MMC shouldn't work.
+Might be.
+But it works for (almost?) all programs (which do not need seekable
+input) which absolutely want the input file specified by a parameter.
+And if it's an proprietary program, you can't even patch it.
 
-I did notice one thing though. The pull-ups and pull-downs seem to be controllable. If I remember correctly, DAT3 needs to have a controller-side pull-up for MMC cards. And the docs said the default was not to provide that (in order to use the internal pull-up that most, but not all, SD cards have for detection). Might be something to look at if you haven't already.
+> to add this since these two forms alluded me, and are likely to allude
+> people new to unix all together (who is more likely to be using this
+> particular tool)..
 
-Rgds
+	Bernd
 -- 
-     -- Pierre Ossman
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+
