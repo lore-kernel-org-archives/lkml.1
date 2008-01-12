@@ -1,256 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761377AbYALUEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761335AbYALUID@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761377AbYALUEz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 15:04:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756907AbYALUEq
+	id S1761335AbYALUID (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 15:08:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757381AbYALUHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 15:04:46 -0500
-Received: from h155.mvista.com ([63.81.120.155]:64203 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755659AbYALUEo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 15:04:44 -0500
-Message-ID: <47891D8D.4010609@ru.mvista.com>
-Date: Sat, 12 Jan 2008 23:05:33 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Sat, 12 Jan 2008 15:07:54 -0500
+Received: from hu-out-0506.google.com ([72.14.214.227]:61744 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756907AbYALUHx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 15:07:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=EIo7yANrhm2iNgVnbLY/jUuX3Gm9rHmYYztAzjk+swP9NXlzeA9/YazfoLqBKFr7tBwcGDS9RXphFKhosjal8RiJzmfjS1/SX96k1343V0G+AdMyPV0HoSjo+X9SrfubdZ98J6n+/Ws3CQ4tNMXXQeD2/IYoVCA9P2y/Pe56t30=
+Date: Sat, 12 Jan 2008 21:11:11 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Greg KH <gregkh@suse.de>, stefanr@s5r6.in-berlin.de,
+       James.Bottomley@hansenpartnership.com, a.zummo@towertech.it,
+       peterz@infradead.org, cbou@mail.ru, linux-kernel@vger.kernel.org,
+       David Brownell <david-b@pacbell.net>, krh@redhat.com,
+       stern@rowland.harvard.edu, dwmw2@infradead.org, davem@davemloft.net
+Subject: Re: [PATCH 1/7] driver-core : add class iteration api
+Message-ID: <20080112201111.GA8129@ami.dom.local>
+References: <20080112094754.GA2893@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 8/8] ide: add ->cable_detect method to ide_hwif_t
-References: <20080106170220.6861.4814.sendpatchset@localhost.localdomain> <20080106170317.6861.77734.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080106170317.6861.77734.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080112094754.GA2893@darkstar.te-china.tietoenator.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-
-Bartlomiej Zolnierkiewicz wrote:
-
-> * Add ->cable_detect method to ide_hwif_t.
-
-> * Call the new method in ide_init_port() if:
->   - the host supports UDMA modes > UDMA2 ('hwif->ultra_mask & 78')
->   - DMA initialization was successful (if hwif->dma_base is not set
->     ide_init_port() sets hwif->ultra_mask to zero)
->   - "idex=ata66" is not used ('hwif->cbl != ATA_CBL_PATA40_SHORT')
-
-> * Convert PCI host drivers to use ->cable_detect method.
-
-> While at it:
-
-> * Factor out cable detection to separate functions (if not already done).
-
-> * hpt366.c/it8213.c/slc90e66.c:
->   - don't check cable type if "idex=ata66" is used
-
-> * pdc202xx_new.c:
->   - add __devinit tag to pdcnew_cable_detect()
-
-> * pdc202xx_old.c:
->   - rename pdc202xx_old_cable_detect() to pdc2026x_old_cable_detect()
->   - add __devinit tag to pdc2026x_old_cable_detect()
-
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-
-> Index: b/drivers/ide/ide-probe.c
-> ===================================================================
-> --- a/drivers/ide/ide-probe.c
-> +++ b/drivers/ide/ide-probe.c
-> @@ -1343,6 +1343,11 @@ static void ide_init_port(ide_hwif_t *hw
->  	/* call chipset specific routine for each enabled port */
->  	if (d->init_hwif)
->  		d->init_hwif(hwif);
-> +
-> +	if (hwif->cable_detect && (hwif->ultra_mask & 0x78)) {
-> +		if (hwif->cbl != ATA_CBL_PATA40_SHORT)
-> +			hwif->cbl = hwif->cable_detect(hwif);
-> +	}
-
-    Could be collapsed to a single *if* statement...
-
-> Index: b/drivers/ide/pci/alim15x3.c
-> ===================================================================
-> --- a/drivers/ide/pci/alim15x3.c
-> +++ b/drivers/ide/pci/alim15x3.c
-> @@ -666,13 +666,12 @@ static void __devinit init_hwif_common_a
->  	hwif->set_dma_mode = &ali_set_dma_mode;
->  	hwif->udma_filter = &ali_udma_filter;
->  
-> +	hwif->cable_detect = ata66_ali15x3;
-
-    Why not give that function a "standard" name while at it?
-
->  static const struct ide_port_info atiixp_pci_info[] __devinitdata = {
-> Index: b/drivers/ide/pci/cmd64x.c
-> ===================================================================
-> --- a/drivers/ide/pci/cmd64x.c
-> +++ b/drivers/ide/pci/cmd64x.c
-> @@ -393,6 +393,8 @@ static void __devinit init_hwif_cmd64x(i
->  	hwif->set_pio_mode = &cmd64x_set_pio_mode;
->  	hwif->set_dma_mode = &cmd64x_set_dma_mode;
->  
-> +	hwif->cable_detect = ata66_cmd64x;
-> +
-
-    Same question...
-
-> Index: b/drivers/ide/pci/hpt366.c
-> ===================================================================
-> --- a/drivers/ide/pci/hpt366.c
-> +++ b/drivers/ide/pci/hpt366.c
-> @@ -1279,12 +1279,55 @@ static unsigned int __devinit init_chips
->  	return dev->irq;
+On Sat, Jan 12, 2008 at 05:47:54PM +0800, Dave Young wrote:
+> Add the following class iteration functions for driver use:
+> class_for_each_device
+> class_find_device
+> class_for_each_child
+> class_find_child
+> 
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+> 
+> ---
+>  drivers/base/class.c   |  159 +++++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/device.h |    8 ++
+>  2 files changed, 167 insertions(+)
+> 
+> diff -upr linux/drivers/base/class.c linux.new/drivers/base/class.c
+> --- linux/drivers/base/class.c	2008-01-12 14:42:24.000000000 +0800
+> +++ linux.new/drivers/base/class.c	2008-01-12 14:42:24.000000000 +0800
+> @@ -798,6 +798,165 @@ void class_device_put(struct class_devic
+>  		kobject_put(&class_dev->kobj);
 >  }
 >  
-> +static u8 __devinit hpt3xx_cable_detect(ide_hwif_t *hwif)
+> +/**
+> + *	class_for_each_device - device iterator
+> + *	@class:	the class we're iterating
+> + *	@data: data for the callback
+> + *	@fn: function to be called for each device
+> + *
+> + *	Iterate over @class's list of devices, and call @fn for each,
+> + *	passing it @data.
+> + *
+> + *	We check the return of @fn each time. If it returns anything
+> + *	other than 0, we break out and return that value.
+> + */
+> +int class_for_each_device(struct class *class, void *data,
+> +			   int (*fn)(struct device *, void *))
 > +{
-> +	struct pci_dev	*dev	= to_pci_dev(hwif->dev);
-> +	struct hpt_info *info	= pci_get_drvdata(dev);
-> +	u8 chip_type		= info->chip_type;
-> +	u8 scr1 = 0, ata66	= hwif->channel ? 0x01 : 0x02;
-
-    The 'ata66' is pretty bad name for this variable (reversed sense), let's 
-go with 'mask'...
-
+> +	struct device *dev;
+> +	int error = 0;
 > +
-> +	/*
-> +	 * The HPT37x uses the CBLID pins as outputs for MA15/MA16
-> +	 * address lines to access an external EEPROM.  To read valid
-> +	 * cable detect state the pins must be enabled as inputs.
-> +	 */
-> +	if (chip_type == HPT374 && (PCI_FUNC(dev->devfn) & 1)) {
-> +		/*
-> +		 * HPT374 PCI function 1
-> +		 * - set bit 15 of reg 0x52 to enable TCBLID as input
-> +		 * - set bit 15 of reg 0x56 to enable FCBLID as input
-> +		 */
-> +		u8  mcr_addr = hwif->select_data + 2;
-> +		u16 mcr;
-> +
-> +		pci_read_config_word(dev, mcr_addr, &mcr);
-> +		pci_write_config_word(dev, mcr_addr, (mcr | 0x8000));
-> +		/* now read cable id register */
-> +		pci_read_config_byte(dev, 0x5a, &scr1);
-> +		pci_write_config_word(dev, mcr_addr, mcr);
-> +	} else if (chip_type >= HPT370) {
-> +		/*
-> +		 * HPT370/372 and 374 pcifn 0
-> +		 * - clear bit 0 of reg 0x5b to enable P/SCBLID as inputs
-> +		 */
-> +		u8 scr2 = 0;
-> +
-> +		pci_read_config_byte(dev, 0x5b, &scr2);
-> +		pci_write_config_byte(dev, 0x5b, (scr2 & ~1));
-> +		/* now read cable id register */
-> +		pci_read_config_byte(dev, 0x5a, &scr1);
-> +		pci_write_config_byte(dev, 0x5b,  scr2);
+> +	if (!class)
+> +		return -EINVAL;
+> +	down(&class->sem);
+> +	list_for_each_entry(dev, &class->devices, node) {
 
-    Sigh, my pretty formatting is gone... at least don't leave double spaces 
-and needless parens. :-)
+Probably some tiny oversight, but I see this comment to struct class
+doesn't mention devices list, so maybe this needs to be updated BTW?:
 
-> +	} else
-> +		pci_read_config_byte(dev, 0x5a, &scr1);
-> +
-> +	return (scr1 & ata66) ? ATA_CBL_PATA40 : ATA_CBL_PATA80;
-> +}
-> +
-[...]
-> --- a/drivers/ide/pci/it8213.c
-> +++ b/drivers/ide/pci/it8213.c
-> Index: b/drivers/ide/pci/it821x.c
-> ===================================================================
-> --- a/drivers/ide/pci/it821x.c
-> +++ b/drivers/ide/pci/it821x.c
-> @@ -579,14 +579,13 @@ static void __devinit init_hwif_it821x(i
->  	} else
->  		hwif->host_flags |= IDE_HFLAG_NO_SET_MODE;
->  
-> +	hwif->cable_detect = ata66_it821x;
-> +
+(from include/linux/device.h)
+"        struct semaphore        sem;    /* locks both the children and interfaces lists */"
 
-    I think the function is really worth renaming...
-
->  static void __devinit it8212_disable_raid(struct pci_dev *dev)
-> Index: b/drivers/ide/pci/jmicron.c
-> ===================================================================
-> --- a/drivers/ide/pci/jmicron.c
-> +++ b/drivers/ide/pci/jmicron.c
-> @@ -111,11 +111,7 @@ static void __devinit init_hwif_jmicron(
->  	hwif->set_pio_mode = &jmicron_set_pio_mode;
->  	hwif->set_dma_mode = &jmicron_set_dma_mode;
->  
-> -	if (hwif->dma_base == 0)
-> -		return;
-> -
-> -	if (hwif->cbl != ATA_CBL_PATA40_SHORT)
-> -		hwif->cbl = ata66_jmicron(hwif);
-> +	hwif->cable_detect = ata66_jmicron;
-
-    And this one too...
-
-> Index: b/drivers/ide/pci/pdc202xx_old.c
-> ===================================================================
-> --- a/drivers/ide/pci/pdc202xx_old.c
-> +++ b/drivers/ide/pci/pdc202xx_old.c
-> @@ -140,7 +140,7 @@ static void pdc202xx_set_pio_mode(ide_dr
->  	pdc202xx_set_mode(drive, XFER_PIO_0 + pio);
->  }
->  
-> -static u8 pdc202xx_old_cable_detect (ide_hwif_t *hwif)
-> +static u8 __devinit pdc2026x_old_cable_detect(ide_hwif_t *hwif)
-
-    I suggest just pdc2026x_ without old_.
-
->  #define DECLARE_SCC_DEV(name_str)			\
-> Index: b/drivers/ide/pci/serverworks.c
-> ===================================================================
-> --- a/drivers/ide/pci/serverworks.c
-> +++ b/drivers/ide/pci/serverworks.c
-> @@ -346,13 +346,8 @@ static void __devinit init_hwif_svwks (i
->  	hwif->set_dma_mode = &svwks_set_dma_mode;
->  	hwif->udma_filter = &svwks_udma_filter;
->  
-> -	if (!hwif->dma_base)
-> -		return;
-> -
-> -	if (dev->device != PCI_DEVICE_ID_SERVERWORKS_OSB4IDE) {
-> -		if (hwif->cbl != ATA_CBL_PATA40_SHORT)
-> -			hwif->cbl = ata66_svwks(hwif);
-> -	}
-> +	if (dev->device != PCI_DEVICE_ID_SERVERWORKS_OSB4IDE)
-> +		hwif->cable_detect = ata66_svwks;
-
-    Worth renaming...
-
-> Index: b/drivers/ide/pci/siimage.c
-> ===================================================================
-> --- a/drivers/ide/pci/siimage.c
-> +++ b/drivers/ide/pci/siimage.c
-> @@ -827,15 +827,14 @@ static void __devinit init_hwif_siimage(
->  	} else
->  		hwif->udma_filter = &sil_pata_udma_filter;
->  
-> +	hwif->cable_detect = ata66_siimage;
-> +
-
-    That one too...
-
-> Index: b/drivers/ide/pci/sis5513.c
-> ===================================================================
-> --- a/drivers/ide/pci/sis5513.c
-> +++ b/drivers/ide/pci/sis5513.c
-> @@ -565,13 +565,12 @@ static void __devinit init_hwif_sis5513 
->  	if (chipset_family >= ATA_133)
->  		hwif->udma_filter = sis5513_ata133_udma_filter;
->  
-> +	hwif->cable_detect = ata66_sis5513;
-> +
-
-   Another one...
-
-MBR, Sergei
+Regards,
+Jarek P.
