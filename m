@@ -1,127 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762864AbYALARS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763110AbYALATu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762864AbYALARS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 19:17:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757584AbYALARA
+	id S1763110AbYALATu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 19:19:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760225AbYALATn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 19:17:00 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:47726 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752275AbYALAQ7 (ORCPT
+	Fri, 11 Jan 2008 19:19:43 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59832 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757584AbYALATn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 19:16:59 -0500
-Message-ID: <478806D6.3080909@torque.net>
-Date: Fri, 11 Jan 2008 19:16:22 -0500
-From: Douglas Gilbert <dougg@torque.net>
-Reply-To: dougg@torque.net
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Pete Wyckoff <pw@osc.edu>, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       tomof@acm.org, deepakrc@gmail.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] bsg : Add support for io vectors in bsg
-References: <Pine.LNX.4.64.0801042137350.7836@localhost>	 <200801050501.m0551LFB030667@mbox.iij4u.or.jp>	 <20080108220918.GA9484@osc.edu>	 <20080109091118N.fujita.tomonori@lab.ntt.co.jp>	 <20080110204325.GC1928@osc.edu>	 <1199998531.3141.96.camel@localhost.localdomain>	 <20080110214605.GD1928@osc.edu> <1200002054.3141.103.camel@localhost.localdomain>
-In-Reply-To: <1200002054.3141.103.camel@localhost.localdomain>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 11 Jan 2008 19:19:43 -0500
+Date: Sat, 12 Jan 2008 00:17:11 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Zachary Amsden <zach@vmware.com>
+Cc: jeff@garzik.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 8390: split up 8390 with ISA delay and 8390 without
+Message-ID: <20080112001711.08361cd8@lxorguk.ukuu.org.uk>
+In-Reply-To: <1200093391.21817.27.camel@bodhitayantram.eng.vmware.com>
+References: <20080111180848.10a7f012@lxorguk.ukuu.org.uk>
+	<1200093391.21817.27.camel@bodhitayantram.eng.vmware.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Thu, 2008-01-10 at 16:46 -0500, Pete Wyckoff wrote:
->> James.Bottomley@HansenPartnership.com wrote on Thu, 10 Jan 2008 14:55 -0600:
->>> On Thu, 2008-01-10 at 15:43 -0500, Pete Wyckoff wrote:
->>>> fujita.tomonori@lab.ntt.co.jp wrote on Wed, 09 Jan 2008 09:11 +0900:
->>>>> On Tue, 8 Jan 2008 17:09:18 -0500
->>>>> Pete Wyckoff <pw@osc.edu> wrote:
->>>>>> I took another look at the compat approach, to see if it is feasible
->>>>>> to keep the compat handling somewhere else, without the use of #ifdef
->>>>>> CONFIG_COMPAT and size-comparison code inside bsg.c.  I don't see how.
->>>>>> The use of iovec is within a write operation on a char device.  It's
->>>>>> not amenable to a compat_sys_ or a .compat_ioctl approach.
->>>>>>
->>>>>> I'm partial to #1 because the use of architecture-independent fields
->>>>>> matches the rest of struct sg_io_v4.  But if you don't want to have
->>>>>> another iovec type in the kernel, could we do #2 but just return
->>>>>> -EINVAL if the need for compat is detected?  I.e. change
->>>>>> dout_iovec_count to dout_iovec_length and do the math?
->>>>> If you are ok with removing the write/read interface and just have
->>>>> ioctl, we could can handle comapt stuff like others do. But I think
->>>>> that you (OSD people) really want to keep the write/read
->>>>> interface. Sorry, I think that there is no workaround to support iovec
->>>>> in bsg.
->>>> I don't care about read/write in particular.  But we do need some
->>>> way to launch asynchronous SCSI commands, and currently read/write
->>>> are the only way to do that in bsg.  The reason is to keep multiple
->>>> spindles busy at the same time.
->>> Won't multi-threading the ioctl calls achieve the same effect?  Or do
->>> you trip over BKL there?
->> There's no BKL on (new) ioctls anymore, at least.  A thread per
->> device would be feasible perhaps.  But if you want any sort of
->> pipelining out of the device, esp. in the remote iSCSI case, you
->> need to have a good number of commands outstanding to each device.
->> So a thread per command per device.  Typical iSCSI queue depth of
->> 128 times 16 devices for a small setup is a lot of threads.
+> > diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.24-rc6-mm1/drivers/net/hp.c linux-2.6.24-rc6-mm1/drivers/net/hp.c
+> > --- linux.vanilla-2.6.24-rc6-mm1/drivers/net/hp.c	2008-01-02 16:04:00.000000000 +0000
+> > +++ linux-2.6.24-rc6-mm1/drivers/net/hp.c	2008-01-11 14:47:44.000000000 +0000
 > 
-> I was actually thinking of a thread per outstanding command.
+> > @@ -176,7 +176,7 @@
+> >  				outb_p(irqmap[irq] | HP_RUN, ioaddr + HP_CONFIGURE);
+> >  				outb_p( 0x00 | HP_RUN, ioaddr + HP_CONFIGURE);
 > 
->> The pthread/pipe latency overhead is not insignificant for fast
->> storage networks too.
->>
->>>> How about these new ioctls instead of read/write:
->>>>
->>>>     SG_IO_SUBMIT - start a new blk_execute_rq_nowait()
->>>>     SG_IO_TEST   - complete and return a previous req
->>>>     SG_IO_WAIT   - wait for a req to finish, interruptibly
->>>>
->>>> Then old write users will instead do ioctl SUBMIT.  Read users will
->>>> do TEST for non-blocking fd, or WAIT for blocking.  And SG_IO could
->>>> be implemented as SUBMIT + WAIT.
->>>>
->>>> Then we can do compat_ioctl and convert up iovecs out-of-line before
->>>> calling the normal functions.
->>>>
->>>> Let me know if you want a patch for this.
->>> Really, the thought of re-inventing yet another async I/O interface
->>> isn't very appealing.
->> I'm fine with read/write, except Tomo is against handling iovecs
->> because of the compat complexity with struct iovec being different
->> on 32- vs 64-bit.  There is a standard way to do "compat" ioctl that
->> hides this handling in a different file (not bsg.c), which is the
->> only reason I'm even considering these ioctls.  I don't care about
->> compat setups per se.
->>
->> Is there another async I/O mechanism?  Userspace builds the CDBs,
->> just needs some way to drop them in SCSI ML.  BSG is almost perfect
->> for this, but doesn't do iovec, leading to lots of memcpy.
-> 
-> No, it's just that async interfaces in Linux have a long and fairly
-> unhappy history.
+> ... didn't you miss two here?  Otherwise, code looks great.
 
-The sg driver's async interface has been pretty stable for
-a long time. The sync SG_IO ioctl is built on top of the
-async interface. That makes the async interface extremely
-well tested.
+The patch only changes the _p usage within the shared library. The hp.c
+code is used solely by the ISA HP driver and needed.
 
-The write()/read() async interface in sg does have one
-problem: when a command is dispatched via a write()
-it would be very useful to get back a tag but that
-violates write()'s second argument: 'const void * buf'.
-That tag could be useful both for identification of the
-response and by task management functions.
+> How will the user know when they need to use 8390p?  
 
-I was hoping that the 'flags' field in sgv4 could be used
-to implement the variants:
-     SG_IO_SUBMIT - start a new blk_execute_rq_nowait()
-     SG_IO_TEST   - complete and return a previous req
-     SG_IO_WAIT   - wait for a req to finish, interruptibly
+They don't need to, any more than they need to know about 8390 right now.
+It is added to the Makefile so will be sucked in and built by Make as an
+extra module. The 8390p and 8390 use different wrapper symbols for
+ei_open etc so depmod will load the right one.
 
-that way the existing SG_IO ioctl is sufficient.
-
-And if Tomo doesn't want to do it in the bsg driver,
-then it could be done it the sg driver.
-
-Doug Gilbert
+Alan
