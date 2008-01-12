@@ -1,82 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763516AbYALLR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763536AbYALLUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763516AbYALLR5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 06:17:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762503AbYALLRt
+	id S1763536AbYALLUu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 06:20:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762211AbYALLUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 06:17:49 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:33041 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762361AbYALLRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 06:17:48 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/4] PM: Do not destroy/create devices while suspended (rev. 2)
-Date: Sat, 12 Jan 2008 12:20:21 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org,
-       stern@rowland.harvard.edu, lenb@kernel.org,
-       linux-kernel@vger.kernel.org, pavel@suse.cz, mingo@elte.hu,
-       gregkh@suse.de, tglx@linutronix.de, ak@suse.de
-References: <200801020032.45529.rjw@sisk.pl> <20080111164613.7791bb94.akpm@linux-foundation.org> <20080111164904.3ca81602.akpm@linux-foundation.org>
-In-Reply-To: <20080111164904.3ca81602.akpm@linux-foundation.org>
+	Sat, 12 Jan 2008 06:20:42 -0500
+Received: from namei.org ([69.55.235.186]:55759 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762205AbYALLUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 06:20:40 -0500
+Date: Sat, 12 Jan 2008 22:20:37 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: linux-fsdevel@vger.kernel.org
+cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: [PATCH][RFC] security: call security_file_permission from rw_verify_area
+Message-ID: <Xine.LNX.4.64.0801122217390.26179@us.intercode.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801121220.23223.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 12 of January 2008, Andrew Morton wrote:
-> On Fri, 11 Jan 2008 16:46:13 -0800
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > > The first patch in the series introduces such a mechanism.  The remaining three
-> > > patches modify the MSR, x86-64 MCE and cpuid drivers in accordance with the
-> > > above approach.
-> > 
-> > These patches are a preresuisite to
-> > gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch and its
-> > later fixed-up versions.
-> > 
-> > So what I have now is
-> > 
-> > revert-gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch
-> > pm-introduce-destroy_suspended_device.patch
-> > pm-do-not-destroy-create-devices-while-suspended-in-msrc-rev-2.patch
-> > pm-do-not-destroy-create-devices-while-suspended-in-mce_64c.patch
-> > pm-do-not-destroy-create-devices-while-suspended-in-cpuidc.patch
-> > pm-acquire-device-locks-on-suspend-rev-3.patch
-> > pm-acquire-device-locks-on-suspend-rev-3-checkpatch-fixes.patch
-> > pm-acquire-device-locks-on-suspend-rev-3-checkpatch-fixes-2.patch
-> > 
-> > So what needs to happen in Greg's tree is
-> > 
-> > a) drop the old gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch
-> > 
-> > b) apply these four patches
-> > 
-> > c) apply the new pm-acquire-device-locks-on-suspend-rev-3.patch (and its fixups)
-> 
-> err, no.  pm-introduce-destroy_suspended_device.patch demolishes
-> pm-acquire-device-locks-on-suspend-rev-3.patch
-> 
-> Confused, giving up.
+Please review.  
 
-Sorry, I didn't know you still had pm-introduce-destroy_suspended_device.patch.
+Tested with SELinux in enforcing mode.
 
-Please drop:
+---
 
-pm-do-not-destroy-create-devices-while-suspended-in-msrc-rev-2.patch
-pm-do-not-destroy-create-devices-while-suspended-in-mce_64c.patch
-pm-do-not-destroy-create-devices-while-suspended-in-cpuidc.patch
-pm-acquire-device-locks-on-suspend-rev-3.patch
-pm-acquire-device-locks-on-suspend-rev-3-checkpatch-fixes.patch
-pm-acquire-device-locks-on-suspend-rev-3-checkpatch-fixes-2.patch
+All instances of rw_verify_area() are followed by a call to
+security_file_permission(), so just call the latter from the former.
 
-and I'll resend a new checkpatch.pl-compliant version of the
-pm-acquire-device-locks-on-suspend patch with appropriate sign-offs to you
-and Greg.
+Signed-off-by: James Morris <jmorris@namei.org>
+---
+ fs/compat.c     |    4 ---
+ fs/read_write.c |   63 +++++++++++++++++++++----------------------------------
+ fs/splice.c     |    8 -------
+ 3 files changed, 24 insertions(+), 51 deletions(-)
+
+diff --git a/fs/compat.c b/fs/compat.c
+index 15078ce..5216c3f 100644
+--- a/fs/compat.c
++++ b/fs/compat.c
+@@ -1104,10 +1104,6 @@ static ssize_t compat_do_readv_writev(int type, struct file *file,
+ 	if (ret < 0)
+ 		goto out;
+ 
+-	ret = security_file_permission(file, type == READ ? MAY_READ:MAY_WRITE);
+-	if (ret)
+-		goto out;
+-
+ 	fnv = NULL;
+ 	if (type == READ) {
+ 		fn = file->f_op->read;
+diff --git a/fs/read_write.c b/fs/read_write.c
+index ea1f94c..c4d3d17 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -197,25 +197,27 @@ int rw_verify_area(int read_write, struct file *file, loff_t *ppos, size_t count
+ {
+ 	struct inode *inode;
+ 	loff_t pos;
++	int retval = -EINVAL;
+ 
+ 	inode = file->f_path.dentry->d_inode;
+ 	if (unlikely((ssize_t) count < 0))
+-		goto Einval;
++		return retval;
+ 	pos = *ppos;
+ 	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
+-		goto Einval;
++		return retval;
+ 
+ 	if (unlikely(inode->i_flock && mandatory_lock(inode))) {
+-		int retval = locks_mandatory_area(
++		retval = locks_mandatory_area(
+ 			read_write == READ ? FLOCK_VERIFY_READ : FLOCK_VERIFY_WRITE,
+ 			inode, file, pos, count);
+ 		if (retval < 0)
+ 			return retval;
+ 	}
++	retval = security_file_permission(file,
++				read_write == READ ? MAY_READ : MAY_WRITE);
++	if (retval)
++		return retval;
+ 	return count > MAX_RW_COUNT ? MAX_RW_COUNT : count;
+-
+-Einval:
+-	return -EINVAL;
+ }
+ 
+ static void wait_on_retry_sync_kiocb(struct kiocb *iocb)
+@@ -267,18 +269,15 @@ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
+ 	ret = rw_verify_area(READ, file, pos, count);
+ 	if (ret >= 0) {
+ 		count = ret;
+-		ret = security_file_permission (file, MAY_READ);
+-		if (!ret) {
+-			if (file->f_op->read)
+-				ret = file->f_op->read(file, buf, count, pos);
+-			else
+-				ret = do_sync_read(file, buf, count, pos);
+-			if (ret > 0) {
+-				fsnotify_access(file->f_path.dentry);
+-				add_rchar(current, ret);
+-			}
+-			inc_syscr(current);
++		if (file->f_op->read)
++			ret = file->f_op->read(file, buf, count, pos);
++		else
++			ret = do_sync_read(file, buf, count, pos);
++		if (ret > 0) {
++			fsnotify_access(file->f_path.dentry);
++			add_rchar(current, ret);
+ 		}
++		inc_syscr(current);
+ 	}
+ 
+ 	return ret;
+@@ -325,18 +324,15 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
+ 	ret = rw_verify_area(WRITE, file, pos, count);
+ 	if (ret >= 0) {
+ 		count = ret;
+-		ret = security_file_permission (file, MAY_WRITE);
+-		if (!ret) {
+-			if (file->f_op->write)
+-				ret = file->f_op->write(file, buf, count, pos);
+-			else
+-				ret = do_sync_write(file, buf, count, pos);
+-			if (ret > 0) {
+-				fsnotify_modify(file->f_path.dentry);
+-				add_wchar(current, ret);
+-			}
+-			inc_syscw(current);
++		if (file->f_op->write)
++			ret = file->f_op->write(file, buf, count, pos);
++		else
++			ret = do_sync_write(file, buf, count, pos);
++		if (ret > 0) {
++			fsnotify_modify(file->f_path.dentry);
++			add_wchar(current, ret);
+ 		}
++		inc_syscw(current);
+ 	}
+ 
+ 	return ret;
+@@ -603,9 +599,6 @@ static ssize_t do_readv_writev(int type, struct file *file,
+ 	ret = rw_verify_area(type, file, pos, tot_len);
+ 	if (ret < 0)
+ 		goto out;
+-	ret = security_file_permission(file, type == READ ? MAY_READ : MAY_WRITE);
+-	if (ret)
+-		goto out;
+ 
+ 	fnv = NULL;
+ 	if (type == READ) {
+@@ -737,10 +730,6 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
+ 		goto fput_in;
+ 	count = retval;
+ 
+-	retval = security_file_permission (in_file, MAY_READ);
+-	if (retval)
+-		goto fput_in;
+-
+ 	/*
+ 	 * Get output file, and verify that it is ok..
+ 	 */
+@@ -759,10 +748,6 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
+ 		goto fput_out;
+ 	count = retval;
+ 
+-	retval = security_file_permission (out_file, MAY_WRITE);
+-	if (retval)
+-		goto fput_out;
+-
+ 	if (!max)
+ 		max = min(in_inode->i_sb->s_maxbytes, out_inode->i_sb->s_maxbytes);
+ 
+diff --git a/fs/splice.c b/fs/splice.c
+index 6bdcb61..56b802b 100644
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -908,10 +908,6 @@ static long do_splice_from(struct pipe_inode_info *pipe, struct file *out,
+ 	if (unlikely(ret < 0))
+ 		return ret;
+ 
+-	ret = security_file_permission(out, MAY_WRITE);
+-	if (unlikely(ret < 0))
+-		return ret;
+-
+ 	return out->f_op->splice_write(pipe, out, ppos, len, flags);
+ }
+ 
+@@ -934,10 +930,6 @@ static long do_splice_to(struct file *in, loff_t *ppos,
+ 	if (unlikely(ret < 0))
+ 		return ret;
+ 
+-	ret = security_file_permission(in, MAY_READ);
+-	if (unlikely(ret < 0))
+-		return ret;
+-
+ 	return in->f_op->splice_read(in, ppos, pipe, len, flags);
+ }
+ 
+-- 
+1.5.3.7
+
