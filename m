@@ -1,72 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760061AbYALSBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760533AbYALSJy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760061AbYALSBh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 13:01:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbYALSB2
+	id S1760533AbYALSJy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 13:09:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755667AbYALSJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 13:01:28 -0500
-Received: from as2.cineca.com ([130.186.84.242]:58980 "EHLO as2.cineca.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754493AbYALSB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 13:01:26 -0500
-Message-ID: <4789006C.2030804@users.sourceforge.net>
-From: Andrea Righi <righiandr@users.sourceforge.net>
-Reply-To: righiandr@users.sourceforge.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070604 Thunderbird/1.5.0.12 Mnenhy/0.7.5.666
+	Sat, 12 Jan 2008 13:09:43 -0500
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:52215 "EHLO
+	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754317AbYALSJm convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 13:09:42 -0500
+From: Sripathi Kodi <sripathik@in.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: [PATCH PREEMPT_RT] Compilation fix for PPC
+Date: Sat, 12 Jan 2008 23:39:48 +0530
+User-Agent: KMail/1.9.4
+Cc: Ingo Molnar <mingo@elte.hu>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: balbir@linux.vnet.ibm.com, Valdis.Kletnieks@vt.edu,
-       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [RFC][PATCH] per-task I/O throttling
-References: <47869FFE.1050000@users.sourceforge.net>	 <661de9470801110759h318347acw5f08c91b48ca742d@mail.gmail.com>	 <47879A32.8060508@users.sourceforge.net>	 <3777.1200113861@turing-police.cc.vt.edu> <1200131197.7999.14.camel@lappy>	 <20080112105702.GC25388@balbir.in.ibm.com> <1200136245.7999.20.camel@lappy>
-In-Reply-To: <1200136245.7999.20.camel@lappy>
-X-Enigmail-Version: 0.95.0
-OpenPGP: id=77CEF397;
-	url=keyserver.veridis.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Date: Sat, 12 Jan 2008 19:01:14 +0100 (MET)
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200801122339.48479.sripathik@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Sat, 2008-01-12 at 16:27 +0530, Balbir Singh wrote:
->> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2008-01-12 10:46:37]:
->>
->>> On Fri, 2008-01-11 at 23:57 -0500, Valdis.Kletnieks@vt.edu wrote:
->>>> On Fri, 11 Jan 2008 17:32:49 +0100, Andrea Righi said:
->>>>
->>>>> The interesting feature is that it allows to set a priority for each
->>>>> process container, but AFAIK it doesn't allow to "partition" the
->>>>> bandwidth between different containers (that would be a nice feature
->>>>> IMHO). For example it would be great to be able to define per-container
->>>>> limits, like assign 10MB/s for processes in container A, 30MB/s to
->>>>> container B, 20MB/s to container C, etc.
->>>> Has anybody considered allocating based on *seeks* rather than bytes moved,
->>>> or counting seeks as "virtual bytes" for the purposes of accounting (if the
->>>> disk can do 50mbytes/sec, and a seek takes 5millisecs, then count it as 100K
->>>> of data)?
->>> I was considering a time scheduler, you can fill your time slot with
->>> seeks or data, it might be what CFQ does, but I've never even read the
->>> code.
->>>
->> So far the definition of I/O bandwidth has been w.r.t time. Not all IO
->> devices have sectors; I'd prefer bytes over a period of time.
-> 
-> Doing a time based one would only require knowing the (avg) delay of
-> seeks, whereas doing a bytes based one would also require knowing the
-> (avg) speed of the device.
-> 
-> That is, if you're also interested in providing a latency guarantee.
-> Because that'd force you to convert bytes to time again.
+Hi,
 
-So, what about considering both bytes/sec and io-operations/sec? In this
-way we should be able to limit huge streams of data and seek storms (or
-any mix of them).
+2.6.24-rc5-rt1 won't compile on PPC if CONFIG_SMP is turned off. 
 
-Regarding CFQ, AFAIK it's only possible to configure an I/O priorty for
-a process, but there's no way for example to limit the bandwidth (or I/O
-operations/sec) for a particular user or group.
+  CC      arch/powerpc/kernel/pmc.o
+In file included from include/asm/tlb.h:62,
+                 from arch/powerpc/mm/mem.c:44:
+include/asm-generic/tlb.h: In function ‘tlb_gather_mmu’:
+include/asm-generic/tlb.h:58: error: implicit declaration of function ‘__get_cpu_lock’
+include/asm-generic/tlb.h:58: error: ‘mmu_gathers’ undeclared (first use in this function)
+include/asm-generic/tlb.h:58: error: (Each undeclared identifier is reported only once
+include/asm-generic/tlb.h:58: error: for each function it appears in.)
+include/asm-generic/tlb.h:58: error: invalid lvalue in unary ‘&’
+include/asm-generic/tlb.h:58: warning: type defaults to ‘int’ in declaration of ‘type name’
+include/asm-generic/tlb.h:58: error: invalid lvalue in unary ‘&’
+include/asm-generic/tlb.h:58: error: invalid lvalue in unary ‘&’
+include/asm-generic/tlb.h:58: warning: type defaults to ‘int’ in declaration of ‘type name’
+include/asm-generic/tlb.h:58: error: invalid lvalue in unary ‘&’
+include/asm-generic/tlb.h:58: error: implicit declaration of function ‘__get_cpu_var_locked’
+include/asm-generic/tlb.h:58: error: invalid lvalue in unary ‘&’
+include/asm-generic/tlb.h: In function ‘tlb_finish_mmu’:
+include/asm-generic/tlb.h:96: error: ‘mmu_gathers’ undeclared (first use in this function)
+include/asm-generic/tlb.h:96: error: invalid lvalue in unary ‘&’
+include/asm-generic/tlb.h:96: warning: type defaults to ‘int’ in declaration of ‘type name’
+include/asm-generic/tlb.h:96: error: invalid lvalue in unary ‘&’
+include/asm-generic/tlb.h:96: error: invalid lvalue in unary ‘&’
+include/asm-generic/tlb.h:96: warning: type defaults to ‘int’ in declaration of ‘type name’
+include/asm-generic/tlb.h:96: error: invalid lvalue in unary ‘&’
 
--Andrea
+The patch below fixes it.
+
+Thanks,
+Sripathi.
+
+Signed-off-by: Sripathi Kodi <sripathik@in.ibm.com>
+
+diff -uprN linux-2.6.24-rc5-rt1_org/include/asm-powerpc/percpu.h linux-2.6.24-rc5-rt1/include/asm-powerpc/percpu.h
+--- linux-2.6.24-rc5-rt1_org/include/asm-powerpc/percpu.h	2008-01-12 17:43:03.000000000 +0530
++++ linux-2.6.24-rc5-rt1/include/asm-powerpc/percpu.h	2008-01-12 17:43:58.000000000 +0530
+@@ -68,6 +68,8 @@ extern void setup_per_cpu_areas(void);
+ 
+ #define __get_cpu_var(var)			per_cpu__##var
+ #define __raw_get_cpu_var(var)			per_cpu__##var
++#define __get_cpu_lock(var, cpu)		per_cpu_lock__##var##_locked
++#define __get_cpu_var_locked(var, cpu)		per_cpu__##var##_locked
+ 
+ #endif	/* SMP */
+ 
