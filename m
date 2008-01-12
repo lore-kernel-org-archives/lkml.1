@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759072AbYALRDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759593AbYALRda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759072AbYALRDl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 12:03:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754317AbYALRDc
+	id S1759593AbYALRda (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 12:33:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbYALRdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 12:03:32 -0500
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:33289 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754266AbYALRDc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 12:03:32 -0500
-Message-ID: <4788F226.7040101@keyaccess.nl>
-Date: Sat, 12 Jan 2008 18:00:22 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sat, 12 Jan 2008 12:33:21 -0500
+Received: from mx2.suse.de ([195.135.220.15]:58635 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753358AbYALRdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 12:33:20 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH/RFC] synchronize_rcu(): high latency on idle system
+Date: Sat, 12 Jan 2008 18:33:09 +0100
+User-Agent: KMail/1.9.6
+Cc: Benjamin LaHaise <bcrl@kvack.org>, dipankar@in.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
+References: <20080112012626.GI28570@kvack.org> <1200129791.7999.5.camel@lappy>
+In-Reply-To: <1200129791.7999.5.camel@lappy>
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus@drzeus.cx>
-CC: Pavel Machek <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Ondrej Zary <linux@rainbow-software.org>,
-       Jaroslav Kysela <perex@perex.cz>,
-       ALSA development <alsa-devel@alsa-project.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Andrew Morton <akpm@osdl.org>,
-       Takashi Iwai <tiwai@suse.de>, linux-pm@lists.linux-foundation.org
-Subject: Re: [alsa-devel] PNP_DRIVER_RES_DISABLE breaks swsusp at least with
- snd_cs4236
-References: <200801092343.48726.linux@rainbow-software.org>	<20080111080141.75aaad5f@poseidon.drzeus.cx>	<47877B83.5040604@keyaccess.nl>	<200801111940.22023.linux@rainbow-software.org>	<4788168F.8070403@keyaccess.nl>	<20080112121256.0f2e96ad@poseidon.drzeus.cx>	<4788C323.6090206@keyaccess.nl> <20080112162150.1ec9cad0@poseidon.drzeus.cx>
-In-Reply-To: <20080112162150.1ec9cad0@poseidon.drzeus.cx>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Disposition: inline
+Message-Id: <200801121833.09508.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12-01-08 16:21, Pierre Ossman wrote:
-
-> Ah, sorry. It was a different thread. Look for a mail with the subject 
-> "PNP: do not stop/start devices in suspend/resume path" in the LKML och 
-> linux-pm archives.
-
-Right, and I see that the removal of start/stop is already in -mm. That's 
-not going to work. Something (such as removing power) disabled Ondrej's 
-CS4236 and the pnp_start_dev() is needed to re-enable it upon resume.
-
->> But we certainly need the pnp_start_dev() in the current flow of
->> things. It not being called is the problem this fixes...
+On Saturday 12 January 2008 10:23:11 Peter Zijlstra wrote:
 > 
-> I think the previous suggestion was that the drivers should call this,
-> not the core, so that it behaved more like other parts of the kernel
-> (e.g. PCI).
+> On Fri, 2008-01-11 at 20:26 -0500, Benjamin LaHaise wrote:
+> > Hello folks,
+> > 
+> > I'd like to put the patch below out for comments to see if folks think the 
+> > approach is a valid fix to reduce the latency of synchronize_rcu().  The 
+> > motivation is that an otherwise idle system takes about 3 ticks per network 
+> > interface in unregister_netdev() due to multiple calls to synchronize_rcu(), 
+> > which adds up to quite a few seconds for tearing down thousands of 
+> > interfaces.  By flushing pending rcu callbacks in the idle loop, the system 
+> > makes progress hundreds of times faster.  If this is indeed a sane thing to, 
+> > it probably needs to be done for other architectures than x86.  And yes, the 
+> > network stack shouldn't call synchronize_rcu() quite so much, but fixing that 
+> > is a little more involved.
+> 
+> So, instead of only relying on the tick to drive the RCU state machine,
+> you add the idle loop to it. This seems to make sense, esp because nohz
+> is held off until rcu is idle too.
 
-It seems all PnP drivers would need to stick a pnp_start_dev in their resume 
-method then which means it really belongs in core. One important point where 
-PnP and PCI differ is that PnP allows to change the resources on a protocol 
-level and I don't see how it could ever not be necessary to restore the 
-state a user may have set if power has been removed. Hibernate is just that, 
-isn't it?
+For NOHZ I agree it would be probably better to just force a quiescent
+cycle than to schedule a one jiffie tick like it is currently done.
 
-Rene.
+For non NOHZ I'm not so sure.
+
+-Andi
