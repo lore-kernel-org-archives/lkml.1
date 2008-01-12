@@ -1,67 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763656AbYALLXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763851AbYALLXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763656AbYALLXQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 06:23:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755750AbYALLXA
+	id S1763851AbYALLXo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 06:23:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762906AbYALLXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 06:23:00 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:33066 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754804AbYALLW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 06:22:59 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH 0/4] PM: Do not destroy/create devices while suspended (rev. 2)
-Date: Sat, 12 Jan 2008 12:25:43 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org,
-       lenb@kernel.org, linux-kernel@vger.kernel.org, pavel@suse.cz,
-       mingo@elte.hu, tglx@linutronix.de, ak@suse.de
-References: <20080112005619.GA4665@suse.de> <Pine.LNX.4.44L0.0801112208030.21411-100000@netrider.rowland.org> <20080112042946.GA30093@suse.de>
-In-Reply-To: <20080112042946.GA30093@suse.de>
+	Sat, 12 Jan 2008 06:23:34 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:60667 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762811AbYALLXc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 06:23:32 -0500
+Date: Sat, 12 Jan 2008 12:23:31 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: David Miller <davem@davemloft.net>
+cc: vaf@cisco.com, andi@firstfloor.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 001/001] ipv4: enable use of 240/4 address space
+In-Reply-To: <20080111.174958.258783771.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0801121222490.425@fbirervta.pbzchgretzou.qr>
+References: <20080108011057.GA21168@cisco.com> <p73bq7smx1t.fsf@bingen.suse.de>
+ <20080111172915.GA6199@cisco.com> <20080111.174958.258783771.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801121225.44688.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 12 of January 2008, Greg KH wrote:
-> On Fri, Jan 11, 2008 at 10:11:52PM -0500, Alan Stern wrote:
-> > On Fri, 11 Jan 2008, Greg KH wrote:
-> > 
-> > > On Fri, Jan 11, 2008 at 04:49:04PM -0800, Andrew Morton wrote:
-> > 
-> > > > err, no.  pm-introduce-destroy_suspended_device.patch demolishes
-> > > > pm-acquire-device-locks-on-suspend-rev-3.patch
-> > > > 
-> > > > Confused, giving up.
-> > > 
-> > > I'm confused too, I have no idea what the proper order of things should
-> > > be either.  Anyone want to give me a hint?
-> > 
-> > Sorry for the confusion.  The correct patch to apply is 
-> > pm-acquire-device-locks-on-suspend-rev-3 (plus the attending 
-> > style-fixups).  It encompasses those earlier patches.
-> 
-> Can someone resend this to me?  Do I need to drop the patch I currently
-> have in my tree as well?  Or put it before/after that one?
-> 
-> > The real problem is that our current email workflow patterns don't 
-> > provide a standardized way for maintainers to tell when a new patch 
-> > submission is meant to override or replace an earlier submission (or 
-> > even a set of earlier submissions).  Does anybody have some suggestions 
-> > for a good way to do this?
-> 
-> Yeah, just tell me what you want me to do with it (drop an old one,
-> replace it, add it, etc.)  We usually can handle this pretty well :)
 
-I'll repost the new patch along with instructions what to do with it.
+On Jan 11 2008 17:49, David Miller wrote:
+>From: Vince Fuller <vaf@cisco.com>
+>Date: Fri, 11 Jan 2008 09:29:15 -0800
+>
+>> I leave it up to you, the developers, to decide if you want to use these
+>> patches.
+>
+>Vince, please just ignore these turkeys who are dismissing
+>your patch and respin it against current sources as I asked
+>of you.
+>
+>I'll apply it, immediately, because it is the only correct
+>course of action.
 
-Greetings,
-Rafael
+
+I strongly agree. Linux should set standards, or at least help them
+become one.
