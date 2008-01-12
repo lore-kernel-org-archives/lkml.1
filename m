@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761437AbYALCtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932088AbYALCt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761437AbYALCtl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 21:49:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760845AbYALCsL
+	id S932088AbYALCt5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 21:49:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760896AbYALCsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 21:48:11 -0500
-Received: from vms044pub.verizon.net ([206.46.252.44]:57956 "EHLO
-	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760687AbYALCsI (ORCPT
+	Fri, 11 Jan 2008 21:48:13 -0500
+Received: from vms046pub.verizon.net ([206.46.252.46]:46944 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760492AbYALCsH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 21:48:08 -0500
-Date: Fri, 11 Jan 2008 21:47:48 -0500
+	Fri, 11 Jan 2008 21:48:07 -0500
+Date: Fri, 11 Jan 2008 21:47:39 -0500
 From: Jon Smirl <jonsmirl@gmail.com>
-Subject: [PATCH 19 5/5] Convert pfc8563 i2c driver from old style to new style
+Subject: [PATCH 19 1/5] Implement module aliasing for i2c to translate from
+	device tree names
 In-reply-to: <20080112024737.7023.61680.stgit@terra.home>
 To: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Message-id: <20080112024748.7023.90680.stgit@terra.home>
+Message-id: <20080112024739.7023.90634.stgit@terra.home>
 MIME-version: 1.0
 Content-type: text/plain; charset=utf-8
 Content-transfer-encoding: 7bit
@@ -25,166 +26,294 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert pfc8563 i2c driver from old style to new style. The
-driver is also modified to support device tree names via the
-i2c mod alias mechanism.
+This patch allows new style i2c chip drivers to have alias names using
+the official kernel aliasing system and MODULE_DEVICE_TABLE(). I've
+tested it on PowerPC and x86. This change is required for PowerPC
+device tree support.
 
 Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
 ---
 
- drivers/rtc/rtc-pcf8563.c |  107 +++++++++++----------------------------------
- 1 files changed, 27 insertions(+), 80 deletions(-)
+ drivers/hwmon/f75375s.c         |    4 ++--
+ drivers/i2c/chips/ds1682.c      |    2 +-
+ drivers/i2c/chips/menelaus.c    |    2 +-
+ drivers/i2c/chips/tps65010.c    |    2 +-
+ drivers/i2c/chips/tsl2550.c     |    2 +-
+ drivers/i2c/i2c-core.c          |   24 +++++++++++++++++++++++-
+ drivers/rtc/rtc-ds1307.c        |    2 +-
+ drivers/rtc/rtc-ds1374.c        |    2 +-
+ drivers/rtc/rtc-m41t80.c        |    2 +-
+ drivers/rtc/rtc-rs5c372.c       |    2 +-
+ include/linux/i2c.h             |    5 ++---
+ include/linux/mod_devicetable.h |   19 +++++++++++++++++++
+ scripts/mod/file2alias.c        |   14 ++++++++++++++
+ 13 files changed, 68 insertions(+), 14 deletions(-)
 
 
-diff --git a/drivers/rtc/rtc-pcf8563.c b/drivers/rtc/rtc-pcf8563.c
-index 0242d80..e1ea2a0 100644
---- a/drivers/rtc/rtc-pcf8563.c
-+++ b/drivers/rtc/rtc-pcf8563.c
-@@ -25,10 +25,6 @@
-  * located at 0x51 will pass the validation routine due to
-  * the way the registers are implemented.
-  */
--static unsigned short normal_i2c[] = { I2C_CLIENT_END };
--
--/* Module parameters */
--I2C_CLIENT_INSMOD;
+diff --git a/drivers/hwmon/f75375s.c b/drivers/hwmon/f75375s.c
+index 6892f76..2247de6 100644
+--- a/drivers/hwmon/f75375s.c
++++ b/drivers/hwmon/f75375s.c
+@@ -117,7 +117,7 @@ struct f75375_data {
+ static int f75375_attach_adapter(struct i2c_adapter *adapter);
+ static int f75375_detect(struct i2c_adapter *adapter, int address, int kind);
+ static int f75375_detach_client(struct i2c_client *client);
+-static int f75375_probe(struct i2c_client *client);
++static int f75375_probe(struct i2c_client *client, const struct i2c_device_id *id);
+ static int f75375_remove(struct i2c_client *client);
  
- #define PCF8563_REG_ST1		0x00 /* status */
- #define PCF8563_REG_ST2		0x01
-@@ -72,9 +68,6 @@ struct pcf8563 {
- 	int c_polarity;	/* 0: MO_C=1 means 19xx, otherwise MO_C=1 means 20xx */
- };
+ static struct i2c_driver f75375_legacy_driver = {
+@@ -628,7 +628,7 @@ static void f75375_init(struct i2c_client *client, struct f75375_data *data,
  
--static int pcf8563_probe(struct i2c_adapter *adapter, int address, int kind);
--static int pcf8563_detach(struct i2c_client *client);
--
+ }
+ 
+-static int f75375_probe(struct i2c_client *client)
++static int f75375_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ {
+ 	struct f75375_data *data = i2c_get_clientdata(client);
+ 	struct f75375s_platform_data *f75375s_pdata = client->dev.platform_data;
+diff --git a/drivers/i2c/chips/ds1682.c b/drivers/i2c/chips/ds1682.c
+index 9e94542..93c0441 100644
+--- a/drivers/i2c/chips/ds1682.c
++++ b/drivers/i2c/chips/ds1682.c
+@@ -200,7 +200,7 @@ static struct bin_attribute ds1682_eeprom_attr = {
  /*
-  * In the routines that deal directly with the pcf8563 hardware, we use
-  * rtc_time -- month 0-11, hour 0-23, yr = calendar year-epoch.
-@@ -257,98 +250,52 @@ static const struct rtc_class_ops pcf8563_rtc_ops = {
- 	.set_time	= pcf8563_rtc_set_time,
- };
- 
--static int pcf8563_attach(struct i2c_adapter *adapter)
-+static int pcf8563_remove(struct i2c_client *client)
+  * Called when a ds1682 device is matched with this driver
+  */
+-static int ds1682_probe(struct i2c_client *client)
++static int ds1682_probe(struct i2c_client *client, const struct i2c_device_id *id)
  {
--	return i2c_probe(adapter, &addr_data, pcf8563_probe);
-+	struct rtc_device *rtc = i2c_get_clientdata(client);
-+
-+	if (rtc)
-+		rtc_device_unregister(rtc);
-+
-+	return 0;
- }
+ 	int rc;
  
-+static struct i2c_device_id pcf8563_id[] = {
-+	OF_I2C_ID("philips,pcf8563", 0)
-+	OF_I2C_ID("epson,rtc8564", 0)
-+	{},
-+};
-+MODULE_DEVICE_TABLE(i2c, pcf8563_id);
-+
-+static int pcf8563_probe(struct i2c_client *client, const struct i2c_device_id *id);
-+
- static struct i2c_driver pcf8563_driver = {
- 	.driver		= {
--		.name	= "pcf8563",
-+		.name	= "rtc-pcf8563",
- 	},
- 	.id		= I2C_DRIVERID_PCF8563,
--	.attach_adapter = &pcf8563_attach,
--	.detach_client	= &pcf8563_detach,
-+	.probe = &pcf8563_probe,
-+	.remove = &pcf8563_remove,
-+	.id_table	= pcf8563_id,
- };
+diff --git a/drivers/i2c/chips/menelaus.c b/drivers/i2c/chips/menelaus.c
+index 2dea012..89ef9b6 100644
+--- a/drivers/i2c/chips/menelaus.c
++++ b/drivers/i2c/chips/menelaus.c
+@@ -1149,7 +1149,7 @@ static inline void menelaus_rtc_init(struct menelaus_chip *m)
  
--static int pcf8563_probe(struct i2c_adapter *adapter, int address, int kind)
-+static int pcf8563_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ static struct i2c_driver menelaus_i2c_driver;
+ 
+-static int menelaus_probe(struct i2c_client *client)
++static int menelaus_probe(struct i2c_client *client, const struct i2c_device_id *id)
  {
--	struct pcf8563 *pcf8563;
--	struct i2c_client *client;
-+	int result;
- 	struct rtc_device *rtc;
- 
--	int err = 0;
--
--	dev_dbg(&adapter->dev, "%s\n", __FUNCTION__);
--
--	if (!i2c_check_functionality(adapter, I2C_FUNC_I2C)) {
--		err = -ENODEV;
--		goto exit;
--	}
--
--	if (!(pcf8563 = kzalloc(sizeof(struct pcf8563), GFP_KERNEL))) {
--		err = -ENOMEM;
--		goto exit;
--	}
--
--	client = &pcf8563->client;
--	client->addr = address;
--	client->driver = &pcf8563_driver;
--	client->adapter	= adapter;
--
--	strlcpy(client->name, pcf8563_driver.driver.name, I2C_NAME_SIZE);
--
--	/* Verify the chip is really an PCF8563 */
--	if (kind < 0) {
--		if (pcf8563_validate_client(client) < 0) {
--			err = -ENODEV;
--			goto exit_kfree;
--		}
--	}
--
--	/* Inform the i2c layer */
--	if ((err = i2c_attach_client(client)))
--		goto exit_kfree;
--
--	dev_info(&client->dev, "chip found, driver version " DRV_VERSION "\n");
-+	result = pcf8563_validate_client(client);
-+	if (result)
-+		return result;
- 
- 	rtc = rtc_device_register(pcf8563_driver.driver.name, &client->dev,
- 				&pcf8563_rtc_ops, THIS_MODULE);
--
--	if (IS_ERR(rtc)) {
--		err = PTR_ERR(rtc);
--		goto exit_detach;
--	}
-+	if (IS_ERR(rtc))
-+		return PTR_ERR(rtc);
- 
- 	i2c_set_clientdata(client, rtc);
- 
+ 	struct menelaus_chip	*menelaus;
+ 	int			rev = 0, val;
+diff --git a/drivers/i2c/chips/tps65010.c b/drivers/i2c/chips/tps65010.c
+index e320994..6b13642 100644
+--- a/drivers/i2c/chips/tps65010.c
++++ b/drivers/i2c/chips/tps65010.c
+@@ -465,7 +465,7 @@ static int __exit tps65010_remove(struct i2c_client *client)
  	return 0;
--
--exit_detach:
--	i2c_detach_client(client);
--
--exit_kfree:
--	kfree(pcf8563);
--
--exit:
--	return err;
--}
--
--static int pcf8563_detach(struct i2c_client *client)
--{
--	struct pcf8563 *pcf8563 = container_of(client, struct pcf8563, client);
--	int err;
--	struct rtc_device *rtc = i2c_get_clientdata(client);
--
--	if (rtc)
--		rtc_device_unregister(rtc);
--
--	if ((err = i2c_detach_client(client)))
--		return err;
--
--	kfree(pcf8563);
--
--	return 0;
  }
  
- static int __init pcf8563_init(void)
+-static int tps65010_probe(struct i2c_client *client)
++static int tps65010_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ {
+ 	struct tps65010		*tps;
+ 	int			status;
+diff --git a/drivers/i2c/chips/tsl2550.c b/drivers/i2c/chips/tsl2550.c
+index 3de4b19..27c553d 100644
+--- a/drivers/i2c/chips/tsl2550.c
++++ b/drivers/i2c/chips/tsl2550.c
+@@ -364,7 +364,7 @@ static int tsl2550_init_client(struct i2c_client *client)
+  */
+ 
+ static struct i2c_driver tsl2550_driver;
+-static int __devinit tsl2550_probe(struct i2c_client *client)
++static int __devinit tsl2550_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ {
+ 	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
+ 	struct tsl2550_data *data;
+diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+index b5e13e4..5f62230 100644
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -47,6 +47,19 @@ static DEFINE_IDR(i2c_adapter_idr);
+ 
+ /* ------------------------------------------------------------------------- */
+ 
++static const struct i2c_device_id *i2c_match_id(
++		const struct i2c_device_id *id, struct i2c_client *client)
++{
++	/* only powerpc drivers implement the id_table,
++	 * it is empty on other platforms */
++	while (id->name[0]) {
++		if (strcmp(client->name, id->name) == 0)
++			return id;
++		id++;
++	}
++	return NULL;
++}
++
+ static int i2c_device_match(struct device *dev, struct device_driver *drv)
+ {
+ 	struct i2c_client	*client = to_i2c_client(dev);
+@@ -58,6 +71,10 @@ static int i2c_device_match(struct device *dev, struct device_driver *drv)
+ 	if (!is_newstyle_driver(driver))
+ 		return 0;
+ 
++	/* match on an id table if there is one */
++	if (driver->id_table)
++		return i2c_match_id(driver->id_table, client) != NULL;
++
+ 	/* new style drivers use the same kind of driver matching policy
+ 	 * as platform devices or SPI:  compare device and driver IDs.
+ 	 */
+@@ -89,12 +106,17 @@ static int i2c_device_probe(struct device *dev)
+ {
+ 	struct i2c_client	*client = to_i2c_client(dev);
+ 	struct i2c_driver	*driver = to_i2c_driver(dev->driver);
++	const struct i2c_device_id *id = NULL;
+ 
+ 	if (!driver->probe)
+ 		return -ENODEV;
+ 	client->driver = driver;
+ 	dev_dbg(dev, "probe\n");
+-	return driver->probe(client);
++
++	if (driver->id_table)
++		id = i2c_match_id(driver->id_table, client);
++	
++	return driver->probe(client, id);
+ }
+ 
+ static int i2c_device_remove(struct device *dev)
+diff --git a/drivers/rtc/rtc-ds1307.c b/drivers/rtc/rtc-ds1307.c
+index bc1c7fe..9b0eab9 100644
+--- a/drivers/rtc/rtc-ds1307.c
++++ b/drivers/rtc/rtc-ds1307.c
+@@ -326,7 +326,7 @@ static struct bin_attribute nvram = {
+ 
+ static struct i2c_driver ds1307_driver;
+ 
+-static int __devinit ds1307_probe(struct i2c_client *client)
++static int __devinit ds1307_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ {
+ 	struct ds1307		*ds1307;
+ 	int			err = -ENODEV;
+diff --git a/drivers/rtc/rtc-ds1374.c b/drivers/rtc/rtc-ds1374.c
+index 45bda18..dab6008 100644
+--- a/drivers/rtc/rtc-ds1374.c
++++ b/drivers/rtc/rtc-ds1374.c
+@@ -355,7 +355,7 @@ static const struct rtc_class_ops ds1374_rtc_ops = {
+ 	.ioctl = ds1374_ioctl,
+ };
+ 
+-static int ds1374_probe(struct i2c_client *client)
++static int ds1374_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ {
+ 	struct ds1374 *ds1374;
+ 	int ret;
+diff --git a/drivers/rtc/rtc-m41t80.c b/drivers/rtc/rtc-m41t80.c
+index 1cb33ca..457f2ca 100644
+--- a/drivers/rtc/rtc-m41t80.c
++++ b/drivers/rtc/rtc-m41t80.c
+@@ -756,7 +756,7 @@ static struct notifier_block wdt_notifier = {
+  *
+  *****************************************************************************
+  */
+-static int m41t80_probe(struct i2c_client *client)
++static int m41t80_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ {
+ 	int i, rc = 0;
+ 	struct rtc_device *rtc = NULL;
+diff --git a/drivers/rtc/rtc-rs5c372.c b/drivers/rtc/rtc-rs5c372.c
+index 6b67b50..25de13b 100644
+--- a/drivers/rtc/rtc-rs5c372.c
++++ b/drivers/rtc/rtc-rs5c372.c
+@@ -494,7 +494,7 @@ static void rs5c_sysfs_unregister(struct device *dev)
+ 
+ static struct i2c_driver rs5c372_driver;
+ 
+-static int rs5c372_probe(struct i2c_client *client)
++static int rs5c372_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ {
+ 	int err = 0;
+ 	struct rs5c372 *rs5c372;
+diff --git a/include/linux/i2c.h b/include/linux/i2c.h
+index a100c9f..0ca1a59 100644
+--- a/include/linux/i2c.h
++++ b/include/linux/i2c.h
+@@ -126,7 +126,7 @@ struct i2c_driver {
+ 	 * With the driver model, device enumeration is NEVER done by drivers;
+ 	 * it's done by infrastructure.  (NEW STYLE DRIVERS ONLY)
+ 	 */
+-	int (*probe)(struct i2c_client *);
++	int (*probe)(struct i2c_client *, const struct i2c_device_id *id);
+ 	int (*remove)(struct i2c_client *);
+ 
+ 	/* driver model interfaces that don't relate to enumeration  */
+@@ -141,11 +141,10 @@ struct i2c_driver {
+ 
+ 	struct device_driver driver;
+ 	struct list_head list;
++	struct i2c_device_id *id_table;
+ };
+ #define to_i2c_driver(d) container_of(d, struct i2c_driver, driver)
+ 
+-#define I2C_NAME_SIZE	20
+-
+ /**
+  * struct i2c_client - represent an I2C slave device
+  * @flags: I2C_CLIENT_TEN indicates the device uses a ten bit chip address;
+diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
+index e9fddb4..f3aef9f 100644
+--- a/include/linux/mod_devicetable.h
++++ b/include/linux/mod_devicetable.h
+@@ -367,4 +367,23 @@ struct virtio_device_id {
+ };
+ #define VIRTIO_DEV_ANY_ID	0xffffffff
+ 
++/* i2c */
++
++/* These defines are used to separate PowerPC open firmware
++ * drivers into their own namespace */
++#define I2C_NAME_SIZE	(16*3)  /* Needs to be large enough to hold device tree style names */
++#define I2C_MODULE_PREFIX "i2c:"
++#ifdef CONFIG_OF
++#define OF_I2C_PREFIX "OF,"
++#define OF_I2C_ID(s,d) { OF_I2C_PREFIX s, (d) },
++#else
++#define OF_I2C_ID(s,d)
++#endif
++
++struct i2c_device_id {
++	char name[I2C_NAME_SIZE];
++	kernel_ulong_t driver_data;	/* Data private to the driver */
++};
++
++
+ #endif /* LINUX_MOD_DEVICETABLE_H */
+diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
+index d802b5a..90a8d2c 100644
+--- a/scripts/mod/file2alias.c
++++ b/scripts/mod/file2alias.c
+@@ -539,6 +539,16 @@ static int do_virtio_entry(const char *filename, struct virtio_device_id *id,
+ 	return 1;
+ }
+ 
++/* Looks like: i2c:s */
++static int do_i2c_entry(const char *filename, struct i2c_device_id *id,
++			   char *alias)
++{
++	char *tmp;
++	sprintf(alias, I2C_MODULE_PREFIX "%s", id->name);
++
++	return 1;
++}
++
+ /* Ignore any prefix, eg. v850 prepends _ */
+ static inline int sym_is(const char *symbol, const char *name)
+ {
+@@ -669,6 +679,10 @@ void handle_moddevtable(struct module *mod, struct elf_info *info,
+ 		do_table(symval, sym->st_size,
+ 			 sizeof(struct virtio_device_id), "virtio",
+ 			 do_virtio_entry, mod);
++	else if (sym_is(symname, "__mod_i2c_device_table"))
++		do_table(symval, sym->st_size,
++			 sizeof(struct i2c_device_id), "i2c",
++			 do_i2c_entry, mod);
+ 	free(zeros);
+ }
+ 
 
