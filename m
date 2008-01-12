@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759762AbYALSZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761109AbYALSgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759762AbYALSZq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 13:25:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756916AbYALSZi
+	id S1761109AbYALSgU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 13:36:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756402AbYALSgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 13:25:38 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:33444 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756619AbYALSZh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 13:25:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=xhjFYBJXvl+orFWtwbzYYhJeSo13iLELEdWlxmZlln+2MX3Gv+KKBIdnJhCuhbsB3whvT9oj8UQecruX3D3uUK7yCBzEgcbpNgyaJFddPSHRifPX6D7ExPvmFQwBKBcGNpHlUpFNU+QDeIXnvI/5UT5ZbSXbOKbfZ8ty37USedo=
-Message-ID: <2c0942db0801121025h7f22d716s657af75ce7603af0@mail.gmail.com>
-Date: Sat, 12 Jan 2008 10:25:34 -0800
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Renato S. Yamane" <renatoyamane@mandic.com.br>
-Subject: Re: Updatedb hangs Kernel 2.6.22.9-cfs-v22
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <478900FF.2000706@mandic.com.br>
+	Sat, 12 Jan 2008 13:36:07 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:36982 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755912AbYALSgG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 13:36:06 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Benjamin LaHaise <bcrl@kvack.org>
+Subject: Re: [PATCH/RFC] synchronize_rcu(): high latency on idle system
+Date: Sat, 12 Jan 2008 19:35:58 +0100
+User-Agent: KMail/1.9.6
+Cc: dipankar@in.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+References: <20080112012626.GI28570@kvack.org> <20080112023759.GG21068@bingen.suse.de> <20080112175135.GK28570@kvack.org>
+In-Reply-To: <20080112175135.GK28570@kvack.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <478900FF.2000706@mandic.com.br>
-X-Google-Sender-Auth: 998fafdf87cabd1d
+Message-Id: <200801121935.58286.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 12, 2008 10:03 AM, Renato S. Yamane <renatoyamane@mandic.com.br> wrote:
-> Hi,
-> I can't use updatedb in Debian Etch (stable) using customized Kernel
-> 2.6.22.9-cfs-v22.
->
-> When I ran updatedb, after ~1 minute my system hangs and "caps lock" LED
-> is blinking. No log is registered.
+On Saturday 12 January 2008 18:51:35 Benjamin LaHaise wrote:
+> On Sat, Jan 12, 2008 at 03:37:59AM +0100, Andi Kleen wrote:
+> > > And yes, the 
+> > > network stack shouldn't call synchronize_rcu() quite so much, but fixing that 
+> > > is a little more involved.
+> > 
+> > ... but the correct solution.
+> 
+> There has to be at least 1 synchronize_rcu() or equivalent in the 
+> unregister_netdev() path.  I suspect the easiest way to fix it might be to 
+> use call_rcu() to actually free the network device, as anything else will 
+> limit performance of single threaded teardown (ie, when an l2tp daemon 
+> gets terminated via kill -9).  This means an API change that exposes 
+> rcu for unregister_netdev().
 
-Please switch out of X11 to a text mode console (CTRL-ALT-F1), and run
-updatedb there. Capture the oops with a digital camera, and post a
-link to the picture (not the picture itself!) to the list. Or, write
-down the oops carefully, and post the text.
+The call_rcu() could be in free_netdev() couldn't it?
+
+-Andi
