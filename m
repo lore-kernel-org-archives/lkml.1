@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763237AbYALSgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760010AbYALShN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763237AbYALSgq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 13:36:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756402AbYALSgi
+	id S1760010AbYALShN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 13:37:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759569AbYALSg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 13:36:38 -0500
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:36828 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755921AbYALSgh (ORCPT
+	Sat, 12 Jan 2008 13:36:59 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:51153 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759495AbYALSg6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 13:36:37 -0500
-Date: Sun, 13 Jan 2008 00:06:07 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: "Renato S. Yamane" <renatoyamane@mandic.com.br>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Subject: Re: Updatedb hangs Kernel 2.6.22.9-cfs-v22
-Message-ID: <20080112183607.GA10926@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <478900FF.2000706@mandic.com.br>
+	Sat, 12 Jan 2008 13:36:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bBBgyc+dTLW9cb3FJSk5ZLZUtqs+e/TvhiJa4SMuuDZLCPEn3Ud0t3+9bnt+FUwdVcjtA6lyYEvKyzAXsGzlNNXfg7yhPFDmAOlM2bd3RCOu0uTPJinnGGPsmf/6HiNiqIM8sdWjXXqqR02d15GB8KdiqgcEQmV2KyQVAS8Re0Q=
+Message-ID: <9f4f8abe0801121036gfdc14fctdbcc075ac6ae91c4@mail.gmail.com>
+Date: Sat, 12 Jan 2008 10:36:57 -0800
+From: "Vineet Gupta" <vineetg76@gmail.com>
+To: "Chris Snook" <csnook@redhat.com>
+Subject: Re: Usage semantics of atomic_set ( )
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <478819EA.2080905@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <478900FF.2000706@mandic.com.br>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <9f4f8abe0801111457t7535069ar1f98cc37d5cf8d40@mail.gmail.com>
+	 <478819EA.2080905@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 12, 2008 at 04:03:43PM -0200, Renato S. Yamane wrote:
-> Hi,
-> I can't use updatedb in Debian Etch (stable) using customized Kernel 
-> 2.6.22.9-cfs-v22.
->
+> What operations are you using to implement spinlocks?
 
-Hi,
+The cpu provides atomic exchange instruction (atomic Read/write
+semantics) which forms the back end of spin lock code.
+__raw_spin_trylock( ) atomically swaps the lock memory with a reg (set
+to 1)
 
-Can you see if it happens with the latest CFS backport. Its been updated
-quite a bit since then. You can find it at
-http://people.redhat.com/mingo/cfs-scheduler/sched-cfs-v2.6.22.15-v24.1.patch
+Using a pool of spinlocks rather that original idea of spinlock per
+atomic_t anyways seems to be a better idea.
+I really appreciate the responses. Thanks a lot
 
-> When I ran updatedb, after ~1 minute my system hangs and "caps lock" LED is 
-> blinking. No log is registered.
->
-
--- 
-regards,
-Dhaval
+-Vineet
