@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763110AbYALATu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763029AbYALA0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763110AbYALATu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 19:19:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760225AbYALATn
+	id S1763029AbYALA0j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 19:26:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760327AbYALA0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 19:19:43 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59832 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757584AbYALATn (ORCPT
+	Fri, 11 Jan 2008 19:26:31 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46450 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754068AbYALA0a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 19:19:43 -0500
-Date: Sat, 12 Jan 2008 00:17:11 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Zachary Amsden <zach@vmware.com>
-Cc: jeff@garzik.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 8390: split up 8390 with ISA delay and 8390 without
-Message-ID: <20080112001711.08361cd8@lxorguk.ukuu.org.uk>
-In-Reply-To: <1200093391.21817.27.camel@bodhitayantram.eng.vmware.com>
-References: <20080111180848.10a7f012@lxorguk.ukuu.org.uk>
-	<1200093391.21817.27.camel@bodhitayantram.eng.vmware.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Jan 2008 19:26:30 -0500
+Date: Fri, 11 Jan 2008 16:26:38 -0800
+From: Greg KH <greg@kroah.com>
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Matthew Wilcox <matthew@wil.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>, Tony Camuso <tcamuso@redhat.com>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+	opt-in
+Message-ID: <20080112002638.GA18710@kroah.com>
+References: <20080111194931.GN18741@parisc-linux.org> <alpine.LFD.1.00.0801111156230.3148@woody.linux-foundation.org> <20080111201716.GO18741@parisc-linux.org> <alpine.LFD.1.00.0801111224090.3148@woody.linux-foundation.org> <20080111204228.GP18741@parisc-linux.org> <alpine.LFD.1.00.0801111311170.3148@woody.linux-foundation.org> <20080111211753.GR18741@parisc-linux.org> <alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org> <20080111213803.GS18741@parisc-linux.org> <20080111235856.GA16079@jurassic.park.msu.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080111235856.GA16079@jurassic.park.msu.ru>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.24-rc6-mm1/drivers/net/hp.c linux-2.6.24-rc6-mm1/drivers/net/hp.c
-> > --- linux.vanilla-2.6.24-rc6-mm1/drivers/net/hp.c	2008-01-02 16:04:00.000000000 +0000
-> > +++ linux-2.6.24-rc6-mm1/drivers/net/hp.c	2008-01-11 14:47:44.000000000 +0000
+On Sat, Jan 12, 2008 at 02:58:56AM +0300, Ivan Kokshaysky wrote:
+> On Fri, Jan 11, 2008 at 02:38:03PM -0700, Matthew Wilcox wrote:
+> > On Fri, Jan 11, 2008 at 01:28:30PM -0800, Linus Torvalds wrote:
+> > > Hmm. Were all those reports root-caused to just that BAR probing? If so, 
+> > > we may be in better shape than I worried.
+> > 
+> > I believe so.
 > 
-> > @@ -176,7 +176,7 @@
-> >  				outb_p(irqmap[irq] | HP_RUN, ioaddr + HP_CONFIGURE);
-> >  				outb_p( 0x00 | HP_RUN, ioaddr + HP_CONFIGURE);
+> Ditto.
 > 
-> ... didn't you miss two here?  Otherwise, code looks great.
+> One typical problem is that on "Intel(r) 3 Series Experss Chipset Family"
+> MMCONFIG probing of the BAR #2 (frame buffer address) of integrated graphics
+> device locks up the machine (depending on BIOS settings, of course).
+> This happens because the frame buffer of IGD has higher decode priority
+> than MMCONFIG range, as stated in Intel docs...
 
-The patch only changes the _p usage within the shared library. The hp.c
-code is used solely by the ISA HP driver and needed.
+Ok, so what would the proposed patch look like to help resolve this?
 
-> How will the user know when they need to use 8390p?  
+Ivan, you posted one a while ago, but never seemed to get any
+confirmation if it helped or not.  Should I use that and drop Arjan's?
+Or use both?  Or something else like the patches proposed by Tony
+Camuso?
 
-They don't need to, any more than they need to know about 8390 right now.
-It is added to the Makefile so will be sucked in and built by Make as an
-extra module. The 8390p and 8390 use different wrapper symbols for
-ei_open etc so depmod will load the right one.
+thanks,
 
-Alan
+greg k-h
