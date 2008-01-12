@@ -1,46 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760447AbYALWQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759543AbYALWYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760447AbYALWQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 17:16:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755255AbYALWQT
+	id S1759543AbYALWYZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 17:24:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757630AbYALWYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 17:16:19 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:55049 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754781AbYALWQS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 17:16:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=lKItoQTwqNkUhvTcBaqNE8plvaOXBpxtUmS/AENX1RShAAJ8r3bQKgz9fEpDDb2a/YPWvVsyhPUtME76Aa5CjohnfqTvTD4IH9m4erf3anA0/dQ07UZ7HajRG3g5PT8QTOYM2GYYhwIPEknWOTBCwNt/IrZJssI+cIJdSIGTsi0=
-Subject: Re: 2.6.24-rc7-git4: Reported regressions from 2.6.23
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+	Sat, 12 Jan 2008 17:24:17 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:59210 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757143AbYALWYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 17:24:16 -0500
+Date: Sun, 13 Jan 2008 00:23:22 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>
-In-Reply-To: <200801122205.34871.rjw@sisk.pl>
-References: <200801122205.34871.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Sat, 12 Jan 2008 14:16:24 -0800
-Message-Id: <1200176184.19760.100.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+       Andrew.Morton@hera.kernel.org
+Subject: Re: Top 10 kernel oopses for the week ending January 12th, 2008
+Message-ID: <20080112222322.GE17276@does.not.exist>
+References: <47890B65.80804@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <47890B65.80804@linux.intel.com>
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-01-12 at 22:05 +0100, Rafael J. Wysocki wrote:
-> [RFC: Would that be useful if I sent regression-fixing patches, CCed to the
-> appropriate maintainers/lists, along with the reports?]
+On Sat, Jan 12, 2008 at 10:48:05AM -0800, Arjan van de Ven wrote:
+> The http://www.kerneloops.org website collects kernel oops and
+> warning reports from various mailing lists and bugzillas as well as
+> with a client users can install to auto-submit oopses.
+> Below is a top 10 list of the oopses collected in the last 7 days.
+> (Reports prior to 2.6.23 have been omitted in collecting the top 10)
+>
+> This week, a total of 136 oopses and warnings have been reported,
+> compared to 46 reports in the previous 7 days.
+>
+> kerneloops.org news:
+> 	* Based on feedback from last weeks report, the website now tries
+> 	  to also present a disassembled Code: line
+> 	* the kerneloops collection client is now part of Fedora (rawhide)
+> 	  (yum install kerneloops)
+> 	* the kerneloops collection client is now included in Debian testing
+> 	  (apt-get install kerneloops)
+> 	* gentoo has received an updated version of the client
+>
+>
+> Rank 1: implement (hid code)
+> 	WARN_ON at drivers/hid/hid-core.c:784
+> 	Reported 23 times (39 total reports)
+> 	This appears to be the kernel doing a WARN_ON based on unexpected ioctl() arguments
+> 	More info: http://www.kerneloops.org/search.php?search=implement
+>...
 
-Perhaps keep the regression report as-is, but for each regression with
-a patch follow up with an appropriately CC'd reply to the regression
-report.  Similar in concept to the regression report being patch 0/X
-or how the -stable series patches are announced?
+The only complete bug reports seems to be from one user who loaded a 
+module whose distribution might be considered a criminal act in some 
+countries.
 
-Harvey
+All the other reports only contain the plain trace. Is there any way to 
+get more information whether the former is a pattern or not, and to
+get this information somehow displayed on the webpage?
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
