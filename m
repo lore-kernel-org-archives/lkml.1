@@ -1,74 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759543AbYALWYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760447AbYALWdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759543AbYALWYZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 17:24:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757630AbYALWYR
+	id S1760447AbYALWdn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 17:33:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758164AbYALWdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 17:24:17 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:59210 "EHLO smtp5.pp.htv.fi"
+	Sat, 12 Jan 2008 17:33:35 -0500
+Received: from rosi.naasa.net ([212.8.0.13]:56933 "EHLO rosi.naasa.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757143AbYALWYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 17:24:16 -0500
-Date: Sun, 13 Jan 2008 00:23:22 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew.Morton@hera.kernel.org
-Subject: Re: Top 10 kernel oopses for the week ending January 12th, 2008
-Message-ID: <20080112222322.GE17276@does.not.exist>
-References: <47890B65.80804@linux.intel.com>
+	id S1754714AbYALWde (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 17:33:34 -0500
+From: Joerg Platte <jplatte@naasa.net>
+Reply-To: jplatte@naasa.net
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Subject: Re: regression: 100% io-wait with 2.6.24-rcX
+Date: Sun, 13 Jan 2008 00:32:30 +0100
+User-Agent: KMail/1.9.7
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+References: <200801071151.11200.lists@naasa.net> <200801101103.06688.lists@naasa.net> <400029009.12072@ustc.edu.cn>
+In-Reply-To: <400029009.12072@ustc.edu.cn>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <47890B65.80804@linux.intel.com>
-User-Agent: Mutt/1.5.17 (2007-12-11)
+Message-Id: <200801130032.32495.jplatte@naasa.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 12, 2008 at 10:48:05AM -0800, Arjan van de Ven wrote:
-> The http://www.kerneloops.org website collects kernel oops and
-> warning reports from various mailing lists and bugzillas as well as
-> with a client users can install to auto-submit oopses.
-> Below is a top 10 list of the oopses collected in the last 7 days.
-> (Reports prior to 2.6.23 have been omitted in collecting the top 10)
+Am Freitag, 11. Januar 2008 schrieb Fengguang Wu:
+> On Thu, Jan 10, 2008 at 11:03:05AM +0100, Joerg Platte wrote:
+> > Am Donnerstag, 10. Januar 2008 schrieb Fengguang Wu:
+> > > > problem, because the iowait problem disappeared today after the
+> > > > regular Debian update. I'll try to install the old package versions
+> > > > to make it show up again. Maybe that helps to debug it.
+> > >
+> > > Thank you. I'm running sid, ext2 as rootfs now ;-)
+> >
+> > The error is back and I'm getting thousands of messages like this with
+> > the patched kernel:
+> >
+> > mm/page-writeback.c 668 wb_kupdate: pdflush(146) 21115 global 3936 0 0 wc
+> > _M > tw 1024 sk 0 requeue_io 301: inode 81441 size 0 at 08:07(sda7)
+> > mm/page-writeback.c 668 wb_kupdate: pdflush(147) 17451 global 3936 0 0 wc
+> > _M > tw 1024 sk 2 requeue_io 301: inode 81441 size 0 at 08:07(sda7)
+> > mm/page-writeback.c 668 wb_kupdate: pdflush(147) 17451 global 3936 0 0 wc
+> > _M > tw 1024 sk 2 requeue_io 301: inode 81441 size 0 at 08:07(sda7)
 >
-> This week, a total of 136 oopses and warnings have been reported,
-> compared to 46 reports in the previous 7 days.
->
-> kerneloops.org news:
-> 	* Based on feedback from last weeks report, the website now tries
-> 	  to also present a disassembled Code: line
-> 	* the kerneloops collection client is now part of Fedora (rawhide)
-> 	  (yum install kerneloops)
-> 	* the kerneloops collection client is now included in Debian testing
-> 	  (apt-get install kerneloops)
-> 	* gentoo has received an updated version of the client
->
->
-> Rank 1: implement (hid code)
-> 	WARN_ON at drivers/hid/hid-core.c:784
-> 	Reported 23 times (39 total reports)
-> 	This appears to be the kernel doing a WARN_ON based on unexpected ioctl() arguments
-> 	More info: http://www.kerneloops.org/search.php?search=implement
->...
+> Joerg, what's the output of `dumpe2fs /dev/sda7` and `lsof|grep /tmp`?
 
-The only complete bug reports seems to be from one user who loaded a 
-module whose distribution might be considered a criminal act in some 
-countries.
+After another reboot I tried to get more information about the konqueror 
+process possibly causing the iowait load by using strace -p. Here is the 
+output:
 
-All the other reports only contain the plain trace. Is there any way to 
-get more information whether the former is a pattern or not, and to
-get this information somehow displayed on the webpage?
+gettimeofday({1200180588, 878508}, NULL) = 0
+setitimer(ITIMER_VIRTUAL, {it_interval={0, 0}, it_value={0, 0}}, NULL) = 0
+rt_sigaction(SIGVTALRM, {SIG_DFL}, {0xb5cffed0, [VTALRM], SA_RESTART}, 8) = 0
+gettimeofday({1200180588, 879942}, NULL) = 0
+time(NULL)                              = 1200180588
+gettimeofday({1200180588, 880838}, NULL) = 0
+gettimeofday({1200180588, 881284}, NULL) = 0
+time(NULL)                              = 1200180588
+gettimeofday({1200180588, 882131}, NULL) = 0
+gettimeofday({1200180588, 882572}, NULL) = 0
+ioctl(5, FIONREAD, [0])                 = 0
+gettimeofday({1200180588, 883477}, NULL) = 0
+select(16, [5 6 7 9 11 14 15], [], [], {0, 150095}) = 0 (Timeout)
+gettimeofday({1200180589, 34269}, NULL) = 0
+gettimeofday({1200180589, 34885}, NULL) = 0
+time(NULL)                              = 1200180589
+gettimeofday({1200180589, 36672}, NULL) = 0
+rt_sigaction(SIGVTALRM, {0xb5cffed0, [VTALRM], SA_RESTART}, {SIG_DFL}, 8) = 0
+setitimer(ITIMER_VIRTUAL, {it_interval={10, 0}, it_value={5, 0}}, 
+{it_interval={0, 0}, it_value={0, 0}}) = 0
+gettimeofday({1200180589, 38555}, NULL) = 0
+time(NULL)                              = 1200180589
+gettimeofday({1200180589, 39802}, NULL) = 0
+setitimer(ITIMER_VIRTUAL, {it_interval={0, 0}, it_value={0, 0}}, NULL) = 0
+rt_sigaction(SIGVTALRM, {SIG_DFL}, {0xb5cffed0, [VTALRM], SA_RESTART}, 8) = 0
+gettimeofday({1200180589, 40912}, NULL) = 0
+time(NULL)                              = 1200180589
+gettimeofday({1200180589, 42019}, NULL) = 0
+gettimeofday({1200180589, 42458}, NULL) = 0
+time(NULL)                              = 1200180589
+gettimeofday({1200180589, 43303}, NULL) = 0
+gettimeofday({1200180589, 43747}, NULL) = 0
+ioctl(5, FIONREAD, [0])                 = 0
+gettimeofday({1200180589, 45834}, NULL) = 0
+select(16, [5 6 7 9 11 14 15], [], [], {0, 149913}) = 0 (Timeout)
+gettimeofday({1200180589, 194815}, NULL) = 0
+ioctl(5, FIONREAD, [0])                 = 0
+gettimeofday({1200180589, 195730}, NULL) = 0
+select(16, [5 6 7 9 11 14 15], [], [], {0, 17}) = 0 (Timeout)
+gettimeofday({1200180589, 197555}, NULL) = 0
+gettimeofday({1200180589, 198020}, NULL) = 0
+time(NULL)                              = 1200180589
+gettimeofday({1200180589, 198884}, NULL) = 0
+rt_sigaction(SIGVTALRM, {0xb5cffed0, [VTALRM], SA_RESTART}, {SIG_DFL}, 8) = 0
+setitimer(ITIMER_VIRTUAL, {it_interval={10, 0}, it_value={5, 0}}, 
+{it_interval={0, 0}, it_value={0, 0}}) = 0
+gettimeofday({1200180589, 200702}, NULL) = 0
+time(NULL)                              = 1200180589
+gettimeofday({1200180589, 200806}, NULL) = 0
+setitimer(ITIMER_VIRTUAL, {it_interval={0, 0}, it_value={0, 0}}, NULL) = 0
+rt_sigaction(SIGVTALRM, {SIG_DFL}, {0xb5cffed0, [VTALRM], SA_RESTART}, 8) = 0
+gettimeofday({1200180589, 202975}, NULL) = 0
+time(NULL)                              = 1200180589
+gettimeofday({1200180589, 203837}, NULL) = 0
+gettimeofday({1200180589, 204319}, NULL) = 0
+time(NULL)                              = 1200180589
+gettimeofday({1200180589, 205169}, NULL) = 0
+gettimeofday({1200180589, 205613}, NULL) = 0
+ioctl(5, FIONREAD, [0])                 = 0
+gettimeofday({1200180589, 206515}, NULL) = 0
+select(16, [5 6 7 9 11 14 15], [], [], {0, 149098} <unfinished ...>
 
-cu
-Adrian
+Fengguang, do you have any idea what's going wrong here?
+
+regards,
+Jörg
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+PGP Key: send mail with subject 'SEND PGP-KEY' PGP Key-ID: FD 4E 21 1D
+PGP Fingerprint: 388A872AFC5649D3 BCEC65778BE0C605
 
