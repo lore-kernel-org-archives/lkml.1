@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761213AbYALGbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761506AbYALG7u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761213AbYALGbQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 01:31:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755840AbYALGbA
+	id S1761506AbYALG7u (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 01:59:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751416AbYALG7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 01:31:00 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55542 "EHLO mx2.mail.elte.hu"
+	Sat, 12 Jan 2008 01:59:42 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40576 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751278AbYALGa7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 01:30:59 -0500
-Date: Sat, 12 Jan 2008 07:30:37 +0100
+	id S1751250AbYALG7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 01:59:42 -0500
+Date: Sat, 12 Jan 2008 07:59:21 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, tglx@tglx.de, hpa@zytor.com
-Subject: Re: [patch 0/8] Series to improve the x86 backtracing code
-Message-ID: <20080112063036.GA32675@elte.hu>
-References: <20080111212623.518e1527@laptopd505.fenrus.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: Roland McGrath <roland@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH x86/mm] x86_64 save_i387_ia32 snafu
+Message-ID: <20080112065921.GB9572@elte.hu>
+References: <4786A9CA.2090008@zytor.com> <20080111004422.2B3F926F9A6@magilla.localdomain> <4786BE15.6040604@zytor.com> <20080111024929.37FDB26F9A9@magilla.localdomain> <4786DB3B.8070808@zytor.com> <20080111104357.8364826F9A9@magilla.localdomain> <20080111104932.GA1589@elte.hu> <20080111213147.EBE0C26F9A9@magilla.localdomain> <5212.1200117118@turing-police.cc.vt.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080111212623.518e1527@laptopd505.fenrus.org>
+In-Reply-To: <5212.1200117118@turing-police.cc.vt.edu>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,22 +35,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Arjan van de Ven <arjan@infradead.org> wrote:
+* Valdis.Kletnieks@vt.edu <Valdis.Kletnieks@vt.edu> wrote:
 
-> this patch series improves the x86 backtracing code in the following ways:
-> 1) Fix a bad bug in x86 (32 bit) FRAME_POINTER backtracing (2.6.24 material)
-> 2) Add the capability to mark a backtrace entry as reliable / unreliable
-> 3) Change the x86 (32 bit) FRAME_POINTER backtracing to use the normal backtrace but use the frames
->    as guidance to the reliability of the backtrace entries
-> 4) Patch to capture the EBP register earlier in the backtrace callchain to get a better FRAME_POINTER
->    based backtrace
-> 5) Split the x86 (64 bit) backtrace code up similar to the 32 bit code by turning a macro into a function
-> 6) Enable FRAME_POINTER backtracing on 64 bit similar to the 32 bit patch in number 3
-> 7) Add a simple self-test module for backtraces (will move to tests/ later when that gets merged)
-> 8) Add the feature to x86 64bit to print a set of bytes prior to the current EIP in the Code: line
->    (already present in 32 bit)
+> On Fri, 11 Jan 2008 13:31:47 PST, Roland McGrath said:
+> > > thanks, applied. Does this explain the crash/hang problems with 32-bit 
+> > > apps on 64-bit kernels? What was the exact failure mode?
+> > 
+> > It does.  Any 32-bit process trying to run a signal handler when it had
+> > used the FPU, would clobber "current" with FP bits.  The observed failure
+> > mode was shortly after this in the signal handler setup code, when it
+> > crashed due to current->mm being zero (current->pid also being zero, and
+> > the whole first 512 bytes of the task_struct being garbage).
+> 
+> For what it's worth, this patch fixes a problem I had in 24-rc6-mm1 
+> with kernel panics when certain X programs exited (Eterm being the 
+> biggest cause), that I had bisected to "somewhere in 
+> git-x86.patch"....
 
-thanks, i've applied your new series to x86.git. (Note that i had to 
-move around some of the changes to make the series bisectable.)
+ok, good. Yesterday's x86.git update has this fix included so the next 
+-mm iteration should have the fix as well.
 
 	Ingo
