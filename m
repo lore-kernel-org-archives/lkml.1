@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763590AbYALJuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763398AbYALJwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763590AbYALJuZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 04:50:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761761AbYALJuM
+	id S1763398AbYALJwL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 04:52:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762563AbYALJv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 04:50:12 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:14464 "EHLO
+	Sat, 12 Jan 2008 04:51:57 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:17687 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751620AbYALJuK (ORCPT
+	with ESMTP id S1762486AbYALJvz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 04:50:10 -0500
+	Sat, 12 Jan 2008 04:51:55 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=dpRaB1zNbAlckmShZ9VtKzjvcm0byaWJR6qT43bHap6/llnb6TlkVEkqYyQJPxddhsJHggj2+01NEjl0AbKRwSN6eOHL7xsRstaEzZgiDardG3Q/P7MyFvOPPnroMThUlvPjZP024SvH/VcbJ3F5hJmTz/VewjDJjdpRQT5KF7k=
-Date: Sat, 12 Jan 2008 17:53:30 +0800
+        b=UJuoxZCxHywbFSsJaSeg+7wAuivtNguEB5gjTo0YK3sCnvR0iCqMrvBW6SIgJQ5BWVJhYuWzAqGe3pVuDZY61NTPXbwBHsY8o9aLUl0omXja2yyLN2qRqndwhSACSHxWJYQV1XqEXR+Vxw6GFsVj2mraw+rNp3lVGRavkYWjUQw=
+Date: Sat, 12 Jan 2008 17:55:17 +0800
 From: Dave Young <hidave.darkstar@gmail.com>
-To: a.zummo@towertech.it
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com
-Subject: [PATCH 4/7] rtc : use class iteration api
-Message-ID: <20080112095330.GD2893@darkstar.te-china.tietoenator.com>
+To: James.Bottomley@hansenpartnership.com
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: [PATCH 5/7] scsi : use class iteration api
+Message-ID: <20080112095517.GE2893@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -33,50 +33,51 @@ Convert to use the class iteration api.
 Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
 
 ---
- drivers/rtc/interface.c |   22 ++++++++++++----------
- 1 file changed, 12 insertions(+), 10 deletions(-)
+ drivers/scsi/hosts.c |   26 +++++++++++++++-----------
+ 1 file changed, 15 insertions(+), 11 deletions(-)
 
-diff -upr linux/drivers/rtc/interface.c linux.new/drivers/rtc/interface.c
---- linux/drivers/rtc/interface.c	2008-01-11 18:06:38.000000000 +0800
-+++ linux.new/drivers/rtc/interface.c	2008-01-11 18:06:38.000000000 +0800
-@@ -251,20 +251,23 @@ void rtc_update_irq(struct rtc_device *r
+diff -upr linux/drivers/scsi/hosts.c linux.new/drivers/scsi/hosts.c
+--- linux/drivers/scsi/hosts.c	2008-01-12 15:54:16.000000000 +0800
++++ linux.new/drivers/scsi/hosts.c	2008-01-12 15:54:16.000000000 +0800
+@@ -429,6 +429,17 @@ void scsi_unregister(struct Scsi_Host *s
  }
- EXPORT_SYMBOL_GPL(rtc_update_irq);
+ EXPORT_SYMBOL(scsi_unregister);
  
-+static int __rtc_match(struct device *dev, void *data)
++static int __scsi_host_match(struct class_device *cdev, void *data)
 +{
-+	char *name = (char *)data;
++	struct Scsi_Host *p;
++	unsigned short *hostnum = (unsigned short *)data;
 +
-+	if (strncmp(dev->bus_id, name, BUS_ID_SIZE) == 0)
++	p = class_to_shost(cdev);
++	if (p->host_no == *hostnum)
 +		return 1;
 +	return 0;
 +}
 +
- struct rtc_device *rtc_class_open(char *name)
+ /**
+  * scsi_host_lookup - get a reference to a Scsi_Host by host no
+  *
+@@ -439,19 +450,12 @@ EXPORT_SYMBOL(scsi_unregister);
+  **/
+ struct Scsi_Host *scsi_host_lookup(unsigned short hostnum)
  {
- 	struct device *dev;
- 	struct rtc_device *rtc = NULL;
+-	struct class *class = &shost_class;
+ 	struct class_device *cdev;
+-	struct Scsi_Host *shost = ERR_PTR(-ENXIO), *p;
++	struct Scsi_Host *shost = ERR_PTR(-ENXIO);
  
--	down(&rtc_class->sem);
--	list_for_each_entry(dev, &rtc_class->devices, node) {
--		if (strncmp(dev->bus_id, name, BUS_ID_SIZE) == 0) {
--			dev = get_device(dev);
--			if (dev)
--				rtc = to_rtc_device(dev);
+-	down(&class->sem);
+-	list_for_each_entry(cdev, &class->children, node) {
+-		p = class_to_shost(cdev);
+-		if (p->host_no == hostnum) {
+-			shost = scsi_host_get(p);
 -			break;
 -		}
 -	}
-+	dev = class_find_device(rtc_class, name, __rtc_match);
-+	if (dev)
-+		rtc = to_rtc_device(dev);
+-	up(&class->sem);
++	cdev = class_find_child(&shost_class, &hostnum, __scsi_host_match);
++	if (cdev)
++		shost = scsi_host_get(class_to_shost(cdev));
  
- 	if (rtc) {
- 		if (!try_module_get(rtc->owner)) {
-@@ -272,7 +275,6 @@ struct rtc_device *rtc_class_open(char *
- 			rtc = NULL;
- 		}
- 	}
--	up(&rtc_class->sem);
- 
- 	return rtc;
+ 	return shost;
  }
