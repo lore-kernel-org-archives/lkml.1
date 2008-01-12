@@ -1,131 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932268AbYALBLJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763291AbYALB0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932268AbYALBLJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 20:11:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932095AbYALBK4
+	id S1763291AbYALB0v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 20:26:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760225AbYALB0k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 20:10:56 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:33478 "EHLO
-	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932091AbYALBKy (ORCPT
+	Fri, 11 Jan 2008 20:26:40 -0500
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:41823 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758079AbYALB0j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 20:10:54 -0500
-Date: Fri, 11 Jan 2008 19:10:15 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: sata_nv + ADMA + Samsung disk problem
-In-reply-to: <20080111231813.GB7052@boogie.lpds.sztaki.hu>
-To: Gabor Gombas <gombasg@sztaki.hu>
-Cc: Allen Martin <AMartin@nvidia.com>, Mark Lord <lkml@rtr.ca>,
-       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Kuan Luo <kluo@nvidia.com>, Peer Chen <pchen@nvidia.com>
-Message-id: <47881377.4070508@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <477B0429.7040909@gmail.com> <477B0CFD.1030603@shaw.ca>
- <F72FA20C31DD4F4C997B91C5B3690A09505577@hqemmail07.nvidia.com>
- <477BDEA5.8040701@garzik.org>
- <F72FA20C31DD4F4C997B91C5B3690A0950557D@hqemmail07.nvidia.com>
- <477C2A99.9010208@shaw.ca> <477C61D3.30009@rtr.ca> <477C6A85.9020607@shaw.ca>
- <F72FA20C31DD4F4C997B91C5B3690A09505598@hqemmail07.nvidia.com>
- <4782BF75.9040803@shaw.ca> <20080111231813.GB7052@boogie.lpds.sztaki.hu>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Fri, 11 Jan 2008 20:26:39 -0500
+Message-ID: <4788168F.8070403@keyaccess.nl>
+Date: Sat, 12 Jan 2008 02:23:27 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Ondrej Zary <linux@rainbow-software.org>, Pierre Ossman <drzeus@drzeus.cx>,
+       Jaroslav Kysela <perex@perex.cz>,
+       ALSA development <alsa-devel@alsa-project.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Andrew Morton <akpm@osdl.org>,
+       Takashi Iwai <tiwai@suse.de>, linux-pm@lists.linux-foundation.org
+Subject: Re: [alsa-devel] PNP_DRIVER_RES_DISABLE breaks swsusp at least with
+ snd_cs4236
+References: <200801092343.48726.linux@rainbow-software.org> <20080111080141.75aaad5f@poseidon.drzeus.cx> <47877B83.5040604@keyaccess.nl> <200801111940.22023.linux@rainbow-software.org>
+In-Reply-To: <200801111940.22023.linux@rainbow-software.org>
+Content-Type: multipart/mixed;
+ boundary="------------010602020600060407080608"
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabor Gombas wrote:
-> On Mon, Jan 07, 2008 at 06:10:29PM -0600, Robert Hancock wrote:
+This is a multi-part message in MIME format.
+--------------010602020600060407080608
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+
+On 11-01-08 19:40, Ondrej Zary wrote:
+
+> On Friday 11 January 2008 15:21:55 Rene Herman wrote:
+
+>> Hrmpf. Well, okay. Ondrej -- I assume this patch fixes things?
 > 
->> Gabor, I just noticed you said that it worked OK in 2.6.20, yet 2.6.22  
->> fails. 2.6.20 had ADMA support as well, so I wonder what change started  
->> causing the problem. Would it be possible for you to do a git bisect (or  
->> at least try 2.6.21 to try and narrow it down)?
-> 
-> I've now booted 2.6.21.7, we'll see. The problem with the bisection is
-> that I can't explicitely trigger the bug so I can't say for sure if a
-> kernel is good or it is just needs more time to trigger. The average
-> uptime of this machine is just a couple hours a day.
-> 
-> For example, with 2.6.24-rc6 it took over 3 hours for the first disk to
-> trigger the bug and the second disk needed more than 7 hours. This
-> machine is seldom turned on for that long.
+> Yes, it works fine. 3c509 card still does not work after resume, but that
+> looks like another problem.
 
-If you want to try to reproduce the problem more rapidly, you can try 
-the recipe I just suggested to the NVIDIA guys:
+Okay. Would now only still like to know why the test in resume() means 
+trouble for you while it seems the same test in suspend() should've 
+triggered as well and not have stopped the device in the first place.
 
-Run 2 instances of this C program, with different output files as the 
-argument, i.e. save this to fsynctest.c, and do
-gcc fsynctest.c -o fsynctest
-./fsynctest testfile & ./fsynctest testfile2 &
+Know absolutely nothing about hibernation so added the listed maintainers to 
+the CC.
 
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
+Pavel, Rafael -- the attached fixes snd-cs4236 not coming back to life for 
+Ondrej after hibernation due to the PNP_DRIVER_RES_DO_NOT_CHANGE test 
+triggering in pnp_bus_resume() and keeping the card in a suspended state.
 
-int main(int argc, char* argv[])
-{
-     int i;
-     int fd = open( argv[1], O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | 
-S_IWUSR);
-     if(fd == -1)
-     {
-         perror("open");
-         return 1;
-     }
-     for(i=0;i<1000000;i++)
-     {
-         int rc = write(fd, "0", 1);
-         if( rc != 1 )
-         {
-             perror("write");
-             return 2;
-         }
-         rc = fsync(fd);
-         if(rc)
-         {
-             perror("fsync");
-             return 2;
-         }
-     }
-     return 0;
-}
+There's issues on wether or not the flag _should_ be set (that is, be part 
+of PNP_DRIVER_RES_DISABLE) and that it shouldn't be tested by these code 
+patchs in the first place, but is it in fact expected that this would be 
+neccessary?
 
-Also run one instance of this:
+That is, is it expected/designed that the same test in pnp_bus_suspend() 
+didn't cause the device to not be disabled in the first place?
 
-dd if=/dev/zero of=blankfile bs=512 count=100000 oflag=direct
+Rene.
 
-and one of this:
+--------------010602020600060407080608
+Content-Type: text/plain;
+ name="pnp_driver_res_do_not_test.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="pnp_driver_res_do_not_test.diff"
 
-while /bin/true; do sdparm --command=sync /dev/sdb; done
+commit 7d16e8b3e7739599d32c8006f9e84fadb86b8296
+Author: Rene Herman <rene.herman@gmail.com>
+Date:   Sat Jan 12 00:00:35 2008 +0100
 
-all at the same time. In my experience, it helps to disable cpufreq (on 
-Red Hat/Fedora, /sbin/service cpuspeed stop) to force the CPU to run at 
-max frequency all the time. After a few minutes I got this:
+    PNP: do not test PNP_DRIVER_RES_DO_NOT_CHANGE on suspend/resume
+    
+    The PNP_DRIVER_RES_DO_NOT_CHANGE flag is meant to signify that
+    the PNP core should not change resources for the device -- not
+    that it shouldn't disable/enable the device on suspend/resume.
+    
+    ALSA ISAPnP drivers set PNP_DRIVER_RES_DO_NOT_CHANAGE (0x0001)
+    through setting PNP_DRIVER_RES_DISABLE (0x0003). The latter
+    including the former may in itself be considered rather
+    unexpected but doesn't change that suspend/resume wouldn't seem
+    to have any business testing the flag.
+    
+    As reported by Ondrej Zary for snd-cs4236, ALSA driven ISAPnP
+    cards don't survive swsusp hibernation with the resume skipping
+    setting the resources due to testing the flag -- the same test
+    in the suspend path isn't enough to keep hibernation from
+    disabling the card it seems.
+    
+    These tests were added (in 2005) by Piere Ossman in commit
+    68094e3251a664ee1389fcf179497237cbf78331, "alsa: Improved PnP
+    suspend support" who doesn't remember why. This deletes them.
+    
+    Signed-off-by: Rene Herman <rene.herman@gmail.com>
+    Tested-by: Ondrej Zary <linux@rainbow-software.org>
 
-ata4: EH in ADMA mode, notifier 0x0 notifier_error 0x0 gen_ctl 0x1501000 
-status 0x400 next cpb count 0x2 next cpb idx 0x0
-ata4: CPB 0: ctl_flags 0x1f, resp_flags 0x0
-ata4: CPB 1: ctl_flags 0x1f, resp_flags 0x0
-ata4: CPB 2: ctl_flags 0x1f, resp_flags 0x0
-ata4: timeout waiting for ADMA IDLE, stat=0x400
-ata4: timeout waiting for ADMA LEGACY, stat=0x400
-ata4.00: exception Emask 0x0 SAct 0x7 SErr 0x0 action 0x2 frozen
-ata4.00: cmd 61/08:00:e0:74:64/00:00:0a:00:00/40 tag 0 ncq 4096 out
-          res 40/00:01:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata4.00: status: { DRDY }
-ata4.00: cmd 61/08:08:30:5b:76/00:00:0c:00:00/40 tag 1 ncq 4096 out
-          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata4.00: status: { DRDY }
-ata4.00: cmd 61/01:10:ba:51:77/00:00:0c:00:00/40 tag 2 ncq 512 out
-          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata4.00: status: { DRDY }
-ata4: soft resetting link
-ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata4.00: configured for UDMA/133
-ata4: EH complete
+diff --git a/drivers/pnp/driver.c b/drivers/pnp/driver.c
+index a262762..12a1645 100644
+--- a/drivers/pnp/driver.c
++++ b/drivers/pnp/driver.c
+@@ -161,8 +161,7 @@ static int pnp_bus_suspend(struct device *dev, pm_message_t state)
+ 			return error;
+ 	}
+ 
+-	if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE) &&
+-	    pnp_can_disable(pnp_dev)) {
++	if (pnp_can_disable(pnp_dev)) {
+ 		error = pnp_stop_dev(pnp_dev);
+ 		if (error)
+ 			return error;
+@@ -185,14 +184,17 @@ static int pnp_bus_resume(struct device *dev)
+ 	if (pnp_dev->protocol && pnp_dev->protocol->resume)
+ 		pnp_dev->protocol->resume(pnp_dev);
+ 
+-	if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE)) {
++	if (pnp_can_write(pnp_dev)) {
+ 		error = pnp_start_dev(pnp_dev);
+ 		if (error)
+ 			return error;
+ 	}
+ 
+-	if (pnp_drv->resume)
+-		return pnp_drv->resume(pnp_dev);
++	if (pnp_drv->resume) {
++		error = pnp_drv->resume(pnp_dev);
++		if (error)
++			return error;
++	}
+ 
+ 	return 0;
+ }
 
+--------------010602020600060407080608--
