@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753658AbYALX4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753631AbYAMAH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753658AbYALX4Q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 18:56:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbYALX4G
+	id S1753631AbYAMAH4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 19:07:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYAMAHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 18:56:06 -0500
-Received: from phunq.net ([64.81.85.152]:34659 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751645AbYALX4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 18:56:05 -0500
-From: Daniel Phillips <phillips@phunq.net>
-To: Andreas Dilger <adilger@sun.com>
-Subject: Re: [RFD] Incremental fsck
-Date: Sat, 12 Jan 2008 15:55:53 -0800
-User-Agent: KMail/1.9.5
-Cc: Alan <alan@clueserver.org>, Al Boldi <a1426z@gawab.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200801090022.55589.a1426z@gawab.com> <60808.198.182.194.170.1199827911.squirrel@clueserver.org> <20080109091656.GL3351@webber.adilger.int>
-In-Reply-To: <20080109091656.GL3351@webber.adilger.int>
+	Sat, 12 Jan 2008 19:07:47 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:65206 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751400AbYAMAHq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 19:07:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=jLuUiB6AogPBh+fk/Niwlhc1YBZosUE4+nvE74I71Sl5SLVJ+0X9QY0wQ3Znpeij1M7Ot7BvWH7lk8NJKO8SCBK4C2U4kPANd8juGKUD1xaY3ju4ONCv04l1ZgdoTDTI8M6+YCeH5KADXntby5Z+0bTk8m4pHZmB69cGmxwhs20=
+Date: Sun, 13 Jan 2008 02:52:11 +0300
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, cbou@mail.ru, dwmw2@infradead.org
+Subject: Re: [PATCH] pda_power: add device_init_wakeup
+Message-ID: <20080112235211.GA12105@zarina>
+Reply-To: cbouatmailru@gmail.com
+References: <20080109163952.GA29397@doriath.ww600.siemens.net> <20080112225016.GA24957@doriath.ww600.siemens.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-Message-Id: <200801121555.54533.phillips@phunq.net>
+In-Reply-To: <20080112225016.GA24957@doriath.ww600.siemens.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 09 January 2008 01:16, Andreas Dilger wrote:
-> While an _incremental_ fsck isn't so easy for existing filesystem
-> types, what is pretty easy to automate is making a read-only snapshot
-> of a filesystem via LVM/DM and then running e2fsck against that.  The
-> kernel and filesystem have hooks to flush the changes from cache and
-> make the on-disk state consistent.
->
-> You can then set the the ext[234] superblock mount count and last
-> check time via tune2fs if all is well, or schedule an outage if there
-> are inconsistencies found.
->
-> There is a copy of this script at:
-> http://osdir.com/ml/linux.lvm.devel/2003-04/msg00001.html
->
-> Note that it might need some tweaks to run with DM/LVM2
-> commands/output, but is mostly what is needed.
+On Sun, Jan 13, 2008 at 01:50:16AM +0300, Dmitry Baryshkov wrote:
+> Hi,
+> 
+> Please apply this patch. Otherwise pda_power can't generate wakeup
+> events. I forgot this in the initial pda_power suspend/resume patch.
+> 
+> Add device_init_wakeup to init wakeup.
 
-You can do this now with ddsnap (an out-of-tree device mapper target) 
-either by checking a local snapshot or a replicated snapshot on a 
-different machine, see:
+Thanks, folded into "pda_power: add suspend/resume support" patch.
 
-    http://zumastor.org/
+FYI, I got it first time, just didn't have time to process. ;-)
 
-Doing the check on a remote machine seems attractive because the fsck 
-does not create a load on the server.
+> Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+> 
+> diff --git a/drivers/power/pda_power.c b/drivers/power/pda_power.c
+> index d98622f..28360e8 100644
+> --- a/drivers/power/pda_power.c
+> +++ b/drivers/power/pda_power.c
+> @@ -207,6 +207,8 @@ static int pda_power_probe(struct platform_device *pdev)
+>  		}
+>  	}
+>  
+> +	device_init_wakeup(&pdev->dev, 1);
+> +
+>  	return 0;
+>  
+>  usb_irq_failed:
 
-Regards,
-
-Daniel
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
