@@ -1,71 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760597AbYALTF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760642AbYALTP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760597AbYALTF5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 14:05:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757552AbYALTFt
+	id S1760642AbYALTP5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 14:15:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756871AbYALTPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 14:05:49 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34229 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757458AbYALTFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 14:05:48 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: [alsa-devel] PNP_DRIVER_RES_DISABLE breaks swsusp at least with snd_cs4236
-Date: Sat, 12 Jan 2008 20:08:09 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pierre Ossman <drzeus@drzeus.cx>, Pavel Machek <pavel@suse.cz>,
-       Ondrej Zary <linux@rainbow-software.org>,
-       Jaroslav Kysela <perex@perex.cz>,
-       ALSA development <alsa-devel@alsa-project.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Andrew Morton <akpm@osdl.org>,
-       Takashi Iwai <tiwai@suse.de>, linux-pm@lists.linux-foundation.org
-References: <200801092343.48726.linux@rainbow-software.org> <20080112162150.1ec9cad0@poseidon.drzeus.cx> <4788F226.7040101@keyaccess.nl>
-In-Reply-To: <4788F226.7040101@keyaccess.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Sat, 12 Jan 2008 14:15:49 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34131 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756223AbYALTPr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 14:15:47 -0500
+Date: Sat, 12 Jan 2008 11:15:20 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Paul Mundt <lethal@linux-sh.org>,
+       linux-sh <linux-sh@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] SH/Dreamcast - add support for GD-Rom CDROM drive on
+ SEGA Dreamcast
+Message-Id: <20080112111520.abf625ce.akpm@linux-foundation.org>
+In-Reply-To: <1200147241.6207.17.camel@localhost.localdomain>
+References: <1200007549.6349.16.camel@localhost.localdomain>
+	<1200088609.6213.3.camel@localhost.localdomain>
+	<20080112053630.0ccb290e.akpm@linux-foundation.org>
+	<1200147241.6207.17.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801122008.10313.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 12 of January 2008, Rene Herman wrote:
-> On 12-01-08 16:21, Pierre Ossman wrote:
+On Sat, 12 Jan 2008 14:14:01 +0000 Adrian McMenamin <adrian@newgolddream.dyndns.info> wrote:
+
 > 
-> > Ah, sorry. It was a different thread. Look for a mail with the subject 
-> > "PNP: do not stop/start devices in suspend/resume path" in the LKML och 
-> > linux-pm archives.
-> 
-> Right, and I see that the removal of start/stop is already in -mm. That's 
-> not going to work. Something (such as removing power) disabled Ondrej's 
-> CS4236 and the pnp_start_dev() is needed to re-enable it upon resume.
-> 
-> >> But we certainly need the pnp_start_dev() in the current flow of
-> >> things. It not being called is the problem this fixes...
+> > > +	spin_command->cmd[0] = 0x70;
+> > > +	spin_command->cmd[2] = 0x1f;
+> > > +	spin_command->buflen = 0;
+> > > +	gd.pending = 1;
+> > > +	gdrom_packetcommand(gd.cd_info, spin_command);
+> > > +	/* 60 second timeout */
+> > > +	wait_event_interruptible_timeout(command_queue, gd.pending == 0, HZ * 60);
+> > > +	gd.pending = 0;
+> > > +	kfree(spin_command);
+> > > +	if (gd.status & 0x01) {
+> > > +		/* log an error */
+> > > +		gdrom_getsense(NULL);
+> > > +		return -EIO;
+> > > +	}
+> > > +	return 0;
+> > > +}
 > > 
-> > I think the previous suggestion was that the drivers should call this,
-> > not the core, so that it behaved more like other parts of the kernel
-> > (e.g. PCI).
+> > If the wait_event_interruptible_timeout() indeed times out, we go ahead and
+> > free spin_command.  But someone else could potentially be using it. 
+> > 
+> > Suppose gdrom_packetcommand() got stuck for a minute due to bad hardware,
+> > or some SCHED_FIFO task preempting us here and running for 61 seconds without
+> > yielding or something similarly weird.
+> > 
 > 
-> It seems all PnP drivers would need to stick a pnp_start_dev in their resume 
-> method
+> 
+> Maybe I am being stupid here, but I don't follow this. They'll get a
+> non-fatal error, that's all. Who else would be using spin_command? It's
+> just a series of bytes to plug into the GD Rom registers, that's all.
+> 
 
-Yes.
+After programming the registers we need to wait for the interrupt to clear
+gd.pending, don't we?
 
-> then which means it really belongs in core.
+<looks>
 
-Yes, if practical.
+oh, I see.  gd is a global singleton and we only support one command at a
+time and one device.  hrm.
 
-> One important point where PnP and PCI differ is that PnP allows to change the
-> resources on a protocol level and I don't see how it could ever not be
-> necessary to restore the state a user may have set if power has been
-> removed. Hibernate is just that, isn't it?
+> > > +
+> > > +static int __devinit gdrom_set_interrupt_handlers(void)
+> > > +{
+> > > +	int err;
+> > > +	init_waitqueue_head(&command_queue);
+> > > +	err = request_irq(HW_EVENT_GDROM_CMD, gdrom_command_interrupt, IRQF_DISABLED, "gdrom_command", &gd);
+> > > +	if (err)
+> > > +		return err;
+> > > +	init_waitqueue_head(&request_queue);
+> > 
+> > You can initialise command_queue and request_queue at compile-time with
+> > DECLARE_WAIT_QUEUE_HEAD().
+> > 
+> 
+> Are you saying that is better?
 
-Basically, yes, it is.
+Yup.  Less source code, less object code, no startup-ordering issues.
 
-Thanks,
-Rafael
+
