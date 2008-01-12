@@ -1,106 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763435AbYALPGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbYALPL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763435AbYALPGv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 10:06:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbYALPGn
+	id S1754654AbYALPL7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 10:11:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbYALPLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 10:06:43 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:40293 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752190AbYALPGm (ORCPT
+	Sat, 12 Jan 2008 10:11:52 -0500
+Received: from jurassic.park.msu.ru ([195.208.223.243]:44173 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750708AbYALPLw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 10:06:42 -0500
-Date: Sat, 12 Jan 2008 10:06:21 -0500
-From: Theodore Tso <tytso@MIT.EDU>
-To: Tuomo Valkonen <tuomov@iki.fi>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: The ext3 way of journalling
-Message-ID: <20080112150621.GC6751@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Tuomo Valkonen <tuomov@iki.fi>, linux-kernel@vger.kernel.org
-References: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi> <18307.42821.166376.732473@stoffel.org> <slrnfo7auq.6m2.tuomov@jolt.modeemi.cs.tut.fi> <871w8r6ruc.fsf@barad-dur.regala.cx> <slrnfo9lqk.17l.tuomov@jolt.modeemi.cs.tut.fi> <20080110131659.GF10230@mit.edu> <20080110134111.GA6254@jolt.modeemi.cs.tut.fi>
+	Sat, 12 Jan 2008 10:11:52 -0500
+Date: Sat, 12 Jan 2008 18:12:12 +0300
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Grant Grundler <grundler@parisc-linux.org>
+Cc: Kumar Gala <galak@kernel.crashing.org>, Greg KH <greg@kroah.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: PCI Failed to allocate mem for PCI ROM
+Message-ID: <20080112151212.GB19279@jurassic.park.msu.ru>
+References: <1B75C5A8-E512-40CB-A6F3-351640701D0D@kernel.crashing.org> <20080111175039.GB7916@kroah.com> <E1025115-6BE2-46B6-8416-A5ADD506E2ED@kernel.crashing.org> <20080112072705.GB7234@colo.lackof.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080110134111.GA6254@jolt.modeemi.cs.tut.fi>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+In-Reply-To: <20080112072705.GB7234@colo.lackof.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 10, 2008 at 03:41:11PM +0200, Tuomo Valkonen wrote:
-> On 2008-01-10 08:16 -0500, Theodore Tso wrote:
-> > > It displays just the right time. On boot anyway. (Linux has had some
-> > > serious problems keeping the time after the switch from 2.6.7 to 2.6.14,
-> > > advanding even 15 minutes a day -- that ntpd doesn't seem to be able 
-> > > to keep up with -- requiring running adjtimexconfig every now and
-> > > then for new settings. But the cmos clock displays the right time.)
-> > 
-> > What do you mean by "on boot"?  Which boot message, precisely?  Is the
-> > time printed before or after e2fsck is run, and by which program?
-> 
-> The time is right as displayed by `date` after boot, i.e. after it has
-> been loaded from the CMOS clock that does keep the (local, IIRC) time
-> just allright. But then it often starts advancing very fast.
+On Sat, Jan 12, 2008 at 12:27:05AM -0700, Grant Grundler wrote:
+> Looking at setup-bus.c:pci_bridge_check_ranges(), I'm concluding that:
+> [7] is IO Range.
+> [8] is MMIO
+> [9] is Prefetchable MMIO
+> [10] no clue...maybe used by host PCI bus controllers.
 
-So running the "date" command after the boot sequence is completely
-finished.  That doesn't mean that system clock was correct at the time
-when fsck is run.  
+#10 is for cardbus bridges, IIRC.
 
-See, here's the the problem.  You have the CMOS hardware clock, which
-for people who are dual-booting with Windows, is unfortunately ticking
-local time, instead of GMT time (or if you want to be pedantic, UTC
-time; whatever).  When the kernel is first loaded and starts
-executing, it will set the Linux system clock from the CMOS hardware
-clock.  However, it has *no* idea whether the CMOS hardware clock is
-ticking localtime or UTC time.  The Linux system clock (i.e., what is
-returned via the gettimeofday() or time() functions) is always UTC
-time.    
+> 0x100000 is 1MB and would be the minimum MMIO range that can be allocated.
+> So that looks right too. Probably need to find out what is allocating
+> 0xe0000000 instead.
 
-What happens later is that distribution init scripts will adjust the
-system clock either forward or backwards if the system is set up so
-that hardware is in Windows bug-compatibility mode where the CMOS
-hwclock is ticking localtime.  If it is 1400 GMT, then in the
-US/Eastern timezone, the clock will be 9:00am, so the clock will be
-pushed four hours later.  If you are in the Central European Timezone,
-then the local time will be 3pm, and the clock will be pushed
-*backwards* by one hour.
+I believe that the setup-bus code just tried to allocate 1M ROM of some
+device using prefetchable window of the bridge 0000:00:00.0. That failed,
+probably because there is no MEM space left on the root bus, which is
+perfectly OK. Then, the ROM might be successfully allocated in the
+non-prefetchable MMIO space.
 
-The question is when does this happen.  In some buggy distributions,
-this happens *after* e2fsck is run.  And it is in those distributions
-e2fsck can sometimes get confused about when the last time the
-filesystem was checked --- especially if the system is getting
-rebooted a lot (which tends to be the case with people who are
-dual-booting).  So the cases where this happens a lot are (a) people
-who are using windows and so the CMOS hwclock is ticking localtime,
-(b) distributions that don't adjust the Linux system clock before
-e2fsck runs.  Unfortunately Ubuntu users in Europe fit this
-demographic hugely, and Ubuntu refuses to fix this problem[1], so it's
-been personally very vexing, because the users complain to *me*, and I
-can't fix the problem, because it's a distribution init script issue.
+So, I don't see any problem in this situation. The only thing I could
+suggest is to lower the log level in that message from KERN_ERR to
+KERN_WARNING...
 
-So what I tell people is to upgrade to the latest e2fsprogs, and then
-set in /etc/e2fsck.conf:
-
-[options]
-	buggy_init_scripts = 1
-
-Maybe someday Ubuntu will get this right --- but I'm not counting on it.
-
-
-[1] Something about installer CD's, and not wanting to ask the users
-any questions, not even what time zone they are in, or some other
-crazyness.  I never completely understood the argument and their
-design constraints.
-
-      	      	     	      	   	 - Ted
-
-P.S.  If there are other scripts which are started, they can also get
-confused because the time is getting warped backwards early-on.  I
-haven't done an analysis to find out which sort programs might be
-vulnerable to this, but this is not necessarily an e2fsck-specific
-problems.  After all, it *is* reasonable to expect that the time
-returned by time(0) or gettimeofday() is correct, and many programs do
-make that assumption....
+Ivan.
