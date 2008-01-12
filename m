@@ -1,90 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762303AbYALAFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762864AbYALARS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762303AbYALAFj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 19:05:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762599AbYALAFR
+	id S1762864AbYALARS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 19:17:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757584AbYALARA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 19:05:17 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55826 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762427AbYALAFP (ORCPT
+	Fri, 11 Jan 2008 19:17:00 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:47726 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752275AbYALAQ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 19:05:15 -0500
-Date: Fri, 11 Jan 2008 16:04:31 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: abhishekrai@google.com, tytso@mit.edu, adilger@sun.com,
-       linux-kernel@vger.kernel.org, kenchen@google.com, mikew@google.com,
-       rohitseth@google.com
-Subject: Re: [PATCH] Clustering indirect blocks in Ext3
-Message-Id: <20080111160431.905a853f.akpm@linux-foundation.org>
-In-Reply-To: <200801110905.18464.phillips@phunq.net>
-References: <d9885f0f0711152102h7a8270bfvd65605d8c00e6754@mail.gmail.com>
-	<d9885f0f0712210615h661ad458x2cf4e4d0e8868772@mail.gmail.com>
-	<d9885f0f0801101317n48e090d6x48f1792c71dc348e@mail.gmail.com>
-	<200801110905.18464.phillips@phunq.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 11 Jan 2008 19:16:59 -0500
+Message-ID: <478806D6.3080909@torque.net>
+Date: Fri, 11 Jan 2008 19:16:22 -0500
+From: Douglas Gilbert <dougg@torque.net>
+Reply-To: dougg@torque.net
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Pete Wyckoff <pw@osc.edu>, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       tomof@acm.org, deepakrc@gmail.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] bsg : Add support for io vectors in bsg
+References: <Pine.LNX.4.64.0801042137350.7836@localhost>	 <200801050501.m0551LFB030667@mbox.iij4u.or.jp>	 <20080108220918.GA9484@osc.edu>	 <20080109091118N.fujita.tomonori@lab.ntt.co.jp>	 <20080110204325.GC1928@osc.edu>	 <1199998531.3141.96.camel@localhost.localdomain>	 <20080110214605.GD1928@osc.edu> <1200002054.3141.103.camel@localhost.localdomain>
+In-Reply-To: <1200002054.3141.103.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Jan 2008 09:05:17 -0800
-Daniel Phillips <phillips@phunq.net> wrote:
-
-> On Thursday 10 January 2008 13:17, Abhishek Rai wrote:
-> > Benchmark 5: fsck
-> > Description: Prepare a newly formated 400GB disk as follows: create
-> > 200 files of 0.5GB each, 100 files of 1GB each, 40 files of 2.5GB
-> > ech, and 10 files of 10GB each. fsck command line: fsck -f -n
-> > 1. vanilla:
-> >  Total: 11m25.3s
-> >  User: 13.4s
-> >  System: 13.2s
-> > 2. mc:
-> >  Total: 3m11.0s
-> >  User: 13.1s
-> >  System: 12.9s
-> >
-> > Note: I'll report results from kernbench and compilebench shortly.
-> >
-> > Observations:
-> > Sequential write performance is much better with metaclustering than
-> > with vanilla. To better understand it, I ran the same benchmark with
-> > the new code but with the metaclustering option turned off and I got
-> > the same performance as vanilla which makes me believe that there is
-> > something about metaclustering that helps write performance though I
-> > don't have a very good handle of what that thing might be.
+James Bottomley wrote:
+> On Thu, 2008-01-10 at 16:46 -0500, Pete Wyckoff wrote:
+>> James.Bottomley@HansenPartnership.com wrote on Thu, 10 Jan 2008 14:55 -0600:
+>>> On Thu, 2008-01-10 at 15:43 -0500, Pete Wyckoff wrote:
+>>>> fujita.tomonori@lab.ntt.co.jp wrote on Wed, 09 Jan 2008 09:11 +0900:
+>>>>> On Tue, 8 Jan 2008 17:09:18 -0500
+>>>>> Pete Wyckoff <pw@osc.edu> wrote:
+>>>>>> I took another look at the compat approach, to see if it is feasible
+>>>>>> to keep the compat handling somewhere else, without the use of #ifdef
+>>>>>> CONFIG_COMPAT and size-comparison code inside bsg.c.  I don't see how.
+>>>>>> The use of iovec is within a write operation on a char device.  It's
+>>>>>> not amenable to a compat_sys_ or a .compat_ioctl approach.
+>>>>>>
+>>>>>> I'm partial to #1 because the use of architecture-independent fields
+>>>>>> matches the rest of struct sg_io_v4.  But if you don't want to have
+>>>>>> another iovec type in the kernel, could we do #2 but just return
+>>>>>> -EINVAL if the need for compat is detected?  I.e. change
+>>>>>> dout_iovec_count to dout_iovec_length and do the math?
+>>>>> If you are ok with removing the write/read interface and just have
+>>>>> ioctl, we could can handle comapt stuff like others do. But I think
+>>>>> that you (OSD people) really want to keep the write/read
+>>>>> interface. Sorry, I think that there is no workaround to support iovec
+>>>>> in bsg.
+>>>> I don't care about read/write in particular.  But we do need some
+>>>> way to launch asynchronous SCSI commands, and currently read/write
+>>>> are the only way to do that in bsg.  The reason is to keep multiple
+>>>> spindles busy at the same time.
+>>> Won't multi-threading the ioctl calls achieve the same effect?  Or do
+>>> you trip over BKL there?
+>> There's no BKL on (new) ioctls anymore, at least.  A thread per
+>> device would be feasible perhaps.  But if you want any sort of
+>> pipelining out of the device, esp. in the remote iSCSI case, you
+>> need to have a good number of commands outstanding to each device.
+>> So a thread per command per device.  Typical iSCSI queue depth of
+>> 128 times 16 devices for a small setup is a lot of threads.
 > 
-> Your results are very impressive.   In my opinion, the sooner this goes 
-> in, the better, since everybody hates waiting for fsck.  The only issue 
-> that jumps out at me is, the patch is big and changes a significant 
-> amount of Ext3 code outside of the metacluster path, which is not a bad 
-> thing except that these changes are going to need to be tested fairly 
-> heavily.
-
-It needs to be reviewed.  In exhaustive detail.  Few people can do that and
-fewer are inclined to do so.
-
-> The way to do that is, put a big [CALL FOR TESTING] in your subject line 
-> the next time you post, and use an attention-getting subject line 
-> like "Make Ext3 fsck way faster".   Diff the patch against the latest 
-> stable kernel to make things as easy as possible for the people who are 
-> hopefully going to download your patch, try it, and report their 
-> results.
+> I was actually thinking of a thread per outstanding command.
 > 
-> The other way is just to ask Andrew to put it in -mm when you feel 
-> ready, but your chances are much better if you already have people 
-> sending in mails saying how great your patch is.
+>> The pthread/pipe latency overhead is not insignificant for fast
+>> storage networks too.
+>>
+>>>> How about these new ioctls instead of read/write:
+>>>>
+>>>>     SG_IO_SUBMIT - start a new blk_execute_rq_nowait()
+>>>>     SG_IO_TEST   - complete and return a previous req
+>>>>     SG_IO_WAIT   - wait for a req to finish, interruptibly
+>>>>
+>>>> Then old write users will instead do ioctl SUBMIT.  Read users will
+>>>> do TEST for non-blocking fd, or WAIT for blocking.  And SG_IO could
+>>>> be implemented as SUBMIT + WAIT.
+>>>>
+>>>> Then we can do compat_ioctl and convert up iovecs out-of-line before
+>>>> calling the normal functions.
+>>>>
+>>>> Let me know if you want a patch for this.
+>>> Really, the thought of re-inventing yet another async I/O interface
+>>> isn't very appealing.
+>> I'm fine with read/write, except Tomo is against handling iovecs
+>> because of the compat complexity with struct iovec being different
+>> on 32- vs 64-bit.  There is a standard way to do "compat" ioctl that
+>> hides this handling in a different file (not bsg.c), which is the
+>> only reason I'm even considering these ioctls.  I don't care about
+>> compat setups per se.
+>>
+>> Is there another async I/O mechanism?  Userspace builds the CDBs,
+>> just needs some way to drop them in SCSI ML.  BSG is almost perfect
+>> for this, but doesn't do iovec, leading to lots of memcpy.
+> 
+> No, it's just that async interfaces in Linux have a long and fairly
+> unhappy history.
 
-I went to merge it so it could get some testing while we await review but
-the patch has all its tabs replaced with spaces, is seriously wordwrapped
-and has random newlines added to it.  Please fix email client and resend
-(offlist is OK if it is unaltered).
+The sg driver's async interface has been pretty stable for
+a long time. The sync SG_IO ioctl is built on top of the
+async interface. That makes the async interface extremely
+well tested.
 
+The write()/read() async interface in sg does have one
+problem: when a command is dispatched via a write()
+it would be very useful to get back a tag but that
+violates write()'s second argument: 'const void * buf'.
+That tag could be useful both for identification of the
+response and by task management functions.
 
-We should have a think about which workloads are most likely to be
-adversely affected by this change.
+I was hoping that the 'flags' field in sgv4 could be used
+to implement the variants:
+     SG_IO_SUBMIT - start a new blk_execute_rq_nowait()
+     SG_IO_TEST   - complete and return a previous req
+     SG_IO_WAIT   - wait for a req to finish, interruptibly
 
+that way the existing SG_IO ioctl is sufficient.
+
+And if Tomo doesn't want to do it in the bsg driver,
+then it could be done it the sg driver.
+
+Doug Gilbert
