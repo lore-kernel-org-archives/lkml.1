@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760543AbYALVpT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759872AbYALVss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760543AbYALVpT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 16:45:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757630AbYALVpF
+	id S1759872AbYALVss (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 16:48:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbYALVsl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 16:45:05 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37108 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756023AbYALVpD (ORCPT
+	Sat, 12 Jan 2008 16:48:41 -0500
+Received: from jurassic.park.msu.ru ([195.208.223.243]:57590 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750888AbYALVsl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 16:45:03 -0500
-Date: Sat, 12 Jan 2008 21:42:30 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Benjamin LaHaise <bcrl@kvack.org>, akpm@osdl.org,
-       linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] serial: remove "too much work for irq" printk
-Message-ID: <20080112214230.241018d4@lxorguk.ukuu.org.uk>
-In-Reply-To: <47893374.4080102@zytor.com>
-References: <20080112201543.GB12775@kvack.org>
-	<20080112212457.3bf534af@lxorguk.ukuu.org.uk>
-	<47893374.4080102@zytor.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 12 Jan 2008 16:48:41 -0500
+Date: Sun, 13 Jan 2008 00:49:11 +0300
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Greg KH <greg@kroah.com>, Matthew Wilcox <matthew@wil.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>, Tony Camuso <tcamuso@redhat.com>,
+       Loic Prylli <loic@myri.com>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+	opt-in
+Message-ID: <20080112214911.GA20102@jurassic.park.msu.ru>
+References: <alpine.LFD.1.00.0801111224090.3148@woody.linux-foundation.org> <20080111204228.GP18741@parisc-linux.org> <alpine.LFD.1.00.0801111311170.3148@woody.linux-foundation.org> <20080111211753.GR18741@parisc-linux.org> <alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org> <20080111213803.GS18741@parisc-linux.org> <20080111235856.GA16079@jurassic.park.msu.ru> <20080112002638.GA18710@kroah.com> <20080112144030.GA19279@jurassic.park.msu.ru> <20080112094557.71f5382a@laptopd505.fenrus.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080112094557.71f5382a@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This is going to put trouble in other places unless, at least, it can be 
-> turned off.  The UART serial interface is heavily emulated as a console 
-> interface without an actual serial port behind it, both in hardware and 
-> software.  Rates will typically vastly exceed real serial port rates, 
+On Sat, Jan 12, 2008 at 09:45:57AM -0800, Arjan van de Ven wrote:
+> btw this is my main objection to your patch; it intertwines the conf1
+> and mmconfig code even more.
 
-Yes Dell do it, HP do it, IBM do it. Have done for years, never caused us
-a problem. Its only KVM tripping it.
+There is nothing wrong with it; please realize that mmconf and conf1 are
+just different cpu-side interfaces. Both produce precisely the *same* bus
+cycles as far as the lower 256-byte space is concerned.
 
-As to bit rate we support up to about 1 to 1.5 Mbit.
+> When (and I'm saying "when" not "if") systems arrive that only have
+> MMCONFIG for some of the devices, we'll have to detangle this again,
+> and I'm really not looking forward to that.
 
-Alan
+MMCONFIG for *some* of the devices? This doesn't sound realistic
+from technical point of view.
+MMCONFIG-only systems? Sure. I really hope to see these. But it won't
+be PC-AT architecture anymore. It has to be something like alpha,
+for instance, fully utilizing the 64-bit address space, and we'll have
+to have the whole low-level PCI infrastructure completely different
+for these future platforms anyway.
+Right now, each and every x86 chipset *does* require working
+conf1 just in order to set up the mmconf aperture. It's the very
+fundamental thing, sort of design philosophy.
+
+Ivan.
