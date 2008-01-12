@@ -1,56 +1,293 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763582AbYALO1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763649AbYALOk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763582AbYALO1j (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 09:27:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763110AbYALO0o
+	id S1763649AbYALOk0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 09:40:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759886AbYALOkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 09:26:44 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:50596 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762750AbYALO0i (ORCPT
+	Sat, 12 Jan 2008 09:40:13 -0500
+Received: from jurassic.park.msu.ru ([195.208.223.243]:35158 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758245AbYALOkL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 09:26:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=vsc9NKH7XXnidUUDujOGOG2fefQIPGpxhrwazi+GHNtmKyzbdkOw95lpDhFeQgTir320CTy6Vww5h8cfnDLzZGCGT7vrNNRqirykghB1zSZ2ISwWn0+KRXj2WaXbIGpi4yrLpStblgJSYLVi24TJ5AlKp7V/vP06QkCYclxSeLI=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Borislav Petkov <bbpetkov@yahoo.de>
-Subject: Re: [PATCH 00/21] ide-floppy redux v2
-Date: Sat, 12 Jan 2008 14:46:00 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <1200052699-28420-1-git-send-email-bbpetkov@yahoo.de>
-In-Reply-To: <1200052699-28420-1-git-send-email-bbpetkov@yahoo.de>
+	Sat, 12 Jan 2008 09:40:11 -0500
+Date: Sat, 12 Jan 2008 17:40:30 +0300
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Greg KH <greg@kroah.com>
+Cc: Matthew Wilcox <matthew@wil.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>, Tony Camuso <tcamuso@redhat.com>,
+       Loic Prylli <loic@myri.com>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+	opt-in
+Message-ID: <20080112144030.GA19279@jurassic.park.msu.ru>
+References: <alpine.LFD.1.00.0801111156230.3148@woody.linux-foundation.org> <20080111201716.GO18741@parisc-linux.org> <alpine.LFD.1.00.0801111224090.3148@woody.linux-foundation.org> <20080111204228.GP18741@parisc-linux.org> <alpine.LFD.1.00.0801111311170.3148@woody.linux-foundation.org> <20080111211753.GR18741@parisc-linux.org> <alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org> <20080111213803.GS18741@parisc-linux.org> <20080111235856.GA16079@jurassic.park.msu.ru> <20080112002638.GA18710@kroah.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801121446.00276.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20080112002638.GA18710@kroah.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 11 January 2008, Borislav Petkov wrote:
+On Fri, Jan 11, 2008 at 04:26:38PM -0800, Greg KH wrote:
+> > One typical problem is that on "Intel(r) 3 Series Experss Chipset Family"
+> > MMCONFIG probing of the BAR #2 (frame buffer address) of integrated graphics
+> > device locks up the machine (depending on BIOS settings, of course).
+> > This happens because the frame buffer of IGD has higher decode priority
+> > than MMCONFIG range, as stated in Intel docs...
 > 
-> Hi Bart,
-> 
->    here's the second version of the ide-floppy refactoring trail. All the
-> patches are based on the version of your quilt tree from the 05.01. Also, you've
-> already applied patch 5 in this series but i'm submitting it still for the sake
-> of completeness.
-> 
-> 
->  drivers/ide/ide-cd.c     |    2 -
->  drivers/ide/ide-floppy.c | 1403 ++++++++++++++++++----------------------------
->  include/linux/cdrom.h    |    1 +
->  include/linux/ide.h      |    3 +
->  4 files changed, 558 insertions(+), 851 deletions(-)
+> Ok, so what would the proposed patch look like to help resolve this?
 
-applied patches #1-4, #8
-(#4 with some changes)
+Yeah, for sure.
 
-#5 was already applied so I just re-ordered it into the right spot
+> Ivan, you posted one a while ago, but never seemed to get any
+> confirmation if it helped or not.  Should I use that and drop Arjan's?
 
-I have some comments for #6-7
+Actually I'm strongly against Arjan's patch. First, it's based on
+assumption that the MMCONFIG thing is sort of fundamentally broken
+on some systems, but none of the facts we have so far does confirm that.
+And second, I really don't like the implementation as it breaks all
+non-x86 arches (or forces them to add a set of totally meaningless
+PCI functions).
+
+> Or use both?  Or something else like the patches proposed by Tony
+> Camuso?
+
+Tony's patch is a variation of the same idea, so this patch
+supersedes it. The only argument for using conf1 to access only the
+first 64 bytes of the config space was some concerns about performance.
+But the only driver that extensively uses config space at runtime
+is tg3, and only as a work around some broken revisions of the chip.
+And even in that case I seriously doubt that mmconf vs. conf1 would
+make any measurable difference.
+On the other hand, always using conf1 for the whole 256-byte legacy
+config space allows us to drop all sorts of black lists, which is
+a *huge* advantage.
+
+Here is the same patch, but with an updated commit message -
+proper attribution to Loic Prylli, which I somehow missed
+the first time, sorry.
+
+Ivan.
+
+---
+PCI x86: always use conf1 to access config space below 256 bytes
+
+Thanks to Loic Prylli <loic@myri.com>, who originally proposed
+this idea.
+
+Always using legacy configuration mechanism for the legacy config space
+and extended mechanism (mmconf) for the extended config space is
+a simple and very logical approach. It's supposed to resolve all
+known mmconf problems. It still allows per-device quirks (tweaking
+dev->cfg_size). It also allows to get rid of mmconf fallback code.
+
+Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+---
+ arch/x86/pci/mmconfig-shared.c |   35 -----------------------------------
+ arch/x86/pci/mmconfig_32.c     |   22 +++++++++-------------
+ arch/x86/pci/mmconfig_64.c     |   22 ++++++++++------------
+ arch/x86/pci/pci.h             |    7 -------
+ 4 files changed, 19 insertions(+), 67 deletions(-)
+
+diff --git a/arch/x86/pci/mmconfig-shared.c b/arch/x86/pci/mmconfig-shared.c
+index 4df637e..6b521d3 100644
+--- a/arch/x86/pci/mmconfig-shared.c
++++ b/arch/x86/pci/mmconfig-shared.c
+@@ -22,42 +22,9 @@
+ #define MMCONFIG_APER_MIN	(2 * 1024*1024)
+ #define MMCONFIG_APER_MAX	(256 * 1024*1024)
+ 
+-DECLARE_BITMAP(pci_mmcfg_fallback_slots, 32*PCI_MMCFG_MAX_CHECK_BUS);
+-
+ /* Indicate if the mmcfg resources have been placed into the resource table. */
+ static int __initdata pci_mmcfg_resources_inserted;
+ 
+-/* K8 systems have some devices (typically in the builtin northbridge)
+-   that are only accessible using type1
+-   Normally this can be expressed in the MCFG by not listing them
+-   and assigning suitable _SEGs, but this isn't implemented in some BIOS.
+-   Instead try to discover all devices on bus 0 that are unreachable using MM
+-   and fallback for them. */
+-static void __init unreachable_devices(void)
+-{
+-	int i, bus;
+-	/* Use the max bus number from ACPI here? */
+-	for (bus = 0; bus < PCI_MMCFG_MAX_CHECK_BUS; bus++) {
+-		for (i = 0; i < 32; i++) {
+-			unsigned int devfn = PCI_DEVFN(i, 0);
+-			u32 val1, val2;
+-
+-			pci_conf1_read(0, bus, devfn, 0, 4, &val1);
+-			if (val1 == 0xffffffff)
+-				continue;
+-
+-			if (pci_mmcfg_arch_reachable(0, bus, devfn)) {
+-				raw_pci_ops->read(0, bus, devfn, 0, 4, &val2);
+-				if (val1 == val2)
+-					continue;
+-			}
+-			set_bit(i + 32 * bus, pci_mmcfg_fallback_slots);
+-			printk(KERN_NOTICE "PCI: No mmconfig possible on device"
+-			       " %02x:%02x\n", bus, i);
+-		}
+-	}
+-}
+-
+ static const char __init *pci_mmcfg_e7520(void)
+ {
+ 	u32 win;
+@@ -270,8 +237,6 @@ void __init pci_mmcfg_init(int type)
+ 		return;
+ 
+ 	if (pci_mmcfg_arch_init()) {
+-		if (type == 1)
+-			unreachable_devices();
+ 		if (known_bridge)
+ 			pci_mmcfg_insert_resources(IORESOURCE_BUSY);
+ 		pci_probe = (pci_probe & ~PCI_PROBE_MASK) | PCI_PROBE_MMCONF;
+diff --git a/arch/x86/pci/mmconfig_32.c b/arch/x86/pci/mmconfig_32.c
+index 1bf5816..7b75e65 100644
+--- a/arch/x86/pci/mmconfig_32.c
++++ b/arch/x86/pci/mmconfig_32.c
+@@ -30,10 +30,6 @@ static u32 get_base_addr(unsigned int seg, int bus, unsigned devfn)
+ 	struct acpi_mcfg_allocation *cfg;
+ 	int cfg_num;
+ 
+-	if (seg == 0 && bus < PCI_MMCFG_MAX_CHECK_BUS &&
+-	    test_bit(PCI_SLOT(devfn) + 32*bus, pci_mmcfg_fallback_slots))
+-		return 0;
+-
+ 	for (cfg_num = 0; cfg_num < pci_mmcfg_config_num; cfg_num++) {
+ 		cfg = &pci_mmcfg_config[cfg_num];
+ 		if (cfg->pci_segment == seg &&
+@@ -68,13 +64,16 @@ static int pci_mmcfg_read(unsigned int seg, unsigned int bus,
+ 	u32 base;
+ 
+ 	if ((bus > 255) || (devfn > 255) || (reg > 4095)) {
+-		*value = -1;
++err:		*value = -1;
+ 		return -EINVAL;
+ 	}
+ 
++	if (reg < 256)
++		return pci_conf1_read(seg,bus,devfn,reg,len,value);
++
+ 	base = get_base_addr(seg, bus, devfn);
+ 	if (!base)
+-		return pci_conf1_read(seg,bus,devfn,reg,len,value);
++		goto err;
+ 
+ 	spin_lock_irqsave(&pci_config_lock, flags);
+ 
+@@ -105,9 +104,12 @@ static int pci_mmcfg_write(unsigned int seg, unsigned int bus,
+ 	if ((bus > 255) || (devfn > 255) || (reg > 4095))
+ 		return -EINVAL;
+ 
++	if (reg < 256)
++		return pci_conf1_write(seg,bus,devfn,reg,len,value);
++
+ 	base = get_base_addr(seg, bus, devfn);
+ 	if (!base)
+-		return pci_conf1_write(seg,bus,devfn,reg,len,value);
++		return -EINVAL;
+ 
+ 	spin_lock_irqsave(&pci_config_lock, flags);
+ 
+@@ -134,12 +136,6 @@ static struct pci_raw_ops pci_mmcfg = {
+ 	.write =	pci_mmcfg_write,
+ };
+ 
+-int __init pci_mmcfg_arch_reachable(unsigned int seg, unsigned int bus,
+-				    unsigned int devfn)
+-{
+-	return get_base_addr(seg, bus, devfn) != 0;
+-}
+-
+ int __init pci_mmcfg_arch_init(void)
+ {
+ 	printk(KERN_INFO "PCI: Using MMCONFIG\n");
+diff --git a/arch/x86/pci/mmconfig_64.c b/arch/x86/pci/mmconfig_64.c
+index 4095e4d..c4cf318 100644
+--- a/arch/x86/pci/mmconfig_64.c
++++ b/arch/x86/pci/mmconfig_64.c
+@@ -40,9 +40,7 @@ static char __iomem *get_virt(unsigned int seg, unsigned bus)
+ static char __iomem *pci_dev_base(unsigned int seg, unsigned int bus, unsigned int devfn)
+ {
+ 	char __iomem *addr;
+-	if (seg == 0 && bus < PCI_MMCFG_MAX_CHECK_BUS &&
+-		test_bit(32*bus + PCI_SLOT(devfn), pci_mmcfg_fallback_slots))
+-		return NULL;
++
+ 	addr = get_virt(seg, bus);
+ 	if (!addr)
+ 		return NULL;
+@@ -56,13 +54,16 @@ static int pci_mmcfg_read(unsigned int seg, unsigned int bus,
+ 
+ 	/* Why do we have this when nobody checks it. How about a BUG()!? -AK */
+ 	if (unlikely((bus > 255) || (devfn > 255) || (reg > 4095))) {
+-		*value = -1;
++err:		*value = -1;
+ 		return -EINVAL;
+ 	}
+ 
++	if (reg < 256)
++		return pci_conf1_read(seg,bus,devfn,reg,len,value);
++
+ 	addr = pci_dev_base(seg, bus, devfn);
+ 	if (!addr)
+-		return pci_conf1_read(seg,bus,devfn,reg,len,value);
++		goto err;
+ 
+ 	switch (len) {
+ 	case 1:
+@@ -88,9 +89,12 @@ static int pci_mmcfg_write(unsigned int seg, unsigned int bus,
+ 	if (unlikely((bus > 255) || (devfn > 255) || (reg > 4095)))
+ 		return -EINVAL;
+ 
++	if (reg < 256)
++		return pci_conf1_write(seg,bus,devfn,reg,len,value);
++
+ 	addr = pci_dev_base(seg, bus, devfn);
+ 	if (!addr)
+-		return pci_conf1_write(seg,bus,devfn,reg,len,value);
++		return -EINVAL;
+ 
+ 	switch (len) {
+ 	case 1:
+@@ -126,12 +130,6 @@ static void __iomem * __init mcfg_ioremap(struct acpi_mcfg_allocation *cfg)
+ 	return addr;
+ }
+ 
+-int __init pci_mmcfg_arch_reachable(unsigned int seg, unsigned int bus,
+-				    unsigned int devfn)
+-{
+-	return pci_dev_base(seg, bus, devfn) != NULL;
+-}
+-
+ int __init pci_mmcfg_arch_init(void)
+ {
+ 	int i;
+diff --git a/arch/x86/pci/pci.h b/arch/x86/pci/pci.h
+index ac56d39..36cb44c 100644
+--- a/arch/x86/pci/pci.h
++++ b/arch/x86/pci/pci.h
+@@ -98,13 +98,6 @@ extern void pcibios_sort(void);
+ 
+ /* pci-mmconfig.c */
+ 
+-/* Verify the first 16 busses. We assume that systems with more busses
+-   get MCFG right. */
+-#define PCI_MMCFG_MAX_CHECK_BUS 16
+-extern DECLARE_BITMAP(pci_mmcfg_fallback_slots, 32*PCI_MMCFG_MAX_CHECK_BUS);
+-
+-extern int __init pci_mmcfg_arch_reachable(unsigned int seg, unsigned int bus,
+-					   unsigned int devfn);
+ extern int __init pci_mmcfg_arch_init(void);
+ 
+ /*
