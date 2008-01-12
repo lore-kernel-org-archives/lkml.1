@@ -1,80 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763298AbYALAfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763313AbYALAmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763298AbYALAfh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 19:35:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758276AbYALAfa
+	id S1763313AbYALAmn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 19:42:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762569AbYALAmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 19:35:30 -0500
-Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:44342 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754788AbYALAf3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 19:35:29 -0500
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: "Andi Kleen" <andi@firstfloor.org>, <ebiederm@xmission.com>,
-       <torvalds@linux-foundation.org>, <gregkh@suse.de>, <airlied@skynet.ie>,
-       <davej@redhat.com>, <mingo@elte.hu>, <tglx@linutronix.de>,
-       <hpa@zytor.co>, <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Subject: Re: [patch 09/11] PAT x86: Add ioremap_wc support
-X-Message-Flag: Warning: May contain useful information
-References: <20080110184840.927409000@intel.com>
-	<20080110184856.379082000@intel.com> <p733at5o5vr.fsf@bingen.suse.de>
-	<924EFEDD5F540B4284297C4DC59F3DEE5A281A@orsmsx423.amr.corp.intel.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 11 Jan 2008 16:18:12 -0800
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE5A281A@orsmsx423.amr.corp.intel.com> (Venkatesh Pallipadi's message of "Thu, 10 Jan 2008 11:25:25 -0800")
-Message-ID: <ada3at3aocb.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+	Fri, 11 Jan 2008 19:42:36 -0500
+Received: from mga03.intel.com ([143.182.124.21]:30162 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758743AbYALAmf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 19:42:35 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,274,1196668800"; 
+   d="scan'208";a="364642014"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver opt-in
+Date: Fri, 11 Jan 2008 16:17:53 -0800
+User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, Arjan van de Ven <arjan@infradead.org>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>
+References: <20080111194524.GA17170@suse.de> <20080111213803.GS18741@parisc-linux.org> <20080111235856.GA16079@jurassic.park.msu.ru>
+In-Reply-To: <20080111235856.GA16079@jurassic.park.msu.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 12 Jan 2008 00:18:12.0414 (UTC) FILETIME=[9E2325E0:01C854B0]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801111617.55623.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > >I don't think that's a good idea. Drivers should be able to 
- > >detect this somehow.
- > >Handling UC mappings as WC will probably give very poor results.
+On Friday, January 11, 2008 3:58 Ivan Kokshaysky wrote:
+> On Fri, Jan 11, 2008 at 02:38:03PM -0700, Matthew Wilcox wrote:
+> > On Fri, Jan 11, 2008 at 01:28:30PM -0800, Linus Torvalds wrote:
+> > > Hmm. Were all those reports root-caused to just that BAR probing?
+> > > If so, we may be in better shape than I worried.
+> >
+> > I believe so.
+>
+> Ditto.
+>
+> One typical problem is that on "Intel(r) 3 Series Experss Chipset
+> Family" MMCONFIG probing of the BAR #2 (frame buffer address) of
+> integrated graphics device locks up the machine (depending on BIOS
+> settings, of course). This happens because the frame buffer of IGD
+> has higher decode priority than MMCONFIG range, as stated in Intel
+> docs...
 
- > It is the other way. ioremap_wc aliases to ioremap_nocache.
- > This was based on earlier feedback from Roland.
+Yeah, I'm only aware of 3:
+  - the BAR overlapping w/MMCONFIG problem described above
+  - ATI chipset config space retry bug
+  - VIA (?) chipset host bridges don't respond well to having decode
+    disabled (they stop decoding RAM addresses as well)
 
- > >From: Roland Dreier [mailto:rdreier@cisco.com] 
- > >I think ioremap_wc() needs to be available on all archs for this to be
- > >really useful to drivers.  It can be a fallback to ioremap_nocache()
- > >everywhere except 64-bit x86, but it's not nice for every driver that
- > >wants to use this to need an "#ifdef X86" or whatever.
+That's it afaik, so I've never really known where Linus' paranoia comes 
+from.  OTOH I haven't been too keen to challenge it either; MMCONFIG 
+space is only just beginning to be tested widely with the deployment of 
+Vista, so we'll doubtless see more problems on older chipsets if we 
+enable it by default.
 
-Yes... my basic point is simply that the kernel interfaces to this WC
-stuff must be available on all architectures, even if it's stubbed out
-on architectures that don't support write-combining or where it hasn't
-been implemented yet.  I think the only sane way to stub it out is to
-fall back to uncached...
-
-It's not going to be useful if drivers need crazy #ifdefs to decide
-whether to use ioremap_wc(), pgprot_writecombine() or whatever.  Just
-look at the mess in drm_io_prot() in drm_vm.c to see what I want to
-avoid.
-
-Just to be explicit, my interest in this is that I want to be able to
-merge the patch below and have the mlx4 driver still build and work on
-every arch that has PCI support:
-
-diff --git a/drivers/infiniband/hw/mlx4/main.c b/drivers/infiniband/hw/mlx4/main.c
-index d8287d9..5eac9c6 100644
---- a/drivers/infiniband/hw/mlx4/main.c
-+++ b/drivers/infiniband/hw/mlx4/main.c
-@@ -381,8 +381,7 @@ static int mlx4_ib_mmap(struct ib_ucontext *context, struct vm_area_struct *vma)
- 				       PAGE_SIZE, vma->vm_page_prot))
- 			return -EAGAIN;
- 	} else if (vma->vm_pgoff == 1 && dev->dev->caps.bf_reg_size != 0) {
--		/* FIXME want pgprot_writecombine() for BlueFlame pages */
--		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-+		vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
- 
- 		if (io_remap_pfn_range(vma, vma->vm_start,
- 				       to_mucontext(context)->uar.pfn +
-
+Jesse
