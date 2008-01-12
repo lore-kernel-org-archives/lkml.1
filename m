@@ -1,101 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762920AbYALKvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763154AbYALK5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762920AbYALKvj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 05:51:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755439AbYALKva
+	id S1763154AbYALK5Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 05:57:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761031AbYALK5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 05:51:30 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:58792 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758679AbYALKv3 (ORCPT
+	Sat, 12 Jan 2008 05:57:17 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:46764 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760587AbYALK5Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 05:51:29 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <47889B68.8010601@s5r6.in-berlin.de>
-Date: Sat, 12 Jan 2008 11:50:16 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
+	Sat, 12 Jan 2008 05:57:16 -0500
+Date: Sat, 12 Jan 2008 16:27:02 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Valdis.Kletnieks@vt.edu, righiandr@users.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [RFC][PATCH] per-task I/O throttling
+Message-ID: <20080112105702.GC25388@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Valdis.Kletnieks@vt.edu, righiandr@users.sourceforge.net,
+	LKML <linux-kernel@vger.kernel.org>,
+	Jens Axboe <jens.axboe@oracle.com>
+References: <47869FFE.1050000@users.sourceforge.net> <661de9470801110759h318347acw5f08c91b48ca742d@mail.gmail.com> <47879A32.8060508@users.sourceforge.net> <3777.1200113861@turing-police.cc.vt.edu> <1200131197.7999.14.camel@lappy>
 MIME-Version: 1.0
-To: Dave Young <hidave.darkstar@gmail.com>
-CC: Greg KH <gregkh@suse.de>, James.Bottomley@hansenpartnership.com,
-       a.zummo@towertech.it, peterz@infradead.org, cbou@mail.ru,
-       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-       krh@redhat.com, stern@rowland.harvard.edu, dwmw2@infradead.org,
-       davem@davemloft.net, jarkao2@gmail.com
-Subject: Re: [PATCH 1/7] driver-core : add class iteration api
-References: <20080112094754.GA2893@darkstar.te-china.tietoenator.com>
-In-Reply-To: <20080112094754.GA2893@darkstar.te-china.tietoenator.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1200131197.7999.14.camel@lappy>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Young wrote:
-> Add the following class iteration functions for driver use:
+* Peter Zijlstra <a.p.zijlstra@chello.nl> [2008-01-12 10:46:37]:
 
-Thanks Dave.  I will check the ieee1394 part in detail later.
+> 
+> On Fri, 2008-01-11 at 23:57 -0500, Valdis.Kletnieks@vt.edu wrote:
+> > On Fri, 11 Jan 2008 17:32:49 +0100, Andrea Righi said:
+> > 
+> > > The interesting feature is that it allows to set a priority for each
+> > > process container, but AFAIK it doesn't allow to "partition" the
+> > > bandwidth between different containers (that would be a nice feature
+> > > IMHO). For example it would be great to be able to define per-container
+> > > limits, like assign 10MB/s for processes in container A, 30MB/s to
+> > > container B, 20MB/s to container C, etc.
+> > 
+> > Has anybody considered allocating based on *seeks* rather than bytes moved,
+> > or counting seeks as "virtual bytes" for the purposes of accounting (if the
+> > disk can do 50mbytes/sec, and a seek takes 5millisecs, then count it as 100K
+> > of data)?
+> 
+> I was considering a time scheduler, you can fill your time slot with
+> seeks or data, it might be what CFQ does, but I've never even read the
+> code.
+>
 
-...
-> +/**
-> + * class_find_device - device iterator for locating a particular device
-> + * @class: the class we're iterating
-> + * @data: data for the match function
-> + * @match: function to check device
-> + *
-> + * This is similar to the class_for_each_dev() function above, but it
-> + * returns a reference to a device that is 'found' for later use, as
-> + * determined by the @match callback.
+So far the definition of I/O bandwidth has been w.r.t time. Not all IO
+devices have sectors; I'd prefer bytes over a period of time.
 
-Maybe add "Drop the reference with put_device() after use." for the
-really slow driver programmers like me?
-
-> + *
-> + * The callback should return 0 if the device doesn't match and non-zero
-> + * if it does.  If the callback returns non-zero, this function will
-> + * return to the caller and not iterate over any more devices.
-> + */
-> +struct device *class_find_device(struct class *class, void *data,
-> +				   int (*match)(struct device *, void *))
-> +{
-
-A general comment on the linux/device.h API (not a direct comment on
-your patch):
-
-The match argument in bus_find_device(), driver_find_device(),
-device_find_child(), class_find_device(), class_find_child() could be
-changed to
-
-	bool (*match)(struct device *, void *)).
-
-Then the semantics are IMO a little bit clearer.  Ditto for the
-dr_match_t type and the struct bus_type.match member.
-
-I don't know though whether the churn of doing such a change everywhere
-would be justified by the result.
-
-
-A comment on patch 2/7...6/7:
-
-You can bring most or all of the various __match implementations into a
-slightly terser but IMO easy to read form, like this:
-
- static int __match_ne(struct device *dev, void *data)
- {
- 	struct unit_directory *ud;
- 	struct node_entry *ne = (struct node_entry *)data;
-
- 	ud = container_of(dev, struct unit_directory, unit_dev);
--	if (ud->ne == ne)
--		return 1;
--	return 0;
-+	return ud->ne == ne;
- }
-
-Here it is also easy to see that readability would improve if the return
-type was bool rather than int.
 -- 
-Stefan Richter
--=====-==--- ---= -==--
-http://arcgraph.de/sr/
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
