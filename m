@@ -1,46 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763742AbYALOot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763721AbYALOwi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763742AbYALOot (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 09:44:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759886AbYALOom
+	id S1763721AbYALOwi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 09:52:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758704AbYALOw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 09:44:42 -0500
-Received: from server19320154104.serverpool.info ([193.201.54.104]:48936 "EHLO
-	hauke-m.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753644AbYALOol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 09:44:41 -0500
-Message-ID: <4788D24E.30805@hauke-m.de>
-Date: Sat, 12 Jan 2008 15:44:30 +0100
-From: Hauke Mehrtens <hauke@hauke-m.de>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Sat, 12 Jan 2008 09:52:29 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:38876 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757316AbYALOw2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 09:52:28 -0500
+Date: Sat, 12 Jan 2008 09:51:40 -0500
+From: Theodore Tso <tytso@MIT.EDU>
+To: Al Boldi <a1426z@gawab.com>
+Cc: Valerie Henson <val.henson@gmail.com>, Rik van Riel <riel@redhat.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFD] Incremental fsck
+Message-ID: <20080112145140.GB6751@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Al Boldi <a1426z@gawab.com>,
+	Valerie Henson <val.henson@gmail.com>,
+	Rik van Riel <riel@redhat.com>, linux-fsdevel@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <200801090022.55589.a1426z@gawab.com> <200801090740.12989.a1426z@gawab.com> <70b6f0bf0801082345vf57951ey642e35c3d6e5194f@mail.gmail.com> <200801091452.14890.a1426z@gawab.com>
 MIME-Version: 1.0
-To: "Luis R. Rodriguez" <mcgrof@winlab.rutgers.edu>
-CC: Michael Wu <flamingice@sourmilk.net>, linux-kernel@vger.kernel.org,
-       Stefano Brivio <stefano.brivio@polimi.it>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-Subject: Re: rtl8187 rate control doesn't work
-References: <477F9890.5050107@hauke-m.de>	 <43e72e890801051354v280c0ceeo78790bb5f1f45314@mail.gmail.com>	 <47824D25.5090005@hauke-m.de> <43e72e890801070942y5abcc8acs31ac446d67414483@mail.gmail.com> <4787F03E.6080605@hauke-m.de>
-In-Reply-To: <4787F03E.6080605@hauke-m.de>
-X-Enigmail-Version: 0.95.2
-OpenPGP: id=95C58E7B;
-	url=http://www.hauke-m.de/pgp-pubkey.asc
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200801091452.14890.a1426z@gawab.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have tested kernel 2.6.24-rc7-git4 with the build in rtl8187 module
-and I have the same problem.
+On Wed, Jan 09, 2008 at 02:52:14PM +0300, Al Boldi wrote:
+> 
+> Ok, but let's look at this a bit more opportunistic / optimistic.
+> 
+> Even after a black-out shutdown, the corruption is pretty minimal, using 
+> ext3fs at least.
+>
 
-I can't ping the AP if the rate is set to auto or to something higher
-than 11M. I have to set it to something less than 11M to be able to ping
-the AP.
+After a unclean shutdown, assuming you have decent hardware that
+doesn't lie about when blocks hit iron oxide, you shouldn't have any
+corruption at all.  If you have crappy hardware, then all bets are off....
 
-iwconfig shows a successful connection in both cases.
+> So let's take advantage of this fact and do an optimistic fsck, to
+> assure integrity per-dir, and assume no external corruption.  Then
+> we release this checked dir to the wild (optionally ro), and check
+> the next.  Once we find external inconsistencies we either fix it
+> unconditionally, based on some preconfigured actions, or present the
+> user with options.
 
-I am using Ubuntu 7.10 with vanilla kernel 2.6.24-rc7-git4 on AMD64
-system with wpa_supplicant v0.5.8
+So what can you check?  The *only* thing you can check is whether or
+not the directory syntax looks sane, whether the inode structure looks
+sane, and whether or not the blocks reported as belong to an inode
+looks sane.
 
---
-Hauke
+What is very hard to check is whether or not the link count on the
+inode is correct.  Suppose the link count is 1, but there are actually
+two directory entries pointing at it.  Now when someone unlinks the
+file through one of the directory hard entries, the link count will go
+to zero, and the blocks will start to get reused, even though the
+inode is still accessible via another pathname.  Oops.  Data Loss.
+
+This is why doing incremental, on-line fsck'ing is *hard*.  You're not
+going to find this while doing each directory one at a time, and if
+the filesystem is changing out from under you, it gets worse.  And
+it's not just the hard link count.  There is a similar issue with the
+block allocation bitmap.  Detecting the case where two files are
+simultaneously can't be done if you are doing it incrementally, and if
+the filesystem is changing out from under you, it's impossible, unless
+you also have the filesystem telling you every single change while it
+is happening, and you keep an insane amount of bookkeeping.
+
+One that you *might* be able to do, is to mount a filesystem readonly,
+check it in the background while you allow users to access it
+read-only.  There are a few caveats, however ---- (1) some filesystem
+errors may cause the data to be corrupt, or in the worst case, could
+cause the system to panic (that's would arguably be a
+filesystem/kernel bug, but we've not necessarily done as much testing
+here as we should.)  (2) if there were any filesystem errors found,
+you would beed to completely unmount the filesystem to flush the inode
+cache and remount it before it would be safe to remount the filesystem
+read/write.  You can't just do a "mount -o remount" if the filesystem
+was modified under the OS's nose.
+
+> All this could be per-dir or using some form of on-the-fly file-block-zoning.
+> 
+> And there probably is a lot more to it, but it should conceptually be 
+> possible, with more thoughts though...
+
+Many things are possible, in the NASA sense of "with enough thrust,
+anything will fly".  Whether or not it is *useful* and *worthwhile*
+are of course different questions!  :-)
+
+						- Ted
