@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762606AbYALUNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762306AbYALUQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762606AbYALUNe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 15:13:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756397AbYALUN0
+	id S1762306AbYALUQR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 15:16:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757812AbYALUQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 15:13:26 -0500
-Received: from mail.queued.net ([207.210.101.209]:3732 "EHLO mail.queued.net"
+	Sat, 12 Jan 2008 15:16:06 -0500
+Received: from kanga.kvack.org ([66.96.29.28]:44842 "EHLO kanga.kvack.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755999AbYALUNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 15:13:25 -0500
-Date: Sat, 12 Jan 2008 15:13:45 -0500
-From: Andres Salomon <dilinger@queued.net>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: dtor@mail.ru, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] input: psmouse: fix potential input register race in
- psmouse_connect()
-Message-ID: <20080112151345.5d14c104@ephemeral>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+	id S1757539AbYALUQF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 15:16:05 -0500
+Date: Sat, 12 Jan 2008 15:15:43 -0500
+From: Benjamin LaHaise <bcrl@kvack.org>
+To: akpm@osdl.org
+Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] serial: remove "too much work for irq" printk
+Message-ID: <20080112201543.GB12775@kvack.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When using kvm with a serial console, the serial driver will print out 
+"too much work for irq4" on any heavy activity (ie vi on a file repainting 
+the terminal).  This message is entirely spurious, as output continues to 
+work fine.  Remove the message as it corrupts screen output and is far too 
+easy to trigger.
 
-If we successfully call input_register_device() in
-psmouse_connect but sysfs_create_group() fails, we'll enter the error
-path without ever having called input_unregister_device() (potentially
-leaking memory, or creating a race condition if something else attempts
-to access the new input device).  This calls input_unregister_device
-from the error path, and sets input_dev to NULL so that we don't
-attempt to also call input_free_device on it.
+		-ben
 
-Signed-off-by: Andres Salomon <dilinger@debian.org>
----
- drivers/input/mouse/psmouse-base.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/input/mouse/psmouse-base.c b/drivers/input/mouse/psmouse-base.c
-index 21a9c0b..df25e7b 100644
---- a/drivers/input/mouse/psmouse-base.c
-+++ b/drivers/input/mouse/psmouse-base.c
-@@ -1247,6 +1247,8 @@ static int psmouse_connect(struct serio *serio, struct serio_driver *drv)
-  err_pt_deactivate:
- 	if (parent && parent->pt_deactivate)
- 		parent->pt_deactivate(parent);
-+	input_unregister_device(psmouse->dev);
-+	input_dev = NULL;
-  err_protocol_disconnect:
- 	if (psmouse->disconnect)
- 		psmouse->disconnect(psmouse);
--- 
-1.5.3.5
-
+Signed-off-by: Benjamin LaHaise <bcrl@kvack.org>
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index f94109c..030b8b5 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -1493,12 +1493,8 @@ static irqreturn_t serial8250_interrupt(int irq, void *dev_id)
+ 
+ 		l = l->next;
+ 
+-		if (l == i->head && pass_counter++ > PASS_LIMIT) {
+-			/* If we hit this, we're dead. */
+-			printk(KERN_ERR "serial8250: too much work for "
+-				"irq%d\n", irq);
++		if (l == i->head && pass_counter++ > PASS_LIMIT)
+ 			break;
+-		}
+ 	} while (l != end);
+ 
+ 	spin_unlock(&i->lock);
