@@ -1,208 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763536AbYALLUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763719AbYALLVO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763536AbYALLUu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 06:20:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762211AbYALLUm
+	id S1763719AbYALLVO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 06:21:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762306AbYALLU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 06:20:42 -0500
-Received: from namei.org ([69.55.235.186]:55759 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762205AbYALLUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 06:20:40 -0500
-Date: Sat, 12 Jan 2008 22:20:37 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: linux-fsdevel@vger.kernel.org
-cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: [PATCH][RFC] security: call security_file_permission from rw_verify_area
-Message-ID: <Xine.LNX.4.64.0801122217390.26179@us.intercode.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 12 Jan 2008 06:20:57 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:61000 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762211AbYALLU4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 06:20:56 -0500
+Date: Sat, 12 Jan 2008 03:26:25 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: Re: [PATCH] x86_64: cleanup setup_node_zones called by paging_init v2
+In-reply-to: <Pine.LNX.4.64.0801091117430.11317@schroedinger.engr.sgi.com>
+To: Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Message-id: <200801120326.25688.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <200801081934.33964.yinghai.lu@sun.com>
+ <200801091030.40545.yinghai.lu@sun.com>
+ <Pine.LNX.4.64.0801091117430.11317@schroedinger.engr.sgi.com>
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please review.  
+On Wednesday 09 January 2008 11:19:01 am Christoph Lameter wrote:
+> On Wed, 9 Jan 2008, Yinghai Lu wrote:
+> 
 
-Tested with SELinux in enforcing mode.
+Christoph's
 
----
+x86: 64-bit, make sparsemem vmemmap the only memory model
 
-All instances of rw_verify_area() are followed by a call to
-security_file_permission(), so just call the latter from the former.
+is in x86.git mm
 
-Signed-off-by: James Morris <jmorris@namei.org>
----
- fs/compat.c     |    4 ---
- fs/read_write.c |   63 +++++++++++++++++++++----------------------------------
- fs/splice.c     |    8 -------
- 3 files changed, 24 insertions(+), 51 deletions(-)
+so we could remove setup_node_zones because it is not needed by SPARSEMEM
 
-diff --git a/fs/compat.c b/fs/compat.c
-index 15078ce..5216c3f 100644
---- a/fs/compat.c
-+++ b/fs/compat.c
-@@ -1104,10 +1104,6 @@ static ssize_t compat_do_readv_writev(int type, struct file *file,
- 	if (ret < 0)
- 		goto out;
- 
--	ret = security_file_permission(file, type == READ ? MAY_READ:MAY_WRITE);
--	if (ret)
--		goto out;
--
- 	fnv = NULL;
- 	if (type == READ) {
- 		fn = file->f_op->read;
-diff --git a/fs/read_write.c b/fs/read_write.c
-index ea1f94c..c4d3d17 100644
---- a/fs/read_write.c
-+++ b/fs/read_write.c
-@@ -197,25 +197,27 @@ int rw_verify_area(int read_write, struct file *file, loff_t *ppos, size_t count
- {
- 	struct inode *inode;
- 	loff_t pos;
-+	int retval = -EINVAL;
- 
- 	inode = file->f_path.dentry->d_inode;
- 	if (unlikely((ssize_t) count < 0))
--		goto Einval;
-+		return retval;
- 	pos = *ppos;
- 	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
--		goto Einval;
-+		return retval;
- 
- 	if (unlikely(inode->i_flock && mandatory_lock(inode))) {
--		int retval = locks_mandatory_area(
-+		retval = locks_mandatory_area(
- 			read_write == READ ? FLOCK_VERIFY_READ : FLOCK_VERIFY_WRITE,
- 			inode, file, pos, count);
- 		if (retval < 0)
- 			return retval;
- 	}
-+	retval = security_file_permission(file,
-+				read_write == READ ? MAY_READ : MAY_WRITE);
-+	if (retval)
-+		return retval;
- 	return count > MAX_RW_COUNT ? MAX_RW_COUNT : count;
--
--Einval:
--	return -EINVAL;
+please check the following patch.
+
+YH
+
+[PATCH] x86_84: only support sparsemem fix
+sparsemem is only one supported, so could remove FLAT_NODE_MEM related code, that is
+only needed !SPARSEMEM
+
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+
+diff --git a/arch/x86/mm/numa_64.c b/arch/x86/mm/numa_64.c
+index 8482314..4c286b7 100644
+--- a/arch/x86/mm/numa_64.c
++++ b/arch/x86/mm/numa_64.c
+@@ -233,32 +233,6 @@ void __init setup_node_bootmem(int nodeid, unsigned long start,
+ 	node_set_online(nodeid);
  }
  
- static void wait_on_retry_sync_kiocb(struct kiocb *iocb)
-@@ -267,18 +269,15 @@ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
- 	ret = rw_verify_area(READ, file, pos, count);
- 	if (ret >= 0) {
- 		count = ret;
--		ret = security_file_permission (file, MAY_READ);
--		if (!ret) {
--			if (file->f_op->read)
--				ret = file->f_op->read(file, buf, count, pos);
--			else
--				ret = do_sync_read(file, buf, count, pos);
--			if (ret > 0) {
--				fsnotify_access(file->f_path.dentry);
--				add_rchar(current, ret);
--			}
--			inc_syscr(current);
-+		if (file->f_op->read)
-+			ret = file->f_op->read(file, buf, count, pos);
-+		else
-+			ret = do_sync_read(file, buf, count, pos);
-+		if (ret > 0) {
-+			fsnotify_access(file->f_path.dentry);
-+			add_rchar(current, ret);
- 		}
-+		inc_syscr(current);
- 	}
- 
- 	return ret;
-@@ -325,18 +324,15 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
- 	ret = rw_verify_area(WRITE, file, pos, count);
- 	if (ret >= 0) {
- 		count = ret;
--		ret = security_file_permission (file, MAY_WRITE);
--		if (!ret) {
--			if (file->f_op->write)
--				ret = file->f_op->write(file, buf, count, pos);
--			else
--				ret = do_sync_write(file, buf, count, pos);
--			if (ret > 0) {
--				fsnotify_modify(file->f_path.dentry);
--				add_wchar(current, ret);
--			}
--			inc_syscw(current);
-+		if (file->f_op->write)
-+			ret = file->f_op->write(file, buf, count, pos);
-+		else
-+			ret = do_sync_write(file, buf, count, pos);
-+		if (ret > 0) {
-+			fsnotify_modify(file->f_path.dentry);
-+			add_wchar(current, ret);
- 		}
-+		inc_syscw(current);
- 	}
- 
- 	return ret;
-@@ -603,9 +599,6 @@ static ssize_t do_readv_writev(int type, struct file *file,
- 	ret = rw_verify_area(type, file, pos, tot_len);
- 	if (ret < 0)
- 		goto out;
--	ret = security_file_permission(file, type == READ ? MAY_READ : MAY_WRITE);
--	if (ret)
--		goto out;
- 
- 	fnv = NULL;
- 	if (type == READ) {
-@@ -737,10 +730,6 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
- 		goto fput_in;
- 	count = retval;
- 
--	retval = security_file_permission (in_file, MAY_READ);
--	if (retval)
--		goto fput_in;
+-/* Initialize final allocator for a zone */
+-void __init setup_node_zones(int nodeid)
+-{
+-	unsigned long start_pfn, end_pfn, memmapsize, limit;
 -
- 	/*
- 	 * Get output file, and verify that it is ok..
- 	 */
-@@ -759,10 +748,6 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
- 		goto fput_out;
- 	count = retval;
- 
--	retval = security_file_permission (out_file, MAY_WRITE);
--	if (retval)
--		goto fput_out;
+-	start_pfn = node_start_pfn(nodeid);
+-	end_pfn = node_end_pfn(nodeid);
 -
- 	if (!max)
- 		max = min(in_inode->i_sb->s_maxbytes, out_inode->i_sb->s_maxbytes);
- 
-diff --git a/fs/splice.c b/fs/splice.c
-index 6bdcb61..56b802b 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -908,10 +908,6 @@ static long do_splice_from(struct pipe_inode_info *pipe, struct file *out,
- 	if (unlikely(ret < 0))
- 		return ret;
- 
--	ret = security_file_permission(out, MAY_WRITE);
--	if (unlikely(ret < 0))
--		return ret;
+-	Dprintk(KERN_INFO "Setting up memmap for node %d %lx-%lx\n",
+-		nodeid, start_pfn, end_pfn);
 -
- 	return out->f_op->splice_write(pipe, out, ppos, len, flags);
+-	/*
+-	 * Try to allocate mem_map at end to not fill up precious <4GB
+-	 * memory.
+-	 */
+-	memmapsize = sizeof(struct page) * (end_pfn-start_pfn);
+-	limit = end_pfn << PAGE_SHIFT;
+-#ifdef CONFIG_FLAT_NODE_MEM_MAP
+-	NODE_DATA(nodeid)->node_mem_map =
+-		__alloc_bootmem_core(NODE_DATA(nodeid)->bdata,
+-				     memmapsize, SMP_CACHE_BYTES,
+-				     round_down(limit - memmapsize, PAGE_SIZE),
+-				     limit);
+-#endif
+-}
+-
+ /*
+  * There are unfortunately some poorly designed mainboards around that
+  * only connect memory to a single CPU. This breaks the 1:1 cpu->node
+@@ -580,9 +554,6 @@ void __init paging_init(void)
+ 	sparse_memory_present_with_active_regions(MAX_NUMNODES);
+ 	sparse_init();
+ 
+-	for_each_online_node(i)
+-		setup_node_zones(i);
+-
+ 	free_area_init_nodes(max_zone_pfns);
  }
  
-@@ -934,10 +930,6 @@ static long do_splice_to(struct file *in, loff_t *ppos,
- 	if (unlikely(ret < 0))
- 		return ret;
- 
--	ret = security_file_permission(in, MAY_READ);
--	if (unlikely(ret < 0))
--		return ret;
--
- 	return in->f_op->splice_read(in, ppos, pipe, len, flags);
- }
- 
--- 
-1.5.3.7
-
