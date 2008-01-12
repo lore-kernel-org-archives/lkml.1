@@ -1,68 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757815AbYALQrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759001AbYALQzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757815AbYALQrd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 11:47:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbYALQrZ
+	id S1759001AbYALQzi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 11:55:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbYALQza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 11:47:25 -0500
-Received: from ns.gsystems.sk ([62.176.172.50]:41599 "EHLO www.gsystems.sk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753898AbYALQrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 11:47:24 -0500
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Pierre Ossman <drzeus@drzeus.cx>
-Subject: Re: [alsa-devel] PNP_DRIVER_RES_DISABLE breaks swsusp at least with snd_cs4236
-Date: Sat, 12 Jan 2008 17:46:53 +0100
-User-Agent: KMail/1.9.7
-Cc: Rene Herman <rene.herman@keyaccess.nl>, Pavel Machek <pavel@suse.cz>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Jaroslav Kysela <perex@perex.cz>,
-       ALSA development <alsa-devel@alsa-project.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Andrew Morton <akpm@osdl.org>,
-       Takashi Iwai <tiwai@suse.de>, linux-pm@lists.linux-foundation.org
-References: <200801092343.48726.linux@rainbow-software.org> <4788C323.6090206@keyaccess.nl> <20080112162150.1ec9cad0@poseidon.drzeus.cx>
-In-Reply-To: <20080112162150.1ec9cad0@poseidon.drzeus.cx>
+	Sat, 12 Jan 2008 11:55:30 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:36685 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753939AbYALQz3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 11:55:29 -0500
+Date: Sat, 12 Jan 2008 08:55:26 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Benjamin LaHaise <bcrl@kvack.org>, dipankar@in.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, rostedt <rostedt@goodmis.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH/RFC] synchronize_rcu(): high latency on idle system
+Message-ID: <20080112165526.GB9741@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080112012626.GI28570@kvack.org> <1200129791.7999.5.camel@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801121746.57177.linux@rainbow-software.org>
+In-Reply-To: <1200129791.7999.5.camel@lappy>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 12 January 2008 16:21:50 Pierre Ossman wrote:
-> On Sat, 12 Jan 2008 14:39:47 +0100
+On Sat, Jan 12, 2008 at 10:23:11AM +0100, Peter Zijlstra wrote:
+> 
+> On Fri, 2008-01-11 at 20:26 -0500, Benjamin LaHaise wrote:
+> > Hello folks,
+> > 
+> > I'd like to put the patch below out for comments to see if folks think the 
+> > approach is a valid fix to reduce the latency of synchronize_rcu().  The 
+> > motivation is that an otherwise idle system takes about 3 ticks per network 
+> > interface in unregister_netdev() due to multiple calls to synchronize_rcu(), 
+> > which adds up to quite a few seconds for tearing down thousands of 
+> > interfaces.  By flushing pending rcu callbacks in the idle loop, the system 
+> > makes progress hundreds of times faster.  If this is indeed a sane thing to, 
+> > it probably needs to be done for other architectures than x86.  And yes, the 
+> > network stack shouldn't call synchronize_rcu() quite so much, but fixing that 
+> > is a little more involved.
+> 
+> So, instead of only relying on the tick to drive the RCU state machine,
+> you add the idle loop to it. This seems to make sense, esp because nohz
+> is held off until rcu is idle too.
 >
-> Rene Herman <rene.herman@keyaccess.nl> wrote:
-> > On 12-01-08 12:12, Pierre Ossman wrote:
-> > > I'm a bit confused here. Bjorn Helgaas wanted to remove the
-> > > pnp_start/stop_dev() calls completely, and you want them called all the
-> > > time. :)
-> >
-> > Wanted where? Haven't seen a coment from Bjorn? But -- while removing
-> > them both looks (as) sensible from a mirror-image viewpoint, this
-> > wouldn't fix the problem.
->
-> Ah, sorry. It was a different thread. Look for a mail with the subject
-> "PNP: do not stop/start devices in suspend/resume path" in the LKML och
-> linux-pm archives.
->
-> > But we certainly need the pnp_start_dev() in the current flow of things.
-> > It not being called is the problem this fixes...
->
-> I think the previous suggestion was that the drivers should call this, not
-> the core, so that it behaved more like other parts of the kernel (e.g.
-> PCI).
+> Even though Andi is right in that its not the proper solution to your
+> problem, I think its worth doing anyway for the general benefit of RCU.
+> 
+> But lets ask Paul, he is Mr RCU after all :-)
 
-I don't think that drivers should call pnp_start_dev() on resume. All drivers 
-would need to call it as all PnP cards are disabled after boot. No driver 
-does that currently.
+;-)
 
-3c509 driver doesn't seem to register as pnp_card_driver so that's probably 
-why it's not enable after resume. I guess that more ISA PnP drivers have this 
-problem. I have some other PnP network and sound cards so I'll test them.
+At first glance, looks workable!
 
--- 
-Ondrej Zary
+One concern is how often it gets invoked.  If rcu_check_callbacks()
+is invoked too often on lots of idle CPUs, it could degrade system
+performance due to contention on the RCU internal locks and due to
+cacheline bouncing.  Now, my guess is that the rcu_pending() call
+should throttle things nicely, but it would be good to test.  All the
+testing ideas thus far have been involved and unlikely to test it well,
+for example:
+
+CPU 0: lots of synchronize_rcu() calls.
+
+CPU 1: lots of synchronize_rcu() calls.
+
+CPU 2: idle.
+
+CPU 3: CPU-bound workload.
+
+Compare the rate of progress made by CPU 3 with CPUs 0 and 1 active
+or not.  But this would not test much -- the load that CPUs 0, 1, and
+2 might be placing on the bus/cache/RCU-locks would not be visible to
+CPU 3.  One could cache-thrash between CPU 3 and 4, but this requires
+a >=5-CPU system.
+
+Will think on it some more.
+
+> > diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+> > index 9663c2a..592f6e4 100644
+> > --- a/arch/x86/kernel/process_32.c
+> > +++ b/arch/x86/kernel/process_32.c
+> > @@ -188,6 +188,9 @@ void cpu_idle(void)
+> >  			rmb();
+> >  			idle = pm_idle;
+> >  
+> > +			if (rcu_pending(cpu))
+> > +				rcu_check_callbacks(cpu, 0);
+
+Given that it is not legal to have RCU read-side critical sections in
+the idle loop, how about the following?
+
++				rcu_check_callbacks(cpu, 1);
+
+Perhaps also changing the name of rcu_check_callbacks()'s second
+parameter from "user" to something like "in_quiescent_state".  Might
+speed up grace-period recognition in some cases -- wouldn't need to
+wait for the next trip through the scheduler in some cases.
+
+						Thanx, Paul
+
+> > +
+> >  			if (!idle)
+> >  				idle = default_idle;
+> >  
+> 
