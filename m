@@ -1,100 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbYALXCE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbYALXFS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754675AbYALXCE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 18:02:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750746AbYALXBy
+	id S1755553AbYALXFS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 18:05:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbYALXFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 18:01:54 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55479 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750740AbYALXBy (ORCPT
+	Sat, 12 Jan 2008 18:05:04 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:60474 "EHLO
+	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750744AbYALXFA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 18:01:54 -0500
-Date: Sat, 12 Jan 2008 15:01:20 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Greg KH <greg@kroah.com>, Matthew Wilcox <matthew@wil.cx>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Martin Mares <mj@ucw.cz>, Tony Camuso <tcamuso@redhat.com>,
-       Loic Prylli <loic@myri.com>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
- opt-in
-Message-ID: <20080112150120.05f93768@laptopd505.fenrus.org>
-In-Reply-To: <20080112214911.GA20102@jurassic.park.msu.ru>
-References: <alpine.LFD.1.00.0801111224090.3148@woody.linux-foundation.org>
-	<20080111204228.GP18741@parisc-linux.org>
-	<alpine.LFD.1.00.0801111311170.3148@woody.linux-foundation.org>
-	<20080111211753.GR18741@parisc-linux.org>
-	<alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org>
-	<20080111213803.GS18741@parisc-linux.org>
-	<20080111235856.GA16079@jurassic.park.msu.ru>
-	<20080112002638.GA18710@kroah.com>
-	<20080112144030.GA19279@jurassic.park.msu.ru>
-	<20080112094557.71f5382a@laptopd505.fenrus.org>
-	<20080112214911.GA20102@jurassic.park.msu.ru>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 12 Jan 2008 18:05:00 -0500
+Date: Sat, 12 Jan 2008 17:04:37 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: PROBLEM REMAINS: [sata_nv ADMA breaks ATAPI] Crash on	accessing
+ DVD-RAM
+In-reply-to: <1200170117.3656.66.camel@localhost.localdomain>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Alexander <aledin@mail.ru>, linux-kernel@vger.kernel.org,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       Tejun Heo <htejun@gmail.com>
+Message-id: <47894785.2050508@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.krOVfyFmB2aqGjJIoHCLmQxecWc@ifi.uio.no>
+ <478702C7.80401@shaw.ca> <47887982.6050805@mail.ru> <47891426.1020604@shaw.ca>
+ <1200170117.3656.66.camel@localhost.localdomain>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Jan 2008 00:49:11 +0300
-Ivan Kokshaysky <ink@jurassic.park.msu.ru> wrote:
-
-> On Sat, Jan 12, 2008 at 09:45:57AM -0800, Arjan van de Ven wrote:
-> > btw this is my main objection to your patch; it intertwines the
-> > conf1 and mmconfig code even more.
+James Bottomley wrote:
+>>> With mem<=4098M or sata_nv.adma=0 it still mounts and works ok.
+>> As I wrote, it would appear that somehow the blk_queue_bounce_limit 
+>> setting that the driver has made is not being respected and the block 
+>> layer is still trying to feed it addresses over 4GB. Any ideas anyone?
 > 
-> There is nothing wrong with it; please realize that mmconf and conf1
-> are just different cpu-side interfaces. Both produce precisely the
-> *same* bus cycles as far as the lower 256-byte space is concerned.
+> Actually, I'd be very sceptical that the blk_queue_bounce_limit isn't
+> working as advertised; there'd be a large number of failures if it were
+> not.
 > 
-> > When (and I'm saying "when" not "if") systems arrive that only have
-> > MMCONFIG for some of the devices, we'll have to detangle this again,
-> > and I'm really not looking forward to that.
+> However, the "as advertised" part doesn't seem to be generally well
+> understood.  The point being that block commands are only bounced if
+> they come from the filesystem or the user, not if they're generated
+> directly inside the kernel.  Since the fault occurs before mount, it's
+> suggestive of the latter.
 > 
-> MMCONFIG for *some* of the devices? This doesn't sound realistic
-> from technical point of view.
+> A long time ago, GFP_KERNEL allocations meant that the memory allocated
+> was physically under 4GB.  Then x86_64 (and before it ia64) wanted to
+> break this.  So they introduced a new flag:  GFP_DMA32 that behaved like
+> the old GFP_KERNEL and then changed GFP_KERNEL on their architectures to
+> return memory from anywhere.  I'd strongly suggest some piece of kernel
+> memory was allocated for a transfer buffer without GFP_DMA32 and then
+> passed in to the driver.  Unfortunately, that could be anywhere inside
+> cdrom or sr.  Knowing what the actual command is might help ... some of
+> the distinctive MMC media ones only have a single source.
 
-you're wrong. 
+Just to give some background on what sata_nv is trying to do:
 
-> MMCONFIG-only systems? Sure. I really hope to see these. But it won't
-> be PC-AT architecture anymore. It has to be something like alpha,
-> for instance, fully utilizing the 64-bit address space, and we'll have
-> to have the whole low-level PCI infrastructure completely different
-> for these future platforms anyway.
-> Right now, each and every x86 chipset *does* require working
-> conf1 just in order to set up the mmconf aperture. It's the very
-> fundamental thing, sort of design philosophy.
+There are two sets of static DMA memory allocations that sata_nv does, 
+the legacy ATA PRD and padding buffer which need to be in the lower 4GB, 
+and the ADMA APRD and CPB areas which can be anywhere in 64-bit memory. 
+With this patch, this is done by setting a 32-bit DMA mask before 
+allocating the legacy areas and setting a 64-bit DMA mask before 
+allocating the ADMA areas. Previously the driver just set a 64-bit mask 
+before the legacy PRD got allocated so it could end up above 4GB, in 
+which case legacy DMA couldn't possibly work. That part of the problem 
+appears to be successfully fixed by the patch in question.
 
-s/x86/pc/
+There's a further problem with runtime DMA mapping, however. Normally 
+when ADMA is enabled the controller can reach anywhere in 64-bit memory. 
+However, if an ATAPI device is connected, since ADMA doesn't work with 
+ATAPI commands we have to switch it off on that port and use legacy DMA, 
+which is limited to 32-bit. This is where the blk_queue_bounce_limit 
+call comes in, it's trying to make the block layer bounce requests above 
+4GB when legacy DMA is in use.
 
-and not even that.
+I don't think the problem is that there's some buffer which is getting 
+allocated above 4GB and never bounced, since the problem goes away if 
+ADMA is disabled entirely and the DMA mask remains 32-bit always. My 
+guess is something is basing its decision on whether to bounce or not on 
+the device DMA mask. That can't possibly work properly for sata_nv since 
+the same PCI device has 2 ports, one of which can be in ADMA mode and 
+64-bit capable and the other can be in legacy mode and only 32-bit capable.
 
-Really this is a huge design mistake in your patch, the hard coding of conf1,
-and for that reason I really don't think it should go in.
-
-We have 4 or so methods on PC today to access config space, probably going to 6 in the next year
-or two. One of those methods *HARD PICKING* another one as "second best" for cases where it
-doesn't want to deal with is WRONG. It really needs to be up to the architecture/platform
-to decide which ops vector is the fallback. And yes on your current PC that might well be conf1.
-But hardcoding that is not the right thing. We have the vectors, we have the ranking code,
-just make a "second rank" thing. 
-Oh wait, my patch did that ;)
-Then let either the mmconfig code or the wrapper above it (doesn't matter, in fact, I can see
-value of making this decision in the wrapper and keep mmconfig code simple and clean,
-because maybe mmconfig IS the thing that the architecture says needs to deal with the lower 256 bytes)..
-
-Oh wait my patch also did that pretty much ;)
-
-The rest of my patch was defaulting to off. Is it that bit that you really hate?
-
-
+Tejun, I believe you had a patch that was printing warnings when libata 
+tried to program a legacy PRD with an address over 4GB. Could we change 
+that to WARN_ON and get someone experiencing this to try it and
+see what the stack trace points to?
