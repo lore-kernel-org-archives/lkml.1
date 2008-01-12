@@ -1,183 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762736AbYALHZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762974AbYALH1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762736AbYALHZi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 02:25:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759606AbYALHZN
+	id S1762974AbYALH1b (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 02:27:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761086AbYALH1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 02:25:13 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:56074 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760243AbYALHY7 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 02:24:59 -0500
-From: Ismail =?utf-8?q?D=C3=B6nmez?= <ismail@pardus.org.tr>
-Organization: Pardus / KDE
-To: Junio C Hamano <gitster@pobox.com>
-Subject: Re: [ANNOUNCE] GIT 1.5.4-rc3
-Date: Sat, 12 Jan 2008 09:26:14 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <7vsl13wmas.fsf@gitster.siamese.dyndns.org>
-In-Reply-To: <7vsl13wmas.fsf@gitster.siamese.dyndns.org>
+	Sat, 12 Jan 2008 02:27:23 -0500
+Received: from colo.lackof.org ([198.49.126.79]:54147 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761031AbYALH1X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 02:27:23 -0500
+Date: Sat, 12 Jan 2008 00:27:05 -0700
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: PCI Failed to allocate mem for PCI ROM
+Message-ID: <20080112072705.GB7234@colo.lackof.org>
+References: <1B75C5A8-E512-40CB-A6F3-351640701D0D@kernel.crashing.org> <20080111175039.GB7916@kroah.com> <E1025115-6BE2-46B6-8416-A5ADD506E2ED@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801120926.14307.ismail@pardus.org.tr>
+In-Reply-To: <E1025115-6BE2-46B6-8416-A5ADD506E2ED@kernel.crashing.org>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Saturday 12 January 2008 09:11:23 tarihinde Junio C Hamano şunları yazmıştı:
-> The third rc for the next feature release GIT 1.5.4 is available
-> at the usual places:
->
->   http://www.kernel.org/pub/software/scm/git/
->
->   git-1.5.4.rc3.tar.{gz,bz2}			(tarball)
->   git-htmldocs-1.5.4.rc3.tar.{gz,bz2}		(preformatted docs)
->   git-manpages-1.5.4.rc3.tar.{gz,bz2}		(preformatted docs)
->   testing/git-*-1.5.4.rc3-1.$arch.rpm	(RPM)
+On Fri, Jan 11, 2008 at 02:27:16PM -0600, Kumar Gala wrote:
+>>> I'm getting the following message from the kernel on an embedded ppc32
+>>> system:
+>>>
+>>> PCI: Failed to allocate mem resource #9:100000@e0000000 for 0000:00:00.0
+>>>
+>>> The HW setup is a PCIe host controller and an e1000 NIC card.
+...
+> I'm happy to debug, is the fact that the resno == 9 ok or does that seem 
+> wrong?
 
-I am seeing new failures compared to rc2 :
+That is fine for the Bridge. See include/linux/pci.h :
+#define PCI_ROM_RESOURCE        6
+#define PCI_BRIDGE_RESOURCES    7
+#define PCI_NUM_RESOURCES       11
 
-*** t9200-git-cvsexportcommit.sh ***
-* FAIL 1: New file
-        mkdir A B C D E F &&
-             echo hello1 >A/newfile1.txt &&
-             echo hello2 >B/newfile2.txt &&
-             cp ../test9200a.png C/newfile3.png &&
-             cp ../test9200a.png D/newfile4.png &&
-             git add A/newfile1.txt &&
-             git add B/newfile2.txt &&
-             git add C/newfile3.png &&
-             git add D/newfile4.png &&
-             git commit -a -m "Test: New file" &&
-             id=$(git rev-list --max-count=1 HEAD) &&
-             (cd "$CVSWORK" &&
-             git cvsexportcommit -c $id &&
-             check_entries A "newfile1.txt/1.1/" &&
-             check_entries B "newfile2.txt/1.1/" &&
-             check_entries C "newfile3.png/1.1/-kb" &&
-             check_entries D "newfile4.png/1.1/-kb" &&
-             diff A/newfile1.txt ../A/newfile1.txt &&
-             diff B/newfile2.txt ../B/newfile2.txt &&
-             diff C/newfile3.png ../C/newfile3.png &&
-             diff D/newfile4.png ../D/newfile4.png
-             )
-* FAIL 2: Remove two files, add two and update two
-        echo Hello1 >>A/newfile1.txt &&
-             rm -f B/newfile2.txt &&
-             rm -f C/newfile3.png &&
-             echo Hello5  >E/newfile5.txt &&
-             cp ../test9200b.png D/newfile4.png &&
-             cp ../test9200a.png F/newfile6.png &&
-             git add E/newfile5.txt &&
-             git add F/newfile6.png &&
-             git commit -a -m "Test: Remove, add and update" &&
-             id=$(git rev-list --max-count=1 HEAD) &&
-             (cd "$CVSWORK" &&
-             git cvsexportcommit -c $id &&
-             check_entries A "newfile1.txt/1.2/" &&
-             check_entries B "" &&
-             check_entries C "" &&
-             check_entries D "newfile4.png/1.2/-kb" &&
-             check_entries E "newfile5.txt/1.1/" &&
-             check_entries F "newfile6.png/1.1/-kb" &&
-             diff A/newfile1.txt ../A/newfile1.txt &&
-             diff D/newfile4.png ../D/newfile4.png &&
-             diff E/newfile5.txt ../E/newfile5.txt &&
-             diff F/newfile6.png ../F/newfile6.png
-             )
+IIRC, Bridges may have two 32-bit or one 64-bit BAR, Expansion ROM BAR and
+three "range" registers: IO Port, MMIO (Prefetchable and non-prefetchable).
+The BRIDGE_RESOURCES (7-10) are what failed to be assigned for some reason.
 
-* FAIL 4: Remove only binary files
-        git reset --hard HEAD^^ &&
-             rm -f D/newfile4.png &&
-             git commit -a -m "test: remove only a binary file" &&
-             id=$(git rev-list --max-count=1 HEAD) &&
-             (cd "$CVSWORK" &&
-             git cvsexportcommit -c $id &&
-             check_entries A "newfile1.txt/1.2/" &&
-             check_entries B "" &&
-             check_entries C "" &&
-             check_entries D "" &&
-             check_entries E "newfile5.txt/1.1/" &&
-             check_entries F "newfile6.png/1.1/-kb" &&
-             diff A/newfile1.txt ../A/newfile1.txt &&
-             diff E/newfile5.txt ../E/newfile5.txt &&
-             diff F/newfile6.png ../F/newfile6.png
-             )
-* FAIL 5: Remove only a text file
-        rm -f A/newfile1.txt &&
-             git commit -a -m "test: remove only a binary file" &&
-             id=$(git rev-list --max-count=1 HEAD) &&
-             (cd "$CVSWORK" &&
-             git cvsexportcommit -c $id &&
-             check_entries A "" &&
-             check_entries B "" &&
-             check_entries C "" &&
-             check_entries D "" &&
-             check_entries E "newfile5.txt/1.1/" &&
-             check_entries F "newfile6.png/1.1/-kb" &&
-             diff E/newfile5.txt ../E/newfile5.txt &&
-             diff F/newfile6.png ../F/newfile6.png
-             )
-* FAIL 6: New file with spaces in file name
-        mkdir "G g" &&
-              echo ok then >"G g/with spaces.txt" &&
-              git add "G g/with spaces.txt" && \
-              cp ../test9200a.png "G g/with spaces.png" && \
-              git add "G g/with spaces.png" &&
-              git commit -a -m "With spaces" &&
-              id=$(git rev-list --max-count=1 HEAD) &&
-              (cd "$CVSWORK" &&
-              git-cvsexportcommit -c $id &&
-              check_entries "G g" "with spaces.png/1.1/-kb|with 
-spaces.txt/1.1/"
-              )
-* FAIL 7: Update file with spaces in file name
-        echo Ok then >>"G g/with spaces.txt" &&
-              cat ../test9200a.png >>"G g/with spaces.png" && \
-              git add "G g/with spaces.png" &&
-              git commit -a -m "Update with spaces" &&
-              id=$(git rev-list --max-count=1 HEAD) &&
-              (cd "$CVSWORK" &&
-              git-cvsexportcommit -c $id
-              check_entries "G g" "with spaces.png/1.2/-kb|with 
-spaces.txt/1.2/"
-              )
-* FAIL 8: File with non-ascii file name
-        mkdir -p 
-Å/goo/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/å/ä/ö &&
-              echo Foo 
->Å/goo/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/å/ä/ö/gårdetsågårdet.txt 
-&&
-              git add 
-Å/goo/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/å/ä/ö/gårdetsågårdet.txt 
-&&
-              cp ../test9200a.png 
-Å/goo/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/å/ä/ö/gårdetsågårdet.png 
-&&
-              git add 
-Å/goo/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/å/ä/ö/gårdetsågårdet.png 
-&&
-              git commit -a -m "Går det så går det" && \
-              id=$(git rev-list --max-count=1 HEAD) &&
-              (cd "$CVSWORK" &&
-              git-cvsexportcommit -v -c $id &&
-              check_entries \
-              "Å/goo/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/å/ä/ö" 
-\
-              "gårdetsågårdet.png/1.1/-kb|gårdetsågårdet.txt/1.1/"
-              )
+Looking at setup-bus.c:pci_bridge_check_ranges(), I'm concluding that:
+[7] is IO Range.
+[8] is MMIO
+[9] is Prefetchable MMIO
+[10] no clue...maybe used by host PCI bus controllers.
 
-[...]
-* failed 7 among 10 test(s)
+0x100000 is 1MB and would be the minimum MMIO range that can be allocated.
+So that looks right too. Probably need to find out what is allocating
+0xe0000000 instead.
 
-Ideas appreciated.
-
-/ismail
-
--- 
-Never learn by your mistakes, if you do you may never dare to try again.
+hth,
+grant
