@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763472AbYALJq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763417AbYALJsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763472AbYALJq6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 04:46:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761796AbYALJqu
+	id S1763417AbYALJsp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 04:48:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756203AbYALJsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 04:46:50 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:7763 "EHLO
+	Sat, 12 Jan 2008 04:48:38 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:10593 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759362AbYALJqt (ORCPT
+	with ESMTP id S1761766AbYALJsh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 04:46:49 -0500
+	Sat, 12 Jan 2008 04:48:37 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=WrJ2iOW21wWOuZ2mkuFcKnX5uvQMWq2Um3hXmivVynk+ICBULC8qKvL2sGukwGv5Sy5dkOcS9nYmqgZwxWdHiiHOUsyvRdrpEBwth1u+eT4Lmb/g88Gdrxw2gBzEUEXYi6ElrgUgmv9raYvx8sxHnw8bk/jmE1aceHivZ4V1GoE=
-Date: Sat, 12 Jan 2008 17:50:08 +0800
+        b=JNMhlblY+IsT4zNjzY8JbqDlMYRvB33m4+/zNRno1xVlIPamC4wTgcFt5RwbaAwM8hmduR5M+FEVMkiKC0CvHf8G/obRGIo6+QlvTOdGXPBSTPBAa8Gz0YeTpFNd0r1xsuNoxBJLCkIayqvEAKRvI6Klt0VXCXSsWteeqJit+Ys=
+Date: Sat, 12 Jan 2008 17:51:57 +0800
 From: Dave Young <hidave.darkstar@gmail.com>
-To: krh@redhat.com, stefanr@s5r6.in-berlin.de
-Cc: gregkh@suse.de, linux1394-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 2/7] ieee1394 : use class iteration api
-Message-ID: <20080112095008.GB2893@darkstar.te-china.tietoenator.com>
+To: cbou@mail.ru, dwmw2@infradead.org
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org
+Subject: [PATCH 3/7] power supply : use class iteration api
+Message-ID: <20080112095157.GC2893@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,438 +33,275 @@ Convert to use the class iteration api.
 Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
 
 ---
- drivers/ieee1394/nodemgr.c |  319 +++++++++++++++++++++++++--------------------
- 1 file changed, 178 insertions(+), 141 deletions(-)
+ drivers/power/apm_power.c         |  116 ++++++++++++++++++++++----------------
+ drivers/power/power_supply_core.c |   72 ++++++++++++-----------
+ 2 files changed, 106 insertions(+), 82 deletions(-)
 
-diff -upr linux/drivers/ieee1394/nodemgr.c linux.new/drivers/ieee1394/nodemgr.c
---- linux/drivers/ieee1394/nodemgr.c	2008-01-12 15:20:27.000000000 +0800
-+++ linux.new/drivers/ieee1394/nodemgr.c	2008-01-12 15:20:27.000000000 +0800
-@@ -727,36 +727,35 @@ static int nodemgr_bus_match(struct devi
+diff -upr linux/drivers/power/apm_power.c linux.new/drivers/power/apm_power.c
+--- linux/drivers/power/apm_power.c	2008-01-11 18:06:38.000000000 +0800
++++ linux.new/drivers/power/apm_power.c	2008-01-11 18:06:38.000000000 +0800
+@@ -13,6 +13,7 @@
+ #include <linux/power_supply.h>
+ #include <linux/apm-emulation.h>
  
- static DEFINE_MUTEX(nodemgr_serialize_remove_uds);
++static DEFINE_MUTEX(apm_mutex);
+ #define PSY_PROP(psy, prop, val) psy->get_property(psy, \
+ 			 POWER_SUPPLY_PROP_##prop, val)
  
-+static int __match_ne(struct device *dev, void *data)
-+{
-+	struct unit_directory *ud;
-+	struct node_entry *ne = (struct node_entry *)data;
-+
-+	ud = container_of(dev, struct unit_directory, unit_dev);
-+	if (ud->ne == ne)
-+		return 1;
-+	return 0;
-+}
-+
- static void nodemgr_remove_uds(struct node_entry *ne)
- {
- 	struct device *dev;
--	struct unit_directory *tmp, *ud;
-+	struct unit_directory *ud;
+@@ -23,67 +24,86 @@
  
--	/* Iteration over nodemgr_ud_class.devices has to be protected by
--	 * nodemgr_ud_class.sem, but device_unregister() will eventually
--	 * take nodemgr_ud_class.sem too. Therefore pick out one ud at a time,
--	 * release the semaphore, and then unregister the ud. Since this code
--	 * may be called from other contexts besides the knodemgrds, protect the
--	 * gap after release of the semaphore by nodemgr_serialize_remove_uds.
-+	/* Use class_find device to iterate the devices. Since this code
-+	 * may be called from other contexts besides the knodemgrds,
-+	 * protect it by nodemgr_serialize_remove_uds.
- 	 */
- 	mutex_lock(&nodemgr_serialize_remove_uds);
--	for (;;) {
--		ud = NULL;
--		down(&nodemgr_ud_class.sem);
--		list_for_each_entry(dev, &nodemgr_ud_class.devices, node) {
--			tmp = container_of(dev, struct unit_directory,
--					   unit_dev);
--			if (tmp->ne == ne) {
--				ud = tmp;
--				break;
--			}
--		}
--		up(&nodemgr_ud_class.sem);
--		if (ud == NULL)
--			break;
--		device_unregister(&ud->unit_dev);
--		device_unregister(&ud->device);
-+	dev = class_find_device(&nodemgr_ud_class, ne, __match_ne);
-+	if (!dev) {
-+		mutex_unlock(&nodemgr_serialize_remove_uds);
-+		return;
- 	}
-+	ud = container_of(dev, struct unit_directory, unit_dev);
-+	device_unregister(&ud->unit_dev);
-+	device_unregister(&ud->device);
- 	mutex_unlock(&nodemgr_serialize_remove_uds);
- }
+ static struct power_supply *main_battery;
  
-@@ -882,45 +881,64 @@ fail_alloc:
- 	return NULL;
- }
- 
-+static int __match_ne_guid(struct device *dev, void *data)
-+{
-+	struct node_entry *ne;
-+	u64 *guid = (u64 *)data;
-+
-+	ne = container_of(dev, struct node_entry, node_dev);
-+	if (ne->guid == *guid)
-+		return 1;
-+	return 0;
-+}
- 
- static struct node_entry *find_entry_by_guid(u64 guid)
- {
- 	struct device *dev;
--	struct node_entry *ne, *ret_ne = NULL;
--
--	down(&nodemgr_ne_class.sem);
--	list_for_each_entry(dev, &nodemgr_ne_class.devices, node) {
--		ne = container_of(dev, struct node_entry, node_dev);
-+	struct node_entry *ne;
- 
--		if (ne->guid == guid) {
--			ret_ne = ne;
--			break;
--		}
--	}
--	up(&nodemgr_ne_class.sem);
-+	dev = class_find_device(&nodemgr_ne_class, &guid, __match_ne_guid);
-+	if (!dev)
-+		return NULL;
-+	ne = container_of(dev, struct node_entry, node_dev);
- 
--	return ret_ne;
-+	return ne;
- }
- 
-+struct match_nodeid_param {
-+	struct hpsb_host *host;
-+	nodeid_t nodeid;
-+};
-+
-+static int __match_ne_nodeid(struct device *dev, void *data)
-+{
-+	struct node_entry *ne;
-+	struct match_nodeid_param *param = (struct match_nodeid_param *)data;
-+
-+	if (!dev)
-+		return 0;
-+	ne = container_of(dev, struct node_entry, node_dev);
-+	if (ne->host == param->host && ne->nodeid == param->nodeid)
-+		return 1;
-+	return 0;
-+}
- 
- static struct node_entry *find_entry_by_nodeid(struct hpsb_host *host,
- 					       nodeid_t nodeid)
- {
- 	struct device *dev;
--	struct node_entry *ne, *ret_ne = NULL;
-+	struct node_entry *ne;
-+	struct match_nodeid_param param;
- 
--	down(&nodemgr_ne_class.sem);
--	list_for_each_entry(dev, &nodemgr_ne_class.devices, node) {
--		ne = container_of(dev, struct node_entry, node_dev);
-+	param.host = host;
-+	param.nodeid = nodeid;
- 
--		if (ne->host == host && ne->nodeid == nodeid) {
--			ret_ne = ne;
--			break;
--		}
--	}
--	up(&nodemgr_ne_class.sem);
-+	dev = class_find_device(&nodemgr_ne_class, &param, __match_ne_nodeid);
-+	if (!dev)
-+		return NULL;
-+	ne = container_of(dev, struct node_entry, node_dev);
- 
--	return ret_ne;
-+	return ne;
- }
- 
- 
-@@ -1370,107 +1388,109 @@ static void nodemgr_node_scan(struct hos
- 	}
- }
- 
--
--static void nodemgr_suspend_ne(struct node_entry *ne)
-+static int __nodemgr_driver_suspend(struct device *dev, void *data)
- {
+-static void find_main_battery(void)
+-{
 -	struct device *dev;
- 	struct unit_directory *ud;
- 	struct device_driver *drv;
-+	struct node_entry *ne = (struct node_entry *)data;
- 	int error;
+-	struct power_supply *bat = NULL;
+-	struct power_supply *max_charge_bat = NULL;
+-	struct power_supply *max_energy_bat = NULL;
++struct find_bat_param {
++	struct power_supply *main;
++	struct power_supply *bat;
++	struct power_supply *max_charge_bat;
++	struct power_supply *max_energy_bat;
+ 	union power_supply_propval full;
+-	int max_charge = 0;
+-	int max_energy = 0;
++	int max_charge;
++	int max_energy;
++};
  
--	HPSB_DEBUG("Node suspended: ID:BUS[" NODE_BUS_FMT "]  GUID[%016Lx]",
--		   NODE_BUS_ARGS(ne->host, ne->nodeid), (unsigned long long)ne->guid);
-+	ud = container_of(dev, struct unit_directory, unit_dev);
-+	if (ud->ne == ne) {
-+		drv = get_driver(ud->device.driver);
-+		if (drv) {
-+			error = 1; /* release if suspend is not implemented */
-+			if (drv->suspend) {
-+				down(&ud->device.sem);
-+				error = drv->suspend(&ud->device, PMSG_SUSPEND);
-+				up(&ud->device.sem);
-+			}
-+			if (error)
-+				device_release_driver(&ud->device);
-+			put_driver(drv);
-+		}
+-	main_battery = NULL;
++static int __find_main_battery(struct device *dev, void *data)
++{
++	struct find_bat_param *bp = (struct find_bat_param *)data;
+ 
+-	list_for_each_entry(dev, &power_supply_class->devices, node) {
+-		bat = dev_get_drvdata(dev);
++	bp->bat = dev_get_drvdata(dev);
+ 
+-		if (bat->use_for_apm) {
+-			/* nice, we explicitly asked to report this battery. */
+-			main_battery = bat;
+-			return;
+-		}
++	if (bp->bat->use_for_apm) {
++		/* nice, we explicitly asked to report this battery. */
++		bp->main = bp->bat;
++		return 1;
 +	}
  
--	ne->in_limbo = 1;
--	WARN_ON(device_create_file(&ne->device, &dev_attr_ne_in_limbo));
-+	return 0;
-+}
- 
--	down(&nodemgr_ud_class.sem);
--	list_for_each_entry(dev, &nodemgr_ud_class.devices, node) {
--		ud = container_of(dev, struct unit_directory, unit_dev);
--		if (ud->ne != ne)
--			continue;
-+static int __nodemgr_driver_resume(struct device *dev, void *data)
-+{
-+	struct unit_directory *ud;
-+	struct device_driver *drv;
-+	struct node_entry *ne = (struct node_entry *)data;
- 
-+	ud = container_of(dev, struct unit_directory, unit_dev);
-+	if (ud->ne == ne) {
- 		drv = get_driver(ud->device.driver);
--		if (!drv)
--			continue;
--
--		error = 1; /* release if suspend is not implemented */
--		if (drv->suspend) {
--			down(&ud->device.sem);
--			error = drv->suspend(&ud->device, PMSG_SUSPEND);
--			up(&ud->device.sem);
-+		if (drv) {
-+			if (drv->resume) {
-+				down(&ud->device.sem);
-+				drv->resume(&ud->device);
-+				up(&ud->device.sem);
-+			}
-+			put_driver(drv);
+-		if (!PSY_PROP(bat, CHARGE_FULL_DESIGN, &full) ||
+-				!PSY_PROP(bat, CHARGE_FULL, &full)) {
+-			if (full.intval > max_charge) {
+-				max_charge_bat = bat;
+-				max_charge = full.intval;
+-			}
+-		} else if (!PSY_PROP(bat, ENERGY_FULL_DESIGN, &full) ||
+-				!PSY_PROP(bat, ENERGY_FULL, &full)) {
+-			if (full.intval > max_energy) {
+-				max_energy_bat = bat;
+-				max_energy = full.intval;
+-			}
++	if (!PSY_PROP(bp->bat, CHARGE_FULL_DESIGN, &bp->full) ||
++			!PSY_PROP(bp->bat, CHARGE_FULL, &bp->full)) {
++		if (bp->full.intval > bp->max_charge) {
++			bp->max_charge_bat = bp->bat;
++			bp->max_charge = bp->full.intval;
++		}
++	} else if (!PSY_PROP(bp->bat, ENERGY_FULL_DESIGN, &bp->full) ||
++			!PSY_PROP(bp->bat, ENERGY_FULL, &bp->full)) {
++		if (bp->full.intval > bp->max_energy) {
++			bp->max_energy_bat = bp->bat;
++			bp->max_energy = bp->full.intval;
  		}
--		if (error)
--			device_release_driver(&ud->device);
--		put_driver(drv);
  	}
--	up(&nodemgr_ud_class.sem);
--}
- 
-+	return 0;
-+}
- 
--static void nodemgr_resume_ne(struct node_entry *ne)
-+static void nodemgr_suspend_ne(struct node_entry *ne)
- {
--	struct device *dev;
--	struct unit_directory *ud;
--	struct device_driver *drv;
-+	HPSB_DEBUG("Node suspended: ID:BUS[" NODE_BUS_FMT "]  GUID[%016Lx]",
-+		   NODE_BUS_ARGS(ne->host, ne->nodeid),
-+		   (unsigned long long)ne->guid);
- 
--	ne->in_limbo = 0;
--	device_remove_file(&ne->device, &dev_attr_ne_in_limbo);
-+	ne->in_limbo = 1;
-+	WARN_ON(device_create_file(&ne->device, &dev_attr_ne_in_limbo));
- 
--	down(&nodemgr_ud_class.sem);
--	list_for_each_entry(dev, &nodemgr_ud_class.devices, node) {
--		ud = container_of(dev, struct unit_directory, unit_dev);
--		if (ud->ne != ne)
--			continue;
-+	class_for_each_device(&nodemgr_ud_class, ne, __nodemgr_driver_suspend);
-+}
- 
--		drv = get_driver(ud->device.driver);
--		if (!drv)
--			continue;
- 
--		if (drv->resume) {
--			down(&ud->device.sem);
--			drv->resume(&ud->device);
--			up(&ud->device.sem);
--		}
--		put_driver(drv);
--	}
--	up(&nodemgr_ud_class.sem);
-+static void nodemgr_resume_ne(struct node_entry *ne)
-+{
-+	ne->in_limbo = 0;
-+	device_remove_file(&ne->device, &dev_attr_ne_in_limbo);
- 
-+	class_for_each_device(&nodemgr_ud_class, ne, __nodemgr_driver_resume);
- 	HPSB_DEBUG("Node resumed: ID:BUS[" NODE_BUS_FMT "]  GUID[%016Lx]",
- 		   NODE_BUS_ARGS(ne->host, ne->nodeid), (unsigned long long)ne->guid);
- }
- 
--
--static void nodemgr_update_pdrv(struct node_entry *ne)
-+static int __nodemgr_update_pdrv(struct device *dev, void *data)
- {
--	struct device *dev;
- 	struct unit_directory *ud;
- 	struct device_driver *drv;
- 	struct hpsb_protocol_driver *pdrv;
-+	struct node_entry *ne = (struct node_entry *)data;
- 	int error;
- 
--	down(&nodemgr_ud_class.sem);
--	list_for_each_entry(dev, &nodemgr_ud_class.devices, node) {
--		ud = container_of(dev, struct unit_directory, unit_dev);
--		if (ud->ne != ne)
--			continue;
--
-+	ud = container_of(dev, struct unit_directory, unit_dev);
-+	if (ud->ne == ne) {
- 		drv = get_driver(ud->device.driver);
--		if (!drv)
--			continue;
--
--		error = 0;
--		pdrv = container_of(drv, struct hpsb_protocol_driver, driver);
--		if (pdrv->update) {
--			down(&ud->device.sem);
--			error = pdrv->update(ud);
--			up(&ud->device.sem);
-+		if (drv) {
-+			error = 0;
-+			pdrv = container_of(drv, struct hpsb_protocol_driver,
-+					    driver);
-+			if (pdrv->update) {
-+				down(&ud->device.sem);
-+				error = pdrv->update(ud);
-+				up(&ud->device.sem);
-+			}
-+			if (error)
-+				device_release_driver(&ud->device);
-+			put_driver(drv);
- 		}
--		if (error)
--			device_release_driver(&ud->device);
--		put_driver(drv);
- 	}
--	up(&nodemgr_ud_class.sem);
-+
 +	return 0;
 +}
 +
-+static void nodemgr_update_pdrv(struct node_entry *ne)
++static void find_main_battery(void)
 +{
-+	class_for_each_device(&nodemgr_ud_class, ne, __nodemgr_update_pdrv);
- }
- 
- 
-@@ -1529,13 +1549,31 @@ static void nodemgr_probe_ne(struct host
- 	put_device(dev);
- }
- 
-+struct probe_param {
-+	struct host_info *hi;
-+	int generation;
-+};
-+
-+static int __nodemgr_node_probe(struct device *dev, void *data)
-+{
-+	struct probe_param *param = (struct probe_param *)data;
-+	struct node_entry *ne;
-+
-+	ne = container_of(dev, struct node_entry, node_dev);
-+	if (!ne->needs_probe)
-+		nodemgr_probe_ne(param->hi, ne, param->generation);
-+	if (ne->needs_probe)
-+		nodemgr_probe_ne(param->hi, ne, param->generation);
-+	return 0;
-+}
- 
- static void nodemgr_node_probe(struct host_info *hi, int generation)
- {
- 	struct hpsb_host *host = hi->host;
--	struct device *dev;
--	struct node_entry *ne;
-+	struct probe_param param;
- 
-+	param.hi = hi;
-+	param.generation = generation;
- 	/* Do some processing of the nodes we've probed. This pulls them
- 	 * into the sysfs layer if needed, and can result in processing of
- 	 * unit-directories, or just updating the node and it's
-@@ -1545,19 +1583,7 @@ static void nodemgr_node_probe(struct ho
- 	 * while probes are time-consuming. (Well, those probes need some
- 	 * improvement...) */
- 
--	down(&nodemgr_ne_class.sem);
--	list_for_each_entry(dev, &nodemgr_ne_class.devices, node) {
--		ne = container_of(dev, struct node_entry, node_dev);
--		if (!ne->needs_probe)
--			nodemgr_probe_ne(hi, ne, generation);
--	}
--	list_for_each_entry(dev, &nodemgr_ne_class.devices, node) {
--		ne = container_of(dev, struct node_entry, node_dev);
--		if (ne->needs_probe)
--			nodemgr_probe_ne(hi, ne, generation);
--	}
--	up(&nodemgr_ne_class.sem);
--
-+	class_for_each_device(&nodemgr_ne_class, &param, __nodemgr_node_probe);
- 
- 	/* If we had a bus reset while we were scanning the bus, it is
- 	 * possible that we did not probe all nodes.  In that case, we
-@@ -1757,6 +1783,22 @@ exit:
- 	return 0;
- }
- 
-+struct host_iter_param {
-+	void *data;
-+	int (*cb)(struct hpsb_host *, void *);
-+};
-+
-+static int __nodemgr_for_each_host(struct device *dev, void *data)
-+{
-+	struct hpsb_host *host;
-+	struct host_iter_param *hip = (struct host_iter_param *)data;
-+	int error = 0;
-+
-+	host = container_of(dev, struct hpsb_host, host_dev);
-+	error = hip->cb(host, hip->data);
-+
-+	return error;
-+}
- /**
-  * nodemgr_for_each_host - call a function for each IEEE 1394 host
-  * @data: an address to supply to the callback
-@@ -1771,18 +1813,13 @@ exit:
-  */
- int nodemgr_for_each_host(void *data, int (*cb)(struct hpsb_host *, void *))
- {
--	struct device *dev;
--	struct hpsb_host *host;
--	int error = 0;
--
--	down(&hpsb_host_class.sem);
--	list_for_each_entry(dev, &hpsb_host_class.devices, node) {
--		host = container_of(dev, struct hpsb_host, host_dev);
-+	struct host_iter_param hip;
++	struct find_bat_param bp;
 +	int error;
++
++	memset(&bp, 0, sizeof(struct find_bat_param));
++	main_battery = NULL;
++	bp.main = main_battery;
++
++	error = class_for_each_device(power_supply_class, &bp,
++				      __find_main_battery);
++	if (error) {
++		main_battery = bp.main;
++		return;
++	}
  
--		if ((error = cb(host, data)))
--			break;
--	}
--	up(&hpsb_host_class.sem);
-+	hip.cb = cb;
-+	hip.data = data;
-+	error = class_for_each_device(&hpsb_host_class, &hip,
-+				      __nodemgr_for_each_host);
- 
- 	return error;
+-	if ((max_energy_bat && max_charge_bat) &&
+-			(max_energy_bat != max_charge_bat)) {
++	if ((bp.max_energy_bat && bp.max_charge_bat) &&
++			(bp.max_energy_bat != bp.max_charge_bat)) {
+ 		/* try guess battery with more capacity */
+-		if (!PSY_PROP(max_charge_bat, VOLTAGE_MAX_DESIGN, &full)) {
+-			if (max_energy > max_charge * full.intval)
+-				main_battery = max_energy_bat;
++		if (!PSY_PROP(bp.max_charge_bat, VOLTAGE_MAX_DESIGN,
++			      &bp.full)) {
++			if (bp.max_energy > bp.max_charge * bp.full.intval)
++				main_battery = bp.max_energy_bat;
+ 			else
+-				main_battery = max_charge_bat;
+-		} else if (!PSY_PROP(max_energy_bat, VOLTAGE_MAX_DESIGN,
+-								  &full)) {
+-			if (max_charge > max_energy / full.intval)
+-				main_battery = max_charge_bat;
++				main_battery = bp.max_charge_bat;
++		} else if (!PSY_PROP(bp.max_energy_bat, VOLTAGE_MAX_DESIGN,
++								  &bp.full)) {
++			if (bp.max_charge > bp.max_energy / bp.full.intval)
++				main_battery = bp.max_charge_bat;
+ 			else
+-				main_battery = max_energy_bat;
++				main_battery = bp.max_energy_bat;
+ 		} else {
+ 			/* give up, choice any */
+-			main_battery = max_energy_bat;
++			main_battery = bp.max_energy_bat;
+ 		}
+-	} else if (max_charge_bat) {
+-		main_battery = max_charge_bat;
+-	} else if (max_energy_bat) {
+-		main_battery = max_energy_bat;
++	} else if (bp.max_charge_bat) {
++		main_battery = bp.max_charge_bat;
++	} else if (bp.max_energy_bat) {
++		main_battery = bp.max_energy_bat;
+ 	} else {
+ 		/* give up, try the last if any */
+-		main_battery = bat;
++		main_battery = bp.bat;
+ 	}
  }
+ 
+@@ -207,10 +227,10 @@ static void apm_battery_apm_get_power_st
+ 	union power_supply_propval status;
+ 	union power_supply_propval capacity, time_to_full, time_to_empty;
+ 
+-	down(&power_supply_class->sem);
++	mutex_lock(&apm_mutex);
+ 	find_main_battery();
+ 	if (!main_battery) {
+-		up(&power_supply_class->sem);
++		mutex_unlock(&apm_mutex);
+ 		return;
+ 	}
+ 
+@@ -278,7 +298,7 @@ static void apm_battery_apm_get_power_st
+ 		}
+ 	}
+ 
+-	up(&power_supply_class->sem);
++	mutex_unlock(&apm_mutex);
+ }
+ 
+ static int __init apm_battery_init(void)
+diff -upr linux/drivers/power/power_supply_core.c linux.new/drivers/power/power_supply_core.c
+--- linux/drivers/power/power_supply_core.c	2008-01-11 18:06:38.000000000 +0800
++++ linux.new/drivers/power/power_supply_core.c	2008-01-11 18:06:38.000000000 +0800
+@@ -20,28 +20,29 @@
+ 
+ struct class *power_supply_class;
+ 
++static int __power_supply_changed_work(struct device *dev, void *data)
++{
++	struct power_supply *psy = (struct power_supply *)data;
++	struct power_supply *pst = dev_get_drvdata(dev);
++	int i;
++
++	for (i = 0; i < psy->num_supplicants; i++)
++		if (!strcmp(psy->supplied_to[i], pst->name)) {
++			if (pst->external_power_changed)
++				pst->external_power_changed(pst);
++		}
++	return 0;
++}
++
+ static void power_supply_changed_work(struct work_struct *work)
+ {
+ 	struct power_supply *psy = container_of(work, struct power_supply,
+ 						changed_work);
+-	int i;
+ 
+ 	dev_dbg(psy->dev, "%s\n", __FUNCTION__);
+ 
+-	for (i = 0; i < psy->num_supplicants; i++) {
+-		struct device *dev;
+-
+-		down(&power_supply_class->sem);
+-		list_for_each_entry(dev, &power_supply_class->devices, node) {
+-			struct power_supply *pst = dev_get_drvdata(dev);
+-
+-			if (!strcmp(psy->supplied_to[i], pst->name)) {
+-				if (pst->external_power_changed)
+-					pst->external_power_changed(pst);
+-			}
+-		}
+-		up(&power_supply_class->sem);
+-	}
++	class_for_each_device(power_supply_class, psy,
++			      __power_supply_changed_work);
+ 
+ 	power_supply_update_leds(psy);
+ 
+@@ -55,32 +56,35 @@ void power_supply_changed(struct power_s
+ 	schedule_work(&psy->changed_work);
+ }
+ 
+-int power_supply_am_i_supplied(struct power_supply *psy)
++static int __power_supply_am_i_supplied(struct device *dev, void *data)
+ {
+ 	union power_supply_propval ret = {0,};
+-	struct device *dev;
++	struct power_supply *psy = (struct power_supply *)data;
++	struct power_supply *epsy = dev_get_drvdata(dev);
++	int i;
+ 
+-	down(&power_supply_class->sem);
+-	list_for_each_entry(dev, &power_supply_class->devices, node) {
+-		struct power_supply *epsy = dev_get_drvdata(dev);
+-		int i;
+-
+-		for (i = 0; i < epsy->num_supplicants; i++) {
+-			if (!strcmp(epsy->supplied_to[i], psy->name)) {
+-				if (epsy->get_property(epsy,
+-					  POWER_SUPPLY_PROP_ONLINE, &ret))
+-					continue;
+-				if (ret.intval)
+-					goto out;
+-			}
++	for (i = 0; i < epsy->num_supplicants; i++) {
++		if (!strcmp(epsy->supplied_to[i], psy->name)) {
++			if (epsy->get_property(epsy,
++				  POWER_SUPPLY_PROP_ONLINE, &ret))
++				continue;
++			if (ret.intval)
++				return ret.intval;
+ 		}
+ 	}
+-out:
+-	up(&power_supply_class->sem);
++	return 0;
++}
++
++int power_supply_am_i_supplied(struct power_supply *psy)
++{
++	int error;
++
++	error = class_for_each_device(power_supply_class, psy,
++				      __power_supply_am_i_supplied);
+ 
+-	dev_dbg(psy->dev, "%s %d\n", __FUNCTION__, ret.intval);
++	dev_dbg(psy->dev, "%s %d\n", __FUNCTION__, error);
+ 
+-	return ret.intval;
++	return error;
+ }
+ 
+ int power_supply_register(struct device *parent, struct power_supply *psy)
