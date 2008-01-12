@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763651AbYALNJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763756AbYALNMB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763651AbYALNJE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 08:09:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759662AbYALNIw
+	id S1763756AbYALNMB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 08:12:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762271AbYALNLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 08:08:52 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60450 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758612AbYALNIv (ORCPT
+	Sat, 12 Jan 2008 08:11:54 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:6048 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757853AbYALNLx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 08:08:51 -0500
-Subject: Re: [PATCH 2/2][RFC][BUG] msync: updating ctime and mtime at
-	syncing
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Anton Salikhmetov <salikhmetov@gmail.com>
-Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       Valdis.Kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com
-In-Reply-To: <4df4ef0c0801120438n4a3c1cfpd3563531929a1a91@mail.gmail.com>
-References: <1200006638.19293.42.camel@codedot>
-	 <1200012249.20379.2.camel@codedot> <1200130565.7999.8.camel@lappy>
-	 <1200130844.7999.12.camel@lappy>
-	 <4df4ef0c0801120438n4a3c1cfpd3563531929a1a91@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 12 Jan 2008 14:09:01 +0100
-Message-Id: <1200143342.7999.25.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.4 
-Content-Transfer-Encoding: 7bit
+	Sat, 12 Jan 2008 08:11:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=IlTLzuvWQ2j6WyK0v7jU84tclitYIEFzak1o3wf+NUcisa+6cDhq/HAooeimfk/U77N6fRAxp8l2FfhMyDIkCAj5hbcs8R4hRSJObrcQNP4t0iq7Kxo/tyBWHwJ6K4NhAxBX7P5s7jgn4Kg7J7m97Bq9l+iMul0jx2YXQVPPU58=
+Date: Sat, 12 Jan 2008 14:13:31 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Jan Kara <jack@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 10/16] udf: create common function for changing free
+	space counter
+Message-ID: <20080112131309.GA24828@joi>
+References: <1200002792-8449-1-git-send-email-marcin.slusarz@gmail.com> <1200002792-8449-11-git-send-email-marcin.slusarz@gmail.com> <20080110232449.GF17430@duck.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080110232449.GF17430@duck.suse.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 2008-01-12 at 15:38 +0300, Anton Salikhmetov wrote:
-> 2008/1/12, Peter Zijlstra <a.p.zijlstra@chello.nl>:
-> >
-> > On Sat, 2008-01-12 at 10:36 +0100, Peter Zijlstra wrote:
-> > > On Fri, 2008-01-11 at 03:44 +0300, Anton Salikhmetov wrote:
-> > >
-> > > > +/*
-> > > > + * Update the ctime and mtime stamps after checking if they are to be updated.
-> > > > + */
-> > > > +void mapped_file_update_time(struct file *file)
-> > > > +{
-> > > > +   if (test_and_clear_bit(AS_MCTIME, &file->f_mapping->flags)) {
-> > > > +           get_file(file);
-> > > > +           file_update_time(file);
-> > > > +           fput(file);
-> > > > +   }
-> > > > +}
-> > > > +
-> > >
-> > > I don't think you need the get/put file stuff here, because
-> >
-> > BTW, the reason for me noticing this is that if it would be needed there
-> > is a race condition right there, who is to say that the file pointer
-> > you're deref'ing in your test condition isn't a dead one already.
+On Fri, Jan 11, 2008 at 12:24:49AM +0100, Jan Kara wrote:
+> On Thu 10-01-08 23:06:26, marcin.slusarz@gmail.com wrote:
+> > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> > CC: Jan Kara <jack@suse.cz>
+> > CC: Christoph Hellwig <hch@infradead.org>
+>   Just two minor comment...
 > 
-> So, in your opinion, is it at all needed here to play with the file reference
-> counter? May I drop the get_file() and fput() calls from the
-> sys_msync() function?
+> > ---
+> >  fs/udf/balloc.c |   49 ++++++++++++++++++++-----------------------------
+> >  1 files changed, 20 insertions(+), 29 deletions(-)
+> > 
+> > diff --git a/fs/udf/balloc.c b/fs/udf/balloc.c
+> > index dc9f8a9..78dbf1d 100644
+> > --- a/fs/udf/balloc.c
+> > +++ b/fs/udf/balloc.c
+> > @@ -140,6 +140,20 @@ static inline int load_block_bitmap(struct super_block *sb,
+> >  	return slot;
+> >  }
+> >  
+> > +static bool udf_inc_free_space(struct udf_sb_info *sbi,
+>   Maybe because you use the function for both increasing and decreasing
+> free space, you could call is udf_add_free_space?
+Ok. Done.
 
-No, the ones in sys_msync() around calling do_fsync() are most
-definately needed because we release mmap_sem there.
+> 
+> > +				u16 partition, u32 cnt)
+> > +{
+> > +	struct logicalVolIntegrityDesc *lvid;
+> > +
+> > +	if (sbi->s_lvid_bh)
+> > +		return false;
+> > +
+> > +	lvid = (struct logicalVolIntegrityDesc *)sbi->s_lvid_bh->b_data;
+> > +	lvid->freeSpaceTable[partition] = cpu_to_le32(le32_to_cpu(
+> > +					lvid->freeSpaceTable[partition]) + cnt);
+>   I think macro like le32_add_cpu() just went into the kernel so you could
+> use that...
+I didn't want to rely on too many patches, so I intentionally left it.
+I'll convert it together with other le*_add_cpu changes.
 
-What I'm saying is that you can remove the get_file()/fput() calls from
-your new mapped_file_update_time() function.
+Can you ack this patch with udf_inc_free_space rename?
 
+Marcin
