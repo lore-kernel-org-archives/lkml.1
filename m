@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763196AbYALKVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763685AbYALKWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763196AbYALKVx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 05:21:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758689AbYALKVo
+	id S1763685AbYALKWU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 05:22:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763465AbYALKWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 05:21:44 -0500
-Received: from [212.12.190.41] ([212.12.190.41]:33714 "EHLO raad.intranet"
+	Sat, 12 Jan 2008 05:22:03 -0500
+Received: from [212.12.190.41] ([212.12.190.41]:33718 "EHLO raad.intranet"
 	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752379AbYALKVn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 05:21:43 -0500
+	id S1762310AbYALKVs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 05:21:48 -0500
 From: Al Boldi <a1426z@gawab.com>
-To: 7eggert@gmx.de
-Subject: Re: [RFD] Incremental fsck
-Date: Sat, 12 Jan 2008 13:20:53 +0300
+To: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 0/5] USB Kconfig: Reorganize USB Kconfig Menu
+Date: Sat, 12 Jan 2008 13:20:46 +0300
 User-Agent: KMail/1.5
-References: <9JubJ-5mo-57@gated-at.bofh.it> <9JHLl-2dL-1@gated-at.bofh.it> <E1JDKkM-0003dY-1b@be1.7eggert.dyndns.org>
-In-Reply-To: <E1JDKkM-0003dY-1b@be1.7eggert.dyndns.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Brownell <david-b@pacbell.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200801051546.SAA08937@raad.intranet> <20080111223928.GB5942@kroah.com>
+In-Reply-To: <20080111223928.GB5942@kroah.com>
 MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200801121320.53882.a1426z@gawab.com>
+Message-Id: <200801121320.46580.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bodo Eggert wrote:
-> Al Boldi <a1426z@gawab.com> wrote:
-> > Even after a black-out shutdown, the corruption is pretty minimal, using
-> > ext3fs at least.  So let's take advantage of this fact and do an
-> > optimistic fsck, to assure integrity per-dir, and assume no external
-> > corruption.  Then we release this checked dir to the wild (optionally
-> > ro), and check the next. Once we find external inconsistencies we either
-> > fix it unconditionally, based on some preconfigured actions, or present
-> > the user with options.
+Greg KH wrote:
+> On Sat, Jan 05, 2008 at 06:40:38PM +0300, Al Boldi wrote:
+> > Reorganize USB Kconfig Menu, and move USB_GADGET out into the Device
+> > Driver Menu. ?This helps the USB Kconfig Menu to be more logical/usable.
+> >
+> > Patchset against 2.6.23
 >
-> Maybe we can know the changes that need to be done in order to fix the
-> filesystem. Let's record this information in - eh - let's call it a
-> journal!
+> So what was the final verdict in this patch set?
 
-Don't mistake data=journal as an fsck replacement.
+IMHO, it's a lot better than what we have right now, and it's split up so 
+that you can pick and choose what you think is useful.
+
+> Can you rsend this against 2.6.24-rc7 with the requested changes (if
+> any) in it?
+
+The only critical change is in patch 2/5:
+
+        menuconfig USB_STORAGE
+        tristate "USB Mass Storage support"
+-       depends on USB && SCSI
++       depends on USB && BLOCK
++       select SCSI
+
+
+I was hoping you could take care of it, or maybe wait until 2.6.25 is out.
 
 
 Thanks!
