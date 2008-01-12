@@ -1,92 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762878AbYALJgG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762863AbYALJjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762878AbYALJgG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 04:36:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759362AbYALJf4
+	id S1762863AbYALJjY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 04:39:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760270AbYALJjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 04:35:56 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:58247 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758581AbYALJfz (ORCPT
+	Sat, 12 Jan 2008 04:39:17 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:59791 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759446AbYALJjQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 04:35:55 -0500
-Subject: Re: [PATCH 2/2][RFC][BUG] msync: updating ctime and mtime at
-	syncing
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Anton Salikhmetov <salikhmetov@gmail.com>
-Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       Valdis.Kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com
-In-Reply-To: <1200012249.20379.2.camel@codedot>
-References: <1200006638.19293.42.camel@codedot>
-	 <1200012249.20379.2.camel@codedot>
-Content-Type: text/plain
-Date: Sat, 12 Jan 2008 10:36:05 +0100
-Message-Id: <1200130565.7999.8.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.4 
-Content-Transfer-Encoding: 7bit
+	Sat, 12 Jan 2008 04:39:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=VHlQpKvsVUypKUOY5YIF9ME6A4WyvBh1zXSafip8QU7nVaIVO1wGmbjRo+bTf17rxE4MupTP7A+tk0y1HFlniZOkbmkN1Z7wC0OGnQGxFo4X9L45xctIn567V9h1dIQMQP6YjzQM+TbWJ+aq2LNDPsZrN7pGf1ELJI+0+Z5q9gY=
+Date: Sat, 12 Jan 2008 17:42:33 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Cc: stefanr@s5r6.in-berlin.de, James.Bottomley@hansenpartnership.com,
+       a.zummo@towertech.it, peterz@infradead.org, cbou@mail.ru,
+       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
+       krh@redhat.com, stern@rowland.harvard.edu, dwmw2@infradead.org,
+       davem@davemloft.net, jarkao2@gmail.com
+Subject: [PATCH 0/7] Add class iteration api and convert semaphore to mutex
+Message-ID: <20080112094233.GA2879@darkstar.te-china.tietoenator.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This series do three things:
 
-On Fri, 2008-01-11 at 03:44 +0300, Anton Salikhmetov wrote:
+1.[PATCH 1/7]
+  Add some class iteration functions in driver core:
+  class_for_each_device
+  class_find_device
+  class_for_each_child
+  class_find_child
 
-> +/*
-> + * Update the ctime and mtime stamps after checking if they are to be updated.
-> + */
-> +void mapped_file_update_time(struct file *file)
-> +{
-> +	if (test_and_clear_bit(AS_MCTIME, &file->f_mapping->flags)) {
-> +		get_file(file);
-> +		file_update_time(file);
-> +		fput(file);
-> +	}
-> +}
-> +
+2.[PATCH {2,3,4,5,6}/7]
+  Make the drivers with class iterating to use class iteration api.
 
-I don't think you need the get/put file stuff here, because
+3.[PATCH 7/7]
+  Convert the class semaphore to mutex.
 
-> @@ -87,6 +87,8 @@ long do_fsync(struct file *file, int datasync)
->  		goto out;
->  	}
->  
-> +	mapped_file_update_time(file);
-> +
->  	ret = filemap_fdatawrite(mapping);
->  
->  	/*
+toc:
+---
+1-driver-core-add-class-iteration-api.patch
+2-ieee1394-use-class-iteration-api.patch
+3-power_supply-use-class-iteration-api.patch
+4-rtc-use-class-iteration-api.patch
+5-scsi-use-class-iteration-api.patch
+6-spi-use-class-iteration-api.patch
+7-driver-core-class-convert-semaphore-to-mutex.patch
 
-at this call-site we already hold an extra reference on the file, and
+Summary diffstat:
+---
+ drivers/base/class.c              |  197 +++++++++++++++++++++--
+ drivers/base/core.c               |   18 --
+ drivers/ieee1394/nodemgr.c        |  319 +++++++++++++++++++++-----------------
+ drivers/power/apm_power.c         |  116 ++++++++-----
+ drivers/power/power_supply_core.c |   72 ++++----
+ drivers/rtc/interface.c           |   22 +-
+ drivers/scsi/hosts.c              |   26 +--
+ drivers/spi/spi.c                 |   26 +--
+ include/linux/device.h            |   11 +
+ 9 files changed, 523 insertions(+), 284 deletions(-)
 
-> @@ -74,14 +79,17 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
->  			break;
->  		}
->  		file = vma->vm_file;
-> -		if ((flags & MS_SYNC) && file && (vma->vm_flags & VM_SHARED)) {
-> -			get_file(file);
-> -			up_read(&mm->mmap_sem);
-> -			error = do_fsync(file, 0);
-> -			fput(file);
-> -			if (error)
-> -				return error;
-> -			down_read(&mm->mmap_sem);
-> +		if (file && (vma->vm_flags & VM_SHARED)) {
-> +			mapped_file_update_time(file);
-> +			if (flags & MS_SYNC) {
-> +				get_file(file);
-> +				up_read(&mm->mmap_sem);
-> +				error = do_fsync(file, 0);
-> +				fput(file);
-> +				if (error)
-> +					return error;
-> +				down_read(&mm->mmap_sem);
-> +			}
->  		}
->  
->  		start = vma->vm_end;
+Thanks all your comment and help. If there's some problem in these ones, please help to point out.
 
-here we hold the mmap_sem so the vma reference on the file can't go
-away.
+Thanks again.
 
+Regards
+dave
