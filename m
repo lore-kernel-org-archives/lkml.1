@@ -1,40 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763509AbYALBhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763491AbYALBlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763509AbYALBhz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 20:37:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762613AbYALBht
+	id S1763491AbYALBlf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 20:41:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762613AbYALBl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 20:37:49 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:48122 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762427AbYALBhs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 20:37:48 -0500
-Message-ID: <478819EA.2080905@redhat.com>
-Date: Fri, 11 Jan 2008 20:37:46 -0500
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 11 Jan 2008 20:41:27 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:62309 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755530AbYALBl0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 20:41:26 -0500
+Date: Sat, 12 Jan 2008 02:41:17 +0100 (CET)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+cc: Bodo Eggert <7eggert@gmx.de>, Matthias Schniedermeyer <ms@citd.de>,
+       Tuomo Valkonen <tuomov@iki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: The ext3 way of journalling
+In-Reply-To: <20080111183927.GM2310@csclub.uwaterloo.ca>
+Message-ID: <alpine.LSU.0.999.0801120236500.9944@be1.lrz>
+References: <9JpbI-5yi-9@gated-at.bofh.it> <9Jqri-7ym-17@gated-at.bofh.it>
+ <9JqUn-8bF-15@gated-at.bofh.it> <9JvKj-85h-41@gated-at.bofh.it>
+ <E1JDMeb-0003qH-Mv@be1.7eggert.dyndns.org>
+ <20080111183927.GM2310@csclub.uwaterloo.ca>
 MIME-Version: 1.0
-To: Vineet Gupta <vineetg76@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Usage semantics of atomic_set ( )
-References: <9f4f8abe0801111457t7535069ar1f98cc37d5cf8d40@mail.gmail.com>
-In-Reply-To: <9f4f8abe0801111457t7535069ar1f98cc37d5cf8d40@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1/+vADAlnzvwkQr8aHnliEt4/EvtkIuvouY0l4
+ MmhxaOhtZOXL4oqHBknujciSRZeF0nJGvLU0SOw9gWs+7sueC+
+ ORMq6NgAsYWpnLN7I6jRw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vineet Gupta wrote:
-> I'm trying to implement atomic ops for a CPU which has no inherent
-> support for Read-Modify-Write Ops. Instead of using a global spin lock
-> which protects all the atomic APIs, I want to use a spin lock per
-> instance of atomic_t.
+On Fri, 11 Jan 2008, Lennart Sorensen wrote:
+> On Fri, Jan 11, 2008 at 05:22:45PM +0100, Bodo Eggert wrote:
 
-What operations are you using to implement spinlocks?
+> > What can happen if someone does tune2fs -Lroot /dev/usbstick
+> > and puts that stick into this system?
+> 
+> Don't know.  I use UUIDs rather than LABELs.  Having duplicated labels
+> just means being careless.  Having duplicate UUIDs should require being
+> malicous.
 
-A few architectures use arrays of spinlocks to implement atomic_t.  I believe 
-sparc and parisc are among them.  Assuming your spinlock implementation is sound 
-and efficient, the same technique should work for you.
-
-	-- Chris
+That's exactly what you have to assume for your users. Otherwise, you could 
+remove any security feature from the system.
+-- 
+Fun things to slip into your budget
+Not in a budget, but in an annual report:
+An employee stole 500,000+. They accounted for it on the annual report as
+'involountary employee relations expense'
