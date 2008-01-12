@@ -1,50 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762690AbYAKX6f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762857AbYALAFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762690AbYAKX6f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 18:58:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932166AbYAKX6X
+	id S1762857AbYALAFZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 19:05:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759020AbYALAFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 18:58:23 -0500
-Received: from jurassic.park.msu.ru ([195.208.223.243]:42131 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932148AbYAKX6W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 18:58:22 -0500
-Date: Sat, 12 Jan 2008 02:58:56 +0300
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Martin Mares <mj@ucw.cz>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
-	opt-in
-Message-ID: <20080111235856.GA16079@jurassic.park.msu.ru>
-References: <20080111194524.GA17170@suse.de> <20080111194931.GN18741@parisc-linux.org> <alpine.LFD.1.00.0801111156230.3148@woody.linux-foundation.org> <20080111201716.GO18741@parisc-linux.org> <alpine.LFD.1.00.0801111224090.3148@woody.linux-foundation.org> <20080111204228.GP18741@parisc-linux.org> <alpine.LFD.1.00.0801111311170.3148@woody.linux-foundation.org> <20080111211753.GR18741@parisc-linux.org> <alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org> <20080111213803.GS18741@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080111213803.GS18741@parisc-linux.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 11 Jan 2008 19:05:10 -0500
+Received: from smtp3-g19.free.fr ([212.27.42.29]:50536 "EHLO smtp3-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756873AbYALAFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 19:05:08 -0500
+Date: Sat, 12 Jan 2008 01:03:53 +0100
+From: Guillaume Chazarain <guichaz@yahoo.fr>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Dillow <dillowda@ornl.gov>, linux-kernel@vger.kernel.org,
+       linux-btrace@vger.kernel.org, tglx@linutronix.de,
+       Jens Axboe <jens.axboe@oracle.com>, nigel@suspend2.net
+Subject: Re: CONFIG_NO_HZ breaks blktrace timestamps
+Message-ID: <20080112010353.0eeb18bf@inria.fr>
+In-Reply-To: <20080111233025.57d17f6a@inria.fr>
+References: <1199918912.8388.13.camel@lap75545.ornl.gov>
+	<1199996752.9159.46.camel@lap75545.ornl.gov>
+	<20080110234438.4826f658@inria.fr>
+	<20080111114132.084036f2@cheypa.inria.fr>
+	<20080111105534.GC1589@elte.hu>
+	<20080111233025.57d17f6a@inria.fr>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 11, 2008 at 02:38:03PM -0700, Matthew Wilcox wrote:
-> On Fri, Jan 11, 2008 at 01:28:30PM -0800, Linus Torvalds wrote:
-> > Hmm. Were all those reports root-caused to just that BAR probing? If so, 
-> > we may be in better shape than I worried.
-> 
-> I believe so.
+Guillaume Chazarain <guichaz@yahoo.fr> wrote:
 
-Ditto.
+> FYI, I'm currently trying to track down where rq->clock started to
+> overflow with nohz=off, and it seems to be before 2.6.23, so my patches
+> are not at fault ;-) Or maybe I am dreaming and it was always
+> overflowing. Investigating ...
 
-One typical problem is that on "Intel(r) 3 Series Experss Chipset Family"
-MMCONFIG probing of the BAR #2 (frame buffer address) of integrated graphics
-device locks up the machine (depending on BIOS settings, of course).
-This happens because the frame buffer of IGD has higher decode priority
-than MMCONFIG range, as stated in Intel docs...
+And the winner is:
 
-Ivan.
+commit 529c77261bccd9d37f110f58b0753d95beaa9fa2
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Fri Aug 10 23:05:11 2007 +0200
+
+    sched: improve rq-clock overflow logic
+    
+    improve the rq-clock overflow logic: limit the absolute rq->clock
+    delta since the last scheduler tick, instead of limiting the delta
+    itself.
+    
+    tested by Arjan van de Ven - whole laptop was misbehaving due to
+    an incorrectly calibrated cpu_khz confusing sched_clock().
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+    Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index b0afd8d..6247e4a 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -263,6 +263,7 @@ struct rq {
+ 
+ 	unsigned int clock_warps, clock_overflows;
+ 	unsigned int clock_unstable_events;
++	u64 tick_timestamp;
+ 
+ 	atomic_t nr_iowait;
+ 
+@@ -341,8 +342,11 @@ static void __update_rq_clock(struct rq *rq)
+ 		/*
+ 		 * Catch too large forward jumps too:
+ 		 */
+-		if (unlikely(delta > 2*TICK_NSEC)) {
+-			clock++;
++		if (unlikely(clock + delta > rq->tick_timestamp + TICK_NSEC)) {
++			if (clock < rq->tick_timestamp + TICK_NSEC)
++				clock = rq->tick_timestamp + TICK_NSEC;
++			else
++				clock++;
+ 			rq->clock_overflows++;
+ 		} else {
+ 			if (unlikely(delta > rq->clock_max_delta))
+@@ -3308,9 +3312,16 @@ void scheduler_tick(void)
+ 	int cpu = smp_processor_id();
+ 	struct rq *rq = cpu_rq(cpu);
+ 	struct task_struct *curr = rq->curr;
++	u64 next_tick = rq->tick_timestamp + TICK_NSEC;
+ 
+ 	spin_lock(&rq->lock);
+ 	__update_rq_clock(rq);
++	/*
++	 * Let rq->clock advance by at least TICK_NSEC:
++	 */
++	if (unlikely(rq->clock < next_tick))
++		rq->clock = next_tick;
++	rq->tick_timestamp = rq->clock;
+ 	update_cpu_load(rq);
+ 	if (curr != rq->idle) /* FIXME: needed? */
+ 		curr->sched_class->task_tick(rq, curr);
+
+
+Seems like I originally was not the only one seeing 2 jiffies jumps ;-)
+I'll adapt my patches.
+
+-- 
+Guillaume
