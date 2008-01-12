@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762728AbYALJX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762492AbYALJe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762728AbYALJX4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 04:23:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760646AbYALJXt
+	id S1762492AbYALJe5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 04:34:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758581AbYALJem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 04:23:49 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:34594 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757785AbYALJXr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 04:23:47 -0500
-Subject: Re: [PATCH/RFC] synchronize_rcu(): high latency on idle system
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Benjamin LaHaise <bcrl@kvack.org>
-Cc: dipankar@in.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>
-In-Reply-To: <20080112012626.GI28570@kvack.org>
-References: <20080112012626.GI28570@kvack.org>
-Content-Type: text/plain
-Date: Sat, 12 Jan 2008 10:23:11 +0100
-Message-Id: <1200129791.7999.5.camel@lappy>
+	Sat, 12 Jan 2008 04:34:42 -0500
+Received: from ns2.suse.de ([195.135.220.15]:42176 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756621AbYALJei (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 04:34:38 -0500
+Date: Sat, 12 Jan 2008 10:34:36 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Jes Sorensen <jes@sgi.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Cliff Wickman <cpw@sgi.com>, airlied@linux.ie, benh@kernel.crashing.org,
+       michael@ellerman.id.au, jk@ozlabs.org,
+       Cedric Le Goater <clg@fr.ibm.com>
+Subject: Re: [rfc][patch] reimplement nopfn callers with fault
+Message-ID: <20080112093436.GB25048@wotan.suse.de>
+References: <20080108113221.GA460@wotan.suse.de> <47877FCA.8050707@sgi.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.4 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47877FCA.8050707@sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 2008-01-11 at 20:26 -0500, Benjamin LaHaise wrote:
-> Hello folks,
+On Fri, Jan 11, 2008 at 03:40:10PM +0100, Jes Sorensen wrote:
+> Nick Piggin wrote:
+> >Hi guys,
+> >
+> >I'd like to finally remove nopfn from the tree. So I would really like to 
+> >get
+> >this patch into -mm soon (or broken out patches into appropriate trees).
+> >
+> >Anyway, I don't have a good way to compile mspec or cell changes very 
+> >easily.
+> >Hopefully if there are any silly typos, they will be easier to fix. More 
+> >problematic
+> >is actually testing the things; I'm not even sure I'm covering all bases 
+> >with
+> >drm testing.
+> >
+> >So, if I could trouble you for a quick review and/or test at some time.... 
+> >the
+> >patch is against latest -mm.
 > 
-> I'd like to put the patch below out for comments to see if folks think the 
-> approach is a valid fix to reduce the latency of synchronize_rcu().  The 
-> motivation is that an otherwise idle system takes about 3 ticks per network 
-> interface in unregister_netdev() due to multiple calls to synchronize_rcu(), 
-> which adds up to quite a few seconds for tearing down thousands of 
-> interfaces.  By flushing pending rcu callbacks in the idle loop, the system 
-> makes progress hundreds of times faster.  If this is indeed a sane thing to, 
-> it probably needs to be done for other architectures than x86.  And yes, the 
-> network stack shouldn't call synchronize_rcu() quite so much, but fixing that 
-> is a little more involved.
+> Nick,
+> 
+> Is this supposed to apply to the latest Linus tree? I applied it here
+> and the mspec driver lights up in beautiful fireworks :-( I'll give the
+> -mm tree a try next.
 
-So, instead of only relying on the tick to drive the RCU state machine,
-you add the idle loop to it. This seems to make sense, esp because nohz
-is held off until rcu is idle too.
+Hi Jes,
 
-Even though Andi is right in that its not the proper solution to your
-problem, I think its worth doing anyway for the general benefit of RCU.
+(reply to all this time).
 
-But lets ask Paul, he is Mr RCU after all :-)
+It is the BUG_ON(vma->vm_flags & VM_PFNMAP); at the start of __do_fault, by
+the looks. That should be simply removed. Sorry about that.
 
-> diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-> index 9663c2a..592f6e4 100644
-> --- a/arch/x86/kernel/process_32.c
-> +++ b/arch/x86/kernel/process_32.c
-> @@ -188,6 +188,9 @@ void cpu_idle(void)
->  			rmb();
->  			idle = pm_idle;
->  
-> +			if (rcu_pending(cpu))
-> +				rcu_check_callbacks(cpu, 0);
-> +
->  			if (!idle)
->  				idle = default_idle;
->  
-
+Thanks,
+Nick
