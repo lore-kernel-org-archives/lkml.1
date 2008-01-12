@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762725AbYALWns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762358AbYALWuf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762725AbYALWns (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 17:43:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759072AbYALWnl
+	id S1762358AbYALWuf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 17:50:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754313AbYALWu1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 17:43:41 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34912 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758967AbYALWnk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 17:43:40 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: 2.6.24-rc7-git4: Reported regressions from 2.6.23
-Date: Sat, 12 Jan 2008 23:46:11 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>
-References: <200801122205.34871.rjw@sisk.pl> <1200176184.19760.100.camel@brick>
-In-Reply-To: <1200176184.19760.100.camel@brick>
+	Sat, 12 Jan 2008 17:50:27 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:34096 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753848AbYALWu0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 17:50:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=Zs5aAMM5KYDuErVNZyRgiyz0FtJ2NHu4Bc3djaEdHJHlJ6/7PVYFkWtdWOmgL1q3M09KRgTp3pm5MJivQi+1Ce6pAkZjBi8FmSCuyV9jvWbDT9nRuN8xspNU48gvgArjwJ2hafrSXaRzlkAXQgXE/YSiUwZczfD7QokoiSDO3X4=
+Date: Sun, 13 Jan 2008 01:50:16 +0300
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: cbouatmailru@gmail.com, linux-kernel@vger.kernel.org, cbou@mail.ru,
+       dwmw2@infradead.org
+Subject: Re: [PATCH] pda_power: add device_init_wakeup
+Message-ID: <20080112225016.GA24957@doriath.ww600.siemens.net>
+References: <20080109163952.GA29397@doriath.ww600.siemens.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801122346.12709.rjw@sisk.pl>
+In-Reply-To: <20080109163952.GA29397@doriath.ww600.siemens.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 12 of January 2008, Harvey Harrison wrote:
-> On Sat, 2008-01-12 at 22:05 +0100, Rafael J. Wysocki wrote:
-> > [RFC: Would that be useful if I sent regression-fixing patches, CCed to the
-> > appropriate maintainers/lists, along with the reports?]
-> 
-> Perhaps keep the regression report as-is, but for each regression with
-> a patch follow up with an appropriately CC'd reply to the regression
-> report.  Similar in concept to the regression report being patch 0/X
-> or how the -stable series patches are announced?
+Hi,
 
-That's exactly what I'm thinking about. :-)
+Please apply this patch. Otherwise pda_power can't generate wakeup
+events. I forgot this in the initial pda_power suspend/resume patch.
 
-Thanks,
-Rafael
+Add device_init_wakeup to init wakeup.
+
+Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+
+diff --git a/drivers/power/pda_power.c b/drivers/power/pda_power.c
+index d98622f..28360e8 100644
+--- a/drivers/power/pda_power.c
++++ b/drivers/power/pda_power.c
+@@ -207,6 +207,8 @@ static int pda_power_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
++	device_init_wakeup(&pdev->dev, 1);
++
+ 	return 0;
+ 
+ usb_irq_failed:
+
+
+-- 
+With best wishes
+Dmitry
+
