@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932101AbYALJks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763230AbYALJlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932101AbYALJks (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 04:40:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761487AbYALJke
+	id S1763230AbYALJlu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 04:41:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761487AbYALJlo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 04:40:34 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:45135 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761425AbYALJkb (ORCPT
+	Sat, 12 Jan 2008 04:41:44 -0500
+Received: from mailout05.sul.t-online.de ([194.25.134.82]:55470 "EHLO
+	mailout05.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761471AbYALJln (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 04:40:31 -0500
-Subject: Re: [PATCH 2/2][RFC][BUG] msync: updating ctime and mtime at
-	syncing
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Anton Salikhmetov <salikhmetov@gmail.com>
-Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       Valdis.Kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com
-In-Reply-To: <1200130565.7999.8.camel@lappy>
-References: <1200006638.19293.42.camel@codedot>
-	 <1200012249.20379.2.camel@codedot>  <1200130565.7999.8.camel@lappy>
-Content-Type: text/plain
-Date: Sat, 12 Jan 2008 10:40:44 +0100
-Message-Id: <1200130844.7999.12.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.4 
+	Sat, 12 Jan 2008 04:41:43 -0500
+Message-ID: <47888B41.70803@t-online.de>
+Date: Sat, 12 Jan 2008 10:41:21 +0100
+From: Harald Dunkel <harald.dunkel@t-online.de>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Takashi Iwai <tiwai@suse.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc7, intel audio: alsa doesn't say a beep
+References: <4782833D.3010600@t-online.de>	<s5h3at8rd9c.wl%tiwai@suse.de>	<4783AC7C.50900@t-online.de>	<s5h63y42oy6.wl%tiwai@suse.de>	<478463A6.2070106@t-online.de>	<s5h8x2zo3ox.wl%tiwai@suse.de>	<47852A41.9020903@t-online.de>	<s5hr6gpajux.wl%tiwai@suse.de>	<4786960D.2040500@t-online.de> <s5hprw8g8m7.wl%tiwai@suse.de>
+In-Reply-To: <s5hprw8g8m7.wl%tiwai@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-ID: Go1Pt-ZQYhQyrBZ715CsJbUg2SkpYz5zi-H8npVxaytBRcOmJf9Xhuy9Kn7hU+ogWL
+X-TOI-MSGID: 2d9735f8-b122-469a-ae2a-8eaa00dae6d7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 2008-01-12 at 10:36 +0100, Peter Zijlstra wrote:
-> On Fri, 2008-01-11 at 03:44 +0300, Anton Salikhmetov wrote:
+Takashi Iwai wrote:
+> At Thu, 10 Jan 2008 23:02:53 +0100,
+> Harald Dunkel wrote:
+>> Takashi Iwai wrote:
+>>> Hm...  Just to be sure, try the patch below.  It's a clean up patch
+>>> that I'd like to apply later.
+>>>
+>> Sorry, no sound.
 > 
-> > +/*
-> > + * Update the ctime and mtime stamps after checking if they are to be updated.
-> > + */
-> > +void mapped_file_update_time(struct file *file)
-> > +{
-> > +	if (test_and_clear_bit(AS_MCTIME, &file->f_mapping->flags)) {
-> > +		get_file(file);
-> > +		file_update_time(file);
-> > +		fput(file);
-> > +	}
-> > +}
-> > +
+> OK, but I'd like to know whether this makes no regression to rc6.
+> Could you check?
 > 
-> I don't think you need the get/put file stuff here, because
+> Also, what exactly did you test?  "No sound" means that no sound from
+> the headphone / line-out or from the speaker?
+> 
+> One interesting test would be to increase the value of udelay() in the
+> reverted patch.  What happens if it's set to 500?
+> 
 
-BTW, the reason for me noticing this is that if it would be needed there
-is a race condition right there, who is to say that the file pointer
-you're deref'ing in your test condition isn't a dead one already.
+There is no udelay() in the reverted patch. If I replace "udelay(10)"
+by "udelay(500)" in the original rc7, then there is still no sound.
+
+This is like fishing in the dark. We've got a working version. Why not
+keep it?
+
+
+Regards
+
+Harri
 
