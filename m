@@ -1,95 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762545AbYALJVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762728AbYALJX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762545AbYALJVh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 04:21:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760190AbYALJVa
+	id S1762728AbYALJX4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 04:23:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760646AbYALJXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 04:21:30 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:25070 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760148AbYALJV3 (ORCPT
+	Sat, 12 Jan 2008 04:23:49 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:34594 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757785AbYALJXr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 04:21:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=uTwPxcP8YVGEQTAmZ42Y2opERgDeQDYMkXbj64CDJpx06wL8QtQS4quSjwyhsWUTbJPyI4CRxF/YWFQLALAVDDPSSEu3eQwGK08Ow6kW/dE4AHAAVWV8Y78+UVzdim5FTRc0nALJiBdDS7HJIY+MuFydlb3/sT1iw8FqQJkmYIk=
-Message-ID: <47888685.7050002@gmail.com>
-Date: Sat, 12 Jan 2008 14:51:09 +0530
-From: Abhishek Sagar <sagar.abhishek@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Masami Hiramatsu <mhiramat@redhat.com>
-CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       ananth@in.ibm.com, jkenisto@us.ibm.com
-Subject: [PATCH] x86: Fix singlestep handling in reenter_kprobe
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 12 Jan 2008 04:23:47 -0500
+Subject: Re: [PATCH/RFC] synchronize_rcu(): high latency on idle system
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Benjamin LaHaise <bcrl@kvack.org>
+Cc: dipankar@in.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>
+In-Reply-To: <20080112012626.GI28570@kvack.org>
+References: <20080112012626.GI28570@kvack.org>
+Content-Type: text/plain
+Date: Sat, 12 Jan 2008 10:23:11 +0100
+Message-Id: <1200129791.7999.5.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.4 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Highlight peculiar cases in singles-step kprobe handling. 
+On Fri, 2008-01-11 at 20:26 -0500, Benjamin LaHaise wrote:
+> Hello folks,
+> 
+> I'd like to put the patch below out for comments to see if folks think the 
+> approach is a valid fix to reduce the latency of synchronize_rcu().  The 
+> motivation is that an otherwise idle system takes about 3 ticks per network 
+> interface in unregister_netdev() due to multiple calls to synchronize_rcu(), 
+> which adds up to quite a few seconds for tearing down thousands of 
+> interfaces.  By flushing pending rcu callbacks in the idle loop, the system 
+> makes progress hundreds of times faster.  If this is indeed a sane thing to, 
+> it probably needs to be done for other architectures than x86.  And yes, the 
+> network stack shouldn't call synchronize_rcu() quite so much, but fixing that 
+> is a little more involved.
 
-In reenter_kprobe(), a breakpoint in KPROBE_HIT_SS case can only occur when single-stepping a breakpoint on which a probe was installed. Since such probes are single-stepped inline, identifying these cases is unambiguous. All other cases leading up to KPROBE_HIT_SS are possible bugs. Identify and WARN_ON such cases.
+So, instead of only relying on the tick to drive the RCU state machine,
+you add the idle loop to it. This seems to make sense, esp because nohz
+is held off until rcu is idle too.
 
-Signed-off-by: Abhishek Sagar <sagar.abhishek@gmail.com>
----
+Even though Andi is right in that its not the proper solution to your
+problem, I think its worth doing anyway for the general benefit of RCU.
 
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index 93aff49..afb5c96 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -443,17 +443,6 @@ void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
- 	*sara = (unsigned long) &kretprobe_trampoline;
- }
- 
--static void __kprobes recursive_singlestep(struct kprobe *p,
--					   struct pt_regs *regs,
--					   struct kprobe_ctlblk *kcb)
--{
--	save_previous_kprobe(kcb);
--	set_current_kprobe(p, regs, kcb);
--	kprobes_inc_nmissed_count(p);
--	prepare_singlestep(p, regs);
--	kcb->kprobe_status = KPROBE_REENTER;
--}
--
- static void __kprobes setup_singlestep(struct kprobe *p, struct pt_regs *regs,
- 				       struct kprobe_ctlblk *kcb)
- {
-@@ -492,20 +481,29 @@ static int __kprobes reenter_kprobe(struct kprobe *p, struct pt_regs *regs,
- 		break;
- #endif
- 	case KPROBE_HIT_ACTIVE:
--		recursive_singlestep(p, regs, kcb);
-+		save_previous_kprobe(kcb);
-+		set_current_kprobe(p, regs, kcb);
-+		kprobes_inc_nmissed_count(p);
-+		prepare_singlestep(p, regs);
-+		kcb->kprobe_status = KPROBE_REENTER;
- 		break;
- 	case KPROBE_HIT_SS:
--		if (*p->ainsn.insn == BREAKPOINT_INSTRUCTION) {
-+		if (p == kprobe_running()) {
- 			regs->flags &= ~TF_MASK;
- 			regs->flags |= kcb->kprobe_saved_flags;
- 			return 0;
- 		} else {
--			recursive_singlestep(p, regs, kcb);
-+			/* A probe has been hit in the codepath leading up
-+			 * to, or just after, single-stepping of a probed
-+			 * instruction. This entire codepath should strictly
-+			 * reside in .kprobes.text section. Raise a warning
-+			 * to highlight this peculiar case.
-+			 */
- 		}
--		break;
- 	default:
- 		/* impossible cases */
- 		WARN_ON(1);
-+		return 0;
- 	}
- 
- 	return 1;
+But lets ask Paul, he is Mr RCU after all :-)
+
+> diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+> index 9663c2a..592f6e4 100644
+> --- a/arch/x86/kernel/process_32.c
+> +++ b/arch/x86/kernel/process_32.c
+> @@ -188,6 +188,9 @@ void cpu_idle(void)
+>  			rmb();
+>  			idle = pm_idle;
+>  
+> +			if (rcu_pending(cpu))
+> +				rcu_check_callbacks(cpu, 0);
+> +
+>  			if (!idle)
+>  				idle = default_idle;
+>  
+
