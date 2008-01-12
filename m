@@ -1,301 +1,312 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763359AbYALKBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763670AbYALKCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763359AbYALKBt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 05:01:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758689AbYALKBm
+	id S1763670AbYALKCP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 05:02:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758689AbYALKB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 05:01:42 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:40376 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754826AbYALKBk (ORCPT
+	Sat, 12 Jan 2008 05:01:58 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:34912 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763323AbYALKB4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 05:01:40 -0500
-Date: Sat, 12 Jan 2008 02:07:19 -0800
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: Re: [PATCH] x86-64: disable the GART early v2
-In-reply-to: <20080111081446.GA6234@elte.hu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, ebiederm@xmission.com,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Message-id: <200801120207.19981.yinghai.lu@sun.com>
-Organization: Sun
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-References: <200801101914.47967.yinghai.lu@sun.com>
- <200801102354.46472.yinghai.lu@sun.com> <20080111081446.GA6234@elte.hu>
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+	Sat, 12 Jan 2008 05:01:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=tH77XzP7JuYnjEmWzuxS/GWtjbIf28A+nrzAsgaba6TGWJk7MpCNuWaOWhip/Gb6hyFo7PHpvtKN7AVlGRILezhR84FPSFTv+S0N/4gJlLt/BpjMU6qeIOPp8FHlqRxmD7pgUmgKn+0ZMdebdQuMV+uc+kAZTZDhrgF3MJobXy4=
+Date: Sat, 12 Jan 2008 18:05:15 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Cc: stefanr@s5r6.in-berlin.de, david-b@pacbell.net, stern@rowland.harvard.edu,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 7/7] driver-core : convert semaphore to mutex in struct
+	class
+Message-ID: <20080112100515.GA2956@darkstar.te-china.tietoenator.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-please check the one against x86.git
-it will use fix e820 for gart.
+Convert the class semaphore to mutex.
 
-YH
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
 
-[PATCH] x86-64: fix e820 for GART or disable the GART early
+---
+ drivers/base/class.c   |   38 +++++++++++++++++++-------------------
+ drivers/base/core.c    |   18 ++++++++----------
+ include/linux/device.h |    3 ++-
+ 3 files changed, 29 insertions(+), 30 deletions(-)
 
-For K8 system: 4G RAM with memory hole remapping enabled, or more than 4G RAM
-installed.
-
-when try to use kexec second kernel, and the first doesn't include gart_shutdown.
-the second kernel could have different aper position than the first kernel. and second
-kernel could use that hole as RAM that is still used by GART set by the first kernel.
-esp. when try to kexec 2.6.24 with sparse mem enable from previous kernel (from RHEL 5
-or SLES 10). the new kernel will use aper by GART (set by first kernel) for vmemmap.
-and after new kernel setting one new GART. the position will be real RAM. the _mapcount
-set is lost.
-
-
-Bad page state in process 'swapper'
-page:ffffe2000e600020 flags:0x0000000000000000 mapping:0000000000000000 mapcount:1 count:0
-Trying to fix it up, but a reboot is needed
-Backtrace:
-Pid: 0, comm: swapper Not tainted 2.6.24-rc7-smp-gcdf71a10-dirty #13
-
-Call Trace:
- [<ffffffff8026401f>] bad_page+0x63/0x8d
- [<ffffffff80264169>] __free_pages_ok+0x7c/0x2a5
- [<ffffffff80ba75d1>] free_all_bootmem_core+0xd0/0x198
- [<ffffffff80ba3a42>] numa_free_all_bootmem+0x3b/0x76
- [<ffffffff80ba3461>] mem_init+0x3b/0x152
- [<ffffffff80b959d3>] start_kernel+0x236/0x2c2
- [<ffffffff80b9511a>] _sinittext+0x11a/0x121
-
-and
- [ffffe2000e600000-ffffe2000e7fffff] PMD ->ffff81001c200000 on node 0
-phys addr is : 0x1c200000
-
-RHEL 5.1 kernel -53 said:
-PCI-DMA: aperture base @ 1c000000 size 65536 KB
-
-new kernel said:
-Mapping aperture over 65536 KB of RAM @ 3c000000
-
-So could try to disable that GART if possible.
-
-According to Ingo
-
-> hm, i'm wondering, instead of modifying the GART, why dont we simply
-> _detect_ whatever GART settings we have inherited, and propagate that
-> into our e820 maps? I.e. if there's inconsistency, then punch that out
-> from the memory maps and just dont use that memory.
-> 
-> that way it would not matter whether the GART settings came from a [old
-> or crashing] Linux kernel that has not called gart_iommu_shutdown(), or
-> whether it's a BIOS that has set up an aperture hole inconsistent with
-> the memory map it passed. (or the memory map we _think_ i tried to pass
-> us)
-> 
-> it would also be more robust to only read and do a memory map quirk
-> based on that, than actively trying to change the GART so early in the
-> bootup. Later on we have to re-enable the GART _anyway_ and have to
-> punch a hole for it.
-> 
-> and as a bonus, we would have shored up our defenses against crappy
-> BIOSes as well.
-
-add e820 modification for gart inconsistent setting.
-
-gart_fix_e820=off could be used to disable e820 fix.
-
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-
-Index: linux-2.6/arch/x86/kernel/aperture_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/aperture_64.c
-+++ linux-2.6/arch/x86/kernel/aperture_64.c
-@@ -218,6 +218,95 @@ static __u32 __init search_agp_bridge(u3
+diff -upr linux/drivers/base/class.c linux.new/drivers/base/class.c
+--- linux/drivers/base/class.c	2008-01-12 16:11:07.000000000 +0800
++++ linux.new/drivers/base/class.c	2008-01-12 16:11:08.000000000 +0800
+@@ -144,7 +144,7 @@ int class_register(struct class * cls)
+ 	INIT_LIST_HEAD(&cls->devices);
+ 	INIT_LIST_HEAD(&cls->interfaces);
+ 	kset_init(&cls->class_dirs);
+-	init_MUTEX(&cls->sem);
++	mutex_init(&cls->mutex);
+ 	error = kobject_set_name(&cls->subsys.kobj, "%s", cls->name);
+ 	if (error)
+ 		return error;
+@@ -617,13 +617,13 @@ int class_device_add(struct class_device
+ 	kobject_uevent(&class_dev->kobj, KOBJ_ADD);
+ 
+ 	/* notify any interfaces this device is now here */
+-	down(&parent_class->sem);
++	mutex_lock_nested(&parent_class->mutex, SINGLE_DEPTH_NESTING);
+ 	list_add_tail(&class_dev->node, &parent_class->children);
+ 	list_for_each_entry(class_intf, &parent_class->interfaces, node) {
+ 		if (class_intf->add)
+ 			class_intf->add(class_dev, class_intf);
+ 	}
+-	up(&parent_class->sem);
++	mutex_unlock(&parent_class->mutex);
+ 
+ 	goto out1;
+ 
+@@ -725,12 +725,12 @@ void class_device_del(struct class_devic
+ 	struct class_interface *class_intf;
+ 
+ 	if (parent_class) {
+-		down(&parent_class->sem);
++		mutex_lock(&parent_class->mutex);
+ 		list_del_init(&class_dev->node);
+ 		list_for_each_entry(class_intf, &parent_class->interfaces, node)
+ 			if (class_intf->remove)
+ 				class_intf->remove(class_dev, class_intf);
+-		up(&parent_class->sem);
++		mutex_unlock(&parent_class->mutex);
+ 	}
+ 
+ 	if (class_dev->dev) {
+@@ -772,14 +772,14 @@ void class_device_destroy(struct class *
+ 	struct class_device *class_dev = NULL;
+ 	struct class_device *class_dev_tmp;
+ 
+-	down(&cls->sem);
++	mutex_lock(&cls->mutex);
+ 	list_for_each_entry(class_dev_tmp, &cls->children, node) {
+ 		if (class_dev_tmp->devt == devt) {
+ 			class_dev = class_dev_tmp;
+ 			break;
+ 		}
+ 	}
+-	up(&cls->sem);
++	mutex_unlock(&cls->mutex);
+ 
+ 	if (class_dev)
+ 		class_device_unregister(class_dev);
+@@ -818,7 +818,7 @@ int class_for_each_device(struct class *
+ 
+ 	if (!class)
+ 		return -EINVAL;
+-	down(&class->sem);
++	mutex_lock(&class->mutex);
+ 	list_for_each_entry(dev, &class->devices, node) {
+ 		dev = get_device(dev);
+ 		if (dev) {
+@@ -829,7 +829,7 @@ int class_for_each_device(struct class *
+ 		if (error)
+ 			break;
+ 	}
+-	up(&class->sem);
++	mutex_unlock(&class->mutex);
+ 
+ 	return error;
+ }
+@@ -858,7 +858,7 @@ struct device *class_find_device(struct 
+ 	if (!class)
+ 		return NULL;
+ 
+-	down(&class->sem);
++	mutex_lock(&class->mutex);
+ 	list_for_each_entry(dev, &class->devices, node) {
+ 		dev = get_device(dev);
+ 		if (dev) {
+@@ -870,7 +870,7 @@ struct device *class_find_device(struct 
+ 		} else
+ 			break;
+ 	}
+-	up(&class->sem);
++	mutex_unlock(&class->mutex);
+ 
+ 	if (error)
+ 		return NULL;
+@@ -898,7 +898,7 @@ int class_for_each_child(struct class *c
+ 
+ 	if (!class)
+ 		return -EINVAL;
+-	down(&class->sem);
++	mutex_lock(&class->mutex);
+ 	list_for_each_entry(dev, &class->children, node) {
+ 		dev = class_device_get(dev);
+ 		if (dev) {
+@@ -909,7 +909,7 @@ int class_for_each_child(struct class *c
+ 		if (error)
+ 			break;
+ 	}
+-	up(&class->sem);
++	mutex_unlock(&class->mutex);
+ 
+ 	return error;
+ }
+@@ -938,7 +938,7 @@ struct class_device *class_find_child(st
+ 	if (!class)
+ 		return NULL;
+ 
+-	down(&class->sem);
++	mutex_lock(&class->mutex);
+ 	list_for_each_entry(dev, &class->children, node) {
+ 		dev = class_device_get(dev);
+ 		if (dev) {
+@@ -950,7 +950,7 @@ struct class_device *class_find_child(st
+ 		} else
+ 			break;
+ 	}
+-	up(&class->sem);
++	mutex_unlock(&class->mutex);
+ 
+ 	if (error)
+ 		return NULL;
+@@ -971,7 +971,7 @@ int class_interface_register(struct clas
+ 	if (!parent)
+ 		return -EINVAL;
+ 
+-	down(&parent->sem);
++	mutex_lock(&parent->mutex);
+ 	list_add_tail(&class_intf->node, &parent->interfaces);
+ 	if (class_intf->add) {
+ 		list_for_each_entry(class_dev, &parent->children, node)
+@@ -981,7 +981,7 @@ int class_interface_register(struct clas
+ 		list_for_each_entry(dev, &parent->devices, node)
+ 			class_intf->add_dev(dev, class_intf);
+ 	}
+-	up(&parent->sem);
++	mutex_unlock(&parent->mutex);
+ 
  	return 0;
  }
+@@ -995,7 +995,7 @@ void class_interface_unregister(struct c
+ 	if (!parent)
+ 		return;
  
-+static int gart_fix_e820 __initdata = 1;
-+
-+static int __init parse_gart_mem(char *p)
-+{
-+	if (!p)
-+		return -EINVAL;
-+
-+	if (!strncmp(p, "off", 3))
-+		gart_fix_e820 = 0;
-+	else if (!strncmp(p, "on", 2))
-+		gart_fix_e820 = 1;
-+
-+        return 0;
-+}
-+early_param("gart_fix_e820", parse_gart_mem);
-+
-+void __init early_gart_iommu_check(void)
-+{
-+	/*
-+	 * in case it is enabled before, esp for kexec/kdump,
-+	 * previous kernel already enable that. memset called
-+	 * by allocate_aperture/__alloc_bootmem_nopanic cause restart.
-+	 * or second kernel have different position for GART hole. and new
-+	 * kernel could use hole as RAM that is still used by GART set by
-+	 * first kernel
-+	 * or BIOS forget to put that in reserved.
-+	 * try to update e820 to make that region as reserved.
-+	 */
-+	int fix, num;
-+	u32 ctl;
-+	u32 aper_size = 0, aper_order = 0, last_aper_order = 0;
-+	u64 aper_base = 0, last_aper_base = 0;
-+	int aper_enabled = 0, last_aper_enabled = 0;
-+
-+	if (!early_pci_allowed())
-+		return;
-+
-+	fix = 0;
-+	for (num = 24; num < 32; num++) {
-+		if (!early_is_k8_nb(read_pci_config(0, num, 3, 0x00)))
-+			continue;
-+
-+		ctl = read_pci_config(0, num, 3, 0x90);
-+		aper_enabled = ctl & 1;
-+		aper_order = (ctl >> 1) & 7;
-+		aper_size = (32 * 1024 * 1024) << aper_order;
-+		aper_base = read_pci_config(0, num, 3, 0x94) & 0x7fff;
-+		aper_base <<= 25;
-+
-+		if ((last_aper_order && aper_order != last_aper_order) ||
-+		    (last_aper_base && aper_base != last_aper_base) ||
-+		    (last_aper_enabled && aper_enabled != last_aper_enabled)) {
-+			fix = 1;
-+			break;
-+		}
-+		last_aper_order = aper_order;
-+		last_aper_base = aper_base;
-+		last_aper_enabled = aper_enabled;
-+	}
-+
-+	if (!fix && !aper_enabled)
-+		return;
-+
-+	if (!aper_base || !aper_size || aper_base + aper_size > 0x100000000UL)
-+                fix = 1;
-+
-+	if (gart_fix_e820 && !fix && aper_enabled) {
-+		if (e820_any_mapped(aper_base, aper_base + aper_size,
-+				    E820_RAM)) {
-+			/* reserved it, so we can resuse it in second kernel */
-+			printk(KERN_INFO "update e820 for GART\n");
-+			add_memory_region(aper_base, aper_size, E820_RESERVED);
-+			update_e820();
-+		}
-+		return;
-+	}
-+
-+	/* different nodes have different setting, disable them all at first*/
-+	for (num = 24; num < 32; num++) {
-+		if (!early_is_k8_nb(read_pci_config(0, num, 3, 0x00)))
-+			continue;
-+
-+		ctl = read_pci_config(0, num, 3, 0x90);
-+		ctl &= ~1;
-+		write_pci_config(0, num, 3, 0x90, ctl);
-+	}
-+
-+}
-+
- void __init gart_iommu_hole_init(void)
- {
- 	u32 aper_size, aper_alloc = 0, aper_order = 0, last_aper_order = 0;
-Index: linux-2.6/arch/x86/kernel/e820_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820_64.c
-+++ linux-2.6/arch/x86/kernel/e820_64.c
-@@ -728,6 +728,18 @@ void __init finish_e820_parsing(void)
+-	down(&parent->sem);
++	mutex_lock(&parent->mutex);
+ 	list_del_init(&class_intf->node);
+ 	if (class_intf->remove) {
+ 		list_for_each_entry(class_dev, &parent->children, node)
+@@ -1005,7 +1005,7 @@ void class_interface_unregister(struct c
+ 		list_for_each_entry(dev, &parent->devices, node)
+ 			class_intf->remove_dev(dev, class_intf);
  	}
+-	up(&parent->sem);
++	mutex_unlock(&parent->mutex);
+ 
+ 	class_put(parent);
  }
+diff -upr linux/drivers/base/core.c linux.new/drivers/base/core.c
+--- linux/drivers/base/core.c	2008-01-12 16:11:07.000000000 +0800
++++ linux.new/drivers/base/core.c	2008-01-12 16:11:08.000000000 +0800
+@@ -19,8 +19,6 @@
+ #include <linux/kdev_t.h>
+ #include <linux/notifier.h>
  
-+void __init update_e820(void)
-+{
-+	u8 nr_map;
-+
-+	nr_map = e820.nr_map;
-+	if (sanitize_e820_map(e820.map, &nr_map))
-+		return;
-+	e820.nr_map = nr_map;
-+	printk(KERN_INFO "modified physical RAM map:\n");
-+	e820_print_map("modified");
-+}
-+
- unsigned long pci_mem_start = 0xaeedbabe;
- EXPORT_SYMBOL(pci_mem_start);
+-#include <asm/semaphore.h>
+-
+ #include "base.h"
+ #include "power/power.h"
  
-Index: linux-2.6/arch/x86/kernel/setup_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup_64.c
-+++ linux-2.6/arch/x86/kernel/setup_64.c
-@@ -54,6 +54,7 @@
- #include <video/edid.h>
- #include <asm/e820.h>
- #include <asm/dma.h>
-+#include <asm/gart.h>
- #include <asm/mpspec.h>
- #include <asm/mmu_context.h>
- #include <asm/proto.h>
-@@ -346,6 +347,8 @@ void __init setup_arch(char **cmdline_p)
+@@ -783,7 +781,7 @@ int device_add(struct device *dev)
+ 		klist_add_tail(&dev->knode_parent, &parent->klist_children);
  
- 	finish_e820_parsing();
+ 	if (dev->class) {
+-		down(&dev->class->sem);
++		mutex_lock(&dev->class->mutex);
+ 		/* tie the class to the device */
+ 		list_add_tail(&dev->node, &dev->class->devices);
  
-+	early_gart_iommu_check();
-+
- 	e820_register_active_regions(0, 0, -1UL);
- 	/*
- 	 * partially used pages are not usable - thus
-Index: linux-2.6/include/asm-x86/e820_64.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/e820_64.h
-+++ linux-2.6/include/asm-x86/e820_64.h
-@@ -35,6 +35,7 @@ extern void e820_register_active_regions
- extern void finish_e820_parsing(void);
+@@ -791,7 +789,7 @@ int device_add(struct device *dev)
+ 		list_for_each_entry(class_intf, &dev->class->interfaces, node)
+ 			if (class_intf->add_dev)
+ 				class_intf->add_dev(dev, class_intf);
+-		up(&dev->class->sem);
++		mutex_unlock(&dev->class->mutex);
+ 	}
+  Done:
+ 	put_device(dev);
+@@ -928,14 +926,14 @@ void device_del(struct device * dev)
+ 			sysfs_remove_link(&dev->kobj, "device");
+ 		}
  
- extern struct e820map e820;
-+extern void update_e820(void);
+-		down(&dev->class->sem);
++		mutex_lock(&dev->class->mutex);
+ 		/* notify any interfaces that the device is now gone */
+ 		list_for_each_entry(class_intf, &dev->class->interfaces, node)
+ 			if (class_intf->remove_dev)
+ 				class_intf->remove_dev(dev, class_intf);
+ 		/* remove the device from the class list */
+ 		list_del_init(&dev->node);
+-		up(&dev->class->sem);
++		mutex_unlock(&dev->class->mutex);
  
- extern unsigned ebda_addr, ebda_size;
- extern unsigned long nodemap_addr, nodemap_size;
-Index: linux-2.6/include/asm-x86/gart.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/gart.h
-+++ linux-2.6/include/asm-x86/gart.h
-@@ -9,6 +9,7 @@ extern int iommu_detected;
- extern void gart_iommu_init(void);
- extern void gart_iommu_shutdown(void);
- extern void __init gart_parse_options(char *);
-+extern void early_gart_iommu_check(void);
- extern void gart_iommu_hole_init(void);
- extern int fallback_aper_order;
- extern int fallback_aper_force;
-@@ -20,6 +21,10 @@ extern int fix_aperture;
- #define gart_iommu_aperture 0
- #define gart_iommu_aperture_allowed 0
+ 		/* If we live in a parent class-directory, unreference it */
+ 		if (dev->kobj.parent->kset == &dev->class->class_dirs) {
+@@ -946,7 +944,7 @@ void device_del(struct device * dev)
+ 			 * if we are the last child of our class, delete
+ 			 * our class-directory at this parent
+ 			 */
+-			down(&dev->class->sem);
++			mutex_lock(&dev->class->mutex);
+ 			list_for_each_entry(d, &dev->class->devices, node) {
+ 				if (d == dev)
+ 					continue;
+@@ -959,7 +957,7 @@ void device_del(struct device * dev)
+ 				kobject_del(dev->kobj.parent);
  
-+static inline void early_gart_iommu_check(void)
-+{
-+}
-+
- static inline void gart_iommu_shutdown(void)
- {
- }
-Index: linux-2.6/Documentation/kernel-parameters.txt
-===================================================================
---- linux-2.6.orig/Documentation/kernel-parameters.txt
-+++ linux-2.6/Documentation/kernel-parameters.txt
-@@ -652,6 +652,10 @@ and is between 256 and 4096 characters. 
+ 			kobject_put(dev->kobj.parent);
+-			up(&dev->class->sem);
++			mutex_unlock(&dev->class->mutex);
+ 		}
+ 	}
+ 	device_remove_file(dev, &uevent_attr);
+@@ -1168,14 +1166,14 @@ void device_destroy(struct class *class,
+ 	struct device *dev = NULL;
+ 	struct device *dev_tmp;
  
- 	gamma=		[HW,DRM]
+-	down(&class->sem);
++	mutex_lock(&class->mutex);
+ 	list_for_each_entry(dev_tmp, &class->devices, node) {
+ 		if (dev_tmp->devt == devt) {
+ 			dev = dev_tmp;
+ 			break;
+ 		}
+ 	}
+-	up(&class->sem);
++	mutex_unlock(&class->mutex);
  
-+	gart_fix_e820=  [X86_64] disable the fix e820 for K8 GART
-+			Format: off | on
-+			default: on
-+
- 	gdth=		[HW,SCSI]
- 			See header of drivers/scsi/gdth.c.
+ 	if (dev)
+ 		device_unregister(dev);
+diff -upr linux/include/linux/device.h linux.new/include/linux/device.h
+--- linux/include/linux/device.h	2008-01-12 16:11:07.000000000 +0800
++++ linux.new/include/linux/device.h	2008-01-12 16:11:08.000000000 +0800
+@@ -20,6 +20,7 @@
+ #include <linux/types.h>
+ #include <linux/module.h>
+ #include <linux/pm.h>
++#include <linux/mutex.h>
+ #include <asm/semaphore.h>
+ #include <asm/atomic.h>
+ #include <asm/device.h>
+@@ -180,7 +181,7 @@ struct class {
+ 	struct list_head	devices;
+ 	struct list_head	interfaces;
+ 	struct kset		class_dirs;
+-	struct semaphore	sem;	/* locks both the children and interfaces lists */
++	struct mutex		mutex;
  
+ 	struct class_attribute		* class_attrs;
+ 	struct class_device_attribute	* class_dev_attrs;
