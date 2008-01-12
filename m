@@ -1,88 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761335AbYALUID@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760146AbYALUL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761335AbYALUID (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 15:08:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757381AbYALUHy
+	id S1760146AbYALUL1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 15:11:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756023AbYALULT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 15:07:54 -0500
-Received: from hu-out-0506.google.com ([72.14.214.227]:61744 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756907AbYALUHx (ORCPT
+	Sat, 12 Jan 2008 15:11:19 -0500
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:43945 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755433AbYALULT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 15:07:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=EIo7yANrhm2iNgVnbLY/jUuX3Gm9rHmYYztAzjk+swP9NXlzeA9/YazfoLqBKFr7tBwcGDS9RXphFKhosjal8RiJzmfjS1/SX96k1343V0G+AdMyPV0HoSjo+X9SrfubdZ98J6n+/Ws3CQ4tNMXXQeD2/IYoVCA9P2y/Pe56t30=
-Date: Sat, 12 Jan 2008 21:11:11 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Greg KH <gregkh@suse.de>, stefanr@s5r6.in-berlin.de,
-       James.Bottomley@hansenpartnership.com, a.zummo@towertech.it,
-       peterz@infradead.org, cbou@mail.ru, linux-kernel@vger.kernel.org,
-       David Brownell <david-b@pacbell.net>, krh@redhat.com,
-       stern@rowland.harvard.edu, dwmw2@infradead.org, davem@davemloft.net
-Subject: Re: [PATCH 1/7] driver-core : add class iteration api
-Message-ID: <20080112201111.GA8129@ami.dom.local>
-References: <20080112094754.GA2893@darkstar.te-china.tietoenator.com>
+	Sat, 12 Jan 2008 15:11:19 -0500
+Message-ID: <47891E21.8060209@keyaccess.nl>
+Date: Sat, 12 Jan 2008 21:08:01 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080112094754.GA2893@darkstar.te-china.tietoenator.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Andrew Morton <akpm@osdl.org>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Pierre Ossman <drzeus@drzeus.cx>,
+       Pavel Machek <pavel@suse.cz>, Ondrej Zary <linux@rainbow-software.org>,
+       Jaroslav Kysela <perex@perex.cz>,
+       ALSA development <alsa-devel@alsa-project.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Takashi Iwai <tiwai@suse.de>,
+       linux-pm@lists.linux-foundation.org
+Subject: -mm: pnp-do-not-stop-start-devices-in-suspend-resume-path.patch breaks
+ resuming isapnp cards
+References: <200801092343.48726.linux@rainbow-software.org> <20080112162150.1ec9cad0@poseidon.drzeus.cx> <4788F226.7040101@keyaccess.nl> <200801122008.10313.rjw@sisk.pl>
+In-Reply-To: <200801122008.10313.rjw@sisk.pl>
+Content-Type: multipart/mixed;
+ boundary="------------030900050006070904040005"
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 12, 2008 at 05:47:54PM +0800, Dave Young wrote:
-> Add the following class iteration functions for driver use:
-> class_for_each_device
-> class_find_device
-> class_for_each_child
-> class_find_child
-> 
-> Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
-> 
-> ---
->  drivers/base/class.c   |  159 +++++++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/device.h |    8 ++
->  2 files changed, 167 insertions(+)
-> 
-> diff -upr linux/drivers/base/class.c linux.new/drivers/base/class.c
-> --- linux/drivers/base/class.c	2008-01-12 14:42:24.000000000 +0800
-> +++ linux.new/drivers/base/class.c	2008-01-12 14:42:24.000000000 +0800
-> @@ -798,6 +798,165 @@ void class_device_put(struct class_devic
->  		kobject_put(&class_dev->kobj);
->  }
->  
-> +/**
-> + *	class_for_each_device - device iterator
-> + *	@class:	the class we're iterating
-> + *	@data: data for the callback
-> + *	@fn: function to be called for each device
-> + *
-> + *	Iterate over @class's list of devices, and call @fn for each,
-> + *	passing it @data.
-> + *
-> + *	We check the return of @fn each time. If it returns anything
-> + *	other than 0, we break out and return that value.
-> + */
-> +int class_for_each_device(struct class *class, void *data,
-> +			   int (*fn)(struct device *, void *))
-> +{
-> +	struct device *dev;
-> +	int error = 0;
-> +
-> +	if (!class)
-> +		return -EINVAL;
-> +	down(&class->sem);
-> +	list_for_each_entry(dev, &class->devices, node) {
+This is a multi-part message in MIME format.
+--------------030900050006070904040005
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Probably some tiny oversight, but I see this comment to struct class
-doesn't mention devices list, so maybe this needs to be updated BTW?:
+Hi Andrew.
 
-(from include/linux/device.h)
-"        struct semaphore        sem;    /* locks both the children and interfaces lists */"
+pnp-do-not-stop-start-devices-in-suspend-resume-path.patch in current -mm 
+breaks resuming isapnp cards from hibernation. They need the pnp_start_dev 
+to enable the device again after hibernation.
 
-Regards,
-Jarek P.
+They don't really need the pnp_stop_dev() which the above mentioned patch 
+also removes but with the pnp_start_dev() restored it seems pnp_stop_dev() 
+should also stay. Bjorn Helgaas should decide  -- currently the patch as you 
+have it breaks drivers though. Could you drop it?
+
+Then, if so and after you do that, could you apply the attached? That's also 
+needed to resume (ALSA) ISA-PnP cards from hibernation due to the 
+RES_DO_NOT_CHANGE test triggering for ALSA drivers and the pnp_start_dev() 
+still not happening. More in the changelog...
+
+On 12-01-08 20:08, Rafael J. Wysocki wrote:
+
+> On Saturday, 12 of January 2008, Rene Herman wrote:
+
+>> It seems all PnP drivers would need to stick a pnp_start_dev in their resume 
+>> method
+> 
+> Yes.
+> 
+>> then which means it really belongs in core.
+> 
+> Yes, if practical.
+> 
+>> One important point where PnP and PCI differ is that PnP allows to change the
+>> resources on a protocol level and I don't see how it could ever not be
+>> necessary to restore the state a user may have set if power has been
+>> removed. Hibernate is just that, isn't it?
+> 
+> Basically, yes, it is.
+
+Rene.
+
+
+--------------030900050006070904040005
+Content-Type: text/plain;
+ name="pnp_driver_res_do_not_test.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="pnp_driver_res_do_not_test.diff"
+
+commit 7d16e8b3e7739599d32c8006f9e84fadb86b8296
+Author: Rene Herman <rene.herman@gmail.com>
+Date:   Sat Jan 12 00:00:35 2008 +0100
+
+    PNP: do not test PNP_DRIVER_RES_DO_NOT_CHANGE on suspend/resume
+    
+    The PNP_DRIVER_RES_DO_NOT_CHANGE flag is meant to signify that
+    the PNP core should not change resources for the device -- not
+    that it shouldn't disable/enable the device on suspend/resume.
+    
+    ALSA ISAPnP drivers set PNP_DRIVER_RES_DO_NOT_CHANAGE (0x0001)
+    through setting PNP_DRIVER_RES_DISABLE (0x0003). The latter
+    including the former may in itself be considered rather
+    unexpected but doesn't change that suspend/resume wouldn't seem
+    to have any business testing the flag.
+    
+    As reported by Ondrej Zary for snd-cs4236, ALSA driven ISAPnP
+    cards don't survive swsusp hibernation with the resume skipping
+    setting the resources due to testing the flag -- the same test
+    in the suspend path isn't enough to keep hibernation from
+    disabling the card it seems.
+    
+    These tests were added (in 2005) by Piere Ossman in commit
+    68094e3251a664ee1389fcf179497237cbf78331, "alsa: Improved PnP
+    suspend support" who doesn't remember why. This deletes them.
+    
+    Signed-off-by: Rene Herman <rene.herman@gmail.com>
+    Tested-by: Ondrej Zary <linux@rainbow-software.org>
+
+diff --git a/drivers/pnp/driver.c b/drivers/pnp/driver.c
+index a262762..12a1645 100644
+--- a/drivers/pnp/driver.c
++++ b/drivers/pnp/driver.c
+@@ -161,8 +161,7 @@ static int pnp_bus_suspend(struct device *dev, pm_message_t state)
+ 			return error;
+ 	}
+ 
+-	if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE) &&
+-	    pnp_can_disable(pnp_dev)) {
++	if (pnp_can_disable(pnp_dev)) {
+ 		error = pnp_stop_dev(pnp_dev);
+ 		if (error)
+ 			return error;
+@@ -185,14 +184,17 @@ static int pnp_bus_resume(struct device *dev)
+ 	if (pnp_dev->protocol && pnp_dev->protocol->resume)
+ 		pnp_dev->protocol->resume(pnp_dev);
+ 
+-	if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE)) {
++	if (pnp_can_write(pnp_dev)) {
+ 		error = pnp_start_dev(pnp_dev);
+ 		if (error)
+ 			return error;
+ 	}
+ 
+-	if (pnp_drv->resume)
+-		return pnp_drv->resume(pnp_dev);
++	if (pnp_drv->resume) {
++		error = pnp_drv->resume(pnp_dev);
++		if (error)
++			return error;
++	}
+ 
+ 	return 0;
+ }
+
+--------------030900050006070904040005--
