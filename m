@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760327AbYALEfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760964AbYALEoF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760327AbYALEfj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 23:35:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754212AbYALEf3
+	id S1760964AbYALEoF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 23:44:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756682AbYALEnx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 23:35:29 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:37138 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754090AbYALEf2 (ORCPT
+	Fri, 11 Jan 2008 23:43:53 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:41433 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754212AbYALEnw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 23:35:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=x8TBTMGuBNkWsz4eFvjuwpywyxvYQ8urWe2miOCzwvwb1BokhPzSn+BDIGUsYw9myisjUZKKMjjuUHJX73mWfudZEa0JTM1PM0GaveQhYat6zoq5dP/hy7RTky6Vin7UimwU80Rz041ygEQHyN9Yg4ULPn/+c4TSkC5OPql1M4Y=
-Message-ID: <4cc25cb20801112035x16c69a40rf3103a73b6cda107@mail.gmail.com>
-Date: Sat, 12 Jan 2008 12:35:27 +0800
-From: rmingming <mingming.nk@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Is try_module_get buggy?
+	Fri, 11 Jan 2008 23:43:52 -0500
+Date: Fri, 11 Jan 2008 20:45:36 -0800
+From: Greg KH <greg@kroah.com>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [TOMOYO #6 retry 08/21] Utility functions and policy
+	manipulationinterface.
+Message-ID: <20080112044536.GA31404@kroah.com>
+References: <20080109005320.323184643@nttdata.co.jp> <20080109005421.598247963@nttdata.co.jp> <Xine.LNX.4.64.0801091524500.13216@us.intercode.com.au> <Xine.LNX.4.64.0801091528160.13216@us.intercode.com.au> <200801121106.DBD21371.SVJOOHQFFLOFMt@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <200801121106.DBD21371.SVJOOHQFFLOFMt@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
- I have a problem about the try_module_get function, I don't know if someone
-removed the module just AFTER line 372, then what happens? Because in this
-situation, the variable module will be incorrect, and module_is_live
-function will lead to unpredicatable behaviour.
+On Sat, Jan 12, 2008 at 11:06:17AM +0900, Tetsuo Handa wrote:
+> Hello.
+> 
+> James Morris wrote:
+> > > > TOMOYO Linux uses /sys/kernel/security/tomoyo interface for configuration.
+> > > 
+> > > Why aren't you using securityfs for this?  (It was designed for LSMs).
+> > 
+> > Doh, it is using securityfs, don't worry.
+> > 
+> I got a mm-commits mail titled
+> "+ sysfs-make-sysfs_deprecated-depend-on-sysfs.patch added to -mm tree" .
+> 
+> Is sysfs going to be deprecated?
 
-368 static inline int try_module_get(struct module *module)
-369 {
-370         int ret = 1;
-371
-372         if (module) {
-373                 unsigned int cpu = get_cpu();
-374                 if (likely(module_is_live(module)))
-375                         local_inc(&module->ref[cpu].count);
-376                 else
-377                         ret = 0;
-378                 put_cpu();
-379         }
-380         return ret;
-381 }
+No, there is a config option, CONFIG_SYSFS_DEPRECATED which enables some
+older sysfs symlinks and layouts.  That patch from Randy Dunlap was just
+fixing up some config dependancies that were found, that's all.
 
-Best wishes to all,
-rmingming
+> If sysfs becomes not available at /sys/ , where securityfs is going to be mounted?
+
+sysfs is not going away any time soon, don't worry :)
+
+thanks,
+
+greg k-h
