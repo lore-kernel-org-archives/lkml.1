@@ -1,70 +1,301 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763387AbYALJ5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763359AbYALKBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763387AbYALJ5R (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 04:57:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760832AbYALJ5B
+	id S1763359AbYALKBt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 05:01:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758689AbYALKBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 04:57:01 -0500
-Received: from smtp-106-saturday.nerim.net ([62.4.16.106]:61412 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760646AbYALJ5A (ORCPT
+	Sat, 12 Jan 2008 05:01:42 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:40376 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754826AbYALKBk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 04:57:00 -0500
-X-Greylist: delayed 456 seconds by postgrey-1.27 at vger.kernel.org; Sat, 12 Jan 2008 04:57:00 EST
-Date: Sat, 12 Jan 2008 10:56:58 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Shaohua Li <shaohua.li@intel.com>,
-       Mike Houston <mikeserv@bmts.com>, Adrian Bunk <bunk@stusta.de>,
-       Elvis Pranskevichus <el@prans.net>, mhoffman@lightlink.com,
-       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
-       Adam Belay <ambx1@neo.rr.com>, Zhao Yakui <yakui.zhao@intel.com>,
-       Thomas Renninger <trenn@suse.de>, lenb@kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: 2.6.24-rc4 hwmon it87 probe fails
-Message-ID: <20080112105658.6fb3995f@hyperion.delvare>
-In-Reply-To: <4769C0E2.4000500@shaw.ca>
-References: <fa.QPUBl9Xd2PDsImgWn6hbR+ShV1U@ifi.uio.no>
-	<fa.ri5Klmu4+MwjYC8x5nSms+xKXfI@ifi.uio.no>
-	<fa.B/J+j9kGGZ1+gW9FrfHky+cj0Eo@ifi.uio.no>
-	<fa.Xv3BmMxnCGLOeEijySte5mKDO5k@ifi.uio.no>
-	<4769C0E2.4000500@shaw.ca>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 12 Jan 2008 05:01:40 -0500
+Date: Sat, 12 Jan 2008 02:07:19 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: Re: [PATCH] x86-64: disable the GART early v2
+In-reply-to: <20080111081446.GA6234@elte.hu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, ebiederm@xmission.com,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Message-id: <200801120207.19981.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <200801101914.47967.yinghai.lu@sun.com>
+ <200801102354.46472.yinghai.lu@sun.com> <20080111081446.GA6234@elte.hu>
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Robert,
+please check the one against x86.git
+it will use fix e820 for gart.
 
-On Wed, 19 Dec 2007 19:09:54 -0600, Robert Hancock wrote:
-> It's quite possible that the BIOS accesses the device either from ACPI 
-> AML or possibly even from SMI. In that case it would be quite reasonable 
-> for the BIOS to reserve that region to prevent another driver from 
-> loading and trying to take conflicting control of the device. One has to 
-> be careful before assuming that any such reservation is bogus.
+YH
 
-Again I am all for honoring such BIOS requests so as to prevent
-conflicts between ACPI or SMI and native drivers. The problem is that
-no two BIOS out there do the same in this respect. I couldn't see any
-correlation between machines declaring their hwmon device in PNP and
-machines where ACPI or SMI access the device in question. Many boards
-declare their device and seemingly never touch it so it's fine for
-Linux to drive them. Some boards no not declare the devices but still
-access them in our back.
+[PATCH] x86-64: fix e820 for GART or disable the GART early
 
-Thomas' patches should deal with the ACPI AML case in most cases, but
-not with SMI.
+For K8 system: 4G RAM with memory hole remapping enabled, or more than 4G RAM
+installed.
 
-So either the PNP code in Linux isn't exporting enough details to
-differentiate, or even the PNP code has no way to tell these cases
-apart. In the latter case there's not much we can do. In the former
-case, let's have the PNP code export the information so that hwmon
-drivers can decide whether they should bind to the devices or not by
-default.
+when try to use kexec second kernel, and the first doesn't include gart_shutdown.
+the second kernel could have different aper position than the first kernel. and second
+kernel could use that hole as RAM that is still used by GART set by the first kernel.
+esp. when try to kexec 2.6.24 with sparse mem enable from previous kernel (from RHEL 5
+or SLES 10). the new kernel will use aper by GART (set by first kernel) for vmemmap.
+and after new kernel setting one new GART. the position will be real RAM. the _mapcount
+set is lost.
 
--- 
-Jean Delvare
+
+Bad page state in process 'swapper'
+page:ffffe2000e600020 flags:0x0000000000000000 mapping:0000000000000000 mapcount:1 count:0
+Trying to fix it up, but a reboot is needed
+Backtrace:
+Pid: 0, comm: swapper Not tainted 2.6.24-rc7-smp-gcdf71a10-dirty #13
+
+Call Trace:
+ [<ffffffff8026401f>] bad_page+0x63/0x8d
+ [<ffffffff80264169>] __free_pages_ok+0x7c/0x2a5
+ [<ffffffff80ba75d1>] free_all_bootmem_core+0xd0/0x198
+ [<ffffffff80ba3a42>] numa_free_all_bootmem+0x3b/0x76
+ [<ffffffff80ba3461>] mem_init+0x3b/0x152
+ [<ffffffff80b959d3>] start_kernel+0x236/0x2c2
+ [<ffffffff80b9511a>] _sinittext+0x11a/0x121
+
+and
+ [ffffe2000e600000-ffffe2000e7fffff] PMD ->ffff81001c200000 on node 0
+phys addr is : 0x1c200000
+
+RHEL 5.1 kernel -53 said:
+PCI-DMA: aperture base @ 1c000000 size 65536 KB
+
+new kernel said:
+Mapping aperture over 65536 KB of RAM @ 3c000000
+
+So could try to disable that GART if possible.
+
+According to Ingo
+
+> hm, i'm wondering, instead of modifying the GART, why dont we simply
+> _detect_ whatever GART settings we have inherited, and propagate that
+> into our e820 maps? I.e. if there's inconsistency, then punch that out
+> from the memory maps and just dont use that memory.
+> 
+> that way it would not matter whether the GART settings came from a [old
+> or crashing] Linux kernel that has not called gart_iommu_shutdown(), or
+> whether it's a BIOS that has set up an aperture hole inconsistent with
+> the memory map it passed. (or the memory map we _think_ i tried to pass
+> us)
+> 
+> it would also be more robust to only read and do a memory map quirk
+> based on that, than actively trying to change the GART so early in the
+> bootup. Later on we have to re-enable the GART _anyway_ and have to
+> punch a hole for it.
+> 
+> and as a bonus, we would have shored up our defenses against crappy
+> BIOSes as well.
+
+add e820 modification for gart inconsistent setting.
+
+gart_fix_e820=off could be used to disable e820 fix.
+
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+
+Index: linux-2.6/arch/x86/kernel/aperture_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/aperture_64.c
++++ linux-2.6/arch/x86/kernel/aperture_64.c
+@@ -218,6 +218,95 @@ static __u32 __init search_agp_bridge(u3
+ 	return 0;
+ }
+ 
++static int gart_fix_e820 __initdata = 1;
++
++static int __init parse_gart_mem(char *p)
++{
++	if (!p)
++		return -EINVAL;
++
++	if (!strncmp(p, "off", 3))
++		gart_fix_e820 = 0;
++	else if (!strncmp(p, "on", 2))
++		gart_fix_e820 = 1;
++
++        return 0;
++}
++early_param("gart_fix_e820", parse_gart_mem);
++
++void __init early_gart_iommu_check(void)
++{
++	/*
++	 * in case it is enabled before, esp for kexec/kdump,
++	 * previous kernel already enable that. memset called
++	 * by allocate_aperture/__alloc_bootmem_nopanic cause restart.
++	 * or second kernel have different position for GART hole. and new
++	 * kernel could use hole as RAM that is still used by GART set by
++	 * first kernel
++	 * or BIOS forget to put that in reserved.
++	 * try to update e820 to make that region as reserved.
++	 */
++	int fix, num;
++	u32 ctl;
++	u32 aper_size = 0, aper_order = 0, last_aper_order = 0;
++	u64 aper_base = 0, last_aper_base = 0;
++	int aper_enabled = 0, last_aper_enabled = 0;
++
++	if (!early_pci_allowed())
++		return;
++
++	fix = 0;
++	for (num = 24; num < 32; num++) {
++		if (!early_is_k8_nb(read_pci_config(0, num, 3, 0x00)))
++			continue;
++
++		ctl = read_pci_config(0, num, 3, 0x90);
++		aper_enabled = ctl & 1;
++		aper_order = (ctl >> 1) & 7;
++		aper_size = (32 * 1024 * 1024) << aper_order;
++		aper_base = read_pci_config(0, num, 3, 0x94) & 0x7fff;
++		aper_base <<= 25;
++
++		if ((last_aper_order && aper_order != last_aper_order) ||
++		    (last_aper_base && aper_base != last_aper_base) ||
++		    (last_aper_enabled && aper_enabled != last_aper_enabled)) {
++			fix = 1;
++			break;
++		}
++		last_aper_order = aper_order;
++		last_aper_base = aper_base;
++		last_aper_enabled = aper_enabled;
++	}
++
++	if (!fix && !aper_enabled)
++		return;
++
++	if (!aper_base || !aper_size || aper_base + aper_size > 0x100000000UL)
++                fix = 1;
++
++	if (gart_fix_e820 && !fix && aper_enabled) {
++		if (e820_any_mapped(aper_base, aper_base + aper_size,
++				    E820_RAM)) {
++			/* reserved it, so we can resuse it in second kernel */
++			printk(KERN_INFO "update e820 for GART\n");
++			add_memory_region(aper_base, aper_size, E820_RESERVED);
++			update_e820();
++		}
++		return;
++	}
++
++	/* different nodes have different setting, disable them all at first*/
++	for (num = 24; num < 32; num++) {
++		if (!early_is_k8_nb(read_pci_config(0, num, 3, 0x00)))
++			continue;
++
++		ctl = read_pci_config(0, num, 3, 0x90);
++		ctl &= ~1;
++		write_pci_config(0, num, 3, 0x90, ctl);
++	}
++
++}
++
+ void __init gart_iommu_hole_init(void)
+ {
+ 	u32 aper_size, aper_alloc = 0, aper_order = 0, last_aper_order = 0;
+Index: linux-2.6/arch/x86/kernel/e820_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/e820_64.c
++++ linux-2.6/arch/x86/kernel/e820_64.c
+@@ -728,6 +728,18 @@ void __init finish_e820_parsing(void)
+ 	}
+ }
+ 
++void __init update_e820(void)
++{
++	u8 nr_map;
++
++	nr_map = e820.nr_map;
++	if (sanitize_e820_map(e820.map, &nr_map))
++		return;
++	e820.nr_map = nr_map;
++	printk(KERN_INFO "modified physical RAM map:\n");
++	e820_print_map("modified");
++}
++
+ unsigned long pci_mem_start = 0xaeedbabe;
+ EXPORT_SYMBOL(pci_mem_start);
+ 
+Index: linux-2.6/arch/x86/kernel/setup_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup_64.c
++++ linux-2.6/arch/x86/kernel/setup_64.c
+@@ -54,6 +54,7 @@
+ #include <video/edid.h>
+ #include <asm/e820.h>
+ #include <asm/dma.h>
++#include <asm/gart.h>
+ #include <asm/mpspec.h>
+ #include <asm/mmu_context.h>
+ #include <asm/proto.h>
+@@ -346,6 +347,8 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	finish_e820_parsing();
+ 
++	early_gart_iommu_check();
++
+ 	e820_register_active_regions(0, 0, -1UL);
+ 	/*
+ 	 * partially used pages are not usable - thus
+Index: linux-2.6/include/asm-x86/e820_64.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/e820_64.h
++++ linux-2.6/include/asm-x86/e820_64.h
+@@ -35,6 +35,7 @@ extern void e820_register_active_regions
+ extern void finish_e820_parsing(void);
+ 
+ extern struct e820map e820;
++extern void update_e820(void);
+ 
+ extern unsigned ebda_addr, ebda_size;
+ extern unsigned long nodemap_addr, nodemap_size;
+Index: linux-2.6/include/asm-x86/gart.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/gart.h
++++ linux-2.6/include/asm-x86/gart.h
+@@ -9,6 +9,7 @@ extern int iommu_detected;
+ extern void gart_iommu_init(void);
+ extern void gart_iommu_shutdown(void);
+ extern void __init gart_parse_options(char *);
++extern void early_gart_iommu_check(void);
+ extern void gart_iommu_hole_init(void);
+ extern int fallback_aper_order;
+ extern int fallback_aper_force;
+@@ -20,6 +21,10 @@ extern int fix_aperture;
+ #define gart_iommu_aperture 0
+ #define gart_iommu_aperture_allowed 0
+ 
++static inline void early_gart_iommu_check(void)
++{
++}
++
+ static inline void gart_iommu_shutdown(void)
+ {
+ }
+Index: linux-2.6/Documentation/kernel-parameters.txt
+===================================================================
+--- linux-2.6.orig/Documentation/kernel-parameters.txt
++++ linux-2.6/Documentation/kernel-parameters.txt
+@@ -652,6 +652,10 @@ and is between 256 and 4096 characters. 
+ 
+ 	gamma=		[HW,DRM]
+ 
++	gart_fix_e820=  [X86_64] disable the fix e820 for K8 GART
++			Format: off | on
++			default: on
++
+ 	gdth=		[HW,SCSI]
+ 			See header of drivers/scsi/gdth.c.
+ 
