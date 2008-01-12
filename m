@@ -1,95 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760642AbYALTP5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758929AbYALTZD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760642AbYALTP5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 14:15:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756871AbYALTPt
+	id S1758929AbYALTZD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 14:25:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbYALTYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 14:15:49 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34131 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756223AbYALTPr (ORCPT
+	Sat, 12 Jan 2008 14:24:53 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:12779 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750962AbYALTYw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 14:15:47 -0500
-Date: Sat, 12 Jan 2008 11:15:20 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Paul Mundt <lethal@linux-sh.org>,
-       linux-sh <linux-sh@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] SH/Dreamcast - add support for GD-Rom CDROM drive on
- SEGA Dreamcast
-Message-Id: <20080112111520.abf625ce.akpm@linux-foundation.org>
-In-Reply-To: <1200147241.6207.17.camel@localhost.localdomain>
-References: <1200007549.6349.16.camel@localhost.localdomain>
-	<1200088609.6213.3.camel@localhost.localdomain>
-	<20080112053630.0ccb290e.akpm@linux-foundation.org>
-	<1200147241.6207.17.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 12 Jan 2008 14:24:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=dWk2VXkonX555reQJvbr2xDC/ydt0jpGTwTHdk9b+3q2gEIMmk3nFfYWtDrUXET+k/sYTC0zP1PodvYteOpkgr36VniMVOZ0FG6ukt5GmhpnjJX7TG4PnmDlzUOWFqxB912Tz9vsslPSYBjSgFsGwANgemA3qXP4oFOS8sSHBlA=
+Message-ID: <e38d12ff0801121124u46c68d03w294d078501d3cf2c@mail.gmail.com>
+Date: Sat, 12 Jan 2008 14:24:52 -0500
+From: "Andrey Vul" <andrey.vul@gmail.com>
+To: "Theodore Tso" <tytso@mit.edu>, "Tuomo Valkonen" <tuomov@iki.fi>,
+       linux-kernel@vger.kernel.org
+Subject: Re: The ext3 way of journalling
+In-Reply-To: <20080112150621.GC6751@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi>
+	 <18307.42821.166376.732473@stoffel.org>
+	 <slrnfo7auq.6m2.tuomov@jolt.modeemi.cs.tut.fi>
+	 <871w8r6ruc.fsf@barad-dur.regala.cx>
+	 <slrnfo9lqk.17l.tuomov@jolt.modeemi.cs.tut.fi>
+	 <20080110131659.GF10230@mit.edu>
+	 <20080110134111.GA6254@jolt.modeemi.cs.tut.fi>
+	 <20080112150621.GC6751@mit.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 Jan 2008 14:14:01 +0000 Adrian McMenamin <adrian@newgolddream.dyndns.info> wrote:
-
-> 
-> > > +	spin_command->cmd[0] = 0x70;
-> > > +	spin_command->cmd[2] = 0x1f;
-> > > +	spin_command->buflen = 0;
-> > > +	gd.pending = 1;
-> > > +	gdrom_packetcommand(gd.cd_info, spin_command);
-> > > +	/* 60 second timeout */
-> > > +	wait_event_interruptible_timeout(command_queue, gd.pending == 0, HZ * 60);
-> > > +	gd.pending = 0;
-> > > +	kfree(spin_command);
-> > > +	if (gd.status & 0x01) {
-> > > +		/* log an error */
-> > > +		gdrom_getsense(NULL);
-> > > +		return -EIO;
-> > > +	}
-> > > +	return 0;
-> > > +}
-> > 
-> > If the wait_event_interruptible_timeout() indeed times out, we go ahead and
-> > free spin_command.  But someone else could potentially be using it. 
-> > 
-> > Suppose gdrom_packetcommand() got stuck for a minute due to bad hardware,
-> > or some SCHED_FIFO task preempting us here and running for 61 seconds without
-> > yielding or something similarly weird.
-> > 
-> 
-> 
-> Maybe I am being stupid here, but I don't follow this. They'll get a
-> non-fatal error, that's all. Who else would be using spin_command? It's
-> just a series of bytes to plug into the GD Rom registers, that's all.
-> 
-
-After programming the registers we need to wait for the interrupt to clear
-gd.pending, don't we?
-
-<looks>
-
-oh, I see.  gd is a global singleton and we only support one command at a
-time and one device.  hrm.
-
-> > > +
-> > > +static int __devinit gdrom_set_interrupt_handlers(void)
-> > > +{
-> > > +	int err;
-> > > +	init_waitqueue_head(&command_queue);
-> > > +	err = request_irq(HW_EVENT_GDROM_CMD, gdrom_command_interrupt, IRQF_DISABLED, "gdrom_command", &gd);
-> > > +	if (err)
-> > > +		return err;
-> > > +	init_waitqueue_head(&request_queue);
-> > 
-> > You can initialise command_queue and request_queue at compile-time with
-> > DECLARE_WAIT_QUEUE_HEAD().
-> > 
-> 
-> Are you saying that is better?
-
-Yup.  Less source code, less object code, no startup-ordering issues.
+On Jan 12, 2008 10:06 AM, Theodore Tso <tytso@mit.edu> wrote:
+[snip]
+> Unfortunately Ubuntu users [snip] fit this demographic hugely, and
+> Ubuntu refuses to fix this problem[1], so it's been personally very
+> vexing, because the users complain to *me*, and I can't fix the problem,
+> because it's a distribution init script issue.
+Ubuntu refuses to be power user friendly. They've forgotten the True
+Meaning (tm) of Linux and try to be Windows-friendly, i.e., No Choices
+(tm).
 
 
+> Maybe someday Ubuntu will get this right --- but I'm not counting on it.
+The alternative CD installer still looks like a semi-dumbed-down
+debian installer. Hell, even the command-line base install is severely
+bloated - it's the exact opposite of LFS or gentoo.
+Still, it's *usable* in comparison to the livecd.
+>
+> [1] Something about installer CD's, and not wanting to ask the users
+> any questions, not even what time zone they are in, or some other
+> crazyness.  I never completely understood the argument and their
+> design constraints.
+Idiot friendliness and no exceptions to power users (e.g.., bloated
+init scripts, UUID fstab). I switched to debian-unstable ages ago
+*just* because apt is _really_ easy to use. Which I use secondarily to
+Gentoo, where things Just Work (tm), once you patch the package
+ebuilds to process your .patch files anyway and, while the packages
+have *lots* of patches, it doesn't bloat the code *and* you can
+disable the patches with the "vanilla" USE flag.
+
+-- 
+Andrey Vul
