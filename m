@@ -1,59 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762262AbYALHPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762736AbYALHZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762262AbYALHPw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 02:15:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759466AbYALHPp
+	id S1762736AbYALHZi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 02:25:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759606AbYALHZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 02:15:45 -0500
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:60577 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758371AbYALHPo (ORCPT
+	Sat, 12 Jan 2008 02:25:13 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:56074 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760243AbYALHY7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 02:15:44 -0500
-X-Greylist: delayed 303 seconds by postgrey-1.27 at vger.kernel.org; Sat, 12 Jan 2008 02:15:44 EST
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq4HALb0h0d5LCjq/2dsb2JhbACBVqgm
-X-IronPort-AV: E=Sophos;i="4.24,275,1196602200"; 
-   d="scan'208";a="21342039"
-To: Bodo Eggert <7eggert@gmx.de>
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Bodo Eggert <7eggert@gmx.de>, Matthias Schniedermeyer <ms@citd.de>,
-       Tuomo Valkonen <tuomov@iki.fi>, linux-kernel@vger.kernel.org
-From: TimC <tconnors@astro.swin.edu.au>
-Subject: Re: The ext3 way of journalling
-Mail-Copies-To: tconnors@astro.swin.edu.au
-In-reply-to: <alpine.LSU.0.999.0801120236500.9944@be1.lrz>
-References: <9JpbI-5yi-9@gated-at.bofh.it> <9Jqri-7ym-17@gated-at.bofh.it> <9JqUn-8bF-15@gated-at.bofh.it> <9JvKj-85h-41@gated-at.bofh.it> <E1JDMeb-0003qH-Mv@be1.7eggert.dyndns.org> <20080111183927.GM2310@csclub.uwaterloo.ca> <alpine.LSU.0.999.0801120236500.9944@be1.lrz>
-X-test-to: Bodo Eggert <7eggert@gmx.de>
-X-cc-to: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>, Bodo Eggert <7eggert@gmx.de>, Matthias Schniedermeyer <ms@citd.de>, Tuomo Valkonen <tuomov@iki.fi>, linux-kernel@vger.kernel.org
-X-reply-to-bofh-messageid: <9KDFA-7Xq-1@gated-at.bofh.it>
-X-Editor: xemacsclientserver
-X-EndlessSeptember: Sat Sep 5247 18:08:36 EST 1993
-X-yes-we-have-no-x-yes-archive-today: NO
-X-Face: "/6m>=uJ8[yh+S{nuW'%UG"H-:QZ$'XRk^sOJ/XE{d/7^|mGK<-"*e>]JDh/b[aqj)MSsV`X1*pA~Uk8C:el[*2TT]O/eVz!(BQ8fp9aZ&RM=Ym&8@.dGBW}KDT]MtT"<e(`rn*-w$3tF&:%]KHf"{~`X*i]=gqAi,ScRRkbv&U;7Aw4WvC
-X-Face-Author: David Bonde mailto:i97_bed@i.kth.se.REMOVE.THIS.TO.REPLY -- If you want to use it please also use this Authorline.
-Message-ID: <slrn-0.9.7.4-27208-4606-200801121808-tc@hexane.ssi.swin.edu.au>
-Date: Sat, 12 Jan 2008 18:10:18 +1100
+	Sat, 12 Jan 2008 02:24:59 -0500
+From: Ismail =?utf-8?q?D=C3=B6nmez?= <ismail@pardus.org.tr>
+Organization: Pardus / KDE
+To: Junio C Hamano <gitster@pobox.com>
+Subject: Re: [ANNOUNCE] GIT 1.5.4-rc3
+Date: Sat, 12 Jan 2008 09:26:14 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <7vsl13wmas.fsf@gitster.siamese.dyndns.org>
+In-Reply-To: <7vsl13wmas.fsf@gitster.siamese.dyndns.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200801120926.14307.ismail@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bodo Eggert <7eggert@gmx.de> said on Sat, 12 Jan 2008 02:41:17 +0100 (CET):
-> On Fri, 11 Jan 2008, Lennart Sorensen wrote:
-> > On Fri, Jan 11, 2008 at 05:22:45PM +0100, Bodo Eggert wrote:
-> 
-> > > What can happen if someone does tune2fs -Lroot /dev/usbstick
-> > > and puts that stick into this system?
-> > 
-> > Don't know.  I use UUIDs rather than LABELs.  Having duplicated labels
-> > just means being careless.  Having duplicate UUIDs should require being
-> > malicous.
-> 
-> That's exactly what you have to assume for your users. Otherwise, you could 
-> remove any security feature from the system.
+Saturday 12 January 2008 09:11:23 tarihinde Junio C Hamano şunları yazmıştı:
+> The third rc for the next feature release GIT 1.5.4 is available
+> at the usual places:
+>
+>   http://www.kernel.org/pub/software/scm/git/
+>
+>   git-1.5.4.rc3.tar.{gz,bz2}			(tarball)
+>   git-htmldocs-1.5.4.rc3.tar.{gz,bz2}		(preformatted docs)
+>   git-manpages-1.5.4.rc3.tar.{gz,bz2}		(preformatted docs)
+>   testing/git-*-1.5.4.rc3-1.$arch.rpm	(RPM)
 
-If they've got physical access to your machine, you've already lost.
+I am seeing new failures compared to rc2 :
+
+*** t9200-git-cvsexportcommit.sh ***
+* FAIL 1: New file
+        mkdir A B C D E F &&
+             echo hello1 >A/newfile1.txt &&
+             echo hello2 >B/newfile2.txt &&
+             cp ../test9200a.png C/newfile3.png &&
+             cp ../test9200a.png D/newfile4.png &&
+             git add A/newfile1.txt &&
+             git add B/newfile2.txt &&
+             git add C/newfile3.png &&
+             git add D/newfile4.png &&
+             git commit -a -m "Test: New file" &&
+             id=$(git rev-list --max-count=1 HEAD) &&
+             (cd "$CVSWORK" &&
+             git cvsexportcommit -c $id &&
+             check_entries A "newfile1.txt/1.1/" &&
+             check_entries B "newfile2.txt/1.1/" &&
+             check_entries C "newfile3.png/1.1/-kb" &&
+             check_entries D "newfile4.png/1.1/-kb" &&
+             diff A/newfile1.txt ../A/newfile1.txt &&
+             diff B/newfile2.txt ../B/newfile2.txt &&
+             diff C/newfile3.png ../C/newfile3.png &&
+             diff D/newfile4.png ../D/newfile4.png
+             )
+* FAIL 2: Remove two files, add two and update two
+        echo Hello1 >>A/newfile1.txt &&
+             rm -f B/newfile2.txt &&
+             rm -f C/newfile3.png &&
+             echo Hello5  >E/newfile5.txt &&
+             cp ../test9200b.png D/newfile4.png &&
+             cp ../test9200a.png F/newfile6.png &&
+             git add E/newfile5.txt &&
+             git add F/newfile6.png &&
+             git commit -a -m "Test: Remove, add and update" &&
+             id=$(git rev-list --max-count=1 HEAD) &&
+             (cd "$CVSWORK" &&
+             git cvsexportcommit -c $id &&
+             check_entries A "newfile1.txt/1.2/" &&
+             check_entries B "" &&
+             check_entries C "" &&
+             check_entries D "newfile4.png/1.2/-kb" &&
+             check_entries E "newfile5.txt/1.1/" &&
+             check_entries F "newfile6.png/1.1/-kb" &&
+             diff A/newfile1.txt ../A/newfile1.txt &&
+             diff D/newfile4.png ../D/newfile4.png &&
+             diff E/newfile5.txt ../E/newfile5.txt &&
+             diff F/newfile6.png ../F/newfile6.png
+             )
+
+* FAIL 4: Remove only binary files
+        git reset --hard HEAD^^ &&
+             rm -f D/newfile4.png &&
+             git commit -a -m "test: remove only a binary file" &&
+             id=$(git rev-list --max-count=1 HEAD) &&
+             (cd "$CVSWORK" &&
+             git cvsexportcommit -c $id &&
+             check_entries A "newfile1.txt/1.2/" &&
+             check_entries B "" &&
+             check_entries C "" &&
+             check_entries D "" &&
+             check_entries E "newfile5.txt/1.1/" &&
+             check_entries F "newfile6.png/1.1/-kb" &&
+             diff A/newfile1.txt ../A/newfile1.txt &&
+             diff E/newfile5.txt ../E/newfile5.txt &&
+             diff F/newfile6.png ../F/newfile6.png
+             )
+* FAIL 5: Remove only a text file
+        rm -f A/newfile1.txt &&
+             git commit -a -m "test: remove only a binary file" &&
+             id=$(git rev-list --max-count=1 HEAD) &&
+             (cd "$CVSWORK" &&
+             git cvsexportcommit -c $id &&
+             check_entries A "" &&
+             check_entries B "" &&
+             check_entries C "" &&
+             check_entries D "" &&
+             check_entries E "newfile5.txt/1.1/" &&
+             check_entries F "newfile6.png/1.1/-kb" &&
+             diff E/newfile5.txt ../E/newfile5.txt &&
+             diff F/newfile6.png ../F/newfile6.png
+             )
+* FAIL 6: New file with spaces in file name
+        mkdir "G g" &&
+              echo ok then >"G g/with spaces.txt" &&
+              git add "G g/with spaces.txt" && \
+              cp ../test9200a.png "G g/with spaces.png" && \
+              git add "G g/with spaces.png" &&
+              git commit -a -m "With spaces" &&
+              id=$(git rev-list --max-count=1 HEAD) &&
+              (cd "$CVSWORK" &&
+              git-cvsexportcommit -c $id &&
+              check_entries "G g" "with spaces.png/1.1/-kb|with 
+spaces.txt/1.1/"
+              )
+* FAIL 7: Update file with spaces in file name
+        echo Ok then >>"G g/with spaces.txt" &&
+              cat ../test9200a.png >>"G g/with spaces.png" && \
+              git add "G g/with spaces.png" &&
+              git commit -a -m "Update with spaces" &&
+              id=$(git rev-list --max-count=1 HEAD) &&
+              (cd "$CVSWORK" &&
+              git-cvsexportcommit -c $id
+              check_entries "G g" "with spaces.png/1.2/-kb|with 
+spaces.txt/1.2/"
+              )
+* FAIL 8: File with non-ascii file name
+        mkdir -p 
+Å/goo/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/å/ä/ö &&
+              echo Foo 
+>Å/goo/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/å/ä/ö/gårdetsågårdet.txt 
+&&
+              git add 
+Å/goo/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/å/ä/ö/gårdetsågårdet.txt 
+&&
+              cp ../test9200a.png 
+Å/goo/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/å/ä/ö/gårdetsågårdet.png 
+&&
+              git add 
+Å/goo/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/å/ä/ö/gårdetsågårdet.png 
+&&
+              git commit -a -m "Går det så går det" && \
+              id=$(git rev-list --max-count=1 HEAD) &&
+              (cd "$CVSWORK" &&
+              git-cvsexportcommit -v -c $id &&
+              check_entries \
+              "Å/goo/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/å/ä/ö" 
+\
+              "gårdetsågårdet.png/1.1/-kb|gårdetsågårdet.txt/1.1/"
+              )
+
+[...]
+* failed 7 among 10 test(s)
+
+Ideas appreciated.
+
+/ismail
 
 -- 
-TimC
-A bug in the code is worth two in the documentation. --unknown
+Never learn by your mistakes, if you do you may never dare to try again.
