@@ -1,176 +1,256 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760432AbYALUCZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761377AbYALUEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760432AbYALUCZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 15:02:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755433AbYALUCQ
+	id S1761377AbYALUEz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 15:04:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756907AbYALUEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 15:02:16 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:38137 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756870AbYALUCP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 15:02:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
-        b=PpOMcyHiptkv1ik37NmKeXDtbJphR66m8IqvKUo76mcALcvcb4se75V09u0YYnf7neHRnQaGqIoQ0qd3FZJwQy9SEYDnL6INfpJ0UwGySxyu89gPkCXmoEGRE20Ykgi2PbtaoJX3Lnyjm1pI1lpKjJaWfrZDz4GXnFVv3qi2w5o=
-From: Balaji Rao <balajirrao@gmail.com>
-Organization: NITK
-To: balbir@linux.vnet.ibm.com
-Subject: [PATCH] [RESEND] Assign IRQs to HPET Timers
-Date: Sun, 13 Jan 2008 01:45:22 +0530
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
-Cc: linux-kernel@vger.kernel.org, amit.shah@qumranet.com,
-       dhaval@linux.vnet.ibm.com, vatsa@linux.vnet.ibm.com,
-       venkatesh.pallipadi@intel.com, clemens@ladisch.de, tglx@linutronix.de,
-       mingo@elte.hu, hpa@zytor.com, akpm@linux-foundation.org
-References: <200801120036.11982.balajirrao@gmail.com> <20080112120312.GE25388@balbir.in.ibm.com>
-In-Reply-To: <20080112120312.GE25388@balbir.in.ibm.com>
+	Sat, 12 Jan 2008 15:04:46 -0500
+Received: from h155.mvista.com ([63.81.120.155]:64203 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755659AbYALUEo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 15:04:44 -0500
+Message-ID: <47891D8D.4010609@ru.mvista.com>
+Date: Sat, 12 Jan 2008 23:05:33 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 8/8] ide: add ->cable_detect method to ide_hwif_t
+References: <20080106170220.6861.4814.sendpatchset@localhost.localdomain> <20080106170317.6861.77734.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080106170317.6861.77734.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200801130145.22517.balajirrao@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The userspace API for the HPET (see Documentation/hpet.txt) did not work. The 
-HPET_IE_ON ioctl was failing as there was no IRQ assigned to the timer 
-device. This patch fixes it by allocating IRQs to timer blocks in the HPET.
+Hello.
 
-arch/x86/kernel/hpet.c |   13 +++++--------
-drivers/char/hpet.c    |   45 ++++++++++++++++++++++++++++++++++++++-------
-include/linux/hpet.h   |    2 +-
-3 files changed, 44 insertions(+), 16 deletions(-)
+Bartlomiej Zolnierkiewicz wrote:
 
-Signed-off-by: Balaji Rao <balajirrao@gmail.com>
+> * Add ->cable_detect method to ide_hwif_t.
 
-diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
-index 4a86ffd..08ee998 100644
---- a/arch/x86/kernel/hpet.c
-+++ b/arch/x86/kernel/hpet.c
-@@ -116,8 +116,7 @@ int is_hpet_enabled(void)
- static void hpet_reserve_platform_timers(unsigned long id)
- {
- 	struct hpet __iomem *hpet = hpet_virt_address;
--	struct hpet_timer __iomem *timer = &hpet->hpet_timers[2];
--	unsigned int nrtimers, i;
-+	unsigned int nrtimers;
- 	struct hpet_data hd;
- 
- 	nrtimers = ((id & HPET_ID_NUMBER) >> HPET_ID_NUMBER_SHIFT) + 1;
-@@ -132,16 +131,14 @@ static void hpet_reserve_platform_timers(unsigned long 
-id)
- #ifdef CONFIG_HPET_EMULATE_RTC
- 	hpet_reserve_timer(&hd, 1);
- #endif
--
- 	hd.hd_irq[0] = HPET_LEGACY_8254;
- 	hd.hd_irq[1] = HPET_LEGACY_RTC;
- 
--	for (i = 2; i < nrtimers; timer++, i++)
--		hd.hd_irq[i] = (timer->hpet_config & Tn_INT_ROUTE_CNF_MASK) >>
--			Tn_INT_ROUTE_CNF_SHIFT;
--
-+	/*
-+	 * IRQs for the other timers are assigned dynamically
-+	 * in hpet_alloc
-+	 */
- 	hpet_alloc(&hd);
--
- }
- #else
- static void hpet_reserve_platform_timers(unsigned long id) { }
-diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
-index 4c16778..593b32c 100644
---- a/drivers/char/hpet.c
-+++ b/drivers/char/hpet.c
-@@ -806,14 +806,14 @@ static unsigned long hpet_calibrate(struct hpets *hpetp)
- 
- int hpet_alloc(struct hpet_data *hdp)
- {
--	u64 cap, mcfg;
-+	u64 cap, mcfg, hpet_config;
- 	struct hpet_dev *devp;
--	u32 i, ntimer;
-+	u32 i, ntimer, irq;
- 	struct hpets *hpetp;
- 	size_t siz;
- 	struct hpet __iomem *hpet;
- 	static struct hpets *last = NULL;
--	unsigned long period;
-+	unsigned long period, irq_bitmap;
- 	unsigned long long temp;
- 
- 	/*
-@@ -840,11 +840,41 @@ int hpet_alloc(struct hpet_data *hdp)
- 	hpetp->hp_hpet_phys = hdp->hd_phys_address;
- 
- 	hpetp->hp_ntimer = hdp->hd_nirqs;
-+	hpet = hpetp->hp_hpet;
- 
--	for (i = 0; i < hdp->hd_nirqs; i++)
--		hpetp->hp_dev[i].hd_hdwirq = hdp->hd_irq[i];
-+	/* Assign IRQs statically for legacy devices */
-+	hpetp->hp_dev[0].hd_hdwirq = hdp->hd_irq[0];
-+	hpetp->hp_dev[1].hd_hdwirq = hdp->hd_irq[1];
- 
--	hpet = hpetp->hp_hpet;
-+	/* Assign IRQs dynamically for the others */
-+	for (i = 2, devp = &hpetp->hp_dev[2]; i < hdp->hd_nirqs; i++, devp++) {
-+		struct hpet_timer __iomem *timer;
-+
-+		timer = &hpet->hpet_timers[devp - hpetp->hp_dev];
-+
-+		hpet_config = readq(&timer->hpet_config);
-+		irq_bitmap = (hpet_config & Tn_INT_ROUTE_CAP_MASK)
-+			>> Tn_INT_ROUTE_CAP_SHIFT;
-+		if (!irq_bitmap)
-+			irq = 0;        /* No valid IRQ Assignable */
-+		else {
-+			irq = find_first_bit(&irq_bitmap, 32);
-+			do {
-+				hpet_config |= irq << Tn_INT_ROUTE_CNF_SHIFT;
-+				writeq(hpet_config, &timer->hpet_config);
-+
-+				/*
-+				 * Verify whether we have written a valid
-+				 * IRQ number by reading it back again
-+				 */
-+				hpet_config = readq(&timer->hpet_config);
-+				if (irq == (hpet_config & Tn_INT_ROUTE_CNF_MASK)
-+						>> Tn_INT_ROUTE_CNF_SHIFT)
-+					break;  /* Success */
-+			} while ((irq = (find_next_bit(&irq_bitmap, 32, irq))));
-+		}
-+		hpetp->hp_dev[i].hd_hdwirq = irq;
-+	}
- 
- 	cap = readq(&hpet->hpet_cap);
- 
-@@ -875,7 +905,8 @@ int hpet_alloc(struct hpet_data *hdp)
- 		hpetp->hp_which, hdp->hd_phys_address,
- 		hpetp->hp_ntimer > 1 ? "s" : "");
- 	for (i = 0; i < hpetp->hp_ntimer; i++)
--		printk("%s %d", i > 0 ? "," : "", hdp->hd_irq[i]);
-+		printk("%s %d", i > 0 ? "," : "",
-+				hpetp->hp_dev[i].hd_hdwirq);
- 	printk("\n");
- 
- 	printk(KERN_INFO "hpet%u: %u %d-bit timers, %Lu Hz\n",
-diff --git a/include/linux/hpet.h b/include/linux/hpet.h
-index 707f7cb..e3c0b2a 100644
---- a/include/linux/hpet.h
-+++ b/include/linux/hpet.h
-@@ -64,7 +64,7 @@ struct hpet {
-  */
- 
- #define	Tn_INT_ROUTE_CAP_MASK		(0xffffffff00000000ULL)
--#define	Tn_INI_ROUTE_CAP_SHIFT		(32UL)
-+#define	Tn_INT_ROUTE_CAP_SHIFT		(32UL)
- #define	Tn_FSB_INT_DELCAP_MASK		(0x8000UL)
- #define	Tn_FSB_INT_DELCAP_SHIFT		(15)
- #define	Tn_FSB_EN_CNF_MASK		(0x4000UL)
----
+> * Call the new method in ide_init_port() if:
+>   - the host supports UDMA modes > UDMA2 ('hwif->ultra_mask & 78')
+>   - DMA initialization was successful (if hwif->dma_base is not set
+>     ide_init_port() sets hwif->ultra_mask to zero)
+>   - "idex=ata66" is not used ('hwif->cbl != ATA_CBL_PATA40_SHORT')
+
+> * Convert PCI host drivers to use ->cable_detect method.
+
+> While at it:
+
+> * Factor out cable detection to separate functions (if not already done).
+
+> * hpt366.c/it8213.c/slc90e66.c:
+>   - don't check cable type if "idex=ata66" is used
+
+> * pdc202xx_new.c:
+>   - add __devinit tag to pdcnew_cable_detect()
+
+> * pdc202xx_old.c:
+>   - rename pdc202xx_old_cable_detect() to pdc2026x_old_cable_detect()
+>   - add __devinit tag to pdc2026x_old_cable_detect()
+
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+
+> Index: b/drivers/ide/ide-probe.c
+> ===================================================================
+> --- a/drivers/ide/ide-probe.c
+> +++ b/drivers/ide/ide-probe.c
+> @@ -1343,6 +1343,11 @@ static void ide_init_port(ide_hwif_t *hw
+>  	/* call chipset specific routine for each enabled port */
+>  	if (d->init_hwif)
+>  		d->init_hwif(hwif);
+> +
+> +	if (hwif->cable_detect && (hwif->ultra_mask & 0x78)) {
+> +		if (hwif->cbl != ATA_CBL_PATA40_SHORT)
+> +			hwif->cbl = hwif->cable_detect(hwif);
+> +	}
+
+    Could be collapsed to a single *if* statement...
+
+> Index: b/drivers/ide/pci/alim15x3.c
+> ===================================================================
+> --- a/drivers/ide/pci/alim15x3.c
+> +++ b/drivers/ide/pci/alim15x3.c
+> @@ -666,13 +666,12 @@ static void __devinit init_hwif_common_a
+>  	hwif->set_dma_mode = &ali_set_dma_mode;
+>  	hwif->udma_filter = &ali_udma_filter;
+>  
+> +	hwif->cable_detect = ata66_ali15x3;
+
+    Why not give that function a "standard" name while at it?
+
+>  static const struct ide_port_info atiixp_pci_info[] __devinitdata = {
+> Index: b/drivers/ide/pci/cmd64x.c
+> ===================================================================
+> --- a/drivers/ide/pci/cmd64x.c
+> +++ b/drivers/ide/pci/cmd64x.c
+> @@ -393,6 +393,8 @@ static void __devinit init_hwif_cmd64x(i
+>  	hwif->set_pio_mode = &cmd64x_set_pio_mode;
+>  	hwif->set_dma_mode = &cmd64x_set_dma_mode;
+>  
+> +	hwif->cable_detect = ata66_cmd64x;
+> +
+
+    Same question...
+
+> Index: b/drivers/ide/pci/hpt366.c
+> ===================================================================
+> --- a/drivers/ide/pci/hpt366.c
+> +++ b/drivers/ide/pci/hpt366.c
+> @@ -1279,12 +1279,55 @@ static unsigned int __devinit init_chips
+>  	return dev->irq;
+>  }
+>  
+> +static u8 __devinit hpt3xx_cable_detect(ide_hwif_t *hwif)
+> +{
+> +	struct pci_dev	*dev	= to_pci_dev(hwif->dev);
+> +	struct hpt_info *info	= pci_get_drvdata(dev);
+> +	u8 chip_type		= info->chip_type;
+> +	u8 scr1 = 0, ata66	= hwif->channel ? 0x01 : 0x02;
+
+    The 'ata66' is pretty bad name for this variable (reversed sense), let's 
+go with 'mask'...
+
+> +
+> +	/*
+> +	 * The HPT37x uses the CBLID pins as outputs for MA15/MA16
+> +	 * address lines to access an external EEPROM.  To read valid
+> +	 * cable detect state the pins must be enabled as inputs.
+> +	 */
+> +	if (chip_type == HPT374 && (PCI_FUNC(dev->devfn) & 1)) {
+> +		/*
+> +		 * HPT374 PCI function 1
+> +		 * - set bit 15 of reg 0x52 to enable TCBLID as input
+> +		 * - set bit 15 of reg 0x56 to enable FCBLID as input
+> +		 */
+> +		u8  mcr_addr = hwif->select_data + 2;
+> +		u16 mcr;
+> +
+> +		pci_read_config_word(dev, mcr_addr, &mcr);
+> +		pci_write_config_word(dev, mcr_addr, (mcr | 0x8000));
+> +		/* now read cable id register */
+> +		pci_read_config_byte(dev, 0x5a, &scr1);
+> +		pci_write_config_word(dev, mcr_addr, mcr);
+> +	} else if (chip_type >= HPT370) {
+> +		/*
+> +		 * HPT370/372 and 374 pcifn 0
+> +		 * - clear bit 0 of reg 0x5b to enable P/SCBLID as inputs
+> +		 */
+> +		u8 scr2 = 0;
+> +
+> +		pci_read_config_byte(dev, 0x5b, &scr2);
+> +		pci_write_config_byte(dev, 0x5b, (scr2 & ~1));
+> +		/* now read cable id register */
+> +		pci_read_config_byte(dev, 0x5a, &scr1);
+> +		pci_write_config_byte(dev, 0x5b,  scr2);
+
+    Sigh, my pretty formatting is gone... at least don't leave double spaces 
+and needless parens. :-)
+
+> +	} else
+> +		pci_read_config_byte(dev, 0x5a, &scr1);
+> +
+> +	return (scr1 & ata66) ? ATA_CBL_PATA40 : ATA_CBL_PATA80;
+> +}
+> +
+[...]
+> --- a/drivers/ide/pci/it8213.c
+> +++ b/drivers/ide/pci/it8213.c
+> Index: b/drivers/ide/pci/it821x.c
+> ===================================================================
+> --- a/drivers/ide/pci/it821x.c
+> +++ b/drivers/ide/pci/it821x.c
+> @@ -579,14 +579,13 @@ static void __devinit init_hwif_it821x(i
+>  	} else
+>  		hwif->host_flags |= IDE_HFLAG_NO_SET_MODE;
+>  
+> +	hwif->cable_detect = ata66_it821x;
+> +
+
+    I think the function is really worth renaming...
+
+>  static void __devinit it8212_disable_raid(struct pci_dev *dev)
+> Index: b/drivers/ide/pci/jmicron.c
+> ===================================================================
+> --- a/drivers/ide/pci/jmicron.c
+> +++ b/drivers/ide/pci/jmicron.c
+> @@ -111,11 +111,7 @@ static void __devinit init_hwif_jmicron(
+>  	hwif->set_pio_mode = &jmicron_set_pio_mode;
+>  	hwif->set_dma_mode = &jmicron_set_dma_mode;
+>  
+> -	if (hwif->dma_base == 0)
+> -		return;
+> -
+> -	if (hwif->cbl != ATA_CBL_PATA40_SHORT)
+> -		hwif->cbl = ata66_jmicron(hwif);
+> +	hwif->cable_detect = ata66_jmicron;
+
+    And this one too...
+
+> Index: b/drivers/ide/pci/pdc202xx_old.c
+> ===================================================================
+> --- a/drivers/ide/pci/pdc202xx_old.c
+> +++ b/drivers/ide/pci/pdc202xx_old.c
+> @@ -140,7 +140,7 @@ static void pdc202xx_set_pio_mode(ide_dr
+>  	pdc202xx_set_mode(drive, XFER_PIO_0 + pio);
+>  }
+>  
+> -static u8 pdc202xx_old_cable_detect (ide_hwif_t *hwif)
+> +static u8 __devinit pdc2026x_old_cable_detect(ide_hwif_t *hwif)
+
+    I suggest just pdc2026x_ without old_.
+
+>  #define DECLARE_SCC_DEV(name_str)			\
+> Index: b/drivers/ide/pci/serverworks.c
+> ===================================================================
+> --- a/drivers/ide/pci/serverworks.c
+> +++ b/drivers/ide/pci/serverworks.c
+> @@ -346,13 +346,8 @@ static void __devinit init_hwif_svwks (i
+>  	hwif->set_dma_mode = &svwks_set_dma_mode;
+>  	hwif->udma_filter = &svwks_udma_filter;
+>  
+> -	if (!hwif->dma_base)
+> -		return;
+> -
+> -	if (dev->device != PCI_DEVICE_ID_SERVERWORKS_OSB4IDE) {
+> -		if (hwif->cbl != ATA_CBL_PATA40_SHORT)
+> -			hwif->cbl = ata66_svwks(hwif);
+> -	}
+> +	if (dev->device != PCI_DEVICE_ID_SERVERWORKS_OSB4IDE)
+> +		hwif->cable_detect = ata66_svwks;
+
+    Worth renaming...
+
+> Index: b/drivers/ide/pci/siimage.c
+> ===================================================================
+> --- a/drivers/ide/pci/siimage.c
+> +++ b/drivers/ide/pci/siimage.c
+> @@ -827,15 +827,14 @@ static void __devinit init_hwif_siimage(
+>  	} else
+>  		hwif->udma_filter = &sil_pata_udma_filter;
+>  
+> +	hwif->cable_detect = ata66_siimage;
+> +
+
+    That one too...
+
+> Index: b/drivers/ide/pci/sis5513.c
+> ===================================================================
+> --- a/drivers/ide/pci/sis5513.c
+> +++ b/drivers/ide/pci/sis5513.c
+> @@ -565,13 +565,12 @@ static void __devinit init_hwif_sis5513 
+>  	if (chipset_family >= ATA_133)
+>  		hwif->udma_filter = sis5513_ata133_udma_filter;
+>  
+> +	hwif->cable_detect = ata66_sis5513;
+> +
+
+   Another one...
+
+MBR, Sergei
