@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbYALXqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753658AbYALX4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753374AbYALXqW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 18:46:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbYALXqN
+	id S1753658AbYALX4Q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 18:56:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbYALX4G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 18:46:13 -0500
-Received: from mga06.intel.com ([134.134.136.21]:59261 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751010AbYALXqN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 18:46:13 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,276,1196668800"; 
-   d="scan'208";a="322599041"
-Message-ID: <47895021.5090306@linux.intel.com>
-Date: Sat, 12 Jan 2008 15:41:21 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+	Sat, 12 Jan 2008 18:56:06 -0500
+Received: from phunq.net ([64.81.85.152]:34659 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751645AbYALX4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 18:56:05 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: Andreas Dilger <adilger@sun.com>
+Subject: Re: [RFD] Incremental fsck
+Date: Sat, 12 Jan 2008 15:55:53 -0800
+User-Agent: KMail/1.9.5
+Cc: Alan <alan@clueserver.org>, Al Boldi <a1426z@gawab.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200801090022.55589.a1426z@gawab.com> <60808.198.182.194.170.1199827911.squirrel@clueserver.org> <20080109091656.GL3351@webber.adilger.int>
+In-Reply-To: <20080109091656.GL3351@webber.adilger.int>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew.Morton@hera.kernel.org
-Subject: Re: Top 10 kernel oopses for the week ending January 12th, 2008
-References: <47890B65.80804@linux.intel.com> <20080112222322.GE17276@does.not.exist> <47894999.8060505@linux.intel.com> <20080112233355.GF17276@does.not.exist>
-In-Reply-To: <20080112233355.GF17276@does.not.exist>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801121555.54533.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Sat, Jan 12, 2008 at 03:13:29PM -0800, Arjan van de Ven wrote:
->> Adrian Bunk wrote:
->>> All the other reports only contain the plain trace. Is there any way to 
->>> get more information whether the former is a pattern or not, and to
->>> get this information somehow displayed on the webpage?
->> IF the kernel prints that its tainted or whatever it'll be shown, as well
->> as the exact versions etc etc if they are there.
->> Sadly none of this information is there prior to 2.6.24-rc4.
->> ...
-> 
-> OK, the problem might actually not be the omission of displaying the 
-> tainted information but the omission of considering any relevant 
-> context.
-> 
-> Looking deeper:
-> 
-> Number #2424 is WARN_ON-after-tainted-oops.
-> 
-> Is your rank 1 just a symptom that the system is in a bad state after 
-> running in what is your rank 8?
-> 
-> In this case the information when following e.g. #2827 is quite useless 
-> since wherever you got this trace from all related context information 
-> like e.g. whether it's like #2424 just the symptom of a previous Oops is 
-> not displayed.
+On Wednesday 09 January 2008 01:16, Andreas Dilger wrote:
+> While an _incremental_ fsck isn't so easy for existing filesystem
+> types, what is pretty easy to automate is making a read-only snapshot
+> of a filesystem via LVM/DM and then running e2fsck against that.  The
+> kernel and filesystem have hooks to flush the changes from cache and
+> make the on-disk state consistent.
+>
+> You can then set the the ext[234] superblock mount count and last
+> check time via tune2fs if all is well, or schedule an outage if there
+> are inconsistencies found.
+>
+> There is a copy of this script at:
+> http://osdir.com/ml/linux.lvm.devel/2003-04/msg00001.html
+>
+> Note that it might need some tweaks to run with DM/LVM2
+> commands/output, but is mostly what is needed.
 
-the tainted flags have a flag for "there was a previous oops", and if that's set,
-the kerneloops.org website ignores the report. Simple as that.
+You can do this now with ddsnap (an out-of-tree device mapper target) 
+either by checking a local snapshot or a replicated snapshot on a 
+different machine, see:
 
-> In the worst case, an entry might only contain WARN_ON traces without 
-> any information where the traces came from and whether it's worth 
-> looking at them or whether the system always already was in a known-bad 
-> state when they occured?
+    http://zumastor.org/
 
-again as of 2.6.24-rc4 or so, this is just no longer the case. The problem is with
-older kernels which had a WARN_ON() that didn't print ANY information other than
-a plain backtrace.
+Doing the check on a remote machine seems attractive because the fsck 
+does not create a load on the server.
+
+Regards,
+
+Daniel
