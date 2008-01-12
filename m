@@ -1,366 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761575AbYALCsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762311AbYALCs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761575AbYALCsk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 21:48:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757858AbYALCrz
+	id S1762311AbYALCs5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 21:48:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760623AbYALCsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 21:47:55 -0500
-Received: from vms042pub.verizon.net ([206.46.252.42]:36805 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757310AbYALCrx (ORCPT
+	Fri, 11 Jan 2008 21:48:06 -0500
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:55652 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760347AbYALCsD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 21:47:53 -0500
-Date: Fri, 11 Jan 2008 21:47:46 -0500
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: [PATCH 19 4/5] Convert PowerPC MPC i2c to of_platform_driver from
-	platform_driver
-In-reply-to: <20080112024737.7023.61680.stgit@terra.home>
-To: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Message-id: <20080112024745.7023.66422.stgit@terra.home>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 7bit
-References: <20080112024737.7023.61680.stgit@terra.home>
-User-Agent: StGIT/0.14.1
+	Fri, 11 Jan 2008 21:48:03 -0500
+X-Greylist: delayed 1450 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Jan 2008 21:48:03 EST
+X-Sasl-enc: 02GM6QO+pIsUKQpdWB9DF3Hn1VhYvQtbiQmINPWnyc19 1200104631
+Date: Sat, 12 Jan 2008 00:23:48 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Lenovo ThinkPads need acpi_osi="Linux"
+Message-ID: <20080112022348.GC27524@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert MPC i2c driver from being a platform_driver to an open firmware version. Error returns were improved. Routine names were changed from fsl_ to mpc_ to make them match the file name.
+While helping a user find out what happened to his mute key, I found out
+that the Lenovo BIOSes need the OSI string Linux defined to behave properly
+in Linux.
 
-Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
----
+Lenovo has been attempting to make things a bit easier for Linux on their
+ThinkPads, by disabling the more obnoxious behaviours of the firmware (used
+by their Windows drivers) when in Linux.  It looks like they used the OSI
+string for that.
 
- arch/powerpc/sysdev/fsl_soc.c |   96 ----------------------
- drivers/i2c/busses/i2c-mpc.c  |  183 ++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 180 insertions(+), 99 deletions(-)
+It is probably worthwhile to give a head's up: regressions involving
+thinkpads and 2.6.23+ should probably have a 'please test with
+acpi_osi="Linux"' step added if there is any chance ACPI AML code, BIOS or
+SMBIOS code, or EC behaviour could be involved.
 
+The most concrete example I have right now of changed behaviour is the Mute
+key on the T61, which just plain disappears if acpi_osi="!Linux" (2.6.23
+default).
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index 94e5c73..d6ef264 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -318,102 +318,6 @@ err:
- 
- arch_initcall(gfar_of_init);
- 
--#ifdef CONFIG_I2C_BOARDINFO
--#include <linux/i2c.h>
--
--static void __init of_register_i2c_devices(struct device_node *adap_node,
--					   int bus_num)
--{
--	struct device_node *node = NULL;
--	const char *compatible;
--
--	while ((node = of_get_next_child(adap_node, node))) {
--		struct i2c_board_info info = {};
--		const u32 *addr;
--		int len;
--
--		addr = of_get_property(node, "reg", &len);
--		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
--			printk(KERN_WARNING "fsl_soc.c: invalid i2c device entry\n");
--			continue;
--		}
--
--		info.irq = irq_of_parse_and_map(node, 0);
--		if (info.irq == NO_IRQ)
--			info.irq = -1;
--
--		compatible = of_get_property(node, "compatible", &len);
--		if (!compatible) {
--			printk(KERN_WARNING "i2c-mpc.c: invalid entry, missing compatible attribute\n");
--			continue;
--		}
--		strncpy(info.type, compatible, sizeof(info.type));
--
--		info.addr = *addr;
--
--		i2c_register_board_info(bus_num, &info, 1);
--	}
--}
--
--static int __init fsl_i2c_of_init(void)
--{
--	struct device_node *np;
--	unsigned int i;
--	struct platform_device *i2c_dev;
--	int ret;
--
--	for (np = NULL, i = 0;
--	     (np = of_find_compatible_node(np, "i2c", "fsl-i2c")) != NULL;
--	     i++) {
--		struct resource r[2];
--		struct fsl_i2c_platform_data i2c_data;
--		const unsigned char *flags = NULL;
--
--		memset(&r, 0, sizeof(r));
--		memset(&i2c_data, 0, sizeof(i2c_data));
--
--		ret = of_address_to_resource(np, 0, &r[0]);
--		if (ret)
--			goto err;
--
--		of_irq_to_resource(np, 0, &r[1]);
--
--		i2c_dev = platform_device_register_simple("fsl-i2c", i, r, 2);
--		if (IS_ERR(i2c_dev)) {
--			ret = PTR_ERR(i2c_dev);
--			goto err;
--		}
--
--		i2c_data.device_flags = 0;
--		flags = of_get_property(np, "dfsrr", NULL);
--		if (flags)
--			i2c_data.device_flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
--
--		flags = of_get_property(np, "fsl5200-clocking", NULL);
--		if (flags)
--			i2c_data.device_flags |= FSL_I2C_DEV_CLOCK_5200;
--
--		ret =
--		    platform_device_add_data(i2c_dev, &i2c_data,
--					     sizeof(struct
--						    fsl_i2c_platform_data));
--		if (ret)
--			goto unreg;
--
--		of_register_i2c_devices(np, i);
--	}
--
--	return 0;
--
--unreg:
--	platform_device_unregister(i2c_dev);
--err:
--	return ret;
--}
--
--arch_initcall(fsl_i2c_of_init);
--#endif
--
- #ifdef CONFIG_PPC_83xx
- static int __init mpc83xx_wdt_init(void)
- {
-diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-index 7c35a8f..91fa73c 100644
---- a/drivers/i2c/busses/i2c-mpc.c
-+++ b/drivers/i2c/busses/i2c-mpc.c
-@@ -17,7 +17,7 @@
- #include <linux/module.h>
- #include <linux/sched.h>
- #include <linux/init.h>
--#include <linux/platform_device.h>
-+#include <linux/of_platform.h>
- 
- #include <asm/io.h>
- #include <linux/fsl_devices.h>
-@@ -25,13 +25,13 @@
- #include <linux/interrupt.h>
- #include <linux/delay.h>
- 
--#define MPC_I2C_ADDR  0x00
-+#define DRV_NAME "mpc-i2c"
-+
- #define MPC_I2C_FDR 	0x04
- #define MPC_I2C_CR	0x08
- #define MPC_I2C_SR	0x0c
- #define MPC_I2C_DR	0x10
- #define MPC_I2C_DFSRR 0x14
--#define MPC_I2C_REGION 0x20
- 
- #define CCR_MEN  0x80
- #define CCR_MIEN 0x40
-@@ -316,6 +316,181 @@ static struct i2c_adapter mpc_ops = {
- 	.retries = 1
- };
- 
-+struct i2c_driver_device {
-+	char	*of_device;
-+	char	*i2c_driver;
-+	char	*i2c_type;
-+};
-+
-+#ifdef CONFIG_PPC_MERGE
-+
-+static void of_register_i2c_devices(struct i2c_adapter *adap, struct device_node *adap_node)
-+{
-+	struct device_node *node = NULL;
-+
-+	while ((node = of_get_next_child(adap_node, node))) {
-+		struct i2c_board_info info;
-+		const u32 *addr;
-+		const char *compatible;
-+		int len;
-+
-+		addr = of_get_property(node, "reg", &len);
-+		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
-+			printk(KERN_ERR "i2c-mpc.c: invalid entry, missing reg attribute\n");
-+			continue;
-+		}
-+
-+		info.irq = irq_of_parse_and_map(node, 0);
-+		if (info.irq == NO_IRQ)
-+			info.irq = -1;
-+
-+		compatible = of_get_property(node, "compatible", &len);
-+		if (!compatible) {
-+			printk(KERN_ERR "i2c-mpc.c: invalid entry, missing compatible attribute\n");
-+			continue;
-+		}
-+		
-+		/* need full alias i2c:NOF,vendor,device */
-+		strcpy(info.type, I2C_OF_MODULE_PREFIX);
-+		strncat(info.type, compatible, sizeof(info.type));
-+		request_module(info.type);
-+		
-+		/* need module alias OF,vendor,device */
-+		strcpy(info.type, OF_I2C_PREFIX);
-+		strncat(info.type, compatible, sizeof(info.type));
-+		
-+		info.driver_name[0] = '\0';
-+		info.platform_data = NULL;
-+		info.addr = *addr;
-+
-+		if (!i2c_new_device(adap, &info)) {
-+			printk(KERN_ERR "i2c-mpc.c: Failed to load driver for %s\n", info.type);
-+			continue;
-+		}
-+	}
-+}
-+
-+static int mpc_i2c_probe(struct of_device *op, const struct of_device_id *match)
-+{
-+	int result = 0;
-+	struct mpc_i2c *i2c;
-+
-+	i2c = kzalloc(sizeof(*i2c), GFP_KERNEL);
-+	if (!i2c)
-+		return -ENOMEM;
-+
-+	if (of_get_property(op->node, "dfsrr", NULL))
-+		i2c->flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
-+
-+	if (of_device_is_compatible(op->node, "mpc5200-i2c"))
-+		i2c->flags |= FSL_I2C_DEV_CLOCK_5200;
-+
-+	init_waitqueue_head(&i2c->queue);
-+
-+	i2c->base = of_iomap(op->node, 0);
-+	if (!i2c->base) {
-+		printk(KERN_ERR "i2c-mpc - failed to map controller\n");
-+		result = -ENOMEM;
-+		goto fail_map;
-+	}
-+
-+	i2c->irq = irq_of_parse_and_map(op->node, 0);
-+	if (i2c->irq == NO_IRQ) {
-+		result = -ENXIO;
-+		goto fail_irq;
-+	}
-+
-+	result = request_irq(i2c->irq, mpc_i2c_isr, IRQF_SHARED, "i2c-mpc", i2c);
-+	if (result < 0) {
-+		printk(KERN_ERR "i2c-mpc - failed to attach interrupt\n");
-+		goto fail_request;
-+	}
-+
-+	mpc_i2c_setclock(i2c);
-+
-+	dev_set_drvdata(&op->dev, i2c);
-+
-+	i2c->adap = mpc_ops;
-+	i2c_set_adapdata(&i2c->adap, i2c);
-+	i2c->adap.dev.parent = &op->dev;
-+
-+	result = i2c_add_adapter(&i2c->adap);
-+	if (result < 0) {
-+		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
-+		goto fail_add;
-+	}
-+
-+	of_register_i2c_devices(&i2c->adap, op->node);
-+
-+	return result;
-+
-+fail_add:
-+	free_irq(i2c->irq, i2c);
-+fail_request:
-+	irq_dispose_mapping(i2c->irq);
-+fail_irq:
-+	iounmap(i2c->base);
-+fail_map:
-+	kfree(i2c);
-+	return result;
-+};
-+
-+static int mpc_i2c_remove(struct of_device *op)
-+{
-+	struct mpc_i2c *i2c = dev_get_drvdata(&op->dev);
-+
-+	i2c_del_adapter(&i2c->adap);
-+	dev_set_drvdata(&op->dev, NULL);
-+
-+	if (i2c->irq != NO_IRQ)
-+		free_irq(i2c->irq, i2c);
-+
-+	irq_dispose_mapping(i2c->irq);
-+	iounmap(i2c->base);
-+	kfree(i2c);
-+	return 0;
-+};
-+
-+static struct of_device_id mpc_i2c_of_match[] = {
-+	{
-+		.compatible	= "fsl-i2c",
-+	},
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, mpc_i2c_of_match);
-+
-+
-+/* Structure for a device driver */
-+static struct of_platform_driver mpc_i2c_driver = {
-+	.match_table	= mpc_i2c_of_match,
-+	.probe		= mpc_i2c_probe,
-+	.remove		= __devexit_p(mpc_i2c_remove),
-+	.driver		= {
-+		.owner	= THIS_MODULE,
-+		.name	= DRV_NAME,
-+	},
-+};
-+
-+static int __init mpc_i2c_init(void)
-+{
-+	int rv;
-+
-+	rv = of_register_platform_driver(&mpc_i2c_driver);
-+	if (rv)
-+		printk(KERN_ERR DRV_NAME " of_register_platform_driver failed (%i)\n", rv);
-+	return rv;
-+}
-+
-+static void __exit mpc_i2c_exit(void)
-+{
-+	of_unregister_platform_driver(&mpc_i2c_driver);
-+}
-+
-+module_init(mpc_i2c_init);
-+module_exit(mpc_i2c_exit);
-+
-+#else
-+
- static int fsl_i2c_probe(struct platform_device *pdev)
- {
- 	int result = 0;
-@@ -416,6 +591,8 @@ static void __exit fsl_i2c_exit(void)
- module_init(fsl_i2c_init);
- module_exit(fsl_i2c_exit);
- 
-+#endif
-+
- MODULE_AUTHOR("Adrian Cox <adrian@humboldt.co.uk>");
- MODULE_DESCRIPTION
-     ("I2C-Bus adapter for MPC107 bridge and MPC824x/85xx/52xx processors");
+I have also seen some hacked DSDTs around (mostly for older T4x models)
+which used the Linux OSI string to fix or work around AML weirdness.  Those
+would break in 2.6.23 (and 2.6.24?) as well.
 
+Now, what should we do about it?  Add a quirk to always define the Linux OSI
+string on ThinkPads (based on DMI information)?  All IBM ones (which won't
+have BIOS revisions anymore, anyway) deal well with it, and Lenovo ones
+seem to benefit from it.
+
+We could also ask Lenovo to change the BIOS to stop paying attention to that
+OSI string, but they will likely want/need a trigger for the AML code to
+know it should change behaviour anyway, and the OSI string *does* look like
+the proper thing to use IMHO.  I don't know if we could get them to arrive
+to a behaviour that is acceptable both to us, and also to their Windows
+drivers...
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
