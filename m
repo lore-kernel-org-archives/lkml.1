@@ -1,123 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760061AbYALSvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760227AbYALS7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760061AbYALSvU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 13:51:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755783AbYALSvL
+	id S1760227AbYALS7j (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 13:59:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757447AbYALS7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 13:51:11 -0500
-Received: from mga10.intel.com ([192.55.52.92]:14124 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755336AbYALSvL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 13:51:11 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,276,1196668800"; 
-   d="scan'208";a="286410230"
-Message-ID: <47890B65.80804@linux.intel.com>
-Date: Sat, 12 Jan 2008 10:48:05 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+	Sat, 12 Jan 2008 13:59:31 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:34186 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757355AbYALS7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 13:59:30 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: [alsa-devel] PNP_DRIVER_RES_DISABLE breaks swsusp at least with snd_cs4236
+Date: Sat, 12 Jan 2008 20:01:58 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pierre Ossman <drzeus@drzeus.cx>, Pavel Machek <pavel@suse.cz>,
+       Ondrej Zary <linux@rainbow-software.org>,
+       Jaroslav Kysela <perex@perex.cz>,
+       ALSA development <alsa-devel@alsa-project.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Andrew Morton <akpm@osdl.org>,
+       Takashi Iwai <tiwai@suse.de>, linux-pm@lists.linux-foundation.org
+References: <200801092343.48726.linux@rainbow-software.org> <20080112121256.0f2e96ad@poseidon.drzeus.cx> <4788C323.6090206@keyaccess.nl>
+In-Reply-To: <4788C323.6090206@keyaccess.nl>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>, Andrew.Morton@vax.1wt.eu
-Illegal-Object: Syntax error in CC: address found on vger.kernel.org:
-	CC:	Andrew Morton
-			^-extraneous tokens in address
-Illegal-Object: Syntax error in CC: address found on vger.kernel.org:
-	CC:	Andrew Morton
-			^-extraneous tokens in address
-Subject: Top 10 kernel oopses for the week ending January 12th, 2008
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801122001.59174.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The http://www.kerneloops.org website collects kernel oops and
-warning reports from various mailing lists and bugzillas as well as
-with a client users can install to auto-submit oopses.
-Below is a top 10 list of the oopses collected in the last 7 days.
-(Reports prior to 2.6.23 have been omitted in collecting the top 10)
+On Saturday, 12 of January 2008, Rene Herman wrote:
+> On 12-01-08 12:12, Pierre Ossman wrote:
+> 
+> > On Sat, 12 Jan 2008 02:23:27 +0100
+> > Rene Herman <rene.herman@keyaccess.nl> wrote:
+> > 
+> >> Pavel, Rafael -- the attached fixes snd-cs4236 not coming back to life for 
+> >> Ondrej after hibernation due to the PNP_DRIVER_RES_DO_NOT_CHANGE test 
+> >> triggering in pnp_bus_resume() and keeping the card in a suspended state.
+> >>
+> > 
+> > I'm a bit confused here. Bjorn Helgaas wanted to remove the pnp_start/stop_dev() calls completely, and you want them called all the time. :)
+> 
+> Wanted where? Haven't seen a coment from Bjorn? But -- while removing them 
+> both looks (as) sensible from a mirror-image viewpoint, this wouldn't fix 
+> the problem.
+> 
+> As fas as I understand things, "hibernation" is basically "save state, shut 
+> down machine" where the latter step is going to disable the card inevitably.
 
-This week, a total of 136 oopses and warnings have been reported,
-compared to 46 reports in the previous 7 days.
+Not exactly.  In the ACPI (aka platform) mode it's:
+- pretend we're suspending and put everything into low power states
+- snapshot memory
+- power everything up
+- save image
+- suspend (ie. enter S4, suspending devices before).
+ 
+> On resume, you're going to need to restore the resources (that were saved in 
+> pnp_dev->res) that it was using to the card, which is what pnp_start_dev() 
+> does -- it not being called is the current problem of the card not coming 
+> back to life.
 
-kerneloops.org news:
-	* Based on feedback from last weeks report, the website now tries
-	  to also present a disassembled Code: line
-	* the kerneloops collection client is now part of Fedora (rawhide)
-	  (yum install kerneloops)
-	* the kerneloops collection client is now included in Debian testing
-	  (apt-get install kerneloops)
-	* gentoo has received an updated version of the client
+First of all, the card need not be initialized at all before .resume() is called.
 
+> pnp_stop_dev() could go in this specific situation. Not much point in first 
+> disabling the thing it seems if a subsequent shutdown is going to take care 
+> of that anyway. However, suspend/resume isn't just called in the case of 
+> complete hibernation I guess and I know nothing about it all -- hence my 
+> request to the hiberhation people for how this is designed to be.
 
-Rank 1: implement (hid code)
-	WARN_ON at drivers/hid/hid-core.c:784
-	Reported 23 times (39 total reports)
-	This appears to be the kernel doing a WARN_ON based on unexpected ioctl() arguments
-	More info: http://www.kerneloops.org/search.php?search=implement
+.suspend()/.resume() are used during suspend to RAM too.  As far as hibernation
+is concerned, .resume() is used for two different purposes:
+(a) to bring the device up after it's been put into a low power state for
+    snapshotting memory
+(b) to bring the device up (or reconfigure it if brought up already) after the
+    hibernation image has been loaded and we're restoring the previous
+    system state.
 
-Rank 2: __ieee80211_rx
-	WARN_ON at net/mac80211/rx.c:1663
-	Reported 14 times (25 total reports)
-	This is the recurring problem from the last few weeks
-	The iwl3945 driver is heavily implicated for this one
-	More info: http://www.kerneloops.org/search.php?search=__ieee80211_rx
+> But we certainly need the pnp_start_dev() in the current flow of things. It 
+> not being called is the problem this fixes...
 
-Rank 3: uart_flush_buffer (caused by bluetooth)
-	WARN_ON drivers/serial/serial_core.c:544
-	Same issue as a few weeks ago; a fix was posted on LKML already
-	Caused by the bluetooth tty layer double closing/freeing the tty
-	Reported 8 times (24 total reports)
-	More info: http://www.kerneloops.org/search.php?search=uart_flush_buffer
+Yes, pnp_start_dev() is generally needed in .resume().
 
-Rank 4: i2c_transfer (by the cx8802/cx22702 driver)
-	kernel NULL pointer
-	Reported 6 times
-	Only reported on 2.6.23.9 so far
-	DVB related
-	More info: http://www.kerneloops.org/search.php?search=i2c_transfer
-
-Rank 5: __ieee80211_rx_handle_packet (iwl3945)
-	WARNING at net/mac80211/rx.c:1693
-	Reported 5 times
-	Only seen with the iwl3945 driver
-	Not the same warning as #2, but the cause may be related
-	More info: http://www.kerneloops.org/search.php?search=__ieee80211_rx_handle_packet
-
-Rank 6: NdisDispatchPnp
-	Kernel page fault
-	Reported 5 times
-	Tainted and in the external ndiswrapper binary driver loader
-	More info: http://www.kerneloops.org/search.php?search=NdisDispatchPnp
-
-Rank 7: __lock_acquire
-	Kernel page fault
-	Reported 4 times (14 total reports)
-	Reported in 2.5.24-rc5 and rc7 but previously in 2.6.18 timeframe
-	Appears to be EXT3 related this time around
-	More info: http://bugzilla.kernel.org/show_bug.cgi?id=9718
-	More info: http://www.kerneloops.org/search.php?search=__lock_acquire
-
-Rank 8: evdev_disconnect
-	Same issue as last week
-	Reported 4 times (14 total reports)
-	Only seen upto 2.6.23
-	Al Viro diagnosed that this got fixed in 2.6.24-rc but the patch wasn't put in 2.6.23-stable
-	More info: http://www.kerneloops.org/search.php?search=evdev_disconnect
-
-Rank 9: hfsplus_releasepage
-	Kernel null pointer deref
-	Reported 3 times
-	Only reported for 2.6.24-rc7
-	More info: http://www.kerneloops.org/search.php?search=hfsplus_releasepage
-
-Rank 10: cfq_remove_request
-	Kernel NULL pointer
-	Reported 3 times
-	Only reported for 2.6.23
-	Reported both from interrupt and process context
-	More info: http://www.kerneloops.org/search.php?search=cfq_remove_request
-
-
+Thanks,
+Rafael
