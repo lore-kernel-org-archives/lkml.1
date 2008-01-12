@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762857AbYALAFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762303AbYALAFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762857AbYALAFZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Jan 2008 19:05:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759020AbYALAFK
+	id S1762303AbYALAFj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Jan 2008 19:05:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762599AbYALAFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Jan 2008 19:05:10 -0500
-Received: from smtp3-g19.free.fr ([212.27.42.29]:50536 "EHLO smtp3-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756873AbYALAFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Jan 2008 19:05:08 -0500
-Date: Sat, 12 Jan 2008 01:03:53 +0100
-From: Guillaume Chazarain <guichaz@yahoo.fr>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Dillow <dillowda@ornl.gov>, linux-kernel@vger.kernel.org,
-       linux-btrace@vger.kernel.org, tglx@linutronix.de,
-       Jens Axboe <jens.axboe@oracle.com>, nigel@suspend2.net
-Subject: Re: CONFIG_NO_HZ breaks blktrace timestamps
-Message-ID: <20080112010353.0eeb18bf@inria.fr>
-In-Reply-To: <20080111233025.57d17f6a@inria.fr>
-References: <1199918912.8388.13.camel@lap75545.ornl.gov>
-	<1199996752.9159.46.camel@lap75545.ornl.gov>
-	<20080110234438.4826f658@inria.fr>
-	<20080111114132.084036f2@cheypa.inria.fr>
-	<20080111105534.GC1589@elte.hu>
-	<20080111233025.57d17f6a@inria.fr>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+	Fri, 11 Jan 2008 19:05:17 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55826 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762427AbYALAFP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Jan 2008 19:05:15 -0500
+Date: Fri, 11 Jan 2008 16:04:31 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: abhishekrai@google.com, tytso@mit.edu, adilger@sun.com,
+       linux-kernel@vger.kernel.org, kenchen@google.com, mikew@google.com,
+       rohitseth@google.com
+Subject: Re: [PATCH] Clustering indirect blocks in Ext3
+Message-Id: <20080111160431.905a853f.akpm@linux-foundation.org>
+In-Reply-To: <200801110905.18464.phillips@phunq.net>
+References: <d9885f0f0711152102h7a8270bfvd65605d8c00e6754@mail.gmail.com>
+	<d9885f0f0712210615h661ad458x2cf4e4d0e8868772@mail.gmail.com>
+	<d9885f0f0801101317n48e090d6x48f1792c71dc348e@mail.gmail.com>
+	<200801110905.18464.phillips@phunq.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,78 +31,60 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guillaume Chazarain <guichaz@yahoo.fr> wrote:
+On Fri, 11 Jan 2008 09:05:17 -0800
+Daniel Phillips <phillips@phunq.net> wrote:
 
-> FYI, I'm currently trying to track down where rq->clock started to
-> overflow with nohz=off, and it seems to be before 2.6.23, so my patches
-> are not at fault ;-) Or maybe I am dreaming and it was always
-> overflowing. Investigating ...
+> On Thursday 10 January 2008 13:17, Abhishek Rai wrote:
+> > Benchmark 5: fsck
+> > Description: Prepare a newly formated 400GB disk as follows: create
+> > 200 files of 0.5GB each, 100 files of 1GB each, 40 files of 2.5GB
+> > ech, and 10 files of 10GB each. fsck command line: fsck -f -n
+> > 1. vanilla:
+> >  Total: 11m25.3s
+> >  User: 13.4s
+> >  System: 13.2s
+> > 2. mc:
+> >  Total: 3m11.0s
+> >  User: 13.1s
+> >  System: 12.9s
+> >
+> > Note: I'll report results from kernbench and compilebench shortly.
+> >
+> > Observations:
+> > Sequential write performance is much better with metaclustering than
+> > with vanilla. To better understand it, I ran the same benchmark with
+> > the new code but with the metaclustering option turned off and I got
+> > the same performance as vanilla which makes me believe that there is
+> > something about metaclustering that helps write performance though I
+> > don't have a very good handle of what that thing might be.
+> 
+> Your results are very impressive.   In my opinion, the sooner this goes 
+> in, the better, since everybody hates waiting for fsck.  The only issue 
+> that jumps out at me is, the patch is big and changes a significant 
+> amount of Ext3 code outside of the metacluster path, which is not a bad 
+> thing except that these changes are going to need to be tested fairly 
+> heavily.
 
-And the winner is:
+It needs to be reviewed.  In exhaustive detail.  Few people can do that and
+fewer are inclined to do so.
 
-commit 529c77261bccd9d37f110f58b0753d95beaa9fa2
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Fri Aug 10 23:05:11 2007 +0200
+> The way to do that is, put a big [CALL FOR TESTING] in your subject line 
+> the next time you post, and use an attention-getting subject line 
+> like "Make Ext3 fsck way faster".   Diff the patch against the latest 
+> stable kernel to make things as easy as possible for the people who are 
+> hopefully going to download your patch, try it, and report their 
+> results.
+> 
+> The other way is just to ask Andrew to put it in -mm when you feel 
+> ready, but your chances are much better if you already have people 
+> sending in mails saying how great your patch is.
 
-    sched: improve rq-clock overflow logic
-    
-    improve the rq-clock overflow logic: limit the absolute rq->clock
-    delta since the last scheduler tick, instead of limiting the delta
-    itself.
-    
-    tested by Arjan van de Ven - whole laptop was misbehaving due to
-    an incorrectly calibrated cpu_khz confusing sched_clock().
-    
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-    Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index b0afd8d..6247e4a 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -263,6 +263,7 @@ struct rq {
- 
- 	unsigned int clock_warps, clock_overflows;
- 	unsigned int clock_unstable_events;
-+	u64 tick_timestamp;
- 
- 	atomic_t nr_iowait;
- 
-@@ -341,8 +342,11 @@ static void __update_rq_clock(struct rq *rq)
- 		/*
- 		 * Catch too large forward jumps too:
- 		 */
--		if (unlikely(delta > 2*TICK_NSEC)) {
--			clock++;
-+		if (unlikely(clock + delta > rq->tick_timestamp + TICK_NSEC)) {
-+			if (clock < rq->tick_timestamp + TICK_NSEC)
-+				clock = rq->tick_timestamp + TICK_NSEC;
-+			else
-+				clock++;
- 			rq->clock_overflows++;
- 		} else {
- 			if (unlikely(delta > rq->clock_max_delta))
-@@ -3308,9 +3312,16 @@ void scheduler_tick(void)
- 	int cpu = smp_processor_id();
- 	struct rq *rq = cpu_rq(cpu);
- 	struct task_struct *curr = rq->curr;
-+	u64 next_tick = rq->tick_timestamp + TICK_NSEC;
- 
- 	spin_lock(&rq->lock);
- 	__update_rq_clock(rq);
-+	/*
-+	 * Let rq->clock advance by at least TICK_NSEC:
-+	 */
-+	if (unlikely(rq->clock < next_tick))
-+		rq->clock = next_tick;
-+	rq->tick_timestamp = rq->clock;
- 	update_cpu_load(rq);
- 	if (curr != rq->idle) /* FIXME: needed? */
- 		curr->sched_class->task_tick(rq, curr);
+I went to merge it so it could get some testing while we await review but
+the patch has all its tabs replaced with spaces, is seriously wordwrapped
+and has random newlines added to it.  Please fix email client and resend
+(offlist is OK if it is unaltered).
 
 
-Seems like I originally was not the only one seeing 2 jiffies jumps ;-)
-I'll adapt my patches.
+We should have a think about which workloads are most likely to be
+adversely affected by this change.
 
--- 
-Guillaume
