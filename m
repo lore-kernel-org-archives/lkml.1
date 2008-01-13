@@ -1,88 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbYAMBhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbYAMBjE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882AbYAMBhu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 20:37:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbYAMBhm
+	id S1754148AbYAMBjE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 20:39:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbYAMBiy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 20:37:42 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:46965 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752479AbYAMBhl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 20:37:41 -0500
-Message-ID: <47896B3B.2000108@redhat.com>
-Date: Sat, 12 Jan 2008 20:36:59 -0500
-From: Tony Camuso <tcamuso@redhat.com>
-Reply-To: tcamuso@redhat.com
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <greg@kroah.com>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Martin Mares <mj@ucw.cz>, Loic Prylli <loic@myri.com>,
-       Prarit Bhargava <prarit@redhat.com>,
-       "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>,
-       "Schoeller, Patrick (Linux - Houston, TX)" <Patrick.Schoeller@hp.com>,
-       Bhavana Nagendra <bnagendr@redhat.com>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
- opt-in
-References: <alpine.LFD.1.00.0801111224090.3148@woody.linux-foundation.org>	<20080111204228.GP18741@parisc-linux.org>	<alpine.LFD.1.00.0801111311170.3148@woody.linux-foundation.org>	<20080111211753.GR18741@parisc-linux.org>	<alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org>	<20080111213803.GS18741@parisc-linux.org>	<20080111235856.GA16079@jurassic.park.msu.ru>	<20080112002638.GA18710@kroah.com>	<20080112144030.GA19279@jurassic.park.msu.ru>	<20080112094557.71f5382a@laptopd505.fenrus.org>	<20080112214911.GA20102@jurassic.park.msu.ru>	<20080112150120.05f93768@laptopd505.fenrus.org>	<47895767.3090503@redhat.com> <20080112164006.6f6f7bc2@laptopd505.fenrus.org>
-In-Reply-To: <20080112164006.6f6f7bc2@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 12 Jan 2008 20:38:54 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:53971 "EHLO
+	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752590AbYAMBix (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 20:38:53 -0500
+Date: Sat, 12 Jan 2008 19:38:48 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: PROBLEM REMAINS: [sata_nv ADMA breaks ATAPI] Crash	on	accessing
+ DVD-RAM
+In-reply-to: <1200180440.3656.76.camel@localhost.localdomain>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Alexander <aledin@mail.ru>, linux-kernel@vger.kernel.org,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       Tejun Heo <htejun@gmail.com>
+Message-id: <47896BA8.4030609@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.krOVfyFmB2aqGjJIoHCLmQxecWc@ifi.uio.no>
+ <478702C7.80401@shaw.ca> <47887982.6050805@mail.ru> <47891426.1020604@shaw.ca>
+ <1200170117.3656.66.camel@localhost.localdomain> <47894785.2050508@shaw.ca>
+ <1200180440.3656.76.camel@localhost.localdomain>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks, Arjan.
+James Bottomley wrote:
+> On Sat, 2008-01-12 at 17:04 -0600, Robert Hancock wrote:
+>> I don't think the problem is that there's some buffer which is getting 
+>> allocated above 4GB and never bounced, since the problem goes away if 
+>> ADMA is disabled entirely and the DMA mask remains 32-bit always. My 
+>> guess is something is basing its decision on whether to bounce or not on 
+>> the device DMA mask. That can't possibly work properly for sata_nv since 
+>> the same PCI device has 2 ports, one of which can be in ADMA mode and 
+>> 64-bit capable and the other can be in legacy mode and only 32-bit capable.
+> 
+> Erm, well, you can't decouple them.  Having a differing blk queue bounce
+> mask and device mask is going to cause huge trouble.  The reason is this
+> insidious nasty called swiotlb.  Basically, with it enabled (and again,
+> it can be on ia64 or x86_64), the kernel can bypass the bounce limit
+> safe in the knowledge that swiotlb will fix up behind in the dma_map_
+> Unfortunately, if the device mask doesn't match the queue mask then
+> swiotlb will never kick in and you'll end up with mapped pages beyond
+> the 4GB limit.
 
-The problem we have been experiencing has to do with Northbridges,
-not with devices.
+Yuck.. All the IOMMU DMA mapping code checks against the device DMA 
+mask, so it looks like if we get to the point of doing the DMA mapping 
+on >4GB addresses in libata we're screwed with this approach.
 
-As far as the device is concerned, after the Northbridge translates
-the config access into PCI bus cycles, the device has no idea what
-mechanism drove the Northbridge to the translation.
+The key problem is that both ata_ports share the same struct device with 
+one DMA mask which really doesn't match what this controller wants. I 
+wonder if we could do a different struct device for each port?
 
-That is to say, the device does not know whether the config cycle
-on the bus was caused by an MMCONFIG cycle or a legacy Port IO
-cycle delivered to the Northbridge.
+Other than that, I guess the solutions would be to just set a 32-bit 
+mask on the device if either port has an ATAPI device connected (which 
+is fairly ugly, considering that you could do things like hotplug an 
+ATAPI device when the other port was in use, for example), or do 
+something to prevent requests from reaching this point with >4GB 
+addresses in the first place..
 
-In systems that had Northbridges that did not respond correctly to
-MMCONFIG cycles, like the AMD 8132, we (HP & RH) were blacklisting
-whole platforms to limit them to Port IO PCI config.
+> 
+>> Tejun, I believe you had a patch that was printing warnings when libata 
+>> tried to program a legacy PRD with an address over 4GB. Could we change 
+>> that to WARN_ON and get someone experiencing this to try it and
+>> see what the stack trace points to?
+> 
+> Unfortunately, the stack trace probably won't help, since the command
+> likely gets issued from the block request function, so the trace won't
+> go back to the culpable initiator; that's why the command would be
+> helpful.
 
-However, when platforms emerged using both legacy PCI and PCI express,
-the platforms that were limited to Port IO config cycles were not
-express compliant, since the express spec requires the platform to
-be able to address the full 4096 byte region of config space to
-be considered express-compliant.
-
-The patch I devised concerned itself with Northbridges and separated
-MMCONFIG-compliant buses from those that could not handle MMCONFIG.
-
-Therefore, the express bus in the platform could happily employ
-MMCONFIG to access the entire 4K region, while the legacy bus
-with the non-compliant Northbridge could be restricted to Port IO
-config.
-
-However, even with my patch, the problem remained where devices
-requiring large displacements could overlap the BIOS-mapped
-MMCONFIG region. In such a situation, where the bus has passed
-the MMCONFIG test, the MMCONFIG region can get doubly mapped by
-bus-sizing code, causing the system to hang.
-
-The remedy proposed by Loic and implemented by Ivan is actually
-quite elegant, in that it addresses all these problems quite
-effectively while eliminating a ration of specialized and somewhat
-obscure code.
-
-In my humble opinion, Port IO config access is here to stay, having
-been defined as an architected mechanism in the PCI 2.1 spec.
-
-This is most especially true for x86.
-
-In other words, for x86, I don't think we need to worry about Port
-IO config access ever going away at all.
+Well, dumping the ATA command surely isn't helpful, as I'm sure it will 
+be PACKET. I guess we'd have to dump out the actual CDB..
