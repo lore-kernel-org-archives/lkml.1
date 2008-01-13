@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173AbYAMWy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755007AbYAMW4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755173AbYAMWy6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 17:54:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754291AbYAMWyu
+	id S1755007AbYAMW4c (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 17:56:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbYAMW4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 17:54:50 -0500
-Received: from home.nigel.suspend2.net ([203.171.70.205]:43033 "EHLO
-	server1.example.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754094AbYAMWyt (ORCPT
+	Sun, 13 Jan 2008 17:56:24 -0500
+Received: from rv-out-0910.google.com ([209.85.198.190]:54017 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754261AbYAMW4X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 17:54:49 -0500
-Message-ID: <478A96BA.3040503@suspend2.net>
-Date: Mon, 14 Jan 2008 09:54:50 +1100
-From: nigel@suspend2.net
-Reply-To: nigel@nigel.suspend2.net
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Sun, 13 Jan 2008 17:56:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oSI38EN6zOifHohMo6ObjiXZF7SVBMdAcgzKl60ent2kB+EO0qGSR6BFVbrGXlJCl/Y4vZWtFHFz6kBUk+3nClKFFnmXKIy5+3MlELnXraHIn4sdigHyNaCxMhIDwU9hbrHC3PB8WDki3oWclKnohMdmZ3mLyNUUIw8Dp5/02cM=
+Message-ID: <5bdc1c8b0801131456h10bb6ab6h7445424c59aeaa26@mail.gmail.com>
+Date: Sun, 13 Jan 2008 14:56:22 -0800
+From: "Mark Knecht" <markknecht@gmail.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: 2.6.24-rc7-rt1
+Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <1200250801.9190.7.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jens Axboe <jens.axboe@oracle.com>, David Dillow <dillowda@ornl.gov>,
-       Guillaume Chazarain <guichaz@yahoo.fr>, linux-kernel@vger.kernel.org,
-       linux-btrace@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de
-Subject: Re: CONFIG_NO_HZ breaks blktrace timestamps
-References: <1199918912.8388.13.camel@lap75545.ornl.gov> <1199996752.9159.46.camel@lap75545.ornl.gov> <20080110234438.4826f658@inria.fr> <1200020661.5099.3.camel@obelisk.thedillows.org> <20080111090723.GI6258@kernel.dk> <478736C6.3080802@suspend2.net> <20080111093211.GC8143@elte.hu>
-In-Reply-To: <20080111093211.GC8143@elte.hu>
-X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1200250801.9190.7.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Jan 13, 2008 11:00 AM, Steven Rostedt <rostedt@goodmis.org> wrote:
+> We are pleased to announce the 2.6.24-rc7-rt1 tree, which can be
+> downloaded from the location:
+>
+>   http://rt.et.redhat.com/download/
+>
 
-Ingo Molnar wrote:
-> * nigel@suspend2.net <nigel@suspend2.net> wrote:
-> 
->>>>> Just out of curiosity, could you try the appended cumulative patch 
->>>>> and report .clock_warps, .clock_overflows and .clock_underflows as 
->>>>> you did.
->>>> With those patches, CONFIG_NO_HZ works just fine.
->> Could these patches also help with hibernation issues? I'm trying 
->> x86_64+NO_HZ, and seeing activity delayed during the atomic copy and 
->> afterwards until I manually generate interrupts (by pressing keys).
-> 
-> i dont think that should be related to cpu_clock() use. Does the patch 
-> below make any difference? (or could you try x86.git to get the whole 
-> stack of x86 changes that we have at the moment.) Here's the coordinates 
-> for x86.git:
+Up and running here. No significant testing but no problems building
+it and no obvious regressions from 2.6.24-rc2-rt1.
 
-Sorry for the delay in replying. Something seems to help, but I haven't
-managed to identify what yet. I don't think it was the patch appended
-because I'm on UP. If you care, I'll see if I can find the time to look
-more carefully.
+mark@lightning ~ $ uname -a
+Linux lightning 2.6.24-rc7-rt1 #1 PREEMPT RT Sun Jan 13 14:41:21 PST
+2008 x86_64 AMD Athlon(tm) 64 Processor 3000+ AuthenticAMD GNU/Linux
+mark@lightning ~ $
 
-Nigel
-
+- Mark
