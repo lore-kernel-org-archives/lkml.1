@@ -1,102 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753311AbYAMSZE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbYAMSfO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753311AbYAMSZE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 13:25:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbYAMSYv
+	id S1753927AbYAMSfO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 13:35:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753375AbYAMSe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 13:24:51 -0500
-Received: from mailbox2.myri.com ([64.172.73.26]:1811 "EHLO myri.com"
+	Sun, 13 Jan 2008 13:34:58 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:52816 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753047AbYAMSYu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 13:24:50 -0500
-Message-ID: <478A5727.3000102@myri.com>
-Date: Sun, 13 Jan 2008 13:23:35 -0500
-From: Loic Prylli <loic@myri.com>
-User-Agent: Thunderbird/2.0.0.4 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <greg@kroah.com>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Martin Mares <mj@ucw.cz>, Tony Camuso <tcamuso@redhat.com>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
- opt-in
-References: <alpine.LFD.1.00.0801111156230.3148@woody.linux-foundation.org>	<20080111201716.GO18741@parisc-linux.org>	<alpine.LFD.1.00.0801111224090.3148@woody.linux-foundation.org>	<20080111204228.GP18741@parisc-linux.org>	<alpine.LFD.1.00.0801111311170.3148@woody.linux-foundation.org>	<20080111211753.GR18741@parisc-linux.org>	<alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org>	<20080111213803.GS18741@parisc-linux.org>	<20080111235856.GA16079@jurassic.park.msu.ru>	<20080112002638.GA18710@kroah.com>	<20080112144030.GA19279@jurassic.park.msu.ru> <20080112094557.71f5382a@laptopd505.fenrus.org>
-In-Reply-To: <20080112094557.71f5382a@laptopd505.fenrus.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1753288AbYAMSe4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jan 2008 13:34:56 -0500
+Message-Id: <20080113183454.551029000@sgi.com>
+References: <20080113183453.973425000@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Sun, 13 Jan 2008 10:34:57 -0800
+From: travis@sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       mingo@elte.hu
+Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 04/10] x86: Change NR_CPUS arrays in intel_cacheinfo
+Content-Disposition: inline; filename=NR_CPUS-arrays-in-intel_cacheinfo
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Change the following static arrays sized by NR_CPUS to
+per_cpu data variables:
 
+	_cpuid4_info *cpuid4_info[NR_CPUS];
+	_index_kobject *index_kobject[NR_CPUS];
+	kobject * cache_kobject[NR_CPUS];
 
-On 1/12/2008 12:45 PM, Arjan van de Ven wrote:
-> On Sat, 12 Jan 2008 17:40:30 +0300
-> Ivan Kokshaysky <ink@jurassic.park.msu.ru> wrote:
->   
->>  
->> +	if (reg < 256)
->> +		return pci_conf1_read(seg,bus,devfn,reg,len,value);
->> +
->>     
->
->
-> btw this is my main objection to your patch; it intertwines the conf1 and mmconfig code even more.
-> When (and I'm saying "when" not "if") systems arrive that only have MMCONFIG for some of the devices,
-> we'll have to detangle this again, and I'm really not looking forward to that.
->   
+Signed-off-by: Mike Travis <travis@sgi.com>
+Reviewed-by: Christoph Lameter <clameter@sgi.com>
+---
+ arch/x86/kernel/cpu/intel_cacheinfo.c |   55 +++++++++++++++++-----------------
+ 1 file changed, 29 insertions(+), 26 deletions(-)
 
+--- a/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -451,8 +451,8 @@ unsigned int __cpuinit init_intel_cachei
+ }
+ 
+ /* pointer to _cpuid4_info array (for each cache leaf) */
+-static struct _cpuid4_info *cpuid4_info[NR_CPUS];
+-#define CPUID4_INFO_IDX(x,y)    (&((cpuid4_info[x])[y]))
++static DEFINE_PER_CPU(struct _cpuid4_info *, cpuid4_info);
++#define CPUID4_INFO_IDX(x,y)    (&((per_cpu(cpuid4_info, x))[y]))
+ 
+ #ifdef CONFIG_SMP
+ static void __cpuinit cache_shared_cpu_map_setup(unsigned int cpu, int index)
+@@ -474,7 +474,7 @@ static void __cpuinit cache_shared_cpu_m
+ 			if (cpu_data(i).apicid >> index_msb ==
+ 			    c->apicid >> index_msb) {
+ 				cpu_set(i, this_leaf->shared_cpu_map);
+-				if (i != cpu && cpuid4_info[i])  {
++				if (i != cpu && per_cpu(cpuid4_info, i))  {
+ 					sibling_leaf = CPUID4_INFO_IDX(i, index);
+ 					cpu_set(cpu, sibling_leaf->shared_cpu_map);
+ 				}
+@@ -505,8 +505,8 @@ static void __cpuinit free_cache_attribu
+ 	for (i = 0; i < num_cache_leaves; i++)
+ 		cache_remove_shared_cpu_map(cpu, i);
+ 
+-	kfree(cpuid4_info[cpu]);
+-	cpuid4_info[cpu] = NULL;
++	kfree(per_cpu(cpuid4_info, cpu));
++	per_cpu(cpuid4_info, cpu) = NULL;
+ }
+ 
+ static int __cpuinit detect_cache_attributes(unsigned int cpu)
+@@ -519,9 +519,9 @@ static int __cpuinit detect_cache_attrib
+ 	if (num_cache_leaves == 0)
+ 		return -ENOENT;
+ 
+-	cpuid4_info[cpu] = kzalloc(
++	per_cpu(cpuid4_info, cpu) = kzalloc(
+ 	    sizeof(struct _cpuid4_info) * num_cache_leaves, GFP_KERNEL);
+-	if (cpuid4_info[cpu] == NULL)
++	if (per_cpu(cpuid4_info, cpu) == NULL)
+ 		return -ENOMEM;
+ 
+ 	oldmask = current->cpus_allowed;
+@@ -546,8 +546,8 @@ static int __cpuinit detect_cache_attrib
+ 
+ out:
+ 	if (retval) {
+-		kfree(cpuid4_info[cpu]);
+-		cpuid4_info[cpu] = NULL;
++		kfree(per_cpu(cpuid4_info, cpu));
++		per_cpu(cpuid4_info, cpu) = NULL;
+ 	}
+ 
+ 	return retval;
+@@ -561,7 +561,7 @@ out:
+ extern struct sysdev_class cpu_sysdev_class; /* from drivers/base/cpu.c */
+ 
+ /* pointer to kobject for cpuX/cache */
+-static struct kobject * cache_kobject[NR_CPUS];
++static DEFINE_PER_CPU(struct kobject *, cache_kobject);
+ 
+ struct _index_kobject {
+ 	struct kobject kobj;
+@@ -570,8 +570,8 @@ struct _index_kobject {
+ };
+ 
+ /* pointer to array of kobjects for cpuX/cache/indexY */
+-static struct _index_kobject *index_kobject[NR_CPUS];
+-#define INDEX_KOBJECT_PTR(x,y)    (&((index_kobject[x])[y]))
++static DEFINE_PER_CPU(struct _index_kobject *, index_kobject);
++#define INDEX_KOBJECT_PTR(x,y)    (&((per_cpu(index_kobject, x))[y]))
+ 
+ #define show_one_plus(file_name, object, val)				\
+ static ssize_t show_##file_name						\
+@@ -684,10 +684,10 @@ static struct kobj_type ktype_percpu_ent
+ 
+ static void __cpuinit cpuid4_cache_sysfs_exit(unsigned int cpu)
+ {
+-	kfree(cache_kobject[cpu]);
+-	kfree(index_kobject[cpu]);
+-	cache_kobject[cpu] = NULL;
+-	index_kobject[cpu] = NULL;
++	kfree(per_cpu(cache_kobject, cpu));
++	kfree(per_cpu(index_kobject, cpu));
++	per_cpu(cache_kobject, cpu) = NULL;
++	per_cpu(index_kobject, cpu) = NULL;
+ 	free_cache_attributes(cpu);
+ }
+ 
+@@ -703,13 +703,14 @@ static int __cpuinit cpuid4_cache_sysfs_
+ 		return err;
+ 
+ 	/* Allocate all required memory */
+-	cache_kobject[cpu] = kzalloc(sizeof(struct kobject), GFP_KERNEL);
+-	if (unlikely(cache_kobject[cpu] == NULL))
++	per_cpu(cache_kobject, cpu) =
++		kzalloc(sizeof(struct kobject), GFP_KERNEL);
++	if (unlikely(per_cpu(cache_kobject, cpu) == NULL))
+ 		goto err_out;
+ 
+-	index_kobject[cpu] = kzalloc(
++	per_cpu(index_kobject, cpu) = kzalloc(
+ 	    sizeof(struct _index_kobject ) * num_cache_leaves, GFP_KERNEL);
+-	if (unlikely(index_kobject[cpu] == NULL))
++	if (unlikely(per_cpu(index_kobject, cpu) == NULL))
+ 		goto err_out;
+ 
+ 	return 0;
+@@ -733,7 +734,8 @@ static int __cpuinit cache_add_dev(struc
+ 	if (unlikely(retval < 0))
+ 		return retval;
+ 
+-	retval = kobject_init_and_add(cache_kobject[cpu], &ktype_percpu_entry,
++	retval = kobject_init_and_add(per_cpu(cache_kobject, cpu),
++				      &ktype_percpu_entry,
+ 				      &sys_dev->kobj, "%s", "cache");
+ 	if (retval < 0) {
+ 		cpuid4_cache_sysfs_exit(cpu);
+@@ -745,13 +747,14 @@ static int __cpuinit cache_add_dev(struc
+ 		this_object->cpu = cpu;
+ 		this_object->index = i;
+ 		retval = kobject_init_and_add(&(this_object->kobj),
+-					      &ktype_cache, cache_kobject[cpu],
++					      &ktype_cache,
++					      per_cpu(cache_kobject, cpu),
+ 					      "index%1lu", i);
+ 		if (unlikely(retval)) {
+ 			for (j = 0; j < i; j++) {
+ 				kobject_put(&(INDEX_KOBJECT_PTR(cpu,j)->kobj));
+ 			}
+-			kobject_put(cache_kobject[cpu]);
++			kobject_put(per_cpu(cache_kobject, cpu));
+ 			cpuid4_cache_sysfs_exit(cpu);
+ 			break;
+ 		}
+@@ -760,7 +763,7 @@ static int __cpuinit cache_add_dev(struc
+ 	if (!retval)
+ 		cpu_set(cpu, cache_dev_map);
+ 
+-	kobject_uevent(cache_kobject[cpu], KOBJ_ADD);
++	kobject_uevent(per_cpu(cache_kobject, cpu), KOBJ_ADD);
+ 	return retval;
+ }
+ 
+@@ -769,7 +772,7 @@ static void __cpuinit cache_remove_dev(s
+ 	unsigned int cpu = sys_dev->id;
+ 	unsigned long i;
+ 
+-	if (cpuid4_info[cpu] == NULL)
++	if (per_cpu(cpuid4_info, cpu) == NULL)
+ 		return;
+ 	if (!cpu_isset(cpu, cache_dev_map))
+ 		return;
+@@ -777,7 +780,7 @@ static void __cpuinit cache_remove_dev(s
+ 
+ 	for (i = 0; i < num_cache_leaves; i++)
+ 		kobject_put(&(INDEX_KOBJECT_PTR(cpu,i)->kobj));
+-	kobject_put(cache_kobject[cpu]);
++	kobject_put(per_cpu(cache_kobject, cpu));
+ 	cpuid4_cache_sysfs_exit(cpu);
+ }
+ 
 
-conf1 has been a hardcoded dependencies of mmconfig for years. Ivan's 
-patch does not make it worse (in fact it considerably simplifies that 
-code, making it easier to untangle later).
-
-
-IMHO, either your patch or Ivan's can be a good base, but:
-
-1) For your remark above to be given any consideration, your patch 
-should be modified to remove the hardcoded conf1 from the *current* 
-mmconfig code, otherwise we end up with 3 set of ops (mmconfig + conf1+ 
-a possible third set of operations) intertwined in a confusing manner. 
-And removing that dependency is not a straightforward operation unless 
-you also do 2):
-
-2) the pci_enable_ext_config() function and dev->ext_cfg_space field, 
-sysfs interface should be removed from the patch.  There has never been 
-a problem reporting crashes or any undefined behaviour while trying to 
-access ext-conf-space, all the problems where *using mmconfig to access 
-legacy-conf-space*. The "if (dev->cfg_space_ext > 0)" checks can instead 
-be replaced by  "if (reg >= 256)".
-Otherwise when using per-device explicit enabling, just *checking* 
-whether ext-conf-space is available by calling pci_enable_ext_config(), 
-will make some of the old problems of *loosing legacy conf-space* come 
-back: you would  have introduced a new user-space and kernel API while 
-only solving half the problems, not a good deal.
-
-if you do 1) and 2), then you really support the good properties you 
-claimed:
-- You can use mmconfig for ext-space and something else for legacy-space.
-- You can use mmconfig for everything (for instance if conf1 is not 
-implemented).
-
-Of course it is as straightforward to modify Ivan's patch to also have 
-the same properties.
-
-
-
-Loic
-
-
-
-
-
-
-
-
-Loic
-
+-- 
