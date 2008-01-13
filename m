@@ -1,29 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753629AbYAMRnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753747AbYAMRpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753629AbYAMRnq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 12:43:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbYAMRnj
+	id S1753747AbYAMRpb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 12:45:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbYAMRpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 12:43:39 -0500
-Received: from smtp-100-sunday.nerim.net ([62.4.16.100]:56528 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753149AbYAMRni (ORCPT
+	Sun, 13 Jan 2008 12:45:22 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37667 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753184AbYAMRpV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 12:43:38 -0500
-Date: Sun, 13 Jan 2008 18:43:37 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Cc: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [i2c] [PATCH] update module-init-tools to support the i2c
- subsystem
-Message-ID: <20080113184337.5d4cd546@hyperion.delvare>
-In-Reply-To: <9e4733910801130826l799e4897pe7380ccb973b5fd0@mail.gmail.com>
-References: <9e4733910712171839h214e0bc3q179266c86e5987b1@mail.gmail.com>
-	<20080113152735.5dca46a1@hyperion.delvare>
-	<9e4733910801130714m1be16826jf240171972324d16@mail.gmail.com>
-	<20080113163543.16e3d26b@hyperion.delvare>
-	<9e4733910801130826l799e4897pe7380ccb973b5fd0@mail.gmail.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Sun, 13 Jan 2008 12:45:21 -0500
+Date: Sun, 13 Jan 2008 17:41:25 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Theodore Tso <tytso@mit.edu>, Al Boldi <a1426z@gawab.com>,
+       Valerie Henson <val.henson@gmail.com>, Rik van Riel <riel@redhat.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFD] Incremental fsck
+Message-ID: <20080113174125.5f39ac64@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080113171916.GB4132@ucw.cz>
+References: <200801090022.55589.a1426z@gawab.com>
+	<200801090740.12989.a1426z@gawab.com>
+	<70b6f0bf0801082345vf57951ey642e35c3d6e5194f@mail.gmail.com>
+	<200801091452.14890.a1426z@gawab.com>
+	<20080112145140.GB6751@mit.edu>
+	<20080113171916.GB4132@ucw.cz>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -31,28 +36,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Jan 2008 11:26:07 -0500, Jon Smirl wrote:
-> On 1/13/08, Jean Delvare <khali@linux-fr.org> wrote:
-> > On Sun, 13 Jan 2008 10:14:14 -0500, Jon Smirl wrote:
-> > > On 1/13/08, Jean Delvare <khali@linux-fr.org> wrote:
-> > > > On Mon, 17 Dec 2007 21:39:37 -0500, Jon Smirl wrote:
-> > > > > Follow on to: "Series to add device tree naming to i2c"
-> > > > > Teach module-init-tools about the i2c subsystem.
-> > > >
-> > > > Can you please explain what this patch does and why it is needed?
-> > >
-> > > It generates the entries needed for the user space module tools to
-> > > work with the aliases. For example modprobe/depmod. It is a standard
-> > > part of the kernel module system.
-> >
-> > What entries, where? What can you do after applying your patch that you
-> > couldn't do before?
-> 
-> The drivers you are testing with don't depend on other drivers.
+> What are ext3 expectations of disk (is there doc somewhere)? For
+> example... if disk does not lie, but powerfail during write damages
+> the sector -- is ext3 still going to work properly?
 
-They do. I'm testing with the lm90 driver, which depends on the hwmon
-driver. Both load automatically when the underlying i2c-parport driver
-instantiate an "adm1032" i2c device.
+Nope. However the few disks that did this rapidly got firmware updates
+because there are other OS's that can't cope.
 
--- 
-Jean Delvare
+> If disk does not lie, but powerfail during write may cause random
+> numbers to be returned on read -- can fsck handle that?
+
+most of the time. and fsck knows about writing sectors to remove read
+errors in metadata blocks.
+
+> What abou disk that kills 5 sectors around sector being written during
+> powerfail; can ext3 survive that?
+
+generally. Note btw that for added fun there is nothing that guarantees
+the blocks around a block on the media are sequentially numbered. The
+usually are but you never know.
+
+Alan
