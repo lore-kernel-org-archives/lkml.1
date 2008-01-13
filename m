@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752599AbYAMNgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbYAMNpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752599AbYAMNgS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 08:36:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbYAMNgI
+	id S1752641AbYAMNpo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 08:45:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbYAMNpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 08:36:08 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58162 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751144AbYAMNgE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 08:36:04 -0500
-Date: Sun, 13 Jan 2008 13:33:17 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Alexander <aledin@mail.ru>, linux-kernel@vger.kernel.org,
-       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       Tejun Heo <htejun@gmail.com>
-Subject: Re: PROBLEM REMAINS: [sata_nv ADMA breaks ATAPI] Crash	on	accessing
- DVD-RAM
-Message-ID: <20080113133317.50ad4bda@lxorguk.ukuu.org.uk>
-In-Reply-To: <47896BA8.4030609@shaw.ca>
-References: <fa.krOVfyFmB2aqGjJIoHCLmQxecWc@ifi.uio.no>
-	<478702C7.80401@shaw.ca>
-	<47887982.6050805@mail.ru>
-	<47891426.1020604@shaw.ca>
-	<1200170117.3656.66.camel@localhost.localdomain>
-	<47894785.2050508@shaw.ca>
-	<1200180440.3656.76.camel@localhost.localdomain>
-	<47896BA8.4030609@shaw.ca>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 13 Jan 2008 08:45:34 -0500
+Received: from ikar.perftech.si ([195.246.0.20]:4698 "EHLO ikar.perftech.si"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751457AbYAMNpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jan 2008 08:45:33 -0500
+X-Greylist: delayed 986 seconds by postgrey-1.27 at vger.kernel.org; Sun, 13 Jan 2008 08:45:33 EST
+X-ASG-Debug-ID: 1200230941-043f00020000-xx1T2L
+X-Barracuda-URL: http://10.12.0.14:5000/cgi-bin/mark.cgi
+X-Spam-Processed: dedal.perftech.si, Sun, 13 Jan 2008 14:29:00 +0100
+	(not processed: spam filter heuristic analysis disabled)
+X-Authenticated-Sender: xerces8@butn.net
+X-Return-Path: xerces8@butn.net
+X-Envelope-From: xerces8@butn.net
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Date: Sun, 13 Jan 2008 14:28:58 +0100
+From: "xerces8" <xerces8@butn.net>
+To: linux-kernel@vger.kernel.org
+X-ASG-Orig-Subj: isofs maintainer and write support
+Subject: isofs maintainer and write support
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-ID: <WorldClient-F200801131428.AA28580079@butn.net>
+X-Mailer: WorldClient 9.6.4rc2
+X-MDAV-Processed: dedal.perftech.si, Sun, 13 Jan 2008 14:29:01 +0100
+X-Barracuda-Connect: UNKNOWN[10.12.0.44]
+X-Barracuda-Start-Time: 1200230941
+X-Barracuda-Virus-Scanned: by OUTBOUND - ikar.perftech.si at perftech.si
+X-Barracuda-Spam-Score: 0.00
+X-Barracuda-Spam-Status: No, SCORE=0.00 using global scores of TAG_LEVEL=1000.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=7.0 tests=UNPARSEABLE_RELAY
+X-Barracuda-Spam-Report: Code version 3.1, rules version 3.1.39418
+	Rule breakdown below
+	 pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	0.00 UNPARSEABLE_RELAY      Informational: message has unparseable relay lines
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Other than that, I guess the solutions would be to just set a 32-bit 
-> mask on the device if either port has an ATAPI device connected (which 
-> is fairly ugly, considering that you could do things like hotplug an 
-> ATAPI device when the other port was in use, for example), or do 
-> something to prevent requests from reaching this point with >4GB 
-> addresses in the first place..
+Hi!
 
-With 2.6.24 almost released I think that is a must do for the moment and
-since we also have hotplugging fo devices it might be easier for .24 to
-just set a 32bit DMA mask and be done with it, then fix it later.
+I write here as the MAINTAINERS file has no entry about the isofs.
+
+The question is : Is there any plan/way/idea to have read/write support
+for isofs ?
+
+I know of user space tools that can perform any operation (like
+create/read/write/rename/delete file/directory) but that is nowhere
+as convenient as a real filesystem.
+
+Use case: Editing a iso9660 filesystem on a DVD+RW. With a r/w isofs most
+changes would take a few seconds, while without, the entire 4.5 gigabytes
+must be copied to HD, edited and then remastered back to the DVD medium.
+(Why I don't use another FS ? Because I use the DVD to store music for
+my car cd/dvd player and it understands only iso9660.)
+(neither does it know vorbis. Or aac+ :-( )
+
+Regards,
+David Balažic
+
 
