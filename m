@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752239AbYAMLRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752440AbYAML0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752239AbYAMLRU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 06:17:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbYAMLRJ
+	id S1752440AbYAML0X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 06:26:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbYAML0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 06:17:09 -0500
-Received: from ns.suse.de ([195.135.220.2]:40191 "EHLO mx1.suse.de"
+	Sun, 13 Jan 2008 06:26:14 -0500
+Received: from mx1.suse.de ([195.135.220.2]:41151 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751235AbYAMLRH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 06:17:07 -0500
-Date: Sun, 13 Jan 2008 12:17:04 +0100
-Message-ID: <s5h8x2u2cwf.wl%tiwai@suse.de>
+	id S1751307AbYAML0N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jan 2008 06:26:13 -0500
+Date: Sun, 13 Jan 2008 12:26:12 +0100
+Message-ID: <s5h7iie2ch7.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Harald Dunkel <harald.dunkel@t-online.de>
 Cc: linux-kernel@vger.kernel.org
 Subject: Re: 2.6.24-rc7, intel audio: alsa doesn't say a beep
-In-Reply-To: <4787E5D0.7000405@t-online.de>
+In-Reply-To: <47888B41.70803@t-online.de>
 References: <4782833D.3010600@t-online.de>
 	<s5h3at8rd9c.wl%tiwai@suse.de>
 	<4783AC7C.50900@t-online.de>
@@ -26,7 +26,7 @@ References: <4782833D.3010600@t-online.de>
 	<s5hr6gpajux.wl%tiwai@suse.de>
 	<4786960D.2040500@t-online.de>
 	<s5hprw8g8m7.wl%tiwai@suse.de>
-	<4787E5D0.7000405@t-online.de>
+	<47888B41.70803@t-online.de>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28)
  (fuki) (+CVS-20070806) (i386-suse-linux)
@@ -36,7 +36,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Fri, 11 Jan 2008 22:55:28 +0100,
+At Sat, 12 Jan 2008 10:41:21 +0100,
 Harald Dunkel wrote:
 > 
 > Takashi Iwai wrote:
@@ -51,71 +51,43 @@ Harald Dunkel wrote:
 > > OK, but I'd like to know whether this makes no regression to rc6.
 > > Could you check?
 > > 
-> 
-> "Regression" sounds like a test suite to me, verifying that the
-> old problems didn't come back. Maybe you could send me a pointer?
-
-The "regression" was your original problem, no sound on rc7, which was
-fixed by reverting the patch.  Now I'd like to know that my new patch
-doesn't break after reverting the broken patch.
-
-In short, try my patch on the latest Linus git tree.  Check whether
-the sound still works.
-
-> Of course I didn't try that much yet. The kernel booted as expected,
-> I saw XWindow running, the mouse pointer was moving, etc. There was
-> just no sound, as before with rc7.
-
-Yeah, I know that it doesn't fix the rc7.
-
 > > Also, what exactly did you test?  "No sound" means that no sound from
 > > the headphone / line-out or from the speaker?
 > > 
-> 
-> Speaker and first headphone are the same on this laptop. If I plugin
-> the headphone, then the tiny speakers are disconnected. But for the
-> last tests no headphone was plugged in.
-> 
-> I tested it by running gnome-alsamixer. I tried to switch off and
-> on the mute buttons, change the volume and other sliders, etc.
-
-Hm.  Looks like the problem appearing only with IDT STAC codecs.
-The symptom indicates that it's not about the EAPD for the speaker but
-in the deeper core initialization part...
-
 > > One interesting test would be to increase the value of udelay() in the
 > > reverted patch.  What happens if it's set to 500?
 > > 
 > 
-> I will try tomorrow. What exactly is this delay good for?
+> There is no udelay() in the reverted patch.
 
-It's simply a delay.  Basically Ingo's patch changed msleep() to
-udelay() to reduce *unneeded* delays.  The function waits until the
-all pending commands are processed.  The delay is simply to reduce the
-system load.  And, now, changing this delay causes a problem
-surprisingly.
+Hm?  Ingo's patch replaces msleep(1) with udelay(10) +
+cond_resched().  This is the patch we're arguing.  This was already
+reverted (based on your report) on git.
 
-> >>> The perex/alsa.git mm branch on kernel.org has many fixes.  Could you
-> >>> give it a try, too?
-> >>>
-> >> This version seems to work. But AFAICS it just reverts hda_intel.c back
-> >> to rc6 again, so this is no surprise.
-> > 
-> > Use mm branch.  The main branch is just an old Linus tree.
-> > 
-> 
-> AFAICS I did use the mm branch. The command to grab the sources was
-> 
-> git-clone git://git.kernel.org/pub/scm/linux/kernel/git/perex/alsa.git mm
-> 
-> Is this correct?
+> If I replace "udelay(10)"
+> by "udelay(500)" in the original rc7, then there is still no sound.
 
-No.  You'd better to clone Linus git tree, then pull from alsa.git mm
-branch.
+Interesting...  What about udelay(1000)?  Then it'll be closer to
+msleep(1).
 
-  % git-clone $LINUS/linux-2.6.git
-  % cd linux-2.6
-  % git-pull $ALSA/alsa.git mm
+> This is like fishing in the dark. We've got a working version. Why not
+> keep it?
 
+Yes, we are shooting in the dark now indeed.  Honestly, I have no
+concrete idea why the patch breaks the sound initialization.
+
+It seems that Dell machines (or STAC codecs) have problems with the
+initialization timing.  I don't think that all commands but only
+certain some command sequences that are so sensitive to the access
+timing.  We need to identify this.
+
+Ingo's patch is basically a really nice fix.  It reduces the
+unnecessary delay, especially improves resume speed much.  I'd love to
+have it.  And above all, I need to understand what is the real
+problem.  Unfortunately, I have no this hardware and the precise h/w
+data, so must rely on testers and a guess work.
+
+
+thanks,
 
 Takashi
