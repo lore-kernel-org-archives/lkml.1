@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751505AbYAMI5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751796AbYAMJgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751505AbYAMI5Y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 03:57:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751098AbYAMI5Q
+	id S1751796AbYAMJgS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 04:36:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbYAMJgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 03:57:16 -0500
-Received: from eazy.amigager.de ([213.239.192.238]:51246 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750883AbYAMI5P (ORCPT
+	Sun, 13 Jan 2008 04:36:06 -0500
+Received: from smtp10.unit.tiscali.de ([213.205.33.46]:38263 "EHLO
+	smtp10.unit.tiscali.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751210AbYAMJgF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 03:57:15 -0500
-Date: Sun, 13 Jan 2008 09:56:56 +0100
-From: Tino Keitel <tino.keitel@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Could not set non-blocking flag with 2.6.24-rc5
-Message-ID: <20080113085655.GA3087@dose.home.local>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-References: <20071213201601.GA5831@dose.home.local> <20080112211015.GA4991@infradead.org>
+	Sun, 13 Jan 2008 04:36:05 -0500
+X-Greylist: delayed 1254 seconds by postgrey-1.27 at vger.kernel.org; Sun, 13 Jan 2008 04:36:04 EST
+From: Michael Gerdau <mgerdau@tiscali.de>
+To: Abhishek Rai <abhishekrai@google.com>
+Subject: Re: [CALL FOR TESTING] Make Ext3 fsck way faster [2.6.23.13]
+Date: Sun, 13 Jan 2008 10:14:40 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, rohitseth@google.com,
+       akpm@linux-foundation.org, phillips@phunq.net
+References: <Pine.LNX.4.64.0801130026480.4286@vmfs7.nyc.corp.google.com>
+In-Reply-To: <Pine.LNX.4.64.0801130026480.4286@vmfs7.nyc.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080112211015.GA4991@infradead.org>
-User-Agent: Mutt/1.5.17 (2007-12-11)
+Content-Type: multipart/signed;
+  boundary="nextPart1353550.V3LuEa6ubV";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200801131015.02683.mgerdau@tiscali.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 12, 2008 at 21:10:15 +0000, Christoph Hellwig wrote:
-> On Thu, Dec 13, 2007 at 09:16:01PM +0100, Tino Keitel wrote:
-> > Hi folks,
-> > 
-> > I often build Debian packages inside a chroot. Today I discovered a
-> > failure during an "aptitude update", which is a command to download new
-> > package lists for the package management. In strace, the lines around
-> > the failure look like this:
-> 
-> Are you using XFS?  This looks a lot like the bug I introduced where
+--nextPart1353550.V3LuEa6ubV
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Yes, I use XFS.
+This patch does not apply to a clean 2.6.23.13 tree using either of
+  patch -p1 <patch.ext3-fsck-faster
+  patch -p1 -l <patch.ext3-fsck-faster
 
-> i_rdev gets a wrong value assigned after mknod.   In that case please
-> try -rc7 as it has a fix for that particular problem.
+Best,
+Michael
+=2D-=20
+ Michael Gerdau       email: mgerdau@tiscali.de
+ GPG-keys available on request or at public keyserver
 
-OK, I'll try it.
+--nextPart1353550.V3LuEa6ubV
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-Regards,
-Tino
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+
+iD8DBQBHidaWUYYhyuxDQc4RAo72AJ9fsKLin6jIsdWFonwStcrekrbwIwCghdV9
+Kw239CV0zxyK7CbbDYXa0h8=
+=bZxy
+-----END PGP SIGNATURE-----
+
+--nextPart1353550.V3LuEa6ubV--
