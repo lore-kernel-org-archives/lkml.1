@@ -1,86 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753143AbYANOb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751802AbYANOh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753143AbYANOb2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 09:31:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbYANObT
+	id S1751802AbYANOh2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 09:37:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbYANOhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 09:31:19 -0500
-Received: from bde.crans.org ([138.231.137.76]:45121 "EHLO bde.crans.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751217AbYANObS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 09:31:18 -0500
-From: Mathieu Segaud <mathieu.segaud@regala.cx>
-To: linux-scsi@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Mathieu Segaud <mathieu.segaud@regala.cx>
-Subject: [PATCH] Convert drivers/scsi/ch.c to use unlocked_ioctl
-Date: Mon, 14 Jan 2008 15:31:17 +0100
-Message-Id: <1200321077-26916-1-git-send-email-mathieu.segaud@regala.cx>
-X-Mailer: git-send-email 1.5.3.8
+	Mon, 14 Jan 2008 09:37:13 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1172 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750695AbYANOhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 09:37:11 -0500
+Date: Sun, 13 Jan 2008 18:16:11 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Yi Yang <yi.y.yang@intel.com>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, lenb@kernel.org,
+       acpi-bugzilla@lists.sourceforge.net
+Subject: Re: [PATCH] ACPI: Add sysfs interface for acpi device wakeup
+Message-ID: <20080113181611.GB4435@ucw.cz>
+References: <1198738022.8950.3.camel@yangyi-dev.bj.intel.com> <1199688961.3551.19.camel@yangyi-dev.bj.intel.com> <1199917306.9596.3.camel@yangyi-dev.bj.intel.com> <200801100943.08780.maximlevitsky@gmail.com> <1199923176.3827.13.camel@yangyi-dev.bj.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1199923176.3827.13.camel@yangyi-dev.bj.intel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As of now, compat_ioctl already runs without the BKL, whereas ioctl runs
-with the BKL. This patch first converts changer_fops to use a .unlocked_ioctl
-member. It applies the same locking rationale than ch_ioctl_compat() uses
-to ch_ioctl().
 
-Signed-off-by: Mathieu Segaud <mathieu.segaud@regala.cx>
----
- drivers/scsi/ch.c |   18 ++++++++----------
- 1 files changed, 8 insertions(+), 10 deletions(-)
+> [yangyi@yangyi-dev ~]$ cat /proc/acpi/wakeup 
+> Device  S-state   Status   Sysfs node           PCI ID
+> SLPB      S4    *enabled   
+> P32       S4     disabled  pci:0000:00:1e.0     0x244e
+> UAR1      S4     disabled  pnp:00:09            0x0000
 
-diff --git a/drivers/scsi/ch.c b/drivers/scsi/ch.c
-index 2311019..389777c 100644
---- a/drivers/scsi/ch.c
-+++ b/drivers/scsi/ch.c
-@@ -92,8 +92,7 @@ static int  ch_probe(struct device *);
- static int  ch_remove(struct device *);
- static int  ch_open(struct inode * inode, struct file * filp);
- static int  ch_release(struct inode * inode, struct file * filp);
--static int  ch_ioctl(struct inode * inode, struct file * filp,
--		     unsigned int cmd, unsigned long arg);
-+static long ch_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
- #ifdef CONFIG_COMPAT
- static long ch_ioctl_compat(struct file * filp,
- 			    unsigned int cmd, unsigned long arg);
-@@ -130,12 +129,12 @@ static struct scsi_driver ch_template =
- 
- static const struct file_operations changer_fops =
- {
--	.owner        = THIS_MODULE,
--	.open         = ch_open,
--	.release      = ch_release,
--	.ioctl        = ch_ioctl,
-+	.owner			= THIS_MODULE,
-+	.open			= ch_open,
-+	.release		= ch_release,
-+	.unlocked_ioctl	= ch_ioctl,
- #ifdef CONFIG_COMPAT
--	.compat_ioctl = ch_ioctl_compat,
-+	.compat_ioctl	= ch_ioctl_compat,
- #endif
- };
- 
-@@ -626,7 +625,7 @@ ch_checkrange(scsi_changer *ch, unsigned int type, unsigned int unit)
- 	return 0;
- }
- 
--static int ch_ioctl(struct inode * inode, struct file * file,
-+static long ch_ioctl(struct file *file,
- 		    unsigned int cmd, unsigned long arg)
- {
- 	scsi_changer *ch = file->private_data;
-@@ -887,8 +886,7 @@ static long ch_ioctl_compat(struct file * file,
- 	case CHIOINITELEM:
- 	case CHIOSVOLTAG:
- 		/* compatible */
--		return ch_ioctl(NULL /* inode, unused */,
--				file, cmd, arg);
-+		return ch_ioctl(file, cmd, arg);
- 	case CHIOGSTATUS32:
- 	{
- 		struct changer_element_status32 ces32;
+This should tell you how bad is placing PCI ID into generic file.
+
+NAK.
+							Pavel
 -- 
-1.5.3.8
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
