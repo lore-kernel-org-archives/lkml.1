@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755152AbYAMEr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754742AbYAME72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755152AbYAMEr6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 23:47:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753465AbYAMErv
+	id S1754742AbYAME72 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 23:59:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbYAME7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 23:47:51 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:38716 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753461AbYAMEru (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 23:47:50 -0500
-Date: Sat, 12 Jan 2008 21:47:48 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: tcamuso@redhat.com, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Martin Mares <mj@ucw.cz>, Loic Prylli <loic@myri.com>,
-       Prarit Bhargava <prarit@redhat.com>,
-       "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>,
-       "Schoeller, Patrick (Linux - Houston, TX)" <Patrick.Schoeller@hp.com>,
-       Bhavana Nagendra <bnagendr@redhat.com>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver opt-in
-Message-ID: <20080113044748.GY18741@parisc-linux.org>
-References: <20080111235856.GA16079@jurassic.park.msu.ru> <20080112002638.GA18710@kroah.com> <20080112144030.GA19279@jurassic.park.msu.ru> <20080112094557.71f5382a@laptopd505.fenrus.org> <20080112214911.GA20102@jurassic.park.msu.ru> <20080112150120.05f93768@laptopd505.fenrus.org> <47895767.3090503@redhat.com> <20080112164006.6f6f7bc2@laptopd505.fenrus.org> <47896B3B.2000108@redhat.com> <20080112204248.29abb1dd@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080112204248.29abb1dd@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 12 Jan 2008 23:59:21 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:46689 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753410AbYAME7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 23:59:20 -0500
+Date: Sat, 12 Jan 2008 23:59:07 -0500
+From: Rik van Riel <riel@redhat.com>
+To: Anton Salikhmetov <salikhmetov@gmail.com>
+Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, ksm@42.dk, staubach@redhat.com,
+       jesper.juhl@gmail.com, torvalds@linux-foundation.org,
+       a.p.zijlstra@chello.nl, akpm@linux-foundation.org, protasnb@gmail.com
+Subject: Re: [PATCH 2/2] updating ctime and mtime at syncing
+Message-ID: <20080112235907.05fc44d4@bree.surriel.com>
+In-Reply-To: <12001992023392-git-send-email-salikhmetov@gmail.com>
+References: <12001991991217-git-send-email-salikhmetov@gmail.com>
+	<12001992023392-git-send-email-salikhmetov@gmail.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 12, 2008 at 08:42:48PM -0800, Arjan van de Ven wrote:
-> Wanne bet there'll be devices that screw this up? THere's devices that even screwed
-> up the 64-256 region after all.
+On Sun, 13 Jan 2008 07:39:59 +0300
+Anton Salikhmetov <salikhmetov@gmail.com> wrote:
 
-I don't know if they 'screwed it up'.  There are devices that misbehave
-when registers are read from pci config space.  But this was never
-guaranteed to be a safe thing to do; it gradualy became clear that
-people expected to be able to read random registers and manufacturers
-responded accordingly, but I don't think you were ever guaranteed to be
-able to peek at bits of config space arbitrarily.
+> http://bugzilla.kernel.org/show_bug.cgi?id=2645
+> 
+> Changes for updating the ctime and mtime fields for memory-mapped files:
+> 
+> 1) new flag triggering update of the inode data;
+> 2) new function to update ctime and mtime for block device files;
+> 3) new helper function to update ctime and mtime when needed;
+> 4) updating time stamps for mapped files in sys_msync() and do_fsync();
+> 5) implementing the feature of auto-updating ctime and mtime.
+> 
+> Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
+
+Acked-by: Rik van Riel <riel@redhat.com>
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+All rights reversed.
