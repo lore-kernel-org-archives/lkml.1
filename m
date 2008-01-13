@@ -1,91 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752062AbYAMM27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752164AbYAMMoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752062AbYAMM27 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 07:28:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbYAMM2s
+	id S1752164AbYAMMoN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 07:44:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbYAMMoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 07:28:48 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:12620 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751340AbYAMM2r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 07:28:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=oEHOQFMpd0q+ZRpirIfBa3MjfsPMnjqPGRgBSGKh5nLGrlUWy5351F1VkADlOj295M2qYV1XN3iVI1etm4Tt8lYmpQabJf3lp1f2yKdDO2zeAZ7ZvmEbeKVEOvM0vP/5hj8fh/DrvqP26dv1LozFZhO/hPx9RXkFmvV/9mq6vy4=
-Message-ID: <9f00bd9d0801130428s5e4c034apf21052b918470f99@mail.gmail.com>
-Date: Sun, 13 Jan 2008 14:28:46 +0200
-From: "Filippos Papadopoulos" <psybases@gmail.com>
-To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
-Subject: Re: INITIO scsi driver fails to work properly
-Cc: linux-scsi@vger.kernel.org, "Chuck Ebbert" <cebbert@redhat.com>,
-       "Boaz Harrosh" <bharrosh@panasas.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1200070903.3286.28.camel@localhost.localdomain>
+	Sun, 13 Jan 2008 07:44:01 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36302 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751234AbYAMMoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jan 2008 07:44:00 -0500
+Message-ID: <478A075F.7010503@redhat.com>
+Date: Sun, 13 Jan 2008 07:43:11 -0500
+From: Tony Camuso <tcamuso@redhat.com>
+Reply-To: tcamuso@redhat.com
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <greg@kroah.com>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>, Loic Prylli <loic@myri.com>,
+       Prarit Bhargava <prarit@redhat.com>,
+       "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>,
+       "Schoeller, Patrick (Linux - Houston, TX)" <Patrick.Schoeller@hp.com>,
+       Bhavana Nagendra <bnagendr@redhat.com>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+ opt-in
+References: <alpine.LFD.1.00.0801111224090.3148@woody.linux-foundation.org>	<20080111204228.GP18741@parisc-linux.org>	<alpine.LFD.1.00.0801111311170.3148@woody.linux-foundation.org>	<20080111211753.GR18741@parisc-linux.org>	<alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org>	<20080111213803.GS18741@parisc-linux.org>	<20080111235856.GA16079@jurassic.park.msu.ru>	<20080112002638.GA18710@kroah.com>	<20080112144030.GA19279@jurassic.park.msu.ru>	<20080112094557.71f5382a@laptopd505.fenrus.org>	<20080112214911.GA20102@jurassic.park.msu.ru>	<20080112150120.05f93768@laptopd505.fenrus.org>	<47895767.3090503@redhat.com>	<20080112164006.6f6f7bc2@laptopd505.fenrus.org>	<47896B3B.2000108@redhat.com> <20080112204248.29abb1dd@laptopd505.fenrus.org>
+In-Reply-To: <20080112204248.29abb1dd@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com>
-	 <1198271036.3130.60.camel@localhost.localdomain>
-	 <476C4177.3030902@redhat.com>
-	 <1198277391.3130.73.camel@localhost.localdomain>
-	 <9f00bd9d0801031618l324e9078i56b0679a35e27f69@mail.gmail.com>
-	 <1200028577.5337.8.camel@localhost.localdomain>
-	 <9f00bd9d0801110154i3b2f9c1flf076823747950196@mail.gmail.com>
-	 <1200066295.3286.19.camel@localhost.localdomain>
-	 <9f00bd9d0801110844g176acdcdle0331783f82ed866@mail.gmail.com>
-	 <1200070903.3286.28.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/11/08, James Bottomley <James.Bottomley@hansenpartnership.com> wrote:
+Arjan van de Ven wrote:
+> On Sat, 12 Jan 2008 20:36:59 -0500
+> Tony Camuso <tcamuso@redhat.com> wrote:
+> 
 >
-> On Fri, 2008-01-11 at 18:44 +0200, Filippos Papadopoulos wrote:
-> > On Jan 11, 2008 5:44 PM, James Bottomley
-> > <James.Bottomley@hansenpartnership.com> wrote:
-> > > >
-> > > > I havent reported "initio: I/O port range 0x0 is busy."
-> > >
-> > > Sorry ... we appear to have several reporters of different bugs in this
-> > > thread.  That message was copied by Chuck Ebbert from a Red Hat
-> > > bugzilla ... I was assuming it was the same problem.
-> > >
-> > > > I applied the patch on 2.6.24-rc6-git9 but unfortunatelly same thing happens.
-> > >
-> > > First off, has this driver ever worked for you in 2.6?  Just booting
-> > > SLES9 (2.6.5) or RHEL4 (2.6.9) ... or one of their open equivalents to
-> > > check a really old kernel would be helpful.  If you can get it to work,
-> > > then we can proceed with a patch reversion regime based on the
-> > > assumption that the problem is a recent commit.
-> >
-> > Yes it works under 2.6.16.13.  See the beginning of this thread, i
-> > mention there some things about newer versions.
->
-> Thanks, actually, I see this:
->
-> > I tried to install OpenSUSE 10.3 (kernel 2.6.22.5) and the latest
-> > OpenSUSE 11.0 Alpha 0  (kernel 2.6.24-rc4) but although the initio
-> > drivergets loaded during the installation process, yast reports that no hard
-> > disk is found.
->
-> Could you try with a vanilla 2.6.22 kernel?  The reason for all of this
-> is that 2.6.22 predates Alan's conversion of this driver (which was my
-> 95% candidate for the source of the bug).  I want you to try the vanilla
-> kernel just in case the opensuse one contains a backport.
+> Just about NOBODY has devices that need the extended config space. At all.
+
+The PCI express spec requires the platform to provide access to this space
+for express-compliance. More devices will be using this space as express
+becomes the dominant IO bus technology.
+
+>> As far as the device is concerned, after the Northbridge translates
+>> the config access into PCI bus cycles, the device has no idea what
+>> mechanism drove the Northbridge to the translation.
+> 
+> Wanne bet there'll be devices that screw this up? THere's devices that even screwed
+> up the 64-256 region after all.
+> 
+
+There may have been devices that incorrectly applied the PCI spec to
+various fields in the header, I'll grant you that.
+
+However, there is no way a device can determine electrically whether the
+Northbridge received Port IO or MMCONFIG cycles. This is between the CPU
+and the Northbridge and is utterly opaque to the devices on the bus.
+
+>> The patch I devised concerned itself with Northbridges and separated
+>> MMCONFIG-compliant buses from those that could not handle MMCONFIG.
+> 
+> THis kind of patchup has been going on for the better part of a year (well 2 years)
+> by now and it's STILL NOT ENOUGH, as you can see by the more patchups that have
+> been proposed as "alternative" to my approach.
+> 
+
+Which is why Loic's proposal and Ivan's implementation of it is so elegant.
+It solves all these problems in one sweep, and eliminates the code rendered
+cruft by Ivan's patch. A two-fer, by my reckoning.
+
+>> In other words, for x86, I don't think we need to worry about Port
+>> IO config access ever going away at all.
+> 
+> You're wrong there. Sad to say, but you're wrong there.
+> 
+
+The PCI spec provides for conf1 as an architected solution. It's not
+going away, and especially not in x86 land where Port IO is built-in
+to the CPU.
 
 
-Yes you are right. I compiled the vanilla 2.6.22 and initio driver works.
-Tell me if you want to apply any patch to it.
 
-
->
-> Thanks,
->
-> James
->
->
->
