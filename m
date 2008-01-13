@@ -1,114 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbYAMQcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753560AbYAMQc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753369AbYAMQcZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 11:32:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYAMQcR
+	id S1753560AbYAMQc6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 11:32:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbYAMQct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 11:32:17 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60475 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752391AbYAMQcQ (ORCPT
+	Sun, 13 Jan 2008 11:32:49 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43526 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752232AbYAMQcs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 11:32:16 -0500
-Subject: Re: 2.6.24-rc6: possible recursive locking detected
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Christian Kujau <lists@nerdbynature.de>, linux-kernel@vger.kernel.org,
-       jfs-discussion@lists.sourceforge.net,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <20080107174908.GB14880@tv-sign.ru>
-References: <alpine.DEB.0.999999.0801032349190.4821@sheep.housecafe.de>
-	 <200801040006.47979.rjw@sisk.pl> <20080104083049.GC22803@elte.hu>
-	 <20080105071205.GA28936@gondor.apana.org.au>
-	 <1199552016.31975.41.camel@lappy> <1199552476.31975.45.camel@lappy>
-	 <20080107172239.GA14880@tv-sign.ru>  <20080107174908.GB14880@tv-sign.ru>
-Content-Type: text/plain
-Date: Sun, 13 Jan 2008 17:32:07 +0100
-Message-Id: <1200241927.7999.38.camel@lappy>
+	Sun, 13 Jan 2008 11:32:48 -0500
+Date: Sun, 13 Jan 2008 16:29:59 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Robert Hancock <hancockr@shaw.ca>, Alexander <aledin@mail.ru>,
+       linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>
+Subject: Re: PROBLEM REMAINS: [sata_nv ADMA breaks ATAPI] Crash	on	accessing
+ DVD-RAM
+Message-ID: <20080113162959.01d519db@lxorguk.ukuu.org.uk>
+In-Reply-To: <1200238725.3179.16.camel@localhost.localdomain>
+References: <fa.krOVfyFmB2aqGjJIoHCLmQxecWc@ifi.uio.no>
+	<478702C7.80401@shaw.ca>
+	<47887982.6050805@mail.ru>
+	<47891426.1020604@shaw.ca>
+	<1200170117.3656.66.camel@localhost.localdomain>
+	<47894785.2050508@shaw.ca>
+	<1200180440.3656.76.camel@localhost.localdomain>
+	<47896BA8.4030609@shaw.ca>
+	<20080113133317.50ad4bda@lxorguk.ukuu.org.uk>
+	<1200238725.3179.16.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.4 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Yes, I concur for the short term.  The other two possible courses of
+> action either involve long discussions (the different device one) or
+> you'll never quite be sure you got all the paths (the GFP_DMA32 one).
+> At least with this one, you know everything will work.
 
-On Mon, 2008-01-07 at 20:49 +0300, Oleg Nesterov wrote:
-> On 01/07, Oleg Nesterov wrote:
-> >
-> > Consider this "just for illustration" patch,
-> > 
-> > --- t/kernel/lockdep.c	2007-11-09 12:57:31.000000000 +0300
-> > +++ t/kernel/lockdep.c	2008-01-07 19:43:50.000000000 +0300
-> > @@ -1266,10 +1266,13 @@ check_deadlock(struct task_struct *curr,
-> >  	struct held_lock *prev;
-> >  	int i;
-> >  
-> > -	for (i = 0; i < curr->lockdep_depth; i++) {
-> > +	for (i = curr->lockdep_depth; --i >= 0; ) {
-> >  		prev = curr->held_locks + i;
-> >  		if (prev->class != next->class)
-> >  			continue;
-> > +
-> > +		if (prev->trylock == -1)
-> > +			return 2;
-> >  		/*
-> >  		 * Allow read-after-read recursion of the same
-> >  		 * lock class (i.e. read_lock(lock)+read_lock(lock)):
-> > -------------------------------------------------------------------------
-> > 
-> > Now,
-> > 
-> > 	// trylock == -1
-> > 	#define	spin_mark_nested(l)	\
-> > 		lock_acquire(&(l)->dep_map, 0, -1, 0, 2, _THIS_IP_)
-> > 	#define	spin_unmark_nested(l)	\
-> > 		lock_release(&(l)->dep_map, 1, _THIS_IP_)
-> > 
-> > and ep_poll_safewake() can do:
-> > 
-> > 	/* Do really wake up now */
-> > 	spin_mark_nested(&wq->lock);
-> > 	wake_up(wq);
-> > 	spin_unmark_nested(&wq->lock);
-> 
-> I tested the patch above with the following code,
-> 
-> 	wait_queue_head_t w1, w2, w3;
-> 
-> 	init_waitqueue_head(&w1);
-> 	init_waitqueue_head(&w2);
-> 	init_waitqueue_head(&w3);
-> 
-> 	local_irq_disable();
-> 	spin_lock(&w1.lock);
-> 
-> 	spin_mark_nested(&w2.lock);
-> 	spin_lock(&w2.lock);
-> 
-> 	spin_mark_nested(&w3.lock);
-> 	wake_up(&w3);
-> 	spin_unmark_nested(&w3.lock);
-> 
-> 	spin_unlock(&w2.lock);
-> 	spin_unmark_nested(&w2.lock);
-> 
-> 	spin_unlock(&w1.lock);
-> 	local_irq_enable();
-> 
-> seems to work. What do you think?
-
-I've been pondering this for a while, and some days I really like it,
-some days I don't.
-
-The problem I have with it is that it becomes very easy to falsely
-annotate problems away - its a very powerful annotation. That said, its
-almost powerful enough to annotate the device semaphore/mutex problem.
-
-I think I'll do wake_up_nested() for now and keep this around.
-
-Thanks for this very nice idea though.
-
+The different device one is tricky because the PCI layer is involved in
+mapping on some systems so you can't just magic up a platform device for
+it. Putting a mask on the block queue might perhaps work as a model
+which avoids breaking stuff by suprise, with the device left at 32bit
+masking.
