@@ -1,51 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755179AbYAMV3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754977AbYAMVc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755179AbYAMV3o (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 16:29:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbYAMV3Y
+	id S1754977AbYAMVc7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 16:32:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbYAMVcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 16:29:24 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58674 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754133AbYAMV3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 16:29:23 -0500
-Message-ID: <478A8268.6020107@redhat.com>
-Date: Sun, 13 Jan 2008 16:28:08 -0500
-From: Tony Camuso <tcamuso@redhat.com>
-Reply-To: tcamuso@redhat.com
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sun, 13 Jan 2008 16:32:51 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:21109 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753903AbYAMVcu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jan 2008 16:32:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=u9Xn8CH2onj0gWrhM9SlAP7MdXpDfB7ad3fXHYiarXjlxG8LVGy3ar80rllRcSxcszM9GmTezSdeFARYPxACKfFlTkOOjYGFvmGyFi+/Jr4/qLzZ9QFW0Rb5IVtrjf0QTXoX35MaqVytl+nd6ezCWePPNh3iVPqrYQbmy0PA9Mg=
+Message-ID: <aa79d98a0801131332w45d6e0e9r13e96b69e7e1b70@mail.gmail.com>
+Date: Sun, 13 Jan 2008 18:32:50 -0300
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: Re: [PATCH] driver: ip27-rtc - convert ioctl to unlocked_ioctl
+Cc: "Paul Gortmaker" <p_gortmaker@yahoo.com>,
+       LKML <linux-kernel@vger.kernel.org>, "Andi Kleen" <ak@suse.de>
+In-Reply-To: <478A82AD.3070904@gmail.com>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <greg@kroah.com>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Martin Mares <mj@ucw.cz>, Loic Prylli <loic@myri.com>,
-       Prarit Bhargava <prarit@redhat.com>,
-       "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>,
-       "Schoeller, Patrick (Linux - Houston, TX)" <Patrick.Schoeller@hp.com>,
-       Bhavana Nagendra <bnagendr@redhat.com>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
- opt-in
-References: <alpine.LFD.1.00.0801111224090.3148@woody.linux-foundation.org>	<20080111204228.GP18741@parisc-linux.org>	<alpine.LFD.1.00.0801111311170.3148@woody.linux-foundation.org>	<20080111211753.GR18741@parisc-linux.org>	<alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org>	<20080111213803.GS18741@parisc-linux.org>	<20080111235856.GA16079@jurassic.park.msu.ru>	<20080112002638.GA18710@kroah.com>	<20080112144030.GA19279@jurassic.park.msu.ru>	<20080112094557.71f5382a@laptopd505.fenrus.org>	<20080112214911.GA20102@jurassic.park.msu.ru>	<20080112150120.05f93768@laptopd505.fenrus.org>	<47895767.3090503@redhat.com>	<20080112164006.6f6f7bc2@laptopd505.fenrus.org>	<47896B3B.2000108@redhat.com>	<20080112204248.29abb1dd@laptopd505.fenrus.org>	<478A075F.7010503@redhat.com> <20080113090311.0a9a1db5@laptopd505.fenrus.org>
-In-Reply-To: <20080113090311.0a9a1db5@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080113203223.GA6723@cvg> <478A8131.9050500@gmail.com>
+	 <478A82AD.3070904@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-
->> The PCI spec provides for conf1 as an architected solution. It's not
->> going away, and especially not in x86 land where Port IO is built-in
->> to the CPU.
-> 
-> again sadly you're wrong. 
-> 
-
-As someone gently pointed out to me, you are in a position to know this,
-so I probably am wrong.
-
+Thanks Jiri. Will do that all tomorrow.
