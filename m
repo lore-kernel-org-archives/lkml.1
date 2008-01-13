@@ -1,89 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752164AbYAMMoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752078AbYAMNK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752164AbYAMMoN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 07:44:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbYAMMoB
+	id S1752078AbYAMNK5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 08:10:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbYAMNKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 07:44:01 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:36302 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751234AbYAMMoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 07:44:00 -0500
-Message-ID: <478A075F.7010503@redhat.com>
-Date: Sun, 13 Jan 2008 07:43:11 -0500
-From: Tony Camuso <tcamuso@redhat.com>
-Reply-To: tcamuso@redhat.com
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sun, 13 Jan 2008 08:10:49 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:6029 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751205AbYAMNKs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jan 2008 08:10:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=TKw4Umj4JWQxYjHrYU+eW0j02IqUviBLwEKyifhSuYQbxavUQkaejtmUwvas1XkYPKzpUGy/kXgyw+5gsvw3ebIbcK0GmeNXg5lhEMvrA34wnMI45o8C8pqHdoE/t3LJ1vVAvY9LWo3dKIluLnd2F70rqKYeeobDQ9+LNOyzznU=
+Message-ID: <76366b180801130510w2af714fevf03f59164f90806f@mail.gmail.com>
+Date: Sun, 13 Jan 2008 08:10:46 -0500
+From: "Andrew Paprocki" <andrew@ishiboo.com>
+To: "Dhaval Giani" <dhaval@linux.vnet.ibm.com>
+Subject: Re: HPET timer broken using 2.6.23.13 / nanosleep() hangs
+Cc: linux-kernel@vger.kernel.org, "Balaji Rao" <balajirrao@gmail.com>
+In-Reply-To: <20080113120337.GA5548@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <greg@kroah.com>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Martin Mares <mj@ucw.cz>, Loic Prylli <loic@myri.com>,
-       Prarit Bhargava <prarit@redhat.com>,
-       "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>,
-       "Schoeller, Patrick (Linux - Houston, TX)" <Patrick.Schoeller@hp.com>,
-       Bhavana Nagendra <bnagendr@redhat.com>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
- opt-in
-References: <alpine.LFD.1.00.0801111224090.3148@woody.linux-foundation.org>	<20080111204228.GP18741@parisc-linux.org>	<alpine.LFD.1.00.0801111311170.3148@woody.linux-foundation.org>	<20080111211753.GR18741@parisc-linux.org>	<alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org>	<20080111213803.GS18741@parisc-linux.org>	<20080111235856.GA16079@jurassic.park.msu.ru>	<20080112002638.GA18710@kroah.com>	<20080112144030.GA19279@jurassic.park.msu.ru>	<20080112094557.71f5382a@laptopd505.fenrus.org>	<20080112214911.GA20102@jurassic.park.msu.ru>	<20080112150120.05f93768@laptopd505.fenrus.org>	<47895767.3090503@redhat.com>	<20080112164006.6f6f7bc2@laptopd505.fenrus.org>	<47896B3B.2000108@redhat.com> <20080112204248.29abb1dd@laptopd505.fenrus.org>
-In-Reply-To: <20080112204248.29abb1dd@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <76366b180801130310x57f24cc8s641d3ccb2415524c@mail.gmail.com>
+	 <20080113120337.GA5548@linux.vnet.ibm.com>
+X-Google-Sender-Auth: 51423d4f072e406d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Sat, 12 Jan 2008 20:36:59 -0500
-> Tony Camuso <tcamuso@redhat.com> wrote:
-> 
+I applied the patch to my 2.6.23.13 tree and upon reboot it stopped right after:
+
+Clocksource tsc unstable (delta = ... ns)
+Time: hpet clocksource has been installed.
+
+It locked up hard.. cursor stopped blinking and SysRq isn't working either.
+
+-Andrew
+
+On Jan 13, 2008 7:03 AM, Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
 >
-> Just about NOBODY has devices that need the extended config space. At all.
-
-The PCI express spec requires the platform to provide access to this space
-for express-compliance. More devices will be using this space as express
-becomes the dominant IO bus technology.
-
->> As far as the device is concerned, after the Northbridge translates
->> the config access into PCI bus cycles, the device has no idea what
->> mechanism drove the Northbridge to the translation.
-> 
-> Wanne bet there'll be devices that screw this up? THere's devices that even screwed
-> up the 64-256 region after all.
-> 
-
-There may have been devices that incorrectly applied the PCI spec to
-various fields in the header, I'll grant you that.
-
-However, there is no way a device can determine electrically whether the
-Northbridge received Port IO or MMCONFIG cycles. This is between the CPU
-and the Northbridge and is utterly opaque to the devices on the bus.
-
->> The patch I devised concerned itself with Northbridges and separated
->> MMCONFIG-compliant buses from those that could not handle MMCONFIG.
-> 
-> THis kind of patchup has been going on for the better part of a year (well 2 years)
-> by now and it's STILL NOT ENOUGH, as you can see by the more patchups that have
-> been proposed as "alternative" to my approach.
-> 
-
-Which is why Loic's proposal and Ivan's implementation of it is so elegant.
-It solves all these problems in one sweep, and eliminates the code rendered
-cruft by Ivan's patch. A two-fer, by my reckoning.
-
->> In other words, for x86, I don't think we need to worry about Port
->> IO config access ever going away at all.
-> 
-> You're wrong there. Sad to say, but you're wrong there.
-> 
-
-The PCI spec provides for conf1 as an architected solution. It's not
-going away, and especially not in x86 land where Port IO is built-in
-to the CPU.
-
-
-
+> On Sun, Jan 13, 2008 at 06:10:52AM -0500, Andrew Paprocki wrote:
+> > I started debugging a problem I was having with my sky2 network driver
+> > under 2.6.23.13. The investigation led me to find that the HPET timer
+> > wasn't working at all, causing the sky2 driver to not work properly.
+> > Simple example:
+> >
+> > am2:/sys/devices/system/clocksource/clocksource0# cat current_clocksource
+> > jiffies
+> > am2:/sys/devices/system/clocksource/clocksource0# time sleep 1
+> > real    0m1.000s
+> > user    0m0.000s
+> > sys     0m0.000s
+> > am2:/sys/devices/system/clocksource/clocksource0# echo tsc > current_clocksource
+> > am2:/sys/devices/system/clocksource/clocksource0# time sleep 1
+> > real    0m1.005s
+> > user    0m0.004s
+> > sys     0m0.000s
+> > am2:/sys/devices/system/clocksource/clocksource0# echo hpet >
+> > current_clocksource
+> > am2:/sys/devices/system/clocksource/clocksource0# time sleep 1
+> > <hangs indefinetly...>
+> >
+> > Running strace shows it blocked on nanosleep(). I'm building the
+> > kernel with the processor type set to Athalon64. I've built it with
+> > and without SMP and high-res timers enabled and I get the same result.
+> > My previous 2.6.18-4 kernel works because it does not install HPET as
+> > the default timer. The same behavior occurs in 2.6.24-rc7 git head.
+> > I've attached the config/dmesg below.
+> >
+>
+> It seems the HPET timer was not being assigned any IRQs at all. Can you
+> try the patch at http://lkml.org/lkml/2008/1/12/128 ?
+>
+> Thanks,
+> --
+> regards,
+> Dhaval
+>
+>
