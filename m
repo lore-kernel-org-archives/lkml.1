@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753766AbYAMFmi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbYAMFsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753766AbYAMFmi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 00:42:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbYAMFma
+	id S1753847AbYAMFsU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 00:48:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751090AbYAMFsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 00:42:30 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:32466 "EHLO
+	Sun, 13 Jan 2008 00:48:12 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:32650 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751243AbYAMFm0 (ORCPT
+	with ESMTP id S1750816AbYAMFsI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 00:42:26 -0500
+	Sun, 13 Jan 2008 00:48:08 -0500
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:date:from:to:cc:subject:message-id:mime-version:content-type;
-	b=v28SY0xpCfl9PB42Eb/6Hi+Hg9LAKz9COO3m/zE+/Xo58nTbeb6Lu9/4Dg0eBUr//
-	/819RsaKSYkoQEQpgKAcg==
-Date: Sun, 13 Jan 2008 00:41:55 -0500 (EST)
+	b=CtCS7U4sdMSE+rkG+05DYkuqsejV0mrTQvG7ZtYefO9eEdX0C0tkaEgDLqONu6VX3
+	Y4MlGcp9zFqVzzNBQzWzA==
+Date: Sun, 13 Jan 2008 00:47:46 -0500 (EST)
 From: Abhishek Rai <abhishekrai@google.com>
 To: linux-kernel@vger.kernel.org
 cc: rohitseth@google.com, akpm@linux-foundation.org, phillips@phunq.net
-Subject: [CALL FOR TESTING] Make Ext3 fsck way faster [2.6.23.13]
-Message-ID: <Pine.LNX.4.64.0801130026480.4286@vmfs7.nyc.corp.google.com>
+Subject: [CALL FOR TESTING] Make Ext3 fsck way faster [2.6.24-rc6 -mm patch]
+Message-ID: <Pine.LNX.4.64.0801130043270.7078@vmfs7.nyc.corp.google.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
@@ -28,23 +28,26 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-This patch speeds up e2fsck on Ext3 significantly using a technique 
-called Metaclustering. Metaclustering is being discussed on LKML in some 
-other threads, here is the latest patch against the 2.6.23.13 stable 
-kernel, any help in testing and evaluating this will be greatly 
-appreciated! While I'd direct anyone interested in details of 
+This patch speeds up e2fsck on Ext3 significantly using a technique called 
+Metaclustering. Metaclustering is being
+discussed on LKML in some other threads, here is the latest patch against 
+the 2.6.24-rc6 -mm patch, any help in
+testing and evaluating this will be greatly appreciated! While I'd direct 
+anyone interested in details of
 metaclustering to other LKML threads discussing it, I've enclosed a brief 
 description here:
 
 Metaclustering refers to storing indirect blocks in clusters on a 
-per-group basis instead of spreading them out along with the data blocks. 
-This makes e2fsck faster since it can now read and verify all indirect 
-blocks without much seeks. However, done naively it can affect IO 
-performance, so we have built in some optimizations to prevent that from 
-happening. Finally, the benefit in fsck performance is noticeable only 
-when indirect block reads are the bottleneck which is not always the case, 
-but quite frequently is, in the case of moderate to large disks with lot 
-of data on them. However, when indirect block reads are not the
+per-group basis instead of spreading them out
+along with the data blocks. This makes e2fsck faster since it can now read 
+and verify all indirect blocks without
+much seeks. However, done naively it can affect IO performance, so we have 
+built in some optimizations to prevent
+that from happening. Finally, the benefit in fsck performance is 
+noticeable only when indirect block reads are the
+bottleneck which is not always the case, but quite frequently is, in the 
+case of moderate to large disks with lot of
+data on them. However, when indirect block reads are not the
 bottleneck, e2fsck is generally quite fast anyway to warrant any 
 performance improvements.
 
@@ -53,9 +56,9 @@ Abhishek
 
 Signed-off-by: Abhishek Rai <abhishekrai@google.com>
 
-diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext3/balloc.c
---- linux-2.6.23.13-clean/fs/ext3/balloc.c	2008-01-09 12:18:17.000000000 -0500
-+++ linux-2.6.23.13-ext3mc/fs/ext3/balloc.c	2008-01-12 23:59:36.000000000 -0500
+diff -rupdN linux-2.6.24-rc6mm1-clean/fs/ext3/balloc.c linux-2.6.24-rc6mm1-ext3mc/fs/ext3/balloc.c
+--- linux-2.6.24-rc6mm1-clean/fs/ext3/balloc.c	2008-01-12 21:56:14.000000000 -0500
++++ linux-2.6.24-rc6mm1-ext3mc/fs/ext3/balloc.c	2008-01-12 23:53:55.000000000 -0500
 @@ -33,6 +33,29 @@
    * super block.  Each descriptor contains the number of the bitmap block and
    * the free blocks count in the block.  The descriptors are loaded in memory
@@ -86,8 +89,8 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
    */
 
 
-@@ -108,6 +131,88 @@ read_block_bitmap(struct super_block *sb
-  error_out:
+@@ -170,6 +193,88 @@ read_block_bitmap(struct super_block *sb
+  	}
   	return bh;
   }
 +
@@ -175,7 +178,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
   /*
    * The reservation window structure operations
    * --------------------------------------------
-@@ -424,6 +529,7 @@ void ext3_free_blocks_sb(handle_t *handl
+@@ -486,6 +591,7 @@ void ext3_free_blocks_sb(handle_t *handl
   	struct ext3_group_desc * desc;
   	struct ext3_super_block * es;
   	struct ext3_sb_info *sbi;
@@ -183,7 +186,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
   	int err = 0, ret;
   	ext3_grpblk_t group_freed;
 
-@@ -463,6 +569,13 @@ do_more:
+@@ -525,6 +631,13 @@ do_more:
   	if (!desc)
   		goto error_return;
 
@@ -197,7 +200,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
   	if (in_range (le32_to_cpu(desc->bg_block_bitmap), block, count) ||
   	    in_range (le32_to_cpu(desc->bg_inode_bitmap), block, count) ||
   	    in_range (block, le32_to_cpu(desc->bg_inode_table),
-@@ -582,6 +695,9 @@ do_more:
+@@ -646,6 +759,9 @@ do_more:
   	if (!err) err = ret;
   	*pdquot_freed_blocks += group_freed;
 
@@ -207,7 +210,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
   	if (overflow && !err) {
   		block += count;
   		count = overflow;
-@@ -687,6 +803,50 @@ bitmap_search_next_usable_block(ext3_grp
+@@ -751,6 +867,50 @@ bitmap_search_next_usable_block(ext3_grp
   	return -1;
   }
 
@@ -258,7 +261,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
   /**
    * find_next_usable_block()
    * @start:		the starting block (group relative) to find next
-@@ -794,19 +954,27 @@ claim_block(spinlock_t *lock, ext3_grpbl
+@@ -858,19 +1018,27 @@ claim_block(spinlock_t *lock, ext3_grpbl
    *	file's own reservation window;
    *	Otherwise, the allocation range starts from the give goal block, ends at
    *	the block group's last block.
@@ -290,7 +293,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
 
   	/* we do allocation within the reservation window if we have a window */
   	if (my_rsv) {
-@@ -851,8 +1019,10 @@ repeat:
+@@ -915,8 +1083,10 @@ repeat:
   	}
   	start = grp_goal;
 
@@ -303,7 +306,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
   		/*
   		 * The block was allocated by another thread, or it was
   		 * allocated and then freed by another thread
-@@ -867,8 +1037,8 @@ repeat:
+@@ -931,8 +1101,8 @@ repeat:
   	grp_goal++;
   	while (num < *count && grp_goal < end
   		&& ext3_test_allocatable(grp_goal, bitmap_bh)
@@ -314,7 +317,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
   		num++;
   		grp_goal++;
   	}
-@@ -1099,7 +1269,9 @@ static int alloc_new_reservation(struct
+@@ -1163,7 +1333,9 @@ static int alloc_new_reservation(struct
 
   	/*
   	 * find_next_reservable_window() simply finds a reservable window
@@ -325,7 +328,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
   	 *
   	 * To make sure the reservation window has a free bit inside it, we
   	 * need to check the bitmap after we found a reservable window.
-@@ -1131,10 +1303,17 @@ retry:
+@@ -1195,10 +1367,17 @@ retry:
   			my_rsv->rsv_start - group_first_block,
   			bitmap_bh, group_end_block - group_first_block + 1);
 
@@ -346,7 +349,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
   		 */
   		spin_lock(rsv_lock);
   		if (!rsv_is_empty(&my_rsv->rsv_window))
-@@ -1237,25 +1416,17 @@ ext3_try_to_allocate_with_rsv(struct sup
+@@ -1301,25 +1480,17 @@ ext3_try_to_allocate_with_rsv(struct sup
   			unsigned int group, struct buffer_head *bitmap_bh,
   			ext3_grpblk_t grp_goal,
   			struct ext3_reserve_window_node * my_rsv,
@@ -378,7 +381,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
   	}
 
   	/*
-@@ -1331,19 +1502,6 @@ ext3_try_to_allocate_with_rsv(struct sup
+@@ -1395,19 +1566,6 @@ ext3_try_to_allocate_with_rsv(struct sup
   		num = *count;
   	}
   out:
@@ -398,7 +401,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
   	return ret;
   }
 
-@@ -1389,22 +1547,149 @@ int ext3_should_retry_alloc(struct super
+@@ -1453,22 +1611,151 @@ int ext3_should_retry_alloc(struct super
   	return journal_force_commit_nested(EXT3_SB(sb)->s_journal);
   }
 
@@ -469,11 +472,13 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
 +		in_range(blk, le32_to_cpu(gdp->bg_inode_table),
 +				EXT3_SB(sb)->s_itb_per_group) ||
 +		in_range(blk + num - 1, le32_to_cpu(gdp->bg_inode_table),
-+				EXT3_SB(sb)->s_itb_per_group))
++				EXT3_SB(sb)->s_itb_per_group)) {
 +		ext3_error(sb, "ext3_new_blocks",
 +				"Allocating block in system zone - "
 +				"blocks from "E3FSBLK", length %lu",
 +				blk, num);
++		return 1;
++	}
 +
 +#ifdef CONFIG_JBD_DEBUG
 +	{
@@ -560,7 +565,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
   {
   	struct buffer_head *bitmap_bh = NULL;
   	struct buffer_head *gdp_bh;
-@@ -1413,10 +1698,16 @@ ext3_fsblk_t ext3_new_blocks(handle_t *h
+@@ -1477,10 +1764,16 @@ ext3_fsblk_t ext3_new_blocks(handle_t *h
   	ext3_grpblk_t grp_target_blk;	/* blockgroup relative goal block */
   	ext3_grpblk_t grp_alloc_blk;	/* blockgroup-relative allocated block*/
   	ext3_fsblk_t ret_block;		/* filesyetem-wide allocated block */
@@ -577,7 +582,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
   	struct super_block *sb;
   	struct ext3_group_desc *gdp;
   	struct ext3_super_block *es;
-@@ -1424,23 +1715,23 @@ ext3_fsblk_t ext3_new_blocks(handle_t *h
+@@ -1488,23 +1781,23 @@ ext3_fsblk_t ext3_new_blocks(handle_t *h
   	struct ext3_reserve_window_node *my_rsv = NULL;
   	struct ext3_block_alloc_info *block_i;
   	unsigned short windowsz = 0;
@@ -605,7 +610,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
   		*errp = -EDQUOT;
   		return 0;
   	}
-@@ -1474,73 +1765,194 @@ ext3_fsblk_t ext3_new_blocks(handle_t *h
+@@ -1538,73 +1831,194 @@ ext3_fsblk_t ext3_new_blocks(handle_t *h
   	group_no = (goal - le32_to_cpu(es->s_first_data_block)) /
   			EXT3_BLOCKS_PER_GROUP(sb);
   	goal_group = group_no;
@@ -646,7 +651,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
 
   	/*
 -	 * Now search the rest of the groups.  We assume that
--	 * i and gdp correctly point to the last group visited.
+-	 * group_no and gdp correctly point to the last group visited.
 +	 * Iterate over successive block groups for allocating (any) indirect
 +	 * blocks and direct blocks until at least one direct block has been
 +	 * allocated. If metaclustering is enabled, we try allocating indirect
@@ -700,7 +705,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
 +		 * critical that we do the frozen_data COW on bitmap buffers in
 +		 * all cases even if the buffer is in BJ_Forget state in the
 +		 * committing transaction.
-+		 */
+  		 */
 +		BUFFER_TRACE(bitmap_bh, "get undo access for new block");
 +		fatal = ext3_journal_get_undo_access(handle, bitmap_bh);
 +		if (fatal)
@@ -709,7 +714,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
 +		/*
 +		 * If metaclustering is enabled, first try to allocate indirect
 +		 * blocks in the metacluster.
-  		 */
++		 */
 +		if (test_opt(sb, METACLUSTER) &&
 +			indirect_blks_done < indirect_blks)
 +			grp_mc_alloc = ext3_alloc_indirect_blocks(sb,
@@ -784,8 +789,8 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
 +			cpu_to_le16(le16_to_cpu(gdp->bg_free_blocks_count) -
 +					(grp_mc_alloc + grp_alloc));
 +		spin_unlock(sb_bgl_lock(sbi, group_no));
-+		percpu_counter_mod(&sbi->s_freeblocks_counter,
-+				 -(grp_mc_alloc + grp_alloc));
++		percpu_counter_sub(&sbi->s_freeblocks_counter,
++				(grp_mc_alloc + grp_alloc));
 +
 +		BUFFER_TRACE(gdp_bh, "journal_dirty_metadata for "
 +				"group descriptor");
@@ -844,7 +849,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
   	/*
   	 * We may end up a bogus ealier ENOSPC error due to
   	 * filesystem is "full" of reservations, but
-@@ -1559,96 +1971,11 @@ retry_alloc:
+@@ -1623,98 +2037,11 @@ retry_alloc:
   	goto out;
 
   allocated:
@@ -864,11 +869,13 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
 -	    in_range(ret_block, le32_to_cpu(gdp->bg_inode_table),
 -		      EXT3_SB(sb)->s_itb_per_group) ||
 -	    in_range(ret_block + num - 1, le32_to_cpu(gdp->bg_inode_table),
--		      EXT3_SB(sb)->s_itb_per_group))
+-		      EXT3_SB(sb)->s_itb_per_group)) {
 -		ext3_error(sb, "ext3_new_block",
 -			    "Allocating block in system zone - "
 -			    "blocks from "E3FSBLK", length %lu",
 -			     ret_block, num);
+-		goto out;
+-	}
 -
 -	performed_allocation = 1;
 -
@@ -922,7 +929,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
 -	gdp->bg_free_blocks_count =
 -			cpu_to_le16(le16_to_cpu(gdp->bg_free_blocks_count)-num);
 -	spin_unlock(sb_bgl_lock(sbi, group_no));
--	percpu_counter_mod(&sbi->s_freeblocks_counter, -num);
+-	percpu_counter_sub(&sbi->s_freeblocks_counter, num);
 -
 -	BUFFER_TRACE(gdp_bh, "journal_dirty_metadata for group descriptor");
 -	err = ext3_journal_dirty_metadata(handle, gdp_bh);
@@ -945,7 +952,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
 
   io_error:
   	*errp = -EIO;
-@@ -1661,7 +1988,13 @@ out:
+@@ -1727,7 +2054,13 @@ out:
   	 * Undo the block allocation
   	 */
   	if (!performed_allocation)
@@ -960,7 +967,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
   	brelse(bitmap_bh);
   	return 0;
   }
-@@ -1669,9 +2002,13 @@ out:
+@@ -1735,9 +2068,13 @@ out:
   ext3_fsblk_t ext3_new_block(handle_t *handle, struct inode *inode,
   			ext3_fsblk_t goal, int *errp)
   {
@@ -976,16 +983,16 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/balloc.c linux-2.6.23.13-ext3mc/fs/ext
   }
 
   /**
-diff -rupdN linux-2.6.23.13-clean/fs/ext3/bitmap.c linux-2.6.23.13-ext3mc/fs/ext3/bitmap.c
---- linux-2.6.23.13-clean/fs/ext3/bitmap.c	2008-01-09 12:18:17.000000000 -0500
-+++ linux-2.6.23.13-ext3mc/fs/ext3/bitmap.c	2008-01-12 22:30:19.000000000 -0500
+diff -rupdN linux-2.6.24-rc6mm1-clean/fs/ext3/bitmap.c linux-2.6.24-rc6mm1-ext3mc/fs/ext3/bitmap.c
+--- linux-2.6.24-rc6mm1-clean/fs/ext3/bitmap.c	2008-01-12 21:54:25.000000000 -0500
++++ linux-2.6.24-rc6mm1-ext3mc/fs/ext3/bitmap.c	2008-01-12 21:57:50.000000000 -0500
 @@ -11,8 +11,6 @@
   #include <linux/jbd.h>
   #include <linux/ext3_fs.h>
 
 -#ifdef EXT3FS_DEBUG
 -
-  static int nibblemap[] = {4, 3, 3, 2, 3, 2, 2, 1, 3, 2, 2, 1, 2, 1, 1, 0};
+  static const int nibblemap[] = {4, 3, 3, 2, 3, 2, 2, 1, 3, 2, 2, 1, 2, 1, 1, 0};
 
   unsigned long ext3_count_free (struct buffer_head * map, unsigned int numchars)
 @@ -27,6 +25,3 @@ unsigned long ext3_count_free (struct bu
@@ -995,9 +1002,9 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/bitmap.c linux-2.6.23.13-ext3mc/fs/ext
 -
 -#endif  /*  EXT3FS_DEBUG  */
 -
-diff -rupdN linux-2.6.23.13-clean/fs/ext3/inode.c linux-2.6.23.13-ext3mc/fs/ext3/inode.c
---- linux-2.6.23.13-clean/fs/ext3/inode.c	2008-01-09 12:18:17.000000000 -0500
-+++ linux-2.6.23.13-ext3mc/fs/ext3/inode.c	2008-01-13 00:00:14.000000000 -0500
+diff -rupdN linux-2.6.24-rc6mm1-clean/fs/ext3/inode.c linux-2.6.24-rc6mm1-ext3mc/fs/ext3/inode.c
+--- linux-2.6.24-rc6mm1-clean/fs/ext3/inode.c	2008-01-12 21:56:14.000000000 -0500
++++ linux-2.6.24-rc6mm1-ext3mc/fs/ext3/inode.c	2008-01-12 23:54:52.000000000 -0500
 @@ -36,10 +36,33 @@
   #include <linux/mpage.h>
   #include <linux/uio.h>
@@ -1097,7 +1104,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/inode.c linux-2.6.23.13-ext3mc/fs/ext3
 
   	/*
   	 * It is going to be referred to from the inode itself? OK, just put it
-@@ -475,8 +501,7 @@ static ext3_fsblk_t ext3_find_goal(struc
+@@ -473,8 +499,7 @@ static ext3_fsblk_t ext3_find_goal(struc
    *	@blks: number of data blocks to be mapped.
    *	@blocks_to_boundary:  the offset in the indirect block
    *
@@ -1107,7 +1114,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/inode.c linux-2.6.23.13-ext3mc/fs/ext3
    */
   static int ext3_blks_to_allocate(Indirect *branch, int k, unsigned long blks,
   		int blocks_to_boundary)
-@@ -505,75 +530,18 @@ static int ext3_blks_to_allocate(Indirec
+@@ -503,75 +528,18 @@ static int ext3_blks_to_allocate(Indirec
   }
 
   /**
@@ -1188,7 +1195,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/inode.c linux-2.6.23.13-ext3mc/fs/ext3
    *	links them into chain and (if we are synchronous) writes them to disk.
    *	In other words, it prepares a branch that can be spliced onto the
    *	inode. It stores the information about that chain in the branch[], in
-@@ -602,7 +570,7 @@ static int ext3_alloc_branch(handle_t *h
+@@ -600,7 +568,7 @@ static int ext3_alloc_branch(handle_t *h
   	ext3_fsblk_t new_blocks[4];
   	ext3_fsblk_t current_block;
 
@@ -1197,7 +1204,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/inode.c linux-2.6.23.13-ext3mc/fs/ext3
   				*blks, new_blocks, &err);
   	if (err)
   		return err;
-@@ -799,17 +767,21 @@ int ext3_get_blocks_handle(handle_t *han
+@@ -797,17 +765,21 @@ int ext3_get_blocks_handle(handle_t *han
   	int blocks_to_boundary = 0;
   	int depth;
   	struct ext3_inode_info *ei = EXT3_I(inode);
@@ -1222,7 +1229,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/inode.c linux-2.6.23.13-ext3mc/fs/ext3
 
   	/* Simplest case - block found, no allocation needed */
   	if (!partial) {
-@@ -844,7 +816,7 @@ int ext3_get_blocks_handle(handle_t *han
+@@ -842,7 +814,7 @@ int ext3_get_blocks_handle(handle_t *han
   	}
 
   	/* Next simple case - plain lookup or failed read of indirect block */
@@ -1231,7 +1238,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/inode.c linux-2.6.23.13-ext3mc/fs/ext3
   		goto cleanup;
 
   	mutex_lock(&ei->truncate_mutex);
-@@ -866,7 +838,8 @@ int ext3_get_blocks_handle(handle_t *han
+@@ -864,7 +836,8 @@ int ext3_get_blocks_handle(handle_t *han
   			brelse(partial->bh);
   			partial--;
   		}
@@ -1241,7 +1248,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/inode.c linux-2.6.23.13-ext3mc/fs/ext3
   		if (!partial) {
   			count++;
   			mutex_unlock(&ei->truncate_mutex);
-@@ -1907,7 +1880,7 @@ static Indirect *ext3_find_shared(struct
+@@ -1972,7 +1945,7 @@ static Indirect *ext3_find_shared(struct
   	/* Make k index the deepest non-null offest + 1 */
   	for (k = depth; k > 1 && !offsets[k-1]; k--)
   		;
@@ -1250,7 +1257,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/inode.c linux-2.6.23.13-ext3mc/fs/ext3
   	/* Writer: pointers */
   	if (!partial)
   		partial = chain + k-1;
-@@ -3230,3 +3203,559 @@ int ext3_change_inode_journal_flag(struc
+@@ -3308,3 +3281,559 @@ int ext3_change_inode_journal_flag(struc
 
   	return err;
   }
@@ -1810,10 +1817,10 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/inode.c linux-2.6.23.13-ext3mc/fs/ext3
 +	} else
 +		return &chain[depth - 1];
 +}
-diff -rupdN linux-2.6.23.13-clean/fs/ext3/super.c linux-2.6.23.13-ext3mc/fs/ext3/super.c
---- linux-2.6.23.13-clean/fs/ext3/super.c	2008-01-09 12:18:17.000000000 -0500
-+++ linux-2.6.23.13-ext3mc/fs/ext3/super.c	2008-01-12 22:30:19.000000000 -0500
-@@ -556,6 +556,9 @@ static int ext3_show_options(struct seq_
+diff -rupdN linux-2.6.24-rc6mm1-clean/fs/ext3/super.c linux-2.6.24-rc6mm1-ext3mc/fs/ext3/super.c
+--- linux-2.6.24-rc6mm1-clean/fs/ext3/super.c	2008-01-12 21:56:14.000000000 -0500
++++ linux-2.6.24-rc6mm1-ext3mc/fs/ext3/super.c	2008-01-12 22:15:57.000000000 -0500
+@@ -625,6 +625,9 @@ static int ext3_show_options(struct seq_
   	else if (test_opt(sb, DATA_FLAGS) == EXT3_MOUNT_WRITEBACK_DATA)
   		seq_puts(seq, ",data=writeback");
 
@@ -1823,7 +1830,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/super.c linux-2.6.23.13-ext3mc/fs/ext3
   	ext3_show_quota_options(seq, sb);
 
   	return 0;
-@@ -684,7 +687,7 @@ enum {
+@@ -756,7 +759,7 @@ enum {
   	Opt_usrjquota, Opt_grpjquota, Opt_offusrjquota, Opt_offgrpjquota,
   	Opt_jqfmt_vfsold, Opt_jqfmt_vfsv0, Opt_quota, Opt_noquota,
   	Opt_ignore, Opt_barrier, Opt_err, Opt_resize, Opt_usrquota,
@@ -1832,7 +1839,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/super.c linux-2.6.23.13-ext3mc/fs/ext3
   };
 
   static match_table_t tokens = {
-@@ -734,6 +737,7 @@ static match_table_t tokens = {
+@@ -806,6 +809,7 @@ static match_table_t tokens = {
   	{Opt_quota, "quota"},
   	{Opt_usrquota, "usrquota"},
   	{Opt_barrier, "barrier=%u"},
@@ -1840,7 +1847,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/super.c linux-2.6.23.13-ext3mc/fs/ext3
   	{Opt_err, NULL},
   	{Opt_resize, "resize"},
   };
-@@ -1066,6 +1070,9 @@ clear_qf_name:
+@@ -1138,6 +1142,9 @@ clear_qf_name:
   		case Opt_bh:
   			clear_opt(sbi->s_mount_opt, NOBH);
   			break;
@@ -1850,7 +1857,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/super.c linux-2.6.23.13-ext3mc/fs/ext3
   		default:
   			printk (KERN_ERR
   				"EXT3-fs: Unrecognized mount option \"%s\" "
-@@ -1594,6 +1601,13 @@ static int ext3_fill_super (struct super
+@@ -1692,6 +1699,13 @@ static int ext3_fill_super (struct super
   	}
   	sbi->s_frags_per_block = 1;
   	sbi->s_blocks_per_group = le32_to_cpu(es->s_blocks_per_group);
@@ -1863,8 +1870,8 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/super.c linux-2.6.23.13-ext3mc/fs/ext3
 +
   	sbi->s_frags_per_group = le32_to_cpu(es->s_frags_per_group);
   	sbi->s_inodes_per_group = le32_to_cpu(es->s_inodes_per_group);
-  	if (EXT3_INODE_SIZE(sb) == 0)
-@@ -1695,6 +1709,18 @@ static int ext3_fill_super (struct super
+  	if (EXT3_INODE_SIZE(sb) == 0 || EXT3_INODES_PER_GROUP(sb) == 0)
+@@ -1801,6 +1815,18 @@ static int ext3_fill_super (struct super
   	sbi->s_rsv_window_head.rsv_goal_size = 0;
   	ext3_rsv_window_add(sb, &sbi->s_rsv_window_head);
 
@@ -1883,7 +1890,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/super.c linux-2.6.23.13-ext3mc/fs/ext3
   	/*
   	 * set up enough so that it can read an inode
   	 */
-@@ -1720,16 +1746,16 @@ static int ext3_fill_super (struct super
+@@ -1826,16 +1852,16 @@ static int ext3_fill_super (struct super
   	if (!test_opt(sb, NOLOAD) &&
   	    EXT3_HAS_COMPAT_FEATURE(sb, EXT3_FEATURE_COMPAT_HAS_JOURNAL)) {
   		if (ext3_load_journal(sb, es, journal_devnum))
@@ -1903,7 +1910,7 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/super.c linux-2.6.23.13-ext3mc/fs/ext3
   	}
 
   	/* We have now updated the journal if required, so we can
-@@ -1752,7 +1778,7 @@ static int ext3_fill_super (struct super
+@@ -1858,7 +1884,7 @@ static int ext3_fill_super (struct super
   		    (sbi->s_journal, 0, 0, JFS_FEATURE_INCOMPAT_REVOKE)) {
   			printk(KERN_ERR "EXT3-fs: Journal does not support "
   			       "requested data journaling mode\n");
@@ -1912,23 +1919,22 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/super.c linux-2.6.23.13-ext3mc/fs/ext3
   		}
   	default:
   		break;
-@@ -1775,13 +1801,13 @@ static int ext3_fill_super (struct super
-  	if (!sb->s_root) {
+@@ -1880,12 +1906,12 @@ static int ext3_fill_super (struct super
+  	if (IS_ERR(root)) {
   		printk(KERN_ERR "EXT3-fs: get root inode failed\n");
-  		iput(root);
+  		ret = PTR_ERR(root);
 -		goto failed_mount4;
 +		goto failed_mount5;
   	}
   	if (!S_ISDIR(root->i_mode) || !root->i_blocks || !root->i_size) {
-  		dput(sb->s_root);
-  		sb->s_root = NULL;
+  		iput(root);
   		printk(KERN_ERR "EXT3-fs: corrupt root inode, run e2fsck\n");
 -		goto failed_mount4;
 +		goto failed_mount5;
   	}
-
-  	ext3_setup_super (sb, es, sb->s_flags & MS_RDONLY);
-@@ -1813,8 +1839,10 @@ cantfind_ext3:
+  	sb->s_root = d_alloc_root(root);
+  	if (!sb->s_root) {
+@@ -1924,8 +1950,10 @@ cantfind_ext3:
   		       sb->s_id);
   	goto failed_mount;
 
@@ -1940,10 +1946,10 @@ diff -rupdN linux-2.6.23.13-clean/fs/ext3/super.c linux-2.6.23.13-ext3mc/fs/ext3
   failed_mount3:
   	percpu_counter_destroy(&sbi->s_freeblocks_counter);
   	percpu_counter_destroy(&sbi->s_freeinodes_counter);
-diff -rupdN linux-2.6.23.13-clean/include/linux/ext3_fs.h linux-2.6.23.13-ext3mc/include/linux/ext3_fs.h
---- linux-2.6.23.13-clean/include/linux/ext3_fs.h	2008-01-09 12:18:17.000000000 -0500
-+++ linux-2.6.23.13-ext3mc/include/linux/ext3_fs.h	2008-01-12 22:30:19.000000000 -0500
-@@ -384,6 +384,7 @@ struct ext3_inode {
+diff -rupdN linux-2.6.24-rc6mm1-clean/include/linux/ext3_fs.h linux-2.6.24-rc6mm1-ext3mc/include/linux/ext3_fs.h
+--- linux-2.6.24-rc6mm1-clean/include/linux/ext3_fs.h	2008-01-12 21:56:15.000000000 -0500
++++ linux-2.6.24-rc6mm1-ext3mc/include/linux/ext3_fs.h	2008-01-12 21:57:50.000000000 -0500
+@@ -380,6 +380,7 @@ struct ext3_inode {
   #define EXT3_MOUNT_QUOTA		0x80000 /* Some quota option set */
   #define EXT3_MOUNT_USRQUOTA		0x100000 /* "old" user quota */
   #define EXT3_MOUNT_GRPQUOTA		0x200000 /* "old" group quota */
@@ -1951,7 +1957,7 @@ diff -rupdN linux-2.6.23.13-clean/include/linux/ext3_fs.h linux-2.6.23.13-ext3mc
 
   /* Compatibility, for having both ext2_fs.h and ext3_fs.h included at once */
   #ifndef _LINUX_EXT2_FS_H
-@@ -497,6 +498,7 @@ struct ext3_super_block {
+@@ -493,6 +494,7 @@ struct ext3_super_block {
   #ifdef __KERNEL__
   #include <linux/ext3_fs_i.h>
   #include <linux/ext3_fs_sb.h>
@@ -1959,7 +1965,7 @@ diff -rupdN linux-2.6.23.13-clean/include/linux/ext3_fs.h linux-2.6.23.13-ext3mc
   static inline struct ext3_sb_info * EXT3_SB(struct super_block *sb)
   {
   	return sb->s_fs_info;
-@@ -732,6 +734,11 @@ struct dir_private_info {
+@@ -742,6 +744,11 @@ struct dir_private_info {
   	__u32		next_hash;
   };
 
@@ -1971,7 +1977,7 @@ diff -rupdN linux-2.6.23.13-clean/include/linux/ext3_fs.h linux-2.6.23.13-ext3mc
   /* calculate the first block number of the group */
   static inline ext3_fsblk_t
   ext3_group_first_block_no(struct super_block *sb, unsigned long group_no)
-@@ -740,6 +747,24 @@ ext3_group_first_block_no(struct super_b
+@@ -750,6 +757,24 @@ ext3_group_first_block_no(struct super_b
   		le32_to_cpu(EXT3_SB(sb)->s_es->s_first_data_block);
   }
 
@@ -1996,7 +2002,7 @@ diff -rupdN linux-2.6.23.13-clean/include/linux/ext3_fs.h linux-2.6.23.13-ext3mc
   /*
    * Special error return code only used by dx_probe() and its callers.
    */
-@@ -762,8 +787,9 @@ extern int ext3_bg_has_super(struct supe
+@@ -772,8 +797,9 @@ extern int ext3_bg_has_super(struct supe
   extern unsigned long ext3_bg_num_gdb(struct super_block *sb, int group);
   extern ext3_fsblk_t ext3_new_block (handle_t *handle, struct inode *inode,
   			ext3_fsblk_t goal, int *errp);
@@ -2008,9 +2014,9 @@ diff -rupdN linux-2.6.23.13-clean/include/linux/ext3_fs.h linux-2.6.23.13-ext3mc
   extern void ext3_free_blocks (handle_t *handle, struct inode *inode,
   			ext3_fsblk_t block, unsigned long count);
   extern void ext3_free_blocks_sb (handle_t *handle, struct super_block *sb,
-diff -rupdN linux-2.6.23.13-clean/include/linux/ext3_fs_sb.h linux-2.6.23.13-ext3mc/include/linux/ext3_fs_sb.h
---- linux-2.6.23.13-clean/include/linux/ext3_fs_sb.h	2008-01-09 12:18:17.000000000 -0500
-+++ linux-2.6.23.13-ext3mc/include/linux/ext3_fs_sb.h	2008-01-12 22:30:19.000000000 -0500
+diff -rupdN linux-2.6.24-rc6mm1-clean/include/linux/ext3_fs_sb.h linux-2.6.24-rc6mm1-ext3mc/include/linux/ext3_fs_sb.h
+--- linux-2.6.24-rc6mm1-clean/include/linux/ext3_fs_sb.h	2008-01-12 21:54:27.000000000 -0500
++++ linux-2.6.24-rc6mm1-ext3mc/include/linux/ext3_fs_sb.h	2008-01-12 21:57:50.000000000 -0500
 @@ -24,6 +24,8 @@
   #endif
   #include <linux/rbtree.h>
@@ -2028,7 +2034,7 @@ diff -rupdN linux-2.6.23.13-clean/include/linux/ext3_fs_sb.h linux-2.6.23.13-ext
   	unsigned long s_inodes_per_group;/* Number of inodes in a group */
   	unsigned long s_itb_per_group;	/* Number of inode table blocks per group */
   	unsigned long s_gdb_count;	/* Number of group descriptor blocks */
-@@ -66,6 +69,9 @@ struct ext3_sb_info {
+@@ -67,6 +70,9 @@ struct ext3_sb_info {
   	struct rb_root s_rsv_window_root;
   	struct ext3_reserve_window_node s_rsv_window_head;
 
@@ -2038,7 +2044,7 @@ diff -rupdN linux-2.6.23.13-clean/include/linux/ext3_fs_sb.h linux-2.6.23.13-ext
   	/* Journaling */
   	struct inode * s_journal_inode;
   	struct journal_s * s_journal;
-@@ -82,4 +88,11 @@ struct ext3_sb_info {
+@@ -83,4 +89,11 @@ struct ext3_sb_info {
   #endif
   };
 
@@ -2050,10 +2056,10 @@ diff -rupdN linux-2.6.23.13-clean/include/linux/ext3_fs_sb.h linux-2.6.23.13-ext
 +};
 +
   #endif	/* _LINUX_EXT3_FS_SB */
-diff -rupdN linux-2.6.23.13-clean/include/linux/jbd.h linux-2.6.23.13-ext3mc/include/linux/jbd.h
---- linux-2.6.23.13-clean/include/linux/jbd.h	2008-01-09 12:18:17.000000000 -0500
-+++ linux-2.6.23.13-ext3mc/include/linux/jbd.h	2008-01-12 22:30:19.000000000 -0500
-@@ -307,6 +307,7 @@ enum jbd_state_bits {
+diff -rupdN linux-2.6.24-rc6mm1-clean/include/linux/jbd.h linux-2.6.24-rc6mm1-ext3mc/include/linux/jbd.h
+--- linux-2.6.24-rc6mm1-clean/include/linux/jbd.h	2008-01-12 21:56:15.000000000 -0500
++++ linux-2.6.24-rc6mm1-ext3mc/include/linux/jbd.h	2008-01-12 21:57:50.000000000 -0500
+@@ -295,6 +295,7 @@ enum jbd_state_bits {
   	BH_State,		/* Pins most journal_head state */
   	BH_JournalHead,		/* Pins bh->b_private and jh->b_bh */
   	BH_Unshadow,		/* Dummy bit, for BJ_Shadow wakeup filtering */
