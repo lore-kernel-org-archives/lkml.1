@@ -1,67 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbYAMNpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752602AbYAMOHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752641AbYAMNpo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 08:45:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbYAMNpe
+	id S1752602AbYAMOHM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 09:07:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbYAMOG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 08:45:34 -0500
-Received: from ikar.perftech.si ([195.246.0.20]:4698 "EHLO ikar.perftech.si"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751457AbYAMNpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 08:45:33 -0500
-X-Greylist: delayed 986 seconds by postgrey-1.27 at vger.kernel.org; Sun, 13 Jan 2008 08:45:33 EST
-X-ASG-Debug-ID: 1200230941-043f00020000-xx1T2L
-X-Barracuda-URL: http://10.12.0.14:5000/cgi-bin/mark.cgi
-X-Spam-Processed: dedal.perftech.si, Sun, 13 Jan 2008 14:29:00 +0100
-	(not processed: spam filter heuristic analysis disabled)
-X-Authenticated-Sender: xerces8@butn.net
-X-Return-Path: xerces8@butn.net
-X-Envelope-From: xerces8@butn.net
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Date: Sun, 13 Jan 2008 14:28:58 +0100
-From: "xerces8" <xerces8@butn.net>
-To: linux-kernel@vger.kernel.org
-X-ASG-Orig-Subj: isofs maintainer and write support
-Subject: isofs maintainer and write support
+	Sun, 13 Jan 2008 09:06:59 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:50699 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751420AbYAMOG6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jan 2008 09:06:58 -0500
+Date: Sun, 13 Jan 2008 19:36:20 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Andrew Paprocki <andrew@ishiboo.com>
+Cc: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       tglx@linutronix.de, clemens@ladisch.de, venkatesh.pallipadi@intel.com,
+       bob.picco@hp.com
+Subject: Re: HPET timer broken using 2.6.23.13 / nanosleep() hangs
+Message-ID: <20080113140620.GA22507@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <76366b180801130310x57f24cc8s641d3ccb2415524c@mail.gmail.com> <20080113120337.GA5548@linux.vnet.ibm.com> <76366b180801130510w2af714fevf03f59164f90806f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-ID: <WorldClient-F200801131428.AA28580079@butn.net>
-X-Mailer: WorldClient 9.6.4rc2
-X-MDAV-Processed: dedal.perftech.si, Sun, 13 Jan 2008 14:29:01 +0100
-X-Barracuda-Connect: UNKNOWN[10.12.0.44]
-X-Barracuda-Start-Time: 1200230941
-X-Barracuda-Virus-Scanned: by OUTBOUND - ikar.perftech.si at perftech.si
-X-Barracuda-Spam-Score: 0.00
-X-Barracuda-Spam-Status: No, SCORE=0.00 using global scores of TAG_LEVEL=1000.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=7.0 tests=UNPARSEABLE_RELAY
-X-Barracuda-Spam-Report: Code version 3.1, rules version 3.1.39418
-	Rule breakdown below
-	 pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	0.00 UNPARSEABLE_RELAY      Informational: message has unparseable relay lines
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <76366b180801130510w2af714fevf03f59164f90806f@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sun, Jan 13, 2008 at 08:10:46AM -0500, Andrew Paprocki wrote:
+> I applied the patch to my 2.6.23.13 tree and upon reboot it stopped right after:
+> 
+> Clocksource tsc unstable (delta = ... ns)
+> Time: hpet clocksource has been installed.
+> 
+> It locked up hard.. cursor stopped blinking and SysRq isn't working either.
+> 
 
-I write here as the MAINTAINERS file has no entry about the isofs.
+It obviously is the wrong fix then :).
 
-The question is : Is there any plan/way/idea to have read/write support
-for isofs ?
+Adding a few cc's. Hopefully they will know what to do better than me.
 
-I know of user space tools that can perform any operation (like
-create/read/write/rename/delete file/directory) but that is nowhere
-as convenient as a real filesystem.
+> -Andrew
+> 
+> On Jan 13, 2008 7:03 AM, Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+> >
+> > On Sun, Jan 13, 2008 at 06:10:52AM -0500, Andrew Paprocki wrote:
+> > > I started debugging a problem I was having with my sky2 network driver
+> > > under 2.6.23.13. The investigation led me to find that the HPET timer
+> > > wasn't working at all, causing the sky2 driver to not work properly.
+> > > Simple example:
+> > >
+> > > am2:/sys/devices/system/clocksource/clocksource0# cat current_clocksource
+> > > jiffies
+> > > am2:/sys/devices/system/clocksource/clocksource0# time sleep 1
+> > > real    0m1.000s
+> > > user    0m0.000s
+> > > sys     0m0.000s
+> > > am2:/sys/devices/system/clocksource/clocksource0# echo tsc > current_clocksource
+> > > am2:/sys/devices/system/clocksource/clocksource0# time sleep 1
+> > > real    0m1.005s
+> > > user    0m0.004s
+> > > sys     0m0.000s
+> > > am2:/sys/devices/system/clocksource/clocksource0# echo hpet >
+> > > current_clocksource
+> > > am2:/sys/devices/system/clocksource/clocksource0# time sleep 1
+> > > <hangs indefinetly...>
+> > >
+> > > Running strace shows it blocked on nanosleep(). I'm building the
+> > > kernel with the processor type set to Athalon64. I've built it with
+> > > and without SMP and high-res timers enabled and I get the same result.
+> > > My previous 2.6.18-4 kernel works because it does not install HPET as
+> > > the default timer. The same behavior occurs in 2.6.24-rc7 git head.
+> > > I've attached the config/dmesg below.
+> > >
+> >
+> > It seems the HPET timer was not being assigned any IRQs at all. Can you
+> > try the patch at http://lkml.org/lkml/2008/1/12/128 ?
+> >
+> > Thanks,
+> > --
+> > regards,
+> > Dhaval
+> >
+> >
 
-Use case: Editing a iso9660 filesystem on a DVD+RW. With a r/w isofs most
-changes would take a few seconds, while without, the entire 4.5 gigabytes
-must be copied to HD, edited and then remastered back to the DVD medium.
-(Why I don't use another FS ? Because I use the DVD to store music for
-my car cd/dvd player and it understands only iso9660.)
-(neither does it know vorbis. Or aac+ :-( )
-
-Regards,
-David Balažic
-
-
+-- 
+regards,
+Dhaval
