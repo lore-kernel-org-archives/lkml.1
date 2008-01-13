@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751861AbYAMLzP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752163AbYAMMD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751861AbYAMLzP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 06:55:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750872AbYAMLzD
+	id S1752163AbYAMMD7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 07:03:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750892AbYAMMDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 06:55:03 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:38968 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750818AbYAMLzA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 06:55:00 -0500
-Date: Sun, 13 Jan 2008 06:54:53 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: akpm@linux-foundation.org, neilb@suse.de, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/5] NLM: Have lockd call try_to_freeze
-Message-ID: <20080113065453.4774f8dd@tleilax.poochiereds.net>
-In-Reply-To: <1199988096-19700-4-git-send-email-jlayton@redhat.com>
-References: <1199988096-19700-1-git-send-email-jlayton@redhat.com>
-	<1199988096-19700-2-git-send-email-jlayton@redhat.com>
-	<1199988096-19700-3-git-send-email-jlayton@redhat.com>
-	<1199988096-19700-4-git-send-email-jlayton@redhat.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 13 Jan 2008 07:03:50 -0500
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:41939 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750872AbYAMMDt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jan 2008 07:03:49 -0500
+Date: Sun, 13 Jan 2008 17:33:37 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Andrew Paprocki <andrew@ishiboo.com>
+Cc: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>
+Subject: Re: HPET timer broken using 2.6.23.13 / nanosleep() hangs
+Message-ID: <20080113120337.GA5548@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <76366b180801130310x57f24cc8s641d3ccb2415524c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <76366b180801130310x57f24cc8s641d3ccb2415524c@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jan 2008 13:01:34 -0500
-Jeff Layton <jlayton@redhat.com> wrote:
-
-> lockd makes itself freezable, but never calls try_to_freeze(). Have it
-> call try_to_freeze() within the main loop.
+On Sun, Jan 13, 2008 at 06:10:52AM -0500, Andrew Paprocki wrote:
+> I started debugging a problem I was having with my sky2 network driver
+> under 2.6.23.13. The investigation led me to find that the HPET timer
+> wasn't working at all, causing the sky2 driver to not work properly.
+> Simple example:
 > 
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> ---
->  fs/lockd/svc.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
+> am2:/sys/devices/system/clocksource/clocksource0# cat current_clocksource
+> jiffies
+> am2:/sys/devices/system/clocksource/clocksource0# time sleep 1
+> real    0m1.000s
+> user    0m0.000s
+> sys     0m0.000s
+> am2:/sys/devices/system/clocksource/clocksource0# echo tsc > current_clocksource
+> am2:/sys/devices/system/clocksource/clocksource0# time sleep 1
+> real    0m1.005s
+> user    0m0.004s
+> sys     0m0.000s
+> am2:/sys/devices/system/clocksource/clocksource0# echo hpet >
+> current_clocksource
+> am2:/sys/devices/system/clocksource/clocksource0# time sleep 1
+> <hangs indefinetly...>
 > 
-> diff --git a/fs/lockd/svc.c b/fs/lockd/svc.c
-> index 82e2192..6ee8bed 100644
-> --- a/fs/lockd/svc.c
-> +++ b/fs/lockd/svc.c
-> @@ -155,6 +155,9 @@ lockd(struct svc_rqst *rqstp)
->  		long timeout = MAX_SCHEDULE_TIMEOUT;
->  		char buf[RPC_MAX_ADDRBUFLEN];
->  
-> +		if (try_to_freeze())
-> +			continue;
-> +
->  		if (signalled()) {
->  			flush_signals(current);
->  			if (nlmsvc_ops) {
+> Running strace shows it blocked on nanosleep(). I'm building the
+> kernel with the processor type set to Athalon64. I've built it with
+> and without SMP and high-res timers enabled and I get the same result.
+> My previous 2.6.18-4 kernel works because it does not install HPET as
+> the default timer. The same behavior occurs in 2.6.24-rc7 git head.
+> I've attached the config/dmesg below.
+> 
 
+It seems the HPET timer was not being assigned any IRQs at all. Can you
+try the patch at http://lkml.org/lkml/2008/1/12/128 ?
 
-I was looking over svc_recv today and noticed that it calls
-try_to_freeze a couple of times. Given that, the above patch may be
-unnecessary. I don't think it hurts anything though. Should we keep
-this patch or drop it?
-
+Thanks,
 -- 
-Jeff Layton <jlayton@redhat.com>
+regards,
+Dhaval
