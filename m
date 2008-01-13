@@ -1,143 +1,510 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753096AbYAMAkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200AbYAMAk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753096AbYAMAkH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 19:40:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928AbYAMAjw
+	id S1754200AbYAMAk4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 19:40:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbYAMAkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 19:39:52 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:33878 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753927AbYAMAjv (ORCPT
+	Sat, 12 Jan 2008 19:40:47 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:43493 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752169AbYAMAkq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 19:39:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:user-agent:mime-version:content-type:from;
-        b=xLh/8TojWAiI3vlVfE0kyeO4vWIG0VapTaQKWGytwrU6L8Va6K52/YzPAA5w8arxHjBkItILlT9aeMOYs/43mu1ZwCaKv3jOp6IqxnjAfcF98hDID4efpIN13ro6GBfO2YKMpd/RdEprvHxjSlpmhCaI/ufxie+/v9hBBpsxdPA=
-Date: Sun, 13 Jan 2008 01:34:44 +0100 (CET)
-To: Samuel Ortiz <samuel@sortiz.org>
-cc: Dag Brattli <dagb@cs.uit.no>, Jean Tourrilhes <jt@hpl.hp.com>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>
-Subject: [PATCH 2/2] irda: avoid potential memory leak in irda_setsockopt()
-Message-ID: <alpine.LNX.1.00.0801130107240.2235@dragon.funnycrock.com>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-From: Jesper Juhl <jesper.juhl@gmail.com>
+	Sat, 12 Jan 2008 19:40:46 -0500
+Date: Sat, 12 Jan 2008 16:40:06 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: tcamuso@redhat.com
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <greg@kroah.com>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>, Loic Prylli <loic@myri.com>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+ opt-in
+Message-ID: <20080112164006.6f6f7bc2@laptopd505.fenrus.org>
+In-Reply-To: <47895767.3090503@redhat.com>
+References: <alpine.LFD.1.00.0801111224090.3148@woody.linux-foundation.org>
+	<20080111204228.GP18741@parisc-linux.org>
+	<alpine.LFD.1.00.0801111311170.3148@woody.linux-foundation.org>
+	<20080111211753.GR18741@parisc-linux.org>
+	<alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org>
+	<20080111213803.GS18741@parisc-linux.org>
+	<20080111235856.GA16079@jurassic.park.msu.ru>
+	<20080112002638.GA18710@kroah.com>
+	<20080112144030.GA19279@jurassic.park.msu.ru>
+	<20080112094557.71f5382a@laptopd505.fenrus.org>
+	<20080112214911.GA20102@jurassic.park.msu.ru>
+	<20080112150120.05f93768@laptopd505.fenrus.org>
+	<47895767.3090503@redhat.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 12 Jan 2008 19:12:23 -0500
+Tony Camuso <tcamuso@redhat.com> wrote:
 
-There are paths through the irda_setsockopt() function where we return and 
-may or may not have allocated a new ias_obj but in any case have not used 
-it for anything yet and we end up leaking memory.
+> Arjan,
+> 
+> I have not seen your MMCONFIG patch.
+> 
+> Would you mind sending me a copy?
+> 
 
-As far as I can tell, in the case where we didn't allocate a new ias_ob 
-but simply were planning to use one already available then we should not 
-free it before returning. But when we have allocated a brand new ias_obj 
-but have not yet used it or put it on any lists etc and then return, 
-that's a memory leak.
-
-There are two cases:
-
-1)
-   switch (optname) {
-   case IRLMP_IAS_SET:
-     ...
-     if(ias_obj == (struct ias_object *) NULL) {
-             /* Create a new object */
---[alloc]--> ias_obj = irias_new_object(ias_opt->irda_class_name,
-                                        jiffies);
-     ...
-     switch(ias_opt->irda_attrib_type) {
-     case IAS_OCT_SEQ:
-       /* Check length */
-       if(ias_opt->attribute.irda_attrib_octet_seq.len >
-          IAS_MAX_OCTET_STRING) {
-               kfree(ias_opt);
---[leak]-->    return -EINVAL;
-     ...
-     }
-     irias_insert_object(ias_obj);
-
-The allocated object isn't referenced at all until we get outside the 
-inner switch, so clearly we leak it (if we took the path that allocated it 
-that is).
+sure
 
 
-2)
-The second case is the same as the above, except it's the default: case in 
-the inner switch instead of case IAS_OCT_SEQ:
-
-       default :
-         kfree(ias_opt);
-         return -EINVAL;
+----
 
 
-The way I propose to fix this is with a new variable that keeps track of 
-whether or not we found an existing ias_obj to use or if we took the 
-allocation path, then use that variable to determine if we should free 
-ias_obj before returning from the function.
+On PCs, PCI extended configuration space (4Kb) is riddled with problems
+associated with the memory mapped access method (MMCONFIG). At the same
+time, there are very few machines that actually need or use this
+extended configuration space.
 
-I'm not very intimate with this code, so if there's a better solution I'd 
-very much like to hear it. It's also entirely possible that someone with 
-more knowledge of this code can prove that these cases can't actually ever 
-happen - if that's the case then please let me know.
+At this point in time, the only sensible action is to make access to the
+extended configuration space an opt-in operation for those device
+drivers that need/want access to this space, as well as for those
+userland diagnostics utilities that (on admin request) want to access
+this space.
 
-This patch is meant to be applied on top of 
-  [PATCH 1/2] irda: return -ENOMEM upon failure to allocate new ias_obj
+It's inevitable that this is done per device rather than per bus; we'll
+be needing per device PCI quirks to turn this extended config space off
+over time no matter what; in addition, it gives the least amount of
+surprise: loading a driver for a device only impacts that one device,
+not a whole bus worth of devices (although it'll be common to have one
+physical device per bus on PCI-E).
 
-The Coverity checker gets credit for pointing its finger towards this.
+The (desireable) side-effect of this patch is that all enumeration is
+done using normal configuration cycles.
+
+The patch below splits the lower level PCI config space operation (which
+operate on a bus) in two: one that normally only operates on traditional
+space, and one that gets used after the driver has opted in to using the
+extended configuration space. This has lead to a little code
+duplication, but it's not all that bad (most of it is prototypes in
+headers and such).
+
+Architectures that have a solid reliable way to get to extended
+configuration space can just keep doing what they do now and allow
+extended space access from the "traditional" bus ops, and just not fill
+in the new bus ops.  (This could include x86 for, say, BIOS year 2009
+and later, but doesn't right now)
+
+This patch also adds a sysfs property for each device into which root
+can write a '1' to enable extended configuration space. The kernel will
+print a notice into dmesg when this happens (including the name of the
+app) so that if the system crashes as a result of this action, the user
+can know what action/tool caused it.
 
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
+ Documentation/ABI/testing/sysfs-pci-extended-config |   39 ++++++++++++++++
+ arch/x86/pci/common.c                               |   23 +++++++++
+ arch/x86/pci/init.c                                 |   10 ++++
+ arch/x86/pci/mmconfig_32.c                          |    2 
+ arch/x86/pci/mmconfig_64.c                          |    2 
+ arch/x86/pci/pci.h                                  |    2 
+ drivers/pci/access.c                                |   46 +++++++++++++++++++
+ drivers/pci/pci-sysfs.c                             |   31 +++++++++++++
+ drivers/pci/pci.c                                   |   28 +++++++++++
+ include/linux/pci.h                                 |   47 +++++++++++++++++---
+ 10 files changed, 222 insertions(+), 8 deletions(-)
 
- af_irda.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
-diff --git a/net/irda/af_irda.c b/net/irda/af_irda.c
-index e33f0a5..352e8a7 100644
---- a/net/irda/af_irda.c
-+++ b/net/irda/af_irda.c
-@@ -1824,7 +1824,8 @@ static int irda_setsockopt(struct socket *sock, int level, int optname,
- 	struct irda_sock *self = irda_sk(sk);
- 	struct irda_ias_set    *ias_opt;
- 	struct ias_object      *ias_obj;
--	struct ias_attrib *	ias_attr;	/* Attribute in IAS object */
-+	struct ias_attrib      *ias_attr;	/* Attribute in IAS object */
-+	int alloc_new_obj = 0;
- 	int opt;
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-pci-extended-config
+@@ -0,0 +1,39 @@
++What:		/sys/devices/pci<bus>/<device>/extended_config_space
++Date:		January 11, 2008
++Contact:	Arjan van de Ven <arjan@linux.intel.com>
++Description:
++		This attribute is for use for system-diagnostic software
++		only.
++
++		The kernel may decide to restrict PCI configuration space
++		access for userspace to the first 64 or 256 bytes by
++		default, for stability reasons. This attribute, when
++		present, can be used to request access to the full
++		4Kb from the kernel.
++
++		Request to get access to the full 4Kb can be done by
++		writing a '1' into this attribute file. All other values
++		are reserved for future use and should not be used by
++		software at this point.
++
++		The kernel may log the request to the various kernel
++		logging services. The kernel may decide to ignore the
++		request if the kernel deems extended configuration space
++		access not reliable enough for the system or the device.
++		The kernel may decide to not present this attribute
++		if the kernel decides extended config space is reliable
++		and made available by default, or if the kernel decides
++		that extended configuration space will never be
++		accessible.
++
++		Software needs to gracefully deal with getting the
++		access not granted. Software also needs to gracefully deal
++		with this attribute not being present.
++
++		Due to the fragility of extended configuration space,
++		system diagnostic software should only set this attribute
++		on explicit user request, or in the case of GUI like tools,
++		at least with explicit user permission.
++
++
++
+--- a/arch/x86/pci/common.c
++++ b/arch/x86/pci/common.c
+@@ -26,6 +26,7 @@ int pcibios_last_bus = -1;
+ unsigned long pirq_table_addr;
+ struct pci_bus *pci_root_bus;
+ struct pci_raw_ops *raw_pci_ops;
++struct pci_raw_ops *raw_pci_ops_extcfg;
  
- 	IRDA_DEBUG(2, "%s(%p)\n", __FUNCTION__, self);
-@@ -1885,6 +1886,7 @@ static int irda_setsockopt(struct socket *sock, int level, int optname,
- 				kfree(ias_opt);
- 				return -ENOMEM;
- 			}
-+			alloc_new_obj = 1;
- 		}
+ static int pci_read(struct pci_bus *bus, unsigned int devfn, int where, int size, u32 *value)
+ {
+@@ -39,9 +40,31 @@ static int pci_write(struct pci_bus *bus
+ 				  devfn, where, size, value);
+ }
  
- 		/* Do we have the attribute already ? */
-@@ -1908,6 +1910,8 @@ static int irda_setsockopt(struct socket *sock, int level, int optname,
- 			if(ias_opt->attribute.irda_attrib_octet_seq.len >
- 			   IAS_MAX_OCTET_STRING) {
- 				kfree(ias_opt);
-+				if (alloc_new_obj)
-+					kfree(ias_obj);
- 				return -EINVAL;
- 			}
- 			/* Add an octet sequence attribute */
-@@ -1936,6 +1940,8 @@ static int irda_setsockopt(struct socket *sock, int level, int optname,
- 			break;
- 		default :
- 			kfree(ias_opt);
-+			if (alloc_new_obj)
-+				kfree(ias_obj);
- 			return -EINVAL;
++static int pci_read_ext(struct pci_bus *bus, unsigned int devfn, int where, int size, u32 *value)
++{
++	if (raw_pci_ops_extcfg)
++		return raw_pci_ops_extcfg->read(pci_domain_nr(bus), bus->number,
++				 devfn, where, size, value);
++	else
++		return raw_pci_ops->read(pci_domain_nr(bus), bus->number,
++				 devfn, where, size, value);
++}
++
++static int pci_write_ext(struct pci_bus *bus, unsigned int devfn, int where, int size, u32 value)
++{
++	if (raw_pci_ops_extcfg)
++		return raw_pci_ops_extcfg->write(pci_domain_nr(bus), bus->number,
++				  devfn, where, size, value);
++	else
++		return raw_pci_ops->write(pci_domain_nr(bus), bus->number,
++				  devfn, where, size, value);
++}
++
+ struct pci_ops pci_root_ops = {
+ 	.read = pci_read,
+ 	.write = pci_write,
++	.readext = pci_read_ext,
++	.writeext = pci_write_ext,
+ };
+ 
+ /*
+--- a/arch/x86/pci/init.c
++++ b/arch/x86/pci/init.c
+@@ -14,6 +14,16 @@ static __init int pci_access_init(void)
+ #ifdef CONFIG_PCI_MMCONFIG
+ 	pci_mmcfg_init(type);
+ #endif
++	/* if we ONLY have MMCONFIG, we need to use it always */
++	if (!raw_pci_ops && raw_pci_ops_extcfg) {
++		printk(KERN_INFO "No direct PCI access, using MMCONFIG always\n");
++		raw_pci_ops = raw_pci_ops_extcfg;
++	}
++
++	/*
++	 * we've found a usable method; this means we can skip
++	 * the potentially dangerous BIOS based methods
++	 */
+ 	if (raw_pci_ops)
+ 		return 0;
+ #ifdef CONFIG_PCI_BIOS
+--- a/arch/x86/pci/mmconfig_32.c
++++ b/arch/x86/pci/mmconfig_32.c
+@@ -143,6 +143,6 @@ int __init pci_mmcfg_arch_reachable(unsi
+ int __init pci_mmcfg_arch_init(void)
+ {
+ 	printk(KERN_INFO "PCI: Using MMCONFIG\n");
+-	raw_pci_ops = &pci_mmcfg;
++	raw_pci_ops_extcfg = &pci_mmcfg;
+ 	return 1;
+ }
+--- a/arch/x86/pci/mmconfig_64.c
++++ b/arch/x86/pci/mmconfig_64.c
+@@ -152,6 +152,6 @@ int __init pci_mmcfg_arch_init(void)
+ 			return 0;
  		}
- 		irias_insert_object(ias_obj);
+ 	}
+-	raw_pci_ops = &pci_mmcfg;
++	raw_pci_ops_extcfg = &pci_mmcfg;
+ 	return 1;
+ }
+--- a/arch/x86/pci/pci.h
++++ b/arch/x86/pci/pci.h
+@@ -32,6 +32,8 @@
+ extern unsigned int pci_probe;
+ extern unsigned long pirq_table_addr;
+ 
++extern struct pci_raw_ops *raw_pci_ops_extcfg;
++
+ enum pci_bf_sort_state {
+ 	pci_bf_sort_default,
+ 	pci_force_nobf,
+--- a/drivers/pci/access.c
++++ b/drivers/pci/access.c
+@@ -51,6 +51,45 @@ int pci_bus_write_config_##size \
+ 	return res;							\
+ }
+ 
++#define PCI_OP_READ_EXT(size, type, len) \
++int pci_bus_read_extconfig_##size \
++	(struct pci_bus *bus, unsigned int devfn, int pos, type *value)	\
++{									\
++	int res;							\
++	unsigned long flags;						\
++	u32 data = 0;							\
++	if (PCI_##size##_BAD)						\
++		return PCIBIOS_BAD_REGISTER_NUMBER;			\
++	spin_lock_irqsave(&pci_lock, flags);				\
++	if (bus->ops->readext)						\
++		res = bus->ops->readext(bus, devfn, pos, len, &data);	\
++	else								\
++		res = bus->ops->read(bus, devfn, pos, len, &data);	\
++	*value = (type)data;						\
++	spin_unlock_irqrestore(&pci_lock, flags);			\
++	return res;							\
++}									\
++EXPORT_SYMBOL(pci_bus_read_extconfig_##size);
++
++#define PCI_OP_WRITE_EXT(size, type, len) \
++int pci_bus_write_extconfig_##size \
++	(struct pci_bus *bus, unsigned int devfn, int pos, type value)	\
++{									\
++	int res;							\
++	unsigned long flags;						\
++	if (PCI_##size##_BAD)						\
++		return PCIBIOS_BAD_REGISTER_NUMBER;			\
++	spin_lock_irqsave(&pci_lock, flags);				\
++	if (bus->ops->writeext)						\
++		res = bus->ops->writeext(bus, devfn, pos, len, value);	\
++	else								\
++		res = bus->ops->write(bus, devfn, pos, len, value);	\
++	spin_unlock_irqrestore(&pci_lock, flags);			\
++	return res;							\
++}									\
++EXPORT_SYMBOL(pci_bus_write_extconfig_##size);
++
++
+ PCI_OP_READ(byte, u8, 1)
+ PCI_OP_READ(word, u16, 2)
+ PCI_OP_READ(dword, u32, 4)
+@@ -58,6 +97,13 @@ PCI_OP_WRITE(byte, u8, 1)
+ PCI_OP_WRITE(word, u16, 2)
+ PCI_OP_WRITE(dword, u32, 4)
+ 
++PCI_OP_READ_EXT(byte, u8, 1)
++PCI_OP_READ_EXT(word, u16, 2)
++PCI_OP_READ_EXT(dword, u32, 4)
++PCI_OP_WRITE_EXT(byte, u8, 1)
++PCI_OP_WRITE_EXT(word, u16, 2)
++PCI_OP_WRITE_EXT(dword, u32, 4)
++
+ EXPORT_SYMBOL(pci_bus_read_config_byte);
+ EXPORT_SYMBOL(pci_bus_read_config_word);
+ EXPORT_SYMBOL(pci_bus_read_config_dword);
+--- a/drivers/pci/pci-sysfs.c
++++ b/drivers/pci/pci-sysfs.c
+@@ -143,6 +143,35 @@ static ssize_t is_enabled_show(struct de
+ 	return sprintf (buf, "%u\n", atomic_read(&pdev->enable_cnt));
+ }
+ 
++static ssize_t extended_config_space_store(struct device *dev,
++				struct device_attribute *attr, const char *buf,
++				size_t count)
++{
++	ssize_t result = -EINVAL;
++	struct pci_dev *pdev = to_pci_dev(dev);
++
++	/* this can crash the machine when done on the "wrong" device */
++	if (!capable(CAP_SYS_ADMIN))
++		return count;
++
++	if (*buf == '1') {
++		printk(KERN_WARNING "Application %s enabled extended config space for device %s\n",
++			current->comm,  pci_name(pdev));
++		result = pci_enable_ext_config(pdev);
++	}
++
++	return result < 0 ? result : count;
++}
++
++static ssize_t extended_config_space_show(struct device *dev,
++			       struct device_attribute *attr, char *buf)
++{
++	struct pci_dev *pdev;
++
++	pdev = to_pci_dev(dev);
++	return sprintf(buf, "%u\n", pdev->ext_cfg_space);
++}
++
+ #ifdef CONFIG_NUMA
+ static ssize_t
+ numa_node_show(struct device *dev, struct device_attribute *attr, char *buf)
+@@ -206,6 +235,8 @@ struct device_attribute pci_dev_attrs[] 
+ 	__ATTR_RO(numa_node),
+ #endif
+ 	__ATTR(enable, 0600, is_enabled_show, is_enabled_store),
++	__ATTR(extended_config_space, 0600, extended_config_space_show,
++		extended_config_space_store),
+ 	__ATTR(broken_parity_status,(S_IRUGO|S_IWUSR),
+ 		broken_parity_status_show,broken_parity_status_store),
+ 	__ATTR(msi_bus, 0644, msi_bus_show, msi_bus_store),
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -802,6 +802,34 @@ int pci_enable_device(struct pci_dev *de
+ 	return __pci_enable_device_flags(dev, IORESOURCE_MEM | IORESOURCE_IO);
+ }
+ 
++/**
++ * pci_enable_ext_config - Enable extended (4K) config space accesses
++ * @dev: PCI device to be changed
++ *
++ *  Enable extended (4Kb) configuration space accesses for a device.
++ *  Extended config space is available for PCI-E devices and can
++ *  be used for things like PCI AER and other features. However,
++ *  due to various stability issues, this can only be done on demand.
++ *
++ * Returns: -1 on failure, 0 on success
++ */
++
++int pci_enable_ext_config(struct pci_dev *dev)
++{
++	if (dev->ext_cfg_space < 0)
++		return -1;
++	if (dev->ext_cfg_space > 0)
++		return 0;
++	dev->ext_cfg_space = 1;
++	/*
++	 * now that we enabled large accesse, we
++	 * need to update the config space size variable
++	 */
++	dev->cfg_size = pci_cfg_space_size(dev);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(pci_enable_ext_config);
++
+ /*
+  * Managed PCI resources.  This manages device on/off, intx/msi/msix
+  * on/off and BAR regions.  pci_dev itself records msi/msix status, so
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -169,6 +169,15 @@ struct pci_dev {
+ 	int		cfg_size;	/* Size of configuration space */
+ 
+ 	/*
++	 * ext_cfg_space gets set by drivers/quirks to device if
++	 * extended (4K) config space is desired.
++	 * negative values -- hard disabled (quirk etc)
++	 * zero            -- disabled
++	 * positive values -- enable
++	 */
++	int		ext_cfg_space;
++
++	/*
+ 	 * Instead of touching interrupt line and base address registers
+ 	 * directly, use the values stored here. They might be different!
+ 	 */
+@@ -297,6 +306,8 @@ struct pci_bus {
+ struct pci_ops {
+ 	int (*read)(struct pci_bus *bus, unsigned int devfn, int where, int size, u32 *val);
+ 	int (*write)(struct pci_bus *bus, unsigned int devfn, int where, int size, u32 val);
++	int (*readext)(struct pci_bus *bus, unsigned int devfn, int where, int size, u32 *val);
++	int (*writeext)(struct pci_bus *bus, unsigned int devfn, int where, int size, u32 val);
+ };
+ 
+ struct pci_raw_ops {
+@@ -517,29 +528,48 @@ int pci_bus_write_config_byte (struct pc
+ int pci_bus_write_config_word (struct pci_bus *bus, unsigned int devfn, int where, u16 val);
+ int pci_bus_write_config_dword (struct pci_bus *bus, unsigned int devfn, int where, u32 val);
+ 
++int pci_bus_read_extconfig_byte(struct pci_bus *bus, unsigned int devfn, int where, u8 *val);
++int pci_bus_read_extconfig_word(struct pci_bus *bus, unsigned int devfn, int where, u16 *val);
++int pci_bus_read_extconfig_dword(struct pci_bus *bus, unsigned int devfn, int where, u32 *val);
++int pci_bus_write_extconfig_byte(struct pci_bus *bus, unsigned int devfn, int where, u8 val);
++int pci_bus_write_extconfig_word(struct pci_bus *bus, unsigned int devfn, int where, u16 val);
++int pci_bus_write_extconfig_dword(struct pci_bus *bus, unsigned int devfn, int where, u32 val);
++
+ static inline int pci_read_config_byte(struct pci_dev *dev, int where, u8 *val)
+ {
+-	return pci_bus_read_config_byte (dev->bus, dev->devfn, where, val);
++	if (dev->ext_cfg_space > 0)
++		return pci_bus_read_extconfig_byte(dev->bus, dev->devfn, where, val);
++	return pci_bus_read_config_byte(dev->bus, dev->devfn, where, val);
+ }
+ static inline int pci_read_config_word(struct pci_dev *dev, int where, u16 *val)
+ {
+-	return pci_bus_read_config_word (dev->bus, dev->devfn, where, val);
++	if (dev->ext_cfg_space > 0)
++		return pci_bus_read_extconfig_word(dev->bus, dev->devfn, where, val);
++	return pci_bus_read_config_word(dev->bus, dev->devfn, where, val);
+ }
+ static inline int pci_read_config_dword(struct pci_dev *dev, int where, u32 *val)
+ {
+-	return pci_bus_read_config_dword (dev->bus, dev->devfn, where, val);
++	if (dev->ext_cfg_space > 0)
++		return pci_bus_read_extconfig_dword(dev->bus, dev->devfn, where, val);
++	return pci_bus_read_config_dword(dev->bus, dev->devfn, where, val);
+ }
+ static inline int pci_write_config_byte(struct pci_dev *dev, int where, u8 val)
+ {
+-	return pci_bus_write_config_byte (dev->bus, dev->devfn, where, val);
++	if (dev->ext_cfg_space > 0)
++		return pci_bus_write_extconfig_byte(dev->bus, dev->devfn, where, val);
++	return pci_bus_write_config_byte(dev->bus, dev->devfn, where, val);
+ }
+ static inline int pci_write_config_word(struct pci_dev *dev, int where, u16 val)
+ {
+-	return pci_bus_write_config_word (dev->bus, dev->devfn, where, val);
++	if (dev->ext_cfg_space > 0)
++		return pci_bus_write_extconfig_word(dev->bus, dev->devfn, where, val);
++	return pci_bus_write_config_word(dev->bus, dev->devfn, where, val);
+ }
+ static inline int pci_write_config_dword(struct pci_dev *dev, int where, u32 val)
+ {
+-	return pci_bus_write_config_dword (dev->bus, dev->devfn, where, val);
++	if (dev->ext_cfg_space > 0)
++		return pci_bus_write_extconfig_dword(dev->bus, dev->devfn, where, val);
++	return pci_bus_write_config_dword(dev->bus, dev->devfn, where, val);
+ }
+ 
+ int __must_check pci_enable_device(struct pci_dev *dev);
+@@ -689,6 +719,9 @@ void ht_destroy_irq(unsigned int irq);
+ extern void pci_block_user_cfg_access(struct pci_dev *dev);
+ extern void pci_unblock_user_cfg_access(struct pci_dev *dev);
+ 
++extern int pci_enable_ext_config(struct pci_dev *dev);
++
++
+ /*
+  * PCI domain support.  Sometimes called PCI segment (eg by ACPI),
+  * a PCI domain is defined to be a set of PCI busses which share
+@@ -786,6 +819,8 @@ static inline struct pci_dev *pci_get_bu
+ 						unsigned int devfn)
+ { return NULL; }
+ 
++static inline int pci_enable_ext_config(struct pci_dev *dev) { return -1; }
++
+ #endif /* CONFIG_PCI */
+ 
+ /* Include architecture-dependent settings and functions */
 
 
-
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
