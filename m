@@ -1,86 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbYAMSmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbYAMSoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754067AbYAMSmX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 13:42:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbYAMSmM
+	id S1754187AbYAMSoT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 13:44:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbYAMSoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 13:42:12 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:34570 "EHLO
+	Sun, 13 Jan 2008 13:44:12 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:34592 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752163AbYAMSmL (ORCPT
+	with ESMTP id S1753301AbYAMSoK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 13:42:11 -0500
-Date: Sun, 13 Jan 2008 10:41:24 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Loic Prylli <loic@myri.com>
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <greg@kroah.com>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Martin Mares <mj@ucw.cz>, Tony Camuso <tcamuso@redhat.com>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
- opt-in
-Message-ID: <20080113104124.022cd0a5@laptopd505.fenrus.org>
-In-Reply-To: <478A5727.3000102@myri.com>
-References: <alpine.LFD.1.00.0801111156230.3148@woody.linux-foundation.org>
-	<20080111201716.GO18741@parisc-linux.org>
-	<alpine.LFD.1.00.0801111224090.3148@woody.linux-foundation.org>
-	<20080111204228.GP18741@parisc-linux.org>
-	<alpine.LFD.1.00.0801111311170.3148@woody.linux-foundation.org>
-	<20080111211753.GR18741@parisc-linux.org>
-	<alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org>
-	<20080111213803.GS18741@parisc-linux.org>
-	<20080111235856.GA16079@jurassic.park.msu.ru>
-	<20080112002638.GA18710@kroah.com>
-	<20080112144030.GA19279@jurassic.park.msu.ru>
-	<20080112094557.71f5382a@laptopd505.fenrus.org>
-	<478A5727.3000102@myri.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+	Sun, 13 Jan 2008 13:44:10 -0500
+Subject: Re: possible recursive locking, 2.6.24-rc7
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Denys Fedoryshchenko <denys@visp.net.lb>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1200241360.7999.29.camel@lappy>
+References: <20080113155142.M6056@visp.net.lb>
+	 <1200241360.7999.29.camel@lappy>
+Content-Type: text/plain
+Date: Sun, 13 Jan 2008 19:44:26 +0100
+Message-Id: <1200249866.7999.48.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.21.4 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Jan 2008 13:23:35 -0500
-Loic Prylli <loic@myri.com> wrote:
 
-Matthew pointed a patch that basically does what you suggested; only one comment on your mail left after that:
-
+On Sun, 2008-01-13 at 17:22 +0100, Peter Zijlstra wrote:
+> On Sun, 2008-01-13 at 17:51 +0200, Denys Fedoryshchenko wrote:
+> > Hi, got in dmesg
+> > Not sure where to send (there is TCP), so sending netdev@ and kernel@
 > 
-> 2) the pci_enable_ext_config() function and dev->ext_cfg_space field, 
-> sysfs interface should be removed from the patch.  There has never
-> been a problem reporting crashes or any undefined behaviour while
-> trying to access ext-conf-space, all the problems where *using
-> mmconfig to access legacy-conf-space*.
+> It's epoll, this is a known issue and will be fixed soon. Thanks for
+> reporting.
 
+If its easy for you to reproduce, would you mind giving the following
+patch a spin?
 
-This entirely misses the point of why I made the patch. The point is NOT
-that devices are buggy. The point is that right now, 99.99% of the machines
-out there do NOT need extended config space (no matter how it gets accessed),
-yet at the same time they suffered from it's issues for... what 2 years now?
-The point of my patch was to make people who don't need extended config space,
-not have to deal with it anymore.
+---
 
-Note: There is not a 100% overlap between "need" and "will not be used in 
-the patches that use legacy for < 256". In the other patches posted, 
-extended config space will be used in cases where it won't be with my 
-patch. (Most obvious one is an "lspci -vx" from automated scripts). 
-Is  that a problem? We've had 2 years of mess, with one not-enough patch after another.
-There still are problems TODAY (eg im 2.6.24-rc7). The patch that falls back
-to an alternative method for below 256 is no doubt a step in the right direction. 
-(although I'm not all that happy about mixing access types, it's not provably incorrect)
-Is it enough? I'm not sure. Only time can tell I suppose, but the risk side is that
-if it is not enough, users who don't need the extended config space for functionality
-will suffer the bugs AGAIN.
+Subject: lockdep: annotate epoll
 
-So in short, my approach was NOT about "fix PCI", it is about "fix the user experience".
-It's a stopgap for sure, until the underlying mechanism gets reliable. It's been 2 years.....
-maybe this next step is "it", maybe it isn't.
+On Sat, 2008-01-05 at 13:35 -0800, Davide Libenzi wrote:
+
+> I remember I talked with Arjan about this time ago. Basically, since 1) 
+> you can drop an epoll fd inside another epoll fd 2) callback-based wakeups 
+> are used, you can see a wake_up() from inside another wake_up(), but they 
+> will never refer to the same lock instance.
+> Think about:
+> 
+> 	dfd = socket(...);
+> 	efd1 = epoll_create();
+> 	efd2 = epoll_create();
+> 	epoll_ctl(efd1, EPOLL_CTL_ADD, dfd, ...);
+> 	epoll_ctl(efd2, EPOLL_CTL_ADD, efd1, ...);
+> 
+> When a packet arrives to the device underneath "dfd", the net code will 
+> issue a wake_up() on its poll wake list. Epoll (efd1) has installed a 
+> callback wakeup entry on that queue, and the wake_up() performed by the 
+> "dfd" net code will end up in ep_poll_callback(). At this point epoll 
+> (efd1) notices that it may have some event ready, so it needs to wake up 
+> the waiters on its poll wait list (efd2). So it calls ep_poll_safewake() 
+> that ends up in another wake_up(), after having checked about the 
+> recursion constraints. That are, no more than EP_MAX_POLLWAKE_NESTS, to 
+> avoid stack blasting. Never hit the same queue, to avoid loops like:
+> 
+> 	epoll_ctl(efd2, EPOLL_CTL_ADD, efd1, ...);
+> 	epoll_ctl(efd3, EPOLL_CTL_ADD, efd2, ...);
+> 	epoll_ctl(efd4, EPOLL_CTL_ADD, efd3, ...);
+> 	epoll_ctl(efd1, EPOLL_CTL_ADD, efd4, ...);
+> 
+> The code "if (tncur->wq == wq || ..." prevents re-entering the same 
+> queue/lock.
+
+Since the epoll code is very careful to not nest same instance locks
+allow the recursion.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ fs/eventpoll.c       |    2 +-
+ include/linux/wait.h |   16 ++++++++++++++++
+ 2 files changed, 17 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/fs/eventpoll.c
+===================================================================
+--- linux-2.6.orig/fs/eventpoll.c
++++ linux-2.6/fs/eventpoll.c
+@@ -353,7 +353,7 @@ static void ep_poll_safewake(struct poll
+ 	spin_unlock_irqrestore(&psw->lock, flags);
+ 
+ 	/* Do really wake up now */
+-	wake_up(wq);
++	wake_up_nested(wq, 1 + wake_nests);
+ 
+ 	/* Remove the current task from the list */
+ 	spin_lock_irqsave(&psw->lock, flags);
+Index: linux-2.6/include/linux/wait.h
+===================================================================
+--- linux-2.6.orig/include/linux/wait.h
++++ linux-2.6/include/linux/wait.h
+@@ -161,6 +161,22 @@ wait_queue_head_t *FASTCALL(bit_waitqueu
+ #define	wake_up_locked(x)		__wake_up_locked((x), TASK_UNINTERRUPTIBLE | TASK_INTERRUPTIBLE)
+ #define wake_up_interruptible_sync(x)   __wake_up_sync((x),TASK_INTERRUPTIBLE, 1)
+ 
++#ifdef CONFIG_DEBUG_LOCK_ALLOC
++/*
++ * macro to avoid include hell
++ */
++#define wake_up_nested(x, s)						\
++do {									\
++	unsigned long flags;						\
++									\
++	spin_lock_irqsave_nested(&(x)->lock, flags, (s));		\
++	wake_up_locked(x); 						\
++	spin_unlock_irqrestore(&(x)->lock, flags);			\
++} while (0)
++#else
++#define wake_up_nested(x, s)		wake_up(x)
++#endif
++
+ #define __wait_event(wq, condition) 					\
+ do {									\
+ 	DEFINE_WAIT(__wait);						\
+
 
