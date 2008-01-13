@@ -1,53 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753560AbYAMQc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753338AbYAMQl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753560AbYAMQc6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 11:32:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbYAMQct
+	id S1753338AbYAMQl6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 11:41:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbYAMQls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 11:32:49 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43526 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752232AbYAMQcs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 11:32:48 -0500
-Date: Sun, 13 Jan 2008 16:29:59 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Robert Hancock <hancockr@shaw.ca>, Alexander <aledin@mail.ru>,
-       linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>
-Subject: Re: PROBLEM REMAINS: [sata_nv ADMA breaks ATAPI] Crash	on	accessing
- DVD-RAM
-Message-ID: <20080113162959.01d519db@lxorguk.ukuu.org.uk>
-In-Reply-To: <1200238725.3179.16.camel@localhost.localdomain>
-References: <fa.krOVfyFmB2aqGjJIoHCLmQxecWc@ifi.uio.no>
-	<478702C7.80401@shaw.ca>
-	<47887982.6050805@mail.ru>
-	<47891426.1020604@shaw.ca>
-	<1200170117.3656.66.camel@localhost.localdomain>
-	<47894785.2050508@shaw.ca>
-	<1200180440.3656.76.camel@localhost.localdomain>
-	<47896BA8.4030609@shaw.ca>
-	<20080113133317.50ad4bda@lxorguk.ukuu.org.uk>
-	<1200238725.3179.16.camel@localhost.localdomain>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 13 Jan 2008 11:41:48 -0500
+Received: from cantor.suse.de ([195.135.220.2]:39652 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750720AbYAMQlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jan 2008 11:41:47 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Subject: Re: [PATCH] Only print SCSI data direction warning once for a command
+Date: Sun, 13 Jan 2008 17:41:43 +0100
+User-Agent: KMail/1.9.6
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, dougg@torque.net
+References: <200801020703.01180.ak@suse.de> <1200166584.3656.36.camel@localhost.localdomain>
+In-Reply-To: <1200166584.3656.36.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801131741.43173.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yes, I concur for the short term.  The other two possible courses of
-> action either involve long discussions (the different device one) or
-> you'll never quite be sure you got all the paths (the GFP_DMA32 one).
-> At least with this one, you know everything will work.
 
-The different device one is tricky because the PCI layer is involved in
-mapping on some systems so you can't just magic up a platform device for
-it. Putting a mask on the block queue might perhaps work as a model
-which avoids breaking stuff by suprise, with the device left at 32bit
-masking.
+> to the log because they come from printk_ratelimit().  So all you've
+> done is halved the volume of flow to the logs and left a dangling printk
+> suppressed message that keeps spewing, so I don't think the patch even
+> does what you describe it as doing ...  if you reverse the order of the
+> operands in the if() it will ...
+
+Here's an updated patch with the reversed order.
+
+-Andi
+
+---
+
+Only print SCSI data direction warning once for a command v2
+
+When I use cdparanoia my logs get spammed a lot by
+
+printk: 464 messages suppressed.
+sg_write: data in/out 30576/30576 bytes for SCSI command 0xbe--guessing data in;
+   program cdparanoia not setting count and/or reply_len properly
+printk: 1078 messages suppressed.
+
+and many more of those. With this patch the message is only printed once
+for a command in a row.
+
+v1->v2: Prevent rate limit messages too (pointed out by jejb)
+
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+---
+ drivers/scsi/sg.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+Index: linux/drivers/scsi/sg.c
+===================================================================
+--- linux.orig/drivers/scsi/sg.c
++++ linux/drivers/scsi/sg.c
+@@ -602,8 +602,9 @@ sg_write(struct file *filp, const char _
+ 	 * but is is possible that the app intended SG_DXFER_TO_DEV, because there
+ 	 * is a non-zero input_size, so emit a warning.
+ 	 */
+-	if (hp->dxfer_direction == SG_DXFER_TO_FROM_DEV)
+-		if (printk_ratelimit())
++	if (hp->dxfer_direction == SG_DXFER_TO_FROM_DEV) {
++		static char cmd[TASK_COMM_LEN];
++		if (strcmp(current->comm, cmd) && printk_ratelimit()) {
+ 			printk(KERN_WARNING
+ 			       "sg_write: data in/out %d/%d bytes for SCSI command 0x%x--"
+ 			       "guessing data in;\n" KERN_WARNING "   "
+@@ -611,6 +612,9 @@ sg_write(struct file *filp, const char _
+ 			       old_hdr.reply_len - (int)SZ_SG_HEADER,
+ 			       input_size, (unsigned int) cmnd[0],
+ 			       current->comm);
++			strcpy(cmd, current->comm);
++		}
++	}
+ 	k = sg_common_write(sfp, srp, cmnd, sfp->timeout, blocking);
+ 	return (k < 0) ? k : count;
+ }
