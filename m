@@ -1,56 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752428AbYAMOYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752767AbYAMO1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752428AbYAMOYR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 09:24:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750704AbYAMOYG
+	id S1752767AbYAMO1p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 09:27:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbYAMO1i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 09:24:06 -0500
-Received: from www17.your-server.de ([213.133.104.17]:58266 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1749667AbYAMOYF (ORCPT
+	Sun, 13 Jan 2008 09:27:38 -0500
+Received: from smtp-100-sunday.nerim.net ([62.4.16.100]:60721 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751193AbYAMO1h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 09:24:05 -0500
-Message-ID: <1200234241.478a1f016a940@213.133.104.17>
-Date: Sun, 13 Jan 2008 15:24:01 +0100
-From: thomas@m3y3r.de
-To: linux-kernel@vger.kernel.org
-Subject: question regarding user mode linux
-MIME-Version: 1.0
+	Sun, 13 Jan 2008 09:27:37 -0500
+Date: Sun, 13 Jan 2008 15:27:35 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Cc: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [i2c] [PATCH] update module-init-tools to support the i2c
+ subsystem
+Message-ID: <20080113152735.5dca46a1@hyperion.delvare>
+In-Reply-To: <9e4733910712171839h214e0bc3q179266c86e5987b1@mail.gmail.com>
+References: <9e4733910712171839h214e0bc3q179266c86e5987b1@mail.gmail.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) 3.2.5
-X-Originating-IP: 88.68.98.185
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I try to setup a user mode linux session and dmesg says:
-"[cut]
- ubda: unknown partition table
-Choosing a random ethernet address for device eth0
-Netdevice 0 (9e:69:a0:f3:f1:f0) : TUN/TAP backend - IP = 192.168.5.1
-Filesystem "ubda": Disabling barriers, not supported by the underlying device
-[cut]"
+On Mon, 17 Dec 2007 21:39:37 -0500, Jon Smirl wrote:
+> Follow on to: "Series to add device tree naming to i2c"
+> Teach module-init-tools about the i2c subsystem.
 
-id est eth0.
+Can you please explain what this patch does and why it is needed?
 
-But the network device is:
-# cat /proc/net/dev
-Inter-|   Receive                                                |  Transmit
- face |bytes    packets errs drop fifo frame compressed multicast|bytes   
-packets errs drop fifo colls carrier compressed
-    lo:       0       0    0    0    0     0          0         0        0      
-0    0    0    0     0       0          0
-  eth6:       0       0    0    0    0     0          0         0        0      
-0    0    0    0     0       0          0
-
-id est eth6
-
-# uname -a
-Linux localhost 2.6.24-rc7-gd0c4c9d4 #1 Sat Jan 12 13:25:44 CET 2008 i686 UML
-User Mode Linux GNU/Linux
-
-Any ideas what could be wrong here?
-
-mfg
-thomas
+-- 
+Jean Delvare
