@@ -1,97 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbYAMWyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173AbYAMWy6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754704AbYAMWyS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 17:54:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbYAMWyG
+	id S1755173AbYAMWy6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 17:54:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754291AbYAMWyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 17:54:06 -0500
-Received: from hermes.jacobs-university.de ([212.201.44.23]:45292 "EHLO
-	hermes.jacobs-university.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753572AbYAMWyE (ORCPT
+	Sun, 13 Jan 2008 17:54:50 -0500
+Received: from home.nigel.suspend2.net ([203.171.70.205]:43033 "EHLO
+	server1.example.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754094AbYAMWyt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 17:54:04 -0500
-X-Greylist: delayed 2074 seconds by postgrey-1.27 at vger.kernel.org; Sun, 13 Jan 2008 17:54:03 EST
-From: Georgi Chulkov <g.chulkov@jacobs-university.de>
-To: linux-kernel@vger.kernel.org
-Subject: ATA device reset, shoud I be concerned?
-Date: Mon, 14 Jan 2008 00:19:20 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-ide@vger.kernel.org
+	Sun, 13 Jan 2008 17:54:49 -0500
+Message-ID: <478A96BA.3040503@suspend2.net>
+Date: Mon, 14 Jan 2008 09:54:50 +1100
+From: nigel@suspend2.net
+Reply-To: nigel@nigel.suspend2.net
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="utf-8"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jens Axboe <jens.axboe@oracle.com>, David Dillow <dillowda@ornl.gov>,
+       Guillaume Chazarain <guichaz@yahoo.fr>, linux-kernel@vger.kernel.org,
+       linux-btrace@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de
+Subject: Re: CONFIG_NO_HZ breaks blktrace timestamps
+References: <1199918912.8388.13.camel@lap75545.ornl.gov> <1199996752.9159.46.camel@lap75545.ornl.gov> <20080110234438.4826f658@inria.fr> <1200020661.5099.3.camel@obelisk.thedillows.org> <20080111090723.GI6258@kernel.dk> <478736C6.3080802@suspend2.net> <20080111093211.GC8143@elte.hu>
+In-Reply-To: <20080111093211.GC8143@elte.hu>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200801140019.20668.g.chulkov@jacobs-university.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi.
 
-During heavy disk load on my laptop, sometimes the IDE disk will pause for a 
-second and then continue. I get this in my kernel log:
+Ingo Molnar wrote:
+> * nigel@suspend2.net <nigel@suspend2.net> wrote:
+> 
+>>>>> Just out of curiosity, could you try the appended cumulative patch 
+>>>>> and report .clock_warps, .clock_overflows and .clock_underflows as 
+>>>>> you did.
+>>>> With those patches, CONFIG_NO_HZ works just fine.
+>> Could these patches also help with hibernation issues? I'm trying 
+>> x86_64+NO_HZ, and seeing activity delayed during the atomic copy and 
+>> afterwards until I manually generate interrupts (by pressing keys).
+> 
+> i dont think that should be related to cpu_clock() use. Does the patch 
+> below make any difference? (or could you try x86.git to get the whole 
+> stack of x86 changes that we have at the moment.) Here's the coordinates 
+> for x86.git:
 
-[ 9031.028000] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 
-frozen
-[ 9031.028000] ata1.00: cmd c8/00:08:90:ca:ce/00:00:00:00:00/e0 tag 0 cdb 0x0 
-data 4096 in
-[ 9031.028000]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 
-(timeout)
-[ 9036.068000] ata1: port is slow to respond, please be patient (Status 0xd0)
-[ 9041.052000] ata1: device not ready (errno=-16), forcing hardreset
-[ 9041.052000] ata1: soft resetting port
-[ 9041.232000] ata1.00: configured for UDMA/100
-[ 9041.232000] ata1: EH complete
-[ 9041.248000] sd 0:0:0:0: [sda] 78140160 512-byte hardware sectors (40008 MB)
-[ 9041.248000] sd 0:0:0:0: [sda] Write Protect is off
-[ 9041.248000] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-[ 9041.248000] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, 
-doesn't support DPO or FUA
+Sorry for the delay in replying. Something seems to help, but I haven't
+managed to identify what yet. I don't think it was the patch appended
+because I'm on UP. If you care, I'll see if I can find the time to look
+more carefully.
 
-My question: What is this telling me, and do I need to be concerned? 
-Everything continues to work normally after the message: no I/O errors, no 
-fsck errors, etc.
+Nigel
 
-I've seen some similar reports on the mailing list, but they include slightly 
-different messages. I would appreciate any information!
-
-uname -a (on Kubuntu Gutsy, CPU is a single-core 32-bit Pentium M):
-
-Linux superfly 2.6.22-14-386 #1 Tue Dec 18 07:34:24 UTC 2007 i686 GNU/Linux
-
-lspci:
-
-00:00.0 Host bridge: Intel Corporation 82855PM Processor to I/O Controller 
-(rev 03)
-00:01.0 PCI bridge: Intel Corporation 82855PM Processor to AGP Controller (rev 
-03)
-00:1d.0 USB Controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) 
-USB UHCI Controller #1 (rev 01)
-00:1d.1 USB Controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) 
-USB UHCI Controller #2 (rev 01)
-00:1d.2 USB Controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) 
-USB UHCI Controller #3 (rev 01)
-00:1d.7 USB Controller: Intel Corporation 82801DB/DBM (ICH4/ICH4-M) USB2 EHCI 
-Controller (rev 01)
-00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev 81)
-00:1f.0 ISA bridge: Intel Corporation 82801DBM (ICH4-M) LPC Interface Bridge 
-(rev 01)
-00:1f.1 IDE interface: Intel Corporation 82801DBM (ICH4-M) IDE Controller (rev 
-01)
-00:1f.5 Multimedia audio controller: Intel Corporation 82801DB/DBL/DBM 
-(ICH4/ICH4-L/ICH4-M) AC'97 Audio Controller (rev 01)
-01:00.0 VGA compatible controller: nVidia Corporation NV28 [GeForce4 Ti 4200 
-Go AGP 8x] (rev a1)
-02:00.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5705M Gigabit 
-Ethernet (rev 01)
-02:01.0 CardBus bridge: Texas Instruments PCI7510 PC card Cardbus Controller 
-(rev 01)
-02:01.2 FireWire (IEEE 1394): Texas Instruments PCI7410,7510,7610 OHCI-Lynx 
-Controller
-02:01.3 System peripheral: Texas Instruments PCI7410,7510,7610 PCI Firmware 
-Loading Function
-02:03.0 CardBus bridge: Texas Instruments PCI1410 PC card Cardbus Controller 
-(rev 01)
-
-Thanks!
