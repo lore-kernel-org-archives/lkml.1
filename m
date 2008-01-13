@@ -1,66 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752163AbYAMMD7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752062AbYAMM27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752163AbYAMMD7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 07:03:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750892AbYAMMDu
+	id S1752062AbYAMM27 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 07:28:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbYAMM2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 07:03:50 -0500
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:41939 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750872AbYAMMDt (ORCPT
+	Sun, 13 Jan 2008 07:28:48 -0500
+Received: from wa-out-1112.google.com ([209.85.146.183]:12620 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751340AbYAMM2r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 07:03:49 -0500
-Date: Sun, 13 Jan 2008 17:33:37 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Andrew Paprocki <andrew@ishiboo.com>
-Cc: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>
-Subject: Re: HPET timer broken using 2.6.23.13 / nanosleep() hangs
-Message-ID: <20080113120337.GA5548@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <76366b180801130310x57f24cc8s641d3ccb2415524c@mail.gmail.com>
+	Sun, 13 Jan 2008 07:28:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oEHOQFMpd0q+ZRpirIfBa3MjfsPMnjqPGRgBSGKh5nLGrlUWy5351F1VkADlOj295M2qYV1XN3iVI1etm4Tt8lYmpQabJf3lp1f2yKdDO2zeAZ7ZvmEbeKVEOvM0vP/5hj8fh/DrvqP26dv1LozFZhO/hPx9RXkFmvV/9mq6vy4=
+Message-ID: <9f00bd9d0801130428s5e4c034apf21052b918470f99@mail.gmail.com>
+Date: Sun, 13 Jan 2008 14:28:46 +0200
+From: "Filippos Papadopoulos" <psybases@gmail.com>
+To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
+Subject: Re: INITIO scsi driver fails to work properly
+Cc: linux-scsi@vger.kernel.org, "Chuck Ebbert" <cebbert@redhat.com>,
+       "Boaz Harrosh" <bharrosh@panasas.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1200070903.3286.28.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <76366b180801130310x57f24cc8s641d3ccb2415524c@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com>
+	 <1198271036.3130.60.camel@localhost.localdomain>
+	 <476C4177.3030902@redhat.com>
+	 <1198277391.3130.73.camel@localhost.localdomain>
+	 <9f00bd9d0801031618l324e9078i56b0679a35e27f69@mail.gmail.com>
+	 <1200028577.5337.8.camel@localhost.localdomain>
+	 <9f00bd9d0801110154i3b2f9c1flf076823747950196@mail.gmail.com>
+	 <1200066295.3286.19.camel@localhost.localdomain>
+	 <9f00bd9d0801110844g176acdcdle0331783f82ed866@mail.gmail.com>
+	 <1200070903.3286.28.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 13, 2008 at 06:10:52AM -0500, Andrew Paprocki wrote:
-> I started debugging a problem I was having with my sky2 network driver
-> under 2.6.23.13. The investigation led me to find that the HPET timer
-> wasn't working at all, causing the sky2 driver to not work properly.
-> Simple example:
-> 
-> am2:/sys/devices/system/clocksource/clocksource0# cat current_clocksource
-> jiffies
-> am2:/sys/devices/system/clocksource/clocksource0# time sleep 1
-> real    0m1.000s
-> user    0m0.000s
-> sys     0m0.000s
-> am2:/sys/devices/system/clocksource/clocksource0# echo tsc > current_clocksource
-> am2:/sys/devices/system/clocksource/clocksource0# time sleep 1
-> real    0m1.005s
-> user    0m0.004s
-> sys     0m0.000s
-> am2:/sys/devices/system/clocksource/clocksource0# echo hpet >
-> current_clocksource
-> am2:/sys/devices/system/clocksource/clocksource0# time sleep 1
-> <hangs indefinetly...>
-> 
-> Running strace shows it blocked on nanosleep(). I'm building the
-> kernel with the processor type set to Athalon64. I've built it with
-> and without SMP and high-res timers enabled and I get the same result.
-> My previous 2.6.18-4 kernel works because it does not install HPET as
-> the default timer. The same behavior occurs in 2.6.24-rc7 git head.
-> I've attached the config/dmesg below.
-> 
+On 1/11/08, James Bottomley <James.Bottomley@hansenpartnership.com> wrote:
+>
+> On Fri, 2008-01-11 at 18:44 +0200, Filippos Papadopoulos wrote:
+> > On Jan 11, 2008 5:44 PM, James Bottomley
+> > <James.Bottomley@hansenpartnership.com> wrote:
+> > > >
+> > > > I havent reported "initio: I/O port range 0x0 is busy."
+> > >
+> > > Sorry ... we appear to have several reporters of different bugs in this
+> > > thread.  That message was copied by Chuck Ebbert from a Red Hat
+> > > bugzilla ... I was assuming it was the same problem.
+> > >
+> > > > I applied the patch on 2.6.24-rc6-git9 but unfortunatelly same thing happens.
+> > >
+> > > First off, has this driver ever worked for you in 2.6?  Just booting
+> > > SLES9 (2.6.5) or RHEL4 (2.6.9) ... or one of their open equivalents to
+> > > check a really old kernel would be helpful.  If you can get it to work,
+> > > then we can proceed with a patch reversion regime based on the
+> > > assumption that the problem is a recent commit.
+> >
+> > Yes it works under 2.6.16.13.  See the beginning of this thread, i
+> > mention there some things about newer versions.
+>
+> Thanks, actually, I see this:
+>
+> > I tried to install OpenSUSE 10.3 (kernel 2.6.22.5) and the latest
+> > OpenSUSE 11.0 Alpha 0  (kernel 2.6.24-rc4) but although the initio
+> > drivergets loaded during the installation process, yast reports that no hard
+> > disk is found.
+>
+> Could you try with a vanilla 2.6.22 kernel?  The reason for all of this
+> is that 2.6.22 predates Alan's conversion of this driver (which was my
+> 95% candidate for the source of the bug).  I want you to try the vanilla
+> kernel just in case the opensuse one contains a backport.
 
-It seems the HPET timer was not being assigned any IRQs at all. Can you
-try the patch at http://lkml.org/lkml/2008/1/12/128 ?
 
-Thanks,
--- 
-regards,
-Dhaval
+Yes you are right. I compiled the vanilla 2.6.22 and initio driver works.
+Tell me if you want to apply any patch to it.
+
+
+>
+> Thanks,
+>
+> James
+>
+>
+>
