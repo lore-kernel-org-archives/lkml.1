@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbYAMEkQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbYAMEkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754121AbYAMEkQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 23:40:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbYAMEkE
+	id S1754643AbYAMEkn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 23:40:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753326AbYAMEkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 23:40:04 -0500
-Received: from smtp06.mtu.ru ([62.5.255.53]:51812 "EHLO smtp06.mtu.ru"
+	Sat, 12 Jan 2008 23:40:06 -0500
+Received: from smtp06.mtu.ru ([62.5.255.53]:60222 "EHLO smtp06.mtu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753072AbYAMEkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753063AbYAMEkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 12 Jan 2008 23:40:01 -0500
 From: Anton Salikhmetov <salikhmetov@gmail.com>
 To: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
@@ -15,89 +15,163 @@ To: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
        staubach@redhat.com, jesper.juhl@gmail.com,
        torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
        akpm@linux-foundation.org, protasnb@gmail.com
-Subject: [PATCH 0/2] yet another attempt to fix the ctime and mtime issue
-Date: Sun, 13 Jan 2008 07:39:57 +0300
-Message-Id: <12001991991217-git-send-email-salikhmetov@gmail.com>
+Subject: [PATCH 1/2] massive code cleanup of sys_msync()
+Date: Sun, 13 Jan 2008 07:39:58 +0300
+Message-Id: <12001992013606-git-send-email-salikhmetov@gmail.com>
 X-Mailer: git-send-email 1.4.4.4
+In-Reply-To: <12001991991217-git-send-email-salikhmetov@gmail.com>
+References: <12001991991217-git-send-email-salikhmetov@gmail.com>
 X-DCC-STREAM-Metrics: smtp06.mtu.ru 10001; Body=0 Fuz1=0 Fuz2=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The POSIX standard requires that the ctime and mtime fields
-for memory-mapped files should be updated after a write
-reference to the memory region where the file data is mapped.
-At least FreeBSD 6.2 and HP-UX 11i implement this properly.
-Linux does not, which leads to data loss problems in database
-backup applications.
+Substantial code cleanup of the sys_msync() function:
 
-Kernel Bug Tracker contains more information about the problem:
+1) using the PAGE_ALIGN() macro instead of "manual" alignment;
+2) improved readability of the loop traversing the process memory regions.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=2645
+Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
+---
+ mm/msync.c |   78 +++++++++++++++++++++++++++---------------------------------
+ 1 files changed, 35 insertions(+), 43 deletions(-)
 
-There have been several attempts in the past to address this
-issue. Following are a few links to LKML discussions related
-to this bug:
+diff --git a/mm/msync.c b/mm/msync.c
+index 144a757..ff654c9 100644
+--- a/mm/msync.c
++++ b/mm/msync.c
+@@ -1,24 +1,25 @@
+ /*
+  *	linux/mm/msync.c
+  *
++ * The msync() system call.
+  * Copyright (C) 1994-1999  Linus Torvalds
++ *
++ * Substantial code cleanup.
++ * Copyright (C) 2008 Anton Salikhmetov <salikhmetov@gmail.com>
+  */
+ 
+-/*
+- * The msync() system call.
+- */
++#include <linux/file.h>
+ #include <linux/fs.h>
+ #include <linux/mm.h>
+ #include <linux/mman.h>
+-#include <linux/file.h>
+-#include <linux/syscalls.h>
+ #include <linux/sched.h>
++#include <linux/syscalls.h>
+ 
+ /*
+  * MS_SYNC syncs the entire file - including mappings.
+  *
+  * MS_ASYNC does not start I/O (it used to, up to 2.5.67).
+- * Nor does it marks the relevant pages dirty (it used to up to 2.6.17).
++ * Nor does it mark the relevant pages dirty (it used to up to 2.6.17).
+  * Now it doesn't do anything, since dirty pages are properly tracked.
+  *
+  * The application may now run fsync() to
+@@ -33,71 +34,62 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
+ 	unsigned long end;
+ 	struct mm_struct *mm = current->mm;
+ 	struct vm_area_struct *vma;
+-	int unmapped_error = 0;
+-	int error = -EINVAL;
++	int error = 0, unmapped_error = 0;
+ 
+ 	if (flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC))
+-		goto out;
++		return -EINVAL;
+ 	if (start & ~PAGE_MASK)
+-		goto out;
++		return -EINVAL;
+ 	if ((flags & MS_ASYNC) && (flags & MS_SYNC))
+-		goto out;
+-	error = -ENOMEM;
+-	len = (len + ~PAGE_MASK) & PAGE_MASK;
++		return -EINVAL;
++
++	len = PAGE_ALIGN(len);
+ 	end = start + len;
+ 	if (end < start)
+-		goto out;
+-	error = 0;
++		return -ENOMEM;
+ 	if (end == start)
+-		goto out;
++		return 0;
++
+ 	/*
+ 	 * If the interval [start,end) covers some unmapped address ranges,
+ 	 * just ignore them, but return -ENOMEM at the end.
+ 	 */
+ 	down_read(&mm->mmap_sem);
+ 	vma = find_vma(mm, start);
+-	for (;;) {
++	do {
+ 		struct file *file;
+ 
+-		/* Still start < end. */
+-		error = -ENOMEM;
+-		if (!vma)
+-			goto out_unlock;
+-		/* Here start < vma->vm_end. */
++		if (!vma) {
++			error = -ENOMEM;
++			break;
++		}
+ 		if (start < vma->vm_start) {
+ 			start = vma->vm_start;
+-			if (start >= end)
+-				goto out_unlock;
++			if (start >= end) {
++				error = -ENOMEM;
++				break;
++			}
+ 			unmapped_error = -ENOMEM;
+ 		}
+-		/* Here vma->vm_start <= start < vma->vm_end. */
+-		if ((flags & MS_INVALIDATE) &&
+-				(vma->vm_flags & VM_LOCKED)) {
++		if ((flags & MS_INVALIDATE) && (vma->vm_flags & VM_LOCKED)) {
+ 			error = -EBUSY;
+-			goto out_unlock;
++			break;
+ 		}
+ 		file = vma->vm_file;
+-		start = vma->vm_end;
+-		if ((flags & MS_SYNC) && file &&
+-				(vma->vm_flags & VM_SHARED)) {
++		if ((flags & MS_SYNC) && file && (vma->vm_flags & VM_SHARED)) {
+ 			get_file(file);
+ 			up_read(&mm->mmap_sem);
+ 			error = do_fsync(file, 0);
+ 			fput(file);
+-			if (error || start >= end)
+-				goto out;
++			if (error)
++				return error;
+ 			down_read(&mm->mmap_sem);
+-			vma = find_vma(mm, start);
+-		} else {
+-			if (start >= end) {
+-				error = 0;
+-				goto out_unlock;
+-			}
+-			vma = vma->vm_next;
+ 		}
+-	}
+-out_unlock:
++
++		start = vma->vm_end;
++		vma = vma->vm_next;
++	} while (start < end);
+ 	up_read(&mm->mmap_sem);
+-out:
++
+ 	return error ? : unmapped_error;
+ }
+-- 
+1.4.4.4
 
-http://lkml.org/lkml/2006/5/17/138
-http://lkml.org/lkml/2007/2/21/242
-http://lkml.org/lkml/2008/1/7/234
-
-All earlier solutions were criticized. Some solutions did not
-handle memory-mapped block devices properly. Some led to forcing
-applications to explicitly call msync() to update file metadata.
-Some contained errors in using kernel synchronization primitives.
-
-In the two patches that follow, I would like to propose a new
-solution.
-
-This is the third version of my changes. This version takes
-into account all feedback I received for the two previous versions.
-The overall design remains basically the same as the one that
-was acked by Rick van Riel:
-
-http://lkml.org/lkml/2008/1/11/208
-
-To the best of my knowledge, these patches are free of all the
-drawbacks found during previous attempts by Peter Staubach,
-Miklos Szeredi and myself.
-
-New since the previous version:
-
-1) no need to explicitly call msync() to update file times;
-2) changing block device data is visible to all device files
-   associated with the block device;
-3) in the cleanup part, the error checks are separated out as
-   suggested by Rik van Riel;
-4) some small refinements accodring to the LKML comments.
-
-This is how I tested the patches.
-
-1. To test the features mentioned above, I wrote a unit test
-   available from
-
-   http://bugzilla.kernel.org/attachment.cgi?id=14430
-
-   I verified that the unit test passed successfully for both
-   regular files and block device files. For the unit test I
-   used the following architectures: 32-bit x86, x86_64 and
-   MIPS32 (cross-compiled from x86_64).
-
-2. I did build tests with allmodconfig and allyesconfig on x86_64.
-
-3. I ran the following test cases from the LTP test suite:
-
-   msync01
-   msync02
-   msync03
-   msync04
-   msync05
-   mmapstress01
-   mmapstress09
-   mmapstress10
-
-   No regressions were found by these test cases.
-
-I think that the bug #2645 is resolved by these patches.
-
-Please apply.
