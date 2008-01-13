@@ -1,77 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbYAMGCM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751328AbYAMGRC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754167AbYAMGCM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 01:02:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbYAMGB5
+	id S1751328AbYAMGRC (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 01:17:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750720AbYAMGQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 01:01:57 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:37548 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751301AbYAMGB4 (ORCPT
+	Sun, 13 Jan 2008 01:16:53 -0500
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:41924 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750696AbYAMGQw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 01:01:56 -0500
-Date: Sat, 12 Jan 2008 23:01:54 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Loic Prylli <loic@myri.com>, Arjan van de Ven <arjan@infradead.org>,
-       Daniel Barkalow <barkalow@iabervon.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Kai Ruhnau <kai@tragetaschen.dyndns.org>,
-       Robert Hancock <hancockr@shaw.ca>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       gregkh@suse.de, linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Martin Mares <mj@ucw.cz>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver opt-in
-Message-ID: <20080113060154.GZ18741@parisc-linux.org>
-References: <alpine.LFD.0.9999.0712271338280.21557@woody.linux-foundation.org> <47742498.1060900@tragetaschen.dyndns.org> <alpine.LNX.1.00.0712272204520.13593@iabervon.org> <alpine.LFD.0.9999.0712272129290.21557@woody.linux-foundation.org> <alpine.LNX.1.00.0712280036330.13593@iabervon.org> <20071228103451.GA28694@jurassic.park.msu.ru> <20071228081418.08b60228@laptopd505.fenrus.org> <20071228163841.GA9409@jurassic.park.msu.ru> <47753525.3010701@myri.com> <20071228211219.GA10475@jurassic.park.msu.ru>
+	Sun, 13 Jan 2008 01:16:52 -0500
+Message-ID: <4789AC0F.9030007@keyaccess.nl>
+Date: Sun, 13 Jan 2008 07:13:35 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071228211219.GA10475@jurassic.park.msu.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Andrew Morton <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pierre Ossman <drzeus@drzeus.cx>, Pavel Machek <pavel@suse.cz>,
+       Ondrej Zary <linux@rainbow-software.org>,
+       Jaroslav Kysela <perex@perex.cz>,
+       ALSA development <alsa-devel@alsa-project.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Takashi Iwai <tiwai@suse.de>, linux-pm@lists.linux-foundation.org
+Subject: Re: -mm: pnp-do-not-stop-start-devices-in-suspend-resume-path.patch
+ breaks resuming isapnp cards
+References: <200801092343.48726.linux@rainbow-software.org> <200801122008.10313.rjw@sisk.pl> <47891E21.8060209@keyaccess.nl> <200801122250.44220.bjorn.helgaas@hp.com>
+In-Reply-To: <200801122250.44220.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 29, 2007 at 12:12:19AM +0300, Ivan Kokshaysky wrote:
-> On Fri, Dec 28, 2007 at 12:40:53PM -0500, Loic Prylli wrote:
-> > One thing that could be changed in pci_cfg_space_size() is to avoid
-> > making a special case for PCI-X 266MHz/533Mhz (assume cfg_size == 256
-> > for such devices too, reserve extended cfg-space for pci-express
-> > devices). There is good reasons to think no such PCI-X 266Mhz/533 device
-> > will ever have an extended-space (no capability IDs was ever defined in
-> > the PCI-X 2.0 spec, no new revision is planned). Such a check would
-> > avoid the possibility of trying extended-conf-space access for PCI-X 2.0
-> > devices behind a amd-8132 or similar (such accesses would just returnd
-> > -1, but there was some objections raised about doing anything like that
-> > other than at initialization time, even if there is ample reasons to
-> > argue it would be harmless).
+On 13-01-08 06:50, Bjorn Helgaas wrote:
+
+> On Saturday 12 January 2008 1:08:01 pm Rene Herman wrote:
+
+>> pnp-do-not-stop-start-devices-in-suspend-resume-path.patch in current -mm
+>> breaks resuming isapnp cards from hibernation. They need the pnp_start_dev
+>> to enable the device again after hibernation.
+>>
+>> They don't really need the pnp_stop_dev() which the above mentioned patch
+>> also removes but with the pnp_start_dev() restored it seems pnp_stop_dev()
+>> should also stay. Bjorn Helgaas should decide  -- currently the patch as
+>> you have it breaks drivers though. Could you drop it?
 > 
-> I agree, we should remove it. IIRC, this PCI-X check was written
-> long ago with some draft (not a final spec) in hands. Matthew?
+> Yes, please drop pnp-do-not-stop-start-devices-in-suspend-resume-path.patch
+> for now.
 
-I have what I believe to be the released version of PCI-X 2.0a (July
-22, 2003).  It is quite clear that Mode 2 devices (ie those running at
-266MHz or 533MHz) are required to support all 4096 bytes of extended
-config space.
+Okay, thanks for the reply. And, now that I have your attention, while it's 
+not important to the issue anymore with the tests removed as the submitted 
+patch did, do you have an opinion on (include/linux/pnp.h):
 
-More to the point, I don't think we have any bug reports suggesting that
-PCI-X Mode 2 devices/bridges have any problems.  There are relatively
-few of them in existance, and my impression is that PCI-X2 is only being
-implemented on server-class machines.  'Consumer grade' equipment is
-where all the problems lie anyway.
+/* pnp driver flags */
+#define PNP_DRIVER_RES_DO_NOT_CHANGE    0x0001  /* do not change the state 
+of the device */
+#define PNP_DRIVER_RES_DISABLE          0x0003  /* ensure the device is 
+disabled */
 
-While the PCI-X 2.0a spec does not define any Extended Capability IDs,
-it simply states that "This field is a PCI-SIG defined ID number that
-indicates the nature and format of the Extended Capabilities List item".
-The PCIe spec does define Extended Capability IDs, and I would think
-it's entirely appropriate to use the same IDs for PCI-X Mode 2 devices.
+I find DISABLE including DO_NOT_CHANGE rather unexpected...
 
-So I don't believe any change in this area is appropriate.
+By the way, I also still have this next one outstanding for you... :-/
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+http://lkml.org/lkml/2008/1/9/168
+
+Rene.
