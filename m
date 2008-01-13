@@ -1,95 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755079AbYAMWvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbYAMWyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755079AbYAMWvT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 17:51:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbYAMWvL
+	id S1754704AbYAMWyS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 17:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbYAMWyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 17:51:11 -0500
-Received: from home.nigel.suspend2.net ([203.171.70.205]:41728 "EHLO
-	server1.example.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754334AbYAMWvJ (ORCPT
+	Sun, 13 Jan 2008 17:54:06 -0500
+Received: from hermes.jacobs-university.de ([212.201.44.23]:45292 "EHLO
+	hermes.jacobs-university.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753572AbYAMWyE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 17:51:09 -0500
-Message-ID: <478A95DB.80407@suspend2.net>
-Date: Mon, 14 Jan 2008 09:51:07 +1100
-From: nigel@suspend2.net
-Reply-To: nigel@nigel.suspend2.net
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Sun, 13 Jan 2008 17:54:04 -0500
+X-Greylist: delayed 2074 seconds by postgrey-1.27 at vger.kernel.org; Sun, 13 Jan 2008 17:54:03 EST
+From: Georgi Chulkov <g.chulkov@jacobs-university.de>
+To: linux-kernel@vger.kernel.org
+Subject: ATA device reset, shoud I be concerned?
+Date: Mon, 14 Jan 2008 00:19:20 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-ide@vger.kernel.org
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH: 2/2] [SERIAL] avoid stalling suspend if serial port won't
- drain
-References: <20080108115148.GB10546@flint.arm.linux.org.uk> <20080108115703.GA27179@flint.arm.linux.org.uk> <20080111101721.GA4463@ucw.cz>
-In-Reply-To: <20080111101721.GA4463@ucw.cz>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200801140019.20668.g.chulkov@jacobs-university.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Hello,
 
-Pavel Machek wrote:
-> On Tue 2008-01-08 11:57:03, Russell King wrote:
->> Some ports seem to be unable to drain their transmitters on shut down.
->> Such a problem can occur if the port is programmed for hardware imposed
->> flow control, characters are in the FIFO but the CTS signal is inactive.
->>
->> Normally, this isn't a problem because most places where we wait for the
->> transmitter to drain have a time-out.  However, there is no timeout in
->> the suspend path.
->>
->> Give a port 30ms to drain; this is an arbitary value chosen to avoid
->> long delays if there are many such ports in the system, while giving a
->> reasonable chance for a single port to drain.  Should a port not drain
->> within this timeout, issue a warning.
->>
->> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
->>
->> diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
->> index 3bb5d24..4ce219c 100644
->> --- a/drivers/serial/serial_core.c
->> +++ b/drivers/serial/serial_core.c
->> @@ -1977,6 +1977,7 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *port)
->>  
->>  	if (state->info && state->info->flags & UIF_INITIALIZED) {
->>  		const struct uart_ops *ops = port->ops;
->> +		int tries;
->>  
->>  		state->info->flags = (state->info->flags & ~UIF_INITIALIZED)
->>  				     | UIF_SUSPENDED;
->> @@ -1990,9 +1991,14 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *port)
->>  		/*
->>  		 * Wait for the transmitter to empty.
->>  		 */
->> -		while (!ops->tx_empty(port)) {
->> +		for (tries = 3; !ops->tx_empty(port) && tries; tries--) {
->>  			msleep(10);
->>  		}
->> +		if (!tries)
->> +			printk(KERN_ERR "%s%s%s%d: Unable to drain transmitter\n",
->> +			       port->dev ? port->dev->bus_id : "",
->> +			       port->dev ? ": " : "",
->> +			       drv->dev_name, port->line);
->>  
->>  		ops->shutdown(port);
->>  	}
->>
-> 
-> Is printk() enough for 'we've just lost your data' condition? Maybe we
-> should abort suspend if we can't drain fifo?
+During heavy disk load on my laptop, sometimes the IDE disk will pause for a 
+second and then continue. I get this in my kernel log:
 
-No way. Think about this from a users' perspective. No one wants suspend
-to ram or hibernate functionality that works sometimes and not others.
-They want it to work reliably so they don't have to worry about their
-laptop overheating while they're getting on the bus or airplane.
-Aborting isn't an option.
+[ 9031.028000] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 
+frozen
+[ 9031.028000] ata1.00: cmd c8/00:08:90:ca:ce/00:00:00:00:00/e0 tag 0 cdb 0x0 
+data 4096 in
+[ 9031.028000]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 
+(timeout)
+[ 9036.068000] ata1: port is slow to respond, please be patient (Status 0xd0)
+[ 9041.052000] ata1: device not ready (errno=-16), forcing hardreset
+[ 9041.052000] ata1: soft resetting port
+[ 9041.232000] ata1.00: configured for UDMA/100
+[ 9041.232000] ata1: EH complete
+[ 9041.248000] sd 0:0:0:0: [sda] 78140160 512-byte hardware sectors (40008 MB)
+[ 9041.248000] sd 0:0:0:0: [sda] Write Protect is off
+[ 9041.248000] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+[ 9041.248000] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, 
+doesn't support DPO or FUA
 
-Regards,
+My question: What is this telling me, and do I need to be concerned? 
+Everything continues to work normally after the message: no I/O errors, no 
+fsck errors, etc.
 
-Nigel
+I've seen some similar reports on the mailing list, but they include slightly 
+different messages. I would appreciate any information!
+
+uname -a (on Kubuntu Gutsy, CPU is a single-core 32-bit Pentium M):
+
+Linux superfly 2.6.22-14-386 #1 Tue Dec 18 07:34:24 UTC 2007 i686 GNU/Linux
+
+lspci:
+
+00:00.0 Host bridge: Intel Corporation 82855PM Processor to I/O Controller 
+(rev 03)
+00:01.0 PCI bridge: Intel Corporation 82855PM Processor to AGP Controller (rev 
+03)
+00:1d.0 USB Controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) 
+USB UHCI Controller #1 (rev 01)
+00:1d.1 USB Controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) 
+USB UHCI Controller #2 (rev 01)
+00:1d.2 USB Controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) 
+USB UHCI Controller #3 (rev 01)
+00:1d.7 USB Controller: Intel Corporation 82801DB/DBM (ICH4/ICH4-M) USB2 EHCI 
+Controller (rev 01)
+00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev 81)
+00:1f.0 ISA bridge: Intel Corporation 82801DBM (ICH4-M) LPC Interface Bridge 
+(rev 01)
+00:1f.1 IDE interface: Intel Corporation 82801DBM (ICH4-M) IDE Controller (rev 
+01)
+00:1f.5 Multimedia audio controller: Intel Corporation 82801DB/DBL/DBM 
+(ICH4/ICH4-L/ICH4-M) AC'97 Audio Controller (rev 01)
+01:00.0 VGA compatible controller: nVidia Corporation NV28 [GeForce4 Ti 4200 
+Go AGP 8x] (rev a1)
+02:00.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5705M Gigabit 
+Ethernet (rev 01)
+02:01.0 CardBus bridge: Texas Instruments PCI7510 PC card Cardbus Controller 
+(rev 01)
+02:01.2 FireWire (IEEE 1394): Texas Instruments PCI7410,7510,7610 OHCI-Lynx 
+Controller
+02:01.3 System peripheral: Texas Instruments PCI7410,7510,7610 PCI Firmware 
+Loading Function
+02:03.0 CardBus bridge: Texas Instruments PCI1410 PC card Cardbus Controller 
+(rev 01)
+
+Thanks!
