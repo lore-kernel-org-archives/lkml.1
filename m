@@ -1,128 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbYAMSoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754487AbYAMSpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754187AbYAMSoT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 13:44:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbYAMSoM
+	id S1754487AbYAMSpj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 13:45:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbYAMSpc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 13:44:12 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:34592 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753301AbYAMSoK (ORCPT
+	Sun, 13 Jan 2008 13:45:32 -0500
+Received: from smtp-100-sunday.noc.nerim.net ([62.4.17.100]:4341 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753362AbYAMSpb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 13:44:10 -0500
-Subject: Re: possible recursive locking, 2.6.24-rc7
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Denys Fedoryshchenko <denys@visp.net.lb>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1200241360.7999.29.camel@lappy>
-References: <20080113155142.M6056@visp.net.lb>
-	 <1200241360.7999.29.camel@lappy>
-Content-Type: text/plain
-Date: Sun, 13 Jan 2008 19:44:26 +0100
-Message-Id: <1200249866.7999.48.camel@lappy>
+	Sun, 13 Jan 2008 13:45:31 -0500
+Date: Sun, 13 Jan 2008 19:45:23 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Cc: "Greg KH" <greg@kroah.com>, linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] Implement module aliasing for i2c to translate from
+ device tree names
+Message-ID: <20080113194523.51683e97@hyperion.delvare>
+In-Reply-To: <9e4733910801131001o604c1474vc2fd021d32b8c2a3@mail.gmail.com>
+References: <20071220044136.20091.70984.stgit@terra.home>
+	<20071220044138.20091.31417.stgit@terra.home>
+	<20080111202015.65c3c160@hyperion.delvare>
+	<20080112094658.197acb08@hyperion.delvare>
+	<9e4733910801120826haa8905dk863ed1c8e9f420c9@mail.gmail.com>
+	<20080113154114.4a1c5166@hyperion.delvare>
+	<9e4733910801130824i547b65a9n64e415f9626d6ab5@mail.gmail.com>
+	<20080113184017.7e3b409f@hyperion.delvare>
+	<9e4733910801131001o604c1474vc2fd021d32b8c2a3@mail.gmail.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.4 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Jon,
 
-On Sun, 2008-01-13 at 17:22 +0100, Peter Zijlstra wrote:
-> On Sun, 2008-01-13 at 17:51 +0200, Denys Fedoryshchenko wrote:
-> > Hi, got in dmesg
-> > Not sure where to send (there is TCP), so sending netdev@ and kernel@
+On Sun, 13 Jan 2008 13:01:06 -0500, Jon Smirl wrote:
+> On 1/13/08, Jean Delvare wrote:
+> > On Sun, 13 Jan 2008 11:24:29 -0500, Jon Smirl wrote:
+> > > The kernel automatically exposes modalias as a sysfs attribute so the
+> > > string must be recorded further down in the driver support layers. No
+> > > need to keep a copy in the i2c structure.
+> >
+> > Really? I didn't know that. So that's another thing that the i2c
+> > subsystem is not doing like the rest of the kernel? Can you please
+> > point me to the code that does this?
 > 
-> It's epoll, this is a known issue and will be fixed soon. Thanks for
-> reporting.
+> I never noticed it before either. Just do find | grep modalias in /sys
+> and see that every driver has a modalias attribute. It is probably
+> implement in drivers/base.
 
-If its easy for you to reproduce, would you mind giving the following
-patch a spin?
+This doesn't mean that the kernel does this automatically! It could
+also be that each subsystem does it on its own. Given that the format of
+the modalias depends on the bus type, it wouldn't be all that
+surprising. Anyway, I'll go look at how the other subsystems handle it
+before going on.
 
----
-
-Subject: lockdep: annotate epoll
-
-On Sat, 2008-01-05 at 13:35 -0800, Davide Libenzi wrote:
-
-> I remember I talked with Arjan about this time ago. Basically, since 1) 
-> you can drop an epoll fd inside another epoll fd 2) callback-based wakeups 
-> are used, you can see a wake_up() from inside another wake_up(), but they 
-> will never refer to the same lock instance.
-> Think about:
+> > > Standard devices don't export a 'name' attribute. To see the driver
+> > > name for a device in sysfs look at the 'driver' link.
+> >
+> > The driver name and the device name are different things! The "name"
+> > attribute that i2c devices have tells user-space the device name, not
+> > the driver name.
 > 
-> 	dfd = socket(...);
-> 	efd1 = epoll_create();
-> 	efd2 = epoll_create();
-> 	epoll_ctl(efd1, EPOLL_CTL_ADD, dfd, ...);
-> 	epoll_ctl(efd2, EPOLL_CTL_ADD, efd1, ...);
-> 
-> When a packet arrives to the device underneath "dfd", the net code will 
-> issue a wake_up() on its poll wake list. Epoll (efd1) has installed a 
-> callback wakeup entry on that queue, and the wake_up() performed by the 
-> "dfd" net code will end up in ep_poll_callback(). At this point epoll 
-> (efd1) notices that it may have some event ready, so it needs to wake up 
-> the waiters on its poll wait list (efd2). So it calls ep_poll_safewake() 
-> that ends up in another wake_up(), after having checked about the 
-> recursion constraints. That are, no more than EP_MAX_POLLWAKE_NESTS, to 
-> avoid stack blasting. Never hit the same queue, to avoid loops like:
-> 
-> 	epoll_ctl(efd2, EPOLL_CTL_ADD, efd1, ...);
-> 	epoll_ctl(efd3, EPOLL_CTL_ADD, efd2, ...);
-> 	epoll_ctl(efd4, EPOLL_CTL_ADD, efd3, ...);
-> 	epoll_ctl(efd1, EPOLL_CTL_ADD, efd4, ...);
-> 
-> The code "if (tncur->wq == wq || ..." prevents re-entering the same 
-> queue/lock.
+> For this system my i2c device names are:
+> 0-0050  0-0051  0-0052  0-0053
 
-Since the epoll code is very careful to not nest same instance locks
-allow the recursion.
+These are not device names, these are device bus IDs. They tell you how
+to access the devices, but they do not tell you what these devices are.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- fs/eventpoll.c       |    2 +-
- include/linux/wait.h |   16 ++++++++++++++++
- 2 files changed, 17 insertions(+), 1 deletion(-)
+> How does the name=eeprom attribute interact with this? All four of my
+> devices have name=eeprom. What is the name field used for in user
+> space?
 
-Index: linux-2.6/fs/eventpoll.c
-===================================================================
---- linux-2.6.orig/fs/eventpoll.c
-+++ linux-2.6/fs/eventpoll.c
-@@ -353,7 +353,7 @@ static void ep_poll_safewake(struct poll
- 	spin_unlock_irqrestore(&psw->lock, flags);
- 
- 	/* Do really wake up now */
--	wake_up(wq);
-+	wake_up_nested(wq, 1 + wake_nests);
- 
- 	/* Remove the current task from the list */
- 	spin_lock_irqsave(&psw->lock, flags);
-Index: linux-2.6/include/linux/wait.h
-===================================================================
---- linux-2.6.orig/include/linux/wait.h
-+++ linux-2.6/include/linux/wait.h
-@@ -161,6 +161,22 @@ wait_queue_head_t *FASTCALL(bit_waitqueu
- #define	wake_up_locked(x)		__wake_up_locked((x), TASK_UNINTERRUPTIBLE | TASK_INTERRUPTIBLE)
- #define wake_up_interruptible_sync(x)   __wake_up_sync((x),TASK_INTERRUPTIBLE, 1)
- 
-+#ifdef CONFIG_DEBUG_LOCK_ALLOC
-+/*
-+ * macro to avoid include hell
-+ */
-+#define wake_up_nested(x, s)						\
-+do {									\
-+	unsigned long flags;						\
-+									\
-+	spin_lock_irqsave_nested(&(x)->lock, flags, (s));		\
-+	wake_up_locked(x); 						\
-+	spin_unlock_irqrestore(&(x)->lock, flags);			\
-+} while (0)
-+#else
-+#define wake_up_nested(x, s)		wake_up(x)
-+#endif
-+
- #define __wait_event(wq, condition) 					\
- do {									\
- 	DEFINE_WAIT(__wait);						\
+The eeprom case might be a bit confusing because that i2c driver
+supports a single device type, so the driver name is the same as the
+device name. Take a look at the hwmon/lm90 driver for a better example:
+this device supports 7 different devices. The devices are mostly
+compatible so it made sense to have a single driver for them, but they
+all differ in some way. For example, the LM90 doesn't support PEC,
+while the ADM1032 does. User-space needs to be able to distinguish
+between the various types. That's the reason why we export the device
+name through sysfs.
 
+Most i2c sensor drivers support several chip types, and libsensors has
+been relying heavily on the name attribute. Less so with the lm-sensors
+3.0.0 rewrite, where most things are automatically detected, but if
+nothing else, giving humans a way to distinguish between the different
+sensor chip types is very useful. Also, not everyone will upgrade to
+lm-sensors 3.0.0 so we need to keep supporting the previous versions.
 
+-- 
+Jean Delvare
