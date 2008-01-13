@@ -1,97 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753911AbYAMSYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753311AbYAMSZE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753911AbYAMSYp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 13:24:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbYAMSYh
+	id S1753311AbYAMSZE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 13:25:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbYAMSYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 13:24:37 -0500
-Received: from py-out-1112.google.com ([64.233.166.179]:28658 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752703AbYAMSYg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 13:24:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=x1wYwb+KghcJKW/dJPEUalH9WTBbz8xu+5hXq15jh0dFmhpsYzsbFC2+C54UGKsKwwwCqpdJJcPdtu+EyWDciZvd5yvHz/LdL5/0clhzrKNo5jRUR2tbOqiZjHoCvNbeEPz0Kd+fyNwGQlyfdEqlGgsXI1ujU7x3MK3P7KLmg6k=
-Message-ID: <8b67d60801131024x4a128cdctdf958bdaa9f375ed@mail.gmail.com>
-Date: Sun, 13 Jan 2008 18:24:34 +0000
-From: "Adrian McMenamin" <lkmladrian@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] SH/Dreamcast - add support for GD-Rom CDROM drive on SEGA Dreamcast
-Cc: "Adrian McMenamin" <adrian@newgolddream.dyndns.info>,
-       "Jens Axboe" <jens.axboe@oracle.com>,
-       "Paul Mundt" <lethal@linux-sh.org>, linux-sh <linux-sh@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080112111520.abf625ce.akpm@linux-foundation.org>
+	Sun, 13 Jan 2008 13:24:51 -0500
+Received: from mailbox2.myri.com ([64.172.73.26]:1811 "EHLO myri.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753047AbYAMSYu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jan 2008 13:24:50 -0500
+Message-ID: <478A5727.3000102@myri.com>
+Date: Sun, 13 Jan 2008 13:23:35 -0500
+From: Loic Prylli <loic@myri.com>
+User-Agent: Thunderbird/2.0.0.4 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <greg@kroah.com>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>, Tony Camuso <tcamuso@redhat.com>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+ opt-in
+References: <alpine.LFD.1.00.0801111156230.3148@woody.linux-foundation.org>	<20080111201716.GO18741@parisc-linux.org>	<alpine.LFD.1.00.0801111224090.3148@woody.linux-foundation.org>	<20080111204228.GP18741@parisc-linux.org>	<alpine.LFD.1.00.0801111311170.3148@woody.linux-foundation.org>	<20080111211753.GR18741@parisc-linux.org>	<alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org>	<20080111213803.GS18741@parisc-linux.org>	<20080111235856.GA16079@jurassic.park.msu.ru>	<20080112002638.GA18710@kroah.com>	<20080112144030.GA19279@jurassic.park.msu.ru> <20080112094557.71f5382a@laptopd505.fenrus.org>
+In-Reply-To: <20080112094557.71f5382a@laptopd505.fenrus.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1200007549.6349.16.camel@localhost.localdomain>
-	 <1200088609.6213.3.camel@localhost.localdomain>
-	 <20080112053630.0ccb290e.akpm@linux-foundation.org>
-	 <1200147241.6207.17.camel@localhost.localdomain>
-	 <20080112111520.abf625ce.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/01/2008, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Sat, 12 Jan 2008 14:14:01 +0000 Adrian McMenamin <adrian@newgolddream.dyndns.info> wrote:
->
-> >
-> > > > + spin_command->cmd[0] = 0x70;
-> > > > + spin_command->cmd[2] = 0x1f;
-> > > > + spin_command->buflen = 0;
-> > > > + gd.pending = 1;
-> > > > + gdrom_packetcommand(gd.cd_info, spin_command);
-> > > > + /* 60 second timeout */
-> > > > + wait_event_interruptible_timeout(command_queue, gd.pending == 0, HZ * 60);
-> > > > + gd.pending = 0;
-> > > > + kfree(spin_command);
-> > > > + if (gd.status & 0x01) {
-> > > > +         /* log an error */
-> > > > +         gdrom_getsense(NULL);
-> > > > +         return -EIO;
-> > > > + }
-> > > > + return 0;
-> > > > +}
-> > >
-> > > If the wait_event_interruptible_timeout() indeed times out, we go ahead and
-> > > free spin_command.  But someone else could potentially be using it.
-> > >
-> > > Suppose gdrom_packetcommand() got stuck for a minute due to bad hardware,
-> > > or some SCHED_FIFO task preempting us here and running for 61 seconds without
-> > > yielding or something similarly weird.
-> > >
-> >
-> >
-> > Maybe I am being stupid here, but I don't follow this. They'll get a
-> > non-fatal error, that's all. Who else would be using spin_command? It's
-> > just a series of bytes to plug into the GD Rom registers, that's all.
-> >
->
-> After programming the registers we need to wait for the interrupt to clear
-> gd.pending, don't we?
->
-> <looks>
->
-> oh, I see.  gd is a global singleton and we only support one command at a
-> time and one device.  hrm.
->
 
-OK, at the risk of looking like a fool:
 
-Yes, it does treat this as only one device per box as that's the way
-the things are made.
+On 1/12/2008 12:45 PM, Arjan van de Ven wrote:
+> On Sat, 12 Jan 2008 17:40:30 +0300
+> Ivan Kokshaysky <ink@jurassic.park.msu.ru> wrote:
+>   
+>>  
+>> +	if (reg < 256)
+>> +		return pci_conf1_read(seg,bus,devfn,reg,len,value);
+>> +
+>>     
+>
+>
+> btw this is my main objection to your patch; it intertwines the conf1 and mmconfig code even more.
+> When (and I'm saying "when" not "if") systems arrive that only have MMCONFIG for some of the devices,
+> we'll have to detangle this again, and I'm really not looking forward to that.
+>   
 
-The hardware will stop you from running two commands in parallel - the
-device will be flagged as busy and so you won't be able to get it do
-anything sensible. I have now added in some additional checks so that
-a user cannot start another command before the old one finishes - but
-I still don't see what the problem is with freeing the memory.
 
-The variable is a local, and an automatic, not a global or a static,
-so I don't see how kfree() could be releasing somebody else's lump of
-memory anyway. Or have I missed something obvious?
+conf1 has been a hardcoded dependencies of mmconfig for years. Ivan's 
+patch does not make it worse (in fact it considerably simplifies that 
+code, making it easier to untangle later).
+
+
+IMHO, either your patch or Ivan's can be a good base, but:
+
+1) For your remark above to be given any consideration, your patch 
+should be modified to remove the hardcoded conf1 from the *current* 
+mmconfig code, otherwise we end up with 3 set of ops (mmconfig + conf1+ 
+a possible third set of operations) intertwined in a confusing manner. 
+And removing that dependency is not a straightforward operation unless 
+you also do 2):
+
+2) the pci_enable_ext_config() function and dev->ext_cfg_space field, 
+sysfs interface should be removed from the patch.  There has never been 
+a problem reporting crashes or any undefined behaviour while trying to 
+access ext-conf-space, all the problems where *using mmconfig to access 
+legacy-conf-space*. The "if (dev->cfg_space_ext > 0)" checks can instead 
+be replaced by  "if (reg >= 256)".
+Otherwise when using per-device explicit enabling, just *checking* 
+whether ext-conf-space is available by calling pci_enable_ext_config(), 
+will make some of the old problems of *loosing legacy conf-space* come 
+back: you would  have introduced a new user-space and kernel API while 
+only solving half the problems, not a good deal.
+
+if you do 1) and 2), then you really support the good properties you 
+claimed:
+- You can use mmconfig for ext-space and something else for legacy-space.
+- You can use mmconfig for everything (for instance if conf1 is not 
+implemented).
+
+Of course it is as straightforward to modify Ivan's patch to also have 
+the same properties.
+
+
+
+Loic
+
+
+
+
+
+
+
+
+Loic
+
