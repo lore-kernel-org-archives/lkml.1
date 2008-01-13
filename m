@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbYAMXlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbYAMX5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754836AbYAMXlr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 18:41:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbYAMXlg
+	id S1755147AbYAMX5Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 18:57:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbYAMX47
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 18:41:36 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:59685 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753525AbYAMXle (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 18:41:34 -0500
-X-Sasl-enc: UIDqfluCRy7DesXX220iq1Y/ofDmAjY5r05xZcF3MaRG 1200267693
-Date: Sun, 13 Jan 2008 21:41:29 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Lenovo ThinkPads need acpi_osi="Linux"
-Message-ID: <20080113234129.GE10693@khazad-dum.debian.net>
-References: <20080112022348.GC27524@khazad-dum.debian.net> <200801120416.08631.lenb@kernel.org> <20080113165801.GA4132@ucw.cz>
+	Sun, 13 Jan 2008 18:56:59 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38595 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754662AbYAMX46 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jan 2008 18:56:58 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Neil Brown <neilb@suse.de>
+Subject: Re: [PATCH 3/5] NLM: Have lockd call try_to_freeze
+Date: Mon, 14 Jan 2008 00:59:08 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Jeff Layton <jlayton@redhat.com>, akpm@linux-foundation.org,
+       linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1199988096-19700-1-git-send-email-jlayton@redhat.com> <20080113065453.4774f8dd@tleilax.poochiereds.net> <18314.36787.541818.450563@notabene.brown>
+In-Reply-To: <18314.36787.541818.450563@notabene.brown>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080113165801.GA4132@ucw.cz>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17 (2007-12-11)
+Message-Id: <200801140059.09078.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Jan 2008, Pavel Machek wrote:
-> > The reason it shoudl be turned off is that backlight enabling
-> > backlight from a native graphics driver is much faster than running
-> > through the video BIOS POST.  So if we keep the OSI(Linux)
-> > video BIOS POST workaround in place permanently, it would
-> > put Linux at a permanent performance disadvantage to Windows.
+On Sunday, 13 of January 2008, Neil Brown wrote:
+> On Sunday January 13, jlayton@redhat.com wrote:
+> > On Thu, 10 Jan 2008 13:01:34 -0500
+> > Jeff Layton <jlayton@redhat.com> wrote:
+> > 
+> > > lockd makes itself freezable, but never calls try_to_freeze(). Have it
+> > > call try_to_freeze() within the main loop.
+> > > 
+> > > Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> > > ---
+> > >  fs/lockd/svc.c |    3 +++
+> > >  1 files changed, 3 insertions(+), 0 deletions(-)
+> > > 
+> > > diff --git a/fs/lockd/svc.c b/fs/lockd/svc.c
+> > > index 82e2192..6ee8bed 100644
+> > > --- a/fs/lockd/svc.c
+> > > +++ b/fs/lockd/svc.c
+> > > @@ -155,6 +155,9 @@ lockd(struct svc_rqst *rqstp)
+> > >  		long timeout = MAX_SCHEDULE_TIMEOUT;
+> > >  		char buf[RPC_MAX_ADDRBUFLEN];
+> > >  
+> > > +		if (try_to_freeze())
+> > > +			continue;
+> > > +
+> > >  		if (signalled()) {
+> > >  			flush_signals(current);
+> > >  			if (nlmsvc_ops) {
+> > 
+> > 
+> > I was looking over svc_recv today and noticed that it calls
+> > try_to_freeze a couple of times. Given that, the above patch may be
+> > unnecessary. I don't think it hurts anything though. Should we keep
+> > this patch or drop it?
 > 
-> Hmm, they should not need to do anything.
-> 
-> When linux calls video BIOS with lcall (acpi_sleep=s3_bios), they
-> should turn on backlight and put video into text mode. They should
-> also make sure mode setting works after that.
+> I would suggest dropping it.
+> Having unnecessary code is likely to be confusing.
 
-IMHO, in that case, we should probably be whitelist-enabling that on
-thinkpads (and allow for acpi_sleep=none to override it), or letting
-userspace change it at runtime.
+But adding a comment instead of it won't hurt, IMHO. :-)
 
-> I don't see how ACPI fits into this picture, and I think it can work
-> well without ACPI tricks.
-
-It fits because Lenovo did it in ACPI (or used to do it in ACPI, whatever).
-We can ask them to not do it, I suppose.  But without some sort of
-autodetection on our part, I doubt they will remove it.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Greetings,
+Rafael
