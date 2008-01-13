@@ -1,134 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751941AbYAMHft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751506AbYAMH6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751941AbYAMHft (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 02:35:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbYAMHfk
+	id S1751506AbYAMH6m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 02:58:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750796AbYAMH6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 02:35:40 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:41271 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751097AbYAMHfi (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 02:35:38 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: 2.6.24-rc6-mm1 - oddness with IPv4/v6 mapped sockets hanging...
-From: Valdis.Kletnieks@vt.edu
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1200209733_18681P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sun, 13 Jan 2008 02:35:33 -0500
-Message-ID: <30887.1200209733@turing-police.cc.vt.edu>
+	Sun, 13 Jan 2008 02:58:33 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:55001 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751081AbYAMH6d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jan 2008 02:58:33 -0500
+Date: Sun, 13 Jan 2008 00:58:31 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <greg@kroah.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>,
+       Tony Camuso <tcamuso@redhat.com>, Loic Prylli <loic@myri.com>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver opt-in
+Message-ID: <20080113075830.GC18741@parisc-linux.org>
+References: <20080111204228.GP18741@parisc-linux.org> <alpine.LFD.1.00.0801111311170.3148@woody.linux-foundation.org> <20080111211753.GR18741@parisc-linux.org> <alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org> <20080111213803.GS18741@parisc-linux.org> <20080111235856.GA16079@jurassic.park.msu.ru> <20080112002638.GA18710@kroah.com> <20080112144030.GA19279@jurassic.park.msu.ru> <1200208085.6896.134.camel@pasglop> <20080113072415.GB18741@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080113072415.GB18741@parisc-linux.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1200209733_18681P
-Content-Type: text/plain; charset=us-ascii
+On Sun, Jan 13, 2008 at 12:24:15AM -0700, Matthew Wilcox wrote:
+> Here's a patch (on top of Ivan's) to improve things further.
 
-I'm seeing problems with Sendmail on 24-rc6-mm1, where the main Sendmail is
-listening on ::1/25, and Fetchmail connects to 127.0.0.1:25 to inject mail it
-has just fetched from an outside server via IMAP - it will often just hang and
-not make any further progress. Looking at netstat shows something interesting:
+Oops.  I forgot to check the ordering of mmconfig vs direct probing, so
+that patch would end up just using mmconfig for everything.  Not what we
+want.  Also, there's three bits of mmconfig-shared that're probing using
+conf1, even if it might have failed.  And if we're going to use
+raw_pci_read() when conf1 might have failed and mmconf isn't set up yet,
+we need to check raw_pci_ops in raw_pci_read().  Add the check in
+raw_pci_write too, just for symmetry.
 
-% netstat -n -a -A inet | grep 25
-tcp        0   5108 127.0.0.1:59355             127.0.0.1:25                ESTABLISHED 
-% netstat -n -a -A inet6 | grep 25
-tcp        0      0 :::25                       :::*                        LISTEN      
-tcp        0      0 ::ffff:127.0.0.1:25         ::ffff:127.0.0.1:59355      ESTABLISHED 
-% netstat -n -a -A inet | grep 25
-tcp        0   5108 127.0.0.1:59355             127.0.0.1:25                ESTABLISHED 
-% netstat -n -a -A inet6 | grep 25
-tcp        0      0 :::25                       :::*                        LISTEN      
-tcp        0      0 ::ffff:127.0.0.1:25         ::ffff:127.0.0.1:59355      ESTABLISHED 
-% netstat -n -a -A inet | grep 25
-tcp        0   5108 127.0.0.1:59355             127.0.0.1:25                ESTABLISHED 
-% netstat -n -a -A inet6 | grep 25
-tcp        0      0 :::25                       :::*                        LISTEN      
-tcp        0      0 ::ffff:127.0.0.1:25         ::ffff:127.0.0.1:59355      ESTABLISHED 
+I don't like it that mmconfig_32 prints a message and mmconfig_64
+doesn't, but fixing that is not part of this patch.
 
-On the IPv4 side, it thinks it's got 5108 bytes in the send queue - but on
-the IPv6 side of that same connection, it's showing 0 in the receive queue,
-and we're stuck there.
+Interdiff:
 
-It's not consistent - sometimes Fetchmail will wedge on the very first mail,
-and do so several times in a row.  Other times, it will do well for a while -
-at the moment, it's gone through 471 of the 1,470 currently queued mails just
-fine, only to get wedged again on number 472.
+diff -u b/arch/x86/pci/common.c b/arch/x86/pci/common.c
+--- b/arch/x86/pci/common.c
++++ b/arch/x86/pci/common.c
+@@ -31,7 +31,7 @@
+ int raw_pci_read(unsigned int domain, unsigned int bus, unsigned int devfn,
+ 						int reg, int len, u32 *val)
+ {
+-	if (reg < 256)
++	if (reg < 256 && raw_pci_ops)
+ 		return raw_pci_ops->read(domain, bus, devfn, reg, len, val);
+ 	if (raw_pci_ext_ops)
+ 		return raw_pci_ext_ops->read(domain, bus, devfn, reg, len, val);
+@@ -41,7 +41,7 @@
+ int raw_pci_write(unsigned int domain, unsigned int bus, unsigned int devfn,
+ 						int reg, int len, u32 val)
+ {
+-	if (reg < 256)
++	if (reg < 256 && raw_pci_ops)
+ 		return raw_pci_ops->write(domain, bus, devfn, reg, len, val);
+ 	if (raw_pci_ext_ops)
+ 		return raw_pci_ext_ops->write(domain, bus, devfn, reg, len, val);
+diff -u b/arch/x86/pci/mmconfig-shared.c b/arch/x86/pci/mmconfig-shared.c
+--- b/arch/x86/pci/mmconfig-shared.c
++++ b/arch/x86/pci/mmconfig-shared.c
+@@ -28,7 +28,7 @@
+ static const char __init *pci_mmcfg_e7520(void)
+ {
+ 	u32 win;
+-	pci_direct_conf1.read(0, 0, PCI_DEVFN(0,0), 0xce, 2, &win);
++	raw_pci_read(0, 0, PCI_DEVFN(0,0), 0xce, 2, &win);
+ 
+ 	win = win & 0xf000;
+ 	if(win == 0x0000 || win == 0xf000)
+@@ -53,7 +53,7 @@
+ 
+ 	pci_mmcfg_config_num = 1;
+ 
+-	pci_direct_conf1.read(0, 0, PCI_DEVFN(0,0), 0x48, 4, &pciexbar);
++	raw_pci_read(0, 0, PCI_DEVFN(0,0), 0x48, 4, &pciexbar);
+ 
+ 	/* Enable bit */
+ 	if (!(pciexbar & 1))
+@@ -118,7 +118,7 @@
+ 	int i;
+ 	const char *name;
+ 
+-	pci_direct_conf1.read(0, 0, PCI_DEVFN(0,0), 0, 4, &l);
++	raw_pci_read(0, 0, PCI_DEVFN(0,0), 0, 4, &l);
+ 	vendor = l & 0xffff;
+ 	device = (l >> 16) & 0xffff;
+ 
+diff -u b/arch/x86/pci/mmconfig_32.c b/arch/x86/pci/mmconfig_32.c
+--- b/arch/x86/pci/mmconfig_32.c
++++ b/arch/x86/pci/mmconfig_32.c
+@@ -132,8 +132,10 @@
+ 
+ int __init pci_mmcfg_arch_init(void)
+ {
+-	printk(KERN_INFO "PCI: Using MMCONFIG\n");
+-	raw_pci_ops = &pci_mmcfg;
++	printk(KERN_INFO "PCI: Using MMCONFIG for %s config space\n",
++		raw_pci_ops ? "extended" : "all");
++	if (!raw_pci_ops)
++		raw_pci_ops = &pci_mmcfg;
+ 	raw_pci_ext_ops = &pci_mmcfg;
+ 	return 1;
+ }
+diff -u b/arch/x86/pci/mmconfig_64.c b/arch/x86/pci/mmconfig_64.c
+--- b/arch/x86/pci/mmconfig_64.c
++++ b/arch/x86/pci/mmconfig_64.c
+@@ -144,7 +144,8 @@
+ 			return 0;
+ 		}
+ 	}
+-	raw_pci_ops = &pci_mmcfg;
++	if (!raw_pci_ops)
++		raw_pci_ops = &pci_mmcfg;
+ 	raw_pci_ext_ops = &pci_mmcfg;
+ 	return 1;
+ }
 
-For what it's worth, here's what 'echo w > /proc/sysrq-trigger' got, although I
-don't see anything that looks odd to me given the netstat output above -
-procmail has sent data, and is waiting for a response back, and sendmail is
-waiting for data to arrive:
-
-fetchmail     S ffffffff8053c520  5360 17612   9902
- ffff81007d37bb08 0000000000000086 0000000000000000 000200d000000000
- ffff81006bf826c0 ffffffff80687360 ffff81006bf82918 0000000000000001
- 0000000000000003 ffff81007d37bb88 0000000000000000 0000000000000000
-Call Trace:
- [<ffffffff80522682>] schedule_timeout+0x22/0xb4
- [<ffffffff80523bd3>] _spin_lock_bh+0x11/0x38
- [<ffffffff80523ac4>] _spin_unlock_bh+0x1e/0x20
- [<ffffffff8047cec6>] release_sock+0xa3/0xac
- [<ffffffff8047d98f>] sk_wait_data+0x8a/0xcf
- [<ffffffff80249b99>] autoremove_wake_function+0x0/0x38
- [<ffffffff804abdca>] tcp_recvmsg+0x35a/0x86b
- [<ffffffff8047c7be>] sock_common_recvmsg+0x32/0x47
- [<ffffffff803288be>] selinux_socket_recvmsg+0x1d/0x1f
- [<ffffffff8047af38>] sock_recvmsg+0x10e/0x12f
- [<ffffffff80249b99>] autoremove_wake_function+0x0/0x38
- [<ffffffff8032425d>] avc_has_perm+0x4c/0x5e
- [<ffffffff803ac952>] pty_write+0x3a/0x44
- [<ffffffff80249dd8>] remove_wait_queue+0x2f/0x3b
- [<ffffffff8047c06b>] sys_recvfrom+0xa4/0xf5
- [<ffffffff8024c850>] hrtimer_start+0x11f/0x131
- [<ffffffff8023aa6e>] do_setitimer+0x184/0x326
- [<ffffffff8020c03b>] system_call_after_swapgs+0x7b/0x80
-
-sendmail      S ffff81007d30a400  5360 17613  16992
- ffff81006bc419e8 0000000000000086 ffff81006bc41998 ffffffff8023f6a5
- ffff81007d30a400 ffff81007d24f200 ffff81007d30a658 0000000100000286
- ffff81006bc419e8 ffffffff8023f851 000000004789b768 ffff81000100eb20
-Call Trace:
- [<ffffffff8023f6a5>] lock_timer_base+0x26/0x4a
- [<ffffffff8023f851>] __mod_timer+0xc4/0xd6
- [<ffffffff805226ed>] schedule_timeout+0x8d/0xb4
- [<ffffffff8023f37c>] process_timeout+0x0/0xb
- [<ffffffff805226e8>] schedule_timeout+0x88/0xb4
- [<ffffffff8029cd26>] do_select+0x4a9/0x50b
- [<ffffffff8029d22d>] __pollwait+0x0/0xdf
- [<ffffffff8022d7b9>] default_wake_function+0x0/0xf
- [<ffffffff80523bd3>] _spin_lock_bh+0x11/0x38
- [<ffffffff8047cf74>] lock_sock_nested+0xa5/0xb2
- [<ffffffff80523bd3>] _spin_lock_bh+0x11/0x38
- [<ffffffff80523ac4>] _spin_unlock_bh+0x1e/0x20
- [<ffffffff8047cec6>] release_sock+0xa3/0xac
- [<ffffffff804ac1c9>] tcp_recvmsg+0x759/0x86b
- [<ffffffff8047c7be>] sock_common_recvmsg+0x32/0x47
- [<ffffffff803288be>] selinux_socket_recvmsg+0x1d/0x1f
- [<ffffffff8047a924>] sock_aio_read+0x121/0x139
- [<ffffffff8032425d>] avc_has_perm+0x4c/0x5e
- [<ffffffff8029cf7a>] core_sys_select+0x1f2/0x2a0
- [<ffffffff80282f50>] page_add_new_anon_rmap+0x20/0x22
- [<ffffffff803251f5>] file_has_perm+0xa5/0xb4
- [<ffffffff80249b99>] autoremove_wake_function+0x0/0x38
- [<ffffffff8029d45c>] sys_select+0x150/0x17b
- [<ffffffff8020c03b>] system_call_after_swapgs+0x7b/0x80
-
-Any ideas?
-
---==_Exmh_1200209733_18681P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHib9FcC3lWbTT17ARApHPAJ41adCIQQPlwvolnOGw7ERE+dPRtACfVbP2
-5YzB9vjZBc3kMZGAimOuUog=
-=B5uG
------END PGP SIGNATURE-----
-
---==_Exmh_1200209733_18681P--
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
