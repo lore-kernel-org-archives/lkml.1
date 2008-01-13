@@ -1,263 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754850AbYAMEk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbYAMEnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754850AbYAMEk4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Jan 2008 23:40:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbYAMEkJ
+	id S1754501AbYAMEnm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Jan 2008 23:43:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbYAMEnf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Jan 2008 23:40:09 -0500
-Received: from smtp06.mtu.ru ([62.5.255.53]:60236 "EHLO smtp06.mtu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752968AbYAMEkC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Jan 2008 23:40:02 -0500
-From: Anton Salikhmetov <salikhmetov@gmail.com>
-To: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, protasnb@gmail.com
-Subject: [PATCH 2/2] updating ctime and mtime at syncing
-Date: Sun, 13 Jan 2008 07:39:59 +0300
-Message-Id: <12001992023392-git-send-email-salikhmetov@gmail.com>
-X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <12001991991217-git-send-email-salikhmetov@gmail.com>
-References: <12001991991217-git-send-email-salikhmetov@gmail.com>
-X-DCC-STREAM-Metrics: smtp06.mtu.ru 10001; Body=0 Fuz1=0 Fuz2=0
+	Sat, 12 Jan 2008 23:43:35 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:43186 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753017AbYAMEne (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Jan 2008 23:43:34 -0500
+Date: Sat, 12 Jan 2008 20:42:48 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: tcamuso@redhat.com
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <greg@kroah.com>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>, Loic Prylli <loic@myri.com>,
+       Prarit Bhargava <prarit@redhat.com>,
+       "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>,
+       "Schoeller, Patrick (Linux - Houston, TX)" <Patrick.Schoeller@hp.com>,
+       Bhavana Nagendra <bnagendr@redhat.com>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+ opt-in
+Message-ID: <20080112204248.29abb1dd@laptopd505.fenrus.org>
+In-Reply-To: <47896B3B.2000108@redhat.com>
+References: <alpine.LFD.1.00.0801111224090.3148@woody.linux-foundation.org>
+	<20080111204228.GP18741@parisc-linux.org>
+	<alpine.LFD.1.00.0801111311170.3148@woody.linux-foundation.org>
+	<20080111211753.GR18741@parisc-linux.org>
+	<alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org>
+	<20080111213803.GS18741@parisc-linux.org>
+	<20080111235856.GA16079@jurassic.park.msu.ru>
+	<20080112002638.GA18710@kroah.com>
+	<20080112144030.GA19279@jurassic.park.msu.ru>
+	<20080112094557.71f5382a@laptopd505.fenrus.org>
+	<20080112214911.GA20102@jurassic.park.msu.ru>
+	<20080112150120.05f93768@laptopd505.fenrus.org>
+	<47895767.3090503@redhat.com>
+	<20080112164006.6f6f7bc2@laptopd505.fenrus.org>
+	<47896B3B.2000108@redhat.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-http://bugzilla.kernel.org/show_bug.cgi?id=2645
+On Sat, 12 Jan 2008 20:36:59 -0500
+Tony Camuso <tcamuso@redhat.com> wrote:
 
-Changes for updating the ctime and mtime fields for memory-mapped files:
+> Thanks, Arjan.
+> 
+> The problem we have been experiencing has to do with Northbridges,
+> not with devices.
 
-1) new flag triggering update of the inode data;
-2) new function to update ctime and mtime for block device files;
-3) new helper function to update ctime and mtime when needed;
-4) updating time stamps for mapped files in sys_msync() and do_fsync();
-5) implementing the feature of auto-updating ctime and mtime.
+correct for now.
+HOWEVER, and this is the point Linus has made several times:
+Just about NOBODY has devices that need the extended config space. At all.
+So making this opt-in for devices allows our users to boot and use
+their system if they are in the majority that has no need for even getting
+close to this mess.
 
-Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
----
- fs/buffer.c             |    1 +
- fs/fs-writeback.c       |    2 ++
- fs/inode.c              |   42 +++++++++++++++++++++++++++++++++++-------
- fs/sync.c               |    2 ++
- include/linux/fs.h      |    9 ++++++++-
- include/linux/pagemap.h |    3 ++-
- mm/msync.c              |   24 ++++++++++++++++--------
- mm/page-writeback.c     |    1 +
- 8 files changed, 67 insertions(+), 17 deletions(-)
+> 
+> As far as the device is concerned, after the Northbridge translates
+> the config access into PCI bus cycles, the device has no idea what
+> mechanism drove the Northbridge to the translation.
 
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 7249e01..09adf7e 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -719,6 +719,7 @@ static int __set_page_dirty(struct page *page,
- 	}
- 	write_unlock_irq(&mapping->tree_lock);
- 	__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
-+	set_bit(AS_MCTIME, &mapping->flags);
- 
- 	return 1;
- }
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index 0fca820..c25ebd5 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -243,6 +243,8 @@ __sync_single_inode(struct inode *inode, struct writeback_control *wbc)
- 
- 	spin_unlock(&inode_lock);
- 
-+	mapping_update_time(mapping);
-+
- 	ret = do_writepages(mapping, wbc);
- 
- 	/* Don't write the inode if only I_DIRTY_PAGES was set */
-diff --git a/fs/inode.c b/fs/inode.c
-index ed35383..c02bfab 100644
---- a/fs/inode.c
-+++ b/fs/inode.c
-@@ -1243,8 +1243,8 @@ void touch_atime(struct vfsmount *mnt, struct dentry *dentry)
- EXPORT_SYMBOL(touch_atime);
- 
- /**
-- *	file_update_time	-	update mtime and ctime time
-- *	@file: file accessed
-+ *	inode_update_time	-	update mtime and ctime time
-+ *	@inode: inode accessed
-  *
-  *	Update the mtime and ctime members of an inode and mark the inode
-  *	for writeback.  Note that this function is meant exclusively for
-@@ -1253,10 +1253,8 @@ EXPORT_SYMBOL(touch_atime);
-  *	S_NOCTIME inode flag, e.g. for network filesystem where these
-  *	timestamps are handled by the server.
-  */
--
--void file_update_time(struct file *file)
-+void inode_update_time(struct inode *inode)
- {
--	struct inode *inode = file->f_path.dentry->d_inode;
- 	struct timespec now;
- 	int sync_it = 0;
- 
-@@ -1279,8 +1277,39 @@ void file_update_time(struct file *file)
- 	if (sync_it)
- 		mark_inode_dirty_sync(inode);
- }
-+EXPORT_SYMBOL(inode_update_time);
-+
-+/*
-+ * Update the ctime and mtime stamps for memory-mapped block device files.
-+ */
-+static void bd_inode_update_time(struct inode *inode)
-+{
-+	struct block_device *bdev = inode->i_bdev;
-+	struct list_head *p;
-+
-+	if (bdev == NULL)
-+		return;
-+
-+	mutex_lock(&bdev->bd_mutex);
-+	list_for_each(p, &bdev->bd_inodes) {
-+		inode = list_entry(p, struct inode, i_devices);
-+		inode_update_time(inode);
-+	}
-+	mutex_unlock(&bdev->bd_mutex);
-+}
- 
--EXPORT_SYMBOL(file_update_time);
-+/*
-+ * Update the ctime and mtime stamps after checking if they are to be updated.
-+ */
-+void mapping_update_time(struct address_space *mapping)
-+{
-+	if (test_and_clear_bit(AS_MCTIME, &mapping->flags)) {
-+		if (S_ISBLK(mapping->host->i_mode))
-+			bd_inode_update_time(mapping->host);
-+		else
-+			inode_update_time(mapping->host);
-+	}
-+}
- 
- int inode_needs_sync(struct inode *inode)
- {
-@@ -1290,7 +1319,6 @@ int inode_needs_sync(struct inode *inode)
- 		return 1;
- 	return 0;
- }
--
- EXPORT_SYMBOL(inode_needs_sync);
- 
- int inode_wait(void *word)
-diff --git a/fs/sync.c b/fs/sync.c
-index 7cd005e..5561464 100644
---- a/fs/sync.c
-+++ b/fs/sync.c
-@@ -87,6 +87,8 @@ long do_fsync(struct file *file, int datasync)
- 		goto out;
- 	}
- 
-+	mapping_update_time(mapping);
-+
- 	ret = filemap_fdatawrite(mapping);
- 
- 	/*
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index b3ec4a4..1dccd4b 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1977,7 +1977,14 @@ extern int buffer_migrate_page(struct address_space *,
- extern int inode_change_ok(struct inode *, struct iattr *);
- extern int __must_check inode_setattr(struct inode *, struct iattr *);
- 
--extern void file_update_time(struct file *file);
-+extern void inode_update_time(struct inode *);
-+
-+static inline void file_update_time(struct file *file)
-+{
-+	inode_update_time(file->f_path.dentry->d_inode);
-+}
-+
-+extern void mapping_update_time(struct address_space *);
- 
- static inline ino_t parent_ino(struct dentry *dentry)
- {
-diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
-index db8a410..bf0f9e7 100644
---- a/include/linux/pagemap.h
-+++ b/include/linux/pagemap.h
-@@ -17,8 +17,9 @@
-  * Bits in mapping->flags.  The lower __GFP_BITS_SHIFT bits are the page
-  * allocation mode flags.
-  */
--#define	AS_EIO		(__GFP_BITS_SHIFT + 0)	/* IO error on async write */
-+#define AS_EIO		(__GFP_BITS_SHIFT + 0)	/* IO error on async write */
- #define AS_ENOSPC	(__GFP_BITS_SHIFT + 1)	/* ENOSPC on async write */
-+#define AS_MCTIME	(__GFP_BITS_SHIFT + 2)	/* mtime and ctime to update */
- 
- static inline void mapping_set_error(struct address_space *mapping, int error)
- {
-diff --git a/mm/msync.c b/mm/msync.c
-index ff654c9..07dc8fc 100644
---- a/mm/msync.c
-+++ b/mm/msync.c
-@@ -5,6 +5,7 @@
-  * Copyright (C) 1994-1999  Linus Torvalds
-  *
-  * Substantial code cleanup.
-+ * Updating the ctime and mtime stamps for memory-mapped files.
-  * Copyright (C) 2008 Anton Salikhmetov <salikhmetov@gmail.com>
-  */
- 
-@@ -22,6 +23,10 @@
-  * Nor does it mark the relevant pages dirty (it used to up to 2.6.17).
-  * Now it doesn't do anything, since dirty pages are properly tracked.
-  *
-+ * The msync() system call updates the ctime and mtime fields for
-+ * the mapped file when called with the MS_SYNC or MS_ASYNC flags
-+ * according to the POSIX standard.
-+ *
-  * The application may now run fsync() to
-  * write out the dirty pages and wait on the writeout and check the result.
-  * Or the application may run fadvise(FADV_DONTNEED) against the fd to start
-@@ -76,14 +81,17 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
- 			break;
- 		}
- 		file = vma->vm_file;
--		if ((flags & MS_SYNC) && file && (vma->vm_flags & VM_SHARED)) {
--			get_file(file);
--			up_read(&mm->mmap_sem);
--			error = do_fsync(file, 0);
--			fput(file);
--			if (error)
--				return error;
--			down_read(&mm->mmap_sem);
-+		if (file && (vma->vm_flags & VM_SHARED)) {
-+			mapping_update_time(file->f_mapping);
-+			if (flags & MS_SYNC) {
-+				get_file(file);
-+				up_read(&mm->mmap_sem);
-+				error = do_fsync(file, 0);
-+				fput(file);
-+				if (error)
-+					return error;
-+				down_read(&mm->mmap_sem);
-+			}
- 		}
- 
- 		start = vma->vm_end;
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index d55cfca..a85df0b 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -1025,6 +1025,7 @@ int __set_page_dirty_nobuffers(struct page *page)
- 		if (mapping->host) {
- 			/* !PageAnon && !swapper_space */
- 			__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
-+			set_bit(AS_MCTIME, &mapping->flags);
- 		}
- 		return 1;
- 	}
+Wanne bet there'll be devices that screw this up? THere's devices that even screwed
+up the 64-256 region after all.
+
+> The patch I devised concerned itself with Northbridges and separated
+> MMCONFIG-compliant buses from those that could not handle MMCONFIG.
+
+THis kind of patchup has been going on for the better part of a year (well 2 years)
+by now and it's STILL NOT ENOUGH, as you can see by the more patchups that have
+been proposed as "alternative" to my approach.
+
+> 
+> In my humble opinion, Port IO config access is here to stay, having
+> been defined as an architected mechanism in the PCI 2.1 spec.
+> 
+> This is most especially true for x86.
+> 
+> In other words, for x86, I don't think we need to worry about Port
+> IO config access ever going away at all.
+
+You're wrong there. Sad to say, but you're wrong there.
+
 -- 
-1.4.4.4
-
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
