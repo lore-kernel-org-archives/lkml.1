@@ -1,86 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755985AbYANRWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753256AbYANR3y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755985AbYANRWY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 12:22:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbYANRWQ
+	id S1753256AbYANR3y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 12:29:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbYANR3p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 12:22:16 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:39433 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751547AbYANRWP (ORCPT
+	Mon, 14 Jan 2008 12:29:45 -0500
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3328 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751222AbYANR3p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 12:22:15 -0500
-Date: Mon, 14 Jan 2008 09:20:35 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: ratn.josh@gmail.com
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] Re-organization of PIDMAP_ENTRIES macro expansion
-Message-Id: <20080114092035.321a64cc.randy.dunlap@oracle.com>
-In-Reply-To: <1200307835.2819.18.camel@life.india.kernelcorp.com>
-References: <1200307835.2819.18.camel@life.india.kernelcorp.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 14 Jan 2008 12:29:45 -0500
+Date: Mon, 14 Jan 2008 17:30:32 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: checkpatch: add filename before the summary line
+Message-ID: <20080114173032.GE19327@shadowen.org>
+References: <20080113233405.5fcdaff5@paolo-desktop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080113233405.5fcdaff5@paolo-desktop>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jan 2008 16:20:35 +0530 Ratnadeep Joshi wrote:
-
-> This patch tries to re-organize the macro expansion of PIDMAP_ENTRIES
-> (possibly) to a more clear one.
+On Sun, Jan 13, 2008 at 11:34:05PM +0100, Paolo Ciarrocchi wrote:
+> With the patch applied the output of checkpatch.pl is as follow:
+> ./arch/arm/mach-footbridge/ebsa285-pci.c 
+> total: 1 errors, 0 warnings, 48 lines checked
 > 
-> Thanks,
-> - Ratnadeep Joshi
-> 
-> diff --git a/include/linux/pid_namespace.h
-> b/include/linux/pid_namespace.h
-> index 1689e28..06e3e99 100644
-> --- a/include/linux/pid_namespace.h
-> +++ b/include/linux/pid_namespace.h
-> @@ -12,7 +12,7 @@ struct pidmap {
->         void *page;
->  };
->  
-> -#define PIDMAP_ENTRIES         ((PID_MAX_LIMIT + 8*PAGE_SIZE -
-> 1)/PAGE_SIZE/8)
-> +#define PIDMAP_ENTRIES         ((PID_MAX_LIMIT - 1)/PAGE_SIZE/8 + 1)
->  
->  struct pid_namespace {
->  	struct kref kref;
+> Adding the file name allowed me to collects stats running:
+> 	find . -name *.c |xargs ./scripts/checkpatch.pl --file |grep -B 1 total
+> but I though it might me useful for other purposes to add the file name
+> after the list of errors and warnings and before the summary,
+> when the list is long I find handy to print out the filename as a reminder.
 
+Hmmm, that being unconfitional would probabally break a raft of other
+users.  Also would it be more useful to put it on the front of the
+summary line?  So that if you have a bunch of files to check then you
+get something more like:
 
-I beg to disagree.  There is a very common (idiomatic) way for
-doing this kind of calculation and the first/original expression
-is in that form, although it's a little difficult to recognize.
+foo: total: 1 errors, ...
+bar: total: 0 errors, ...
 
-This common formula lives in linux/kernel.h:
-
-#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
-
-where n is (AFAIK) numerator and d is divisor.
-
-Example:  One use of this is in linux/bitops.h:
-
-#define BITS_TO_LONGS(nr)	DIV_ROUND_UP(nr, BITS_PER_LONG)
-
-This macro returns the number of longs that it takes to hold
-'nr' bits.  Expanded, it looks like:
-
-nr_longs = (nr_bits + BITS_PER_LONG - 1) / BITS_PER_LONG;
-
-The idiomatic formula handles boundary conditions very nicely.
-
-
-Now for PIDMAP_ENTRIES, use 8 * PAGE_SIZE as the (d) part of
-DIV_ROUND_UP() and you can see that it is done correctly.
-
----
-~Randy
+-apw
