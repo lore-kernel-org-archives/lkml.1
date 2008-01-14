@@ -1,257 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753999AbYANSNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbYANSNt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753999AbYANSNW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 13:13:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750962AbYANSNO
+	id S1754480AbYANSNt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 13:13:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750962AbYANSNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 13:13:14 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49233 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750818AbYANSNN (ORCPT
+	Mon, 14 Jan 2008 13:13:39 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:57349 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750818AbYANSNi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 13:13:13 -0500
-Message-ID: <478BA635.9050908@sgi.com>
-Date: Mon, 14 Jan 2008 10:13:09 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 14 Jan 2008 13:13:38 -0500
+Date: Mon, 14 Jan 2008 10:12:39 -0800
+From: Greg KH <greg@kroah.com>
+To: Al Boldi <a1426z@gawab.com>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/5] USB Kconfig: Reorganize USB Kconfig Menu
+Message-ID: <20080114181239.GB14814@kroah.com>
+References: <200801051546.SAA08937@raad.intranet> <20080112195333.GA4924@kroah.com> <4789FAF8.8080107@s5r6.in-berlin.de> <200801141321.51185.a1426z@gawab.com>
 MIME-Version: 1.0
-To: Mel Gorman <mel@csn.ul.ie>
-CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       mingo@elte.hu, Christoph Lameter <clameter@sgi.com>,
-       Jack Steiner <steiner@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/10] x86: Change size of APICIDs from u8 to u16
-References: <20080113183453.973425000@sgi.com> <20080113183454.155968000@sgi.com> <20080114122310.GC32446@csn.ul.ie>
-In-Reply-To: <20080114122310.GC32446@csn.ul.ie>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200801141321.51185.a1426z@gawab.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mel Gorman wrote:
-> On (13/01/08 10:34), travis@sgi.com didst pronounce:
->> Change the size of APICIDs from u8 to u16.  This partially
->> supports the new x2apic mode that will be present on future
->> processor chips. (Chips actually support 32-bit APICIDs, but that
->> change is more intrusive. Supporting 16-bit is sufficient for now).
->>
->> Signed-off-by: Jack Steiner <steiner@sgi.com>
->>
->> I've included just the partial change from u8 to u16 apicids.  The
->> remaining x2apic changes will be in a separate patch.
->>
->> In addition, the fake_node_to_pxm_map[] and fake_apicid_to_node[]
->> tables have been moved from local data to the __initdata section
->> reducing stack pressure when MAX_NUMNODES and MAX_LOCAL_APIC are
->> increased in size.
->>
+On Mon, Jan 14, 2008 at 01:21:51PM +0300, Al Boldi wrote:
+> Stefan Richter wrote:
+> > Greg KH wrote:
+> > > On Sat, Jan 12, 2008 at 01:20:46PM +0300, Al Boldi wrote:
+> > >> Greg KH wrote:
+> > >>> On Sat, Jan 05, 2008 at 06:40:38PM +0300, Al Boldi wrote:
+> > >>>> Reorganize USB Kconfig Menu, and move USB_GADGET out into the Device
+> > >>>> Driver Menu. ?This helps the USB Kconfig Menu to be more
+> > >>>> logical/usable.
+> > >>>>
+> > >>>> Patchset against 2.6.23
+> > >>>
+> > >>> So what was the final verdict in this patch set?
+> > >>
+> > >> IMHO, it's a lot better than what we have right now, and it's split up
+> > >> so that you can pick and choose what you think is useful.
+> > >>
+> > >>> Can you rsend this against 2.6.24-rc7 with the requested changes (if
+> > >>> any) in it?
+> > >>
+> > >> The only critical change is in patch 2/5:
+> > >>
+> > >>         menuconfig USB_STORAGE
+> > >>         tristate "USB Mass Storage support"
+> > >> -       depends on USB && SCSI
+> > >> +       depends on USB && BLOCK
+> > >> +       select SCSI
+> > >>
+> > >>
+> > >> I was hoping you could take care of it, or maybe wait until 2.6.25 is
+> > >> out.
+> > >
+> > > Well, if you want such a change to go into 2.6.25, I need the patches
+> > > now :)
+> > >
+> > > So, can you respin these against 2.6.24-rc7, with the above fix, so that
+> > > I can apply them and test them out?
+> >
+> > May I repeat my request that nobody does "select SCSI", please?
+> >
+> > Al Boldy, would you please explain like I asked you:
+> >   - what is wrong with the current solution which tells the user to
+> >     first enable SCSI to get the USB_STORAGE option,
+> >   - whether there are frequent end-user requests which demonstrate
+> >     that many people currently don't realize how to enable USB_STORAGE.
+> >
+> > Please use "select" carefully, particularly *only* for options which
+> > enable simple compact library-like code which
+> >   - is small,
+> >   - doesn't itself depend on anything,
+> >   - doesn't has further configuration options in some other menu.
+> > None of this applies to CONFIG_SCSI.
 > 
-> Does this make a different to inter-node effects?
+> I thought we discussed this before.  We do it here, for the same reasons 
+> libata does it.  In any case, the patch is optional.
 
-Are you asking about the movement of the fake arrays?  Since these
-are used once and discarded, the it shouldn't have any effect.
+Yes, I do not want to do this, as we went round and round on it in the
+past many times over the years.  It should be left as-is.
 
-If you are asking abut the general increase to 16 bits, I don't
-think we have much choice.  The hardware for 16 (and as mentioned
-32) is coming.  I'm trying to minimize as much traffic between
-node 0 and the other nodes.  Apic id AFAICT is used mostly for
-sending IPI's, either to cpus within the node or to remote cpus.
-Using the remote cpu's node memory to query it's apicid seems
-reasonable?  And, of course, having all the data about one's own
-node local to itself seems a big win as well.
+thanks,
 
-Thanks,
-Mike
-
-> 
->> Signed-off-by: Mike Travis <travis@sgi.com>
->> Reviewed-by: Christoph Lameter <clameter@sgi.com>
->> ---
->>  arch/x86/kernel/genapic_64.c |    4 ++--
->>  arch/x86/kernel/mpparse_64.c |    4 ++--
->>  arch/x86/kernel/smpboot_64.c |    2 +-
->>  arch/x86/mm/numa_64.c        |    2 +-
->>  arch/x86/mm/srat_64.c        |   22 +++++++++++++---------
->>  include/asm-x86/processor.h  |   14 +++++++-------
->>  include/asm-x86/smp_64.h     |    8 ++++----
->>  7 files changed, 30 insertions(+), 26 deletions(-)
->>
->> --- a/arch/x86/kernel/genapic_64.c
->> +++ b/arch/x86/kernel/genapic_64.c
->> @@ -32,10 +32,10 @@
->>   * array during this time.  Is it zeroed when the per_cpu
->>   * data area is removed.
->>   */
->> -u8 x86_cpu_to_apicid_init[NR_CPUS] __initdata
->> +u16 x86_cpu_to_apicid_init[NR_CPUS] __initdata
->>  					= { [0 ... NR_CPUS-1] = BAD_APICID };
->>  void *x86_cpu_to_apicid_ptr;
->> -DEFINE_PER_CPU(u8, x86_cpu_to_apicid) = BAD_APICID;
->> +DEFINE_PER_CPU(u16, x86_cpu_to_apicid) = BAD_APICID;
->>  EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
->>  
->>  struct genapic __read_mostly *genapic = &apic_flat;
->> --- a/arch/x86/kernel/mpparse_64.c
->> +++ b/arch/x86/kernel/mpparse_64.c
->> @@ -67,7 +67,7 @@ unsigned disabled_cpus __cpuinitdata;
->>  /* Bitmask of physically existing CPUs */
->>  physid_mask_t phys_cpu_present_map = PHYSID_MASK_NONE;
->>  
->> -u8 bios_cpu_apicid[NR_CPUS] = { [0 ... NR_CPUS-1] = BAD_APICID };
->> +u16 bios_cpu_apicid[NR_CPUS] = { [0 ... NR_CPUS-1] = BAD_APICID };
->>  
->>  
->>  /*
->> @@ -132,7 +132,7 @@ static void __cpuinit MP_processor_info(
->>  	 * area is created.
->>  	 */
->>  	if (x86_cpu_to_apicid_ptr) {
->> -		u8 *x86_cpu_to_apicid = (u8 *)x86_cpu_to_apicid_ptr;
->> +		u16 *x86_cpu_to_apicid = (u16 *)x86_cpu_to_apicid_ptr;
->>  		x86_cpu_to_apicid[cpu] = m->mpc_apicid;
->>  	} else {
->>  		per_cpu(x86_cpu_to_apicid, cpu) = m->mpc_apicid;
->> --- a/arch/x86/kernel/smpboot_64.c
->> +++ b/arch/x86/kernel/smpboot_64.c
->> @@ -65,7 +65,7 @@ int smp_num_siblings = 1;
->>  EXPORT_SYMBOL(smp_num_siblings);
->>  
->>  /* Last level cache ID of each logical CPU */
->> -DEFINE_PER_CPU(u8, cpu_llc_id) = BAD_APICID;
->> +DEFINE_PER_CPU(u16, cpu_llc_id) = BAD_APICID;
->>  
->>  /* Bitmask of currently online CPUs */
->>  cpumask_t cpu_online_map __read_mostly;
->> --- a/arch/x86/mm/numa_64.c
->> +++ b/arch/x86/mm/numa_64.c
->> @@ -627,7 +627,7 @@ void __init init_cpu_to_node(void)
->>  	int i;
->>  
->>  	for (i = 0; i < NR_CPUS; i++) {
->> -		u8 apicid = x86_cpu_to_apicid_init[i];
->> +		u16 apicid = x86_cpu_to_apicid_init[i];
->>  
->>  		if (apicid == BAD_APICID)
->>  			continue;
->> --- a/arch/x86/mm/srat_64.c
->> +++ b/arch/x86/mm/srat_64.c
->> @@ -130,6 +130,9 @@ void __init
->>  acpi_numa_processor_affinity_init(struct acpi_srat_cpu_affinity *pa)
->>  {
->>  	int pxm, node;
->> +	int apic_id;
->> +
->> +	apic_id = pa->apic_id;
->>  	if (srat_disabled())
->>  		return;
->>  	if (pa->header.length != sizeof(struct acpi_srat_cpu_affinity)) {
->> @@ -145,10 +148,10 @@ acpi_numa_processor_affinity_init(struct
->>  		bad_srat();
->>  		return;
->>  	}
->> -	apicid_to_node[pa->apic_id] = node;
->> +	apicid_to_node[apic_id] = node;
->>  	acpi_numa = 1;
->>  	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
->> -	       pxm, pa->apic_id, node);
->> +	       pxm, apic_id, node);
->>  }
->>  
->>  int update_end_of_memory(unsigned long end) {return -1;}
->> @@ -343,7 +346,8 @@ int __init acpi_scan_nodes(unsigned long
->>  	/* First clean up the node list */
->>  	for (i = 0; i < MAX_NUMNODES; i++) {
->>  		cutoff_node(i, start, end);
->> -		if ((nodes[i].end - nodes[i].start) < NODE_MIN_SIZE) {
->> +		/* ZZZ why was this needed. At least add a comment */
->> +		if (nodes[i].end && (nodes[i].end - nodes[i].start) < NODE_MIN_SIZE) {
-> 
-> Care to actually add a comment? This looks like a note to yourself that
-> got missed.
-> 
->>  			unparse_node(i);
->>  			node_set_offline(i);
->>  		}
->> @@ -384,6 +388,12 @@ int __init acpi_scan_nodes(unsigned long
->>  }
->>  
->>  #ifdef CONFIG_NUMA_EMU
->> +static int fake_node_to_pxm_map[MAX_NUMNODES] __initdata = {
->> +	[0 ... MAX_NUMNODES-1] = PXM_INVAL
->> +};
->> +static unsigned char fake_apicid_to_node[MAX_LOCAL_APIC] __initdata = {
->> +	[0 ... MAX_LOCAL_APIC-1] = NUMA_NO_NODE
->> +};
->>  static int __init find_node_by_addr(unsigned long addr)
->>  {
->>  	int ret = NUMA_NO_NODE;
->> @@ -414,12 +424,6 @@ static int __init find_node_by_addr(unsi
->>  void __init acpi_fake_nodes(const struct bootnode *fake_nodes, int num_nodes)
->>  {
->>  	int i, j;
->> -	int fake_node_to_pxm_map[MAX_NUMNODES] = {
->> -		[0 ... MAX_NUMNODES-1] = PXM_INVAL
->> -	};
->> -	unsigned char fake_apicid_to_node[MAX_LOCAL_APIC] = {
->> -		[0 ... MAX_LOCAL_APIC-1] = NUMA_NO_NODE
->> -	};
->>  
->>  	printk(KERN_INFO "Faking PXM affinity for fake nodes on real "
->>  			 "topology.\n");
->> --- a/include/asm-x86/processor.h
->> +++ b/include/asm-x86/processor.h
->> @@ -86,14 +86,14 @@ struct cpuinfo_x86 {
->>  #ifdef CONFIG_SMP
->>  	cpumask_t llc_shared_map;	/* cpus sharing the last level cache */
->>  #endif
->> -	unsigned char x86_max_cores;	/* cpuid returned max cores value */
->> -	unsigned char apicid;
->> -	unsigned short x86_clflush_size;
->> +	u16 x86_max_cores;		/* cpuid returned max cores value */
->> +	u16 apicid;
->> +	u16 x86_clflush_size;
->>  #ifdef CONFIG_SMP
->> -	unsigned char booted_cores;	/* number of cores as seen by OS */
->> -	__u8 phys_proc_id; 		/* Physical processor id. */
->> -	__u8 cpu_core_id;  		/* Core id */
->> -	__u8 cpu_index;			/* index into per_cpu list */
->> +	u16 booted_cores;		/* number of cores as seen by OS */
->> +	u16 phys_proc_id; 		/* Physical processor id. */
->> +	u16 cpu_core_id;  		/* Core id */
->> +	u16 cpu_index;			/* index into per_cpu list */
->>  #endif
->>  } __attribute__((__aligned__(SMP_CACHE_BYTES)));
->>  
->> --- a/include/asm-x86/smp_64.h
->> +++ b/include/asm-x86/smp_64.h
->> @@ -26,14 +26,14 @@ extern void unlock_ipi_call_lock(void);
->>  extern int smp_call_function_mask(cpumask_t mask, void (*func)(void *),
->>  				  void *info, int wait);
->>  
->> -extern u8 __initdata x86_cpu_to_apicid_init[];
->> +extern u16 __initdata x86_cpu_to_apicid_init[];
->>  extern void *x86_cpu_to_apicid_ptr;
->> -extern u8 bios_cpu_apicid[];
->> +extern u16 bios_cpu_apicid[];
->>  
->>  DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
->>  DECLARE_PER_CPU(cpumask_t, cpu_core_map);
->> -DECLARE_PER_CPU(u8, cpu_llc_id);
->> -DECLARE_PER_CPU(u8, x86_cpu_to_apicid);
->> +DECLARE_PER_CPU(u16, cpu_llc_id);
->> +DECLARE_PER_CPU(u16, x86_cpu_to_apicid);
->>  
->>  static inline int cpu_present_to_apicid(int mps_cpu)
->>  {
->>
->> -- 
->>
->> --
->> To unsubscribe, send a message with 'unsubscribe linux-mm' in
->> the body to majordomo@kvack.org.  For more info on Linux MM,
->> see: http://www.linux-mm.org/ .
->> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
->>
-> 
-
+greg k-h
