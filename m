@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752907AbYANSGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753612AbYANSKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752907AbYANSGR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 13:06:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbYANSGA
+	id S1753612AbYANSKl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 13:10:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbYANSKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 13:06:00 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:57322 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750898AbYANSF7 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 13:05:59 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Paul Moore <paul.moore@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.24-rc6-mm1 - oddness with IPv4/v6 mapped sockets hanging...
-In-Reply-To: Your message of "Mon, 14 Jan 2008 11:36:40 EST."
-             <200801141136.41140.paul.moore@hp.com>
-From: Valdis.Kletnieks@vt.edu
-References: <30887.1200209733@turing-police.cc.vt.edu> <7197.1200327338@turing-police.cc.vt.edu>
-            <200801141136.41140.paul.moore@hp.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1200333948_3045P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 14 Jan 2008 13:05:48 -0500
-Message-ID: <31130.1200333948@turing-police.cc.vt.edu>
+	Mon, 14 Jan 2008 13:10:34 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:40783 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750981AbYANSKd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 13:10:33 -0500
+Date: Mon, 14 Jan 2008 19:10:32 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: travis@sgi.com
+cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       mingo@elte.hu, Christoph Lameter <clameter@sgi.com>,
+       Jack Steiner <steiner@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/10] x86: Change size of APICIDs from u8 to u16
+In-Reply-To: <20080113183454.155968000@sgi.com>
+Message-ID: <Pine.LNX.4.64.0801141908370.24893@fbirervta.pbzchgretzou.qr>
+References: <20080113183453.973425000@sgi.com> <20080113183454.155968000@sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1200333948_3045P
-Content-Type: text/plain; charset=us-ascii
 
-On Mon, 14 Jan 2008 11:36:40 EST, Paul Moore said:
+On Jan 13 2008 10:34, travis@sgi.com wrote:
+>--- a/arch/x86/kernel/mpparse_64.c
+>+++ b/arch/x86/kernel/mpparse_64.c
+>@@ -132,7 +132,7 @@ static void __cpuinit MP_processor_info(
+> 	 * area is created.
+> 	 */
+> 	if (x86_cpu_to_apicid_ptr) {
+>-		u8 *x86_cpu_to_apicid = (u8 *)x86_cpu_to_apicid_ptr;
+>+		u16 *x86_cpu_to_apicid = (u16 *)x86_cpu_to_apicid_ptr;
+> 		x86_cpu_to_apicid[cpu] = m->mpc_apicid;
+> 	} else {
+> 		per_cpu(x86_cpu_to_apicid, cpu) = m->mpc_apicid;
 
-> Are you still only seeing these problems on loopback?  I can't help but wonder 
-> if this is the skb_clone() problem where it wasn't copying skb->iif causing 
-> SELinux to silently drop the packets.
+You can do away with the cast while modifying this line.
 
-Yes, I've only spotted it on loopback.  The odd part is that I had reverted the
-one commit 9c6ad8f6895db7a517c04c2147cb5e7ffb83a315 "Convert the netif code to
-use ifindex values" - so either I managed to get the revert terribly wrong,
-or there's something else odd going on.  The first time around, I was seeing
-hangs during a TCP 3-packet handshake - this time data flows for some number
-of packets before hanging.
+>--- a/arch/x86/mm/srat_64.c
+>+++ b/arch/x86/mm/srat_64.c
+>@@ -384,6 +388,12 @@ int __init acpi_scan_nodes(unsigned long
+> }
+> 
+> #ifdef CONFIG_NUMA_EMU
+>+static int fake_node_to_pxm_map[MAX_NUMNODES] __initdata = {
+>+	[0 ... MAX_NUMNODES-1] = PXM_INVAL
+>+};
+>+static unsigned char fake_apicid_to_node[MAX_LOCAL_APIC] __initdata = {
+>+	[0 ... MAX_LOCAL_APIC-1] = NUMA_NO_NODE
+>+};
+> static int __init find_node_by_addr(unsigned long addr)
+> {
+> 	int ret = NUMA_NO_NODE;
 
-I'm pulling  git://git.infradead.org/users/pcmoore/lblnet-2.6_testing at the
-moment, and seeing if there's already a fix in there for this.
-
-
---==_Exmh_1200333948_3045P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHi6R8cC3lWbTT17ARArXKAKDffj0290XpKY6OITSMmqU9uGnHQACg9r43
-Aw9JW6hnv12Wlfj2OQzS3jU=
-=7/3J
------END PGP SIGNATURE-----
-
---==_Exmh_1200333948_3045P--
+No u8/u16 here?
