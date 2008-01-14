@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753548AbYANII1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754020AbYANIKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753548AbYANII1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 03:08:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbYANIIS
+	id S1754020AbYANIKS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 03:10:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbYANIKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 03:08:18 -0500
-Received: from nz-out-0506.google.com ([64.233.162.234]:5500 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751403AbYANIIR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 03:08:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Vdvvl/imM3NrUT8mmOIShApipdPuItRIBsrVBj0peYIOQlyLp6+ZpQdOUWHIUHtO1McZkQsztTi1QR16hl2p2U0XCotzbUBm2RqNxvkKvvIPsrSx24VW8YONhe+Y7YG6fxv2svfoZBKVU20fsCniz3dy6T0EVxGHL6WE1k0C2uM=
-Message-ID: <8bd0f97a0801140008x274d4e27lbaefc7c10ea02629@mail.gmail.com>
-Date: Mon, 14 Jan 2008 03:08:16 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Florian Fainelli" <florian.fainelli@telecomint.eu>
-Subject: Re: [RFC, PATCH] watchdog on gpio
-Cc: "Marc Pignat" <marc.pignat@hevs.ch>, wim@iguana.be,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200801111740.25754.florian.fainelli@telecomint.eu>
+	Mon, 14 Jan 2008 03:10:05 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:11517 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751403AbYANIKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 03:10:04 -0500
+Date: Mon, 14 Jan 2008 09:10:01 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Dillow <dillowda@ornl.gov>, Guillaume Chazarain <guichaz@yahoo.fr>,
+       linux-kernel@vger.kernel.org, linux-btrace@vger.kernel.org,
+       mingo@redhat.com, tglx@linutronix.de,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] block: fix blktrace timestamps
+Message-ID: <20080114081001.GN6258@kernel.dk>
+References: <20080111092334.GA8143@elte.hu> <20080111092513.GO6258@kernel.dk> <20080111094205.GE8143@elte.hu> <20080111095654.GR6258@kernel.dk> <20080111102953.GA27223@elte.hu> <20080111122802.GT6258@kernel.dk> <20080111132106.GA16496@elte.hu> <20080111171855.GX6258@kernel.dk> <20080114075114.GA13195@elte.hu> <20080114075922.GA17686@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200801101611.08867.marc.pignat@hevs.ch>
-	 <200801111740.25754.florian.fainelli@telecomint.eu>
+In-Reply-To: <20080114075922.GA17686@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 11, 2008 11:40 AM, Florian Fainelli
-<florian.fainelli@telecomint.eu> wrote:
-> Did you look into hooking into Wim's uniform watchdog driver :
->
-> http://git.kernel.org/?p=linux/kernel/git/wim/linux-2.6-watchdog-experimental.git;a=commit;h=732c54027e6c866f98857c4a6d1c6c466459dcd5
->
-> Maybe you can save some code ?
+On Mon, Jan 14 2008, Ingo Molnar wrote:
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > because a perfectly working system is:
+> > 
+> >  "a user's .config that worked before should work with the new kernel
+> >   too"
+> > 
+> > not:
+> > 
+> >  "a user's .config that worked before should work now too, with random
+> >   new kernel features enabled as well."
+> > 
+> > the latter appears to be the rule you are applying, but it's not the 
+> > regression rule we are using.
+> 
+> Jens, just to bring your definition of regressions to its logical 
+> conclusion: does this mean that if there is any longstanding bug in the 
+> block layer that you know about, but i didnt ever utilize that bit of 
+> the block layer it in my .config, and if i enable it now in the .config 
+> and i experience that bug, does it suddenly count as a regression? Do 
+> you realize that your definition for "regressions" turns _almost every_ 
+> current bug in the kernel into a regression?
 
-seems like it'd be pointless for Marc to look at using this if it isnt
-slated for merging into mainline anytime soon.
+Ingo, why do you keep harping this issue? I thought I suggested we agree
+to disagree on this and let it rest.
 
-that said, i'd love to see a watchdog "core" as it pains me to see how
-80% of all watchdogs are pretty much copy & paste & variable/function
-renaming.
--mike
+And I would say that, yes, that is a regression, if that config option
+is a core option that people are likely to enable. The CONFIG_NO_HZ is a
+new option, people will select it. Your example pertain more to the 'use
+mmio for IO operations' type options for drivers. If you enable that and
+your driver suddenly stops working, you have a clear idea of WHY it
+stops working and how to fix it. Not so with this blktrace scenario, I
+bet that would take people quite a while to figure out how it broke.
+
+Can we drop this subject now, please? The issue is resolved (and
+merged), debating definitions of regressions is not very productive :-)
+
+-- 
+Jens Axboe
+
