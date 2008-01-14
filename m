@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbYANT0l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbYANT06@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754538AbYANT0l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 14:26:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbYANT0c
+	id S1754729AbYANT06 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 14:26:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbYANT0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 14:26:32 -0500
-Received: from mail.windriver.com ([147.11.1.11]:60228 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751379AbYANT0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 14:26:31 -0500
-Message-ID: <478BB74E.6020506@windriver.com>
-Date: Mon, 14 Jan 2008 13:26:06 -0600
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Mon, 14 Jan 2008 14:26:46 -0500
+Received: from py-out-1112.google.com ([64.233.166.179]:38504 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754551AbYANT0o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 14:26:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=WDDta6jnKTvFBGPiiIEGTIeaqcoX4WfESxDc95suwEjAm/IXJPMQE7OTs5P49TnrivpChO44uPhB94xtfyFWHmbD+ScdkvfQRf7TmA3WzzAkjRDLtcNce7Imf792MTf+Te80rpdyV9znObT/p02hQP+1O8K75qe8Dgm3UUmiNTk=
+Message-ID: <43e72e890801141126t21480e69wc024c2fdc236af52@mail.gmail.com>
+Date: Mon, 14 Jan 2008 14:26:42 -0500
+From: "Luis R. Rodriguez" <mcgrof@winlab.rutgers.edu>
+To: "Hauke Mehrtens" <hauke@hauke-m.de>
+Subject: Re: rtl8187 rate control doesn't work
+Cc: "Michael Wu" <flamingice@sourmilk.net>, linux-kernel@vger.kernel.org,
+       "Stefano Brivio" <stefano.brivio@polimi.it>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+In-Reply-To: <4787F03E.6080605@hauke-m.de>
 MIME-Version: 1.0
-To: Jan Kiszka <jan.kiszka@siemens.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: State of kgdb on x86-64
-References: <478BB35B.9060507@siemens.com>
-In-Reply-To: <478BB35B.9060507@siemens.com>
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Jan 2008 19:26:06.0369 (UTC) FILETIME=[4F0A2910:01C856E3]
+Content-Disposition: inline
+References: <477F9890.5050107@hauke-m.de>
+	 <43e72e890801051354v280c0ceeo78790bb5f1f45314@mail.gmail.com>
+	 <47824D25.5090005@hauke-m.de>
+	 <43e72e890801070942y5abcc8acs31ac446d67414483@mail.gmail.com>
+	 <4787F03E.6080605@hauke-m.de>
+X-Google-Sender-Auth: 84921234f631f3a1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It was working at the point that I tested it with the 2.6.24-rc5 on
-x86_64.  However I suspect my kernel config may differ drastically from
-what you are using.
+On Jan 11, 2008 5:39 PM, Hauke Mehrtens <hauke@hauke-m.de> wrote:
+> Luis R. Rodriguez wrote:
+> > On Jan 7, 2008 11:02 AM, Hauke Mehrtens <hauke@hauke-m.de> wrote:
+> >
+> > Thanks for reporting this, how'd it go with simple rate control
+> > algorithm instead?
+>
+> How do I change from pid to simple rate control algorithm?
 
-Without any other context provided than the generic message, it is hard
-to know what might have happened. 
+In config.mk replace this line:
 
-Jason.
+CONFIG_MAC80211_RC_DEFAULT=pid
 
-Jan Kiszka wrote:
-> Hi Jason,
->
-> what is the state of the kgbd git repos? What should work, what might be
-> broken?
->
-> I'm asking as today I tried to get kgdb up and running on a 4-way x86-64
-> Xeon box with both 2.6.24-rc6 and -rc7. Once kgdb is enabled in .config,
-> the boot stops early with this panic:
->
-> Kernel panic - not syncing: Attempted to kill init!
->
-> May I have more success with 2.6.23? Was x86-64 tested and found working
-> once? I can dig deeper into the above issue, but before starting
-> blindly, I would like to asses if there could be more issues ahead on
-> this arch.
->
-> Thanks,
-> Jan
->
->   
+with:
 
+CONFIG_MAC80211_RC_DEFAULT=simple
+
+although I am planning on changing the config stuff soon.
+
+  Luis
