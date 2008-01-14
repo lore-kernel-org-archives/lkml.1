@@ -1,108 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752268AbYANPHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751525AbYANPOb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752268AbYANPHf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 10:07:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750784AbYANPH2
+	id S1751525AbYANPOb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 10:14:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750838AbYANPOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 10:07:28 -0500
-Received: from metis.extern.pengutronix.de ([83.236.181.26]:46341 "EHLO
-	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750702AbYANPH1 (ORCPT
+	Mon, 14 Jan 2008 10:14:23 -0500
+Received: from fk-out-0910.google.com ([209.85.128.190]:9887 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750739AbYANPOW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 10:07:27 -0500
-Message-ID: <478B7A86.7010207@pengutronix.de>
-Date: Mon, 14 Jan 2008 16:06:46 +0100
-From: Marc Kleine-Budde <mkl@pengutronix.de>
-Organization: pengutronix
-User-Agent: Icedove 1.5.0.14pre (X11/20071025)
+	Mon, 14 Jan 2008 10:14:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=L+8VMjIAyBmJwKOkzws/A09A3zR4QjcPwPVMw832woc2mnskoMlzdKjda6W5aJ+vrgbM3LGgRGH6jTB7SF0MFjSP10yOmL0mGLsl2sGDToYo+O2OctVcSlesGS1wxoO2M5tUIm+oeIKMd3qMSYlH+s7z7tZQukBuqxOeoM5l1nc=
+Message-ID: <478B7C4A.5090903@gmail.com>
+Date: Mon, 14 Jan 2008 16:14:18 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Marc Kleine-Budde <mkl@pengutronix.de>, Dmitry Torokhov <dtor@mail.ru>,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
-       Graeme Gregory <gg@opensource.wolfsonmicro.com>,
-       Rodolfo Giometti <giometti@enneenne.com>,
-       Russell King <rmk@arm.linux.org.uk>, Ian Molton <spyro@f2s.com>,
-       Vince Sanders <vince@kyllikki.org>, Andrew Zabolotny <zap@homelink.ru>
-References: <1199965870-4629-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-2-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-3-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-4-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-5-git-send-email-broonie@opensource.wolfsonmicro.com> <478B31B6.3050406@pengutronix.de> <20080114144250.GA7443@rakim.wolfsonmicro.main>
-In-Reply-To: <20080114144250.GA7443@rakim.wolfsonmicro.main>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigBF29A3972656F1D70799EB13"
-X-SA-Exim-Connect-IP: 83.236.181.29
-X-SA-Exim-Mail-From: mkl@pengutronix.de
-Subject: Re: [PATCH 5/6] Driver for WM97xx touchscreens in streaming mode
- on PXA2xx systems
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on metis.extern.pengutronix.de)
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Paul Gortmaker <p_gortmaker@yahoo.com>,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [PATCH] driver: ip27-rtc - convert ioctl to unlocked_ioctl
+References: <20080113203223.GA6723@cvg> <478A8131.9050500@gmail.com>	 <478A82AD.3070904@gmail.com>	 <aa79d98a0801131332w45d6e0e9r13e96b69e7e1b70@mail.gmail.com> <aa79d98a0801132238o72266a91p78ae3a0c1476607c@mail.gmail.com>
+In-Reply-To: <aa79d98a0801132238o72266a91p78ae3a0c1476607c@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigBF29A3972656F1D70799EB13
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On 01/14/2008 07:38 AM, Cyrill Gorcunov wrote:
+> This patch converts ioctl call to unlocked_ioctl form. It's possible
+> due to rtl_lock spinlock protection.
+> 
+> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> ---
+> The patch is *not* tested but the patch does not bring _much_ changes
+> so it wouldn't break the compilation procedure.
+> 
+> If there is problem with attachment - i could send it as inline
+> form today evening.
 
-Mark Brown wrote:
-> On Mon, Jan 14, 2008 at 10:56:06AM +0100, Marc Kleine-Budde wrote:
->> reMark Brown wrote:
->=20
->>> Cc: Marc Kleine-Budde <mkl@penugtronix.de>
->>                                 ^^
->> it's mkl@pengutronix.de
->=20
-> Fixed, sorry about that.
->=20
->>> +			/* use PEN_DOWN GPIO 13 to assert IRQ on GPIO line 2 */
->>> +			wm->pen_irq =3D MAINSTONE_AC97_IRQ;
->=20
->> I'm missing some kind of abstraction here, what about non mainstone
->> boards with the pen irq wired to some other gpio?
->=20
-> The driver really isn't intended to cope with them.  As you say, other
-> boards may have things wired up differently and therefore require
-> different configuration of the wm97xx and other bits of the system.  Th=
-e
-> expectation is that other systems will have their own driver.
+Yes, please, especially if it is app/octet-stream (base64 encoded plaintext). 
+Also Cc akpm or somebody who will pick your patch up.
 
-What bits have to setup in a different way? Only the stuff in
-wm97xx_acc_startup() or other things aswell. An irq can be put as utual
-into a device's resouce, Setting up bits may be done like other stuff on
-pxa, too. e.g. pxa_set_ohci_info.
+> Andi, Jiri, Alexey the only thing I do complain about -
+> is time set/read from several user threads that uses same
+> (duplicated) file descriptor. Could there be useless thread
+> spins instead of sleep (in case if this unlocked_ioctl were
+> protected by mutex)?
 
-> My initial thought is that the most straightforward way of handling thi=
-s
-> would be to rename the driver to mainstone-wm97xx or similar to make it=
-
-> clear that the driver is only intended to handle Mainstone as-is.  Does=
-
-> that seem reasonable?
-
-With my limited understanding of the pxa-wm97xx.c file, the only board
-dependent stuff is done in wm97xx_acc_startup() so a different "driver"
-for other boards would result in code duplication.
-
-regards - Marc
-
---=20
- Marc Kleine-Budde              Phone: +49-231-2826-924
- Pengutronix - Linux Solutions for Science and Industry
- Vertretung West/Dortmund     http://www.pengutronix.de
-
-
---------------enigBF29A3972656F1D70799EB13
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFHi3qLjTAFq1RaXHMRApikAJ0Sn14UyJglVm/uKOQ+B3Smfbh8fwCfQxXo
-kZml/x1VjD19jHWI9IMuECY=
-=Y2kb
------END PGP SIGNATURE-----
-
---------------enigBF29A3972656F1D70799EB13--
+Sorry, what?
