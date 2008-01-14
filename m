@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754361AbYANIox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754374AbYANIu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754361AbYANIox (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 03:44:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbYANIon
+	id S1754374AbYANIu6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 03:50:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbYANIut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 03:44:43 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:58335 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751417AbYANIom (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 03:44:42 -0500
-Date: Mon, 14 Jan 2008 10:44:40 +0200 (EET)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>
-Subject: Re: Netperf TCP_RR(loopback) 10% regression in 2.6.24-rc6,	comparing
- with 2.6.22
-In-Reply-To: <1200043854.3265.24.camel@ymzhang>
-Message-ID: <Pine.LNX.4.64.0801141036400.31652@kivilampi-30.cs.helsinki.fi>
-References: <1199871330.3298.132.camel@ymzhang> <1200043854.3265.24.camel@ymzhang>
-Mime-Version: 1.0
+	Mon, 14 Jan 2008 03:50:49 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55236 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752888AbYANIus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 03:50:48 -0500
+Date: Mon, 14 Jan 2008 09:50:27 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: x86: Add the "print code before the trapping instruction"
+	feature to 64 bit
+Message-ID: <20080114085026.GA26367@elte.hu>
+References: <20080110084739.5ba72522@laptopd505.fenrus.org> <4786780F.90302@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <4786780F.90302@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Jan 2008, Zhang, Yanmin wrote:
 
-> On Wed, 2008-01-09 at 17:35 +0800, Zhang, Yanmin wrote: 
-> > The regression is:
-> > 1)stoakley with 2 qual-core processors: 11%;
-> > 2)Tulsa with 4 dual-core(+hyperThread) processors:13%;
-> I have new update on this issue and also cc to netdev maillist.
-> Thank David Miller for pointing me the netdev maillist.
+* Chuck Ebbert <cebbert@redhat.com> wrote:
+
+> > Subject: x86: Add the "print code before the trapping instruction" feature to 64 bit
+> > From: Arjan van de Ven <arjan@linux.intel.com>
+> > 
+> > The 32 bit x86 tree has a very useful feature that prints the Code: 
+> > line for the code even before the trapping instrution (and the start 
+> > of the trapping instruction is then denoted with a <>). 
+> > Unfortunately, the 64 bit x86 tree does not yet have this feature, 
+> > making diagnosing backtraces harder than needed.
+> > 
+> > This patch adds this feature in the same was as the 32 bit tree has 
+> > (including the same kernel boot parameter), and including a bugfix 
+> > to make the code use probe_kernel_address() rarther than a buggy 
+> > (deadlocking) __get_user.
+> > 
 > 
-> > 
-> > The test command is:
-> > #sudo taskset -c 7 ./netserver
-> > #sudo taskset -c 0 ./netperf -t TCP_RR -l 60 -H 127.0.0.1 -i 50,3 -I 99,5 -- -r 1,1
-> > 
-> > As a matter of fact, 2.6.23 has about 6% regression and 2.6.24-rc's
-> > regression is between 16%~11%.
-> > 
-> > I tried to use bisect to locate the bad patch between 2.6.22 and 2.6.23-rc1,
-> > but the bisected kernel wasn't stable and went crazy.
+> If this get accepted I can stop ignoring x86_64 oops reports...
 
-TCP work between that is very much non-existing.
+yep - all of Arjan's patches are in x86.git. (right now with a merge 
+target of v2.6.25)
 
-Using git-reset's to select a nearby merge point instead of default 
-commit where bisection lands might be help in case the bisected kernel 
-breaks.
-
-Also, limiting bisection under a subsystem might reduce probability of 
-brokeness (might at least be able to narrow it down quite a lot), e.g.
-
-git bisect start net/
-
-
--- 
- i.
+	Ingo
