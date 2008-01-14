@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbYANXZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbYANXZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754871AbYANXZR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 18:25:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbYANXZF
+	id S1756793AbYANXZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 18:25:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbYANXZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 18:25:05 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:61849 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753712AbYANXZD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 18:25:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=Mo071wRkXbBFpybYmco+4WR7qO0MpwD0T2lD2cu/a/3Af82I6pT7hKklVNJ1LdOeIWz8kXo0ibdf83BTlRN6KyGqibHfvQHADJPBZpXI5wXAhAmbGPbCOINmEyqlqCokMC/SNn8Nf31pWwbHMCcJwQAtvDMG+Cyz23SMvycO1MI=
-Message-ID: <478BEF4A.80805@gmail.com>
-Date: Tue, 15 Jan 2008 02:24:58 +0300
-From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-Organization: DmVo Home
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
+	Mon, 14 Jan 2008 18:25:51 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:33861 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754180AbYANXZu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 18:25:50 -0500
+Message-ID: <478BEF7A.5090906@redhat.com>
+Date: Mon, 14 Jan 2008 17:25:46 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org
-CC: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH -v2][MIPS] Add Atlas to feature-removal-schedule.txt
-Content-Type: text/plain; charset=KOI8-R
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, zippel@linux-m68k.org
+Subject: Re: [PATCH] address hfs on-disk corruption robustness review comments
+References: <478BD0D8.8070101@redhat.com> <20080114151659.035b96a3.akpm@linux-foundation.org>
+In-Reply-To: <20080114151659.035b96a3.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ralf Baechle on Atlas board support in the linux-mips mailing list:
+Andrew Morton wrote:
+> On Mon, 14 Jan 2008 15:15:04 -0600
+> Eric Sandeen <sandeen@redhat.com> wrote:
+> 
+>> Address Roman's review comments for the previously sent on-disk
+>> corruption hfs robustness patch.
+>>
+>> I still owe a patch for hfsplus.
+>>
+>> Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+> 
+> That isn't a changlog.  Please send a description of this patch?
 
-> Maciej is promising to fix it up since a few years ;-)  Aside of that it's
-> safe to say the Atlas is dead like a coffin nail.
+Follows.
 
-Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+-----------
 
----
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index 20c4c8b..2693ebc 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -333,3 +333,11 @@ Why:	This driver has been marked obsolet
- Who:	Stephen Hemminger <shemminger@linux-foundation.org>
- 
- ---------------------------
-+
-+What:	Support for MIPS Technologies' Atlas evaluation board
-+When:	March 2008
-+Why:	Apparently there is no user base left for this platform.
-+	Hardware out of production since several years.
-+Who:	Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-+
-+---------------------------
+Per maintainer's request, use 0 as a failure value, rather than
+making a new macro HFS_BAD_KEYLEN, and use a switch statement
+instead of if's.
+
+Add new fail: target to __hfs_brec_find to skip assignments using
+bad values when exiting with a failure.
+
+-----------
+
+Sorry 'bout that.
+
+-Eric
