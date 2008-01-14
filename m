@@ -1,56 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754395AbYANUCs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbYANUDB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754395AbYANUCs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 15:02:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754436AbYANUC0
+	id S1756023AbYANUDB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 15:03:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755852AbYANUCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 15:02:26 -0500
-Received: from wx-out-0506.google.com ([66.249.82.232]:50780 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754117AbYANUCZ (ORCPT
+	Mon, 14 Jan 2008 15:02:44 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54471 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755856AbYANUCn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 15:02:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=v8/YzaKsADzr90/Z2mZxui14beXjUQc8dmWUEW9mXZhA25manV58Cp5AhwVrEz9U1xBUnq2imEjYDp2bzHzCJ7OsWCiU9Yxb09e59YmYmTyC0zb3q5web2BDpzl9fYNZA1Ahn2esDVskmNDx53naDTBclEMcsrIFIYHdZ+j1mc0=
-Message-ID: <5bdc1c8b0801141202p68dcb452yd2cb55fde9336521@mail.gmail.com>
-Date: Mon, 14 Jan 2008 12:02:21 -0800
-From: "Mark Knecht" <markknecht@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: 2.6.24-rc7-rt2
-Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <1200336080.318.8.camel@localhost.localdomain>
+	Mon, 14 Jan 2008 15:02:43 -0500
+Date: Mon, 14 Jan 2008 12:02:42 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       kvm-devel@lists.sourceforge.net, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, daniel.blueman@quadrics.com,
+       holt@sgi.com, steiner@sgi.com, Andrew Morton <akpm@osdl.org>,
+       Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] mmu notifiers #v2
+In-Reply-To: <20080113162418.GE8736@v2.random>
+Message-ID: <Pine.LNX.4.64.0801141154240.8300@schroedinger.engr.sgi.com>
+References: <20080113162418.GE8736@v2.random>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1200336080.318.8.camel@localhost.localdomain>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 14, 2008 10:41 AM, Steven Rostedt <rostedt@goodmis.org> wrote:
-> We are pleased to announce the 2.6.24-rc7-rt2 tree, which can be
-> downloaded from the location:
->
+On Sun, 13 Jan 2008, Andrea Arcangeli wrote:
 
-Up and running here:
+> About the locking perhaps I'm underestimating it, but by following the
+> TLB flushing analogy, by simply clearing the shadow ptes (with kvm
+> mmu_lock spinlock to avoid racing with other vcpu spte accesses of
+> course) and flushing the shadow-pte after clearing the main linux pte,
+> it should be enough to serialize against shadow-pte page faults that
+> would call into get_user_pages. Flushing the host TLB before or after
+> the shadow-ptes shouldn't matter.
 
-mark@lightning ~ $ uname -a
-Linux lightning 2.6.24-rc7-rt2 #1 PREEMPT RT Mon Jan 14 11:18:04 PST
-2008 x86_64 AMD Athlon(tm) 64 Processor 3000+ AuthenticAMD GNU/Linux
-mark@lightning ~ $
+Hmmm... In most of the callsites we hold a writelock on mmap_sem right?
 
-I must learn how to use some of the test tools so I can do better
-testing for you guys. I see no problems in dmesg but in
-/var/log/messages I spotted this:
+> Comments welcome... especially from SGI/IBM/Quadrics and all other
+> potential users of this functionality.
 
-Jan 14 11:56:54 lightning sshd[5915]: Server listening on :: port 22.
-Jan 14 11:56:54 lightning sshd[5915]: error: Bind to port 22 on
-0.0.0.0 failed: Address already in use.
+> There are also certain details I'm uncertain about, like passing 'mm'
+> to the lowlevel methods, my KVM usage of the invalidate_page()
+> notifier for example only uses 'mm' for a BUG_ON for example:
 
-Scanning back through /var/log/messages I don't see that in earlier kernels.
+Passing mm is fine as long as mmap_sem is held.
 
-- Mark
+> diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
+> --- a/include/asm-generic/pgtable.h
+> +++ b/include/asm-generic/pgtable.h
+> @@ -86,6 +86,7 @@ do {									\
+>  	pte_t __pte;							\
+>  	__pte = ptep_get_and_clear((__vma)->vm_mm, __address, __ptep);	\
+>  	flush_tlb_page(__vma, __address);				\
+> +	mmu_notifier(invalidate_page, (__vma)->vm_mm, __address);	\
+>  	__pte;								\
+>  })
+>  #endif
+
+Hmmm... this is ptep_clear_flush? What about the other uses of 
+flush_tlb_page in asm-generic/pgtable.h and related uses in arch code?
+(would help if your patches would mention the function name in the diff 
+headers)
+
+> +#define mmu_notifier(function, mm, args...)				\
+> +	do {								\
+> +		struct mmu_notifier *__mn;				\
+> +		struct hlist_node *__n;					\
+> +									\
+> +		hlist_for_each_entry(__mn, __n, &(mm)->mmu_notifier, hlist) \
+> +			if (__mn->ops->function)			\
+> +				__mn->ops->function(__mn, mm, args);	\
+> +	} while (0)
+
+Does this have to be inline? ptep_clear_flush will become quite big
