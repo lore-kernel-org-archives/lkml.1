@@ -1,59 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbYANRRP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753292AbYANRRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754429AbYANRRP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 12:17:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbYANRRA
+	id S1753292AbYANRRe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 12:17:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbYANRRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 12:17:00 -0500
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4914 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750894AbYANRRA (ORCPT
+	Mon, 14 Jan 2008 12:17:23 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45951 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750894AbYANRRW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 12:17:00 -0500
-Date: Mon, 14 Jan 2008 17:17:36 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Daniel Walker <dwalker@mvista.com>, Bernd Petrovitsch <bernd@firmix.at>,
-       linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH] checkpatch.pl: show how to read from stdin
-Message-ID: <20080114171736.GC19327@shadowen.org>
-References: <47872E35.3070705@gmail.com> <1200043035.29897.62.camel@imap.mvista.com> <47873505.7040008@gmail.com> <1200043399.3905.9.camel@gimli.at.home> <1200043827.29897.70.camel@imap.mvista.com> <47873833.30001@gmail.com> <1200044206.29897.73.camel@imap.mvista.com> <4787502B.2020606@s5r6.in-berlin.de> <47875809.7060301@gmail.com> <tkrat.b5ac0cacd128569b@s5r6.in-berlin.de>
+	Mon, 14 Jan 2008 12:17:22 -0500
+Message-ID: <478B991F.8060809@sgi.com>
+Date: Mon, 14 Jan 2008 09:17:19 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <tkrat.b5ac0cacd128569b@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 08/10] x86: Change NR_CPUS arrays in numa_64
+References: <20080113183453.973425000@sgi.com> <20080113183455.077460000@sgi.com> <20080114111428.GA24237@elte.hu>
+In-Reply-To: <20080114111428.GA24237@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 11, 2008 at 06:06:35PM +0100, Stefan Richter wrote:
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> Acked-by: Jiri Slaby <jirislaby@gmail.com>
-
-As an absolute minimum this seems reasonable to me.  I guess we could
-make no arguments default to '-' also.  There are up and downsides to
-doing that, as currently no arguments currently tell you the usage and
-with this patch would point clearly out the '-' option.  Just assuming
-stding would lose easy access to usage, which may actually be more
-confusing for the beginner.  Hmmm.  Cirtainly will include this
-documentation change if nothing else.
-
-> ---
->  scripts/checkpatch.pl |    1 +
->  1 file changed, 1 insertion(+)
+Ingo Molnar wrote:
+> * travis@sgi.com <travis@sgi.com> wrote:
 > 
-> Index: linux/scripts/checkpatch.pl
-> ===================================================================
-> --- linux.orig/scripts/checkpatch.pl
-> +++ linux/scripts/checkpatch.pl
-> @@ -53,6 +53,7 @@ if ($#ARGV < 0) {
->  	print "         --file       => check a source file\n";
->  	print "         --strict     => enable more subjective tests\n";
->  	print "         --root       => path to the kernel tree root\n";
-> +	print "When patchfile is -, read standard input.\n";
->  	exit(1);
->  }
+>> Change the following static arrays sized by NR_CPUS to
+>> per_cpu data variables:
+>>
+>> 	char cpu_to_node_map[NR_CPUS];
+> 
+> x86.git randconfig testing found the !NUMA build bugs below.
+> 
+> 	Ingo
 
--apw
+Thanks!  I'll add this in.
+
+Mike
+
+> 
+> --------------->
+> ---
+>  arch/x86/kernel/setup_64.c   |    2 ++
+>  arch/x86/kernel/smpboot_64.c |    4 ++++
+>  2 files changed, 6 insertions(+)
+> 
+> Index: linux/arch/x86/kernel/setup_64.c
+> ===================================================================
+> --- linux.orig/arch/x86/kernel/setup_64.c
+> +++ linux/arch/x86/kernel/setup_64.c
+> @@ -379,7 +379,9 @@ void __init setup_arch(char **cmdline_p)
+>  #ifdef CONFIG_SMP
+>  	/* setup to use the early static init tables during kernel startup */
+>  	x86_cpu_to_apicid_early_ptr = (void *)&x86_cpu_to_apicid_init;
+> +#ifdef CONFIG_NUMA
+>  	x86_cpu_to_node_map_early_ptr = (void *)&x86_cpu_to_node_map_init;
+> +#endif
+>  	x86_bios_cpu_apicid_early_ptr = (void *)&x86_bios_cpu_apicid_init;
+>  #endif
+>  
+> Index: linux/arch/x86/kernel/smpboot_64.c
+> ===================================================================
+> --- linux.orig/arch/x86/kernel/smpboot_64.c
+> +++ linux/arch/x86/kernel/smpboot_64.c
+> @@ -864,8 +864,10 @@ void __init smp_set_apicids(void)
+>  		if (per_cpu_offset(cpu)) {
+>  			per_cpu(x86_cpu_to_apicid, cpu) =
+>  						x86_cpu_to_apicid_init[cpu];
+> +#ifdef CONFIG_NUMA
+>  			per_cpu(x86_cpu_to_node_map, cpu) =
+>  						x86_cpu_to_node_map_init[cpu];
+> +#endif
+>  			per_cpu(x86_bios_cpu_apicid, cpu) =
+>  						x86_bios_cpu_apicid_init[cpu];
+>  		}
+> @@ -876,7 +878,9 @@ void __init smp_set_apicids(void)
+>  
+>  	/* indicate the early static arrays are gone */
+>  	x86_cpu_to_apicid_early_ptr = NULL;
+> +#ifdef CONFIG_NUMA
+>  	x86_cpu_to_node_map_early_ptr = NULL;
+> +#endif
+>  	x86_bios_cpu_apicid_early_ptr = NULL;
+>  }
+>  
+
