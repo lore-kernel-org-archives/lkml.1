@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753697AbYANQ3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752951AbYANQcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753697AbYANQ3U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 11:29:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750833AbYANQ3N
+	id S1752951AbYANQcj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 11:32:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbYANQca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 11:29:13 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:59090 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750832AbYANQ3M (ORCPT
+	Mon, 14 Jan 2008 11:32:30 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55581 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750744AbYANQc3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 11:29:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=wsKbt5VxbTwxTS6Xf6XtoJsdghX7U/SVJzAc6VjLHOwpCqt/jEDyVSSUUapHUMFY2SpV8kNV8OeXjy7MwVKlh5oCnvKEfGxuSEyW+ICmmjvEaXfpTv7o6mXlPQBiebGd7xRdoEc2Kftqn+WL11kwYL/izXDWz66co54I8fXIT1A=
-Date: Mon, 14 Jan 2008 19:28:57 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Paul Gortmaker <p_gortmaker@yahoo.com>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [PATCH] driver: ip27-rtc - convert ioctl to unlocked_ioctl
-Message-ID: <20080114162857.GC6639@cvg>
-References: <20080113203223.GA6723@cvg> <478A8131.9050500@gmail.com> <478A82AD.3070904@gmail.com> <aa79d98a0801131332w45d6e0e9r13e96b69e7e1b70@mail.gmail.com> <aa79d98a0801132238o72266a91p78ae3a0c1476607c@mail.gmail.com> <478B7C4A.5090903@gmail.com> <20080114153806.GA6639@cvg> <478B86DA.1010902@gmail.com> <20080114160745.GB6639@cvg> <478B8D54.7010400@gmail.com>
+	Mon, 14 Jan 2008 11:32:29 -0500
+Date: Mon, 14 Jan 2008 08:30:07 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       "K. Prasad" <prasad@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, dipankar@in.ibm.com, ego@in.ibm.com,
+       paulmck@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/2] Markers Implementation for Preempt RCU Boost
+ Tracing
+In-Reply-To: <20080114153505.GA11522@Krystal>
+Message-ID: <alpine.LFD.1.00.0801140824430.2806@woody.linux-foundation.org>
+References: <20071231060911.GB6461@in.ibm.com> <20071231102045.GB30380@elte.hu> <y0modc4vr7a.fsf@ton.toronto.redhat.com> <20080102124734.GC11208@elte.hu> <20080102163309.GC11496@redhat.com> <20080102170157.GA11161@elte.hu> <20080107185954.GA16041@Krystal>
+ <20080113180740.GA4435@ucw.cz> <20080114153505.GA11522@Krystal>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <478B8D54.7010400@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Jiri Slaby - Mon, Jan 14, 2008 at 05:27:00PM +0100]
-> On 01/14/2008 05:07 PM, Cyrill Gorcunov wrote:
->> Yes, process would be stopped, and not *just* stopped but could spend
->> all his cpu time-slice in attempt to get spinlock (espec if set time is
->> much longer than read), but if we use mutex here the process could just
->> sleep instead of trying to get spinlock granted. Am I wrong? Or this is
->> not worth to do it?
->
-> I would say no. It'll spin only for nanoseconds there.
->
 
-Thanks a lot Jiri, I'll resend improved patch.
 
-		- Cyrill -
+On Mon, 14 Jan 2008, Mathieu Desnoyers wrote:
+> 
+> We would have to figure out if enabling -freorder-blocks-and-partition
+> makes sense kernel-wide.
+
+Last I saw, it generates crappy code, with lots more jumps back and forth, 
+and the image just blows up.
+
+There's a reason we use -Os, and that's that small footprint I$ is 
+generally more important than fake compiler optimizations that don't 
+actually help except on microbenchmarks where everything fits in the 
+cache.
+
+Taking a branch instruction from two bytes to five is almost always a 
+mistake, unless you *know* that the code it jumps to will effectively 
+never be done at all (which is not necessarily the case at all). It also 
+makes debugging much nastier, because if now things like backtraces 
+probably look like crap too!
+
+Don't go there. The *best* we can do is to just use the optimizations that 
+generate good-looking code that humans can read. The rest is just compiler 
+masturbation.
+
+			Linus
