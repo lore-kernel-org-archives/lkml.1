@@ -1,70 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbYANKd7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbYANKft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756038AbYANKd7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 05:33:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755916AbYANKdj
+	id S1755936AbYANKft (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 05:35:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754361AbYANKfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 05:33:39 -0500
-Received: from smtp02.citrix.com ([66.165.176.63]:5781 "EHLO SMTP02.CITRIX.COM"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755852AbYANKdh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 05:33:37 -0500
-X-SBRS: None
-X-MesageID: 37611252
-X-Ironport-Server: ftlpip02.citrite.net
-X-Remote-IP: 216.142.71.134
-X-Policy: $Relay
-X-IronPort-AV: E=Sophos;i="4.24,281,1196658000"; 
-   d="scan'208";a="37611252"
-Date: Mon, 14 Jan 2008 10:27:06 +0000
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Default keyboard LEDs
-Message-ID: <20080114102706.GB4298@implementation.uk.xensource.com>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, linux-input@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20080114005219.GA4296@implementation> <478ADC0A.7020006@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <478ADC0A.7020006@zytor.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+	Mon, 14 Jan 2008 05:35:39 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:43369 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754296AbYANKfi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 05:35:38 -0500
+Subject: Re: 2.6.24-rc7 lockdep warning when poweroff
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Dave Young <hidave.darkstar@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1200302644.7415.6.camel@twins>
+References: <a8e1da0801140104m2d8dceaayd8cf85466659bbf@mail.gmail.com>
+	 <1200302644.7415.6.camel@twins>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Mnnig6DVm2aT6H9ol1c9"
+Date: Mon, 14 Jan 2008 11:35:02 +0100
+Message-Id: <1200306902.5887.39.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin, le Sun 13 Jan 2008 19:50:34 -0800, a écrit :
-> >Actually, what would be perfect would be to use the configuration that
-> >the BIOS sets at boot by default.  That is device-dependent, however.
-> >
-> 
-> It is, but it can be read out either by INT calls at initialization 
-> time, or by reading out the byte at physical address 0x417:
 
-I should have said "arch-dependent".
-I didn't mean it wasn't possible, but just it'd probably be better that
-driver experts do it, not me :)
+--=-Mnnig6DVm2aT6H9ol1c9
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> --------K-M00400017--------------------------
-> MEM 0040h:0017h - KEYBOARD - STATUS FLAGS 1
-> Size:   BYTE
-> SeeAlso: MEM 0040h:0018h,INT 16/AH=02h,MEM 0040h:0096h
-> 
-> Bitfields for keyboard status flags 1:
-> Bit(s)  Description     (Table M0010)
->  7      INSert active
->  6      Caps Lock active
->  5      Num Lock active
->  4      Scroll Lock active
->  3      either Alt pressed
->  2      either Ctrl pressed
->  1      Left Shift pressed
->  0      Right Shift pressed
-> SeeAlso: #M0011,#00587
-> 
-> The same information is available through INT 16h, AH=02h.
 
-Samuel
+> > When I "halt -p", lockdep warnings triggered as following (hand copy):
+> >=20
+> > WARNING : at kernel/lockdep.c: 700 lookup_lock_class()
+> >=20
+> > <snip>
+> > lock_acquire
+> > cleanup_workqueue_thread
+> > workqueue_cpu_callback
+> > notifier_call_chain
+> > __raw_notifier_call_chain
+> > raw_notifier_call_chain
+> > __cpu_down
+> > disable_nonboot_cpus
+> > kernel_power_off
+> > sys_reboot
+> > <snip>
+>=20
+> My first guess would be a __create_workqueue_key() where a key is
+> re-used with a different workqueue name.
+
+Hm, can you elaborate how you got there from the trace above? I don't
+think I'm following.
+
+johannes
+
+--=-Mnnig6DVm2aT6H9ol1c9
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR4s61aVg1VMiehFYAQLzHhAAhWs3JlJneVzjK04Cxn0usN5WkR8fHyWG
+bHgzfa1svCVycnkR5f+TJVIkCDYYYaJFuSWrt3+EwYPGI3M3k/NYSwWMFG32huTN
+nQd5x85VYLjtXa+HF7bbYoQSEqcu7oEBZRfyDiy2B4Ap+pvKgZFD2zmm7gyKhpHh
+arqRFNbZiXUEb3mssZR5VORW2sQKxKvrgQnxmRGpKDPDkVT/iUubHEieK7LE/usR
+NX6kQXAx7+laB8KRHRSe2siZ1hnDoQkS6f5Mmy5hViTKTag3b3dubANRv+Io/frw
+UweEBVFue0Y/lsR462CZp9osxn4cCof/PIL9JvyzO8qzGw4Hu7fYfF+e0VJ7e0G3
+OHEGkujdw/ByQGAiKJHfD40yEnICymexEmwXewh2s6ri7F4S2zb/FRI2Y6kF6Dz+
+yTEY0As4MDb0Rs3rLyG6benQK0AQ/iwLSAJogCz6GBsXP/yM/Kj/C0h4RKMZbkns
+4W9PXbKEeGLcDauEFWnw7iWzYvBl6zb9FuSHzUWSDPvrQuCs8/mCd70Ws4QS40L1
+Cl66h31iSvgZYjo+HYGPuiyz0BAalnGVmSUFc2UntmKKBx1Co1j9AOTBgMQzOjjp
+Tu+JWsStpAzjz0CWMsOVtlP9RhtSyZy5w25AnouBFQDBbsp0HiqhdJ1MoP156qqC
+Ns5pI1fsblA=
+=banZ
+-----END PGP SIGNATURE-----
+
+--=-Mnnig6DVm2aT6H9ol1c9--
+
