@@ -1,61 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756328AbYANMWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756388AbYANMXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756328AbYANMWw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 07:22:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756156AbYANMWm
+	id S1756388AbYANMXY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 07:23:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750994AbYANMXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 07:22:42 -0500
-Received: from nz-out-0506.google.com ([64.233.162.227]:11158 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755846AbYANMWk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 07:22:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RLhAQ578V8rTyyPppXW4s+LQVFu1wHO16yihDznZ9002zLWEcwAIeu1/Ni8Q50cG9f/fQbE/vF8zBFn3CJAznDRTEBssJTvqrKJ7H8FnEqYwHkrq6eCkr12NEQn1Th0n/wHEYbykpWn763ge3etzmgmX3ZMrLnQDkQx6PovgIGo=
-Message-ID: <8bd0f97a0801140422n3d3e3835v7f57dbe33c7a6db0@mail.gmail.com>
-Date: Mon, 14 Jan 2008 07:22:39 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Haavard Skinnemoen" <hskinnemoen@atmel.com>
-Subject: Re: [RFC, PATCH] watchdog on gpio
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Marc Pignat" <marc.pignat@hevs.ch>,
-       wim@iguana.be, linux-kernel@vger.kernel.org
-In-Reply-To: <20080114131429.40453e5f@siona>
+	Mon, 14 Jan 2008 07:23:15 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:60170 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750982AbYANMXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 07:23:13 -0500
+Date: Mon, 14 Jan 2008 12:23:10 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: travis@sgi.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       mingo@elte.hu, Christoph Lameter <clameter@sgi.com>,
+       Jack Steiner <steiner@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/10] x86: Change size of APICIDs from u8 to u16
+Message-ID: <20080114122310.GC32446@csn.ul.ie>
+References: <20080113183453.973425000@sgi.com> <20080113183454.155968000@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-References: <200801101611.08867.marc.pignat@hevs.ch>
-	 <8bd0f97a0801140004q6a32c2ceh397a2208d3012f0e@mail.gmail.com>
-	 <20080114090329.6efa2921@lxorguk.ukuu.org.uk>
-	 <8bd0f97a0801140128i2ebf9236uabe0e0b8cf15fbe@mail.gmail.com>
-	 <20080114092905.227c5a38@lxorguk.ukuu.org.uk>
-	 <8bd0f97a0801140145s5e13083ej926aa9d5f87e3a99@mail.gmail.com>
-	 <20080114131429.40453e5f@siona>
+In-Reply-To: <20080113183454.155968000@sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 14, 2008 7:14 AM, Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
-> "Mike Frysinger" <vapier.adi@gmail.com> wrote:
-> > there is no hard requirement anywhere that says platform resources
-> > must be in the board resources file.  marking the functions as __init
-> > instead of __devinit will basically cause a kernel crash if someone
-> > tries to use dynamic platform resources.  there is no option that i'm
-> > aware of that prevents dynamic platform resources which means there is
-> > no way for the driver to say "i wont work with standard dynamic
-> > platform resources".
->
-> There is: platform_driver_probe(). It takes the probe function as a
-> parameter so that it can be left out of the platform_driver struct.
-> After it returns, there are no references to the probe function left
-> around, so if you call platform_driver_probe() instead of
-> platform_driver_register(), the probe function can be __init.
+On (13/01/08 10:34), travis@sgi.com didst pronounce:
+> Change the size of APICIDs from u8 to u16.  This partially
+> supports the new x2apic mode that will be present on future
+> processor chips. (Chips actually support 32-bit APICIDs, but that
+> change is more intrusive. Supporting 16-bit is sufficient for now).
+> 
+> Signed-off-by: Jack Steiner <steiner@sgi.com>
+> 
+> I've included just the partial change from u8 to u16 apicids.  The
+> remaining x2apic changes will be in a separate patch.
+> 
+> In addition, the fake_node_to_pxm_map[] and fake_apicid_to_node[]
+> tables have been moved from local data to the __initdata section
+> reducing stack pressure when MAX_NUMNODES and MAX_LOCAL_APIC are
+> increased in size.
+> 
 
-ah, thanks for that.  i think in that case, there's no way to bind the
-release function to the process ?  which means the driver is no longer
-unloadable ?  which means the platform driver release function can be
-scrubbed as well as the module exit function as well as changing the
-Kconfig to be a bool ?
--mike
+Does this make a different to inter-node effects?
+
+> Signed-off-by: Mike Travis <travis@sgi.com>
+> Reviewed-by: Christoph Lameter <clameter@sgi.com>
+> ---
+>  arch/x86/kernel/genapic_64.c |    4 ++--
+>  arch/x86/kernel/mpparse_64.c |    4 ++--
+>  arch/x86/kernel/smpboot_64.c |    2 +-
+>  arch/x86/mm/numa_64.c        |    2 +-
+>  arch/x86/mm/srat_64.c        |   22 +++++++++++++---------
+>  include/asm-x86/processor.h  |   14 +++++++-------
+>  include/asm-x86/smp_64.h     |    8 ++++----
+>  7 files changed, 30 insertions(+), 26 deletions(-)
+> 
+> --- a/arch/x86/kernel/genapic_64.c
+> +++ b/arch/x86/kernel/genapic_64.c
+> @@ -32,10 +32,10 @@
+>   * array during this time.  Is it zeroed when the per_cpu
+>   * data area is removed.
+>   */
+> -u8 x86_cpu_to_apicid_init[NR_CPUS] __initdata
+> +u16 x86_cpu_to_apicid_init[NR_CPUS] __initdata
+>  					= { [0 ... NR_CPUS-1] = BAD_APICID };
+>  void *x86_cpu_to_apicid_ptr;
+> -DEFINE_PER_CPU(u8, x86_cpu_to_apicid) = BAD_APICID;
+> +DEFINE_PER_CPU(u16, x86_cpu_to_apicid) = BAD_APICID;
+>  EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
+>  
+>  struct genapic __read_mostly *genapic = &apic_flat;
+> --- a/arch/x86/kernel/mpparse_64.c
+> +++ b/arch/x86/kernel/mpparse_64.c
+> @@ -67,7 +67,7 @@ unsigned disabled_cpus __cpuinitdata;
+>  /* Bitmask of physically existing CPUs */
+>  physid_mask_t phys_cpu_present_map = PHYSID_MASK_NONE;
+>  
+> -u8 bios_cpu_apicid[NR_CPUS] = { [0 ... NR_CPUS-1] = BAD_APICID };
+> +u16 bios_cpu_apicid[NR_CPUS] = { [0 ... NR_CPUS-1] = BAD_APICID };
+>  
+>  
+>  /*
+> @@ -132,7 +132,7 @@ static void __cpuinit MP_processor_info(
+>  	 * area is created.
+>  	 */
+>  	if (x86_cpu_to_apicid_ptr) {
+> -		u8 *x86_cpu_to_apicid = (u8 *)x86_cpu_to_apicid_ptr;
+> +		u16 *x86_cpu_to_apicid = (u16 *)x86_cpu_to_apicid_ptr;
+>  		x86_cpu_to_apicid[cpu] = m->mpc_apicid;
+>  	} else {
+>  		per_cpu(x86_cpu_to_apicid, cpu) = m->mpc_apicid;
+> --- a/arch/x86/kernel/smpboot_64.c
+> +++ b/arch/x86/kernel/smpboot_64.c
+> @@ -65,7 +65,7 @@ int smp_num_siblings = 1;
+>  EXPORT_SYMBOL(smp_num_siblings);
+>  
+>  /* Last level cache ID of each logical CPU */
+> -DEFINE_PER_CPU(u8, cpu_llc_id) = BAD_APICID;
+> +DEFINE_PER_CPU(u16, cpu_llc_id) = BAD_APICID;
+>  
+>  /* Bitmask of currently online CPUs */
+>  cpumask_t cpu_online_map __read_mostly;
+> --- a/arch/x86/mm/numa_64.c
+> +++ b/arch/x86/mm/numa_64.c
+> @@ -627,7 +627,7 @@ void __init init_cpu_to_node(void)
+>  	int i;
+>  
+>  	for (i = 0; i < NR_CPUS; i++) {
+> -		u8 apicid = x86_cpu_to_apicid_init[i];
+> +		u16 apicid = x86_cpu_to_apicid_init[i];
+>  
+>  		if (apicid == BAD_APICID)
+>  			continue;
+> --- a/arch/x86/mm/srat_64.c
+> +++ b/arch/x86/mm/srat_64.c
+> @@ -130,6 +130,9 @@ void __init
+>  acpi_numa_processor_affinity_init(struct acpi_srat_cpu_affinity *pa)
+>  {
+>  	int pxm, node;
+> +	int apic_id;
+> +
+> +	apic_id = pa->apic_id;
+>  	if (srat_disabled())
+>  		return;
+>  	if (pa->header.length != sizeof(struct acpi_srat_cpu_affinity)) {
+> @@ -145,10 +148,10 @@ acpi_numa_processor_affinity_init(struct
+>  		bad_srat();
+>  		return;
+>  	}
+> -	apicid_to_node[pa->apic_id] = node;
+> +	apicid_to_node[apic_id] = node;
+>  	acpi_numa = 1;
+>  	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
+> -	       pxm, pa->apic_id, node);
+> +	       pxm, apic_id, node);
+>  }
+>  
+>  int update_end_of_memory(unsigned long end) {return -1;}
+> @@ -343,7 +346,8 @@ int __init acpi_scan_nodes(unsigned long
+>  	/* First clean up the node list */
+>  	for (i = 0; i < MAX_NUMNODES; i++) {
+>  		cutoff_node(i, start, end);
+> -		if ((nodes[i].end - nodes[i].start) < NODE_MIN_SIZE) {
+> +		/* ZZZ why was this needed. At least add a comment */
+> +		if (nodes[i].end && (nodes[i].end - nodes[i].start) < NODE_MIN_SIZE) {
+
+Care to actually add a comment? This looks like a note to yourself that
+got missed.
+
+>  			unparse_node(i);
+>  			node_set_offline(i);
+>  		}
+> @@ -384,6 +388,12 @@ int __init acpi_scan_nodes(unsigned long
+>  }
+>  
+>  #ifdef CONFIG_NUMA_EMU
+> +static int fake_node_to_pxm_map[MAX_NUMNODES] __initdata = {
+> +	[0 ... MAX_NUMNODES-1] = PXM_INVAL
+> +};
+> +static unsigned char fake_apicid_to_node[MAX_LOCAL_APIC] __initdata = {
+> +	[0 ... MAX_LOCAL_APIC-1] = NUMA_NO_NODE
+> +};
+>  static int __init find_node_by_addr(unsigned long addr)
+>  {
+>  	int ret = NUMA_NO_NODE;
+> @@ -414,12 +424,6 @@ static int __init find_node_by_addr(unsi
+>  void __init acpi_fake_nodes(const struct bootnode *fake_nodes, int num_nodes)
+>  {
+>  	int i, j;
+> -	int fake_node_to_pxm_map[MAX_NUMNODES] = {
+> -		[0 ... MAX_NUMNODES-1] = PXM_INVAL
+> -	};
+> -	unsigned char fake_apicid_to_node[MAX_LOCAL_APIC] = {
+> -		[0 ... MAX_LOCAL_APIC-1] = NUMA_NO_NODE
+> -	};
+>  
+>  	printk(KERN_INFO "Faking PXM affinity for fake nodes on real "
+>  			 "topology.\n");
+> --- a/include/asm-x86/processor.h
+> +++ b/include/asm-x86/processor.h
+> @@ -86,14 +86,14 @@ struct cpuinfo_x86 {
+>  #ifdef CONFIG_SMP
+>  	cpumask_t llc_shared_map;	/* cpus sharing the last level cache */
+>  #endif
+> -	unsigned char x86_max_cores;	/* cpuid returned max cores value */
+> -	unsigned char apicid;
+> -	unsigned short x86_clflush_size;
+> +	u16 x86_max_cores;		/* cpuid returned max cores value */
+> +	u16 apicid;
+> +	u16 x86_clflush_size;
+>  #ifdef CONFIG_SMP
+> -	unsigned char booted_cores;	/* number of cores as seen by OS */
+> -	__u8 phys_proc_id; 		/* Physical processor id. */
+> -	__u8 cpu_core_id;  		/* Core id */
+> -	__u8 cpu_index;			/* index into per_cpu list */
+> +	u16 booted_cores;		/* number of cores as seen by OS */
+> +	u16 phys_proc_id; 		/* Physical processor id. */
+> +	u16 cpu_core_id;  		/* Core id */
+> +	u16 cpu_index;			/* index into per_cpu list */
+>  #endif
+>  } __attribute__((__aligned__(SMP_CACHE_BYTES)));
+>  
+> --- a/include/asm-x86/smp_64.h
+> +++ b/include/asm-x86/smp_64.h
+> @@ -26,14 +26,14 @@ extern void unlock_ipi_call_lock(void);
+>  extern int smp_call_function_mask(cpumask_t mask, void (*func)(void *),
+>  				  void *info, int wait);
+>  
+> -extern u8 __initdata x86_cpu_to_apicid_init[];
+> +extern u16 __initdata x86_cpu_to_apicid_init[];
+>  extern void *x86_cpu_to_apicid_ptr;
+> -extern u8 bios_cpu_apicid[];
+> +extern u16 bios_cpu_apicid[];
+>  
+>  DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
+>  DECLARE_PER_CPU(cpumask_t, cpu_core_map);
+> -DECLARE_PER_CPU(u8, cpu_llc_id);
+> -DECLARE_PER_CPU(u8, x86_cpu_to_apicid);
+> +DECLARE_PER_CPU(u16, cpu_llc_id);
+> +DECLARE_PER_CPU(u16, x86_cpu_to_apicid);
+>  
+>  static inline int cpu_present_to_apicid(int mps_cpu)
+>  {
+> 
+> -- 
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
