@@ -1,91 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752372AbYANN7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751704AbYANOBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752372AbYANN7R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 08:59:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYANN7F
+	id S1751704AbYANOBs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 09:01:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYANOBk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 08:59:05 -0500
-Received: from nz-out-0506.google.com ([64.233.162.226]:14906 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750784AbYANN7C (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 08:59:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=aYUQ/h+qSRiWOXqH5T1DhXNJmtQ8PoVbjtGTOgyPDZIiazrx9qCyAExu/OdGKfwgxDR6albaBVTE2OiygmKXsnhYPLN4qJHsTrbMidFNdo+kgqx66FmonHZFR87Cg5uVzYvPZFNkJCQ9LTObgF3Wcyg7ThiEpQoCPtFtZhFQi8A=
-From: Balaji Rao <balajirrao@gmail.com>
-Organization: NITK
-To: Clemens Ladisch <clemens@ladisch.de>
-Subject: Re: HPET timer broken using 2.6.23.13 / nanosleep() hangs
-Date: Mon, 14 Jan 2008 19:42:41 +0530
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
-Cc: Andrew Paprocki <andrew@ishiboo.com>, linux-kernel@vger.kernel.org
-References: <76366b180801130310x57f24cc8s641d3ccb2415524c@mail.gmail.com> <478B5CAF.6010605@ladisch.de>
-In-Reply-To: <478B5CAF.6010605@ladisch.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801141942.41732.balajirrao@gmail.com>
+	Mon, 14 Jan 2008 09:01:40 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:49020 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750695AbYANOBj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 09:01:39 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1199902278.9393.283.camel@moss-spartans.epoch.ncsc.mil>
+References: <1199902278.9393.283.camel@moss-spartans.epoch.ncsc.mil> <1197307397.18120.72.camel@moss-spartans.epoch.ncsc.mil> <1197305173.18120.60.camel@moss-spartans.epoch.ncsc.mil> <20071205193818.24617.79771.stgit@warthog.procyon.org.uk> <20071205193859.24617.36392.stgit@warthog.procyon.org.uk> <25037.1197306473@redhat.com> <17868.1199897484@redhat.com> 
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: dhowells@redhat.com, Daniel J Walsh <dwalsh@redhat.com>,
+       casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM settings for task actions [try #2]
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Mon, 14 Jan 2008 14:01:19 +0000
+Message-ID: <3466.1200319279@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 January 2008 06:29:27 pm Clemens Ladisch wrote:
-> Andrew Paprocki wrote:
-> > I started debugging a problem I was having with my sky2 network driver
-> > under 2.6.23.13. The investigation led me to find that the HPET timer
-> > wasn't working at all, causing the sky2 driver to not work properly.
-> > Simple example:
-> >
-> > am2:/sys/devices/system/clocksource/clocksource0# echo hpet >
-> > current_clocksource am2:/sys/devices/system/clocksource/clocksource0#
-> > time sleep 1
-> > <hangs indefinetly...>
-> >
-> > Running strace shows it blocked on nanosleep(). I'm building the
-> > kernel with the processor type set to Athalon64. I've built it with
-> > and without SMP and high-res timers enabled and I get the same result.
-> > My previous 2.6.18-4 kernel works because it does not install HPET as
-> > the default timer. The same behavior occurs in 2.6.24-rc7 git head.
-> > I've attached the config/dmesg below.
-> >
-> > Under 2.6.18-4 (Debian stock kernel):
-> >
-> > ACPI: HPET id: 0x10b9a201 base: 0xfed00000
-> > hpet0: at MMIO 0xfed00000 (virtual 0xf8800000), IRQs 2, 8, 0, 0
-> > hpet0: 4 32-bit timers, 14318180 Hz
-> > Using HPET for base-timer
-> > hpet_resources: 0xfed00000 is busy
-> > Time: tsc clocksource has been installed.
-> >
-> > Under 2.6.23.13 w/ SMP:
-> >
-> > ACPI: HPET 37FE7400, 0038 (r1 RS690  AWRDACPI 42302E31 AWRD       98)
-> > ACPI: HPET id: 0x10b9a201 base: 0xfed00000
-> > Time: tsc clocksource has been installed.
-> > Clocksource tsc unstable (delta = 500013666 ns)
-> > Time: hpet clocksource has been installed.
->
-> The lines prefixed with "hpet0:" are missing; apparently, hpet_alloc()
-> was never called because hpet_reserve_platform_timers() is disabled
-> because CONFIG_HPET is not set.  Try enabling this option.  (CONFIG_HPET
-> is in the "Character Devices" kernel config menu.)
->
-> That this option would be required to get the platform HPET code to work
-> seems like a bug.
->
-This doesn't seem to be the issue, as I have not been able to reproduce the bug on my Core 2 system with the same config.
-HPET clocksource works fine with only CONFIG_HPET_TIMER.
->
-> Regards,
-> Clemens
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
 
+Stephen Smalley <sds@tycho.nsa.gov> wrote:
 
+> > 	avc_has_perm(daemon_tsec->sid, nominated_sid,
+> > 		     SECCLASS_CACHE, CACHE__USE_AS_OVERRIDE, NULL);
+> > 
+> > And I assume this doesn't care if one, the other or both of the two SIDs
+> > mentioned are of SECCLASS_PROCESS rather than of SECCLASS_CACHE.
+> 
+> Right, the latter is reasonable.
+
+Okay...  It looks like I want four security operations/hooks for cachefiles:
+
+ (1) Check that a daemon can nominate a secid for use by the kernel to override
+     the process subjective secid.
+
+ (2) Set the secid mentioned in (1).
+
+ (3) Check that the kernel may create files as a particular secid (this could
+     be specified indirectly by specifying an inode, which would hide the secid
+     inside the LSM).
+
+ (4) Set the fscreate secid mentioned in (3).
+
+Now, it's possible to condense (1) and (2) into a single op, and condense (3)
+and (4) into a single op.  That, however, might make the ops unusable by nfsd,
+which may well want to bypass the checks or do them elsewhere.
+
+Any thoughts?
+
+David
