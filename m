@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755493AbYANDnh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbYANDuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755493AbYANDnh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 22:43:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206AbYANDn0
+	id S1755469AbYANDuH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 22:50:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbYANDt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 22:43:26 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:40682 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753958AbYANDnZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 22:43:25 -0500
-Date: Mon, 14 Jan 2008 03:43:23 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Neil Brown <neilb@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 002 of 6] md: Fix use-after-free bug when dropping an rdev from an md array.
-Message-ID: <20080114034322.GO27894@ZenIV.linux.org.uk>
-References: <20080114123726.19968.patches@notabene> <1080114014531.20354@suse.de> <20080114020459.GN27894@ZenIV.linux.org.uk> <18314.54601.196877.828373@notabene.brown>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18314.54601.196877.828373@notabene.brown>
-User-Agent: Mutt/1.4.2.3i
+	Sun, 13 Jan 2008 22:49:57 -0500
+Received: from scrub.xs4all.nl ([194.109.195.176]:3525 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754275AbYANDt4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jan 2008 22:49:56 -0500
+Date: Mon, 14 Jan 2008 04:49:48 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+Subject: Re: kconfig: support option env="" [Was: kconfig: use $K64BIT to
+ set 64BIT with all*config targets]
+In-Reply-To: <20080106132601.GA3139@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0801140442420.17507@scrub.home>
+References: <20071110204038.GA13140@uranus.ravnborg.org>
+ <11947274093185-git-send-email-sam@ravnborg.org> <11947274091127-git-send-email-sam@ravnborg.org>
+ <Pine.LNX.4.64.0711142116500.1818@scrub.home> <20071114220840.GB10920@uranus.ravnborg.org>
+ <Pine.LNX.4.64.0711151616330.1817@scrub.home> <20080106132601.GA3139@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 14, 2008 at 02:21:45PM +1100, Neil Brown wrote:
+Hi,
 
-> Maybe it isn't there any more....
+On Sun, 6 Jan 2008, Sam Ravnborg wrote:
+
+> Please get back to me so we can finsih this patch and have it applied.
+> I will split the patch in two btw.
+
+I reworked the patch a little and split it into three.
+
+> > +	if (sym->flags & SYMBOL_AUTO)
+> > +		sym->flags &= ~SYMBOL_WRITE;
+> > +
 > 
-> Once upon a time, when I 
->    echo remove > /sys/block/mdX/md/dev-YYY/state
+> Why is this change needed?
+> It is non-obvious to me so please explain and I will add a comment.
 
-Egads.  And just what will protect you from parallel callers
-of state_store()?  buffer->mutex does *not* do that - it only
-gives you exclusion on given struct file.  Run the command
-above from several shells and you've got independent open
-from each redirect => different struct file *and* different
-buffer for each => no exclusion whatsoever.
+Automatically generated symbols are not saved, this was previously not 
+needed as they weren't in the menu structure.
 
-And _that_ is present right in the mainline tree - it's unrelated
-to -mm kobject changes.
+> I did it like this:
+> 			menu_warn(current_entry,
+> 			          "config %s: redefining environment symbol from '%s' to '%s'",
+> 			          sym->name, env, sym2->name);
 
-BTW, yes, you do have a deadlock there - kobject_del() will try to evict
-children, which will include waiting for currently running ->store()
-to finish, which will include the caller since .../state *is* a child of
-that sucker.
+I omitted the prefix, it's inconsistent with other warnings.
 
-The real problem is the lack of any kind of exclusion considerations in
-md.c itself, AFAICS.  Fun with ordering is secondary (BTW, yes, it is
-a problem - will sysfs ->store() to attribute between export_rdev() and
-kobject_del() work correctly?)
-
+bye, Roman
