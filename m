@@ -1,95 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752028AbYANFUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751839AbYANFXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752028AbYANFUc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 00:20:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbYANFUW
+	id S1751839AbYANFXS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 00:23:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbYANFXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 00:20:22 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:53628 "EHLO
-	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750861AbYANFUV (ORCPT
+	Mon, 14 Jan 2008 00:23:08 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37488 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750861AbYANFXH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 00:20:21 -0500
-Date: Sun, 13 Jan 2008 23:20:13 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: fixed a bug of adma in rhel4u5 with HDS7250SASUN500G.
-In-reply-to: <15F501D1A78BD343BE8F4D8DB854566B1BFE2AC0@hkemmail01.nvidia.com>
-To: Kuan Luo <kluo@nvidia.com>
-Cc: Tejun Heo <htejun@gmail.com>, Mark Lord <liml@rtr.ca>,
-       Jeff Garzik <jeff@garzik.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Allen Martin <AMartin@nvidia.com>, Peer Chen <pchen@nvidia.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       David Milburn <dmilburn@redhat.com>
-Message-id: <478AF10D.5080805@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <4781F008.9070404@gmail.com> <4782422C.8020202@rtr.ca>
- <4782B73B.8080309@shaw.ca> <4782BC48.4000309@gmail.com>
- <4782C008.3030902@shaw.ca> <4782CB62.7040901@gmail.com>
- <4782CEF9.3040708@gmail.com> <4782DFFE.50301@shaw.ca>
- <4782E5A8.9010305@gmail.com> <4782E63E.1000606@gmail.com>
- <4782E78F.9050205@shaw.ca> <4782E912.1050204@gmail.com>
- <4783493A.7070800@gmail.com> <47838B57.8020407@shaw.ca>
- <47842A54.2060107@gmail.com> <47842ABA.2060605@gmail.com>
- <47844471.4070705@shaw.ca> <47845708.6060900@gmail.com>
- <478567D8.10601@shaw.ca>
- <15F501D1A78BD343BE8F4D8DB854566B1BFE2ABF@hkemmail01.nvidia.com>
- <478812C9.1000901@shaw.ca>
- <15F501D1A78BD343BE8F4D8DB854566B1BFE2AC0@hkemmail01.nvidia.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Mon, 14 Jan 2008 00:23:07 -0500
+Date: Sun, 13 Jan 2008 21:20:35 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: tcamuso@redhat.com, Arjan van de Ven <arjan@infradead.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <greg@kroah.com>,
+       Matthew Wilcox <matthew@wil.cx>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>, Loic Prylli <loic@myri.com>,
+       Prarit Bhargava <prarit@redhat.com>,
+       "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>,
+       "Schoeller, Patrick (Linux - Houston, TX)" <Patrick.Schoeller@hp.com>,
+       Bhavana Nagendra <bnagendr@redhat.com>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+ opt-in
+In-Reply-To: <20080114005434.48340f84@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.LFD.1.00.0801132119520.2806@woody.linux-foundation.org>
+References: <alpine.LFD.1.00.0801111224090.3148@woody.linux-foundation.org> <20080111204228.GP18741@parisc-linux.org> <alpine.LFD.1.00.0801111311170.3148@woody.linux-foundation.org> <20080111211753.GR18741@parisc-linux.org> <alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org>
+ <20080111213803.GS18741@parisc-linux.org> <20080111235856.GA16079@jurassic.park.msu.ru> <20080112002638.GA18710@kroah.com> <20080112144030.GA19279@jurassic.park.msu.ru> <20080112094557.71f5382a@laptopd505.fenrus.org> <20080112214911.GA20102@jurassic.park.msu.ru>
+ <20080112150120.05f93768@laptopd505.fenrus.org> <47895767.3090503@redhat.com> <20080112164006.6f6f7bc2@laptopd505.fenrus.org> <47896B3B.2000108@redhat.com> <20080112204248.29abb1dd@laptopd505.fenrus.org> <478A075F.7010503@redhat.com>
+ <20080113090311.0a9a1db5@laptopd505.fenrus.org> <478A8268.6020107@redhat.com> <20080114005434.48340f84@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kuan Luo wrote:
-> Robert hancock wrote:
->> What problem does this resolve? I tested it against the cache 
->> flush/NCQ 
->> write switching problem we've been trying to solve, and it 
->> doesn't look 
->> like it fixes that one - if I apply this patch and then remove the 
->> udelay(20) in sata_nv.c that I added which prevented me from 
->> seeing this 
->> problem before, it shows up.
->>
-> 
-> First thank  davide to help to send the attachment.
-> 
-> Robert,
-> The patch is to solve the error message "ata1: CPB flags CMD err,
-> flags=0x11" when testing HDS7250SASUN500G in rhel4u5.
-> I tested this hd in 2.6.24-rc7 which needed to remove the mask in
-> blacklist to run the ncq and the same error also showed up. 
-> 
-> I traced the  bug and found that the interrupt finished a command (for
-> example, tag=0) when the driver got that adma status is
-> NV_ADMA_STAT_DONE  and  cpb->resp_flags is NV_CPB_RESP_DONE.
-> However, For this hd, the drive maybe didn't clear bit 0 at this moment.
-> It meaned the hardware  had not completely finished the command.
-> If at the same time  the driver freed the command(tag 0) and sended
-> another command (tag 0), the error happened.
-> 
-> The notifier register is 32-bit register containing notifier value.
-> Value is bit vector containing one bit per tag number (0-31) in
-> corresponding bit positions (bit 0 is for tag 0, etc). When bit is set
-> then ADMA indicates that command with corresponding tag number completed
-> execution.
-> 
-> So i added the check notifier code. Sometimes i saw that the notifier
-> reg set some bits  , but the adma status set NV_ADMA_STAT_CMD_COMPLETE
-> ,not NV_ADMA_STAT_DONE. So i added the NV_ADMA_STAT_CMD_COMPLETE check
-> code.
 
-That looks like a good fix then. (Though a possible optimization would 
-be to and the check_commands value with the notifier clear value rather 
-than testing against the notifier on each loop. That's fairly minor though.)
 
-As I mentioned, this doesn't seem to resolve the problem we're seeing 
-with rapidly intermixed NCQ commands and cache flushes (at least, if I 
-take out the arbitrary 20usec delay from the driver and add this patch, 
-the problem still shows up). It could be a similar problem, though, of 
-commands being issued before the controller is really ready for them. If 
-you or others at NVIDIA could assist in tracking down that problem it 
-would be appreciated..
+On Mon, 14 Jan 2008, Alan Cox wrote:
+> > 
+> > As someone gently pointed out to me, you are in a position to know this,
+> > so I probably am wrong.
+> 
+> I suspect Arjan is wrong. It might be some Intel agenda but I still see
+> fairly new driver reference code that is hardcoding port accesses even
+> when designed for Redmond products.
+
+Agreed. I suspect that the likelihood of conf1 accesses going away in the 
+next five years is slim to none.
+
+			Linus
