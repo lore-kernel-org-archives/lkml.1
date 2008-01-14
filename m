@@ -1,47 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbYANQS2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753123AbYANQSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755404AbYANQS2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 11:18:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754202AbYANQSR
+	id S1753123AbYANQSp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 11:18:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755427AbYANQS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 11:18:17 -0500
-Received: from sa14.bezeqint.net ([192.115.104.29]:56167 "EHLO
-	sa14.bezeqint.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750867AbYANQSQ (ORCPT
+	Mon, 14 Jan 2008 11:18:29 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:56268 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755414AbYANQS3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 11:18:16 -0500
-Message-ID: <478B8B41.6060602@panasas.com>
-Date: Mon, 14 Jan 2008 18:18:09 +0200
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 14 Jan 2008 11:18:29 -0500
+Date: Mon, 14 Jan 2008 11:18:28 -0500
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Tuomo Valkonen <tuomov@iki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: The ext3 way of journalling
+Message-ID: <20080114161828.GO2310@csclub.uwaterloo.ca>
+References: <20080112150621.GC6751@mit.edu> <20080113221301.GA18341@jolt.modeemi.cs.tut.fi> <20080113222310.GA20815@jolt.modeemi.cs.tut.fi> <20080113231150.GB23906@mit.edu> <20080114071555.GA6475@jolt.modeemi.cs.tut.fi> <1200303743.24517.6.camel@tara.firmix.at> <slrnfombug.lco.tuomov@jolt.modeemi.cs.tut.fi> <m3d4s4yb4s.fsf@maximus.localdomain> <20080114110328.GA29126@jolt.modeemi.cs.tut.fi> <m3myr8vakf.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: rdunlap@xenotime.net, apw@shadowen.org, jschopp@austin.ibm.com,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Checkpatch.pl failure
-References: <1200325734.3159.1.camel@localhost.localdomain>
-In-Reply-To: <1200325734.3159.1.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m3myr8vakf.fsf@maximus.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan. 14, 2008, 17:48 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> This error:
-> 
-> ERROR: no space before that close parenthesis ')'
-> #501: FILE: drivers/scsi/dpt_i2o.c:2299:
-> +               if (dev_status == 0x02 /*CHECK_CONDITION*/) {
-> 
-> Is definitely wrong.  I think it's stripped the comments so now the if
-> looks to have a space before the bracket, but stylistically the
-> complaint it has errored out for is wrong.
+On Mon, Jan 14, 2008 at 01:46:56PM +0100, Krzysztof Halasa wrote:
+> Nothing will make it work reliably if the system clock isn't stable.
 
-I've seen similar complaints as well and I agree with James that
-they seem bogus.  I think that the comment should be treated as
-part of the grammar and not just stripped out and then you can
-even add checks about allowed spacing before and after the comment.
+I remember my nforce2 board having totally insane clock behaviour back
+around 2.6.14/2.6.15 or so.  It has since been fixed in newer kernels.
+I seem to recall some ATI chipsets were even more insane than the nvidia
+at the time, with some running double speed for the system time.
 
-> 
-> James
+--
+Len Sorensen
