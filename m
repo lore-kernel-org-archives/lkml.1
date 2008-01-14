@@ -1,69 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755740AbYANX5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbYAOABb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755740AbYANX5k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 18:57:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYANX5b
+	id S1754897AbYAOABb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 19:01:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbYAOABY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 18:57:31 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41916 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752028AbYANX5a (ORCPT
+	Mon, 14 Jan 2008 19:01:24 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:58235 "EHLO
+	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750818AbYAOABX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 18:57:30 -0500
-Date: Tue, 15 Jan 2008 08:57:11 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Rik van Riel <riel@redhat.com>
-Subject: Re: [patch 05/19] split LRU lists into anon & file sets
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-In-Reply-To: <20080111104651.3ebea5ea@bree.surriel.com>
-References: <20080111162320.FD6A.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080111104651.3ebea5ea@bree.surriel.com>
-Message-Id: <20080115084534.116A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+	Mon, 14 Jan 2008 19:01:23 -0500
+Date: Mon, 14 Jan 2008 17:59:43 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+ opt-in
+In-reply-to: <fa.EgRiN/duILxBcenHk7dQyC+rldw@ifi.uio.no>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: tcamuso@redhat.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <greg@kroah.com>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>, Loic Prylli <loic@myri.com>,
+       Prarit Bhargava <prarit@redhat.com>,
+       "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>,
+       "Schoeller, Patrick (Linux - Houston, TX)" <Patrick.Schoeller@hp.com>,
+       Bhavana Nagendra <bnagendr@redhat.com>
+Message-id: <478BF76F.8080702@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.KgDY4hzBogAL+o607R+LHzW+HTc@ifi.uio.no>
+ <fa.y9bLGEm23C6rL/wz7kMpKYF67oM@ifi.uio.no>
+ <fa.S+otiE5kNySVMlhUagdf/n9GRIc@ifi.uio.no>
+ <fa.OH5C/OjPYJXn8kSOHV/09piVz0E@ifi.uio.no>
+ <fa.jj0GkdAagaR3CLapBSdT1psD3Ps@ifi.uio.no>
+ <fa.EgRiN/duILxBcenHk7dQyC+rldw@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
-> > Why drop (total_swap_pages == 0 && PageAnon(page)) condition?
-> > in embedded sysmtem, 
-> > CONFIG_NORECLAIM is OFF (because almost embedded cpu is 32bit) and
-> > that anon move to inactive list is meaningless because it doesn't have swap.
+Arjan van de Ven wrote:
+> On Sun, 13 Jan 2008 22:29:23 -0500
+> Tony Camuso <tcamuso@redhat.com> wrote:
 > 
-> That was a mistake, kind of.  Since all swap backed pages are on their
-> own LRU lists, we should not scan those lists at all any more if we are
-> out of swap space.
+>> . There is no need to provide different PCI config access
+>>    mechanisms at device granularity, since the PCI config access
+>>    mechanism between the CPU and the Northbridge is opaque to
+>>    the devices. PCI config mechanisms only need to differ at
+>>    the Northbridge level.
 > 
-> The patch that fixes get_scan_ratio() adds that test.
+> This ignores the "lets make it not matter for the 99% of the users" case.
+>> . If the system is capable of conf1, then PCI config access
+>>    at offsets < 256 should be confined to conf1. This solution
+>>    is most effective for existing and legacy systems.
 > 
-> Having said that, with the nr_swap_pages==0 test in get_scan_ratio(),
-> we no longer need to test for that condition in shrink_active_list().
-
-Oh I see!
-thank you for your kindful lecture.
-
-your implementation is very cute.
-
-
-> > below code is more good, may be.
-> > but I don't understand yet why ignore page_referenced() result at anon page ;-)
+> not "conf1" but "what the platform thinks is the best method for < 256".
 > 
-> On modern systems, swapping out anonymous pages is a relatively rare
-> event.  All anonymous pages start out as active and referenced, so
-> testing for that condition does (1) not add any information and (2)
-> mean we need to scan ALL of the anonymous pages, in order to find one
-> candidate to swap out (since they are all referenced).
+> We have this nice abstraction for the platform to select the best method... we should use it.
 > 
-> Simply deactivating a few pages and checking whether they were referenced
-> again while on the (smaller) inactive_anon_list means we can find candidates
-> to page out with a lot less CPU time used.
+> And still, it's another attempt to get this fixed (well.. it's been 2 years in the coming so far, maybe this will
+> be the last one, maybe it will not be... we'll see I suppose, but it sucks to be a user who doesn't 
+> need any of the functionality that the extended config space provides in theory but gets to suffer more of the issues)
 
-thanks, I understand, may be.
+There actually haven't been that many attempts to "get this fixed". It's 
+been more a) people complaining about it and nothing being done about 
+the problems and b) adding hacks to blindly disable it because of 
+reported problems without root-causing why those problems were showing 
+up. With such approaches no wonder it has not been reliable to try  and 
+use MMCONFIG in the past..
 
-
-- kosaki
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
