@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753700AbYANTMN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752252AbYANTRJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753700AbYANTMN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 14:12:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751269AbYANTL7
+	id S1752252AbYANTRJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 14:17:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751084AbYANTQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 14:11:59 -0500
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4179 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750810AbYANTL6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 14:11:58 -0500
-Date: Mon, 14 Jan 2008 19:12:43 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Bernd Petrovitsch <bernd@firmix.at>, linux-kernel@vger.kernel.org,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH] checkpatch.pl: show how to read from stdin
-Message-ID: <20080114191243.GB25058@shadowen.org>
-References: <47873505.7040008@gmail.com> <1200043399.3905.9.camel@gimli.at.home> <1200043827.29897.70.camel@imap.mvista.com> <47873833.30001@gmail.com> <1200044206.29897.73.camel@imap.mvista.com> <4787502B.2020606@s5r6.in-berlin.de> <47875809.7060301@gmail.com> <tkrat.b5ac0cacd128569b@s5r6.in-berlin.de> <20080114171736.GC19327@shadowen.org> <1200332116.31521.3.camel@imap.mvista.com>
+	Mon, 14 Jan 2008 14:16:57 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:51923 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751022AbYANTQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 14:16:57 -0500
+Date: Mon, 14 Jan 2008 11:16:56 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mike Travis <travis@sgi.com>
+cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       mingo@elte.hu, Jack Steiner <steiner@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/10] x86: Change size of APICIDs from u8 to u16
+In-Reply-To: <478BAAD5.1090500@sgi.com>
+Message-ID: <Pine.LNX.4.64.0801141116160.7891@schroedinger.engr.sgi.com>
+References: <20080113183453.973425000@sgi.com> <20080113183454.155968000@sgi.com>
+ <Pine.LNX.4.64.0801141908370.24893@fbirervta.pbzchgretzou.qr>
+ <478BAAD5.1090500@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1200332116.31521.3.camel@imap.mvista.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 14, 2008 at 09:35:15AM -0800, Daniel Walker wrote:
-> 
-> On Mon, 2008-01-14 at 17:17 +0000, Andy Whitcroft wrote:
-> > On Fri, Jan 11, 2008 at 06:06:35PM +0100, Stefan Richter wrote:
-> > > Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> > > Acked-by: Jiri Slaby <jirislaby@gmail.com>
-> > 
-> > As an absolute minimum this seems reasonable to me.  I guess we could
-> > make no arguments default to '-' also.  There are up and downsides to
-> > doing that, as currently no arguments currently tell you the usage and
-> > with this patch would point clearly out the '-' option.  Just assuming
-> > stding would lose easy access to usage, which may actually be more
-> > confusing for the beginner.  Hmmm.  Cirtainly will include this
-> > documentation change if nothing else.
-> > 
-> 
-> The patch that I submitted checks STDIN for piped data, and if there is
-> any it will default to checking that incoming data .. That's regardless
-> of the number of arguments given .. 
+On Mon, 14 Jan 2008, Mike Travis wrote:
 
-So it does, however that of itself differs from the unix norm; as with
-this I cannot run checkpatch and "type" (ie paste) a patch fragment to
-check it.  So I don't think we want the semantics as you have there,
-as its confusing to the experienced user and inconsistent with the norm.
-Either we should document the standard '-' usage as has been suggested
-elsewhere or always assume stdin with no parameters.
+> I see the mistake in the node array.  But AFAICT, pxm is the proximity
+> between nodes and cannot be expressed as greater than the number of
+> nodes, yes?  (Or can it be arbitrarily expressed where 32 bits is
+> necessary?)  I ask this because the real node_to_pxm_map is already
+> 32 bits.
 
--apw
+Well I think local variables that contain a node can be int without a 
+problem because that is what the core used to store node ids.
+
