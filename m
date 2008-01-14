@@ -1,48 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753237AbYANOiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752078AbYANOnD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753237AbYANOiK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 09:38:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYANOhh
+	id S1752078AbYANOnD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 09:43:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbYANOmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 09:37:37 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:40929 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752859AbYANOhf (ORCPT
+	Mon, 14 Jan 2008 09:42:54 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:38382 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750784AbYANOmx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 09:37:35 -0500
-Date: Mon, 14 Jan 2008 07:37:30 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Mathieu Segaud <mathieu.segaud@regala.cx>
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Convert drivers/scsi/ch.c to use unlocked_ioctl
-Message-ID: <20080114143730.GK18741@parisc-linux.org>
-References: <1200321077-26916-1-git-send-email-mathieu.segaud@regala.cx>
+	Mon, 14 Jan 2008 09:42:53 -0500
+Date: Mon, 14 Jan 2008 14:42:50 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Marc Kleine-Budde <mkl@pengutronix.de>
+Cc: Dmitry Torokhov <dtor@mail.ru>, linux-input@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org,
+       Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
+       Graeme Gregory <gg@opensource.wolfsonmicro.com>,
+       Rodolfo Giometti <giometti@enneenne.com>,
+       Russell King <rmk@arm.linux.org.uk>, Ian Molton <spyro@f2s.com>,
+       Vince Sanders <vince@kyllikki.org>, Andrew Zabolotny <zap@homelink.ru>
+Subject: Re: [PATCH 5/6] Driver for WM97xx touchscreens in streaming mode
+	on PXA2xx systems
+Message-ID: <20080114144250.GA7443@rakim.wolfsonmicro.main>
+Mail-Followup-To: Marc Kleine-Budde <mkl@pengutronix.de>,
+	Dmitry Torokhov <dtor@mail.ru>,
+	linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+	Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
+	Graeme Gregory <gg@opensource.wolfsonmicro.com>,
+	Rodolfo Giometti <giometti@enneenne.com>,
+	Russell King <rmk@arm.linux.org.uk>, Ian Molton <spyro@f2s.com>,
+	Vince Sanders <vince@kyllikki.org>,
+	Andrew Zabolotny <zap@homelink.ru>
+References: <1199965870-4629-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-2-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-3-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-4-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-5-git-send-email-broonie@opensource.wolfsonmicro.com> <478B31B6.3050406@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1200321077-26916-1-git-send-email-mathieu.segaud@regala.cx>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <478B31B6.3050406@pengutronix.de>
+X-Cookie: Apply only to affected area.
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 14, 2008 at 03:31:17PM +0100, Mathieu Segaud wrote:
-> +	.owner			= THIS_MODULE,
-> +	.open			= ch_open,
-> +	.release		= ch_release,
-> +	.unlocked_ioctl	= ch_ioctl,
+On Mon, Jan 14, 2008 at 10:56:06AM +0100, Marc Kleine-Budde wrote:
+> reMark Brown wrote:
 
-Do you have a tab setting that's not 8?  You seem to have used one tab
-too many for the first three lines.
+> > Cc: Marc Kleine-Budde <mkl@penugtronix.de>
+>                                 ^^
+> it's mkl@pengutronix.de
 
-Please correct that one, and then add my:
+Fixed, sorry about that.
 
-Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
+> > +			/* use PEN_DOWN GPIO 13 to assert IRQ on GPIO line 2 */
+> > +			wm->pen_irq = MAINSTONE_AC97_IRQ;
 
-Thanks!
+> I'm missing some kind of abstraction here, what about non mainstone
+> boards with the pen irq wired to some other gpio?
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+The driver really isn't intended to cope with them.  As you say, other
+boards may have things wired up differently and therefore require
+different configuration of the wm97xx and other bits of the system.  The
+expectation is that other systems will have their own driver.
+
+My initial thought is that the most straightforward way of handling this
+would be to rename the driver to mainstone-wm97xx or similar to make it
+clear that the driver is only intended to handle Mainstone as-is.  Does
+that seem reasonable?
