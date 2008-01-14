@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbYANAac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754404AbYANAqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755271AbYANAac (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 19:30:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbYANAaU
+	id S1754404AbYANAqd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 19:46:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbYANAqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 19:30:20 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:47524 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754291AbYANAaS (ORCPT
+	Sun, 13 Jan 2008 19:46:22 -0500
+Received: from cavan.codon.org.uk ([78.32.9.130]:34416 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751866AbYANAqV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 19:30:18 -0500
-Date: Mon, 14 Jan 2008 00:29:12 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux Kernel List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH: 2/2] [SERIAL] avoid stalling suspend if serial port won't drain
-Message-ID: <20080114002912.GA19195@flint.arm.linux.org.uk>
-References: <20080108115148.GB10546@flint.arm.linux.org.uk> <20080108115703.GA27179@flint.arm.linux.org.uk> <20080111101721.GA4463@ucw.cz>
-Mime-Version: 1.0
+	Sun, 13 Jan 2008 19:46:21 -0500
+Date: Mon, 14 Jan 2008 00:35:54 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-ID: <20080114003553.GA1698@srcf.ucam.org>
+References: <20080112022348.GC27524@khazad-dum.debian.net> <200801120416.08631.lenb@kernel.org> <20080113165801.GA4132@ucw.cz> <20080113234129.GE10693@khazad-dum.debian.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080111101721.GA4463@ucw.cz>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080113234129.GE10693@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: Lenovo ThinkPads need acpi_osi="Linux"
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 11, 2008 at 10:17:21AM +0000, Pavel Machek wrote:
-> On Tue 2008-01-08 11:57:03, Russell King wrote:
-> > +		if (!tries)
-> > +			printk(KERN_ERR "%s%s%s%d: Unable to drain transmitter\n",
-> > +			       port->dev ? port->dev->bus_id : "",
-> > +			       port->dev ? ": " : "",
-> > +			       drv->dev_name, port->line);
-> >  
-> >  		ops->shutdown(port);
-> >  	}
-> > 
+On Sun, Jan 13, 2008 at 09:41:29PM -0200, Henrique de Moraes Holschuh wrote:
+> On Sun, 13 Jan 2008, Pavel Machek wrote:
+> > When linux calls video BIOS with lcall (acpi_sleep=s3_bios), they
+> > should turn on backlight and put video into text mode. They should
+> > also make sure mode setting works after that.
 > 
-> Is printk() enough for 'we've just lost your data' condition? Maybe we
-> should abort suspend if we can't drain fifo?
+> IMHO, in that case, we should probably be whitelist-enabling that on
+> thinkpads (and allow for acpi_sleep=none to override it), or letting
+> userspace change it at runtime.
 
-That would mean that a port set for hardware flow control, with hardware
-implemented flow control, has CTS deasserted, you'll never suspend.
-
-If you're suspending because your battery is almost dead what would you
-prefer - the system being prevented from suspending and losing complete
-power unexpectedly, resulting in complete data loss, or losing the
-characters in the serial port and suspending?
-
-Which is the lesser of two evils?
+No. This breaks on the R50e, at least - I suspect it'd also have 
+problems on any nvidia based machines, but I don't have one to hand at 
+the moment. It can be set at runtime already.
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Matthew Garrett | mjg59@srcf.ucam.org
