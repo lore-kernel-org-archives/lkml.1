@@ -1,61 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757508AbYANWZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757908AbYANWZz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757508AbYANWZg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 17:25:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755982AbYANWRK
+	id S1757908AbYANWZz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 17:25:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755345AbYANWRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 17:17:10 -0500
-Received: from cantor.suse.de ([195.135.220.2]:60035 "EHLO mx1.suse.de"
+	Mon, 14 Jan 2008 17:17:12 -0500
+Received: from cantor.suse.de ([195.135.220.2]:60051 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753552AbYANWQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 17:16:58 -0500
+	id S1751766AbYANWQ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 17:16:59 -0500
 From: Andi Kleen <ak@suse.de>
 References: <200801141116.534682000@suse.de>
 In-Reply-To: <200801141116.534682000@suse.de>
 To: linux-kernel@vger.kernel.org, jbeulich@novell.com, mingo@elte.hu,
        tglx@linutronix.de
-Subject: [PATCH] [24/31] CPA: Only unmap kernel init pages in text mapping when CONFIG_DEBUG_RODATA is set
-Message-Id: <20080114221657.443DD14F83@wotan.suse.de>
-Date: Mon, 14 Jan 2008 23:16:57 +0100 (CET)
+Subject: [PATCH] [25/31] CPA: Always do full TLB flush when splitting large pages
+Message-Id: <20080114221658.54C8C14F83@wotan.suse.de>
+Date: Mon, 14 Jan 2008 23:16:58 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Otherwise the kernel will likely always run with 4K pages instead of 2MB pages,
-which is costly in terms of TLBs.
+Various CPUs have errata when using INVLPG to flush large pages.
+This includes Intel Penryn (AV2) and AMD K7 (#16 in Athlon 4) 
+While these happen only in specific circumstances it is still
+a little risky and it's not clear the kernel can avoid them all.
 
-Also optimize it a little bit by using only a single change_page_attr() calls.
-This is particularly useful if debugging is enabled inside it because it spams
-the logs much less.
+Avoid this can of worms by always flushing the full TLB (but 
+not the full cache) when splitting a large page. This should
+not be that expensive anyways and initial splitting should be
+hopefully infrequent.
+
+This also removes the previously hard coded workaround for K7 
+Athlon on 32bit.
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86/mm/init_64.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ arch/x86/mm/pageattr_32.c |   17 +++++++++++------
+ arch/x86/mm/pageattr_64.c |   12 ++++++++++--
+ 2 files changed, 21 insertions(+), 8 deletions(-)
 
-Index: linux/arch/x86/mm/init_64.c
+Index: linux/arch/x86/mm/pageattr_32.c
 ===================================================================
---- linux.orig/arch/x86/mm/init_64.c
-+++ linux/arch/x86/mm/init_64.c
-@@ -553,13 +553,16 @@ void free_init_pages(char *what, unsigne
- 		init_page_count(virt_to_page(addr));
- 		memset((void *)(addr & ~(PAGE_SIZE-1)),
- 			POISON_FREE_INITMEM, PAGE_SIZE);
--		if (addr >= __START_KERNEL_map)
--			change_page_attr_addr(addr, 1, __pgprot(0));
- 		free_page(addr);
- 		totalram_pages++;
+--- linux.orig/arch/x86/mm/pageattr_32.c
++++ linux/arch/x86/mm/pageattr_32.c
+@@ -113,10 +113,7 @@ static void flush_kernel_map(void *arg)
+ 		}
  	}
--	if (addr > __START_KERNEL_map)
-+#ifdef CONFIG_DEBUG_RODATA
-+	if (begin >= __START_KERNEL_map) {
-+		change_page_attr_addr(begin, (end - begin)/PAGE_SIZE,
-+					__pgprot(0));
- 		global_flush_tlb();
-+	}
-+#endif
+ 
+-	/* Handle errata with flushing large pages in early Athlons */
+-	if (a->full_flush ||
+-	    (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
+-	     boot_cpu_data.x86 == 7))
++	if (a->full_flush)
+ 		__flush_tlb_all();
+ 
+ 	/*
+@@ -198,7 +195,7 @@ static int cache_attr_changed(pte_t pte,
+  * data structure to keep track of the flush. This has the added bonus that
+  * it will work for MMIO holes without mem_map too.
+  */
+-static void set_tlb_flush(unsigned long address, int cache)
++static void set_tlb_flush(unsigned long address, int cache, int large)
+ {
+ 	enum flush_mode mode = cache ? FLUSH_CACHE : FLUSH_TLB;
+ 	struct flush *f = kmalloc(sizeof(struct flush), GFP_KERNEL);
+@@ -210,6 +207,13 @@ static void set_tlb_flush(unsigned long 
+ 	f->addr = address;
+ 	f->mode = mode;
+ 	list_add_tail(&f->l, &flush_pages);
++
++	/*
++	 * Work around large page INVLPG bugs in early K7 and in Penryn.
++	 * When we split a large page always do a full TLB flush.
++	 */
++	if (large && full_flush < FLUSH_TLB)
++		full_flush = FLUSH_TLB;
  }
  
- void free_initmem(void)
+ static int
+@@ -230,7 +234,8 @@ __change_page_attr(struct page *page, pg
+ 	BUG_ON(PageLRU(kpte_page));
+ 	BUG_ON(PageCompound(kpte_page));
+ 
+-	set_tlb_flush(address, cache_attr_changed(*kpte, prot, level));
++	set_tlb_flush(address, cache_attr_changed(*kpte, prot, level),
++			level < 3);
+ 
+ 	if (pgprot_val(prot) != pgprot_val(PAGE_KERNEL)) { 
+ 		if (level == 3) {
+Index: linux/arch/x86/mm/pageattr_64.c
+===================================================================
+--- linux.orig/arch/x86/mm/pageattr_64.c
++++ linux/arch/x86/mm/pageattr_64.c
+@@ -164,7 +164,7 @@ static void revert_page(unsigned long ad
+  * data structure to keep track of the flush. This has the added bonus that
+  * it will work for MMIO holes without mem_map too.
+  */
+-static void set_tlb_flush(unsigned long address, int cache)
++static void set_tlb_flush(unsigned long address, int cache, int large)
+ {
+ 	enum flush_mode mode = cache ? FLUSH_CACHE : FLUSH_TLB;
+ 	struct flush *f = kmalloc(sizeof(struct flush), GFP_KERNEL);
+@@ -177,6 +177,13 @@ static void set_tlb_flush(unsigned long 
+ 	f->addr = address;
+ 	f->mode = mode;
+ 	list_add_tail(&f->l, &flush_pages);
++
++	/*
++	 * Work around large page INVLPG bugs in early K7 and in Penryn.
++	 * When we split a large page always do a full TLB flush.
++	 */
++	if (large && full_flush < FLUSH_TLB)
++		full_flush = FLUSH_TLB;
+ }
+ 
+ static unsigned short pat_bit[5] = {
+@@ -208,7 +215,8 @@ __change_page_attr(unsigned long address
+ 	BUG_ON(PageCompound(kpte_page));
+ 	BUG_ON(PageLRU(kpte_page));
+ 
+-	set_tlb_flush(address, cache_attr_changed(*kpte, prot, level));
++	set_tlb_flush(address, cache_attr_changed(*kpte, prot, level),
++			level < 4);
+ 
+ 	if (pgprot_val(prot) != pgprot_val(ref_prot)) { 
+ 		if (level == 4) {
