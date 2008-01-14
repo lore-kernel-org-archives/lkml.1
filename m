@@ -1,93 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754913AbYANUMe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753691AbYANUTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754913AbYANUMe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 15:12:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754114AbYANUMX
+	id S1753691AbYANUTf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 15:19:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbYANUT1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 15:12:23 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:58634 "EHLO pasmtpA.tele.dk"
+	Mon, 14 Jan 2008 15:19:27 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:53259 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753866AbYANUMU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 15:12:20 -0500
-Date: Mon, 14 Jan 2008 21:12:14 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Adrian Bunk <bunk@kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       rjw@sisk.pl, pavel@suse.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without HOTPLUG_CPU
-Message-ID: <20080114201214.GC9257@uranus.ravnborg.org>
-References: <20080110112607.GE28740@does.not.exist> <200801101242.53504.ak@suse.de> <20080110124702.GF28740@does.not.exist> <p73fxx5omck.fsf@bingen.suse.de> <20080110150911.GG28740@does.not.exist> <20080114135240.GA15357@elte.hu> <20080114140910.GA8507@uranus.ravnborg.org> <20080114145854.GA31695@elte.hu> <20080114150553.GA3524@elte.hu> <20080114152440.GA9174@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1750759AbYANUT0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 15:19:26 -0500
+Date: Mon, 14 Jan 2008 22:18:26 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>, rjw@sisk.pl,
+       pavel@suse.cz, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without
+	HOTPLUG_CPU
+Message-ID: <20080114201826.GD9847@does.not.exist>
+References: <p73fxx5omck.fsf@bingen.suse.de> <20080110150911.GG28740@does.not.exist> <20080114135240.GA15357@elte.hu> <20080114140910.GA8507@uranus.ravnborg.org> <20080114145854.GA31695@elte.hu> <20080114150103.GA2700@elte.hu> <20080114182052.GB9847@does.not.exist> <20080114191009.GB2288@elte.hu> <20080114195258.GC9847@does.not.exist> <20080114200126.GB9257@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080114152440.GA9174@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080114200126.GB9257@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 14, 2008 at 04:24:40PM +0100, Ingo Molnar wrote:
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > also, in theory we've got a pretty reliable set of the following 
-> > information:
+On Mon, Jan 14, 2008 at 09:01:26PM +0100, Sam Ravnborg wrote:
+> On Mon, Jan 14, 2008 at 09:52:58PM +0200, Adrian Bunk wrote:
+> > On Mon, Jan 14, 2008 at 08:10:09PM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Adrian Bunk <bunk@kernel.org> wrote:
+> > > 
+> > > > > for example, in current -git, could you tell me why this triggers:
+> > > > > 
+> > > > >  WARNING: vmlinux.o(.text+0x87e2a): Section mismatch: reference to 
+> > > > >           .init.text: (between 'process_zones' and 'setup_per_cpu_pageset')
+> > > > > 
+> > > > > and how to resolve it? I had a quick look and it was not obvious to me.
+> > > > 
+> > > > Please send the .config.
+> > > 
+> > > 'make allyesconfig' and disable CONFIG_HOTPLUG=y.
 > > 
-> >   function X references symbol Y
+> > Works for me without the warning.
 > > 
-> > and we know what type of sections they are in, right?
+> > Wait, I remember something @#$%#@$!!!:
+> > 'make allyesconfig' on x86 became ambiguously.
 > > 
-> > could -ffunction-sections be used to delay the categorization of 
-> > functions to the link stage, and in essence remove the need to mark 
-> > functions via any of the __init markers?
+> > If you have by chance a 64bit CPU that would explain why I didn't get it.
+> > 
+> > @Sam:
+> > Can you fix the bug that menuconfig does not let me enable CONFIG_64BIT?
 > 
-> find below the current set of warnings on -git. There are 62.
+> make ARCH=x86_64 allyesconfig
+> will set CONFIG_64BIT for you - no?
 
-The correct figure is 112.
+Yes.
 
-You need to do a:
-make KCFLAGS=-fno-unit-at-a-time
-build to see them all.
+But this still leaves the fact that when someone says 'allyesconfig' 
+it's no longer clear which configuration he has. And no, I do not 
+consider it funny that this now implies two hours of compilation twice 
+just for seeing one bug.
 
-> 
-> for example, instead of the rather cryptic:
-> 
->   WARNING: vmlinux.o(.text+0x1815e): Section mismatch: reference to 
->   .init.text:calibrate_delay (between 'smp_callin' and '__cpu_up')
-> 
-> the following output would be more informative:
-> 
-> --------------------------------->
-> | function:
-> |
-> |  ./init/calibrate.c:void __devinit calibrate_delay(void)
-> |
-> | calls:
-> |
-> |  ./arch/x86/kernel/smpboot_32.c:static void __cpuinit smp_callin(void)
-> |
-> | but calibrate_delay() is __devinit while smp_callin() is __cpuinit. 
-> | Change smp_callin() to __devinit to resolve this warning.
-> |-------------------------------->
-> 
-> would result in a lot faster cycles of fixing this.
-> 
-> do we have all the info to print this?
+And the fact that I have to set ARCH only for seeing the 32/64bit 
+Kconfig choice is clearly bullshit.
 
-Not yet. The patch I posted on lkml bring us one step further.
-At modpost time today we only see .init.text and .text but
-with the suggested patch we will be able to see what section
-a function belong to and we are several steps closer to better
-error messages.
+> 	Sam
 
-So let me get that into shape and I will revisit the messages.
+cu
+Adrian
 
-In this case I would not know if calibrate_delay() should be
-__cpuinit or smp_callin() should be __devinit looking at the
-information modpost has available without additional digging.
-But a quick grep tells me that the right fix is to annotate
-calibrate_delay() with __cpuinit because is is used from
-either __cpuinit annotated or __init annotated functions.
+-- 
 
-	Sam
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
