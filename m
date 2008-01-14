@@ -1,86 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755057AbYANJG1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbYANJPD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755057AbYANJG1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 04:06:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbYANJGP
+	id S1754417AbYANJPD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 04:15:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbYANJOx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 04:06:15 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35184 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752891AbYANJGN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 04:06:13 -0500
-Date: Mon, 14 Jan 2008 09:03:29 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Cc: "Marc Pignat" <marc.pignat@hevs.ch>, wim@iguana.be,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC, PATCH] watchdog on gpio
-Message-ID: <20080114090329.6efa2921@lxorguk.ukuu.org.uk>
-In-Reply-To: <8bd0f97a0801140004q6a32c2ceh397a2208d3012f0e@mail.gmail.com>
-References: <200801101611.08867.marc.pignat@hevs.ch>
-	<8bd0f97a0801140004q6a32c2ceh397a2208d3012f0e@mail.gmail.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 14 Jan 2008 04:14:53 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:40361 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751638AbYANJOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 04:14:52 -0500
+Message-ID: <478B2806.3000300@sgi.com>
+Date: Mon, 14 Jan 2008 10:14:46 +0100
+From: Jes Sorensen <jes@sgi.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Cliff Wickman <cpw@sgi.com>, airlied@linux.ie, benh@kernel.crashing.org,
+       michael@ellerman.id.au, jk@ozlabs.org,
+       Cedric Le Goater <clg@fr.ibm.com>
+Subject: Re: [rfc][patch] reimplement nopfn callers with fault
+References: <20080108113221.GA460@wotan.suse.de> <47877FCA.8050707@sgi.com> <20080112093436.GB25048@wotan.suse.de>
+In-Reply-To: <20080112093436.GB25048@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > #include <linux/gpio_wdt.h>
+Nick Piggin wrote:
+> On Fri, Jan 11, 2008 at 03:40:10PM +0100, Jes Sorensen wrote:
+>> Nick,
+>>
+>> Is this supposed to apply to the latest Linus tree? I applied it here
+>> and the mspec driver lights up in beautiful fireworks :-( I'll give the
+>> -mm tree a try next.
 > 
-> perhaps "watchdog" rather than "wdt" considering it's already
-> "linux/watchdog.h" ?
-
-or _wdt/wdt_ like the rest of the watchdog code uses for watchdog names
-(wdt ->watchdog timer).
-
->
-> > +       case WDIOC_KEEPALIVE:
-> > +               gpio_wdt_keepalive(wdt);
-> > +               return 0;
+> Hi Jes,
 > 
-> this two lines should be merged.
-
-No.
-
-> > +       default:
-> > +               return -ENOIOCTLCMD;
+> (reply to all this time).
 > 
-> should be -ENOTTY like all the other watchdogs
+> It is the BUG_ON(vma->vm_flags & VM_PFNMAP); at the start of __do_fault, by
+> the looks. That should be simply removed. Sorry about that.
 
-Yes. That's a common confusion. -ENOIOCTLCMD is a magic code used
-internally by some mid layers to indicate the driver doesn't know the
-ioctl so use default behaviour. -ENOTTY (confusingly but this is Unix
-history) is the right answer for unknowns.
-> 
-> > +static char banner[] __initdata = KERN_INFO PFX "fixed %d.%03d seconds timeout (nowayout= %d)\n";
-> 
-> this only gets used once in the init function ... having it be broken
-> out like this is kind of silly
+Hi Nick,
 
-Saves memory - you can't make inlined strings __initdata without breaking
-some compilers. So it is correct.
+Ok, I pulled that line and now mspec is working as expected for me.
+I'll throw in an ACK for your patch then.
 
-> 
-> > +static int __init gpio_wdt_probe(struct platform_device *pdev)
-> 
-> shouldnt this be __devinit ?
+Acked-by: Jes Sorensen <jes@sgi.com>
 
-IFF the device can be found/removed dynamically.
-
-> > +       if (watchdog) {
-> > +               printk(KERN_ERR PFX "only one device supported\n");
-> > +               return -ENODEV;
-> > +       }
-> 
-> why ?  it'd be trivial to abstract this driver away from a global
-> "watchdog" state into a proper arbitrary # of gpio watchdogs.
-
-The core watchdog code only supports one watchdog currently. This again
-is correct.
-
+Cheers,
+Jes
