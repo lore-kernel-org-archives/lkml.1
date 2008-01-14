@@ -1,88 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751907AbYANPVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752372AbYANPYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751907AbYANPVT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 10:21:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYANPVJ
+	id S1752372AbYANPYT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 10:24:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYANPYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 10:21:09 -0500
-Received: from bde.crans.org ([138.231.137.76]:54045 "EHLO bde.crans.org"
+	Mon, 14 Jan 2008 10:24:11 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56697 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750708AbYANPVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 10:21:09 -0500
-From: Mathieu Segaud <mathieu.segaud@regala.cx>
-To: linux-scsi@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Mathieu Segaud <mathieu.segaud@regala.cx>
-Subject: [PATCH] Convert drivers/scsi/ch.c to use unlocked_ioctl
-Date: Mon, 14 Jan 2008 16:21:07 +0100
-Message-Id: <1200324067-27253-1-git-send-email-mathieu.segaud@regala.cx>
-X-Mailer: git-send-email 1.5.3.8
+	id S1750733AbYANPYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 10:24:10 -0500
+Message-ID: <478B7E62.9070700@redhat.com>
+Date: Mon, 14 Jan 2008 10:23:14 -0500
+From: Tony Camuso <tcamuso@redhat.com>
+Reply-To: tcamuso@redhat.com
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <greg@kroah.com>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>, Loic Prylli <loic@myri.com>,
+       Prarit Bhargava <prarit@redhat.com>,
+       "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>,
+       "Schoeller, Patrick (Linux - Houston, TX)" <Patrick.Schoeller@hp.com>,
+       Bhavana Nagendra <bnagendr@redhat.com>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+ opt-in
+References: <alpine.LFD.1.00.0801111224090.3148@woody.linux-foundation.org>	<alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org>	<20080111213803.GS18741@parisc-linux.org>	<20080111235856.GA16079@jurassic.park.msu.ru>	<20080112002638.GA18710@kroah.com>	<20080112144030.GA19279@jurassic.park.msu.ru>	<20080112094557.71f5382a@laptopd505.fenrus.org>	<20080112214911.GA20102@jurassic.park.msu.ru>	<20080112150120.05f93768@laptopd505.fenrus.org>	<47895767.3090503@redhat.com>	<20080112164006.6f6f7bc2@laptopd505.fenrus.org>	<47896B3B.2000108@redhat.com>	<20080112204248.29abb1dd@laptopd505.fenrus.org>	<478A075F.7010503@redhat.com>	<20080113090311.0a9a1db5@laptopd505.fenrus.org>	<478A8268.6020107@redhat.com>	<20080114005434.48340f84@lxorguk.ukuu.org.uk>	<20080113173331.617ac935@laptopd505.fenrus.org>	<478AD713.8060204@redhat.com>	<20080113210501.4584e4d2@laptopd505.fenrus.o! rg>	<478B5D0D.7060808@redhat.com> <20080114064614.22081ff3@laptopd505.fenrus.org>
+In-Reply-To: <20080114064614.22081ff3@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As of now, compat_ioctl already runs without the BKL, whereas ioctl runs
-with the BKL. This patch first converts changer_fops to use a .unlocked_ioctl
-member. It applies the same locking rationale than ch_ioctl_compat() uses
-to ch_ioctl().
+Arjan van de Ven wrote:
+> On Mon, 14 Jan 2008 08:01:01 -0500
+> Tony Camuso <tcamuso@redhat.com> wrote:
+ >>
+>> If we're going to differentiate MMCONFIG from
+>> some other access mechanism, it only needs to be done at the
+>> Northbridge level. Devices are electrically ignorant of the protocol
+>> used between CPU and Northbridge to get the Northbridge to assert
+>> config cycles on the bus.
+> 
+> Again this is about having systems that don't need extended config space not use it. At all.
+> The only way to do that is have the drivers say they need it, and not use it otherwise.
+> It has NOTHING to do with how things are wired up. It's pure a kernel level policy decision
+> about whether to use extended config space AT ALL.
+> 
 
-Signed-off-by: Mathieu Segaud <mathieu.segaud@regala.cx>
-Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
----
- drivers/scsi/ch.c |   18 ++++++++----------
- 1 files changed, 8 insertions(+), 10 deletions(-)
+The problem with compelling device drivers to determine the PCI
+config mechanism is that it must be forced upon arches that
+have no PCI configuration quirks or don't even use the same
+PCI config mechanisms as x86.
 
-diff --git a/drivers/scsi/ch.c b/drivers/scsi/ch.c
-index 2311019..cead0f5 100644
---- a/drivers/scsi/ch.c
-+++ b/drivers/scsi/ch.c
-@@ -92,8 +92,7 @@ static int  ch_probe(struct device *);
- static int  ch_remove(struct device *);
- static int  ch_open(struct inode * inode, struct file * filp);
- static int  ch_release(struct inode * inode, struct file * filp);
--static int  ch_ioctl(struct inode * inode, struct file * filp,
--		     unsigned int cmd, unsigned long arg);
-+static long ch_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
- #ifdef CONFIG_COMPAT
- static long ch_ioctl_compat(struct file * filp,
- 			    unsigned int cmd, unsigned long arg);
-@@ -130,12 +129,12 @@ static struct scsi_driver ch_template =
- 
- static const struct file_operations changer_fops =
- {
--	.owner        = THIS_MODULE,
--	.open         = ch_open,
--	.release      = ch_release,
--	.ioctl        = ch_ioctl,
-+	.owner		= THIS_MODULE,
-+	.open		= ch_open,
-+	.release	= ch_release,
-+	.unlocked_ioctl	= ch_ioctl,
- #ifdef CONFIG_COMPAT
--	.compat_ioctl = ch_ioctl_compat,
-+	.compat_ioctl	= ch_ioctl_compat,
- #endif
- };
- 
-@@ -626,7 +625,7 @@ ch_checkrange(scsi_changer *ch, unsigned int type, unsigned int unit)
- 	return 0;
- }
- 
--static int ch_ioctl(struct inode * inode, struct file * file,
-+static long ch_ioctl(struct file *file,
- 		    unsigned int cmd, unsigned long arg)
- {
- 	scsi_changer *ch = file->private_data;
-@@ -887,8 +886,7 @@ static long ch_ioctl_compat(struct file * file,
- 	case CHIOINITELEM:
- 	case CHIOSVOLTAG:
- 		/* compatible */
--		return ch_ioctl(NULL /* inode, unused */,
--				file, cmd, arg);
-+		return ch_ioctl(file, cmd, arg);
- 	case CHIOGSTATUS32:
- 	{
- 		struct changer_element_status32 ces32;
--- 
-1.5.3.8
+I don't think that's a good policy.
+
+Better to confine arch-specific quirks to the arch-specific code
+whenever possible.
 
