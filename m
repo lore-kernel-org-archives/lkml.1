@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755775AbYANDzK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755886AbYAND5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755775AbYANDzK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 22:55:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbYANDy6
+	id S1755886AbYAND5W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 22:57:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754510AbYAND5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 22:54:58 -0500
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:34783 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1754290AbYANDy5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 22:54:57 -0500
-Message-ID: <400282904.32255@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Mon, 14 Jan 2008 11:54:39 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Joerg Platte <jplatte@naasa.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-Subject: Re: regression: 100% io-wait with 2.6.24-rcX
-References: <200801071151.11200.lists@naasa.net> <200801130905.44855.jplatte@naasa.net> <400212488.11031@ustc.edu.cn> <200801131049.33111.jplatte@naasa.net> <20080113115933.GA11045@mail.ustc.edu.cn>
+	Sun, 13 Jan 2008 22:57:14 -0500
+Received: from rv-out-0910.google.com ([209.85.198.190]:25287 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754290AbYAND5N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jan 2008 22:57:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=DOivksDvcE+X52VJXDexE5naPZV7RhQX6g9ZpgRBcXSqE7Hq/5ipKUhpmmOmwNFwFhRJRFOx/h1Ds9xpST//wHkQ0EbzZKipEDuOiYBj9BEMIxcYwoaRXLy3I+qvHS5xW0kUNchkzWzgnFT4a3Y5/hpqDMUOQqiEk+vz5xCmvyk=
+Message-ID: <75b66ecd0801131957s1e70bda9x342f16a7d16a2789@mail.gmail.com>
+Date: Sun, 13 Jan 2008 22:57:13 -0500
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: "Jan Marek" <linux@hazard.jcu.cz>
+Subject: Re: Is it possible to change IRQ for certain device?
+Cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080111165711.GA21173@hazard.jcu.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080113115933.GA11045@mail.ustc.edu.cn>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.12-2006-07-14
-Message-Id: <E1JEGPH-0001uw-Df@localhost.localdomain>
+References: <20080110110535.GA25706@hazard.jcu.cz>
+	 <Pine.LNX.4.61.0801100855300.32310@chaos.analogic.com>
+	 <20080111165711.GA21173@hazard.jcu.cz>
+X-Google-Sender-Auth: e50f456a23251080
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 13, 2008 at 07:59:33PM +0800, Fengguang Wu wrote:
-> On Sun, Jan 13, 2008 at 10:49:31AM +0100, Joerg Platte wrote:
-> > register_jprobe(ext2_writepage) = 0
-> > register_jprobe(requeue_io) = 0
-> > register_kprobe(submit_bio) = 0
-> > requeue_io:
-> > inode 114019(sda7/.kde) count 2,2 size 0 pages 1
-> > 0	2	0	U____
-> > requeue_io:
-> > inode 114025(sda7/cache-ibm) count 2,1 size 0 pages 1
-> > 0	2	0	U____
-> > requeue_io:
-> > inode 114029(sda7/socket-ibm) count 2,3 size 0 pages 1
-> > 0	2	0	U____
-> > requeue_io:
-> > inode 114017(sda7/0266584877) count 3,6 size 0 pages 1
-> > 0	2	0	U____
-> 
-> It helps. Thank you, Joerg!
-> 
-> The .kde/cache-ibm/socket-ibm/0266584877 above are directories.
-> It's weird that dirs would have their own mappings in ext2. In
+On Jan 11, 2008 11:57 AM, Jan Marek <linux@hazard.jcu.cz> wrote:
+> I suppose, that VGA card does not need unique IRQ, but programmers,
+> which wrote driver, want it. I can imagine, that VGA card have many
+> interrupts, especially in the OpenGL games, but I cannot assign unique
+> IRQ for VGA card at all :-(
+>
+> But thank you for advice: I will try to send e-mail to Gigabyte and ask
+> they, if it possible to do change in the BIOS.
+>
+> BTW: it is interesting: I had a Biostar TA690G motherboard and it behave
+> similar as Gigabyte: I cannnot assign unique IRQ to the external
+> graphics card... Chipsets of this motherboards are the same...
+>
+> I've tried to solve this problem by bought of new motherboard: Gigabyte
+> MA790FX-DS5. I will see, if this board will behave as previous board...
 
-Oh, ext2 dirs have their own mapping pages. Not the same with ext3.
+Why is a shared IRQ a problem for you?  IRQ handlers are supposed to
+be fast enough that disabling an IRQ line for the duration of the
+handler execution should not be a problem even if the IRQ is shared.
+VGA interrupts in particular should only fire once per frame and only
+need to flip some bits to wake up any processes waiting on vsync.
 
-> particular this bug is triggered because the dir mapping page has
-> PAGECACHE_TAG_DIRTY set and PG_dirty cleared, staying in an
-> inconsistent state.
+If you have issues with a shared VGA interrupt then the bug is that
+some IRQ handler runs for too long and should be deferring work to a
+bottom half.
 
-Just found that a deleted dir will enter that inconsistent state when
-someone still have reference to it...
-
+Lee
