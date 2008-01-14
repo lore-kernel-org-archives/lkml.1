@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754698AbYANUDo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbYANUMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754698AbYANUDo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 15:03:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbYANUDd
+	id S1753906AbYANUMU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 15:12:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751218AbYANUMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 15:03:33 -0500
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:35070 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753470AbYANUDc (ORCPT
+	Mon, 14 Jan 2008 15:12:09 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:42560 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750801AbYANUMI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 15:03:32 -0500
-Message-ID: <478BBFE3.9030707@nortel.com>
-Date: Mon, 14 Jan 2008 14:02:43 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Ray Lee <ray-lk@madrabbit.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: questions on NAPI processing latency and dropped network packets
-References: <478654C3.60806@nortel.com> <2c0942db0801112137k3f3f885ek212d5cbaecb7fea0@mail.gmail.com> <478B8473.6080506@nortel.com> <478B943C.7080009@cosmosbay.com> <478BB722.1020004@nortel.com> <478BB904.3060903@cosmosbay.com>
-In-Reply-To: <478BB904.3060903@cosmosbay.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 14 Jan 2008 20:02:46.0944 (UTC) FILETIME=[6EAF4200:01C856E8]
+	Mon, 14 Jan 2008 15:12:08 -0500
+Date: Mon, 14 Jan 2008 21:15:05 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: unify pagetable accessors patch causes double fault III
+Message-ID: <20080114201505.GC19102@one.firstfloor.org>
+References: <20080114094814.GA28300@basil.nowhere.org> <20080114125638.GA9510@basil.nowhere.org> <20080114130620.GA14057@elte.hu> <20080114135811.GA16190@one.firstfloor.org> <478B9183.3020101@goop.org> <20080114165635.GK15542@elte.hu> <20080114170856.GA18412@one.firstfloor.org> <20080114171838.GA18662@one.firstfloor.org> <20080114190004.GB26540@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080114190004.GB26540@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> Chris Friesen a écrit :
-
->> Based on the profiling information we're spending time in 
->> sctp_endpoint_lookup_assoc() which doesn't actually use hashes, so I 
->> can't see how the hash would be related.  I'm pretty new to SCTP 
->> though, so I may be missing something.
+On Mon, Jan 14, 2008 at 08:00:04PM +0100, Ingo Molnar wrote:
 > 
-> Well, it does use hashes :)
+> * Andi Kleen <andi@firstfloor.org> wrote:
 > 
->        hash = sctp_assoc_hashfn(ep->base.bind_addr.port, rport);
->        head = &sctp_assoc_hashtable[hash];
->        read_lock(&head->lock);
->        sctp_for_each_hentry(epb, node, &head->chain) {
->            /* maybe your machine is traversing here a *really* long 
-> chain */
->            }
+> > BTW there seems to be some other instability that hits even on 64bit. 
+> > Since I updated my workstation to a recent git-x86 based kernel 
+> > (admittedly with my patches too) I had at least one hard hang already.
+> > 
+> > Previously it ran an older -rc5 based kernel without git-x86 also with 
+> > most of my patches and was stable for >23 days until a KVM oops 
+> > required a reboot.
+> > 
+> > It unfortunately was not set up to receive console at this point and 
+> > it hung in X, but I'm watching it now.
+> 
+> hm. Did the hanging kernel have the i387 regset fix from Roland already? 
+> That bug indeed manifested itself as rare desktop hangs.
 
+Which patch was that exactly? I don't see an obvious candidate. It was
+git-x86 of friday or so. I still got the whole patch, but not the change
+set tip because I've updated since again.
 
-The latest released kernel doesn't have this code, it was only added in 
-November.  The SCTP maintainer just pointed me to the patch, and made 
-some other suggestions as well.
+The hang happened while I started a large java program (groupwise) and
+the machine was dead as in no pings anymore.
 
-Chris
+KVM might have been running in the background but only idling (I earlier
+managed to oops the 2.6.24-rc* KVM, but only with a special guest 
+which was not active at that time) 
+
+-Andi
