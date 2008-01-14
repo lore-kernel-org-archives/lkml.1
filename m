@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbYANJlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbYANJle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754650AbYANJlP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 04:41:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbYANJk7
+	id S1754002AbYANJle (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 04:41:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754118AbYANJlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 04:40:59 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:34484 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753153AbYANJk6 (ORCPT
+	Mon, 14 Jan 2008 04:41:06 -0500
+Received: from mga05.intel.com ([192.55.52.89]:19409 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753999AbYANJlD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 04:40:58 -0500
-Date: Mon, 14 Jan 2008 09:35:25 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux Kernel List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH: 2/2] [SERIAL] avoid stalling suspend if serial port won't drain
-Message-ID: <20080114093525.GA22818@flint.arm.linux.org.uk>
-References: <20080108115148.GB10546@flint.arm.linux.org.uk> <20080108115703.GA27179@flint.arm.linux.org.uk> <20080111101721.GA4463@ucw.cz> <20080114002912.GA19195@flint.arm.linux.org.uk> <20080114090459.GB4024@elf.ucw.cz>
+	Mon, 14 Jan 2008 04:41:03 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,281,1196668800"; 
+   d="scan'208";a="500117591"
+Subject: Re: Netperf TCP_RR(loopback) 10% regression in
+	2.6.24-rc6,	comparing with 2.6.22
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+Cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0801141118450.31652@kivilampi-30.cs.helsinki.fi>
+References: <1199871330.3298.132.camel@ymzhang>
+	 <1200043854.3265.24.camel@ymzhang>
+	 <Pine.LNX.4.64.0801141036400.31652@kivilampi-30.cs.helsinki.fi>
+	 <Pine.LNX.4.64.0801141118450.31652@kivilampi-30.cs.helsinki.fi>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 14 Jan 2008 17:38:36 +0800
+Message-Id: <1200303516.3151.30.camel@ymzhang>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080114090459.GB4024@elf.ucw.cz>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 14, 2008 at 10:04:59AM +0100, Pavel Machek wrote:
-> On Mon 2008-01-14 00:29:12, Russell King wrote:
-> > If you're suspending because your battery is almost dead what would you
-> > prefer - the system being prevented from suspending and losing complete
-> > power unexpectedly, resulting in complete data loss, or losing the
-> > characters in the serial port and suspending?
-> > 
-> > Which is the lesser of two evils?
+On Mon, 2008-01-14 at 11:21 +0200, Ilpo Järvinen wrote:
+> On Mon, 14 Jan 2008, Ilpo Järvinen wrote:
 > 
-> Not sure, but there's third option -- correct but more work. What
-> about saving/restoring fifo state? That will not stall suspend, nor
-> will loose data.
+> > On Fri, 11 Jan 2008, Zhang, Yanmin wrote:
+> > 
+> > > On Wed, 2008-01-09 at 17:35 +0800, Zhang, Yanmin wrote: 
+> > > > 
+> > > > As a matter of fact, 2.6.23 has about 6% regression and 2.6.24-rc's
+> > > > regression is between 16%~11%.
+> > > > 
+> > > > I tried to use bisect to locate the bad patch between 2.6.22 and 2.6.23-rc1,
+> > > > but the bisected kernel wasn't stable and went crazy.
+> > 
+> > TCP work between that is very much non-existing.
+> 
+> I _really_ meant 2.6.22 - 2.6.23-rc1, not 2.6.24-rc1 in case you had a 
+> typo
+I did bisect 2.6.22 - 2.6.23-rc1. I also tested it on the latest 2.6.24-rc.
 
-The only way you could do that on 8250 is to clear the RX FIFO, enable
-loopback, wait for the port to transmit all its characters into the RX
-FIFO and read them out that way.
+>  there which is not that uncommon while typing kernel versions... :-)
+Thanks. I will retry bisect and bind the server/client to the same logical processor, where
+I hope the result is stable this time when bisecting.
 
-That brings up other questions though:
+Manual testing showed there is still same or more regression if I bind the
+processes on the same cpu.
 
-- what if its a port with 256 characters in the FIFO, and its programmed
-  for 110 baud?
-- what if loopback isn't supported?
-- what if, while doing this operation, the remote end is sending characters
-  because you can't deassert RTS?
 
-Finally, on many non-8250 ports, you don't have a loopback mode to
-enable, so you have no way to read back the contents of the FIFO.
+Thanks a lot!
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+-yanmin
+
+
