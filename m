@@ -1,63 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498AbYANNbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753572AbYANNcY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754498AbYANNbQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 08:31:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbYANNah
+	id S1753572AbYANNcY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 08:32:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750908AbYANNcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 08:30:37 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:52962 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751290AbYANNaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 08:30:35 -0500
-Date: Mon, 14 Jan 2008 14:30:19 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Marc Pignat" <marc.pignat@hevs.ch>,
-       wim@iguana.be, linux-kernel@vger.kernel.org
-Subject: Re: [RFC, PATCH] watchdog on gpio
-Message-ID: <20080114143019.5d7ffaf4@siona>
-In-Reply-To: <8bd0f97a0801140422n3d3e3835v7f57dbe33c7a6db0@mail.gmail.com>
-References: <200801101611.08867.marc.pignat@hevs.ch>
-	<8bd0f97a0801140004q6a32c2ceh397a2208d3012f0e@mail.gmail.com>
-	<20080114090329.6efa2921@lxorguk.ukuu.org.uk>
-	<8bd0f97a0801140128i2ebf9236uabe0e0b8cf15fbe@mail.gmail.com>
-	<20080114092905.227c5a38@lxorguk.ukuu.org.uk>
-	<8bd0f97a0801140145s5e13083ej926aa9d5f87e3a99@mail.gmail.com>
-	<20080114131429.40453e5f@siona>
-	<8bd0f97a0801140422n3d3e3835v7f57dbe33c7a6db0@mail.gmail.com>
-Organization: Atmel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Jan 2008 08:32:17 -0500
+Received: from bde.crans.org ([138.231.137.76]:38861 "EHLO bde.crans.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750896AbYANNcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 08:32:16 -0500
+From: Mathieu Segaud <mathieu.segaud@regala.cx>
+To: James.Bottomley@HansenPartnership.com
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mathieu Segaud <mathieu.segaud@regala.cx>
+Subject: [PATCH] Convert drivers/scsi/ch.c to use unlocked_ioctl
+Date: Mon, 14 Jan 2008 14:32:13 +0100
+Message-Id: <1200317533-24643-1-git-send-email-mathieu.segaud@regala.cx>
+X-Mailer: git-send-email 1.5.3.8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jan 2008 07:22:39 -0500
-"Mike Frysinger" <vapier.adi@gmail.com> wrote:
+As of now, compat_ioctl already runs without the BKL, whereas ioctl runs
+with the BKL. This patch first converts changer_fops to use a .unlocked_ioctl
+member. It applies the same locking rationale than ch_ioctl_compat() uses
+to ch_ioctl().
 
-> > There is: platform_driver_probe(). It takes the probe function as a
-> > parameter so that it can be left out of the platform_driver struct.
-> > After it returns, there are no references to the probe function left
-> > around, so if you call platform_driver_probe() instead of
-> > platform_driver_register(), the probe function can be __init.  
-> 
-> ah, thanks for that.  i think in that case, there's no way to bind the
-> release function to the process ?  which means the driver is no longer
-> unloadable ?  which means the platform driver release function can be
-> scrubbed as well as the module exit function as well as changing the
-> Kconfig to be a bool ?
+Signed-off-by: Mathieu Segaud <mathieu.segaud@regala.cx>
+---
+ drivers/scsi/ch.c |   19 +++++++++----------
+ 1 files changed, 9 insertions(+), 10 deletions(-)
 
-No, you can still provide a remove() callback, but it can usually be
-__exit_p since it will only be needed if you compile the driver as a
-module.
+diff --git a/drivers/scsi/ch.c b/drivers/scsi/ch.c
+index 2311019..b8e005d 100644
+--- a/drivers/scsi/ch.c
++++ b/drivers/scsi/ch.c
+@@ -21,6 +21,7 @@
+ #include <linux/compat.h>
+ #include <linux/chio.h>			/* here are all the ioctls */
+ #include <linux/mutex.h>
++#include <linux/smp_lock.h>
+ 
+ #include <scsi/scsi.h>
+ #include <scsi/scsi_cmnd.h>
+@@ -92,8 +93,7 @@ static int  ch_probe(struct device *);
+ static int  ch_remove(struct device *);
+ static int  ch_open(struct inode * inode, struct file * filp);
+ static int  ch_release(struct inode * inode, struct file * filp);
+-static int  ch_ioctl(struct inode * inode, struct file * filp,
+-		     unsigned int cmd, unsigned long arg);
++static long ch_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
+ #ifdef CONFIG_COMPAT
+ static long ch_ioctl_compat(struct file * filp,
+ 			    unsigned int cmd, unsigned long arg);
+@@ -130,12 +130,12 @@ static struct scsi_driver ch_template =
+ 
+ static const struct file_operations changer_fops =
+ {
+-	.owner        = THIS_MODULE,
+-	.open         = ch_open,
+-	.release      = ch_release,
+-	.ioctl        = ch_ioctl,
++	.owner          = THIS_MODULE,
++	.open           = ch_open,
++	.release        = ch_release,
++	.unlocked_ioctl = ch_ioctl,
+ #ifdef CONFIG_COMPAT
+-	.compat_ioctl = ch_ioctl_compat,
++	.compat_ioctl   = ch_ioctl_compat,
+ #endif
+ };
+ 
+@@ -626,7 +626,7 @@ ch_checkrange(scsi_changer *ch, unsigned int type, unsigned int unit)
+ 	return 0;
+ }
+ 
+-static int ch_ioctl(struct inode * inode, struct file * file,
++static long ch_ioctl(struct file *file,
+ 		    unsigned int cmd, unsigned long arg)
+ {
+ 	scsi_changer *ch = file->private_data;
+@@ -887,8 +887,7 @@ static long ch_ioctl_compat(struct file * file,
+ 	case CHIOINITELEM:
+ 	case CHIOSVOLTAG:
+ 		/* compatible */
+-		return ch_ioctl(NULL /* inode, unused */,
+-				file, cmd, arg);
++		return ch_ioctl(file, cmd, arg);
+ 	case CHIOGSTATUS32:
+ 	{
+ 		struct changer_element_status32 ces32;
+-- 
+1.5.3.8
 
-The platform_driver will be registered just as before; the only
-difference is that it won't have a probe() callback so dynamically
-added devices can't be bound to the driver. If the driver has a
-remove() callback, it will be called when the driver is unregistered,
-but that will usually only happen if the driver is compiled as a
-module (and has a module exit function.)
-
-Haavard
