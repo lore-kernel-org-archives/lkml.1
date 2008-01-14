@@ -1,99 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbYANWnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755892AbYANWqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756483AbYANWnt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 17:43:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbYANWnl
+	id S1755892AbYANWqw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 17:46:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYANWqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 17:43:41 -0500
-Received: from nz-out-0506.google.com ([64.233.162.225]:47573 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750982AbYANWnk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 17:43:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VejlU5Cp+/Hv51ITmeoEP808ngcWZuI/A0jwJ/2CjcjjuHxcf5IHlLF2ZYxwSF3jjCcwIF9u9plUTiIbadV6NkjlzJt+f0sMcshT2UWbLQEXln9YxKwR/Z195zO1wtX+xtE09R3K7wkLHAaOxZHGfI6taDrqmi6+BFRmzQrlaY8=
-Message-ID: <cf3edd8d0801141443r988a340n10d2940501117832@mail.gmail.com>
-Date: Mon, 14 Jan 2008 22:43:37 +0000
-From: "Colin Fowler" <elethiomel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: Performance loss 2.6.22->22.6.23->2.6.24-rc7 on CPU intensive benchmark on 8 Core Xeon
-Cc: linux-kernel@vger.kernel.org, "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-In-Reply-To: <cf3edd8d0801141442nedf4ac1p6b1fd6bc94900063@mail.gmail.com>
+	Mon, 14 Jan 2008 17:46:44 -0500
+Received: from gw.goop.org ([64.81.55.164]:40977 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751888AbYANWqo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 17:46:44 -0500
+Message-ID: <478BE628.7090008@goop.org>
+Date: Mon, 14 Jan 2008 14:46:00 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: unify pagetable accessors patch causes double fault II
+References: <20080114094814.GA28300@basil.nowhere.org> <20080114125638.GA9510@basil.nowhere.org> <20080114130620.GA14057@elte.hu> <20080114135811.GA16190@one.firstfloor.org> <478BDC43.6050105@goop.org> <20080114222349.GA23409@one.firstfloor.org>
+In-Reply-To: <20080114222349.GA23409@one.firstfloor.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <cf3edd8d0801140937w755c3e75me83c214ebc1f4cd3@mail.gmail.com>
-	 <20080114185520.GA26540@elte.hu>
-	 <cf3edd8d0801141442nedf4ac1p6b1fd6bc94900063@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Forgot to add that the results are at http://vangogh.cs.tcd.ie/fowler/cfs/
+Andi Kleen wrote:
+>> OK, I see the problem.  The problem is that the _PAGE_X defines are 
+>> defined with _AC(UL, 1 << _PAGE_BIT_X), which has unsigned long type.  
+>> This means that ~_PAGE_X also has unsigned long type, and so when cast 
+>> to 64-bit in pte_mkX, it ends up &ing the pte with 0x00000000ffffffxxx, 
+>> with predictable results.
+>>     
+>
+> Actually I fixed some of that -- see the pgtable-nx patch on firstfloor -- but
+> it still doesn't work. Or maybe my patch was not complete.
+>   
+
+Yeah, that looks like the right sort of thing, but I wonder if there's 
+other places doing an open-coded "pte_val(pte) & ~_PAGE_FOO".  My patch 
+changes the definition of _PAGE_FOO so it should be OK everywhere.
+
+>> The original code just used signed constants for the _PAGE_X 
+>> definitions, which will sign-extend when cast to 64-bit, and so have the 
+>> upper bits set when masking.  (Well, actually, the old code just 
+>> operated on pte_low, so the problem didn't arise; however, pgtable_64.h 
+>> also uses integers for its _PAGE_X, which has the same sign-extended 
+>> 32->64 casting property).
+>>
+>> I'll put together a fixup patch now.
+>>     
+>
+> I'm leaving now but can test later.
+>   
+
+Can you try this out?  It applies after "x86: move all asm/pgtable 
+constants into one place".
 
 
-On Jan 14, 2008 10:42 PM, Colin Fowler <elethiomel@gmail.com> wrote:
-> Hi Ingo, thanks for the reply.
->
-> Modifying /proc/sys/kernel/sched_latency_ns to be double may have in
-> fact made things slightly worse. I used 24-rc7
->
-> Your script was only written to run for 15 seconds, so I ran it so it
-> multiple times so it covered most of the benchmark.
-> Other issues with these data may be that for much of the benchmark I
-> am building data structures utilizing at most 1 to 3 cores. I'm not
-> concerned with these timings personally as this is considered the
-> offline part of the render. Once these data structures are built I
-> proceed to render across 8 cores. This is the section of the benchmark
-> I get my timings from ( I use RDTSC before and after the render
-> segment). The majority of the overall time taken for a run is
-> therefore data structure building. I do not time this.
->
-> Colin.
->
->
->
-> On Jan 14, 2008 6:55 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Colin Fowler <elethiomel@gmail.com> wrote:
-> >
-> > > Benchmark : A ray-trace is performed on 500 times on 17 separate
-> > > scenes. Workload is distributed by tiling the framebuffer into N 32x32
-> > > pixel tiles. Each CPU grabs one of N tiles out of the queue and
-> > > repeats until no jobs are left. Rendering is to a shared framebuffer
-> > > (obviously this causes problems with caching). Locking and
-> > > synchronization is done using pthreads.
-> > >
-> > > Other details: The system is cleanly booted for each run. No I/O is
-> > > performed during the timed portions of the test. The benchmark does
-> > > however read a model file from the drive and build a data structure
-> > > from it before each timed portion.
-> > >
-> > > On the 2.6.22 series of kernels results are pretty much the same. On
-> > > 2.6.23 series kernels I see a loss in speed of ~2% across the board.
-> > > On 2.6.24-rc7 that loss in speed is perhaps very slightly worse (~3%).
-> > > 2.6.22 Kernels tested: 22.9(Ubuntu Stock Kernel), 22.14, 22.15
-> > > 2.6.23 Kernels tested: 23.1, 23.3,  23.13
-> > > 2.6.24 Kernels tested: 24-rc7
-> > >
-> > > I have my kernel compiled to use the SLAB allocator. All other
-> > > tweaking options are set as defaults. My config files are available at
-> > > http://vangogh.cs.tcd.ie/fowler/configs . Perhaps I'm configuring
-> > > something wrong for the type of work I do?
-> >
-> > Could you try CONFIG_SCHED_DEBUG=y and CONFIG_SCHEDSTATS=y and double
-> > the value of /proc/sys/kernel/sched_latency_ns - does that make any
-> > difference? Please also run the following script while the ray-trace app
-> > is running:
-> >
-> >   http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
-> >
-> > and send me the output of it, so that we can have an idea about what's
-> > going on in your system during this workload.
-> >
-> >         Ingo
-> >
->
+Subject: x86/pgtable: fix constant sign extension problem
+
+When the _PAGE_FOO constants are defined as (1ul << _PAGE_BIT_FOO), they
+become unsigned longs.  In 32-bit PAE mode, these end up being
+implicitly cast to 64-bit types when used to manipulate a pte, and
+because they're unsigned the top 32-bits are 0, destroying the upper
+bits of the pte.
+
+When _PAGE_FOO constants are given a signed integer type, the cast to
+64-bits will sign-extend so that the upper bits are all ones,
+preserving the upper pte bits in manipulations.
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Andi Kleen <ak@suse.de>
+
+---
+ include/asm-x86/pgtable.h |   24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
+
+===================================================================
+--- a/include/asm-x86/pgtable.h
++++ b/include/asm-x86/pgtable.h
+@@ -19,18 +19,18 @@
+ #define _PAGE_BIT_UNUSED3	11
+ #define _PAGE_BIT_NX		63       /* No execute: only valid after cpuid check */
+ 
+-#define _PAGE_PRESENT	(_AC(1, UL)<<_PAGE_BIT_PRESENT)
+-#define _PAGE_RW	(_AC(1, UL)<<_PAGE_BIT_RW)
+-#define _PAGE_USER	(_AC(1, UL)<<_PAGE_BIT_USER)
+-#define _PAGE_PWT	(_AC(1, UL)<<_PAGE_BIT_PWT)
+-#define _PAGE_PCD	(_AC(1, UL)<<_PAGE_BIT_PCD)
+-#define _PAGE_ACCESSED	(_AC(1, UL)<<_PAGE_BIT_ACCESSED)
+-#define _PAGE_DIRTY	(_AC(1, UL)<<_PAGE_BIT_DIRTY)
+-#define _PAGE_PSE	(_AC(1, UL)<<_PAGE_BIT_PSE)	/* 2MB page */
+-#define _PAGE_GLOBAL	(_AC(1, UL)<<_PAGE_BIT_GLOBAL)	/* Global TLB entry */
+-#define _PAGE_UNUSED1	(_AC(1, UL)<<_PAGE_BIT_UNUSED1)
+-#define _PAGE_UNUSED2	(_AC(1, UL)<<_PAGE_BIT_UNUSED2)
+-#define _PAGE_UNUSED3	(_AC(1, UL)<<_PAGE_BIT_UNUSED3)
++#define _PAGE_PRESENT	(_AC(1, L)<<_PAGE_BIT_PRESENT)
++#define _PAGE_RW	(_AC(1, L)<<_PAGE_BIT_RW)
++#define _PAGE_USER	(_AC(1, L)<<_PAGE_BIT_USER)
++#define _PAGE_PWT	(_AC(1, L)<<_PAGE_BIT_PWT)
++#define _PAGE_PCD	(_AC(1, L)<<_PAGE_BIT_PCD)
++#define _PAGE_ACCESSED	(_AC(1, L)<<_PAGE_BIT_ACCESSED)
++#define _PAGE_DIRTY	(_AC(1, L)<<_PAGE_BIT_DIRTY)
++#define _PAGE_PSE	(_AC(1, L)<<_PAGE_BIT_PSE)	/* 2MB page */
++#define _PAGE_GLOBAL	(_AC(1, L)<<_PAGE_BIT_GLOBAL)	/* Global TLB entry */
++#define _PAGE_UNUSED1	(_AC(1, L)<<_PAGE_BIT_UNUSED1)
++#define _PAGE_UNUSED2	(_AC(1, L)<<_PAGE_BIT_UNUSED2)
++#define _PAGE_UNUSED3	(_AC(1, L)<<_PAGE_BIT_UNUSED3)
+ 
+ #if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
+ #define _PAGE_NX	(_AC(1, ULL) << _PAGE_BIT_NX)
+
+
+
