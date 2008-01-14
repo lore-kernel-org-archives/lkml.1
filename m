@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754426AbYANH0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbYANHfR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754426AbYANH0n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 02:26:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbYANH0e
+	id S1754685AbYANHfR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 02:35:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbYANHfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 02:26:34 -0500
-Received: from mail.cs.tut.fi ([130.230.4.42]:50235 "EHLO mail.cs.tut.fi"
+	Mon, 14 Jan 2008 02:35:04 -0500
+Received: from mail.hevs.ch ([153.109.23.15]:34276 "EHLO mail.hevs.ch"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751847AbYANH0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 02:26:33 -0500
-Date: Mon, 14 Jan 2008 09:15:55 +0200
-From: Tuomo Valkonen <tuomov@iki.fi>
-To: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org
-Subject: Re: The ext3 way of journalling
-Message-ID: <20080114071555.GA6475@jolt.modeemi.cs.tut.fi>
-References: <18307.42821.166376.732473@stoffel.org> <slrnfo7auq.6m2.tuomov@jolt.modeemi.cs.tut.fi> <871w8r6ruc.fsf@barad-dur.regala.cx> <slrnfo9lqk.17l.tuomov@jolt.modeemi.cs.tut.fi> <20080110131659.GF10230@mit.edu> <20080110134111.GA6254@jolt.modeemi.cs.tut.fi> <20080112150621.GC6751@mit.edu> <20080113221301.GA18341@jolt.modeemi.cs.tut.fi> <20080113222310.GA20815@jolt.modeemi.cs.tut.fi> <20080113231150.GB23906@mit.edu>
+	id S1751839AbYANHfD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 02:35:03 -0500
+From: Marc Pignat <marc.pignat@hevs.ch>
+Organization: HEVs
+To: Florian Fainelli <florian.fainelli@telecomint.eu>
+Subject: Re: [RFC, PATCH] watchdog on gpio
+Date: Mon, 14 Jan 2008 08:34:53 +0100
+User-Agent: KMail/1.9.7
+Cc: wim@iguana.be, linux-kernel@vger.kernel.org
+References: <200801101611.08867.marc.pignat@hevs.ch> <200801111740.25754.florian.fainelli@telecomint.eu>
+In-Reply-To: <200801111740.25754.florian.fainelli@telecomint.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080113231150.GB23906@mit.edu>
-X-Archive: encrypt
-X-PGP-Fingerprint: 3B2A 89E6 9468 6DC4 FEEF  D6F6 D00C A21E C004 251B
-X-PGP-Key: http://modeemi.fi/~tuomov/gpg.txt.asc
-User-Agent: Mutt/1.5.11
+Message-Id: <200801140834.54280.marc.pignat@hevs.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008-01-13 18:11 -0500, Theodore Tso wrote:
-> It's much more likely that this early in your boot cycle, your clock is
-> sometimes incorrect.
+On Friday 11 January 2008, Florian Fainelli wrote:
+> Hello Marc,
+> 
+> Your patch looks good to me, and I have been waiting for something like 
+> this :). Other comments below.
+> 
+> Le jeudi 10 janvier 2008, Marc Pignat a écrit :
+> > +#include <asm/uaccess.h>
+> > +#include <asm/arch/gpio.h>
+> 
+> At first sight, this will only work with the platforms which have implemented 
+> gpiolib, some (like MIPS) still use the old generic GPIO API. So I think the 
+> include will not work here for anything than ARM, correct me if I am wrong.
+find arch -name "Kconfig" -exec grep -q "GENERIC_GPIO" {} \; -print
+arch/arm/Kconfig
+arch/mips/Kconfig
+arch/avr32/Kconfig
+arch/blackfin/Kconfig
 
-I doubt it. I get this nearly _always_ when the system crashes, which
-accounts for the vast majority of the times I boot it. (I wish swsusp
-didn't suck so much..)
+It seems that no only arm are using GENERIC_GPIO, even some mips chips.
+I probably missed wirting the subject right, should be "watchdog on GENERIC_GPIO" :)
 
-> Is the "9192" number roughly constant, or is it always changing?
+...
+> 
+> Did you look into hooking into Wim's uniform watchdog driver :
+> 
+> http://git.kernel.org/?p=linux/kernel/git/wim/linux-2.6-watchdog-experimental.git;a=commit;h=732c54027e6c866f98857c4a6d1c6c466459dcd5
+Now yes, interesting!
 
-No. That's the number I got last time, but typically I've got 
-something in the 3xxxx range. 
+Regards
 
-> If your machine is on the network, then the "ntpdate"
-> program could be setting your time so that it looks correct, but
-> that's after e2fsck is run.  
+Marc
 
-ntpdate isn't run by any of the init scripts. ntpd is, but like I 
-already mentioned, I doubt it would correct vastly incorrect time,
-not even being able to track and correct when it advances fast.
-
--- 
-Tuomo
