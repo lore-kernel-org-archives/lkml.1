@@ -1,68 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754138AbYANQkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753521AbYANQpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754138AbYANQkm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 11:40:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbYANQkf
+	id S1753521AbYANQpG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 11:45:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbYANQoz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 11:40:35 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:41145 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751469AbYANQke (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 11:40:34 -0500
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: Mike Galbraith <efault@gmx.de>
-Subject: Re: 2.6.24-rc7-rt1
-Date: Mon, 14 Jan 2008 20:39:39 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <1200250801.9190.7.camel@localhost.localdomain> <Pine.LNX.4.58.0801131552350.10093@gandalf.stny.rr.com> <1200299260.4665.17.camel@homer.simson.net>
-In-Reply-To: <1200299260.4665.17.camel@homer.simson.net>
+	Mon, 14 Jan 2008 11:44:55 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58972 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751290AbYANQoz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 11:44:55 -0500
+Date: Mon, 14 Jan 2008 17:43:24 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, ebiederm@xmission.com, rdreier@cisco.com,
+       torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
+       davej@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [patch 02/11] PAT x86: Map only usable memory in x86_64
+	identity map and kernel text
+Message-ID: <20080114164324.GH15542@elte.hu>
+References: <p737iiho5yq.fsf@bingen.suse.de> <924EFEDD5F540B4284297C4DC59F3DEE5A2805@orsmsx423.amr.corp.intel.com> <20080110192808.GF747@one.firstfloor.org> <924EFEDD5F540B4284297C4DC59F3DEE5A28CE@orsmsx423.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801142039.42463.caglar@pardus.org.tr>
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE5A28CE@orsmsx423.amr.corp.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi;
 
-14 Oca 2008 Pts tarihinde, Mike Galbraith şunları yazmıştı: 
-> btw, CONFIG_INTEL_IOATDMA compile booboo
-> 
->   CC      drivers/dma/ioat_dma.o
-> drivers/dma/ioat_dma.c: In function ‘ioat1_tx_submit’:
-> drivers/dma/ioat_dma.c:300: error: too few arguments to function ‘__list_splice’
-> make[2]: *** [drivers/dma/ioat_dma.o] Error 1
+* Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com> wrote:
 
-Following seems solves this issue;
+> Also, relying on MTRR, is like giving more importance to BIOS writer 
+> than required :-). I think the best way to deal with MTRR is just to 
+> not touch it. Leave it as it is and do not try to assume that they are 
+> correct, as frequently they will not be.
 
-Index: linux-2.6.23/drivers/dma/ioat_dma.c
-===================================================================
---- linux-2.6.23.orig/drivers/dma/ioat_dma.c
-+++ linux-2.6.23/drivers/dma/ioat_dma.c
-@@ -260,7 +260,7 @@ static dma_cookie_t ioat1_tx_submit(stru
- 	/* write address into NextDescriptor field of last desc in chain */
- 	to_ioat_desc(ioat_chan->used_desc.prev)->hw->next =
- 							first->async_tx.phys;
--	__list_splice(&new_chain, ioat_chan->used_desc.prev);
-+	list_splice(&new_chain, &ioat_chan->used_desc);
- 
- 	ioat_chan->dmacount += desc_count;
- 	ioat_chan->pending += desc_count;
+i'd suggest the following strategy on PAT-capable CPUs:
 
+ - do not try to write MTRRs. Ever.
 
-Cheers
--- 
-S.Çağlar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
+ - _read_ the current MTRR settings (including the default MTRR) and 
+   check them against the e820 map. I can see two basic types of 
+   mismatches:
 
-Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
+     - RAM area marked fine in e820 but marked UC by MTRR: this 
+       currently results in a slow system. (NOTE: UC- would be fine and 
+       overridable by PAT, hence it's not a conflict we should detect.)
+
+     - mmio area marked cacheable in the MTRR (results in broken system)
+
+   then emit a warning and exclude all such areas from any further Linux 
+   use. I.e. if it's RAM then clip it from our memory map. If it's mmio 
+   area then try to exclude it from BAR sizing/positioning.
+
+   this way we'll only have two sorts of physical pages put into 
+   pagetables by Linux:
+
+     1) RAM page, marked cacheable by MTRR
+     2) RAM page, marked as UC- by MTRR
+     2) mmio page, marked as UC- by MTRR
+
+ - then we'd use PAT for all these patches to differentiate their 
+   caching properties. We mark RAM pages as cacheable, and we mark mmio 
+   pages as WC or UC.
+
+I.e. try to be as conservative and always have a deterministic exit 
+strategy towards a 100% working system, even if BIOS writers messed up 
+the MTRR defaults. _Worst-case_ we boot up with somewhat less RAM or 
+with a somewhat smaller mmio area. (but there will be warnings in the 
+dmesg about that so users can complain about the BIOS.) We should never 
+ever allow the wrong BIOS MTRR defaults to impact Linux's correctness.
+
+hm?
+
+	Ingo
