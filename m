@@ -1,53 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbYANCk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755155AbYANDLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755236AbYANCk0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 21:40:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbYANCkQ
+	id S1755155AbYANDLt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 22:11:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbYANDLj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 21:40:16 -0500
-Received: from home.nigel.suspend2.net ([203.171.70.205]:58117 "EHLO
-	server1.example.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753206AbYANCkP (ORCPT
+	Sun, 13 Jan 2008 22:11:39 -0500
+Received: from hqemgate02.nvidia.com ([216.228.112.143]:2466 "EHLO
+	HQEMGATE02.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751333AbYANDLi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 21:40:15 -0500
-Message-ID: <478ACB90.3040709@suspend2.net>
-Date: Mon, 14 Jan 2008 13:40:16 +1100
-From: nigel@suspend2.net
-Reply-To: nigel@nigel.suspend2.net
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Sun, 13 Jan 2008 22:11:38 -0500
+X-PGP-Universal: processed;
+	by hqnvupgp02.nvidia.com on Sun, 13 Jan 2008 19:11:26 -0800
+X-MimeOLE: Produced By Microsoft Exchange V6.5
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Pavel Machek <pavel@ucw.cz>, Russell King <rmk+lkml@arm.linux.org.uk>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH: 2/2] [SERIAL] avoid stalling suspend if serial port won't
- drain
-References: <20080108115148.GB10546@flint.arm.linux.org.uk>	<20080108115703.GA27179@flint.arm.linux.org.uk>	<20080111101721.GA4463@ucw.cz>	<478A95DB.80407@suspend2.net> <20080114004959.0f533fef@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080114004959.0f533fef@lxorguk.ukuu.org.uk>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: RE: fixed a bug of adma in rhel4u5 with HDS7250SASUN500G.
+Date: Mon, 14 Jan 2008 11:08:27 +0800
+Message-ID: <15F501D1A78BD343BE8F4D8DB854566B1BFE2AC0@hkemmail01.nvidia.com>
+In-Reply-To: <478812C9.1000901@shaw.ca>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: fixed a bug of adma in rhel4u5 with HDS7250SASUN500G.
+Thread-Index: AchUt6haosjcVtzPTh6qLDaACeheNgBnLRFQ
+References: <4781F008.9070404@gmail.com> <4782422C.8020202@rtr.ca> <4782B73B.8080309@shaw.ca> <4782BC48.4000309@gmail.com> <4782C008.3030902@shaw.ca> <4782CB62.7040901@gmail.com> <4782CEF9.3040708@gmail.com> <4782DFFE.50301@shaw.ca> <4782E5A8.9010305@gmail.com> <4782E63E.1000606@gmail.com> <4782E78F.9050205@shaw.ca> <4782E912.1050204@gmail.com> <4783493A.7070800@gmail.com> <47838B57.8020407@shaw.ca> <47842A54.2060107@gmail.com> <47842ABA.2060605@gmail.com> <47844471.4070705@shaw.ca> <47845708.6060900@gmail.com> <478567D8.10601@shaw.ca> <15F501D1A78BD343BE8F4D8DB854566B1BFE2ABF@hkemmail01.nvidia.com> <478812C9.1000901@shaw.ca>
+From: "Kuan Luo" <kluo@nvidia.com>
+To: "Robert Hancock" <hancockr@shaw.ca>
+Cc: "Tejun Heo" <htejun@gmail.com>, "Mark Lord" <liml@rtr.ca>,
+       "Jeff Garzik" <jeff@garzik.org>,
+       "IDE/ATA development list" <linux-ide@vger.kernel.org>,
+       "Allen Martin" <AMartin@nvidia.com>, "Peer Chen" <pchen@nvidia.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "David Milburn" <dmilburn@redhat.com>
+X-OriginalArrivalTime: 14 Jan 2008 03:09:11.0957 (UTC) FILETIME=[D620AC50:01C8565A]
+Content-class: urn:content-classes:message
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Robert hancock wrote:
+> What problem does this resolve? I tested it against the cache 
+> flush/NCQ 
+> write switching problem we've been trying to solve, and it 
+> doesn't look 
+> like it fixes that one - if I apply this patch and then remove the 
+> udelay(20) in sata_nv.c that I added which prevented me from 
+> seeing this 
+> problem before, it shows up.
+>
 
-Alan Cox wrote:
->>> Is printk() enough for 'we've just lost your data' condition? Maybe we
->>> should abort suspend if we can't drain fifo?
->> No way. Think about this from a users' perspective. No one wants suspend
->> to ram or hibernate functionality that works sometimes and not others.
->> They want it to work reliably so they don't have to worry about their
->> laptop overheating while they're getting on the bus or airplane.
->> Aborting isn't an option.
-> 
-> Dumb question on the printk however - what if the port that is sticking
-> is the console - don't we recurse and die ?
+First thank  davide to help to send the attachment.
 
-I don't know, but I'd argue that we shouldn't die. Things should be as
-robust as possible.
+Robert,
+The patch is to solve the error message "ata1: CPB flags CMD err,
+flags=0x11" when testing HDS7250SASUN500G in rhel4u5.
+I tested this hd in 2.6.24-rc7 which needed to remove the mask in
+blacklist to run the ncq and the same error also showed up. 
 
-Regards,
+I traced the  bug and found that the interrupt finished a command (for
+example, tag=0) when the driver got that adma status is
+NV_ADMA_STAT_DONE  and  cpb->resp_flags is NV_CPB_RESP_DONE.
+However, For this hd, the drive maybe didn't clear bit 0 at this moment.
+It meaned the hardware  had not completely finished the command.
+If at the same time  the driver freed the command(tag 0) and sended
+another command (tag 0), the error happened.
 
-Nigel
+The notifier register is 32-bit register containing notifier value.
+Value is bit vector containing one bit per tag number (0-31) in
+corresponding bit positions (bit 0 is for tag 0, etc). When bit is set
+then ADMA indicates that command with corresponding tag number completed
+execution.
+
+So i added the check notifier code. Sometimes i saw that the notifier
+reg set some bits  , but the adma status set NV_ADMA_STAT_CMD_COMPLETE
+,not NV_ADMA_STAT_DONE. So i added the NV_ADMA_STAT_CMD_COMPLETE check
+code.
+
+
+
+-----------------------------------------------------------------------------------
+This email message is for the sole use of the intended recipient(s) and may contain
+confidential information.  Any unauthorized review, use, disclosure or distribution
+is prohibited.  If you are not the intended recipient, please contact the sender by
+reply email and destroy all copies of the original message.
+-----------------------------------------------------------------------------------
