@@ -1,60 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752245AbYANPGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752268AbYANPHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752245AbYANPGV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 10:06:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbYANPGN
+	id S1752268AbYANPHf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 10:07:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750784AbYANPH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 10:06:13 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37310 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750851AbYANPGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 10:06:12 -0500
-Date: Mon, 14 Jan 2008 16:05:53 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Adrian Bunk <bunk@kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       rjw@sisk.pl, pavel@suse.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without
-	HOTPLUG_CPU
-Message-ID: <20080114150553.GA3524@elte.hu>
-References: <20080103442.621670000@suse.de> <20080110111514.GS25945@bingen.suse.de> <20080110112607.GE28740@does.not.exist> <200801101242.53504.ak@suse.de> <20080110124702.GF28740@does.not.exist> <p73fxx5omck.fsf@bingen.suse.de> <20080110150911.GG28740@does.not.exist> <20080114135240.GA15357@elte.hu> <20080114140910.GA8507@uranus.ravnborg.org> <20080114145854.GA31695@elte.hu>
+	Mon, 14 Jan 2008 10:07:28 -0500
+Received: from metis.extern.pengutronix.de ([83.236.181.26]:46341 "EHLO
+	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750702AbYANPH1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 10:07:27 -0500
+Message-ID: <478B7A86.7010207@pengutronix.de>
+Date: Mon, 14 Jan 2008 16:06:46 +0100
+From: Marc Kleine-Budde <mkl@pengutronix.de>
+Organization: pengutronix
+User-Agent: Icedove 1.5.0.14pre (X11/20071025)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080114145854.GA31695@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Marc Kleine-Budde <mkl@pengutronix.de>, Dmitry Torokhov <dtor@mail.ru>,
+       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
+       Graeme Gregory <gg@opensource.wolfsonmicro.com>,
+       Rodolfo Giometti <giometti@enneenne.com>,
+       Russell King <rmk@arm.linux.org.uk>, Ian Molton <spyro@f2s.com>,
+       Vince Sanders <vince@kyllikki.org>, Andrew Zabolotny <zap@homelink.ru>
+References: <1199965870-4629-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-2-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-3-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-4-git-send-email-broonie@opensource.wolfsonmicro.com> <1199965870-4629-5-git-send-email-broonie@opensource.wolfsonmicro.com> <478B31B6.3050406@pengutronix.de> <20080114144250.GA7443@rakim.wolfsonmicro.main>
+In-Reply-To: <20080114144250.GA7443@rakim.wolfsonmicro.main>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigBF29A3972656F1D70799EB13"
+X-SA-Exim-Connect-IP: 83.236.181.29
+X-SA-Exim-Mail-From: mkl@pengutronix.de
+Subject: Re: [PATCH 5/6] Driver for WM97xx touchscreens in streaming mode
+ on PXA2xx systems
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on metis.extern.pengutronix.de)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigBF29A3972656F1D70799EB13
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Mark Brown wrote:
+> On Mon, Jan 14, 2008 at 10:56:06AM +0100, Marc Kleine-Budde wrote:
+>> reMark Brown wrote:
+>=20
+>>> Cc: Marc Kleine-Budde <mkl@penugtronix.de>
+>>                                 ^^
+>> it's mkl@pengutronix.de
+>=20
+> Fixed, sorry about that.
+>=20
+>>> +			/* use PEN_DOWN GPIO 13 to assert IRQ on GPIO line 2 */
+>>> +			wm->pen_irq =3D MAINSTONE_AC97_IRQ;
+>=20
+>> I'm missing some kind of abstraction here, what about non mainstone
+>> boards with the pen irq wired to some other gpio?
+>=20
+> The driver really isn't intended to cope with them.  As you say, other
+> boards may have things wired up differently and therefore require
+> different configuration of the wm97xx and other bits of the system.  Th=
+e
+> expectation is that other systems will have their own driver.
 
-> > Would be great to have them automated - just dunno how to do it. Do 
-> > you see a feasible way to do it?
-> 
-> a good starting point would be to make the warnings a lot more 
-> self-explanatory. Right now it's often non-obvious trying to figure 
-> out how the dependencies are structured and which one should be 
-> changed to get rid of the bug.
+What bits have to setup in a different way? Only the stuff in
+wm97xx_acc_startup() or other things aswell. An irq can be put as utual
+into a device's resouce, Setting up bits may be done like other stuff on
+pxa, too. e.g. pxa_set_ohci_info.
 
-also, in theory we've got a pretty reliable set of the following 
-information:
+> My initial thought is that the most straightforward way of handling thi=
+s
+> would be to rename the driver to mainstone-wm97xx or similar to make it=
 
-  function X references symbol Y
+> clear that the driver is only intended to handle Mainstone as-is.  Does=
 
-and we know what type of sections they are in, right?
+> that seem reasonable?
 
-could -ffunction-sections be used to delay the categorization of 
-functions to the link stage, and in essence remove the need to mark 
-functions via any of the __init markers?
+With my limited understanding of the pxa-wm97xx.c file, the only board
+dependent stuff is done in wm97xx_acc_startup() so a different "driver"
+for other boards would result in code duplication.
 
-	Ingo
+regards - Marc
+
+--=20
+ Marc Kleine-Budde              Phone: +49-231-2826-924
+ Pengutronix - Linux Solutions for Science and Industry
+ Vertretung West/Dortmund     http://www.pengutronix.de
+
+
+--------------enigBF29A3972656F1D70799EB13
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFHi3qLjTAFq1RaXHMRApikAJ0Sn14UyJglVm/uKOQ+B3Smfbh8fwCfQxXo
+kZml/x1VjD19jHWI9IMuECY=
+=Y2kb
+-----END PGP SIGNATURE-----
+
+--------------enigBF29A3972656F1D70799EB13--
