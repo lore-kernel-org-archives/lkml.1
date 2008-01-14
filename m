@@ -1,73 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755172AbYANJmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755591AbYANJnM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755172AbYANJmu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 04:42:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753877AbYANJml
+	id S1755591AbYANJnM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 04:43:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbYANJmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 04:42:41 -0500
-Received: from ns.firmix.at ([62.141.48.66]:3836 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753866AbYANJmj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 04:42:39 -0500
-Subject: Re: The ext3 way of journalling
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Tuomo Valkonen <tuomov@iki.fi>
-Cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080114071555.GA6475@jolt.modeemi.cs.tut.fi>
-References: <18307.42821.166376.732473@stoffel.org>
-	 <slrnfo7auq.6m2.tuomov@jolt.modeemi.cs.tut.fi>
-	 <871w8r6ruc.fsf@barad-dur.regala.cx>
-	 <slrnfo9lqk.17l.tuomov@jolt.modeemi.cs.tut.fi>
-	 <20080110131659.GF10230@mit.edu>
-	 <20080110134111.GA6254@jolt.modeemi.cs.tut.fi>
-	 <20080112150621.GC6751@mit.edu>
-	 <20080113221301.GA18341@jolt.modeemi.cs.tut.fi>
-	 <20080113222310.GA20815@jolt.modeemi.cs.tut.fi>
-	 <20080113231150.GB23906@mit.edu>
-	 <20080114071555.GA6475@jolt.modeemi.cs.tut.fi>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Mon, 14 Jan 2008 10:42:23 +0100
-Message-Id: <1200303743.24517.6.camel@tara.firmix.at>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Mon, 14 Jan 2008 04:42:50 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:21814 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755156AbYANJms (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 04:42:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=Q7+5duepwJbYW9HH6Tv/ve0BKglBqhi3g1++w2Au1a+FX7cU4lV8fbFsuxg/S5QE4H9CT01iEtbBLTawFbRjipd+0D5fUFK260GJGyj7mL57Gi9FavKVsxtvAwqlfP2inlee3YfRlZWHx6rC5naajjmXS1wuOUy9dK/1Z5NpgVo=
+Message-ID: <478B2E92.5090901@gmail.com>
+Date: Mon, 14 Jan 2008 18:42:42 +0900
+From: Joonwoo Park <joonwpark81@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: "Zhu, Yi" <yi.zhu@intel.com>, netdev@vger.kernel.org
+CC: "Chatre, Reinette" <reinette.chatre@intel.com>,
+       linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [ipw3945-devel] [PATCH 2/5] iwlwifi: iwl3945 synchronize interruptand
+ tasklet for down iwlwifi
+References: <11998765481610-git-send-email-joonwpark81@gmail.com>	 <D936D925018D154694D8A362EEB08920035CCD70@orsmsx416.amr.corp.intel.com>	 <b25c3fa70801101724he91d934y9db6636c68a32486@mail.gmail.com>	 <D936D925018D154694D8A362EEB0892003602E2D@orsmsx416.amr.corp.intel.com> <b25c3fa70801101838o7a71cc60h1c8b8a71624aeff9@mail.gmail.com> <478B1EBF.8030701@gmail.com>
+In-Reply-To: <478B1EBF.8030701@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -2.334 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.334 required=5
-X-Spam-Score: -2.334 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-01-14 at 09:15 +0200, Tuomo Valkonen wrote:
-[...]
-> ntpdate isn't run by any of the init scripts. ntpd is, but like I 
+I'm so sorry for mangled patch.
+resending patch with preformat html from thunderbird.
 
-Yes, that is a usual bug/problem in common distributions[0] as there is
-no real guarantee that your clock is not far off.
-Add your timeservers in /etc/ntp/step-tickers whereever your
-distribution looks into to decide if ntpdate should run or activate the
-ntpdate init.d script.
-And some distributions run `ntpdate` quite late BTW ....
 
-> already mentioned, I doubt it would correct vastly incorrect time,
-> not even being able to track and correct when it advances fast.
+After disabling interrupts, it's possible irq & tasklet is pending or running
+This patch eleminates races for down iwlwifi.
 
-That the reason to activate `ntpdate` unconditionally: It sets the
-current time to an (somewhat) accurate value and `ntpd` handles the
-rest.
+Since synchronize_irq can introduce iwl_irq_tasklet, tasklet_kill should be 
+called after doing synchronize_irq.
+To avoid races between iwl_synchronize_irq and iwl_irq_tasklet
+STATUS_INT_ENABLED flag is needed.
 
-	Bernd
+Signed-off-by: Joonwoo Park <joonwpark81@gmail.com>
+---
+ drivers/net/wireless/iwlwifi/iwl3945-base.c |   33 ++++++++++++++++++++++-----
+ 1 files changed, 27 insertions(+), 6 deletions(-)
 
-[0]: Perhaps there is some reason for this. However I don't of any and
-     none came ever to my mind.
--- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
+diff --git a/drivers/net/wireless/iwlwifi/iwl3945-base.c b/drivers/net/wireless/iwlwifi/iwl3945-base.c
+index 6e20725..f98cd4f 100644
+--- a/drivers/net/wireless/iwlwifi/iwl3945-base.c
++++ b/drivers/net/wireless/iwlwifi/iwl3945-base.c
+@@ -4405,6 +4405,14 @@ static void iwl_print_rx_config_cmd(struct iwl_rxon_cmd *rxon)
+ }
+ #endif
+ 
++static void iwl_synchronize_interrupts(struct iwl_priv *priv)
++{
++	synchronize_irq(priv->pci_dev->irq);
++	/* synchornize_irq introduces irq_tasklet,
++	 * tasklet_kill should be called after doing synchronize_irq */
++	tasklet_kill(&priv->irq_tasklet);
++}
++
+ static void iwl_enable_interrupts(struct iwl_priv *priv)
+ {
+ 	IWL_DEBUG_ISR("Enabling interrupts\n");
+@@ -4413,7 +4421,7 @@ static void iwl_enable_interrupts(struct iwl_priv *priv)
+ 	iwl_flush32(priv, CSR_INT_MASK);
+ }
+ 
+-static inline void iwl_disable_interrupts(struct iwl_priv *priv)
++static inline void __iwl_disable_interrupts(struct iwl_priv *priv)
+ {
+ 	clear_bit(STATUS_INT_ENABLED, &priv->status);
+ 
+@@ -4427,6 +4435,13 @@ static inline void iwl_disable_interrupts(struct iwl_priv *priv)
+ 	iwl_flush32(priv, CSR_INT);
+ 	iwl_write32(priv, CSR_FH_INT_STATUS, 0xffffffff);
+ 	iwl_flush32(priv, CSR_FH_INT_STATUS);
++}
++
++static inline void iwl_disable_interrupts(struct iwl_priv *priv)
++{
++	__iwl_disable_interrupts(priv);
++
++	iwl_synchronize_interrupts(priv);
+ 
+ 	IWL_DEBUG_ISR("Disabled interrupts\n");
+ }
+@@ -4708,7 +4723,8 @@ static void iwl_irq_tasklet(struct iwl_priv *priv)
+ 		IWL_ERROR("Microcode HW error detected.  Restarting.\n");
+ 
+ 		/* Tell the device to stop sending interrupts */
+-		iwl_disable_interrupts(priv);
++		__iwl_disable_interrupts(priv);
++		IWL_DEBUG_ISR("Disabled interrupts\n");
+ 
+ 		iwl_irq_handle_error(priv);
+ 
+@@ -4814,8 +4830,11 @@ static void iwl_irq_tasklet(struct iwl_priv *priv)
+ 		IWL_WARNING("   with FH_INT = 0x%08x\n", inta_fh);
+ 	}
+ 
+-	/* Re-enable all interrupts */
+-	iwl_enable_interrupts(priv);
++	/* To avoid race when device goes down,
++	 * it should be discarded to enable interrupts */
++	if (test_bit(STATUS_INT_ENABLED, &priv->status))
++		/* Re-enable all interrupts */
++		iwl_enable_interrupts(priv);
+ 
+ #ifdef CONFIG_IWLWIFI_DEBUG
+ 	if (iwl_debug_level & (IWL_DL_ISR)) {
+@@ -4876,8 +4895,10 @@ unplugged:
+ 	return IRQ_HANDLED;
+ 
+  none:
+-	/* re-enable interrupts here since we don't have anything to service. */
+-	iwl_enable_interrupts(priv);
++	if (test_bit(STATUS_INT_ENABLED, &priv->status))
++		/* re-enable interrupts here since we don't have anything
++		 * to service. */
++		iwl_enable_interrupts(priv);
+ 	spin_unlock(&priv->lock);
+ 	return IRQ_NONE;
+ }
+---
 
+Thanks,
+Joonwoo
 
