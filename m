@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbYANXEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbYANXF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755560AbYANXEv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 18:04:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbYANXEl
+	id S1756161AbYANXF5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 18:05:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbYANXFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 18:04:41 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:43954 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752160AbYANXEk (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 18:04:40 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Paul Moore <paul.moore@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.24-rc6-mm1 - oddness with IPv4/v6 mapped sockets hanging...
-In-Reply-To: Your message of "Mon, 14 Jan 2008 14:07:46 EST."
-             <200801141407.46345.paul.moore@hp.com>
-From: Valdis.Kletnieks@vt.edu
-References: <30887.1200209733@turing-police.cc.vt.edu> <32065.1200334930@turing-police.cc.vt.edu> <1030.1200336639@turing-police.cc.vt.edu>
-            <200801141407.46345.paul.moore@hp.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1200351868_2904P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 14 Jan 2008 18:04:28 -0500
-Message-ID: <4382.1200351868@turing-police.cc.vt.edu>
+	Mon, 14 Jan 2008 18:05:48 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:53581 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751440AbYANXFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 18:05:48 -0500
+Date: Tue, 15 Jan 2008 01:04:48 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <greg@kroah.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
+       Martin Mares <mj@ucw.cz>, Tony Camuso <tcamuso@redhat.com>,
+       Loic Prylli <loic@myri.com>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+	opt-in
+Message-ID: <20080114230448.GL9847@does.not.exist>
+References: <20080111211753.GR18741@parisc-linux.org> <alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org> <20080111213803.GS18741@parisc-linux.org> <20080111235856.GA16079@jurassic.park.msu.ru> <20080112002638.GA18710@kroah.com> <20080112144030.GA19279@jurassic.park.msu.ru> <1200208085.6896.134.camel@pasglop> <20080113072415.GB18741@parisc-linux.org> <20080113090108.3224698c@laptopd505.fenrus.org> <20080114225225.GQ18741@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080114225225.GQ18741@parisc-linux.org>
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1200351868_2904P
-Content-Type: text/plain; charset=us-ascii
+On Mon, Jan 14, 2008 at 03:52:26PM -0700, Matthew Wilcox wrote:
+> On Sun, Jan 13, 2008 at 09:01:08AM -0800, Arjan van de Ven wrote:
+>...
+> > > -	pci_conf1_read(0, 0, PCI_DEVFN(0,0), 0xce, 2, &win);
+> > > +	pci_direct_conf1.read(0, 0, PCI_DEVFN(0,0), 0xce, 2, &win);
+> > 
+> > 	couldn't this (at least in some next patch) use the vector if it exists?
+> 
+> I thought so, but due to the way that things are initialised, mmconfig
+> happens before conf1.  conf1 is known to be usable, but hasn't set
+> raw_pci_ops at this point.  Confusing, and not ideal, but fixing this
+> isn't in scope for 2.6.24.
+>...
 
-On Mon, 14 Jan 2008 14:07:46 EST, Paul Moore said:
->
-> http://git.infradead.org/?p=users/pcmoore/lblnet-2.6_testing;a=commitdiff;h=02f1c89d6e36507476f78108a3dcc78538be460b
+*ahem*
 
-Initial testing indicates that 2.6.24-rc6-mm1 plus this one commit is
-behaving itself correctly - my Tcl test case that reliably demonstrated wedges
-during SYN handling is definitively fixed, and the current issue with hangs with
-data pending seems to be gone as well (after admittedly light testing).
+I don't think anything of what was discussed in this thread would be in 
+scope for 2.6.24 (unless Linus wants to let the bunny that brings eggs 
+release 2.6.24).
 
-Thanks for finding the commit that fixed it... 
+cu
+Adrian
 
---==_Exmh_1200351868_2904P
-Content-Type: application/pgp-signature
+-- 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-iD8DBQFHi+p8cC3lWbTT17ARAl9WAKC9VSshufAvQRsrvJ7U4xLeIjLaCgCePNCJ
-PKagwt2RJ0bmSySO6ok1uas=
-=fWsE
------END PGP SIGNATURE-----
-
---==_Exmh_1200351868_2904P--
