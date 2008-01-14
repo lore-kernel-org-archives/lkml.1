@@ -1,64 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbYANV17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755247AbYANV2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754019AbYANV17 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 16:27:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbYANV1w
+	id S1755247AbYANV2r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 16:28:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbYANV2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 16:27:52 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:37661 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751218AbYANV1v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 16:27:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=LuyAKMIMMQpWjx2ZOwB/DrBNqxf0b9Ea0Z2vD7U9mLxkhMaIb6mNpDi84fojbyHdBKZpd+vTwJOQHBqeSJnSJ/G1W/KnDxAqGvoMBgYe1E4qGEbic9BJNqY/I5TIlOtDXCxNKL2jU/FFiPIn83swLT371ya+xU7aCC9T+Id4w5w=
-Message-ID: <478BD3D2.3060807@gmail.com>
-Date: Tue, 15 Jan 2008 00:27:46 +0300
-From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-Organization: DmVo Home
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
-MIME-Version: 1.0
-To: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org
-CC: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH][MIPS] Malta: Fix reading the PCI clock frequency on big-endian
-Content-Type: text/plain; charset=KOI8-R
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Jan 2008 16:28:39 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:55508 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751314AbYANV2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 16:28:38 -0500
+Date: Tue, 15 Jan 2008 00:27:41 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, Ingo Molnar <mingo@elte.hu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Christian Kujau <lists@nerdbynature.de>, linux-kernel@vger.kernel.org,
+       jfs-discussion@lists.sourceforge.net,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: 2.6.24-rc6: possible recursive locking detected
+Message-ID: <20080114212741.GA2263@tv-sign.ru>
+References: <alpine.DEB.0.999999.0801032349190.4821@sheep.housecafe.de> <200801040006.47979.rjw@sisk.pl> <20080104083049.GC22803@elte.hu> <20080105071205.GA28936@gondor.apana.org.au> <1199552016.31975.41.camel@lappy> <1199552476.31975.45.camel@lappy> <20080107172239.GA14880@tv-sign.ru> <20080107174908.GB14880@tv-sign.ru> <1200241927.7999.38.camel@lappy>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1200241927.7999.38.camel@lappy>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The JMPRS register on Malta boards keeps a 32-bit CPU-endian
-value. The readw() function assumes that the value it reads is a
-little-endian 16-bit number. Therefore, using readw() to obtain
-the value of the JMPRS register is a mistake. This error leads
-to incorrect reading of the PCI clock frequency on big-endian
-during board start-up.
+On 01/13, Peter Zijlstra wrote:
+> 
+> On Mon, 2008-01-07 at 20:49 +0300, Oleg Nesterov wrote:
+>
+> > On 01/07, Oleg Nesterov wrote:
+> > >
+> > > Consider this "just for illustration" patch,
+> > > 
+> > > --- t/kernel/lockdep.c	2007-11-09 12:57:31.000000000 +0300
+> > > +++ t/kernel/lockdep.c	2008-01-07 19:43:50.000000000 +0300
+> > > @@ -1266,10 +1266,13 @@ check_deadlock(struct task_struct *curr,
+> > >  	struct held_lock *prev;
+> > >  	int i;
+> > >  
+> > > -	for (i = 0; i < curr->lockdep_depth; i++) {
+> > > +	for (i = curr->lockdep_depth; --i >= 0; ) {
+> > >  		prev = curr->held_locks + i;
+> > >  		if (prev->class != next->class)
+> > >  			continue;
+> > > +
+> > > +		if (prev->trylock == -1)
+> > > +			return 2;
+> > >  		/*
+> > >  		 * Allow read-after-read recursion of the same
+> > >  		 * lock class (i.e. read_lock(lock)+read_lock(lock)):
+> > > -------------------------------------------------------------------------
+> > > 
+> > > Now,
+> > > 
+> > > 	// trylock == -1
+> > > 	#define	spin_mark_nested(l)	\
+> > > 		lock_acquire(&(l)->dep_map, 0, -1, 0, 2, _THIS_IP_)
+> > > 	#define	spin_unmark_nested(l)	\
+> > > 		lock_release(&(l)->dep_map, 1, _THIS_IP_)
+> > > 
+> > > and ep_poll_safewake() can do:
+> > > 
+> > > 	/* Do really wake up now */
+> > > 	spin_mark_nested(&wq->lock);
+> > > 	wake_up(wq);
+> > > 	spin_unmark_nested(&wq->lock);
+> > 
+> > seems to work. What do you think?
+> 
+> I've been pondering this for a while, and some days I really like it,
+> some days I don't.
+> 
+> The problem I have with it is that it becomes very easy to falsely
+> annotate problems away - its a very powerful annotation.
 
-Change readw() to __raw_readl().
+Also, I don't like the overloading of ->trylock, this is really hackish.
 
-This was tested by injecting a call to printk() and verifying
-that the value of the jmpr variable was consistent with current
-setting of the JP4 "PCI CLK" jumper.
+> I think I'll do wake_up_nested() for now and keep this around.
 
-Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
----
- arch/mips/mips-boards/malta/malta_setup.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Agreed.
 
-diff --git a/arch/mips/mips-boards/malta/malta_setup.c b/arch/mips/mips-boards/malta/malta_setup.c
-index 9a2636e..bc43a5c 100644
---- a/arch/mips/mips-boards/malta/malta_setup.c
-+++ b/arch/mips/mips-boards/malta/malta_setup.c
-@@ -149,7 +149,7 @@ void __init plat_mem_setup(void)
- 	/* Check PCI clock */
- 	{
- 		unsigned int __iomem *jmpr_p = (unsigned int *) ioremap(MALTA_JMPRS_REG, sizeof(unsigned int));
--		int jmpr = (readw(jmpr_p) >> 2) & 0x07;
-+		int jmpr = (__raw_readl(jmpr_p) >> 2) & 0x07;
- 		static const int pciclocks[] __initdata = {
- 			33, 20, 25, 30, 12, 16, 37, 10
- 		};
--- 
-1.5.3
+Perhaps it is a bit easier to use spin_lock_nested() + __wake_up_common()
+directly (we have a lot of wake_up_xxx helpers), but this is up to you.
+
+
+Offtopic question. Why do we have so many lockdep stuff in timer.c and hrtimer.c ?
+We never lock 2 bases at the same time, except in migrate_timers(). We can kill
+double_spin_lock() and base_lock_keys[] and just use spin_lock_nested in
+migrate_timers(), no?
+
+Oleg.
+
