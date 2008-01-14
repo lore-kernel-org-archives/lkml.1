@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbYANQOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754324AbYANQPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754725AbYANQOZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 11:14:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbYANQOR
+	id S1754324AbYANQPz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 11:15:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbYANQPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 11:14:17 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55700 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750852AbYANQOQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 11:14:16 -0500
-Date: Mon, 14 Jan 2008 17:13:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Matthew <jackdachef@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ed Tomlinson <edt@aei.ca>
-Subject: Re: Fwd: Fwd: laptop / computer hardlocks during execution of
-	32bit applications(binaries) on 64bit system (Gentoo)
-Message-ID: <20080114161359.GD15542@elte.hu>
-References: <e85b9d30801080333y3d6668ccgf20f9666d0326884@mail.gmail.com> <e85b9d30801080340y43fbd4c0sa9b6c9811c7391a1@mail.gmail.com> <47841C41.4060401@zytor.com> <e85b9d30801101310p485c7686o30b7cd581043712@mail.gmail.com> <47868B6D.6030208@zytor.com> <e85b9d30801101352hf66826eqe436e61310c96f14@mail.gmail.com> <478694CB.4000306@zytor.com> <e85b9d30801101428s1c760cb1i5ee415738dffb90f@mail.gmail.com> <47869C93.2060308@zytor.com> <e85b9d30801101453k21c60f81v1975cde6a8d5ed52@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e85b9d30801101453k21c60f81v1975cde6a8d5ed52@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 14 Jan 2008 11:15:44 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:37607 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750759AbYANQPn (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 11:15:43 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.24-rc6-mm1 - oddness with IPv4/v6 mapped sockets hanging...
+In-Reply-To: Your message of "Sun, 13 Jan 2008 02:35:33 EST."
+             <30887.1200209733@turing-police.cc.vt.edu>
+From: Valdis.Kletnieks@vt.edu
+References: <30887.1200209733@turing-police.cc.vt.edu>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1200327338_3131P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Mon, 14 Jan 2008 11:15:38 -0500
+Message-ID: <7197.1200327338@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1200327338_3131P
+Content-Type: text/plain; charset=us-ascii
 
-* Matthew <jackdachef@gmail.com> wrote:
+On Sun, 13 Jan 2008 02:35:33 EST, Valdis.Kletnieks@vt.edu said:
 
-> > I just managed to reproduce the bug in simulation.  I believe we should
-> > be able to resolve this.
+> I'm seeing problems with Sendmail on 24-rc6-mm1, where the main Sendmail is
+> listening on ::1/25, and Fetchmail connects to 127.0.0.1:25 to inject mail it
+> has just fetched from an outside server via IMAP - it will often just hang and
+> not make any further progress. Looking at netstat shows something interesting:
 > 
-> That's great news! Keep up the good work :)
+> % netstat -n -a -A inet | grep 25
+> tcp        0   5108 127.0.0.1:59355             127.0.0.1:25                ESTABLISHED 
 
-FYI, latest x86.git should have this fix included. So if your box still 
-hangs there must be some other bug lurking as well.
+The IPv6 is apparently a red herring - this morning I'm seeing the same problem
+with another totally separate pair of programs that are IPv4-only, hanging
+on loopback.
 
-	Ingo
+--==_Exmh_1200327338_3131P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFHi4qqcC3lWbTT17ARAuYSAKCWuGdoG2L7WQouMM8j0JydjkEJpQCg7qmT
+u0koDo54Oa1lLgWWNRCVaec=
+=F8Rx
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1200327338_3131P--
