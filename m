@@ -1,96 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbYANG1l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355AbYANG3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754789AbYANG1l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 01:27:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbYANG1e
+	id S1753355AbYANG3T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 01:29:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbYANG27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 01:27:34 -0500
-Received: from ag-out-0708.google.com ([72.14.246.245]:23675 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751369AbYANG1c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 01:27:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=fFCnCwZhkYH/j2lhO7J2o0S41AMcmuN8CNRjXFo/RY6MfwaVqgNQlIud7kD2gAe0jgNQpKFMwX7tamoWN84nS33ebouhez4MeAs5Uz8SFOkW/UirA1O6j9B4U7CiSaSG5W52jTxNeGtIyVUz/tVhaYszEGygl4mqr7eNmkLqj8g=
-Date: Mon, 14 Jan 2008 14:26:34 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ralf Baechle <ralf@linux-mips.org>, WANG Cong <xiyou.wangcong@gmail.com>,
-       Andreas Schwab <schwab@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       linux-kbuild@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       linux-mips@linux-mips.org
-Subject: Re: (Try #3) [Patch 2/8] MIPS: Remove 'TOPDIR' from Makefiles
-Message-ID: <20080114062634.GB2537@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <20080101071311.GA2496@hacking> <20080101072238.GC2496@hacking> <20080101101540.GB28913@uranus.ravnborg.org> <jefxxhlkxb.fsf@sykes.suse.de> <20080101175754.GC31575@uranus.ravnborg.org> <20080102062135.GE2493@hacking> <20080111141754.GC19900@linux-mips.org> <20080111170204.GA28299@uranus.ravnborg.org>
+	Mon, 14 Jan 2008 01:28:59 -0500
+Received: from mx2.suse.de ([195.135.220.15]:48593 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751356AbYANG25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 01:28:57 -0500
+From: Neil Brown <neilb@suse.de>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Date: Mon, 14 Jan 2008 17:28:44 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080111170204.GA28299@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18315.284.774998.348672@notabene.brown>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 002 of 6] md: Fix use-after-free bug when dropping an rdev from an md array.
+In-Reply-To: message from Neil Brown on Monday January 14
+References: <20080114123726.19968.patches@notabene>
+	<1080114014531.20354@suse.de>
+	<20080114020459.GN27894@ZenIV.linux.org.uk>
+	<18314.54601.196877.828373@notabene.brown>
+	<20080114034322.GO27894@ZenIV.linux.org.uk>
+	<18314.59832.14451.334084@notabene.brown>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 11, 2008 at 06:02:04PM +0100, Sam Ravnborg wrote:
->On Fri, Jan 11, 2008 at 02:17:54PM +0000, Ralf Baechle wrote:
->> On Wed, Jan 02, 2008 at 02:21:36PM +0800, WANG Cong wrote:
->> 
->> > >> Shouldn't that use $(LINUXINCLUDE), or $(KBUILD_CPPFLAGS)?
->> > >It would be better to use $(LINUXINCLUDE) as we then pull in all config
->> > >symbols too and do not have to hardcode kbuild internal names (include2).
->> > 
->> > OK. Refine this patch.
->> 
->> LDSCRIPT also needed fixing to get builds in a separate object directory
->> working again.
->> 
->> I've applied below fix.
->
->Great - I will drop it from my tree. 
->
->See small comment below.
->
->	Sam
->
->
->>   Ralf
->> 
->> From 8babf06e1265214116fb8ffc634c04df85597c52 Mon Sep 17 00:00:00 2001
->> From: WANG Cong <xiyou.wangcong@gmail.com>
->> Date: Wed, 2 Jan 2008 14:21:36 +0800
->> Subject: [PATCH] [MIPS] Lasat: Fix built in separate object directory.
->> 
->> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
->> 
->> [Ralf: The LDSCRIPT script needed fixing, too]
->> 
->> Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
->> 
->> diff --git a/arch/mips/lasat/image/Makefile b/arch/mips/lasat/image/Makefile
->> index 5332449..7ccd40d 100644
->> --- a/arch/mips/lasat/image/Makefile
->> +++ b/arch/mips/lasat/image/Makefile
->> @@ -12,11 +12,11 @@ endif
->>  
->>  MKLASATIMG = mklasatimg
->>  MKLASATIMG_ARCH = mq2,mqpro,sp100,sp200
->> -KERNEL_IMAGE = $(TOPDIR)/vmlinux
->> +KERNEL_IMAGE = vmlinux
->>  KERNEL_START = $(shell $(NM) $(KERNEL_IMAGE) | grep " _text" | cut -f1 -d\ )
->>  KERNEL_ENTRY = $(shell $(NM) $(KERNEL_IMAGE) | grep kernel_entry | cut -f1 -d\ )
->>  
->> -LDSCRIPT= -L$(obj) -Tromscript.normal
->> +LDSCRIPT= -L$(srctree)/$(obj) -Tromscript.normal
->
->This needs to read:
->> +LDSCRIPT= -L$(srctree)/$(src) -Tromscript.normal
->
->
->(There is no difference between src and obj in normal cases but to be consistent
->it shuld be like above).
+On Monday January 14, neilb@suse.de wrote:
+> 
+> Thanks.  I'll see what I can some up with.
 
-Agreed. Thank you!
+How about this, against current -mm
 
+On both the read and write path for an rdev attribute, we
+call mddev_lock, first checking that mddev is not NULL.
+Once we get the lock, we check again.
+If rdev->mddev is not NULL, we know it will stay that way as it only
+gets cleared under the same lock.
+
+While in the rdev show/store routines, we know that the mddev cannot
+get freed, do to the kobject relationships.
+
+rdev_size_store is awkward because it has to drop the lock.  So we
+take a copy of rdev->mddev before the drop, and we are safe...
+
+Comments?
+
+NeilBrown
+
+Signed-off-by: Neil Brown <neilb@suse.de>
+
+### Diffstat output
+ ./drivers/md/md.c |   35 ++++++++++++++++++++++++++---------
+ 1 file changed, 26 insertions(+), 9 deletions(-)
+
+diff .prev/drivers/md/md.c ./drivers/md/md.c
+--- .prev/drivers/md/md.c	2008-01-14 12:26:15.000000000 +1100
++++ ./drivers/md/md.c	2008-01-14 17:05:53.000000000 +1100
+@@ -1998,9 +1998,11 @@ rdev_size_store(mdk_rdev_t *rdev, const 
+ 	char *e;
+ 	unsigned long long size = simple_strtoull(buf, &e, 10);
+ 	unsigned long long oldsize = rdev->size;
++	mddev_t *my_mddev = rdev->mddev;
++
+ 	if (e==buf || (*e && *e != '\n'))
+ 		return -EINVAL;
+-	if (rdev->mddev->pers)
++	if (my_mddev->pers)
+ 		return -EBUSY;
+ 	rdev->size = size;
+ 	if (size > oldsize && rdev->mddev->external) {
+@@ -2013,7 +2015,7 @@ rdev_size_store(mdk_rdev_t *rdev, const 
+ 		int overlap = 0;
+ 		struct list_head *tmp, *tmp2;
+ 
+-		mddev_unlock(rdev->mddev);
++		mddev_unlock(my_mddev);
+ 		for_each_mddev(mddev, tmp) {
+ 			mdk_rdev_t *rdev2;
+ 
+@@ -2033,7 +2035,7 @@ rdev_size_store(mdk_rdev_t *rdev, const 
+ 				break;
+ 			}
+ 		}
+-		mddev_lock(rdev->mddev);
++		mddev_lock(my_mddev);
+ 		if (overlap) {
+ 			/* Someone else could have slipped in a size
+ 			 * change here, but doing so is just silly.
+@@ -2045,8 +2047,8 @@ rdev_size_store(mdk_rdev_t *rdev, const 
+ 			return -EBUSY;
+ 		}
+ 	}
+-	if (size < rdev->mddev->size || rdev->mddev->size == 0)
+-		rdev->mddev->size = size;
++	if (size < my_mddev->size || my_mddev->size == 0)
++		my_mddev->size = size;
+ 	return len;
+ }
+ 
+@@ -2067,10 +2069,21 @@ rdev_attr_show(struct kobject *kobj, str
+ {
+ 	struct rdev_sysfs_entry *entry = container_of(attr, struct rdev_sysfs_entry, attr);
+ 	mdk_rdev_t *rdev = container_of(kobj, mdk_rdev_t, kobj);
++	mddev_t *mddev = rdev->mddev;
++	ssize_t rv;
+ 
+ 	if (!entry->show)
+ 		return -EIO;
+-	return entry->show(rdev, page);
++
++	rv = mddev ? mddev_lock(mddev) : -EBUSY;
++	if (!rv) {
++		if (rdev->mddev == NULL)
++			rv = -EBUSY;
++		else
++			rv = entry->show(rdev, page);
++		mddev_unlock(mddev);
++	}
++	return rv;
+ }
+ 
+ static ssize_t
+@@ -2079,15 +2092,19 @@ rdev_attr_store(struct kobject *kobj, st
+ {
+ 	struct rdev_sysfs_entry *entry = container_of(attr, struct rdev_sysfs_entry, attr);
+ 	mdk_rdev_t *rdev = container_of(kobj, mdk_rdev_t, kobj);
+-	int rv;
++	ssize_t rv;
++	mddev_t *mddev = rdev->mddev;
+ 
+ 	if (!entry->store)
+ 		return -EIO;
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EACCES;
+-	rv = mddev_lock(rdev->mddev);
++	rv = mddev ? mddev_lock(mddev): -EBUSY;
+ 	if (!rv) {
+-		rv = entry->store(rdev, page, length);
++		if (rdev->mddev == NULL)
++			rv = -EBUSY;
++		else
++			rv = entry->store(rdev, page, length);
+ 		mddev_unlock(rdev->mddev);
+ 	}
+ 	return rv;
