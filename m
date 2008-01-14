@@ -1,47 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbYANIc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755168AbYANIdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754658AbYANIc4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 03:32:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbYANIcs
+	id S1755168AbYANIdX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 03:33:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYANIdO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 03:32:48 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50212 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751465AbYANIcr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 03:32:47 -0500
-Date: Mon, 14 Jan 2008 09:32:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: Kevin Winchester <kjwinchester@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "mboton@gmail.com" <mboton@gmail.com>,
-       Zach Brown <zach.brown@oracle.com>
-Subject: Re: [PATCH] x86: refactor ioport unification
-Message-ID: <20080114083222.GE18296@elte.hu>
-References: <4786AA11.5010805@gmail.com> <4786AB1B.4030004@zytor.com> <4786AF4C.6050509@gmail.com> <4786C2CF.4070204@zytor.com> <20080110220444.4c9efdec.kjwinchester@gmail.com> <20080111140346.GA13604@elte.hu> <20080112010443.GA5476@sequoia.sous-sol.org> <20080112010656.GD3627@sequoia.sous-sol.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 14 Jan 2008 03:33:14 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:2139
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751465AbYANIdN convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 03:33:13 -0500
+Message-Id: <478B2C6F.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Mon, 14 Jan 2008 08:33:35 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/4] __cpuinitconst and __devinitconst
+References: <47873D11.76E4.0078.0@novell.com>
+ <20080111194428.GB29189@uranus.ravnborg.org>
+ <20080112205635.GA6059@uranus.ravnborg.org>
+ <20080113073024.GA30120@uranus.ravnborg.org>
+ <20080113214204.GB2205@uranus.ravnborg.org>
+In-Reply-To: <20080113214204.GB2205@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080112010656.GD3627@sequoia.sous-sol.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>> Sam Ravnborg <sam@ravnborg.org> 13.01.08 22:42 >>>
+>> And I found another small buglet too. I hope to post a complete
+>> solution later today.
+>
+>The modpost bits turned out to take longer than expected so 
+>they are not done yet. The problem was the modpost structure
+>were not prepared for adding such additional chacks.
+>So I reworked those bits and the patch has been sent out for review.
+>
+>What follows here is the changes for init.h + all linker scripts
+>to show the idea.
+>
+>Next step is to beat modpost in shape and to post this on linux-arch.
+>
+>Note - in -mm there are changes to init.h so the logic
+>to decide type of __meminit notation is much simpler.
 
-* Chris Wright <chrisw@sous-sol.org> wrote:
+Yes, I certainly like this concept. What I would have wanted in that patch,
+though, is that the read-only data would right away be included in
+RODATA() rather than being put in DATA_DATA. Also, to shorten the
+names a little, how about .{cpu,mem,dev}init.rodata?
 
-> Refactor ioport unification to pull out common code.
+The one thing that I'm not sure is really consistent yet wrt. the
+constification is that now you need to write e.g.
 
-thanks, applied. Looks quite a bit more logical this way.
+static const char __cpuinitcdata example[];
 
-	Ingo
+and (accidentally) omitting the 'const' (as it's really an apparently
+redundant thing now) as in
+
+static char __cpuinitcdata example[];
+
+will cause section type conflicts (at the compiler or linker level). I
+therefore think that the 'const' should really be part of the
+__{cpu,mem,dev}cdata definitions (requiring the attribute to be
+placed properly, namely placement at the end of a declaration as
+is possible with __{cpu,mem,dev}initdata is then not an option here).
+
+Jan
+
