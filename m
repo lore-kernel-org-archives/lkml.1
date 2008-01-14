@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbYANGke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbYANGlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755241AbYANGke (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 01:40:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbYANGk1
+	id S1755401AbYANGlx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 01:41:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbYANGlo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 01:40:27 -0500
-Received: from ro-out-1112.google.com ([72.14.202.181]:42963 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751438AbYANGkZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 01:40:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=jj61kVnjh3Q1rd+hJnqhQcVATMiuCf7TSy3H55rC0Xrit2uLUw6PzT9TnHQqxeKKtv9qQQ5bPyos/e8or/YEOCVmZZBsq/mWT5gvQg9pJR5MVxo8nWTsztNTAyxXIlw8MUAnoGKWENDTCgPnxOeSlYFPv1kG+kVvRxqqRDPDd88=
-Date: Mon, 14 Jan 2008 14:39:26 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Bryan Wu <cooloney.lkml@gmail.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, xiyou.wangcong@gmail.com,
-       Li Yang <leoli@freescale.com>, torvalds@linux-foundation.org,
-       gregkh@suse.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-kernel@zh-kernel.org
-Subject: Re: [GIT PATCH] Update to Chinese documents
-Message-ID: <20080114063926.GC2537@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <1199796637.6835.7.camel@Gundam> <20080108131823.GB23947@uranus.ravnborg.org> <1199875266.21597.16.camel@Gundam> <20080109115413.GA981@uranus.ravnborg.org> <386072610801090848m4866e41bt41f439422c174799@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <386072610801090848m4866e41bt41f439422c174799@mail.gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Mon, 14 Jan 2008 01:41:44 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:44462 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751438AbYANGlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 01:41:44 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Lee.Schermerhorn@hp.com, Cliff Wickman <cpw@sgi.com>,
+       linux-kernel@vger.kernel.org, David Rientjes <rientjes@google.com>,
+       Christoph Lameter <clameter@sgi.com>, Paul Jackson <pj@sgi.com>
+Date: Sun, 13 Jan 2008 22:41:41 -0800
+Message-Id: <20080114064141.2782.77305.sendpatchset@jackhammer.engr.sgi.com>
+Subject: [PATCH 1/3] hotplug cpu move tasks in empty cpusets to parent node_online_map fix
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 10, 2008 at 12:48:56AM +0800, Bryan Wu wrote:
->On Jan 9, 2008 7:54 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
->> > >
->> > > What is generally seen as a showstopper is the amount of work needed
->> > > to do the translation - and keeping it up-to-date.
->> >
->> > Sure.  The key is to have more participants to involve.  The work can't
->> > be done without a large contributor base.
->>
->> I already got positive feedback from Bryan Wu and WANG Cong so a Chinese
->> translation is well within reach if we get the infrastructure adapted so
->> we have better .po files support.
->>
->
->Thanks.
->As Leo said, we can host this project in zh-kernel.org and invite some
->Chinese developers to boost up the translation.
->WANG Cong is good to maintain this, -:))
+From: Paul Jackson <pj@sgi.com>
 
-Yes, I would like to do that work. Thank you.
+As of the October 2007 kernel/cpuset.c patch "Memoryless nodes:
+Use N_HIGH_MEMORY for cpusets", cpuset nodes are relative to
+the nodes with (HIGH) memory, not relative to all nodes in
+node_online_map.
 
-And I will also find some guys here to help me to do this. Please
-feel free to Cc me if you have any suggestions.
+Signed-off-by: Paul Jackson <pj@sgi.com>
+Cc: Cliff Wickman <cpw@sgi.com>
 
-Regards.
+---
 
- Cong
+ kernel/cpuset.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
+--- 2.6.24-rc6-mm1.orig/kernel/cpuset.c	2008-01-12 18:52:43.480406969 -0800
++++ 2.6.24-rc6-mm1/kernel/cpuset.c	2008-01-12 19:07:44.330236260 -0800
+@@ -1817,7 +1817,8 @@ static void scan_for_empty_cpusets(const
+ 		cont = cp->css.cgroup;
+ 		/* Remove offline cpus and mems from this cpuset. */
+ 		cpus_and(cp->cpus_allowed, cp->cpus_allowed, cpu_online_map);
+-		nodes_and(cp->mems_allowed, cp->mems_allowed, node_online_map);
++		nodes_and(cp->mems_allowed, cp->mems_allowed,
++						node_states[N_HIGH_MEMORY]);
+ 		if ((cpus_empty(cp->cpus_allowed) ||
+ 		     nodes_empty(cp->mems_allowed))) {
+ 		        /* Move tasks from the empty cpuset to a parent */
+@@ -1832,8 +1833,8 @@ static void scan_for_empty_cpusets(const
+ 
+ /*
+  * The cpus_allowed and mems_allowed nodemasks in the top_cpuset track
+- * cpu_online_map and node_online_map.  Force the top cpuset to track
+- * whats online after any CPU or memory node hotplug or unplug event.
++ * cpu_online_map and node_states[N_HIGH_MEMORY].  Force the top cpuset to
++ * track what's online after any CPU or memory node hotplug or unplug event.
+  *
+  * Since there are two callers of this routine, one for CPU hotplug
+  * events and one for memory node hotplug events, we could have coded
+
+-- 
+                          I won't rest till it's the best ...
+                          Programmer, Linux Scalability
+                          Paul Jackson <pj@sgi.com> 1.650.933.1373
