@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbYANWSI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756255AbYANWSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756152AbYANWSI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 17:18:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbYANWQi
+	id S1756255AbYANWSZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 17:18:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbYANWQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 17:16:38 -0500
-Received: from ns1.suse.de ([195.135.220.2]:59608 "EHLO mx1.suse.de"
+	Mon, 14 Jan 2008 17:16:39 -0500
+Received: from cantor.suse.de ([195.135.220.2]:59629 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751927AbYANWQh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 17:16:37 -0500
+	id S1751593AbYANWQi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 17:16:38 -0500
 From: Andi Kleen <ak@suse.de>
 References: <200801141116.534682000@suse.de>
 In-Reply-To: <200801141116.534682000@suse.de>
 To: linux-kernel@vger.kernel.org, jbeulich@novell.com, mingo@elte.hu,
        tglx@linutronix.de
-Subject: [PATCH] [4/31] Add pte_pgprot on i386
-Message-Id: <20080114221636.0306F14F83@wotan.suse.de>
-Date: Mon, 14 Jan 2008 23:16:35 +0100 (CET)
+Subject: [PATCH] [5/31] Don't drop NX bit in pte modifier functions for 32bit
+Message-Id: <20080114221637.13BCA14F83@wotan.suse.de>
+Date: Mon, 14 Jan 2008 23:16:37 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-64bit already had it.
+The pte_* modifier functions that cleared bits dropped the NX bit on 32bit
+PAE because they only worked in int, but NX is in bit 63. Fix that
+by adding appropiate casts so that the arithmetic happens as long long
+on PAE kernels.
 
-Needed for later patches.
+I decided to just use 64bit arithmetic instead of open coding like
+pte_modify() because gcc should generate good enough code for that now.
+
+While this looks in theory like a .24 candidate this might trigger
+some subtle latent bugs so it's better to delay it for .25 for more
+testing.
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- include/asm-x86/pgtable-2level.h |    2 ++
- include/asm-x86/pgtable-3level.h |    2 ++
- 2 files changed, 4 insertions(+)
+ include/asm-x86/pgtable.h |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-Index: linux/include/asm-x86/pgtable-2level.h
+Index: linux/include/asm-x86/pgtable.h
 ===================================================================
---- linux.orig/include/asm-x86/pgtable-2level.h
-+++ linux/include/asm-x86/pgtable-2level.h
-@@ -75,6 +75,8 @@ static inline int pte_exec_kernel(pte_t 
- #define pgoff_to_pte(off) \
- 	((pte_t) { .pte_low = (((off) & 0x1f) << 1) + (((off) >> 5) << 8) + _PAGE_FILE })
- 
-+#define pte_pgprot(x) __pgprot((x).pte_low & 0xfff)
-+
- /* Encode and de-code a swap entry */
- #define __swp_type(x)			(((x).val >> 1) & 0x1f)
- #define __swp_offset(x)			((x).val >> 8)
-Index: linux/include/asm-x86/pgtable-3level.h
-===================================================================
---- linux.orig/include/asm-x86/pgtable-3level.h
-+++ linux/include/asm-x86/pgtable-3level.h
-@@ -142,6 +142,8 @@ static inline unsigned long pte_pfn(pte_
- 	return pte_val(pte) >> PAGE_SHIFT;
+--- linux.orig/include/asm-x86/pgtable.h
++++ linux/include/asm-x86/pgtable.h
+@@ -141,17 +141,17 @@ static inline int pmd_large(pmd_t pte) {
+ 		(_PAGE_PSE|_PAGE_PRESENT);
  }
  
-+#define pte_pgprot(x) __pgprot(pte_val(x) & (0xfff | _PAGE_NX))
-+
- /*
-  * Bits 0, 6 and 7 are taken in the low part of the pte,
-  * put the 32 bits of offset into the high part.
+-static inline pte_t pte_mkclean(pte_t pte)	{ return __pte(pte_val(pte) & ~_PAGE_DIRTY); }
+-static inline pte_t pte_mkold(pte_t pte)	{ return __pte(pte_val(pte) & ~_PAGE_ACCESSED); }
+-static inline pte_t pte_wrprotect(pte_t pte)	{ return __pte(pte_val(pte) & ~_PAGE_RW); }
+-static inline pte_t pte_mkexec(pte_t pte)	{ return __pte(pte_val(pte) & ~_PAGE_NX); }
++static inline pte_t pte_mkclean(pte_t pte)	{ return __pte(pte_val(pte) & ~(pteval_t)_PAGE_DIRTY); }
++static inline pte_t pte_mkold(pte_t pte)	{ return __pte(pte_val(pte) & ~(pteval_t)_PAGE_ACCESSED); }
++static inline pte_t pte_wrprotect(pte_t pte)	{ return __pte(pte_val(pte) & ~(pteval_t)_PAGE_RW); }
++static inline pte_t pte_mkexec(pte_t pte)	{ return __pte(pte_val(pte) & ~(pteval_t)_PAGE_NX); }
+ static inline pte_t pte_mkdirty(pte_t pte)	{ return __pte(pte_val(pte) | _PAGE_DIRTY); }
+ static inline pte_t pte_mkyoung(pte_t pte)	{ return __pte(pte_val(pte) | _PAGE_ACCESSED); }
+ static inline pte_t pte_mkwrite(pte_t pte)	{ return __pte(pte_val(pte) | _PAGE_RW); }
+ static inline pte_t pte_mkhuge(pte_t pte)	{ return __pte(pte_val(pte) | _PAGE_PSE); }
+-static inline pte_t pte_clrhuge(pte_t pte)	{ return __pte(pte_val(pte) & ~_PAGE_PSE); }
++static inline pte_t pte_clrhuge(pte_t pte)	{ return __pte(pte_val(pte) & ~(pteval_t)_PAGE_PSE); }
+ static inline pte_t pte_mkglobal(pte_t pte)	{ return __pte(pte_val(pte) | _PAGE_GLOBAL); }
+-static inline pte_t pte_clrglobal(pte_t pte)	{ return __pte(pte_val(pte) & ~_PAGE_GLOBAL); }
++static inline pte_t pte_clrglobal(pte_t pte)	{ return __pte(pte_val(pte) & ~(pteval_t)_PAGE_GLOBAL); }
+ 
+ extern pteval_t __supported_pte_mask;
+ 
