@@ -1,63 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbYANDO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755497AbYANDWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755478AbYANDO4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 22:14:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbYANDOq
+	id S1755497AbYANDWI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 22:22:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbYANDVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 22:14:46 -0500
-Received: from mga10.intel.com ([192.55.52.92]:60495 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751360AbYANDOp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 22:14:45 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,279,1196668800"; 
-   d="scan'208";a="499778899"
-Subject: Re: Netperf TCP_RR(loopback) 10% regression in
-	2.6.24-rc6,	comparing with 2.6.22
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Rick Jones <rick.jones2@hp.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-In-Reply-To: <4787ADDA.7090602@hp.com>
-References: <1199871330.3298.132.camel@ymzhang>
-	 <1200043854.3265.24.camel@ymzhang>  <4787ADDA.7090602@hp.com>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 14 Jan 2008 11:11:32 +0800
-Message-Id: <1200280292.3151.24.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+	Sun, 13 Jan 2008 22:21:55 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:36820 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752660AbYANDVy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jan 2008 22:21:54 -0500
+From: Neil Brown <neilb@suse.de>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Date: Mon, 14 Jan 2008 14:21:45 +1100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18314.54601.196877.828373@notabene.brown>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 002 of 6] md: Fix use-after-free bug when dropping an rdev from an md array.
+In-Reply-To: message from Al Viro on Monday January 14
+References: <20080114123726.19968.patches@notabene>
+	<1080114014531.20354@suse.de>
+	<20080114020459.GN27894@ZenIV.linux.org.uk>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-01-11 at 09:56 -0800, Rick Jones wrote:
-> >>The test command is:
-> >>#sudo taskset -c 7 ./netserver
-> >>#sudo taskset -c 0 ./netperf -t TCP_RR -l 60 -H 127.0.0.1 -i 50,3 -I 99,5 -- -r 1,1
+On Monday January 14, viro@ZenIV.linux.org.uk wrote:
+> On Mon, Jan 14, 2008 at 12:45:31PM +1100, NeilBrown wrote:
+> > 
+> > Due to possible deadlock issues we need to use a schedule work to
+> > kobject_del an 'rdev' object from a different thread.
+> > 
+> > A recent change means that kobject_add no longer gets a refernce, and
+> > kobject_del doesn't put a reference.  Consequently, we need to
+> > explicitly hold a reference to ensure that the last reference isn't
+> > dropped before the scheduled work get a chance to call kobject_del.
+> > 
+> > Also, rename delayed_delete to md_delayed_delete to that it is more
+> > obvious in a stack trace which code is to blame.
 > 
-> A couple of comments/questions on the command lines:
-Thanks for your kind comments.
+> I don't know...  You still get kobject_del() and export_rdev()
+> in unpredictable order; sure, it won't be freed under you, but...
+
+I cannot see that that would matter.
+kobject_del deletes the object from the kobj tree and free sysfs.
+export_rdev disconnects the objects from md structures and releases
+the connection with the device.  They are quite independent.
 
 > 
-> *) netperf/netserver support CPU affinity within themselves with the 
-> global -T option to netperf.  Is the result with taskset much different? 
->    The equivalent to the above would be to run netperf with:
-> 
-> ./netperf -T 0,7 ..
-I checked the source codes and didn't find this option.
-I use netperf V2.3 (I found the number in the makefile).
+> What is that deadlock problem, anyway?  I don't see anything that
+> would look like an obvious candidate in the stuff you are delaying...
 
-> .
-> 
-> The one possibly salient difference between the two is that when done 
-> within netperf, the initial process creation will take place wherever 
-> the scheduler wants it.
-> 
-> *) The -i option to set the confidence iteration count will silently cap 
-> the max at 30.
-Indeed, you are right.
+Maybe it isn't there any more....
 
--yanmin
+Once upon a time, when I 
+   echo remove > /sys/block/mdX/md/dev-YYY/state
 
+sysfs_write_file would hold buffer->sem while calling my store
+handler.
+When my store handler tried to delete the relevant kobject, it would
+eventually call orphan_all_buffers which would try to take buf->sem
+and deadlock.
 
+orphan_all_buffers doesn't exist any more, so maybe the deadlock is
+gone too.
+However the comment at the top of sysfs_schedule_callback in
+sysfs/file.c says:
+
+ *
+ * sysfs attribute methods must not unregister themselves or their parent
+ * kobject (which would amount to the same thing).  Attempts to do so will
+ * deadlock, since unregistration is mutually exclusive with driver
+ * callbacks.
+ *
+
+so I'm included to leave the code as it is....  ofcourse the comment
+could be well out of date.
+
+NeilBrown
