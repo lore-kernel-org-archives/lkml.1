@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755497AbYANKdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbYANKdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755497AbYANKdU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 05:33:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbYANKdJ
+	id S1755721AbYANKdp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 05:33:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755094AbYANKdd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 05:33:09 -0500
-Received: from smtp02.citrix.com ([66.165.176.63]:57314 "EHLO
-	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754019AbYANKdH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 05:33:07 -0500
-X-SBRS: None
-X-MesageID: 37611095
-X-Ironport-Server: ftlpip02.citrite.net
-X-Remote-IP: 216.142.71.134
-X-Policy: $Relay
-X-IronPort-AV: E=Sophos;i="4.24,281,1196658000"; 
-   d="scan'208";a="37611095"
-Date: Mon, 14 Jan 2008 10:24:28 +0000
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Default keyboard LEDs
-Message-ID: <20080114102428.GA4298@implementation.uk.xensource.com>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Jan Engelhardt <jengelh@computergmbh.de>,
-	linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080114005219.GA4296@implementation> <Pine.LNX.4.64.0801140238260.10906@fbirervta.pbzchgretzou.qr>
+	Mon, 14 Jan 2008 05:33:33 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59049 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755078AbYANKdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 05:33:32 -0500
+Date: Mon, 14 Jan 2008 11:33:05 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: Fix x86 32 bit FRAME_POINTER chasing code
+Message-ID: <20080114103305.GA27977@elte.hu>
+References: <20080109220421.630d3516@laptopd505.fenrus.org> <20080110065438.GA23022@elte.hu> <478670BA.6010600@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0801140238260.10906@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <478670BA.6010600@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt, le Mon 14 Jan 2008 02:40:08 +0100, a écrit :
-> On Jan 14 2008 00:52, Samuel Thibault wrote:
-> >In many cases, one prefers to have e.g. the NumLock on by default.  In
-> >many cases, one doesn't want to have it by default, e.g. on laptops.
-> >
-> >Distributions actually have a very hard time trying to set this
-> >correctly after the kernel boot, and that doesn't work for new consoles
-> >that are created via the openvt(1) command anyway. This hence adds a
-> >keyboard.default_leds boot parameter that permits to configure the
-> >default keyboard LEDs.
+
+* Chuck Ebbert <cebbert@redhat.com> wrote:
+
+> > it's a 2.6.24.1 candidate i believe. We trigger plenty of various 
+> > crashes during x86.git maintenance and others hit various crashes in 
+> > -mm, so by the time .1 is released we'll have it in .25 and can 
+> > backport it. Most folks/distros will update to 2.6.24.1 very quickly 
+> > so there's no risk of months loss of quality to kerneloops.org data 
+> > either.
 > 
-> Apart from openvt being able to find the first unused tty,
-> what is openvt good for? (Read: I could just as well run
-> `bash </dev/tty8 >/dev/tty8 2>/dev/tty8`)
+> Using the same logic, why not put it in 2.6.24 and then remove it in 
+> 2.6.24.1 if it's broken?
 
-But it is a burden (you forgot '&' btw ;) ). Also, openvt properly sets
-the controlling tty, can run a login shell, etc...
+hm, did you understood my .25 reference to mean 2.6.25-final? I meant 
+2.6.25-rc1. Or if there's a 2.6.24-rc8 planned then we could put it in 
+right now [with the bisectability fixes, i.e. not the original series]. 
+I.e. IMO what we shouldnt do is to put in these fixes without having had 
+_some_ -rc release inbetween.
 
-Anyway, be it openvt or bash, the LED issue exists :)
-
-Samuel
+	Ingo
