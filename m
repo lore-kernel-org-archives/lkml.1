@@ -1,111 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758597AbYANW3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758668AbYANW35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758597AbYANW3k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 17:29:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757477AbYANWXg
+	id S1758668AbYANW35 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 17:29:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757052AbYANWX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 17:23:36 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:11824 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756787AbYANWXf (ORCPT
+	Mon, 14 Jan 2008 17:23:56 -0500
+Received: from mho-01-bos.mailhop.org ([63.208.196.178]:63538 "EHLO
+	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757326AbYANWXz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 17:23:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=CbJVcPF5S1nqMOYJ214FoxN4cnSh1Nl0DqxBtO8brZjDNsj6p6N/4VH9HLjNFHqkHMLuFqCWNsIuJD8RHI5IhPXU4jeKlCX7G2BeWH6HdAbmxwxCbucgt3lgJytFx1pxUshMcybUYrCCIP7XonBAF5n0jkH+XWAdPI5Wxe4rQ54=
-Date: Mon, 14 Jan 2008 23:23:39 +0100
-From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-To: apw@shadowen.org, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] checkpatch: add filename in the summary
-Message-ID: <20080114232339.2c018647@paolo-desktop>
-X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 14 Jan 2008 17:23:55 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 216.15.117.105
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX18vSgwvx24mI5erflnrFwG2
+Message-ID: <478BE08B.3090306@reed.com>
+Date: Mon, 14 Jan 2008 17:22:03 -0500
+From: "David P. Reed" <dpreed@reed.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.9) Gecko/20071115 Fedora/2.0.0.9-1.fc8 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: David Woodhouse <dwmw2@infradead.org>
+CC: Rene Herman <rene.herman@keyaccess.nl>, Zachary Amsden <zach@vmware.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Christer Weinigel <christer@weinigel.se>,
+       Ondrej Zary <linux@rainbow-software.org>, Bodo Eggert <7eggert@gmx.de>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Paul Rolland <rol@as2917.net>, Pavel Machek <pavel@ucw.cz>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, rol <rol@witbe.net>
+Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
+ I/O delay override.
+References: <9BdU5-1YW-9@gated-at.bofh.it>	 <200801081810.58904.linux@rainbow-software.org> <4783B1B2.6070005@reed.com>	 <200801081838.16241.linux@rainbow-software.org> <4783C4A6.9060402@reed.com>		 <20080108185120.3ff7ed18@lxorguk.ukuu.org.uk> <4783CBD9.7020709@reed.com>	 <1199847162.7369.323.camel@bodhitayantram.eng.vmware.com>	 <47845972.9090803@zytor.com>	 <1199915614.7369.367.camel@bodhitayantram.eng.vmware.com>	 <47854916.4080703@reed.com>	 <1200015388.6192.22.camel@bodhitayantram.eng.vmware.com>	 <4786DD05.20804@keyaccess.nl>  <47877ECD.9060408@reed.com> <1200347847.2647.97.camel@shinybook.infradead.org>
+In-Reply-To: <1200347847.2647.97.camel@shinybook.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a filename option (default to 0)
-in order to get the following summary output:
-./scripts/checkpatch.pl --filename --file ./arch/sparc/kernel/apc.c 
-...
-...
-...
-./arch/sparc/kernel/apc.c --> total: 18 errors, 3 warnings, 186 lines checked
----
+David Woodhouse wrote:
+> On Fri, 2008-01-11 at 09:35 -0500, David P. Reed wrote:
+>   
+>>   Using any "unused port" for a delay means that the machine check
+>> feature is wasted and utterly unusable.
+>>     
+>
+> Not entirely unusable. You can recover silently from the machine check
+> if it was one of the known accesses to the 'unused port'. It certainly
+> achieves a delay :)
+>   
+I'm sure that's what the driver writers had in mind.  ;-)
 
-Andy, 
-I wonder why checkpatch doesn't show all the command line options. 
-At the moment, it only prints:
-options: -q           => quiet
-	--no-tree    => run without a kernel tree
-        --terse      => one line per report
-        --emacs      => emacs compile window format
-        --file       => check a source file
-        --strict     => enable more subjective tests
-        --root       => path to the kernel tree root
-
-but I see a lot more options:
-	q|quiet
-	tree
-	signoff
-	patch
-	test-type
-	emacs
-	terse
-	file
-	subjective
-	strict
-	root=s
-	summary
-	mailback
+And I think we probably have a great shot at getting Intel, Microsoft, 
+HP, et al.. to add a feature for Linux to one of the ACPI table 
+specifications that define an "unused port for delay purposes" field in 
+the ACPI 4.0 spec, and retrofit it into PC/104 machine BIOSes.  At least 
+Microsoft doesn't have a patent on using port 80 for delay purposes. :-)
 
 
- scripts/checkpatch.pl |   10 +++++++++-
- 1 files changed, 9 insertions(+), 1 deletions(-)
 
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index 579f50f..1762b73 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -24,6 +24,7 @@ my $file = 0;
- my $check = 0;
- my $summary = 1;
- my $mailback = 0;
-+my $patchfilename= 0;
- my $root;
- GetOptions(
- 	'q|quiet+'	=> \$quiet,
-@@ -39,6 +40,7 @@ GetOptions(
- 	'root=s'	=> \$root,
- 	'summary!'	=> \$summary,
- 	'mailback!'	=> \$mailback,
-+	'filename'	=> \$patchfilename,
- ) or exit;
- 
- my $exit = 0;
-@@ -1579,12 +1581,18 @@ sub process {
- 	}
- 
- 	print report_dump();
--	if ($summary) {
-+	if ($summary == 1 && $patchfilename == 0) {
- 		print "total: $cnt_error errors, $cnt_warn warnings, " .
- 			(($check)? "$cnt_chk checks, " : "") .
- 			"$cnt_lines lines checked\n";
- 		print "\n" if ($quiet == 0);
- 	}
-+	if ($summary == 1 && $patchfilename == 1) {
-+		print "$filename --> total: $cnt_error errors, $cnt_warn warnings, " .
-+			(($check)? "$cnt_chk checks, " : "") .
-+			"$cnt_lines lines checked\n";
-+		print "\n" if ($quiet == 0);
-+	}
- 
- 	if ($clean == 1 && $quiet == 0) {
- 		print "Your patch has no obvious style problems and is ready for submission.\n"
--- 
-1.5.4.rc3
 
