@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbYANXtw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754471AbYANX5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754995AbYANXtw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 18:49:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750990AbYANXtp
+	id S1754471AbYANX5S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 18:57:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYANX5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 18:49:45 -0500
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:44324 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750903AbYANXto (ORCPT
+	Mon, 14 Jan 2008 18:57:06 -0500
+Received: from py-out-1112.google.com ([64.233.166.177]:51264 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751711AbYANX5D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 18:49:44 -0500
-Message-ID: <478BF449.2050307@keyaccess.nl>
-Date: Tue, 15 Jan 2008 00:46:17 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 14 Jan 2008 18:57:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=KRUG/88l9fSZ3N0twKarN4Pi8LzSx5bODM9/DGYtDo6h1rbg0KdR2HG/qTpKOW7iXYCSJzzT3VjyU3qytNCQW1H/bWych3XTDbBhMwtu62goFvCbbzWFVEOtRjAS3TCNG38sJ79QyDFSSMM0bp1iNC7PDjHAYVbSFVeZl9H3B4Y=
+Message-ID: <478BF6C9.4090306@gmail.com>
+Date: Tue, 15 Jan 2008 08:56:57 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Andrew Morton <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pierre Ossman <drzeus@drzeus.cx>, Pavel Machek <pavel@suse.cz>,
-       Ondrej Zary <linux@rainbow-software.org>,
-       Jaroslav Kysela <perex@perex.cz>,
-       ALSA development <alsa-devel@alsa-project.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Takashi Iwai <tiwai@suse.de>, linux-pm@lists.linux-foundation.org
-Subject: Re: -mm: pnp-do-not-stop-start-devices-in-suspend-resume-path.patch
- breaks resuming isapnp cards
-References: <200801092343.48726.linux@rainbow-software.org> <200801122250.44220.bjorn.helgaas@hp.com> <4789AC0F.9030007@keyaccess.nl> <200801141526.57744.bjorn.helgaas@hp.com>
-In-Reply-To: <200801141526.57744.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+To: =?UTF-8?B?IkouQS4gTWFnYWxsw7NuIg==?= <jamagallon@ono.com>
+CC: "Linux-Kernel, " <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.24-rc7
+References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org>	<20080108015012.2e518dd4@werewolf>	<478429B2.2030002@gmail.com>	<20080110102505.62097da1@werewolf>	<47861930.7010708@gmail.com>	<20080114001914.1e05fdb5@werewolf>	<478AA56F.9020506@gmail.com> <20080115003818.0bf10703@werewolf>
+In-Reply-To: <20080115003818.0bf10703@werewolf>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14-01-08 23:26, Bjorn Helgaas wrote:
-
-> On Saturday 12 January 2008 11:13:35 pm Rene Herman wrote:
-
->> I find DISABLE including DO_NOT_CHANGE rather unexpected...
+J.A. Magallón wrote:
+> I finally found the bad drive (the most obvious one as I would expect,
+> it was recycled from an older box...).
+> I tried removing completely the drive from power and controller, and then
+> running with it powered but not connected. No single error any more on
+> any of the other 3 drives. I have been updating my distro, rebuilding the
+> rpm database, moving big files between drives, even all at the same time.
+> No error.
 > 
-> I don't know the history of those flags, but I wish they didn't exist.
-> They really look like warts in the PNP core code.  They're used so
-> infrequently and without obvious rationale, that it seems like it'd
-> be better if there were a way to deal with them inside the driver.
+> I can't believe it, but a bad drive was causing timeouts on other drive
+> _on other controller_, the bad one was attached to the Promise and the
+> good ones on the ICH5 SATA (both integrated in motherboard).
+> Or there is a strange interaction in my board (Asus PC-DL), or there is
+> a nasty bug in the kernel...
 
-I see, thanks for the comment. PNP_DRIVER_RES_DISABLE is used by ALSA only 
-and used by _all_ ALSA ISA-PnP drivers (snd-sscape uses RES_DO_NOT_CHANGE 
-instead but we should consider that one a consistency bug).
+Hmmm... That's an interesting story.  Can you please connect the faulty
+harddrive to a separate power supply and connect the drive to the
+controller and see whether IO errors go away?
 
-RES_DO_NOT_CHANGE is used by drivers/pnp/system.c and rtc-cmos.c as well. 
-I'll look at this. Getting rid of DISABLE as a first step should not be 
-overly problematic. This might again be a left-over from days where no easy 
-to use interface to PnP existed which it now does in echoing things into sysfs.
-
-Takashi: which reminds me -- crap, I promised to document more of that for 
-ALSA use following up the recent pnp driver-side resource setting removal. 
-Sorry, forgot, will do.
-
-> This had to do with the excessive warnings about exceeding the maximum
-> number of resources for a PNP device.  This should be resolved by Len's
-> patch here:
-> 
->   http://bugzilla.kernel.org/show_bug.cgi?id=9535#c10
-> 
-> We all agree this is a stop-gap, and for 2.6.25, we need the real
-> solution of making PNP resources fully dynamic.
-
-Thank you. Just pulled and see that's now indeed in. Wasn't in -rc7 yet...
-
-Rene.
+-- 
+tejun
