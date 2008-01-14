@@ -1,86 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbYANDNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbYANDO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401AbYANDNV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 22:13:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbYANDNN
+	id S1755478AbYANDO4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 22:14:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbYANDOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 22:13:13 -0500
-Received: from cavan.codon.org.uk ([78.32.9.130]:46724 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751360AbYANDNM (ORCPT
+	Sun, 13 Jan 2008 22:14:46 -0500
+Received: from mga10.intel.com ([192.55.52.92]:60495 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751360AbYANDOp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 22:13:12 -0500
-Date: Mon, 14 Jan 2008 03:13:05 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: linux-kernel@vger.kernel.org
-Cc: linux-acpi@vger.kernel.org, len.brown@intel.com
-Message-ID: <20080114031305.GA3111@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: [PATCH] Reset ACPI backlight on resume
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+	Sun, 13 Jan 2008 22:14:45 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,279,1196668800"; 
+   d="scan'208";a="499778899"
+Subject: Re: Netperf TCP_RR(loopback) 10% regression in
+	2.6.24-rc6,	comparing with 2.6.22
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Rick Jones <rick.jones2@hp.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+In-Reply-To: <4787ADDA.7090602@hp.com>
+References: <1199871330.3298.132.camel@ymzhang>
+	 <1200043854.3265.24.camel@ymzhang>  <4787ADDA.7090602@hp.com>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 14 Jan 2008 11:11:32 +0800
+Message-Id: <1200280292.3151.24.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some machines seem to need the backlight brightness to be reset on 
-resume. Add support for doing so to the video module.
+On Fri, 2008-01-11 at 09:56 -0800, Rick Jones wrote:
+> >>The test command is:
+> >>#sudo taskset -c 7 ./netserver
+> >>#sudo taskset -c 0 ./netperf -t TCP_RR -l 60 -H 127.0.0.1 -i 50,3 -I 99,5 -- -r 1,1
+> 
+> A couple of comments/questions on the command lines:
+Thanks for your kind comments.
 
-Signed-off-by: Matthew Garrett <mjg59@srcf.ucam.org>
+> 
+> *) netperf/netserver support CPU affinity within themselves with the 
+> global -T option to netperf.  Is the result with taskset much different? 
+>    The equivalent to the above would be to run netperf with:
+> 
+> ./netperf -T 0,7 ..
+I checked the source codes and didn't find this option.
+I use netperf V2.3 (I found the number in the makefile).
 
----
+> .
+> 
+> The one possibly salient difference between the two is that when done 
+> within netperf, the initial process creation will take place wherever 
+> the scheduler wants it.
+> 
+> *) The -i option to set the confidence iteration count will silently cap 
+> the max at 30.
+Indeed, you are right.
 
-diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
-index b8ce6dc..09a85eb 100644
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -74,6 +74,7 @@ MODULE_LICENSE("GPL");
- 
- static int acpi_video_bus_add(struct acpi_device *device);
- static int acpi_video_bus_remove(struct acpi_device *device, int type);
-+static int acpi_video_resume(struct acpi_device *device);
- 
- static const struct acpi_device_id video_device_ids[] = {
- 	{ACPI_VIDEO_HID, 0},
-@@ -88,6 +89,7 @@ static struct acpi_driver acpi_video_bus = {
- 	.ops = {
- 		.add = acpi_video_bus_add,
- 		.remove = acpi_video_bus_remove,
-+		.resume = acpi_video_resume,
- 		},
- };
- 
-@@ -1896,6 +1900,25 @@ static void acpi_video_device_notify(acpi_handle handle, u32 event, void *data)
- }
- 
- static int instance;
-+static int acpi_video_resume(struct acpi_device *device)
-+{
-+	struct acpi_video_bus *video;
-+	struct acpi_video_device *video_device;
-+	int i;
-+
-+	if (!device || !acpi_driver_data(device))
-+		return -EINVAL;
-+
-+	video = acpi_driver_data(device);
-+
-+	for (i=0; i<video->attached_count; i++) {
-+		video_device = video->attached_array[i].bind_info;
-+		if (video_device && video_device->backlight)
-+			acpi_video_set_brightness(video_device->backlight);
-+	}		
-+	return AE_OK;
-+}
-+
- static int acpi_video_bus_add(struct acpi_device *device)
- {
- 	acpi_status status;
+-yanmin
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+
