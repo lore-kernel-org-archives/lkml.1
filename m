@@ -1,114 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755740AbYANXjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbYANXrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755740AbYANXjI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 18:39:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbYANXi4
+	id S1754648AbYANXrU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 18:47:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbYANXrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 18:38:56 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:54232 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752280AbYANXiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 18:38:54 -0500
-Date: Mon, 14 Jan 2008 17:39:10 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
-       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
-Subject: Re: [patch 9/9] unprivileged mounts: add "no submounts" flag
-Message-ID: <20080114233910.GI6704@sergelap.austin.ibm.com>
-References: <20080108113502.184459371@szeredi.hu> <20080108113634.382855604@szeredi.hu>
+	Mon, 14 Jan 2008 18:47:10 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:58308 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750868AbYANXrH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 18:47:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=gTrZfRK7ABWaiLMzM8BQ7H+hbYVRxBLw9DFNLdHNS1TuRLYd+ZsOHMNTwLBj6SdFfdHllVyJgIjsqnbHo70j+008JEcR+CXwEwFHHNODTvmPs+kUeKxV8rqVr5N6aLlL1K+5oJ4HW+oszE6uuWYPjTY/uLIe09TwJEAgHScDpyA=
+Message-ID: <478BF473.9050602@gmail.com>
+Date: Tue, 15 Jan 2008 08:46:59 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080108113634.382855604@szeredi.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Adrian Bunk <bunk@kernel.org>
+CC: Ondrej Zary <linux@rainbow-software.org>, Jeff Garzik <jgarzik@redhat.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH #upstream-fixes] libata: relocate sdev->manage_start_stop
+ configuration
+References: <20080114210805.GH9847@does.not.exist>
+In-Reply-To: <20080114210805.GH9847@does.not.exist>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Miklos Szeredi (miklos@szeredi.hu):
-> From: Miklos Szeredi <mszeredi@suse.cz>
-> 
-> Add a new mount flag "nomnt", which denies submounts for the owner.
-> This would be useful, if we want to support traditional /etc/fstab
-> based user mounts.
-> 
-> In this case mount(8) would still have to be suid-root, to check the
-> mountpoint against the user/users flag in /etc/fstab, but /etc/mtab
-> would no longer be mandatory for storing the actual owner of the
-> mount.
+After 9b8e8de7, manage_start_stop configuration depends on valid ATA
+device.  Move it into ata_scsi_dev_config().  This was detected by the
+coverity checker.
 
-Ah, I see, so the floppy drive could be mounted as a MNT_NOMNT but
-MNT_USER mount with mnt_owner set.  Makes sense.  I'd ask for a better
-name than 'nomnt', but I can't think of one myself.
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+Cc: Adrian Bunk <bunk@kernel.org>
+---
+ drivers/ata/libata-scsi.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-
-> ---
-> 
-> Index: linux/fs/namespace.c
-> ===================================================================
-> --- linux.orig/fs/namespace.c	2008-01-04 13:49:52.000000000 +0100
-> +++ linux/fs/namespace.c	2008-01-04 13:50:28.000000000 +0100
-> @@ -694,6 +694,7 @@ static int show_vfsmnt(struct seq_file *
->  		{ MNT_NOATIME, ",noatime" },
->  		{ MNT_NODIRATIME, ",nodiratime" },
->  		{ MNT_RELATIME, ",relatime" },
-> +		{ MNT_NOMNT, ",nomnt" },
->  		{ 0, NULL }
->  	};
->  	struct proc_fs_info *fs_infop;
-> @@ -1044,6 +1045,9 @@ static bool permit_mount(struct nameidat
->  	if (S_ISLNK(inode->i_mode))
->  		return false;
-> 
-> +	if (nd->path.mnt->mnt_flags & MNT_NOMNT)
-> +		return false;
-> +
->  	if (!is_mount_owner(nd->path.mnt, current->fsuid))
->  		return false;
-> 
-> @@ -1888,9 +1892,11 @@ long do_mount(char *dev_name, char *dir_
->  		mnt_flags |= MNT_RELATIME;
->  	if (flags & MS_RDONLY)
->  		mnt_flags |= MNT_READONLY;
-> +	if (flags & MS_NOMNT)
-> +		mnt_flags |= MNT_NOMNT;
-> 
-> -	flags &= ~(MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_ACTIVE |
-> -		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME| MS_KERNMOUNT);
-> +	flags &= ~(MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_ACTIVE | MS_NOATIME |
-> +			MS_NODIRATIME | MS_RELATIME | MS_KERNMOUNT | MS_NOMNT);
-> 
->  	/* ... and get the mountpoint */
->  	retval = path_lookup(dir_name, LOOKUP_FOLLOW, &nd);
-> Index: linux/include/linux/fs.h
-> ===================================================================
-> --- linux.orig/include/linux/fs.h	2008-01-04 13:49:12.000000000 +0100
-> +++ linux/include/linux/fs.h	2008-01-04 13:49:58.000000000 +0100
-> @@ -130,6 +130,7 @@ extern int dir_notify_enable;
->  #define MS_KERNMOUNT	(1<<22) /* this is a kern_mount call */
->  #define MS_I_VERSION	(1<<23) /* Update inode I_version field */
->  #define MS_SETUSER	(1<<24) /* set mnt_uid to current user */
-> +#define MS_NOMNT	(1<<25) /* don't allow unprivileged submounts */
->  #define MS_ACTIVE	(1<<30)
->  #define MS_NOUSER	(1<<31)
-> 
-> Index: linux/include/linux/mount.h
-> ===================================================================
-> --- linux.orig/include/linux/mount.h	2008-01-04 13:45:45.000000000 +0100
-> +++ linux/include/linux/mount.h	2008-01-04 13:49:58.000000000 +0100
-> @@ -30,6 +30,7 @@ struct mnt_namespace;
->  #define MNT_NODIRATIME	0x10
->  #define MNT_RELATIME	0x20
->  #define MNT_READONLY	0x40	/* does the user want this to be r/o? */
-> +#define MNT_NOMNT	0x80
-> 
->  #define MNT_SHRINKABLE	0x100
->  #define MNT_IMBALANCED_WRITE_COUNT	0x200 /* just for debugging */
-> 
-> --
+diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
+index 7c13663..a6575b7 100644
+--- a/drivers/ata/libata-scsi.c
++++ b/drivers/ata/libata-scsi.c
+@@ -841,6 +841,9 @@ static void ata_scsi_dev_config(struct scsi_device *sdev,
+ 		blk_queue_max_hw_segments(q, q->max_hw_segments - 1);
+ 	}
+ 
++	if (dev->class == ATA_DEV_ATA)
++		sdev->manage_start_stop = 1;
++
+ 	if (dev->flags & ATA_DFLAG_AN)
+ 		set_bit(SDEV_EVT_MEDIA_CHANGE, sdev->supported_events);
+ 
+@@ -872,9 +875,6 @@ int ata_scsi_slave_config(struct scsi_device *sdev)
+ 
+ 	ata_scsi_sdev_config(sdev);
+ 
+-	if (dev->class == ATA_DEV_ATA)
+-		sdev->manage_start_stop = 1;
+-
+ 	if (dev)
+ 		ata_scsi_dev_config(sdev, dev);
+ 
