@@ -1,81 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbYANUDB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754698AbYANUDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756023AbYANUDB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 15:03:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755852AbYANUCo
+	id S1754698AbYANUDo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 15:03:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbYANUDd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 15:02:44 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54471 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755856AbYANUCn (ORCPT
+	Mon, 14 Jan 2008 15:03:33 -0500
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:35070 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753470AbYANUDc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 15:02:43 -0500
-Date: Mon, 14 Jan 2008 12:02:42 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       kvm-devel@lists.sourceforge.net, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, daniel.blueman@quadrics.com,
-       holt@sgi.com, steiner@sgi.com, Andrew Morton <akpm@osdl.org>,
-       Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] mmu notifiers #v2
-In-Reply-To: <20080113162418.GE8736@v2.random>
-Message-ID: <Pine.LNX.4.64.0801141154240.8300@schroedinger.engr.sgi.com>
-References: <20080113162418.GE8736@v2.random>
+	Mon, 14 Jan 2008 15:03:32 -0500
+Message-ID: <478BBFE3.9030707@nortel.com>
+Date: Mon, 14 Jan 2008 14:02:43 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Ray Lee <ray-lk@madrabbit.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: questions on NAPI processing latency and dropped network packets
+References: <478654C3.60806@nortel.com> <2c0942db0801112137k3f3f885ek212d5cbaecb7fea0@mail.gmail.com> <478B8473.6080506@nortel.com> <478B943C.7080009@cosmosbay.com> <478BB722.1020004@nortel.com> <478BB904.3060903@cosmosbay.com>
+In-Reply-To: <478BB904.3060903@cosmosbay.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 14 Jan 2008 20:02:46.0944 (UTC) FILETIME=[6EAF4200:01C856E8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Jan 2008, Andrea Arcangeli wrote:
+Eric Dumazet wrote:
+> Chris Friesen a écrit :
 
-> About the locking perhaps I'm underestimating it, but by following the
-> TLB flushing analogy, by simply clearing the shadow ptes (with kvm
-> mmu_lock spinlock to avoid racing with other vcpu spte accesses of
-> course) and flushing the shadow-pte after clearing the main linux pte,
-> it should be enough to serialize against shadow-pte page faults that
-> would call into get_user_pages. Flushing the host TLB before or after
-> the shadow-ptes shouldn't matter.
+>> Based on the profiling information we're spending time in 
+>> sctp_endpoint_lookup_assoc() which doesn't actually use hashes, so I 
+>> can't see how the hash would be related.  I'm pretty new to SCTP 
+>> though, so I may be missing something.
+> 
+> Well, it does use hashes :)
+> 
+>        hash = sctp_assoc_hashfn(ep->base.bind_addr.port, rport);
+>        head = &sctp_assoc_hashtable[hash];
+>        read_lock(&head->lock);
+>        sctp_for_each_hentry(epb, node, &head->chain) {
+>            /* maybe your machine is traversing here a *really* long 
+> chain */
+>            }
 
-Hmmm... In most of the callsites we hold a writelock on mmap_sem right?
 
-> Comments welcome... especially from SGI/IBM/Quadrics and all other
-> potential users of this functionality.
+The latest released kernel doesn't have this code, it was only added in 
+November.  The SCTP maintainer just pointed me to the patch, and made 
+some other suggestions as well.
 
-> There are also certain details I'm uncertain about, like passing 'mm'
-> to the lowlevel methods, my KVM usage of the invalidate_page()
-> notifier for example only uses 'mm' for a BUG_ON for example:
-
-Passing mm is fine as long as mmap_sem is held.
-
-> diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
-> --- a/include/asm-generic/pgtable.h
-> +++ b/include/asm-generic/pgtable.h
-> @@ -86,6 +86,7 @@ do {									\
->  	pte_t __pte;							\
->  	__pte = ptep_get_and_clear((__vma)->vm_mm, __address, __ptep);	\
->  	flush_tlb_page(__vma, __address);				\
-> +	mmu_notifier(invalidate_page, (__vma)->vm_mm, __address);	\
->  	__pte;								\
->  })
->  #endif
-
-Hmmm... this is ptep_clear_flush? What about the other uses of 
-flush_tlb_page in asm-generic/pgtable.h and related uses in arch code?
-(would help if your patches would mention the function name in the diff 
-headers)
-
-> +#define mmu_notifier(function, mm, args...)				\
-> +	do {								\
-> +		struct mmu_notifier *__mn;				\
-> +		struct hlist_node *__n;					\
-> +									\
-> +		hlist_for_each_entry(__mn, __n, &(mm)->mmu_notifier, hlist) \
-> +			if (__mn->ops->function)			\
-> +				__mn->ops->function(__mn, mm, args);	\
-> +	} while (0)
-
-Does this have to be inline? ptep_clear_flush will become quite big
+Chris
