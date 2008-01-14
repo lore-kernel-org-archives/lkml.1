@@ -1,66 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755052AbYANTyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbYANTyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755052AbYANTyN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 14:54:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbYANTx6
+	id S1755355AbYANTyc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 14:54:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbYANTyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 14:53:58 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:41810 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752285AbYANTx5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 14:53:57 -0500
-Date: Mon, 14 Jan 2008 21:52:58 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Andi Kleen <andi@firstfloor.org>,
-       rjw@sisk.pl, pavel@suse.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without
-	HOTPLUG_CPU
-Message-ID: <20080114195258.GC9847@does.not.exist>
-References: <200801101242.53504.ak@suse.de> <20080110124702.GF28740@does.not.exist> <p73fxx5omck.fsf@bingen.suse.de> <20080110150911.GG28740@does.not.exist> <20080114135240.GA15357@elte.hu> <20080114140910.GA8507@uranus.ravnborg.org> <20080114145854.GA31695@elte.hu> <20080114150103.GA2700@elte.hu> <20080114182052.GB9847@does.not.exist> <20080114191009.GB2288@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080114191009.GB2288@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-12-11)
+	Mon, 14 Jan 2008 14:54:22 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:30360 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752923AbYANTyV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 14:54:21 -0500
+Subject: Re: [PATCH] checkpatch.pl: show how to read from stdin
+From: Daniel Walker <dwalker@mvista.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Andy Whitcroft <apw@shadowen.org>, Bernd Petrovitsch <bernd@firmix.at>,
+       linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, Jiri Slaby <jirislaby@gmail.com>
+In-Reply-To: <478BB89A.803@s5r6.in-berlin.de>
+References: <47873505.7040008@gmail.com>
+	 <1200043399.3905.9.camel@gimli.at.home>
+	 <1200043827.29897.70.camel@imap.mvista.com> <47873833.30001@gmail.com>
+	 <1200044206.29897.73.camel@imap.mvista.com>
+	 <4787502B.2020606@s5r6.in-berlin.de> <47875809.7060301@gmail.com>
+	 <tkrat.b5ac0cacd128569b@s5r6.in-berlin.de>
+	 <20080114171736.GC19327@shadowen.org>
+	 <1200332116.31521.3.camel@imap.mvista.com>
+	 <20080114191243.GB25058@shadowen.org>
+	 <1200338243.31521.10.camel@imap.mvista.com>
+	 <478BB89A.803@s5r6.in-berlin.de>
+Content-Type: text/plain
+Date: Mon, 14 Jan 2008 11:51:46 -0800
+Message-Id: <1200340306.31521.17.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 14, 2008 at 08:10:09PM +0100, Ingo Molnar wrote:
+
+On Mon, 2008-01-14 at 20:31 +0100, Stefan Richter wrote:
+> AFAIU Daniel's patch still leaves the possibility to use the '-'
+> syntax,
+> doesn't it?
 > 
-> * Adrian Bunk <bunk@kernel.org> wrote:
-> 
-> > > for example, in current -git, could you tell me why this triggers:
-> > > 
-> > >  WARNING: vmlinux.o(.text+0x87e2a): Section mismatch: reference to 
-> > >           .init.text: (between 'process_zones' and 'setup_per_cpu_pageset')
-> > > 
-> > > and how to resolve it? I had a quick look and it was not obvious to me.
-> > 
-> > Please send the .config.
-> 
-> 'make allyesconfig' and disable CONFIG_HOTPLUG=y.
+> (The program 'cat' is of the kind which always reads from stdin if no
+> file name is given, or if '-' is given instead of a file name.  So,
+> 'cat' allows Andy to start it and then type something in for cat to
+> process in either case, while checkpatch supports this only with '-'
+> as
+> argument.  OTOH it's easier to get checkpatch to print a usage note
+> than
+> it is with cat.  There you have to type no less than 'cat --help', or
+> at
+> least with GNU cat.)
 
-Works for me without the warning.
+I tried the following with my changes,
 
-Wait, I remember something @#$%#@$!!!:
-'make allyesconfig' on x86 became ambiguously.
+./scripts/checkpatch.pl -
+cat | ./scripts/checkpatch.pl
 
-If you have by chance a 64bit CPU that would explain why I didn't get it.
+Both allowed pasting patches and pressing Ctrl-D , then it processed the
+patch..
 
-@Sam:
-Can you fix the bug that menuconfig does not let me enable CONFIG_64BIT?
+and
 
-> 	Ingo
+cat <patchname> | ./scripts/checkpatch.pl
 
-cu
-Adrian
+Also processed the patch ..
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Daniel
 
