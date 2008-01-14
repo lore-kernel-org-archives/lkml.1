@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbYANBry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbYANBua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753396AbYANBry (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 20:47:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbYANBrD
+	id S1755356AbYANBua (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 20:50:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbYANBuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 20:47:03 -0500
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:38684 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1755915AbYANBrA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 20:47:00 -0500
-Message-ID: <400275229.00373@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Sun, 13 Jan 2008 19:59:33 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Joerg Platte <jplatte@naasa.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-Subject: Re: regression: 100% io-wait with 2.6.24-rcX
-References: <200801071151.11200.lists@naasa.net> <200801130905.44855.jplatte@naasa.net> <400212488.11031@ustc.edu.cn> <200801131049.33111.jplatte@naasa.net>
+	Sun, 13 Jan 2008 20:50:19 -0500
+Received: from cavan.codon.org.uk ([78.32.9.130]:51299 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753008AbYANBuS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jan 2008 20:50:18 -0500
+Date: Mon, 14 Jan 2008 01:50:09 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-ID: <20080114015009.GA2317@srcf.ucam.org>
+References: <20080112022348.GC27524@khazad-dum.debian.net> <200801120416.08631.lenb@kernel.org> <20080113165801.GA4132@ucw.cz> <20080113234129.GE10693@khazad-dum.debian.net> <20080114003553.GA1698@srcf.ucam.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200801131049.33111.jplatte@naasa.net>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+In-Reply-To: <20080114003553.GA1698@srcf.ucam.org>
 User-Agent: Mutt/1.5.12-2006-07-14
-Message-Id: <E1JE1Uz-0002w5-6z@localhost.localdomain>
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: Lenovo ThinkPads need acpi_osi="Linux"
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 13, 2008 at 10:49:31AM +0100, Joerg Platte wrote:
-> register_jprobe(ext2_writepage) = 0
-> register_jprobe(requeue_io) = 0
-> register_kprobe(submit_bio) = 0
-> requeue_io:
-> inode 114019(sda7/.kde) count 2,2 size 0 pages 1
-> 0	2	0	U____
-> requeue_io:
-> inode 114025(sda7/cache-ibm) count 2,1 size 0 pages 1
-> 0	2	0	U____
-> requeue_io:
-> inode 114029(sda7/socket-ibm) count 2,3 size 0 pages 1
-> 0	2	0	U____
-> requeue_io:
-> inode 114017(sda7/0266584877) count 3,6 size 0 pages 1
-> 0	2	0	U____
+On Mon, Jan 14, 2008 at 12:35:54AM +0000, Matthew Garrett wrote:
 
-It helps. Thank you, Joerg!
+> No. This breaks on the R50e, at least - I suspect it'd also have 
+> problems on any nvidia based machines, but I don't have one to hand at 
+> the moment. It can be set at runtime already.
 
-The .kde/cache-ibm/socket-ibm/0266584877 above are directories.
-It's weird that dirs would have their own mappings in ext2. In
-particular this bug is triggered because the dir mapping page has
-PAGECACHE_TAG_DIRTY set and PG_dirty cleared, staying in an
-inconsistent state.
+Just to clarify this further, in the relatively near-term future we're 
+not going to want the low-level ACPI code to do anything video-related 
+on a lot of hardware. The in-kernel modesetting code for Intel machines 
+will be able to handle this significantly more effectively.
 
-Fengguang
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
