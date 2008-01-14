@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753819AbYANT00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbYANT0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753819AbYANT00 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 14:26:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYANT0P
+	id S1754538AbYANT0l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 14:26:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbYANT0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 14:26:15 -0500
-Received: from zcars04f.nortel.com ([47.129.242.57]:47190 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751390AbYANT0O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 14:26:14 -0500
-Message-ID: <478BB722.1020004@nortel.com>
-Date: Mon, 14 Jan 2008 13:25:22 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Mon, 14 Jan 2008 14:26:32 -0500
+Received: from mail.windriver.com ([147.11.1.11]:60228 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751379AbYANT0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 14:26:31 -0500
+Message-ID: <478BB74E.6020506@windriver.com>
+Date: Mon, 14 Jan 2008 13:26:06 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Ray Lee <ray-lk@madrabbit.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: questions on NAPI processing latency and dropped network packets
-References: <478654C3.60806@nortel.com> <2c0942db0801112137k3f3f885ek212d5cbaecb7fea0@mail.gmail.com> <478B8473.6080506@nortel.com> <478B943C.7080009@cosmosbay.com>
-In-Reply-To: <478B943C.7080009@cosmosbay.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 14 Jan 2008 19:25:29.0317 (UTC) FILETIME=[38F47950:01C856E3]
+To: Jan Kiszka <jan.kiszka@siemens.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: State of kgdb on x86-64
+References: <478BB35B.9060507@siemens.com>
+In-Reply-To: <478BB35B.9060507@siemens.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Jan 2008 19:26:06.0369 (UTC) FILETIME=[4F0A2910:01C856E3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> Chris Friesen a écrit :
+It was working at the point that I tested it with the 2.6.24-rc5 on
+x86_64.  However I suspect my kernel config may differ drastically from
+what you are using.
 
->> Based on profiling and instrumentation it seems like the cost of 
->> sctp_endpoint_lookup_assoc() more than triples, which means that the 
->> amount of time that bottom halves are disabled in that function also 
->> triples.
-> 
-> Any idea of the size of sctp hash size you have ?
-> (your dmesg probably includes a message starting with SCTP: Hash tables 
-> configured...
-> How many concurrent sctp sockets are handled ?
+Without any other context provided than the generic message, it is hard
+to know what might have happened. 
 
-Our lab is currently rebooting, but I'll try and get this once it's back up.
+Jason.
 
-> Maybe sctp_assoc_hashfn() is too weak for your use, and some chains are 
-> *really* long.
+Jan Kiszka wrote:
+> Hi Jason,
+>
+> what is the state of the kgbd git repos? What should work, what might be
+> broken?
+>
+> I'm asking as today I tried to get kgdb up and running on a 4-way x86-64
+> Xeon box with both 2.6.24-rc6 and -rc7. Once kgdb is enabled in .config,
+> the boot stops early with this panic:
+>
+> Kernel panic - not syncing: Attempted to kill init!
+>
+> May I have more success with 2.6.23? Was x86-64 tested and found working
+> once? I can dig deeper into the above issue, but before starting
+> blindly, I would like to asses if there could be more issues ahead on
+> this arch.
+>
+> Thanks,
+> Jan
+>
+>   
 
-Based on the profiling information we're spending time in 
-sctp_endpoint_lookup_assoc() which doesn't actually use hashes, so I 
-can't see how the hash would be related.  I'm pretty new to SCTP though, 
-so I may be missing something.
-
-Here's the top results from readprofile, unfortunately these are 
-aggregated across both cpus so they don't really show what's going on. 
-The key thing is that sctp_endpoint_lookup_assoc() is the most expensive 
-kernel routine on this entire system.
-
-   3147 .power4_idle                              22.4786
-   1712 .native_idle                              20.3810
-   1234 .sctp_endpoint_lookup_assoc                2.1725
-   1212 ._spin_unlock_irqrestore                   6.4468
-    778 .do_futex                                  0.3791
-    447 ._spin_unlock_irq                          4.2981
-    313 .fget                                      1.7784
-    277 .fput                                      3.8472
-    275 .kfree                                     0.7473
-    234 .__kmalloc                                 0.5571
-    131 SystemCall_common                          0.3411
-    130 .sctp_assoc_is_match                       0.6373
-    123 .lock_sock                                 0.4155
-    119 .find_vma                                  0.6919
-    116 .kmem_cache_alloc                          0.3580
-    111 .kmem_cache_free                           0.3343
-    106 .skb_release_data                          0.4907
-    102 .__copy_tofrom_user                        0.0724
-    100 .exit_elf_binfmt                           1.9231
-    100 .do_select                                 0.0820
-
-
-Chris
