@@ -1,84 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544AbYANKq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755832AbYANKtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755544AbYANKq5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 05:46:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbYANKqs
+	id S1755832AbYANKtn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 05:49:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbYANKtg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 05:46:48 -0500
-Received: from 2-1-3-15a.ens.sth.bostream.se ([82.182.31.214]:33154 "EHLO
-	zoo.weinigel.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752989AbYANKqs (ORCPT
+	Mon, 14 Jan 2008 05:49:36 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:52483 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754043AbYANKtf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 05:46:48 -0500
-Date: Mon, 14 Jan 2008 10:44:49 +0000
-From: Christer Weinigel <christer@weinigel.se>
-To: Bernd Petrovitsch <bernd@firmix.at>
-Cc: Tuomo Valkonen <tuomov@iki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: The ext3 way of journalling
-Message-ID: <20080114104449.0d162707@cw05lap>
-In-Reply-To: <1200304629.24517.15.camel@tara.firmix.at>
-References: <18307.42821.166376.732473@stoffel.org>
-	<slrnfo7auq.6m2.tuomov@jolt.modeemi.cs.tut.fi>
-	<871w8r6ruc.fsf@barad-dur.regala.cx>
-	<slrnfo9lqk.17l.tuomov@jolt.modeemi.cs.tut.fi>
-	<20080110131659.GF10230@mit.edu>
-	<20080110134111.GA6254@jolt.modeemi.cs.tut.fi>
-	<20080112150621.GC6751@mit.edu>
-	<20080113221301.GA18341@jolt.modeemi.cs.tut.fi>
-	<20080113222310.GA20815@jolt.modeemi.cs.tut.fi>
-	<20080113231150.GB23906@mit.edu>
-	<20080114071555.GA6475@jolt.modeemi.cs.tut.fi>
-	<1200303743.24517.6.camel@tara.firmix.at>
-	<slrnfombug.lco.tuomov@jolt.modeemi.cs.tut.fi>
-	<1200304629.24517.15.camel@tara.firmix.at>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Jan 2008 05:49:35 -0500
+To: salikhmetov@gmail.com
+CC: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, protasnb@gmail.com
+In-reply-to: <12001992013606-git-send-email-salikhmetov@gmail.com> (message
+	from Anton Salikhmetov on Sun, 13 Jan 2008 07:39:58 +0300)
+Subject: Re: [PATCH 1/2] massive code cleanup of sys_msync()
+References: <12001991991217-git-send-email-salikhmetov@gmail.com> <12001992013606-git-send-email-salikhmetov@gmail.com>
+Message-Id: <E1JEMsg-00079n-FK@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 14 Jan 2008 11:49:26 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jan 2008 10:57:09 +0100
-Bernd Petrovitsch <bernd@firmix.at> wrote:
-
-> On Mon, 2008-01-14 at 09:48 +0000, Tuomo Valkonen wrote:
-> > On 2008-01-14, Bernd Petrovitsch <bernd@firmix.at> wrote:
-> > > Yes, that is a usual bug/problem in common distributions[0] as
-> > > there is no real guarantee that your clock is not far off.
-> > 
-> > It isn't, right after boot. But while the system is on, it sometimes
-> > starts advancing very fast, 15min a day or so. To my knowledge, the
-> > time the CMOS clock is not used then, but rather the kernel tracks
-> > the
+> Substantial code cleanup of the sys_msync() function:
 > 
-> > time based on scheduler interrupts, with ntpd occasionally
-> > correcting. However, ntpd refuses to correct when the time has
-> > drifted too much, causing even further drift.
+> 1) using the PAGE_ALIGN() macro instead of "manual" alignment;
+> 2) improved readability of the loop traversing the process memory regions.
+
+Thanks for doing this.  See comments below.
+
+> Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
+> ---
+>  mm/msync.c |   78 +++++++++++++++++++++++++++---------------------------------
+>  1 files changed, 35 insertions(+), 43 deletions(-)
 > 
-> That shouldn't happen.
- 
-> > Nope, as explained above. ntpdate at boot wouldn't help much,
-> > because the time is (approximately) correct after boot. It only
-> > drifts after it.
-> 
-> Aha. That's also strange. `ntpd` is able to (and always does AFAIK)
-> modify the speed of the clock (to keep it synchronized) so that the
-> error is usually much smaller than 1 second - also if you are behind
-> high-jitter links and/or an a high stratum.
-> That leads to the question why the clock starts to run like crazy at
-> some time so that `ntpd` can't cope with it.
-> Playing with `ntpd` parameters (e.g. increasing ) doesn't help I
-> assume.
+> diff --git a/mm/msync.c b/mm/msync.c
+> index 144a757..ff654c9 100644
+> --- a/mm/msync.c
+> +++ b/mm/msync.c
+> @@ -1,24 +1,25 @@
+>  /*
+>   *	linux/mm/msync.c
+>   *
+> + * The msync() system call.
+>   * Copyright (C) 1994-1999  Linus Torvalds
+> + *
+> + * Substantial code cleanup.
+> + * Copyright (C) 2008 Anton Salikhmetov <salikhmetov@gmail.com>
+>   */
+>  
+> -/*
+> - * The msync() system call.
+> - */
+> +#include <linux/file.h>
+>  #include <linux/fs.h>
+>  #include <linux/mm.h>
+>  #include <linux/mman.h>
+> -#include <linux/file.h>
+> -#include <linux/syscalls.h>
+>  #include <linux/sched.h>
+> +#include <linux/syscalls.h>
+>  
+>  /*
+>   * MS_SYNC syncs the entire file - including mappings.
+>   *
+>   * MS_ASYNC does not start I/O (it used to, up to 2.5.67).
+> - * Nor does it marks the relevant pages dirty (it used to up to 2.6.17).
+> + * Nor does it mark the relevant pages dirty (it used to up to 2.6.17).
+>   * Now it doesn't do anything, since dirty pages are properly tracked.
+>   *
+>   * The application may now run fsync() to
+> @@ -33,71 +34,62 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
+>  	unsigned long end;
+>  	struct mm_struct *mm = current->mm;
+>  	struct vm_area_struct *vma;
+> -	int unmapped_error = 0;
+> -	int error = -EINVAL;
+> +	int error = 0, unmapped_error = 0;
+>  
+>  	if (flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC))
+> -		goto out;
+> +		return -EINVAL;
+>  	if (start & ~PAGE_MASK)
+> -		goto out;
+> +		return -EINVAL;
+>  	if ((flags & MS_ASYNC) && (flags & MS_SYNC))
+> -		goto out;
+> -	error = -ENOMEM;
+> -	len = (len + ~PAGE_MASK) & PAGE_MASK;
+> +		return -EINVAL;
+> +
+> +	len = PAGE_ALIGN(len);
+>  	end = start + len;
+>  	if (end < start)
+> -		goto out;
+> -	error = 0;
+> +		return -ENOMEM;
+>  	if (end == start)
+> -		goto out;
+> +		return 0;
+> +
+>  	/*
+>  	 * If the interval [start,end) covers some unmapped address ranges,
+>  	 * just ignore them, but return -ENOMEM at the end.
+>  	 */
+>  	down_read(&mm->mmap_sem);
+>  	vma = find_vma(mm, start);
+> -	for (;;) {
+> +	do {
+>  		struct file *file;
+>  
+> -		/* Still start < end. */
+> -		error = -ENOMEM;
+> -		if (!vma)
+> -			goto out_unlock;
+> -		/* Here start < vma->vm_end. */
+> +		if (!vma) {
+> +			error = -ENOMEM;
+> +			break;
+> +		}
+>  		if (start < vma->vm_start) {
+>  			start = vma->vm_start;
+> -			if (start >= end)
+> -				goto out_unlock;
+> +			if (start >= end) {
+> +				error = -ENOMEM;
+> +				break;
+> +			}
+>  			unmapped_error = -ENOMEM;
+>  		}
+> -		/* Here vma->vm_start <= start < vma->vm_end. */
+> -		if ((flags & MS_INVALIDATE) &&
+> -				(vma->vm_flags & VM_LOCKED)) {
+> +		if ((flags & MS_INVALIDATE) && (vma->vm_flags & VM_LOCKED)) {
+>  			error = -EBUSY;
+> -			goto out_unlock;
+> +			break;
+>  		}
+>  		file = vma->vm_file;
+> -		start = vma->vm_end;
+> -		if ((flags & MS_SYNC) && file &&
+> -				(vma->vm_flags & VM_SHARED)) {
+> +		if ((flags & MS_SYNC) && file && (vma->vm_flags & VM_SHARED)) {
+>  			get_file(file);
+>  			up_read(&mm->mmap_sem);
+>  			error = do_fsync(file, 0);
+>  			fput(file);
+> -			if (error || start >= end)
+> -				goto out;
+> +			if (error)
+> +				return error;
+>  			down_read(&mm->mmap_sem);
+> -			vma = find_vma(mm, start);
 
-NTP can't correct too large errors.  I had some similar problems
-(one of many problems) with my HP Proliant desktop.  Something totally
-messed up the timekeeping, so the system would drift up to an hour or
-so per day.  I don't know what was wrong, I tried a lot of combinations
-of timer options, but couldn't find any that fixed it.  A kernel
-upgrade a couple of weeks later fixed those problems and the system
-time has been stable since then. 
+Where did this line go?  It's needed because after releasing and
+reacquiring the mmap sem, the old vma may have gone away.
 
-So upgrading to a recent kernel is probably a good idea.  
+I suggest, that when doing such a massive cleanup, that you split it
+up even further into easily understandable pieces, so such bugs cannot
+creep in.
 
-  /Christer
+> -		} else {
+> -			if (start >= end) {
+> -				error = 0;
+> -				goto out_unlock;
+> -			}
+> -			vma = vma->vm_next;
+>  		}
+> -	}
+> -out_unlock:
+> +
+> +		start = vma->vm_end;
+> +		vma = vma->vm_next;
+> +	} while (start < end);
+>  	up_read(&mm->mmap_sem);
+> -out:
+> +
+>  	return error ? : unmapped_error;
+>  }
+> -- 
+> 1.4.4.4
+
+Miklos
