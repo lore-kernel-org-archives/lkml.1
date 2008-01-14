@@ -1,118 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753158AbYANRxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbYANRyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753158AbYANRxA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 12:53:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750818AbYANRwx
+	id S1753836AbYANRyS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 12:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750864AbYANRyH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 12:52:53 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48265 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750801AbYANRww (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 12:52:52 -0500
-Message-ID: <478BA170.10806@sgi.com>
-Date: Mon, 14 Jan 2008 09:52:48 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 14 Jan 2008 12:54:07 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:17752 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750818AbYANRyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 12:54:04 -0500
+Date: Mon, 14 Jan 2008 18:54:00 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH][RFC] fast file mapping for loop
+Message-ID: <20080114175359.GS6258@kernel.dk>
+References: <20080109085231.GE6650@kernel.dk> <20080114121021.0d392102@think.oraclecorp.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/10] x86: Reduce memory and intra-node effects with
- large count NR_CPUs
-References: <20080113183453.973425000@sgi.com> <20080114081418.GB18296@elte.hu> <20080114090010.GA5404@elte.hu>
-In-Reply-To: <20080114090010.GA5404@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080114121021.0d392102@think.oraclecorp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
+On Mon, Jan 14 2008, Chris Mason wrote:
+> Hello everyone,
 > 
->>> 32cpus			  1kcpus-before		    1kcpus-after
->>>    7172678 Total	   +23314404 Total	       -147590 Total
->> 1kcpus-after means it's +23314404-147590, i.e. +23166814? (i.e. a 0.6% 
->> reduction of the bloat?)
+> Here is a modified version of Jens' patch.  The basic idea is to push
+> the mapping maintenance out of loop and down into the filesystem (ext2
+> in this case).
 > 
-> or if it's relative to 32cpus then that's an excellent result :)
+> Two new address_space operations are added, one to map
+> extents and the other to provide call backs into the FS as io is
+> completed.
 > 
-> 	Ingo
+> Still TODO for this patch:
+> 
+> * Add exclusion between filling holes and readers.  This is partly
+> implemented, when a hole is filled by the FS, the extent is flagged as
+> having a hole.  The idea is to check this flag before trying to read
+> the blocks and just send back all zeros.
+> 
+> The flag would be cleared when the blocks filling the hole have been
+> written.
+> 
+> * Exclude page cache readers and writers
+> 
+> * Add a way for the FS to request a commit before telling the higher
+> layers the IO is complete.  This way we can make sure metadata related
+> to holes is on disk before claiming the IO is really done.  COW based
+> filesystems will also needed it.
+> 
+> * Change loop to use fast mapping only when the new address_space op is
+> provided (whoops, forgot about this until just now)
+> 
+> * A few other bits for COW, not really relevant until there
+> is...something COW using it.
 
-Nope, it's a cumulative thing.
+Looks pretty good. Essentially the loop side is 100% the same, it just
+offloads the extent ownership to the fs (where it belongs). So I like
+it. Attaching a small cleanup/fixup patch for loop, don't think it needs
+further explanations.
 
+One suggestion - free_extent_map(), I would call that put_extent_map()
+instead.
 
-> allsizes -w 72 32cpus 1kcpus-after
-32cpus                              1kcpus-after
-       228 .altinstr_replacemen             +0 .altinstr_replacemen
-      1219 .altinstructions                 +0 .altinstructions
-    717512 .bss                       +1395328 .bss
-     61374 .comment                         +0 .comment
-        16 .con_initcall.init               +0 .con_initcall.init
-    425256 .data                        +19200 .data
-    178688 .data.cacheline_alig      +12898304 .data.cacheline_alig
-      8192 .data.init_task                  +0 .data.init_task
-      4096 .data.page_aligned               +0 .data.page_aligned
-     27008 .data.percpu                +128896 .data.percpu
-     43904 .data.read_mostly          +8703776 .data.read_mostly
-         4 .data_nosave                     +0 .data_nosave
-      5141 .exit.text                       +8 .exit.text
-    138480 .init.data                    +4608 .init.data
-       133 .init.ramfs                      +1 .init.ramfs
-      3192 .init.setup                      +0 .init.setup
-    159754 .init.text                     +904 .init.text
-      2288 .initcall.init                   +0 .initcall.init
-         8 .jiffies                         +0 .jiffies
-      4512 .pci_fixup                       +0 .pci_fixup
-   1314438 .rodata                        +760 .rodata
-     36552 .smp_locks                     +256 .smp_locks
-   3971848 .text                        +14773 .text
-      3368 .vdso                            +0 .vdso
-         4 .vgetcpu_mode                    +0 .vgetcpu_mode
-       218 .vsyscall_0                      +0 .vsyscall_0
-        52 .vsyscall_1                      +0 .vsyscall_1
-        91 .vsyscall_2                      +0 .vsyscall_2
-         8 .vsyscall_3                      +0 .vsyscall_3
-        54 .vsyscall_fn                     +0 .vsyscall_fn
-        80 .vsyscall_gtod_data              +0 .vsyscall_gtod_data
-     39480 __bug_table                      +0 __bug_table
-     16320 __ex_table                       +0 __ex_table
-      9160 __param                          +0 __param
-   7172678 Total                     +23166814 Total
+diff -u b/drivers/block/loop.c b/drivers/block/loop.c
+--- b/drivers/block/loop.c
++++ b/drivers/block/loop.c
+@@ -677,13 +677,14 @@
+ 	if (IS_ERR(lfe))
+ 		return -EIO;
+ 
+-	while(!lfe) {
++	while (!lfe) {
+ 		loop_schedule_extent_mapping(lo, bio->bi_sector,
+ 					     bio->bi_size, 1);
+ 		lfe = loop_lookup_extent(lo, start, GFP_ATOMIC);
+ 		if (IS_ERR(lfe))
+ 			return -EIO;
+ 	}
++
+ 	/*
+ 	 * handle sparse io
+ 	 */
+@@ -802,13 +803,13 @@
+ {
+ 	struct bio *orig_bio = bio->bi_private;
+ 	struct inode *inode = bio->bi_bdev->bd_inode;
++	struct address_space *mapping = inode->i_mapping;
+ 	u64 start = orig_bio->bi_sector << 9;
+ 	u64 len = bio->bi_size;
+ 
+-	if (inode->i_mapping->a_ops->extent_io_complete) {
+-		inode->i_mapping->a_ops->extent_io_complete(inode->i_mapping,
+-							    start, len);
+-	}
++	if (mapping->a_ops->extent_io_complete)
++		mapping->a_ops->extent_io_complete(mapping, start, len);
++
+ 	bio_put(bio);
+ 	bio_endio(orig_bio, err);
+ }
+@@ -829,6 +830,7 @@
+ 		err = -ENOMEM;
+ 		goto out;
+ 	}
++
+ 	/*
+ 	 * change the sector so we can find the correct file offset in our
+ 	 * endio
+@@ -847,7 +849,6 @@
+ 		goto out;;
+ 	}
+ 
+-
+ 	disk_block = em->block_start;
+ 	extent_off = start - em->start;
+ 	new_bio->bi_sector = (disk_block + extent_off) >> 9;
+@@ -924,11 +925,8 @@
+ 		spin_unlock_irq(&lo->lo_lock);
+ 
+ 		BUG_ON(!bio);
+-		if (lo_act_bio(bio))
+-			bio_act = 1;
+-		else
+-			bio_act = 0;
+ 
++		bio_act = lo_act_bio(bio);
+ 		loop_handle_bio(lo, bio);
+ 
+ 		spin_lock_irq(&lo->lo_lock);
+@@ -1103,11 +1101,9 @@
+ 		return -EINVAL;
+ 
+ 	/*
+-	 * Need a working bmap. TODO: use the same optimization that
+-	 * direct-io.c does for get_block() mapping more than one block
+-	 * at the time.
++	 * Need a working extent_map
+ 	 */
+-	if (inode->i_mapping->a_ops->bmap == NULL)
++	if (inode->i_mapping->a_ops->map_extent == NULL)
+ 		return -EINVAL;
+ 	/*
+ 	 * invalidate all page cache belonging to this file, it could become
+diff -u b/include/linux/loop.h b/include/linux/loop.h
+--- b/include/linux/loop.h
++++ b/include/linux/loop.h
+@@ -18,7 +18,6 @@
+ #include <linux/blkdev.h>
+ #include <linux/spinlock.h>
+ #include <linux/mutex.h>
+-#include <linux/rbtree.h>
+ 
+ /* Possible states of device */
+ enum {
+@@ -72,9 +71,6 @@
+ 	struct gendisk		*lo_disk;
+ 	struct list_head	lo_list;
+ 
+-	struct prio_tree_root	prio_root;
+-	struct prio_tree_node	*last_insert;
+-	struct prio_tree_node	*last_lookup;
+ 	unsigned int		blkbits;
+ };
+ 
 
-My goal is to move 90+% of the wasted, unused memory to either
-the percpu area or the initdata section.  The 4 fronts are:
-NR_CPUS arrays, cpumask_t usages, more efficient cpu_alloc/percpu
-area, and (relatively small) redesign of the irq system.  (The
-node and apicid arrays are related to the NR_CPUS arrays.)
+-- 
+Jens Axboe
 
-The irq structs are particularly bad because they use NR_CPUS**2
-arrays and the irq vars use 22588416 bytes (74%) of the total
-30339492 bytes of memory:
-
-   7172678 Total                      30339492 Total
-
-> datasizes -w 72 32cpus 1kcpus-before
-32cpus                              1kcpus-before
-      262144    BSS __log_buf           12681216 CALNDA irq_desc
-      163840 CALNDA irq_desc             8718336 RMDATA irq_cfg
-      131072    BSS entries               528384    BSS irq_lists
-       76800 INITDA early_node_map        396288    BSS irq_2_pin
-       30720 RMDATA irq_cfg               264192    BSS irq_timer_state
-       29440    BSS ide_hwifs             262144    BSS __log_buf
-       24576    BSS boot_exception_       132168 PERCPU per_cpu__kstat
-       20480    BSS irq_lists             131072    BSS entries
-       18840   DATA ioctl_start           131072    BSS boot_pageset
-       16384    BSS boot_cpu_stack        131072 CALNDA boot_cpu_pda
-       15360    BSS irq_2_pin              98304    BSS cpu_devices
-       14677   DATA bnx2_CP_b06FwTe        76800 INITDA early_node_map
-
-I'm still working on a tool to analyze runtime usage of kernel
-memory.
-
-And I'm very open to any and all suggestions... ;-)
-
-Thanks,
-Mike
