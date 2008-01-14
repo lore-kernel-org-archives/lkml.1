@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753974AbYANWN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614AbYANWQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753974AbYANWN0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 17:13:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbYANWNS
+	id S1754614AbYANWQS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 17:16:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbYANWQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 17:13:18 -0500
-Received: from wx-out-0506.google.com ([66.249.82.239]:25033 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750868AbYANWNR (ORCPT
+	Mon, 14 Jan 2008 17:16:11 -0500
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:38577 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750973AbYANWQK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 17:13:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SgaclFLUhZB55hPlUHQf5rS3oTqDi8jTTaiE8jMeCwbxL/WKcZeL5k8Wko88KE+LPTkaCILX7AtfdkleaQR15pPBwPVspwGy0nY7kdfJVnvkqfUiKv/eBZpm0azLCj8Scr9sBic/EgDmeFnMEOI51aI1EeGaM4R82eYaRi12Uxk=
-Message-ID: <4d8e3fd30801141413x15d81576lc56eebfa726f1dbb@mail.gmail.com>
-Date: Mon, 14 Jan 2008 23:13:14 +0100
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "Andy Whitcroft" <apw@shadowen.org>
-Subject: Re: checkpatch: add filename before the summary line
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080114173032.GE19327@shadowen.org>
+	Mon, 14 Jan 2008 17:16:10 -0500
+Date: Mon, 14 Jan 2008 23:16:08 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: mingo@elte.hu, sam@ravnborg.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Latest git-x86 doesn't build on 32bit
+Message-ID: <20080114221608.GA11732@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080113233405.5fcdaff5@paolo-desktop>
-	 <20080114173032.GE19327@shadowen.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 14 Jan 2008 22:09:57.0370 (UTC) FILETIME=[32C5DDA0:01C856FA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 14, 2008 6:30 PM, Andy Whitcroft <apw@shadowen.org> wrote:
-> On Sun, Jan 13, 2008 at 11:34:05PM +0100, Paolo Ciarrocchi wrote:
-> > With the patch applied the output of checkpatch.pl is as follow:
-> > ./arch/arm/mach-footbridge/ebsa285-pci.c
-> > total: 1 errors, 0 warnings, 48 lines checked
-> >
-> > Adding the file name allowed me to collects stats running:
-> >       find . -name *.c |xargs ./scripts/checkpatch.pl --file |grep -B 1 total
-> > but I though it might me useful for other purposes to add the file name
-> > after the list of errors and warnings and before the summary,
-> > when the list is long I find handy to print out the filename as a reminder.
->
-> Hmmm, that being unconfitional would probabally break a raft of other
-> users.  Also would it be more useful to put it on the front of the
-> summary line?  So that if you have a bunch of files to check then you
-> get something more like:
->
-> foo: total: 1 errors, ...
-> bar: total: 0 errors, ...
 
-I have a patch that adds an option (default to false) and with that I have
-the following output:
+On a fresh object dir I get for a 32bit build:
 
-./arch/sparc/kernel/apc.c --> total: 18 errors, 3 warnings, 186 lines checked
-./arch/sparc/kernel/apc.c --> total: 18 errors, 3 warnings, 186 lines checked
+make -C /home/lsrc/quilt/linux O=/home/lsrc/quilt/obj32 
+  GEN     /home/lsrc/quilt/obj32/Makefile
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  Using /home/lsrc/quilt/linux as source for kernel
+  CALL    /home/lsrc/quilt/linux/scripts/checksyscalls.sh
+  CHK     include/linux/compile.h
+  Building modules, stage 2.
+  MODPOST 1 modules
+make[3]: Nothing to be done for `vmlinux'.
+KBUILD_IMAGE := arch/x86/boot/bzImage
+make[2]: KBUILD_IMAGE: Command not found
+make[2]: *** [all] Error 127
+make[1]: *** [sub-make] Error 2
+make: *** [all] Error 2
 
-Will send to the list in a few minutes.
+I think it worked on older object dirs where not everything was rebuild.
 
-Ciao,
--- 
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
+make --version
+GNU Make 3.81
+
+
+-Andi
