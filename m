@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752236AbYANM7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752672AbYANNBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752236AbYANM7v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 07:59:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbYANM7m
+	id S1752672AbYANNBv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 08:01:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750695AbYANNBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 07:59:42 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:36420 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750830AbYANM7l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 07:59:41 -0500
-Date: Mon, 14 Jan 2008 12:59:39 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Neil Brown <neilb@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 002 of 6] md: Fix use-after-free bug when dropping an rdev from an md array.
-Message-ID: <20080114125939.GP27894@ZenIV.linux.org.uk>
-References: <20080114123726.19968.patches@notabene> <1080114014531.20354@suse.de> <20080114020459.GN27894@ZenIV.linux.org.uk> <18314.54601.196877.828373@notabene.brown> <20080114034322.GO27894@ZenIV.linux.org.uk> <18314.59832.14451.334084@notabene.brown> <18315.284.774998.348672@notabene.brown>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 14 Jan 2008 08:01:43 -0500
+Received: from mail.hevs.ch ([153.109.23.15]:47909 "EHLO mail.hevs.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750801AbYANNBn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 08:01:43 -0500
+From: Marc Pignat <marc.pignat@hevs.ch>
+Organization: HEVs
+To: Florian Fainelli <florian.fainelli@telecomint.eu>
+Subject: Re: [RFC, PATCH, take 2] watchdog on generic gpio
+Date: Mon, 14 Jan 2008 14:01:33 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <200801141103.23744.marc.pignat@hevs.ch> <200801141206.39858.florian.fainelli@telecomint.eu>
+In-Reply-To: <200801141206.39858.florian.fainelli@telecomint.eu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <18315.284.774998.348672@notabene.brown>
-User-Agent: Mutt/1.4.2.3i
+Message-Id: <200801141401.33783.marc.pignat@hevs.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 14, 2008 at 05:28:44PM +1100, Neil Brown wrote:
-> On Monday January 14, neilb@suse.de wrote:
-> > 
-> > Thanks.  I'll see what I can some up with.
-> 
-> How about this, against current -mm
-> 
-> On both the read and write path for an rdev attribute, we
-> call mddev_lock, first checking that mddev is not NULL.
-> Once we get the lock, we check again.
-> If rdev->mddev is not NULL, we know it will stay that way as it only
-> gets cleared under the same lock.
-> 
-> While in the rdev show/store routines, we know that the mddev cannot
-> get freed, do to the kobject relationships.
-> 
-> rdev_size_store is awkward because it has to drop the lock.  So we
-> take a copy of rdev->mddev before the drop, and we are safe...
-> 
-> Comments?
+Hi Florian!
 
-*cringe*
+On Monday 14 January 2008, Florian Fainelli wrote:
+...
+> I would like this function to be supplied by the platform_data structure 
+> because as I mentioned before, not all GPIO connected watchdog will simply 
+> need a single bit to be toggled, but also sometimes a full GPIO line.
+I understand your wish, but...
+You told me that your plaform doesn't implement the generic gpio interface
+(yet?), so this driver can't work for you.
 
-I really don't like the entire scheme, to be honest.  BTW, what happens
-if you try to add the same device to the same array after having it kicked
-out?  If that comes before your delayed kobject_del(), the things will
-get nasty since sysfs will (rightfully) refuse to add another entry with
-the same name and parent while the old one is still there and for all
-sysfs knows is going to stay there...
+...
+> 
+> If we do not supply any specific callback to keepalive the watchdog let's just 
+> assume we need a single bit to be toggled if this is ok with you ?
+This is not the only function to be changed, start, stop and keepalive (and
+probably suspend/resume) should be changed, and when the 'Uniform Watchdog
+Device Driver' will be merged, writing your driver dealing with more gpio will
+be almost trivial.
+
+Please make sure to look a the right place, the git tree for the unified
+driver you have given is 17 month old... here is the latest:
+http://git.kernel.org/?p=linux/kernel/git/wim/linux-2.6-watchdog-mm.git;a=summary
+
+I'm trying to get this work merged because I use it, it works for me and I'm
+almost sure I haven't got the only embedded system using a max823 connected
+to a gpio.
+
+Let me know if you want some help implementing your driver!
+
+Regards
+
+Marc
