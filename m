@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbYANJbw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbYANJlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754721AbYANJbw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 04:31:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753153AbYANJbo
+	id S1754650AbYANJlP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 04:41:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbYANJk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 04:31:44 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56354 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752996AbYANJbn (ORCPT
+	Mon, 14 Jan 2008 04:40:59 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:34484 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753153AbYANJk6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 04:31:43 -0500
-Date: Mon, 14 Jan 2008 09:29:05 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Cc: "Marc Pignat" <marc.pignat@hevs.ch>, wim@iguana.be,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC, PATCH] watchdog on gpio
-Message-ID: <20080114092905.227c5a38@lxorguk.ukuu.org.uk>
-In-Reply-To: <8bd0f97a0801140128i2ebf9236uabe0e0b8cf15fbe@mail.gmail.com>
-References: <200801101611.08867.marc.pignat@hevs.ch>
-	<8bd0f97a0801140004q6a32c2ceh397a2208d3012f0e@mail.gmail.com>
-	<20080114090329.6efa2921@lxorguk.ukuu.org.uk>
-	<8bd0f97a0801140128i2ebf9236uabe0e0b8cf15fbe@mail.gmail.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Mon, 14 Jan 2008 04:40:58 -0500
+Date: Mon, 14 Jan 2008 09:35:25 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linux Kernel List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH: 2/2] [SERIAL] avoid stalling suspend if serial port won't drain
+Message-ID: <20080114093525.GA22818@flint.arm.linux.org.uk>
+References: <20080108115148.GB10546@flint.arm.linux.org.uk> <20080108115703.GA27179@flint.arm.linux.org.uk> <20080111101721.GA4463@ucw.cz> <20080114002912.GA19195@flint.arm.linux.org.uk> <20080114090459.GB4024@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080114090459.GB4024@elf.ucw.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Saves memory - you can't make inlined strings __initdata without breaking
-> > some compilers. So it is correct.
+On Mon, Jan 14, 2008 at 10:04:59AM +0100, Pavel Machek wrote:
+> On Mon 2008-01-14 00:29:12, Russell King wrote:
+> > If you're suspending because your battery is almost dead what would you
+> > prefer - the system being prevented from suspending and losing complete
+> > power unexpectedly, resulting in complete data loss, or losing the
+> > characters in the serial port and suspending?
+> > 
+> > Which is the lesser of two evils?
 > 
-> you could make the same argument about all strings used in all __init
-> functions.  making a special case for this one string is just
-> confusing.  this is also used from the *platfrom driver probe*
-> function, not the *module init* function, which means it should be
-> __devinitdata (see below) ... which quickly adds to the
-> confusion/craziness.
+> Not sure, but there's third option -- correct but more work. What
+> about saving/restoring fifo state? That will not stall suspend, nor
+> will loose data.
 
-Not neccessarily see below. For strings there is a tricky tradeoff
-between space on embedded boxes and simplicity. On a 2GB desktop PC the
-decision is fairly trivial, on a PDA it gets a bit more important.
+The only way you could do that on 8250 is to clear the RX FIFO, enable
+loopback, wait for the port to transmit all its characters into the RX
+FIFO and read them out that way.
 
-> > > > +static int __init gpio_wdt_probe(struct platform_device *pdev)
-> > >
-> > > shouldnt this be __devinit ?
-> >
-> > IFF the device can be found/removed dynamically.
-> 
-> wont __init get freed once the module has finished loading ?  
+That brings up other questions though:
 
-If your platform creates the device statically (as a lot of embedded
-platforms do) then the __init is fine. The platform register in
-init_module will call back the driver probe method and attach the device
-before the init_module exits.
+- what if its a port with 256 characters in the FIFO, and its programmed
+  for 110 baud?
+- what if loopback isn't supported?
+- what if, while doing this operation, the remote end is sending characters
+  because you can't deassert RTS?
 
-Alan
+Finally, on many non-8250 ports, you don't have a loopback mode to
+enable, so you have no way to read back the contents of the FIFO.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
