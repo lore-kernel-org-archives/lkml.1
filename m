@@ -1,70 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752694AbYANUfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752750AbYANUri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752694AbYANUfm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 15:35:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbYANUfe
+	id S1752750AbYANUri (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 15:47:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbYANUr2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 15:35:34 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:53264 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750733AbYANUfd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 15:35:33 -0500
-Date: Mon, 14 Jan 2008 22:34:34 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>, rjw@sisk.pl,
-       pavel@suse.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without
-	HOTPLUG_CPU
-Message-ID: <20080114203434.GF9847@does.not.exist>
-References: <20080114135240.GA15357@elte.hu> <20080114140910.GA8507@uranus.ravnborg.org> <20080114145854.GA31695@elte.hu> <20080114150103.GA2700@elte.hu> <20080114182052.GB9847@does.not.exist> <20080114191009.GB2288@elte.hu> <20080114195258.GC9847@does.not.exist> <20080114200126.GB9257@uranus.ravnborg.org> <20080114201826.GD9847@does.not.exist> <20080114202740.GD9257@uranus.ravnborg.org>
+	Mon, 14 Jan 2008 15:47:28 -0500
+Received: from mailout06.sul.t-online.de ([194.25.134.19]:55493 "EHLO
+	mailout06.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750733AbYANUr1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 15:47:27 -0500
+Message-ID: <478BCA42.1090503@t-online.de>
+Date: Mon, 14 Jan 2008 21:46:58 +0100
+From: Harald Dunkel <harald.dunkel@t-online.de>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080114202740.GD9257@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-12-11)
+To: Takashi Iwai <tiwai@suse.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc7, intel audio: alsa doesn't say a beep
+References: <4782833D.3010600@t-online.de>	<s5h3at8rd9c.wl%tiwai@suse.de>	<4783AC7C.50900@t-online.de>	<s5h63y42oy6.wl%tiwai@suse.de>	<478463A6.2070106@t-online.de>	<s5h8x2zo3ox.wl%tiwai@suse.de>	<47852A41.9020903@t-online.de>	<s5hr6gpajux.wl%tiwai@suse.de>	<4786960D.2040500@t-online.de>	<s5hprw8g8m7.wl%tiwai@suse.de>	<4787E5D0.7000405@t-online.de> <s5h8x2u2cwf.wl%tiwai@suse.de>
+In-Reply-To: <s5h8x2u2cwf.wl%tiwai@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ID: EXBq3rZGohrqkiQ4dwV1gSLMi76OBdbSo463WnuWMIRB1MpxsLwHChduGT5CCl8Qk4
+X-TOI-MSGID: 6c57b0b6-da9c-4bde-8f3b-1528d62d1799
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 14, 2008 at 09:27:40PM +0100, Sam Ravnborg wrote:
-> > > > Can you fix the bug that menuconfig does not let me enable CONFIG_64BIT?
-> > > 
-> > > make ARCH=x86_64 allyesconfig
-> > > will set CONFIG_64BIT for you - no?
-> > 
-> > Yes.
-> > 
-> > But this still leaves the fact that when someone says 'allyesconfig' 
-> > it's no longer clear which configuration he has.
-> Assuming you are on an x86 box...
+Dear Takashi-san,
+
+Takashi Iwai wrote:
 > 
-> make allyesconfig will give you a config for same OS bit-size as you run.
-> make ARCH=i386 allyesconfig gives you a 32 bit config
-> make ARCH=x86_64 allyesconfig gives you a 64 bit config
+> The "regression" was your original problem, no sound on rc7, which was
+> fixed by reverting the patch.  Now I'd like to know that my new patch
+> doesn't break after reverting the broken patch.
 > 
-> make ARCH=x86 allyesconfig gives you a 32 bit config where you can select 64 bit.
+
+Seems that there was some misunderstanding: I thought your patch
+for sigmatel.c was supposed to fix the "missing sound" problem,
+too.
+
+> In short, try my patch on the latest Linus git tree.  Check whether
+> the sound still works.
 > 
-> It was seen as the best solution when unifying 32 and 64 bit stuff
-> and introducing support for ARCH=x86.
+
+It does.
+
+rc7 plus the big "clean-up" patch for sigmatel.c plus hda_intel.c
+taken from rc6 worked, too. Seems that I missed to mention it in a
+previous EMail.
+
 > 
-> No-one has complained until now so most people seems to get it
-> or maybe they are just silent.
+> It's simply a delay.  Basically Ingo's patch changed msleep() to
+> udelay() to reduce *unneeded* delays.  The function waits until the
+> all pending commands are processed.  The delay is simply to reduce the
+> system load.  And, now, changing this delay causes a problem
+> surprisingly.
+> 
 
-Or I'm the only person doing kernel development on a 32bit x86 machine?
+I am glad to help, but could you please do me a favour? If I am
+supposed to try some new version, then please create a complete(!)
+patch using rc7 on kernel.org as the base, and send it as an
+attachment using a unique filename. Very likely you have a much
+better overview about the most recent kernel changes, but some
+statements like "new patch" or "Ingo's patch" don't mean very much
+to me. The "reverted" patch is a new patch, too, and AFAIK Ingo
+reverted it, so maybe you can imagine that this is highly confusing.
 
-Even oldconfig is busted since the Kconfig choice is not available 
-without explicitely setting ARCH.
+ >> AFAICS I did use the mm branch. The command to grab the sources was
+ >>
+ >> git-clone git://git.kernel.org/pub/scm/linux/kernel/git/perex/alsa.git mm
+ >>
+ >> Is this correct?
+ >
+ > No.  You'd better to clone Linus git tree, then pull from alsa.git mm
+ > branch.
+ >
+ >   % git-clone $LINUS/linux-2.6.git
+ >   % cd linux-2.6
+ >   % git-pull $ALSA/alsa.git mm
+ >
 
-> 	Sam
+AFAICS there shouldn't be a difference to my one-liner, unless Linus'
+and Alsa's git trees are out of sync. Is this correct? Sorry, I am
+more familiar with ClearCase and Accurev than with Git.
 
-cu
-Adrian
 
--- 
+Regards
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Harri
 
