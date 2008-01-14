@@ -1,74 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752309AbYANSzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753283AbYANTAB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752309AbYANSzk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 13:55:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbYANSzd
+	id S1753283AbYANTAB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 14:00:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbYANS7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 13:55:33 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46254 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750708AbYANSzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 13:55:32 -0500
-Date: Mon, 14 Jan 2008 19:55:20 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Colin Fowler <elethiomel@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Performance loss 2.6.22->22.6.23->2.6.24-rc7 on CPU intensive
-	benchmark on 8 Core Xeon
-Message-ID: <20080114185520.GA26540@elte.hu>
-References: <cf3edd8d0801140937w755c3e75me83c214ebc1f4cd3@mail.gmail.com>
+	Mon, 14 Jan 2008 13:59:54 -0500
+Received: from nz-out-0506.google.com ([64.233.162.227]:23400 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750973AbYANS7x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 13:59:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=voQz/Ar4Gp0esPl2fBTJZ7gJkQDrjMmwwfOlVqpOtDK5gfFHgkukFr6Po/aE1wwMXA4bdmAElfGObnS/Njozyf0/URJlRJPZEZTJO2jbmYLF6sn+Ipu3LgASxWy8c8kAYD8BjPJJsSRoa0XoF7f4lMj2TGDT1yeStTAZWNQr7tM=
+Message-ID: <4df4ef0c0801141059t6fbdc7dexa8e9abf9d2c94c42@mail.gmail.com>
+Date: Mon, 14 Jan 2008 21:59:51 +0300
+From: "Anton Salikhmetov" <salikhmetov@gmail.com>
+To: "Miklos Szeredi" <miklos@szeredi.hu>
+Subject: Re: [PATCH 2/2] updating ctime and mtime at syncing
+Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, protasnb@gmail.com
+In-Reply-To: <E1JEP9P-0007RD-PP@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <cf3edd8d0801140937w755c3e75me83c214ebc1f4cd3@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <12001991991217-git-send-email-salikhmetov@gmail.com>
+	 <12001992023392-git-send-email-salikhmetov@gmail.com>
+	 <E1JENAv-0007CM-T9@pomaz-ex.szeredi.hu>
+	 <4df4ef0c0801140422l1980d507v1884ad8d8e8bf6d3@mail.gmail.com>
+	 <E1JEP9P-0007RD-PP@pomaz-ex.szeredi.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2008/1/14, Miklos Szeredi <miklos@szeredi.hu>:
+> > 2008/1/14, Miklos Szeredi <miklos@szeredi.hu>:
+> > > > http://bugzilla.kernel.org/show_bug.cgi?id=2645
+> > > >
+> > > > Changes for updating the ctime and mtime fields for memory-mapped files:
+> > > >
+> > > > 1) new flag triggering update of the inode data;
+> > > > 2) new function to update ctime and mtime for block device files;
+> > > > 3) new helper function to update ctime and mtime when needed;
+> > > > 4) updating time stamps for mapped files in sys_msync() and do_fsync();
+> > > > 5) implementing the feature of auto-updating ctime and mtime.
+> > >
+> > > How exactly is this done?
+> > >
+> > > Is this catering for this case:
+> > >
+> > >  1 page is dirtied through mapping
+> > >  2 app calls msync(MS_ASYNC)
+> > >  3 page is written again through mapping
+> > >  4 app calls msync(MS_ASYNC)
+> > >  5 ...
+> > >  6 page is written back
+> > >
+> > > What happens at 4?  Do we care about this one at all?
+> >
+> > The POSIX standard requires updating the file times every time when msync()
+> > is called with MS_ASYNC. I.e. the time stamps should be updated even
+> > when no physical synchronization is being done immediately.
+>
+> Yes.  However, on linux MS_ASYNC is basically a no-op, and without
+> doing _something_ with the dirty pages (which afaics your patch
+> doesn't do), it's impossible to observe later writes to the same page.
+>
+> I don't advocate full POSIX conformance anymore, because it's probably
+> too expensive to do (I've tried).  Rather than that, we should
+> probably find some sane compromise, that just fixes the real life
+> issue.  Here's a pointer to the thread about this:
+>
+> http://lkml.org/lkml/2007/3/27/55
+>
+> Your patch may be a good soultion, but you should describe in detail
+> what it does when pages are dirtied, and when msync/fsync are called,
+> and what happens with multiple msync calls that I've asked about.
+>
+> I suspect your patch is ignoring writes after the first msync, but
+> then why care about msync at all?  What's so special about the _first_
+> msync?  Is it just that most test programs only check this, and not
+> what happens if msync is called more than once?  That would be a bug
+> in the test cases.
+>
+> > > > +/*
+> > > > + * Update the ctime and mtime stamps for memory-mapped block device files.
+> > > > + */
+> > > > +static void bd_inode_update_time(struct inode *inode)
+> > > > +{
+> > > > +     struct block_device *bdev = inode->i_bdev;
+> > > > +     struct list_head *p;
+> > > > +
+> > > > +     if (bdev == NULL)
+> > > > +             return;
+> > > > +
+> > > > +     mutex_lock(&bdev->bd_mutex);
+> > > > +     list_for_each(p, &bdev->bd_inodes) {
+> > > > +             inode = list_entry(p, struct inode, i_devices);
+> > > > +             inode_update_time(inode);
+> > > > +     }
+> > > > +     mutex_unlock(&bdev->bd_mutex);
+> > > > +}
+> > >
+> > > Umm, why not just call with file->f_dentry->d_inode, so that you don't
+> > > need to do this ugly search for the physical inode?  The file pointer
+> > > is available in both msync and fsync.
+> >
+> > I'm not sure if I undestood your question. I see two possible
+> > interpretations for this question, and I'm answering both.
+> >
+> > The intention was to make the data changes in the block device data
+> > visible to all device files associated with the block device. Hence
+> > the search, because the time stamps for all such device files should
+> > be updated as well.
+>
+> Ahh, but it will only update "active" devices, which are currently
+> open, no?  Is that what we want?
+>
+> > Not only the sys_msync() and do_fsync() routines call the helper
+> > function mapping_update_time().
+>
+> Ah yes, __sync_single_inode() calls it as well.  Why?
 
-* Colin Fowler <elethiomel@gmail.com> wrote:
+The __sync_single_inode() function calls mapping_update_time()
+to enable the "auto-updating" feature discussed earlier.
 
-> Benchmark : A ray-trace is performed on 500 times on 17 separate 
-> scenes. Workload is distributed by tiling the framebuffer into N 32x32 
-> pixel tiles. Each CPU grabs one of N tiles out of the queue and 
-> repeats until no jobs are left. Rendering is to a shared framebuffer 
-> (obviously this causes problems with caching). Locking and 
-> synchronization is done using pthreads.
-> 
-> Other details: The system is cleanly booted for each run. No I/O is 
-> performed during the timed portions of the test. The benchmark does 
-> however read a model file from the drive and build a data structure 
-> from it before each timed portion.
-> 
-> On the 2.6.22 series of kernels results are pretty much the same. On
-> 2.6.23 series kernels I see a loss in speed of ~2% across the board.
-> On 2.6.24-rc7 that loss in speed is perhaps very slightly worse (~3%).
-> 2.6.22 Kernels tested: 22.9(Ubuntu Stock Kernel), 22.14, 22.15
-> 2.6.23 Kernels tested: 23.1, 23.3,  23.13
-> 2.6.24 Kernels tested: 24-rc7
-> 
-> I have my kernel compiled to use the SLAB allocator. All other 
-> tweaking options are set as defaults. My config files are available at 
-> http://vangogh.cs.tcd.ie/fowler/configs . Perhaps I'm configuring 
-> something wrong for the type of work I do?
-
-Could you try CONFIG_SCHED_DEBUG=y and CONFIG_SCHEDSTATS=y and double 
-the value of /proc/sys/kernel/sched_latency_ns - does that make any 
-difference? Please also run the following script while the ray-trace app 
-is running:
-
-  http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
-
-and send me the output of it, so that we can have an idea about what's 
-going on in your system during this workload.
-
-	Ingo
+>
+> Miklos
+>
