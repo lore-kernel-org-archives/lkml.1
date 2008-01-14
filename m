@@ -1,45 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbYANN4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755059AbYANN4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754290AbYANN4a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 08:56:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYANN4U
+	id S1755059AbYANN4l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 08:56:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbYANN4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 08:56:20 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35014 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751089AbYANN4T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 08:56:19 -0500
-Date: Mon, 14 Jan 2008 13:56:18 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Neil Brown <neilb@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 002 of 6] md: Fix use-after-free bug when dropping an rdev from an md array.
-Message-ID: <20080114135618.GQ27894@ZenIV.linux.org.uk>
-References: <20080114123726.19968.patches@notabene> <1080114014531.20354@suse.de> <20080114020459.GN27894@ZenIV.linux.org.uk> <18314.54601.196877.828373@notabene.brown> <20080114034322.GO27894@ZenIV.linux.org.uk> <18314.59832.14451.334084@notabene.brown> <18315.284.774998.348672@notabene.brown> <20080114125939.GP27894@ZenIV.linux.org.uk>
-Mime-Version: 1.0
+	Mon, 14 Jan 2008 08:56:23 -0500
+Received: from saeurebad.de ([85.214.36.134]:36002 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751166AbYANN4V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 08:56:21 -0500
+From: Johannes Weiner <hannes@saeurebad.de>
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Marc Pignat" <marc.pignat@hevs.ch>,
+       wim@iguana.be, linux-kernel@vger.kernel.org
+Subject: printk-wrapper with sectionized string constants [was: Re: [RFC, PATCH] watchdog on gpio]
+References: <200801101611.08867.marc.pignat@hevs.ch>
+	<8bd0f97a0801140004q6a32c2ceh397a2208d3012f0e@mail.gmail.com>
+	<20080114090329.6efa2921@lxorguk.ukuu.org.uk>
+	<8bd0f97a0801140128i2ebf9236uabe0e0b8cf15fbe@mail.gmail.com>
+	<20080114092905.227c5a38@lxorguk.ukuu.org.uk>
+	<8bd0f97a0801140145s5e13083ej926aa9d5f87e3a99@mail.gmail.com>
+	<87zlv8k1w0.fsf@saeurebad.de>
+	<8bd0f97a0801140503t484ab61clcf41f4e4ea913fe4@mail.gmail.com>
+Date: Mon, 14 Jan 2008 14:56:52 +0100
+In-Reply-To: <8bd0f97a0801140503t484ab61clcf41f4e4ea913fe4@mail.gmail.com>
+	(Mike Frysinger's message of "Mon, 14 Jan 2008 08:03:29 -0500")
+Message-ID: <87prw4jysb.fsf_-_@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080114125939.GP27894@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 14, 2008 at 12:59:39PM +0000, Al Viro wrote:
+Hi,
 
-> I really don't like the entire scheme, to be honest.  BTW, what happens
-> if you try to add the same device to the same array after having it kicked
-> out?  If that comes before your delayed kobject_del(), the things will
-> get nasty since sysfs will (rightfully) refuse to add another entry with
-> the same name and parent while the old one is still there and for all
-> sysfs knows is going to stay there...
+"Mike Frysinger" <vapier.adi@gmail.com> writes:
+>> How about:
+>>
+>> #define init_printk(fmt, args...) ({            \
+>>         static const __init char __fmt[] = fmt; \
+>>         printk(__fmt, args);                    \
+>> })
+>>
+>> Now it returns the printk result.
+>
+> i wasnt really worried about that ... i was worried about other random
+> things i may have missed
 
-More fun questions: what are the locking requirements for ->resize()?
-You are calling it with no exclusion whatsoever...  What about
-bind_rdev_to_array()?  At the very least, you want to protect
-mddev->disks, and AFAICS new_dev_store() has no exclusion at all.
-And I suspect that you have other things in there in need of protection
-(finding free desc_nr, for one); can all of those be handled by simple
-spinlocks?
+Ok.
+
+> your dropping of ## wont work as you need gcc to expand args and take
+> away the , in the simple 1 arg case:
+> init_printk("MOO");
+
+Whoops, totally oversaw this one.  Of course, this must be in.
+
+Perhaps an even more generic solution would be good, like this:
+
+#define section_printk(sect, fmt, args...) ({		\
+	static const sect char __fmt[] = fmt;		\
+        printk(__fmt, ## args);				\
+})
+
+And then just have convenience wrappers like {,dev}init_printk, ... etc.
+
+Can someone please shout at us if there is a fundamental problem with
+this approach?
+
+	Hannes
