@@ -1,117 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbYANBc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbYANBeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754084AbYANBc6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 20:32:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbYANBcu
+	id S1754717AbYANBeR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 20:34:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751530AbYANBeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 20:32:50 -0500
-Received: from hs-out-0708.google.com ([64.233.178.248]:16414 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751530AbYANBcs (ORCPT
+	Sun, 13 Jan 2008 20:34:05 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:50320 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751343AbYANBeD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 20:32:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SE7YbfELDGJDcLaPqQq/j0J0d5JSVk2XjllIisHX47QAQ6ZBIJJ9MBrecOzkdqMHbSevJ9wOuDUlKVY8Iy2DE446PkPTDPg2GdZkRHRql1JhegV8ebORJtGFcBIpzMl+r0Vby3jII8G03TXcA7iBqwHeAmw6K02C4ltZYzhZ4FY=
-Message-ID: <a8e1da0801131732t55238bf0u8e083b1754641c68@mail.gmail.com>
-Date: Mon, 14 Jan 2008 09:32:47 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH 1/7] driver-core : add class iteration api
-Cc: "Greg KH" <gregkh@suse.de>, James.Bottomley@hansenpartnership.com,
-       a.zummo@towertech.it, peterz@infradead.org, cbou@mail.ru,
-       linux-kernel@vger.kernel.org, "David Brownell" <david-b@pacbell.net>,
-       krh@redhat.com, stern@rowland.harvard.edu, dwmw2@infradead.org,
-       davem@davemloft.net, jarkao2@gmail.com
-In-Reply-To: <47889B68.8010601@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 13 Jan 2008 20:34:03 -0500
+Date: Sun, 13 Jan 2008 17:33:31 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: tcamuso@redhat.com, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Greg KH <greg@kroah.com>, Matthew Wilcox <matthew@wil.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>, Loic Prylli <loic@myri.com>,
+       Prarit Bhargava <prarit@redhat.com>,
+       "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>,
+       "Schoeller, Patrick (Linux - Houston, TX)" <Patrick.Schoeller@hp.com>,
+       Bhavana Nagendra <bnagendr@redhat.com>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+ opt-in
+Message-ID: <20080113173331.617ac935@laptopd505.fenrus.org>
+In-Reply-To: <20080114005434.48340f84@lxorguk.ukuu.org.uk>
+References: <alpine.LFD.1.00.0801111224090.3148@woody.linux-foundation.org>
+	<20080111204228.GP18741@parisc-linux.org>
+	<alpine.LFD.1.00.0801111311170.3148@woody.linux-foundation.org>
+	<20080111211753.GR18741@parisc-linux.org>
+	<alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org>
+	<20080111213803.GS18741@parisc-linux.org>
+	<20080111235856.GA16079@jurassic.park.msu.ru>
+	<20080112002638.GA18710@kroah.com>
+	<20080112144030.GA19279@jurassic.park.msu.ru>
+	<20080112094557.71f5382a@laptopd505.fenrus.org>
+	<20080112214911.GA20102@jurassic.park.msu.ru>
+	<20080112150120.05f93768@laptopd505.fenrus.org>
+	<47895767.3090503@redhat.com>
+	<20080112164006.6f6f7bc2@laptopd505.fenrus.org>
+	<47896B3B.2000108@redhat.com>
+	<20080112204248.29abb1dd@laptopd505.fenrus.org>
+	<478A075F.7010503@redhat.com>
+	<20080113090311.0a9a1db5@laptopd505.fenrus.org>
+	<478A8268.6020107@redhat.com>
+	<20080114005434.48340f84@lxorguk.ukuu.org.uk>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080112094754.GA2893@darkstar.te-china.tietoenator.com>
-	 <47889B68.8010601@s5r6.in-berlin.de>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 12, 2008 6:50 PM, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-> Dave Young wrote:
-> > Add the following class iteration functions for driver use:
->
-> Thanks Dave.  I will check the ieee1394 part in detail later.
->
-> ...
-> > +/**
-> > + * class_find_device - device iterator for locating a particular device
-> > + * @class: the class we're iterating
-> > + * @data: data for the match function
-> > + * @match: function to check device
-> > + *
-> > + * This is similar to the class_for_each_dev() function above, but it
-> > + * returns a reference to a device that is 'found' for later use, as
-> > + * determined by the @match callback.
->
-> Maybe add "Drop the reference with put_device() after use." for the
-> really slow driver programmers like me?
+On Mon, 14 Jan 2008 00:54:34 +0000
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-Sounds good, thanks.
+> On Sun, 13 Jan 2008 16:28:08 -0500
+> Tony Camuso <tcamuso@redhat.com> wrote:
+> 
+> > Arjan van de Ven wrote:
+> > 
+> > >> The PCI spec provides for conf1 as an architected solution. It's
+> > >> not going away, and especially not in x86 land where Port IO is
+> > >> built-in to the CPU.
+>
 
->
-> > + *
-> > + * The callback should return 0 if the device doesn't match and non-zero
-> > + * if it does.  If the callback returns non-zero, this function will
-> > + * return to the caller and not iterate over any more devices.
-> > + */
-> > +struct device *class_find_device(struct class *class, void *data,
-> > +                                int (*match)(struct device *, void *))
-> > +{
->
-> A general comment on the linux/device.h API (not a direct comment on
-> your patch):
->
-> The match argument in bus_find_device(), driver_find_device(),
-> device_find_child(), class_find_device(), class_find_child() could be
-> changed to
->
->         bool (*match)(struct device *, void *)).
->
-> Then the semantics are IMO a little bit clearer.  Ditto for the
-> dr_match_t type and the struct bus_type.match member.
+> 
+> I suspect Arjan is wrong. It might be some Intel agenda but I still
+> see fairly new driver reference code that is hardcoding port accesses
+> even when designed for Redmond products.
 
-Yes, from semantics side it's better.
-But IMHO int is good as well, although it need a little bit more
-understanding of the api.
 
->
-> I don't know though whether the churn of doing such a change everywhere
-> would be justified by the result.
->
->
-> A comment on patch 2/7...6/7:
->
-> You can bring most or all of the various __match implementations into a
-> slightly terser but IMO easy to read form, like this:
->
->  static int __match_ne(struct device *dev, void *data)
->  {
->         struct unit_directory *ud;
->         struct node_entry *ne = (struct node_entry *)data;
->
->         ud = container_of(dev, struct unit_directory, unit_dev);
-> -       if (ud->ne == ne)
-> -               return 1;
-> -       return 0;
-> +       return ud->ne == ne;
->  }
->
-> Here it is also easy to see that readability would improve if the return
-> type was bool rather than int.
+I find it hard to believe that even they have their drivers do PCI config access via ports directly from the drivers,
+and especially in driver reference code...
 
-Ok, thanks.
 
-> --
-> Stefan Richter
-> -=====-==--- ---= -==--
-> http://arcgraph.de/sr/
->
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
