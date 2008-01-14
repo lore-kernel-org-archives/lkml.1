@@ -1,125 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758046AbYANW0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757011AbYANW1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758046AbYANW0z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 17:26:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756052AbYANWRQ
+	id S1757011AbYANW1V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 17:27:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753569AbYANWRS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 17:17:16 -0500
-Received: from ns2.suse.de ([195.135.220.15]:55120 "EHLO mx2.suse.de"
+	Mon, 14 Jan 2008 17:17:18 -0500
+Received: from cantor.suse.de ([195.135.220.2]:60101 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755907AbYANWRB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 17:17:01 -0500
+	id S1755913AbYANWRE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 17:17:04 -0500
 From: Andi Kleen <ak@suse.de>
 References: <200801141116.534682000@suse.de>
 In-Reply-To: <200801141116.534682000@suse.de>
 To: linux-kernel@vger.kernel.org, jbeulich@novell.com, mingo@elte.hu,
        tglx@linutronix.de
-Subject: [PATCH] [27/31] CPA: Change comments of external interfaces to kerneldoc format
-Message-Id: <20080114221700.7252314F83@wotan.suse.de>
-Date: Mon, 14 Jan 2008 23:17:00 +0100 (CET)
+Subject: [PATCH] [28/31] CPA: Make kernel_text test match boot mapping initialization
+Message-Id: <20080114221701.8604A14F83@wotan.suse.de>
+Date: Mon, 14 Jan 2008 23:17:01 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-And clarify description a bit.
+The boot direct mapping initialization used a different test to check if a 
+page was part of the kernel mapping than c_p_a(). Make them use
+a common function. 
 
-Only for 64bit, but the interfaces are identical for 32bit and kerneldoc should
-merge them (?) 
+Also round up to a large page size to be sure and check for the beginning
+of the kernel address to handle highly loaded kernels better.
+
+This gives a small semantic change of NX applying to always 2MB areas 
+on !PSE && NX systems, but that's an obscure case even considering
+DEBUG_PAGEALLOC.
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- Documentation/DocBook/kernel-api.tmpl |    8 +++++
- arch/x86/mm/pageattr_64.c             |   46 +++++++++++++++++++++++++---------
- 2 files changed, 42 insertions(+), 12 deletions(-)
+ arch/x86/mm/init_32.c        |   16 ++--------------
+ arch/x86/mm/pageattr_32.c    |    9 ++++++++-
+ include/asm-x86/pgtable_32.h |    2 +-
+ 3 files changed, 11 insertions(+), 16 deletions(-)
 
-Index: linux/arch/x86/mm/pageattr_64.c
+Index: linux/arch/x86/mm/pageattr_32.c
 ===================================================================
---- linux.orig/arch/x86/mm/pageattr_64.c
-+++ linux/arch/x86/mm/pageattr_64.c
-@@ -269,19 +269,19 @@ __change_page_attr(unsigned long address
- 	return 0;
- } 
+--- linux.orig/arch/x86/mm/pageattr_32.c
++++ linux/arch/x86/mm/pageattr_32.c
+@@ -184,6 +184,13 @@ static int cache_attr_changed(pte_t pte,
+ 	return a != (pgprot_val(prot) & _PAGE_CACHE);
+ }
  
--/*
-- * Change the page attributes of an page in the linear mapping.
-- *
-- * This should be used when a page is mapped with a different caching policy
-- * than write-back somewhere - some CPUs do not like it when mappings with
-- * different caching policies exist. This changes the page attributes of the
-- * in kernel linear mapping too.
-+/**
-+ * change_page_attr_addr - Change page table attributes in linear mapping
-+ * @address: Virtual address in linear mapping.
-+ * @numpages: Number of pages to change
-+ * @prot:    New page table attribute (PAGE_*)
-  * 
-- * The caller needs to ensure that there are no conflicting mappings elsewhere.
-- * This function only deals with the kernel linear map.
-- * 
-- * Caller must call global_flush_tlb() after this.
-+ * Change page attributes of a page in the direct mapping. This is a variant
-+ * of change_page_attr() that also works on memory holes that do not have
-+ * mem_map entry (pfn_valid() is false).
-+ *
-+ * See change_page_attr() documentation for more details.
-  */
++int text_address(unsigned long addr)
++{
++	unsigned long start = ((unsigned long)&_text) & LARGE_PAGE_MASK;
++	unsigned long end = ((unsigned long)&__init_end) & LARGE_PAGE_MASK;
++	return addr >= start && addr < end + LARGE_PAGE_SIZE;
++}
 +
- int change_page_attr_addr(unsigned long address, int numpages, pgprot_t prot)
- {
- 	int err = 0, kernel_map = 0;
-@@ -318,13 +318,35 @@ int change_page_attr_addr(unsigned long 
- 	return err;
- }
+ /*
+  * Mark the address for flushing later in global_tlb_flush().
+  *
+@@ -238,7 +245,7 @@ __change_page_attr(struct page *page, pg
+ 	set_tlb_flush(address, cache_attr_changed(*kpte, prot, level),
+ 			level < 3);
  
--/* Don't call this for MMIO areas that may not have a mem_map entry */
-+/**
-+ * change_page_attr - Change page table attributes in the linear mapping.
-+ * @page: First page to change
-+ * @numpages: Number of pages to change
-+ * @prot: New protection/caching type (PAGE_*)
-+ *
-+ * Returns 0 on success, otherwise a negated errno.
-+ *
-+ * This should be used when a page is mapped with a different caching policy
-+ * than write-back somewhere - some CPUs do not like it when mappings with
-+ * different caching policies exist. This changes the page attributes of the
-+ * in kernel linear mapping too.
-+ *
-+ * Caller must call global_flush_tlb() later to make the changes active.
-+ *
-+ * The caller needs to ensure that there are no conflicting mappings elsewhere
-+ * (e.g. in user space) * This function only deals with the kernel linear map.
-+ *
-+ * For MMIO areas without mem_map use change_page_attr_addr() instead.
-+ */
- int change_page_attr(struct page *page, int numpages, pgprot_t prot)
- {
- 	unsigned long addr = (unsigned long)page_address(page);
- 	return change_page_attr_addr(addr, numpages, prot);
- }
+-	if ((address & LARGE_PAGE_MASK) < (unsigned long)&_etext)
++	if (text_address(address))
+ 		ref_prot = PAGE_KERNEL_EXEC;
  
-+/**
-+ * global_flush_tlb - Flush linear mappings changed by change_page_attr()
-+ */
- void global_flush_tlb(void)
- { 
- 	struct page *pg, *next;
-Index: linux/Documentation/DocBook/kernel-api.tmpl
+ 	ref_prot = canon_pgprot(ref_prot);
+Index: linux/arch/x86/mm/init_32.c
 ===================================================================
---- linux.orig/Documentation/DocBook/kernel-api.tmpl
-+++ linux/Documentation/DocBook/kernel-api.tmpl
-@@ -726,4 +726,12 @@ X!Idrivers/video/console/fonts.c
- !Ffs/pipe.c
-   </chapter>
+--- linux.orig/arch/x86/mm/init_32.c
++++ linux/arch/x86/mm/init_32.c
+@@ -136,13 +136,6 @@ static void __init page_table_range_init
+ 	}
+ }
  
-+  <chapter id="pageattr">
-+	<title>Kernel direct mapping paging attributes</title>
-+  <para>
-+	Changing the paging attributes of kernel direct mapping pages
-+	on x86.
-+  </para>
-+!Farch/x86/mm/pageattr_64.c
-+  </chapter>
- </book>
+-static inline int is_kernel_text(unsigned long addr)
+-{
+-	if (addr >= PAGE_OFFSET && addr <= (unsigned long)__init_end)
+-		return 1;
+-	return 0;
+-}
+-
+ /*
+  * This maps the physical memory to kernel virtual address space, a total 
+  * of max_low_pfn pages, by creating page tables starting from address 
+@@ -172,14 +165,9 @@ static void __init kernel_physical_mappi
+ 			/* Map with big pages if possible, otherwise
+ 			   create normal page tables. */
+ 			if (cpu_has_pse) {
+-				unsigned int address2;
+ 				pgprot_t prot = PAGE_KERNEL_LARGE;
+ 
+-				address2 = (pfn + PTRS_PER_PTE - 1) * PAGE_SIZE +
+-					PAGE_OFFSET + PAGE_SIZE-1;
+-
+-				if (is_kernel_text(address) ||
+-				    is_kernel_text(address2))
++				if (text_address(address))
+ 					prot = PAGE_KERNEL_LARGE_EXEC;
+ 
+ 				set_pmd(pmd, pfn_pmd(pfn, prot));
+@@ -193,7 +181,7 @@ static void __init kernel_physical_mappi
+ 				     pte++, pfn++, pte_ofs++, address += PAGE_SIZE) {
+ 					pgprot_t prot = PAGE_KERNEL;
+ 
+-					if (is_kernel_text(address))
++					if (text_address(address))
+ 						prot = PAGE_KERNEL_EXEC;
+ 
+ 					set_pte(pte, pfn_pte(pfn, prot));
+Index: linux/include/asm-x86/pgtable_32.h
+===================================================================
+--- linux.orig/include/asm-x86/pgtable_32.h
++++ linux/include/asm-x86/pgtable_32.h
+@@ -34,7 +34,7 @@ void check_pgt_cache(void);
+ void pmd_ctor(struct kmem_cache *, void *);
+ void pgtable_cache_init(void);
+ void paging_init(void);
+-
++int text_address(unsigned long);
+ 
+ /*
+  * The Linux x86 paging architecture is 'compile-time dual-mode', it
