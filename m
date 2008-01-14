@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753323AbYANP1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753255AbYANP2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753323AbYANP1K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 10:27:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112AbYANP05
+	id S1753255AbYANP2t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 10:28:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750962AbYANP2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 10:26:57 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:50636 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750975AbYANP04 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 10:26:56 -0500
-Date: Mon, 14 Jan 2008 17:25:57 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>, rjw@sisk.pl, pavel@suse.cz,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without
-	HOTPLUG_CPU
-Message-ID: <20080114152557.GA9240@does.not.exist>
-References: <20080103442.621670000@suse.de> <20080110111514.GS25945@bingen.suse.de> <20080110112607.GE28740@does.not.exist> <200801101242.53504.ak@suse.de> <20080110124702.GF28740@does.not.exist> <p73fxx5omck.fsf@bingen.suse.de> <20080110150911.GG28740@does.not.exist> <20080114135240.GA15357@elte.hu>
+	Mon, 14 Jan 2008 10:28:42 -0500
+Received: from smtp-03.mandic.com.br ([200.225.81.143]:50306 "EHLO
+	smtp-03.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750902AbYANP2l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 10:28:41 -0500
+Message-ID: <478B7F9F.3020209@mandic.com.br>
+Date: Mon, 14 Jan 2008 13:28:31 -0200
+From: "Renato S. Yamane" <renatoyamane@mandic.com.br>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080114135240.GA15357@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-12-11)
+To: Ray Lee <ray-lk@madrabbit.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Updatedb hangs Kernel 2.6.22.9-cfs-v22
+References: <478900FF.2000706@mandic.com.br> <2c0942db0801121025h7f22d716s657af75ce7603af0@mail.gmail.com>
+In-Reply-To: <2c0942db0801121025h7f22d716s657af75ce7603af0@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 14, 2008 at 02:52:40PM +0100, Ingo Molnar wrote:
->...
-> but longer-term, shouldnt these annotations be automated? We'll see a 
-> constant stream of them, all around the clock as people regularly get it 
-> wrong (because it's not intuitive).
+Ray Lee escreveu:
+> On Jan 12, 2008 10:03 AM, Renato S. Yamane wrote:
+>> I can't use updatedb in Debian Etch (stable) using customized Kernel
+>> 2.6.22.9-cfs-v22.
+>>
+>> When I ran updatedb, after ~1 minute my system hangs and "caps lock" LED
+>> is blinking. No log is registered.
+> 
+> Please switch out of X11 to a text mode console (CTRL-ALT-F1), and run
+> updatedb there. Capture the oops with a digital camera, and post a
+> link to the picture (not the picture itself!) to the list. Or, write
+> down the oops carefully, and post the text.
 
-Definitely.
+I see a infinite loop and is very fast, so I can't capture errors messages.
+None is registered in /var/log/*
 
-Even more when you looking at what Maciej Rozycki suggested regarding 
-discardable strings. [1]
-
-But _how_ can we get this automated at all?
-
-> 	Ingo
-
-cu
-Adrian
-
-[1] http://lkml.org/lkml/2007/10/12/297
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Regards,
+Renato
