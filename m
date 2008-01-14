@@ -1,71 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754476AbYANVak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755462AbYANVbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754476AbYANVak (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 16:30:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbYANVa3
+	id S1755462AbYANVbU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 16:31:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYANVbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 16:30:29 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:48990 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750937AbYANVa2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 16:30:28 -0500
-Date: Mon, 14 Jan 2008 13:30:54 -0800
-From: Greg KH <gregkh@suse.de>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       "Oliver Pinter (Pint??r Oliv??r)" <oliver.pntr@gmail.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+	Mon, 14 Jan 2008 16:31:07 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:45786 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751505AbYANVbE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 16:31:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VPjd6yzX1ibfQ21chEwaKGSRLixvCtcy4IOMpFIWq3jWS95JEu4fJu59uNbQz+jbUUg8cZ/i6EDlPwaD7LJj4xHkVAsn6yX8dmglHzVdXvQpGIjggBotBbUvpoSa6fjS4cadDPOyQES5Aq605xg41TFb093hW2OxKdhK4quCfrg=
+Message-ID: <6101e8c40801141331n3cb66c04pc74ff07faf04c8fd@mail.gmail.com>
+Date: Mon, 14 Jan 2008 22:31:03 +0100
+From: "=?ISO-8859-1?Q?Oliver_Pinter_(Pint=E9r_Oliv=E9r)?=" 
+	<oliver.pntr@gmail.com>
+To: "Adrian Bunk" <bunk@kernel.org>
 Subject: Re: [BUG] skge 0000:02:05: read data parity error
-Message-ID: <20080114213054.GA3573@suse.de>
-References: <6101e8c40801141157j1ce7d3f0if2e4eb2344b6c844@mail.gmail.com> <20080114125200.28cb4c69@deepthought> <20080114210105.GG9847@does.not.exist>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Cc: "Stephen Hemminger" <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, gregkh@suse.de
 In-Reply-To: <20080114210105.GG9847@does.not.exist>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6101e8c40801141157j1ce7d3f0if2e4eb2344b6c844@mail.gmail.com>
+	 <20080114125200.28cb4c69@deepthought>
+	 <20080114210105.GG9847@does.not.exist>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 14, 2008 at 11:01:05PM +0200, Adrian Bunk wrote:
-> On Mon, Jan 14, 2008 at 12:52:00PM -0800, Stephen Hemminger wrote:
-> > On Mon, 14 Jan 2008 20:57:49 +0100
-> > "Oliver Pinter (Pint??r Oliv??r)" <oliver.pntr@gmail.com> wrote:
-> > 
-> > > Hi All!
-> > > 
-> > > It is fully reproductable under 2.6.22.15, 2.6.23.13 (all tainted and
-> > > not tainted [4 different kernel] ) and 2 different PC:
-> > > 
-> > > [BUG] skge 0000:02:05: read data parity error
-> > > [BUG] skge 0000:02:05: read data parity error
-> > > 
-> > > steps:
-> > > 1. login as root
-> > > 2. start mc
-> > > 3. cd /sys/bus/pci/drivers/skge/0000:02:05.0
-> > > 4. press F3 (mcview) on resource0
-> > > 5. the system hang up, without panic or bug ... only this message
-> > > printed 2x: [BUG] skge 0000:02:05: read data parity error
-> > 
-> > This is not a bug.
-> > 
-> > The hardware has some debug registers that if accessed cause a read
-> > back to the host. Since this can point anywhere, it will cause errors
-> > or system hang.
-> > 
-> > The point is don't do it.
-> 
-> Is it really a good idea that _reading_ files under /sys can kill your 
-> machine?
+I think, it is a potential security breakpoint, when applications with
+root permission its read, then a machine is freezed, or only i thin
+it's?
 
-No, but mmapping them as root and then doing bad things with that data
-isn't recommended :)
 
-Note that this is a special file, just like the ones in /proc, that
-provide a mmap interface into the pci card's resource.  This is nothing
-new...
-
-thanks,
-
-greg k-h
+-- 
+Thanks,
+Oliver
