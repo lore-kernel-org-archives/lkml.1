@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751839AbYANFXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752473AbYANFbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751839AbYANFXS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 00:23:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbYANFXI
+	id S1752473AbYANFbA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 00:31:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbYANFau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 00:23:08 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37488 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750861AbYANFXH (ORCPT
+	Mon, 14 Jan 2008 00:30:50 -0500
+Received: from py-out-1112.google.com ([64.233.166.178]:50392 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751003AbYANFat (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 00:23:07 -0500
-Date: Sun, 13 Jan 2008 21:20:35 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: tcamuso@redhat.com, Arjan van de Ven <arjan@infradead.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <greg@kroah.com>,
-       Matthew Wilcox <matthew@wil.cx>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Martin Mares <mj@ucw.cz>, Loic Prylli <loic@myri.com>,
-       Prarit Bhargava <prarit@redhat.com>,
-       "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>,
-       "Schoeller, Patrick (Linux - Houston, TX)" <Patrick.Schoeller@hp.com>,
-       Bhavana Nagendra <bnagendr@redhat.com>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
- opt-in
-In-Reply-To: <20080114005434.48340f84@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LFD.1.00.0801132119520.2806@woody.linux-foundation.org>
-References: <alpine.LFD.1.00.0801111224090.3148@woody.linux-foundation.org> <20080111204228.GP18741@parisc-linux.org> <alpine.LFD.1.00.0801111311170.3148@woody.linux-foundation.org> <20080111211753.GR18741@parisc-linux.org> <alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org>
- <20080111213803.GS18741@parisc-linux.org> <20080111235856.GA16079@jurassic.park.msu.ru> <20080112002638.GA18710@kroah.com> <20080112144030.GA19279@jurassic.park.msu.ru> <20080112094557.71f5382a@laptopd505.fenrus.org> <20080112214911.GA20102@jurassic.park.msu.ru>
- <20080112150120.05f93768@laptopd505.fenrus.org> <47895767.3090503@redhat.com> <20080112164006.6f6f7bc2@laptopd505.fenrus.org> <47896B3B.2000108@redhat.com> <20080112204248.29abb1dd@laptopd505.fenrus.org> <478A075F.7010503@redhat.com>
- <20080113090311.0a9a1db5@laptopd505.fenrus.org> <478A8268.6020107@redhat.com> <20080114005434.48340f84@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Mon, 14 Jan 2008 00:30:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=O6Piq8/dcv1YV2qVMlR62oJ0mNr3qUEoEnrP5vDT4dbkzrJbVeypd3tDVZGMAItIz+kd/D6/Os+JBeKj8xjXAXenfuuTlJh9gN0dWbLf5Pue//dlm3TZCoSWGD8CD2xXp+xZlCPv9NFl0SZ0w0RsNmsYKw8pk3OYQSYKcGmRisE=
+Message-ID: <3e8340490801132130l737e166i3f957518170b98fc@mail.gmail.com>
+Date: Mon, 14 Jan 2008 00:30:48 -0500
+From: "Bryan Donlan" <bdonlan@gmail.com>
+To: "Lee Revell" <rlrevell@joe-job.com>
+Subject: Re: Is it possible to change IRQ for certain device?
+Cc: "Jan Marek" <linux@hazard.jcu.cz>,
+       "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <75b66ecd0801131957s1e70bda9x342f16a7d16a2789@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080110110535.GA25706@hazard.jcu.cz>
+	 <Pine.LNX.4.61.0801100855300.32310@chaos.analogic.com>
+	 <20080111165711.GA21173@hazard.jcu.cz>
+	 <75b66ecd0801131957s1e70bda9x342f16a7d16a2789@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jan 13, 2008 10:57 PM, Lee Revell <rlrevell@joe-job.com> wrote:
+> On Jan 11, 2008 11:57 AM, Jan Marek <linux@hazard.jcu.cz> wrote:
+> > I suppose, that VGA card does not need unique IRQ, but programmers,
+> > which wrote driver, want it. I can imagine, that VGA card have many
+> > interrupts, especially in the OpenGL games, but I cannot assign unique
+> > IRQ for VGA card at all :-(
+> >
+> > But thank you for advice: I will try to send e-mail to Gigabyte and ask
+> > they, if it possible to do change in the BIOS.
+> >
+> > BTW: it is interesting: I had a Biostar TA690G motherboard and it behave
+> > similar as Gigabyte: I cannnot assign unique IRQ to the external
+> > graphics card... Chipsets of this motherboards are the same...
+> >
+> > I've tried to solve this problem by bought of new motherboard: Gigabyte
+> > MA790FX-DS5. I will see, if this board will behave as previous board...
+>
+> Why is a shared IRQ a problem for you?  IRQ handlers are supposed to
+> be fast enough that disabling an IRQ line for the duration of the
+> handler execution should not be a problem even if the IRQ is shared.
+> VGA interrupts in particular should only fire once per frame and only
+> need to flip some bits to wake up any processes waiting on vsync.
+>
+> If you have issues with a shared VGA interrupt then the bug is that
+> some IRQ handler runs for too long and should be deferring work to a
+> bottom half.
 
-
-On Mon, 14 Jan 2008, Alan Cox wrote:
-> > 
-> > As someone gently pointed out to me, you are in a position to know this,
-> > so I probably am wrong.
-> 
-> I suspect Arjan is wrong. It might be some Intel agenda but I still see
-> fairly new driver reference code that is hardcoding port accesses even
-> when designed for Redmond products.
-
-Agreed. I suspect that the likelihood of conf1 accesses going away in the 
-next five years is slim to none.
-
-			Linus
+Jan is apparently using the nvidia binary driver, so I doubt it will
+be possible to fix the bug that prevents it from sharing IRQs.
