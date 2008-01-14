@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbYANRoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753631AbYANRqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752842AbYANRoU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 12:44:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbYANRoL
+	id S1753631AbYANRqV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 12:46:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbYANRqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 12:44:11 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43786 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750852AbYANRoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 12:44:10 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Linus Torvalds <torvalds@osdl.org>
-Subject: [PATCH 2.6.24 please] pnpacpi: print resource shortage message only once (more)
-Date: Mon, 14 Jan 2008 12:43:53 -0500
-User-Agent: KMail/1.9.5
-Cc: "Hartkopp, Oliver (K-EFE/E)" <oliver.hartkopp@volkswagen.de>,
-       linux-kernel@vger.kernel.org
-References: <71A66C381173F7418BA6E78EE9E33465AC02EC@vwagwox00011.vw.vwg>
-In-Reply-To: <71A66C381173F7418BA6E78EE9E33465AC02EC@vwagwox00011.vw.vwg>
+	Mon, 14 Jan 2008 12:46:11 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:9973 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750720AbYANRqK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 12:46:10 -0500
+Message-ID: <478B9FE0.3040801@hp.com>
+Date: Mon, 14 Jan 2008 09:46:08 -0800
+From: Rick Jones <rick.jones2@hp.com>
+User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+CC: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: Netperf TCP_RR(loopback) 10% regression in	2.6.24-rc6,	comparing
+ with 2.6.22
+References: <1199871330.3298.132.camel@ymzhang>	<1200043854.3265.24.camel@ymzhang>  <4787ADDA.7090602@hp.com> <1200280292.3151.24.camel@ymzhang>
+In-Reply-To: <1200280292.3151.24.camel@ymzhang>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801141243.53513.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+>>*) netperf/netserver support CPU affinity within themselves with the 
+>>global -T option to netperf.  Is the result with taskset much different? 
+>>   The equivalent to the above would be to run netperf with:
+>>
+>>./netperf -T 0,7 ..
+> 
+> I checked the source codes and didn't find this option.
+> I use netperf V2.3 (I found the number in the makefile).
 
-Wups, previous patch was ineffective in 2 cases.
-    
-http://bugzilla.kernel.org/show_bug.cgi?id=9535
-    
-Signed-off-by: Len Brown <len.brown@intel.com>
----
-Thanks for noticing, Oliver!
+Indeed, that version pre-dates the -T option.  If you weren't already 
+chasing a regression I'd suggest an upgrade to 2.4.mumble.  Once you are 
+at a point where changing another variable won't muddle things you may 
+want to consider upgrading.
 
-diff --git a/drivers/pnp/pnpacpi/rsparser.c b/drivers/pnp/pnpacpi/rsparser.c
-index f7b8648..6b9840c 100644
---- a/drivers/pnp/pnpacpi/rsparser.c
-+++ b/drivers/pnp/pnpacpi/rsparser.c
-@@ -215,6 +215,7 @@ static void pnpacpi_parse_allocated_ioresource(struct pnp_resource_table *res,
- 	} else if (!warned) {
- 		printk(KERN_ERR "pnpacpi: exceeded the max number of IO "
- 				"resources: %d \n", PNP_MAX_PORT);
-+		warned = 1;
- 	}
- }
- 
-@@ -242,6 +243,7 @@ static void pnpacpi_parse_allocated_memresource(struct pnp_resource_table *res,
- 	} else if (!warned) {
- 		printk(KERN_ERR "pnpacpi: exceeded the max number of mem "
- 				"resources: %d\n", PNP_MAX_MEM);
-+		warned = 1;
- 	}
- }
- 
+happy benchmarking,
+
+rick jones
