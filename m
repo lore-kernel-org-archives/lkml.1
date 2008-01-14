@@ -1,48 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbYANKEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbYANKEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755625AbYANKEe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 05:04:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbYANKE0
+	id S1754713AbYANKEs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 05:04:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755497AbYANKEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 05:04:26 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:34414 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752097AbYANKEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 05:04:25 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 00/10] x86: Reduce memory and intra-node effects with large count NR_CPUs
-Date: Mon, 14 Jan 2008 11:04:18 +0100
-User-Agent: KMail/1.9.6
-Cc: travis@sgi.com, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-References: <20080113183453.973425000@sgi.com> <20080114081418.GB18296@elte.hu>
-In-Reply-To: <20080114081418.GB18296@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Jan 2008 05:04:32 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58963 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755430AbYANKEb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 05:04:31 -0500
+Date: Mon, 14 Jan 2008 10:04:15 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: nigel@nigel.suspend2.net
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@ucw.cz>,
+       Linux Kernel List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH: 2/2] [SERIAL] avoid stalling suspend if serial port won't drain
+Message-ID: <20080114100415.GC22818@flint.arm.linux.org.uk>
+References: <20080108115148.GB10546@flint.arm.linux.org.uk> <20080108115703.GA27179@flint.arm.linux.org.uk> <20080111101721.GA4463@ucw.cz> <478A95DB.80407@suspend2.net> <20080114004959.0f533fef@lxorguk.ukuu.org.uk> <478ACB90.3040709@suspend2.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801141104.18789.ak@suse.de>
+In-Reply-To: <478ACB90.3040709@suspend2.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jan 14, 2008 at 01:40:16PM +1100, nigel@suspend2.net wrote:
+> Hi.
+> 
+> Alan Cox wrote:
+> >>> Is printk() enough for 'we've just lost your data' condition? Maybe we
+> >>> should abort suspend if we can't drain fifo?
+> >> No way. Think about this from a users' perspective. No one wants suspend
+> >> to ram or hibernate functionality that works sometimes and not others.
+> >> They want it to work reliably so they don't have to worry about their
+> >> laptop overheating while they're getting on the bus or airplane.
+> >> Aborting isn't an option.
+> > 
+> > Dumb question on the printk however - what if the port that is sticking
+> > is the console - don't we recurse and die ?
+> 
+> I don't know, but I'd argue that we shouldn't die. Things should be as
+> robust as possible.
 
-> i.e. we've got ~22K bloat per CPU - which is not bad, but because it's a 
-> static component, it hurts smaller boxes. For distributors to enable 
-> CONFIG_NR_CPU=1024 by default i guess that bloat has to drop below 1-2K 
-> per CPU :-/ [that would still mean 1-2MB total bloat but that's much 
-> more acceptable than 23MB]
+Of course we should never die.  That's precisely what I'm trying to work
+towards here.
 
-Even 1-2MB overhead would be too much for distributors I think. Ideally
-there must be near zero overhead for possible CPUs (and I see no principle
-reason why this is not possible) Worst case a low few hundred KBs, but even
-that would be much.
+Currently without this patch, various platforms I have here do precisely
+that - you ask them to suspend and they shut down the majority of devices
+and then die.  The recovery is either system reboot or a power cycle -
+especially when the port in question is connected to something other than
+an external serial port (eg, a serial port for connection to a non-existent
+bluetooth module.)
 
-There are the cpusets which get passed around, but these are only one bit per 
-possible CPU.
+While we're talking about robustness, since the serial wakeup support has
+gone in, another couple of issues have appeared:
 
--Andi
+1. We no longer suspend ports marked as wakeup sources.  That means we
+   never place them into a low power state (which might be required by
+   hardware) - we need a flag from the driver or something to indicate
+   that.
+
+2. As a direct consequence, we no longer re-initialise the port at resume
+   time, resulting in a completely deconfigured but open port.  Such a
+   port may be the system console, which will cause any printks may be
+   damned slow and the output will be garbage.
+
+(2) is quite a serious problem for ARM platforms - you lose the console
+entirely and you also lose control of the system.  Again, recovery from
+such events is by either a power cycle or system reboot.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
