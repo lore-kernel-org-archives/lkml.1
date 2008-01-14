@@ -1,37 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751518AbYANM4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752236AbYANM7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751518AbYANM4u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 07:56:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbYANM4n
+	id S1752236AbYANM7v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 07:59:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbYANM7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 07:56:43 -0500
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:49495 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750763AbYANM4m (ORCPT
+	Mon, 14 Jan 2008 07:59:42 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:36420 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750830AbYANM7l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 07:56:42 -0500
-Date: Mon, 14 Jan 2008 13:56:38 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, mingo@elte.hu, tglx@linutronix.de,
+	Mon, 14 Jan 2008 07:59:41 -0500
+Date: Mon, 14 Jan 2008 12:59:39 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Neil Brown <neilb@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: unify pagetable accessors patch causes double fault II
-Message-ID: <20080114125638.GA9510@basil.nowhere.org>
-References: <20080114094814.GA28300@basil.nowhere.org>
-MIME-Version: 1.0
+Subject: Re: [PATCH 002 of 6] md: Fix use-after-free bug when dropping an rdev from an md array.
+Message-ID: <20080114125939.GP27894@ZenIV.linux.org.uk>
+References: <20080114123726.19968.patches@notabene> <1080114014531.20354@suse.de> <20080114020459.GN27894@ZenIV.linux.org.uk> <18314.54601.196877.828373@notabene.brown> <20080114034322.GO27894@ZenIV.linux.org.uk> <18314.59832.14451.334084@notabene.brown> <18315.284.774998.348672@notabene.brown>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080114094814.GA28300@basil.nowhere.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 14 Jan 2008 12:50:28.0198 (UTC) FILETIME=[09FCB860:01C856AC]
+In-Reply-To: <18315.284.774998.348672@notabene.brown>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jan 14, 2008 at 05:28:44PM +1100, Neil Brown wrote:
+> On Monday January 14, neilb@suse.de wrote:
+> > 
+> > Thanks.  I'll see what I can some up with.
+> 
+> How about this, against current -mm
+> 
+> On both the read and write path for an rdev attribute, we
+> call mddev_lock, first checking that mddev is not NULL.
+> Once we get the lock, we check again.
+> If rdev->mddev is not NULL, we know it will stay that way as it only
+> gets cleared under the same lock.
+> 
+> While in the rdev show/store routines, we know that the mddev cannot
+> get freed, do to the kobject relationships.
+> 
+> rdev_size_store is awkward because it has to drop the lock.  So we
+> take a copy of rdev->mddev before the drop, and we are safe...
+> 
+> Comments?
 
-Subject was wrong of course -- it was a recursive oops, not a double fault.
-Sorry for the inaccuracy.
+*cringe*
 
-Hopefully it can be fixed soon because it inhibits further testing here.
-
--Andi
+I really don't like the entire scheme, to be honest.  BTW, what happens
+if you try to add the same device to the same array after having it kicked
+out?  If that comes before your delayed kobject_del(), the things will
+get nasty since sysfs will (rightfully) refuse to add another entry with
+the same name and parent while the old one is still there and for all
+sysfs knows is going to stay there...
