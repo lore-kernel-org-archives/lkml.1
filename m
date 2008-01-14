@@ -1,88 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752903AbYANVsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbYANVxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752903AbYANVsw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 16:48:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755753AbYANVsh
+	id S1755226AbYANVxV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 16:53:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbYANVxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 16:48:37 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:51940 "EHLO e5.ny.us.ibm.com"
+	Mon, 14 Jan 2008 16:53:10 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:57627 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755531AbYANVsf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 16:48:35 -0500
-Date: Mon, 14 Jan 2008 15:48:41 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
-       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
-Subject: Re: [patch 2/9] unprivileged mounts: allow unprivileged umount
-Message-ID: <20080114214841.GB6704@sergelap.austin.ibm.com>
-References: <20080108113502.184459371@szeredi.hu> <20080108113620.664824939@szeredi.hu>
+	id S1752577AbYANVxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 16:53:09 -0500
+Date: Mon, 14 Jan 2008 23:52:09 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Oliver Pinter =?utf-8?B?KFBpbnTDqXIgT2xpdsOpcik=?= 
+	<oliver.pntr@gmail.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, gregkh@suse.de
+Subject: Re: [BUG] skge 0000:02:05: read data parity error
+Message-ID: <20080114215209.GK9847@does.not.exist>
+References: <6101e8c40801141157j1ce7d3f0if2e4eb2344b6c844@mail.gmail.com> <20080114125200.28cb4c69@deepthought> <20080114210105.GG9847@does.not.exist> <6101e8c40801141331n3cb66c04pc74ff07faf04c8fd@mail.gmail.com> <20080114213453.GJ9847@does.not.exist> <6101e8c40801141341hcb17b08h2fd5244bccb21928@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080108113620.664824939@szeredi.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <6101e8c40801141341hcb17b08h2fd5244bccb21928@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Miklos Szeredi (miklos@szeredi.hu):
-> From: Miklos Szeredi <mszeredi@suse.cz>
+On Mon, Jan 14, 2008 at 10:41:52PM +0100, Oliver Pinter (Pintér Olivér) wrote:
+> On 1/14/08, Adrian Bunk <bunk@kernel.org> wrote:
+> > On Mon, Jan 14, 2008 at 10:31:03PM +0100, Oliver Pinter (Pintér Olivér)
+> > wrote:
+> > > I think, it is a potential security breakpoint, when applications with
+> > > root permission its read, then a machine is freezed, or only i thin
+> > > it's?
+> >
+> > When you are root there are infinite ways to kill your machine, so
+> > there's nothing security related about this issue.
 > 
-> The owner doesn't need sysadmin capabilities to call umount().
+> Yes, i know, but when some application or daemons read some file with
+> running root privileges, then ...
 > 
-> Similar behavior as umount(8) on mounts having "user=UID" option in /etc/mtab.
-> The difference is that umount also checks /etc/fstab, presumably to exclude
-> another mount on the same mountpoint.
-> 
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> thanks, then it is only a "feature" and not bug.
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+It might be a bug in the application.
 
-> ---
-> 
-> Index: linux/fs/namespace.c
-> ===================================================================
-> --- linux.orig/fs/namespace.c	2008-01-03 20:52:38.000000000 +0100
-> +++ linux/fs/namespace.c	2008-01-03 21:14:16.000000000 +0100
-> @@ -894,6 +894,27 @@ static int do_umount(struct vfsmount *mn
->  	return retval;
->  }
-> 
-> +static bool is_mount_owner(struct vfsmount *mnt, uid_t uid)
-> +{
-> +	return (mnt->mnt_flags & MNT_USER) && mnt->mnt_uid == uid;
-> +}
-> +
-> +/*
-> + * umount is permitted for
-> + *  - sysadmin
-> + *  - mount owner, if not forced umount
-> + */
-> +static bool permit_umount(struct vfsmount *mnt, int flags)
-> +{
-> +	if (capable(CAP_SYS_ADMIN))
-> +		return true;
-> +
-> +	if (flags & MNT_FORCE)
-> +		return false;
-> +
-> +	return is_mount_owner(mnt, current->fsuid);
-> +}
-> +
->  /*
->   * Now umount can handle mount points as well as block devices.
->   * This is important for filesystems which use unnamed block devices.
-> @@ -917,7 +938,7 @@ asmlinkage long sys_umount(char __user *
->  		goto dput_and_out;
-> 
->  	retval = -EPERM;
-> -	if (!capable(CAP_SYS_ADMIN))
-> +	if (!permit_umount(nd.path.mnt, flags))
->  		goto dput_and_out;
-> 
->  	retval = do_umount(nd.path.mnt, flags);
-> 
-> --
+But there are worse things than crashing your machine (e.g. getting your 
+/etc/shadow) that can happen when someone with bad intentions can read 
+files with root privileges.
+
+> Thanks,
+> Oliver
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
