@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758569AbYANWbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758810AbYANWb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758569AbYANWbM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 17:31:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758533AbYANW3J
+	id S1758810AbYANWb3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 17:31:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758707AbYANWbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 17:29:09 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:22565 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754012AbYANW3G (ORCPT
+	Mon, 14 Jan 2008 17:31:10 -0500
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:59983 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758710AbYANWbI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 17:29:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=WgicjT0IgfsjIwbsAMNyamX2OGJ9Wkyv0QcNLyps1HMoTVhZjjo1vVQ9RkPgbKmGd9qhqZErZ0mUw6BukWOsoIusUApwkHi1gU5Kv+H3aYyrzshn1klSZ6ml/HKvMFhRw6gpQUKhuQ9vHF/eE1VO0U8iKGpJHt7mw9teER3zmDk=
-Date: Mon, 14 Jan 2008 23:29:13 +0100
-From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-To: apw@shadowen.org
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Change a WARN message in checkpatch
-Message-ID: <20080114232913.2555d392@paolo-desktop>
-X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Jan 2008 17:31:08 -0500
+Date: Mon, 14 Jan 2008 17:30:41 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.24-rc7-rt2
+In-Reply-To: <200801142316.39330.m.kozlowski@tuxland.pl>
+Message-ID: <Pine.LNX.4.58.0801141730150.3109@gandalf.stny.rr.com>
+References: <1200336080.318.8.camel@localhost.localdomain>
+ <200801142316.39330.m.kozlowski@tuxland.pl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andy,
-When I started using checkpatch I was confused by the following WARN message:
 
-	no space between function name and open parenthesis
+On Mon, 14 Jan 2008, Mariusz Kozlowski wrote:
 
-I thought the problem was that a space was missing while the truth is the opposite.
+> Hello,
+>
+> > We are pleased to announce the 2.6.24-rc7-rt2 tree, which can be
+> > downloaded from the location:
+> >
+> >   http://rt.et.redhat.com/download/
+>
+> Compiles fine but I run into another problem. On startup kernel oopses
+> early and this 'oops' loops over and over again on the screen until you
+> shut down the box. So I can't (easily) capture the output. I tried different
+> boot_delay values but it seems that it doesn't work as intended. Seems that
+> it delays only the first printk from oops, then the rest loops over the screen
+> without delay - again it becomes unreadable. I used my usual config with a bunch
+> of debug options enabled so that maybe is not real rt system case. Also tried to
+> bisect it with quilt but that is hard. Lots of patches depends on another patches
+> so bisection brakes things. I'll look into this tommorow and reply if I get
+> anything substantial.
+>
+> I attached my config in case anybody wants to try to reproduce that.
+>
 
-How about the following patch?
+Turn off LOCKDEP and see if you still have the same problems. This might
+be fixed with Daniel's patch.
 
+-- Steve
 
---- checkpatch.pl.old	2008-01-04 13:37:51.000000000 +0100
-+++ checkpatch.pl	2008-01-04 13:37:24.000000000 +0100
-@@ -1117,7 +1117,7 @@
- 		while ($line =~ /($Ident)\s+\(/g) {
- 			if ($1 !~ /^(?:if|for|while|switch|return|volatile|__volatile__|__attribute__|format|__extension__|Copyright|case)$/ &&
- 		            $line !~ /$Type\s+\(/ && $line !~ /^.\#\s*define\b/) {
--				WARN("no space between function name and open parenthesis '('\n" . $herecurr);
-+				WARN("don't put a space between function name and open parenthesis '('\n" . $herecurr);
- 			}
- 		}
- # Check operator spacing.
