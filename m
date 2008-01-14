@@ -1,306 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbYAND0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbYANDa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755525AbYAND0a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 22:26:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbYAND0W
+	id S1755534AbYANDa1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 22:30:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbYANDaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 22:26:22 -0500
-Received: from web36712.mail.mud.yahoo.com ([209.191.85.46]:36077 "HELO
-	web36712.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753645AbYAND0V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 22:26:21 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=BRlgLK9EYxpXbAfi4MZQSj3thiQsEyutq7Nsav7xy1/H/IET3G6DhXEt25TwCIvK0NUewrc7giFxUqq89Jna3mQJm99QZN3/tFCBWS2mknEUTUteS1AjzfOLxedSZBCYBWiWpRwfne5M1VhRQgNHUDE2V9MxBlfvFd9vs4ULiZs=;
-X-YMail-OSG: oTc0ZN4VM1kRL_KV2GCFSfMI6FNqVxTgb9xHNk82iXXfZoQQsJF3IDRIGd4uGjdXwxbJnrI4Ohohq4K5mitbb0RDbrd2dVDSKbrC57eIpVOU88TKSPkgaS3haFuYekIs1_b0D7Scyg--
-Date: Sun, 13 Jan 2008 19:26:20 -0800 (PST)
-From: Alex Dubov <oakad@yahoo.com>
-Subject: Re: [PATCH] [MEMSTICK] Initial commit for Sony MemoryStick support
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080110010049.695da076.akpm@linux-foundation.org>
+	Sun, 13 Jan 2008 22:30:14 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:40570 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752495AbYANDaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Jan 2008 22:30:12 -0500
+Message-ID: <478AD713.8060204@redhat.com>
+Date: Sun, 13 Jan 2008 22:29:23 -0500
+From: Tony Camuso <tcamuso@redhat.com>
+Reply-To: tcamuso@redhat.com
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <355699.38284.qm@web36712.mail.mud.yahoo.com>
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <greg@kroah.com>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>, Loic Prylli <loic@myri.com>,
+       Prarit Bhargava <prarit@redhat.com>,
+       "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>,
+       "Schoeller, Patrick (Linux - Houston, TX)" <Patrick.Schoeller@hp.com>,
+       Bhavana Nagendra <bnagendr@redhat.com>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+ opt-in
+References: <alpine.LFD.1.00.0801111224090.3148@woody.linux-foundation.org>	<20080111204228.GP18741@parisc-linux.org>	<alpine.LFD.1.00.0801111311170.3148@woody.linux-foundation.org>	<20080111211753.GR18741@parisc-linux.org>	<alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org>	<20080111213803.GS18741@parisc-linux.org>	<20080111235856.GA16079@jurassic.park.msu.ru>	<20080112002638.GA18710@kroah.com>	<20080112144030.GA19279@jurassic.park.msu.ru>	<20080112094557.71f5382a@laptopd505.fenrus.org>	<20080112214911.GA20102@jurassic.park.msu.ru>	<20080112150120.05f93768@laptopd505.fenrus.org>	<47895767.3090503@redhat.com>	<20080112164006.6f6f7bc2@laptopd505.fenrus.org>	<47896B3B.2000108@redhat.com>	<20080112204248.29abb1dd@laptopd505.fenrus.org>	<478A075F.7010503@redhat.com>	<20080113090311.0a9a1db5@laptopd505.fenrus.org>	<478A8268.6020107@redhat.com>	<20080114005434.48340f84@lxorguk.ukuu.org.uk> <20080113173331.617ac935@laptopd505.fenrus.org>
+In-Reply-To: <20080113173331.617ac935@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+To all ...
 
---- Andrew Morton <akpm@linux-foundation.org> wrote:
+Well, here is what I perceive we've got so far.
 
-> On Wed,  2 Jan 2008 17:42:24 +1100 oakad@exemail.com.au wrote:
-> 
-> > From: Alex Dubov <oakad@yahoo.com>
-> > 
-> > Sony MemoryStick cards are used in many products manufactured by Sony. They
-> > are available both as storage and as IO expansion cards. Currently, only
-> > MemoryStick Pro storage cards are supported via TI FlashMedia MemoryStick
-> > interface.
-> > 
-> 
-> Will you be running a git tree for this?  If so, please send me the link.
-> 
-> Will this enable that thus-far useless slot on my Vaio?
-> 
-> Where did the info come from which enabled this driver to be written?  I
-> thought Sony were super-secretive about this stuff?
-> 
+. Some PCI Northbridges do not work with MMCONFIG.
 
-I'm going to set-up git tree, yes.
+. Some PCI BARs can overlap the MMCONFIG area during bus sizing.
+   It is hoped that new BIOSes will locate MMCONFIG in an area
+   safely out of the way of bus sizing code, but there can be
+   no guarantees.
 
-It should support some vaios (newer ones for sure), as far as I know.
+. conf1 is going away in newer x86 implementations in the not
+   too distant future.
 
-The primary reference for the driver is this one:
-http://zeniv.linux.org.uk/~winbond/ (link is somewhat slow, but works). Winbond developed GPLv2
-driver for linux and there was enough info in their source code for my implementation (totally
-different from their's). Some reverse engineering of the windows driver was needed too (for the TI
-registers and such).
+. The PCI express spec requires platforms to provide access to
+   the extended config area, and there are express devices today
+   using that area for AER.
+
+. There is no need to provide different PCI config access
+   mechanisms at device granularity, since the PCI config access
+   mechanism between the CPU and the Northbridge is opaque to
+   the devices. PCI config mechanisms only need to differ at
+   the Northbridge level.
+
+. We have a flurry of patches all claiming to solve all or some
+   of these problems.
 
 
+Arjan,
 
-> 
-> > @@ -0,0 +1,26 @@
-> > +#
-> > +# MemoryStick subsystem configuration
-> > +#
-> > +
-> > +menuconfig MEMSTICK
-> > +	tristate "Sony MemoryStick card support (EXPERIMENTAL)"
-> > +	help
-> > +	  Sony MemoryStick is a proprietary storage/extension card protocol.
-> > +
-> > +	  If you want MemoryStick support, you should say Y here and also
-> > +	  to the specific driver for your MMC interface.
-> 
-> Are you sure this has enough dependencies?  CONFIG_TIFM_* for a start?
+I realize it may not be possible for you to answer this question,
+but I feel compelled to ask it anyway. Is it possible that future
+x86 architectures will be implementing a SAL-like interface to
+abstract PCI config access altogether?
 
-This is supposed to be a generic layer, akin to mmc. I have a jmicron backend in the works, and
-windbond backend will be possible, too.
+Or can we condense these patches down to a set that does the
+following?
 
+. If the system is capable of conf1, then PCI config access
+   at offsets < 256 should be confined to conf1. This solution
+   is most effective for existing and legacy systems.
 
-> 
-> <fiddles with Kconfig>
-> 
-> We can create a config which has CONFIG_TIFM_CORE=m, CONFIG_MEMSTICK=y. 
-> That might not work?
-> 
-> Anyway, please have a think about that.
+. If the system does not support MMCONFIG, of if MMCONFIG is
+   not working, then accesses to offsets > 256 return -1 and an
+   error status.
 
-
-Considering the previous point this should be ok.
-
-> 
-> > ...
-> >
-> > +
-> > +struct mspro_sys_attr {
-> > +	size_t                  size;
-> > +	unsigned char           *data;
-> > +	unsigned char           id;
-> > +	char                    name[32];
-> > +	struct device_attribute sys_attr;
-> > +};
-> > +
-> > +struct mspro_attr_entry {
-> > +	unsigned int  address;
-> > +	unsigned int  size;
-> > +	unsigned char id;
-> > +	unsigned char reserved[3];
-> > +} __attribute__((packed));
-> > +
-> > +struct mspro_attribute {
-> > +	unsigned short          signature;
-> > +	unsigned short          version;
-> > +	unsigned char           count;
-> > +	unsigned char           reserved[11];
-> > +	struct mspro_attr_entry entries[];
-> > +} __attribute__((packed));
-> 
-> Why are these packed?  Do they map onto something whcih hardware knows
-> about?
-
-Yes, of course; all structures with "packed" attribute correspond to appropriate protocol ones
-(the endianness is tweaked as needed - most, but not all fields, are big-endian).
-
-> >
-> > ...
-> >
-> > +struct mspro_block_data {
-> > +	struct memstick_dev   *card;
-> > +	unsigned int          usage_count;
-> > +	struct gendisk        *disk;
-> > +	struct request_queue  *queue;
-> > +	spinlock_t            q_lock;
-> > +	wait_queue_head_t     q_wait;
-> > +	struct task_struct    *q_thread;
-> > +
-> > +	unsigned short        page_size;
-> > +	unsigned short        cylinders;
-> > +	unsigned short        heads;
-> > +	unsigned short        sectors_per_track;
-> > +
-> > +	unsigned char         system;
-> > +	unsigned char         read_only:1,
-> > +			      active:1,
-> > +			      has_request:1,
-> > +			      data_dir:1;
-> 
-> You're aware that these four fields occupy the same machine word and that
-> the compiler provides no locking?  So if one thread attempts to modify
-> "read_only" while another modifies "has_request", one can corrupt the work
-> of the other?
-> 
-> If this is indeed safe then a comment here whcih clearly explains that
-> would be useful.
-
-The access to these fields should be exclusively under q_lock (I'll check the locking again, just
-to make sure). After all, the same applies to old fashioned bit masks.
-
-> 
-> > +}
-> > +
-> > +static ssize_t mspro_block_attr_show_modelname(struct device *dev,
-> > +					       struct device_attribute *attr,
-> > +					       char *buffer)
-> > +{
-> > +	struct mspro_sys_attr *x_attr = container_of(attr,
-> > +						     struct mspro_sys_attr,
-> > +						     sys_attr);
-> > +
-> > +	return snprintf(buffer, PAGE_SIZE, "%s", x_attr->data);
-> > +}
-> >
-> > ...
-> >
-> > +static int mspro_block_sysfs_register(struct memstick_dev *card)
-> > +{
-> > +	struct mspro_block_data *msb = memstick_get_drvdata(card);
-> > +	int cnt, rc = 0;
-> > +
-> > +	for (cnt = 0; cnt < msb->attr_count; cnt++) {
-> > +		rc = device_create_file(&card->dev,
-> > +					&msb->attributes[cnt].sys_attr);
-> > +
-> > +		if (rc) {
-> > +			if (cnt) {
-> > +				for (cnt--; cnt >= 0; cnt--)
-> 
-> ow. my brain hurts.
-> 
-> The `if (cnt)' is actually unneeded.  But if it were mine I'd be doing
-> something simpler and obviouser here.  Like `for (i = 0; i < cnt; i++)'
-> simple == good.  !simple == !.
-> 
-> > +					device_remove_file(&card->dev,
-> > +							   &msb->attributes[cnt]
-> > +								.sys_attr);
-> > +			}
-> > +			break;
-> > +		}
-> > +	}
-> > +	return rc;
-> > +}
-> 
-> Could we be using attribute groups for all this?
-
-The idea here is that MSPro media have an attribute namespace, which may contain various entries.
-Some of them I know how to decode, others I still want to be presented in sysfs for further study
-(as hex dumps). Sysfs attr group should be fine, but I was not aware that such thing exists.
-
-> > > ...
-> >
-> >
-> > +static int mspro_block_queue_thread(void *data)
-> > +{
-> > +	struct memstick_dev *card = data;
-> > +	struct memstick_host *host = card->host;
-> > +	struct mspro_block_data *msb = memstick_get_drvdata(card);
-> > +	struct request *req;
-> > +	unsigned long flags;
-> > +
-> > +	while (1) {
-> > +		wait_event(msb->q_wait, mspro_block_has_request(msb));
-> > +		dev_dbg(&card->dev, "thread iter\n");
-> > +
-> > +		spin_lock_irqsave(&msb->q_lock, flags);
-> > +		req = elv_next_request(msb->queue);
-> > +		dev_dbg(&card->dev, "next req %p\n", req);
-> > +		if (!req) {
-> > +			msb->has_request = 0;
-> > +			if (kthread_should_stop()) {
-> > +				spin_unlock_irqrestore(&msb->q_lock, flags);
-> > +				break;
-> > +			}
-> > +		} else
-> > +			msb->has_request = 1;
-> > +		spin_unlock_irqrestore(&msb->q_lock, flags);
-> > +
-> > +		if (req) {
-> > +			mutex_lock(&host->lock);
-> > +			mspro_block_process_request(card, req);
-> > +			mutex_unlock(&host->lock);
-> > +		}
-> > +	}
-> 
-> Should this have a try_to_freeze() in it?
-
-The thread is stopped on suspend and restarted on resume.It works on my machine.
-
-> > ...
-> >
-> > +static int mspro_block_resume(struct memstick_dev *card)
-> > +{
-> > +	struct mspro_block_data *msb = memstick_get_drvdata(card);
-> > +	unsigned long flags;
-> > +	int rc = 0;
-> > +
-> > +#ifdef CONFIG_MEMSTICK_UNSAFE_RESUME
-> > +
-> > +	struct mspro_block_data *new_msb;
-> > +	struct memstick_host *host = card->host;
-> > +	unsigned char cnt;
-> > +
-> > +	mutex_lock(&host->lock);
-> > +	new_msb = kzalloc(sizeof(struct mspro_block_data), GFP_KERNEL);
-> 
-> If anything takes host->lock on the IO path then there might be a deadlock
-> here.  GFP_NOIO, perhaps.  or just swap these two lines.
-
-
-There's no IO path at this point, as IO thread was stopped on suspend. The fine point here is that
-thread is restarted only with "UNSAFE_RESUME" set, otherwise the block device just sits dead in
-the water waiting for the bus driver to kick it out and run the media detection routine anew.
-
-
-> > +inline void *memstick_priv(struct memstick_host *host)
-> > +{
-> > +	return (void *)host->private;
-> > +}
-> > +
-> > +inline void *memstick_get_drvdata(struct memstick_dev *card)
-> > +{
-> > +	return dev_get_drvdata(&card->dev);
-> > +}
-> > +
-> > +inline void memstick_set_drvdata(struct memstick_dev *card, void *data)
-> > +{
-> > +	dev_set_drvdata(&card->dev, data);
-> > +}
-> 
-> static inline.
-> 
-
-Somebody was already kind enough to fix this.
-
-I hope it'll be ok for me to address the rest of the issues with incremental patches.I expect to
-have a web accessible git within a few days.
+. For systems, where the conf1 mechanism is NOT available,
+   then MMCONFIG should be the PCI access mechanism for all
+   offsets. For such systems, we must assume that the BIOS has
+   become smart enough to locate MMCONFIG in a region safe from
+   encroachment by bus sizing code.
 
 
 
-      ____________________________________________________________________________________
-Looking for last minute shopping deals?  
-Find them fast with Yahoo! Search.  http://tools.search.yahoo.com/newsearch/category.php?category=shopping
