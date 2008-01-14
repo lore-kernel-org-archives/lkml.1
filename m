@@ -1,54 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbYANWkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbYANWmf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755459AbYANWkb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 17:40:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbYANWkN
+	id S1755180AbYANWmf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 17:42:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbYANWm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 17:40:13 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36818 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750898AbYANWkK convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 17:40:10 -0500
-Date: Mon, 14 Jan 2008 14:37:15 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: "Oliver Pinter (=?UTF-8?B?UGludMOpciBPbGl2w6ly?=)" 
-	<oliver.pntr@gmail.com>
-Cc: "Adrian Bunk" <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, gregkh@suse.de
-Subject: Re: [BUG] skge 0000:02:05: read data parity error
-Message-ID: <20080114143715.69a5e9d1@deepthought>
-In-Reply-To: <6101e8c40801141358la75d1c6vb100247dbbd651a@mail.gmail.com>
-References: <6101e8c40801141157j1ce7d3f0if2e4eb2344b6c844@mail.gmail.com>
-	<20080114125200.28cb4c69@deepthought>
-	<20080114210105.GG9847@does.not.exist>
-	<6101e8c40801141331n3cb66c04pc74ff07faf04c8fd@mail.gmail.com>
-	<20080114213453.GJ9847@does.not.exist>
-	<6101e8c40801141341hcb17b08h2fd5244bccb21928@mail.gmail.com>
-	<20080114215209.GK9847@does.not.exist>
-	<6101e8c40801141358la75d1c6vb100247dbbd651a@mail.gmail.com>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 14 Jan 2008 17:42:26 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:51367 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750818AbYANWmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 17:42:24 -0500
+Date: Mon, 14 Jan 2008 16:42:40 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
+       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
+Subject: Re: [patch 5/9] unprivileged mounts: allow unprivileged bind mounts
+Message-ID: <20080114224240.GE6704@sergelap.austin.ibm.com>
+References: <20080108113502.184459371@szeredi.hu> <20080108113626.895583537@szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080108113626.895583537@szeredi.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jan 2008 22:58:51 +0100
-"Oliver Pinter (Pintér Olivér)" <oliver.pntr@gmail.com> wrote:
-
-> I "tested" other devices resources file, and only with skge freezed
-> the system. from this think, that is skge driver bug
+Quoting Miklos Szeredi (miklos@szeredi.hu):
+> From: Miklos Szeredi <mszeredi@suse.cz>
 > 
+> Allow bind mounts to unprivileged users if the following conditions are met:
+> 
+>   - mountpoint is not a symlink
+>   - parent mount is owned by the user
+>   - the number of user mounts is below the maximum
+> 
+> Unprivileged mounts imply MS_SETUSER, and will also have the "nosuid" and
+> "nodev" mount flags set.
+> 
+> In particular, if mounting process doesn't have CAP_SETUID capability,
+> then the "nosuid" flag will be added, and if it doesn't have CAP_MKNOD
+> capability, then the "nodev" flag will be added.
+> 
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 
-Its a property of the hardware, and the current device model has
-no way to stop it.  Other devices are worse and can die if you access
-pci config space.
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-
-
-
--- 
-Stephen Hemminger <stephen.hemminger@vyatta.com>
+> ---
+> 
+> Index: linux/fs/namespace.c
+> ===================================================================
+> --- linux.orig/fs/namespace.c	2008-01-04 13:47:49.000000000 +0100
+> +++ linux/fs/namespace.c	2008-01-04 13:48:01.000000000 +0100
+> @@ -487,11 +487,34 @@ static void dec_nr_user_mounts(void)
+>  	spin_unlock(&vfsmount_lock);
+>  }
+> 
+> -static void set_mnt_user(struct vfsmount *mnt)
+> +static int reserve_user_mount(void)
+> +{
+> +	int err = 0;
+> +
+> +	spin_lock(&vfsmount_lock);
+> +	if (nr_user_mounts >= max_user_mounts && !capable(CAP_SYS_ADMIN))
+> +		err = -EPERM;
+> +	else
+> +		nr_user_mounts++;
+> +	spin_unlock(&vfsmount_lock);
+> +	return err;
+> +}
+> +
+> +static void __set_mnt_user(struct vfsmount *mnt)
+>  {
+>  	BUG_ON(mnt->mnt_flags & MNT_USER);
+>  	mnt->mnt_uid = current->fsuid;
+>  	mnt->mnt_flags |= MNT_USER;
+> +
+> +	if (!capable(CAP_SETUID))
+> +		mnt->mnt_flags |= MNT_NOSUID;
+> +	if (!capable(CAP_MKNOD))
+> +		mnt->mnt_flags |= MNT_NODEV;
+> +}
+> +
+> +static void set_mnt_user(struct vfsmount *mnt)
+> +{
+> +	__set_mnt_user(mnt);
+>  	spin_lock(&vfsmount_lock);
+>  	nr_user_mounts++;
+>  	spin_unlock(&vfsmount_lock);
+> @@ -510,10 +533,16 @@ static struct vfsmount *clone_mnt(struct
+>  					int flag)
+>  {
+>  	struct super_block *sb = old->mnt_sb;
+> -	struct vfsmount *mnt = alloc_vfsmnt(old->mnt_devname);
+> +	struct vfsmount *mnt;
+> 
+> +	if (flag & CL_SETUSER) {
+> +		int err = reserve_user_mount();
+> +		if (err)
+> +			return ERR_PTR(err);
+> +	}
+> +	mnt = alloc_vfsmnt(old->mnt_devname);
+>  	if (!mnt)
+> -		return ERR_PTR(-ENOMEM);
+> +		goto alloc_failed;
+> 
+>  	mnt->mnt_flags = old->mnt_flags;
+>  	atomic_inc(&sb->s_active);
+> @@ -525,7 +554,7 @@ static struct vfsmount *clone_mnt(struct
+>  	/* don't copy the MNT_USER flag */
+>  	mnt->mnt_flags &= ~MNT_USER;
+>  	if (flag & CL_SETUSER)
+> -		set_mnt_user(mnt);
+> +		__set_mnt_user(mnt);
+> 
+>  	if (flag & CL_SLAVE) {
+>  		list_add(&mnt->mnt_slave, &old->mnt_slave_list);
+> @@ -550,6 +579,11 @@ static struct vfsmount *clone_mnt(struct
+>  		spin_unlock(&vfsmount_lock);
+>  	}
+>  	return mnt;
+> +
+> + alloc_failed:
+> +	if (flag & CL_SETUSER)
+> +		dec_nr_user_mounts();
+> +	return ERR_PTR(-ENOMEM);
+>  }
+> 
+>  static inline void __mntput(struct vfsmount *mnt)
+> @@ -986,22 +1020,26 @@ asmlinkage long sys_oldumount(char __use
+> 
+>  #endif
+> 
+> -static int mount_is_safe(struct nameidata *nd)
+> +/*
+> + * Conditions for unprivileged mounts are:
+> + * - mountpoint is not a symlink
+> + * - mountpoint is in a mount owned by the user
+> + */
+> +static bool permit_mount(struct nameidata *nd, int *flags)
+>  {
+> +	struct inode *inode = nd->path.dentry->d_inode;
+> +
+>  	if (capable(CAP_SYS_ADMIN))
+> -		return 0;
+> -	return -EPERM;
+> -#ifdef notyet
+> -	if (S_ISLNK(nd->path.dentry->d_inode->i_mode))
+> -		return -EPERM;
+> -	if (nd->path.dentry->d_inode->i_mode & S_ISVTX) {
+> -		if (current->uid != nd->path.dentry->d_inode->i_uid)
+> -			return -EPERM;
+> -	}
+> -	if (vfs_permission(nd, MAY_WRITE))
+> -		return -EPERM;
+> -	return 0;
+> -#endif
+> +		return true;
+> +
+> +	if (S_ISLNK(inode->i_mode))
+> +		return false;
+> +
+> +	if (!is_mount_owner(nd->path.mnt, current->fsuid))
+> +		return false;
+> +
+> +	*flags |= MS_SETUSER;
+> +	return true;
+>  }
+> 
+>  static int lives_below_in_same_fs(struct dentry *d, struct dentry *dentry)
+> @@ -1245,9 +1283,10 @@ static int do_loopback(struct nameidata 
+>  	int clone_fl;
+>  	struct nameidata old_nd;
+>  	struct vfsmount *mnt = NULL;
+> -	int err = mount_is_safe(nd);
+> -	if (err)
+> -		return err;
+> +	int err;
+> +
+> +	if (!permit_mount(nd, &flags))
+> +		return -EPERM;
+>  	if (!old_name || !*old_name)
+>  		return -EINVAL;
+>  	err = path_lookup(old_name, LOOKUP_FOLLOW, &old_nd);
+> 
+> --
