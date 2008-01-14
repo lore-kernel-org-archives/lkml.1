@@ -1,155 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355AbYANG3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbYANGjK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753355AbYANG3T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 01:29:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbYANG27
+	id S1754445AbYANGjK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 01:39:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbYANGi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 01:28:59 -0500
-Received: from mx2.suse.de ([195.135.220.15]:48593 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751356AbYANG25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 01:28:57 -0500
-From: Neil Brown <neilb@suse.de>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Date: Mon, 14 Jan 2008 17:28:44 +1100
+	Mon, 14 Jan 2008 01:38:58 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:37162 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750902AbYANGi5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 01:38:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=arhCAQNzGDjSDEynBr/EK3n8+Si/6Pm3FKJACaU3d+8mmkgcpEturK3oxA8egFpgPcpXei3CzYXmIdNiDsfubmMyW/O2DpoBPEPr2dQb67f5N1FRJj0R8ZxUme9DuXkg0sAmMxu5OlHOfKNBUgYuDFqZzXcWOqghnWyITt4wW48=
+Message-ID: <aa79d98a0801132238o72266a91p78ae3a0c1476607c@mail.gmail.com>
+Date: Mon, 14 Jan 2008 09:38:57 +0300
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: Re: [PATCH] driver: ip27-rtc - convert ioctl to unlocked_ioctl
+Cc: "Paul Gortmaker" <p_gortmaker@yahoo.com>,
+       LKML <linux-kernel@vger.kernel.org>, "Andi Kleen" <ak@suse.de>,
+       "Alexey Dobriyan" <adobriyan@gmail.com>
+In-Reply-To: <aa79d98a0801131332w45d6e0e9r13e96b69e7e1b70@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18315.284.774998.348672@notabene.brown>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 002 of 6] md: Fix use-after-free bug when dropping an rdev from an md array.
-In-Reply-To: message from Neil Brown on Monday January 14
-References: <20080114123726.19968.patches@notabene>
-	<1080114014531.20354@suse.de>
-	<20080114020459.GN27894@ZenIV.linux.org.uk>
-	<18314.54601.196877.828373@notabene.brown>
-	<20080114034322.GO27894@ZenIV.linux.org.uk>
-	<18314.59832.14451.334084@notabene.brown>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_9919_10320393.1200292737101"
+References: <20080113203223.GA6723@cvg> <478A8131.9050500@gmail.com>
+	 <478A82AD.3070904@gmail.com>
+	 <aa79d98a0801131332w45d6e0e9r13e96b69e7e1b70@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday January 14, neilb@suse.de wrote:
-> 
-> Thanks.  I'll see what I can some up with.
+------=_Part_9919_10320393.1200292737101
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-How about this, against current -mm
+This patch converts ioctl call to unlocked_ioctl form. It's possible
+due to rtl_lock spinlock protection.
 
-On both the read and write path for an rdev attribute, we
-call mddev_lock, first checking that mddev is not NULL.
-Once we get the lock, we check again.
-If rdev->mddev is not NULL, we know it will stay that way as it only
-gets cleared under the same lock.
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
+The patch is *not* tested but the patch does not bring _much_ changes
+so it wouldn't break the compilation procedure.
 
-While in the rdev show/store routines, we know that the mddev cannot
-get freed, do to the kobject relationships.
+If there is problem with attachment - i could send it as inline
+form today evening.
 
-rdev_size_store is awkward because it has to drop the lock.  So we
-take a copy of rdev->mddev before the drop, and we are safe...
+Andi, Jiri, Alexey the only thing I do complain about -
+is time set/read from several user threads that uses same
+(duplicated) file descriptor. Could there be useless thread
+spins instead of sleep (in case if this unlocked_ioctl were
+protected by mutex)?
 
-Comments?
+------=_Part_9919_10320393.1200292737101
+Content-Type: application/octet-stream; name=ip27-rtc-unlocked-ioctl.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fbelsf3k0
+Content-Disposition: attachment; filename=ip27-rtc-unlocked-ioctl.patch
 
-NeilBrown
+IGRyaXZlcnMvY2hhci9pcDI3LXJ0Yy5jIHwgICAgOSArKysrLS0tLS0KIDEgZmlsZXMgY2hhbmdl
+ZCwgNCBpbnNlcnRpb25zKCspLCA1IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMv
+Y2hhci9pcDI3LXJ0Yy5jIGIvZHJpdmVycy9jaGFyL2lwMjctcnRjLmMKaW5kZXggOTMyMjY0YS4u
+ODZlNjUzOCAxMDA2NDQKLS0tIGEvZHJpdmVycy9jaGFyL2lwMjctcnRjLmMKKysrIGIvZHJpdmVy
+cy9jaGFyL2lwMjctcnRjLmMKQEAgLTQ2LDggKzQ2LDggQEAKICNpbmNsdWRlIDxhc20vc24vc24w
+L2h1Yi5oPgogI2luY2x1ZGUgPGFzbS9zbi9zbl9wcml2YXRlLmg+CiAKLXN0YXRpYyBpbnQgcnRj
+X2lvY3RsKHN0cnVjdCBpbm9kZSAqaW5vZGUsIHN0cnVjdCBmaWxlICpmaWxlLAotCQkgICAgIHVu
+c2lnbmVkIGludCBjbWQsIHVuc2lnbmVkIGxvbmcgYXJnKTsKK3N0YXRpYyBsb25nIHJ0Y19pb2N0
+bChzdHJ1Y3QgZmlsZSAqZmlscCwgdW5zaWduZWQgaW50IGNtZCwKKwkJCXVuc2lnbmVkIGxvbmcg
+YXJnKTsKIAogc3RhdGljIGludCBydGNfcmVhZF9wcm9jKGNoYXIgKnBhZ2UsIGNoYXIgKipzdGFy
+dCwgb2ZmX3Qgb2ZmLAogICAgICAgICAgICAgICAgICAgICAgICAgIGludCBjb3VudCwgaW50ICpl
+b2YsIHZvaWQgKmRhdGEpOwpAQCAtNzUsOCArNzUsNyBAQCBzdGF0aWMgdW5zaWduZWQgbG9uZyBl
+cG9jaCA9IDE5NzA7CS8qIHllYXIgY29ycmVzcG9uZGluZyB0byAweDAwCSovCiBzdGF0aWMgY29u
+c3QgdW5zaWduZWQgY2hhciBkYXlzX2luX21vW10gPQogezAsIDMxLCAyOCwgMzEsIDMwLCAzMSwg
+MzAsIDMxLCAzMSwgMzAsIDMxLCAzMCwgMzF9OwogCi1zdGF0aWMgaW50IHJ0Y19pb2N0bChzdHJ1
+Y3QgaW5vZGUgKmlub2RlLCBzdHJ1Y3QgZmlsZSAqZmlsZSwgdW5zaWduZWQgaW50IGNtZCwKLQkJ
+ICAgICB1bnNpZ25lZCBsb25nIGFyZykKK3N0YXRpYyBsb25nIHJ0Y19pb2N0bChzdHJ1Y3QgZmls
+ZSAqZmlscCwgdW5zaWduZWQgaW50IGNtZCwgdW5zaWduZWQgbG9uZyBhcmcpCiB7CiAKIAlzdHJ1
+Y3QgcnRjX3RpbWUgd3RpbWU7CkBAIC0xOTcsNyArMTk2LDcgQEAgc3RhdGljIGludCBydGNfcmVs
+ZWFzZShzdHJ1Y3QgaW5vZGUgKmlub2RlLCBzdHJ1Y3QgZmlsZSAqZmlsZSkKIAogc3RhdGljIGNv
+bnN0IHN0cnVjdCBmaWxlX29wZXJhdGlvbnMgcnRjX2ZvcHMgPSB7CiAJLm93bmVyCQk9IFRISVNf
+TU9EVUxFLAotCS5pb2N0bAkJPSBydGNfaW9jdGwsCisJLnVubG9ja2VkX2lvY3RsCT0gcnRjX2lv
+Y3RsLAogCS5vcGVuCQk9IHJ0Y19vcGVuLAogCS5yZWxlYXNlCT0gcnRjX3JlbGVhc2UsCiB9Owo=
 
-Signed-off-by: Neil Brown <neilb@suse.de>
-
-### Diffstat output
- ./drivers/md/md.c |   35 ++++++++++++++++++++++++++---------
- 1 file changed, 26 insertions(+), 9 deletions(-)
-
-diff .prev/drivers/md/md.c ./drivers/md/md.c
---- .prev/drivers/md/md.c	2008-01-14 12:26:15.000000000 +1100
-+++ ./drivers/md/md.c	2008-01-14 17:05:53.000000000 +1100
-@@ -1998,9 +1998,11 @@ rdev_size_store(mdk_rdev_t *rdev, const 
- 	char *e;
- 	unsigned long long size = simple_strtoull(buf, &e, 10);
- 	unsigned long long oldsize = rdev->size;
-+	mddev_t *my_mddev = rdev->mddev;
-+
- 	if (e==buf || (*e && *e != '\n'))
- 		return -EINVAL;
--	if (rdev->mddev->pers)
-+	if (my_mddev->pers)
- 		return -EBUSY;
- 	rdev->size = size;
- 	if (size > oldsize && rdev->mddev->external) {
-@@ -2013,7 +2015,7 @@ rdev_size_store(mdk_rdev_t *rdev, const 
- 		int overlap = 0;
- 		struct list_head *tmp, *tmp2;
- 
--		mddev_unlock(rdev->mddev);
-+		mddev_unlock(my_mddev);
- 		for_each_mddev(mddev, tmp) {
- 			mdk_rdev_t *rdev2;
- 
-@@ -2033,7 +2035,7 @@ rdev_size_store(mdk_rdev_t *rdev, const 
- 				break;
- 			}
- 		}
--		mddev_lock(rdev->mddev);
-+		mddev_lock(my_mddev);
- 		if (overlap) {
- 			/* Someone else could have slipped in a size
- 			 * change here, but doing so is just silly.
-@@ -2045,8 +2047,8 @@ rdev_size_store(mdk_rdev_t *rdev, const 
- 			return -EBUSY;
- 		}
- 	}
--	if (size < rdev->mddev->size || rdev->mddev->size == 0)
--		rdev->mddev->size = size;
-+	if (size < my_mddev->size || my_mddev->size == 0)
-+		my_mddev->size = size;
- 	return len;
- }
- 
-@@ -2067,10 +2069,21 @@ rdev_attr_show(struct kobject *kobj, str
- {
- 	struct rdev_sysfs_entry *entry = container_of(attr, struct rdev_sysfs_entry, attr);
- 	mdk_rdev_t *rdev = container_of(kobj, mdk_rdev_t, kobj);
-+	mddev_t *mddev = rdev->mddev;
-+	ssize_t rv;
- 
- 	if (!entry->show)
- 		return -EIO;
--	return entry->show(rdev, page);
-+
-+	rv = mddev ? mddev_lock(mddev) : -EBUSY;
-+	if (!rv) {
-+		if (rdev->mddev == NULL)
-+			rv = -EBUSY;
-+		else
-+			rv = entry->show(rdev, page);
-+		mddev_unlock(mddev);
-+	}
-+	return rv;
- }
- 
- static ssize_t
-@@ -2079,15 +2092,19 @@ rdev_attr_store(struct kobject *kobj, st
- {
- 	struct rdev_sysfs_entry *entry = container_of(attr, struct rdev_sysfs_entry, attr);
- 	mdk_rdev_t *rdev = container_of(kobj, mdk_rdev_t, kobj);
--	int rv;
-+	ssize_t rv;
-+	mddev_t *mddev = rdev->mddev;
- 
- 	if (!entry->store)
- 		return -EIO;
- 	if (!capable(CAP_SYS_ADMIN))
- 		return -EACCES;
--	rv = mddev_lock(rdev->mddev);
-+	rv = mddev ? mddev_lock(mddev): -EBUSY;
- 	if (!rv) {
--		rv = entry->store(rdev, page, length);
-+		if (rdev->mddev == NULL)
-+			rv = -EBUSY;
-+		else
-+			rv = entry->store(rdev, page, length);
- 		mddev_unlock(rdev->mddev);
- 	}
- 	return rv;
+------=_Part_9919_10320393.1200292737101--
