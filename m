@@ -1,209 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756542AbYANLPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756060AbYANLS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756542AbYANLPa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 06:15:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755544AbYANLPU
+	id S1756060AbYANLS1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 06:18:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754253AbYANLSP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 06:15:20 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:37511 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754356AbYANLPT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 06:15:19 -0500
-To: salikhmetov@gmail.com
-CC: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, protasnb@gmail.com
-In-reply-to: <E1JENAv-0007CM-T9@pomaz-ex.szeredi.hu> (message from Miklos
-	Szeredi on Mon, 14 Jan 2008 12:08:17 +0100)
-Subject: Re: [PATCH 2/2] updating ctime and mtime at syncing
-References: <12001991991217-git-send-email-salikhmetov@gmail.com> <12001992023392-git-send-email-salikhmetov@gmail.com> <E1JENAv-0007CM-T9@pomaz-ex.szeredi.hu>
-Message-Id: <E1JENHf-0007Dl-Q5@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 14 Jan 2008 12:15:15 +0100
+	Mon, 14 Jan 2008 06:18:15 -0500
+Received: from ns.firmix.at ([62.141.48.66]:4152 "EHLO ns.firmix.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751958AbYANLSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 06:18:14 -0500
+Subject: Re: The ext3 way of journalling
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: Tuomo Valkonen <tuomov@iki.fi>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080114111158.GB29126@jolt.modeemi.cs.tut.fi>
+References: <20080110131659.GF10230@mit.edu>
+	 <20080110134111.GA6254@jolt.modeemi.cs.tut.fi>
+	 <20080112150621.GC6751@mit.edu>
+	 <20080113221301.GA18341@jolt.modeemi.cs.tut.fi>
+	 <20080113222310.GA20815@jolt.modeemi.cs.tut.fi>
+	 <20080113231150.GB23906@mit.edu>
+	 <20080114071555.GA6475@jolt.modeemi.cs.tut.fi>
+	 <1200303743.24517.6.camel@tara.firmix.at>
+	 <slrnfombug.lco.tuomov@jolt.modeemi.cs.tut.fi>
+	 <1200304629.24517.15.camel@tara.firmix.at>
+	 <20080114111158.GB29126@jolt.modeemi.cs.tut.fi>
+Content-Type: text/plain
+Organization: Firmix Software GmbH
+Date: Mon, 14 Jan 2008 12:18:06 +0100
+Message-Id: <1200309486.24517.28.camel@tara.firmix.at>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -2.334 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Spam-Status: No, hits=-2.334 required=5
+X-Spam-Score: -2.334 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Envelope-From: <bernd@firmix.at>
+X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > http://bugzilla.kernel.org/show_bug.cgi?id=2645
-> > 
-> > Changes for updating the ctime and mtime fields for memory-mapped files:
-> > 
-> > 1) new flag triggering update of the inode data;
-> > 2) new function to update ctime and mtime for block device files;
-> > 3) new helper function to update ctime and mtime when needed;
-> > 4) updating time stamps for mapped files in sys_msync() and do_fsync();
-> > 5) implementing the feature of auto-updating ctime and mtime.
+On Mon, 2008-01-14 at 13:11 +0200, Tuomo Valkonen wrote:
+> On 2008-01-14 10:57 +0100, Bernd Petrovitsch wrote:
+> > That leads to the question why the clock starts to run like crazy at
+> > some time so that `ntpd` can't cope with it.
 > 
-> How exactly is this done?
-> 
-> Is this catering for this case:
-> 
->  1 page is dirtied through mapping
->  2 app calls msync(MS_ASYNC)
->  3 page is written again through mapping
->  4 app calls msync(MS_ASYNC)
->  5 ...
->  6 page is written back
-> 
-> What happens at 4?  Do we care about this one at all?
+> I do wonder whether the PSU could've been causing it. Now that think
 
-Oh, and here's a test program I wrote, that can be used to check this
-behavior.   It has two options:
+We have some embedded systems where some strange problems[0] were caused
+by bad/cheap/low-quality PSUs.
 
- -s   use MS_SYNC instead of MS_ASYNC
- -f   fork and do the msync on a different mapping
+> about it, I got the PSU around two years ago, just like I compiled 
+> 2.6.14. This PSU coincidentally seems to have been the cause of the 
+> crash that started this thread, and went completely silent during 
+> the same day, on the third crash. But even if the PSU could cause
+> the timer interrupt to signal too frequently or so, doesn't explain
+> why nearly always after a crash (when journal recovery would be the
+> normal course of action), fsck starts checking with absurd intervals
+> since last check, whereas there's no trouble booting after normal
+> shutdown.
 
-Back then I haven't found a single OS, that fully conformed to all the
-stupid POSIX rules regarding mmaps and ctime/mtime.
+But for normal PCs, I don't know how much the quality of a PSU is
+relevant for the speed of the clock.
+Can you test with a different PSU?
 
-Miklos
-----
+	Bernd
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-
-static const char *filename;
-static int msync_flag = MS_ASYNC;
-static int msync_fork = 0;
-
-static void print_times(const char *msg)
-{
-    struct stat stbuf;
-    stat(filename, &stbuf);
-    printf("%s\t%li\t%li\t%li\n", msg, stbuf.st_ctime, stbuf.st_mtime,
-           stbuf.st_atime);
-}
-
-static void do_msync(void *addr, int len)
-{
-    int res;
-    if (!msync_fork) {
-        res = msync(addr, len, msync_flag);
-        if (res == -1) {
-            perror("msync");
-            exit(1);
-        }
-    } else {
-        int pid = fork();
-        if (pid == -1) {
-            perror("fork");
-            exit(1);
-        }
-        if (!pid) {
-            int fd = open(filename, O_RDWR);
-            if (fd == -1) {
-                perror("open");
-                exit(1);
-            }
-            addr = mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-            if (addr == MAP_FAILED) {
-                perror("mmap");
-                exit(1);
-            }
-            res = msync(addr, len, msync_flag);
-            if (res == -1) {
-                perror("msync");
-                exit(1);
-            }
-            exit(0);
-        }
-        wait(NULL);
-    }
-}
-
-static void usage(const char *progname)
-{
-    fprintf(stderr, "usage: %s filename [-sf]\n", progname);
-    exit(1);
-}
-
-int main(int argc, char *argv[])
-{
-    int res;
-    char *addr;
-    int fd;
-
-    if (argc < 2)
-        usage(argv[0]);
-
-    filename = argv[1];
-    if (argc > 2) {
-        if (argc > 3)
-            usage(argv[0]);
-        if (strcmp(argv[2], "-s") == 0)
-            msync_flag = MS_SYNC;
-        else if (strcmp(argv[2], "-f") == 0)
-            msync_fork = 1;
-        else if (strcmp(argv[2], "-sf") == 0 || strcmp(argv[2], "-fs") == 0) {
-            msync_flag = MS_SYNC;
-            msync_fork = 1;
-        } else
-            usage(argv[0]);
-    }
-
-    fd = open(filename, O_RDWR | O_TRUNC | O_CREAT, 0666);
-    if (fd == -1) {
-        perror(filename);
-        return 1;
-    }
-    print_times("begin");
-    sleep(1);
-    write(fd, "aaaa\n", 4);
-    print_times("write");
-    sleep(1);
-    addr = mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    if (addr == MAP_FAILED) {
-        perror("mmap");
-        return 1;
-    }
-    print_times("mmap");
-    sleep(1);
-
-    addr[1] = 'b';
-    print_times("b");
-    sleep(1);
-    do_msync(addr, 4);
-    print_times("msync b");
-    sleep(1);
-
-    addr[2] = 'c';
-    print_times("c");
-    sleep(1);
-    do_msync(addr, 4);
-    print_times("msync c");
-    sleep(1);
-
-    addr[3] = 'd';
-    print_times("d");
-    sleep(1);
-    res = munmap(addr, 4);
-    if (res == -1) {
-        perror("munmap");
-        return 1;
-    }
-    print_times("munmap");
-    sleep(1);
-
-    res = close(fd);
-    if (res == -1) {
-        perror("close");
-        return 1;
-    }
-    print_times("close");
-    sleep(1);
-    sync();
-    print_times("sync");
-
-    return 0;
-}
+[0]: I don't know more details out of the top of my head.
+-- 
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
 
 
