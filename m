@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751871AbYANTIL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752514AbYANTIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751871AbYANTIL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 14:08:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750744AbYANTHz
+	id S1752514AbYANTIt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 14:08:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbYANTIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 14:07:55 -0500
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:4421 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750702AbYANTHy (ORCPT
+	Mon, 14 Jan 2008 14:08:41 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51914 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750744AbYANTIk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 14:07:54 -0500
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett Packard
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: 2.6.24-rc6-mm1 - oddness with IPv4/v6 mapped sockets hanging...
-Date: Mon, 14 Jan 2008 14:07:46 -0500
-User-Agent: KMail/1.9.7
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-References: <30887.1200209733@turing-police.cc.vt.edu> <32065.1200334930@turing-police.cc.vt.edu> <1030.1200336639@turing-police.cc.vt.edu>
-In-Reply-To: <1030.1200336639@turing-police.cc.vt.edu>
+	Mon, 14 Jan 2008 14:08:40 -0500
+Message-ID: <478BB336.5000004@sgi.com>
+Date: Mon, 14 Jan 2008 11:08:38 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       mingo@elte.hu, Christoph Lameter <clameter@sgi.com>,
+       Jack Steiner <steiner@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 06/10] x86: Change NR_CPUS arrays in topology
+References: <20080113183453.973425000@sgi.com> <20080113183454.815670000@sgi.com> <Pine.LNX.4.64.0801141925070.24893@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0801141925070.24893@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801141407.46345.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 January 2008 1:50:39 pm Valdis.Kletnieks@vt.edu wrote:
-> On Mon, 14 Jan 2008 13:22:10 EST, Valdis.Kletnieks@vt.edu said:
-> > Apparently the only new commit in there since the tree that was in
-> > 24-rc6-mm1 is 5d95575903fd3865b884952bd93c339d48725c33 adding some
-> > warning printk's.  Would it be more productive to test against the full
-> > tree, or leaving out the one commit I already reverted?
->
-> <voice=Emily Litella> Nevermind... </voice> :)
->
-> The new commit won't apply with the other one reverted - it patches
-> security/selinux/netnode.c which was created by the problematic commit...
+Jan Engelhardt wrote:
+> On Jan 13 2008 10:34, travis@sgi.com wrote:
+>> +++ b/include/asm-x86/cpu.h
+>> @@ -7,7 +7,7 @@
+>> #include <linux/nodemask.h>
+>> #include <linux/percpu.h>
+>>
+>> -struct i386_cpu {
+>> +struct x86_cpu {
+>> 	struct cpu cpu;
+>> };
+>> extern int arch_register_cpu(int num);
+> 
+> Is not struct x86_cpu kinda redundant here if it only wraps around
+> one member?
 
-There have been quite a few changes in lblnet-2.6_testing since 2.6.24-rc6-mm1 
-so I would recommend taking the whole tree.  I'm also not quite sure if 
-simply reverting the "Convert the netif code to use ifindex values" patch 
-would solve the problem as there are other patches in the rc6-mm1 tree that 
-rely on skb->iif being valid (new code, not converted code).  If you want to 
-stick with a _relatively_ vanilla rc6-mm1 tree I would leave everything in 
-and simply apply the following patch which solved the skb_clone()/iif 
-problem:
+Looking at it, I think the x86 arch specific include file
+is including the generic struct cpu (instead of say, a
+different one)...?
 
-http://git.infradead.org/?p=users/pcmoore/lblnet-2.6_testing;a=commitdiff;h=02f1c89d6e36507476f78108a3dcc78538be460b
-
--- 
-paul moore
-linux security @ hp
+Thanks,
+Mike
