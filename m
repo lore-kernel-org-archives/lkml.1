@@ -1,99 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755639AbYANRGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbYANRI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755639AbYANRGd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 12:06:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbYANRGN
+	id S1755325AbYANRI0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 12:08:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYANRIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 12:06:13 -0500
-Received: from styx.suse.cz ([82.119.242.94]:54563 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753339AbYANRGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 12:06:11 -0500
-Date: Mon, 14 Jan 2008 18:06:09 +0100
-From: Jan Kara <jack@suse.cz>
-To: Zach Brown <zach.brown@oracle.com>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org,
-       ext3-users@redhat.com, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-fsdevel@vger.kernel.org
-Subject: Re: lockdep warning with LTP dio test (v2.6.24-rc6-125-g5356f66)
-Message-ID: <20080114170609.GH4214@duck.suse.cz>
-References: <200712242302.lBON2O8s011190@agora.fsl.cs.sunysb.edu> <477BF72B.4000608@oracle.com>
+	Mon, 14 Jan 2008 12:08:19 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:39197 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751363AbYANRIS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 12:08:18 -0500
+Date: Mon, 14 Jan 2008 18:08:16 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Jean Delvare <khali@linux-fr.org>
+cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, i2c@lm-sensors.org
+Subject: Re: [i2c] [PATCH] update module-init-tools to support the i2c 
+ subsystem
+In-Reply-To: <20080114173835.5fe907db@hyperion.delvare>
+Message-ID: <Pine.LNX.4.64.0801141752450.3058@vixen.sonytel.be>
+References: <9e4733910712171839h214e0bc3q179266c86e5987b1@mail.gmail.com>
+ <20080113152735.5dca46a1@hyperion.delvare> <9e4733910801130714m1be16826jf240171972324d16@mail.gmail.com>
+ <20080113163543.16e3d26b@hyperion.delvare> <9e4733910801130826l799e4897pe7380ccb973b5fd0@mail.gmail.com>
+ <20080113184337.5d4cd546@hyperion.delvare> <9e4733910801131004i669276e2pde04b195dd10bd90@mail.gmail.com>
+ <Pine.LNX.4.64.0801141154420.3058@vixen.sonytel.be> <20080114173835.5fe907db@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <477BF72B.4000608@oracle.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1183529181-1200329614=:3058"
+Content-ID: <Pine.LNX.4.64.0801141803270.3058@vixen.sonytel.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 02-01-08 12:42:19, Zach Brown wrote:
-> Erez Zadok wrote:
-> > Setting: ltp-full-20071031, dio01 test on ext3 with Linus's latest tree.
-> > Kernel w/ SMP, preemption, and lockdep configured.
-> 
-> This is a real lock ordering problem.  Thanks for reporting it.
-> 
-> The updating of atime inside sys_mmap() orders the mmap_sem in the vfs
-> outside of the journal handle in ext3's inode dirtying:
-> 
-> > -> #1 (jbd_handle){--..}:
-> >        [<c023068f>] __lock_acquire+0x9cc/0xb95
-> >        [<c0230c2f>] lock_acquire+0x5f/0x78
-> >        [<c029c7e9>] journal_start+0xee/0xf8
-> >        [<c02959d6>] ext3_journal_start_sb+0x48/0x4a
-> >        [<c029152b>] ext3_dirty_inode+0x27/0x6c
-> >        [<c026f701>] __mark_inode_dirty+0x29/0x144
-> >        [<c026817b>] touch_atime+0xb7/0xbc
-> >        [<c023af6d>] generic_file_mmap+0x2d/0x42
-> >        [<c024a5cc>] mmap_region+0x1e6/0x3b4
-> >        [<c024aa6b>] do_mmap_pgoff+0x1fb/0x253
-> >        [<c02067af>] sys_mmap2+0x9b/0xb5
-> >        [<c020275e>] syscall_call+0x7/0xb
-> >        [<ffffffff>] 0xffffffff
-> 
-> ext3_direct_IO() orders the journal handle outside of the mmap_sem that
-> dio_get_page() acquires to pin pages with get_user_pages():
-> 
-> > -> #0 (&mm->mmap_sem){----}:
-> >        [<c023057f>] __lock_acquire+0x8bc/0xb95
-> >        [<c0230c2f>] lock_acquire+0x5f/0x78
-> >        [<c0397d4f>] down_read+0x3a/0x4c
-> >        [<c02778a2>] dio_get_page+0x4e/0x15d
-> >        [<c0278352>] __blockdev_direct_IO+0x431/0xa81
-> >        [<c0291318>] ext3_direct_IO+0x10c/0x1a1
-> >        [<c023c091>] generic_file_direct_IO+0x124/0x139
-> >        [<c023c0fc>] generic_file_direct_write+0x56/0x11c
-> >        [<c023ca15>] __generic_file_aio_write_nolock+0x33d/0x489
-> >        [<c023cbb9>] generic_file_aio_write+0x58/0xb6
-> >        [<c028d4e3>] ext3_file_write+0x27/0x99
-> >        [<c0256d0f>] do_sync_write+0xc5/0x102
-> >        [<c0257463>] vfs_write+0x90/0x119
-> >        [<c0257a25>] sys_write+0x3d/0x61
-> >        [<c02026d6>] sysenter_past_esp+0x5f/0xa5
-> >        [<ffffffff>] 0xffffffff
-> 
-> Two fixes come to mind:
-> 
-> 1) use something like Peter's ->mmap_prepare() to update atime before
-> acquiring the mmap_sem.  ( http://lkml.org/lkml/2007/11/11/97 ).  I
-> don't know if this would leave more paths which do a journal_start()
-> while holding the mmap_sem.
-> 
-> 2) rework ext3's dio to only hold the jbd handle in ext3_get_block().
-> Chris has a patch for this kicking around somewhere but I'm told it has
-> problems exposing old blocks in ordered data mode.
-> 
-> Does anyone have preferences?  I could go either way.  I certainly don't
-> like the idea of journal handles being held across the entirety of
-> fs/direct-io.c.  It's yet another case of O_DIRECT differing wildly from
-> the buffered path :(.
-  I've looked more into it and I think that 2) is the only way to go since
-transaction start ranks below page lock (standard buffered write path) and
-page lock ranks below mmap_sem. So we have at least one more dependency
-mmap_sem must go before transaction start...
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+---584349381-1183529181-1200329614=:3058
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0801141803271.3058@vixen.sonytel.be>
+
+On Mon, 14 Jan 2008, Jean Delvare wrote:
+> On Mon, 14 Jan 2008 11:57:52 +0100 (CET), Geert Uytterhoeven wrote:
+> > On Sun, 13 Jan 2008, Jon Smirl wrote:
+> > > I don't know exactly what those modules tables are used for. I just
+> > > copied what the other subsystems do. Maybe they are used when you make
+> > > an initrd to know which drivers to copy into the image.
+> > 
+> > Module-init-tools needs those table to create module aliases in the *.ko
+> > files from the MODULE_DEVICE_TABLE(), so udev can load the modules based
+> > on the device IDs when the devices appear in sysfs.
+> 
+> I thought that the module aliases were generated by
+> scripts/mod/modpost? As a matter of fact, I did not apply Jon's patch
+
+Sorry, you're right. Too early in the morning :-)
+
+> to module-init-tools, and "modinfo" shows me module aliases properly
+> for i2c drivers that call MODULE_DEVICE_TABLE():
+
+I've just looked it up again (I had to do a similar thing for Zorro bus
+support).  Module-init-tools (depmod) also creates the modules.*map files,
+which are used to map from device IDs to module names. I think these are used
+by udev to load the appropriate module when a device with a specific device ID
+pops up in sysfs.
+
+> $ /sbin/modinfo lm90
+> filename:       /lib/modules/2.6.24-rc7-git4/kernel/drivers/hwmon/lm90.ko
+> author:         Jean Delvare <khali@linux-fr.org>
+> description:    LM90/ADM1032 driver
+> license:        GPL
+> vermagic:       2.6.24-rc7-git4 mod_unload
+> depends:        hwmon
+> alias:          i2c:Nlm90*
+> alias:          i2c:Nadm1032*
+> alias:          i2c:Nlm99*
+> alias:          i2c:Nlm86*
+> alias:          i2c:Nmax6657*
+> alias:          i2c:Nadt7461*
+> alias:          i2c:Nmax6680*
+> $
+> 
+> "modprobe i2c:Nadm1032" loads the lm90 driver as expected.
+
+Yes, it's also still not 100% clear to me when `i2c:Nadm1032' is used, and when
+modules.i2cmap would be used...
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+Sony Network and Software Technology Center Europe
+A division of Sony Service Centre (Europe) N.V.
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
+VAT BE 0413.825.160 · RPR Brussels
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584349381-1183529181-1200329614=:3058--
