@@ -1,61 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751704AbYANOBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753242AbYANOD3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751704AbYANOBs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 09:01:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYANOBk
+	id S1753242AbYANOD3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 09:03:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750925AbYANODW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 09:01:40 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49020 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750695AbYANOBj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 09:01:39 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1199902278.9393.283.camel@moss-spartans.epoch.ncsc.mil>
-References: <1199902278.9393.283.camel@moss-spartans.epoch.ncsc.mil> <1197307397.18120.72.camel@moss-spartans.epoch.ncsc.mil> <1197305173.18120.60.camel@moss-spartans.epoch.ncsc.mil> <20071205193818.24617.79771.stgit@warthog.procyon.org.uk> <20071205193859.24617.36392.stgit@warthog.procyon.org.uk> <25037.1197306473@redhat.com> <17868.1199897484@redhat.com> 
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: dhowells@redhat.com, Daniel J Walsh <dwalsh@redhat.com>,
-       casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
-       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM settings for task actions [try #2]
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Mon, 14 Jan 2008 14:01:19 +0000
-Message-ID: <3466.1200319279@redhat.com>
+	Mon, 14 Jan 2008 09:03:22 -0500
+Received: from smtp1.int-evry.fr ([157.159.10.44]:33745 "EHLO
+	smtp1.int-evry.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750824AbYANODV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 09:03:21 -0500
+From: Florian Fainelli <florian.fainelli@telecomint.eu>
+To: Marc Pignat <marc.pignat@hevs.ch>
+Subject: Re: [RFC, PATCH, take 2] watchdog on generic gpio
+Date: Mon, 14 Jan 2008 15:03:14 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <200801141103.23744.marc.pignat@hevs.ch> <200801141206.39858.florian.fainelli@telecomint.eu> <200801141401.33783.marc.pignat@hevs.ch>
+In-Reply-To: <200801141401.33783.marc.pignat@hevs.ch>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200801141503.15359.florian.fainelli@telecomint.eu>
+X-int-MailScanner-Information: Please contact the ISP for more information
+X-int-MailScanner: Found to be clean
+X-int-MailScanner-SpamCheck: 
+X-int-MailScanner-From: florian.fainelli@telecomint.eu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Le lundi 14 janvier 2008, Marc Pignat a écrit :
+> Hi Florian!
+> I understand your wish, but...
+> You told me that your plaform doesn't implement the generic gpio interface
+> (yet?), so this driver can't work for you.
 
-Stephen Smalley <sds@tycho.nsa.gov> wrote:
+You understood me wrong, I told you that not all platforms, actually only 
+AVR32 and ARM seem to make use of David Brownell's gpiolib, but the MIPS 
+board I am working with supports the "old" generic GPIO API which required 
+you to define your own wrappers for gpio_set/get_value and such. For both 
+implementations the config symbol is GENERIC_GPIO, which can somehow be 
+confusing.
+>
+> This is not the only function to be changed, start, stop and keepalive (and
+> probably suspend/resume) should be changed, and when the 'Uniform Watchdog
+> Device Driver' will be merged, writing your driver dealing with more gpio
+> will be almost trivial.
 
-> > 	avc_has_perm(daemon_tsec->sid, nominated_sid,
-> > 		     SECCLASS_CACHE, CACHE__USE_AS_OVERRIDE, NULL);
-> > 
-> > And I assume this doesn't care if one, the other or both of the two SIDs
-> > mentioned are of SECCLASS_PROCESS rather than of SECCLASS_CACHE.
-> 
-> Right, the latter is reasonable.
+I use only one gpio bit as well, only the keepalive function should be 
+changed. And even if we need the other ones to be changed, let's assume we 
+can pass the necessary callback to the platform driver, and checking wether 
+they are defined and call them or not is just trivial. This will not bloat 
+the driver.
 
-Okay...  It looks like I want four security operations/hooks for cachefiles:
+>
+> Please make sure to look a the right place, the git tree for the unified
+> driver you have given is 17 month old... here is the latest:
+> http://git.kernel.org/?p=linux/kernel/git/wim/linux-2.6-watchdog-mm.git;a=s
+>ummary
+>
+> I'm trying to get this work merged because I use it, it works for me and
+> I'm almost sure I haven't got the only embedded system using a max823
+> connected to a gpio.
 
- (1) Check that a daemon can nominate a secid for use by the kernel to override
-     the process subjective secid.
+Yes, I understand, but having a max823-centric driver does not make it as 
+general as it could be.
 
- (2) Set the secid mentioned in (1).
+>
+> Let me know if you want some help implementing your driver!
 
- (3) Check that the kernel may create files as a particular secid (this could
-     be specified indirectly by specifying an inode, which would hide the secid
-     inside the LSM).
+It already exists and his merged as mtx1_wdt, I just want to get rid of it if 
+any generic gpio wathchdog driver can fit my needs and others.
 
- (4) Set the fscreate secid mentioned in (3).
-
-Now, it's possible to condense (1) and (2) into a single op, and condense (3)
-and (4) into a single op.  That, however, might make the ops unusable by nfsd,
-which may well want to bypass the checks or do them elsewhere.
-
-Any thoughts?
-
-David
+As a general comments, Wim did not answer yet, I would like to hear from him.
+-- 
+Cordialement, Florian Fainelli
+------------------------------
