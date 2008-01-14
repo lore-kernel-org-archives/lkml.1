@@ -1,74 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173AbYANJzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754857AbYANJ5L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755173AbYANJzf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 04:55:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbYANJz1
+	id S1754857AbYANJ5L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 04:57:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbYANJ46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 04:55:27 -0500
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:41822 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1752097AbYANJz0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 04:55:26 -0500
-Message-ID: <400304530.01514@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Mon, 14 Jan 2008 17:55:18 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Joerg Platte <jplatte@naasa.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-Subject: Re: regression: 100% io-wait with 2.6.24-rcX
-References: <200801071151.11200.lists@naasa.net> <200801130905.44855.jplatte@naasa.net> <400212488.11031@ustc.edu.cn> <200801131049.33111.jplatte@naasa.net> <20080113115933.GA11045@mail.ustc.edu.cn> <20080114035439.GA7330@mail.ustc.edu.cn>
+	Mon, 14 Jan 2008 04:56:58 -0500
+Received: from styx.suse.cz ([82.119.242.94]:38989 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751969AbYANJ45 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 04:56:57 -0500
+Date: Mon, 14 Jan 2008 10:56:55 +0100
+From: Jan Kara <jack@suse.cz>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 10/16] udf: create common function for changing free
+	space counter
+Message-ID: <20080114095655.GA4214@duck.suse.cz>
+References: <1200002792-8449-1-git-send-email-marcin.slusarz@gmail.com> <1200002792-8449-11-git-send-email-marcin.slusarz@gmail.com> <20080110232449.GF17430@duck.suse.cz> <20080112131309.GA24828@joi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080114035439.GA7330@mail.ustc.edu.cn>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.12-2006-07-14
-Message-Id: <E1JEM2I-00010S-5U@localhost.localdomain>
+In-Reply-To: <20080112131309.GA24828@joi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 14, 2008 at 11:54:39AM +0800, Fengguang Wu wrote:
-> > particular this bug is triggered because the dir mapping page has
-> > PAGECACHE_TAG_DIRTY set and PG_dirty cleared, staying in an
-> > inconsistent state.
+On Sat 12-01-08 14:13:31, Marcin Slusarz wrote:
+> On Fri, Jan 11, 2008 at 12:24:49AM +0100, Jan Kara wrote:
+> > On Thu 10-01-08 23:06:26, marcin.slusarz@gmail.com wrote:
+> > > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> > > CC: Jan Kara <jack@suse.cz>
+> > > CC: Christoph Hellwig <hch@infradead.org>
+> >   Just two minor comment...
+> > 
+> > > ---
+> > >  fs/udf/balloc.c |   49 ++++++++++++++++++++-----------------------------
+> > >  1 files changed, 20 insertions(+), 29 deletions(-)
+> > > 
+> > > diff --git a/fs/udf/balloc.c b/fs/udf/balloc.c
+> > > index dc9f8a9..78dbf1d 100644
+> > > --- a/fs/udf/balloc.c
+> > > +++ b/fs/udf/balloc.c
+> > > @@ -140,6 +140,20 @@ static inline int load_block_bitmap(struct super_block *sb,
+> > >  	return slot;
+> > >  }
+> > >  
+> > > +static bool udf_inc_free_space(struct udf_sb_info *sbi,
+> >   Maybe because you use the function for both increasing and decreasing
+> > free space, you could call is udf_add_free_space?
+> Ok. Done.
 > 
-> Just found that a deleted dir will enter that inconsistent state when
-> someone still have reference to it...
+> > 
+> > > +				u16 partition, u32 cnt)
+> > > +{
+> > > +	struct logicalVolIntegrityDesc *lvid;
+> > > +
+> > > +	if (sbi->s_lvid_bh)
+> > > +		return false;
+> > > +
+> > > +	lvid = (struct logicalVolIntegrityDesc *)sbi->s_lvid_bh->b_data;
+> > > +	lvid->freeSpaceTable[partition] = cpu_to_le32(le32_to_cpu(
+> > > +					lvid->freeSpaceTable[partition]) + cnt);
+> >   I think macro like le32_add_cpu() just went into the kernel so you could
+> > use that...
+> I didn't want to rely on too many patches, so I intentionally left it.
+> I'll convert it together with other le*_add_cpu changes.
+  OK, fair enough.
 
-Joerg, this patch fixed the bug for me :-)
+> Can you ack this patch with udf_inc_free_space rename?
+  Yes.
+  Acked-by: Jan Kara <jack@suse.cz>
 
-Fengguang
----
+										Honza
 
-clear PAGECACHE_TAG_DIRTY for truncated page in block_write_full_page()
-
-The `truncated' page in block_write_full_page() may stick for a long time.
-E.g. ext2_rmdir() will set i_size to 0. The dir may still be referenced by
-someone, and have dirty pages in it.
-
-So clear PAGECACHE_TAG_DIRTY to prevent pdflush from retrying and iowaiting on
-it.
-
-Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
----
-fs/buffer.c |    2 ++
- 1 files changed, 2 insertions(+)
-
-Index: linux/fs/buffer.c
-===================================================================
---- linux.orig/fs/buffer.c
-+++ linux/fs/buffer.c
-@@ -2820,7 +2820,9 @@ int block_write_full_page(struct page *p
- 		 * freeable here, so the page does not leak.
- 		 */
- 		do_invalidatepage(page, 0);
-+		set_page_writeback(page);
- 		unlock_page(page);
-+		end_page_writeback(page);
- 		return 0; /* don't care */
- 	}
- 
-
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
