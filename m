@@ -1,96 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757239AbYANWVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757302AbYANWVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757239AbYANWVj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 17:21:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755809AbYANWQx
+	id S1757302AbYANWVy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 17:21:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755856AbYANWQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 17:16:53 -0500
-Received: from cantor.suse.de ([195.135.220.2]:59789 "EHLO mx1.suse.de"
+	Mon, 14 Jan 2008 17:16:56 -0500
+Received: from ns2.suse.de ([195.135.220.15]:54949 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753161AbYANWQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 17:16:48 -0500
+	id S1755650AbYANWQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 17:16:50 -0500
 From: Andi Kleen <ak@suse.de>
 References: <200801141116.534682000@suse.de>
 In-Reply-To: <200801141116.534682000@suse.de>
 To: linux-kernel@vger.kernel.org, jbeulich@novell.com, mingo@elte.hu,
        tglx@linutronix.de
-Subject: [PATCH] [14/31] CPA: Use page granuality TLB flushing in change_page_attr
-Message-Id: <20080114221646.9F5A714F83@wotan.suse.de>
-Date: Mon, 14 Jan 2008 23:16:46 +0100 (CET)
+Subject: [PATCH] [16/31] CPA: Use wbinvd() macro instead of inline assembly in 64bit c_p_a()
+Message-Id: <20080114221648.C166914F83@wotan.suse.de>
+Date: Mon, 14 Jan 2008 23:16:48 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-With the infrastructure added for CLFLUSH it is possible
-to only TLB flush the actually changed pages in change_page_attr()
-
-Take care of old Athlon K7 Errata on the 32bit version
-
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86/mm/pageattr_32.c |   15 ++++++++-------
- arch/x86/mm/pageattr_64.c |   10 +++++-----
- 2 files changed, 13 insertions(+), 12 deletions(-)
+ arch/x86/mm/pageattr_64.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux/arch/x86/mm/pageattr_32.c
-===================================================================
---- linux.orig/arch/x86/mm/pageattr_32.c
-+++ linux/arch/x86/mm/pageattr_32.c
-@@ -97,19 +97,20 @@ static void flush_kernel_map(void *arg)
- 	struct flush_arg *a = (struct flush_arg *)arg;
- 	struct flush *f;
- 
--	if (!cpu_has_clflush)
--		a->full_flush = 1;
--	if (a->full_flush && boot_cpu_data.x86_model >= 4)
-+	if ((!cpu_has_clflush || a->full_flush) && boot_cpu_data.x86_model >= 4)
- 		wbinvd();
- 	list_for_each_entry(f, &a->l, l) {
- 		if (!a->full_flush)
- 			clflush_cache_range((void *)f->addr, PAGE_SIZE);
-+		if (!a->full_flush)
-+			__flush_tlb_one(f->addr);
- 	}
- 
--	/* Flush all to work around Errata in early athlons regarding 
--	 * large page flushing. 
--	 */
--	__flush_tlb_all();	
-+	/* Handle errata with flushing large pages in early Athlons */
-+	if (a->full_flush ||
-+	    (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
-+	     boot_cpu_data.x86 == 7))
-+		__flush_tlb_all();
- }
- 
- static void set_pmd_pte(pte_t *kpte, unsigned long address, pte_t pte) 
 Index: linux/arch/x86/mm/pageattr_64.c
 ===================================================================
 --- linux.orig/arch/x86/mm/pageattr_64.c
 +++ linux/arch/x86/mm/pageattr_64.c
-@@ -92,18 +92,18 @@ static void flush_kernel_map(void *arg)
- 	struct flush_arg *a = (struct flush_arg *)arg;
- 	struct flush *f;
- 
--	if (!cpu_has_clflush)
--		a->full_flush = 1;
--
+@@ -95,7 +95,7 @@ static void flush_kernel_map(void *arg)
  	/* When clflush is available always use it because it is
  	   much cheaper than WBINVD. */
--	if (a->full_flush)
-+	if (a->full_flush || !cpu_has_clflush)
- 		asm volatile("wbinvd" ::: "memory");
+ 	if ((a->full_flush || !cpu_has_clflush) && !cpu_has_ss)
+-		asm volatile("wbinvd" ::: "memory");
++		wbinvd();
  	list_for_each_entry(f, &a->l, l) {
- 		if (!a->full_flush)
+ 		if (!a->full_flush && !cpu_has_ss)
  			clflush_cache_range((void *)f->addr, PAGE_SIZE);
-+		if (!a->full_flush)
-+			__flush_tlb_one(f->addr);
- 	}
--	__flush_tlb_all();
-+	if (a->full_flush)
-+		__flush_tlb_all();
- }
- 
- /* both protected by init_mm.mmap_sem */
