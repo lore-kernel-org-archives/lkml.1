@@ -1,62 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753740AbYANSV7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbYANSW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753740AbYANSV7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 13:21:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbYANSVw
+	id S1754674AbYANSW4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 13:22:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbYANSWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 13:21:52 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:43230 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750993AbYANSVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 13:21:51 -0500
-Date: Mon, 14 Jan 2008 20:20:52 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Andi Kleen <andi@firstfloor.org>,
-       rjw@sisk.pl, pavel@suse.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without
-	HOTPLUG_CPU
-Message-ID: <20080114182052.GB9847@does.not.exist>
-References: <20080110111514.GS25945@bingen.suse.de> <20080110112607.GE28740@does.not.exist> <200801101242.53504.ak@suse.de> <20080110124702.GF28740@does.not.exist> <p73fxx5omck.fsf@bingen.suse.de> <20080110150911.GG28740@does.not.exist> <20080114135240.GA15357@elte.hu> <20080114140910.GA8507@uranus.ravnborg.org> <20080114145854.GA31695@elte.hu> <20080114150103.GA2700@elte.hu>
+	Mon, 14 Jan 2008 13:22:46 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:42776 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750868AbYANSWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 13:22:45 -0500
+Message-ID: <478BA872.60309@sgi.com>
+Date: Mon, 14 Jan 2008 10:22:42 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080114150103.GA2700@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-12-11)
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       mingo@elte.hu, Christoph Lameter <clameter@sgi.com>,
+       Jack Steiner <steiner@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/10] x86: Change size of APICIDs from u8 to u16
+References: <20080113183453.973425000@sgi.com> <20080113183454.155968000@sgi.com> <Pine.LNX.4.64.0801141908370.24893@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0801141908370.24893@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 14, 2008 at 04:01:03PM +0100, Ingo Molnar wrote:
+Jan Engelhardt wrote:
+> On Jan 13 2008 10:34, travis@sgi.com wrote:
+>> --- a/arch/x86/kernel/mpparse_64.c
+>> +++ b/arch/x86/kernel/mpparse_64.c
+>> @@ -132,7 +132,7 @@ static void __cpuinit MP_processor_info(
+>> 	 * area is created.
+>> 	 */
+>> 	if (x86_cpu_to_apicid_ptr) {
+>> -		u8 *x86_cpu_to_apicid = (u8 *)x86_cpu_to_apicid_ptr;
+>> +		u16 *x86_cpu_to_apicid = (u16 *)x86_cpu_to_apicid_ptr;
+>> 		x86_cpu_to_apicid[cpu] = m->mpc_apicid;
+>> 	} else {
+>> 		per_cpu(x86_cpu_to_apicid, cpu) = m->mpc_apicid;
 > 
-> * Ingo Molnar <mingo@elte.hu> wrote:
+> You can do away with the cast while modifying this line.
+
+Thanks!  For some reason I had problems with the 'inter-section'
+referencing and this slipped in while addressing that problem.
+
 > 
-> > > Would be great to have them automated - just dunno how to do it. Do 
-> > > you see a feasible way to do it?
-> > 
-> > a good starting point would be to make the warnings a lot more 
-> > self-explanatory. Right now it's often non-obvious trying to figure 
-> > out how the dependencies are structured and which one should be 
-> > changed to get rid of the bug.
+>> --- a/arch/x86/mm/srat_64.c
+>> +++ b/arch/x86/mm/srat_64.c
+>> @@ -384,6 +388,12 @@ int __init acpi_scan_nodes(unsigned long
+>> }
+>>
+>> #ifdef CONFIG_NUMA_EMU
+>> +static int fake_node_to_pxm_map[MAX_NUMNODES] __initdata = {
+>> +	[0 ... MAX_NUMNODES-1] = PXM_INVAL
+>> +};
+>> +static unsigned char fake_apicid_to_node[MAX_LOCAL_APIC] __initdata = {
+>> +	[0 ... MAX_LOCAL_APIC-1] = NUMA_NO_NODE
+>> +};
+>> static int __init find_node_by_addr(unsigned long addr)
+>> {
+>> 	int ret = NUMA_NO_NODE;
 > 
-> for example, in current -git, could you tell me why this triggers:
-> 
->  WARNING: vmlinux.o(.text+0x87e2a): Section mismatch: reference to 
->           .init.text: (between 'process_zones' and 'setup_per_cpu_pageset')
-> 
-> and how to resolve it? I had a quick look and it was not obvious to me.
+> No u8/u16 here?
 
-Please send the .config.
+Good point.
 
-> 	Ingo
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Thanks,
+Mike
 
