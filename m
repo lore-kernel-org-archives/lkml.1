@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755499AbYANHwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753282AbYANIAI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755499AbYANHwW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 02:52:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbYANHwL
+	id S1753282AbYANIAI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 03:00:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbYANH7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 02:52:11 -0500
-Received: from miranda.se.axis.com ([193.13.178.8]:47071 "EHLO
-	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752250AbYANHwJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 02:52:09 -0500
-Date: Mon, 14 Jan 2008 08:51:53 +0100
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mikael.starvik@axis.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] CRIS v10: Correct do_signal to fix oops and clean up signal handling in general.
-Message-ID: <20080114075153.GA3912@axis.com>
-References: <20080111185923.GE27482@axis.com> <20080111154513.43c0d414.akpm@linux-foundation.org>
+	Mon, 14 Jan 2008 02:59:54 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41159 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751399AbYANH7x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 02:59:53 -0500
+Date: Mon, 14 Jan 2008 08:59:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: David Dillow <dillowda@ornl.gov>, Guillaume Chazarain <guichaz@yahoo.fr>,
+       linux-kernel@vger.kernel.org, linux-btrace@vger.kernel.org,
+       mingo@redhat.com, tglx@linutronix.de,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] block: fix blktrace timestamps
+Message-ID: <20080114075922.GA17686@elte.hu>
+References: <20080111090723.GI6258@kernel.dk> <20080111092334.GA8143@elte.hu> <20080111092513.GO6258@kernel.dk> <20080111094205.GE8143@elte.hu> <20080111095654.GR6258@kernel.dk> <20080111102953.GA27223@elte.hu> <20080111122802.GT6258@kernel.dk> <20080111132106.GA16496@elte.hu> <20080111171855.GX6258@kernel.dk> <20080114075114.GA13195@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080111154513.43c0d414.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080114075114.GA13195@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 11, 2008 at 03:45:13PM -0800, Andrew Morton wrote:
-> On Fri, 11 Jan 2008 19:59:24 +0100
-> Jesper Nilsson <jesper.nilsson@axis.com> wrote:
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> because a perfectly working system is:
 > 
-> > CRIS v10: Correct do_signal to fix oops and clean up signal handling in general.
-> > 
-> > This fixes a kernel panic on boot due to do_signal not being compatible
-> > with it's callers.
+>  "a user's .config that worked before should work with the new kernel
+>   too"
 > 
-> Please sequence-number patches even if they are unrelated.  That will make
-> emails like this one easier.
-
-Yes, sorry about that, they should have been sequenced.
-
-> 1: CRIS v10: Correct do_signal to fix oops and clean up signal handling in general.
-> 2: CRIS: Define __ARCH_WANT_SYS_RT_SIGSUSPEND in unistd.h for CRIS
-> 3: CRIS v10: kernel/time.c needs to include linux/vmstat.h to compile.
-> 4: CRIS v10: Driver for ds1302 needs to include cris-specific i2c.h
+> not:
 > 
-> Patches 3 and 4 were missing your signed-off-by:.  I added it.
+>  "a user's .config that worked before should work now too, with random
+>   new kernel features enabled as well."
 > 
-> I queued patches 1, 3 and 4 for 2.6.24 and patch 2 for 2.6.25.  Do you agree?
+> the latter appears to be the rule you are applying, but it's not the 
+> regression rule we are using.
 
-All four should be queued for 2.6.24 since patch 2 is needed if patch 1
-is included, otherwise sys_rt_sigsuspend will be undefined causing a
-link error.
+Jens, just to bring your definition of regressions to its logical 
+conclusion: does this mean that if there is any longstanding bug in the 
+block layer that you know about, but i didnt ever utilize that bit of 
+the block layer it in my .config, and if i enable it now in the .config 
+and i experience that bug, does it suddenly count as a regression? Do 
+you realize that your definition for "regressions" turns _almost every_ 
+current bug in the kernel into a regression?
 
-Thanks!
-
-/^JN - Jesper Nilsson
---
-               Jesper Nilsson -- jesper.nilsson@axis.com
+	Ingo
