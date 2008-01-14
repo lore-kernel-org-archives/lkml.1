@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754700AbYANQMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbYANQOZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754700AbYANQMT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 11:12:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbYANQMM
+	id S1754725AbYANQOZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 11:14:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbYANQOR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 11:12:12 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54972 "EHLO mx2.mail.elte.hu"
+	Mon, 14 Jan 2008 11:14:17 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55700 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750898AbYANQML (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 11:12:11 -0500
-Date: Mon, 14 Jan 2008 17:11:50 +0100
+	id S1750852AbYANQOQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 11:14:16 -0500
+Date: Mon, 14 Jan 2008 17:13:59 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Greg KH <greg@kroah.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: [patch] auto-qa Kconfig
-Message-ID: <20080114161150.GC15542@elte.hu>
-References: <20071222233056.d652743e.akpm@linux-foundation.org> <20071231121115.b7ae39e4.randy.dunlap@oracle.com> <20080112010528.GA1590@kroah.com>
+To: Matthew <jackdachef@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ed Tomlinson <edt@aei.ca>
+Subject: Re: Fwd: Fwd: laptop / computer hardlocks during execution of
+	32bit applications(binaries) on 64bit system (Gentoo)
+Message-ID: <20080114161359.GD15542@elte.hu>
+References: <e85b9d30801080333y3d6668ccgf20f9666d0326884@mail.gmail.com> <e85b9d30801080340y43fbd4c0sa9b6c9811c7391a1@mail.gmail.com> <47841C41.4060401@zytor.com> <e85b9d30801101310p485c7686o30b7cd581043712@mail.gmail.com> <47868B6D.6030208@zytor.com> <e85b9d30801101352hf66826eqe436e61310c96f14@mail.gmail.com> <478694CB.4000306@zytor.com> <e85b9d30801101428s1c760cb1i5ee415738dffb90f@mail.gmail.com> <47869C93.2060308@zytor.com> <e85b9d30801101453k21c60f81v1975cde6a8d5ed52@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080112010528.GA1590@kroah.com>
+In-Reply-To: <e85b9d30801101453k21c60f81v1975cde6a8d5ed52@mail.gmail.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,40 +37,14 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Greg KH <greg@kroah.com> wrote:
+* Matthew <jackdachef@gmail.com> wrote:
 
-> > and that is after fixing (in some sense) the first CONFIG_BLOCK=n 
-> > problem with the patch below.  Please test lots of configs. and/or 
-> > use 'make randconfig' (automated, scripted, e.g., etc.). maybe check 
-> > Documentation/SubmitChecklist.  :)
+> > I just managed to reproduce the bug in simulation.  I believe we should
+> > be able to resolve this.
 > 
-> Ingo seems to be saying that he has some kind of "automated" build 
-> system to do this kind of checking.  Ingo, did you ever post how you 
-> did this anywhere?  I have enough spare machines here that I should be 
-> able to set up something to test my stuff this way easier than doing 
-> it by hand all the time (as the above problem proves I do miss things 
-> :( )
+> That's great news! Keep up the good work :)
 
-the crux of it is this patch:
-
-  http://redhat.com/~mingo/auto-qa-patches/Kconfig-qa.patch
-
-(ontop of x86.git)
-
-adjust your arch/x86/Kconfig.needed whitelist (should already work on 
-typical systems) and do a 'make randconfig'. Every config is supposed to 
-build and boot fine, including 'make allnoconfig' and 'make 
-allyesconfig'. And please let me know about any blacklist items as well. 
-(right now they are a bit hacky via a "depends on 0" line and a small 
-comment explaining why they are not suitable in a bzImage kernel.)
-
-( the CONFIG_BOOTPARAM stuff is there to easily randomize boot options - 
-we frequently have regressions that only trigger with certain boot 
-option combinations. )
-
-it's somewhat hackish in places. The rest of my scripts (to scp a new 
-kernel image, to reboot a testbox, etc.) tie in to my specific 
-environment quite closely and make no sense to be posted. (they are also 
-quite ugly)
+FYI, latest x86.git should have this fix included. So if your box still 
+hangs there must be some other bug lurking as well.
 
 	Ingo
