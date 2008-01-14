@@ -1,71 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbYAOAwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbYAOA4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755483AbYAOAwy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 19:52:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbYAOAwq
+	id S1755547AbYAOA4T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 19:56:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbYAOA4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 19:52:46 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57279 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750708AbYAOAwp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 19:52:45 -0500
-Date: Tue, 15 Jan 2008 09:52:14 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH 0/5] mem notifications v4
-Cc: kosaki.motohiro@jp.fujitsu.com, Marcelo Tosatti <marcelo@kvack.org>,
-       Daniel Spang <daniel.spang@gmail.com>, Rik van Riel <riel@redhat.com>,
+	Mon, 14 Jan 2008 19:56:10 -0500
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:37055 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752778AbYAOA4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 19:56:08 -0500
+Message-ID: <400358577.30629@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Mon, 14 Jan 2008 20:50:53 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: jplatte@naasa.net, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Message-Id: <20080115092828.116F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Subject: Re: regression: 100% io-wait with 2.6.24-rcX
+References: <200801071151.11200.lists@naasa.net> <20080114035439.GA7330@mail.ustc.edu.cn> <400304530.01514@ustc.edu.cn> <200801141230.13694.jplatte@naasa.net> <1200310886.15103.1.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1200310886.15103.1.camel@twins>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.12-2006-07-14
+Message-Id: <E1JEOmD-0001Ap-U7@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Mon, Jan 14, 2008 at 12:41:26PM +0100, Peter Zijlstra wrote:
+> 
+> On Mon, 2008-01-14 at 12:30 +0100, Joerg Platte wrote:
+> > Am Montag, 14. Januar 2008 schrieb Fengguang Wu:
+> > 
+> > > Joerg, this patch fixed the bug for me :-)
+> > 
+> > Fengguang, congratulations, I can confirm that your patch fixed the bug! With 
+> > previous kernels the bug showed up after each reboot. Now, when booting the 
+> > patched kernel everything is fine and there is no longer any suspicious 
+> > iowait!
+> > 
+> > Do you have an idea why this problem appeared in 2.6.24? Did somebody change 
+> > the ext2 code or is it related to the changes in the scheduler?
+> 
+> It was Fengguang who changed the inode writeback code, and I guess the
+> new and improved code was less able do deal with these funny corner
+> cases. But he has been very good in tracking them down and solving them,
+> kudos to him for that work!
 
-The /dev/mem_notify is low memory notification device.
-it can avoid swappness and oom by cooperationg with the user process.
+Thank you.
 
-You need not be annoyed by OOM any longer :)
-please any comments!
+In particular the bug is triggered by the patch named:
+        "writeback: introduce writeback_control.more_io to indicate more io"
+That patch means to speed up writeback, but unfortunately its
+aggressiveness has disclosed bugs in reiserfs, jfs and now ext2.
 
+Linus, given the number of bugs it triggered, I'd recommend revert
+this patch(git commit 2e6883bdf49abd0e7f0d9b6297fc3be7ebb2250b). Let's
+push it back to -mm tree for more testings?
 
-related discussion:
---------------------------------------------------------------
-  LKML OOM notifications requirement discussion
-     http://www.gossamer-threads.com/lists/linux/kernel/832802?nohighlight=1#832802
-  OOM notifications patch [Marcelo Tosatti]
-     http://marc.info/?l=linux-kernel&m=119273914027743&w=2
-  mem notifications v3 [Marcelo Tosatti]
-     http://marc.info/?l=linux-mm&m=119852828327044&w=2
-  Thrashing notification patch  [Daniel Spang]
-     http://marc.info/?l=linux-mm&m=119427416315676&w=2
-
-
-Changelog
--------------------------------------------------
-  v3 -> v4 (by KOSAKI Motohiro)
-    o rebase to 2.6.24-rc6-mm1
-    o avoid wake up all.
-    o add judgement point to __free_one_page().
-    o add zone awareness.
-
-  v2 -> v3 (by Marcelo Tosatti)
-    o changes the notification point to happen whenever
-      the VM moves an anonymous page to the inactive list.
-    o implement notification rate limit.
-
-  v1(oom notify) -> v2 (by Marcelo Tosatti)
-    o name change
-    o notify timing change from just swap thrashing to
-      just before thrashing.
-    o also works with swapless device.
-
-
-
+Regards,
+Fengguang
 
