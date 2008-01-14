@@ -1,50 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752647AbYANOaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753143AbYANOb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752647AbYANOaS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 09:30:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbYANOaG
+	id S1753143AbYANOb2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 09:31:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbYANObT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 09:30:06 -0500
-Received: from mail.gmx.net ([213.165.64.20]:38345 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750810AbYANOaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 09:30:04 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18HF6hknM0Hw5NCnxU2CFVwuxRm9ODzSdbuvLB178
-	4VgAguG2kSwuGA
-Subject: Re: 2.6.24-rc7-rt1
-From: Mike Galbraith <efault@gmx.de>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>
-In-Reply-To: <1200317101.3733.14.camel@homer.simson.net>
-References: <1200250801.9190.7.camel@localhost.localdomain>
-	 <200801132143.34889.m.kozlowski@tuxland.pl>
-	 <Pine.LNX.4.58.0801131552350.10093@gandalf.stny.rr.com>
-	 <1200299260.4665.17.camel@homer.simson.net>
-	 <478B0B7C.BA47.005A.0@novell.com>
-	 <1200317101.3733.14.camel@homer.simson.net>
-Content-Type: text/plain
-Date: Mon, 14 Jan 2008 15:29:58 +0100
-Message-Id: <1200320998.4249.3.camel@homer.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Mon, 14 Jan 2008 09:31:19 -0500
+Received: from bde.crans.org ([138.231.137.76]:45121 "EHLO bde.crans.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751217AbYANObS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 09:31:18 -0500
+From: Mathieu Segaud <mathieu.segaud@regala.cx>
+To: linux-scsi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Mathieu Segaud <mathieu.segaud@regala.cx>
+Subject: [PATCH] Convert drivers/scsi/ch.c to use unlocked_ioctl
+Date: Mon, 14 Jan 2008 15:31:17 +0100
+Message-Id: <1200321077-26916-1-git-send-email-mathieu.segaud@regala.cx>
+X-Mailer: git-send-email 1.5.3.8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+As of now, compat_ioctl already runs without the BKL, whereas ioctl runs
+with the BKL. This patch first converts changer_fops to use a .unlocked_ioctl
+member. It applies the same locking rationale than ch_ioctl_compat() uses
+to ch_ioctl().
 
-On Mon, 2008-01-14 at 14:25 +0100, Mike Galbraith wrote:
+Signed-off-by: Mathieu Segaud <mathieu.segaud@regala.cx>
+---
+ drivers/scsi/ch.c |   18 ++++++++----------
+ 1 files changed, 8 insertions(+), 10 deletions(-)
 
-> No, I just copied the matching paranoia while leering at it.
-
-Actually, I can't say definitively no, only that a panic() there didn't
-make keyboard blink.  Suspend may be disabling blinkies, dunno.
-
-	-Mike
+diff --git a/drivers/scsi/ch.c b/drivers/scsi/ch.c
+index 2311019..389777c 100644
+--- a/drivers/scsi/ch.c
++++ b/drivers/scsi/ch.c
+@@ -92,8 +92,7 @@ static int  ch_probe(struct device *);
+ static int  ch_remove(struct device *);
+ static int  ch_open(struct inode * inode, struct file * filp);
+ static int  ch_release(struct inode * inode, struct file * filp);
+-static int  ch_ioctl(struct inode * inode, struct file * filp,
+-		     unsigned int cmd, unsigned long arg);
++static long ch_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
+ #ifdef CONFIG_COMPAT
+ static long ch_ioctl_compat(struct file * filp,
+ 			    unsigned int cmd, unsigned long arg);
+@@ -130,12 +129,12 @@ static struct scsi_driver ch_template =
+ 
+ static const struct file_operations changer_fops =
+ {
+-	.owner        = THIS_MODULE,
+-	.open         = ch_open,
+-	.release      = ch_release,
+-	.ioctl        = ch_ioctl,
++	.owner			= THIS_MODULE,
++	.open			= ch_open,
++	.release		= ch_release,
++	.unlocked_ioctl	= ch_ioctl,
+ #ifdef CONFIG_COMPAT
+-	.compat_ioctl = ch_ioctl_compat,
++	.compat_ioctl	= ch_ioctl_compat,
+ #endif
+ };
+ 
+@@ -626,7 +625,7 @@ ch_checkrange(scsi_changer *ch, unsigned int type, unsigned int unit)
+ 	return 0;
+ }
+ 
+-static int ch_ioctl(struct inode * inode, struct file * file,
++static long ch_ioctl(struct file *file,
+ 		    unsigned int cmd, unsigned long arg)
+ {
+ 	scsi_changer *ch = file->private_data;
+@@ -887,8 +886,7 @@ static long ch_ioctl_compat(struct file * file,
+ 	case CHIOINITELEM:
+ 	case CHIOSVOLTAG:
+ 		/* compatible */
+-		return ch_ioctl(NULL /* inode, unused */,
+-				file, cmd, arg);
++		return ch_ioctl(file, cmd, arg);
+ 	case CHIOGSTATUS32:
+ 	{
+ 		struct changer_element_status32 ces32;
+-- 
+1.5.3.8
 
