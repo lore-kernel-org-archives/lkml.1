@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754374AbYANIu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753999AbYANJAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754374AbYANIu6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 03:50:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbYANIut
+	id S1753999AbYANJAf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 04:00:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121AbYANJAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 03:50:49 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55236 "EHLO mx3.mail.elte.hu"
+	Mon, 14 Jan 2008 04:00:25 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48102 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752888AbYANIus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 03:50:48 -0500
-Date: Mon, 14 Jan 2008 09:50:27 +0100
+	id S1751432AbYANJAY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 04:00:24 -0500
+Date: Mon, 14 Jan 2008 10:00:10 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: x86: Add the "print code before the trapping instruction"
-	feature to 64 bit
-Message-ID: <20080114085026.GA26367@elte.hu>
-References: <20080110084739.5ba72522@laptopd505.fenrus.org> <4786780F.90302@redhat.com>
+To: travis@sgi.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/10] x86: Reduce memory and intra-node effects with
+	large count NR_CPUs
+Message-ID: <20080114090010.GA5404@elte.hu>
+References: <20080113183453.973425000@sgi.com> <20080114081418.GB18296@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4786780F.90302@redhat.com>
+In-Reply-To: <20080114081418.GB18296@elte.hu>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,26 +37,14 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Chuck Ebbert <cebbert@redhat.com> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> > Subject: x86: Add the "print code before the trapping instruction" feature to 64 bit
-> > From: Arjan van de Ven <arjan@linux.intel.com>
-> > 
-> > The 32 bit x86 tree has a very useful feature that prints the Code: 
-> > line for the code even before the trapping instrution (and the start 
-> > of the trapping instruction is then denoted with a <>). 
-> > Unfortunately, the 64 bit x86 tree does not yet have this feature, 
-> > making diagnosing backtraces harder than needed.
-> > 
-> > This patch adds this feature in the same was as the 32 bit tree has 
-> > (including the same kernel boot parameter), and including a bugfix 
-> > to make the code use probe_kernel_address() rarther than a buggy 
-> > (deadlocking) __get_user.
-> > 
+> > 32cpus			  1kcpus-before		    1kcpus-after
+> >    7172678 Total	   +23314404 Total	       -147590 Total
 > 
-> If this get accepted I can stop ignoring x86_64 oops reports...
+> 1kcpus-after means it's +23314404-147590, i.e. +23166814? (i.e. a 0.6% 
+> reduction of the bloat?)
 
-yep - all of Arjan's patches are in x86.git. (right now with a merge 
-target of v2.6.25)
+or if it's relative to 32cpus then that's an excellent result :)
 
 	Ingo
