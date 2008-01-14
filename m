@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbYANImn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754361AbYANIox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754534AbYANImn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 03:42:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752263AbYANImf
+	id S1754361AbYANIox (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 03:44:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbYANIon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 03:42:35 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:16589 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752183AbYANIme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 03:42:34 -0500
-Date: Mon, 14 Jan 2008 09:42:32 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, David Dillow <dillowda@ornl.gov>,
-       Guillaume Chazarain <guichaz@yahoo.fr>, linux-kernel@vger.kernel.org,
-       linux-btrace@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] block: fix blktrace timestamps
-Message-ID: <20080114084231.GQ6258@kernel.dk>
-References: <20080111092334.GA8143@elte.hu> <20080111092513.GO6258@kernel.dk> <20080111094205.GE8143@elte.hu> <20080111095654.GR6258@kernel.dk> <20080111102953.GA27223@elte.hu> <20080111122802.GT6258@kernel.dk> <20080111132106.GA16496@elte.hu> <20080111171855.GX6258@kernel.dk> <20080114075114.GA13195@elte.hu> <20080114083901.GA17897@infradead.org>
-MIME-Version: 1.0
+	Mon, 14 Jan 2008 03:44:43 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:58335 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751417AbYANIom (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 03:44:42 -0500
+Date: Mon, 14 Jan 2008 10:44:40 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>
+Subject: Re: Netperf TCP_RR(loopback) 10% regression in 2.6.24-rc6,	comparing
+ with 2.6.22
+In-Reply-To: <1200043854.3265.24.camel@ymzhang>
+Message-ID: <Pine.LNX.4.64.0801141036400.31652@kivilampi-30.cs.helsinki.fi>
+References: <1199871330.3298.132.camel@ymzhang> <1200043854.3265.24.camel@ymzhang>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080114083901.GA17897@infradead.org>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 14 2008, Christoph Hellwig wrote:
+On Fri, 11 Jan 2008, Zhang, Yanmin wrote:
+
+> On Wed, 2008-01-09 at 17:35 +0800, Zhang, Yanmin wrote: 
+> > The regression is:
+> > 1)stoakley with 2 qual-core processors: 11%;
+> > 2)Tulsa with 4 dual-core(+hyperThread) processors:13%;
+> I have new update on this issue and also cc to netdev maillist.
+> Thank David Miller for pointing me the netdev maillist.
 > 
-> Folks, this is getting a little silly.
+> > 
+> > The test command is:
+> > #sudo taskset -c 7 ./netserver
+> > #sudo taskset -c 0 ./netperf -t TCP_RR -l 60 -H 127.0.0.1 -i 50,3 -I 99,5 -- -r 1,1
+> > 
+> > As a matter of fact, 2.6.23 has about 6% regression and 2.6.24-rc's
+> > regression is between 16%~11%.
+> > 
+> > I tried to use bisect to locate the bad patch between 2.6.22 and 2.6.23-rc1,
+> > but the bisected kernel wasn't stable and went crazy.
 
-It is
+TCP work between that is very much non-existing.
 
-> Even if CONFIG_NO_HZ is new this is a an important regression, and
-> yes we should avoid regressions wherever we can, and for such a quite
-> important feature we should fix it.  On the other hand blktrace is using
-> the wrong interface, and it has been told multiple times on lkml that
-> sched_clock() should never ever be used outside the scheduler.  So the
-> burden to fix this regression lies on the shoulders of the blktrace
-> maintainer.
+Using git-reset's to select a nearby merge point instead of default 
+commit where bisection lands might be help in case the bisected kernel 
+breaks.
 
-That is true. So far alternatives have all been slower though, so not
-very tempting to transition to.
+Also, limiting bisection under a subsystem might reduce probability of 
+brokeness (might at least be able to narrow it down quite a lot), e.g.
 
-> No need for silly name calling here.
+git bisect start net/
 
-I don't know what thread you are reading, but neiter Ingo nor I have
-resorted to silly name calling. The thread has long since diverted from
-the original topic, though.
 
 -- 
-Jens Axboe
-
+ i.
