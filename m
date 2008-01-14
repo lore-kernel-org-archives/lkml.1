@@ -1,50 +1,230 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758065AbYANW2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757384AbYANW3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758065AbYANW2v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 17:28:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755782AbYANWUv
+	id S1757384AbYANW3V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 17:29:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757131AbYANWWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 17:20:51 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:58312 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756857AbYANWUt (ORCPT
+	Mon, 14 Jan 2008 17:22:52 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:46125 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756599AbYANWWt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 17:20:49 -0500
-Date: Mon, 14 Jan 2008 23:23:49 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: unify pagetable accessors patch causes double fault II
-Message-ID: <20080114222349.GA23409@one.firstfloor.org>
-References: <20080114094814.GA28300@basil.nowhere.org> <20080114125638.GA9510@basil.nowhere.org> <20080114130620.GA14057@elte.hu> <20080114135811.GA16190@one.firstfloor.org> <478BDC43.6050105@goop.org>
-Mime-Version: 1.0
+	Mon, 14 Jan 2008 17:22:49 -0500
+Date: Mon, 14 Jan 2008 16:23:05 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
+       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
+Subject: Re: [patch 4/9] unprivileged mounts: propagate error values from
+	clone_mnt
+Message-ID: <20080114222305.GD6704@sergelap.austin.ibm.com>
+References: <20080108113502.184459371@szeredi.hu> <20080108113624.898035951@szeredi.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <478BDC43.6050105@goop.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080108113624.898035951@szeredi.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> OK, I see the problem.  The problem is that the _PAGE_X defines are 
-> defined with _AC(UL, 1 << _PAGE_BIT_X), which has unsigned long type.  
-> This means that ~_PAGE_X also has unsigned long type, and so when cast 
-> to 64-bit in pte_mkX, it ends up &ing the pte with 0x00000000ffffffxxx, 
-> with predictable results.
-
-Actually I fixed some of that -- see the pgtable-nx patch on firstfloor -- but
-it still doesn't work. Or maybe my patch was not complete.
+Quoting Miklos Szeredi (miklos@szeredi.hu):
+> From: Miklos Szeredi <mszeredi@suse.cz>
 > 
-> The original code just used signed constants for the _PAGE_X 
-> definitions, which will sign-extend when cast to 64-bit, and so have the 
-> upper bits set when masking.  (Well, actually, the old code just 
-> operated on pte_low, so the problem didn't arise; however, pgtable_64.h 
-> also uses integers for its _PAGE_X, which has the same sign-extended 
-> 32->64 casting property).
+> Allow clone_mnt() to return errors other than ENOMEM.  This will be used for
+> returning a different error value when the number of user mounts goes over the
+> limit.
 > 
-> I'll put together a fixup patch now.
+> Fix copy_tree() to return EPERM for unbindable mounts.
+> 
+> Don't propagate further from dup_mnt_ns() as that copy_tree() can only fail
+> with -ENOMEM.
 
-I'm leaving now but can test later.
+I see what you're saying, but it just seems like it's bound to be more
+confusing this way.
 
--Andi
+What's the reason to insist on doing this?  To force people to think
+about it as a form of documentation?
+
+Still,
+
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+
+> ---
+> 
+> Index: linux/fs/namespace.c
+> ===================================================================
+> --- linux.orig/fs/namespace.c	2008-01-04 13:47:09.000000000 +0100
+> +++ linux/fs/namespace.c	2008-01-04 13:47:49.000000000 +0100
+> @@ -512,41 +512,42 @@ static struct vfsmount *clone_mnt(struct
+>  	struct super_block *sb = old->mnt_sb;
+>  	struct vfsmount *mnt = alloc_vfsmnt(old->mnt_devname);
+> 
+> -	if (mnt) {
+> -		mnt->mnt_flags = old->mnt_flags;
+> -		atomic_inc(&sb->s_active);
+> -		mnt->mnt_sb = sb;
+> -		mnt->mnt_root = dget(root);
+> -		mnt->mnt_mountpoint = mnt->mnt_root;
+> -		mnt->mnt_parent = mnt;
+> -
+> -		/* don't copy the MNT_USER flag */
+> -		mnt->mnt_flags &= ~MNT_USER;
+> -		if (flag & CL_SETUSER)
+> -			set_mnt_user(mnt);
+> -
+> -		if (flag & CL_SLAVE) {
+> -			list_add(&mnt->mnt_slave, &old->mnt_slave_list);
+> -			mnt->mnt_master = old;
+> -			CLEAR_MNT_SHARED(mnt);
+> -		} else if (!(flag & CL_PRIVATE)) {
+> -			if ((flag & CL_PROPAGATION) || IS_MNT_SHARED(old))
+> -				list_add(&mnt->mnt_share, &old->mnt_share);
+> -			if (IS_MNT_SLAVE(old))
+> -				list_add(&mnt->mnt_slave, &old->mnt_slave);
+> -			mnt->mnt_master = old->mnt_master;
+> -		}
+> -		if (flag & CL_MAKE_SHARED)
+> -			set_mnt_shared(mnt);
+> +	if (!mnt)
+> +		return ERR_PTR(-ENOMEM);
+> 
+> -		/* stick the duplicate mount on the same expiry list
+> -		 * as the original if that was on one */
+> -		if (flag & CL_EXPIRE) {
+> -			spin_lock(&vfsmount_lock);
+> -			if (!list_empty(&old->mnt_expire))
+> -				list_add(&mnt->mnt_expire, &old->mnt_expire);
+> -			spin_unlock(&vfsmount_lock);
+> -		}
+> +	mnt->mnt_flags = old->mnt_flags;
+> +	atomic_inc(&sb->s_active);
+> +	mnt->mnt_sb = sb;
+> +	mnt->mnt_root = dget(root);
+> +	mnt->mnt_mountpoint = mnt->mnt_root;
+> +	mnt->mnt_parent = mnt;
+> +
+> +	/* don't copy the MNT_USER flag */
+> +	mnt->mnt_flags &= ~MNT_USER;
+> +	if (flag & CL_SETUSER)
+> +		set_mnt_user(mnt);
+> +
+> +	if (flag & CL_SLAVE) {
+> +		list_add(&mnt->mnt_slave, &old->mnt_slave_list);
+> +		mnt->mnt_master = old;
+> +		CLEAR_MNT_SHARED(mnt);
+> +	} else if (!(flag & CL_PRIVATE)) {
+> +		if ((flag & CL_PROPAGATION) || IS_MNT_SHARED(old))
+> +			list_add(&mnt->mnt_share, &old->mnt_share);
+> +		if (IS_MNT_SLAVE(old))
+> +			list_add(&mnt->mnt_slave, &old->mnt_slave);
+> +		mnt->mnt_master = old->mnt_master;
+> +	}
+> +	if (flag & CL_MAKE_SHARED)
+> +		set_mnt_shared(mnt);
+> +
+> +	/* stick the duplicate mount on the same expiry list
+> +	 * as the original if that was on one */
+> +	if (flag & CL_EXPIRE) {
+> +		spin_lock(&vfsmount_lock);
+> +		if (!list_empty(&old->mnt_expire))
+> +			list_add(&mnt->mnt_expire, &old->mnt_expire);
+> +		spin_unlock(&vfsmount_lock);
+>  	}
+>  	return mnt;
+>  }
+> @@ -1021,11 +1022,11 @@ struct vfsmount *copy_tree(struct vfsmou
+>  	struct nameidata nd;
+> 
+>  	if (!(flag & CL_COPY_ALL) && IS_MNT_UNBINDABLE(mnt))
+> -		return NULL;
+> +		return ERR_PTR(-EPERM);
+> 
+>  	res = q = clone_mnt(mnt, dentry, flag);
+> -	if (!q)
+> -		goto Enomem;
+> +	if (IS_ERR(q))
+> +		goto error;
+>  	q->mnt_mountpoint = mnt->mnt_mountpoint;
+> 
+>  	p = mnt;
+> @@ -1046,8 +1047,8 @@ struct vfsmount *copy_tree(struct vfsmou
+>  			nd.path.mnt = q;
+>  			nd.path.dentry = p->mnt_mountpoint;
+>  			q = clone_mnt(p, p->mnt_root, flag);
+> -			if (!q)
+> -				goto Enomem;
+> +			if (IS_ERR(q))
+> +				goto error;
+>  			spin_lock(&vfsmount_lock);
+>  			list_add_tail(&q->mnt_list, &res->mnt_list);
+>  			attach_mnt(q, &nd);
+> @@ -1055,7 +1056,7 @@ struct vfsmount *copy_tree(struct vfsmou
+>  		}
+>  	}
+>  	return res;
+> -Enomem:
+> + error:
+>  	if (res) {
+>  		LIST_HEAD(umount_list);
+>  		spin_lock(&vfsmount_lock);
+> @@ -1063,7 +1064,7 @@ Enomem:
+>  		spin_unlock(&vfsmount_lock);
+>  		release_mounts(&umount_list);
+>  	}
+> -	return NULL;
+> +	return q;
+>  }
+> 
+>  struct vfsmount *collect_mounts(struct vfsmount *mnt, struct dentry *dentry)
+> @@ -1262,13 +1263,13 @@ static int do_loopback(struct nameidata 
+>  		goto out;
+> 
+>  	clone_fl = (flags & MS_SETUSER) ? CL_SETUSER : 0;
+> -	err = -ENOMEM;
+>  	if (flags & MS_REC)
+>  		mnt = copy_tree(old_nd.path.mnt, old_nd.path.dentry, clone_fl);
+>  	else
+>  		mnt = clone_mnt(old_nd.path.mnt, old_nd.path.dentry, clone_fl);
+> 
+> -	if (!mnt)
+> +	err = PTR_ERR(mnt);
+> +	if (IS_ERR(mnt))
+>  		goto out;
+> 
+>  	err = graft_tree(mnt, nd);
+> @@ -1840,7 +1841,7 @@ static struct mnt_namespace *dup_mnt_ns(
+>  	/* First pass: copy the tree topology */
+>  	new_ns->root = copy_tree(mnt_ns->root, mnt_ns->root->mnt_root,
+>  					CL_COPY_ALL | CL_EXPIRE);
+> -	if (!new_ns->root) {
+> +	if (IS_ERR(new_ns->root)) {
+>  		up_write(&namespace_sem);
+>  		kfree(new_ns);
+>  		return ERR_PTR(-ENOMEM);;
+> Index: linux/fs/pnode.c
+> ===================================================================
+> --- linux.orig/fs/pnode.c	2008-01-04 13:45:46.000000000 +0100
+> +++ linux/fs/pnode.c	2008-01-04 13:47:49.000000000 +0100
+> @@ -189,8 +189,9 @@ int propagate_mnt(struct vfsmount *dest_
+> 
+>  		source =  get_source(m, prev_dest_mnt, prev_src_mnt, &type);
+> 
+> -		if (!(child = copy_tree(source, source->mnt_root, type))) {
+> -			ret = -ENOMEM;
+> +		child = copy_tree(source, source->mnt_root, type);
+> +		if (IS_ERR(child)) {
+> +			ret = PTR_ERR(child);
+>  			list_splice(tree_list, tmp_list.prev);
+>  			goto out;
+>  		}
+> 
+> --
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
