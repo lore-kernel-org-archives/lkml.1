@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752901AbYANRh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbYANRoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752901AbYANRh7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 12:37:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYANRhu
+	id S1752842AbYANRoU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 12:44:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbYANRoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 12:37:50 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:5324 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751472AbYANRhu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 12:37:50 -0500
-Subject: Re: [PATCH] checkpatch.pl: show how to read from stdin
-From: Daniel Walker <dwalker@mvista.com>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Bernd Petrovitsch <bernd@firmix.at>, linux-kernel@vger.kernel.org,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, Jiri Slaby <jirislaby@gmail.com>
-In-Reply-To: <20080114171736.GC19327@shadowen.org>
-References: <47872E35.3070705@gmail.com>
-	 <1200043035.29897.62.camel@imap.mvista.com> <47873505.7040008@gmail.com>
-	 <1200043399.3905.9.camel@gimli.at.home>
-	 <1200043827.29897.70.camel@imap.mvista.com> <47873833.30001@gmail.com>
-	 <1200044206.29897.73.camel@imap.mvista.com>
-	 <4787502B.2020606@s5r6.in-berlin.de> <47875809.7060301@gmail.com>
-	 <tkrat.b5ac0cacd128569b@s5r6.in-berlin.de>
-	 <20080114171736.GC19327@shadowen.org>
-Content-Type: text/plain
-Date: Mon, 14 Jan 2008 09:35:15 -0800
-Message-Id: <1200332116.31521.3.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+	Mon, 14 Jan 2008 12:44:11 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43786 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750852AbYANRoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 12:44:10 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Linus Torvalds <torvalds@osdl.org>
+Subject: [PATCH 2.6.24 please] pnpacpi: print resource shortage message only once (more)
+Date: Mon, 14 Jan 2008 12:43:53 -0500
+User-Agent: KMail/1.9.5
+Cc: "Hartkopp, Oliver (K-EFE/E)" <oliver.hartkopp@volkswagen.de>,
+       linux-kernel@vger.kernel.org
+References: <71A66C381173F7418BA6E78EE9E33465AC02EC@vwagwox00011.vw.vwg>
+In-Reply-To: <71A66C381173F7418BA6E78EE9E33465AC02EC@vwagwox00011.vw.vwg>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801141243.53513.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Len Brown <len.brown@intel.com>
 
-On Mon, 2008-01-14 at 17:17 +0000, Andy Whitcroft wrote:
-> On Fri, Jan 11, 2008 at 06:06:35PM +0100, Stefan Richter wrote:
-> > Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> > Acked-by: Jiri Slaby <jirislaby@gmail.com>
-> 
-> As an absolute minimum this seems reasonable to me.  I guess we could
-> make no arguments default to '-' also.  There are up and downsides to
-> doing that, as currently no arguments currently tell you the usage and
-> with this patch would point clearly out the '-' option.  Just assuming
-> stding would lose easy access to usage, which may actually be more
-> confusing for the beginner.  Hmmm.  Cirtainly will include this
-> documentation change if nothing else.
-> 
+Wups, previous patch was ineffective in 2 cases.
+    
+http://bugzilla.kernel.org/show_bug.cgi?id=9535
+    
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+Thanks for noticing, Oliver!
 
-The patch that I submitted checks STDIN for piped data, and if there is
-any it will default to checking that incoming data .. That's regardless
-of the number of arguments given .. 
-
-Daniel
-
+diff --git a/drivers/pnp/pnpacpi/rsparser.c b/drivers/pnp/pnpacpi/rsparser.c
+index f7b8648..6b9840c 100644
+--- a/drivers/pnp/pnpacpi/rsparser.c
++++ b/drivers/pnp/pnpacpi/rsparser.c
+@@ -215,6 +215,7 @@ static void pnpacpi_parse_allocated_ioresource(struct pnp_resource_table *res,
+ 	} else if (!warned) {
+ 		printk(KERN_ERR "pnpacpi: exceeded the max number of IO "
+ 				"resources: %d \n", PNP_MAX_PORT);
++		warned = 1;
+ 	}
+ }
+ 
+@@ -242,6 +243,7 @@ static void pnpacpi_parse_allocated_memresource(struct pnp_resource_table *res,
+ 	} else if (!warned) {
+ 		printk(KERN_ERR "pnpacpi: exceeded the max number of mem "
+ 				"resources: %d\n", PNP_MAX_MEM);
++		warned = 1;
+ 	}
+ }
+ 
