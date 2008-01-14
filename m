@@ -1,81 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbYANA7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbYANBDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755303AbYANA7U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 19:59:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755136AbYANA7G
+	id S1754836AbYANBDp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 20:03:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbYANBDh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 19:59:06 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53384 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755144AbYANA7B (ORCPT
+	Sun, 13 Jan 2008 20:03:37 -0500
+Received: from queueout01-winn.ispmail.ntl.com ([81.103.221.31]:34612 "EHLO
+	queueout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751247AbYANBDg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 19:59:01 -0500
-Date: Mon, 14 Jan 2008 00:54:34 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: tcamuso@redhat.com
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <greg@kroah.com>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Martin Mares <mj@ucw.cz>, Loic Prylli <loic@myri.com>,
-       Prarit Bhargava <prarit@redhat.com>,
-       "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>,
-       "Schoeller, Patrick (Linux - Houston, TX)" <Patrick.Schoeller@hp.com>,
-       Bhavana Nagendra <bnagendr@redhat.com>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
- opt-in
-Message-ID: <20080114005434.48340f84@lxorguk.ukuu.org.uk>
-In-Reply-To: <478A8268.6020107@redhat.com>
-References: <alpine.LFD.1.00.0801111224090.3148@woody.linux-foundation.org>
-	<20080111204228.GP18741@parisc-linux.org>
-	<alpine.LFD.1.00.0801111311170.3148@woody.linux-foundation.org>
-	<20080111211753.GR18741@parisc-linux.org>
-	<alpine.LFD.1.00.0801111326120.3148@woody.linux-foundation.org>
-	<20080111213803.GS18741@parisc-linux.org>
-	<20080111235856.GA16079@jurassic.park.msu.ru>
-	<20080112002638.GA18710@kroah.com>
-	<20080112144030.GA19279@jurassic.park.msu.ru>
-	<20080112094557.71f5382a@laptopd505.fenrus.org>
-	<20080112214911.GA20102@jurassic.park.msu.ru>
-	<20080112150120.05f93768@laptopd505.fenrus.org>
-	<47895767.3090503@redhat.com>
-	<20080112164006.6f6f7bc2@laptopd505.fenrus.org>
-	<47896B3B.2000108@redhat.com>
-	<20080112204248.29abb1dd@laptopd505.fenrus.org>
-	<478A075F.7010503@redhat.com>
-	<20080113090311.0a9a1db5@laptopd505.fenrus.org>
-	<478A8268.6020107@redhat.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 13 Jan 2008 20:03:36 -0500
+Date: Mon, 14 Jan 2008 00:52:19 +0000
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: linux-input@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Default keyboard LEDs
+Message-ID: <20080114005219.GA4296@implementation>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Jan 2008 16:28:08 -0500
-Tony Camuso <tcamuso@redhat.com> wrote:
+In many cases, one prefers to have e.g. the NumLock on by default.  In
+many cases, one doesn't want to have it by default, e.g. on laptops.
 
-> Arjan van de Ven wrote:
-> 
-> >> The PCI spec provides for conf1 as an architected solution. It's not
-> >> going away, and especially not in x86 land where Port IO is built-in
-> >> to the CPU.
-> > 
-> > again sadly you're wrong. 
-> > 
-> 
-> As someone gently pointed out to me, you are in a position to know this,
-> so I probably am wrong.
+Distributions actually have a very hard time trying to set this
+correctly after the kernel boot, and that doesn't work for new consoles
+that are created via the openvt(1) command anyway. This hence adds a
+keyboard.default_leds boot parameter that permits to configure the
+default keyboard LEDs.
 
-I suspect Arjan is wrong. It might be some Intel agenda but I still see
-fairly new driver reference code that is hardcoding port accesses even
-when designed for Redmond products.
+Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
 
-Alan
+---
+
+Actually, what would be perfect would be to use the configuration that
+the BIOS sets at boot by default.  That is device-dependent, however.
+
+--- linux/drivers/char/keyboard.c.orig	2008-01-14 00:26:12.000000000 +0000
++++ linux/drivers/char/keyboard.c	2008-01-14 00:33:03.000000000 +0000
+@@ -67,6 +67,9 @@
+ 
+ #define KBD_DEFLOCK 0
+ 
++unsigned char default_leds = KBD_DEFLEDS;
++module_param(default_leds, byte, S_IRUGO | S_IWUSR);
++
+ void compute_shiftstate(void);
+ 
+ /*
+@@ -1405,8 +1408,8 @@
+ 	int error;
+ 
+         for (i = 0; i < MAX_NR_CONSOLES; i++) {
+-		kbd_table[i].ledflagstate = KBD_DEFLEDS;
+-		kbd_table[i].default_ledflagstate = KBD_DEFLEDS;
++		kbd_table[i].ledflagstate = default_leds;
++		kbd_table[i].default_ledflagstate = default_leds;
+ 		kbd_table[i].ledmode = LED_SHOW_FLAGS;
+ 		kbd_table[i].lockstate = KBD_DEFLOCK;
+ 		kbd_table[i].slockstate = 0;
+--- linux/include/linux/kbd_kern.h.orig	2008-01-14 00:32:36.000000000 +0000
++++ linux/include/linux/kbd_kern.h	2008-01-14 00:32:48.000000000 +0000
+@@ -13,6 +13,7 @@
+ extern char func_buf[];
+ extern char *funcbufptr;
+ extern int funcbufsize, funcbufleft;
++extern unsigned char default_leds;
+ 
+ /*
+  * kbd->xxx contains the VC-local things (flag settings etc..)
+--- linux/Documentation/kernel-parameters.txt.orig	2008-01-14 00:38:40.000000000 +0000
++++ linux/Documentation/kernel-parameters.txt	2008-01-14 00:41:21.000000000 +0000
+@@ -550,6 +550,15 @@
+ 			Set system-wide default UTF-8 mode for all tty's.
+ 			Default is 0 and by setting to 1, it enables UTF-8
+ 			mode for all newly opened or allocated terminals.
++	
++	keyboard.default_leds=
++			[KEYBOARD]
++			Format=<ledmask>
++			Mask of the leds to activate on consoles by default.
++			ScrollLock: 1
++			NumLock: 2
++			CapsLock: 4
++			KanaLock: 8
+ 
+ 	dhash_entries=	[KNL]
+ 			Set number of hash buckets for dentry cache.
