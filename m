@@ -1,64 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbYANHfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbYANHmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754685AbYANHfR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 02:35:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbYANHfE
+	id S1754832AbYANHmN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 02:42:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbYANHl6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 02:35:04 -0500
-Received: from mail.hevs.ch ([153.109.23.15]:34276 "EHLO mail.hevs.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751839AbYANHfD convert rfc822-to-8bit (ORCPT
+	Mon, 14 Jan 2008 02:41:58 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:37861 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751524AbYANHl4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 02:35:03 -0500
-From: Marc Pignat <marc.pignat@hevs.ch>
-Organization: HEVs
-To: Florian Fainelli <florian.fainelli@telecomint.eu>
-Subject: Re: [RFC, PATCH] watchdog on gpio
-Date: Mon, 14 Jan 2008 08:34:53 +0100
-User-Agent: KMail/1.9.7
-Cc: wim@iguana.be, linux-kernel@vger.kernel.org
-References: <200801101611.08867.marc.pignat@hevs.ch> <200801111740.25754.florian.fainelli@telecomint.eu>
-In-Reply-To: <200801111740.25754.florian.fainelli@telecomint.eu>
+	Mon, 14 Jan 2008 02:41:56 -0500
+Date: Mon, 14 Jan 2008 07:41:51 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Fix kprobes on ia64
+Message-ID: <20080114074151.GA15431@infradead.org>
+References: <20080114022423.GH18741@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801140834.54280.marc.pignat@hevs.ch>
+In-Reply-To: <20080114022423.GH18741@parisc-linux.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 11 January 2008, Florian Fainelli wrote:
-> Hello Marc,
+On Sun, Jan 13, 2008 at 07:24:24PM -0700, Matthew Wilcox wrote:
+> If CONFIG_KPROBES is set, we get the error during build:
 > 
-> Your patch looks good to me, and I have been waiting for something like 
-> this :). Other comments below.
+> kernel/kprobes.c:1057: error: __ksymtab_jprobe_return causes a section
+> type conflict
 > 
-> Le jeudi 10 janvier 2008, Marc Pignat a écrit :
-> > +#include <asm/uaccess.h>
-> > +#include <asm/arch/gpio.h>
-> 
-> At first sight, this will only work with the platforms which have implemented 
-> gpiolib, some (like MIPS) still use the old generic GPIO API. So I think the 
-> include will not work here for anything than ARM, correct me if I am wrong.
-find arch -name "Kconfig" -exec grep -q "GENERIC_GPIO" {} \; -print
-arch/arm/Kconfig
-arch/mips/Kconfig
-arch/avr32/Kconfig
-arch/blackfin/Kconfig
+> This is because ia64 defines a static inline jprobe_return which kprobes
+> attempts to EXPORT_SYMBOL.
 
-It seems that no only arm are using GENERIC_GPIO, even some mips chips.
-I probably missed wirting the subject right, should be "watchdog on GENERIC_GPIO" :)
-
-...
-> 
-> Did you look into hooking into Wim's uniform watchdog driver :
-> 
-> http://git.kernel.org/?p=linux/kernel/git/wim/linux-2.6-watchdog-experimental.git;a=commit;h=732c54027e6c866f98857c4a6d1c6c466459dcd5
-Now yes, interesting!
-
-Regards
-
-Marc
+Given that jprobe_return is defined in the arch-specific kprobes.c file
+it would be better to export it there instead of in kernel/kprobe.c, or
+in case of ia64 not export it at all.
 
