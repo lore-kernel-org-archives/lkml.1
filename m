@@ -1,191 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753466AbYANIBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753497AbYANIEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753466AbYANIBU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 03:01:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbYANIBM
+	id S1753497AbYANIEq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 03:04:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbYANIEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 03:01:12 -0500
-Received: from web32601.mail.mud.yahoo.com ([68.142.207.228]:26134 "HELO
-	web32601.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751349AbYANIBK (ORCPT
+	Mon, 14 Jan 2008 03:04:39 -0500
+Received: from py-out-1112.google.com ([64.233.166.176]:18788 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751349AbYANIEi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 03:01:10 -0500
-X-YMail-OSG: 9cYtBqYVM1np.gQ1QkQhGFXvXu2Uupc1Oxq7HgXni9PewL10
-X-Mailer: YahooMailRC/818.31 YahooMailWebService/0.7.160
-Date: Mon, 14 Jan 2008 00:01:09 -0800 (PST)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: Re: Strange NFS write performance Linux->Solaris-10/VXFS, maybe VW related
-To: Martin Knoblauch <spamtrap@knobisoft.de>, Chris Snook <csnook@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+	Mon, 14 Jan 2008 03:04:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=UEx7ZdwaTwKylOPJuazRy6pIxuxs10G1AKtENQbKodnP2vjx/RGFnCnve0f3SpwEfMlmvSxJSrQ8EMs8Xt7NSUpQiSYQoRNOI9yabxUihI9oezGxzMCMAPk6k6V8DtUtKkhIUdWORgium426wDLgM1lCX0C1JwiKfejmxhumSiE=
+Message-ID: <8bd0f97a0801140004q6a32c2ceh397a2208d3012f0e@mail.gmail.com>
+Date: Mon, 14 Jan 2008 03:04:36 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Marc Pignat" <marc.pignat@hevs.ch>
+Subject: Re: [RFC, PATCH] watchdog on gpio
+Cc: wim@iguana.be, linux-kernel@vger.kernel.org
+In-Reply-To: <200801101611.08867.marc.pignat@hevs.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <211041.82276.qm@web32601.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200801101611.08867.marc.pignat@hevs.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message ----
-> From: Martin Knoblauch <spamtrap@knobisoft.de>
-> To: Chris Snook <csnook@redhat.com>
-> Cc: linux-kernel@vger.kernel.org; linux-nfs@vger.kernel.org; spam trap <spamtrap@knobisoft.de>
-> Sent: Saturday, December 29, 2007 12:11:08 PM
-> Subject: Re: Strange NFS write performance Linux->Solaris-10/VXFS, maybe VW related
-> 
-> ----- Original Message ----
-> > From: Chris Snook 
-> > To: Martin Knoblauch 
-> > Cc: linux-kernel@vger.kernel.org; linux-nfs@vger.kernel.org
-> > Sent: Friday, December 28, 2007 7:45:13 PM
-> > Subject: Re: Strange NFS write performance
-> Linux->Solaris-10/VXFS,
-> 
- maybe VW related
-> > 
-> > Martin Knoblauch wrote:
-> > > Hi,
-> > > 
-> > > currently I am tracking down an "interesting" effect when writing
-> 
-> > 3) It sounds like the bottleneck is the vxfs filesystem.  It
-> > only *appears* on  the client side because writes up
-> until
-> 
- dirty_ratio
-> > get buffered on the client. 
-> >   If you can confirm that the server is actually writing stuff to
-> > disk slower  when the client is in writeback mode, then it's possible
-> > the Linux NFSclient is  doing something inefficient in
-> writeback
-> 
- mode.
-> > 
-> 
-> so, is the output of "iostat -d -l1 d111" during two runs. The
-> first
-> 
- run is with 750 MB, the second with 850MB.
-> 
-> // 750MB
-> $ iostat -d -l 1 md111 2
->    md111
-> kps tps serv
->  22   0   14
->   0   0    0
->   0   0   13
-> 29347 468   12
-> 37040 593   17
-> 30938 492   25
-> 30421 491   25
-> 41626 676   16
-> 42913 703   14
-> 39890 647   15
-> 9009 141    7
-> 8963 141    7
-> 5143  81    7
-> 34814 547   10
-> 49323 775   12
-> 28624 451    6
->  22   1    6
-> #### finish
->   0   0    0
->   0   0    0
-> 
->  Here it seems that the disk is writing for 26-28 seconds with avg.
-> 29
-> 
- MB/sec. Fine.
-> 
-> // 850MB
-> $ iostat -d -l 1 md111 2
->    md111
-> kps tps serv
->   0   0    0
-> 11275 180   10
-> 39874 635   14
-> 37403 587   17
-> 24341 392   30
-> 25989 423   26
-> 22464 375   30
-> 21922 361   32
-> 27924 450   26
-> 21507 342   21
-> 9217 153   15
-> 9260 150   15
-> 9544 155   15
-> 9298 150   14
-> 10118 162   11
-> 15505 250   12
-> 27513 448   14
-> 26698 436   15
-> 26144 431   15
-> 25201 412   14
-> #### 38 seconds in run
->   0   0    0
->   0   0    0
-> 579  17   12
->   0   0    0
->   0   0    0
->   0   0    0
->   0   0    0
-> 518   9   16
-> 485   8    6
->   9   1    7
-> 514   9    7
->   0   0    0
->   0   0    0
-> 541   9    8
-> 532  10    6
->   0   0    0
->   0   0    0
-> 650  12    7
->   0   0    0
-> 242   8    9
-> 1023  18    5
-> 304   5    6
-> 418   8    7
-> 283   5    5
-> 303   5    8
-> 527  10    6
->   0   0    0
->   0   0    0
->   0   0    0
->   5   1   13
->   0   0    0
->   0   0    0
->   0   0    0
->   0   0    0
->   0   0    0
->   0   0   11
->   0   0    0
->   0   0    0
->   0   0    0
->   1   0   15
->   0   0    0
->  96   2   15
-> 138   3   10
-> 11057 175    6
-> 17549 280    6
-> 351   8    5
->   0   0    0
-> ##### 218 seconds in run, finish.
-> 
->  So, for the first 38 seconds everything looks similar to the 750
-> MB case. For the next about 180 seconds most time nothing happens.
-> Averaging 4.1 MB/sec.
-> 
-> Maybe it is time to capture the traffic. What are the best
-> tcpdump parameters for NFS? I always forget :-(
-> 
-> Cheers
-> Martin
-> 
-> 
-Hi,
+On Jan 10, 2008 10:11 AM, Marc Pignat <marc.pignat@hevs.ch> wrote:
+> watchdog driver for embedded systems with a supervisor watchdog (MAX823 or so)
+> connected to a gpio. This is the platform_driver and needs platform_data for
+> defining the gpio pin and the watchdog timeout.
 
- now that the seasonal festivities are over - Happy New Year btw. - any comments/suggestions on my problem?
+generic gpio watchdog is good stuff ...
 
-Cheers
-Martin
+> #include <linux/gpio_wdt.h>
 
+perhaps "watchdog" rather than "wdt" considering it's already
+"linux/watchdog.h" ?
 
+> --- a/drivers/watchdog/gpio_wdt.c       1970-01-01 01:00:00.000000000 +0100
+> +++ b/drivers/watchdog/gpio_wdt.c       2008-01-10 16:06:09.000000000 +0100
+> +#include <asm/arch/gpio.h>
 
+this should be <asm/gpio.h>
+
+> +static struct watchdog_info ident = {
+> +       .firmware_version = 0,
+
+no point in setting this i dont think ...
+
+> +static int gpio_wdt_ioctl(struct inode *inode, struct file *file,
+> +    unsigned int cmd, unsigned long arg)
+> +{
+> +       case WDIOC_KEEPALIVE:
+> +               gpio_wdt_keepalive(wdt);
+> +               return 0;
+
+this two lines should be merged.
+
+> +       default:
+> +               return -ENOIOCTLCMD;
+
+should be -ENOTTY like all the other watchdogs
+
+> +static char banner[] __initdata = KERN_INFO PFX "fixed %d.%03d seconds timeout (nowayout= %d)\n";
+
+this only gets used once in the init function ... having it be broken
+out like this is kind of silly
+
+> +static int __init gpio_wdt_probe(struct platform_device *pdev)
+
+shouldnt this be __devinit ?
+
+> +       if (watchdog) {
+> +               printk(KERN_ERR PFX "only one device supported\n");
+> +               return -ENODEV;
+> +       }
+
+why ?  it'd be trivial to abstract this driver away from a global
+"watchdog" state into a proper arbitrary # of gpio watchdogs.
+
+> +static int __exit gpio_wdt_remove(struct platform_device *pdev)
+
+shouldnt this be __devexit ?
+
+> +#define gpio_wdt_suspend()
+> +#define gpio_wdt_resume()
+
+i'm pretty sure this is incorrect and instead should read:
+#define gpio_wdt_suspend NULL
+#define gpio_wdt_resume NULL
+
+> +static struct platform_driver gpio_wdt_driver = {
+> +       .probe          = gpio_wdt_probe,
+> +       .remove         = __exit_p(gpio_wdt_remove),
+
+once you fix the remove to be __devexit, this should be __devexit_p()
+
+> --- a/drivers/watchdog/Kconfig  2008-01-08 17:30:30.000000000 +0100
+> +++ b/drivers/watchdog/Kconfig  2008-01-10 14:00:30.000000000 +0100
+> +config GPIO_WATCHDOG
+> +       tristate "Support for GPIO connected watchdog"
+> +       depends on GENERIC_GPIO
+> +       help
+> +         This option enables support for a MAX823-like watchdog connected to
+> +         GPIO input/output.
+
+this is misleading/confusing.  suggested rewording:
+This option enables support for a watchdog connected via GPIO lines
+(such as the MAX823).
+
+To compile this driver as a module, choose M here: the module will be
+called gpio_wdt.
+
+> --- a/include/linux/gpio_wdt.h  1970-01-01 01:00:00.000000000 +0100
+> +++ b/include/linux/gpio_wdt.h  2008-01-10 15:48:42.000000000 +0100
+> +#include <asm/arch/hardware.h>
+
+no idea why you're including this as it is surely incorrect and not
+needed.  please remove it and add <linux/types.h>.
+
+> +#define GPIO_WDT_DRIVER_NAME "gpio_wdt"
+
+this belongs in the driver C file, not the header.
+-mike
