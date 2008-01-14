@@ -1,65 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbYANOKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752563AbYANOR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754001AbYANOKO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 09:10:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbYANOKA
+	id S1752563AbYANOR7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 09:17:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750996AbYANORt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 09:10:00 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:41972 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751063AbYANOKA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 09:10:00 -0500
-Date: Mon, 14 Jan 2008 15:09:10 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Adrian Bunk <bunk@kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       rjw@sisk.pl, pavel@suse.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without HOTPLUG_CPU
-Message-ID: <20080114140910.GA8507@uranus.ravnborg.org>
-References: <20080103442.621670000@suse.de> <20080110111514.GS25945@bingen.suse.de> <20080110112607.GE28740@does.not.exist> <200801101242.53504.ak@suse.de> <20080110124702.GF28740@does.not.exist> <p73fxx5omck.fsf@bingen.suse.de> <20080110150911.GG28740@does.not.exist> <20080114135240.GA15357@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 14 Jan 2008 09:17:49 -0500
+Received: from nz-out-0506.google.com ([64.233.162.227]:28362 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750859AbYANORs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 09:17:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RYGdPa3Yur9rOCXVmMSbMvqClm7L215o+tJYttRWaMbwmCJ2+Lk7ywek31C1DI3AiiRTpmzBhqr37hSQrGlznuaZ2iwY+02G4iZIXfsHcmNbwgLQQb6gTiAtaxNId3pZn/3/3+5ItuBUWKYDoBenmzHtEQMHtBRTdoMtp+M9Zu8=
+Message-ID: <4df4ef0c0801140617t6ca81e84w1cdfcce290ce68fe@mail.gmail.com>
+Date: Mon, 14 Jan 2008 17:17:46 +0300
+From: "Anton Salikhmetov" <salikhmetov@gmail.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 2/2] updating ctime and mtime at syncing
+Cc: "Miklos Szeredi" <miklos@szeredi.hu>, linux-mm@kvack.org,
+       jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       protasnb@gmail.com
+In-Reply-To: <1200317737.15103.8.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080114135240.GA15357@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+References: <12001991991217-git-send-email-salikhmetov@gmail.com>
+	 <12001992023392-git-send-email-salikhmetov@gmail.com>
+	 <E1JENAv-0007CM-T9@pomaz-ex.szeredi.hu>
+	 <4df4ef0c0801140422l1980d507v1884ad8d8e8bf6d3@mail.gmail.com>
+	 <E1JEP9P-0007RD-PP@pomaz-ex.szeredi.hu>
+	 <1200317737.15103.8.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 14, 2008 at 02:52:40PM +0100, Ingo Molnar wrote:
-> 
-> * Adrian Bunk <bunk@kernel.org> wrote:
-> 
-> > On Thu, Jan 10, 2008 at 02:12:59PM +0100, Andi Kleen wrote:
-> > > Adrian Bunk <bunk@kernel.org> writes:
+2008/1/14, Peter Zijlstra <a.p.zijlstra@chello.nl>:
+>
+> On Mon, 2008-01-14 at 14:14 +0100, Miklos Szeredi wrote:
+> > > 2008/1/14, Miklos Szeredi <miklos@szeredi.hu>:
+> > > > > http://bugzilla.kernel.org/show_bug.cgi?id=2645
+> > > > >
+> > > > > Changes for updating the ctime and mtime fields for memory-mapped files:
+> > > > >
+> > > > > 1) new flag triggering update of the inode data;
+> > > > > 2) new function to update ctime and mtime for block device files;
+> > > > > 3) new helper function to update ctime and mtime when needed;
+> > > > > 4) updating time stamps for mapped files in sys_msync() and do_fsync();
+> > > > > 5) implementing the feature of auto-updating ctime and mtime.
 > > > >
-> > > > Technically you are the one who has to deal with problems in your 
-> > > > patches, not the people pointing at the problems.
-> > > 
-> > > If you believe that my patch adds a new problem then please describe
-> > > it clearly so that I can understand it.
-> > 
-> > Description:
-> > - there are already __cpuinit* annotations in the kernel
-> > - on UP kernels supporting suspend/resume, such annotated code
-> >   currently gets freed after booting (and this works)
-> > - with your patch applied, this code no longer gets freed
-> 
-> ok, i've dropped this patch from x86.git for now:
-> 
->  Subject: x86: force __cpuinit on for CONFIG_PM without HOTPLUG_CPU
->  From: Andi Kleen <ak@suse.de>
-> 
-> but longer-term, shouldnt these annotations be automated? We'll see a 
-> constant stream of them, all around the clock as people regularly get it 
-> wrong (because it's not intuitive).
-Would be great to have them automated - just dunno how to do it.
-Do you see a feasible way to do it?
+> > > > How exactly is this done?
+> > > >
+> > > > Is this catering for this case:
+> > > >
+> > > >  1 page is dirtied through mapping
+> > > >  2 app calls msync(MS_ASYNC)
+> > > >  3 page is written again through mapping
+> > > >  4 app calls msync(MS_ASYNC)
+> > > >  5 ...
+> > > >  6 page is written back
+> > > >
+> > > > What happens at 4?  Do we care about this one at all?
+> > >
+> > > The POSIX standard requires updating the file times every time when msync()
+> > > is called with MS_ASYNC. I.e. the time stamps should be updated even
+> > > when no physical synchronization is being done immediately.
+> >
+> > Yes.  However, on linux MS_ASYNC is basically a no-op, and without
+> > doing _something_ with the dirty pages (which afaics your patch
+> > doesn't do), it's impossible to observe later writes to the same page.
+> >
+> > I don't advocate full POSIX conformance anymore, because it's probably
+> > too expensive to do (I've tried).  Rather than that, we should
+> > probably find some sane compromise, that just fixes the real life
+> > issue.  Here's a pointer to the thread about this:
+> >
+> > http://lkml.org/lkml/2007/3/27/55
+> >
+> > Your patch may be a good soultion, but you should describe in detail
+> > what it does when pages are dirtied, and when msync/fsync are called,
+> > and what happens with multiple msync calls that I've asked about.
+> >
+> > I suspect your patch is ignoring writes after the first msync, but
+> > then why care about msync at all?  What's so special about the _first_
+> > msync?  Is it just that most test programs only check this, and not
+> > what happens if msync is called more than once?  That would be a bug
+> > in the test cases.
+>
+> I must agree, doing the mmap dirty, MS_ASYNC, mmap retouch, MS_ASYNC
+> case correctly would need a lot more code which I doubt is worth the
+> effort.
+>
+> It would require scanning the PTEs and marking them read-only again on
+> MS_ASYNC, and some more logic in set_page_dirty() because that currently
+> bails out early if the page in question is already dirty.
 
-Short term modpost etc. will be enhanced to be less dependent on the actual
-configuration when performing the checks.
-It should not matter if CONFIG_HOTPLUG_CPU is enabled or not when we check
-the __cpuint annotations but this is how we see it today so far
-too many faults slip through.
+Thanks for your review, Peter and Miklos!
 
-	Sam
+I overlooked this case when AS_MCTIME flag has been turned off and the
+page is still dirty.
+
+On the other hand, the words "shall be marked for update" may be
+considered as just setting the AS_MCTIME flag, not updating the time
+stamps.
+
+What do you think about calling mapping_update_time() inside of "if
+(MS_SYNC & flags)"? I suggest such change because the code for
+analysis of the case you've mentioned above seems impossible to me.
+
+>
+>
+>
+>
