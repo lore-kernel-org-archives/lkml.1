@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758668AbYANW35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbYANWab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758668AbYANW35 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 17:29:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757052AbYANWX4
+	id S1755393AbYANWab (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 17:30:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758003AbYANW0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 17:23:56 -0500
-Received: from mho-01-bos.mailhop.org ([63.208.196.178]:63538 "EHLO
-	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757326AbYANWXz (ORCPT
+	Mon, 14 Jan 2008 17:26:44 -0500
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:39493 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757747AbYANW0m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 17:23:55 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 216.15.117.105
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX18vSgwvx24mI5erflnrFwG2
-Message-ID: <478BE08B.3090306@reed.com>
-Date: Mon, 14 Jan 2008 17:22:03 -0500
-From: "David P. Reed" <dpreed@reed.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.9) Gecko/20071115 Fedora/2.0.0.9-1.fc8 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
+	Mon, 14 Jan 2008 17:26:42 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: -mm: pnp-do-not-stop-start-devices-in-suspend-resume-path.patch breaks resuming isapnp cards
+Date: Mon, 14 Jan 2008 15:26:56 -0700
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Andrew Morton <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pierre Ossman <drzeus@drzeus.cx>, Pavel Machek <pavel@suse.cz>,
+       Ondrej Zary <linux@rainbow-software.org>,
+       Jaroslav Kysela <perex@perex.cz>,
+       ALSA development <alsa-devel@alsa-project.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Takashi Iwai <tiwai@suse.de>, linux-pm@lists.linux-foundation.org
+References: <200801092343.48726.linux@rainbow-software.org> <200801122250.44220.bjorn.helgaas@hp.com> <4789AC0F.9030007@keyaccess.nl>
+In-Reply-To: <4789AC0F.9030007@keyaccess.nl>
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: Rene Herman <rene.herman@keyaccess.nl>, Zachary Amsden <zach@vmware.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Christer Weinigel <christer@weinigel.se>,
-       Ondrej Zary <linux@rainbow-software.org>, Bodo Eggert <7eggert@gmx.de>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Paul Rolland <rol@as2917.net>, Pavel Machek <pavel@ucw.cz>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>, rol <rol@witbe.net>
-Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
- I/O delay override.
-References: <9BdU5-1YW-9@gated-at.bofh.it>	 <200801081810.58904.linux@rainbow-software.org> <4783B1B2.6070005@reed.com>	 <200801081838.16241.linux@rainbow-software.org> <4783C4A6.9060402@reed.com>		 <20080108185120.3ff7ed18@lxorguk.ukuu.org.uk> <4783CBD9.7020709@reed.com>	 <1199847162.7369.323.camel@bodhitayantram.eng.vmware.com>	 <47845972.9090803@zytor.com>	 <1199915614.7369.367.camel@bodhitayantram.eng.vmware.com>	 <47854916.4080703@reed.com>	 <1200015388.6192.22.camel@bodhitayantram.eng.vmware.com>	 <4786DD05.20804@keyaccess.nl>  <47877ECD.9060408@reed.com> <1200347847.2647.97.camel@shinybook.infradead.org>
-In-Reply-To: <1200347847.2647.97.camel@shinybook.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801141526.57744.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> On Fri, 2008-01-11 at 09:35 -0500, David P. Reed wrote:
->   
->>   Using any "unused port" for a delay means that the machine check
->> feature is wasted and utterly unusable.
->>     
->
-> Not entirely unusable. You can recover silently from the machine check
-> if it was one of the known accesses to the 'unused port'. It certainly
-> achieves a delay :)
->   
-I'm sure that's what the driver writers had in mind.  ;-)
+On Saturday 12 January 2008 11:13:35 pm Rene Herman wrote:
+> ... And, now that I have your attention, while it's 
+> not important to the issue anymore with the tests removed as the submitted 
+> patch did, do you have an opinion on (include/linux/pnp.h):
+> 
+> /* pnp driver flags */
+> #define PNP_DRIVER_RES_DO_NOT_CHANGE    0x0001  /* do not change the state 
+> of the device */
+> #define PNP_DRIVER_RES_DISABLE          0x0003  /* ensure the device is 
+> disabled */
+> 
+> I find DISABLE including DO_NOT_CHANGE rather unexpected...
 
-And I think we probably have a great shot at getting Intel, Microsoft, 
-HP, et al.. to add a feature for Linux to one of the ACPI table 
-specifications that define an "unused port for delay purposes" field in 
-the ACPI 4.0 spec, and retrofit it into PC/104 machine BIOSes.  At least 
-Microsoft doesn't have a patent on using port 80 for delay purposes. :-)
+I don't know the history of those flags, but I wish they didn't exist.
+They really look like warts in the PNP core code.  They're used so
+infrequently and without obvious rationale, that it seems like it'd
+be better if there were a way to deal with them inside the driver.
 
+But to answer your question, I don't know enough to have an opinion
+on whether DISABLE should include DO_NOT_CHANGE.
 
+> By the way, I also still have this next one outstanding for you... :-/
+> 
+> http://lkml.org/lkml/2008/1/9/168
 
+This had to do with the excessive warnings about exceeding the maximum
+number of resources for a PNP device.  This should be resolved by Len's
+patch here:
 
+  http://bugzilla.kernel.org/show_bug.cgi?id=9535#c10
+
+We all agree this is a stop-gap, and for 2.6.25, we need the real
+solution of making PNP resources fully dynamic.
+
+Bjorn
