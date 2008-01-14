@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbYAMX5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbYANAKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755284AbYAMX5w (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Jan 2008 18:57:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690AbYAMX5n
+	id S1755196AbYANAKZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Jan 2008 19:10:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754692AbYANAKM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Jan 2008 18:57:43 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:24742 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754669AbYAMX5m (ORCPT
+	Sun, 13 Jan 2008 19:10:12 -0500
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:48202 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754580AbYANAKK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Jan 2008 18:57:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=RvM/lEAQ/izBSZ1XWzj9Va2e0ssaz2X2ajyNxHCSCYbwJav/+qAJ53Sn0ZB8Se3gwzxeoLfFr1fKT7xKHRszmaxMZbWVucS32m/CMR+xl/1fRxLAUoa/9bRo9mWDWb7nLSXXyYlM+0roLK2JovoVwESn6GBQ1hlk3N+BOftTHmo=
-Message-ID: <478AA56F.9020506@gmail.com>
-Date: Mon, 14 Jan 2008 08:57:35 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sun, 13 Jan 2008 19:10:10 -0500
+X-Sasl-enc: BprIIJMl9fOkYBLWUrsoL0NRQQr1PWA3Hj7SLF4stBgV 1200269408
+Date: Sun, 13 Jan 2008 22:10:05 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Lenovo ThinkPads need acpi_osi="Linux"
+Message-ID: <20080114001005.GF10693@khazad-dum.debian.net>
+References: <20080112022348.GC27524@khazad-dum.debian.net>
 MIME-Version: 1.0
-To: =?UTF-8?B?IkouQS4gTWFnYWxsw7NuIg==?= <jamagallon@ono.com>
-CC: "Linux-Kernel, " <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.24-rc7
-References: <alpine.LFD.1.00.0801061410290.3148@woody.linux-foundation.org>	<20080108015012.2e518dd4@werewolf>	<478429B2.2030002@gmail.com>	<20080110102505.62097da1@werewolf>	<47861930.7010708@gmail.com> <20080114001914.1e05fdb5@werewolf>
-In-Reply-To: <20080114001914.1e05fdb5@werewolf>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080112022348.GC27524@khazad-dum.debian.net>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J.A. Magallón wrote:
-> I'm still pending to pysically remove the disks (or at least unplug the
-> cable...), but I have realized a cusious thing: after some errors, the
-> kernel is lowering the disk speed (UDMA/133, then 100, then 33):
+A bit more on this issue.  I have received a report that on a X61, it
+actually works the opposite from the T61 and you need acpi_osi="!Linux" to
+get the "mute" key to work.
 
-That's the standard error handling behavior.  Timeouts are likely to
-indicate transmission problems so libata puts it into slower gear.
-
-> Perhaps this gives a clue.
-> Or I just had bad luck and 2 of my 4 disks broke at the same time.
-
-As I said, the first thing I would try is to connect the drives to a
-separate PSU and re-seating cables as you're seeing problems on two
-drives simultaneously.
+Well, I am asking the users to track down exactly *where* the mute key is
+comming from in each case (ACPI or keyboard controller).  When I have the
+results, I will send an update to this thread.
 
 -- 
-tejun
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
