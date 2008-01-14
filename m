@@ -1,203 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755863AbYANL4q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756022AbYANL73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755863AbYANL4q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 06:56:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755112AbYANL4g
+	id S1756022AbYANL73 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 06:59:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755112AbYANL7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 06:56:36 -0500
-Received: from py-out-1112.google.com ([64.233.166.180]:65083 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754596AbYANL4f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 06:56:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uKnp6HRcTJgxBY+9UnK/xoQjlL9W0FfSj+qGsYO6LrQXla6/A6pxoQEtsBuAHOWkb0NeiTy3PB94MW9IqtShf2jevUmOoUnBJbzHDgr5gBo37QTnvB2cdmGIaDhVt4hFPsSRYJZJl3fkWr/02mbXJpHH7LyjoXF/zw323t3iqBI=
-Message-ID: <4df4ef0c0801140356x2bf11e33oc8969d65ad5641a6@mail.gmail.com>
-Date: Mon, 14 Jan 2008 14:56:33 +0300
-From: "Anton Salikhmetov" <salikhmetov@gmail.com>
-To: "Miklos Szeredi" <miklos@szeredi.hu>
-Subject: Re: [PATCH 1/2] massive code cleanup of sys_msync()
-Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, protasnb@gmail.com
-In-Reply-To: <E1JEMsg-00079n-FK@pomaz-ex.szeredi.hu>
+	Mon, 14 Jan 2008 06:59:23 -0500
+Received: from styx.suse.cz ([82.119.242.94]:49189 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754763AbYANL7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 06:59:22 -0500
+Date: Mon, 14 Jan 2008 12:59:20 +0100
+From: Jan Kara <jack@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, supriyak@in.ibm.com
+Subject: Re: [PATCH] Fix private_list handling
+Message-ID: <20080114115920.GE4214@duck.suse.cz>
+References: <20080110154959.GA12697@duck.suse.cz> <20080110155513.GB12697@duck.suse.cz> <20080110163635.33e7640e.akpm@linux-foundation.org> <20080111142130.GA28698@duck.suse.cz> <20080111153354.324a5af9.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <12001991991217-git-send-email-salikhmetov@gmail.com>
-	 <12001992013606-git-send-email-salikhmetov@gmail.com>
-	 <E1JEMsg-00079n-FK@pomaz-ex.szeredi.hu>
+In-Reply-To: <20080111153354.324a5af9.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/1/14, Miklos Szeredi <miklos@szeredi.hu>:
-> > Substantial code cleanup of the sys_msync() function:
-> >
-> > 1) using the PAGE_ALIGN() macro instead of "manual" alignment;
-> > 2) improved readability of the loop traversing the process memory regions.
->
-> Thanks for doing this.  See comments below.
->
-> > Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
-> > ---
-> >  mm/msync.c |   78 +++++++++++++++++++++++++++---------------------------------
-> >  1 files changed, 35 insertions(+), 43 deletions(-)
-> >
-> > diff --git a/mm/msync.c b/mm/msync.c
-> > index 144a757..ff654c9 100644
-> > --- a/mm/msync.c
-> > +++ b/mm/msync.c
-> > @@ -1,24 +1,25 @@
-> >  /*
-> >   *   linux/mm/msync.c
-> >   *
-> > + * The msync() system call.
-> >   * Copyright (C) 1994-1999  Linus Torvalds
-> > + *
-> > + * Substantial code cleanup.
-> > + * Copyright (C) 2008 Anton Salikhmetov <salikhmetov@gmail.com>
-> >   */
-> >
-> > -/*
-> > - * The msync() system call.
-> > - */
-> > +#include <linux/file.h>
-> >  #include <linux/fs.h>
-> >  #include <linux/mm.h>
-> >  #include <linux/mman.h>
-> > -#include <linux/file.h>
-> > -#include <linux/syscalls.h>
-> >  #include <linux/sched.h>
-> > +#include <linux/syscalls.h>
-> >
-> >  /*
-> >   * MS_SYNC syncs the entire file - including mappings.
-> >   *
-> >   * MS_ASYNC does not start I/O (it used to, up to 2.5.67).
-> > - * Nor does it marks the relevant pages dirty (it used to up to 2.6.17).
-> > + * Nor does it mark the relevant pages dirty (it used to up to 2.6.17).
-> >   * Now it doesn't do anything, since dirty pages are properly tracked.
-> >   *
-> >   * The application may now run fsync() to
-> > @@ -33,71 +34,62 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
-> >       unsigned long end;
-> >       struct mm_struct *mm = current->mm;
-> >       struct vm_area_struct *vma;
-> > -     int unmapped_error = 0;
-> > -     int error = -EINVAL;
-> > +     int error = 0, unmapped_error = 0;
-> >
-> >       if (flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC))
-> > -             goto out;
-> > +             return -EINVAL;
-> >       if (start & ~PAGE_MASK)
-> > -             goto out;
-> > +             return -EINVAL;
-> >       if ((flags & MS_ASYNC) && (flags & MS_SYNC))
-> > -             goto out;
-> > -     error = -ENOMEM;
-> > -     len = (len + ~PAGE_MASK) & PAGE_MASK;
-> > +             return -EINVAL;
-> > +
-> > +     len = PAGE_ALIGN(len);
-> >       end = start + len;
-> >       if (end < start)
-> > -             goto out;
-> > -     error = 0;
-> > +             return -ENOMEM;
-> >       if (end == start)
-> > -             goto out;
-> > +             return 0;
-> > +
-> >       /*
-> >        * If the interval [start,end) covers some unmapped address ranges,
-> >        * just ignore them, but return -ENOMEM at the end.
-> >        */
-> >       down_read(&mm->mmap_sem);
-> >       vma = find_vma(mm, start);
-> > -     for (;;) {
-> > +     do {
-> >               struct file *file;
-> >
-> > -             /* Still start < end. */
-> > -             error = -ENOMEM;
-> > -             if (!vma)
-> > -                     goto out_unlock;
-> > -             /* Here start < vma->vm_end. */
-> > +             if (!vma) {
-> > +                     error = -ENOMEM;
-> > +                     break;
-> > +             }
-> >               if (start < vma->vm_start) {
-> >                       start = vma->vm_start;
-> > -                     if (start >= end)
-> > -                             goto out_unlock;
-> > +                     if (start >= end) {
-> > +                             error = -ENOMEM;
-> > +                             break;
-> > +                     }
-> >                       unmapped_error = -ENOMEM;
-> >               }
-> > -             /* Here vma->vm_start <= start < vma->vm_end. */
-> > -             if ((flags & MS_INVALIDATE) &&
-> > -                             (vma->vm_flags & VM_LOCKED)) {
-> > +             if ((flags & MS_INVALIDATE) && (vma->vm_flags & VM_LOCKED)) {
-> >                       error = -EBUSY;
-> > -                     goto out_unlock;
-> > +                     break;
-> >               }
-> >               file = vma->vm_file;
-> > -             start = vma->vm_end;
-> > -             if ((flags & MS_SYNC) && file &&
-> > -                             (vma->vm_flags & VM_SHARED)) {
-> > +             if ((flags & MS_SYNC) && file && (vma->vm_flags & VM_SHARED)) {
-> >                       get_file(file);
-> >                       up_read(&mm->mmap_sem);
-> >                       error = do_fsync(file, 0);
-> >                       fput(file);
-> > -                     if (error || start >= end)
-> > -                             goto out;
-> > +                     if (error)
-> > +                             return error;
-> >                       down_read(&mm->mmap_sem);
-> > -                     vma = find_vma(mm, start);
->
-> Where did this line go?  It's needed because after releasing and
-> reacquiring the mmap sem, the old vma may have gone away.
->
-> I suggest, that when doing such a massive cleanup, that you split it
-> up even further into easily understandable pieces, so such bugs cannot
-> creep in.
+On Fri 11-01-08 15:33:54, Andrew Morton wrote:
+> On Fri, 11 Jan 2008 15:21:31 +0100
+> Jan Kara <jack@suse.cz> wrote:
+> 
+> > On Thu 10-01-08 16:36:35, Andrew Morton wrote:
+> > > On Thu, 10 Jan 2008 16:55:13 +0100
+> > > Jan Kara <jack@suse.cz> wrote:
+> > > 
+> > > >   Hi,
+> > > > 
+> > > >   sorry for the previous empty email...
+> > > > 
+> > > >   Supriya noted in his testing that sometimes buffers removed by
+> > > > __remove_assoc_queue() don't have b_assoc_mapping set (and thus IO error
+> > > > won't be properly propagated). Actually, looking more into the code I found
+> > > > there are some more races. The patch below should fix them. It survived
+> > > > beating with LTP and fsstress on ext2 filesystem on my testing machine so
+> > > > it should be reasonably bugfree... Andrew, would you put the patch into
+> > > > -mm? Thanks.
+> > > > 
+> > > > 								Honza
+> > > > -- 
+> > > > Jan Kara <jack@suse.cz>
+> > > > SUSE Labs, CR
+> > > > ---
+> > > > 
+> > > > There are two possible races in handling of private_list in buffer cache.
+> > > > 1) When fsync_buffers_list() processes a private_list, it clears
+> > > > b_assoc_mapping and moves buffer to its private list. Now drop_buffers() comes,
+> > > > sees a buffer is on list so it calls __remove_assoc_queue() which complains
+> > > > about b_assoc_mapping being cleared (as it cannot propagate possible IO error).
+> > > > This race has been actually observed in the wild.
+> > > 
+> > > private_lock should prevent this race.
+> > > 
+> > > Which call to drop_buffers() is the culprit?  The first one in
+> > > try_to_free_buffers(), I assume?  The "can this still happen?" one?
+> > > 
+> > > If so, it can happen.  How?  Perhaps this is a bug.
+> >   Good question but I don't think so. The problem is that
+> > fsync_buffers_list() drops the private_lock() e.g. when it does
+> > wait_on_buffer(). And buffers on the list fsync_buffers_list() constructs
+> > have b_assoc_mapping set to NULL but the test
+> > !list_empty(bh->b_assoc_buffers) succeeds for them and thus
+> > __remove_assoc_queue() is called and it complains.
+> >   We could also silence the warning by leaving b_assoc_mapping set when we
+> > move the buffer to the constructed list.
+> 
+> Could fsync_buffers_list() leave the buffer not on a list when it does the
+> ll_rw_block() and only add it to tmp afterwards if it sees that the buffer
+> is still not on a list?
+> 
+> I guess not, as it still needs to find the buffer to wait upon it.
+  Exactly... We have to have submitted buffers on some list.
 
-Thanks for your review. I overlooked this problem. I'll redo my cleanup soon.
+> > But given the problem below
+> > I've decided to do a more complete cleanup of the code.
+> 
+> Well.  Large-scale changes to long-established code like this are a last
+> resort.  We should fully investigate little local fixups first.
+  I see. Well, I could do the following minimal changes if it'd make you more
+comfortable about it):
+  1) Don't clear b_assoc_map in fsync_buffers_list() (that would get rid of
+race with drop_buffers())
+  2) Change fsync_buffers_list() to readd buffer into private_list when it
+is dirty after we've waited on it. That should get rid of the second
+race.
+  But I still think that unnecessary temporary list is worth a cleanup ;).
 
->
-> > -             } else {
-> > -                     if (start >= end) {
-> > -                             error = 0;
-> > -                             goto out_unlock;
-> > -                     }
-> > -                     vma = vma->vm_next;
-> >               }
-> > -     }
-> > -out_unlock:
-> > +
-> > +             start = vma->vm_end;
-> > +             vma = vma->vm_next;
-> > +     } while (start < end);
-> >       up_read(&mm->mmap_sem);
-> > -out:
-> > +
-> >       return error ? : unmapped_error;
-> >  }
-> > --
-> > 1.4.4.4
->
-> Miklos
->
+> > > > 2) When fsync_buffers_list() processes a private_list,
+> > > > mark_buffer_dirty_inode() can be called on bh which is already on the private
+> > > > list of fsync_buffers_list(). As buffer is on some list (note that the check is
+> > > > performed without private_lock), it is not readded to the mapping's
+> > > > private_list and after fsync_buffers_list() finishes, we have a dirty buffer
+> > > > which should be on private_list but it isn't. This race has not been reported,
+> > > > probably because most (but not all) callers of mark_buffer_dirty_inode() hold
+> > > > i_mutex and thus are serialized with fsync().
+> > > 
+> > > Maybe fsync_buffers_list should put the buffer back onto private_list if it
+> > > got dirtied again.
+> >   Yes, that's what it does in my new version. Only the locking is a bit
+> > subtle if we want to avoid taking private_lock in mark_buffer_dirty_inode()
+> > when the buffer is already on some list...
+> 
+> I fear rewrites in there.  It took five years to find this bug.  How long
+> will it take to find new ones which get added?
+  Well, I've added that WARN_ON() which warned us about the problem about
+14 month ago so it was not that bad. But I agree that bugs are hard to
+detect here as they result either in lost IO error or in not writing all
+buffers on fsync both of which go mostly unnoticed.
+
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
