@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbYANSW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbYANSXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754674AbYANSW4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 13:22:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbYANSWq
+	id S1755366AbYANSXR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 13:23:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbYANSWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 13:22:46 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:42776 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750868AbYANSWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 13:22:45 -0500
-Message-ID: <478BA872.60309@sgi.com>
-Date: Mon, 14 Jan 2008 10:22:42 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       mingo@elte.hu, Christoph Lameter <clameter@sgi.com>,
-       Jack Steiner <steiner@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/10] x86: Change size of APICIDs from u8 to u16
-References: <20080113183453.973425000@sgi.com> <20080113183454.155968000@sgi.com> <Pine.LNX.4.64.0801141908370.24893@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0801141908370.24893@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 14 Jan 2008 13:22:49 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:48991 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751564AbYANSWs (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 13:22:48 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+Cc: Paul Moore <paul.moore@hp.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.24-rc6-mm1 - oddness with IPv4/v6 mapped sockets hanging...
+In-Reply-To: Your message of "Mon, 14 Jan 2008 13:05:48 EST."
+             <31130.1200333948@turing-police.cc.vt.edu>
+From: Valdis.Kletnieks@vt.edu
+References: <30887.1200209733@turing-police.cc.vt.edu> <7197.1200327338@turing-police.cc.vt.edu> <200801141136.41140.paul.moore@hp.com>
+            <31130.1200333948@turing-police.cc.vt.edu>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1200334930_3045P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Mon, 14 Jan 2008 13:22:10 -0500
+Message-ID: <32065.1200334930@turing-police.cc.vt.edu>
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Jan 13 2008 10:34, travis@sgi.com wrote:
->> --- a/arch/x86/kernel/mpparse_64.c
->> +++ b/arch/x86/kernel/mpparse_64.c
->> @@ -132,7 +132,7 @@ static void __cpuinit MP_processor_info(
->> 	 * area is created.
->> 	 */
->> 	if (x86_cpu_to_apicid_ptr) {
->> -		u8 *x86_cpu_to_apicid = (u8 *)x86_cpu_to_apicid_ptr;
->> +		u16 *x86_cpu_to_apicid = (u16 *)x86_cpu_to_apicid_ptr;
->> 		x86_cpu_to_apicid[cpu] = m->mpc_apicid;
->> 	} else {
->> 		per_cpu(x86_cpu_to_apicid, cpu) = m->mpc_apicid;
-> 
-> You can do away with the cast while modifying this line.
+--==_Exmh_1200334930_3045P
+Content-Type: text/plain; charset=us-ascii
 
-Thanks!  For some reason I had problems with the 'inter-section'
-referencing and this slipped in while addressing that problem.
+On Mon, 14 Jan 2008 13:05:48 EST, Valdis.Kletnieks@vt.edu said:
 
-> 
->> --- a/arch/x86/mm/srat_64.c
->> +++ b/arch/x86/mm/srat_64.c
->> @@ -384,6 +388,12 @@ int __init acpi_scan_nodes(unsigned long
->> }
->>
->> #ifdef CONFIG_NUMA_EMU
->> +static int fake_node_to_pxm_map[MAX_NUMNODES] __initdata = {
->> +	[0 ... MAX_NUMNODES-1] = PXM_INVAL
->> +};
->> +static unsigned char fake_apicid_to_node[MAX_LOCAL_APIC] __initdata = {
->> +	[0 ... MAX_LOCAL_APIC-1] = NUMA_NO_NODE
->> +};
->> static int __init find_node_by_addr(unsigned long addr)
->> {
->> 	int ret = NUMA_NO_NODE;
-> 
-> No u8/u16 here?
+> I'm pulling  git://git.infradead.org/users/pcmoore/lblnet-2.6_testing at the
+> moment, and seeing if there's already a fix in there for this.
 
-Good point.
+Apparently the only new commit in there since the tree that was in
+24-rc6-mm1 is 5d95575903fd3865b884952bd93c339d48725c33 adding some warning
+printk's.  Would it be more productive to test against the full tree, or
+leaving out the one commit I already reverted?
 
-Thanks,
-Mike
+--==_Exmh_1200334930_3045P
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFHi6hScC3lWbTT17ARAk+XAJ9C6qfY2fmtxxA5cBaw1tEqP4mxtwCg9ziS
+B0RA542l+7+gWHu3pXui2k0=
+=SabW
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1200334930_3045P--
