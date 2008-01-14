@@ -1,40 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755671AbYANVex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755686AbYANVgI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755671AbYANVex (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 16:34:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbYANVdx
+	id S1755686AbYANVgI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 16:36:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYANVfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 16:33:53 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:55630 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750956AbYANVdt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 16:33:49 -0500
-Date: Mon, 14 Jan 2008 13:39:26 -0800
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH 0/3] x86_64:amd fam10h mmconf
-To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <ak@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Message-id: <200801141339.27107.yinghai.lu@sun.com>
-Organization: Sun
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+	Mon, 14 Jan 2008 16:35:53 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:58171 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751051AbYANVfw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 16:35:52 -0500
+Date: Mon, 14 Jan 2008 23:34:53 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Oliver Pinter =?utf-8?B?KFBpbnTDqXIgT2xpdsOpcik=?= 
+	<oliver.pntr@gmail.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, gregkh@suse.de
+Subject: Re: [BUG] skge 0000:02:05: read data parity error
+Message-ID: <20080114213453.GJ9847@does.not.exist>
+References: <6101e8c40801141157j1ce7d3f0if2e4eb2344b6c844@mail.gmail.com> <20080114125200.28cb4c69@deepthought> <20080114210105.GG9847@does.not.exist> <6101e8c40801141331n3cb66c04pc74ff07faf04c8fd@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <6101e8c40801141331n3cb66c04pc74ff07faf04c8fd@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-please check the updated version, so we will not rely on MCFG setting
+On Mon, Jan 14, 2008 at 10:31:03PM +0100, Oliver Pinter (Pintér Olivér) wrote:
+> I think, it is a potential security breakpoint, when applications with
+> root permission its read, then a machine is freezed, or only i thin
+> it's?
 
-it is against to x86.git
+When you are root there are infinite ways to kill your machine, so 
+there's nothing security related about this issue.
 
-these three patches can be applied seperately. 
-if you think 1/3 is too complicated, you can apply 2 and 3
+> Thanks,
+> Oliver
 
-Thanks
+cu
+Adrian
 
-YH
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
