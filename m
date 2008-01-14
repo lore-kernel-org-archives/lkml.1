@@ -1,83 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754367AbYANI15@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbYANI2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754367AbYANI15 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 03:27:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbYANI1r
+	id S1754822AbYANI2T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 03:28:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYANI1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 03:27:47 -0500
-Received: from mail.gmx.net ([213.165.64.20]:50930 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751381AbYANI1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 03:27:46 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+rchVx36irjrFVaCECXMxwmcQVt0hjkrn5ZsQ6fz
-	wc5TjZpOlq9R0Z
-Subject: Re: 2.6.24-rc7-rt1
-From: Mike Galbraith <efault@gmx.de>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <Pine.LNX.4.58.0801131552350.10093@gandalf.stny.rr.com>
-References: <1200250801.9190.7.camel@localhost.localdomain>
-	 <200801132143.34889.m.kozlowski@tuxland.pl>
-	 <Pine.LNX.4.58.0801131552350.10093@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 14 Jan 2008 09:27:40 +0100
-Message-Id: <1200299260.4665.17.camel@homer.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 8bit
-X-Y-GMX-Trusted: 0
+	Mon, 14 Jan 2008 03:27:51 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42525 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752675AbYANI1t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 03:27:49 -0500
+Date: Mon, 14 Jan 2008 09:27:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Kevin Winchester <kjwinchester@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "mboton@gmail.com" <mboton@gmail.com>,
+       Zach Brown <zach.brown@oracle.com>
+Subject: Re: [PATCH] x86: fix ioport unification on 32-bit [was: Re:
+	hwclock failure in x86.git]
+Message-ID: <20080114082725.GD18296@elte.hu>
+References: <4786AA11.5010805@gmail.com> <4786AB1B.4030004@zytor.com> <4786AF4C.6050509@gmail.com> <4786C2CF.4070204@zytor.com> <20080110220444.4c9efdec.kjwinchester@gmail.com> <20080111140346.GA13604@elte.hu> <20080112010443.GA5476@sequoia.sous-sol.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080112010443.GA5476@sequoia.sous-sol.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Sun, 2008-01-13 at 15:54 -0500, Steven Rostedt wrote:
+* Chris Wright <chrisw@sous-sol.org> wrote:
 
-> OK, -rt2 will take a bit more beating from me before I release it, so it
-> might take some time to get it out (expect it out on Monday).
+> * Ingo Molnar (mingo@elte.hu) wrote:
+> > thanks for tracking it down. I pulled that commit for now. But it would 
+> > be nice to figure out what's going on there.
+> 
+> Zach was right. The unification was broken for 32-bit; it was missing 
+> the actual pushf/popf EFLAGS manipluation (set_iopl_mask()) and 
+> would've broken task switching between processes w/ different iopl in 
+> paravirt guests too.  64-bit sys_iopl just does pt_regs->flags 
+> modification and lets syscall/sysret plus ptregscall sync and do 
+> EFLAGS update.
+> 
+> Also, use of volatile looks like leftover cruft.
+> 
+> This patch in on top of Miguel's (can respin to standalone if that's 
+> better). [...]
 
-Ah, that reminds me (tests, yup) I still need the patchlet below to
-resume from ram without black screen of death.  No idea why my P4 box
-seems to be the only box in the rt galaxy affected.  (haven't poked at
-it since the holidays)
+thanks, applied.
 
-Index: linux-2.6.24.git-rt1/kernel/sched_rt.c
-===================================================================
---- linux-2.6.24.git-rt1.orig/kernel/sched_rt.c
-+++ linux-2.6.24.git-rt1/kernel/sched_rt.c
-@@ -33,6 +33,9 @@ static inline void rt_clear_overload(str
- 
- static void update_rt_migration(struct rq *rq)
- {
-+	if (unlikely(num_online_cpus() == 1))
-+		return;
-+
- 	if (rq->rt.rt_nr_migratory && (rq->rt.rt_nr_running > 1)) {
- 		if (!rq->rt.overloaded) {
- 			rt_set_overload(rq);
-@@ -105,8 +108,10 @@ static inline void dec_rt_tasks(struct t
- 		} /* otherwise leave rq->highest prio alone */
- 	} else
- 		rq->rt.highest_prio = MAX_RT_PRIO;
--	if (p->nr_cpus_allowed > 1)
-+	if (p->nr_cpus_allowed > 1) {
-+		BUG_ON(!rq->rt.rt_nr_migratory);
- 		rq->rt.rt_nr_migratory--;
-+	}
- 
- 	if (rq->rt.highest_prio != highest_prio)
- 		cpupri_set(&rq->rd->cpupri, rq->cpu, rq->rt.highest_prio);
-
-
-btw, CONFIG_INTEL_IOATDMA compile booboo
-
-  CC      drivers/dma/ioat_dma.o
-drivers/dma/ioat_dma.c: In function ‘ioat1_tx_submit’:
-drivers/dma/ioat_dma.c:300: error: too few arguments to function ‘__list_splice’
-make[2]: *** [drivers/dma/ioat_dma.o] Error 1
-
-
+	Ingo
