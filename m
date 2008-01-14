@@ -1,99 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755247AbYANV2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754476AbYANVak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755247AbYANV2r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 16:28:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbYANV2j
+	id S1754476AbYANVak (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 16:30:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbYANVa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 16:28:39 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:55508 "EHLO mail.screens.ru"
+	Mon, 14 Jan 2008 16:30:29 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:48990 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751314AbYANV2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 16:28:38 -0500
-Date: Tue, 15 Jan 2008 00:27:41 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Christian Kujau <lists@nerdbynature.de>, linux-kernel@vger.kernel.org,
-       jfs-discussion@lists.sourceforge.net,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: 2.6.24-rc6: possible recursive locking detected
-Message-ID: <20080114212741.GA2263@tv-sign.ru>
-References: <alpine.DEB.0.999999.0801032349190.4821@sheep.housecafe.de> <200801040006.47979.rjw@sisk.pl> <20080104083049.GC22803@elte.hu> <20080105071205.GA28936@gondor.apana.org.au> <1199552016.31975.41.camel@lappy> <1199552476.31975.45.camel@lappy> <20080107172239.GA14880@tv-sign.ru> <20080107174908.GB14880@tv-sign.ru> <1200241927.7999.38.camel@lappy>
-Mime-Version: 1.0
+	id S1750937AbYANVa2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 16:30:28 -0500
+Date: Mon, 14 Jan 2008 13:30:54 -0800
+From: Greg KH <gregkh@suse.de>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       "Oliver Pinter (Pint??r Oliv??r)" <oliver.pntr@gmail.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [BUG] skge 0000:02:05: read data parity error
+Message-ID: <20080114213054.GA3573@suse.de>
+References: <6101e8c40801141157j1ce7d3f0if2e4eb2344b6c844@mail.gmail.com> <20080114125200.28cb4c69@deepthought> <20080114210105.GG9847@does.not.exist>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1200241927.7999.38.camel@lappy>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080114210105.GG9847@does.not.exist>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/13, Peter Zijlstra wrote:
-> 
-> On Mon, 2008-01-07 at 20:49 +0300, Oleg Nesterov wrote:
->
-> > On 01/07, Oleg Nesterov wrote:
-> > >
-> > > Consider this "just for illustration" patch,
-> > > 
-> > > --- t/kernel/lockdep.c	2007-11-09 12:57:31.000000000 +0300
-> > > +++ t/kernel/lockdep.c	2008-01-07 19:43:50.000000000 +0300
-> > > @@ -1266,10 +1266,13 @@ check_deadlock(struct task_struct *curr,
-> > >  	struct held_lock *prev;
-> > >  	int i;
-> > >  
-> > > -	for (i = 0; i < curr->lockdep_depth; i++) {
-> > > +	for (i = curr->lockdep_depth; --i >= 0; ) {
-> > >  		prev = curr->held_locks + i;
-> > >  		if (prev->class != next->class)
-> > >  			continue;
-> > > +
-> > > +		if (prev->trylock == -1)
-> > > +			return 2;
-> > >  		/*
-> > >  		 * Allow read-after-read recursion of the same
-> > >  		 * lock class (i.e. read_lock(lock)+read_lock(lock)):
-> > > -------------------------------------------------------------------------
-> > > 
-> > > Now,
-> > > 
-> > > 	// trylock == -1
-> > > 	#define	spin_mark_nested(l)	\
-> > > 		lock_acquire(&(l)->dep_map, 0, -1, 0, 2, _THIS_IP_)
-> > > 	#define	spin_unmark_nested(l)	\
-> > > 		lock_release(&(l)->dep_map, 1, _THIS_IP_)
-> > > 
-> > > and ep_poll_safewake() can do:
-> > > 
-> > > 	/* Do really wake up now */
-> > > 	spin_mark_nested(&wq->lock);
-> > > 	wake_up(wq);
-> > > 	spin_unmark_nested(&wq->lock);
+On Mon, Jan 14, 2008 at 11:01:05PM +0200, Adrian Bunk wrote:
+> On Mon, Jan 14, 2008 at 12:52:00PM -0800, Stephen Hemminger wrote:
+> > On Mon, 14 Jan 2008 20:57:49 +0100
+> > "Oliver Pinter (Pint??r Oliv??r)" <oliver.pntr@gmail.com> wrote:
 > > 
-> > seems to work. What do you think?
+> > > Hi All!
+> > > 
+> > > It is fully reproductable under 2.6.22.15, 2.6.23.13 (all tainted and
+> > > not tainted [4 different kernel] ) and 2 different PC:
+> > > 
+> > > [BUG] skge 0000:02:05: read data parity error
+> > > [BUG] skge 0000:02:05: read data parity error
+> > > 
+> > > steps:
+> > > 1. login as root
+> > > 2. start mc
+> > > 3. cd /sys/bus/pci/drivers/skge/0000:02:05.0
+> > > 4. press F3 (mcview) on resource0
+> > > 5. the system hang up, without panic or bug ... only this message
+> > > printed 2x: [BUG] skge 0000:02:05: read data parity error
+> > 
+> > This is not a bug.
+> > 
+> > The hardware has some debug registers that if accessed cause a read
+> > back to the host. Since this can point anywhere, it will cause errors
+> > or system hang.
+> > 
+> > The point is don't do it.
 > 
-> I've been pondering this for a while, and some days I really like it,
-> some days I don't.
-> 
-> The problem I have with it is that it becomes very easy to falsely
-> annotate problems away - its a very powerful annotation.
+> Is it really a good idea that _reading_ files under /sys can kill your 
+> machine?
 
-Also, I don't like the overloading of ->trylock, this is really hackish.
+No, but mmapping them as root and then doing bad things with that data
+isn't recommended :)
 
-> I think I'll do wake_up_nested() for now and keep this around.
+Note that this is a special file, just like the ones in /proc, that
+provide a mmap interface into the pci card's resource.  This is nothing
+new...
 
-Agreed.
+thanks,
 
-Perhaps it is a bit easier to use spin_lock_nested() + __wake_up_common()
-directly (we have a lot of wake_up_xxx helpers), but this is up to you.
-
-
-Offtopic question. Why do we have so many lockdep stuff in timer.c and hrtimer.c ?
-We never lock 2 bases at the same time, except in migrate_timers(). We can kill
-double_spin_lock() and base_lock_keys[] and just use spin_lock_nested in
-migrate_timers(), no?
-
-Oleg.
-
+greg k-h
