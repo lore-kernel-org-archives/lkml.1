@@ -1,51 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbYAOKZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbYAOKbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755865AbYAOKZf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 05:25:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751683AbYAOKZ1
+	id S1755487AbYAOKbm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 05:31:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751173AbYAOKbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 05:25:27 -0500
-Received: from ns2.suse.de ([195.135.220.15]:48107 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751198AbYAOKZ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 05:25:26 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [PATCH] [13/31] CPA: Use macros to modify the PG_arch_1 page flags in change_page_attr
-Date: Tue, 15 Jan 2008 11:25:22 +0100
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, jbeulich@novell.com, mingo@elte.hu,
-       tglx@linutronix.de
-References: <200801141116.534682000@suse.de> <200801151106.41855.ak@suse.de> <1200392102.16794.26.camel@brick>
-In-Reply-To: <1200392102.16794.26.camel@brick>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801151125.22817.ak@suse.de>
+	Tue, 15 Jan 2008 05:31:31 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:45448 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750768AbYAOKba (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 05:31:30 -0500
+To: serue@us.ibm.com
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, hch@infradead.org,
+       serue@us.ibm.com, viro@ftp.linux.org.uk, ebiederm@xmission.com,
+       kzak@redhat.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       util-linux-ng@vger.kernel.org
+In-reply-to: <20080114232419.GH6704@sergelap.austin.ibm.com>
+	(serue@us.ibm.com)
+Subject: Re: [patch 7/9] unprivileged mounts: allow unprivileged fuse mounts
+References: <20080108113502.184459371@szeredi.hu> <20080108113630.861045063@szeredi.hu> <20080114232419.GH6704@sergelap.austin.ibm.com>
+Message-Id: <E1JEj3N-0000vj-QA@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 15 Jan 2008 11:29:57 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 January 2008 11:15:02 Harvey Harrison wrote:
-> On Tue, 2008-01-15 at 11:06 +0100, Andi Kleen wrote:
-> > On Tuesday 15 January 2008 10:29:51 Harvey Harrison wrote:
-> > > On Mon, 2008-01-14 at 23:16 +0100, Andi Kleen wrote:
-> > > > Instead of open coding the bit accesses uses standard style
-> > > > *PageDeferred* macros. 
-> > > > 
-> > > 
-> > > Any reason these couldn't be static inlines in a shared header?
-> > 
-> > The whole usage of that bit is private to the file
-> 
-> True if pageattr_32|64.c get merged, not one I have looked at yet,
-> but wouldn't a static inline in the files then be better for the
-> typechecking?
+> Sounds like a sysctl to enable FS_SAFE for fuse will make this patch
+> acceptable to everyone?
 
-If you pass in something other than a struct page * the compiler
-will already complain. Also all the other Page* accessor in page-flags.h are macros.
+I think the most generic approach, is to be able to set "safeness" for
+any fs type, not just fuse (Karel's suggestion).
 
--Andi
+E.g:
+
+  echo 1 > /proc/sys/fs/types/cifs/safe
+
+This would also provide a way to query the FS_SAFE flag.
+
+Miklos
