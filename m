@@ -1,63 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756681AbYAOT3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbYAOTaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756681AbYAOT3i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 14:29:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYAOT3W
+	id S1756702AbYAOTaf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 14:30:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbYAOTaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 14:29:22 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:57330 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752294AbYAOT3V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 14:29:21 -0500
-Message-ID: <478D0928.9020802@redhat.com>
-Date: Tue, 15 Jan 2008 14:27:36 -0500
-From: Tony Camuso <tcamuso@redhat.com>
-Reply-To: tcamuso@redhat.com
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: Greg KH <greg@kroah.com>, Loic Prylli <loic@myri.com>,
-       Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
- opt-in
-References: <20080111235856.GA16079@jurassic.park.msu.ru> <20080112002638.GA18710@kroah.com> <20080112144030.GA19279@jurassic.park.msu.ru> <1200208085.6896.134.camel@pasglop> <20080113072415.GB18741@parisc-linux.org> <20080113090108.3224698c@laptopd505.fenrus.org> <20080114225225.GQ18741@parisc-linux.org> <20080114230448.GL9847@does.not.exist> <478CD8A5.5090608@myri.com> <20080115174643.GB28238@kroah.com> <20080115175641.GE18741@parisc-linux.org>
-In-Reply-To: <20080115175641.GE18741@parisc-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 15 Jan 2008 14:30:25 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:58697 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751668AbYAOTaY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 14:30:24 -0500
+Subject: Re: [PATCH 2/2] Updating ctime and mtime at syncing
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Anton Salikhmetov <salikhmetov@gmail.com>
+Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       protasnb@gmail.com, miklos@szeredi.hu
+In-Reply-To: <4df4ef0c0801150918l71504c81s49fc8c9e427896f3@mail.gmail.com>
+References: <12004129652397-git-send-email-salikhmetov@gmail.com>
+	 <1200412978699-git-send-email-salikhmetov@gmail.com>
+	 <1200414911.26045.32.camel@twins>
+	 <4df4ef0c0801150918l71504c81s49fc8c9e427896f3@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 15 Jan 2008 20:30:20 +0100
+Message-Id: <1200425420.26045.42.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I agree with Matthew.
 
-My preference is Ivan's patch using Loic's proposal.
-
-My patch would have tested MMCONFIG before using it, but it didn't
-fix the problem where the decode of large displacement devices can
-overlap the MMCONFIG region.
-
-Ivan's patch fixes that, and the problem of Northbridges that don't
-respond to MMCONFIG and as a bonus cleans out some code rendered
-unnecessary by his patch.
-
-Linus is confident that conf1 is not going away for at least the
-next five years.
-
-
-Matthew Wilcox wrote:
-> On Tue, Jan 15, 2008 at 09:46:43AM -0800, Greg KH wrote:
->> But so far, we have a zillion patches floating around, claiming
->> different things, some with signed-off-bys and others without, so for
->> now, I'll just stick with Arjan's patch in -mm and see if anyone
->> complains about those releases...
+On Tue, 2008-01-15 at 20:18 +0300, Anton Salikhmetov wrote:
+> 2008/1/15, Peter Zijlstra <a.p.zijlstra@chello.nl>:
+> >
+> > On Tue, 2008-01-15 at 19:02 +0300, Anton Salikhmetov wrote:
+> >
+> > > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> > > index 3d3848f..53d0e34 100644
+> > > --- a/mm/page-writeback.c
+> > > +++ b/mm/page-writeback.c
+> > > @@ -997,35 +997,39 @@ int __set_page_dirty_no_writeback(struct page *page)
+> > >   */
+> > >  int __set_page_dirty_nobuffers(struct page *page)
+> > >  {
+> > > -     if (!TestSetPageDirty(page)) {
+> > > -             struct address_space *mapping = page_mapping(page);
+> > > -             struct address_space *mapping2;
+> > > +     struct address_space *mapping = page_mapping(page);
+> > > +     struct address_space *mapping2;
+> > >
+> > > -             if (!mapping)
+> > > -                     return 1;
+> > > +     if (!mapping)
+> > > +             return 1;
+> > >
+> > > -             write_lock_irq(&mapping->tree_lock);
+> > > -             mapping2 = page_mapping(page);
+> > > -             if (mapping2) { /* Race with truncate? */
+> > > -                     BUG_ON(mapping2 != mapping);
+> > > -                     WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
+> > > -                     if (mapping_cap_account_dirty(mapping)) {
+> > > -                             __inc_zone_page_state(page, NR_FILE_DIRTY);
+> > > -                             __inc_bdi_stat(mapping->backing_dev_info,
+> > > -                                             BDI_RECLAIMABLE);
+> > > -                             task_io_account_write(PAGE_CACHE_SIZE);
+> > > -                     }
+> > > -                     radix_tree_tag_set(&mapping->page_tree,
+> > > -                             page_index(page), PAGECACHE_TAG_DIRTY);
+> > > -             }
+> > > -             write_unlock_irq(&mapping->tree_lock);
+> > > -             if (mapping->host) {
+> > > -                     /* !PageAnon && !swapper_space */
+> > > -                     __mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+> > > +     mapping->mtime = CURRENT_TIME;
+> > > +     set_bit(AS_MCTIME, &mapping->flags);
+> >
+> > This seems vulnerable to the race we have against truncate, handled by
+> > the mapping2 magic below. Do we care?
+> >
+> > > +
+> > > +     if (TestSetPageDirty(page))
+> > > +             return 0;
+> > > +
+> > > +     write_lock_irq(&mapping->tree_lock);
+> > > +     mapping2 = page_mapping(page);
+> > > +     if (mapping2) {
+> > > +             /* Race with truncate? */
+> > > +             BUG_ON(mapping2 != mapping);
+> > > +             WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
+> > > +             if (mapping_cap_account_dirty(mapping)) {
+> > > +                     __inc_zone_page_state(page, NR_FILE_DIRTY);
+> > > +                     __inc_bdi_stat(mapping->backing_dev_info,
+> > > +                                     BDI_RECLAIMABLE);
+> > > +                     task_io_account_write(PAGE_CACHE_SIZE);
+> > >               }
+> > > -             return 1;
+> > > +             radix_tree_tag_set(&mapping->page_tree,
+> > > +                             page_index(page), PAGECACHE_TAG_DIRTY);
+> > >       }
+> > > -     return 0;
+> > > +     write_unlock_irq(&mapping->tree_lock);
+> > > +
+> > > +     if (mapping->host)
+> > > +             __mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
 > 
-> I complain about Arjan's patch.  For reasons which have been adequately
-> gone into already in this thread.
-> 
+> The inode gets marked dirty using the same "mapping" variable
+> as my code does. So, AFAIU, my change does not introduce any new
+> vulnerabilities. I would nevertherless be grateful to you for a scenario
+> where the race would be triggered.
+
+Ah, right, so that would be a resounding no to my previous question :-)
 
