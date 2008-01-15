@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758225AbYAOU6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758588AbYAOU6o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758225AbYAOU6a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 15:58:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448AbYAOUu5
+	id S1758588AbYAOU6o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 15:58:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757454AbYAOUu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 15:50:57 -0500
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:65116 "EHLO
+	Tue, 15 Jan 2008 15:50:58 -0500
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:65115 "EHLO
 	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756665AbYAOUuh (ORCPT
+	with ESMTP id S1756447AbYAOUuh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 15 Jan 2008 15:50:37 -0500
-Message-Id: <20080115205024.818432034@goodmis.org>
+Message-Id: <20080115205025.192359753@goodmis.org>
 References: <20080115204907.838227723@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 15 Jan 2008 15:49:25 -0500
+Date: Tue, 15 Jan 2008 15:49:27 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -28,97 +28,78 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
        Jan Kiszka <jan.kiszka@siemens.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [RFC PATCH 18/30 v3] add get_monotonic_cycles
-Content-Disposition: inline; filename=get-monotonic-cycles.patch
+Subject: [RFC PATCH 20/30 v3] Add timestamps to tracer
+Content-Disposition: inline; filename=mcount-tracer-timestamp.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latency tracer needs a way to get an accurate time
-without grabbing any locks. Locks themselves might call
-the latency tracer and cause at best a slow down.
-
-This patch adds get_monotonic_cycles that returns cycles
-from a reliable clock source in a monotonic fashion.
+Add timestamps to trace entries.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- include/linux/clocksource.h |    3 ++
- kernel/time/timekeeping.c   |   48 ++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 51 insertions(+)
+ lib/tracing/tracer.c |   16 ++++++++++++++++
+ lib/tracing/tracer.h |    1 +
+ 2 files changed, 17 insertions(+)
 
-Index: linux-compile.git/include/linux/clocksource.h
+Index: linux-compile.git/lib/tracing/tracer.c
 ===================================================================
---- linux-compile.git.orig/include/linux/clocksource.h	2008-01-14 13:14:14.000000000 -0500
-+++ linux-compile.git/include/linux/clocksource.h	2008-01-14 13:14:14.000000000 -0500
-@@ -273,6 +273,9 @@ extern int clocksource_register(struct c
- extern struct clocksource* clocksource_get_next(void);
- extern void clocksource_change_rating(struct clocksource *cs, int rating);
- extern void clocksource_resume(void);
-+extern cycle_t get_monotonic_cycles(void);
-+extern unsigned long cycles_to_usecs(cycle_t cycles);
-+extern cycle_t usecs_to_cycles(unsigned long usecs);
+--- linux-compile.git.orig/lib/tracing/tracer.c	2008-01-14 13:14:13.000000000 -0500
++++ linux-compile.git/lib/tracing/tracer.c	2008-01-14 14:57:41.000000000 -0500
+@@ -19,12 +19,18 @@
+ #include <linux/percpu.h>
+ #include <linux/debugfs.h>
+ #include <linux/kallsyms.h>
++#include <linux/clocksource.h>
+ #include <linux/uaccess.h>
+ #include <linux/mcount.h>
  
- /* used to initialize clock */
- extern struct clocksource clocksource_jiffies;
-Index: linux-compile.git/kernel/time/timekeeping.c
-===================================================================
---- linux-compile.git.orig/kernel/time/timekeeping.c	2008-01-14 13:14:14.000000000 -0500
-+++ linux-compile.git/kernel/time/timekeeping.c	2008-01-14 13:14:14.000000000 -0500
-@@ -103,6 +103,54 @@ static inline void __get_realtime_clock_
- 	timespec_add_ns(ts, nsecs);
+ #include "tracer.h"
+ #include "tracer_interface.h"
+ 
++static inline notrace cycle_t now(void)
++{
++	return get_monotonic_cycles();
++}
++
+ static struct mctracer_trace mctracer_trace;
+ static DEFINE_PER_CPU(struct mctracer_trace_cpu, mctracer_trace_cpu);
+ static int trace_enabled __read_mostly;
+@@ -58,6 +64,7 @@ mctracer_add_trace_entry(struct mctracer
+ 	entry->ip	 = ip;
+ 	entry->parent_ip = parent_ip;
+ 	entry->pid	 = tsk->pid;
++	entry->t	 = now();
+ 	memcpy(entry->comm, tsk->comm, TASK_COMM_LEN);
  }
  
-+cycle_t notrace get_monotonic_cycles(void)
-+{
-+	cycle_t cycle_now, cycle_delta, cycle_raw, cycle_last;
+@@ -250,6 +257,15 @@ static int s_show(struct seq_file *m, vo
+ 	if (iter->ent == NULL) {
+ 		seq_printf(m, "mctracer:\n");
+ 	} else {
++		unsigned long long t;
++		unsigned long usec_rem;
++		unsigned long secs;
 +
-+	do {
-+		/*
-+		 * cycle_raw and cycle_last can change on
-+		 * another CPU and we need the delta calculation
-+		 * of cycle_now and cycle_last happen atomic, as well
-+		 * as the adding to cycle_raw. We don't need to grab
-+		 * any locks, we just keep trying until get all the
-+		 * calculations together in one state.
-+		 *
-+		 * In fact, we __cant__ grab any locks. This
-+		 * function is called from the latency_tracer which can
-+		 * be called anywhere. To grab any locks (including
-+		 * seq_locks) we risk putting ourselves into a deadlock.
-+		 */
-+		cycle_raw = clock->cycle_raw;
-+		cycle_last = clock->cycle_last;
++		t = cycles_to_usecs(iter->ent->t);
++		usec_rem = do_div(t, 1000000ULL);
++		secs = (unsigned long)t;
 +
-+		/* read clocksource: */
-+		cycle_now = clocksource_read(clock);
-+
-+		/* calculate the delta since the last update_wall_time: */
-+		cycle_delta = (cycle_now - cycle_last) & clock->mask;
-+
-+	} while (cycle_raw != clock->cycle_raw ||
-+		 cycle_last != clock->cycle_last);
-+
-+	return cycle_raw + cycle_delta;
-+}
-+
-+unsigned long notrace cycles_to_usecs(cycle_t cycles)
-+{
-+	u64 ret = cyc2ns(clock, cycles);
-+
-+	ret += NSEC_PER_USEC/2; /* For rounding in do_div() */
-+	do_div(ret, NSEC_PER_USEC);
-+
-+	return ret;
-+}
-+
-+cycle_t notrace usecs_to_cycles(unsigned long usecs)
-+{
-+	return ns2cyc(clock, (u64)usecs * 1000);
-+}
-+
- /**
-  * getnstimeofday - Returns the time of day in a timespec
-  * @ts:		pointer to the timespec to be set
++		seq_printf(m, "[%5lu.%06lu] ", secs, usec_rem);
+ 		seq_printf(m, "CPU %d: ", iter->cpu);
+ 		seq_printf(m, "%s:%d ", iter->ent->comm, iter->ent->pid);
+ 		seq_print_ip_sym(m, iter->ent->ip, sym_only);
+Index: linux-compile.git/lib/tracing/tracer.h
+===================================================================
+--- linux-compile.git.orig/lib/tracing/tracer.h	2008-01-14 13:14:13.000000000 -0500
++++ linux-compile.git/lib/tracing/tracer.h	2008-01-14 14:57:41.000000000 -0500
+@@ -5,6 +5,7 @@
+ #include <linux/sched.h>
+ 
+ struct mctracer_entry {
++	unsigned long long t;
+ 	unsigned long idx;
+ 	unsigned long ip;
+ 	unsigned long parent_ip;
 
 -- 
