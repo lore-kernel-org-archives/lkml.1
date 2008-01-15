@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755024AbYAOKNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbYAOKPR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755024AbYAOKNP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 05:13:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbYAOKMs
+	id S1756841AbYAOKPR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 05:15:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbYAOKPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 05:12:48 -0500
-Received: from [211.102.241.196] ([211.102.241.196]:33087 "EHLO mail.yuvad.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750851AbYAOKMr convert rfc822-to-8bit (ORCPT
+	Tue, 15 Jan 2008 05:15:04 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:62175 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753145AbYAOKPB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 05:12:47 -0500
-From: "Mao Rui" <maorui@yuvad.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: SATA DOM is not identified by ata_piix module
-Date: Tue, 15 Jan 2008 18:11:25 +0800
-Message-ID: <003a01c8575f$070d2230$7740a8c0@cmaorui2>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-X-Mailer: Microsoft Office Outlook 11
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-Thread-Index: AchXXM8AqKPptE8ET1SkVWZpfV69DA==
+	Tue, 15 Jan 2008 05:15:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=OGs6EAFWmT2vMSLEun76nK4Z2ct0c2I5V5YFQk9i3oxIbUKPrpr2+LkMFusFIMpFFps87eO9tAUHx/LWlcZozrwrGXpbhsgmuvYS1faWxLq+P5+esQRnXa0H4eDAiOCcui4VjNSeYvOV7eGGLmngzdY3dYPXmKDcb7uWuCjC+1U=
+Subject: Re: [PATCH] [13/31] CPA: Use macros to modify the PG_arch_1 page
+	flags in change_page_attr
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org, jbeulich@novell.com, mingo@elte.hu,
+       tglx@linutronix.de
+In-Reply-To: <200801151106.41855.ak@suse.de>
+References: <200801141116.534682000@suse.de>
+	 <20080114221645.90C5D14F83@wotan.suse.de> <1200389391.16794.12.camel@brick>
+	 <200801151106.41855.ak@suse.de>
+Content-Type: text/plain
+Date: Tue, 15 Jan 2008 02:15:02 -0800
+Message-Id: <1200392102.16794.26.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 2008-01-15 at 11:06 +0100, Andi Kleen wrote:
+> On Tuesday 15 January 2008 10:29:51 Harvey Harrison wrote:
+> > On Mon, 2008-01-14 at 23:16 +0100, Andi Kleen wrote:
+> > > Instead of open coding the bit accesses uses standard style
+> > > *PageDeferred* macros. 
+> > > 
+> > 
+> > Any reason these couldn't be static inlines in a shared header?
+> 
+> The whole usage of that bit is private to the file
 
-I have a PQI Turbo SATA DOM. It works well under Windows. I installed it in
-a SuperMicro motherboard, Intel 5000P chipset. The OS is Ubuntu 7.04, kernel
-2.6.20-15. But the DOM is not appeared as a device node, and I found several
-error messages in kernel log.
+True if pageattr_32|64.c get merged, not one I have looked at yet,
+but wouldn't a static inline in the files then be better for the
+typechecking?
 
-[   67.124299] ata2.00: qc timeout (cmd 0x91)
-[   67.124306] ata2.00: failed to IDENTIFY (INIT_DEV_PARAMS failed,
-err_mask=0x4)
-[   67.124309] ata2: failed to recover some devices, retrying in 5 secs
-[  102.258334] ata2.00: qc timeout (cmd 0x91)
-[  102.258341] ata2.00: failed to IDENTIFY (INIT_DEV_PARAMS failed,
-err_mask=0x4)
-[  102.258344] ata2: failed to recover some devices, retrying in 5 secs
-[  137.392654] ata2.00: qc timeout (cmd 0x91)
-[  137.392661] ata2.00: failed to IDENTIFY (INIT_DEV_PARAMS failed,
-err_mask=0x4)
-
-Actually I also have a PQI IDE DOM, it have same error with Ubuntu 7.04 /
-kernel 2.6.20-15. After I upgrade kernel to 2.6.22, the IDE DOM can work.
-But as for SATA DOM, I have no luck this time. Even with the newest kernel,
-2.6.23.14 and 2.6.24-rc7-git6, the problem still exists.
-I also found an interesting matter. The Ubuntu 6.10, say kernel 2.6.15-28,
-can identify both IDE DOM and SATA DOM. But due to other critical problem, I
-can not go back to this old kernel.
-
-What’s going on? The new kernel is even worse than old one. It seems the
-problem is existing in the ata_piix driver.
-
-Best regards,
-Mao Rui
-
-
+Harvey
 
