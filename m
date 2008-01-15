@@ -1,82 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbYAOTHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752951AbYAOTN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754176AbYAOTHb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 14:07:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbYAOTHY
+	id S1752951AbYAOTN2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 14:13:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751077AbYAOTNU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 14:07:24 -0500
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:52597 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750940AbYAOTHX (ORCPT
+	Tue, 15 Jan 2008 14:13:20 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:11911 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750955AbYAOTNT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 14:07:23 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq4HAIWSjEdMROHU/2dsb2JhbACBWKoe
-Date: Tue, 15 Jan 2008 14:07:20 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Adrian Bunk <adrian.bunk@movial.fi>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, phil.el@wanadoo.fr,
-       oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: Fwd: Re: [2.6.24 patch] restore ARMv6 OProfile support
-Message-ID: <20080115190719.GA12236@Krystal>
-References: <20071228195841.GA3945@flint.arm.linux.org.uk> <20080115104526.GA32067@flint.arm.linux.org.uk> <alpine.LFD.1.00.0801150811250.2806@woody.linux-foundation.org> <20080115173701.GB8375@Krystal> <alpine.LFD.1.00.0801151051120.2806@woody.linux-foundation.org>
+	Tue, 15 Jan 2008 14:13:19 -0500
+Date: Tue, 15 Jan 2008 11:10:18 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Anton Salikhmetov" <salikhmetov@gmail.com>
+Cc: "Christoph Hellwig" <hch@infradead.org>, linux-mm@kvack.org,
+       jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, protasnb@gmail.com, miklos@szeredi.hu
+Subject: Re: [PATCH 1/2] Massive code cleanup of sys_msync()
+Message-Id: <20080115111018.1e27a229.randy.dunlap@oracle.com>
+In-Reply-To: <4df4ef0c0801151102l4d72b6b5j702e21beb1ebe459@mail.gmail.com>
+References: <12004129652397-git-send-email-salikhmetov@gmail.com>
+	<12004129734126-git-send-email-salikhmetov@gmail.com>
+	<20080115175705.GA21557@infradead.org>
+	<4df4ef0c0801151102l4d72b6b5j702e21beb1ebe459@mail.gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0801151051120.2806@woody.linux-foundation.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:01:49 up 73 days, 7 min,  9 users,  load average: 0.46, 0.85,
-	0.82
-User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Linus Torvalds (torvalds@linux-foundation.org) wrote:
-> 
-> 
-> On Tue, 15 Jan 2008, Mathieu Desnoyers wrote:
-> > 
-> > Well, it goes along the lines of the patch I suggested as a reply to
-> > Adrian, with these differences :
-> > 
-> > - I still source the kernel/Kconfig.instrumentation file.
-> > - I put back the missing OPROFILE options directly in arch/arm/Kconfig
-> > 
-> > Then end result is the same as your patch, but without the code
-> > duplication.
-> 
-> No it's not.
-> 
-> Now the config variables may all be there, but the UI for the *menu* 
-> system is broken (ie all the ARM profiling config options are now outside 
-> the profiling menu).
-> 
-> Is that menu really needed? I dunno. But since it exists, it should be 
-> correct.
-> 
-> 		Linus
+On Tue, 15 Jan 2008 22:02:54 +0300 Anton Salikhmetov wrote:
 
-There is an "instrumentation menu removal" patchset I've submitted to
-Andrew for the next release cycle that moves the instrumentation menu
-content into General setup (I did this following your advice).
+> 2008/1/15, Christoph Hellwig <hch@infradead.org>:
+> > On Tue, Jan 15, 2008 at 07:02:44PM +0300, Anton Salikhmetov wrote:
 
-Furthermore, on ARM, the OPROFILE_ARMV6, OPROFILE_MPCORE and
-OPROFILE_ARM11_CORE are all "bool , default y" (equivalent to the
-preferred def_bool y). Unless I am grossly mistaken, this is not
-supposed to show up in the menus; it's just selected when the
-dependencies are met.
+> > > @@ -33,71 +34,65 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
+> > >       unsigned long end;
+> > >       struct mm_struct *mm = current->mm;
+> > >       struct vm_area_struct *vma;
+> > > -     int unmapped_error = 0;
+> > > -     int error = -EINVAL;
+> > > +     int error = 0, unmapped_error = 0;
+> > >
+> > >       if (flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC))
+> > > -             goto out;
+> > > +             return -EINVAL;
+> > >       if (start & ~PAGE_MASK)
+> > > -             goto out;
+> > > +             return -EINVAL;
+> >
+> > The goto out for a simple return style is used quite commonly in kernel
+> > code to have a single return statement which makes code maintaince, e.g.
+> > adding locks or allocations simpler.  Not sure that getting rid of it
+> > makes a lot of sense.
+> 
+> Sorry, I can't agree. That's what is written in the CodingStyle document:
+> 
+> The goto statement comes in handy when a function exits from multiple
+> locations and some common work such as cleanup has to be done.
 
-Mathieu
+CodingStyle does not try to cover Everything.  Nor do we want it to.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+At any rate, there is a desire for functions to have a single point
+of return, regardless of the amount of cleanup to be done, so I agree
+with Christoph's comments.
+
+
+> The second part of requirement does not hold true for the sys_msync() routine.
+> 
+> >
+> > > +             file = vma->vm_file;
+> > > +             if ((flags & MS_SYNC) && file && (vma->vm_flags & VM_SHARED)) {
+> >
+> > Given that file is assigned just above it would be more readable to test
+> > it first.
+> 
+> The second part of my solution changes this code, anyway.
+> 
+> >
+> > > +                     if (error)
+> > > +                             return error;
+> >
+> > This should be an goto out, returns out of the middle of the function
+> > make reading and maintaining the code not so nice.
+> 
+> Sorry, I don't think so. No "common cleanup" is needed here.
+
+
+---
+~Randy
