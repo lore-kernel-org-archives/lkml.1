@@ -1,66 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756185AbYAOC5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbYAODBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756185AbYAOC5Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 21:57:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755144AbYAOC5J
+	id S1755483AbYAODBn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 22:01:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYAODBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 21:57:09 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56473 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754974AbYAOC5A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 21:57:00 -0500
-Date: Mon, 14 Jan 2008 21:56:47 -0500
-From: Rik van Riel <riel@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Marcelo Tosatti <marcelo@kvack.org>,
-       Daniel Spang <daniel.spang@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH 3/5] add /dev/mem_notify device
-Message-ID: <20080114215647.169fd245@bree.surriel.com>
-In-Reply-To: <20080115110918.118B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080115100029.1178.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20080115111035.d516639a.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080115110918.118B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 14 Jan 2008 22:01:32 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:35723 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751894AbYAODBb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 22:01:31 -0500
+Message-Id: <478C22A9.5000009@ce.jp.nec.com>
+Date: Tue, 15 Jan 2008 12:04:09 +0900
+From: "K.Tanaka" <k-tanaka@ce.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: linux-scsi@vger.kernel.org
+CC: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       dm-devel@redhat.com
+Subject: [RFC] A SCSI fault injection framework using SystemTap.
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jan 2008 11:20:56 +0900
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-> Hi Kame
-> 
-> > > +	if (pressure) {
-> > > +		nr_wakeup = max_t(int, atomic_read(&nr_watcher_task)>>4, 100);
-> > > +		atomic_long_set(&last_mem_notify, jiffies);
-> > > +		wake_up_locked_nr(&mem_wait, nr_wakeup);
-> > > +	}
-> > What is this for ? and Why ?
-> > Are there too many waiters ?
-> 
-> my intent is for avoid thundering herd.
-> 100 is heuristic value.
-> 
-> and too many wakeup cause too much memory freed.
-> I don't want it.
-> 
-> of course, if any problem happened, I will change.
+I would like to introduce a SCSI fault injection framework using SystemTap.
 
-I agree with you.  Your code looks like it could be a reasonable
-heuristic, but the only way to really find that out is to test
-the code on live systems under varying workloads.
+Currently, kernel has Fault-injection framework and Faulty mode for md,
+which can also be used for testing the error handling. But, they could
+only produce fixed type of errors stochastically. In order to simulate
+more realistic scsi disk faults, I have created a  new flexible fault injection
+framework using SystemTap.
 
-Maybe we need to wake up fewer tasks more often, maybe we are
-better off waking up more tasks but fewer times.  Either way,
-at this time we simply do not know and can stick with your current 
-code.
+The new fault injection framework has the following features:
+
+ 1) The new framework is flexible, easy to change the condition without changing
+    the kernel because actually they are SystemTap scripts.
+    For example, device faults resulting in scsi command timeout, and media
+    faults which could be corrected by writing data to the failed sector
+    could be simulated using this framework.
+
+ 2) The new framework generates "pseudo" faults in the SCSI mid-layer.
+    Any upper layer app/driver using the SCSI mid-layer can apply this framework.
+
+ 3) The new framework rewrite the status code and sense data for SCSI command and
+    pass it to the upper layer. So the real error handling routine of the upper
+    layer for I/O request can be tested.
+
+I have tested the software RAID (md/dm-mirror) using this framework
+and found some bugs.
+ e.g.
+  -The kernel thread for md RAID1 could cause a deadlock when the error handler for
+    md RAID1 contends with the write access to the md RAID1 array.
+
+  -dm-mirror's redundancy doesn't work. A read error from the disk consisting
+   the array will be directory passed to the userspace, without reading from
+   the other mirror.
+   (It turns out that this issue is a known issue, but the patch is not merged.
+    http://www.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/dm-raid1-handle-read-failures.patch)
+
+There are also some other bugs for error handling routine in the multiple
+fault situation. I will report the details about these bugs later.
+
+The new framework is tested on Fedora8(i386) running with kernel 2.6.23.12.
+So far, I'm cleaning up the tool set for release, and plan to post it in the near future.
+If you are interested, take a look at it.
+If you have any comments, please let me know.
 
 -- 
-All rights reversed.
+------------------------------------------------------------------------
+Kenichi TANAKA    | Open Source Software Platform Development Division
+                  | Computers Software Operations Unit, NEC Corporation
+                  | k-tanaka@ce.jp.nec.com
+
+
