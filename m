@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963AbYAONoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753166AbYAONqM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753963AbYAONoj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 08:44:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbYAONob
+	id S1753166AbYAONqM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 08:46:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751060AbYAONp7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 08:44:31 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:47368 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750860AbYAONob (ORCPT
+	Tue, 15 Jan 2008 08:45:59 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50357 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750860AbYAONp6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 08:44:31 -0500
-Message-ID: <478CB75B.70503@zytor.com>
-Date: Tue, 15 Jan 2008 08:38:35 -0500
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: "Huang, Ying" <ying.huang@intel.com>, venkatesh.pallipadi@intel.com,
-       akpm@linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 0/3] i386 boot: replace boot_ioremap with enhanced
- bt_ioremap
-References: <1200375902.3505.29.camel@caritas-dev.intel.com> <20080115084417.GA16449@elte.hu> <1200390535.3505.62.camel@caritas-dev.intel.com> <478CAC70.80309@zytor.com> <20080115133942.GI7025@elte.hu>
-In-Reply-To: <20080115133942.GI7025@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 15 Jan 2008 08:45:58 -0500
+Date: Tue, 15 Jan 2008 13:42:09 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Marcelo Tosatti <marcelo@kvack.org>,
+       Daniel Spang <daniel.spang@gmail.com>, Rik van Riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC][PATCH 3/5] add /dev/mem_notify device
+Message-ID: <20080115134209.7b3c2f7e@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080115202711.11A6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20080115195022.11A3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080115112027.6120915b@lxorguk.ukuu.org.uk>
+	<20080115202711.11A6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * H. Peter Anvin <hpa@zytor.com> wrote:
-> 
->> I did a quick scan over the patchset (not quite awake yet, so I may 
->> very well have missed something), but it looks like EFI (again!) is 
->> the only user of ioremapping before paging_init().  This makes me 
->> wonder if that code can't be restructured so that isn't necessary.
-> 
-> i think that in general making access to unmapped memory a bit easier is 
-> generally a good robustness idea as ACPI could be impacted by it as 
-> well.
-> 
-> Fundamentally, paging_init() has obvious dependency on "figuring out the 
-> memory setup" of the box, and "figuring out the memory setup" means 
-> interpreting various data structures passed in by the BIOS - some of 
-> which might be in not yet mapped areas or iommu areas (if we have to do 
-> some early quirk). So having a robust implementation of ioremap_early() 
-> sounds like a definitive plus.
-> 
+> current wake up order is simply FIFO by poll(2) called.
+> because the VM cannot know how much amount each process can do in free.
+> the process rss and freeable memory is not proportional.
 
-Fair enough.  If it's generally useful, I certainly have no objections.
+Ok this makes sense.
+> 
+> thus I adopt wake up one after another until restoration memory shortage.
+> 
+> 
+> > It also appears there is no way to wait for memory shortages (processes
+> > that can free memory easily) only for memory to start appearing.
+> 
+> poll() with never timeout don't fill your requirement?
+> to be honest, maybe I don't understand your afraid yet. sorry.
 
-	-hpa
+My misunderstanding. There is in fact no way to wait for memory to become
+available. The poll() method you provide works nicely waiting for
+shortages and responding to them by freeing memory.
+
+It would be interesting to add FASYNC support to this. Some users have
+asked for a signal when memory shortage occurs (as IBM AIX provides
+this). FASYNC support would allow a SIGIO to be delivered from this
+device when memory shortages occurred. Poll as you have implemented is of
+course the easier way for a program to monitor memory and a better
+interface.
+
+Alan
