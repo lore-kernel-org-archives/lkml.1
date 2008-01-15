@@ -1,87 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751979AbYAOPPR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752960AbYAOPQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751979AbYAOPPR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 10:15:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751010AbYAOPPD
+	id S1752960AbYAOPQY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 10:16:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751134AbYAOPQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 10:15:03 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:37035 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750930AbYAOPPB (ORCPT
+	Tue, 15 Jan 2008 10:16:15 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:56235 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750931AbYAOPQN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 10:15:01 -0500
-Subject: Re: [RFC/PATCH 4/8] revoke: core code V7
-From: Peter Zijlstra <peterz@infradead.org>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: alan@redhat.com, viro@zeniv.linux.org.uk, hch@infradead.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0712141716370.28689@sbz-30.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0712141716370.28689@sbz-30.cs.Helsinki.FI>
+	Tue, 15 Jan 2008 10:16:13 -0500
+Subject: Re: INITIO scsi driver fails to work properly
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Filippos Papadopoulos <psybases@gmail.com>
+Cc: linux-scsi@vger.kernel.org, Chuck Ebbert <cebbert@redhat.com>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <9f00bd9d0801130428s5e4c034apf21052b918470f99@mail.gmail.com>
+References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com>
+	 <1198271036.3130.60.camel@localhost.localdomain>
+	 <476C4177.3030902@redhat.com>
+	 <1198277391.3130.73.camel@localhost.localdomain>
+	 <9f00bd9d0801031618l324e9078i56b0679a35e27f69@mail.gmail.com>
+	 <1200028577.5337.8.camel@localhost.localdomain>
+	 <9f00bd9d0801110154i3b2f9c1flf076823747950196@mail.gmail.com>
+	 <1200066295.3286.19.camel@localhost.localdomain>
+	 <9f00bd9d0801110844g176acdcdle0331783f82ed866@mail.gmail.com>
+	 <1200070903.3286.28.camel@localhost.localdomain>
+	 <9f00bd9d0801130428s5e4c034apf21052b918470f99@mail.gmail.com>
 Content-Type: text/plain
-Date: Tue, 15 Jan 2008 16:14:54 +0100
-Message-Id: <1200410094.26045.29.camel@twins>
+Date: Tue, 15 Jan 2008 09:16:06 -0600
+Message-Id: <1200410166.9273.4.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
+X-Mailer: Evolution 2.12.2 (2.12.2-3.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 2007-12-14 at 17:16 +0200, Pekka J Enberg wrote:
+On Sun, 2008-01-13 at 14:28 +0200, Filippos Papadopoulos wrote:
+> On 1/11/08, James Bottomley <James.Bottomley@hansenpartnership.com> wrote:
+> >
+> > On Fri, 2008-01-11 at 18:44 +0200, Filippos Papadopoulos wrote:
+> > > On Jan 11, 2008 5:44 PM, James Bottomley
+> > > <James.Bottomley@hansenpartnership.com> wrote:
+> > > > >
+> > > > > I havent reported "initio: I/O port range 0x0 is busy."
+> > > >
+> > > > Sorry ... we appear to have several reporters of different bugs in this
+> > > > thread.  That message was copied by Chuck Ebbert from a Red Hat
+> > > > bugzilla ... I was assuming it was the same problem.
+> > > >
+> > > > > I applied the patch on 2.6.24-rc6-git9 but unfortunatelly same thing happens.
+> > > >
+> > > > First off, has this driver ever worked for you in 2.6?  Just booting
+> > > > SLES9 (2.6.5) or RHEL4 (2.6.9) ... or one of their open equivalents to
+> > > > check a really old kernel would be helpful.  If you can get it to work,
+> > > > then we can proceed with a patch reversion regime based on the
+> > > > assumption that the problem is a recent commit.
+> > >
+> > > Yes it works under 2.6.16.13.  See the beginning of this thread, i
+> > > mention there some things about newer versions.
+> >
+> > Thanks, actually, I see this:
+> >
+> > > I tried to install OpenSUSE 10.3 (kernel 2.6.22.5) and the latest
+> > > OpenSUSE 11.0 Alpha 0  (kernel 2.6.24-rc4) but although the initio
+> > > drivergets loaded during the installation process, yast reports that no hard
+> > > disk is found.
+> >
+> > Could you try with a vanilla 2.6.22 kernel?  The reason for all of this
+> > is that 2.6.22 predates Alan's conversion of this driver (which was my
+> > 95% candidate for the source of the bug).  I want you to try the vanilla
+> > kernel just in case the opensuse one contains a backport.
+> 
+> 
+> Yes you are right. I compiled the vanilla 2.6.22 and initio driver works.
+> Tell me if you want to apply any patch to it.
 
-> +static int revoke_files(struct inode *inode)
-> +{
-> +	struct super_block *sb;
-> +	struct file *file;
-> +	int err = 0;
-> +
-> +	sb = inode->i_sb;
-> +	if (!sb)
-> +		return -EINVAL;
-> +
-> +restart:
-> +	file_list_lock();
-> +	list_for_each_entry(file, &sb->s_files, f_u.fu_list) {
-> +		struct dentry *dentry = file->f_path.dentry;
-> +
-> +		if (dentry->d_inode != inode)
-> +			continue;
-> +
-> +		if (file->f_op != inode->i_fop)
-> +			continue;
-> +
-> +		get_file(file);
-> +
-> +		/*
-> +		 * inode->i_mutex cannot be acquired under files_lock
-> +		 */
-> +		file_list_unlock();
-> +
-> +		err = file->f_op->revoke(file);
-> +		make_revoked_file(inode, file);
-> +		fput(file);
-> +
-> +		if (err)
-> +			goto out;
-> +
-> +		if (signal_pending(current)) {
-> +			err = -EINTR;
-> +			goto out;
-> +		}
-> +		cond_resched();
-> +		goto restart;
-> +	}
-> +	file_list_unlock();
-> +out:
-> +	return err;
-> +}
 
-Humm, we were trying to get rid of file_list_lock(), this puts up
-another user of the sb file list.
+That's good news ... at least we know where the issue lies; now the
+problem comes: there are two candidate patches for this issue: Alan's
+driver update patch and Tomo's accessors patch.  Unfortunately, due to
+merge conflicts the two are pretty hopelessly intertwined.  I think I
+already spotted one bug in the accessor conversion, so I'll look at that
+again.  Alan's also going to acquire an inito board and retest his
+conversions.
 
-Also, that loop looks horribly expensive: n*(1+m); where n is the list
-size, and m the number of matching fds.
+I'm afraid it might be a while before we have anything for you to test.
 
-Granted, I see no other options either.
+James
+
 
