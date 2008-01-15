@@ -1,52 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbYAOJEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755971AbYAOJFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755345AbYAOJEp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 04:04:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbYAOJEc
+	id S1755971AbYAOJFU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 04:05:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752292AbYAOJFB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 04:04:32 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:43627 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752064AbYAOJEb (ORCPT
+	Tue, 15 Jan 2008 04:05:01 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:46586 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750744AbYAOJE6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 04:04:31 -0500
-Date: Tue, 15 Jan 2008 18:03:38 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC] mmaped copy too slow?
-Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1200387478.15103.21.camel@twins>
-References: <20080115115318.1191.KOSAKI.MOTOHIRO@jp.fujitsu.com> <1200387478.15103.21.camel@twins>
-Message-Id: <20080115180130.119A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 15 Jan 2008 04:04:58 -0500
+Message-ID: <478C76D4.3010700@bull.net>
+Date: Tue, 15 Jan 2008 10:03:16 +0100
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       matthltc@us.ibm.com
+Subject: Re: [RFC PATCH 4/4] [RESEND] Recomputing msgmni on memory add / remove
+References: <20080114155402.690906000@bull.net> <20080114155602.855698000@bull.net> <20080115164440.6DBB.Y-GOTO@jp.fujitsu.com>
+In-Reply-To: <20080115164440.6DBB.Y-GOTO@jp.fujitsu.com>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 15/01/2008 10:13:18,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 15/01/2008 10:13:19,
+	Serialize complete at 15/01/2008 10:13:19
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
-
-> > > While being able to deal with used-once mappings in page reclaim
-> > > could be a good idea, this would require us to be able to determine
-> > > the difference between a page that was accessed once since it was
-> > > faulted in and a page that got accessed several times.
-> > 
-> > it makes sense that read ahead hit assume used-once mapping, may be.
-> > I will try it.
+Yasunori Goto wrote:
+> Hello Nadia-san.
 > 
-> I once had a patch that made read-ahead give feedback into page reclaim,
-> but people didn't like it.
+> 
+>>@@ -118,6 +122,10 @@ struct ipc_namespace {
+>> 	size_t		shm_ctlall;
+>> 	int		shm_ctlmni;
+>> 	int		shm_tot;
+>>+
+>>+#ifdef CONFIG_MEMORY_HOTPLUG
+>>+	struct notifier_block ipc_memory_hotplug;
+>>+#endif
+>> };
+> 
+> 
+> I'm sorry, but I don't see why each ipc namespace must have each callbacks
+> of memory hotplug.
+> I prefer only one callback for each subsystem, not for each namespace.
+> In addition, the recompute_msgmni() calculation looks very similar for
+> all ipc namespace.
+> Or do you wish each ipc namespace have different callback for the future?
+> 
 
-Could you please tell me your mail subject or URL?
-I hope know why people didn't like.
+Actually, this is what I wanted to do at the very beginning: have a 
+single callback that would recompute the msgmni for each ipc namespace. 
+But the issue here is that the namespaces are not linked to each other, 
+so I had no simple way to go through all the namespaces.
+I solved the issue by having a callback for any single ipc namespace and 
+make it recompute the msgmni value for itslef.
 
-thanks
+> 
+> 
+> BTW, have you ever tested this patch? If you don't have any test environment
+> for memory hotplug code, then I'll check it. :-)
 
-- kosaki
+Well, I tested it but not in "real configuration": what I did is that I 
+changed the status by hand under sysfs to offline. I also changed 
+remove_memory() in mm/memory_hotplug.c in the following way (instead of 
+returninf EINVAL):
+1) decrease the total_ram pages
+2) call memory_notify(MEM_OFFLINE, NULL)
+
+and checked that the msgmni was recomputed.
+
+But sure, if you are candidate to test it, that would be great!
+
+
+
+Regards,
+Nadia
+
 
 
 
