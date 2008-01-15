@@ -1,93 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752095AbYAOPXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752142AbYAOP2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752095AbYAOPXz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 10:23:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbYAOPXp
+	id S1752142AbYAOP2g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 10:28:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751145AbYAOP23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 10:23:45 -0500
-Received: from chello089077127128.chello.pl ([89.77.127.128]:45659 "EHLO
-	astralstorm.puszkin.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751001AbYAOPXo (ORCPT
+	Tue, 15 Jan 2008 10:28:29 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:35911 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751076AbYAOP22 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 10:23:44 -0500
-X-Greylist: delayed 384 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Jan 2008 10:23:43 EST
-Date: Tue, 15 Jan 2008 16:17:05 +0100
-From: Radoslaw Szkodzinski (AstralStorm) <lkml@astralstorm.puszkin.org>
-To: "Chris Friesen" <cfriesen@nortel.com>
-Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: questions on NAPI processing latency and dropped network
- packets
-Message-ID: <20080115161705.0724250d@astralstorm.puszkin.org>
-In-Reply-To: <478CC76B.1020804@nortel.com>
-References: <20080115071950.GA1696@ff.dom.local>
-	<478CC76B.1020804@nortel.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/8tJObg510IBp.7DfwEaB7GX";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+	Tue, 15 Jan 2008 10:28:28 -0500
+Date: Tue, 15 Jan 2008 10:28:01 -0500
+From: Theodore Tso <tytso@MIT.EDU>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Abhishek Rai <abhishekrai@google.com>, linux-kernel@vger.kernel.org,
+       rohitseth@google.com, linux-ext4@vger.kernel.org
+Subject: Re: [CALL FOR TESTING] Make Ext3 fsck way faster [2.6.24-rc6 -mm
+	patch]
+Message-ID: <20080115152801.GA7292@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Christoph Hellwig <hch@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Abhishek Rai <abhishekrai@google.com>, linux-kernel@vger.kernel.org,
+	rohitseth@google.com, linux-ext4@vger.kernel.org
+References: <200801140839.01986.abhishekrai@google.com> <20080114163412.83a8b18d.akpm@linux-foundation.org> <20080115030441.a0270609.akpm@linux-foundation.org> <20080115131533.GA5766@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080115131533.GA5766@infradead.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/8tJObg510IBp.7DfwEaB7GX
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Tue, Jan 15, 2008 at 01:15:33PM +0000, Christoph Hellwig wrote:
+> They won't fsck in planned downtimes.  They will have to use fsck when
+> the shit hits the fan and they need to.   Not sure about ext3, but big
+> XFS user with a close tie to the US goverment were concerned about this
+> case for really big filesystems and have sponsored speedup including
+> multithreading xfs_repair.  I'm pretty sure the same arguments apply
+> to ext3, even if the filesystems are a few magnitudes smaller.
 
-On Tue, 15 Jan 2008 08:47:07 -0600
-"Chris Friesen" <cfriesen@nortel.com> wrote:
+Agreed, 100%.  Even if you fsck snapshots during slow periods, it
+still doesn't help you if the filesystem gets corrupted due to a
+hardware or software error.  That's where this will matter the most.
 
-> Jarek Poplawski wrote:
->=20
-> > IMHO, checking this with a current stable, which probably you are going
-> > to do some day, anyway, should be 100% acceptable: giving some input to
-> > netdev, while still working for yourself.
->=20
-> While I would love to do this, it's not that simple.
->=20
-> Some of our hardware is not supported on mainline, so we need per-kernel=
-=20
-> version patches to even bring up the blade.  The blades netboot via a=20
-> jumbo-frame network, so kernel extensions are needed to handle setting=20
-> the MTU before mounting the rootfs.
+Val Hensen has done a proof of concept patch that multi-threads e2fsck
+(and she's working on one that would be long-term supportable) that
+might reduce the value of this patch, but metaclustering should still
+help.
 
-Why? Can't you use a small initramfs to set it up?
+> > In any decent environment, people will fsck their ext3 filesystems during
+> > planned downtime, and the benefit of reducing that downtime from 6
+> > hours/machine to 2 hours/machine is probably fairly small, given that there
+> > is no service interruption.  (The same applies to desktops and laptops).
+> > 
+> > Sure, the benefit is not *zero*, but it's small.  Much less than it would
+> > be with ext2.  I mean, the "avoid unplanned fscks" feature is the whole
+> > reason why ext3 has journalling (and boy is that feature expensive during
+> > normal operation).
 
-> The blade in question uses CKRM=20
-> which doesn't exist for newer kernels so the problem may simply be=20
-> hidden by scheduling differences.
+Also, it's not just reducing fsck times, although that's the main one.
+The last time this was suggested, the rationale was to speed up the
+"rm dvd.iso" case.  Also, something which *could* be done, if Abhishek
+wants to pursue it, would be to pull in all of the indirect blocks
+when the file is opened, and create an in-memory extent tree that
+would speed up access to the file.  It's rarely worth doing this
+without metaclustering, since it doesn't help for sequential I/O, only
+random I/O, but with metaclustering it would also be a win for
+sequential I/O.  (This would also remove the minor performance
+degradation for sequential I/O imposed by metaclustering, and in fact
+improve it slightly for really big files.)
 
-Current spiritual successor is Ingo's realtime patchset I guess.
-
-> The userspace application uses other=20
-> kernel features that are not in mainline (and likely some of them won't=20
-> ever be in mainline--I know because I've tried).
-
-What would these be? Some proc or sysfs files that were removed or
-renamed?
-Maybe they can be worked around w/o changing the application at all, or
-very minor changes.
-
-Also, be sure to check if there are pauses with other CPU hogs.
-
-> Basically, the number of changes required for our environment makes it=20
-> difficult to just boot up the latest kernel.
-
-Yes, adding an initramfs is non-trivial (some busybox + shell
-scripting), but not all that hard either.
-And maintaining one is easier than patching the kernel.
-(usually 0 maintenance, maybe minor fixes sometimes)
-
---Sig_/8tJObg510IBp.7DfwEaB7GX
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.8 (GNU/Linux)
-
-iEYEARECAAYFAkeMznoACgkQBlhXA0ALOYMwvACgkLIEPeMlYnCDE/ylqXZl+OU2
-TkgAnR1FlNKBsGNvJhPY+hbbawXi5dEh
-=T8Zj
------END PGP SIGNATURE-----
-
---Sig_/8tJObg510IBp.7DfwEaB7GX--
+					- Ted
