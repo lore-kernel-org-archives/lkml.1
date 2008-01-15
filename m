@@ -1,89 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753397AbYAOPTp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752095AbYAOPXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753397AbYAOPTp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 10:19:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751069AbYAOPTi
+	id S1752095AbYAOPXz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 10:23:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbYAOPXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 10:19:38 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:34472 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750979AbYAOPTh (ORCPT
+	Tue, 15 Jan 2008 10:23:45 -0500
+Received: from chello089077127128.chello.pl ([89.77.127.128]:45659 "EHLO
+	astralstorm.puszkin.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751001AbYAOPXo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 10:19:37 -0500
-Message-ID: <478CCEA3.5050404@bull.net>
-Date: Tue, 15 Jan 2008 16:17:55 +0100
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: linux-mm@kvack.org, containers@list.osdl.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 0/4] [RESEND] Change default MSGMNI tunable to scale with
- lowmem
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 15/01/2008 16:27:56,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 15/01/2008 16:27:58,
-	Serialize complete at 15/01/2008 16:27:58
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Tue, 15 Jan 2008 10:23:44 -0500
+X-Greylist: delayed 384 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Jan 2008 10:23:43 EST
+Date: Tue, 15 Jan 2008 16:17:05 +0100
+From: Radoslaw Szkodzinski (AstralStorm) <lkml@astralstorm.puszkin.org>
+To: "Chris Friesen" <cfriesen@nortel.com>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: questions on NAPI processing latency and dropped network
+ packets
+Message-ID: <20080115161705.0724250d@astralstorm.puszkin.org>
+In-Reply-To: <478CC76B.1020804@nortel.com>
+References: <20080115071950.GA1696@ff.dom.local>
+	<478CC76B.1020804@nortel.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_/8tJObg510IBp.7DfwEaB7GX";
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+--Sig_/8tJObg510IBp.7DfwEaB7GX
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Yesterday, I posted to lkml a series of patches that make the ipc 
-tunable msgmni scale with lowmem (see thread 
-http://lkml.org/lkml/2008/1/14/196).
+On Tue, 15 Jan 2008 08:47:07 -0600
+"Chris Friesen" <cfriesen@nortel.com> wrote:
 
-Since these patches watch for memory hotplug notifications, I thought 
-that comments from linux-mm people would be interesting.
+> Jarek Poplawski wrote:
+>=20
+> > IMHO, checking this with a current stable, which probably you are going
+> > to do some day, anyway, should be 100% acceptable: giving some input to
+> > netdev, while still working for yourself.
+>=20
+> While I would love to do this, it's not that simple.
+>=20
+> Some of our hardware is not supported on mainline, so we need per-kernel=
+=20
+> version patches to even bring up the blade.  The blades netboot via a=20
+> jumbo-frame network, so kernel extensions are needed to handle setting=20
+> the MTU before mounting the rootfs.
 
-Also, since these patches change the ipc_namespace structure, comments 
-from people subscribed at the containers mailing list would be welcome too.
+Why? Can't you use a small initramfs to set it up?
 
-Notes:
-1) please, Cc me since I'm not subscribed to linux-mm.
-2) sorry for lkml subsribers who are receiving this mail for the 2nd 
-time, but I wanted all the comments to be shared.
+> The blade in question uses CKRM=20
+> which doesn't exist for newer kernels so the problem may simply be=20
+> hidden by scheduling differences.
 
+Current spiritual successor is Ingo's realtime patchset I guess.
 
-Here is patch 0, the complete series can be found in the thread 
-mentioned above.
+> The userspace application uses other=20
+> kernel features that are not in mainline (and likely some of them won't=20
+> ever be in mainline--I know because I've tried).
 
------------------
+What would these be? Some proc or sysfs files that were removed or
+renamed?
+Maybe they can be worked around w/o changing the application at all, or
+very minor changes.
 
-On large systems we'd like to allow a larger number of message queues. 
-In some cases up to 32K. However simply setting MSGMNI to a larger value 
-may cause problems for smaller systems.
+Also, be sure to check if there are pauses with other CPU hogs.
 
-The first patch of this series introduces a default maximum number of 
-message queue ids that scales with the amount of lowmem.
+> Basically, the number of changes required for our environment makes it=20
+> difficult to just boot up the latest kernel.
 
-Since msgmni is per namespace and there is no amount of memory dedicated 
-to each namespace so far, the second patch of this series scales msgmni 
-to the number of ipc namespaces.
+Yes, adding an initramfs is non-trivial (some busybox + shell
+scripting), but not all that hard either.
+And maintaining one is easier than patching the kernel.
+(usually 0 maintenance, maybe minor fixes sometimes)
 
-In the last patch, a notifier block is added to the ipc namespace 
-structure to manage memory hotplug. The callback routine is activated 
-upon memory add/remove and it recomputes msgmni. One callback routine is 
-added to the memory notifier chain each time an ipc namespace is 
-allocated. It is removed when the coresponding ipc namespace is freed.
+--Sig_/8tJObg510IBp.7DfwEaB7GX
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
-I still have 1 issue that I'll try to solve next:
-   . use the notification mechanism to recompute all the msg_ctlmni each
-     time an ipc namespace is created / removed.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.8 (GNU/Linux)
 
+iEYEARECAAYFAkeMznoACgkQBlhXA0ALOYMwvACgkLIEPeMlYnCDE/ylqXZl+OU2
+TkgAnR1FlNKBsGNvJhPY+hbbawXi5dEh
+=T8Zj
+-----END PGP SIGNATURE-----
 
-These patches should be applied to 2.6.24-rc7, in the following order:
-
-[PATCH 1/4]: ipc_scale_msgmni_with_lowmem.patch
-[PATCH 2/4]: ipc_scale_msgmni_with_namespaces.patch
-[PATCH 3/4]: ipc_slab_memory_callback_prio_to_const.patch
-[PATCH 4/4]: ipc_recompute_msgmni_on_memory_hotplug.patch
-
-
-Regards,
-Nadia
+--Sig_/8tJObg510IBp.7DfwEaB7GX--
