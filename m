@@ -1,77 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756315AbYAORKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210AbYAORLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756315AbYAORKl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 12:10:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbYAORKd
+	id S1756210AbYAORLn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 12:11:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbYAORLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 12:10:33 -0500
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3742 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750890AbYAORKc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 12:10:32 -0500
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: 2.6.24-rc7-rt2
-Date: Tue, 15 Jan 2008 18:10:27 +0100
-User-Agent: KMail/1.9.7
-Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-References: <1200336080.318.8.camel@localhost.localdomain> <200801142316.39330.m.kozlowski@tuxland.pl> <Pine.LNX.4.58.0801141730150.3109@gandalf.stny.rr.com>
-In-Reply-To: <Pine.LNX.4.58.0801141730150.3109@gandalf.stny.rr.com>
+	Tue, 15 Jan 2008 12:11:35 -0500
+Received: from wx-out-0506.google.com ([66.249.82.233]:2804 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751348AbYAORLe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 12:11:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=aC1Q8Z6YdZflIGvwi0Z/lNzpPloiZokKdnMqHouxkwf/Z6bT81ZeP94rLMXPh9Ne9zW6jDXHAvPJYIodcTT7qj/4gdyt7zuAeMFGMemfHUiIasGyoAtp/d5D9VwcK8asus2ekHxgvezfB1QMFajgYO/L08DmpuZEMVOUtix1NrQ=
+Message-ID: <e85b9d30801150911p791651e8hf0406490ad1811ee@mail.gmail.com>
+Date: Tue, 15 Jan 2008 18:11:33 +0100
+From: Matthew <jackdachef@gmail.com>
+To: "Ingo Molnar" <mingo@redhat.com>
+Subject: Re: Fwd: Fwd: laptop / computer hardlocks during execution of 32bit applications(binaries) on 64bit system (Gentoo)
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       "Ed Tomlinson" <edt@aei.ca>, "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <200801141716.38380.edt@aei.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801151810.28279.m.kozlowski@tuxland.pl>
+References: <47841C41.4060401@zytor.com>
+	 <e85b9d30801140847k4b19cea4nd08461c1664a1b35@mail.gmail.com>
+	 <20080114170036.GL15542@elte.hu> <200801141716.38380.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > We are pleased to announce the 2.6.24-rc7-rt2 tree, which can be
-> > > downloaded from the location:
-> > >
-> > >   http://rt.et.redhat.com/download/
-> >
-> > Compiles fine but I run into another problem. On startup kernel oopses
-> > early and this 'oops' loops over and over again on the screen until you
-> > shut down the box. So I can't (easily) capture the output. I tried different
-> > boot_delay values but it seems that it doesn't work as intended. Seems that
-> > it delays only the first printk from oops, then the rest loops over the screen
-> > without delay - again it becomes unreadable. I used my usual config with a bunch
-> > of debug options enabled so that maybe is not real rt system case. Also tried to
-> > bisect it with quilt but that is hard. Lots of patches depends on another patches
-> > so bisection brakes things. I'll look into this tommorow and reply if I get
-> > anything substantial.
-> >
-> > I attached my config in case anybody wants to try to reproduce that.
-> >
-> 
-> Turn off LOCKDEP and see if you still have the same problems. This might
-> be fixed with Daniel's patch.
+> Ingo,
+>
+> This is _not_ a regression.  This has been occuring for ages here.  A backport of this fix to 2.6.23 would be a
+> very good thing - IMHO its something that should go into stable asap.
+>
+> Thanks,
+> Ed Tomlinson
+>
+>
+>
 
-Ok. It works.
+++
 
-I found this in dmesg:
+Ingo,
+this probably has to do something with the random unmotivated
+hardlocks which I suffered from with 2.6.23
 
-BUG: swapper:0 task might have lost a preemption check!
-Pid: 0, comm: swapper Not tainted 2.6.24-rc7-rt2 #3
- [<c010386b>] show_trace_log_lvl+0x1d/0x3b
- [<c01042f3>] show_trace+0x12/0x14
- [<c0104a2f>] dump_stack+0x6a/0x70
- [<c0115419>] preempt_enable_no_resched+0x5c/0x5e
- [<c0100e35>] cpu_idle+0x6d/0x82
- [<c0323b6e>] rest_init+0x66/0x68
- [<c043aba6>] start_kernel+0x20c/0x276
- [<00000000>] 0x0
- =======================
----------------------------
-| preempt count: 00000000 ]
-| 0-level deep critical section nesting:
-----------------------------------------
+when I used 2.6.23-based kernels my rig from time to time (sometimes 2
+times a day) just locked and wouldn't react to keyboard-input or magic
+sysrq key anymore
+if I have a more precise look at my memory (in my head) it probably
+happened more often around usage with realplayer (<-- at least that
+app; 32bit on amd64) [perhaps also with 32bit thunderbird]
+the next suspect is nvidia-drivers: with earlier versions this
+happened more often for me (that's at least the "feeling" I have)
 
-Box runs fine though.
+so you guys might want to start with those 3 points (thunderbird,
+realplayer, nvidia-drivers);
+considerung use / test with latest cfs-backports would also be a good
+idea, with early backports I had some problems, whereas it's now
+perfectly stable (fair group scheduling not enabled)
 
-Regards,
+unfortunately I can't / couldn't reproduce it
+in addition to that I'm pretty busy right now so I can't investigate
+any further ...
 
-	Mariusz
+hope you also find the culprit for that buggy ;)
+
+Regards
+Mat
