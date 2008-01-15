@@ -1,54 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758790AbYAOWOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758603AbYAOWPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758790AbYAOWOl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 17:14:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758603AbYAOWOa
+	id S1758603AbYAOWPW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 17:15:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbYAOWPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 17:14:30 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37265 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758644AbYAOWO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 17:14:29 -0500
-Date: Tue, 15 Jan 2008 23:14:09 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Andi Kleen <andi@firstfloor.org>,
-       rjw@sisk.pl, pavel@suse.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without
-	HOTPLUG_CPU
-Message-ID: <20080115221409.GF2665@elte.hu>
-References: <20080110150911.GG28740@does.not.exist> <20080114135240.GA15357@elte.hu> <20080114140910.GA8507@uranus.ravnborg.org> <20080114145854.GA31695@elte.hu> <20080114150103.GA2700@elte.hu> <20080114182052.GB9847@does.not.exist> <20080114191009.GB2288@elte.hu> <20080114195258.GC9847@does.not.exist> <20080114200126.GB9257@uranus.ravnborg.org> <20080114201826.GD9847@does.not.exist>
+	Tue, 15 Jan 2008 17:15:08 -0500
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:48269 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753588AbYAOWPG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 17:15:06 -0500
+Date: Tue, 15 Jan 2008 17:15:02 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Jan Kiszka <jan.kiszka@siemens.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [RFC PATCH 28/30 v3] Generic command line storage
+In-Reply-To: <20080115213044.GC17439@Krystal>
+Message-ID: <Pine.LNX.4.58.0801151704140.29090@gandalf.stny.rr.com>
+References: <20080115204907.838227723@goodmis.org> <20080115205026.559348520@goodmis.org>
+ <20080115213044.GC17439@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080114201826.GD9847@does.not.exist>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Adrian Bunk <bunk@kernel.org> wrote:
+On Tue, 15 Jan 2008, Mathieu Desnoyers wrote:
 
-> > make ARCH=x86_64 allyesconfig
-> > will set CONFIG_64BIT for you - no?
-> 
-> Yes.
-> 
-> But this still leaves the fact that when someone says 'allyesconfig' 
-> it's no longer clear which configuration he has. And no, I do not 
-> consider it funny that this now implies two hours of compilation twice 
-> just for seeing one bug.
+> * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > Saving the comm of tasks for each trace is very expensive.
+> > This patch includes in the context switch hook, a way to
+> > store the last 100 command lines of tasks. This table is
+> > examined when a trace is to be printed.
+> >
+>
+> Instead of saving the comm at context switch, could we save them when a
+> process exits ? (actually, if we want to do this right, we would also
+> have to trace the changes of "comm" upon exec(), so we deal correctly
+> with processes that do multiple execs).
+>
+> This way, we would not duplicate the comm of processes still active in
+> the system, and would trigger on a much lower event-rate trace point.
+>
+> And the idea would be to save only the comm of processes present in your
+> summary (top X processes); why do you save the last 100 ? (if the system
+> has more than 100 active tasks, this code will always be executed, which
+> seems bad)
 
-sorry - i should have mentioned that it's 64-bit. (and i even 
-mis-remembered having seen it on 32-bit as well)
+100 was just an arbitrary number that seems to be fine in my current
+tests. But yes, a function trace over a thousand tasks will clean them
+out. But the recording is only done when a trace is active.
 
-	Ingo
+>
+> Also, if we do as I propose, we would have to keep process exit/exec
+> tracing active until the summary is cleared, even though the rest of
+> "high event rate" tracing could be stopped sooner.
+
+One thing I planned on doing was at a low path point (hit max latency to
+record, etc) we could copy the array into the trace buffer, so the info
+stays with the trace.
+
+Going with your approach (marker at exit), I could flush the traces that
+were saved, as well as the comms of the current tasks that are still
+running. The thing is, this all starts to get a bit intrusive into the
+rest of the kernel.  What is suppose to be a compact latency tracer,
+starts to become larger, problematic, entity. Now changes in exit could
+require updates to the tracer. Which is something I want to avoid.
+
+-- Steve
+
