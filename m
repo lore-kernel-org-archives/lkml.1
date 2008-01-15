@@ -1,48 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757705AbYAOWDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758226AbYAOWEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757705AbYAOWDb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 17:03:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbYAOWDX
+	id S1758226AbYAOWEU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 17:04:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756394AbYAOWEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 17:03:23 -0500
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:63846 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753134AbYAOWDW (ORCPT
+	Tue, 15 Jan 2008 17:04:12 -0500
+Received: from an-out-0708.google.com ([209.85.132.249]:53893 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755953AbYAOWEK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 17:03:22 -0500
-Date: Tue, 15 Jan 2008 17:03:14 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 16/22 -v2] add get_monotonic_cycles
-In-Reply-To: <Pine.LNX.4.58.0801151658190.29090@gandalf.stny.rr.com>
-Message-ID: <Pine.LNX.4.58.0801151702420.29090@gandalf.stny.rr.com>
-References: <20080109232914.676624725@goodmis.org> <20080109233044.777564395@goodmis.org>
- <20080115214636.GD17439@Krystal> <Pine.LNX.4.58.0801151658190.29090@gandalf.stny.rr.com>
+	Tue, 15 Jan 2008 17:04:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=hPzIGQz2QJdgGgwbkv3yxMO7667ciLwdF7sPxu5r7ANjGuHfkCsU3dWUqR3XPTSf6t/fv48yG2Ci8w70rB0rEsVzEAHn8ifQJkD5CrIJBPY3YbAkXCkhpbRTmFO4CTIkIHVJvRlFNhRC+WuYzcXeG9NRI0v7ZbYDilMuMQutNeM=
+Date: Tue, 15 Jan 2008 17:04:01 -0500
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Andres Salomon <dilinger@queued.net>
+Cc: linux-input@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] input: psmouse: fix input_dev leak in lifebook driver
+Message-ID: <20080115170323.ZZRA012@mailhub.coreip.homeip.net>
+References: <20080112151252.193d6b52@ephemeral>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080112151252.193d6b52@ephemeral>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Jan 12, 2008 at 03:12:52PM -0500, Andres Salomon wrote:
+> 
+> The lifebook driver may register a second input device, but it never
+> unregisters it.  This fixes that.
+> 
+> Signed-off-by: Andres Salomon <dilinger@debian.org>
 
-On Tue, 15 Jan 2008, Steven Rostedt wrote:
->
-> Also, it just occurred to me that this is an old patch. I thought I
-> renamed cycle_raw to cycle_monotonic. But I must have lost that patch :-/
+Applied, thank you Andres.
 
-Ah, I changed this in the -rt patch queue, and never moved the patch back
-here.
-
--- Steve
+-- 
+Dmitry
 
