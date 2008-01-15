@@ -1,93 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753588AbYAOHL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbYAOHNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753588AbYAOHL1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 02:11:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbYAOHLS
+	id S1754194AbYAOHNm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 02:13:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYAOHNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 02:11:18 -0500
-Received: from smtp110.plus.mail.re1.yahoo.com ([69.147.102.73]:24147 "HELO
-	smtp110.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751733AbYAOHLQ (ORCPT
+	Tue, 15 Jan 2008 02:13:32 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:49380 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752335AbYAOHNb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 02:11:16 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:Mail-Followup-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
-  b=Vkmm4aSTeSwWnZM9XinWobKzylzDfoIQUycYY5RQXfwCInKOjivgxphfEsiPzyaKWjT81d8RS9F52S7eADG8knOFvbPkCg13pm8Y+pSMyCOayvsrDrrQjKMKMxNkWZMKKnZsP4ZONnGnPs6l22Bt50acBVXZkR0hm6G3hd+LC5M=  ;
-X-YMail-OSG: L7xQYyEVM1mctFI5wskZaSdAsqyiICx91Nqjqsnu3D1G6jAA
-X-Yahoo-Newman-Property: ymail-3
-Date: Tue, 15 Jan 2008 08:07:35 +0100
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 10/12] ide-floppy: remove atomic test_*bit macros
-Message-ID: <20080115070735.GA32009@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-Mail-Followup-To: bbpetkov@yahoo.de,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <1200255505-31418-1-git-send-email-bbpetkov@yahoo.de> <1200255505-31418-10-git-send-email-bbpetkov@yahoo.de> <1200255505-31418-11-git-send-email-bbpetkov@yahoo.de> <200801142250.58201.bzolnier@gmail.com>
+	Tue, 15 Jan 2008 02:13:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=tT9JKcMSAH4m2njmqMMd9zokYRLiySFTndzN28Txc/T48Gku66Gm7FKEDdHQI//WsAvXra0FGpCPjd8UZSDOyFomI0u1u3oIMEwPyZopvCmSbAdFtHvfDaiCPNH+18sq+YFqvbXUD0j1yjhSZeIy1P9Daxq9xU/JAwAkPzZCNn0=
+Date: Tue, 15 Jan 2008 08:19:50 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: questions on NAPI processing latency and dropped network
+	packets
+Message-ID: <20080115071950.GA1696@ff.dom.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200801142250.58201.bzolnier@gmail.com>
+In-Reply-To: <478B86BA.1050706@nortel.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 14, 2008 at 10:50:58PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> On Sunday 13 January 2008, Borislav Petkov wrote:
-> > ..and replace them with flag enums.
-> > 
-> > Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
-> > ---
-> >  drivers/ide/ide-floppy.c |  132 +++++++++++++++++++++++++--------------------
-> >  1 files changed, 73 insertions(+), 59 deletions(-)
+On 14-01-2008 16:58, Chris Friesen wrote:
+...
+> How close to bleeding edge do we need to be for it to be considered 
+> acceptable to ask questions on netdev?
 > 
-> [...]
-> 
-> > @@ -506,14 +516,14 @@ static ide_startstop_t idefloppy_pc_intr(ide_drive_t *drive)
-> >  
-> >  	debug_log("Reached %s interrupt handler\n", __FUNCTION__);
-> >  
-> > -	if (test_bit(PC_DMA_IN_PROGRESS, &pc->flags)) {
-> > +	if (PC_FLAG_DMA_IN_PROGRESS & pc->flags) {
-> 
-> the usual kernel convention is to put flag last, i.e.
-> 
-> pc->flags & PC_FLAG_DMA_IN_PROGRESS
-> 
-> [...]
-> 
-> > @@ -570,7 +581,7 @@ static ide_startstop_t idefloppy_pc_intr(ide_drive_t *drive)
-> >  		printk(KERN_ERR "ide-floppy: CoD != 0 in %s\n", __FUNCTION__);
-> >  		return ide_do_reset(drive);
-> >  	}
-> > -	if (((ireason & IO) == IO) == test_bit(PC_WRITING, &pc->flags)) {
-> > +	if (((ireason & IO) == IO) == (PC_FLAG_WRITING  & pc->flags)) {
-> 
-> - test_bit() returns 1 or 0 (=> boolean)
-> - (pc->flags & PC_FLAG_WRITING) is 0x10 or 0
-> 
-> so the above comparison will fail
-> 
-> > @@ -607,7 +618,7 @@ static ide_startstop_t idefloppy_pc_intr(ide_drive_t *drive)
-> >  		xferfunc(drive, pc->current_position, bcount);
-> >  	else
-> >  		ide_floppy_io_buffers(drive, pc, bcount,
-> > -				test_bit(PC_WRITING, &pc->flags));
-> > +				(PC_FLAG_WRITING & pc->flags));
-> 
-> ditto, this may actually work but '(pc->flags & PC_FLAG_WRITING) ? 1 : 0'
-> would be much safer from maintainability POV
-Hi Bart,
+> Given that the embedded space tends to be perpetually stuck on older 
+> kernels (our "current" release is based on 2.6.14) do you have any 
+> suggestion on how we can obtain information that would be available on 
+> netdev if we were using newer kernels?
 
-i must've been sleeping while i've been doing this :) Will redo them tonight and
-resend.
+IMHO, checking this with a current stable, which probably you are going
+to do some day, anyway, should be 100% acceptable: giving some input to
+netdev, while still working for yourself.
 
-Thanks.
--- 
-Regards/Gruﬂ,
-    Boris.
+Regards,
+Jarek P.
