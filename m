@@ -1,88 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbYAOT3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757114AbYAOT3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755119AbYAOT3Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 14:29:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbYAOT3Q
+	id S1757114AbYAOT3w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 14:29:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbYAOT32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 14:29:16 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:43712 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751291AbYAOT3P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 14:29:15 -0500
-X-SourceIP: 80.56.237.116
-Subject: Re: [PATCH 1/2] Massive code cleanup of sys_msync()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Anton Salikhmetov <salikhmetov@gmail.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>, linux-mm@kvack.org,
-       jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       protasnb@gmail.com, miklos@szeredi.hu
-In-Reply-To: <4df4ef0c0801151126p5dfdbc13ga9862c995890c33c@mail.gmail.com>
-References: <12004129652397-git-send-email-salikhmetov@gmail.com>
-	 <12004129734126-git-send-email-salikhmetov@gmail.com>
-	 <20080115175705.GA21557@infradead.org>
-	 <4df4ef0c0801151102l4d72b6b5j702e21beb1ebe459@mail.gmail.com>
-	 <20080115111018.1e27a229.randy.dunlap@oracle.com>
-	 <4df4ef0c0801151126p5dfdbc13ga9862c995890c33c@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 15 Jan 2008 20:28:48 +0100
-Message-Id: <1200425328.26045.39.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Jan 2008 14:29:28 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:45904 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755475AbYAOT30 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 14:29:26 -0500
+Date: Tue, 15 Jan 2008 11:29:55 -0800
+From: Greg KH <gregkh@suse.de>
+To: "Oliver Pinter (Pint?r Oliv?r)" <oliver.pntr@gmail.com>
+Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, davem@davemloft.net,
+       stable@kernel.org, stable-commits@vger.kernel.org
+Subject: Re: patch cassini_1.patch queued to -stable tree
+Message-ID: <20080115192955.GA22107@suse.de>
+References: <20080111.013838.267004233.davem@davemloft.net> <20080115184557.2757B145446E@imap.suse.de> <6101e8c40801151117w7c584f75w1b72936a1f5de17e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6101e8c40801151117w7c584f75w1b72936a1f5de17e@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-01-15 at 22:26 +0300, Anton Salikhmetov wrote:
-> 2008/1/15, Randy Dunlap <randy.dunlap@oracle.com>:
-> > On Tue, 15 Jan 2008 22:02:54 +0300 Anton Salikhmetov wrote:
+On Tue, Jan 15, 2008 at 08:17:56PM +0100, Oliver Pinter (Pint?r Oliv?r) wrote:
+> On 1/15/08, gregkh@suse.de <gregkh@suse.de> wrote:
 > >
-> > > 2008/1/15, Christoph Hellwig <hch@infradead.org>:
-> > > > On Tue, Jan 15, 2008 at 07:02:44PM +0300, Anton Salikhmetov wrote:
+> > This is a note to let you know that we have just queued up the patch titled
 > >
-> > > > > @@ -33,71 +34,65 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
-> > > > >       unsigned long end;
-> > > > >       struct mm_struct *mm = current->mm;
-> > > > >       struct vm_area_struct *vma;
-> > > > > -     int unmapped_error = 0;
-> > > > > -     int error = -EINVAL;
-> > > > > +     int error = 0, unmapped_error = 0;
-> > > > >
-> > > > >       if (flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC))
-> > > > > -             goto out;
-> > > > > +             return -EINVAL;
-> > > > >       if (start & ~PAGE_MASK)
-> > > > > -             goto out;
-> > > > > +             return -EINVAL;
-> > > >
-> > > > The goto out for a simple return style is used quite commonly in kernel
-> > > > code to have a single return statement which makes code maintaince, e.g.
-> > > > adding locks or allocations simpler.  Not sure that getting rid of it
-> > > > makes a lot of sense.
-> > >
-> > > Sorry, I can't agree. That's what is written in the CodingStyle document:
-> > >
-> > > The goto statement comes in handy when a function exits from multiple
-> > > locations and some common work such as cleanup has to be done.
+> >      Subject: CASSINI: Fix endianness bug.
 > >
-> > CodingStyle does not try to cover Everything.  Nor do we want it to.
-> >
-> > At any rate, there is a desire for functions to have a single point
-> > of return, regardless of the amount of cleanup to be done, so I agree
-> > with Christoph's comments.
+> > to the 2.6.22-stable tree.  Its filename is
 > 
-> Should I replace "return -EINVAL;" statement with the following?
-> 
-> {
->     error = -EINVAL;
->     goto out;
-> }
+> 2.6.23-stable (cassini_*)
 
-Notice that error is already -EINVAL, so a simple goto should suffice.
+/me kicks his scripts....
 
+Yes, sorry about that.  I'll queue it up for .22 later today...
+
+thanks,
+
+greg k-h
