@@ -1,63 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755639AbYAOQdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755427AbYAOQf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755639AbYAOQdg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 11:33:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbYAOQd3
+	id S1755427AbYAOQf1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 11:35:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbYAOQfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 11:33:29 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53024 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751102AbYAOQd2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 11:33:28 -0500
-Date: Tue, 15 Jan 2008 17:32:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Adrian Bunk <adrian.bunk@movial.fi>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Randy Dunlap <randy.dunlap@oracle.com>, phil.el@wanadoo.fr,
-       oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: Fwd: Re: [2.6.24 patch] restore ARMv6 OProfile support
-Message-ID: <20080115163251.GC31270@elte.hu>
-References: <20071228195841.GA3945@flint.arm.linux.org.uk> <20080115104526.GA32067@flint.arm.linux.org.uk> <alpine.LFD.1.00.0801150811250.2806@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0801150811250.2806@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 15 Jan 2008 11:35:18 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:42668 "EHLO
+	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751856AbYAOQfR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 11:35:17 -0500
+Subject: Re: [PATCH 2/2] Updating ctime and mtime at syncing
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Anton Salikhmetov <salikhmetov@gmail.com>
+Cc: inux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       protasnb@gmail.com, miklos@szeredi.hu
+In-Reply-To: <1200412978699-git-send-email-salikhmetov@gmail.com>
+References: <12004129652397-git-send-email-salikhmetov@gmail.com>
+	 <1200412978699-git-send-email-salikhmetov@gmail.com>
+Content-Type: text/plain
+Date: Tue, 15 Jan 2008 17:35:11 +0100
+Message-Id: <1200414911.26045.32.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Tue, 2008-01-15 at 19:02 +0300, Anton Salikhmetov wrote:
 
-> But as mentioned, it's totally untested and I don't have (or really 
-> want to have) a cross-compiling environment. And I don't care *that* 
-> much. I just want something we can all live with.
-> 
-> So does something like this work for people?
+> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> index 3d3848f..53d0e34 100644
+> --- a/mm/page-writeback.c
+> +++ b/mm/page-writeback.c
+> @@ -997,35 +997,39 @@ int __set_page_dirty_no_writeback(struct page *page)
+>   */
+>  int __set_page_dirty_nobuffers(struct page *page)
+>  {
+> -	if (!TestSetPageDirty(page)) {
+> -		struct address_space *mapping = page_mapping(page);
+> -		struct address_space *mapping2;
+> +	struct address_space *mapping = page_mapping(page);
+> +	struct address_space *mapping2;
+>  
+> -		if (!mapping)
+> -			return 1;
+> +	if (!mapping)
+> +		return 1;
+>  
+> -		write_lock_irq(&mapping->tree_lock);
+> -		mapping2 = page_mapping(page);
+> -		if (mapping2) { /* Race with truncate? */
+> -			BUG_ON(mapping2 != mapping);
+> -			WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
+> -			if (mapping_cap_account_dirty(mapping)) {
+> -				__inc_zone_page_state(page, NR_FILE_DIRTY);
+> -				__inc_bdi_stat(mapping->backing_dev_info,
+> -						BDI_RECLAIMABLE);
+> -				task_io_account_write(PAGE_CACHE_SIZE);
+> -			}
+> -			radix_tree_tag_set(&mapping->page_tree,
+> -				page_index(page), PAGECACHE_TAG_DIRTY);
+> -		}
+> -		write_unlock_irq(&mapping->tree_lock);
+> -		if (mapping->host) {
+> -			/* !PageAnon && !swapper_space */
+> -			__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+> +	mapping->mtime = CURRENT_TIME;
+> +	set_bit(AS_MCTIME, &mapping->flags);
 
->  arch/arm/Kconfig                 |    2 +-
->  arch/arm/Kconfig.instrumentation |   52 ++++++++++++++++++++++++++++++++++++++
->  2 files changed, 53 insertions(+), 1 deletions(-)
+This seems vulnerable to the race we have against truncate, handled by
+the mapping2 magic below. Do we care?
 
-i like this approach better, not the least because it affects only one 
-architecture so late in the .24-rc cycle. Instrumentation bugs tend to 
-be found with a few weeks/months of delays. (because historically 
-instrumentation has been typically used by folks who cannot change their 
-kernel easily to debug it, i.e. by extension they dont run bleeding edge 
-kernels either.)
+> +
+> +	if (TestSetPageDirty(page))
+> +		return 0;
+> +
+> +	write_lock_irq(&mapping->tree_lock);
+> +	mapping2 = page_mapping(page);
+> +	if (mapping2) {
+> +		/* Race with truncate? */
+> +		BUG_ON(mapping2 != mapping);
+> +		WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
+> +		if (mapping_cap_account_dirty(mapping)) {
+> +			__inc_zone_page_state(page, NR_FILE_DIRTY);
+> +			__inc_bdi_stat(mapping->backing_dev_info,
+> +					BDI_RECLAIMABLE);
+> +			task_io_account_write(PAGE_CACHE_SIZE);
+>  		}
+> -		return 1;
+> +		radix_tree_tag_set(&mapping->page_tree,
+> +				page_index(page), PAGECACHE_TAG_DIRTY);
+>  	}
+> -	return 0;
+> +	write_unlock_irq(&mapping->tree_lock);
+> +
+> +	if (mapping->host)
+> +		__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+> +
+> +	return 1;
+>  }
+>  EXPORT_SYMBOL(__set_page_dirty_nobuffers);
+>  
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
-
-	Ingo
