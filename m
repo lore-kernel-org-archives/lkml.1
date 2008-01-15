@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520AbYAONYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbYAON0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755520AbYAONYu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 08:24:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbYAONYn
+	id S1756061AbYAON0b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 08:26:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbYAON0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 08:24:43 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48851 "EHLO mx2.mail.elte.hu"
+	Tue, 15 Jan 2008 08:26:23 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35450 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750791AbYAONYm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 08:24:42 -0500
-Date: Tue, 15 Jan 2008 14:24:23 +0100
+	id S1750743AbYAON0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 08:26:22 -0500
+Date: Tue, 15 Jan 2008 14:26:07 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
-Cc: Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@xensource.com>
-Subject: Re: [PATCH] adjust/fix LDT handling for Xen
-Message-ID: <20080115132423.GD7025@elte.hu>
-References: <4787436E.76E4.0078.0@novell.com> <20080114154817.GA14000@elte.hu> <478B96A5.76E4.0078.0@novell.com> <478B9606.6020008@citrix.com>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: move warning message of polling idle and HT
+	enabled
+Message-ID: <20080115132607.GE7025@elte.hu>
+References: <478BB226.6090105@ct.jp.nec.com> <20080114190904.GA2288@elte.hu> <478C1475.7060706@ct.jp.nec.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <478B9606.6020008@citrix.com>
+In-Reply-To: <478C1475.7060706@ct.jp.nec.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,20 +35,22 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com> wrote:
+* Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
 
->>> coul dyou try this against x86.git as well? We already unified ldt.c as 
->>> part of the paravirt patches.
->>>     
->>
->> Sure, but it may take me a little while.
->
-> I've got the unified version here. 
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> Subject: [PATCH] x86: move warning message of polling idle and HT enabled
+> 
+> This warning at idle_setup() is never shown because smp_num_sibling hasn't
+> been updated at this point yet.
+> 
+> Move this polling idle and HT enabled warning message to 
+> select_idle_routine(). I also implement this warning on 64-bit kernel 
+> and make select_idle_routine() call after detect_ht() call.
 
-thanks, applied.
-
-> Acked-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-
-please use Signed-off-by when passing through (or modifying) patches.
+looks good to me, but could you please split this up into two patches 
+instead - one that just moves/adds the printks, the other one that moves 
+the select_idle_routine() call? (Moving init calls around is notoriously 
+error-prone, so we want as small of a bisection target as possible.) 
+Thanks,
 
 	Ingo
