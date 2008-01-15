@@ -1,76 +1,320 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755461AbYAOBmN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755653AbYAOBqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755461AbYAOBmN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 20:42:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbYAOBl5
+	id S1755653AbYAOBqA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 20:46:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbYAOBpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 20:41:57 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:29604 "EHLO
-	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751218AbYAOBl4 (ORCPT
+	Mon, 14 Jan 2008 20:45:52 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48133 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750818AbYAOBpv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 20:41:56 -0500
-Date: Mon, 14 Jan 2008 19:41:53 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: PROBLEM REMAINS: [sata_nv ADMA breaks ATAPI]	Crash	on	accessing
- DVD-RAM
-In-reply-to: <1200243102.3179.27.camel@localhost.localdomain>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alexander <aledin@mail.ru>,
-       linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>
-Message-id: <478C0F61.7030002@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.krOVfyFmB2aqGjJIoHCLmQxecWc@ifi.uio.no>
- <478702C7.80401@shaw.ca> <47887982.6050805@mail.ru> <47891426.1020604@shaw.ca>
- <1200170117.3656.66.camel@localhost.localdomain> <47894785.2050508@shaw.ca>
- <1200180440.3656.76.camel@localhost.localdomain> <47896BA8.4030609@shaw.ca>
- <20080113133317.50ad4bda@lxorguk.ukuu.org.uk>
- <1200238725.3179.16.camel@localhost.localdomain>
- <20080113162959.01d519db@lxorguk.ukuu.org.uk>
- <1200243102.3179.27.camel@localhost.localdomain>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Mon, 14 Jan 2008 20:45:51 -0500
+Date: Tue, 15 Jan 2008 10:45:47 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [RFC] mmaped copy too slow?
+Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Message-Id: <20080115100450.1180.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="------_478C06B20000000011D9_MULTIPART_MIXED_"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Sun, 2008-01-13 at 16:29 +0000, Alan Cox wrote:
->>> Yes, I concur for the short term.  The other two possible courses of
->>> action either involve long discussions (the different device one) or
->>> you'll never quite be sure you got all the paths (the GFP_DMA32 one).
->>> At least with this one, you know everything will work.
->> The different device one is tricky because the PCI layer is involved in
->> mapping on some systems so you can't just magic up a platform device for
->> it. Putting a mask on the block queue might perhaps work as a model
->> which avoids breaking stuff by suprise, with the device left at 32bit
->> masking.
-> 
-> Actually, you might be able to ... that's why I'm suggesting it.  There
-> are two pieces of information the arch layer needs to know:  what is the
-> dma_mask and where is the iommu/bridge/whatever.  When we went to the
-> generic dma_map_ API on parisc, we found you simply get the one from
-> struct device and for the other you walk up the device tree until you
-> find what you're looking for.
-> 
-> I'm not suggesting we invent a dummy pci_device ... I'm suggesting we
-> dma_map on the existing scsi_device, which is properly parented to the
-> pci_device.  The problem with this approach will be any architecture
-> which blindly expects dma_map converts to pci_dma_map; however, I'm not
-> sure we have any of those left.
+--------_478C06B20000000011D9_MULTIPART_MIXED_
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
 
-I've tried the dumb solution of setting the mask on the PCI device (for 
-both ports) whenever an ATAPI device is detected, and ran into problems 
-with that. If we really need to keep the block queue bounce limit and 
-DMA mask the same, then we then have to set the bounce limit on both 
-ports as well. If you blindly do that from slave_config, though, then 
-you blow up since on the first port's initial slave_config the block 
-queue for the second port isn't allocated yet, so you'd have to detect 
-that case somehow. And if it's done via hotplug after the other port is 
-already in use, it'll be changing the limits on a port that's in active 
-use, which seems like it could be a bit racy.
+Hi
 
-So, any ideas? Maybe using the separate struct device is the easiest 
-solution, if it'll work..
+at one point, I found the large file copy speed was different depending on
+the copy method.
+
+I compared below method
+ - read(2) and write(2).
+ - mmap(2) x2 and memcpy.
+ - mmap(2) and write(2).
+
+in addition, effect of fadvice(2) and madvice(2) is checked.
+
+to a strange thing, 
+   - most faster method is read + write + fadvice.
+   - worst method is mmap + memcpy.
+
+some famous book(i.e. Advanced Programming in UNIX Environment 
+by W. Richard Stevens) written mmap copy x2 faster than read-write.
+but, linux doesn't.
+
+and, I found bottleneck is page reclaim.
+for comparision, I change page reclaim function a bit. and test again.
+
+
+test machine:
+   CPU:      Pentium4 with HT 2.8GHz
+   memory:   512M
+   Disk I/O: can about 20M/s transfer.
+             (in other word, 1GB transfer need 50s at ideal state)
+
+
+spent time of 1GB file copy.(unit is second)
+
+                 2.6.24-rc6    2.6.24-rc6       ratio
+                               +my patch        (small is faster)
+    ------------------------------------------------------------
+    rw_cp             59.32       58.60          98.79%
+    rw_fadv_cp        57.96       57.96          100.0%
+    mm_sync_cp        69.97       61.68          88.15%
+    mm_sync_madv_cp   69.41       62.54          90.10%
+    mw_cp             61.69       63.11         102.30%
+    mw_madv_cp        61.35       61.31          99.93%
+
+this patch is too premature and ugly.
+but I think that there is enough information to discuss to 
+page reclaim improvement. 
+
+the problem is when almost page is mapped and PTE access bit on,
+page reclaim process below steps.
+
+  1) page move to inactive list -> active list
+  2) page move to active list   -> inactive list
+  3) really pageout
+
+It is too roundabout and unnecessary memory pressure happend.
+if you don't mind, please discuss.
+
+
+
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+
+---
+ mm/vmscan.c |   46 +++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 43 insertions(+), 3 deletions(-)
+
+Index: linux-2.6.24-rc6-cp3/mm/vmscan.c
+===================================================================
+--- linux-2.6.24-rc6-cp3.orig/mm/vmscan.c	2008-01-13 21:58:03.000000000 +0900
++++ linux-2.6.24-rc6-cp3/mm/vmscan.c	2008-01-13 22:30:27.000000000 +0900
+@@ -446,13 +446,18 @@ static unsigned long shrink_page_list(st
+ 	struct pagevec freed_pvec;
+ 	int pgactivate = 0;
+ 	unsigned long nr_reclaimed = 0;
++	unsigned long nr_scanned = 0;
++	LIST_HEAD(l_mapped_pages);
++	unsigned long nr_mapped_page_activate = 0;
++	struct page *page;
++	int reference_checked = 0;
+ 
+ 	cond_resched();
+ 
+ 	pagevec_init(&freed_pvec, 1);
++retry:
+ 	while (!list_empty(page_list)) {
+ 		struct address_space *mapping;
+-		struct page *page;
+ 		int may_enter_fs;
+ 		int referenced;
+ 
+@@ -466,6 +471,7 @@ static unsigned long shrink_page_list(st
+ 
+ 		VM_BUG_ON(PageActive(page));
+ 
++		nr_scanned++;
+ 		sc->nr_scanned++;
+ 
+ 		if (!sc->may_swap && page_mapped(page))
+@@ -493,11 +499,17 @@ static unsigned long shrink_page_list(st
+ 				goto keep_locked;
+ 		}
+ 
+-		referenced = page_referenced(page, 1);
+-		/* In active use or really unfreeable?  Activate it. */
+-		if (sc->order <= PAGE_ALLOC_COSTLY_ORDER &&
+-					referenced && page_mapping_inuse(page))
+-			goto activate_locked;
++		if (!reference_checked) {
++			referenced = page_referenced(page, 1);
++			/* In active use or really unfreeable?  Activate it. */
++			if (sc->order <= PAGE_ALLOC_COSTLY_ORDER &&
++			    referenced && page_mapping_inuse(page)) {
++				nr_mapped_page_activate++;
++				unlock_page(page);
++				list_add(&page->lru, &l_mapped_pages);
++				continue;
++			}
++		}
+ 
+ #ifdef CONFIG_SWAP
+ 		/*
+@@ -604,7 +616,31 @@ keep:
+ 		list_add(&page->lru, &ret_pages);
+ 		VM_BUG_ON(PageLRU(page));
+ 	}
++
++	if (nr_scanned == nr_mapped_page_activate) {
++		/* may be under copy by mmap.
++		   ignore reference flag. */
++		reference_checked = 1;
++		list_splice(&l_mapped_pages, page_list);
++		goto retry;
++	} else {
++		/* move active list just now */
++		while (!list_empty(&l_mapped_pages)) {
++			page = lru_to_page(&l_mapped_pages);
++			list_del(&page->lru);
++			prefetchw_prev_lru_page(page, &l_mapped_pages, flags);
++
++			if (!TestSetPageLocked(page)) {
++				SetPageActive(page);
++				pgactivate++;
++				unlock_page(page);
++			}
++			list_add(&page->lru, &ret_pages);
++		}
++	}
++
+ 	list_splice(&ret_pages, page_list);
++
+ 	if (pagevec_count(&freed_pvec))
+ 		__pagevec_release_nonlru(&freed_pvec);
+ 	count_vm_events(PGACTIVATE, pgactivate);
+
+
+--------_478C06B20000000011D9_MULTIPART_MIXED_
+Content-Type: application/octet-stream;
+ name="mmap-write.c"
+Content-Disposition: attachment;
+ filename="mmap-write.c"
+Content-Transfer-Encoding: base64
+
+I2luY2x1ZGUgPHN0ZGlvLmg+CiNpbmNsdWRlIDxzdGRsaWIuaD4KI2luY2x1ZGUgPHN0cmluZy5o
+PgojaW5jbHVkZSA8dW5pc3RkLmg+CiNpbmNsdWRlIDxhc3NlcnQuaD4KI2luY2x1ZGUgPHN5cy9t
+bWFuLmg+CiNpbmNsdWRlIDxzeXMvdHlwZXMuaD4KI2luY2x1ZGUgPGZjbnRsLmg+CiNpbmNsdWRl
+IDxzeXMvc3RhdC5oPgoKaW50IG1haW4oaW50IGFyZ2MsIGNoYXIgKmFyZ3ZbXSkKewogICAgaWYg
+KGFyZ2MgIT0gMykgewogICAgICAgIGZwcmludGYoc3RkZXJyLCAidXNhZ2U6ICVzIGZyb21fZmls
+ZSB0b19maWxlIiwgYXJndlswXSk7CiAgICAgICAgZXhpdCgwKTsKICAgIH0KCiAgICAvKiBmcm9t
+ICovCiAgICBpbnQgZnJvbSA9IG9wZW4oYXJndlsxXSwgT19SRE9OTFksIDA2NDQpOwogICAgYXNz
+ZXJ0KGZyb20gPj0gMCk7CgogICAgc3RydWN0IHN0YXQgc3RfYnVmOwogICAgYXNzZXJ0KGZzdGF0
+KGZyb20sICZzdF9idWYpID49IDApOwogICAgc2l6ZV90IHNpemUgPSBzdF9idWYuc3Rfc2l6ZTsK
+CiAgICB2b2lkICpmcm9tX21tYXAgPSBtbWFwKE5VTEwsIHNpemUsIFBST1RfUkVBRCwgTUFQX1NI
+QVJFRCwgZnJvbSwgMCk7CiAgICBhc3NlcnQoZnJvbV9tbWFwID49IDApOwoKI2lmIFVTRV9NQURW
+SVNFCiAgICBhc3NlcnQobWFkdmlzZShmcm9tX21tYXAsIHNpemUsIE1BRFZfU0VRVUVOVElBTCkg
+Pj0gMCk7CiNlbmRpZgoKICAgIC8qIHRvICovCiAgICBpbnQgdG8gPSBvcGVuKGFyZ3ZbMl0sIE9f
+Q1JFQVQgfCBPX1dST05MWSwgMDY2Nik7CiAgICBhc3NlcnQodG8gPj0gMCk7CgogICAgLyogY29w
+eSAqLwogICAgY2hhciAqcCA9IGZyb21fbW1hcDsKICAgIGNvbnN0IGNoYXIgKiBjb25zdCBlbmRw
+ID0gZnJvbV9tbWFwICsgc2l6ZTsKICAgIHdoaWxlIChwIDwgZW5kcCkgewogICAgICAgIGludCBu
+dW1fYnl0ZXMgPSB3cml0ZSh0bywgcCwgZW5kcCAtIHApOwogICAgICAgIHAgKz0gbnVtX2J5dGVz
+OwogICAgfQogICAgYXNzZXJ0KHAgPT0gZW5kcCk7CgogICAgZnN5bmModG8pOwoKICAgIGNsb3Nl
+KHRvKTsKICAgIGNsb3NlKGZyb20pOwoKICAgIHJldHVybiAwOwp9Cg==
+--------_478C06B20000000011D9_MULTIPART_MIXED_
+Content-Type: application/octet-stream;
+ name="read-write.c"
+Content-Disposition: attachment;
+ filename="read-write.c"
+Content-Transfer-Encoding: base64
+
+I2luY2x1ZGUgPGZjbnRsLmg+CiNpbmNsdWRlIDxzdGRsaWIuaD4KI2luY2x1ZGUgPHN0ZGlvLmg+
+CiNpbmNsdWRlIDxzdHJpbmcuaD4KI2luY2x1ZGUgPGFzc2VydC5oPgojaW5jbHVkZSA8c3lzL3R5
+cGVzLmg+CiNpbmNsdWRlIDxzeXMvc3RhdC5oPgojaW5jbHVkZSA8dW5pc3RkLmg+CiNpbmNsdWRl
+IDxsaW51eC9mYWR2aXNlLmg+CgojZGVmaW5lIEJVRl9TSVpFIDgxOTIKCmludCBtYWluKGludCBh
+cmdjLCBjaGFyICoqYXJndikKewogICAgY2hhciBidWZbQlVGX1NJWkVdOwogICAgc3RydWN0IHN0
+YXQgc3RfYnVmOwoKICAgIGlmIChhcmdjIDwgMykgewogICAgICAgIGZwcmludGYoc3RkZXJyLCAi
+dXNhZ2U6ICVzIHNyYyBvdXRcbiIsIGFyZ3ZbMF0pOwogICAgICAgIGV4aXQoRVhJVF9TVUNDRVNT
+KTsKICAgIH0KCiAgICBjaGFyICpzcmMgID0gYXJndlsxXTsKICAgIGNoYXIgKmRlc3QgPSBhcmd2
+WzJdOwogICAgYXNzZXJ0KHN0cmNtcChzcmMsIGRlc3QpICE9IDApOwoKICAgIGludCBzcmNmZCA9
+IG9wZW4oc3JjLCBPX1JET05MWSwgMDY0NCk7CiAgICBhc3NlcnQoc3JjZmQgPj0gMCk7CgojaWYg
+VVNFX0ZBRFZJU0UKICAgIHBvc2l4X2ZhZHZpc2Uoc3JjZmQsIDAsIDAsIFBPU0lYX0ZBRFZfU0VR
+VUVOVElBTCk7CiAgICBwb3NpeF9mYWR2aXNlKHNyY2ZkLCAwLCAwLCBQT1NJWF9GQURWX05PUkVV
+U0UpOwojZW5kaWYKCiAgICAvKiBnZXQgcGVybWlzc2lvbiAqLwogICAgYXNzZXJ0KGZzdGF0KHNy
+Y2ZkLCAmc3RfYnVmKSA+PSAwKTsKCiAgICBpbnQgZGVzdGZkID0gb3BlbihkZXN0LCBPX1dST05M
+WSB8IE9fQ1JFQVQsIHN0X2J1Zi5zdF9tb2RlKTsKICAgIGFzc2VydChkZXN0ZmQgPj0gMCk7Cgog
+ICAgaW50IG4gPSAwOwogICAgd2hpbGUgKChuID0gcmVhZChzcmNmZCwgYnVmLCBzaXplb2YoYnVm
+KSkpID4gMCkgewogICAgICAgIGNoYXIgKnAgPSAmYnVmWzBdOwogICAgICAgIGNvbnN0IGNoYXIg
+KiBjb25zdCBlbmRwID0gYnVmICsgbjsKICAgICAgICB3aGlsZSAocCA8IGVuZHApIHsKICAgICAg
+ICAgICAgaW50IG51bV9ieXRlcyA9IHdyaXRlKGRlc3RmZCwgcCwgZW5kcCAtIHApOwogICAgICAg
+ICAgICBwICs9IG51bV9ieXRlczsKICAgICAgICB9CiAgICB9CiAgICBhc3NlcnQobiA9PSAwKTsK
+CiAgICBmc3luYyhkZXN0ZmQpOwoKICAgIGNsb3NlKGRlc3RmZCk7CiAgICBjbG9zZShzcmNmZCk7
+CgogICAgZXhpdChFWElUX1NVQ0NFU1MpOwp9Cg==
+--------_478C06B20000000011D9_MULTIPART_MIXED_
+Content-Type: application/octet-stream;
+ name="test.sh"
+Content-Disposition: attachment;
+ filename="test.sh"
+Content-Transfer-Encoding: base64
+
+IyEvYmluL3pzaCAteAoKU1JDPXRlc3RmaWxlMUcKRFNUPXRlc3RmaWxlMUcyClRJTUVYPS91c3Iv
+YmluL3RpbWUKUFJFUEFSRT0ncm0gJERTVDtzeW5jO3N5bmM7c3luYztzdWRvIHNoIC1jICJlY2hv
+IDMgPiAvcHJvYy9zeXMvdm0vZHJvcF9jYWNoZXMiO3NsZWVwIDEnClJFUEVBVD0xCgoKKHJlcGVh
+dCAkUkVQRUFUIChldmFsICRQUkVQQVJFOyAkVElNRVggLi9yd19jcCAke1NSQ30gJHtEU1R9KSkK
+KHJlcGVhdCAkUkVQRUFUIChldmFsICRQUkVQQVJFOyAkVElNRVggLi9yd19mYWR2X2NwICR7U1JD
+fSAke0RTVH0pKQoocmVwZWF0ICRSRVBFQVQgKGV2YWwgJFBSRVBBUkU7ICRUSU1FWCAuL21tX3N5
+bmNfY3AgJHtTUkN9ICR7RFNUfSkpCihyZXBlYXQgJFJFUEVBVCAoZXZhbCAkUFJFUEFSRTsgJFRJ
+TUVYIC4vbW1fc3luY19tYWR2X2NwICR7U1JDfSAke0RTVH0pKQoocmVwZWF0ICRSRVBFQVQgKGV2
+YWwgJFBSRVBBUkU7ICRUSU1FWCAuL213X2NwICR7U1JDfSAke0RTVH0pKQoocmVwZWF0ICRSRVBF
+QVQgKGV2YWwgJFBSRVBBUkU7ICRUSU1FWCAuL213X21hZHZfY3AgJHtTUkN9ICR7RFNUfSkpCg==
+--------_478C06B20000000011D9_MULTIPART_MIXED_
+Content-Type: application/octet-stream;
+ name="Makefile"
+Content-Disposition: attachment;
+ filename="Makefile"
+Content-Transfer-Encoding: base64
+
+Q0ZMQUdTID0gLVdhbGwgLU8yIC0tc3RhdGljIApUQVJHRVQgPSByd19jcCByd19mYWR2X2NwIG1t
+X3N5bmNfY3AgbW1fbXVuX2NwIG1tX3N5bmNfbWFkdl9jcCBtbV9tdW5fbWFkdl9jcCBtd19jcCBt
+d19tYWR2X2NwIG1tX3N5bmNfbm9jYWNoZV9jcCBtbV9zeW5jX21hZHZfbm9jYWNoZV9jcAoKYWxs
+OiAkKFRBUkdFVCkKCnJ3X2NwOiByZWFkLXdyaXRlLmMKCWdjYyAkKENGTEFHUykgIC1vIHJ3X2Nw
+IHJlYWQtd3JpdGUuYwoKcndfZmFkdl9jcDogcmVhZC13cml0ZS5jCglnY2MgJChDRkxBR1MpICAt
+RFVTRV9GQURWSVNFIC1vIHJ3X2ZhZHZfY3AgcmVhZC13cml0ZS5jCgptbV9zeW5jX2NwOiBtbWFw
+LW1tYXAuYwoJZ2NjICQoQ0ZMQUdTKSAtRFdJVEhfTVNZTkMgLW8gbW1fc3luY19jcCBtbWFwLW1t
+YXAuYwoKbW1fc3luY19ub2NhY2hlX2NwOiBtbWFwLW1tYXAuYwoJZ2NjICQoQ0ZMQUdTKSAtRFdJ
+VEhfTVNZTkMgLURVU0VfTk9DQUNIRV9NRU1DUFkgLW8gJEAgJDwKCm1tX211bl9jcDogbW1hcC1t
+bWFwLmMKCWdjYyAkKENGTEFHUykgLURXSVRIX01VTk1BUCAtbyBtbV9tdW5fY3AgbW1hcC1tbWFw
+LmMKCm1tX3N5bmNfbWFkdl9jcDogbW1hcC1tbWFwLmMKCWdjYyAkKENGTEFHUykgLURVU0VfTUFE
+VklTRSAtRFdJVEhfTVNZTkMgLW8gbW1fc3luY19tYWR2X2NwIG1tYXAtbW1hcC5jCgptbV9zeW5j
+X21hZHZfbm9jYWNoZV9jcDogbW1hcC1tbWFwLmMKCWdjYyAkKENGTEFHUykgLURXSVRIX01TWU5D
+IC1EVVNFX05PQ0FDSEVfTUVNQ1BZIC1vICRAICQ8CgptbV9tdW5fbWFkdl9jcDogbW1hcC1tbWFw
+LmMKCWdjYyAkKENGTEFHUykgLURVU0VfTUFEVklTRSAtRFdJVEhfTVVOTUFQIC1vIG1tX211bl9t
+YWR2X2NwIG1tYXAtbW1hcC5jCgptd19jcDogbW1hcC13cml0ZS5jCglnY2MgJChDRkxBR1MpIC1v
+IG13X2NwIG1tYXAtd3JpdGUuYwoKbXdfbWFkdl9jcDogbW1hcC13cml0ZS5jCglnY2MgJChDRkxB
+R1MpIC1EVVNFX01BRFZJU0UgLW8gbXdfbWFkdl9jcCBtbWFwLXdyaXRlLmMKCmNsZWFuOgoJLXJt
+ICoubwoJLXJtICQoVEFSR0VUKQoK
+--------_478C06B20000000011D9_MULTIPART_MIXED_
+Content-Type: application/octet-stream;
+ name="mmap-mmap.c"
+Content-Disposition: attachment;
+ filename="mmap-mmap.c"
+Content-Transfer-Encoding: base64
+
+I2RlZmluZSBfR05VX1NPVVJDRQojaW5jbHVkZSA8c3RkaW8uaD4KI2luY2x1ZGUgPHN0ZGxpYi5o
+PgojaW5jbHVkZSA8c3RyaW5nLmg+CiNpbmNsdWRlIDxhc3NlcnQuaD4KI2luY2x1ZGUgPHVuaXN0
+ZC5oPgojaW5jbHVkZSA8c3lzL21tYW4uaD4KI2luY2x1ZGUgPHN5cy90eXBlcy5oPgojaW5jbHVk
+ZSA8ZmNudGwuaD4KI2luY2x1ZGUgPHN5cy9zdGF0Lmg+CiNpbmNsdWRlIDxzeXMvZXJybm8uaD4K
+CmludCBtYWluKGludCBhcmdjLCBjaGFyICphcmd2W10pCnsKICAgIGludCBlcnI7CgogICAgaWYg
+KGFyZ2MgIT0gMykgewogICAgICAgIGZwcmludGYoc3RkZXJyLCAidXNhZ2U6ICVzIGZyb21fZmls
+ZSB0b19maWxlIiwgYXJndlswXSk7CiAgICAgICAgZXhpdCgwKTsKICAgIH0KCiAgICAvKiBmcm9t
+ICovCiAgICBpbnQgZnJvbSA9IG9wZW4oYXJndlsxXSwgT19SRE9OTFksIDA2NDQpOwogICAgYXNz
+ZXJ0KGZyb20gPj0gMCk7CgogICAgc3RydWN0IHN0YXQgc3RfYnVmOwogICAgYXNzZXJ0KGZzdGF0
+KGZyb20sICZzdF9idWYpID49IDApOwogICAgc2l6ZV90IHNpemUgPSBzdF9idWYuc3Rfc2l6ZTsK
+CiAgICB2b2lkICpmcm9tX21tYXAgPSBtbWFwKE5VTEwsIHNpemUsIFBST1RfUkVBRCwgTUFQX1NI
+QVJFRCwgZnJvbSwgMCk7CiAgICBhc3NlcnQoZnJvbV9tbWFwID49IDApOwoKI2lmIFVTRV9NQURW
+SVNFCiAgICBlcnIgPSBtYWR2aXNlKGZyb21fbW1hcCwgc2l6ZSwgTUFEVl9TRVFVRU5USUFMKTsK
+ICAgIGFzc2VydChlcnIgPj0gMCk7CiNlbmRpZgoKICAgIC8qIHRvICovCiAgICBpbnQgdG8gPSBv
+cGVuKGFyZ3ZbMl0sIE9fQ1JFQVR8T19SRFdSLCBzdF9idWYuc3RfbW9kZSk7CiAgICBhc3NlcnQo
+dG8gPj0gMCk7CgogICAgaW50IGkgPSAwOwogICAgYXNzZXJ0KGxzZWVrKHRvLCBzaXplIC0gc2l6
+ZW9mKGludCksIDBMKSA+PSAwKTsKICAgIGFzc2VydCh3cml0ZSh0bywgKCZpKSwgc2l6ZW9mKGlu
+dCkpID09IHNpemVvZihpbnQpKTsKCiAgICBlcnJubz0wOwogICAgdm9pZCAqdG9fbW1hcCA9IG1t
+YXAoTlVMTCwgc2l6ZSwgUFJPVF9XUklURSwgTUFQX1NIQVJFRCwgdG8sIDApOwogICAgYXNzZXJ0
+X3BlcnJvcihlcnJubyk7CgojaWYgVVNFX01BRFZJU0UKICAgIGVycm5vPTA7CiAgICBlcnIgPSBt
+YWR2aXNlKHRvX21tYXAsIHNpemUsIE1BRFZfU0VRVUVOVElBTCk7CiAgICBhc3NlcnRfcGVycm9y
+KGVycm5vKTsKI2VuZGlmCgogICAgLyogY29weSAqLwogICAgbWVtY3B5KHRvX21tYXAsIGZyb21f
+bW1hcCwgc2l6ZSk7CgojaWYgV0lUSF9NU1lOQwogICAgYXNzZXJ0KG1zeW5jKHRvX21tYXAsIHNp
+emUsIE1TX1NZTkMpID49IDApOwojZW5kaWYKI2lmIFdJVEhfTVVOTUFQCiAgICBhc3NlcnQobXVu
+bWFwKHRvX21tYXAsIHNpemUpID49IDApOwojZW5kaWYKCiAgICBhc3NlcnQoZnRydW5jYXRlKHRv
+LCBzaXplKSA+PSAwKTsKCiAgICByZXR1cm4gMDsKfQo=
+--------_478C06B20000000011D9_MULTIPART_MIXED_--
+
+
