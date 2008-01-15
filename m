@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759192AbYAOXxL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758159AbYAOXxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759192AbYAOXxL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 18:53:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757201AbYAOXsj
+	id S1758159AbYAOXxj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 18:53:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbYAOXsl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 18:48:39 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:52362 "EHLO mx1.redhat.com"
+	Tue, 15 Jan 2008 18:48:41 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52376 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757199AbYAOXsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 18:48:17 -0500
+	id S1757422AbYAOXs1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 18:48:27 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 13/26] FS-Cache: Recruit a couple of page flags for cache
-	management
+Subject: [PATCH 08/26] Add a secctx_to_secid() LSM hook to go along with the
+	existing
 To: sds@tycho.nsa.gov, casey@schaufler-ca.com, Trond.Myklebust@netapp.com,
        npiggin@suse.de
 Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Tue, 15 Jan 2008 23:48:02 +0000
-Message-ID: <20080115234801.22183.27186.stgit@warthog.procyon.org.uk>
+Date: Tue, 15 Jan 2008 23:47:35 +0000
+Message-ID: <20080115234735.22183.36356.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080115234652.22183.24850.stgit@warthog.procyon.org.uk>
 References: <20080115234652.22183.24850.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -32,351 +32,128 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Recruit a couple of page flags to aid in cache management.  The following extra
-flags are defined:
+secid_to_secctx() LSM hook.  This patch also includes the SELinux
+implementation for this hook.
 
- (1) PG_fscache (PG_private_2)
-
-     The marked page is backed by a local cache and is pinning resources in the
-     cache driver.
-
- (2) PG_fscache_write (PG_owner_priv_2)
-
-     The marked page is being written to the local cache.  The page may not be
-     modified whilst this is in progress.
-
-If PG_fscache is set, then things that checked for PG_private will now also
-check for that.  This includes things like truncation and page invalidation.
-The function page_has_private() had been added to make the checks for both
-PG_private and PG_private_2 at the same time.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
+Signed-off-by: Paul Moore <paul.moore@hp.com>
+Acked-by: Stephen Smalley <sds@tycho.nsa.gov>
 ---
 
- fs/splice.c                |    2 +-
- include/linux/page-flags.h |   40 ++++++++++++++++++++++++++++++++++++++--
- include/linux/pagemap.h    |   11 +++++++++++
- mm/filemap.c               |   16 ++++++++++++++++
- mm/migrate.c               |    2 +-
- mm/page_alloc.c            |    3 +++
- mm/readahead.c             |    9 +++++----
- mm/swap.c                  |    4 ++--
- mm/swap_state.c            |    4 ++--
- mm/truncate.c              |   10 +++++-----
- mm/vmscan.c                |    2 +-
- 11 files changed, 85 insertions(+), 18 deletions(-)
+ include/linux/security.h |   13 +++++++++++++
+ security/dummy.c         |    6 ++++++
+ security/security.c      |    6 ++++++
+ security/selinux/hooks.c |    6 ++++++
+ 4 files changed, 31 insertions(+), 0 deletions(-)
 
 
-diff --git a/fs/splice.c b/fs/splice.c
-index 6bdcb61..61edad7 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -58,7 +58,7 @@ static int page_cache_pipe_buf_steal(struct pipe_inode_info *pipe,
- 		 */
- 		wait_on_page_writeback(page);
+diff --git a/include/linux/security.h b/include/linux/security.h
+index b7ba073..e8f2f2d 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -1200,6 +1200,10 @@ struct request_sock;
+  *	Convert secid to security context.
+  *	@secid contains the security ID.
+  *	@secdata contains the pointer that stores the converted security context.
++ * @secctx_to_secid:
++ *      Convert security context to secid.
++ *      @secid contains the pointer to the generated security ID.
++ *      @secdata contains the security context.
+  *
+  * @release_secctx:
+  *	Release the security context.
+@@ -1389,6 +1393,7 @@ struct security_operations {
+  	int (*getprocattr)(struct task_struct *p, char *name, char **value);
+  	int (*setprocattr)(struct task_struct *p, char *name, void *value, size_t size);
+ 	int (*secid_to_secctx)(u32 secid, char **secdata, u32 *seclen);
++	int (*secctx_to_secid)(char *secdata, u32 seclen, u32 *secid);
+ 	void (*release_secctx)(char *secdata, u32 seclen);
  
--		if (PagePrivate(page))
-+		if (page_has_private(page))
- 			try_to_release_page(page, GFP_KERNEL);
+ #ifdef CONFIG_SECURITY_NETWORK
+@@ -1623,6 +1628,7 @@ int security_setprocattr(struct task_struct *p, char *name, void *value, size_t
+ int security_netlink_send(struct sock *sk, struct sk_buff *skb);
+ int security_netlink_recv(struct sk_buff *skb, int cap);
+ int security_secid_to_secctx(u32 secid, char **secdata, u32 *seclen);
++int security_secctx_to_secid(char *secdata, u32 seclen, u32 *secid);
+ void security_release_secctx(char *secdata, u32 seclen);
  
- 		/*
-diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
-index 209d3a4..364f8f9 100644
---- a/include/linux/page-flags.h
-+++ b/include/linux/page-flags.h
-@@ -77,25 +77,32 @@
- #define PG_active		 6
- #define PG_slab			 7	/* slab debug (Suparna wants this) */
- 
--#define PG_owner_priv_1		 8	/* Owner use. If pagecache, fs may use*/
-+#define PG_owner_priv_1		 8	/* Owner use. fs may use in pagecache */
- #define PG_arch_1		 9
- #define PG_reserved		10
- #define PG_private		11	/* If pagecache, has fs-private data */
- 
- #define PG_writeback		12	/* Page is under writeback */
-+#define PG_private_2		13	/* If pagecache, has fs aux data */
- #define PG_compound		14	/* Part of a compound page */
- #define PG_swapcache		15	/* Swap page: swp_entry_t in private */
- 
- #define PG_mappedtodisk		16	/* Has blocks allocated on-disk */
- #define PG_reclaim		17	/* To be reclaimed asap */
-+#define PG_owner_priv_2		18	/* Owner use. fs may use in pagecache */
- #define PG_buddy		19	/* Page is free, on buddy lists */
- 
- /* PG_readahead is only used for file reads; PG_reclaim is only for writes */
- #define PG_readahead		PG_reclaim /* Reminder to do async read-ahead */
- 
--/* PG_owner_priv_1 users should have descriptive aliases */
-+/* PG_owner_priv_1/2 users should have descriptive aliases */
- #define PG_checked		PG_owner_priv_1 /* Used by some filesystems */
- #define PG_pinned		PG_owner_priv_1	/* Xen pinned pagetable */
-+#define PG_fscache_write	PG_owner_priv_2	/* Writing to local cache */
-+
-+/* PG_private_2 causes releasepage() and co to be invoked */
-+#define PG_fscache		PG_private_2	/* Backed by local cache */
-+
- 
- #if (BITS_PER_LONG > 32)
- /*
-@@ -199,6 +206,24 @@ static inline void SetPageUptodate(struct page *page)
- #define TestClearPageWriteback(page) test_and_clear_bit(PG_writeback,	\
- 							&(page)->flags)
- 
-+#define PageFsCache(page)	test_bit(PG_fscache, &(page)->flags)
-+#define SetPageFsCache(page)	set_bit(PG_fscache, &(page)->flags)
-+#define ClearPageFsCache(page)	clear_bit(PG_fscache, &(page)->flags)
-+#define TestSetPageFsCache(page) test_and_set_bit(PG_fscache, &(page)->flags)
-+#define TestClearPageFsCache(page) test_and_clear_bit(PG_fscache, \
-+						      &(page)->flags)
-+
-+#define PageFsCacheWrite(page)		test_bit(PG_fscache_write, \
-+						 &(page)->flags)
-+#define SetPageFsCacheWrite(page)	set_bit(PG_fscache_write, \
-+						&(page)->flags)
-+#define ClearPageFsCacheWrite(page)	clear_bit(PG_fscache_write, \
-+						  &(page)->flags)
-+#define TestSetPageFsCacheWrite(page)	test_and_set_bit(PG_fscache_write, \
-+							 &(page)->flags)
-+#define TestClearPageFsCacheWrite(page)	test_and_clear_bit(PG_fscache_write, \
-+							   &(page)->flags)
-+
- #define PageBuddy(page)		test_bit(PG_buddy, &(page)->flags)
- #define __SetPageBuddy(page)	__set_bit(PG_buddy, &(page)->flags)
- #define __ClearPageBuddy(page)	__clear_bit(PG_buddy, &(page)->flags)
-@@ -272,4 +297,15 @@ static inline void set_page_writeback(struct page *page)
- 	test_set_page_writeback(page);
+ #else /* CONFIG_SECURITY */
+@@ -2305,6 +2311,13 @@ static inline int security_secid_to_secctx(u32 secid, char **secdata, u32 *secle
+ 	return -EOPNOTSUPP;
  }
  
-+/**
-+ * page_has_private - Determine if page has private stuff
-+ * @page: The page to be checked
-+ *
-+ * Determine if a page has private stuff, indicating that release routines
-+ * should be invoked upon it.
-+ */
-+#define page_has_private(page)			\
-+	((page)->flags & ((1 << PG_private) |	\
-+			  (1 << PG_private_2)))
-+
- #endif	/* PAGE_FLAGS_H */
-diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
-index db8a410..6a1b317 100644
---- a/include/linux/pagemap.h
-+++ b/include/linux/pagemap.h
-@@ -212,6 +212,17 @@ static inline void wait_on_page_writeback(struct page *page)
- extern void end_page_writeback(struct page *page);
- 
- /*
-+ * Wait for a page to finish being written to a local cache
-+ */
-+static inline void wait_on_page_fscache_write(struct page *page)
++static inline int security_secctx_to_secid(char *secdata,
++					   u32 seclen,
++					   u32 *secid)
 +{
-+	if (PageFsCacheWrite(page))
-+		wait_on_page_bit(page, PG_fscache_write);
++	return -EOPNOTSUPP;
 +}
 +
-+extern void end_page_fscache_write(struct page *page);
-+
-+/*
-  * Fault a userspace page into pagetables.  Return non-zero on a fault.
-  *
-  * This assumes that two userspace pages are always sufficient.  That's
-diff --git a/mm/filemap.c b/mm/filemap.c
-index f4d0cde..a86569f 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -572,6 +572,19 @@ void end_page_writeback(struct page *page)
- EXPORT_SYMBOL(end_page_writeback);
- 
- /**
-+ * end_page_fscache_write - End writing page to cache
-+ * @page: the page
-+ */
-+void end_page_fscache_write(struct page *page)
-+{
-+	if (!TestClearPageFsCacheWrite(page))
-+		BUG();
-+	smp_mb__after_clear_bit();
-+	wake_up_page(page, PG_fscache_write);
-+}
-+EXPORT_SYMBOL(end_page_fscache_write);
-+
-+/**
-  * __lock_page - get a lock on the page, assuming we need to sleep to get it
-  * @page: the page to lock
-  *
-@@ -2540,6 +2553,9 @@ out:
-  * (presumably at page->private).  If the release was successful, return `1'.
-  * Otherwise return zero.
-  *
-+ * This may also be called if PG_fscache is set on a page, indicating that the
-+ * page is known to the local caching routines.
-+ *
-  * The @gfp_mask argument specifies whether I/O may be performed to release
-  * this page (__GFP_IO), and whether the call may block (__GFP_WAIT).
-  *
-diff --git a/mm/migrate.c b/mm/migrate.c
-index 6a207e8..ebaf557 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -545,7 +545,7 @@ static int fallback_migrate_page(struct address_space *mapping,
- 	 * Buffers may be managed in a filesystem specific way.
- 	 * We must have no buffers or drop them.
- 	 */
--	if (PagePrivate(page) &&
-+	if (page_has_private(page) &&
- 	    !try_to_release_page(page, GFP_KERNEL))
- 		return -EAGAIN;
- 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index e1028fa..d0d356b 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -230,6 +230,7 @@ static void bad_page(struct page *page)
- 	dump_stack();
- 	page->flags &= ~(1 << PG_lru	|
- 			1 << PG_private |
-+			1 << PG_fscache	|
- 			1 << PG_locked	|
- 			1 << PG_active	|
- 			1 << PG_dirty	|
-@@ -456,6 +457,7 @@ static inline int free_pages_check(struct page *page)
- 		(page->flags & (
- 			1 << PG_lru	|
- 			1 << PG_private |
-+			1 << PG_fscache	|
- 			1 << PG_locked	|
- 			1 << PG_active	|
- 			1 << PG_slab	|
-@@ -605,6 +607,7 @@ static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
- 		(page->flags & (
- 			1 << PG_lru	|
- 			1 << PG_private	|
-+			1 << PG_fscache	|
- 			1 << PG_locked	|
- 			1 << PG_active	|
- 			1 << PG_dirty	|
-diff --git a/mm/readahead.c b/mm/readahead.c
-index 75aa6b6..272ffc7 100644
---- a/mm/readahead.c
-+++ b/mm/readahead.c
-@@ -46,14 +46,15 @@ EXPORT_SYMBOL_GPL(file_ra_state_init);
- 
- /*
-  * see if a page needs releasing upon read_cache_pages() failure
-- * - the caller of read_cache_pages() may have set PG_private before calling,
-- *   such as the NFS fs marking pages that are cached locally on disk, thus we
-- *   need to give the fs a chance to clean up in the event of an error
-+ * - the caller of read_cache_pages() may have set PG_private or PG_fscache
-+ *   before calling, such as the NFS fs marking pages that are cached locally
-+ *   on disk, thus we need to give the fs a chance to clean up in the event of
-+ *   an error
-  */
- static void read_cache_pages_invalidate_page(struct address_space *mapping,
- 					     struct page *page)
+ static inline void security_release_secctx(char *secdata, u32 seclen)
  {
--	if (PagePrivate(page)) {
-+	if (page_has_private(page)) {
- 		if (TestSetPageLocked(page))
- 			BUG();
- 		page->mapping = mapping;
-diff --git a/mm/swap.c b/mm/swap.c
-index 9ac8832..22d6e03 100644
---- a/mm/swap.c
-+++ b/mm/swap.c
-@@ -455,8 +455,8 @@ void pagevec_strip(struct pagevec *pvec)
- 	for (i = 0; i < pagevec_count(pvec); i++) {
- 		struct page *page = pvec->pages[i];
- 
--		if (PagePrivate(page) && !TestSetPageLocked(page)) {
--			if (PagePrivate(page))
-+		if (page_has_private(page) && !TestSetPageLocked(page)) {
-+			if (page_has_private(page))
- 				try_to_release_page(page, 0);
- 			unlock_page(page);
- 		}
-diff --git a/mm/swap_state.c b/mm/swap_state.c
-index b526356..33f1e5c 100644
---- a/mm/swap_state.c
-+++ b/mm/swap_state.c
-@@ -76,7 +76,7 @@ static int __add_to_swap_cache(struct page *page, swp_entry_t entry,
- 
- 	BUG_ON(!PageLocked(page));
- 	BUG_ON(PageSwapCache(page));
--	BUG_ON(PagePrivate(page));
-+	BUG_ON(page_has_private(page));
- 	error = radix_tree_preload(gfp_mask);
- 	if (!error) {
- 		write_lock_irq(&swapper_space.tree_lock);
-@@ -129,7 +129,7 @@ void __delete_from_swap_cache(struct page *page)
- 	BUG_ON(!PageLocked(page));
- 	BUG_ON(!PageSwapCache(page));
- 	BUG_ON(PageWriteback(page));
--	BUG_ON(PagePrivate(page));
-+	BUG_ON(page_has_private(page));
- 
- 	radix_tree_delete(&swapper_space.page_tree, page_private(page));
- 	set_page_private(page, 0);
-diff --git a/mm/truncate.c b/mm/truncate.c
-index cadc156..5b7d1c5 100644
---- a/mm/truncate.c
-+++ b/mm/truncate.c
-@@ -49,7 +49,7 @@ void do_invalidatepage(struct page *page, unsigned long offset)
- static inline void truncate_partial_page(struct page *page, unsigned partial)
- {
- 	zero_user_page(page, partial, PAGE_CACHE_SIZE - partial, KM_USER0);
--	if (PagePrivate(page))
-+	if (page_has_private(page))
- 		do_invalidatepage(page, partial);
+ }
+diff --git a/security/dummy.c b/security/dummy.c
+index 6f97089..72f1666 100644
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -943,6 +943,11 @@ static int dummy_secid_to_secctx(u32 secid, char **secdata, u32 *seclen)
+ 	return -EOPNOTSUPP;
  }
  
-@@ -100,7 +100,7 @@ truncate_complete_page(struct address_space *mapping, struct page *page)
++static int dummy_secctx_to_secid(char *secdata, u32 seclen, u32 *secid)
++{
++	return -EOPNOTSUPP;
++}
++
+ static void dummy_release_secctx(char *secdata, u32 seclen)
+ {
+ }
+@@ -1109,6 +1114,7 @@ void security_fixup_ops (struct security_operations *ops)
+  	set_to_dummy_if_null(ops, getprocattr);
+  	set_to_dummy_if_null(ops, setprocattr);
+  	set_to_dummy_if_null(ops, secid_to_secctx);
++	set_to_dummy_if_null(ops, secctx_to_secid);
+  	set_to_dummy_if_null(ops, release_secctx);
+ #ifdef CONFIG_SECURITY_NETWORK
+ 	set_to_dummy_if_null(ops, unix_stream_connect);
+diff --git a/security/security.c b/security/security.c
+index 92d66d6..1ef4908 100644
+--- a/security/security.c
++++ b/security/security.c
+@@ -821,6 +821,12 @@ int security_secid_to_secctx(u32 secid, char **secdata, u32 *seclen)
+ }
+ EXPORT_SYMBOL(security_secid_to_secctx);
  
- 	cancel_dirty_page(page, PAGE_CACHE_SIZE);
++int security_secctx_to_secid(char *secdata, u32 seclen, u32 *secid)
++{
++	return security_ops->secctx_to_secid(secdata, seclen, secid);
++}
++EXPORT_SYMBOL(security_secctx_to_secid);
++
+ void security_release_secctx(char *secdata, u32 seclen)
+ {
+ 	return security_ops->release_secctx(secdata, seclen);
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index 20a6b55..1d3eab7 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -4734,6 +4734,11 @@ static int selinux_secid_to_secctx(u32 secid, char **secdata, u32 *seclen)
+ 	return security_sid_to_context(secid, secdata, seclen);
+ }
  
--	if (PagePrivate(page))
-+	if (page_has_private(page))
- 		do_invalidatepage(page, 0);
++static int selinux_secctx_to_secid(char *secdata, u32 seclen, u32 *secid)
++{
++	return security_context_to_sid(secdata, seclen, secid);
++}
++
+ static void selinux_release_secctx(char *secdata, u32 seclen)
+ {
+ 	kfree(secdata);
+@@ -4937,6 +4942,7 @@ static struct security_operations selinux_ops = {
+ 	.setprocattr =                  selinux_setprocattr,
  
- 	remove_from_page_cache(page);
-@@ -125,7 +125,7 @@ invalidate_complete_page(struct address_space *mapping, struct page *page)
- 	if (page->mapping != mapping)
- 		return 0;
+ 	.secid_to_secctx =		selinux_secid_to_secctx,
++	.secctx_to_secid =		selinux_secctx_to_secid,
+ 	.release_secctx =		selinux_release_secctx,
  
--	if (PagePrivate(page) && !try_to_release_page(page, 0))
-+	if (page_has_private(page) && !try_to_release_page(page, 0))
- 		return 0;
- 
- 	ret = remove_mapping(mapping, page);
-@@ -347,14 +347,14 @@ invalidate_complete_page2(struct address_space *mapping, struct page *page)
- 	if (page->mapping != mapping)
- 		return 0;
- 
--	if (PagePrivate(page) && !try_to_release_page(page, GFP_KERNEL))
-+	if (page_has_private(page) && !try_to_release_page(page, GFP_KERNEL))
- 		return 0;
- 
- 	write_lock_irq(&mapping->tree_lock);
- 	if (PageDirty(page))
- 		goto failed;
- 
--	BUG_ON(PagePrivate(page));
-+	BUG_ON(page_has_private(page));
- 	__remove_from_page_cache(page);
- 	write_unlock_irq(&mapping->tree_lock);
- 	ClearPageUptodate(page);
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index e5a9597..ff2fa2d 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -578,7 +578,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
- 		 * process address space (page_count == 1) it can be freed.
- 		 * Otherwise, leave the page on the LRU so it is swappable.
- 		 */
--		if (PagePrivate(page)) {
-+		if (page_has_private(page)) {
- 			if (!try_to_release_page(page, sc->gfp_mask))
- 				goto activate_locked;
- 			if (!mapping && page_count(page) == 1)
+         .unix_stream_connect =		selinux_socket_unix_stream_connect,
 
