@@ -1,57 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758014AbYAOWNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758678AbYAOWNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758014AbYAOWNY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 17:13:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbYAOWNQ
+	id S1758678AbYAOWNi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 17:13:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756960AbYAOWNU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 17:13:16 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33696 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751238AbYAOWNQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 17:13:16 -0500
-Date: Tue, 15 Jan 2008 23:12:49 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Adrian Bunk <bunk@kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       rjw@sisk.pl, pavel@suse.cz, linux-kernel@vger.kernel.org
-Subject: [patch for v2.6.24] fix section mismatch warning in page_alloc.c
-Message-ID: <20080115221249.GE2665@elte.hu>
-References: <20080110112607.GE28740@does.not.exist> <200801101242.53504.ak@suse.de> <20080110124702.GF28740@does.not.exist> <p73fxx5omck.fsf@bingen.suse.de> <20080110150911.GG28740@does.not.exist> <20080114135240.GA15357@elte.hu> <20080114140910.GA8507@uranus.ravnborg.org> <20080114145854.GA31695@elte.hu> <20080114150103.GA2700@elte.hu> <20080114195950.GA9257@uranus.ravnborg.org>
+	Tue, 15 Jan 2008 17:13:20 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:32850 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754208AbYAOWNT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 17:13:19 -0500
+Date: Tue, 15 Jan 2008 23:13:21 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] auto-qa Kconfig
+Message-ID: <20080115221321.GB1565@elf.ucw.cz>
+References: <20071222233056.d652743e.akpm@linux-foundation.org> <20071231121115.b7ae39e4.randy.dunlap@oracle.com> <20080112010528.GA1590@kroah.com> <20080114161150.GC15542@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080114195950.GA9257@uranus.ravnborg.org>
+In-Reply-To: <20080114161150.GC15542@elte.hu>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Sam Ravnborg <sam@ravnborg.org> wrote:
-
-> [PATCH] mm: fix section mismatch warning in page_alloc.c
+On Mon 2008-01-14 17:11:50, Ingo Molnar wrote:
 > 
-> With CONFIG_HOTPLUG=n and CONFIG_HOTPLUG_CPU=y we saw following 
-> warning: WARNING: mm/built-in.o(.text+0x6864): Section mismatch: 
-> reference to .init.text: (between 'process_zones' and 
-> 'pageset_cpuup_callback')
+> * Greg KH <greg@kroah.com> wrote:
 > 
-> The culprint was zone_batchsize() which were annotated __devinit but 
-> used from process_zones() which is annotated __cpuinit. 
-> zone_batchsize() are used from another function annotated __meminit so 
-> the only valid option is to drop the annotation of zone_batchsize() so 
-> we know it is always valid to use it.
+> > > and that is after fixing (in some sense) the first CONFIG_BLOCK=n 
+> > > problem with the patch below.  Please test lots of configs. and/or 
+> > > use 'make randconfig' (automated, scripted, e.g., etc.). maybe check 
+> > > Documentation/SubmitChecklist.  :)
+> > 
+> > Ingo seems to be saying that he has some kind of "automated" build 
+> > system to do this kind of checking.  Ingo, did you ever post how you 
+> > did this anywhere?  I have enough spare machines here that I should be 
+> > able to set up something to test my stuff this way easier than doing 
+> > it by hand all the time (as the above problem proves I do miss things 
+> > :( )
+> 
+> the crux of it is this patch:
+> 
+>   http://redhat.com/~mingo/auto-qa-patches/Kconfig-qa.patch
+> 
+> (ontop of x86.git)
+> 
+> adjust your arch/x86/Kconfig.needed whitelist (should already work on 
+> typical systems) and do a 'make randconfig'. Every config is supposed to 
+> build and boot fine, including 'make allnoconfig' and 'make 
+> allyesconfig'. And please let me know about any blacklist items as well. 
+> (right now they are a bit hacky via a "depends on 0" line and a small 
+> comment explaining why they are not suitable in a bzImage kernel.)
 
-Andrew: a v2.6.24 mm fix i think.
+ config X86_ELAN
+        bool "AMD Elan"
+        depends on X86_32
++
++       # dangerous to boot on non-Elan CPUs
++       depends on 0
++
+        help
+          Select this for an AMD Elan processor.
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
 
-	Ingo
+Hmmm... Most options like "support 386" are of "add support for 386,
+but do not break support for pentium". ELAN etc seem to be
+exceptions. Perhaps options that _take away_ functionality (like ELAN
+-- takes ability to boot on normal 386)  should be specifically marked
+somehow?
+
+depends on EXCLUSIVE_FEATURE
+
+?
+
+depends on NOT_A_FEATURE
+
+?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
