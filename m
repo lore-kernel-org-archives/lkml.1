@@ -1,78 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752142AbYAOP2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752322AbYAOPcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752142AbYAOP2g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 10:28:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751145AbYAOP23
+	id S1752322AbYAOPcQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 10:32:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751140AbYAOPcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 10:28:29 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:35911 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751076AbYAOP22 (ORCPT
+	Tue, 15 Jan 2008 10:32:04 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:40275 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751080AbYAOPcC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 10:28:28 -0500
-Date: Tue, 15 Jan 2008 10:28:01 -0500
-From: Theodore Tso <tytso@MIT.EDU>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Abhishek Rai <abhishekrai@google.com>, linux-kernel@vger.kernel.org,
-       rohitseth@google.com, linux-ext4@vger.kernel.org
-Subject: Re: [CALL FOR TESTING] Make Ext3 fsck way faster [2.6.24-rc6 -mm
-	patch]
-Message-ID: <20080115152801.GA7292@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Christoph Hellwig <hch@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Abhishek Rai <abhishekrai@google.com>, linux-kernel@vger.kernel.org,
-	rohitseth@google.com, linux-ext4@vger.kernel.org
-References: <200801140839.01986.abhishekrai@google.com> <20080114163412.83a8b18d.akpm@linux-foundation.org> <20080115030441.a0270609.akpm@linux-foundation.org> <20080115131533.GA5766@infradead.org>
+	Tue, 15 Jan 2008 10:32:02 -0500
+Message-ID: <478CD18B.9050705@bull.net>
+Date: Tue, 15 Jan 2008 16:30:19 +0100
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080115131533.GA5766@infradead.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+To: containers@lists.osdl.org
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 0/4] [RESEND] Change default MSGMNI tunable to scale
+ with lowmem
+References: <478CCEA3.5050404@bull.net>
+In-Reply-To: <478CCEA3.5050404@bull.net>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 15/01/2008 16:40:21,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 15/01/2008 16:40:22,
+	Serialize complete at 15/01/2008 16:40:22
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 15, 2008 at 01:15:33PM +0000, Christoph Hellwig wrote:
-> They won't fsck in planned downtimes.  They will have to use fsck when
-> the shit hits the fan and they need to.   Not sure about ext3, but big
-> XFS user with a close tie to the US goverment were concerned about this
-> case for really big filesystems and have sponsored speedup including
-> multithreading xfs_repair.  I'm pretty sure the same arguments apply
-> to ext3, even if the filesystems are a few magnitudes smaller.
+Resending with the right address for the containers mailing list.
+So sorry...
 
-Agreed, 100%.  Even if you fsck snapshots during slow periods, it
-still doesn't help you if the filesystem gets corrupted due to a
-hardware or software error.  That's where this will matter the most.
 
-Val Hensen has done a proof of concept patch that multi-threads e2fsck
-(and she's working on one that would be long-term supportable) that
-might reduce the value of this patch, but metaclustering should still
-help.
+Nadia Derbey wrote:
+> Hi,
+> 
+> Yesterday, I posted to lkml a series of patches that make the ipc 
+> tunable msgmni scale with lowmem (see thread 
+> http://lkml.org/lkml/2008/1/14/196).
+> 
+> Since these patches watch for memory hotplug notifications, I thought 
+> that comments from linux-mm people would be interesting.
+> 
+> Also, since these patches change the ipc_namespace structure, comments 
+> from people subscribed at the containers mailing list would be welcome too.
+> 
+> Notes:
+> 1) please, Cc me since I'm not subscribed to linux-mm.
+> 2) sorry for lkml subsribers who are receiving this mail for the 2nd 
+> time, but I wanted all the comments to be shared.
+> 
+> 
+> Here is patch 0, the complete series can be found in the thread 
+> mentioned above.
+> 
+> -----------------
+> 
+> On large systems we'd like to allow a larger number of message queues. 
+> In some cases up to 32K. However simply setting MSGMNI to a larger value 
+> may cause problems for smaller systems.
+> 
+> The first patch of this series introduces a default maximum number of 
+> message queue ids that scales with the amount of lowmem.
+> 
+> Since msgmni is per namespace and there is no amount of memory dedicated 
+> to each namespace so far, the second patch of this series scales msgmni 
+> to the number of ipc namespaces.
+> 
+> In the last patch, a notifier block is added to the ipc namespace 
+> structure to manage memory hotplug. The callback routine is activated 
+> upon memory add/remove and it recomputes msgmni. One callback routine is 
+> added to the memory notifier chain each time an ipc namespace is 
+> allocated. It is removed when the coresponding ipc namespace is freed.
+> 
+> I still have 1 issue that I'll try to solve next:
+>   . use the notification mechanism to recompute all the msg_ctlmni each
+>     time an ipc namespace is created / removed.
+> 
+> 
+> These patches should be applied to 2.6.24-rc7, in the following order:
+> 
+> [PATCH 1/4]: ipc_scale_msgmni_with_lowmem.patch
+> [PATCH 2/4]: ipc_scale_msgmni_with_namespaces.patch
+> [PATCH 3/4]: ipc_slab_memory_callback_prio_to_const.patch
+> [PATCH 4/4]: ipc_recompute_msgmni_on_memory_hotplug.patch
+> 
+> 
+> Regards,
+> Nadia
+> 
 
-> > In any decent environment, people will fsck their ext3 filesystems during
-> > planned downtime, and the benefit of reducing that downtime from 6
-> > hours/machine to 2 hours/machine is probably fairly small, given that there
-> > is no service interruption.  (The same applies to desktops and laptops).
-> > 
-> > Sure, the benefit is not *zero*, but it's small.  Much less than it would
-> > be with ext2.  I mean, the "avoid unplanned fscks" feature is the whole
-> > reason why ext3 has journalling (and boy is that feature expensive during
-> > normal operation).
 
-Also, it's not just reducing fsck times, although that's the main one.
-The last time this was suggested, the rationale was to speed up the
-"rm dvd.iso" case.  Also, something which *could* be done, if Abhishek
-wants to pursue it, would be to pull in all of the indirect blocks
-when the file is opened, and create an in-memory extent tree that
-would speed up access to the file.  It's rarely worth doing this
-without metaclustering, since it doesn't help for sequential I/O, only
-random I/O, but with metaclustering it would also be a win for
-sequential I/O.  (This would also remove the minor performance
-degradation for sequential I/O imposed by metaclustering, and in fact
-improve it slightly for really big files.)
 
-					- Ted
