@@ -1,91 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756074AbYAOBKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbYAOBVB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756074AbYAOBKg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 20:10:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbYAOBK2
+	id S1755246AbYAOBVB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 20:21:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbYAOBUw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 20:10:28 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:50869 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751533AbYAOBK1 (ORCPT
+	Mon, 14 Jan 2008 20:20:52 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:22517 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752549AbYAOBUv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 20:10:27 -0500
-Date: Mon, 14 Jan 2008 17:08:04 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Marcelo Tosatti <marcelo@kvack.org>,
-       Daniel Spang <daniel.spang@gmail.com>, Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH 3/5] add /dev/mem_notify device
-Message-Id: <20080114170804.b5961aea.randy.dunlap@oracle.com>
-In-Reply-To: <20080115100029.1178.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080115092828.116F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20080115100029.1178.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 14 Jan 2008 20:20:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=qPebWY3huRWQWCiEI7fIFtS131CFt5btGgkw2C6jN8qsJaicrHFd0VmBeV6xR7W3TKVjQwJai415ceFnG+qMOVolxnJG5f5xPKd3dzdwvJHZvmeJZC0NJ5hdQ/fDc8qHeAYV8wOt5olgsKXuAVnMaKjmHju29Za9n+zVy3Ue154=
+Date: Tue, 15 Jan 2008 09:24:02 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.24-rc7 lockdep warning when poweroff
+Message-ID: <20080115012402.GA2780@darkstar.te-china.tietoenator.com>
+References: <a8e1da0801140104m2d8dceaayd8cf85466659bbf@mail.gmail.com> <1200302644.7415.6.camel@twins> <1200306902.5887.39.camel@johannes.berg> <1200307288.7415.11.camel@twins> <1200307896.5887.42.camel@johannes.berg> <a8e1da0801141631k50dfd74fo923973722d13c3a3@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a8e1da0801141631k50dfd74fo923973722d13c3a3@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jan 2008 10:01:21 +0900 KOSAKI Motohiro wrote:
-
-> the core of this patch series.
-> add /dev/mem_notify device for notification low memory to user process.
+On Tue, Jan 15, 2008 at 08:31:48AM +0800, Dave Young wrote:
+> On Jan 14, 2008 6:51 PM, Johannes Berg <johannes@sipsolutions.net> wrote:
+> >
+> > > The warning that triggered (lockdep.c:700) means that one class (key)
+> > > was used with more than one name.
+> >
+> > Right.
+> >
+> > > Looking at cleanup_workqueue_thread(), the lock_acquire() there works on
+> > > wq->lockdep_map, and that is only initialized at one spot:
+> > > __create_workqueue_key(), thus it stands to reason that that was
+> > > mis-used.
+> >
+> > Oh ok, yes, makes sense. Maybe something is generating a workqueue with
+> > a name that's passed in but the key is statically from that place. I'll
+> > try to find it.
 > 
-> <usage examle>
+> I add some debug printk and found the names :
 > 
->         fd = open("/dev/mem_notify", O_RDONLY);
->         if (fd < 0) {
->                 exit(1);
->         }
->         pollfds.fd = fd;
->         pollfds.events = POLLIN;
->         pollfds.revents = 0;
-> 	err = poll(&pollfds, 1, -1); // wake up at low memory
+> block_osm/exec_osm
 > 
->         ...
-> </usage example>
+> in drivers/message/i2o
 > 
-> Signed-off-by: Marcelo Tosatti <marcelo@kvack.org>
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> maybe this helps.
+
+Not sure right or not, the following patch fixed the problem:
+
+diff -upr linux/include/linux/workqueue.h linux.new/include/linux/workqueue.h
+--- linux/include/linux/workqueue.h	2008-01-15 08:49:08.000000000 +0800
++++ linux.new/include/linux/workqueue.h	2008-01-15 08:49:42.000000000 +0800
+@@ -154,7 +154,7 @@ __create_workqueue_key(const char *name,
+ #ifdef CONFIG_LOCKDEP
+ #define __create_workqueue(name, singlethread, freezeable)	\
+ ({								\
+-	static struct lock_class_key __key;			\
++	struct lock_class_key __key;			\
+ 								\
+ 	__create_workqueue_key((name), (singlethread),		\
+ 			       (freezeable), &__key);		\
 > 
-> ---
->  drivers/char/mem.c         |    6 ++
->  include/linux/mem_notify.h |   41 ++++++++++++++++
->  include/linux/mmzone.h     |    1 
->  mm/Makefile                |    2 
->  mm/mem_notify.c            |  109 +++++++++++++++++++++++++++++++++++++++++++++
->  mm/page_alloc.c            |    1 
->  6 files changed, 159 insertions(+), 1 deletion(-)
+> Regards
+> dave
 > 
-
-Hi,
-
-1/ I don't see the file below listed in the diffstat above...
-
-2/ Where is the userspace interface information for the syscall?
-
-> Index: linux-2.6.24-rc6-mm1-memnotify/Documentation/devices.txt
-> ===================================================================
-> --- linux-2.6.24-rc6-mm1-memnotify.orig/Documentation/devices.txt	2008-01-13 16:42:57.000000000 +0900
-> +++ linux-2.6.24-rc6-mm1-memnotify/Documentation/devices.txt	2008-01-13 17:07:05.000000000 +0900
-> @@ -96,6 +96,7 @@ Your cooperation is appreciated.
->  		 11 = /dev/kmsg		Writes to this come out as printk's
->  		 12 = /dev/oldmem	Used by crashdump kernels to access
->  					the memory of the kernel that crashed.
-> +		 13 = /dev/mem_notify   Low memory notification.
->  
->    1 block	RAM disk
->  		  0 = /dev/ram0		First RAM disk
-
-
----
-~Randy
+> >
+> > johannes
+> >
