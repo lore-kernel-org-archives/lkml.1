@@ -1,184 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756601AbYAOCVF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbYAOCWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756601AbYAOCVF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 21:21:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936AbYAOCRq
+	id S1757019AbYAOCWW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 21:22:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbYAOCWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 21:17:46 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:57585 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753964AbYAOCRi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 21:17:38 -0500
-Message-Id: <20080115021737.571491000@sgi.com>
-References: <20080115021735.779102000@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 14 Jan 2008 18:17:45 -0800
-From: travis@sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       mingo@elte.hu
-Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 10/10] x86: Change bios_cpu_apicid to percpu data variable V2
-Content-Disposition: inline; filename=change-bios_cpu_apicid-to-percpu
+	Mon, 14 Jan 2008 21:22:14 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39332 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751348AbYAOCWM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 21:22:12 -0500
+Date: Tue, 15 Jan 2008 11:20:56 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH 3/5] add /dev/mem_notify device
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Marcelo Tosatti <marcelo@kvack.org>,
+       Daniel Spang <daniel.spang@gmail.com>, Rik van Riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080115111035.d516639a.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080115100029.1178.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080115111035.d516639a.kamezawa.hiroyu@jp.fujitsu.com>
+Message-Id: <20080115110918.118B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change static bios_cpu_apicid array to a per_cpu data variable.
-This includes using a static array used during initialization
-similar to the way x86_cpu_to_apicid[] is handled.
+Hi Kame
 
-There is one early use of bios_cpu_apicid in apic_is_clustered_box().
-The other reference in cpu_present_to_apicid() is called after
-smp_set_apicids() has setup the percpu version of bios_cpu_apicid.
+> > +	if (pressure) {
+> > +		nr_wakeup = max_t(int, atomic_read(&nr_watcher_task)>>4, 100);
+> > +		atomic_long_set(&last_mem_notify, jiffies);
+> > +		wake_up_locked_nr(&mem_wait, nr_wakeup);
+> > +	}
+> What is this for ? and Why ?
+> Are there too many waiters ?
+
+my intent is for avoid thundering herd.
+100 is heuristic value.
+
+and too many wakeup cause too much memory freed.
+I don't want it.
+
+of course, if any problem happened, I will change.
+Do you dislike it?
 
 
-Signed-off-by: Mike Travis <travis@sgi.com>
-Reviewed-by: Christoph Lameter <clameter@sgi.com>
----
-V1->V2:
-    - Removed extraneous casts
-    - Add slight optimization to apic_is_clustered_box()
-      [don't reference x86_bios_cpu_apicid_early_ptr each pass.]
----
- arch/x86/kernel/apic_64.c    |   17 +++++++++++++++--
- arch/x86/kernel/mpparse_64.c |   12 +++++++++---
- arch/x86/kernel/setup_64.c   |    1 +
- arch/x86/kernel/smpboot_64.c |    3 +++
- include/asm-x86/smp_64.h     |    8 +++++---
- 5 files changed, 33 insertions(+), 8 deletions(-)
-
---- a/arch/x86/kernel/apic_64.c
-+++ b/arch/x86/kernel/apic_64.c
-@@ -1150,19 +1150,32 @@ __cpuinit int apic_is_clustered_box(void
- {
- 	int i, clusters, zeros;
- 	unsigned id;
-+	u16 *bios_cpu_apicid = x86_bios_cpu_apicid_early_ptr;
- 	DECLARE_BITMAP(clustermap, NUM_APIC_CLUSTERS);
- 
- 	bitmap_zero(clustermap, NUM_APIC_CLUSTERS);
- 
- 	for (i = 0; i < NR_CPUS; i++) {
--		id = bios_cpu_apicid[i];
-+		/* are we being called early in kernel startup? */
-+		if (bios_cpu_apicid) {
-+			id = bios_cpu_apicid[i];
-+		}
-+		else if (i < nr_cpu_ids) {
-+			if (cpu_present(i))
-+				id = per_cpu(x86_bios_cpu_apicid, i);
-+			else
-+				continue;
-+		}
-+		else
-+			break;
-+
- 		if (id != BAD_APICID)
- 			__set_bit(APIC_CLUSTERID(id), clustermap);
- 	}
- 
- 	/* Problem:  Partially populated chassis may not have CPUs in some of
- 	 * the APIC clusters they have been allocated.  Only present CPUs have
--	 * bios_cpu_apicid entries, thus causing zeroes in the bitmap.  Since
-+	 * x86_bios_cpu_apicid entries, thus causing zeroes in the bitmap.  Since
- 	 * clusters are allocated sequentially, count zeros only if they are
- 	 * bounded by ones.
- 	 */
---- a/arch/x86/kernel/mpparse_64.c
-+++ b/arch/x86/kernel/mpparse_64.c
-@@ -67,7 +67,11 @@ unsigned disabled_cpus __cpuinitdata;
- /* Bitmask of physically existing CPUs */
- physid_mask_t phys_cpu_present_map = PHYSID_MASK_NONE;
- 
--u16 bios_cpu_apicid[NR_CPUS] = { [0 ... NR_CPUS-1] = BAD_APICID };
-+u16 x86_bios_cpu_apicid_init[NR_CPUS] __initdata
-+				= { [0 ... NR_CPUS-1] = BAD_APICID };
-+void *x86_bios_cpu_apicid_early_ptr;
-+DEFINE_PER_CPU(u16, x86_bios_cpu_apicid) = BAD_APICID;
-+EXPORT_PER_CPU_SYMBOL(x86_bios_cpu_apicid);
- 
- 
- /*
-@@ -118,20 +122,22 @@ static void __cpuinit MP_processor_info(
- 	physid_set(m->mpc_apicid, phys_cpu_present_map);
-  	if (m->mpc_cpuflag & CPU_BOOTPROCESSOR) {
-  		/*
-- 		 * bios_cpu_apicid is required to have processors listed
-+		 * x86_bios_cpu_apicid is required to have processors listed
-  		 * in same order as logical cpu numbers. Hence the first
-  		 * entry is BSP, and so on.
-  		 */
- 		cpu = 0;
-  	}
--	bios_cpu_apicid[cpu] = m->mpc_apicid;
- 	/* are we being called early in kernel startup? */
- 	if (x86_cpu_to_apicid_early_ptr) {
- 		u16 *cpu_to_apicid = x86_cpu_to_apicid_early_ptr;
-+		u16 *bios_cpu_apicid = x86_bios_cpu_apicid_early_ptr;
- 
- 		cpu_to_apicid[cpu] = m->mpc_apicid;
-+		bios_cpu_apicid[cpu] = m->mpc_apicid;
- 	} else {
- 		per_cpu(x86_cpu_to_apicid, cpu) = m->mpc_apicid;
-+		per_cpu(x86_bios_cpu_apicid, cpu) = m->mpc_apicid;
- 	}
- 
- 	cpu_set(cpu, cpu_possible_map);
---- a/arch/x86/kernel/setup_64.c
-+++ b/arch/x86/kernel/setup_64.c
-@@ -375,6 +375,7 @@ void __init setup_arch(char **cmdline_p)
- #ifdef CONFIG_SMP
- 	/* setup to use the early static init tables during kernel startup */
- 	x86_cpu_to_apicid_early_ptr = (void *)&x86_cpu_to_apicid_init;
-+	x86_bios_cpu_apicid_early_ptr = (void *)&x86_bios_cpu_apicid_init;
- #ifdef CONFIG_NUMA
- 	x86_cpu_to_node_map_early_ptr = (void *)&x86_cpu_to_node_map_init;
- #endif
---- a/arch/x86/kernel/smpboot_64.c
-+++ b/arch/x86/kernel/smpboot_64.c
-@@ -864,6 +864,8 @@ void __init smp_set_apicids(void)
- 		if (per_cpu_offset(cpu)) {
- 			per_cpu(x86_cpu_to_apicid, cpu) =
- 						x86_cpu_to_apicid_init[cpu];
-+			per_cpu(x86_bios_cpu_apicid, cpu) =
-+						x86_bios_cpu_apicid_init[cpu];
- #ifdef CONFIG_NUMA
- 			per_cpu(x86_cpu_to_node_map, cpu) =
- 						x86_cpu_to_node_map_init[cpu];
-@@ -876,6 +878,7 @@ void __init smp_set_apicids(void)
- 
- 	/* indicate the early static arrays are gone */
- 	x86_cpu_to_apicid_early_ptr = NULL;
-+	x86_bios_cpu_apicid_early_ptr = NULL;
- #ifdef CONFIG_NUMA
- 	x86_cpu_to_node_map_early_ptr = NULL;
- #endif
---- a/include/asm-x86/smp_64.h
-+++ b/include/asm-x86/smp_64.h
-@@ -27,18 +27,20 @@ extern int smp_call_function_mask(cpumas
- 				  void *info, int wait);
- 
- extern u16 __initdata x86_cpu_to_apicid_init[];
-+extern u16 __initdata x86_bios_cpu_apicid_init[];
- extern void *x86_cpu_to_apicid_early_ptr;
--extern u16 bios_cpu_apicid[];
-+extern void *x86_bios_cpu_apicid_early_ptr;
- 
- DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
- DECLARE_PER_CPU(cpumask_t, cpu_core_map);
- DECLARE_PER_CPU(u16, cpu_llc_id);
- DECLARE_PER_CPU(u16, x86_cpu_to_apicid);
-+DECLARE_PER_CPU(u16, x86_bios_cpu_apicid);
- 
- static inline int cpu_present_to_apicid(int mps_cpu)
- {
--	if (mps_cpu < NR_CPUS)
--		return (int)bios_cpu_apicid[mps_cpu];
-+	if (cpu_present(mps_cpu))
-+		return (int)per_cpu(x86_bios_cpu_apicid, mps_cpu);
- 	else
- 		return BAD_APICID;
- }
-
--- 
