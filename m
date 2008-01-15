@@ -1,50 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754976AbYAOAt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbYAOAwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754976AbYAOAt4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 19:49:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYAOAtt
+	id S1755483AbYAOAwy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 19:52:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbYAOAwq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 19:49:49 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:47074 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751348AbYAOAts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 19:49:48 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] [27/31] CPA: Change comments of external interfaces to kerneldoc format
-Date: Tue, 15 Jan 2008 01:49:43 +0100
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, jbeulich@novell.com, mingo@elte.hu,
-       tglx@linutronix.de
-References: <200801141116.534682000@suse.de> <20080114221700.7252314F83@wotan.suse.de> <20080114145054.1f7fa01c.randy.dunlap@oracle.com>
-In-Reply-To: <20080114145054.1f7fa01c.randy.dunlap@oracle.com>
+	Mon, 14 Jan 2008 19:52:46 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57279 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750708AbYAOAwp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 19:52:45 -0500
+Date: Tue, 15 Jan 2008 09:52:14 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [RFC][PATCH 0/5] mem notifications v4
+Cc: kosaki.motohiro@jp.fujitsu.com, Marcelo Tosatti <marcelo@kvack.org>,
+       Daniel Spang <daniel.spang@gmail.com>, Rik van Riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Message-Id: <20080115092828.116F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801150149.43628.ak@suse.de>
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 January 2008 23:50:54 Randy Dunlap wrote:
-> On Mon, 14 Jan 2008 23:17:00 +0100 (CET) Andi Kleen wrote:
-> 
-> > 
-> > And clarify description a bit.
-> > 
-> > Only for 64bit, but the interfaces are identical for 32bit and kerneldoc should
-> > merge them (?) 
-> 
-> I doubt that kernel-doc will merge them.
-> 
-> Normally we just import (like with !I, !E, !F, etc.) one file that
-> contains the kernel-doc API notations.
-> Would that work for this case?
+Hi!
 
-Yes it should. The interface is identical except that 64bit has
-one entry point more (but Venki was planning to add that one to 32bit too) 
+The /dev/mem_notify is low memory notification device.
+it can avoid swappness and oom by cooperationg with the user process.
 
--Andi
+You need not be annoyed by OOM any longer :)
+please any comments!
+
+
+related discussion:
+--------------------------------------------------------------
+  LKML OOM notifications requirement discussion
+     http://www.gossamer-threads.com/lists/linux/kernel/832802?nohighlight=1#832802
+  OOM notifications patch [Marcelo Tosatti]
+     http://marc.info/?l=linux-kernel&m=119273914027743&w=2
+  mem notifications v3 [Marcelo Tosatti]
+     http://marc.info/?l=linux-mm&m=119852828327044&w=2
+  Thrashing notification patch  [Daniel Spang]
+     http://marc.info/?l=linux-mm&m=119427416315676&w=2
+
+
+Changelog
+-------------------------------------------------
+  v3 -> v4 (by KOSAKI Motohiro)
+    o rebase to 2.6.24-rc6-mm1
+    o avoid wake up all.
+    o add judgement point to __free_one_page().
+    o add zone awareness.
+
+  v2 -> v3 (by Marcelo Tosatti)
+    o changes the notification point to happen whenever
+      the VM moves an anonymous page to the inactive list.
+    o implement notification rate limit.
+
+  v1(oom notify) -> v2 (by Marcelo Tosatti)
+    o name change
+    o notify timing change from just swap thrashing to
+      just before thrashing.
+    o also works with swapless device.
+
+
+
+
