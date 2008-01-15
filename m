@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758857AbYAOU56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758225AbYAOU6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758857AbYAOU56 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 15:57:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757443AbYAOUu4
+	id S1758225AbYAOU6a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 15:58:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448AbYAOUu5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 15:50:56 -0500
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:63820 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756185AbYAOUug (ORCPT
+	Tue, 15 Jan 2008 15:50:57 -0500
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:65116 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756665AbYAOUuh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 15:50:36 -0500
-Message-Id: <20080115205021.934848948@goodmis.org>
+	Tue, 15 Jan 2008 15:50:37 -0500
+Message-Id: <20080115205024.818432034@goodmis.org>
 References: <20080115204907.838227723@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 15 Jan 2008 15:49:11 -0500
+Date: Tue, 15 Jan 2008 15:49:25 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -28,131 +28,97 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
        Jan Kiszka <jan.kiszka@siemens.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [RFC PATCH 04/30 v3] add notrace annotations to vsyscall.
-Content-Disposition: inline; filename=mcount-add-x86-vdso-notrace-annotations.patch
+Subject: [RFC PATCH 18/30 v3] add get_monotonic_cycles
+Content-Disposition: inline; filename=get-monotonic-cycles.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the notrace annotations to some of the vsyscall functions.
+The latency tracer needs a way to get an accurate time
+without grabbing any locks. Locks themselves might call
+the latency tracer and cause at best a slow down.
+
+This patch adds get_monotonic_cycles that returns cycles
+from a reliable clock source in a monotonic fashion.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/x86/kernel/vsyscall_64.c  |    3 ++-
- arch/x86/vdso/vclock_gettime.c |   15 ++++++++-------
- arch/x86/vdso/vgetcpu.c        |    3 ++-
- include/asm-x86/vsyscall.h     |    3 ++-
- 4 files changed, 14 insertions(+), 10 deletions(-)
+ include/linux/clocksource.h |    3 ++
+ kernel/time/timekeeping.c   |   48 ++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 51 insertions(+)
 
-Index: linux-compile.git/arch/x86/kernel/vsyscall_64.c
+Index: linux-compile.git/include/linux/clocksource.h
 ===================================================================
---- linux-compile.git.orig/arch/x86/kernel/vsyscall_64.c	2008-01-14 13:14:00.000000000 -0500
-+++ linux-compile.git/arch/x86/kernel/vsyscall_64.c	2008-01-14 14:57:53.000000000 -0500
-@@ -42,7 +42,8 @@
- #include <asm/topology.h>
- #include <asm/vgtod.h>
+--- linux-compile.git.orig/include/linux/clocksource.h	2008-01-14 13:14:14.000000000 -0500
++++ linux-compile.git/include/linux/clocksource.h	2008-01-14 13:14:14.000000000 -0500
+@@ -273,6 +273,9 @@ extern int clocksource_register(struct c
+ extern struct clocksource* clocksource_get_next(void);
+ extern void clocksource_change_rating(struct clocksource *cs, int rating);
+ extern void clocksource_resume(void);
++extern cycle_t get_monotonic_cycles(void);
++extern unsigned long cycles_to_usecs(cycle_t cycles);
++extern cycle_t usecs_to_cycles(unsigned long usecs);
  
--#define __vsyscall(nr) __attribute__ ((unused,__section__(".vsyscall_" #nr)))
-+#define __vsyscall(nr) \
-+		__attribute__ ((unused, __section__(".vsyscall_" #nr))) notrace
- #define __syscall_clobber "r11","rcx","memory"
- #define __pa_vsymbol(x)			\
- 	({unsigned long v;  		\
-Index: linux-compile.git/arch/x86/vdso/vclock_gettime.c
+ /* used to initialize clock */
+ extern struct clocksource clocksource_jiffies;
+Index: linux-compile.git/kernel/time/timekeeping.c
 ===================================================================
---- linux-compile.git.orig/arch/x86/vdso/vclock_gettime.c	2008-01-14 13:14:00.000000000 -0500
-+++ linux-compile.git/arch/x86/vdso/vclock_gettime.c	2008-01-14 13:14:13.000000000 -0500
-@@ -24,7 +24,7 @@
- 
- #define gtod vdso_vsyscall_gtod_data
- 
--static long vdso_fallback_gettime(long clock, struct timespec *ts)
-+notrace static long vdso_fallback_gettime(long clock, struct timespec *ts)
- {
- 	long ret;
- 	asm("syscall" : "=a" (ret) :
-@@ -32,7 +32,7 @@ static long vdso_fallback_gettime(long c
- 	return ret;
+--- linux-compile.git.orig/kernel/time/timekeeping.c	2008-01-14 13:14:14.000000000 -0500
++++ linux-compile.git/kernel/time/timekeeping.c	2008-01-14 13:14:14.000000000 -0500
+@@ -103,6 +103,54 @@ static inline void __get_realtime_clock_
+ 	timespec_add_ns(ts, nsecs);
  }
  
--static inline long vgetns(void)
-+notrace static inline long vgetns(void)
- {
- 	long v;
- 	cycles_t (*vread)(void);
-@@ -41,7 +41,7 @@ static inline long vgetns(void)
- 	return (v * gtod->clock.mult) >> gtod->clock.shift;
- }
- 
--static noinline int do_realtime(struct timespec *ts)
-+notrace static noinline int do_realtime(struct timespec *ts)
- {
- 	unsigned long seq, ns;
- 	do {
-@@ -55,7 +55,8 @@ static noinline int do_realtime(struct t
- }
- 
- /* Copy of the version in kernel/time.c which we cannot directly access */
--static void vset_normalized_timespec(struct timespec *ts, long sec, long nsec)
-+notrace static void
-+vset_normalized_timespec(struct timespec *ts, long sec, long nsec)
- {
- 	while (nsec >= NSEC_PER_SEC) {
- 		nsec -= NSEC_PER_SEC;
-@@ -69,7 +70,7 @@ static void vset_normalized_timespec(str
- 	ts->tv_nsec = nsec;
- }
- 
--static noinline int do_monotonic(struct timespec *ts)
-+notrace static noinline int do_monotonic(struct timespec *ts)
- {
- 	unsigned long seq, ns, secs;
- 	do {
-@@ -83,7 +84,7 @@ static noinline int do_monotonic(struct 
- 	return 0;
- }
- 
--int __vdso_clock_gettime(clockid_t clock, struct timespec *ts)
-+notrace int __vdso_clock_gettime(clockid_t clock, struct timespec *ts)
- {
- 	if (likely(gtod->sysctl_enabled && gtod->clock.vread))
- 		switch (clock) {
-@@ -97,7 +98,7 @@ int __vdso_clock_gettime(clockid_t clock
- int clock_gettime(clockid_t, struct timespec *)
- 	__attribute__((weak, alias("__vdso_clock_gettime")));
- 
--int __vdso_gettimeofday(struct timeval *tv, struct timezone *tz)
-+notrace int __vdso_gettimeofday(struct timeval *tv, struct timezone *tz)
- {
- 	long ret;
- 	if (likely(gtod->sysctl_enabled && gtod->clock.vread)) {
-Index: linux-compile.git/arch/x86/vdso/vgetcpu.c
-===================================================================
---- linux-compile.git.orig/arch/x86/vdso/vgetcpu.c	2008-01-14 13:14:00.000000000 -0500
-+++ linux-compile.git/arch/x86/vdso/vgetcpu.c	2008-01-14 13:14:13.000000000 -0500
-@@ -13,7 +13,8 @@
- #include <asm/vgtod.h>
- #include "vextern.h"
- 
--long __vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *unused)
-+notrace long
-+__vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *unused)
- {
- 	unsigned int dummy, p;
- 
-Index: linux-compile.git/include/asm-x86/vsyscall.h
-===================================================================
---- linux-compile.git.orig/include/asm-x86/vsyscall.h	2008-01-14 13:14:00.000000000 -0500
-+++ linux-compile.git/include/asm-x86/vsyscall.h	2008-01-14 13:14:13.000000000 -0500
-@@ -24,7 +24,8 @@ enum vsyscall_num {
- 	((unused, __section__ (".vsyscall_gtod_data"),aligned(16)))
- #define __section_vsyscall_clock __attribute__ \
- 	((unused, __section__ (".vsyscall_clock"),aligned(16)))
--#define __vsyscall_fn __attribute__ ((unused,__section__(".vsyscall_fn")))
-+#define __vsyscall_fn \
-+	__attribute__ ((unused, __section__(".vsyscall_fn"))) notrace
- 
- #define VGETCPU_RDTSCP	1
- #define VGETCPU_LSL	2
++cycle_t notrace get_monotonic_cycles(void)
++{
++	cycle_t cycle_now, cycle_delta, cycle_raw, cycle_last;
++
++	do {
++		/*
++		 * cycle_raw and cycle_last can change on
++		 * another CPU and we need the delta calculation
++		 * of cycle_now and cycle_last happen atomic, as well
++		 * as the adding to cycle_raw. We don't need to grab
++		 * any locks, we just keep trying until get all the
++		 * calculations together in one state.
++		 *
++		 * In fact, we __cant__ grab any locks. This
++		 * function is called from the latency_tracer which can
++		 * be called anywhere. To grab any locks (including
++		 * seq_locks) we risk putting ourselves into a deadlock.
++		 */
++		cycle_raw = clock->cycle_raw;
++		cycle_last = clock->cycle_last;
++
++		/* read clocksource: */
++		cycle_now = clocksource_read(clock);
++
++		/* calculate the delta since the last update_wall_time: */
++		cycle_delta = (cycle_now - cycle_last) & clock->mask;
++
++	} while (cycle_raw != clock->cycle_raw ||
++		 cycle_last != clock->cycle_last);
++
++	return cycle_raw + cycle_delta;
++}
++
++unsigned long notrace cycles_to_usecs(cycle_t cycles)
++{
++	u64 ret = cyc2ns(clock, cycles);
++
++	ret += NSEC_PER_USEC/2; /* For rounding in do_div() */
++	do_div(ret, NSEC_PER_USEC);
++
++	return ret;
++}
++
++cycle_t notrace usecs_to_cycles(unsigned long usecs)
++{
++	return ns2cyc(clock, (u64)usecs * 1000);
++}
++
+ /**
+  * getnstimeofday - Returns the time of day in a timespec
+  * @ts:		pointer to the timespec to be set
 
 -- 
