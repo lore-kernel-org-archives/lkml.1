@@ -1,86 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757333AbYAOWut@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757513AbYAOWw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757333AbYAOWut (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 17:50:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbYAOWul
+	id S1757513AbYAOWw2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 17:52:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754684AbYAOWwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 17:50:41 -0500
-Received: from quasar.osc.edu ([192.148.249.15]:45359 "EHLO quasar.osc.edu"
+	Tue, 15 Jan 2008 17:52:21 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:55853 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751298AbYAOWuk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 17:50:40 -0500
-Date: Tue, 15 Jan 2008 17:50:39 -0500
-From: Pete Wyckoff <pw@osc.edu>
-To: dean gaudet <dean@arctic.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: nosmp/maxcpus=0 or 1 -> TSC unstable
-Message-ID: <20080115225039.GA25701@osc.edu>
-References: <alpine.DEB.0.999999.0801121142370.11727@twinlark.arctic.org>
+	id S1754293AbYAOWwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 17:52:20 -0500
+Date: Wed, 16 Jan 2008 00:51:17 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Andi Kleen <andi@firstfloor.org>,
+       rjw@sisk.pl, pavel@suse.cz, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without
+	HOTPLUG_CPU
+Message-ID: <20080115225117.GB4449@does.not.exist>
+References: <20080114135240.GA15357@elte.hu> <20080114140910.GA8507@uranus.ravnborg.org> <20080114145854.GA31695@elte.hu> <20080114150103.GA2700@elte.hu> <20080114182052.GB9847@does.not.exist> <20080114191009.GB2288@elte.hu> <20080114195258.GC9847@does.not.exist> <20080114200126.GB9257@uranus.ravnborg.org> <20080114201826.GD9847@does.not.exist> <20080115221409.GF2665@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.0.999999.0801121142370.11727@twinlark.arctic.org>
+In-Reply-To: <20080115221409.GF2665@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dean@arctic.org wrote on Sat, 12 Jan 2008 11:48 -0800:
-> if i boot an x86 64-bit 2.6.24-rc7 kernel with nosmp, maxcpus=0 or 1 it 
-> still disables TSC :)
+On Tue, Jan 15, 2008 at 11:14:09PM +0100, Ingo Molnar wrote:
 > 
-> Marking TSC unstable due to TSCs unsynchronized
+> * Adrian Bunk <bunk@kernel.org> wrote:
 > 
-> this is an opteron 2xx box which does have two cpus and no clock-divide in 
-> halt or cpufreq enabled so TSC should be fine with only one cpu.
+> > > make ARCH=x86_64 allyesconfig
+> > > will set CONFIG_64BIT for you - no?
+> > 
+> > Yes.
+> > 
+> > But this still leaves the fact that when someone says 'allyesconfig' 
+> > it's no longer clear which configuration he has. And no, I do not 
+> > consider it funny that this now implies two hours of compilation twice 
+> > just for seeing one bug.
 > 
-> pretty sure this is the culprit is that num_possible_cpus() > 1, which 
-> would mean cpu_possible_map contains the second cpu... but i'm not quite 
-> sure what the right fix is... or perhaps this is all intended.
+> sorry - i should have mentioned that it's 64-bit. (and i even 
+> mis-remembered having seen it on 32-bit as well)
 
-We've seen the same problem.  We use gettimeofday() for timing of
-network-ish operations on the order of 10-50 us.  But not having
-the TSC makes gettimeofday() itself very slow, on the order of 30 us.
+This bug seems to also be present on 32bit, but allyesconfig minus 
+CONFIG_HOTPLUG is not among the configurations where it's present
+on 32bit.
 
-Here's what we've been using for quite a few kernel versions.  I've
-not tried to submit it for fear that it could break some other
-scenario, as you suggest.  Although in hotplug scenarios, this
-function unsynchronized_tsc() should get rerun and disable TSC if
-more processors arrive.
+> 	Ingo
 
-At least count this as a "me too".
+cu
+Adrian
 
-		-- Pete
-
-
->From 0cdcd494bc0e27f49438bc2fc72fd3823629802b Mon Sep 17 00:00:00 2001
-From: Pete Wyckoff <pw@osc.edu>
-Date: Tue, 15 Jan 2008 17:42:28 -0500
-Subject: [PATCH] use tsc on 1 cpu smp
-
-Use num_online_cpus() instead of num_present_cpus() as the
-parameter to check when deciding if TSC is good enough.  Thus
-explicitly booting with maxcpus=1 will let us use the TSC even on
-a dual-processor machine.  This helps reduce gettimeofday
-overheads on our dual Opteron nodes immensely (30 us vs 0.5 us).
-
-Signed-off-by: Pete Wyckoff <pw@osc.edu>
----
- arch/x86/kernel/tsc_64.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/tsc_64.c b/arch/x86/kernel/tsc_64.c
-index 9c70af4..5f2e91f 100644
---- a/arch/x86/kernel/tsc_64.c
-+++ b/arch/x86/kernel/tsc_64.c
-@@ -235,7 +235,7 @@ __cpuinit int unsynchronized_tsc(void)
- 	}
- 
- 	/* Assume multi socket systems are not synchronized */
--	return num_present_cpus() > 1;
-+	return num_online_cpus() > 1;
- }
- 
- int __init notsc_setup(char *s)
 -- 
-1.5.3.7
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
