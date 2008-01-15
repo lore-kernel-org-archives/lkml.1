@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755746AbYAOJyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbYAOJyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755746AbYAOJyR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 04:54:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYAOJyE
+	id S1756511AbYAOJyc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 04:54:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbYAOJyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 04:54:04 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:47650 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751694AbYAOJyD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 04:54:03 -0500
-To: salikhmetov@gmail.com
-CC: a.p.zijlstra@chello.nl, miklos@szeredi.hu, linux-mm@kvack.org,
-       jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       protasnb@gmail.com
-In-reply-to: <4df4ef0c0801140617t6ca81e84w1cdfcce290ce68fe@mail.gmail.com>
-	(salikhmetov@gmail.com)
-Subject: Re: [PATCH 2/2] updating ctime and mtime at syncing
-References: <12001991991217-git-send-email-salikhmetov@gmail.com>
-	 <12001992023392-git-send-email-salikhmetov@gmail.com>
-	 <E1JENAv-0007CM-T9@pomaz-ex.szeredi.hu>
-	 <4df4ef0c0801140422l1980d507v1884ad8d8e8bf6d3@mail.gmail.com>
-	 <E1JEP9P-0007RD-PP@pomaz-ex.szeredi.hu>
-	 <1200317737.15103.8.camel@twins> <4df4ef0c0801140617t6ca81e84w1cdfcce290ce68fe@mail.gmail.com>
-Message-Id: <E1JEiUT-0000qO-MY@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 15 Jan 2008 10:53:53 +0100
+	Tue, 15 Jan 2008 04:54:15 -0500
+Received: from mga01.intel.com ([192.55.52.88]:55390 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753255AbYAOJyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 04:54:13 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,286,1196668800"; 
+   d="scan'208";a="502253520"
+Subject: Re: [PATCH -mm 0/3] i386 boot: replace boot_ioremap with enhanced
+	bt_ioremap
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Ingo Molnar <mingo@elte.hu>, venkatesh.pallipadi@intel.com
+Cc: akpm@linux-foundation.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080115084417.GA16449@elte.hu>
+References: <1200375902.3505.29.camel@caritas-dev.intel.com>
+	 <20080115084417.GA16449@elte.hu>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 15 Jan 2008 17:48:55 +0800
+Message-Id: <1200390535.3505.62.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 15 Jan 2008 09:48:41.0408 (UTC) FILETIME=[CF726400:01C8575B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Thanks for your review, Peter and Miklos!
+On Tue, 2008-01-15 at 09:44 +0100, Ingo Molnar wrote:
+> * Huang, Ying <ying.huang@intel.com> wrote:
 > 
-> I overlooked this case when AS_MCTIME flag has been turned off and the
-> page is still dirty.
+> > This patchset replaces boot_ioremap with a enhanced version of 
+> > bt_ioremap and renames the bt_ioremap to early_ioremap. This reduces 
+> > 12k from .init.data segment and increases the size of memory that can 
+> > be re-mapped before paging_init to 64k.
 > 
-> On the other hand, the words "shall be marked for update" may be
-> considered as just setting the AS_MCTIME flag, not updating the time
-> stamps.
-> 
-> What do you think about calling mapping_update_time() inside of "if
-> (MS_SYNC & flags)"? I suggest such change because the code for
-> analysis of the case you've mentioned above seems impossible to me.
+> in latest x86.git#mm there's an early_ioremap() introduced as part of 
+> the PAT series - available on both 32-bit and 64-bit. Could you take a 
+> look at it and use that if it's OK for your purposes?
 
-I think that's a good idea.  As a first iteration, just updating the
-mtime/ctime in msync(MS_SYNC) and remove_vma() (called at munmap time)
-would be a big improvement over what we currently have.
+After checking the early_ioremap() implementation in
+arch/x86/kernel/setup_32.c, I found that it is a duplication of
+bt_ioremap() implementation in arch/x86/mm/ioremap_32.c. Both
+implementations use set_fixmap(), so they can be used only after
+paging_init().
 
-I would also recommend, that you drop mapping_update_time() and the
-related functions from the patch, and just use file_update_time()
-instead.
+The early_ioremap implementation provided in this patchset works as
+follow:
 
-Miklos
+- Enhances bt_ioremap, make it usable before paging_init() via a
+dedicated PTE page.
+- Rename bt_ioremap to early_ioremap
+
+So I think maybe we should replace the early_ioremap() implementation in
+PAT series with that of this series.
+
+Best Regards,
+Huang Ying
+
