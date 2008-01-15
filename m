@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbYAOUkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbYAOUlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756774AbYAOUkT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 15:40:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbYAOUkI
+	id S1755294AbYAOUlA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 15:41:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbYAOUkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 15:40:08 -0500
-Received: from serv.smile.org.ua ([193.178.237.153]:4350 "EHLO
-	serv.smile.org.ua" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752477AbYAOUkG (ORCPT
+	Tue, 15 Jan 2008 15:40:52 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:58512 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754043AbYAOUkv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 15:40:06 -0500
-X-Greylist: delayed 1359 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Jan 2008 15:40:06 EST
-Date: Tue, 15 Jan 2008 22:17:23 +0200
-From: Andy Shevchenko <andy@smile.org.ua>
-To: linux-kernel@vger.kernel.org
-Cc: Matthias Urlichs <smurf@smurf.noris.de>
-Subject: [PATCH] yet another Dell wireless CDMA/EVDO modem
-Message-ID: <20080115201723.GF2097@serv.smile.org.ua>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-X-Operating-System: Linux 2.4.21-50.EL.aspsmp i586
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Tue, 15 Jan 2008 15:40:51 -0500
+To: a.p.zijlstra@chello.nl
+CC: miklos@szeredi.hu, salikhmetov@gmail.com, linux-mm@kvack.org,
+       jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       protasnb@gmail.com
+In-reply-to: <1200429167.26045.45.camel@twins> (message from Peter Zijlstra on
+	Tue, 15 Jan 2008 21:32:47 +0100)
+Subject: Re: [PATCH 0/2] Updating ctime and mtime for memory-mapped files
+	[try #4]
+References: <12004129652397-git-send-email-salikhmetov@gmail.com>
+	 <E1JEsNJ-00026T-7B@pomaz-ex.szeredi.hu> <1200429167.26045.45.camel@twins>
+Message-Id: <E1JEsaV-00028A-EB@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 15 Jan 2008 21:40:47 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+> On Tue, 2008-01-15 at 21:27 +0100, Miklos Szeredi wrote:
+> > > 1. Introduction
+> > > 
+> > > This is the fourth version of my solution for the bug #2645:
+> > > 
+> > > http://bugzilla.kernel.org/show_bug.cgi?id=2645
+> > > 
+> > > Changes since the previous version:
+> > > 
+> > > 1) the case of retouching an already-dirty page pointed out
+> > >   by Miklos Szeredi has been addressed;
+> > 
+> > I'm a bit sceptical, as we've also pointed out, that this is not
+> > possible without messing with the page tables.
+> > 
+> > Did you try my test program on the patched kernel?
+> > 
+> > I've refreshed the patch, where we left this issue last time.  It
+> > should basically have equivalent functionality to your patch, and is a
+> > lot simpler.  There might be performance issues with it, but it's a
+> > good starting point.
+> 
+> It has the same problem as Anton's in that it won't get triggered again
+> for an already dirty mapped page.
 
-Here the patch to add native support of the Dell wireless CDMA/EVDO modem.
+Yes, it's not better in this respect, than Anton's patch.  And it
+might be worse performance-wise, since file_update_time() is sure to
+be slower, than set_bit().  According to Andrew, this may not actually
+matter in practice, but that would have to be benchmarked, I guess.
 
-# modprobe usbserial vendor=0x413c product=0x8129
-
-Following seesion lines describe modem itself
-at
-OK
-ati3
-Manufacturer: NOVATEL WIRELESS INCORPORATED
-Model: EXPEDITE ET620
-Revision: M6500C-BBIRD_TLS_MINI_DELL-Q40306.166 [Aug 25 2006 14:00:00]
-ESN: 0x5B39071D
-+GCAP: +CIS707-A, CIS-856, +MS, +ES, +DS, +FCLASS
-
-OK
-
-Signed-off-by: Andy Shevchenko <andy@smile.org.ua>
-
-diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
-index a18659e..9290b22 100644
---- a/drivers/usb/serial/option.c
-+++ b/drivers/usb/serial/option.c
-@@ -178,6 +178,7 @@ static struct usb_device_id option_ids[] = {
- 	{ USB_DEVICE(DELL_VENDOR_ID, 0x8117) },	/* Dell Wireless 5700 Mobile Broadband CDMA/EVDO ExpressCard == Novatel Merlin XV620 CDMA/EV-DO */
- 	{ USB_DEVICE(DELL_VENDOR_ID, 0x8118) },	/* Dell Wireless 5510 Mobile Broadband HSDPA ExpressCard == Novatel Merlin XU870 HSDPA/3G */
- 	{ USB_DEVICE(DELL_VENDOR_ID, 0x8128) },	/* Dell Wireless 5700 Mobile Broadband CDMA/EVDO Mini-Card == Novatel Expedite E720 CDMA/EV-DO */
-+	{ USB_DEVICE(DELL_VENDOR_ID, 0x8129) },	/* Dell Wireless 5700 Mobile Broadband CDMA/EVDO Mini-Card == Novatel Expedite ET620 CDMA/EV-DO */
- 	{ USB_DEVICE(DELL_VENDOR_ID, 0x8137) },	/* Dell Wireless HSDPA 5520 */
- 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_E100A) },
- 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_500A) },
-
-
--- 
-With best regards,
-Andy Shevchenko.      mailto: andy@smile.org.ua
-
-
+Miklos
