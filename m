@@ -1,94 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbYAOKB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbYAOKBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756713AbYAOKB0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 05:01:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbYAOKAn
+	id S1756775AbYAOKBz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 05:01:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbYAOKBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 05:00:43 -0500
-Received: from mx1.suse.de ([195.135.220.2]:56470 "EHLO mx1.suse.de"
+	Tue, 15 Jan 2008 05:01:43 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43002 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752611AbYAOKAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 05:00:40 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Jan Beulich" <jbeulich@novell.com>
-Subject: Re: [PATCH] [12/31] CPA: CLFLUSH support in change_page_attr()
-Date: Tue, 15 Jan 2008 10:57:39 +0100
-User-Agent: KMail/1.9.6
-Cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-References: <200801141116.534682000@suse.de> <20080114221644.816F314F83@wotan.suse.de> <478C7F8B.76E4.0078.0@novell.com>
-In-Reply-To: <478C7F8B.76E4.0078.0@novell.com>
+	id S1753166AbYAOKBm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 05:01:42 -0500
+Date: Tue, 15 Jan 2008 11:01:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: sam@ravnborg.org, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: Latest git-x86 doesn't build on 32bit
+Message-ID: <20080115100130.GA27029@elte.hu>
+References: <20080114221608.GA11732@basil.nowhere.org> <20080115085757.GA18591@elte.hu> <20080115090829.GB29301@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801151057.39164.ak@suse.de>
+In-Reply-To: <20080115090829.GB29301@one.firstfloor.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 January 2008 09:40:27 Jan Beulich wrote:
-> >-	/* clflush is still broken. Disable for now. */
-> >-	if (1 || !cpu_has_clflush)
-> >+	if (a->full_flush)
-> > 		asm volatile("wbinvd" ::: "memory");
-> >-	else list_for_each_entry(pg, l, lru) {
-> >-		void *adr = page_address(pg);
-> >-		clflush_cache_range(adr, PAGE_SIZE);
-> >+	list_for_each_entry(f, &a->l, l) {
-> >+		if (!a->full_flush)
+
+* Andi Kleen <andi@firstfloor.org> wrote:
+
+> On Tue, Jan 15, 2008 at 09:57:57AM +0100, Ingo Molnar wrote:
+> > 
+> > * Andi Kleen <andi@firstfloor.org> wrote:
+> > 
+> > > On a fresh object dir I get for a 32bit build:
+> > 
+> > you seem to have a modified git repository.
 > 
-> This if() looks redundant (could also be avoided in the 32-bit variant, but
-> isn't redundant there at present). Also, is there no
-> wbinvd() on 64bit?
+> Would surprise me -- i regularly remove the old one and reclone fresh.
+> 
+> Also didn't other people complain about build problems too?
 
-That's all done in a later patch.
+not that i know of. (Got reports about the "only half of x86.git got 
+uploaded last night" problem but that is distinct.)
 
-The transformation steps are not always ideal, but in the end the code
-is ok I think.
+> Anyways I'll try today's git now.
 
--Andi
+ok.
 
-The final result of the series is for 32bit & flush_kernel_map:
-
- static void flush_kernel_map(void *arg)
- {
--       struct list_head *lh = (struct list_head *)arg;
--       struct page *p;
-+       struct flush_arg *a = (struct flush_arg *)arg;
-+       struct flush *f;
-+       int cache_flush = a->full_flush == FLUSH_CACHE;
-+
-+       list_for_each_entry(f, &a->l, l) {
-+               if (!a->full_flush)
-+                       __flush_tlb_one(f->addr);
-+               if (f->mode == FLUSH_CACHE && !cpu_has_ss) {
-+                       if (cpu_has_clflush)
-+                               clflush_cache_range((void *)f->addr, PAGE_SIZE);
-+                       else
-+                               cache_flush++;
-+               }
-+       }
- 
--       /* High level code is not ready for clflush yet */
--       if (0 && cpu_has_clflush) {
--               list_for_each_entry (p, lh, lru)
--                       cache_flush_page(p);
--       } else if (boot_cpu_data.x86_model >= 4)
--               wbinvd();
-+       if (a->full_flush)
-+               __flush_tlb_all();
- 
--       /* Flush all to work around Errata in early athlons regarding 
--        * large page flushing. 
-+       /*
-+        * RED-PEN: Intel documentation ask for a CPU synchronization step
-+        * here and in the loop. But it is moot on Self-Snoop CPUs anyways.
-         */
--       __flush_tlb_all();      
-+
-+       if (cache_flush > 0 && !cpu_has_ss && boot_cpu_data.x86_model >= 4)
-+               wbinvd();
- }
-
+	Ingo
