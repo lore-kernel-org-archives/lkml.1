@@ -1,37 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756788AbYAOSLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756975AbYAOSMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756788AbYAOSLk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 13:11:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbYAOSLc
+	id S1756975AbYAOSMm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 13:12:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805AbYAOSMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 13:11:32 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:43364 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750841AbYAOSLc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 13:11:32 -0500
-Message-ID: <478CF710.10701@s5r6.in-berlin.de>
-Date: Tue, 15 Jan 2008 19:10:24 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
-MIME-Version: 1.0
-To: Dave Young <hidave.darkstar@gmail.com>
-CC: gregkh@suse.de, linux1394-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/7] ieee1394 : use class iteration api
-References: <20080112095008.GB2893@darkstar.te-china.tietoenator.com> <a8e1da0801150038p242c8717k9db373b1beb2404d@mail.gmail.com>
-In-Reply-To: <a8e1da0801150038p242c8717k9db373b1beb2404d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 15 Jan 2008 13:12:31 -0500
+Received: from mail.vyatta.com ([216.93.170.194]:56809 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752259AbYAOSMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 13:12:30 -0500
+X-Spam-Flag: NO
+X-Spam-Score: -2.55
+Date: Tue, 15 Jan 2008 10:09:47 -0800
+From: Stephen Hemminger <stephen.hemminger@vyatta.com>
+To: "Ioan Ionita" <opslynx@gmail.com>
+Cc: netdev@vger.kernel.org, jeff@garzik.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: sky2 patch in 2.6.24-rc7-git6 breaks POST - commit
+ 84cd2dfb04d23a961c5f537baa243fa54d0987ac
+Message-ID: <20080115100947.4ec6cda0@deepthought>
+In-Reply-To: <df47b87a0801150301w6b970decwdd4bd256aa2ca9ac@mail.gmail.com>
+References: <df47b87a0801150301w6b970decwdd4bd256aa2ca9ac@mail.gmail.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Young wrote:
-> Is it right for me to put_device after class_find_device at following point?
+On Tue, 15 Jan 2008 13:01:47 +0200
+"Ioan Ionita" <opslynx@gmail.com> wrote:
 
-Yes, that's right.
+> Hi,
+> 
+> I have an Asus Commando motherboard, p965 chipset with Marvell
+> 88E8056 and 88E8001 gigabit lan onboard. skge and sky2 are compiled
+> in.
+> When booting linux-2.6.24-rc7-git6, everything seemed fine, but when
+> attempting to reboot, the machine would freeze on POST, right before
+> detecting AHCI drives.
+> In order to get it to POST, a reset or shutdown from the power button
+> is not enough, I actually have to cut power to the motherboard using
+> the PSU's power switch!
+> 
+> I first thought that the BIOS or CMOS may have gotten corrupted, but
+> eventually I fund that linux was the culprit. After a git bisect, I
+> found the bad commit below
+> 
+
+Is Wake On Lan enabled in the BIOS?
+
 -- 
-Stefan Richter
--=====-==--- ---= -====
-http://arcgraph.de/sr/
+Stephen Hemminger <stephen.hemminger@vyatta.com>
