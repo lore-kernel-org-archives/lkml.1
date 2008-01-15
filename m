@@ -1,97 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbYAOUsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757296AbYAOUt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756541AbYAOUsv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 15:48:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750955AbYAOUso
+	id S1757296AbYAOUt3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 15:49:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbYAOUtV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 15:48:44 -0500
-Received: from waste.org ([66.93.16.53]:44147 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750890AbYAOUsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 15:48:43 -0500
-Subject: Re: [PATCH 1/2] Massive code cleanup of sys_msync()
-From: Matt Mackall <mpm@selenic.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Anton Salikhmetov <salikhmetov@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>, linux-mm@kvack.org,
-       jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, protasnb@gmail.com, miklos@szeredi.hu
-In-Reply-To: <20080115111018.1e27a229.randy.dunlap@oracle.com>
-References: <12004129652397-git-send-email-salikhmetov@gmail.com>
-	 <12004129734126-git-send-email-salikhmetov@gmail.com>
-	 <20080115175705.GA21557@infradead.org>
-	 <4df4ef0c0801151102l4d72b6b5j702e21beb1ebe459@mail.gmail.com>
-	 <20080115111018.1e27a229.randy.dunlap@oracle.com>
-Content-Type: text/plain
-Date: Tue, 15 Jan 2008 14:46:57 -0600
-Message-Id: <1200430017.19146.61.camel@cinder.waste.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Jan 2008 15:49:21 -0500
+Received: from an-out-0708.google.com ([209.85.132.246]:5140 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750955AbYAOUtT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 15:49:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=Fc7cfUckLddkZY+4NaadLLHl6Nu6OiwBLwlHsiUv93gb5xhvcEXoCWWDBfAvhFm7gq7jisJk+13gdPaqvQW3UaEnk2bdPnMRl9nqAzbYrutXxZ2+Jc8ff/ku9pDPDuTZboXCP0f6qBEO0a4PH+3EzGUowbmvIaIWAehTS54k9/Y=
+Date: Tue, 15 Jan 2008 15:49:12 -0500
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: linux-input@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       William Pettersson <william.pettersson@gmail.com>
+Subject: Re: [BISECTED] Re: psmouse.c: GlidePoint at isa0060/serio1/input0
+	lost sync at byte 1
+Message-ID: <20080115154142.ZZRA012@mailhub.coreip.homeip.net>
+References: <19f34abd0711141226n60323630rdc4833db0bfb2eeb@mail.gmail.com> <19f34abd0801071224kb9cb121u244b00b274231db0@mail.gmail.com> <d120d5000801110647k4b1fa49ene974898baf745aec@mail.gmail.com> <478CFB56.1030700@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <478CFB56.1030700@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Vegard,
 
-On Tue, 2008-01-15 at 11:10 -0800, Randy Dunlap wrote:
-> On Tue, 15 Jan 2008 22:02:54 +0300 Anton Salikhmetov wrote:
-> 
-> > 2008/1/15, Christoph Hellwig <hch@infradead.org>:
-> > > On Tue, Jan 15, 2008 at 07:02:44PM +0300, Anton Salikhmetov wrote:
-> 
-> > > > @@ -33,71 +34,65 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
-> > > >       unsigned long end;
-> > > >       struct mm_struct *mm = current->mm;
-> > > >       struct vm_area_struct *vma;
-> > > > -     int unmapped_error = 0;
-> > > > -     int error = -EINVAL;
-> > > > +     int error = 0, unmapped_error = 0;
-> > > >
-> > > >       if (flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC))
-> > > > -             goto out;
-> > > > +             return -EINVAL;
-> > > >       if (start & ~PAGE_MASK)
-> > > > -             goto out;
-> > > > +             return -EINVAL;
-> > >
-> > > The goto out for a simple return style is used quite commonly in kernel
-> > > code to have a single return statement which makes code maintaince, e.g.
-> > > adding locks or allocations simpler.  Not sure that getting rid of it
-> > > makes a lot of sense.
-> > 
-> > Sorry, I can't agree. That's what is written in the CodingStyle document:
-> > 
-> > The goto statement comes in handy when a function exits from multiple
-> > locations and some common work such as cleanup has to be done.
-> 
-> CodingStyle does not try to cover Everything.  Nor do we want it to.
-> 
-> At any rate, there is a desire for functions to have a single point
-> of return, regardless of the amount of cleanup to be done, so I agree
-> with Christoph's comments.
+On Tue, Jan 15, 2008 at 07:28:38PM +0100, Vegard Nossum wrote:
+> # up/down scroll button
+> drivers/input/serio/i8042.c: 9c <- i8042 (interrupt, 0, 1) [592682]
+> drivers/input/serio/i8042.c: df <- i8042 (interrupt, 1, 12) [596318]
+> psmouse.c: GlidePoint at isa0060/serio1/input0 lost sync at byte 1
+> drivers/input/serio/i8042.c: 21 <- i8042 (interrupt, 1, 12) [596321]
+> psmouse.c: GlidePoint at isa0060/serio1/input0 lost sync at byte 1
+> drivers/input/serio/i8042.c: 20 <- i8042 (interrupt, 1, 12) [596323]
+> psmouse.c: GlidePoint at isa0060/serio1/input0 lost sync at byte 1
+> drivers/input/serio/i8042.c: 18 <- i8042 (interrupt, 1, 12) [596325]
+> drivers/input/serio/i8042.c: 67 <- i8042 (interrupt, 1, 12) [596328]
+> drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [596331]
 
-When we're not cleaning up resources, the main advantage of having a
-single point of return is that you can trace backwards from the return
-point through the function's logic. But that advantage flies right out
-the window when you use gotos. You still have to figure out how you got
-to the return statement by tracing back and looking at all the possible
-gotos. And the "goto out" style adds bulk and non-negligible complexity
-when we've got to search back for what the last explicitly set value of
-"ret" or "error" or whatever the function in question is using was.
-Sometimes people get this wrong ("retval is already -EINVAL, so I don't
-need to explicitly set it"), and create bugs.
-
-So I think if we're not actually going to use "structured
-programming" (no gotos) or "stack cleanup" styles, the single return
-point style is more trouble than it's worth.
-
-A lesser advantage of the single return point is that you can set a
-breakpoint or put a printk at the end of a function. But I don't think
-that's much justification.
+Thank you for the debug data. It looks like the scroll buttons on your
+box send 0xdf instead of 0xcf. That should be pretty easy to fix, please
+stay tuned.
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Dmitry
 
