@@ -1,68 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbYAOA4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755645AbYAOBAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755547AbYAOA4T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 19:56:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbYAOA4K
+	id S1755645AbYAOBAU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 20:00:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbYAOBAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 19:56:10 -0500
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:37055 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1752778AbYAOA4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 19:56:08 -0500
-Message-ID: <400358577.30629@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Mon, 14 Jan 2008 20:50:53 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: jplatte@naasa.net, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Mon, 14 Jan 2008 20:00:08 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57819 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750991AbYAOBAG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 20:00:06 -0500
+Date: Tue, 15 Jan 2008 09:59:12 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [RFC][PATCH 1/5] introduce poll_wait_exclusive() new API 
+Cc: kosaki.motohiro@jp.fujitsu.com, Marcelo Tosatti <marcelo@kvack.org>,
+       Daniel Spang <daniel.spang@gmail.com>, Rik van Riel <riel@redhat.com>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: regression: 100% io-wait with 2.6.24-rcX
-References: <200801071151.11200.lists@naasa.net> <20080114035439.GA7330@mail.ustc.edu.cn> <400304530.01514@ustc.edu.cn> <200801141230.13694.jplatte@naasa.net> <1200310886.15103.1.camel@twins>
+In-Reply-To: <20080115092828.116F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20080115092828.116F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-Id: <20080115095755.1172.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1200310886.15103.1.camel@twins>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.12-2006-07-14
-Message-Id: <E1JEOmD-0001Ap-U7@localhost.localdomain>
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 14, 2008 at 12:41:26PM +0100, Peter Zijlstra wrote:
-> 
-> On Mon, 2008-01-14 at 12:30 +0100, Joerg Platte wrote:
-> > Am Montag, 14. Januar 2008 schrieb Fengguang Wu:
-> > 
-> > > Joerg, this patch fixed the bug for me :-)
-> > 
-> > Fengguang, congratulations, I can confirm that your patch fixed the bug! With 
-> > previous kernels the bug showed up after each reboot. Now, when booting the 
-> > patched kernel everything is fine and there is no longer any suspicious 
-> > iowait!
-> > 
-> > Do you have an idea why this problem appeared in 2.6.24? Did somebody change 
-> > the ext2 code or is it related to the changes in the scheduler?
-> 
-> It was Fengguang who changed the inode writeback code, and I guess the
-> new and improved code was less able do deal with these funny corner
-> cases. But he has been very good in tracking them down and solving them,
-> kudos to him for that work!
+There are 2 way of adding item to wait_queue,
+  1. add_wait_queue()
+  2. add_wait_queue_exclusive()
+and add_wait_queue_exclusive() is very useful API.
 
-Thank you.
+unforunately, poll_wait_exclusive() against poll_wait() doesn't exist. 
+it means there is no way that wake up only 1 process where polled.
+wake_up() is wake up all sleeping process by poll_wait(), not 1 process.
 
-In particular the bug is triggered by the patch named:
-        "writeback: introduce writeback_control.more_io to indicate more io"
-That patch means to speed up writeback, but unfortunately its
-aggressiveness has disclosed bugs in reiserfs, jfs and now ext2.
+this patch introduce poll_wait_exclusive() new API for allow wake up only 1 process.
 
-Linus, given the number of bugs it triggered, I'd recommend revert
-this patch(git commit 2e6883bdf49abd0e7f0d9b6297fc3be7ebb2250b). Let's
-push it back to -mm tree for more testings?
+<example of usage>
+unsigned int kosaki_poll(struct file *file,
+		         struct poll_table_struct *wait)
+{
+	poll_wait_exclusive(file, &kosaki_wait_queue, wait);
+	if (data_exist)
+		return POLLIN | POLLRDNORM;
+	return 0;
+}
 
-Regards,
-Fengguang
+
+Signed-off-by: Marcelo Tosatti <marcelo@kvack.org>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+
+---
+ fs/eventpoll.c       |    7 +++++--
+ fs/select.c          |    9 ++++++---
+ include/linux/poll.h |   11 +++++++++--
+ 3 files changed, 20 insertions(+), 7 deletions(-)
+
+
+
+Index: linux-2.6.24-rc6-memnotify/fs/eventpoll.c
+===================================================================
+--- linux-2.6.24-rc6-memnotify.orig/fs/eventpoll.c	2007-12-30 02:08:58.000000000 +0900
++++ linux-2.6.24-rc6-memnotify/fs/eventpoll.c	2007-12-30 07:10:46.000000000 +0900
+@@ -676,7 +676,7 @@ out_unlock:
+  * target file wakeup lists.
+  */
+ static void ep_ptable_queue_proc(struct file *file, wait_queue_head_t *whead,
+-				 poll_table *pt)
++				 poll_table *pt, int exclusive)
+ {
+ 	struct epitem *epi = ep_item_from_epqueue(pt);
+ 	struct eppoll_entry *pwq;
+@@ -685,7 +685,10 @@ static void ep_ptable_queue_proc(struct 
+ 		init_waitqueue_func_entry(&pwq->wait, ep_poll_callback);
+ 		pwq->whead = whead;
+ 		pwq->base = epi;
+-		add_wait_queue(whead, &pwq->wait);
++		if (exclusive)
++			add_wait_queue_exclusive(whead, &pwq->wait);
++		else
++			add_wait_queue(whead, &pwq->wait);
+ 		list_add_tail(&pwq->llink, &epi->pwqlist);
+ 		epi->nwait++;
+ 	} else {
+Index: linux-2.6.24-rc6-memnotify/fs/select.c
+===================================================================
+--- linux-2.6.24-rc6-memnotify.orig/fs/select.c	2007-12-30 02:09:00.000000000 +0900
++++ linux-2.6.24-rc6-memnotify/fs/select.c	2007-12-30 02:34:05.000000000 +0900
+@@ -48,7 +48,7 @@ struct poll_table_page {
+  * poll table.
+  */
+ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
+-		       poll_table *p);
++		       poll_table *p, int exclusive);
+ 
+ void poll_initwait(struct poll_wqueues *pwq)
+ {
+@@ -117,7 +117,7 @@ static struct poll_table_entry *poll_get
+ 
+ /* Add a new entry */
+ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
+-				poll_table *p)
++		       poll_table *p, int exclusive)
+ {
+ 	struct poll_table_entry *entry = poll_get_entry(p);
+ 	if (!entry)
+@@ -126,7 +126,10 @@ static void __pollwait(struct file *filp
+ 	entry->filp = filp;
+ 	entry->wait_address = wait_address;
+ 	init_waitqueue_entry(&entry->wait, current);
+-	add_wait_queue(wait_address, &entry->wait);
++	if (exclusive)
++		add_wait_queue_exclusive(wait_address, &entry->wait);
++	else
++		add_wait_queue(wait_address, &entry->wait);
+ }
+ 
+ #define FDS_IN(fds, n)		(fds->in + n)
+Index: linux-2.6.24-rc6-memnotify/include/linux/poll.h
+===================================================================
+--- linux-2.6.24-rc6-memnotify.orig/include/linux/poll.h	2007-12-30 02:09:16.000000000 +0900
++++ linux-2.6.24-rc6-memnotify/include/linux/poll.h	2007-12-30 02:41:35.000000000 +0900
+@@ -28,7 +28,8 @@ struct poll_table_struct;
+ /* 
+  * structures and helpers for f_op->poll implementations
+  */
+-typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *, struct poll_table_struct *);
++typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *,
++				struct poll_table_struct *, int);
+ 
+ typedef struct poll_table_struct {
+ 	poll_queue_proc qproc;
+@@ -37,7 +38,13 @@ typedef struct poll_table_struct {
+ static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_address, poll_table *p)
+ {
+ 	if (p && wait_address)
+-		p->qproc(filp, wait_address, p);
++		p->qproc(filp, wait_address, p, 0);
++}
++
++static inline void poll_wait_exclusive(struct file *filp, wait_queue_head_t *wait_address, poll_table *p)
++{
++	if (p && wait_address)
++		p->qproc(filp, wait_address, p, 1);
+ }
+ 
+ static inline void init_poll_funcptr(poll_table *pt, poll_queue_proc qproc)
+
+
 
