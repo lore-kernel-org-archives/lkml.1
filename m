@@ -1,128 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753397AbYAOPxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752203AbYAOP6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753397AbYAOPxU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 10:53:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbYAOPxI
+	id S1752203AbYAOP6c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 10:58:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751204AbYAOP6Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 10:53:08 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:25858 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751243AbYAOPxG (ORCPT
+	Tue, 15 Jan 2008 10:58:24 -0500
+Received: from mail-out.m-online.net ([212.18.0.9]:45676 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751173AbYAOP6X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 10:53:06 -0500
-Date: Tue, 15 Jan 2008 10:52:38 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: btrfs-devel@oss.oracle.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: [ANNOUNCE] Btrfs v0.10 (online growing/shrinking, ext3 conversion,
- and more)
-Message-ID: <20080115105238.4fc3e992@think.oraclecorp.com>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 15 Jan 2008 10:58:23 -0500
+Date: Tue, 15 Jan 2008 16:58:26 +0100
+From: Olaf Hering <olaf@aepfle.de>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: crash in kmem_cache_init
+Message-ID: <20080115155826.GA14446@aepfle.de>
+References: <20080115150949.GA14089@aepfle.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080115150949.GA14089@aepfle.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jan 15, Olaf Hering wrote:
 
-Hello everyone,
+> 
+> Current linus tree crashes in kmem_cache_init, as shown below. The
+> system is a 8cpu 2.2GHz POWER5 system, model 9117-570, with 4GB ram.
+> Firmware is 240_332, 2.6.23 boots ok with the same config.
+> 
+> There is a series of mm related patches in 2.6.24-rc1:
+> commit 04231b3002ac53f8a64a7bd142fde3fa4b6808c6 seems to break it,
 
-Btrfs v0.10 is now available for download from:
+2.6.24-rc6-mm1-ppc64 boots past this point, but crashes later.
+Likely unrelated to the kmem_cache_init bug:
 
-http://oss.oracle.com/projects/btrfs/
-
-Btrfs is still in an early alpha state, and the disk format is not finalized.
-v0.10 introduces a new disk format, and is not compatible with v0.9.
-
-The core of this release is explicit back references for all metadata blocks,
-data extents, and directory items.  These are a crucial building block for
-future features such as online fsck and migration between devices.  The back
-references are verified during deletes, and the extent back references are
-checked by the existing offline fsck tool.
-
-For all of the details of how the back references are maintained, please
-see the design document:
-
-http://oss.oracle.com/projects/btrfs/dist/documentation/btrfs-design.html
-
-Other new features (described in detail below):
-
-* Online resizing (including shrinking)
-* In place conversion from Ext3 to Btrfs
-* data=ordered support
-* Mount options to disable data COW and checksumming 
-* Barrier support for sata and IDE drives
-
-[ Resizing ]
-
-In order to demonstrate and test the back references, I've added an online
-resizer, which can both grow and shrink the filesystem:
-
-mount -t btrfs /dev/xxx /mnt
-
-# add 2GB to the FS
-btrfsctl -r +2g /mnt
-
-# shrink the FS by 4GB
-btrfsctl -r -4g /mnt
-
-# Explicitly set the FS size
-btrfsctl -r 20g /mnt
-
-# Use 'max' to grow the FS to the limit of the device
-btrfsctl -r max /mnt
-
-[ Conversion from Ext3 ]
-
-This is an offline, in place, conversion program written by Yan Zheng.  It
-has been through basic testing, but should not be trusted with critical data.
-
-To build the conversion program, run 'make convert' in the btrfs-progs
-tree. It depends on libe2fs and acl development libraries.
-
-The conversion program uses the copy on write nature of Btrfs to preserve the
-original Ext3 FS, sharing the data blocks between Btrfs and Ext3 metadata.
-Btrfs metadata is created inside the free space of the Ext3 filesystem, and it
-is possible to either make the conversion permanent (reclaiming the space used
-by Ext3) or roll back the conversion to the original Ext3 filesystem.
-
-More details and example usage of the conversion program can be found here:
-
-http://oss.oracle.com/projects/btrfs/dist/documentation/btrfs-converter.html
-
-Thanks to Yan Zheng for all of his work on the converter.
-
-[ New mount options ]
-
-mount -o nodatacsum disables checksumming on data extents
-
-mount -o nodatacow disables copy on write of data extents, unless a given
-extent is referenced by more than one snapshot.  This is targeted at database
-workloads, where copy on write is not optimal for performance.
-
-The explicit back references allow the nodatacow code to make sure copy
-on write is done when multiple snapshots reference the same file, maintaining
-snapshot consistency.
-
-mount -o alloc_start=num forces allocation hints to start at least num bytes
-into the disk.  This was introduced to test the resizer.  Example usage:
-
-mount -o alloc_start=16g /dev/xxxx /mnt
-(do something to the FS)
-btrfsctl -r 12g /mnt
-
-The btrfsctl command will resize the FS down to 12GB in size.  Because
-the FS was mounted with -o alloc_start=16g, any allocations done after
-mounting will need to be relocated by the resizer.
-
-It is safe to specify a number past the end of the FS, if the alloc_start is too
-large, it is ignored.
-
-mount -o nobarrier disables cache flushes during commit.
-
--chris
+...
+matroxfb: 640x480x8bpp (virtual: 640x26214)
+matroxfb: framebuffer at 0x40178000000, mapped to 0xd000080080080000, size 33554432
+Console: switching to colour frame buffer device 80x30
+fb0: MATROX frame buffer device
+matroxfb_crtc2: secondary head of fb0 was registered as fb1
+vio_register_driver: driver hvc_console registering
+HVSI: registered 0 devices
+Generic RTC Driver v1.07
+Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing disabled
+pmac_zilog: 0.6 (Benjamin Herrenschmidt <benh@kernel.crashing.org>)
+input: Macintosh mouse button emulation as /devices/virtual/input/input0
+Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+ehci_hcd 0000:c8:01.2: EHCI Host Controller
+ehci_hcd 0000:c8:01.2: new USB bus registered, assigned bus number 1
+ehci_hcd 0000:c8:01.2: irq 85, io mem 0x400a0002000
+ehci_hcd 0000:c8:01.2: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
+usb usb1: configuration #1 chosen from 1 choice
+hub 1-0:1.0: USB hub found
+hub 1-0:1.0: 5 ports detected
+Unable to handle kernel paging request for data at address 0x00000050
+Faulting instruction address: 0xc0000000000fa1c4
+cpu 0x7: Vector: 300 (Data Access) at [c0000000d82e7a70]
+    pc: c0000000000fa1c4: .cache_reap+0x74/0x29c
+    lr: c0000000000fa198: .cache_reap+0x48/0x29c
+    sp: c0000000d82e7cf0
+   msr: 8000000000009032
+   dar: 50
+ dsisr: 40000000
+  current = 0xc0000000d82d85c0
+  paca    = 0xc000000000668e00
+    pid   = 27, comm = events/7
+enter ? for help
+[c0000000d82e7cf0] c00000000070be98 vmstat_update+0x0/0x18 (unreliable)
+[c0000000d82e7da0] c000000000092994 .run_workqueue+0x120/0x210
+[c0000000d82e7e40] c000000000093bb8 .worker_thread+0xcc/0xf0
+[c0000000d82e7f00] c000000000097b70 .kthread+0x78/0xc4
+[c0000000d82e7f90] c00000000002ab74 .kernel_thread+0x4c/0x68
+7:mon> 
+...
