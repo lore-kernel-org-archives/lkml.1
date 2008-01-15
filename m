@@ -1,92 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756575AbYAOBez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756240AbYAOBgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756575AbYAOBez (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 20:34:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbYAOBeq
+	id S1756240AbYAOBgP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 20:36:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYAOBf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 20:34:46 -0500
-Received: from ro-out-1112.google.com ([72.14.202.180]:4300 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752654AbYAOBeo (ORCPT
+	Mon, 14 Jan 2008 20:35:59 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:34088 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750956AbYAOBf6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 20:34:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=RvbCNkVZssq2Ngi1KlElyOnOfHnM7F7nvrNvcw+GjkiVMcEEQczdiPtsTmGMFyLuHdGw4hdpQqCZrZ05efxJAL/+fbV/P3HDXTe9GN61Vw1+jabVmJYxAW1ub/0Wms/zWMvccjPFbGiKx14sjr2bwCT5986jwOe0by94veFHbx0=
-Date: Tue, 15 Jan 2008 09:33:47 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>, Adrian Bunk <bunk@kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: translations (Re: Kbuild update)
-Message-ID: <20080115013347.GA3112@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <20080103213255.GA21811@uranus.ravnborg.org> <20080104132316.GA2485@hacking> <20080104143953.GA30536@uranus.ravnborg.org> <20080105054840.GB9976@does.not.exist> <20080106142606.GB2528@hacking> <20080106214136.GA24008@flower.upol.cz> <20080109022208.GD2480@hacking> <20080109135024.GD24008@flower.upol.cz>
-MIME-Version: 1.0
+	Mon, 14 Jan 2008 20:35:58 -0500
+Date: Tue, 15 Jan 2008 02:38:58 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: unify pagetable accessors patch causes double fault II
+Message-ID: <20080115013858.GA25112@one.firstfloor.org>
+References: <20080114094814.GA28300@basil.nowhere.org> <20080114125638.GA9510@basil.nowhere.org> <20080114130620.GA14057@elte.hu> <20080114135811.GA16190@one.firstfloor.org> <478BDC43.6050105@goop.org> <20080114222349.GA23409@one.firstfloor.org> <478BE628.7090008@goop.org> <20080115010534.GA24854@one.firstfloor.org> <478C0D18.5020505@goop.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080109135024.GD24008@flower.upol.cz>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <478C0D18.5020505@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jan 14, 2008 at 05:32:08PM -0800, Jeremy Fitzhardinge wrote:
+> >
+> >I just applied over the whole git-x86 patchkit (tip 
+> >2f42671697ea9abc7d10ea7f663d6ef6e8ec6358)  + the two build fixes
+> >Unfortunately it didn't work, although the faulting loop is shorter now:
+> >  
+> 
+> Just to be clear, these two patches cause this oops to appear?  Current 
 
->
->ftp://flower.upol.cz/upload/Configure.help
->
->OK, please, take a look at stuff, Korean guys did 5-6 years ago. One
->particular ARM port (S3C2410X) along with an ARM bootloader (vivi) was
->done. Yet for some reason official Linux port has another developers, and,
->it seems, it was done some time (~1-2 years) later.
+The two build fixes? Without that it just doesn't build.
 
-I glanced at the page. I don't know Korean, but it seems OK.
-What do you mean by saying this? I can't catch your points.
+> x86.git seems to be missing a pile of patches at the moment, so I 
+> presume you're using a version which does have my patch set?
 
+I just tested x86.git and then x86.git + patch you send (+ build fixes
+in both cases), none of your patchkits. If you want me to test
+some other patchkit please point me to it.
 
->> I abosutely agree that we should focus on the exsiting bugs of Linux,
->> but like Greg's inclusion of some kernel doc translations, this kind
->> of work is really helpful to attract some kernel newbies from none
->> English-speaking countries. Even we can't make offical efforts,
->> the civil work, like TLKTP, is still worthy.
->...
->
->> Believe me, I am leading a local LUG in my college and I found that one
->> _big_ reason that why the newbies are afraid of Linux kernel is
->> English, instead of the C tricks or low-level programming.
->
->IMHO, there is so much stuff done, that any brilliant C or whatever-asm
->coder *have* to study at least something of it. And, in order to do a
->valuable contribution, one must know the work-flow, people *and* English.
->This is usually done by reading mailing list *and* archives for quite
->some time. This takes time, this takes effort, but this also have huge
->impact on intelligence and culture of the `coders'.
->
->Do you ever have a question about why History exists and is studied on
->all levels of education? Same with programming. Without
->history-via-English, one have no strong roots, thus base for grow and
->flower.
+The problem happens with plain git-x86 (+ build fixes) and also
+with git-x86 + your patch.
 
-I think you've overstated.
+-Andi
 
-Translation does _not_ mean avoiding learning English. I agree with
-what you said above about English. But just as you said, it needs
-_time_ and translation *is* a good way to help this. I, myself,
-began to learn computer English by reading the translations of some
-famous English textbooks, and then reading the original ones.
-
-
->OTOH, Internet has so much noise and crap all over the place, that
->information is very hard to find. It takes much time to sort and see it.
->Yet, providing noise generating, like in-tree translations, seems, is a
->very easy way around (not taking maintaining in account).
-
-Translations can be put in .po files.
-
-Thanks.
-
- Cong
 
