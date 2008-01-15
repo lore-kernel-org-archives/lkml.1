@@ -1,77 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbYAOSbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753644AbYAOSbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756588AbYAOSbY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 13:31:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbYAOSbR
+	id S1753644AbYAOSbm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 13:31:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754383AbYAOSbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 13:31:17 -0500
-Received: from mu-out-0910.google.com ([209.85.134.191]:12599 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751533AbYAOSbQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 13:31:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=rqwrcwddnhHQhjhSUnq1c2IGRh4IMVgu/zgbO5NVocGiaIood4RSJOVFhqSbKCJUBNInU52quIEHp0WPSc83VGjRMt0UHC9vMW5tUFWB/oZdJeKBlK4M1IaBIL9paiu2ttos6rAYaRuj53JFqlspKqtaW1LBvLvjiNgVn4x6/og=
-Date: Tue, 15 Jan 2008 21:30:56 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Cc: apw@shadowen.org, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] checkpatch: add filename in the summary
-Message-ID: <20080115183056.GB6723@cvg>
-References: <20080114232339.2c018647@paolo-desktop>
-MIME-Version: 1.0
+	Tue, 15 Jan 2008 13:31:33 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:59660 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751533AbYAOSbc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 13:31:32 -0500
+Date: Tue, 15 Jan 2008 19:31:32 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Adrian Bunk <bunk@kernel.org>, rjw@sisk.pl,
+       pavel@suse.cz, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without HOTPLUG_CPU
+Message-ID: <20080115183132.GD18338@uranus.ravnborg.org>
+References: <20080114140910.GA8507@uranus.ravnborg.org> <20080114145854.GA31695@elte.hu> <20080114150553.GA3524@elte.hu> <20080114152440.GA9174@elte.hu> <20080114201214.GC9257@uranus.ravnborg.org> <20080115151742.GB10722@elte.hu> <20080115162513.GA18338@uranus.ravnborg.org> <20080115171146.GA2377@one.firstfloor.org> <20080115182142.GC18338@uranus.ravnborg.org> <20080115182904.GA3393@one.firstfloor.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080114232339.2c018647@paolo-desktop>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080115182904.GA3393@one.firstfloor.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Paolo Ciarrocchi - Mon, Jan 14, 2008 at 11:23:39PM +0100]
-| Add a filename option (default to 0)
-| in order to get the following summary output:
-| ./scripts/checkpatch.pl --filename --file ./arch/sparc/kernel/apc.c 
-| ...
-| ...
-| ...
-| ./arch/sparc/kernel/apc.c --> total: 18 errors, 3 warnings, 186 lines checked
-| ---
-| 
-| Andy, 
-| I wonder why checkpatch doesn't show all the command line options. 
-| At the moment, it only prints:
-| options: -q           => quiet
-| 	--no-tree    => run without a kernel tree
-|         --terse      => one line per report
-|         --emacs      => emacs compile window format
-|         --file       => check a source file
-|         --strict     => enable more subjective tests
-|         --root       => path to the kernel tree root
-| 
-| but I see a lot more options:
-| 	q|quiet
-| 	tree
-| 	signoff
-| 	patch
-| 	test-type
-| 	emacs
-| 	terse
-| 	file
-| 	subjective
-| 	strict
-| 	root=s
-| 	summary
-| 	mailback
-| 
-| 
-|
+On Tue, Jan 15, 2008 at 07:29:04PM +0100, Andi Kleen wrote:
+> On Tue, Jan 15, 2008 at 07:21:42PM +0100, Sam Ravnborg wrote:
+> > With default options to gcc my .config produces ~65 warnings
+> > but with -fno-unit-a-time I get 112 warnings.
+> > Solely due to less inlining done by gcc.
+> > 
+> > So there are two sources for the 'randomization':
+> > a) The actual config
+> > b) The sometimes agressive inlining
+> 
+> Inlining should not be random.  And how does inlining cause such a warning?
+Consider:
 
-Hi Paolo,
+static int __init foo()
+{
+	// ...
+}
 
-the options you're complaining about (in most) are enabled by default so
-there is no reason to 'turn them on' explicitly /methink/.
+static int bar()
+{
+	// ...
+	if (foo())
+		// ...
+}
 
-		- Cyrill -
+gcc will often inline foo into bar - and then all code are suddenly
+part of .text and no section mismatch.
+But you add anohter call to foo() somewhere so gcc decide no longer
+to inline foo() and we then have a reference from .text to .init.text.
+
+> > 
+> > a) will be addressed by having separate sections for each
+> > __init* type that is at link time combined where it belongs.
+> 
+> One problem I ran into the past was that older binutils seem
+> to have some exponential behaviour with a lot of named sections
+> and run very slowly.
+This is more the -ffunction-section issue I guess.
+What we are dealig with here is ~20 more sections and the kernel has
+~100 section today (or more). So not a huge increase.
+
+	Sam
