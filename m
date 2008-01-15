@@ -1,77 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752427AbYAOO7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753193AbYAOO76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752427AbYAOO7i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 09:59:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981AbYAOO73
+	id S1753193AbYAOO76 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 09:59:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbYAOO7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 09:59:29 -0500
-Received: from zombie.ncsc.mil ([144.51.88.131]:65256 "EHLO zombie.ncsc.mil"
+	Tue, 15 Jan 2008 09:59:47 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:37262 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750841AbYAOO72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 09:59:28 -0500
-Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM
-	settings for task actions [try #2]
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: David Howells <dhowells@redhat.com>
-Cc: Daniel J Walsh <dwalsh@redhat.com>, casey@schaufler-ca.com,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <3524.1200319577@redhat.com>
-References: <3466.1200319279@redhat.com>
-	 <1199902278.9393.283.camel@moss-spartans.epoch.ncsc.mil>
-	 <1197307397.18120.72.camel@moss-spartans.epoch.ncsc.mil>
-	 <1197305173.18120.60.camel@moss-spartans.epoch.ncsc.mil>
-	 <20071205193818.24617.79771.stgit@warthog.procyon.org.uk>
-	 <20071205193859.24617.36392.stgit@warthog.procyon.org.uk>
-	 <25037.1197306473@redhat.com> <17868.1199897484@redhat.com>
-	 <3524.1200319577@redhat.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Tue, 15 Jan 2008 09:58:48 -0500
-Message-Id: <1200409128.9669.46.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	id S1750981AbYAOO7p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 09:59:45 -0500
+Date: Tue, 15 Jan 2008 08:59:19 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: serue@us.ibm.com, akpm@linux-foundation.org, hch@infradead.org,
+       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
+Subject: Re: [patch 8/9] unprivileged mounts: propagation: inherit owner
+	from parent
+Message-ID: <20080115145919.GG4453@sergelap.austin.ibm.com>
+References: <20080108113502.184459371@szeredi.hu> <20080108113632.895453887@szeredi.hu> <20080114231340.GG6704@sergelap.austin.ibm.com> <E1JEjCG-0000wz-BS@pomaz-ex.szeredi.hu> <20080115142115.GC4453@sergelap.austin.ibm.com> <E1JEmv3-0001RN-6J@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1JEmv3-0001RN-6J@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Quoting Miklos Szeredi (miklos@szeredi.hu):
+> > > > > On mount propagation, let the owner of the clone be inherited from the
+> > > > > parent into which it has been propagated.  Also if the parent has the
+> > > > > "nosuid" flag, set this flag for the child as well.
+> > > > 
+> > > > What about nodev?
+> > > 
+> > > Hmm, I think the nosuid thing is meant to prevent suid mounts being
+> > > introduced into a "suidless" namespace.  This doesn't apply to dev
+> > > mounts, which are quite safe in a suidless environment, as long as the
+> > > user is not able to create devices.  But that should be taken care of
+> > > by capability tests.
+> > > 
+> > > I'll update the description.
+> > 
+> > Hmm,
+> > 
+> > Part of me wants to say the safest thing for now would be to refuse
+> > mounts propagation from non-user mounts to user mounts.
+> > 
+> > I assume you're thinking about a fully user-mounted chroot, where
+> > the user woudl still want to be able to stick in a cdrom and have
+> > it automounted under /mnt/cdrom, propagated from the root mounts ns?
+> 
+> Right.
+> 
+> > But then are there no devices which the user could create on a floppy
+> > while inserted into his own laptop, owned by his own uid, then insert
+> > into this machine, and use the device under the auto-mounted /dev/floppy
+> > to gain inappropriate access?
+> 
+> I assume, that the floppy and cdrom are already mounted with
+> nosuid,nodev.
 
-On Mon, 2008-01-14 at 14:06 +0000, David Howells wrote:
-> David Howells <dhowells@redhat.com> wrote:
-> 
-> > Okay...  It looks like I want four security operations/hooks for cachefiles:
-> 
-> FYI, I added the following vectors:
-> 
-> 	# kernel services that need to override task security
-> 	class kernel_service
-> 	{
-> 		use_as_override
-> 		create_files_as
-> 	}
-> 
-> The first allows:
-> 
-> 	avc_has_perm(daemon_tsec->sid, nominated_sid,
-> 		     SECCLASS_KERNEL_SERVICE,
-> 		     KERNEL_SERVICE__USE_AS_OVERRIDE,
-> 		     NULL);
-> 
-> And the second something like:
-> 
-> 	avc_has_perm(tsec->sid, inode->sid,
-> 		     SECCLASS_KERNEL_SERVICE,
-> 		     KERNEL_SERVICE__CREATE_FILES_AS,
-> 		     NULL);
-> 
-> Rather than specifically dedicating them to the cache, I made them general.
+Yeah, of course, what I'm saying is no different whether the upper mount
+is a user mount or not.  You're right.
 
-Make sure that you or Dan submits a policy patch to register these
-classes and permissions in the policy when the kernel patch is queued
-for merge.
+> The problem case is I think is if a sysadmin does some mounting in the
+> initial namespace, and this is propagated into the fully user-mounted
+> namespace (or chroot), so that a mount with suid binaries slips in.
+> Which is bad, because the user may be able rearange the namespace, to
+> trick the suid program to something it should not do.
 
--- 
-Stephen Smalley
-National Security Agency
+And really this shouldn't be an issue at all - the usermount chroot
+would be set up under something like /share/hallyn/root, so the admin
+would have to purposely set up propagation into that tree, so this
+won't be happening by accident.
 
+> OTOH, a mount with devices can't be abused this way, since it is not
+> possible to gain privileges to files/devices just by rearanging the
+> mounts.
+
+Thanks for humoring me,
+
+-serge
