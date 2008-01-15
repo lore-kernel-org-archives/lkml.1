@@ -1,160 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757207AbYAOVmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757506AbYAOVmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757207AbYAOVmT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 16:42:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754764AbYAOVmF
+	id S1757506AbYAOVmp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 16:42:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751140AbYAOVme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 16:42:05 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:54591 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754209AbYAOVmE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 16:42:04 -0500
-Date: Tue, 15 Jan 2008 16:42:01 -0500
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] libata fixes
-Message-ID: <20080115214201.GA8238@havoc.gtf.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 15 Jan 2008 16:42:34 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:13198 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754764AbYAOVmd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 16:42:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=EzoDLHAjmRvdWCVKvSLa6wTXKmn4PZKrztp6DPEozYlPThgxhoIr6rW9TcXJGvOdnuocJx8aMBazpN2eKoLw01wlExW8S6ELxAmkJ52ZtRT16Sv39zouOgHZFqCo60aagVmGVFhJIFJLG8UhDnNjlYKU42g0nHjwQRnGWdbYa8A=
+Subject: [PATCH] x86: Unify pte_exec helper
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 15 Jan 2008 13:42:36 -0800
+Message-Id: <1200433356.16794.52.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+- Rename it to pte_exec() from pte_exec_kernel(). There is nothing
+kernel specific in there.
+- Move it into the common file because _PAGE_NX is 0 on !PAE and then
+pte_exec() will be always evaluate to true.
 
-Open issues for 2.6.24:  sata_nv ADMA, sata_nv 32/64bit DMA
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Taken from Patch 31/31 in Andi's CPA queue, added the init_32 change
+as well.  Against x86.git
 
-Please pull from 'upstream-linus' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+ arch/x86/mm/fault_32.c           |    2 +-
+ arch/x86/mm/init_32.c            |    2 +-
+ include/asm-x86/pgtable-2level.h |    8 --------
+ include/asm-x86/pgtable-3level.h |    8 --------
+ include/asm-x86/pgtable.h        |    1 +
+ 5 files changed, 3 insertions(+), 18 deletions(-)
 
-to receive the following updates:
-
- drivers/ata/libata-core.c  |    4 +++-
- drivers/ata/pata_bf54x.c   |    3 ++-
- drivers/ata/pata_legacy.c  |    8 +++-----
- drivers/ata/pata_qdi.c     |    8 +++-----
- drivers/ata/pata_winbond.c |    8 +++-----
- include/linux/ata.h        |    2 --
- 6 files changed, 14 insertions(+), 19 deletions(-)
-
-Al Viro (1):
-      libata fixes for sparse-found problems
-
-Alan Cox (1):
-      libata: correct handling of TSS DVD
-
-Andrew Morton (2):
-      [libata] pata_bf54x: checkpatch fixes
-      [libata] core checkpatch fix
-
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index 4753a18..6380726 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -6998,7 +6998,9 @@ int ata_host_start(struct ata_host *host)
- 			rc = ap->ops->port_start(ap);
- 			if (rc) {
- 				if (rc != -ENODEV)
--					dev_printk(KERN_ERR, host->dev, "failed to start port %d (errno=%d)\n", i, rc);
-+					dev_printk(KERN_ERR, host->dev,
-+						"failed to start port %d "
-+						"(errno=%d)\n", i, rc);
- 				goto err_out;
- 			}
- 		}
-diff --git a/drivers/ata/pata_bf54x.c b/drivers/ata/pata_bf54x.c
-index 088a41f..7842cc4 100644
---- a/drivers/ata/pata_bf54x.c
-+++ b/drivers/ata/pata_bf54x.c
-@@ -1509,7 +1509,8 @@ static int __devinit bfin_atapi_probe(struct platform_device *pdev)
- 	if (res == NULL)
- 		return -EINVAL;
+diff --git a/arch/x86/mm/fault_32.c b/arch/x86/mm/fault_32.c
+index 977904c..936bb0c 100644
+--- a/arch/x86/mm/fault_32.c
++++ b/arch/x86/mm/fault_32.c
+@@ -615,7 +615,7 @@ no_context:
+ 		if (error_code & PF_INSTR) {
+ 			pte_t *pte = lookup_address(address);
  
--	while (bfin_port_info[board_idx].udma_mask>0 && udma_fsclk[udma_mode] > fsclk) {
-+	while (bfin_port_info[board_idx].udma_mask > 0 &&
-+			udma_fsclk[udma_mode] > fsclk) {
- 		udma_mode--;
- 		bfin_port_info[board_idx].udma_mask >>= 1;
- 	}
-diff --git a/drivers/ata/pata_legacy.c b/drivers/ata/pata_legacy.c
-index 7bed8d8..17159b5 100644
---- a/drivers/ata/pata_legacy.c
-+++ b/drivers/ata/pata_legacy.c
-@@ -271,14 +271,12 @@ static void pdc_data_xfer_vlb(struct ata_device *adev, unsigned char *buf, unsig
- 			ioread32_rep(ap->ioaddr.data_addr, buf, buflen >> 2);
+-			if (pte && pte_present(*pte) && !pte_exec_kernel(*pte))
++			if (pte && pte_present(*pte) && !pte_exec(*pte))
+ 				printk(KERN_CRIT "kernel tried to execute "
+ 					"NX-protected page - exploit attempt? "
+ 					"(uid: %d)\n", current->uid);
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index b8ba6a7..2456968 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -613,7 +613,7 @@ int __init set_kernel_exec(unsigned long vaddr, int enable)
+ 	pte = lookup_address(vaddr);
+ 	BUG_ON(!pte);
  
- 		if (unlikely(slop)) {
--			u32 pad;
-+			__le32 pad = 0;
- 			if (write_data) {
- 				memcpy(&pad, buf + buflen - slop, slop);
--				pad = le32_to_cpu(pad);
--				iowrite32(pad, ap->ioaddr.data_addr);
-+				iowrite32(le32_to_cpu(pad), ap->ioaddr.data_addr);
- 			} else {
--				pad = ioread32(ap->ioaddr.data_addr);
--				pad = cpu_to_le16(pad);
-+				pad = cpu_to_le32(ioread32(ap->ioaddr.data_addr));
- 				memcpy(buf + buflen - slop, &pad, slop);
- 			}
- 		}
-diff --git a/drivers/ata/pata_qdi.c b/drivers/ata/pata_qdi.c
-index 7d4c696..a4c0e50 100644
---- a/drivers/ata/pata_qdi.c
-+++ b/drivers/ata/pata_qdi.c
-@@ -136,14 +136,12 @@ static void qdi_data_xfer(struct ata_device *adev, unsigned char *buf, unsigned
- 			ioread32_rep(ap->ioaddr.data_addr, buf, buflen >> 2);
+-	if (!pte_exec_kernel(*pte))
++	if (!pte_exec(*pte))
+ 		ret = 0;
  
- 		if (unlikely(slop)) {
--			u32 pad;
-+			__le32 pad = 0;
- 			if (write_data) {
- 				memcpy(&pad, buf + buflen - slop, slop);
--				pad = le32_to_cpu(pad);
--				iowrite32(pad, ap->ioaddr.data_addr);
-+				iowrite32(le32_to_cpu(pad), ap->ioaddr.data_addr);
- 			} else {
--				pad = ioread32(ap->ioaddr.data_addr);
--				pad = cpu_to_le32(pad);
-+				pad = cpu_to_le32(ioread32(ap->ioaddr.data_addr));
- 				memcpy(buf + buflen - slop, &pad, slop);
- 			}
- 		}
-diff --git a/drivers/ata/pata_winbond.c b/drivers/ata/pata_winbond.c
-index 311cdb3..7116a9e 100644
---- a/drivers/ata/pata_winbond.c
-+++ b/drivers/ata/pata_winbond.c
-@@ -104,14 +104,12 @@ static void winbond_data_xfer(struct ata_device *adev, unsigned char *buf, unsig
- 			ioread32_rep(ap->ioaddr.data_addr, buf, buflen >> 2);
+ 	if (enable)
+diff --git a/include/asm-x86/pgtable-2level.h b/include/asm-x86/pgtable-2level.h
+index ce486bd..701404f 100644
+--- a/include/asm-x86/pgtable-2level.h
++++ b/include/asm-x86/pgtable-2level.h
+@@ -56,14 +56,6 @@ static inline pte_t native_ptep_get_and_clear(pte_t *xp)
+ #define pte_pfn(x)		(pte_val(x) >> PAGE_SHIFT)
  
- 		if (unlikely(slop)) {
--			u32 pad;
-+			__le32 pad = 0;
- 			if (write_data) {
- 				memcpy(&pad, buf + buflen - slop, slop);
--				pad = le32_to_cpu(pad);
--				iowrite32(pad, ap->ioaddr.data_addr);
-+				iowrite32(le32_to_cpu(pad), ap->ioaddr.data_addr);
- 			} else {
--				pad = ioread32(ap->ioaddr.data_addr);
--				pad = cpu_to_le16(pad);
-+				pad = cpu_to_le32(ioread32(ap->ioaddr.data_addr));
- 				memcpy(buf + buflen - slop, &pad, slop);
- 			}
- 		}
-diff --git a/include/linux/ata.h b/include/linux/ata.h
-index 72ab808..e672e80 100644
---- a/include/linux/ata.h
-+++ b/include/linux/ata.h
-@@ -554,8 +554,6 @@ static inline int ata_drive_40wire(const u16 *dev_id)
+ /*
+- * All present pages are kernel-executable:
+- */
+-static inline int pte_exec_kernel(pte_t pte)
+-{
+-	return 1;
+-}
+-
+-/*
+  * Bits 0, 6 and 7 are taken, split up the 29 bits of offset
+  * into this range:
+  */
+diff --git a/include/asm-x86/pgtable-3level.h b/include/asm-x86/pgtable-3level.h
+index bfafa9b..20fc120 100644
+--- a/include/asm-x86/pgtable-3level.h
++++ b/include/asm-x86/pgtable-3level.h
+@@ -19,14 +19,6 @@
+ #define pud_bad(pud)				0
+ #define pud_present(pud)			1
  
- static inline int ata_drive_40wire_relaxed(const u16 *dev_id)
- {
--	if (ata_id_is_sata(dev_id))
--		return 0;	/* SATA */
- 	if ((dev_id[93] & 0x2000) == 0x2000)
- 		return 0;	/* 80 wire */
- 	return 1;
+-/*
+- * All present pages with !NX bit are kernel-executable:
+- */
+-static inline int pte_exec_kernel(pte_t pte)
+-{
+-	return !(pte_val(pte) & _PAGE_NX);
+-}
+-
+ /* Rules for using set_pte: the pte being assigned *must* be
+  * either not present or in a state where the hardware will
+  * not attempt to update the pte.  In places where this is
+diff --git a/include/asm-x86/pgtable.h b/include/asm-x86/pgtable.h
+index bae9648..dce27bb 100644
+--- a/include/asm-x86/pgtable.h
++++ b/include/asm-x86/pgtable.h
+@@ -142,6 +142,7 @@ static inline int pte_young(pte_t pte)		{ return pte_val(pte) & _PAGE_ACCESSED;
+ static inline int pte_write(pte_t pte)		{ return pte_val(pte) & _PAGE_RW; }
+ static inline int pte_file(pte_t pte)		{ return pte_val(pte) & _PAGE_FILE; }
+ static inline int pte_huge(pte_t pte)		{ return pte_val(pte) & _PAGE_PSE; }
++static inline int pte_exec(pte_t pte)		{ return !(pte_val(pte) & _PAGE_NX); }
+ 
+ static inline int pmd_large(pmd_t pte) {
+ 	return (pmd_val(pte) & (_PAGE_PSE|_PAGE_PRESENT)) ==
+-- 
+1.5.4.rc2.1164.g6451
+
