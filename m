@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758719AbYAOXvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758026AbYAOXwF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758719AbYAOXvr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 18:51:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbYAOXs1
+	id S1758026AbYAOXwF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 18:52:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756830AbYAOXs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 18:48:27 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:52343 "EHLO mx1.redhat.com"
+	Tue, 15 Jan 2008 18:48:29 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52344 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753588AbYAOXsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752127AbYAOXsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 15 Jan 2008 18:48:04 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 09/26] Security: Pre-add additional non-caching classes
+Subject: [PATCH 10/26] Security: Add a kernel_service object class to SELinux
 To: sds@tycho.nsa.gov, casey@schaufler-ca.com, Trond.Myklebust@netapp.com,
        npiggin@suse.de
 Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Tue, 15 Jan 2008 23:47:41 +0000
-Message-ID: <20080115234740.22183.78995.stgit@warthog.procyon.org.uk>
+Date: Tue, 15 Jan 2008 23:47:46 +0000
+Message-ID: <20080115234746.22183.48252.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080115234652.22183.24850.stgit@warthog.procyon.org.uk>
 References: <20080115234652.22183.24850.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -31,98 +31,69 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pre-add additional non-caching classes that are in the SELinux upstream
-repository, but not in the upstream kernel so they don't get in the fscache
-class patch.
+Add a 'kernel_service' object class to SELinux and give this object class two
+access vectors: 'use_as_override' and 'create_files_as'.
+
+The first vector is used to grant a process the right to nominate an alternate
+process security ID for the kernel to use as an override for the SELinux
+subjective security when accessing stuff on behalf of another process.
+
+For example, CacheFiles when accessing the cache on behalf on a process
+accessing an NFS file needs to use a subjective security ID appropriate to the
+cache rather then the one the calling process is using.  The cachefilesd
+daemon will nominate the security ID to be used.
+
+The second vector is used to grant a process the right to nominate a file
+creation label for a kernel service to use.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- security/selinux/include/av_perm_to_string.h |    5 +++++
- security/selinux/include/av_permissions.h    |    5 +++++
- security/selinux/include/class_to_string.h   |    7 +++++++
+ security/selinux/include/av_perm_to_string.h |    2 ++
+ security/selinux/include/av_permissions.h    |    2 ++
+ security/selinux/include/class_to_string.h   |    1 +
  security/selinux/include/flask.h             |    1 +
- 4 files changed, 18 insertions(+), 0 deletions(-)
+ 4 files changed, 6 insertions(+), 0 deletions(-)
 
 
 diff --git a/security/selinux/include/av_perm_to_string.h b/security/selinux/include/av_perm_to_string.h
-index 049bf69..caa0634 100644
+index caa0634..6ba8200 100644
 --- a/security/selinux/include/av_perm_to_string.h
 +++ b/security/selinux/include/av_perm_to_string.h
-@@ -37,6 +37,8 @@
-    S_(SECCLASS_NODE, NODE__ENFORCE_DEST, "enforce_dest")
-    S_(SECCLASS_NODE, NODE__DCCP_RECV, "dccp_recv")
-    S_(SECCLASS_NODE, NODE__DCCP_SEND, "dccp_send")
-+   S_(SECCLASS_NODE, NODE__RECVFROM, "recvfrom")
-+   S_(SECCLASS_NODE, NODE__SENDTO, "sendto")
-    S_(SECCLASS_NETIF, NETIF__TCP_RECV, "tcp_recv")
-    S_(SECCLASS_NETIF, NETIF__TCP_SEND, "tcp_send")
-    S_(SECCLASS_NETIF, NETIF__UDP_RECV, "udp_recv")
-@@ -45,6 +47,8 @@
-    S_(SECCLASS_NETIF, NETIF__RAWIP_SEND, "rawip_send")
-    S_(SECCLASS_NETIF, NETIF__DCCP_RECV, "dccp_recv")
-    S_(SECCLASS_NETIF, NETIF__DCCP_SEND, "dccp_send")
-+   S_(SECCLASS_NETIF, NETIF__INGRESS, "ingress")
-+   S_(SECCLASS_NETIF, NETIF__EGRESS, "egress")
-    S_(SECCLASS_UNIX_STREAM_SOCKET, UNIX_STREAM_SOCKET__CONNECTTO, "connectto")
-    S_(SECCLASS_UNIX_STREAM_SOCKET, UNIX_STREAM_SOCKET__NEWCONN, "newconn")
-    S_(SECCLASS_UNIX_STREAM_SOCKET, UNIX_STREAM_SOCKET__ACCEPTFROM, "acceptfrom")
-@@ -159,3 +163,4 @@
-    S_(SECCLASS_DCCP_SOCKET, DCCP_SOCKET__NODE_BIND, "node_bind")
+@@ -164,3 +164,5 @@
     S_(SECCLASS_DCCP_SOCKET, DCCP_SOCKET__NAME_CONNECT, "name_connect")
     S_(SECCLASS_MEMPROTECT, MEMPROTECT__MMAP_ZERO, "mmap_zero")
-+   S_(SECCLASS_PEER, PEER__RECV, "recv")
+    S_(SECCLASS_PEER, PEER__RECV, "recv")
++   S_(SECCLASS_KERNEL_SERVICE, KERNEL_SERVICE__USE_AS_OVERRIDE, "use_as_override")
++   S_(SECCLASS_KERNEL_SERVICE, KERNEL_SERVICE__CREATE_FILES_AS, "create_files_as")
 diff --git a/security/selinux/include/av_permissions.h b/security/selinux/include/av_permissions.h
-index eda89a2..c2b5bb2 100644
+index c2b5bb2..9500ba3 100644
 --- a/security/selinux/include/av_permissions.h
 +++ b/security/selinux/include/av_permissions.h
-@@ -292,6 +292,8 @@
- #define NODE__ENFORCE_DEST                        0x00000040UL
- #define NODE__DCCP_RECV                           0x00000080UL
- #define NODE__DCCP_SEND                           0x00000100UL
-+#define NODE__RECVFROM                            0x00000200UL
-+#define NODE__SENDTO                              0x00000400UL
- #define NETIF__TCP_RECV                           0x00000001UL
- #define NETIF__TCP_SEND                           0x00000002UL
- #define NETIF__UDP_RECV                           0x00000004UL
-@@ -300,6 +302,8 @@
- #define NETIF__RAWIP_SEND                         0x00000020UL
- #define NETIF__DCCP_RECV                          0x00000040UL
- #define NETIF__DCCP_SEND                          0x00000080UL
-+#define NETIF__INGRESS                            0x00000100UL
-+#define NETIF__EGRESS                             0x00000200UL
- #define NETLINK_SOCKET__IOCTL                     0x00000001UL
- #define NETLINK_SOCKET__READ                      0x00000002UL
- #define NETLINK_SOCKET__WRITE                     0x00000004UL
-@@ -824,3 +828,4 @@
- #define DCCP_SOCKET__NODE_BIND                    0x00400000UL
+@@ -829,3 +829,5 @@
  #define DCCP_SOCKET__NAME_CONNECT                 0x00800000UL
  #define MEMPROTECT__MMAP_ZERO                     0x00000001UL
-+#define PEER__RECV                                0x00000001UL
+ #define PEER__RECV                                0x00000001UL
++#define KERNEL_SERVICE__USE_AS_OVERRIDE           0x00000001UL
++#define KERNEL_SERVICE__CREATE_FILES_AS           0x00000002UL
 diff --git a/security/selinux/include/class_to_string.h b/security/selinux/include/class_to_string.h
-index e77de0e..b1b0d1d 100644
+index b1b0d1d..efe9efa 100644
 --- a/security/selinux/include/class_to_string.h
 +++ b/security/selinux/include/class_to_string.h
-@@ -64,3 +64,10 @@
+@@ -71,3 +71,4 @@
      S_(NULL)
-     S_("dccp_socket")
-     S_("memprotect")
-+    S_(NULL)
-+    S_(NULL)
-+    S_(NULL)
-+    S_(NULL)
-+    S_(NULL)
-+    S_(NULL)
-+    S_("peer")
+     S_(NULL)
+     S_("peer")
++    S_("kernel_service")
 diff --git a/security/selinux/include/flask.h b/security/selinux/include/flask.h
-index a9c2b20..09e9dd2 100644
+index 09e9dd2..2bc251a 100644
 --- a/security/selinux/include/flask.h
 +++ b/security/selinux/include/flask.h
-@@ -50,6 +50,7 @@
- #define SECCLASS_KEY                                     58
+@@ -51,6 +51,7 @@
  #define SECCLASS_DCCP_SOCKET                             60
  #define SECCLASS_MEMPROTECT                              61
-+#define SECCLASS_PEER                                    68
+ #define SECCLASS_PEER                                    68
++#define SECCLASS_KERNEL_SERVICE                          69
  
  /*
   * Security identifier indices for initial entities
