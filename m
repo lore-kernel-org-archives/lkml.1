@@ -1,127 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753526AbYAOKIC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756703AbYAOKI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753526AbYAOKIC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 05:08:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756133AbYAOKHo
+	id S1756703AbYAOKI2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 05:08:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756757AbYAOKH7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 05:07:44 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:20664 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755585AbYAOKHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 05:07:43 -0500
-Date: Tue, 15 Jan 2008 11:07:40 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       hch@infradead.org, peterz@infradead.org
-Subject: Re: [PATCH][RFC] fast file mapping for loop
-Message-ID: <20080115100739.GX6258@kernel.dk>
-References: <20080109085231.GE6650@kernel.dk> <20080114121021.0d392102@think.oraclecorp.com> <20080114175359.GS6258@kernel.dk> <20080115092503.GV6258@kernel.dk> <20080115093651.GW6258@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080115093651.GW6258@kernel.dk>
+	Tue, 15 Jan 2008 05:07:59 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:49351 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756197AbYAOKH5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 05:07:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=nMzD/qvfNHiK2/wL1WojEifz3ZLjr6SWQw37leOpIhZL+zfBFbMU1lcUyHOwdWRBVDPWWQvkEucnKejAYP1lm7IH5JQXRhT1nxaajcJn6crUg6eeK/yNCHtQtUfJ7J70u6ARbUhLEKDVIEGd2gJ9p/DC671e7jyRLE/6Q1IRLWU=
+Subject: Re: [PATCH] [2/31] CPA: Do a simple self test at boot
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org, jbeulich@novell.com, mingo@elte.hu,
+       tglx@linutronix.de
+In-Reply-To: <200801151059.09467.ak@suse.de>
+References: <200801141116.534682000@suse.de>
+	 <20080114221633.B6A4814F93@wotan.suse.de> <1200386857.16794.2.camel@brick>
+	 <200801151059.09467.ak@suse.de>
+Content-Type: text/plain
+Date: Tue, 15 Jan 2008 02:07:59 -0800
+Message-Id: <1200391679.16794.22.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 15 2008, Jens Axboe wrote:
-> On Tue, Jan 15 2008, Jens Axboe wrote:
-> > On Mon, Jan 14 2008, Jens Axboe wrote:
-> > > On Mon, Jan 14 2008, Chris Mason wrote:
-> > > > Hello everyone,
-> > > > 
-> > > > Here is a modified version of Jens' patch.  The basic idea is to push
-> > > > the mapping maintenance out of loop and down into the filesystem (ext2
-> > > > in this case).
-> > > > 
-> > > > Two new address_space operations are added, one to map
-> > > > extents and the other to provide call backs into the FS as io is
-> > > > completed.
-> > > > 
-> > > > Still TODO for this patch:
-> > > > 
-> > > > * Add exclusion between filling holes and readers.  This is partly
-> > > > implemented, when a hole is filled by the FS, the extent is flagged as
-> > > > having a hole.  The idea is to check this flag before trying to read
-> > > > the blocks and just send back all zeros.
-> > > > 
-> > > > The flag would be cleared when the blocks filling the hole have been
-> > > > written.
-> > > > 
-> > > > * Exclude page cache readers and writers
-> > > > 
-> > > > * Add a way for the FS to request a commit before telling the higher
-> > > > layers the IO is complete.  This way we can make sure metadata related
-> > > > to holes is on disk before claiming the IO is really done.  COW based
-> > > > filesystems will also needed it.
-> > > > 
-> > > > * Change loop to use fast mapping only when the new address_space op is
-> > > > provided (whoops, forgot about this until just now)
-> > > > 
-> > > > * A few other bits for COW, not really relevant until there
-> > > > is...something COW using it.
-> > > 
-> > > Looks pretty good. Essentially the loop side is 100% the same, it just
-> > > offloads the extent ownership to the fs (where it belongs). So I like
-> > > it. Attaching a small cleanup/fixup patch for loop, don't think it needs
-> > > further explanations.
-> > > 
-> > > One suggestion - free_extent_map(), I would call that put_extent_map()
-> > > instead.
-> > 
-> > I split and merged the patch into five bits (added ext3 support), so
-> > perhaps that would be easier for people to read/review. Attached and
-> > also exist in the loop-extent_map branch here:
-> > 
-> > http://git.kernel.dk/?p=linux-2.6-block.git;a=shortlog;h=loop-extent_map
+On Tue, 2008-01-15 at 10:59 +0100, Andi Kleen wrote:
+> > global_flush_tlb outside CONFIG_CPA_DEBUG here.  Intentional?
 > 
-> Seems my ext3 version doesn't work, it craps out in
-> ext3_get_blocks_handle() triggering this bug:
+> Yes that's all intentional. Without CPA_DEBUG there is only a single flush,
+> with CPA_DEBUG we flush more often simply to catch bugs.
 > 
-> J_ASSERT(handle != NULL || create == 0);
-> 
-> I'll see if I can fix that, being fairly fs ignorant...
 
-This works, but probably pretty suboptimal (should end the new journal
-in map_io_complete()?). And yes I know the >> 9 isn't correct, since the
-fs block size is larger. Just making sure that we always have enough
-blocks.
+OK, it just looked a bit fishy with the different grouping, just making
+sure.
 
-Punting to Chris!
-
-diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
-index 55e677d..e97181a 100644
---- a/fs/ext3/inode.c
-+++ b/fs/ext3/inode.c
-@@ -1002,11 +1002,25 @@ static struct extent_map *ext3_map_extent(struct address_space *mapping,
- 					  gfp_t gfp_mask)
- {
- 	struct extent_map_tree *tree = &EXT3_I(mapping->host)->extent_tree;
-+	handle_t *handle = NULL;
-+	struct extent_map *ret;
- 
--	return map_extent_get_block(tree, mapping, start, len, create, gfp_mask,
-+	if (create) {
-+		handle = ext3_journal_start(mapping->host, len >> 9);
-+		if (IS_ERR(handle))
-+			return (struct extent_map *) handle;
-+	}
-+
-+	ret = map_extent_get_block(tree, mapping, start, len, create, gfp_mask,
- 					ext3_get_block);
-+	if (handle)
-+		ext3_journal_stop(handle);
-+
-+	return ret;
- }
- 
-+
-+
- /*
-  * `handle' can be NULL if create is zero
-  */
-
--- 
-Jens Axboe
+Harvey
 
