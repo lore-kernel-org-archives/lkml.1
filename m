@@ -1,74 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751863AbYAOOkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751907AbYAOOrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751863AbYAOOkA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 09:40:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbYAOOjv
+	id S1751907AbYAOOrt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 09:47:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751078AbYAOOrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 09:39:51 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:51482 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750752AbYAOOjt (ORCPT
+	Tue, 15 Jan 2008 09:47:37 -0500
+Received: from zcars04f.nortel.com ([47.129.242.57]:56488 "EHLO
+	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751046AbYAOOrg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 09:39:49 -0500
-To: serue@us.ibm.com
-CC: miklos@szeredi.hu, serue@us.ibm.com, akpm@linux-foundation.org,
-       hch@infradead.org, viro@ftp.linux.org.uk, ebiederm@xmission.com,
-       kzak@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
-       util-linux-ng@vger.kernel.org
-In-reply-to: <20080115142115.GC4453@sergelap.austin.ibm.com>
-	(serue@us.ibm.com)
-Subject: Re: [patch 8/9] unprivileged mounts: propagation: inherit owner
-	from parent
-References: <20080108113502.184459371@szeredi.hu> <20080108113632.895453887@szeredi.hu> <20080114231340.GG6704@sergelap.austin.ibm.com> <E1JEjCG-0000wz-BS@pomaz-ex.szeredi.hu> <20080115142115.GC4453@sergelap.austin.ibm.com>
-Message-Id: <E1JEmv3-0001RN-6J@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 15 Jan 2008 15:37:37 +0100
+	Tue, 15 Jan 2008 09:47:36 -0500
+Message-ID: <478CC76B.1020804@nortel.com>
+Date: Tue, 15 Jan 2008 08:47:07 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Jarek Poplawski <jarkao2@gmail.com>
+CC: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: questions on NAPI processing latency and dropped network	packets
+References: <20080115071950.GA1696@ff.dom.local>
+In-Reply-To: <20080115071950.GA1696@ff.dom.local>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Jan 2008 14:47:11.0186 (UTC) FILETIME=[8281A320:01C85785]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > On mount propagation, let the owner of the clone be inherited from the
-> > > > parent into which it has been propagated.  Also if the parent has the
-> > > > "nosuid" flag, set this flag for the child as well.
-> > > 
-> > > What about nodev?
-> > 
-> > Hmm, I think the nosuid thing is meant to prevent suid mounts being
-> > introduced into a "suidless" namespace.  This doesn't apply to dev
-> > mounts, which are quite safe in a suidless environment, as long as the
-> > user is not able to create devices.  But that should be taken care of
-> > by capability tests.
-> > 
-> > I'll update the description.
-> 
-> Hmm,
-> 
-> Part of me wants to say the safest thing for now would be to refuse
-> mounts propagation from non-user mounts to user mounts.
-> 
-> I assume you're thinking about a fully user-mounted chroot, where
-> the user woudl still want to be able to stick in a cdrom and have
-> it automounted under /mnt/cdrom, propagated from the root mounts ns?
+Jarek Poplawski wrote:
 
-Right.
+> IMHO, checking this with a current stable, which probably you are going
+> to do some day, anyway, should be 100% acceptable: giving some input to
+> netdev, while still working for yourself.
 
-> But then are there no devices which the user could create on a floppy
-> while inserted into his own laptop, owned by his own uid, then insert
-> into this machine, and use the device under the auto-mounted /dev/floppy
-> to gain inappropriate access?
+While I would love to do this, it's not that simple.
 
-I assume, that the floppy and cdrom are already mounted with
-nosuid,nodev.
+Some of our hardware is not supported on mainline, so we need per-kernel 
+version patches to even bring up the blade.  The blades netboot via a 
+jumbo-frame network, so kernel extensions are needed to handle setting 
+the MTU before mounting the rootfs.  The blade in question uses CKRM 
+which doesn't exist for newer kernels so the problem may simply be 
+hidden by scheduling differences.  The userspace application uses other 
+kernel features that are not in mainline (and likely some of them won't 
+ever be in mainline--I know because I've tried).
 
-The problem case is I think is if a sysadmin does some mounting in the
-initial namespace, and this is propagated into the fully user-mounted
-namespace (or chroot), so that a mount with suid binaries slips in.
-Which is bad, because the user may be able rearange the namespace, to
-trick the suid program to something it should not do.
+Basically, the number of changes required for our environment makes it 
+difficult to just boot up the latest kernel.
 
-OTOH, a mount with devices can't be abused this way, since it is not
-possible to gain privileges to files/devices just by rearanging the
-mounts.
-
-Miklos
+Chris
