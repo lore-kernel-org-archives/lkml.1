@@ -1,162 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753248AbYAONhI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbYAONhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753248AbYAONhI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 08:37:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750917AbYAONg5
+	id S1755067AbYAONhb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 08:37:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbYAONhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 08:36:57 -0500
-Received: from krynn.se.axis.com ([193.13.178.10]:41613 "EHLO
-	krynn.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750890AbYAONg4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 08:36:56 -0500
-Date: Tue, 15 Jan 2008 14:36:24 +0100
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Mikael Starvik <mikael.starvik@axis.com>,
-       Jesper Nilsson <jesper.nilsson@axis.com>, linux-kernel@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, Yuusei KUWANA <kuwana@nyanyan.to>
-Subject: [PATCH] CRIS v10: vmlinux.lds.S Fix kernel oops on boot and use common defines
-Message-ID: <20080115133624.GD3912@axis.com>
+	Tue, 15 Jan 2008 08:37:05 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47672 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751862AbYAONhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 08:37:04 -0500
+Date: Tue, 15 Jan 2008 14:36:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: venkatesh.pallipadi@intel.com, akpm@linux-foundation.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 0/3] i386 boot: replace boot_ioremap with enhanced
+	bt_ioremap
+Message-ID: <20080115133645.GH7025@elte.hu>
+References: <1200375902.3505.29.camel@caritas-dev.intel.com> <20080115084417.GA16449@elte.hu> <1200390535.3505.62.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1200390535.3505.62.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- Move alignment to page size of init data outside ifdef for BLK_DEV_INITRD.
-  The reservation up to page size of memory after init data was previously
-  not done if BLK_DEV_INITRD was undefined.
-  This caused a kernel oops when init memory pages were freed after startup,
-  data placed in the same page as the last init memory would also be freed
-  and reused, with disastrous results.
 
-- Use macros for initcalls and .text sections.
+* Huang, Ying <ying.huang@intel.com> wrote:
 
-- Replace hardcoded page size constant with PAGE_SIZE define.
+> > in latest x86.git#mm there's an early_ioremap() introduced as part 
+> > of the PAT series - available on both 32-bit and 64-bit. Could you 
+> > take a look at it and use that if it's OK for your purposes?
+> 
+> After checking the early_ioremap() implementation in 
+> arch/x86/kernel/setup_32.c, I found that it is a duplication of 
+> bt_ioremap() implementation in arch/x86/mm/ioremap_32.c. Both 
+> implementations use set_fixmap(), so they can be used only after 
+> paging_init().
+> 
+> The early_ioremap implementation provided in this patchset works as 
+> follow:
+> 
+> - Enhances bt_ioremap, make it usable before paging_init() via a
+> dedicated PTE page.
+> - Rename bt_ioremap to early_ioremap
+>
+> So I think maybe we should replace the early_ioremap() implementation 
+> in PAT series with that of this series.
 
-- Change include/asm-cris/page.h to use the _AC macro to instead
-  of testing __ASSEMBLY__.
+yep, agreed, that would be nice.
 
-Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
----
-
-NOTE: This patch supercedes
-arch-cris-arch-v10-vmlinuxldss-fix-boot-problem.patch
-by Yuusei KUWANA <kuwana@nyanyan.to> in the -mm tree.
-
-That patch only restricts which sections are counted as init memory,
-and does not solve the underlying problem (that memory that is not part
-of init data can be freed)
-
- arch/cris/arch-v10/vmlinux.lds.S |   33 +++++++++++++++------------------
- include/asm-cris/page.h          |    7 ++-----
- 2 files changed, 17 insertions(+), 23 deletions(-)
-
-diff --git a/arch/cris/arch-v10/vmlinux.lds.S b/arch/cris/arch-v10/vmlinux.lds.S
-index 9859d49..97a7876 100644
---- a/arch/cris/arch-v10/vmlinux.lds.S
-+++ b/arch/cris/arch-v10/vmlinux.lds.S
-@@ -9,7 +9,8 @@
-  */	
- 
- #include <asm-generic/vmlinux.lds.h>
--		
-+#include <asm/page.h>
-+
- jiffies = jiffies_64;
- SECTIONS
- {
-@@ -23,7 +24,7 @@ SECTIONS
- 	_stext = .;
- 	__stext = .;
- 	.text : {
--		*(.text)
-+		TEXT_TEXT
- 		SCHED_TEXT
- 		LOCK_TEXT
- 		*(.fixup)
-@@ -49,10 +50,10 @@ SECTIONS
- 	__edata = . ;                 /* End of data section */
- 	_edata = . ;
- 
--	. = ALIGN(8192);              /* init_task and stack, must be aligned */
-+	. = ALIGN(PAGE_SIZE);	/* init_task and stack, must be aligned */
-   	.data.init_task : { *(.data.init_task) }
- 
--  	. = ALIGN(8192);              /* Init code and data */
-+	. = ALIGN(PAGE_SIZE);	/* Init code and data */
-   	__init_begin = .;
- 	.init.text : { 
- 		   _sinittext = .;
-@@ -66,13 +67,7 @@ SECTIONS
-   	__setup_end = .;
-   	.initcall.init : {
- 		__initcall_start = .;
--		*(.initcall1.init);
--		*(.initcall2.init);
--		*(.initcall3.init);
--		*(.initcall4.init);
--		*(.initcall5.init);
--		*(.initcall6.init);
--		*(.initcall7.init);
-+		INITCALLS
- 		__initcall_end = .;	
- 	}
- 
-@@ -88,16 +83,18 @@ SECTIONS
- 		__initramfs_start = .;
- 		*(.init.ramfs)
- 		__initramfs_end = .;
--		/* We fill to the next page, so we can discard all init
--		   pages without needing to consider what payload might be
--		   appended to the kernel image.  */
--		FILL (0); 
--		. = ALIGN (8192);
- 	}
- #endif
--	
- 	__vmlinux_end = .;            /* last address of the physical file */
--  	__init_end = .;
-+
-+	/*
-+	 * We fill to the next page, so we can discard all init
-+	 * pages without needing to consider what payload might be
-+	 * appended to the kernel image.
-+	 */
-+	. = ALIGN(PAGE_SIZE);
-+
-+	__init_end = .;
- 
- 	__data_end = . ;              /* Move to _edata ? */
- 	__bss_start = .;              /* BSS */
-diff --git a/include/asm-cris/page.h b/include/asm-cris/page.h
-index 0648e31..b84353e 100644
---- a/include/asm-cris/page.h
-+++ b/include/asm-cris/page.h
-@@ -4,14 +4,11 @@
- #ifdef __KERNEL__
- 
- #include <asm/arch/page.h>
-+#include <linux/const.h>
- 
- /* PAGE_SHIFT determines the page size */
- #define PAGE_SHIFT	13
--#ifndef __ASSEMBLY__
--#define PAGE_SIZE	(1UL << PAGE_SHIFT)
--#else
--#define PAGE_SIZE	(1 << PAGE_SHIFT)
--#endif
-+#define PAGE_SIZE	(_AC(1, UL) << PAGE_SHIFT)
- #define PAGE_MASK	(~(PAGE_SIZE-1))
- 
- #define clear_page(page)        memset((void *)(page), 0, PAGE_SIZE)
--- 
-1.5.3.6.970.gd25430
-
-
-/^JN - Jesper Nilsson
---
-               Jesper Nilsson -- jesper.nilsson@axis.com
+	Ingo
