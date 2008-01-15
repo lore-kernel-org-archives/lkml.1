@@ -1,95 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752588AbYAOFD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752878AbYAOFGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752588AbYAOFD4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 00:03:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbYAOFDr
+	id S1752878AbYAOFGb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 00:06:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbYAOFGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 00:03:47 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:43649 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751315AbYAOFDq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 00:03:46 -0500
-Message-ID: <478C3E81.3020007@torque.net>
-Date: Tue, 15 Jan 2008 00:02:57 -0500
-From: Douglas Gilbert <dougg@torque.net>
-Reply-To: dougg@torque.net
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Only print SCSI data direction warning once for a command
-References: <200801020703.01180.ak@suse.de> <1200166584.3656.36.camel@localhost.localdomain> <200801131741.43173.ak@suse.de>
-In-Reply-To: <200801131741.43173.ak@suse.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=iso-8859-15; format=flowed
+	Tue, 15 Jan 2008 00:06:23 -0500
+Received: from mga02.intel.com ([134.134.136.20]:38666 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751413AbYAOFGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 00:06:23 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,285,1196668800"; 
+   d="scan'208";a="324586886"
+Subject: Re: [PATCH]PCIE ASPM support - takes 2
+From: Shaohua Li <shaohua.li@intel.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>, Greg KH <greg@kroah.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080115041943.GS18741@parisc-linux.org>
+References: <1200367276.20538.1.camel@sli10-desk.sh.intel.com>
+	 <20080115041943.GS18741@parisc-linux.org>
+Content-Type: text/plain
+Date: Tue, 15 Jan 2008 13:07:02 +0800
+Message-Id: <1200373622.20869.2.camel@sli10-desk.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> to the log because they come from printk_ratelimit().  So all you've
->> done is halved the volume of flow to the logs and left a dangling printk
->> suppressed message that keeps spewing, so I don't think the patch even
->> does what you describe it as doing ...  if you reverse the order of the
->> operands in the if() it will ...
-> 
-> Here's an updated patch with the reversed order.
-> 
-> -Andi
-> 
-> ---
-> 
-> Only print SCSI data direction warning once for a command v2
-> 
-> When I use cdparanoia my logs get spammed a lot by
-> 
-> printk: 464 messages suppressed.
-> sg_write: data in/out 30576/30576 bytes for SCSI command 0xbe--guessing data in;
->    program cdparanoia not setting count and/or reply_len properly
-> printk: 1078 messages suppressed.
-> 
-> and many more of those. With this patch the message is only printed once
-> for a command in a row.
-> 
-> v1->v2: Prevent rate limit messages too (pointed out by jejb)
-> 
-> Signed-off-by: Andi Kleen <ak@suse.de>
-> 
-> ---
->  drivers/scsi/sg.c |    8 ++++++--
->  1 file changed, 6 insertions(+), 2 deletions(-)
-> 
-> Index: linux/drivers/scsi/sg.c
-> ===================================================================
-> --- linux.orig/drivers/scsi/sg.c
-> +++ linux/drivers/scsi/sg.c
-> @@ -602,8 +602,9 @@ sg_write(struct file *filp, const char _
->  	 * but is is possible that the app intended SG_DXFER_TO_DEV, because there
->  	 * is a non-zero input_size, so emit a warning.
->  	 */
-> -	if (hp->dxfer_direction == SG_DXFER_TO_FROM_DEV)
-> -		if (printk_ratelimit())
-> +	if (hp->dxfer_direction == SG_DXFER_TO_FROM_DEV) {
-> +		static char cmd[TASK_COMM_LEN];
-> +		if (strcmp(current->comm, cmd) && printk_ratelimit()) {
->  			printk(KERN_WARNING
->  			       "sg_write: data in/out %d/%d bytes for SCSI command 0x%x--"
->  			       "guessing data in;\n" KERN_WARNING "   "
-> @@ -611,6 +612,9 @@ sg_write(struct file *filp, const char _
->  			       old_hdr.reply_len - (int)SZ_SG_HEADER,
->  			       input_size, (unsigned int) cmnd[0],
->  			       current->comm);
-> +			strcpy(cmd, current->comm);
-> +		}
-> +	}
->  	k = sg_common_write(sfp, srp, cmnd, sfp->timeout, blocking);
->  	return (k < 0) ? k : count;
->  }
-> 
-> 
 
-Signed-off-by: Douglas Gilbert <dougg@torque.net>
+On Mon, 2008-01-14 at 21:19 -0700, Matthew Wilcox wrote:
+> On Tue, Jan 15, 2008 at 11:21:16AM +0800, Shaohua Li wrote:
+> > +	int same_clock = 0;
+> > +
+> > +	/* Check downstream component if bit Slot Clock Configuration is 1 */
+> > +	child_pos = pci_find_capability(child_dev, PCI_CAP_ID_EXP);
+> > +	pci_read_config_word(child_dev, child_pos + PCI_EXP_LNKSTA, &reg16);
+> > +	if (reg16 & PCI_EXP_LNKSTA_SLC)
+> > +		same_clock = 1;
+> > +
+> > +	/* Check upstream component if bit Slot Clock Configuration is 1 */
+> > +	pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
+> > +	pci_read_config_word(pdev, pos + PCI_EXP_LNKSTA, &reg16);
+> > +	if (reg16 & PCI_EXP_LNKSTA_SLC)
+> > +		same_clock &= 1;
+> > +	else
+> > +		same_clock = 0;
+> 
+> This could be done a little neater ... the &= 1 idiom confused me on a
+> quick scan.
+> 
+> How about:
+> 
+> 	int same_clock = 1;
+> 
+> 	child_pos = pci_find_capability(child_dev, PCI_CAP_ID_EXP);
+> 	pci_read_config_word(child_dev, child_pos + PCI_EXP_LNKSTA, &reg16);
+> 	if (!(reg16 & PCI_EXP_LNKSTA_SLC))
+> 		same_clock = 0;
+> 
+> 	pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
+> 	pci_read_config_word(pdev, pos + PCI_EXP_LNKSTA, &reg16);
+> 	if (!(reg16 & PCI_EXP_LNKSTA_SLC))
+> 		same_clock = 0;
+Thanks, for your time. ok, this is better.
+> > +#ifdef CONFIG_PCIEASPM
+> > +extern int pcie_aspm_init(void);
+> > +#else
+> > +#define pcie_aspm_init() do {} while (0)
+> > +#endif
+> 
+> If pcie_aspm_init() returns a value, then callers may want to check it
+> ... which they can't do for this null definition.  How about simply:
+> 
+> #define pcie_aspm_init() 0
+ok
+> 
+> > Index: linux/drivers/pci/pci-acpi.c
+> > ===================================================================
+> > --- linux.orig/drivers/pci/pci-acpi.c	2008-01-15 10:16:35.000000000 +0800
+> > +++ linux/drivers/pci/pci-acpi.c	2008-01-15 10:16:54.000000000 +0800
+> > @@ -15,6 +15,7 @@
+> >  #include <acpi/acnamesp.h>
+> >  #include <acpi/acresrc.h>
+> >  #include <acpi/acpi_bus.h>
+> > +#include <linux/aspm.h>
+> >  
+> >  #include <linux/pci-acpi.h>
+> >  #include "pci.h"
+> > @@ -349,3 +350,11 @@ static int __init acpi_pci_init(void)
+> >  	return 0;
+> >  }
+> >  arch_initcall(acpi_pci_init);
+> > +
+> > +/* Called after ACPI is enabled */
+> > +static int __init acpi_pcie_support_init(void)
+> > +{
+> > +	pcie_aspm_init();
+> > +	return 0;
+> > +}
+> > +fs_initcall(acpi_pcie_support_init);
+> 
+> Is there any reason to put this in here instead of just making
+> pcie_aspm_init an initcall?
+yes, this will evaluate some ACPI methods, so must be called after ACPI
+is initialized, which is a sub_system call
+
+Thanks,
+Shaohua
 
