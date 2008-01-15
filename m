@@ -1,53 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756240AbYAOBgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755461AbYAOBmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756240AbYAOBgP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 20:36:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYAOBf7
+	id S1755461AbYAOBmN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 20:42:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbYAOBl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 20:35:59 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:34088 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750956AbYAOBf6 (ORCPT
+	Mon, 14 Jan 2008 20:41:57 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:29604 "EHLO
+	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751218AbYAOBl4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 20:35:58 -0500
-Date: Tue, 15 Jan 2008 02:38:58 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: unify pagetable accessors patch causes double fault II
-Message-ID: <20080115013858.GA25112@one.firstfloor.org>
-References: <20080114094814.GA28300@basil.nowhere.org> <20080114125638.GA9510@basil.nowhere.org> <20080114130620.GA14057@elte.hu> <20080114135811.GA16190@one.firstfloor.org> <478BDC43.6050105@goop.org> <20080114222349.GA23409@one.firstfloor.org> <478BE628.7090008@goop.org> <20080115010534.GA24854@one.firstfloor.org> <478C0D18.5020505@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <478C0D18.5020505@goop.org>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 14 Jan 2008 20:41:56 -0500
+Date: Mon, 14 Jan 2008 19:41:53 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: PROBLEM REMAINS: [sata_nv ADMA breaks ATAPI]	Crash	on	accessing
+ DVD-RAM
+In-reply-to: <1200243102.3179.27.camel@localhost.localdomain>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alexander <aledin@mail.ru>,
+       linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>
+Message-id: <478C0F61.7030002@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.krOVfyFmB2aqGjJIoHCLmQxecWc@ifi.uio.no>
+ <478702C7.80401@shaw.ca> <47887982.6050805@mail.ru> <47891426.1020604@shaw.ca>
+ <1200170117.3656.66.camel@localhost.localdomain> <47894785.2050508@shaw.ca>
+ <1200180440.3656.76.camel@localhost.localdomain> <47896BA8.4030609@shaw.ca>
+ <20080113133317.50ad4bda@lxorguk.ukuu.org.uk>
+ <1200238725.3179.16.camel@localhost.localdomain>
+ <20080113162959.01d519db@lxorguk.ukuu.org.uk>
+ <1200243102.3179.27.camel@localhost.localdomain>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 14, 2008 at 05:32:08PM -0800, Jeremy Fitzhardinge wrote:
-> >
-> >I just applied over the whole git-x86 patchkit (tip 
-> >2f42671697ea9abc7d10ea7f663d6ef6e8ec6358)  + the two build fixes
-> >Unfortunately it didn't work, although the faulting loop is shorter now:
-> >  
+James Bottomley wrote:
+> On Sun, 2008-01-13 at 16:29 +0000, Alan Cox wrote:
+>>> Yes, I concur for the short term.  The other two possible courses of
+>>> action either involve long discussions (the different device one) or
+>>> you'll never quite be sure you got all the paths (the GFP_DMA32 one).
+>>> At least with this one, you know everything will work.
+>> The different device one is tricky because the PCI layer is involved in
+>> mapping on some systems so you can't just magic up a platform device for
+>> it. Putting a mask on the block queue might perhaps work as a model
+>> which avoids breaking stuff by suprise, with the device left at 32bit
+>> masking.
 > 
-> Just to be clear, these two patches cause this oops to appear?  Current 
+> Actually, you might be able to ... that's why I'm suggesting it.  There
+> are two pieces of information the arch layer needs to know:  what is the
+> dma_mask and where is the iommu/bridge/whatever.  When we went to the
+> generic dma_map_ API on parisc, we found you simply get the one from
+> struct device and for the other you walk up the device tree until you
+> find what you're looking for.
+> 
+> I'm not suggesting we invent a dummy pci_device ... I'm suggesting we
+> dma_map on the existing scsi_device, which is properly parented to the
+> pci_device.  The problem with this approach will be any architecture
+> which blindly expects dma_map converts to pci_dma_map; however, I'm not
+> sure we have any of those left.
 
-The two build fixes? Without that it just doesn't build.
+I've tried the dumb solution of setting the mask on the PCI device (for 
+both ports) whenever an ATAPI device is detected, and ran into problems 
+with that. If we really need to keep the block queue bounce limit and 
+DMA mask the same, then we then have to set the bounce limit on both 
+ports as well. If you blindly do that from slave_config, though, then 
+you blow up since on the first port's initial slave_config the block 
+queue for the second port isn't allocated yet, so you'd have to detect 
+that case somehow. And if it's done via hotplug after the other port is 
+already in use, it'll be changing the limits on a port that's in active 
+use, which seems like it could be a bit racy.
 
-> x86.git seems to be missing a pile of patches at the moment, so I 
-> presume you're using a version which does have my patch set?
-
-I just tested x86.git and then x86.git + patch you send (+ build fixes
-in both cases), none of your patchkits. If you want me to test
-some other patchkit please point me to it.
-
-The problem happens with plain git-x86 (+ build fixes) and also
-with git-x86 + your patch.
-
--Andi
-
-
+So, any ideas? Maybe using the separate struct device is the easiest 
+solution, if it'll work..
