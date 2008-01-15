@@ -1,43 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756665AbYAOCSE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbYAOCSd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756665AbYAOCSE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 21:18:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbYAOCRj
+	id S1756591AbYAOCSd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 21:18:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754189AbYAOCRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 14 Jan 2008 21:17:39 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:53026 "EHLO relay.sgi.com"
+Received: from relay1.sgi.com ([192.48.171.29]:57570 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750818AbYAOCRh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753076AbYAOCRh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 14 Jan 2008 21:17:37 -0500
-Message-Id: <20080115021736.061141000@sgi.com>
-References: <20080115021735.779102000@sgi.com>
+Message-Id: <20080115021735.779102000@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 14 Jan 2008 18:17:36 -0800
+Date: Mon, 14 Jan 2008 18:17:35 -0800
 From: travis@sgi.com
 To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
        mingo@elte.hu
 Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
        linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 01/10] x86: Change size of APICIDs from u8 to u16 V2
-Content-Disposition: inline; filename=big_apicids
+Subject: [PATCH 00/10] x86: Reduce memory and intra-node effects with large count NR_CPUs V2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change the size of APICIDs from u8 to u16.  This partially
-supports the new x2apic mode that will be present on future
-processor chips. (Chips actually support 32-bit APICIDs, but that
-change is more intrusive. Supporting 16-bit is sufficient for now).
 
-Signed-off-by: Jack Steiner <steiner@sgi.com>
+This patchset addresses the kernel bloat that occurs when NR_CPUS is increased.
+The memory numbers below are with NR_CPUS = 1024 which I've been testing (4 and
+32 real processors, the rest "possible" using the additional_cpus start option.)
+These changes are all specific to the x86 architecture, non-arch specific
+changes will follow.
 
-I've included just the partial change from u8 to u16 apicids.  The
-remaining x2apic changes will be in a separate patch.
-
-In addition, the fake_node_to_pxm_map[] and fake_apicid_to_node[]
-tables have been moved from local data to the __initdata section
-reducing stack pressure when MAX_NUMNODES and MAX_LOCAL_APIC are
-increased in size.
+Based on 2.6.24-rc6-mm1
 
 Signed-off-by: Mike Travis <travis@sgi.com>
 Reviewed-by: Christoph Lameter <clameter@sgi.com>
@@ -45,182 +37,53 @@ Reviewed-by: Christoph Lameter <clameter@sgi.com>
 V1->V2:
     - Remove extraneous casts
     - Add comment about node memory < NODE_MIN_SIZE
+    - changed pxm_to_node_map to u16
+    - changed memnode map entries to u16
+    - Fix !NUMA builds with '#ifdef CONFIG_NUMA"
+    - Add slight optimization to apic_is_clustered_box()
 ---
- arch/x86/kernel/genapic_64.c |    4 ++--
- arch/x86/kernel/mpparse_64.c |    4 ++--
- arch/x86/kernel/smpboot_64.c |    2 +-
- arch/x86/mm/numa_64.c        |    2 +-
- arch/x86/mm/srat_64.c        |   26 +++++++++++++++++---------
- include/asm-x86/processor.h  |   14 +++++++-------
- include/asm-x86/smp_64.h     |    8 ++++----
- 7 files changed, 34 insertions(+), 26 deletions(-)
 
---- a/arch/x86/kernel/genapic_64.c
-+++ b/arch/x86/kernel/genapic_64.c
-@@ -32,10 +32,10 @@
-  * array during this time.  Is it zeroed when the per_cpu
-  * data area is removed.
-  */
--u8 x86_cpu_to_apicid_init[NR_CPUS] __initdata
-+u16 x86_cpu_to_apicid_init[NR_CPUS] __initdata
- 					= { [0 ... NR_CPUS-1] = BAD_APICID };
- void *x86_cpu_to_apicid_ptr;
--DEFINE_PER_CPU(u8, x86_cpu_to_apicid) = BAD_APICID;
-+DEFINE_PER_CPU(u16, x86_cpu_to_apicid) = BAD_APICID;
- EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
- 
- struct genapic __read_mostly *genapic = &apic_flat;
---- a/arch/x86/kernel/mpparse_64.c
-+++ b/arch/x86/kernel/mpparse_64.c
-@@ -67,7 +67,7 @@ unsigned disabled_cpus __cpuinitdata;
- /* Bitmask of physically existing CPUs */
- physid_mask_t phys_cpu_present_map = PHYSID_MASK_NONE;
- 
--u8 bios_cpu_apicid[NR_CPUS] = { [0 ... NR_CPUS-1] = BAD_APICID };
-+u16 bios_cpu_apicid[NR_CPUS] = { [0 ... NR_CPUS-1] = BAD_APICID };
- 
- 
- /*
-@@ -132,7 +132,7 @@ static void __cpuinit MP_processor_info(
- 	 * area is created.
- 	 */
- 	if (x86_cpu_to_apicid_ptr) {
--		u8 *x86_cpu_to_apicid = (u8 *)x86_cpu_to_apicid_ptr;
-+		u16 *x86_cpu_to_apicid = x86_cpu_to_apicid_ptr;
- 		x86_cpu_to_apicid[cpu] = m->mpc_apicid;
- 	} else {
- 		per_cpu(x86_cpu_to_apicid, cpu) = m->mpc_apicid;
---- a/arch/x86/kernel/smpboot_64.c
-+++ b/arch/x86/kernel/smpboot_64.c
-@@ -65,7 +65,7 @@ int smp_num_siblings = 1;
- EXPORT_SYMBOL(smp_num_siblings);
- 
- /* Last level cache ID of each logical CPU */
--DEFINE_PER_CPU(u8, cpu_llc_id) = BAD_APICID;
-+DEFINE_PER_CPU(u16, cpu_llc_id) = BAD_APICID;
- 
- /* Bitmask of currently online CPUs */
- cpumask_t cpu_online_map __read_mostly;
---- a/arch/x86/mm/numa_64.c
-+++ b/arch/x86/mm/numa_64.c
-@@ -627,7 +627,7 @@ void __init init_cpu_to_node(void)
- 	int i;
- 
- 	for (i = 0; i < NR_CPUS; i++) {
--		u8 apicid = x86_cpu_to_apicid_init[i];
-+		u16 apicid = x86_cpu_to_apicid_init[i];
- 
- 		if (apicid == BAD_APICID)
- 			continue;
---- a/arch/x86/mm/srat_64.c
-+++ b/arch/x86/mm/srat_64.c
-@@ -130,6 +130,9 @@ void __init
- acpi_numa_processor_affinity_init(struct acpi_srat_cpu_affinity *pa)
- {
- 	int pxm, node;
-+	int apic_id;
-+
-+	apic_id = pa->apic_id;
- 	if (srat_disabled())
- 		return;
- 	if (pa->header.length != sizeof(struct acpi_srat_cpu_affinity)) {
-@@ -145,10 +148,10 @@ acpi_numa_processor_affinity_init(struct
- 		bad_srat();
- 		return;
- 	}
--	apicid_to_node[pa->apic_id] = node;
-+	apicid_to_node[apic_id] = node;
- 	acpi_numa = 1;
- 	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
--	       pxm, pa->apic_id, node);
-+	       pxm, apic_id, node);
- }
- 
- int update_end_of_memory(unsigned long end) {return -1;}
-@@ -343,7 +346,12 @@ int __init acpi_scan_nodes(unsigned long
- 	/* First clean up the node list */
- 	for (i = 0; i < MAX_NUMNODES; i++) {
- 		cutoff_node(i, start, end);
--		if ((nodes[i].end - nodes[i].start) < NODE_MIN_SIZE) {
-+		/*
-+		 * don't confuse VM with a node that doesn't have the
-+		 * minimum memory.
-+		 */
-+		if (nodes[i].end &&
-+			(nodes[i].end - nodes[i].start) < NODE_MIN_SIZE) {
- 			unparse_node(i);
- 			node_set_offline(i);
- 		}
-@@ -384,6 +392,12 @@ int __init acpi_scan_nodes(unsigned long
- }
- 
- #ifdef CONFIG_NUMA_EMU
-+static int fake_node_to_pxm_map[MAX_NUMNODES] __initdata = {
-+	[0 ... MAX_NUMNODES-1] = PXM_INVAL
-+};
-+static unsigned char fake_apicid_to_node[MAX_LOCAL_APIC] __initdata = {
-+	[0 ... MAX_LOCAL_APIC-1] = NUMA_NO_NODE
-+};
- static int __init find_node_by_addr(unsigned long addr)
- {
- 	int ret = NUMA_NO_NODE;
-@@ -414,12 +428,6 @@ static int __init find_node_by_addr(unsi
- void __init acpi_fake_nodes(const struct bootnode *fake_nodes, int num_nodes)
- {
- 	int i, j;
--	int fake_node_to_pxm_map[MAX_NUMNODES] = {
--		[0 ... MAX_NUMNODES-1] = PXM_INVAL
--	};
--	unsigned char fake_apicid_to_node[MAX_LOCAL_APIC] = {
--		[0 ... MAX_LOCAL_APIC-1] = NUMA_NO_NODE
--	};
- 
- 	printk(KERN_INFO "Faking PXM affinity for fake nodes on real "
- 			 "topology.\n");
---- a/include/asm-x86/processor.h
-+++ b/include/asm-x86/processor.h
-@@ -86,14 +86,14 @@ struct cpuinfo_x86 {
- #ifdef CONFIG_SMP
- 	cpumask_t llc_shared_map;	/* cpus sharing the last level cache */
- #endif
--	unsigned char x86_max_cores;	/* cpuid returned max cores value */
--	unsigned char apicid;
--	unsigned short x86_clflush_size;
-+	u16 x86_max_cores;		/* cpuid returned max cores value */
-+	u16 apicid;
-+	u16 x86_clflush_size;
- #ifdef CONFIG_SMP
--	unsigned char booted_cores;	/* number of cores as seen by OS */
--	__u8 phys_proc_id; 		/* Physical processor id. */
--	__u8 cpu_core_id;  		/* Core id */
--	__u8 cpu_index;			/* index into per_cpu list */
-+	u16 booted_cores;		/* number of cores as seen by OS */
-+	u16 phys_proc_id; 		/* Physical processor id. */
-+	u16 cpu_core_id;  		/* Core id */
-+	u16 cpu_index;			/* index into per_cpu list */
- #endif
- } __attribute__((__aligned__(SMP_CACHE_BYTES)));
- 
---- a/include/asm-x86/smp_64.h
-+++ b/include/asm-x86/smp_64.h
-@@ -26,14 +26,14 @@ extern void unlock_ipi_call_lock(void);
- extern int smp_call_function_mask(cpumask_t mask, void (*func)(void *),
- 				  void *info, int wait);
- 
--extern u8 __initdata x86_cpu_to_apicid_init[];
-+extern u16 __initdata x86_cpu_to_apicid_init[];
- extern void *x86_cpu_to_apicid_ptr;
--extern u8 bios_cpu_apicid[];
-+extern u16 bios_cpu_apicid[];
- 
- DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
- DECLARE_PER_CPU(cpumask_t, cpu_core_map);
--DECLARE_PER_CPU(u8, cpu_llc_id);
--DECLARE_PER_CPU(u8, x86_cpu_to_apicid);
-+DECLARE_PER_CPU(u16, cpu_llc_id);
-+DECLARE_PER_CPU(u16, x86_cpu_to_apicid);
- 
- static inline int cpu_present_to_apicid(int mps_cpu)
- {
+The following columns are using the default x86_64 config with no modules.
+32cpus is the default NR_CPUS, 1kcpus-before has NR_CPUS = 1024, and
+1kcpus-after is after applying this patch.
+
+As noticeable below there's still plenty of room for improvement... ;-)
+
+32cpus			  1kcpus-before		    1kcpus-after
+       228 .altinstr_repl 	  +0 .altinstr_repl 	    +0 .altinstr_repl
+      1219 .altinstructio 	  +0 .altinstructio 	    +0 .altinstructio
+    717512 .bss		    +1542784 .bss	       -147456 .bss
+     61374 .comment	  	  +0 .comment	    	    +0 .comment
+	16 .con_initcall. 	  +0 .con_initcall. 	    +0 .con_initcall.
+    425256 .data	      +20224 .data	    	 -1024 .data
+    178688 .data.cachelin  +12898304 .data.cachelin 	    +0 .data.cachelin
+      8192 .data.init_tas 	  +0 .data.init_tas 	    +0 .data.init_tas
+      4096 .data.page_ali 	  +0 .data.page_ali 	    +0 .data.page_ali
+     27008 .data.percpu	     +128768 .data.percpu   	  +128 .data.percpu
+     43904 .data.read_mos   +8707872 .data.read_mos 	 -4096 .data.read_mos
+	 4 .data_nosave	  	  +0 .data_nosave   	    +0 .data_nosave
+      5141 .exit.text	  	  +9 .exit.text	    	    -1 .exit.text
+    138480 .init.data	  	+992 .init.data	    	 +3616 .init.data
+       133 .init.ramfs	  	  +0 .init.ramfs    	    +1 .init.ramfs
+      3192 .init.setup	  	  +0 .init.setup    	    +0 .init.setup
+    159754 .init.text	  	+891 .init.text	    	   +13 .init.text
+      2288 .initcall.init 	  +0 .initcall.init 	    +0 .initcall.init
+	 8 .jiffies	  	  +0 .jiffies	    	    +0 .jiffies
+      4512 .pci_fixup	  	  +0 .pci_fixup	    	    +0 .pci_fixup
+   1314438 .rodata	       +1312 .rodata	    	  -552 .rodata
+     36552 .smp_locks	  	+256 .smp_locks	    	    +0 .smp_locks
+   3971848 .text	      +12992 .text	    	 +1781 .text
+      3368 .vdso	  	  +0 .vdso	    	    +0 .vdso
+	 4 .vgetcpu_mode  	  +0 .vgetcpu_mode  	    +0 .vgetcpu_mode
+       218 .vsyscall_0	  	  +0 .vsyscall_0    	    +0 .vsyscall_0
+	52 .vsyscall_1	  	  +0 .vsyscall_1    	    +0 .vsyscall_1
+	91 .vsyscall_2	  	  +0 .vsyscall_2    	    +0 .vsyscall_2
+	 8 .vsyscall_3	  	  +0 .vsyscall_3    	    +0 .vsyscall_3
+	54 .vsyscall_fn	  	  +0 .vsyscall_fn   	    +0 .vsyscall_fn
+	80 .vsyscall_gtod 	  +0 .vsyscall_gtod 	    +0 .vsyscall_gtod
+     39480 __bug_table	  	  +0 __bug_table    	    +0 __bug_table
+     16320 __ex_table	  	  +0 __ex_table	    	    +0 __ex_table
+      9160 __param	  	  +0 __param	    	    +0 __param
+   7172678 Total	   +23314404 Total	       -147590 Total
 
 -- 
