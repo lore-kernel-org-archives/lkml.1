@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759250AbYAOU7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759315AbYAOU7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759250AbYAOU7Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 15:59:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757468AbYAOUvD
+	id S1759315AbYAOU7j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 15:59:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756786AbYAOUvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 15:51:03 -0500
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:65124 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756786AbYAOUuh (ORCPT
+	Tue, 15 Jan 2008 15:51:04 -0500
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:51836 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756940AbYAOUui (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 15:50:37 -0500
-Message-Id: <20080115205023.242197006@goodmis.org>
+	Tue, 15 Jan 2008 15:50:38 -0500
+Message-Id: <20080115205024.988170727@goodmis.org>
 References: <20080115204907.838227723@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 15 Jan 2008 15:49:19 -0500
+Date: Tue, 15 Jan 2008 15:49:26 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -28,183 +28,164 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
        Jan Kiszka <jan.kiszka@siemens.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [RFC PATCH 12/30 v3] separate out the percpu date into a percpu struct
-Content-Disposition: inline; filename=mcount-tracer-percpu-struct.patch
+Subject: [RFC PATCH 19/30 v3] add notrace annotations to timing events
+Content-Disposition: inline; filename=mcount-add-time-notrace-annotations.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For better cacheline performance, this patch creates a separate
-struct for each CPU with the percpu data grouped together.
+This patch adds notrace annotations to timer functions
+that will be used by tracing. This helps speed things up and
+also keeps the ugliness of printing these functions down.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- lib/tracing/tracer.c |   42 +++++++++++++++++++++++-------------------
- lib/tracing/tracer.h |   12 ++++++++----
- 2 files changed, 31 insertions(+), 23 deletions(-)
+ arch/x86/kernel/apic_32.c     |    2 +-
+ arch/x86/kernel/hpet.c        |    2 +-
+ arch/x86/kernel/time_32.c     |    2 +-
+ arch/x86/kernel/tsc_32.c      |    2 +-
+ arch/x86/kernel/tsc_64.c      |    4 ++--
+ arch/x86/lib/delay_32.c       |    6 +++---
+ drivers/clocksource/acpi_pm.c |    8 ++++----
+ 7 files changed, 13 insertions(+), 13 deletions(-)
 
-Index: linux-compile.git/lib/tracing/tracer.c
+Index: linux-compile.git/arch/x86/kernel/apic_32.c
 ===================================================================
---- linux-compile.git.orig/lib/tracing/tracer.c	2008-01-14 13:14:13.000000000 -0500
-+++ linux-compile.git/lib/tracing/tracer.c	2008-01-14 14:57:43.000000000 -0500
-@@ -16,6 +16,7 @@
- #include <linux/module.h>
- #include <linux/linkage.h>
- #include <linux/seq_file.h>
-+#include <linux/percpu.h>
- #include <linux/debugfs.h>
- #include <linux/kallsyms.h>
- #include <linux/uaccess.h>
-@@ -25,6 +26,7 @@
- #include "tracer_interface.h"
+--- linux-compile.git.orig/arch/x86/kernel/apic_32.c	2008-01-14 13:13:34.000000000 -0500
++++ linux-compile.git/arch/x86/kernel/apic_32.c	2008-01-14 13:14:14.000000000 -0500
+@@ -577,7 +577,7 @@ static void local_apic_timer_interrupt(v
+  *   interrupt as well. Thus we cannot inline the local irq ... ]
+  */
  
- static struct mctracer_trace mctracer_trace;
-+static DEFINE_PER_CPU(struct mctracer_trace_cpu, mctracer_trace_cpu);
- static int trace_enabled __read_mostly;
+-void fastcall smp_apic_timer_interrupt(struct pt_regs *regs)
++notrace fastcall void smp_apic_timer_interrupt(struct pt_regs *regs)
+ {
+ 	struct pt_regs *old_regs = set_irq_regs(regs);
  
- static inline notrace void
-@@ -36,21 +38,22 @@ mctracer_add_trace_entry(struct mctracer
- 	unsigned long idx, idx_next;
- 	struct mctracer_entry *entry;
- 	struct task_struct *tsk = current;
-+	struct mctracer_trace_cpu *data = tr->data[cpu];
+Index: linux-compile.git/arch/x86/kernel/hpet.c
+===================================================================
+--- linux-compile.git.orig/arch/x86/kernel/hpet.c	2008-01-14 13:13:34.000000000 -0500
++++ linux-compile.git/arch/x86/kernel/hpet.c	2008-01-14 13:14:14.000000000 -0500
+@@ -295,7 +295,7 @@ static int hpet_legacy_next_event(unsign
+ /*
+  * Clock source related code
+  */
+-static cycle_t read_hpet(void)
++static notrace cycle_t read_hpet(void)
+ {
+ 	return (cycle_t)hpet_readl(HPET_COUNTER);
+ }
+Index: linux-compile.git/arch/x86/kernel/time_32.c
+===================================================================
+--- linux-compile.git.orig/arch/x86/kernel/time_32.c	2008-01-14 13:13:34.000000000 -0500
++++ linux-compile.git/arch/x86/kernel/time_32.c	2008-01-14 13:14:14.000000000 -0500
+@@ -122,7 +122,7 @@ static int set_rtc_mmss(unsigned long no
  
--	idx = tr->trace_idx[cpu];
-+	idx = data->trace_idx;
- 	idx_next = idx + 1;
+ int timer_ack;
  
- 	if (unlikely(idx_next >= tr->entries)) {
--		atomic_inc(&tr->underrun[cpu]);
-+		atomic_inc(&data->underrun);
- 		idx_next = 0;
- 	}
+-unsigned long profile_pc(struct pt_regs *regs)
++notrace unsigned long profile_pc(struct pt_regs *regs)
+ {
+ 	unsigned long pc = instruction_pointer(regs);
  
--	tr->trace_idx[cpu] = idx_next;
-+	data->trace_idx = idx_next;
+Index: linux-compile.git/arch/x86/kernel/tsc_32.c
+===================================================================
+--- linux-compile.git.orig/arch/x86/kernel/tsc_32.c	2008-01-14 13:13:34.000000000 -0500
++++ linux-compile.git/arch/x86/kernel/tsc_32.c	2008-01-14 13:14:14.000000000 -0500
+@@ -269,7 +269,7 @@ core_initcall(cpufreq_tsc);
  
--	if (unlikely(idx_next != 0 && atomic_read(&tr->underrun[cpu])))
--		atomic_inc(&tr->underrun[cpu]);
-+	if (unlikely(idx_next != 0 && atomic_read(&data->underrun)))
-+		atomic_inc(&data->underrun);
+ static unsigned long current_tsc_khz = 0;
  
--	entry = tr->trace[cpu] + idx * MCTRACER_ENTRY_SIZE;
-+	entry = data->trace + idx * MCTRACER_ENTRY_SIZE;
- 	entry->idx	 = atomic_inc_return(&tr->cnt);
- 	entry->ip	 = ip;
- 	entry->parent_ip = parent_ip;
-@@ -73,11 +76,11 @@ static notrace void trace_function(const
+-static cycle_t read_tsc(void)
++static notrace cycle_t read_tsc(void)
+ {
+ 	cycle_t ret;
  
- 	cpu = raw_smp_processor_id();
+Index: linux-compile.git/arch/x86/kernel/tsc_64.c
+===================================================================
+--- linux-compile.git.orig/arch/x86/kernel/tsc_64.c	2008-01-14 13:13:34.000000000 -0500
++++ linux-compile.git/arch/x86/kernel/tsc_64.c	2008-01-14 13:14:14.000000000 -0500
+@@ -248,13 +248,13 @@ __setup("notsc", notsc_setup);
  
--	atomic_inc(&tr->disabled[cpu]);
--	if (likely(atomic_read(&tr->disabled[cpu]) == 1))
-+	atomic_inc(&tr->data[cpu]->disabled);
-+	if (likely(atomic_read(&tr->data[cpu]->disabled) == 1))
- 		mctracer_add_trace_entry(tr, cpu, ip, parent_ip);
  
--	atomic_dec(&tr->disabled[cpu]);
-+	atomic_dec(&tr->data[cpu]->disabled);
- 
-  out:
- 	raw_local_irq_restore(flags);
-@@ -93,8 +96,8 @@ static notrace void mctracer_reset(struc
- 	int cpu;
- 
- 	for_each_online_cpu(cpu) {
--		tr->trace_idx[cpu] = 0;
--		atomic_set(&tr->underrun[cpu], 0);
-+		tr->data[cpu]->trace_idx = 0;
-+		atomic_set(&tr->data[cpu]->underrun, 0);
- 	}
+ /* clock source code: */
+-static cycle_t read_tsc(void)
++static notrace cycle_t read_tsc(void)
+ {
+ 	cycle_t ret = (cycle_t)get_cycles_sync();
+ 	return ret;
  }
  
-@@ -115,16 +118,16 @@ static struct mctracer_entry *mctracer_e
- 						 unsigned long idx,
- 						 int cpu)
+-static cycle_t __vsyscall_fn vread_tsc(void)
++static notrace cycle_t __vsyscall_fn vread_tsc(void)
  {
--	struct mctracer_entry *array = tr->trace[cpu];
-+	struct mctracer_entry *array = tr->data[cpu]->trace;
- 	unsigned long underrun;
- 
- 	if (idx >= tr->entries)
- 		return NULL;
- 
--	underrun = atomic_read(&tr->underrun[cpu]);
-+	underrun = atomic_read(&tr->data[cpu]->underrun);
- 	if (underrun)
- 		idx = ((underrun - 1) + idx) % tr->entries;
--	else if (idx >= tr->trace_idx[cpu])
-+	else if (idx >= tr->data[cpu]->trace_idx)
- 		return NULL;
- 
- 	return &array[idx];
-@@ -139,7 +142,7 @@ static void *find_next_entry(struct mctr
- 	int i;
- 
- 	for_each_possible_cpu(i) {
--		if (!tr->trace[i])
-+		if (!tr->data[i]->trace)
- 			continue;
- 		ent = mctracer_entry_idx(tr, iter->next_idx[i], i);
- 		if (ent && (!next || next->idx > ent->idx)) {
-@@ -461,6 +464,7 @@ static notrace int mctracer_alloc_buffer
- 	int i;
- 
- 	for_each_possible_cpu(i) {
-+		mctracer_trace.data[i] = &per_cpu(mctracer_trace_cpu, i);
- 		array = (struct mctracer_entry *)
- 			  __get_free_pages(GFP_KERNEL, order);
- 		if (array == NULL) {
-@@ -468,7 +472,7 @@ static notrace int mctracer_alloc_buffer
- 			       " %ld bytes for trace buffer!\n", size);
- 			goto free_buffers;
- 		}
--		mctracer_trace.trace[i] = array;
-+		mctracer_trace.data[i]->trace = array;
- 	}
- 
- 	/*
-@@ -489,10 +493,10 @@ static notrace int mctracer_alloc_buffer
- 
-  free_buffers:
- 	for (i-- ; i >= 0; i--) {
--		if (mctracer_trace.trace[i]) {
--			free_pages((unsigned long)mctracer_trace.trace[i],
-+		if (mctracer_trace.data[i] && mctracer_trace.data[i]->trace) {
-+			free_pages((unsigned long)mctracer_trace.data[i]->trace,
- 				   order);
--			mctracer_trace.trace[i] = NULL;
-+			mctracer_trace.data[i]->trace = NULL;
- 		}
- 	}
- 	return -ENOMEM;
-Index: linux-compile.git/lib/tracing/tracer.h
+ 	cycle_t ret = (cycle_t)get_cycles_sync();
+ 	return ret;
+Index: linux-compile.git/arch/x86/lib/delay_32.c
 ===================================================================
---- linux-compile.git.orig/lib/tracing/tracer.h	2008-01-14 13:14:13.000000000 -0500
-+++ linux-compile.git/lib/tracing/tracer.h	2008-01-14 14:57:43.000000000 -0500
-@@ -12,15 +12,19 @@ struct mctracer_entry {
- 	pid_t pid;
- };
+--- linux-compile.git.orig/arch/x86/lib/delay_32.c	2008-01-14 13:13:34.000000000 -0500
++++ linux-compile.git/arch/x86/lib/delay_32.c	2008-01-14 13:14:14.000000000 -0500
+@@ -24,7 +24,7 @@
+ #endif
  
-+struct mctracer_trace_cpu {
-+	void *trace;
-+	unsigned long trace_idx;
-+	atomic_t      disabled;
-+	atomic_t      underrun;
-+};
-+
- struct mctracer_trace {
--	void	      *trace[NR_CPUS];
--	unsigned long trace_idx[NR_CPUS];
- 	unsigned long entries;
- 	long	      ctrl;
- 	unsigned long iter_flags;
- 	atomic_t      cnt;
--	atomic_t      disabled[NR_CPUS];
--	atomic_t      underrun[NR_CPUS];
-+	struct mctracer_trace_cpu *data[NR_CPUS];
- };
+ /* simple loop based delay: */
+-static void delay_loop(unsigned long loops)
++static notrace void delay_loop(unsigned long loops)
+ {
+ 	int d0;
  
- #endif /* _LINUX_MCOUNT_TRACER_H */
+@@ -39,7 +39,7 @@ static void delay_loop(unsigned long loo
+ }
+ 
+ /* TSC based delay: */
+-static void delay_tsc(unsigned long loops)
++static notrace void delay_tsc(unsigned long loops)
+ {
+ 	unsigned long bclock, now;
+ 
+@@ -72,7 +72,7 @@ int read_current_timer(unsigned long *ti
+ 	return -1;
+ }
+ 
+-void __delay(unsigned long loops)
++notrace void __delay(unsigned long loops)
+ {
+ 	delay_fn(loops);
+ }
+Index: linux-compile.git/drivers/clocksource/acpi_pm.c
+===================================================================
+--- linux-compile.git.orig/drivers/clocksource/acpi_pm.c	2008-01-14 13:13:34.000000000 -0500
++++ linux-compile.git/drivers/clocksource/acpi_pm.c	2008-01-14 13:14:14.000000000 -0500
+@@ -30,13 +30,13 @@
+  */
+ u32 pmtmr_ioport __read_mostly;
+ 
+-static inline u32 read_pmtmr(void)
++static inline notrace u32 read_pmtmr(void)
+ {
+ 	/* mask the output to 24 bits */
+ 	return inl(pmtmr_ioport) & ACPI_PM_MASK;
+ }
+ 
+-u32 acpi_pm_read_verified(void)
++notrace u32 acpi_pm_read_verified(void)
+ {
+ 	u32 v1 = 0, v2 = 0, v3 = 0;
+ 
+@@ -56,12 +56,12 @@ u32 acpi_pm_read_verified(void)
+ 	return v2;
+ }
+ 
+-static cycle_t acpi_pm_read_slow(void)
++static notrace cycle_t acpi_pm_read_slow(void)
+ {
+ 	return (cycle_t)acpi_pm_read_verified();
+ }
+ 
+-static cycle_t acpi_pm_read(void)
++static notrace cycle_t acpi_pm_read(void)
+ {
+ 	return (cycle_t)read_pmtmr();
+ }
 
 -- 
