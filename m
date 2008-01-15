@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbYAOJv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755746AbYAOJyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755568AbYAOJv1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 04:51:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbYAOJvQ
+	id S1755746AbYAOJyR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 04:54:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYAOJyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 04:51:16 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:59422 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751198AbYAOJvP (ORCPT
+	Tue, 15 Jan 2008 04:54:04 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:47650 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751694AbYAOJyD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 04:51:15 -0500
-Message-Id: <478C82BE.6040100@ce.jp.nec.com>
-Date: Tue, 15 Jan 2008 18:54:06 +0900
-From: "K.Tanaka" <k-tanaka@ce.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, dm-devel@redhat.com
-Subject: Re: [RFC] A SCSI fault injection framework using SystemTap.
-References: <478C22A9.5000009@ce.jp.nec.com> <20080115033145.GR18741@parisc-linux.org>
-In-Reply-To: <20080115033145.GR18741@parisc-linux.org>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Jan 2008 04:54:03 -0500
+To: salikhmetov@gmail.com
+CC: a.p.zijlstra@chello.nl, miklos@szeredi.hu, linux-mm@kvack.org,
+       jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       protasnb@gmail.com
+In-reply-to: <4df4ef0c0801140617t6ca81e84w1cdfcce290ce68fe@mail.gmail.com>
+	(salikhmetov@gmail.com)
+Subject: Re: [PATCH 2/2] updating ctime and mtime at syncing
+References: <12001991991217-git-send-email-salikhmetov@gmail.com>
+	 <12001992023392-git-send-email-salikhmetov@gmail.com>
+	 <E1JENAv-0007CM-T9@pomaz-ex.szeredi.hu>
+	 <4df4ef0c0801140422l1980d507v1884ad8d8e8bf6d3@mail.gmail.com>
+	 <E1JEP9P-0007RD-PP@pomaz-ex.szeredi.hu>
+	 <1200317737.15103.8.camel@twins> <4df4ef0c0801140617t6ca81e84w1cdfcce290ce68fe@mail.gmail.com>
+Message-Id: <E1JEiUT-0000qO-MY@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 15 Jan 2008 10:53:53 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> On Tue, Jan 15, 2008 at 12:04:09PM +0900, K.Tanaka wrote:
->> I would like to introduce a SCSI fault injection framework using SystemTap.
->>
->> Currently, kernel has Fault-injection framework and Faulty mode for md,
->> which can also be used for testing the error handling. But, they could
->> only produce fixed type of errors stochastically. In order to simulate
->> more realistic scsi disk faults, I have created a  new flexible fault injection
->> framework using SystemTap.
+> Thanks for your review, Peter and Miklos!
 > 
-> How does it compare to using scsi_debug, which I believe can do all of
-> the above and more?
+> I overlooked this case when AS_MCTIME flag has been turned off and the
+> page is still dirty.
 > 
+> On the other hand, the words "shall be marked for update" may be
+> considered as just setting the AS_MCTIME flag, not updating the time
+> stamps.
+> 
+> What do you think about calling mapping_update_time() inside of "if
+> (MS_SYNC & flags)"? I suggest such change because the code for
+> analysis of the case you've mentioned above seems impossible to me.
 
- Sorry for the lack of explanation.
- The new framework is supposed to be used by a userspace testing tool
- (such as a shell script). For the availability, this framework enables user to
- designate the inode number of the target file on the device to inject faults.
- On accessing the target file through page caches, a fault will be injected.
- Also, user can designate the logical block address as the target position
- of a fault injection.
+I think that's a good idea.  As a first iteration, just updating the
+mtime/ctime in msync(MS_SYNC) and remove_vma() (called at munmap time)
+would be a big improvement over what we currently have.
 
--- 
----------------------------------------------------------
-Kenichi TANAKA    | Open Source Software Platform Development Division
-                  | Computers Software Operations Unit, NEC Corporation
-                  | k-tanaka@ce.jp.nec.com
+I would also recommend, that you drop mapping_update_time() and the
+related functions from the patch, and just use file_update_time()
+instead.
+
+Miklos
