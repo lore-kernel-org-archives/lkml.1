@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbYAOBE3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbYAOBFB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756219AbYAOBE3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 20:04:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbYAOBEU
+	id S1756596AbYAOBFB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 20:05:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbYAOBEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 20:04:20 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46014 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752469AbYAOBET (ORCPT
+	Mon, 14 Jan 2008 20:04:53 -0500
+Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:36853 "EHLO
+	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752469AbYAOBEw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 20:04:19 -0500
-Date: Tue, 15 Jan 2008 10:03:23 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH 5/5] /proc/zoneinfo enhancement
-Cc: kosaki.motohiro@jp.fujitsu.com, Marcelo Tosatti <marcelo@kvack.org>,
-       Daniel Spang <daniel.spang@gmail.com>, Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080115092828.116F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080115092828.116F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-Id: <20080115100233.117E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Mon, 14 Jan 2008 20:04:52 -0500
+Date: Tue, 15 Jan 2008 02:04:49 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: mingo@elte.hu, sam@ravnborg.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix 32bit build for git-x86
+Message-ID: <20080115010449.GA5521@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 15 Jan 2008 00:58:39.0114 (UTC) FILETIME=[C3CD6EA0:01C85711]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-show new member of zone struct by /proc/zoneinfo.
 
-Signed-off-by: Marcelo Tosatti <marcelo@kvack.org>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Fixes the 32build here with git-x86 (tip 2f42671697ea9abc7d10ea7f663d6ef6e8ec6358)
 
----
- mm/vmstat.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Fix git-x86 build 
 
-Index: linux-2.6.24-rc6-mm1-memnotify/mm/vmstat.c
+Otherwise
+
+make[3]: Nothing to be done for `vmlinux'.
+KBUILD_IMAGE := arch/x86/boot/bzImage
+make[2]: KBUILD_IMAGE: Command not found
+make[2]: *** [all] Error 127
+
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+Index: linux/arch/x86/Makefile
 ===================================================================
---- linux-2.6.24-rc6-mm1-memnotify.orig/mm/vmstat.c	2008-01-13 16:42:54.000000000 +0900
-+++ linux-2.6.24-rc6-mm1-memnotify/mm/vmstat.c	2008-01-13 17:07:43.000000000 +0900
-@@ -795,9 +795,11 @@ static void zoneinfo_show_print(struct s
- 	seq_printf(m,
- 		   "\n  all_unreclaimable: %u"
- 		   "\n  prev_priority:     %i"
-+		   "\n  mem_notify_status: %i"
- 		   "\n  start_pfn:         %lu",
--			   zone_is_all_unreclaimable(zone),
-+		   zone_is_all_unreclaimable(zone),
- 		   zone->prev_priority,
-+		   zone->mem_notify_status,
- 		   zone->zone_start_pfn);
- 	seq_putc(m, '\n');
- }
-
-
+--- linux.orig/arch/x86/Makefile
++++ linux/arch/x86/Makefile
+@@ -211,7 +211,8 @@ PHONY += zImage bzImage compressed zlilo
+ all: bzImage
+ 
+ # KBUILD_IMAGE specify target image being built
+-		    KBUILD_IMAGE := $(boot)/bzImage
++KBUILD_IMAGE := $(boot)/bzImage
++
+ zImage zlilo zdisk: KBUILD_IMAGE := arch/x86/boot/zImage
+ 
+ zImage bzImage: vmlinux
