@@ -1,86 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756261AbYAOUdE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756315AbYAOUgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756261AbYAOUdE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 15:33:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbYAOUcy
+	id S1756315AbYAOUgs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 15:36:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbYAOUgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 15:32:54 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:7590 "EHLO
-	viefep34-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752272AbYAOUcx (ORCPT
+	Tue, 15 Jan 2008 15:36:41 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56686 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752178AbYAOUgk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 15:32:53 -0500
-Subject: Re: [PATCH 0/2] Updating ctime and mtime for memory-mapped files
-	[try #4]
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: salikhmetov@gmail.com, linux-mm@kvack.org, jakob@unthought.net,
-       linux-kernel@vger.kernel.org, valdis.kletnieks@vt.edu, riel@redhat.com,
-       ksm@42.dk, staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       protasnb@gmail.com
-In-Reply-To: <E1JEsNJ-00026T-7B@pomaz-ex.szeredi.hu>
-References: <12004129652397-git-send-email-salikhmetov@gmail.com>
-	 <E1JEsNJ-00026T-7B@pomaz-ex.szeredi.hu>
-Content-Type: text/plain
-Date: Tue, 15 Jan 2008 21:32:47 +0100
-Message-Id: <1200429167.26045.45.camel@twins>
+	Tue, 15 Jan 2008 15:36:40 -0500
+Date: Tue, 15 Jan 2008 12:35:15 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jesper Nilsson <jesper.nilsson@axis.com>
+Cc: Mikael Starvik <mikael.starvik@axis.com>, linux-kernel@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>, Yuusei KUWANA <kuwana@nyanyan.to>
+Subject: Re: [PATCH] CRIS v10: vmlinux.lds.S Fix kernel oops on boot and use
+ common defines
+Message-Id: <20080115123515.126b9cad.akpm@linux-foundation.org>
+In-Reply-To: <20080115133624.GD3912@axis.com>
+References: <20080115133624.GD3912@axis.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 15 Jan 2008 14:36:24 +0100 Jesper Nilsson <jesper.nilsson@axis.com> wrote:
 
-On Tue, 2008-01-15 at 21:27 +0100, Miklos Szeredi wrote:
-> > 1. Introduction
-> > 
-> > This is the fourth version of my solution for the bug #2645:
-> > 
-> > http://bugzilla.kernel.org/show_bug.cgi?id=2645
-> > 
-> > Changes since the previous version:
-> > 
-> > 1) the case of retouching an already-dirty page pointed out
-> >   by Miklos Szeredi has been addressed;
+> - Move alignment to page size of init data outside ifdef for BLK_DEV_INITRD.
+>   The reservation up to page size of memory after init data was previously
+>   not done if BLK_DEV_INITRD was undefined.
+>   This caused a kernel oops when init memory pages were freed after startup,
+>   data placed in the same page as the last init memory would also be freed
+>   and reused, with disastrous results.
+
+So this is a 2.6.24 thing?
+
+> - Use macros for initcalls and .text sections.
 > 
-> I'm a bit sceptical, as we've also pointed out, that this is not
-> possible without messing with the page tables.
+> - Replace hardcoded page size constant with PAGE_SIZE define.
 > 
-> Did you try my test program on the patched kernel?
-> 
-> I've refreshed the patch, where we left this issue last time.  It
-> should basically have equivalent functionality to your patch, and is a
-> lot simpler.  There might be performance issues with it, but it's a
-> good starting point.
+> - Change include/asm-cris/page.h to use the _AC macro to instead
+>   of testing __ASSEMBLY__.
 
-It has the same problem as Anton's in that it won't get triggered again
-for an already dirty mapped page.
-
-But yeah, its simpler than fudging set_page_dirty().
-
-> Index: linux/mm/memory.c
-> ===================================================================
-> --- linux.orig/mm/memory.c	2008-01-09 21:16:30.000000000 +0100
-> +++ linux/mm/memory.c	2008-01-15 21:16:14.000000000 +0100
-> @@ -1680,6 +1680,8 @@ gotten:
->  unlock:
->  	pte_unmap_unlock(page_table, ptl);
->  	if (dirty_page) {
-> +		if (vma->vm_file)
-> +			file_update_time(vma->vm_file);
->  		/*
->  		 * Yes, Virginia, this is actually required to prevent a race
->  		 * with clear_page_dirty_for_io() from clearing the page dirty
-> @@ -2313,6 +2315,8 @@ out_unlocked:
->  	if (anon)
->  		page_cache_release(vmf.page);
->  	else if (dirty_page) {
-> +		if (vma->vm_file)
-> +			file_update_time(vma->vm_file);
->  		set_page_dirty_balance(dirty_page, page_mkwrite);
->  		put_page(dirty_page);
->  	}
-> 
-
+Even though those are not.
