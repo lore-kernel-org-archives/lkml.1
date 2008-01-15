@@ -1,150 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbYAOQ0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754208AbYAOQ1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754708AbYAOQ0W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 11:26:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYAOQ0O
+	id S1754208AbYAOQ1m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 11:27:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYAOQ1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 11:26:14 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33782 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751496AbYAOQ0N (ORCPT
+	Tue, 15 Jan 2008 11:27:34 -0500
+Received: from metis.extern.pengutronix.de ([83.236.181.26]:52129 "EHLO
+	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750762AbYAOQ1c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 11:26:13 -0500
-Date: Tue, 15 Jan 2008 08:24:34 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-cc: Adrian Bunk <adrian.bunk@movial.fi>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Randy Dunlap <randy.dunlap@oracle.com>, phil.el@wanadoo.fr,
-       oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: Fwd: Re: [2.6.24 patch] restore ARMv6 OProfile support
-In-Reply-To: <20080115104526.GA32067@flint.arm.linux.org.uk>
-Message-ID: <alpine.LFD.1.00.0801150811250.2806@woody.linux-foundation.org>
-References: <20071228195841.GA3945@flint.arm.linux.org.uk> <20080115104526.GA32067@flint.arm.linux.org.uk>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 15 Jan 2008 11:27:32 -0500
+Date: Tue, 15 Jan 2008 17:27:29 +0100
+From: Luotao Fu <l.fu@pengutronix.de>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.24-rc7-rt2
+Message-ID: <20080115162729.GF5859@pengutronix.de>
+Mail-Followup-To: Steven Rostedt <rostedt@goodmis.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+	Thomas Gleixner <tglx@linutronix.de>
+References: <1200336080.318.8.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="w3uUfsyyY1Pqa/ej"
+Content-Disposition: inline
+In-Reply-To: <1200336080.318.8.camel@localhost.localdomain>
+X-PGP-Key-ID: 0xE5325261
+X-URL: http://www.pengutronix.de/
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Hannoversche
+	Str. 2, 31134 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-9 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 17:04:10 up 8 days,  7:53,  1 user,  load average: 0.24, 0.31,
+	0.24
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 10.1.0.69
+X-SA-Exim-Mail-From: l.fu@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.extern.pengutronix.de); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--w3uUfsyyY1Pqa/ej
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, 15 Jan 2008, Russell King wrote:
-> 
-> I don't particularly like stuffing the options into some random place
-> in the architectures Kconfig file when they should stay along side the
-> instrumentation configuration entries.
+Hi,
 
-Well, I have to say that I don't particularly like obviously 
-architecture-specific stuff in an obviously non-architecture file..
+On Mon, Jan 14, 2008 at 01:41:20PM -0500, Steven Rostedt wrote:
+> We are pleased to announce the 2.6.24-rc7-rt2 tree, which can be
+> downloaded from the location:
+>=20
+>   http://rt.et.redhat.com/download/
+>=20
+=2E.........=20
+> Changes since 2.6.24-rc7-rt1
+>=20
+=20
+=2E.........
+>   - PPC compile fix (reported by: Robert Schwebel)
+>=20
 
-I'd almost prefer to revert the thing that caused the problem, because 
-with Adrian's patch, I think the end result may *work*, but it's uglier 
-than what we started out with.
+Compiling with tracing function turned seemed still to be broken to me:
+kernel/built-in.o: In function `early_printk_name':
+latency_trace.c:(.text+0x3cd18): undefined reference to `early_printk'
+latency_trace.c:(.text+0x3cd40): undefined reference to `early_printk'
+kernel/built-in.o: In function `early_print_entry':
+latency_trace.c:(.text+0x3cd80): undefined reference to `early_printk'
+latency_trace.c:(.text+0x3cdd8): undefined reference to `early_printk'
+latency_trace.c:(.text+0x3cdfc): undefined reference to `early_printk'
 
-However, I think the *cleanest* solution right now may be something like 
-the appended. Totally untested, of course. It basically just copies the 
-generic kernel/Kconfig.instrumentation file into the arm directory, makes 
-arm use its own instead of the generic one, and removes the dependencies 
-on ARM in there (including all of the KPROBES entry that apparently isn't 
-an issue on ARM anyway). It then adds back the ARM-specific ones.
+We made a early_printk patch based on the 8250_early for powerpc 32bit here.
+(still absolutely untested and incomplete, we will post it asap). I added
+early_printk() and exported _mcount() and could compile succesfully. Howeve=
+r the
+kernel will not boot. I attached a bdi to it and found out that it stucks at
+_mcount in arch/powerpc/kernel/entry_32.S at about line 1080, where the var=
+iable
+mcount_enabled is loaded and checked. Obviously the variable is still not v=
+alid
+at the time of check. To check this I took out the lines like above
 
-This follows the sacred rules of good code:
+--- arch/powerpc/kernel/entry_32.S.orig 2008-01-15 17:01:25.000000000 +0100
++++ arch/powerpc/kernel/entry_32.S      2008-01-15 17:17:18.000000000 +0100
+@@ -1075,9 +1075,6 @@
+        stw     r6, 24(r1)
+        mflr    r3      /* will use as first arg to __trace() */
+        mfcr    r4
+-       lis     r5,mcount_enabled@ha
+-       lwz     r5,mcount_enabled@l(r5)
+-       cmpwi   r5,0
+        stw     r3, 44(r1)      /* lr */
+        stw     r4,  8(r1)      /* cr */
+        stw     r7, 28(r1)
 
- - generic code is either generic or not. If it's not generic, don't claim 
-   it is.
+After recompiling the kernel started normally and it seems to work. I was e=
+ven
+able to make a trace with cyclictest. However there were several crashes (w=
+hich
+might be caused by other problems). I still have to take a closer look.
 
- - don't *force* people to use generic code if it doesn't suit them. Make 
-   it available for the cases it makes sense for, but don't shoe-horn it 
-   into cases where it doesn't work well.
+I am just wondering why the check for mcount_enabled is there at all and I =
+think
+that there due to be some better fixes than just throw it out ;-). On the o=
+ther
+side, I just can't find in which way mcount_enabled is used in the tracer at
+all. Could you give me some hints on this one?
 
-So it allows the sharing of the common case and *many* architectures end 
-up using the generic Kconfig file, but hey, if it doesn't make sense for 
-ARM, it doesn't make sense for ARM. It's that simple.
+cheers
+Luotao Fu
+--=20
+   Dipl.-Ing. Luotao Fu | Phone: +49-5121-206917-3
+Pengutronix - Linux Solutions for Science and Industry
+Entwicklungszentrum Nord     http://www.pengutronix.de
 
-But as mentioned, it's totally untested and I don't have (or really want 
-to have) a cross-compiling environment. And I don't care *that* much. I 
-just want something we can all live with.
 
-So does something like this work for people?
+--w3uUfsyyY1Pqa/ej
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-		Linus
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
----
- arch/arm/Kconfig                 |    2 +-
- arch/arm/Kconfig.instrumentation |   52 ++++++++++++++++++++++++++++++++++++++
- 2 files changed, 53 insertions(+), 1 deletions(-)
+iD8DBQFHjN7xiruQY+UyUmERAhBcAKC09ucwz7Kt7Qp/vREztTaCxG6hXQCfRknv
+y9KYRrVbzD1SiGjeEaNU8Zo=
+=9Gl6
+-----END PGP SIGNATURE-----
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index c4de2d4..3a75a0b 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -1076,7 +1076,7 @@ endmenu
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
-+source "arch/arm/Kconfig.instrumentation"
- 
- source "arch/arm/Kconfig.debug"
- 
-diff --git a/arch/arm/Kconfig.instrumentation b/arch/arm/Kconfig.instrumentation
-new file mode 100644
-index 0000000..63b8c6d
---- /dev/null
-+++ b/arch/arm/Kconfig.instrumentation
-@@ -0,0 +1,52 @@
-+menuconfig INSTRUMENTATION
-+	bool "Instrumentation Support"
-+	default y
-+	---help---
-+	  Say Y here to get to see options related to performance measurement,
-+	  system-wide debugging, and testing. This option alone does not add any
-+	  kernel code.
-+
-+	  If you say N, all options in this submenu will be skipped and
-+	  disabled. If you're trying to debug the kernel itself, go see the
-+	  Kernel Hacking menu.
-+
-+if INSTRUMENTATION
-+
-+config PROFILING
-+	bool "Profiling support (EXPERIMENTAL)"
-+	help
-+	  Say Y here to enable the extended profiling support mechanisms used
-+	  by profilers such as OProfile.
-+
-+config OPROFILE
-+	tristate "OProfile system profiling (EXPERIMENTAL)"
-+	depends on PROFILING && !UML
-+	help
-+	  OProfile is a profiling system capable of profiling the
-+	  whole system, include the kernel, kernel modules, libraries,
-+	  and applications.
-+
-+	  If unsure, say N.
-+
-+config OPROFILE_ARMV6
-+	bool
-+	depends on OPROFILE && CPU_V6 && !SMP
-+	default y
-+	select OPROFILE_ARM11_CORE
-+
-+config OPROFILE_MPCORE
-+	bool
-+	depends on OPROFILE && CPU_V6 && SMP
-+	default y
-+	select OPROFILE_ARM11_CORE
-+
-+config OPROFILE_ARM11_CORE
-+	bool
-+
-+config MARKERS
-+	bool "Activate markers"
-+	help
-+	  Place an empty function call at each marker site. Can be
-+	  dynamically changed for a probe function.
-+
-+endif # INSTRUMENTATION
+--w3uUfsyyY1Pqa/ej--
