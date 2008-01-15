@@ -1,76 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbYAORIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756315AbYAORKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755294AbYAORIy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 12:08:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750926AbYAORIo
+	id S1756315AbYAORKl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 12:10:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbYAORKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 12:08:44 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:57718 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750890AbYAORIn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 12:08:43 -0500
-Date: Tue, 15 Jan 2008 18:11:46 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Adrian Bunk <bunk@kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, rjw@sisk.pl, pavel@suse.cz,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without HOTPLUG_CPU
-Message-ID: <20080115171146.GA2377@one.firstfloor.org>
-References: <p73fxx5omck.fsf@bingen.suse.de> <20080110150911.GG28740@does.not.exist> <20080114135240.GA15357@elte.hu> <20080114140910.GA8507@uranus.ravnborg.org> <20080114145854.GA31695@elte.hu> <20080114150553.GA3524@elte.hu> <20080114152440.GA9174@elte.hu> <20080114201214.GC9257@uranus.ravnborg.org> <20080115151742.GB10722@elte.hu> <20080115162513.GA18338@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 15 Jan 2008 12:10:33 -0500
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3742 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750890AbYAORKc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 12:10:32 -0500
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: 2.6.24-rc7-rt2
+Date: Tue, 15 Jan 2008 18:10:27 +0100
+User-Agent: KMail/1.9.7
+Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+References: <1200336080.318.8.camel@localhost.localdomain> <200801142316.39330.m.kozlowski@tuxland.pl> <Pine.LNX.4.58.0801141730150.3109@gandalf.stny.rr.com>
+In-Reply-To: <Pine.LNX.4.58.0801141730150.3109@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080115162513.GA18338@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200801151810.28279.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 15, 2008 at 05:25:13PM +0100, Sam Ravnborg wrote:
-> On Tue, Jan 15, 2008 at 04:17:42PM +0100, Ingo Molnar wrote:
-> > 
-> > * Sam Ravnborg <sam@ravnborg.org> wrote:
-> > 
-> > > > find below the current set of warnings on -git. There are 62.
-> > > 
-> > > The correct figure is 112.
-> > > 
-> > > You need to do a:
-> > > make KCFLAGS=-fno-unit-at-a-time
-> > > build to see them all.
-> > 
-> > btw., please add a .config option to trigger the -fno-unit-at-a-time 
-> > flags. Something like CONFIG_SECTION_ERRORS=y - plus perhaps combine it 
-> > with the patch below that turns such section bugs into detectable build 
-> > errors. A distro does not want to build a kernel that could potentially 
-> > corrupt kernel memory. (it's a security risk as well.) If we make the 
-> > err=1 dependent on CONFIG_SECTION_ERRORS then we'll have this 
-> > configurable.
+> > > We are pleased to announce the 2.6.24-rc7-rt2 tree, which can be
+> > > downloaded from the location:
+> > >
+> > >   http://rt.et.redhat.com/download/
+> >
+> > Compiles fine but I run into another problem. On startup kernel oopses
+> > early and this 'oops' loops over and over again on the screen until you
+> > shut down the box. So I can't (easily) capture the output. I tried different
+> > boot_delay values but it seems that it doesn't work as intended. Seems that
+> > it delays only the first printk from oops, then the rest loops over the screen
+> > without delay - again it becomes unreadable. I used my usual config with a bunch
+> > of debug options enabled so that maybe is not real rt system case. Also tried to
+> > bisect it with quilt but that is hard. Lots of patches depends on another patches
+> > so bisection brakes things. I'll look into this tommorow and reply if I get
+> > anything substantial.
+> >
+> > I attached my config in case anybody wants to try to reproduce that.
+> >
 > 
-> The plan is to let section mismatch warnings become errors 
-> after the merge window - so we hit -mm first.
+> Turn off LOCKDEP and see if you still have the same problems. This might
+> be fixed with Daniel's patch.
 
-A lot of those I look at seem to be not really bugs; also my
-impression is that they sometimes crop up randomly. e.g. you
-change something completely unrelated and suddenly you get
-a section warning somewhere else.
+Ok. It works.
 
-> And I will add a config option to:
-> - set -fno-unit-at-a-time
+I found this in dmesg:
 
-I was told future gcc versions would remove that. Why do you
-want it?
+BUG: swapper:0 task might have lost a preemption check!
+Pid: 0, comm: swapper Not tainted 2.6.24-rc7-rt2 #3
+ [<c010386b>] show_trace_log_lvl+0x1d/0x3b
+ [<c01042f3>] show_trace+0x12/0x14
+ [<c0104a2f>] dump_stack+0x6a/0x70
+ [<c0115419>] preempt_enable_no_resched+0x5c/0x5e
+ [<c0100e35>] cpu_idle+0x6d/0x82
+ [<c0323b6e>] rest_init+0x66/0x68
+ [<c043aba6>] start_kernel+0x20c/0x276
+ [<00000000>] 0x0
+ =======================
+---------------------------
+| preempt count: 00000000 ]
+| 0-level deep critical section nesting:
+----------------------------------------
 
-> - add no-inline to all functions marked __init*
-> - and maybe disable __inline if that gives additional errors
+Box runs fine though.
 
-I sometimes do that for debugging "define static noinline" 
-in specific files or similar because it's easier to make sense of oopses
-when functions not inlined.  Not sure it would work
-as a global option though because if you do it globally
-then all the inlines in all .hs would be affected and that might
-lead to immense code bloat.
+Regards,
 
--Andi
+	Mariusz
