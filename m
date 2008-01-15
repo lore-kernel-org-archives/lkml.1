@@ -1,44 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbYAONQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbYAONTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755309AbYAONQy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 08:16:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbYAONQp
+	id S1755448AbYAONTU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 08:19:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbYAONTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 08:16:45 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60186 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751243AbYAONQp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 08:16:45 -0500
-Date: Tue, 15 Jan 2008 13:16:40 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Abhishek Rai <abhishekrai@google.com>, linux-kernel@vger.kernel.org,
-       rohitseth@google.com, linux-ext4@vger.kernel.org
-Subject: Re: [CALL FOR TESTING] Make Ext3 fsck way faster [2.6.24-rc6 -mm
-	patch]
-Message-ID: <20080115131640.GB5766@infradead.org>
-References: <200801140839.01986.abhishekrai@google.com> <20080114163412.83a8b18d.akpm@linux-foundation.org> <20080115030441.a0270609.akpm@linux-foundation.org> <20080115131533.GA5766@infradead.org>
+	Tue, 15 Jan 2008 08:19:13 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35968 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751268AbYAONTM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 08:19:12 -0500
+Date: Tue, 15 Jan 2008 14:19:02 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: x86: minor cleanup for ptrace_32/64
+Message-ID: <20080115131902.GA7025@elte.hu>
+References: <Pine.LNX.4.64.0801151336570.30034@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080115131533.GA5766@infradead.org>
+In-Reply-To: <Pine.LNX.4.64.0801151336570.30034@fbirervta.pbzchgretzou.qr>
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 15, 2008 at 01:15:33PM +0000, Christoph Hellwig wrote:
-> They won't fsck in planned downtimes.  They will have to use fsck when
-> the shit hits the fan and they need to.   Not sure about ext3, but big
-> XFS user with a close tie to the US goverment were concerned about this
-> case for really big filesystems and have sponsored speedup including
-> multithreading xfs_repair.  I'm pretty sure the same arguments apply
-> to ext3, even if the filesystems are a few magnitudes smaller.
 
-And to add to that thanks to the not quite optimal default of
-peridocially checking that I alwasy forget to turn off on test machines
-an ext3 fsck speedup would be in my personal interested, and probably
-that of tons of developers :)
+* Jan Engelhardt <jengelh@computergmbh.de> wrote:
+
+>     x86: minor cleanup
+>     
+>     - let get_stack_long from ptrace_32 use long (not int) for consistency
+>     - make put_stack_long() return void (return value not used anywhere)
+>     - add const keyword to args
+
+ptrace*.c has been unified into ptrace.c in x86.git's mm branch. (see 
+the instructions below about how to pick up the latest x86.git repo)
+
+	Ingo
+
+--------------{ x86.git instructions }---------->
+
+# Add Linus's tree as a remote
+git remote --add linus
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+
+# Add Ingo's tree as a remote
+git remote --add x86
+git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
+
+# With that setup, just run the following to get any changes you
+# don't have.  It will also notice any new branches Ingo/Linus
+# add to their repo.  Look in .git/config afterwards, the format
+# to add new remotes is easy to figure out.
+git remote update
+
