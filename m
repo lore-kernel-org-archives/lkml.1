@@ -1,60 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbYAOAG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754487AbYAOARS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754547AbYAOAG4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 19:06:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbYAOAGr
+	id S1754487AbYAOARS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 19:17:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750733AbYAOARG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 19:06:47 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59236 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752173AbYAOAGr (ORCPT
+	Mon, 14 Jan 2008 19:17:06 -0500
+Received: from wr-out-0506.google.com ([64.233.184.228]:26729 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752173AbYAOARF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 19:06:47 -0500
-Date: Tue, 15 Jan 2008 09:06:20 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: Re: [patch 10/19] No Reclaim LRU Infrastructure
-Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <1200066224.5304.6.camel@localhost>
-References: <20080111133048.FD5C.KOSAKI.MOTOHIRO@jp.fujitsu.com> <1200066224.5304.6.camel@localhost>
-Message-Id: <20080115085931.116D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Mon, 14 Jan 2008 19:17:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CZl4f0Ipsrm3vlMyzgxdzwLyIN8D+HT9PTV6/YTVSq320xeWc8A2o766rV6qUJpdAHlDbNJdC9f6R3L59FO1xtiQ61A9iS222F/VKmon4URyP87fstoCzY5/8RA32BENjtHMPOhru4nVF40QBunaFtXNP3Bji+zDdv6FITR8sps=
+Message-ID: <a8e1da0801141617x6d49a144r441404dfe06d5b35@mail.gmail.com>
+Date: Tue, 15 Jan 2008 08:17:04 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Cornelia Huck" <cornelia.huck@de.ibm.com>
+Subject: Re: [PATCH 1/7] driver-core : add class iteration api
+Cc: "Greg KH" <gregkh@suse.de>, stefanr@s5r6.in-berlin.de,
+       James.Bottomley@hansenpartnership.com, a.zummo@towertech.it,
+       peterz@infradead.org, cbou@mail.ru, linux-kernel@vger.kernel.org,
+       "David Brownell" <david-b@pacbell.net>, krh@redhat.com,
+       stern@rowland.harvard.edu, dwmw2@infradead.org, davem@davemloft.net,
+       jarkao2@gmail.com
+In-Reply-To: <20080114131347.6ddd036a@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Disposition: inline
+References: <20080112094754.GA2893@darkstar.te-china.tietoenator.com>
+	 <20080114131347.6ddd036a@gondolin.boeblingen.de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Lee-san
+On Jan 14, 2008 8:13 PM, Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
+> On Sat, 12 Jan 2008 17:47:54 +0800,
+> Dave Young <hidave.darkstar@gmail.com> wrote:
+>
+> Minor style suggestion (same for class_find_child):
+>
+> > +struct device *class_find_device(struct class *class, void *data,
+> > +                                int (*match)(struct device *, void *))
+> > +{
+> > +     struct device *dev;
+> > +     int error = 1;
+>
+> How about using inverse logic here (e.g., start with int found = 0)...
 
-> > > +config NORECLAIM
-> > > +	bool "Track non-reclaimable pages (EXPERIMENTAL; 64BIT only)"
-> > > +	depends on EXPERIMENTAL && 64BIT
-> > > +	help
-> > > +	  Supports tracking of non-reclaimable pages off the [in]active lists
-> > > +	  to avoid excessive reclaim overhead on large memory systems.  Pages
-> > > +	  may be non-reclaimable because:  they are locked into memory, they
-> > > +	  are anonymous pages for which no swap space exists, or they are anon
-> > > +	  pages that are expensive to unmap [long anon_vma "related vma" list.]
-> > 
-> > Why do you select to default is NO ?
-> > I think this is really improvement and no one of 64bit user
-> > hope turn off without NORECLAIM developer :)
-> 
-> This was my doing.  I left the default == NO during
-> development/experimemental stage so that one would have to take explicit
-> action to enable this function.  If the feature makes it into mainline
-> and we decide that the default should be 'yes', that will be an easy
-> change.
+Sounds good, will do. Thanks.
 
-Oh I see.
-I will help testing too for it merges to mainline early. 
-
-thanks.
-
-
-- kosaki
-
-
+>
+> > +
+> > +     if (!class)
+> > +             return NULL;
+> > +
+> > +     down(&class->sem);
+> > +     list_for_each_entry(dev, &class->devices, node) {
+> > +             dev = get_device(dev);
+> > +             if (dev) {
+> > +                     if (match(dev, data)) {
+> > +                             error = 0;
+>
+> ...and set found = 1 here...
+>
+> > +                             break;
+> > +                     } else
+> > +                             put_device(dev);
+> > +             } else
+> > +                     break;
+> > +     }
+> > +     up(&class->sem);
+> > +
+> > +     if (error)
+> > +             return NULL;
+> > +     return dev;
+>
+> ...and do
+>         return found ? dev : NULL;
+> in the end?
+>
+> Especially since not finding the device is not really an error.
+>
+> > +}
+>
+> Otherwise this looks fine to me.
+>
