@@ -1,87 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755971AbYAOBd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756357AbYAOBeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755971AbYAOBd4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 20:33:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbYAOBdt
+	id S1756357AbYAOBeY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 20:34:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbYAOBeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 20:33:49 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:33487 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751894AbYAOBds (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 20:33:48 -0500
-Date: Mon, 14 Jan 2008 17:39:35 -0800
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH] x86_64: checking aperture report for node instead of cpu
-In-reply-to: <20080114083545.GF18296@elte.hu>
-To: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: Christoph Lameter <clameter@sgi.com>, ebiederm@xmission.com,
-       LKML <linux-kernel@vger.kernel.org>
-Message-id: <200801141739.35448.yinghai.lu@sun.com>
-Organization: Sun
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-References: <200801101914.47967.yinghai.lu@sun.com>
- <200801120207.19981.yinghai.lu@sun.com> <20080114083545.GF18296@elte.hu>
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+	Mon, 14 Jan 2008 20:34:16 -0500
+Received: from koto.vergenet.net ([210.128.90.7]:42096 "EHLO koto.vergenet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752173AbYAOBeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 20:34:15 -0500
+Date: Tue, 15 Jan 2008 10:34:10 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Ian Campbell <Ian.Campbell@citrix.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>, "Huang, Ying" <ying.huang@intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH -mm 1/2] kexec/i386: kexec page table code clean up -
+	add arch_kimage
+Message-ID: <20080115013409.GB7969@verge.net.au>
+References: <1199847467.8126.15.camel@caritas-dev.intel.com> <20080110011423.GB23143@redhat.com> <20080110081535.GA30505@verge.net.au> <1200317376.11020.9.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1200317376.11020.9.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-this one is against x86.git
+On Mon, Jan 14, 2008 at 01:29:36PM +0000, Ian Campbell wrote:
+> 
+> On Thu, 2008-01-10 at 17:15 +0900, Simon Horman wrote: 
+> > > Have you tested Xen too? Does it run into issues with this change?
+> > 
+> > Xen will need to be updated for this change but it shouldn't be a big
+> > deal. Basically right now it calls __ma() (which is kind of like __pa())
+> > on kexec_pgd and friends. Updating the arguments to __ma() to use
+> > the new arch_kimage pointers should be easy enough.
+> 
+> I think you mean the Xen specific parts of the kexec machinery in the
+> kernel.c would need updating rather than the hypervisor, right?
 
-[PATCH] x86_64: checking aperture report for node instead of cpu
+Yes, that is right. Sorry for the confusion.
 
-currently when gart iommu is enabled by BIOS or previous we got
+> I don't think these changes will cause anything more than minor problems
+> for whoever ports the Xen kexec stuff upstream.
+> 
+> > N.B: As this is Dom0 code (not DomU) it is maintained in the xen
+> > repository and has been merged into Linux.
+> 
+> I don't think we would bother backporting these changes to there, would
+> we?
 
-"
-Checking aperture...
-CPU 0: aperture @4000000 size 64MB
-CPU 1: aperture @4000000 size 64MB
-"
-we should use use Node instead.
+No, I was more thinking of the situation where Xen moves its kernel forwards.
 
-we will get
-"
-Checking aperture...
-Node 0: aperture @4000000 size 64MB
-Node 1: aperture @4000000 size 64MB
-"
+-- 
+Horms
 
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-
-Index: linux-2.6/arch/x86/kernel/aperture_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/aperture_64.c
-+++ linux-2.6/arch/x86/kernel/aperture_64.c
-@@ -312,6 +312,7 @@ void __init gart_iommu_hole_init(void)
- 	u32 aper_size, aper_alloc = 0, aper_order = 0, last_aper_order = 0;
- 	u64 aper_base, last_aper_base = 0;
- 	int fix, num, valid_agp = 0;
-+	int node;
- 
- 	if (gart_iommu_aperture_disabled || !fix_aperture ||
- 	    !early_pci_allowed())
-@@ -320,6 +321,7 @@ void __init gart_iommu_hole_init(void)
- 	printk(KERN_INFO  "Checking aperture...\n");
- 
- 	fix = 0;
-+	node = 0;
- 	for (num = 24; num < 32; num++) {
- 		if (!early_is_k8_nb(read_pci_config(0, num, 3, 0x00)))
- 			continue;
-@@ -332,8 +334,8 @@ void __init gart_iommu_hole_init(void)
- 		aper_base = read_pci_config(0, num, 3, 0x94) & 0x7fff;
- 		aper_base <<= 25;
- 
--		printk(KERN_INFO "CPU %d: aperture @ %Lx size %u MB\n",
--				num-24, aper_base, aper_size>>20);
-+		printk(KERN_INFO "Node %d: aperture @ %Lx size %u MB\n",
-+				node++, aper_base, aper_size >> 20);
- 
- 		if (!aperture_valid(aper_base, aper_size)) {
- 			fix = 1;
