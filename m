@@ -1,106 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757059AbYAOSdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbYAOSn6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757059AbYAOSdV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 13:33:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbYAOSdK
+	id S1754579AbYAOSn6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 13:43:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbYAOSnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 13:33:10 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:33911 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752280AbYAOSdI (ORCPT
+	Tue, 15 Jan 2008 13:43:49 -0500
+Received: from wx-out-0506.google.com ([66.249.82.229]:10578 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751061AbYAOSnt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 13:33:08 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=CKWIvVH14gVK0K7HLT0ixiPwK+9q6gQugOTgtvpdTNfBYGbXFxwOPfTBMwIA9IbAk
-	8qROG+seNQCLIp/Uqs1FA==
-Message-ID: <532480950801151033w69411f8dk4d9ab14a2ff07d64@mail.gmail.com>
-Date: Tue, 15 Jan 2008 10:33:01 -0800
-From: "Michael Rubin" <mrubin@google.com>
-To: "Fengguang Wu" <wfg@mail.ustc.edu.cn>
-Subject: Re: [PATCH 00/13] writeback bug fixes and simplifications take 2
-Cc: "Andrew Morton" <akpm@osdl.org>, "Peter Zijlstra" <peterz@infradead.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <400401292.24795@ustc.edu.cn>
+	Tue, 15 Jan 2008 13:43:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=sJpLFjOaxu2bPM1U3wK066CJ/fhykXDdoU5JeGVSwZUhVUqd+XOVKmGgUujlqdJ3TZInXfFpmzngSKLpHpzfrhFTgs9+5ktkNpRWMQCmrsPCyfpuUUPgpjrwaKenn+zDQLDK1NRobc2dLa4EYF2Es1ZRWAslsQtOitrPr1hp3y4=
+Message-ID: <4d8e3fd30801151043o29a1466cudca4b2a5fe807d9d@mail.gmail.com>
+Date: Tue, 15 Jan 2008 22:13:43 +0330
+From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
+To: "Cyrill Gorcunov" <gorcunov@gmail.com>
+Subject: Re: [PATCH] checkpatch: add filename in the summary
+Cc: apw@shadowen.org, "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080115183056.GB6723@cvg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <400401292.24795@ustc.edu.cn>
+References: <20080114232339.2c018647@paolo-desktop> <20080115183056.GB6723@cvg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 15, 2008 4:36 AM, Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
-> Andrew,
->
-> This patchset mainly polishes the writeback queuing policies.
+On 1/15/08, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> [Paolo Ciarrocchi - Mon, Jan 14, 2008 at 11:23:39PM +0100]
 
-Anyone know which tree is this patched based out of?
-
-> The main goals are:
+> Hi Paolo,
 >
-> (1) small files should not be starved by big dirty files
-> (2) sync as fast as possible for not-blocked inodes/pages
->     - don't leave them out; no congestion_wait() in between them
-> (3) avoid busy iowait for blocked inodes
->     - retry them in the next go of s_io(maybe at the next wakeup of pdflush)
+> the options you're complaining about (in most) are enabled by default so
+> there is no reason to 'turn them on' explicitly /methink/.
 >
 
-Fengguang do you have any specific tests for any of these cases? As I
-have posted earlier I am putting together a writeback test suite for
-test.kernel.org and if you have one (even if it's an ugly shell
-script) that would save me some time.
 
-Also if you want any of mine let me know. :-)
+I was looking for more information, i didn't want to complain :-)
+That said, i still think that document how to disable/enable all the
+options might be useful.
 
-mrubin
-
-
-> The role of the queues:
->
-> s_dirty:   park for dirtied_when expiration
-> s_io:      park for io submission
-> s_more_io: for big dirty inodes, they will be retried in this run of pdflush
->            (it ensures fairness between small/large files)
-> s_more_io_wait: for blocked inodes, they will be picked up in next run of s_io
->
->
-> This patchset is in better shape, but still not ready for merge.
-> It begins with:
->
->         [PATCH 01/13] writeback: revert 2e6883bdf49abd0e7f0d9b6297fc3be7ebb2250b
->         [PATCH 02/13] writeback: clear PAGECACHE_TAG_DIRTY for truncated page in block_write_full_page()
->
-> Introduces more_io/more_io_wait based policies:
->
->         [PATCH 03/13] writeback: introduce writeback_control.more_io
->         [PATCH 04/13] writeback: introduce super_block.s_more_io_wait
->         [PATCH 05/13] writeback: merge duplicate code into writeback_some_pages()
->         [PATCH 06/13] writeback: defer writeback on not-all-pages-written
->         [PATCH 07/13] writeback: defer writeback on locked inode
->         [PATCH 08/13] writeback: defer writeback on locked buffers
->         [PATCH 09/13] writeback: requeue_io() on redirtied inode
->
-> And finishes with some code cleanups:
->
->         [PATCH 10/13] writeback: introduce queue_dirty()
->         [PATCH 11/13] writeback: queue_dirty() on memory-backed bdi
->         [PATCH 12/13] writeback: remove redirty_tail()
->         [PATCH 13/13] writeback: cleanup __sync_single_inode()
->
-> Diffstat:
->
->  fs/buffer.c         |    2
->  fs/fs-writeback.c   |  121 +++++++++++++++---------------------------
->  fs/super.c          |    1
->  include/linux/fs.h  |    1
->  mm/page-writeback.c |   46 +++++++--------
->  5 files changed, 72 insertions(+), 99 deletions(-)
->
-> Regards,
-> Fengguang Wu
-> --
->
+Ciao,
+-- 
+Paolo
+http://paolo.ciarrocchi.googlepages.com/
