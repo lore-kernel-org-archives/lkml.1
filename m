@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbYAOKx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753671AbYAOKyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752549AbYAOKx6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 05:53:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbYAOKxs
+	id S1753671AbYAOKyY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 05:54:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbYAOKyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 05:53:48 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:48892 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751003AbYAOKxr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 05:53:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XqRAHR2MZ5Au1Yj+jr5H8wDpy5s4bL7poP8K4Uo5Dz4QKu5GI+RWFYtTECgIEj7OV4SQ30nm3IDg2J5XVpSPZl7xgdeGYx0zcvWZx3jrfdHQNZ7QfrVEXq3JWq6Cz4c5Jw+FW967sWy5/TJCwZWQJn2ifNR4gIJY5HQOooo/ewc=
-Message-ID: <643ea2b10801150253i735d7342q73bf01f864d6167c@mail.gmail.com>
-Date: Tue, 15 Jan 2008 08:53:42 -0200
-From: "A. C. Censi" <accensi@gmail.com>
-To: "Miklos Szeredi" <miklos@szeredi.hu>
-Subject: Re: [patch 9/9] unprivileged mounts: add "no submounts" flag
-Cc: serue@us.ibm.com, akpm@linux-foundation.org, hch@infradead.org,
-       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
-In-Reply-To: <E1JEjEE-0000xZ-RU@pomaz-ex.szeredi.hu>
+	Tue, 15 Jan 2008 05:54:15 -0500
+Received: from mx1.suse.de ([195.135.220.2]:37850 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751078AbYAOKyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 05:54:14 -0500
+To: travis@sgi.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 08/10] x86: Change NR_CPUS arrays in numa_64 V2
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080115021735.779102000@sgi.com>
+	<20080115021737.228970000@sgi.com>
+Date: Tue, 15 Jan 2008 11:54:12 +0100
+In-Reply-To: <20080115021737.228970000@sgi.com> (travis@sgi.com's message of "Mon\, 14 Jan 2008 18\:17\:43 -0800")
+Message-ID: <p73wsqbl5pn.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080108113502.184459371@szeredi.hu>
-	 <20080108113634.382855604@szeredi.hu>
-	 <20080114233910.GI6704@sergelap.austin.ibm.com>
-	 <E1JEjEE-0000xZ-RU@pomaz-ex.szeredi.hu>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 15, 2008 8:41 AM, Miklos Szeredi <miklos@szeredi.hu> wrote:
-> > Quoting Miklos Szeredi (miklos@szeredi.hu):
-> > > From: Miklos Szeredi <mszeredi@suse.cz>
-> > >
-> > > Add a new mount flag "nomnt", which denies submounts for the owner.
-> > > This would be useful, if we want to support traditional /etc/fstab
-> > > based user mounts.
-> > >
-> > > In this case mount(8) would still have to be suid-root, to check the
-> > > mountpoint against the user/users flag in /etc/fstab, but /etc/mtab
-> > > would no longer be mandatory for storing the actual owner of the
-> > > mount.
-> >
-> > Ah, I see, so the floppy drive could be mounted as a MNT_NOMNT but
-> > MNT_USER mount with mnt_owner set.  Makes sense.  I'd ask for a better
-> > name than 'nomnt', but I can't think of one myself.
->
-> Me neither.
->
+travis@sgi.com writes:
+> +
+>  /* Returns the number of the node containing CPU 'cpu' */
+>  static inline int cpu_to_node(int cpu)
+>  {
+> -	return cpu_to_node_map[cpu];
+> +	u16 *cpu_to_node_map = x86_cpu_to_node_map_early_ptr;
+> +
+> +	if (cpu_to_node_map)
+> +		return cpu_to_node_map[cpu];
+> +	else if(per_cpu_offset(cpu))
+> +		return per_cpu(x86_cpu_to_node_map, cpu);
+> +	else
+> +		return NUMA_NO_NODE;
 
-Why not "nosubmnt"?
+Seems a little big now to be still inlined.
 
+Also I wonder if there are really that many early callers that it
+isn't feasible to just convert them to a early_cpu_to_node(). Also
+early_cpu_to_node() should really not be speed critical, so just
+linearly searching some other table instead of setting up an explicit
+array should be fine for that.
 
--- 
-A. C. Censi
-accensi [em] gmail [ponto] com
-accensi [em] montreal [ponto] com [ponto] br
+-Andi
