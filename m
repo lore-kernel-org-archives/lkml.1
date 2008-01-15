@@ -1,49 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbYAOJaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbYAOJhI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755521AbYAOJaG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 04:30:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbYAOJ3x
+	id S1755322AbYAOJhI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 04:37:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbYAOJg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 04:29:53 -0500
-Received: from py-out-1112.google.com ([64.233.166.181]:43299 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750744AbYAOJ3w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 04:29:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=TR7qlm+rS1l5iJ77eaQIK/it/kKfu4zJAU+RRiP1UozFAtSAMl5WowAEBx+epSzPDmHtjPqsvZg1rNMWy2AQ+qcIMx1T0QKpuQ9CtCz8ftnbqMgvQJGh6KWbEM2r6pMMPLW8RwUPXMJQUo49vx7JZCrEsm3i19ZJKY4rmmA27i4=
-Subject: Re: [PATCH] [13/31] CPA: Use macros to modify the PG_arch_1 page
-	flags in change_page_attr
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org, jbeulich@novell.com, mingo@elte.hu,
-       tglx@linutronix.de
-In-Reply-To: <20080114221645.90C5D14F83@wotan.suse.de>
-References: <200801141116.534682000@suse.de>
-	 <20080114221645.90C5D14F83@wotan.suse.de>
-Content-Type: text/plain
-Date: Tue, 15 Jan 2008 01:29:51 -0800
-Message-Id: <1200389391.16794.12.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Jan 2008 04:36:56 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:9127 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751076AbYAOJgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 04:36:55 -0500
+Date: Tue, 15 Jan 2008 10:36:52 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       hch@infradead.org, peterz@infradead.org
+Subject: Re: [PATCH][RFC] fast file mapping for loop
+Message-ID: <20080115093651.GW6258@kernel.dk>
+References: <20080109085231.GE6650@kernel.dk> <20080114121021.0d392102@think.oraclecorp.com> <20080114175359.GS6258@kernel.dk> <20080115092503.GV6258@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080115092503.GV6258@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-01-14 at 23:16 +0100, Andi Kleen wrote:
-> Instead of open coding the bit accesses uses standard style
-> *PageDeferred* macros. 
+On Tue, Jan 15 2008, Jens Axboe wrote:
+> On Mon, Jan 14 2008, Jens Axboe wrote:
+> > On Mon, Jan 14 2008, Chris Mason wrote:
+> > > Hello everyone,
+> > > 
+> > > Here is a modified version of Jens' patch.  The basic idea is to push
+> > > the mapping maintenance out of loop and down into the filesystem (ext2
+> > > in this case).
+> > > 
+> > > Two new address_space operations are added, one to map
+> > > extents and the other to provide call backs into the FS as io is
+> > > completed.
+> > > 
+> > > Still TODO for this patch:
+> > > 
+> > > * Add exclusion between filling holes and readers.  This is partly
+> > > implemented, when a hole is filled by the FS, the extent is flagged as
+> > > having a hole.  The idea is to check this flag before trying to read
+> > > the blocks and just send back all zeros.
+> > > 
+> > > The flag would be cleared when the blocks filling the hole have been
+> > > written.
+> > > 
+> > > * Exclude page cache readers and writers
+> > > 
+> > > * Add a way for the FS to request a commit before telling the higher
+> > > layers the IO is complete.  This way we can make sure metadata related
+> > > to holes is on disk before claiming the IO is really done.  COW based
+> > > filesystems will also needed it.
+> > > 
+> > > * Change loop to use fast mapping only when the new address_space op is
+> > > provided (whoops, forgot about this until just now)
+> > > 
+> > > * A few other bits for COW, not really relevant until there
+> > > is...something COW using it.
+> > 
+> > Looks pretty good. Essentially the loop side is 100% the same, it just
+> > offloads the extent ownership to the fs (where it belongs). So I like
+> > it. Attaching a small cleanup/fixup patch for loop, don't think it needs
+> > further explanations.
+> > 
+> > One suggestion - free_extent_map(), I would call that put_extent_map()
+> > instead.
 > 
+> I split and merged the patch into five bits (added ext3 support), so
+> perhaps that would be easier for people to read/review. Attached and
+> also exist in the loop-extent_map branch here:
+> 
+> http://git.kernel.dk/?p=linux-2.6-block.git;a=shortlog;h=loop-extent_map
 
-Any reason these couldn't be static inlines in a shared header?
+Seems my ext3 version doesn't work, it craps out in
+ext3_get_blocks_handle() triggering this bug:
 
-asm/page.h perhaps?
+J_ASSERT(handle != NULL || create == 0);
 
-Cheers,
+I'll see if I can fix that, being fairly fs ignorant...
 
-Harvey
-
+-- 
+Jens Axboe
 
