@@ -1,80 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757622AbYAOXF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757522AbYAOXHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757622AbYAOXF3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 18:05:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbYAOXFW
+	id S1757522AbYAOXHX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 18:07:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbYAOXHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 18:05:22 -0500
-Received: from nz-out-0506.google.com ([64.233.162.230]:48869 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751440AbYAOXFV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 18:05:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=im0kxrPi16h2uKKRTrYwjpbVZjIY808Li46XpXng8yqmgWy8GV1aQVbVT/88p2e73tGZsPWOCiNbsdPXBUkvt22r0HPtDqX18jh7YPw0jDXIhn8Kv581W2GYN03QqNiNaw3AZ/FI00x65y0VvPDP1LESR2hW3RVsAIyJARyARIc=
-Message-ID: <cf3edd8d0801151505r54bfd9d0r89f57e3835f295e1@mail.gmail.com>
-Date: Tue, 15 Jan 2008 23:05:17 +0000
-From: "Colin Fowler" <elethiomel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: Performance loss 2.6.22->22.6.23->2.6.24-rc7 on CPU intensive benchmark on 8 Core Xeon
-Cc: linux-kernel@vger.kernel.org, "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-In-Reply-To: <20080115220641.GC2665@elte.hu>
+	Tue, 15 Jan 2008 18:07:09 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36122 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752548AbYAOXHH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 18:07:07 -0500
+Date: Wed, 16 Jan 2008 00:07:14 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: David Chinner <dgc@sgi.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Al Boldi <a1426z@gawab.com>, Valerie Henson <val.henson@gmail.com>,
+       Rik van Riel <riel@redhat.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Patch] document ext3 requirements (was Re: [RFD] Incremental
+	fsck)
+Message-ID: <20080115230714.GC3573@elf.ucw.cz>
+References: <200801090022.55589.a1426z@gawab.com> <200801090740.12989.a1426z@gawab.com> <70b6f0bf0801082345vf57951ey642e35c3d6e5194f@mail.gmail.com> <200801091452.14890.a1426z@gawab.com> <20080112145140.GB6751@mit.edu> <20080113171916.GB4132@ucw.cz> <20080113174125.5f39ac64@lxorguk.ukuu.org.uk> <20080115201653.GA5639@elf.ucw.cz> <20080115214325.GN155407@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <cf3edd8d0801140937w755c3e75me83c214ebc1f4cd3@mail.gmail.com>
-	 <20080114185520.GA26540@elte.hu>
-	 <cf3edd8d0801141442nedf4ac1p6b1fd6bc94900063@mail.gmail.com>
-	 <cf3edd8d0801150901p653edeear62d5bc91d9f46981@mail.gmail.com>
-	 <20080115220641.GC2665@elte.hu>
+In-Reply-To: <20080115214325.GN155407@sgi.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
-      I'll get the results tomorrow as I'm now out of the office, but
-I can perhaps answer some of your queries now.
+Hi!
 
-On Jan 15, 2008 10:06 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> > > > What are ext3 expectations of disk (is there doc somewhere)? For
+> > > > example... if disk does not lie, but powerfail during write damages
+> > > > the sector -- is ext3 still going to work properly?
+> > > 
+> > > Nope. However the few disks that did this rapidly got firmware updates
+> > > because there are other OS's that can't cope.
+> > > 
+> > > > If disk does not lie, but powerfail during write may cause random
+> > > > numbers to be returned on read -- can fsck handle that?
+> > > 
+> > > most of the time. and fsck knows about writing sectors to remove read
+> > > errors in metadata blocks.
+> > > 
+> > > > What abou disk that kills 5 sectors around sector being written during
+> > > > powerfail; can ext3 survive that?
+> > > 
+> > > generally. Note btw that for added fun there is nothing that guarantees
+> > > the blocks around a block on the media are sequentially numbered. The
+> > > usually are but you never know.
+> > 
+> > Ok, should something like this be added to the documentation?
+> > 
+> > It would be cool to be able to include few examples (modern SATA disks
+> > support bariers so are safe, any IDE from 1989 is unsafe), but I do
+> > not know enough about hw...
+> 
+> ext3 is not the only filesystem that will have trouble due to
+> volatile write caches. We see problems often enough with XFS
+> due to volatile write caches that it's in our FAQ:
+> 
+> http://oss.sgi.com/projects/xfs/faq.html#wcache
 
-> hm, the system has considerable idle time left:
->
->  r  b swpd   free   buff  cache   si so  bi bo   in    cs  us sy id wa
->  8  0    0 1201920 683840 1039100  0  0   3  2   27    46   1  0 99  0
->  2  0    0 1202168 683840 1039112  0  0   0  0  245 45339  80  2 17  0
->  2  0    0 1202168 683840 1039112  0  0   0  0  263 47349  84  3 14  0
->  2  0    0 1202300 683848 1039112  0  0   0 76  255 47057  84  3 13  0
->
-> and context-switches 45K times a second. Do you know what is going on
-> there? I thought ray-tracing is something that can be parallelized
-> pretty efficiently, without having to contend and schedule too much.
->
+Nice FAQ, yep. Perhaps you should move parts of it to Documentation/ ,
+and I could then make ext3 FAQ point to it?
 
-This is a RTRT (real-time ray tracing) system and as a result differs
-from traditional offline ray-tracers as it is optimised for speed. The
-benchmark I ran while these data were collected renders an 80K polygon
-scene to a 512x512 buffer at just over 100fps.
-
-The context switches are most likely caused by the pthreads
-synchronisation code. There are two mutexs. Each job is a 32x32 tile
-and each mutex is therefore unlocked (512/32) * (512/32) * 100 (for
-100fps) * 2 =~50k. There's very likely where our context switches are
-coming from. Larger tile sizes would of course reduce the locking
-overhead, but then the ray-tracer suffers form load imbalance as some
-tiles are much quicker to render than others. Empircally we've found
-that this tile-size works the best for us.
-
-The CPU idling occurs as the system doesn't yet perform asynchronous
-rendering. When all tiles in a current job queue are finished the
-current frame is done. At this point all worker threads sleep while
-the master thread blits the image to the screen and fills the job
-queue for the next frame. The data probably shows that one CPU is kept
-maxed and the others reach about 90% most of the time. This is
-something on my TODO list to fix along with a myriad of other
-optimisations :)
-
-regards,
-        Colin
+I had write cache enabled on my main computer. Oops. I guess that
+means we do need better documentation.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
