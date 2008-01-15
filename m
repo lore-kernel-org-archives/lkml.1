@@ -1,46 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756259AbYAOTlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbYAOTn6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756259AbYAOTlX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 14:41:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbYAOTlH
+	id S1756055AbYAOTn6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 14:43:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYAOTnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 14:41:07 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49346 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755450AbYAOTlE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 14:41:04 -0500
-Date: Tue, 15 Jan 2008 11:38:42 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Tony Camuso <tcamuso@redhat.com>
-cc: Matthew Wilcox <matthew@wil.cx>, Greg KH <greg@kroah.com>,
-       Loic Prylli <loic@myri.com>, Adrian Bunk <bunk@kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
- opt-in
-In-Reply-To: <478D0928.9020802@redhat.com>
-Message-ID: <alpine.LFD.1.00.0801151137390.2806@woody.linux-foundation.org>
-References: <20080111235856.GA16079@jurassic.park.msu.ru> <20080112002638.GA18710@kroah.com> <20080112144030.GA19279@jurassic.park.msu.ru> <1200208085.6896.134.camel@pasglop> <20080113072415.GB18741@parisc-linux.org> <20080113090108.3224698c@laptopd505.fenrus.org>
- <20080114225225.GQ18741@parisc-linux.org> <20080114230448.GL9847@does.not.exist> <478CD8A5.5090608@myri.com> <20080115174643.GB28238@kroah.com> <20080115175641.GE18741@parisc-linux.org> <478D0928.9020802@redhat.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 15 Jan 2008 14:43:50 -0500
+Received: from gw.goop.org ([64.81.55.164]:45436 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751134AbYAOTnu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 14:43:50 -0500
+Message-ID: <478D0CE7.2090104@goop.org>
+Date: Tue, 15 Jan 2008 11:43:35 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: unify pagetable accessors patch causes double fault II
+References: <20080114094814.GA28300@basil.nowhere.org> <20080114125638.GA9510@basil.nowhere.org> <20080114130620.GA14057@elte.hu> <20080114135811.GA16190@one.firstfloor.org> <478BDC43.6050105@goop.org> <20080114222349.GA23409@one.firstfloor.org> <478BE628.7090008@goop.org> <20080115135317.GA13493@elte.hu> <20080115173658.GA2665@one.firstfloor.org>
+In-Reply-To: <20080115173658.GA2665@one.firstfloor.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi Kleen wrote:
+> The patch does not fix the problem here. When I boot plain git-x86
+> upto commit 67db3027d691ff8049d19be7bc440eca0e5826d7
+> on my 6GB machine I still get an recursive oops on entering user space.
+>
+> The only difference to earlier kernels seems to be that the problem
+> happens a little latter (in stty, not boot), but that might be just
+> coincidence.
+>   
 
+Yesterday's x86.git was missing all my unification patches, so if you 
+were seeing this oops then, it's something else.   Is it still caused 
+specifically by "unify pagetable accessors", or is some other change 
+being problematic now?
 
-On Tue, 15 Jan 2008, Tony Camuso wrote:
-> 
-> Linus is confident that conf1 is not going away for at least the
-> next five years.
-
-Not on PC's. Small birds tell me that there can be all these non-PC x86 
-subarchitectures that may or may not have conf1.
-
-		Linus
+    J
