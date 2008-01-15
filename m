@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbYAORxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbYAORyD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755609AbYAORxt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 12:53:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbYAORxl
+	id S1756795AbYAORyD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 12:54:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754975AbYAORxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 12:53:41 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:43325 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751179AbYAORxl (ORCPT
+	Tue, 15 Jan 2008 12:53:48 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:30066 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754116AbYAORxr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 12:53:41 -0500
-Message-ID: <478CF31A.8040305@ct.jp.nec.com>
-Date: Tue, 15 Jan 2008 09:53:30 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Tue, 15 Jan 2008 12:53:47 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=xOYEQ1LmyG/5itLlZY5NQhT0mNv4AT3Xxv5803JCfaEXHLkksDosrSxd6iYQ/CDHG
+	WBuXx73i97SUyDIcNUEug==
+Message-ID: <532480950801150953g5a25f041ge1ad4eeb1b9bc04b@mail.gmail.com>
+Date: Tue, 15 Jan 2008 09:53:42 -0800
+From: "Michael Rubin" <mrubin@google.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: [patch] Converting writeback linked lists to a tree based data structure
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, wfg@mail.ustc.edu.cn
+In-Reply-To: <1200386774.15103.20.camel@twins>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: move warning message of polling idle and HT	enabled
-References: <478BB226.6090105@ct.jp.nec.com> <20080114190904.GA2288@elte.hu> <478C1475.7060706@ct.jp.nec.com> <20080115132607.GE7025@elte.hu>
-In-Reply-To: <20080115132607.GE7025@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080115080921.70E3810653@localhost>
+	 <1200386774.15103.20.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
-> 
->> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->> Subject: [PATCH] x86: move warning message of polling idle and HT enabled
->>
->> This warning at idle_setup() is never shown because smp_num_sibling hasn't
->> been updated at this point yet.
->>
->> Move this polling idle and HT enabled warning message to 
->> select_idle_routine(). I also implement this warning on 64-bit kernel 
->> and make select_idle_routine() call after detect_ht() call.
-> 
-> looks good to me, but could you please split this up into two patches 
-> instead - one that just moves/adds the printks, the other one that moves 
-> the select_idle_routine() call? (Moving init calls around is notoriously 
-> error-prone, so we want as small of a bisection target as possible.) 
+On Jan 15, 2008 12:46 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> Just a quick question, how does this interact/depend-uppon etc.. with
+> Fengguangs patches I still have in my mailbox? (Those from Dec 28th)
 
-Sure, I'll repost take3 soon.
+They don't. They apply to a 2.6.24rc7 tree. This is a candidte for 2.6.25.
 
-Thanks,
-Hiroshi Shimamoto
+This work was done before Fengguang's patches. I am trying to test
+Fengguang's for comparison but am having problems with getting mm1 to
+boot on my systems.
 
+mrubin
