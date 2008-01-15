@@ -1,42 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbYAOKbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753572AbYAOKcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755487AbYAOKbm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 05:31:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751173AbYAOKbb
+	id S1753572AbYAOKcA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 05:32:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbYAOKbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 05:31:31 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:45448 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750768AbYAOKba (ORCPT
+	Tue, 15 Jan 2008 05:31:48 -0500
+Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:56390 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755990AbYAOKbq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 05:31:30 -0500
-To: serue@us.ibm.com
-CC: miklos@szeredi.hu, akpm@linux-foundation.org, hch@infradead.org,
-       serue@us.ibm.com, viro@ftp.linux.org.uk, ebiederm@xmission.com,
-       kzak@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
-       util-linux-ng@vger.kernel.org
-In-reply-to: <20080114232419.GH6704@sergelap.austin.ibm.com>
-	(serue@us.ibm.com)
-Subject: Re: [patch 7/9] unprivileged mounts: allow unprivileged fuse mounts
-References: <20080108113502.184459371@szeredi.hu> <20080108113630.861045063@szeredi.hu> <20080114232419.GH6704@sergelap.austin.ibm.com>
-Message-Id: <E1JEj3N-0000vj-QA@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 15 Jan 2008 11:29:57 +0100
+	Tue, 15 Jan 2008 05:31:46 -0500
+Date: Tue, 15 Jan 2008 11:31:43 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Steve Hardy <steve@linuxrealtime.co.uk>
+Cc: linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+Subject: Re: [PATCH 1/1] : hwmon - new chip driver for TI  ADS7828 A-D
+Message-ID: <20080115113143.6a181fab@hyperion.delvare>
+In-Reply-To: <20080114222849.GA7279@toshiba-lt>
+References: <477D50CC.6020504@linuxrealtime.co.uk>
+	<20080104073439.GA22033@toshiba-lt>
+	<20080110141934.1266ee39@hyperion.delvare>
+	<20080114222849.GA7279@toshiba-lt>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Sounds like a sysctl to enable FS_SAFE for fuse will make this patch
-> acceptable to everyone?
+Hi Steve,
 
-I think the most generic approach, is to be able to set "safeness" for
-any fs type, not just fuse (Karel's suggestion).
+On Mon, 14 Jan 2008 22:28:51 +0000, Steve Hardy wrote:
+> > As far as I know boolean parameters take values 0 and 1, not N and Y.
+> 
+> Not on the systems I am testing on (2.6.24-rc6) - the sysfs interface
+> displays boolean parameters as Y/N, and will accept boot parameters as
+> either Y/N or 0/1.  Below is a snippet from a test proving this point :
+> 
+> test@shtest:~$ cat /sys/module/ads7828/parameters/se_input
+> Y
+> test@shtest:~$ cat /sys/module/ads7828/parameters/int_vref
+> Y
+> 
+> after appending the ads7828.int_vref=N parameter to the kernel
+> command-line :
+> 
+> Linux 2.6.24-rc6 (shtest) (16:53 on Saturday, 05 January 2002)
+> 
+> login: test
+> test@shtest:~$ cat /sys/module/ads7828/parameters/int_vref
+> N
 
-E.g:
+Oh. This is news to me, thanks for the information.
 
-  echo 1 > /proc/sys/fs/types/cifs/safe
+> Is it more "correct" to refer to 1/0 in the documentation?
+> I just naturally used the same syntax provided by the sysfs nodes
 
-This would also provide a way to query the FS_SAFE flag.
+Nah, just scratch this comment of mine, I just didn't know that Y/N was
+working for booleans. If you prefer that to document that form that's
+alright with me.
 
-Miklos
+(I do believe that it was a mistake to allow two different ways to do
+the same thing, but that's a different issue.)
+
+-- 
+Jean Delvare
