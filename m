@@ -1,124 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754519AbYAPPou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbYAPPqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754519AbYAPPou (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 10:44:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbYAPPoo
+	id S1754812AbYAPPqp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 10:46:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbYAPPqh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 10:44:44 -0500
-Received: from lizzard.sbs.de ([194.138.37.39]:23829 "EHLO lizzard.sbs.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751810AbYAPPon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 10:44:43 -0500
-Message-ID: <478E2662.2070606@siemens.com>
-Date: Wed, 16 Jan 2008 16:44:34 +0100
-From: Jan Kiszka <jan.kiszka@siemens.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
-MIME-Version: 1.0
-To: Jason Wessel <jason.wessel@windriver.com>
-CC: Jan Kiszka <jan.kiszka@web.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: State of kgdb on x86-64
-References: <478BB35B.9060507@siemens.com> <478BB74E.6020506@windriver.com> <478C786A.3090709@siemens.com> <478CB724.3000900@windriver.com> <478CFF08.1090608@web.de> <478D839A.4010201@windriver.com>
-In-Reply-To: <478D839A.4010201@windriver.com>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Jan 2008 10:46:37 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:50780 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750986AbYAPPqf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 10:46:35 -0500
+Subject: Re: 2.6.24-rc7 lockdep warning when poweroff
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Dave Young <hidave.darkstar@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@tv-sign.ru>
+In-Reply-To: <1200399661.26045.13.camel@twins>
+References: <a8e1da0801140104m2d8dceaayd8cf85466659bbf@mail.gmail.com>
+	 <1200302644.7415.6.camel@twins>  <1200306902.5887.39.camel@johannes.berg>
+	 <1200307288.7415.11.camel@twins>  <1200307896.5887.42.camel@johannes.berg>
+	 <1200393685.5887.113.camel@johannes.berg> <1200399661.26045.13.camel@twins>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-g4KsQ4ktY+zrfYQioE7w"
+Date: Wed, 16 Jan 2008 00:54:53 +0100
+Message-Id: <1200441293.5887.158.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jason Wessel wrote:
-> Jan Kiszka wrote:
->> Jason Wessel wrote:
->>   
->>> Jan Kiszka wrote:
->>>     
->>>> Jason Wessel wrote:
->>>>   
->>>>       
->>>>> It was working at the point that I tested it with the 2.6.24-rc5 on
->>>>> x86_64.  However I suspect my kernel config may differ drastically from
->>>>> what you are using.
->>>>>
->>>>> Without any other context provided than the generic message, it is hard
->>>>> to know what might have happened. 
->>>>>     
->>>>>         
->>>> Here is the promised .config. I could also dig out the backtrace of the
->>>> panic as kgdb sees it if that helps, just let me know.
->>>>
->>>> Jan
->>>>
->>>>   
->>>>       
->>> The backtrace might be very telling as to what happened.  More
->>> information is always better than less :-)
->>>
->>>     
->> My primary test box is again out of reach, but meanwhile I was able to
->> reproduce some kind of problem under QEMU - that one at least is
->> triggered by SMP. With only one CPU -> all apparently fine. Once booting
->> QEMU with "-smp 2" -> this happens:
->>
->> (gdb) tar remote /dev/pts/6
->> Remote debugging using /dev/pts/6
->> Not all CPUs have been synced for KGDB
->> breakpoint () at kernel/kgdb.c:1895
->> 1895            wmb(); /* Sync point after breakpoint */
->> (gdb) c
->> Continuing.
->> Not all CPUs have been synced for KGDB
->> [New Thread 32769]
->>
->> Program received signal SIGFPE, Arithmetic exception.
->> [Switching to Thread 32769]
->> 0xffffffff8020adb7 in default_idle () at include/asm/irqflags_64.h:140
->> 140             __asm__ __volatile__("sti; hlt" : : : "memory");
->> (gdb) bt
->> #0  0xffffffff8020adb7 in default_idle () at include/asm/irqflags_64.h:140
->> #1  0xffffffff8020ae65 in cpu_idle () at arch/x86/kernel/process_64.c:225
->> #2  0xffffffff8021ccb9 in start_secondary () at arch/x86/kernel/smpboot_64.c:375
->> #3  0x0000000000000000 in ?? ()
->> (gdb)                                                                                     
->>
->> The problem seems to be related to continuing SMP boxes. I'm able to
->> boot my box up if I leave kgdb unattached. But when I then later attach
->> and continue execution, I get the same crash. Any ideas what goes wrong,
->> any suggestion where to start digging? Maybe at "Not all CPUs have been
->> synched"?
->>   
-> 
-> Generally speaking when you get an error that the CPUs have not been
-> synced, it means that the IPI which was sent to all the non-master
-> processors failed.  I took a quick look and it appears that the DIE_TRAP
-> is occuring after kgdb sends the IPI to the non master cores with the call:
-> 
->     send_IPI_allbutself(APIC_DM_NMI);
-> 
-> In prior kernels that ultimately resulted in an NMI trap.  I am not sure
-> of the cause of the DIE_TRAP as a result of the IPI.  For now, if you
-> add the statement "case DIE_TRAP:" right before "    case
-> DIE_NMIWATCHDOG:" in arch/x86/kernel/kgdb_64.c it will sync te
-> processors, however the kernel should not be trapping for this error
-> code from the IPI event.  I suspect there has been some kind of change
-> to the way the IPI/NMI handling is being done in the latest kernels.
 
-Things I found out so far:
+--=-g4KsQ4ktY+zrfYQioE7w
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
- - delivery of this IPI under QEMU somehow doesn't work
-   (I would dare to say: at emulation level. But I'm not sure yet.)
 
- - the breakdown of my Xeon box with kdbg is a separate issue
+> > Turns out that there are many users that give a dynamic string as the
+> > workqueue name (only the first three are relevant for the problem at
+> > hand because the others are single-threaded):
+>=20
+> I'm not sure the single threadedness of a workqueue matters here.
 
- - stuffing my Xeon kernel into QEMU triggers the original bug there
-   too, even under UP => debugging with QEMU should be feasible
+Oh I should have explained this, missed it earlier. No, the
+single-threadedness doesn't really matter for the problem, but the
+warning Dave got couldn't possibly have triggered for a single-threaded
+workqueue because it was from the CPU up/down code that spawns/stops the
+new workqueue thread on a new/dying CPU.
 
-But I'm first trying to identify the related config switch that makes it
-pop up, because this mostly means compiling and quick testing (I can't
-spent my full time on it yet). Will let you know about news, and I would
-appreciate to hear from you if you have any updates.
+johannes
 
-Jan
+--=-g4KsQ4ktY+zrfYQioE7w
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
--- 
-Siemens AG, Corporate Technology, CT SE 2
-Corporate Competence Center Embedded Linux
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR41HzKVg1VMiehFYAQK/fg/6AiPNOzPp5pyivaoQZIHByGNd1GxN3DzQ
+AsYVV4R7PqEqB55XtFQGbOjAxrmai7PJtpv8c8ZhpDm02TN5OJsoU2aBJD2tsOkR
+1K2/30B6qjvqBXrXFe5aZ9JjAwNmCAPGJGIv+e32u8tk3kEKlKJoQZQQE0Vf/hR3
+/YOBQctNJG6nFLB2NNi6p/jXCYYf4rzWPra5e2dhoOs/OrjJsCroO4M1TlBTI4YM
+kClZt8W1J7vVZ4rw4QQSrpCpwUtLoAVxwbSspQ1tNgsLWu09aFayadOPjyHPDUGz
+TsTiFhmREkYJYlwmdJ06SWVpKz8jMnPztWd9t5pTzAE7ACdmEnmucof96PNoO3ok
+CzamJX6VOfiSiEmcOoTmzG+unK7+qZdnUQhwGTQ6+guy1w7ONSLlBl4e4gOI4zRv
+rMcBwdcRDxn8fCihl/sK6H6VI2saGmXRa7swc71/kYQxaESlvujQLdHQLivwa6Ou
+bx+9ANCojSNSI/bC+Hf9Qtyy+7jXTsKSeIUyJ66EoBtmeS7lkKOXAt21WmOpAQWT
+/eoK+/OPcDKeBiO9C6cm3AIzAISlV0w6k9QxYpj1VI1zZX8sCIl/zHWy/jATscQQ
+fr2wnhl04GV+z3HiqcVLGWNRIL/nIcTtIuFK1urHiA8EBhfnRLo2lMx4VuS2MCy2
+MBH65sf6Sak=
+=Uq5I
+-----END PGP SIGNATURE-----
+
+--=-g4KsQ4ktY+zrfYQioE7w--
+
