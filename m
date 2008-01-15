@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753572AbYAOKcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbYAOKgn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753572AbYAOKcA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 05:32:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbYAOKbs
+	id S1756043AbYAOKgn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 05:36:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751262AbYAOKgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 05:31:48 -0500
-Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:56390 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755990AbYAOKbq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 05:31:46 -0500
-Date: Tue, 15 Jan 2008 11:31:43 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Steve Hardy <steve@linuxrealtime.co.uk>
-Cc: linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
-Subject: Re: [PATCH 1/1] : hwmon - new chip driver for TI  ADS7828 A-D
-Message-ID: <20080115113143.6a181fab@hyperion.delvare>
-In-Reply-To: <20080114222849.GA7279@toshiba-lt>
-References: <477D50CC.6020504@linuxrealtime.co.uk>
-	<20080104073439.GA22033@toshiba-lt>
-	<20080110141934.1266ee39@hyperion.delvare>
-	<20080114222849.GA7279@toshiba-lt>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Jan 2008 05:36:35 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:54542 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750768AbYAOKge (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 05:36:34 -0500
+Date: Tue, 15 Jan 2008 11:36:02 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Adrian Bunk <bunk@kernel.org>
+cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Top 10 kernel oopses for the week ending January 12th, 2008
+In-Reply-To: <20080112222322.GE17276@does.not.exist>
+Message-ID: <Pine.LNX.4.64.0801151126480.15647@twin.jikos.cz>
+References: <47890B65.80804@linux.intel.com> <20080112222322.GE17276@does.not.exist>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Steve,
+On Sun, 13 Jan 2008, Adrian Bunk wrote:
 
-On Mon, 14 Jan 2008 22:28:51 +0000, Steve Hardy wrote:
-> > As far as I know boolean parameters take values 0 and 1, not N and Y.
-> 
-> Not on the systems I am testing on (2.6.24-rc6) - the sysfs interface
-> displays boolean parameters as Y/N, and will accept boot parameters as
-> either Y/N or 0/1.  Below is a snippet from a test proving this point :
-> 
-> test@shtest:~$ cat /sys/module/ads7828/parameters/se_input
-> Y
-> test@shtest:~$ cat /sys/module/ads7828/parameters/int_vref
-> Y
-> 
-> after appending the ads7828.int_vref=N parameter to the kernel
-> command-line :
-> 
-> Linux 2.6.24-rc6 (shtest) (16:53 on Saturday, 05 January 2002)
-> 
-> login: test
-> test@shtest:~$ cat /sys/module/ads7828/parameters/int_vref
-> N
+> > Rank 1: implement (hid code)
+> > 	WARN_ON at drivers/hid/hid-core.c:784
+> > 	Reported 23 times (39 total reports)
+> > 	This appears to be the kernel doing a WARN_ON based on unexpected ioctl() arguments
+> > 	More info: http://www.kerneloops.org/search.php?search=implement
+> >...
+> The only complete bug reports seems to be from one user who loaded a 
+> module whose distribution might be considered a criminal act in some 
+> countries.
 
-Oh. This is news to me, thanks for the information.
+The most usual case is hid2hci utility, that tries to switch modes on 
+Bluetooth HID peripherials (via hiddev). When these "switching" packets 
+are not compliant with HID report descriptor of the device, this WARN_ON() 
+happens.
 
-> Is it more "correct" to refer to 1/0 in the documentation?
-> I just naturally used the same syntax provided by the sysfs nodes
+Unfortunately there is no standard specifying how these packets should 
+look like, so it is guess-game and some rev-eng, that Marcel has put into 
+hid2hci for individual vendors, and sometimes this just happens not to 
+work.
 
-Nah, just scratch this comment of mine, I just didn't know that Y/N was
-working for booleans. If you prefer that to document that form that's
-alright with me.
+I have had the commit below queued in my tree for 2.6.25 for quite some 
+time
 
-(I do believe that it was a mistake to allow two different ways to do
-the same thing, but that's a different issue.)
+commit dbacd67dc33f7b0d5fe64323668cf266d18f4b3f
+Author: Jiri Kosina <jkosina@suse.cz>
+Date:   Fri Nov 30 11:12:58 2007 +0100
+
+    HID: remove redundant WARN_ON()s in order not to scare users
+
+    The WARN_ON() in implement() and extract() spit out stacktraces and
+    a lot of other information that might make users think that there is
+    something seriously wrong with the system. WARN_ON() should not be
+    deliberately triggerable by userspace application, which these can be.
+    Usually this WARN_ON() triggers when hid2hci utility is sending the
+    data that don't correspond to the device's report descriptor.
+
+    Convert these messages to more friendly printk().
 
 -- 
-Jean Delvare
+Jiri Kosina
