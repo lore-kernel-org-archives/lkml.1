@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756546AbYAOSIN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756270AbYAOSK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756546AbYAOSIN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 13:08:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbYAOSH7
+	id S1756270AbYAOSK2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 13:10:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751173AbYAOSKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 13:07:59 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:39196 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751144AbYAOSH6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 13:07:58 -0500
-Date: Tue, 15 Jan 2008 20:06:56 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Bryan Wu <bryan.wu@analog.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Randy Dunlap <randy.dunlap@oracle.com>, phil.el@wanadoo.fr,
-       oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: Fwd: Re: [2.6.24 patch] restore ARMv6 OProfile support
-Message-ID: <20080115180656.GA19192@does.not.exist>
-References: <20071228195841.GA3945@flint.arm.linux.org.uk> <20080115104526.GA32067@flint.arm.linux.org.uk> <alpine.LFD.1.00.0801150811250.2806@woody.linux-foundation.org> <20080115174948.GB19306@flint.arm.linux.org.uk>
+	Tue, 15 Jan 2008 13:10:19 -0500
+Received: from web36613.mail.mud.yahoo.com ([209.191.85.30]:47375 "HELO
+	web36613.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750852AbYAOSKR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 13:10:17 -0500
+X-YMail-OSG: MSeQVaoVM1mg6Re08tISyPs9YLHQ4uwoyziN2mykv3S8U21PmVSQ7Gjn8Pehs.BIO_p_XlyGQw--
+X-RocketYMMF: rancidfat
+Date: Tue, 15 Jan 2008 10:10:12 -0800 (PST)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM settings for task actions [try #2]
+To: David Howells <dhowells@redhat.com>, Stephen Smalley <sds@tycho.nsa.gov>
+Cc: dhowells@redhat.com, Daniel J Walsh <dwalsh@redhat.com>,
+       casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
+In-Reply-To: <32507.1200412997@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080115174948.GB19306@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.17 (2007-12-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <286481.40953.qm@web36613.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 15, 2008 at 05:49:48PM +0000, Russell King wrote:
->...
-> So blackfin also needs fixing.  I don't know if blackfin people are
-> aware of this.
 
-They are:
-  http://lkml.org/lkml/2007/12/28/100
+--- David Howells <dhowells@redhat.com> wrote:
 
-> Russell King
+> Stephen Smalley <sds@tycho.nsa.gov> wrote:
+> 
+> > >  (3) Check that the kernel may create files as a particular secid (this
+> > >      could be specified indirectly by specifying an inode, which would
+> > >      hide the secid inside the LSM).
+> > 
+> > I don't think this check is on the kernel per se but rather the ability
+> > of the daemon to nominate a secid for use on files created later by the
+> > kernel module.
+> 
+> Hmmm...  At the moment the cachefiles module works out for itself what the
+> file label should be by looking at the root directory it was given and
+> assuming the label on that is what it's going to be using.  Are you
+> suggesting
+> this should be specified directly instead by the daemon?
 
-cu
-Adrian
+Oh my. While there will be cases where the label of the file
+will match the label of the containing directory, and in fact
+for most label based LSMs that will usually be the case, you
+certainly can't count on it. The only place that you can find
+the correct label for a file with any confidence in from the
+xattr (assuming the LSM uses xattrs) on the file itself. I can
+imaging an LSM for which it would make sense to derive the
+label from the root directory, but I know Smack isn't one of
+them, and I don't think that SELinux is either, although I
+would defer a definitive answer on that to Stephen.
 
--- 
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Casey Schaufler
+casey@schaufler-ca.com
