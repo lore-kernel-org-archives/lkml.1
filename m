@@ -1,90 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760008AbYAOX6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760066AbYAOX66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760008AbYAOX6m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 18:58:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756944AbYAOXtp
+	id S1760066AbYAOX66 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 18:58:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758494AbYAOXwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 18:49:45 -0500
-Received: from s9.math.TU-Berlin.DE ([130.149.11.90]:55331 "EHLO
-	mail-pool.math.tu-berlin.de" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758095AbYAOXtn (ORCPT
+	Tue, 15 Jan 2008 18:52:08 -0500
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:33496 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758166AbYAOXwH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 18:49:43 -0500
-X-Greylist: delayed 2633 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Jan 2008 18:49:43 EST
-Date: Wed, 16 Jan 2008 00:05:44 +0100
-From: Jan Christoph Nordholz <hesso@pool.math.tu-berlin.de>
-To: shemminger@linux-foundation.org, kaber@trash.net
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] net_device refcnt bug when NFQUEUEing bridged packets
-Message-ID: <20080115230544.GA21214@pool.math.tu-berlin.de>
+	Tue, 15 Jan 2008 18:52:07 -0500
+X-Sasl-enc: QJP/pC5ArKD5kUFC6/zc6o02RbKuJICLFW/Zg6qmTvE5 1200441125
+Message-ID: <478D4723.5000407@imap.cc>
+Date: Wed, 16 Jan 2008 00:52:03 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Folkert van Heusden <folkert@vanheusden.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Fw: G965 & on-board serial port
+References: <20080109130242.GD8331@vanheusden.com>
+In-Reply-To: <20080109130242.GD8331@vanheusden.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigC7C763EAB0001ADAE2A2C94F"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigC7C763EAB0001ADAE2A2C94F
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-I came across the following bug a few weeks ago (which still applies to
-2.6.24-rc7):
+Am 09.01.2008 14:02 schrieb Folkert van Heusden:
+> (no-one with a g965 mobo who uses the serial port?)
 
-Packets that are to be sent out over a bridge device are skb_clone()d in
-br_loop() before traversing the appropriate (FORWARD/OUTPUT) NF chain. 
-The copies made by skb_clone() share their nf_bridge metadata with the
-original, which is no problem usually.
-If however one or more packets of a br_loop() run end up in a NFQUEUE,
-their shared nf_bridge metadata causes trouble when they are about to be
-reinjected: nf_reinject() decrements the net_device refcounts that were
-previously upped when queueing the packet in __nf_queue(), but as
-skb->nf_bridge->physoutdev points to the same device for all these
-packets, most (if not all) of them will affect the wrong refcnt.
+I am using the on-board serial port of a Intel DQ965GF board for
+ongoing test and development of the ser_gigaset driver, which is
+implemented as a line discipline on top of the standard serial
+driver. The port works purrfectly fine, including non-trivial
+use of the modem control lines. I'm sure I would have noticed
+any existing problems by now.
 
-(I originally encountered the bug on a Xen host because the hypervisor
-refused to shutdown a virtual device with non-zero refcount... but it is
-perfectly reproducible with a standard kernel, too, although it was a
-bit more tedious to create a test scenario, involving a couple of UMLs.)
+HTH
+T.
 
-I'd suggest to make a real copy of the nf_bridge member in br_loop() if
-CONFIG_BRIDGE_NETFILTER is defined - I've attached a patch that illus-
-trates how to fix the bug (and the machine I've found the bug on is
-running a kernel with this patch since weeks and has not had any
-refcount anomalies since), but I admit it is ugly, returning the reference
-acquired by __nf_copy() and then copying manually...
-
-Please tell me where that logic should really go (skbuff.h? br_netfilter.c?)
-so I can wrap up a final and CodingStyle-conformant version, or feel free
-to simply apply a modified version.
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
 
-Regards,
+--------------enigC7C763EAB0001ADAE2A2C94F
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Jan
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
+iD8DBQFHjUckMdB4Whm86/kRAoF2AJ9JOGAqhCWR74t0dcUPAjh7/pNBrQCcC/tZ
+z2SmZOv3pWE3IbqdumnLTXw=
+=WA7G
+-----END PGP SIGNATURE-----
 
-Signed-off-by: Jan Christoph Nordholz <hesso@pool.math.tu-berlin.de>
----
-diff -Naur linux-2.6.24-rc7/ linux/
---- linux-2.6.24-rc7/net/bridge/br_forward.c
-+++ linux/net/bridge/br_forward.c
-@@ -120,6 +120,20 @@
-					return;
-				}
- 
-+#ifdef CONFIG_BRIDGE_NETFILTER
-+				if (skb->nf_bridge) {
-+					nf_bridge_put(skb2->nf_bridge);
-+					if ((skb2->nf_bridge = kzalloc(sizeof(struct nf_bridge_info), GFP_ATOMIC)) == NULL) {
-+						br->statistics.tx_dropped++;
-+						kfree_skb(skb2);
-+						kfree_skb(skb);
-+						return;
-+					}
-+					memcpy(skb2->nf_bridge, skb->nf_bridge, sizeof(struct nf_bridge_info));
-+					atomic_set(&(skb2->nf_bridge->use), 1);
-+				}
-+#endif
-+
-				__packet_hook(prev, skb2);
-			}
+--------------enigC7C763EAB0001ADAE2A2C94F--
