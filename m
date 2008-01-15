@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753796AbYAONXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520AbYAONYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753796AbYAONXT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 08:23:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbYAONXL
+	id S1755520AbYAONYu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 08:24:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbYAONYn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 08:23:11 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48336 "EHLO mx2.mail.elte.hu"
+	Tue, 15 Jan 2008 08:24:43 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48851 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750982AbYAONXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 08:23:09 -0500
-Date: Tue, 15 Jan 2008 14:22:53 +0100
+	id S1750791AbYAONYm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 08:24:42 -0500
+Date: Tue, 15 Jan 2008 14:24:23 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Lameter <clameter@sgi.com>, ebiederm@xmission.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: checking aperture report for node instead of
-	cpu
-Message-ID: <20080115132253.GC7025@elte.hu>
-References: <200801101914.47967.yinghai.lu@sun.com> <200801120207.19981.yinghai.lu@sun.com> <20080114083545.GF18296@elte.hu> <200801141739.35448.yinghai.lu@sun.com>
+To: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
+Cc: Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
+       Jeremy Fitzhardinge <jeremy@xensource.com>
+Subject: Re: [PATCH] adjust/fix LDT handling for Xen
+Message-ID: <20080115132423.GD7025@elte.hu>
+References: <4787436E.76E4.0078.0@novell.com> <20080114154817.GA14000@elte.hu> <478B96A5.76E4.0078.0@novell.com> <478B9606.6020008@citrix.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200801141739.35448.yinghai.lu@sun.com>
+In-Reply-To: <478B9606.6020008@citrix.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,14 +35,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+* Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com> wrote:
 
-> -		printk(KERN_INFO "CPU %d: aperture @ %Lx size %u MB\n",
-> -				num-24, aper_base, aper_size>>20);
-> +		printk(KERN_INFO "Node %d: aperture @ %Lx size %u MB\n",
-> +				node++, aper_base, aper_size >> 20);
+>>> coul dyou try this against x86.git as well? We already unified ldt.c as 
+>>> part of the paravirt patches.
+>>>     
+>>
+>> Sure, but it may take me a little while.
+>
+> I've got the unified version here. 
 
-please dont put side-effects into printks. (put the node++ iteration out 
-into a separate line) Your patch looks fine otherwise.
+thanks, applied.
+
+> Acked-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+
+please use Signed-off-by when passing through (or modifying) patches.
 
 	Ingo
