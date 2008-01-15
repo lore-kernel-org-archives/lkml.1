@@ -1,52 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751907AbYAOOrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751847AbYAOO5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751907AbYAOOrt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 09:47:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751078AbYAOOrh
+	id S1751847AbYAOO5e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 09:57:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbYAOO5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 09:47:37 -0500
-Received: from zcars04f.nortel.com ([47.129.242.57]:56488 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751046AbYAOOrg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 09:47:36 -0500
-Message-ID: <478CC76B.1020804@nortel.com>
-Date: Tue, 15 Jan 2008 08:47:07 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Jarek Poplawski <jarkao2@gmail.com>
-CC: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: questions on NAPI processing latency and dropped network	packets
-References: <20080115071950.GA1696@ff.dom.local>
-In-Reply-To: <20080115071950.GA1696@ff.dom.local>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 15 Jan 2008 09:57:24 -0500
+Received: from zombie.ncsc.mil ([144.51.88.131]:64422 "EHLO zombie.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751046AbYAOO5X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 09:57:23 -0500
+Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM
+	settings for task actions [try #2]
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: David Howells <dhowells@redhat.com>
+Cc: Daniel J Walsh <dwalsh@redhat.com>, casey@schaufler-ca.com,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <3466.1200319279@redhat.com>
+References: <1199902278.9393.283.camel@moss-spartans.epoch.ncsc.mil>
+	 <1197307397.18120.72.camel@moss-spartans.epoch.ncsc.mil>
+	 <1197305173.18120.60.camel@moss-spartans.epoch.ncsc.mil>
+	 <20071205193818.24617.79771.stgit@warthog.procyon.org.uk>
+	 <20071205193859.24617.36392.stgit@warthog.procyon.org.uk>
+	 <25037.1197306473@redhat.com> <17868.1199897484@redhat.com>
+	 <3466.1200319279@redhat.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Tue, 15 Jan 2008 09:56:42 -0500
+Message-Id: <1200409002.9669.43.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-3.fc8) 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 Jan 2008 14:47:11.0186 (UTC) FILETIME=[8281A320:01C85785]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarek Poplawski wrote:
 
-> IMHO, checking this with a current stable, which probably you are going
-> to do some day, anyway, should be 100% acceptable: giving some input to
-> netdev, while still working for yourself.
+On Mon, 2008-01-14 at 14:01 +0000, David Howells wrote:
+> Stephen Smalley <sds@tycho.nsa.gov> wrote:
+> 
+> > > 	avc_has_perm(daemon_tsec->sid, nominated_sid,
+> > > 		     SECCLASS_CACHE, CACHE__USE_AS_OVERRIDE, NULL);
+> > > 
+> > > And I assume this doesn't care if one, the other or both of the two SIDs
+> > > mentioned are of SECCLASS_PROCESS rather than of SECCLASS_CACHE.
+> > 
+> > Right, the latter is reasonable.
+> 
+> Okay...  It looks like I want four security operations/hooks for cachefiles:
+> 
+>  (1) Check that a daemon can nominate a secid for use by the kernel to override
+>      the process subjective secid.
+> 
+>  (2) Set the secid mentioned in (1).
+> 
+>  (3) Check that the kernel may create files as a particular secid (this could
+>      be specified indirectly by specifying an inode, which would hide the secid
+>      inside the LSM).
 
-While I would love to do this, it's not that simple.
+I don't think this check is on the kernel per se but rather the ability
+of the daemon to nominate a secid for use on files created later by the
+kernel module.
 
-Some of our hardware is not supported on mainline, so we need per-kernel 
-version patches to even bring up the blade.  The blades netboot via a 
-jumbo-frame network, so kernel extensions are needed to handle setting 
-the MTU before mounting the rootfs.  The blade in question uses CKRM 
-which doesn't exist for newer kernels so the problem may simply be 
-hidden by scheduling differences.  The userspace application uses other 
-kernel features that are not in mainline (and likely some of them won't 
-ever be in mainline--I know because I've tried).
+>  (4) Set the fscreate secid mentioned in (3).
+> 
+> Now, it's possible to condense (1) and (2) into a single op, and condense (3)
+> and (4) into a single op.  That, however, might make the ops unusable by nfsd,
+> which may well want to bypass the checks or do them elsewhere.
+> 
+> Any thoughts?
 
-Basically, the number of changes required for our environment makes it 
-difficult to just boot up the latest kernel.
+I think it is fine to combine them.
 
-Chris
+-- 
+Stephen Smalley
+National Security Agency
+
