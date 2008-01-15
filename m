@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752164AbYAOKty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751463AbYAOKuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752164AbYAOKty (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 05:49:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751089AbYAOKtp
+	id S1751463AbYAOKuM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 05:50:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbYAOKtq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 05:49:45 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38085 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750990AbYAOKtm (ORCPT
+	Tue, 15 Jan 2008 05:49:46 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57022 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750968AbYAOKtm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 15 Jan 2008 05:49:42 -0500
-Date: Tue, 15 Jan 2008 19:49:25 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [RFC][PATCH 5/5] /proc/zoneinfo enhancement
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Marcelo Tosatti <marcelo@kvack.org>,
+Date: Tue, 15 Jan 2008 10:46:19 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       kosaki.motohiro@jp.fujitsu.com, Marcelo Tosatti <marcelo@kvack.org>,
        Daniel Spang <daniel.spang@gmail.com>, Rik van Riel <riel@redhat.com>,
        Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080115104406.14ab0da7@lxorguk.ukuu.org.uk>
-References: <20080115100233.117E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080115104406.14ab0da7@lxorguk.ukuu.org.uk>
-Message-Id: <20080115194837.11A0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Subject: Re: [RFC][PATCH 3/5] add /dev/mem_notify device
+Message-ID: <20080115104619.10dab6de@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080115100029.1178.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20080115092828.116F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080115100029.1178.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi alan
+On Tue, 15 Jan 2008 10:01:21 +0900
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-> > show new member of zone struct by /proc/zoneinfo.
-> > 
-> > Signed-off-by: Marcelo Tosatti <marcelo@kvack.org>
-> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> 
-> Minor NAK - Please put new fields at the end - it makes it less likely to
-> break badly written tools.
+> the core of this patch series.
+> add /dev/mem_notify device for notification low memory to user process.
 
-Oh I see.
-I applied your opinion at next post.
+As you only wake one process how would you use this API from processes
+which want to monitor and can free memory under load. Also what fairness
+guarantees are there...
 
-Thanks!
-
-
-- kosaki
-
+Alan
