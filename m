@@ -1,75 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757522AbYAOXHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757969AbYAOXIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757522AbYAOXHX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 18:07:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbYAOXHJ
+	id S1757969AbYAOXIo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 18:08:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755625AbYAOXIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 18:07:09 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36122 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752548AbYAOXHH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 18:07:07 -0500
-Date: Wed, 16 Jan 2008 00:07:14 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: David Chinner <dgc@sgi.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Al Boldi <a1426z@gawab.com>, Valerie Henson <val.henson@gmail.com>,
-       Rik van Riel <riel@redhat.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Patch] document ext3 requirements (was Re: [RFD] Incremental
-	fsck)
-Message-ID: <20080115230714.GC3573@elf.ucw.cz>
-References: <200801090022.55589.a1426z@gawab.com> <200801090740.12989.a1426z@gawab.com> <70b6f0bf0801082345vf57951ey642e35c3d6e5194f@mail.gmail.com> <200801091452.14890.a1426z@gawab.com> <20080112145140.GB6751@mit.edu> <20080113171916.GB4132@ucw.cz> <20080113174125.5f39ac64@lxorguk.ukuu.org.uk> <20080115201653.GA5639@elf.ucw.cz> <20080115214325.GN155407@sgi.com>
-MIME-Version: 1.0
+	Tue, 15 Jan 2008 18:08:37 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:34264 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753439AbYAOXIg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 18:08:36 -0500
+Date: Wed, 16 Jan 2008 00:11:40 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Andi Kleen <andi@firstfloor.org>, ebiederm@xmission.com,
+       rdreier@cisco.com, torvalds@linux-foundation.org, gregkh@suse.de,
+       airlied@skynet.ie, davej@redhat.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       jesse.barnes@intel.com
+Subject: Re: [patch 02/11] PAT x86: Map only usable memory in x86_64 identity map and kernel text
+Message-ID: <20080115231140.GA5967@one.firstfloor.org>
+References: <p737iiho5yq.fsf@bingen.suse.de> <924EFEDD5F540B4284297C4DC59F3DEE5A2805@orsmsx423.amr.corp.intel.com> <20080110192808.GF747@one.firstfloor.org> <924EFEDD5F540B4284297C4DC59F3DEE5A28CE@orsmsx423.amr.corp.intel.com> <20080114164324.GH15542@elte.hu> <20080114212105.GB8903@linux-os.sc.intel.com> <20080115221758.GG2665@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080115214325.GN155407@sgi.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080115221758.GG2665@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+> just to make sure i understood the attribute priorities right: we cannot 
+> just mark it WB in the PAT and expect it to be write-back - the UC of 
+> the MTRR will control?
 
-> > > > What are ext3 expectations of disk (is there doc somewhere)? For
-> > > > example... if disk does not lie, but powerfail during write damages
-> > > > the sector -- is ext3 still going to work properly?
-> > > 
-> > > Nope. However the few disks that did this rapidly got firmware updates
-> > > because there are other OS's that can't cope.
-> > > 
-> > > > If disk does not lie, but powerfail during write may cause random
-> > > > numbers to be returned on read -- can fsck handle that?
-> > > 
-> > > most of the time. and fsck knows about writing sectors to remove read
-> > > errors in metadata blocks.
-> > > 
-> > > > What abou disk that kills 5 sectors around sector being written during
-> > > > powerfail; can ext3 survive that?
-> > > 
-> > > generally. Note btw that for added fun there is nothing that guarantees
-> > > the blocks around a block on the media are sequentially numbered. The
-> > > usually are but you never know.
-> > 
-> > Ok, should something like this be added to the documentation?
-> > 
-> > It would be cool to be able to include few examples (modern SATA disks
-> > support bariers so are safe, any IDE from 1989 is unsafe), but I do
-> > not know enough about hw...
-> 
-> ext3 is not the only filesystem that will have trouble due to
-> volatile write caches. We see problems often enough with XFS
-> due to volatile write caches that it's in our FAQ:
-> 
-> http://oss.sgi.com/projects/xfs/faq.html#wcache
+There are different kinds of UC: UC+ and UC-. One controls the other doesn't.
 
-Nice FAQ, yep. Perhaps you should move parts of it to Documentation/ ,
-and I could then make ext3 FAQ point to it?
-
-I had write cache enabled on my main computer. Oops. I guess that
-means we do need better documentation.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-Andi
