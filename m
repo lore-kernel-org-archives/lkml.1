@@ -1,107 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbYAOVJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757535AbYAOVK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757405AbYAOVJZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 16:09:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750917AbYAOVJQ
+	id S1757535AbYAOVK7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 16:10:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbYAOVKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 16:09:16 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:31584 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751422AbYAOVJP (ORCPT
+	Tue, 15 Jan 2008 16:10:52 -0500
+Received: from rv-out-0910.google.com ([209.85.198.190]:25286 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751238AbYAOVKv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 16:09:15 -0500
-Date: Tue, 15 Jan 2008 13:06:27 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Anton Salikhmetov <salikhmetov@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>, linux-mm@kvack.org,
-       jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, protasnb@gmail.com, miklos@szeredi.hu
-Subject: Re: [PATCH 1/2] Massive code cleanup of sys_msync()
-Message-Id: <20080115130627.13b64688.randy.dunlap@oracle.com>
-In-Reply-To: <1200430017.19146.61.camel@cinder.waste.org>
-References: <12004129652397-git-send-email-salikhmetov@gmail.com>
-	<12004129734126-git-send-email-salikhmetov@gmail.com>
-	<20080115175705.GA21557@infradead.org>
-	<4df4ef0c0801151102l4d72b6b5j702e21beb1ebe459@mail.gmail.com>
-	<20080115111018.1e27a229.randy.dunlap@oracle.com>
-	<1200430017.19146.61.camel@cinder.waste.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Tue, 15 Jan 2008 16:10:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Lx0IIixtMKT4oZbnMH+v35f0ZKPJMveTg7YzJZ1MIISYzFxRzTrznVXgsx441l3WwKX77E/uYoJp05QK+3P7sXi9+s1XuG5UpWj22Q81zWU/z2VhIplPQN7/vPm2XCSmqJx/S76FSPQZ7gMaD1vDFsbq/uu2L6CkvjuAz1zZ7qA=
+Subject: [PATCH] x86: Add dump_pagetable helper to X86_32
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Content-Type: text/plain
+Date: Tue, 15 Jan 2008 13:10:53 -0800
+Message-Id: <1200431453.16794.46.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jan 2008 14:46:57 -0600 Matt Mackall wrote:
+Similar to X86_64.
 
-> 
-> On Tue, 2008-01-15 at 11:10 -0800, Randy Dunlap wrote:
-> > On Tue, 15 Jan 2008 22:02:54 +0300 Anton Salikhmetov wrote:
-> > 
-> > > 2008/1/15, Christoph Hellwig <hch@infradead.org>:
-> > > > On Tue, Jan 15, 2008 at 07:02:44PM +0300, Anton Salikhmetov wrote:
-> > 
-> > > > > @@ -33,71 +34,65 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
-> > > > >       unsigned long end;
-> > > > >       struct mm_struct *mm = current->mm;
-> > > > >       struct vm_area_struct *vma;
-> > > > > -     int unmapped_error = 0;
-> > > > > -     int error = -EINVAL;
-> > > > > +     int error = 0, unmapped_error = 0;
-> > > > >
-> > > > >       if (flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC))
-> > > > > -             goto out;
-> > > > > +             return -EINVAL;
-> > > > >       if (start & ~PAGE_MASK)
-> > > > > -             goto out;
-> > > > > +             return -EINVAL;
-> > > >
-> > > > The goto out for a simple return style is used quite commonly in kernel
-> > > > code to have a single return statement which makes code maintaince, e.g.
-> > > > adding locks or allocations simpler.  Not sure that getting rid of it
-> > > > makes a lot of sense.
-> > > 
-> > > Sorry, I can't agree. That's what is written in the CodingStyle document:
-> > > 
-> > > The goto statement comes in handy when a function exits from multiple
-> > > locations and some common work such as cleanup has to be done.
-> > 
-> > CodingStyle does not try to cover Everything.  Nor do we want it to.
-> > 
-> > At any rate, there is a desire for functions to have a single point
-> > of return, regardless of the amount of cleanup to be done, so I agree
-> > with Christoph's comments.
-> 
-> When we're not cleaning up resources, the main advantage of having a
-> single point of return is that you can trace backwards from the return
-> point through the function's logic. But that advantage flies right out
-> the window when you use gotos. You still have to figure out how you got
-> to the return statement by tracing back and looking at all the possible
-> gotos. And the "goto out" style adds bulk and non-negligible complexity
-> when we've got to search back for what the last explicitly set value of
-> "ret" or "error" or whatever the function in question is using was.
-> Sometimes people get this wrong ("retval is already -EINVAL, so I don't
-> need to explicitly set it"), and create bugs.
-> 
-> So I think if we're not actually going to use "structured
-> programming" (no gotos) or "stack cleanup" styles, the single return
-> point style is more trouble than it's worth.
-> 
-> A lesser advantage of the single return point is that you can set a
-> breakpoint or put a printk at the end of a function. But I don't think
-> that's much justification.
-
-OTOH, I think that those are fine reasons for it.
-
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
-~Randy
+Ingo, pulled this out of some unification work, Andi Kleen
+sent a pretty much identical patch in his CPA queue (7/31), this
+is against current x86.git
+
+ arch/x86/mm/fault_32.c |   72 ++++++++++++++++++++++++++----------------------
+ 1 files changed, 39 insertions(+), 33 deletions(-)
+
+diff --git a/arch/x86/mm/fault_32.c b/arch/x86/mm/fault_32.c
+index 46ec16c..977904c 100644
+--- a/arch/x86/mm/fault_32.c
++++ b/arch/x86/mm/fault_32.c
+@@ -173,6 +173,44 @@ static void force_sig_info_fault(int si_signo, int si_code,
+ 	force_sig_info(si_signo, &info, tsk);
+ }
+ 
++void dump_pagetable(unsigned long address)
++{
++	__typeof__(pte_val(__pte(0))) page;
++
++	page = read_cr3();
++	page = ((__typeof__(page) *) __va(page))[address >> PGDIR_SHIFT];
++#ifdef CONFIG_X86_PAE
++	printk("*pdpt = %016Lx ", page);
++	if ((page >> PAGE_SHIFT) < max_low_pfn
++	    && page & _PAGE_PRESENT) {
++		page &= PAGE_MASK;
++		page = ((__typeof__(page) *) __va(page))[(address >> PMD_SHIFT)
++		                                         & (PTRS_PER_PMD - 1)];
++		printk(KERN_CONT "*pde = %016Lx ", page);
++		page &= ~_PAGE_NX;
++	}
++#else
++	printk("*pde = %08lx ", page);
++#endif
++
++	/*
++	 * We must not directly access the pte in the highpte
++	 * case if the page table is located in highmem.
++	 * And let's rather not kmap-atomic the pte, just in case
++	 * it's allocated already.
++	 */
++	if ((page >> PAGE_SHIFT) < max_low_pfn
++	    && (page & _PAGE_PRESENT)
++	    && !(page & _PAGE_PSE)) {
++		page &= PAGE_MASK;
++		page = ((__typeof__(page) *) __va(page))[(address >> PAGE_SHIFT)
++		                                         & (PTRS_PER_PTE - 1)];
++		printk("*pte = %0*Lx ", sizeof(page)*2, (u64)page);
++	}
++
++	printk("\n");
++}
++
+ void do_invalid_op(struct pt_regs *, unsigned long);
+ 
+ static inline pmd_t *vmalloc_sync_one(pgd_t *pgd, unsigned long address)
+@@ -572,7 +610,6 @@ no_context:
+ 	bust_spinlocks(1);
+ 
+ 	if (oops_may_print()) {
+-		__typeof__(pte_val(__pte(0))) page;
+ 
+ #ifdef CONFIG_X86_PAE
+ 		if (error_code & PF_INSTR) {
+@@ -593,38 +630,7 @@ no_context:
+ 		printk(" at virtual address %08lx\n", address);
+ 		printk(KERN_ALERT "printing ip: %08lx ", regs->ip);
+ 
+-		page = read_cr3();
+-		page = ((__typeof__(page) *) __va(page))[address >> PGDIR_SHIFT];
+-#ifdef CONFIG_X86_PAE
+-		printk("*pdpt = %016Lx ", page);
+-		if ((page >> PAGE_SHIFT) < max_low_pfn
+-		    && page & _PAGE_PRESENT) {
+-			page &= PAGE_MASK;
+-			page = ((__typeof__(page) *) __va(page))[(address >> PMD_SHIFT)
+-			                                         & (PTRS_PER_PMD - 1)];
+-			printk(KERN_CONT "*pde = %016Lx ", page);
+-			page &= ~_PAGE_NX;
+-		}
+-#else
+-		printk("*pde = %08lx ", page);
+-#endif
+-
+-		/*
+-		 * We must not directly access the pte in the highpte
+-		 * case if the page table is located in highmem.
+-		 * And let's rather not kmap-atomic the pte, just in case
+-		 * it's allocated already.
+-		 */
+-		if ((page >> PAGE_SHIFT) < max_low_pfn
+-		    && (page & _PAGE_PRESENT)
+-		    && !(page & _PAGE_PSE)) {
+-			page &= PAGE_MASK;
+-			page = ((__typeof__(page) *) __va(page))[(address >> PAGE_SHIFT)
+-			                                         & (PTRS_PER_PTE - 1)];
+-			printk("*pte = %0*Lx ", sizeof(page)*2, (u64)page);
+-		}
+-
+-		printk("\n");
++		dump_pagetable(address);
+ 	}
+ 
+ 	tsk->thread.cr2 = address;
+-- 
+1.5.4.rc2.1164.g6451
+
+
