@@ -1,49 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbYAOR4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885AbYAOR5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756326AbYAOR4v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 12:56:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbYAOR4o
+	id S1756885AbYAOR5V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 12:57:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYAOR5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 12:56:44 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:52354 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751823AbYAOR4n (ORCPT
+	Tue, 15 Jan 2008 12:57:13 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:43974 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751956AbYAOR5M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 12:56:43 -0500
-Date: Tue, 15 Jan 2008 10:56:41 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Greg KH <greg@kroah.com>
-Cc: Loic Prylli <loic@myri.com>, Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>,
-       Tony Camuso <tcamuso@redhat.com>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver opt-in
-Message-ID: <20080115175641.GE18741@parisc-linux.org>
-References: <20080111235856.GA16079@jurassic.park.msu.ru> <20080112002638.GA18710@kroah.com> <20080112144030.GA19279@jurassic.park.msu.ru> <1200208085.6896.134.camel@pasglop> <20080113072415.GB18741@parisc-linux.org> <20080113090108.3224698c@laptopd505.fenrus.org> <20080114225225.GQ18741@parisc-linux.org> <20080114230448.GL9847@does.not.exist> <478CD8A5.5090608@myri.com> <20080115174643.GB28238@kroah.com>
+	Tue, 15 Jan 2008 12:57:12 -0500
+Date: Tue, 15 Jan 2008 17:57:05 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Anton Salikhmetov <salikhmetov@gmail.com>
+Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, protasnb@gmail.com, miklos@szeredi.hu
+Subject: Re: [PATCH 1/2] Massive code cleanup of sys_msync()
+Message-ID: <20080115175705.GA21557@infradead.org>
+References: <12004129652397-git-send-email-salikhmetov@gmail.com> <12004129734126-git-send-email-salikhmetov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080115174643.GB28238@kroah.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <12004129734126-git-send-email-salikhmetov@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 15, 2008 at 09:46:43AM -0800, Greg KH wrote:
-> But so far, we have a zillion patches floating around, claiming
-> different things, some with signed-off-bys and others without, so for
-> now, I'll just stick with Arjan's patch in -mm and see if anyone
-> complains about those releases...
+On Tue, Jan 15, 2008 at 07:02:44PM +0300, Anton Salikhmetov wrote:
+> +++ b/mm/msync.c
+> @@ -1,24 +1,25 @@
+>  /*
+>   *	linux/mm/msync.c
+>   *
+> + * The msync() system call.
+>   * Copyright (C) 1994-1999  Linus Torvalds
+> + *
+> + * Massive code cleanup.
+> + * Copyright (C) 2008 Anton Salikhmetov <salikhmetov@gmail.com>
 
-I complain about Arjan's patch.  For reasons which have been adequately
-gone into already in this thread.
+Please don't put the changelog in here, that's what the log in the SCM
+is for.  And while you're at it remove the confusing file name comment.
+This should now look something like:
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+/*
+ * The msync() system call.
+ *
+ * Copyright (C) 1994-1999  Linus Torvalds
+ * Copyright (C) 2008 Anton Salikhmetov <salikhmetov@gmail.com>
+ */
+
+> @@ -33,71 +34,65 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
+>  	unsigned long end;
+>  	struct mm_struct *mm = current->mm;
+>  	struct vm_area_struct *vma;
+> -	int unmapped_error = 0;
+> -	int error = -EINVAL;
+> +	int error = 0, unmapped_error = 0;
+>  
+>  	if (flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC))
+> -		goto out;
+> +		return -EINVAL;
+>  	if (start & ~PAGE_MASK)
+> -		goto out;
+> +		return -EINVAL;
+
+The goto out for a simple return style is used quite commonly in kernel
+code to have a single return statement which makes code maintaince, e.g.
+adding locks or allocations simpler.  Not sure that getting rid of it
+makes a lot of sense.
+
+> +		file = vma->vm_file;
+> +		if ((flags & MS_SYNC) && file && (vma->vm_flags & VM_SHARED)) {
+
+Given that file is assigned just above it would be more readable to test
+it first.
+
+> +			if (error)
+> +				return error;
+
+This should be an goto out, returns out of the middle of the function
+make reading and maintaining the code not so nice.
+
+>  	return error ? : unmapped_error;
+
+Care to get rid of this odd GNU extension while you're at it and use
+the proper
+
+	return error ? error : unmapped_error;
+
+?
+
