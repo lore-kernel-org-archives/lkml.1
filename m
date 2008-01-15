@@ -1,49 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbYAOMna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752857AbYAOMpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752525AbYAOMna (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 07:43:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbYAOMnX
+	id S1752857AbYAOMpL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 07:45:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbYAOMo7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 07:43:23 -0500
-Received: from mail.suse.de ([195.135.220.2]:56350 "EHLO mx1.suse.de"
+	Tue, 15 Jan 2008 07:44:59 -0500
+Received: from il.qumranet.com ([82.166.9.18]:44365 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750994AbYAOMnW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 07:43:22 -0500
-From: Andi Kleen <ak@suse.de>
-To: "Jan Beulich" <jbeulich@novell.com>
-Subject: Re: [PATCH] [0/31] Great change_page_attr patch series v2
-Date: Tue, 15 Jan 2008 13:43:21 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-References: <200801141116.534682000@suse.de> <200801151106.15452.ak@suse.de> <478CAD42.76E4.0078.0@novell.com>
-In-Reply-To: <478CAD42.76E4.0078.0@novell.com>
+	id S1750914AbYAOMo6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 07:44:58 -0500
+Date: Tue, 15 Jan 2008 13:44:50 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       kvm-devel@lists.sourceforge.net, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, daniel.blueman@quadrics.com,
+       holt@sgi.com, steiner@sgi.com, Andrew Morton <akpm@osdl.org>,
+       Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] mmu notifiers #v2
+Message-ID: <20080115124449.GK30812@v2.random>
+References: <20080113162418.GE8736@v2.random> <Pine.LNX.4.64.0801141154240.8300@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801151343.22152.ak@suse.de>
+In-Reply-To: <Pine.LNX.4.64.0801141154240.8300@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jan 14, 2008 at 12:02:42PM -0800, Christoph Lameter wrote:
+> Hmmm... In most of the callsites we hold a writelock on mmap_sem right?
 
-> >But you're right that would be an useful feature. But wouldn't it require
-> >aligning rodata to 2MB in the vmlinux to be really effective?
->
-> Yes, that would be desirable then (and .data should be at a 2/4 Mb
-> boundary for this, too).
+Not in all, like Marcelo pointed out in kvm-devel, so the lowlevel
+locking can't relay on the VM locks.
 
-Yes, rather .rodata/.text together and .data/.bss separately 
-aligned to 2MB.
+About your request to schedule in the mmu notifier methods this is not
+feasible right now, the notifier is often called with the pte
+spinlocks held. I wonder if you can simply post/queue an event like a
+softirq/pdflush.
 
-But the problem is it would be quite wasteful -- even on a big 
-defconfig kernel data+bss is far less than 2MB and with 4MB
-pages it would be even worse.
+> Passing mm is fine as long as mmap_sem is held.
 
-I'm not sure that would be worth the advantage of write protection for non 
-debugging kernels and for debugging kernels just using 4K pages is fine.
+mmap_sem is not held, but don't worry "mm" can't go away under the mmu
+notifier, so it's ok. It's just that the KVM methods never uses "mm"
+at all (containerof translates the struct mmu_notifier to a struct
+kvm, and there is the mm in kvm->mm too). Perhaps others don't save
+the "mm" in their container where the mmu_notifier is embedded into,
+so I left mm as parameter to the methods.
 
-There's also the issue where to put the initcode/initdata.
+> Hmmm... this is ptep_clear_flush? What about the other uses of 
+> flush_tlb_page in asm-generic/pgtable.h and related uses in arch code?
 
--Andi
+This is not necessarily a 1:1 relationship with the tlb
+flushes. Otherwise they'd be the tlb-notifiers not the mmu-notifiers.
+
+The other methods in the pgtable.h are not dropping an user page from
+the "mm". That's the invalidate case right now. Other methods will not
+call into invalidate_page, but you're welcome to add other methods and
+call them from other ptep_* functions if you're interested about being
+notified about more than just the invalidates of the "mm".
+
+Is invalidate_page/range a clear enough method name to explain when
+the ptes and tlb entries have been dropped for such page/range mapped
+in userland in that address/range?
+
+> (would help if your patches would mention the function name in the diff 
+> headers)
+
+my patches uses git diff defaults I guess, and they mention the
+function name in all other places, it's just git isn't smart enough
+there to catch the function name in that single place, it's ok.
+
+> > +#define mmu_notifier(function, mm, args...)				\
+> > +	do {								\
+> > +		struct mmu_notifier *__mn;				\
+> > +		struct hlist_node *__n;					\
+> > +									\
+> > +		hlist_for_each_entry(__mn, __n, &(mm)->mmu_notifier, hlist) \
+> > +			if (__mn->ops->function)			\
+> > +				__mn->ops->function(__mn, mm, args);	\
+> > +	} while (0)
+> 
+> Does this have to be inline? ptep_clear_flush will become quite big
+
+Inline makes the patch smaller and it avoids a call in the common case
+that the mmu_notifier list is empty. Perhaps I could add a:
+
+     if (unlikely(!list_empty(&(mm)->mmu_notifier)) {
+     	...
+     }
+
+so gcc could offload the internal block in a cold-icache region of .text.
+
+I think at least an unlikely(!list_empty(&(mm)->mmu_notifier)) check
+has to be inline. Currently there isn't such check because I'm unsure
+if it really makes sense. The idea is that if you really care to
+optimize this you'll use self-modifying code to turn a nop into a call
+when a certain method is armed. That's an extreme optimization though,
+current code shouldn't be measurable already when disarmed.
