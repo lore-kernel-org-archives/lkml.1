@@ -1,50 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbYAOSn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756532AbYAOSol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754579AbYAOSn6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 13:43:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbYAOSnt
+	id S1756532AbYAOSol (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 13:44:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbYAOSod
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 13:43:49 -0500
-Received: from wx-out-0506.google.com ([66.249.82.229]:10578 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751061AbYAOSnt (ORCPT
+	Tue, 15 Jan 2008 13:44:33 -0500
+Received: from fmmailgate01.web.de ([217.72.192.221]:33938 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751866AbYAOSoc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 13:43:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sJpLFjOaxu2bPM1U3wK066CJ/fhykXDdoU5JeGVSwZUhVUqd+XOVKmGgUujlqdJ3TZInXfFpmzngSKLpHpzfrhFTgs9+5ktkNpRWMQCmrsPCyfpuUUPgpjrwaKenn+zDQLDK1NRobc2dLa4EYF2Es1ZRWAslsQtOitrPr1hp3y4=
-Message-ID: <4d8e3fd30801151043o29a1466cudca4b2a5fe807d9d@mail.gmail.com>
-Date: Tue, 15 Jan 2008 22:13:43 +0330
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "Cyrill Gorcunov" <gorcunov@gmail.com>
-Subject: Re: [PATCH] checkpatch: add filename in the summary
-Cc: apw@shadowen.org, "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080115183056.GB6723@cvg>
+	Tue, 15 Jan 2008 13:44:32 -0500
+Message-ID: <478CFF08.1090608@web.de>
+Date: Tue, 15 Jan 2008 19:44:24 +0100
+From: Jan Kiszka <jan.kiszka@web.de>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080114232339.2c018647@paolo-desktop> <20080115183056.GB6723@cvg>
+To: Jason Wessel <jason.wessel@windriver.com>
+CC: Jan Kiszka <jan.kiszka@siemens.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: State of kgdb on x86-64
+References: <478BB35B.9060507@siemens.com> <478BB74E.6020506@windriver.com> <478C786A.3090709@siemens.com> <478CB724.3000900@windriver.com>
+In-Reply-To: <478CB724.3000900@windriver.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig88BCC8787000BCBE7C3C2DE3"
+X-Provags-ID: V01U2FsdGVkX1+658zLvxC0m1JzC3vUO5zJX++k80oYELXMpIOc
+	ceohbGcUgJ/4gWHKKgvIPAVcmDDbclV3Yt5tp0H8Gleoj7T3ds
+	D6/GKwLCE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/15/08, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> [Paolo Ciarrocchi - Mon, Jan 14, 2008 at 11:23:39PM +0100]
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig88BCC8787000BCBE7C3C2DE3
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-> Hi Paolo,
->
-> the options you're complaining about (in most) are enabled by default so
-> there is no reason to 'turn them on' explicitly /methink/.
->
+Jason Wessel wrote:
+> Jan Kiszka wrote:
+>> Jason Wessel wrote:
+>>  =20
+>>> It was working at the point that I tested it with the 2.6.24-rc5 on
+>>> x86_64.  However I suspect my kernel config may differ drastically fr=
+om
+>>> what you are using.
+>>>
+>>> Without any other context provided than the generic message, it is ha=
+rd
+>>> to know what might have happened.=20
+>>>    =20
+>> Here is the promised .config. I could also dig out the backtrace of th=
+e
+>> panic as kgdb sees it if that helps, just let me know.
+>>
+>> Jan
+>>
+>>  =20
+> The backtrace might be very telling as to what happened.  More
+> information is always better than less :-)
+>=20
+
+My primary test box is again out of reach, but meanwhile I was able to
+reproduce some kind of problem under QEMU - that one at least is
+triggered by SMP. With only one CPU -> all apparently fine. Once booting
+QEMU with "-smp 2" -> this happens:
+
+(gdb) tar remote /dev/pts/6
+Remote debugging using /dev/pts/6
+Not all CPUs have been synced for KGDB
+breakpoint () at kernel/kgdb.c:1895
+1895            wmb(); /* Sync point after breakpoint */
+(gdb) c
+Continuing.
+Not all CPUs have been synced for KGDB
+[New Thread 32769]
+
+Program received signal SIGFPE, Arithmetic exception.
+[Switching to Thread 32769]
+0xffffffff8020adb7 in default_idle () at include/asm/irqflags_64.h:140
+140             __asm__ __volatile__("sti; hlt" : : : "memory");
+(gdb) bt
+#0  0xffffffff8020adb7 in default_idle () at include/asm/irqflags_64.h:14=
+0
+#1  0xffffffff8020ae65 in cpu_idle () at arch/x86/kernel/process_64.c:225=
+
+#2  0xffffffff8021ccb9 in start_secondary () at arch/x86/kernel/smpboot_6=
+4.c:375
+#3  0x0000000000000000 in ?? ()
+(gdb)                                                                    =
+                =20
+
+The problem seems to be related to continuing SMP boxes. I'm able to
+boot my box up if I leave kgdb unattached. But when I then later attach
+and continue execution, I get the same crash. Any ideas what goes wrong,
+any suggestion where to start digging? Maybe at "Not all CPUs have been
+synched"?
+
+Jan
 
 
-I was looking for more information, i didn't want to complain :-)
-That said, i still think that document how to disable/enable all the
-options might be useful.
+--------------enig88BCC8787000BCBE7C3C2DE3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Ciao,
--- 
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iD8DBQFHjP8LniDOoMHTA+kRAlhpAJ4vXRYbKUIizXwQzAsiGGYYOqtpTQCcCYXq
+K5YwAGnyyHg79TLMifKyCZM=
+=qaED
+-----END PGP SIGNATURE-----
+
+--------------enig88BCC8787000BCBE7C3C2DE3--
