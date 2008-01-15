@@ -1,56 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756172AbYAONyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752443AbYAONyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756172AbYAONyX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 08:54:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750859AbYAONyP
+	id S1752443AbYAONyk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 08:54:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbYAONya
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 08:54:15 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:46969 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750752AbYAONyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 08:54:14 -0500
-Date: Tue, 15 Jan 2008 14:54:19 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mikael Starvik <mikael.starvik@axis.com>, linux-kernel@vger.kernel.org,
-       Yuusei KUWANA <kuwana@nyanyan.to>
-Subject: Re: [PATCH] CRIS v10: vmlinux.lds.S Fix kernel oops on boot and use common defines
-Message-ID: <20080115135419.GA17685@uranus.ravnborg.org>
-References: <20080115133624.GD3912@axis.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080115133624.GD3912@axis.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 15 Jan 2008 08:54:30 -0500
+Received: from usermail.globalproof.net ([194.146.153.18]:38331 "EHLO
+	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750752AbYAONy3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 08:54:29 -0500
+From: "Denys Fedoryshchenko" <denys@visp.net.lb>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: TSC && HPET calibration
+Date: Tue, 15 Jan 2008 15:54:12 +0200
+Message-Id: <20080115135318.M68697@visp.net.lb>
+In-Reply-To: <20080115021720.ad71605f.akpm@linux-foundation.org>
+References: <20080110123612.M81049@visp.net.lb> <20080115021720.ad71605f.akpm@linux-foundation.org>
+X-Mailer: OpenWebMail 2.52 20060502
+X-OriginatingIP: 195.69.208.251 (denys@visp.net.lb)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=koi8-r
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 15, 2008 at 02:36:24PM +0100, Jesper Nilsson wrote:
-> - Move alignment to page size of init data outside ifdef for BLK_DEV_INITRD.
->   The reservation up to page size of memory after init data was previously
->   not done if BLK_DEV_INITRD was undefined.
->   This caused a kernel oops when init memory pages were freed after startup,
->   data placed in the same page as the last init memory would also be freed
->   and reused, with disastrous results.
+Latest, 2.6.24-rc7, and 2.6.23 is the same.
+
+If more information required, tell me. It is btw not latest (not based on 
+Core2) Xeon.
+
+
+On Tue, 15 Jan 2008 02:17:20 -0800, Andrew Morton wrote
+> On Thu, 10 Jan 2008 14:36:12 +0200 "Denys Fedoryshchenko" 
+> <denys@visp.net.lb> wrote:
 > 
-> - Use macros for initcalls and .text sections.
+> > Hi
+> > 
+> > I have same issue, but it's never passed synchronization.
+> > 
+> > Jan 10 12:59:44 visp-1 Time: tsc clocksource has been installed.
+> > Jan 10 13:41:51 visp-1 ACPI: HPET 000F29CD, 0038 (r1 DELL   
+PE_SC3          1 
+> > DELL        1)
+> > Jan 10 13:41:51 visp-1 ACPI: HPET id: 0x8086a201 base: 0xfed00000
+> > Jan 10 13:41:51 visp-1 hpet clockevent registered
+> > Jan 10 13:41:51 visp-1 checking TSC synchronization [CPU#0 -> CPU#1]: 
+passed.
+> > Jan 10 13:41:51 visp-1 checking TSC synchronization [CPU#0 -> CPU#2]:
+> > Jan 10 13:41:51 visp-1 Measured 1020 cycles TSC warp between CPUs, 
+turning 
+> > off TSC clock.
+> > Jan 10 13:41:51 visp-1 Marking TSC unstable due to: check_tsc_sync_source 
+> > failed.
+> > Jan 10 13:41:51 visp-1 hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
+> > Jan 10 13:41:51 visp-1 hpet0: 3 64-bit timers, 14318180 Hz
+> > Jan 10 13:41:51 visp-1 Time: hpet clocksource has been installed.
+> > 
+> > grep Measures
+> > Sep 19 14:31:28 visp-1 Measured 1044 cycles TSC warp between CPUs, 
+turning 
+> > off TSC clock.
+> > Sep 19 18:22:46 visp-1 Measured 996 cycles TSC warp between CPUs, turning 
+off 
+> > TSC clock.
+> > Sep 19 18:35:44 visp-1 Measured 1080 cycles TSC warp between CPUs, 
+turning 
+> > off TSC clock.
 > 
-> - Replace hardcoded page size constant with PAGE_SIZE define.
-> 
-> - Change include/asm-cris/page.h to use the _AC macro to instead
->   of testing __ASSEMBLY__.
+> Which kernel version?
 
-Looks good.
 
-What about applying the same fixes/changes to v32?
+--
+Denys Fedoryshchenko
+Technical Manager
+Virtual ISP S.A.L.
 
-It would btw. be nice to move the vmlinux.lds.S files to
-arch/cris/kernel/.
-Se how x86 handle build for two different bit sizes.
-
-If this is done then cris is less awkward compared
-to the other archs.
-
-	Sam
