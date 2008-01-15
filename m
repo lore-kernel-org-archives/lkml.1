@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbYAORGM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbYAORIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755470AbYAORGM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 12:06:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751469AbYAORF6
+	id S1755294AbYAORIy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 12:08:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750926AbYAORIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 12:05:58 -0500
-Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:12323 "EHLO
-	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750733AbYAORF5 (ORCPT
+	Tue, 15 Jan 2008 12:08:44 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:57718 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890AbYAORIn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 12:05:57 -0500
-X-Greylist: delayed 599 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Jan 2008 12:05:56 EST
-Date: Tue, 15 Jan 2008 11:55:55 -0500
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: btrfs-devel@oss.oracle.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Btrfs v0.10 (online growing/shrinking, ext3
-	conversion, and more)
-Message-ID: <20080115165555.GA7164@phobos.i.cabal.ca>
-References: <20080115105238.4fc3e992@think.oraclecorp.com>
-MIME-Version: 1.0
+	Tue, 15 Jan 2008 12:08:43 -0500
+Date: Tue, 15 Jan 2008 18:11:46 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Adrian Bunk <bunk@kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, rjw@sisk.pl, pavel@suse.cz,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without HOTPLUG_CPU
+Message-ID: <20080115171146.GA2377@one.firstfloor.org>
+References: <p73fxx5omck.fsf@bingen.suse.de> <20080110150911.GG28740@does.not.exist> <20080114135240.GA15357@elte.hu> <20080114140910.GA8507@uranus.ravnborg.org> <20080114145854.GA31695@elte.hu> <20080114150553.GA3524@elte.hu> <20080114152440.GA9174@elte.hu> <20080114201214.GC9257@uranus.ravnborg.org> <20080115151742.GB10722@elte.hu> <20080115162513.GA18338@uranus.ravnborg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080115105238.4fc3e992@think.oraclecorp.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080115162513.GA18338@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 15, 2008 at 10:52:38AM -0500, Chris Mason wrote:
-> http://oss.oracle.com/projects/btrfs/
+On Tue, Jan 15, 2008 at 05:25:13PM +0100, Sam Ravnborg wrote:
+> On Tue, Jan 15, 2008 at 04:17:42PM +0100, Ingo Molnar wrote:
+> > 
+> > * Sam Ravnborg <sam@ravnborg.org> wrote:
+> > 
+> > > > find below the current set of warnings on -git. There are 62.
+> > > 
+> > > The correct figure is 112.
+> > > 
+> > > You need to do a:
+> > > make KCFLAGS=-fno-unit-at-a-time
+> > > build to see them all.
+> > 
+> > btw., please add a .config option to trigger the -fno-unit-at-a-time 
+> > flags. Something like CONFIG_SECTION_ERRORS=y - plus perhaps combine it 
+> > with the patch below that turns such section bugs into detectable build 
+> > errors. A distro does not want to build a kernel that could potentially 
+> > corrupt kernel memory. (it's a security risk as well.) If we make the 
+> > err=1 dependent on CONFIG_SECTION_ERRORS then we'll have this 
+> > configurable.
 > 
-> Btrfs is still in an early alpha state, and the disk format is not finalized.
-> v0.10 introduces a new disk format, and is not compatible with v0.9.
-> 
+> The plan is to let section mismatch warnings become errors 
+> after the merge window - so we hit -mm first.
 
-Looks like fun. btrfsck fails to check if it actually received a
-dev argument though, so if you don't pass a device, we get a nice
-segfault.
+A lot of those I look at seem to be not really bugs; also my
+impression is that they sometimes crop up randomly. e.g. you
+change something completely unrelated and suddenly you get
+a section warning somewhere else.
 
-Signed-off-by: Kyle McMartin <kmcmartin@redhat.com>
+> And I will add a config option to:
+> - set -fno-unit-at-a-time
 
----
-diff -Nur btrfs-progs-0.10/btrfsck.c btrfs-progs-0.10-kyle/btrfsck.c
---- btrfs-progs-0.10/btrfsck.c	2008-01-15 10:33:32.000000000 -0500
-+++ btrfs-progs-0.10-kyle/btrfsck.c	2008-01-15 11:49:24.000000000 -0500
-@@ -709,6 +709,11 @@
- 	return err;
- }
- 
-+void print_usage(void) {
-+	fprintf(stderr, "usage: btrfsck dev\n");
-+	exit(1);
-+}
-+
- int main(int ac, char **av) {
- 	struct btrfs_root *root;
- 	struct cache_tree extent_cache;
-@@ -727,6 +732,9 @@
- 	int slot;
- 	struct btrfs_root_item ri;
- 
-+	if (ac < 2)
-+		print_usage();
-+
- 	radix_tree_init();
- 	cache_tree_init(&extent_cache);
- 	cache_tree_init(&seen);
+I was told future gcc versions would remove that. Why do you
+want it?
+
+> - add no-inline to all functions marked __init*
+> - and maybe disable __inline if that gives additional errors
+
+I sometimes do that for debugging "define static noinline" 
+in specific files or similar because it's easier to make sense of oopses
+when functions not inlined.  Not sure it would work
+as a global option though because if you do it globally
+then all the inlines in all .hs would be affected and that might
+lead to immense code bloat.
+
+-Andi
