@@ -1,86 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753193AbYAOO76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751417AbYAOPJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753193AbYAOO76 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 09:59:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbYAOO7r
+	id S1751417AbYAOPJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 10:09:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750955AbYAOPJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 09:59:47 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:37262 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750981AbYAOO7p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 09:59:45 -0500
-Date: Tue, 15 Jan 2008 08:59:19 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: serue@us.ibm.com, akpm@linux-foundation.org, hch@infradead.org,
-       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
-Subject: Re: [patch 8/9] unprivileged mounts: propagation: inherit owner
-	from parent
-Message-ID: <20080115145919.GG4453@sergelap.austin.ibm.com>
-References: <20080108113502.184459371@szeredi.hu> <20080108113632.895453887@szeredi.hu> <20080114231340.GG6704@sergelap.austin.ibm.com> <E1JEjCG-0000wz-BS@pomaz-ex.szeredi.hu> <20080115142115.GC4453@sergelap.austin.ibm.com> <E1JEmv3-0001RN-6J@pomaz-ex.szeredi.hu>
+	Tue, 15 Jan 2008 10:09:13 -0500
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:41902 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750912AbYAOPJL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 10:09:11 -0500
+Message-ID: <478CCC95.8030405@hp.com>
+Date: Tue, 15 Jan 2008 10:09:09 -0500
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1JEmv3-0001RN-6J@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Ray Lee <ray-lk@madrabbit.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: questions on NAPI processing latency and dropped network packets
+References: <478654C3.60806@nortel.com> <2c0942db0801112137k3f3f885ek212d5cbaecb7fea0@mail.gmail.com> <478B8473.6080506@nortel.com> <478B943C.7080009@cosmosbay.com> <478BB722.1020004@nortel.com> <478BB904.3060903@cosmosbay.com> <478BBFE3.9030707@nortel.com>
+In-Reply-To: <478BBFE3.9030707@nortel.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Miklos Szeredi (miklos@szeredi.hu):
-> > > > > On mount propagation, let the owner of the clone be inherited from the
-> > > > > parent into which it has been propagated.  Also if the parent has the
-> > > > > "nosuid" flag, set this flag for the child as well.
-> > > > 
-> > > > What about nodev?
-> > > 
-> > > Hmm, I think the nosuid thing is meant to prevent suid mounts being
-> > > introduced into a "suidless" namespace.  This doesn't apply to dev
-> > > mounts, which are quite safe in a suidless environment, as long as the
-> > > user is not able to create devices.  But that should be taken care of
-> > > by capability tests.
-> > > 
-> > > I'll update the description.
-> > 
-> > Hmm,
-> > 
-> > Part of me wants to say the safest thing for now would be to refuse
-> > mounts propagation from non-user mounts to user mounts.
-> > 
-> > I assume you're thinking about a fully user-mounted chroot, where
-> > the user woudl still want to be able to stick in a cdrom and have
-> > it automounted under /mnt/cdrom, propagated from the root mounts ns?
+Chris Friesen wrote:
+> Eric Dumazet wrote:
+>> Chris Friesen a écrit :
 > 
-> Right.
+>>> Based on the profiling information we're spending time in 
+>>> sctp_endpoint_lookup_assoc() which doesn't actually use hashes, so I 
+>>> can't see how the hash would be related.  I'm pretty new to SCTP 
+>>> though, so I may be missing something.
+>>
+>> Well, it does use hashes :)
+>>
+>>        hash = sctp_assoc_hashfn(ep->base.bind_addr.port, rport);
+>>        head = &sctp_assoc_hashtable[hash];
+>>        read_lock(&head->lock);
+>>        sctp_for_each_hentry(epb, node, &head->chain) {
+>>            /* maybe your machine is traversing here a *really* long 
+>> chain */
+>>            }
 > 
-> > But then are there no devices which the user could create on a floppy
-> > while inserted into his own laptop, owned by his own uid, then insert
-> > into this machine, and use the device under the auto-mounted /dev/floppy
-> > to gain inappropriate access?
 > 
-> I assume, that the floppy and cdrom are already mounted with
-> nosuid,nodev.
+> The latest released kernel doesn't have this code, it was only added in 
+> November.  The SCTP maintainer just pointed me to the patch, and made 
+> some other suggestions as well.
+> 
 
-Yeah, of course, what I'm saying is no different whether the upper mount
-is a user mount or not.  You're right.
+Yes,  the hash code only got added to 2.6.24.  Before that, it was
+a linear list traversal which sucked.
 
-> The problem case is I think is if a sysadmin does some mounting in the
-> initial namespace, and this is propagated into the fully user-mounted
-> namespace (or chroot), so that a mount with suid binaries slips in.
-> Which is bad, because the user may be able rearange the namespace, to
-> trick the suid program to something it should not do.
+I need to take a look at the locking to see if we can further reduce
+the time that bottom half is disabled.
 
-And really this shouldn't be an issue at all - the usermount chroot
-would be set up under something like /share/hallyn/root, so the admin
-would have to purposely set up propagation into that tree, so this
-won't be happening by accident.
-
-> OTOH, a mount with devices can't be abused this way, since it is not
-> possible to gain privileges to files/devices just by rearanging the
-> mounts.
-
-Thanks for humoring me,
-
--serge
+-vlad
