@@ -1,122 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757012AbYAOUi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbYAOUkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757012AbYAOUi5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 15:38:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbYAOUiv
+	id S1756774AbYAOUkT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 15:40:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbYAOUkI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 15:38:51 -0500
-Received: from smtp114.sbc.mail.re2.yahoo.com ([68.142.229.91]:29675 "HELO
-	smtp114.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752416AbYAOUiu (ORCPT
+	Tue, 15 Jan 2008 15:40:08 -0500
+Received: from serv.smile.org.ua ([193.178.237.153]:4350 "EHLO
+	serv.smile.org.ua" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752477AbYAOUkG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 15:38:50 -0500
-X-YMail-OSG: mLMgxtYVM1nND1kuy5rFz1cdRNi6xyGUPUDGVvxbpy01F3XKV79aQ2UrbjvtVs6Go0QN8PFT6zpTkbsIQVode0Y8O8S07mIN0EdOJeNplmf0f3cXGBI3KrwOswzxpltu6jGSOq0-
-Date: Tue, 15 Jan 2008 14:36:59 -0600
-From: serge@hallyn.com
-To: Clifford Wolf <clifford@clifford.at>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] rlim in proc/<pid>/status
-Message-ID: <20080115203659.GA5404@vino.hallyn.com>
-References: <20080115100631.GA13394@clifford.at>
+	Tue, 15 Jan 2008 15:40:06 -0500
+X-Greylist: delayed 1359 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Jan 2008 15:40:06 EST
+Date: Tue, 15 Jan 2008 22:17:23 +0200
+From: Andy Shevchenko <andy@smile.org.ua>
+To: linux-kernel@vger.kernel.org
+Cc: Matthias Urlichs <smurf@smurf.noris.de>
+Subject: [PATCH] yet another Dell wireless CDMA/EVDO modem
+Message-ID: <20080115201723.GF2097@serv.smile.org.ua>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-In-Reply-To: <20080115100631.GA13394@clifford.at>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Operating-System: Linux 2.4.21-50.EL.aspsmp i586
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Clifford Wolf (clifford@clifford.at):
-> Hi,
-> 
-> because I needed it already twice in two different projects this week: the
-> following patch adds rlim (ulimits) output to /proc/<pid>/status.
-> 
-> Please let me know if there is another (already existing) way of accessing
-> this information easy (i.e. connecting with gdb to the process in question
-> and 'injecting' a getrlimit() call does not count.. ;-).
-> 
-> yours,
->  - clifford
-> 
-> Signed-off-by: Clifford Wolf <clifford@clifford.at>
-> 
-> --- linux/fs/proc/array.c	(revision 757)
-> +++ linux/fs/proc/array.c	(working copy)
-> @@ -239,6 +239,55 @@
->  	}
->  }
->  
-> +static char *rlim_names[RLIM_NLIMITS] = {
-> +	[RLIMIT_CPU]        = "CPU",
-> +	[RLIMIT_FSIZE]      = "FSize",
-> +	[RLIMIT_DATA]       = "Data",
-> +	[RLIMIT_STACK]      = "Stack",
-> +	[RLIMIT_CORE]       = "Core",
-> +	[RLIMIT_RSS]        = "RSS",
-> +	[RLIMIT_NPROC]      = "NProc",
-> +	[RLIMIT_NOFILE]     = "NoFile",
-> +	[RLIMIT_MEMLOCK]    = "MemLock",
-> +	[RLIMIT_AS]         = "AddrSpace",
-> +	[RLIMIT_LOCKS]      = "Locks",
-> +	[RLIMIT_SIGPENDING] = "SigPending",
-> +	[RLIMIT_MSGQUEUE]   = "MsgQueue",
-> +	[RLIMIT_NICE]       = "Nice",
-> +	[RLIMIT_RTPRIO]     = "RTPrio"
-> +};
-> +
-> +static inline char *task_rlim(struct task_struct *p, char *buffer)
-> +{
-> +	unsigned long flags;
-> +	struct rlimit rlim[RLIM_NLIMITS];
-> +	int i;
-> +	
-> +	rcu_read_lock();
-> +	if (lock_task_sighand(p, &flags)) {
-> +		for (i=0; i<RLIM_NLIMITS; i++)
-> +			rlim[i] = p->signal->rlim[i];
+Hi!
 
-I'm confused - where do you unlock_task_sighand()?
+Here the patch to add native support of the Dell wireless CDMA/EVDO modem.
 
-> +	}
-> +	rcu_read_unlock();
-> +
-> +	for (i=0; i<RLIM_NLIMITS; i++) {
-> +		if (rlim_names[i])
-> +			buffer += sprintf(buffer, "Rlim%s:\t", rlim_names[i]);
-> +		else
-> +			buffer += sprintf(buffer, "Rlim%d:\t", i);
-> +		if (rlim[i].rlim_cur != ~0)
-> +			buffer += sprintf(buffer, "%lu\t", rlim[i].rlim_cur);
-> +		else
-> +			buffer += sprintf(buffer, "-\t");
-> +		if (rlim[i].rlim_max != ~0)
-> +			buffer += sprintf(buffer, "%lu\n", rlim[i].rlim_max);
-> +		else
-> +			buffer += sprintf(buffer, "-\n");
-> +	}
-> +
-> +	return buffer;
-> +}
-> +
->  static inline char *task_sig(struct task_struct *p, char *buffer)
->  {
->  	unsigned long flags;
-> @@ -310,6 +359,7 @@
->  		buffer = task_mem(mm, buffer);
->  		mmput(mm);
->  	}
-> +	buffer = task_rlim(task, buffer);
->  	buffer = task_sig(task, buffer);
->  	buffer = task_cap(task, buffer);
->  	buffer = cpuset_task_status_allowed(task, buffer);
-> 
-> -- 
-> [..] If it still doesn't work, re-write it in assembler. This won't fix the
-> bug, but it will make sure no one else finds it and makes you look bad.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+# modprobe usbserial vendor=0x413c product=0x8129
+
+Following seesion lines describe modem itself
+at
+OK
+ati3
+Manufacturer: NOVATEL WIRELESS INCORPORATED
+Model: EXPEDITE ET620
+Revision: M6500C-BBIRD_TLS_MINI_DELL-Q40306.166 [Aug 25 2006 14:00:00]
+ESN: 0x5B39071D
++GCAP: +CIS707-A, CIS-856, +MS, +ES, +DS, +FCLASS
+
+OK
+
+Signed-off-by: Andy Shevchenko <andy@smile.org.ua>
+
+diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
+index a18659e..9290b22 100644
+--- a/drivers/usb/serial/option.c
++++ b/drivers/usb/serial/option.c
+@@ -178,6 +178,7 @@ static struct usb_device_id option_ids[] = {
+ 	{ USB_DEVICE(DELL_VENDOR_ID, 0x8117) },	/* Dell Wireless 5700 Mobile Broadband CDMA/EVDO ExpressCard == Novatel Merlin XV620 CDMA/EV-DO */
+ 	{ USB_DEVICE(DELL_VENDOR_ID, 0x8118) },	/* Dell Wireless 5510 Mobile Broadband HSDPA ExpressCard == Novatel Merlin XU870 HSDPA/3G */
+ 	{ USB_DEVICE(DELL_VENDOR_ID, 0x8128) },	/* Dell Wireless 5700 Mobile Broadband CDMA/EVDO Mini-Card == Novatel Expedite E720 CDMA/EV-DO */
++	{ USB_DEVICE(DELL_VENDOR_ID, 0x8129) },	/* Dell Wireless 5700 Mobile Broadband CDMA/EVDO Mini-Card == Novatel Expedite ET620 CDMA/EV-DO */
+ 	{ USB_DEVICE(DELL_VENDOR_ID, 0x8137) },	/* Dell Wireless HSDPA 5520 */
+ 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_E100A) },
+ 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_500A) },
+
+
+-- 
+With best regards,
+Andy Shevchenko.      mailto: andy@smile.org.ua
+
+
