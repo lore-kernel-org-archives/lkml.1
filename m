@@ -1,92 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbYAORvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbYAORxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755324AbYAORvT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 12:51:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYAORvK
+	id S1755609AbYAORxt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 12:53:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbYAORxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 12:51:10 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:32945 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751253AbYAORvJ (ORCPT
+	Tue, 15 Jan 2008 12:53:41 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:43325 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751179AbYAORxl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 12:51:09 -0500
-Date: Tue, 15 Jan 2008 17:49:48 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Bryan Wu <bryan.wu@analog.com>
-Cc: Adrian Bunk <adrian.bunk@movial.fi>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Randy Dunlap <randy.dunlap@oracle.com>, phil.el@wanadoo.fr,
-       oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: Fwd: Re: [2.6.24 patch] restore ARMv6 OProfile support
-Message-ID: <20080115174948.GB19306@flint.arm.linux.org.uk>
-References: <20071228195841.GA3945@flint.arm.linux.org.uk> <20080115104526.GA32067@flint.arm.linux.org.uk> <alpine.LFD.1.00.0801150811250.2806@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0801150811250.2806@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 15 Jan 2008 12:53:41 -0500
+Message-ID: <478CF31A.8040305@ct.jp.nec.com>
+Date: Tue, 15 Jan 2008 09:53:30 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: move warning message of polling idle and HT	enabled
+References: <478BB226.6090105@ct.jp.nec.com> <20080114190904.GA2288@elte.hu> <478C1475.7060706@ct.jp.nec.com> <20080115132607.GE7025@elte.hu>
+In-Reply-To: <20080115132607.GE7025@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 15, 2008 at 08:24:34AM -0800, Linus Torvalds wrote:
+Ingo Molnar wrote:
+> * Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
 > 
+>> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>> Subject: [PATCH] x86: move warning message of polling idle and HT enabled
+>>
+>> This warning at idle_setup() is never shown because smp_num_sibling hasn't
+>> been updated at this point yet.
+>>
+>> Move this polling idle and HT enabled warning message to 
+>> select_idle_routine(). I also implement this warning on 64-bit kernel 
+>> and make select_idle_routine() call after detect_ht() call.
 > 
-> On Tue, 15 Jan 2008, Russell King wrote:
-> > 
-> > I don't particularly like stuffing the options into some random place
-> > in the architectures Kconfig file when they should stay along side the
-> > instrumentation configuration entries.
-> 
-> Well, I have to say that I don't particularly like obviously 
-> architecture-specific stuff in an obviously non-architecture file..
-> 
-> I'd almost prefer to revert the thing that caused the problem, because 
-> with Adrian's patch, I think the end result may *work*, but it's uglier 
-> than what we started out with.
-> 
-> However, I think the *cleanest* solution right now may be something like 
-> the appended. Totally untested, of course. It basically just copies the 
-> generic kernel/Kconfig.instrumentation file into the arm directory, makes 
-> arm use its own instead of the generic one, and removes the dependencies 
-> on ARM in there (including all of the KPROBES entry that apparently isn't 
-> an issue on ARM anyway). It then adds back the ARM-specific ones.
-> 
-> This follows the sacred rules of good code:
-> 
->  - generic code is either generic or not. If it's not generic, don't claim 
->    it is.
-> 
->  - don't *force* people to use generic code if it doesn't suit them. Make 
->    it available for the cases it makes sense for, but don't shoe-horn it 
->    into cases where it doesn't work well.
-> 
-> So it allows the sharing of the common case and *many* architectures end 
-> up using the generic Kconfig file, but hey, if it doesn't make sense for 
-> ARM, it doesn't make sense for ARM. It's that simple.
-> 
-> But as mentioned, it's totally untested and I don't have (or really want 
-> to have) a cross-compiling environment. And I don't care *that* much. I 
-> just want something we can all live with.
-> 
-> So does something like this work for people?
+> looks good to me, but could you please split this up into two patches 
+> instead - one that just moves/adds the printks, the other one that moves 
+> the select_idle_routine() call? (Moving init calls around is notoriously 
+> error-prone, so we want as small of a bisection target as possible.) 
 
-BTW, your patch may fix ARM, but the original commit broke blackfin as
-well - it removed the Kconfig entry for HARDWARE_PM, which is still used:
+Sure, I'll repost take3 soon.
 
-$ grep HARDWARE_PM arch/blackfin/ -r
-arch/blackfin/mach-common/interrupt.S:#ifdef CONFIG_HARDWARE_PM
-arch/blackfin/mach-common/interrupt.S:#ifdef CONFIG_HARDWARE_PM
-arch/blackfin/mach-common/irqpanic.c:#ifdef CONFIG_HARDWARE_PM
-arch/blackfin/oprofile/Makefile:oprofile-$(CONFIG_HARDWARE_PM) += op_model_bf533.o
-arch/blackfin/oprofile/common.c:#ifdef CONFIG_HARDWARE_PM
+Thanks,
+Hiroshi Shimamoto
 
-So blackfin also needs fixing.  I don't know if blackfin people are
-aware of this.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
