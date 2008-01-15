@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbYAOStk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755914AbYAOSxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756781AbYAOStk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 13:49:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbYAOStc
+	id S1755914AbYAOSxi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 13:53:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbYAOSxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 13:49:32 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:14108 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751320AbYAOStb (ORCPT
+	Tue, 15 Jan 2008 13:53:31 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39638 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752170AbYAOSxa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 13:49:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=P/DNdoiDqwm3+tbxMgHJY46QVdaMCzKLV1s2H2zg65+HFaTupV7hReqpiqnFbIIhTI4bO2hahfbv/4M2Xefzzy9u+XQj1dAPbu2VJzzIlO5s2jMAzYFcEpin+4+KXDYlSMHriLnmp44FolS3HCRRahxM0AvCUC2LtSq+8PLYVwE=
-Date: Tue, 15 Jan 2008 21:49:12 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Cc: apw@shadowen.org, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] checkpatch: add filename in the summary
-Message-ID: <20080115184912.GC6723@cvg>
-References: <20080114232339.2c018647@paolo-desktop> <20080115183056.GB6723@cvg> <4d8e3fd30801151043o29a1466cudca4b2a5fe807d9d@mail.gmail.com>
+	Tue, 15 Jan 2008 13:53:30 -0500
+Date: Tue, 15 Jan 2008 10:52:39 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Russell King <rmk+lkml@arm.linux.org.uk>,
+       Adrian Bunk <adrian.bunk@movial.fi>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, phil.el@wanadoo.fr,
+       oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: Fwd: Re: [2.6.24 patch] restore ARMv6 OProfile support
+In-Reply-To: <20080115173701.GB8375@Krystal>
+Message-ID: <alpine.LFD.1.00.0801151051120.2806@woody.linux-foundation.org>
+References: <20071228195841.GA3945@flint.arm.linux.org.uk> <20080115104526.GA32067@flint.arm.linux.org.uk> <alpine.LFD.1.00.0801150811250.2806@woody.linux-foundation.org> <20080115173701.GB8375@Krystal>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4d8e3fd30801151043o29a1466cudca4b2a5fe807d9d@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Paolo Ciarrocchi - Tue, Jan 15, 2008 at 10:13:43PM +0330]
-| On 1/15/08, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| > [Paolo Ciarrocchi - Mon, Jan 14, 2008 at 11:23:39PM +0100]
-| 
-| > Hi Paolo,
-| >
-| > the options you're complaining about (in most) are enabled by default so
-| > there is no reason to 'turn them on' explicitly /methink/.
-| >
-| 
-| 
-| I was looking for more information, i didn't want to complain :-)
 
-oh, typo, s/complain/worry/ ;)
 
-| That said, i still think that document how to disable/enable all the
-| options might be useful.
-| 
-| Ciao,
-| -- 
-| Paolo
-| http://paolo.ciarrocchi.googlepages.com/
-| 
-		- Cyrill -
+On Tue, 15 Jan 2008, Mathieu Desnoyers wrote:
+> 
+> Well, it goes along the lines of the patch I suggested as a reply to
+> Adrian, with these differences :
+> 
+> - I still source the kernel/Kconfig.instrumentation file.
+> - I put back the missing OPROFILE options directly in arch/arm/Kconfig
+> 
+> Then end result is the same as your patch, but without the code
+> duplication.
+
+No it's not.
+
+Now the config variables may all be there, but the UI for the *menu* 
+system is broken (ie all the ARM profiling config options are now outside 
+the profiling menu).
+
+Is that menu really needed? I dunno. But since it exists, it should be 
+correct.
+
+		Linus
