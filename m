@@ -1,63 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755655AbYAOCQB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbYAOCRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755655AbYAOCQB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 21:16:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbYAOCPv
+	id S1756212AbYAOCRs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 21:17:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbYAOCRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 21:15:51 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:46686 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750818AbYAOCPu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 21:15:50 -0500
-Date: Mon, 14 Jan 2008 21:15:40 -0500
-From: Rik van Riel <riel@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       kosaki.motohiro@jp.fujitsu.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC] mmaped copy too slow?
-Message-ID: <20080114211540.284df4fb@bree.surriel.com>
-In-Reply-To: <20080115100450.1180.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080115100450.1180.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Jan 2008 21:17:38 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:57575 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750956AbYAOCRh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 21:17:37 -0500
+Message-Id: <20080115021736.236433000@sgi.com>
+References: <20080115021735.779102000@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Mon, 14 Jan 2008 18:17:37 -0800
+From: travis@sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       mingo@elte.hu
+Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 02/10] x86: Change size of node ids from u8 to u16 V2
+Content-Disposition: inline; filename=big_nodeids
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jan 2008 10:45:47 +0900
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+Change the size of node ids from 8 bits to 16 bits to
+accomodate more than 256 nodes.
 
-> the problem is when almost page is mapped and PTE access bit on,
-> page reclaim process below steps.
-> 
->   1) page move to inactive list -> active list
->   2) page move to active list   -> inactive list
->   3) really pageout
-> 
-> It is too roundabout and unnecessary memory pressure happend.
-> if you don't mind, please discuss.
+Signed-off-by: Mike Travis <travis@sgi.com>
+Reviewed-by: Christoph Lameter <clameter@sgi.com>
+---
+V1->V2:
+    - changed pxm_to_node_map to u16
+    - changed memnode map entries to u16
+---
+ arch/x86/mm/numa_64.c       |    9 ++++++---
+ arch/x86/mm/srat_64.c       |    2 +-
+ drivers/acpi/numa.c         |    2 +-
+ include/asm-x86/mmzone_64.h |    4 ++--
+ include/asm-x86/numa_64.h   |    4 ++--
+ include/asm-x86/topology.h  |    2 +-
+ 6 files changed, 13 insertions(+), 10 deletions(-)
 
-While being able to deal with used-once mappings in page reclaim
-could be a good idea, this would require us to be able to determine
-the difference between a page that was accessed once since it was
-faulted in and a page that got accessed several times.
-
-That kind of infrastructure could end up adding more overhead than
-an immediate reclaim of these streaming mmap pages would save.
-
-Given that page faults have overhead too, it does not surprise me
-that read+write is faster than mmap+memcpy.
-
-In threaded applications, page fault overhead will be worse still,
-since the TLBs need to be synchronized between CPUs (at least at
-reclaim time).
-
-Maybe we should just advise people to use read+write, since it is
-faster than mmap+memcpy?
+--- a/arch/x86/mm/numa_64.c
++++ b/arch/x86/mm/numa_64.c
+@@ -11,6 +11,7 @@
+ #include <linux/ctype.h>
+ #include <linux/module.h>
+ #include <linux/nodemask.h>
++#include <linux/sched.h>
+ 
+ #include <asm/e820.h>
+ #include <asm/proto.h>
+@@ -30,12 +31,12 @@ bootmem_data_t plat_node_bdata[MAX_NUMNO
+ 
+ struct memnode memnode;
+ 
+-int cpu_to_node_map[NR_CPUS] __read_mostly = {
++u16 cpu_to_node_map[NR_CPUS] __read_mostly = {
+ 	[0 ... NR_CPUS-1] = NUMA_NO_NODE
+ };
+ EXPORT_SYMBOL(cpu_to_node_map);
+ 
+-unsigned char apicid_to_node[MAX_LOCAL_APIC] __cpuinitdata = {
++u16 apicid_to_node[MAX_LOCAL_APIC] __cpuinitdata = {
+ 	[0 ... MAX_LOCAL_APIC-1] = NUMA_NO_NODE
+ };
+ 
+@@ -544,7 +545,9 @@ void __init numa_initmem_init(unsigned l
+ 	node_set(0, node_possible_map);
+ 	for (i = 0; i < NR_CPUS; i++)
+ 		numa_set_node(i, 0);
+-	node_to_cpumask_map[0] = cpumask_of_cpu(0);
++	/* we can't use cpumask_of_cpu() yet */
++	memset(&node_to_cpumask_map[0], 0, sizeof(node_to_cpumask_map[0]));
++	cpu_set(0, node_to_cpumask_map[0]);
+ 	e820_register_active_regions(0, start_pfn, end_pfn);
+ 	setup_node_bootmem(0, start_pfn << PAGE_SHIFT, end_pfn << PAGE_SHIFT);
+ }
+--- a/arch/x86/mm/srat_64.c
++++ b/arch/x86/mm/srat_64.c
+@@ -395,7 +395,7 @@ int __init acpi_scan_nodes(unsigned long
+ static int fake_node_to_pxm_map[MAX_NUMNODES] __initdata = {
+ 	[0 ... MAX_NUMNODES-1] = PXM_INVAL
+ };
+-static unsigned char fake_apicid_to_node[MAX_LOCAL_APIC] __initdata = {
++static u16 fake_apicid_to_node[MAX_LOCAL_APIC] __initdata = {
+ 	[0 ... MAX_LOCAL_APIC-1] = NUMA_NO_NODE
+ };
+ static int __init find_node_by_addr(unsigned long addr)
+--- a/drivers/acpi/numa.c
++++ b/drivers/acpi/numa.c
+@@ -38,7 +38,7 @@ ACPI_MODULE_NAME("numa");
+ static nodemask_t nodes_found_map = NODE_MASK_NONE;
+ 
+ /* maps to convert between proximity domain and logical node ID */
+-static int pxm_to_node_map[MAX_PXM_DOMAINS]
++static u16 pxm_to_node_map[MAX_PXM_DOMAINS]
+ 				= { [0 ... MAX_PXM_DOMAINS - 1] = NID_INVAL };
+ static int node_to_pxm_map[MAX_NUMNODES]
+ 				= { [0 ... MAX_NUMNODES - 1] = PXM_INVAL };
+--- a/include/asm-x86/mmzone_64.h
++++ b/include/asm-x86/mmzone_64.h
+@@ -15,8 +15,8 @@
+ struct memnode {
+ 	int shift;
+ 	unsigned int mapsize;
+-	u8 *map;
+-	u8 embedded_map[64-16];
++	u16 *map;
++	u16 embedded_map[64-16];
+ } ____cacheline_aligned; /* total size = 64 bytes */
+ extern struct memnode memnode;
+ #define memnode_shift memnode.shift
+--- a/include/asm-x86/numa_64.h
++++ b/include/asm-x86/numa_64.h
+@@ -20,7 +20,7 @@ extern void numa_set_node(int cpu, int n
+ extern void srat_reserve_add_area(int nodeid);
+ extern int hotadd_percent;
+ 
+-extern unsigned char apicid_to_node[MAX_LOCAL_APIC];
++extern u16 apicid_to_node[MAX_LOCAL_APIC];
+ 
+ extern void numa_initmem_init(unsigned long start_pfn, unsigned long end_pfn);
+ extern unsigned long numa_free_all_bootmem(void);
+@@ -40,6 +40,6 @@ static inline void clear_node_cpumask(in
+ #define clear_node_cpumask(cpu) do {} while (0)
+ #endif
+ 
+-#define NUMA_NO_NODE 0xff
++#define NUMA_NO_NODE 0xffff
+ 
+ #endif
+--- a/include/asm-x86/topology.h
++++ b/include/asm-x86/topology.h
+@@ -30,7 +30,7 @@
+ #include <asm/mpspec.h>
+ 
+ /* Mappings between logical cpu number and node number */
+-extern int cpu_to_node_map[];
++extern u16 cpu_to_node_map[];
+ extern cpumask_t node_to_cpumask_map[];
+ 
+ /* Returns the number of the node containing CPU 'cpu' */
 
 -- 
-All rights reversed.
