@@ -1,179 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751838AbYAOQXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754034AbYAOQZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751838AbYAOQXt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 11:23:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbYAOQXY
+	id S1754034AbYAOQZX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 11:25:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbYAOQZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 11:23:24 -0500
-Received: from smtp02.mtu.ru ([62.5.255.49]:56349 "EHLO smtp02.mtu.ru"
+	Tue, 15 Jan 2008 11:25:11 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:35666 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752579AbYAOQXV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 11:23:21 -0500
-From: Anton Salikhmetov <salikhmetov@gmail.com>
-To: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, protasnb@gmail.com, miklos@szeredi.hu
-Subject: [PATCH 1/2] Massive code cleanup of sys_msync()
-Date: Tue, 15 Jan 2008 19:02:44 +0300
-Message-Id: <12004129734126-git-send-email-salikhmetov@gmail.com>
-X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <12004129652397-git-send-email-salikhmetov@gmail.com>
-References: <12004129652397-git-send-email-salikhmetov@gmail.com>
-X-DCC-STREAM-Metrics: smtp02.mtu.ru 10001; Body=0 Fuz1=0 Fuz2=0
+	id S1751320AbYAOQZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 11:25:10 -0500
+Date: Tue, 15 Jan 2008 17:25:13 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Adrian Bunk <bunk@kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       rjw@sisk.pl, pavel@suse.cz, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without HOTPLUG_CPU
+Message-ID: <20080115162513.GA18338@uranus.ravnborg.org>
+References: <20080110124702.GF28740@does.not.exist> <p73fxx5omck.fsf@bingen.suse.de> <20080110150911.GG28740@does.not.exist> <20080114135240.GA15357@elte.hu> <20080114140910.GA8507@uranus.ravnborg.org> <20080114145854.GA31695@elte.hu> <20080114150553.GA3524@elte.hu> <20080114152440.GA9174@elte.hu> <20080114201214.GC9257@uranus.ravnborg.org> <20080115151742.GB10722@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080115151742.GB10722@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Substantial code cleanup of the sys_msync() function:
+On Tue, Jan 15, 2008 at 04:17:42PM +0100, Ingo Molnar wrote:
+> 
+> * Sam Ravnborg <sam@ravnborg.org> wrote:
+> 
+> > > find below the current set of warnings on -git. There are 62.
+> > 
+> > The correct figure is 112.
+> > 
+> > You need to do a:
+> > make KCFLAGS=-fno-unit-at-a-time
+> > build to see them all.
+> 
+> btw., please add a .config option to trigger the -fno-unit-at-a-time 
+> flags. Something like CONFIG_SECTION_ERRORS=y - plus perhaps combine it 
+> with the patch below that turns such section bugs into detectable build 
+> errors. A distro does not want to build a kernel that could potentially 
+> corrupt kernel memory. (it's a security risk as well.) If we make the 
+> err=1 dependent on CONFIG_SECTION_ERRORS then we'll have this 
+> configurable.
 
-1) using the PAGE_ALIGN() macro instead of "manual" alignment;
-2) improved readability of the loop traversing the process memory regions.
+The plan is to let section mismatch warnings become errors 
+after the merge window - so we hit -mm first.
+And I will add a config option to:
+- set -fno-unit-at-a-time
+- add no-inline to all functions marked __init*
+- and maybe disable __inline if that gives additional errors
 
-Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
----
- mm/msync.c |   79 ++++++++++++++++++++++++++++--------------------------------
- 1 files changed, 37 insertions(+), 42 deletions(-)
+Slowly getting there.
+Need to beat modpost in shape to get much less configuration
+dependent warnings/errors first.
 
-diff --git a/mm/msync.c b/mm/msync.c
-index 144a757..3270caa 100644
---- a/mm/msync.c
-+++ b/mm/msync.c
-@@ -1,24 +1,25 @@
- /*
-  *	linux/mm/msync.c
-  *
-+ * The msync() system call.
-  * Copyright (C) 1994-1999  Linus Torvalds
-+ *
-+ * Massive code cleanup.
-+ * Copyright (C) 2008 Anton Salikhmetov <salikhmetov@gmail.com>
-  */
- 
--/*
-- * The msync() system call.
-- */
-+#include <linux/file.h>
- #include <linux/fs.h>
- #include <linux/mm.h>
- #include <linux/mman.h>
--#include <linux/file.h>
--#include <linux/syscalls.h>
- #include <linux/sched.h>
-+#include <linux/syscalls.h>
- 
- /*
-  * MS_SYNC syncs the entire file - including mappings.
-  *
-  * MS_ASYNC does not start I/O (it used to, up to 2.5.67).
-- * Nor does it marks the relevant pages dirty (it used to up to 2.6.17).
-+ * Nor does it mark the relevant pages dirty (it used to up to 2.6.17).
-  * Now it doesn't do anything, since dirty pages are properly tracked.
-  *
-  * The application may now run fsync() to
-@@ -33,71 +34,65 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
- 	unsigned long end;
- 	struct mm_struct *mm = current->mm;
- 	struct vm_area_struct *vma;
--	int unmapped_error = 0;
--	int error = -EINVAL;
-+	int error = 0, unmapped_error = 0;
- 
- 	if (flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC))
--		goto out;
-+		return -EINVAL;
- 	if (start & ~PAGE_MASK)
--		goto out;
-+		return -EINVAL;
- 	if ((flags & MS_ASYNC) && (flags & MS_SYNC))
--		goto out;
--	error = -ENOMEM;
--	len = (len + ~PAGE_MASK) & PAGE_MASK;
-+		return -EINVAL;
-+
-+	len = PAGE_ALIGN(len);
- 	end = start + len;
- 	if (end < start)
--		goto out;
--	error = 0;
-+		return -ENOMEM;
- 	if (end == start)
--		goto out;
-+		return 0;
-+
- 	/*
- 	 * If the interval [start,end) covers some unmapped address ranges,
- 	 * just ignore them, but return -ENOMEM at the end.
- 	 */
- 	down_read(&mm->mmap_sem);
- 	vma = find_vma(mm, start);
--	for (;;) {
-+	do {
- 		struct file *file;
- 
--		/* Still start < end. */
--		error = -ENOMEM;
--		if (!vma)
--			goto out_unlock;
--		/* Here start < vma->vm_end. */
-+		if (!vma) {
-+			error = -ENOMEM;
-+			break;
-+		}
- 		if (start < vma->vm_start) {
- 			start = vma->vm_start;
--			if (start >= end)
--				goto out_unlock;
-+			if (start >= end) {
-+				error = -ENOMEM;
-+				break;
-+			}
- 			unmapped_error = -ENOMEM;
- 		}
--		/* Here vma->vm_start <= start < vma->vm_end. */
--		if ((flags & MS_INVALIDATE) &&
--				(vma->vm_flags & VM_LOCKED)) {
-+		if ((flags & MS_INVALIDATE) && (vma->vm_flags & VM_LOCKED)) {
- 			error = -EBUSY;
--			goto out_unlock;
-+			break;
- 		}
--		file = vma->vm_file;
- 		start = vma->vm_end;
--		if ((flags & MS_SYNC) && file &&
--				(vma->vm_flags & VM_SHARED)) {
-+
-+		file = vma->vm_file;
-+		if ((flags & MS_SYNC) && file && (vma->vm_flags & VM_SHARED)) {
- 			get_file(file);
- 			up_read(&mm->mmap_sem);
- 			error = do_fsync(file, 0);
- 			fput(file);
--			if (error || start >= end)
--				goto out;
-+			if (error)
-+				return error;
- 			down_read(&mm->mmap_sem);
- 			vma = find_vma(mm, start);
--		} else {
--			if (start >= end) {
--				error = 0;
--				goto out_unlock;
--			}
--			vma = vma->vm_next;
-+			continue;
- 		}
--	}
--out_unlock:
-+
-+		vma = vma->vm_next;
-+	} while (start < end);
- 	up_read(&mm->mmap_sem);
--out:
-+
- 	return error ? : unmapped_error;
- }
--- 
-1.4.4.4
-
+	Sam
