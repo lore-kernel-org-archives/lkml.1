@@ -1,110 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755427AbYAOQf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754026AbYAOQnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755427AbYAOQf1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 11:35:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbYAOQfS
+	id S1754026AbYAOQnT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 11:43:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248AbYAOQnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 11:35:18 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:42668 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751856AbYAOQfR (ORCPT
+	Tue, 15 Jan 2008 11:43:08 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:52818 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751167AbYAOQnG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 11:35:17 -0500
-Subject: Re: [PATCH 2/2] Updating ctime and mtime at syncing
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Anton Salikhmetov <salikhmetov@gmail.com>
-Cc: inux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       protasnb@gmail.com, miklos@szeredi.hu
-In-Reply-To: <1200412978699-git-send-email-salikhmetov@gmail.com>
-References: <12004129652397-git-send-email-salikhmetov@gmail.com>
-	 <1200412978699-git-send-email-salikhmetov@gmail.com>
-Content-Type: text/plain
-Date: Tue, 15 Jan 2008 17:35:11 +0100
-Message-Id: <1200414911.26045.32.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Jan 2008 11:43:06 -0500
+Date: Tue, 15 Jan 2008 17:43:05 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+cc: =?ISO-8859-15?Q?Dagfinn_Ilmari_Manns=E5ker?= <ilmari@ilmari.org>,
+       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Possibly silly Q?
+In-Reply-To: <alpine.LFD.1.00.0801141551260.26152@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0801151741450.30034@fbirervta.pbzchgretzou.qr>
+References: <200801141434.00934.gene.heskett@gmail.com> <d8jmyr8xjyi.fsf@nygaard.ping.uio.no>
+ <alpine.LFD.1.00.0801141551260.26152@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 2008-01-15 at 19:02 +0300, Anton Salikhmetov wrote:
+On Jan 14 2008 15:53, Robert P. J. Day wrote:
+>>
+>> fdisk or similar should have issued an ioctl to reread the partition
+>> table after writing the new one, but you can do it manually with
+>> 'blockdev --rereadpt <device>'.
+>
+>i remember bringing up this very issue quite some time ago and, IIRC,
+>the consensus was that *primary* partition changes would be re-read by
+>the kernel, but not *logical* partition changes.  or something sort of
+>like that.
 
-> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> index 3d3848f..53d0e34 100644
-> --- a/mm/page-writeback.c
-> +++ b/mm/page-writeback.c
-> @@ -997,35 +997,39 @@ int __set_page_dirty_no_writeback(struct page *page)
->   */
->  int __set_page_dirty_nobuffers(struct page *page)
->  {
-> -	if (!TestSetPageDirty(page)) {
-> -		struct address_space *mapping = page_mapping(page);
-> -		struct address_space *mapping2;
-> +	struct address_space *mapping = page_mapping(page);
-> +	struct address_space *mapping2;
->  
-> -		if (!mapping)
-> -			return 1;
-> +	if (!mapping)
-> +		return 1;
->  
-> -		write_lock_irq(&mapping->tree_lock);
-> -		mapping2 = page_mapping(page);
-> -		if (mapping2) { /* Race with truncate? */
-> -			BUG_ON(mapping2 != mapping);
-> -			WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
-> -			if (mapping_cap_account_dirty(mapping)) {
-> -				__inc_zone_page_state(page, NR_FILE_DIRTY);
-> -				__inc_bdi_stat(mapping->backing_dev_info,
-> -						BDI_RECLAIMABLE);
-> -				task_io_account_write(PAGE_CACHE_SIZE);
-> -			}
-> -			radix_tree_tag_set(&mapping->page_tree,
-> -				page_index(page), PAGECACHE_TAG_DIRTY);
-> -		}
-> -		write_unlock_irq(&mapping->tree_lock);
-> -		if (mapping->host) {
-> -			/* !PageAnon && !swapper_space */
-> -			__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
-> +	mapping->mtime = CURRENT_TIME;
-> +	set_bit(AS_MCTIME, &mapping->flags);
+Nah, it dumps the whole partition structure.
+Note in fs/partition/check.c:rescan_partitions:
 
-This seems vulnerable to the race we have against truncate, handled by
-the mapping2 magic below. Do we care?
-
-> +
-> +	if (TestSetPageDirty(page))
-> +		return 0;
-> +
-> +	write_lock_irq(&mapping->tree_lock);
-> +	mapping2 = page_mapping(page);
-> +	if (mapping2) {
-> +		/* Race with truncate? */
-> +		BUG_ON(mapping2 != mapping);
-> +		WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
-> +		if (mapping_cap_account_dirty(mapping)) {
-> +			__inc_zone_page_state(page, NR_FILE_DIRTY);
-> +			__inc_bdi_stat(mapping->backing_dev_info,
-> +					BDI_RECLAIMABLE);
-> +			task_io_account_write(PAGE_CACHE_SIZE);
->  		}
-> -		return 1;
-> +		radix_tree_tag_set(&mapping->page_tree,
-> +				page_index(page), PAGECACHE_TAG_DIRTY);
->  	}
-> -	return 0;
-> +	write_unlock_irq(&mapping->tree_lock);
-> +
-> +	if (mapping->host)
-> +		__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
-> +
-> +	return 1;
->  }
->  EXPORT_SYMBOL(__set_page_dirty_nobuffers);
->  
-
+	for (p = 1; p < disk->minors; p++)
+		delete_partition(disk, p);
