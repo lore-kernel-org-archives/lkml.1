@@ -1,78 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756837AbYAOOFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751883AbYAOOVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756837AbYAOOFo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 09:05:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbYAOOFZ
+	id S1751883AbYAOOVM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 09:21:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbYAOOU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 09:05:25 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:33166 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751848AbYAOOFX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 09:05:23 -0500
-Date: Tue, 15 Jan 2008 09:04:51 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       hch@infradead.org, peterz@infradead.org
-Subject: Re: [PATCH][RFC] fast file mapping for loop
-Message-ID: <20080115090451.060dbedd@think.oraclecorp.com>
-In-Reply-To: <20080115100739.GX6258@kernel.dk>
-References: <20080109085231.GE6650@kernel.dk>
-	<20080114121021.0d392102@think.oraclecorp.com>
-	<20080114175359.GS6258@kernel.dk>
-	<20080115092503.GV6258@kernel.dk>
-	<20080115093651.GW6258@kernel.dk>
-	<20080115100739.GX6258@kernel.dk>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 15 Jan 2008 09:20:59 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:59556 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750702AbYAOOU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 09:20:57 -0500
+Date: Tue, 15 Jan 2008 08:21:15 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: serue@us.ibm.com, akpm@linux-foundation.org, hch@infradead.org,
+       viro@ftp.linux.org.uk, ebiederm@xmission.com, kzak@redhat.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
+Subject: Re: [patch 8/9] unprivileged mounts: propagation: inherit owner
+	from parent
+Message-ID: <20080115142115.GC4453@sergelap.austin.ibm.com>
+References: <20080108113502.184459371@szeredi.hu> <20080108113632.895453887@szeredi.hu> <20080114231340.GG6704@sergelap.austin.ibm.com> <E1JEjCG-0000wz-BS@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1JEjCG-0000wz-BS@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jan 2008 11:07:40 +0100
-Jens Axboe <jens.axboe@oracle.com> wrote:
-
-> > > I split and merged the patch into five bits (added ext3 support),
-> > > so perhaps that would be easier for people to read/review.
-> > > Attached and also exist in the loop-extent_map branch here:
-
-Thanks!
-
+Quoting Miklos Szeredi (miklos@szeredi.hu):
+> > Quoting Miklos Szeredi (miklos@szeredi.hu):
+> > > From: Miklos Szeredi <mszeredi@suse.cz>
 > > > 
-> > > http://git.kernel.dk/?p=linux-2.6-block.git;a=shortlog;h=loop-extent_map
+> > > On mount propagation, let the owner of the clone be inherited from the
+> > > parent into which it has been propagated.  Also if the parent has the
+> > > "nosuid" flag, set this flag for the child as well.
 > > 
-> > Seems my ext3 version doesn't work, it craps out in
-> > ext3_get_blocks_handle() triggering this bug:
-> > 
-> > J_ASSERT(handle != NULL || create == 0);
-> > 
-> > I'll see if I can fix that, being fairly fs ignorant...
+> > What about nodev?
 > 
-> This works, but probably pretty suboptimal (should end the new journal
-> in map_io_complete()?). And yes I know the >> 9 isn't correct, since
-> the fs block size is larger. Just making sure that we always have
-> enough blocks.
+> Hmm, I think the nosuid thing is meant to prevent suid mounts being
+> introduced into a "suidless" namespace.  This doesn't apply to dev
+> mounts, which are quite safe in a suidless environment, as long as the
+> user is not able to create devices.  But that should be taken care of
+> by capability tests.
+> 
+> I'll update the description.
 
-You can use DIO_CREDITS instead of len >> 9, just like the ext3
-O_DIRECT code does.  Your current patch is fine, except it breaks
-data=ordered rules.  My plan to work within data=ordered:
+Hmm,
 
-1) Inside ext3_map_extent (while the transaction was running), increment
-a counter in the ext3 journal for number of pending IOs.  Then end the
-transaction handle.
+Part of me wants to say the safest thing for now would be to refuse
+mounts propagation from non-user mounts to user mounts.
 
-2) Drop this counter inside the IO completion call
+I assume you're thinking about a fully user-mounted chroot, where
+the user woudl still want to be able to stick in a cdrom and have
+it automounted under /mnt/cdrom, propagated from the root mounts ns?
 
-3) Change the ext3 commit code to wait for the IO count to be zero.
+But then are there no devices which the user could create on a floppy
+while inserted into his own laptop, owned by his own uid, then insert
+into this machine, and use the device under the auto-mounted /dev/floppy
+to gain inappropriate access?
 
-I'll give it a shot later this week, until then your current patch is
-just data=writeback, which is good enough for testing.
-
--chris
+-serge
