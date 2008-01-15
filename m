@@ -1,77 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754259AbYAOTQE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756643AbYAOTQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754259AbYAOTQE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 14:16:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751077AbYAOTPx
+	id S1756643AbYAOTQb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 14:16:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbYAOTQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 14:15:53 -0500
-Received: from zombie.ncsc.mil ([144.51.88.131]:53189 "EHLO zombie.ncsc.mil"
+	Tue, 15 Jan 2008 14:16:22 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:42495 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751210AbYAOTPw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 14:15:52 -0500
-Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM
-	settings for task actions [try #2]
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: casey@schaufler-ca.com
-Cc: David Howells <dhowells@redhat.com>, Daniel J Walsh <dwalsh@redhat.com>,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <286481.40953.qm@web36613.mail.mud.yahoo.com>
-References: <286481.40953.qm@web36613.mail.mud.yahoo.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Tue, 15 Jan 2008 14:15:08 -0500
-Message-Id: <1200424508.9669.63.camel@moss-spartans.epoch.ncsc.mil>
+	id S1751077AbYAOTQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 14:16:21 -0500
+Date: Tue, 15 Jan 2008 20:16:23 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Adrian Bunk <adrian.bunk@movial.fi>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, phil.el@wanadoo.fr,
+       oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: Fwd: Re: [2.6.24 patch] restore ARMv6 OProfile support
+Message-ID: <20080115191623.GA19694@uranus.ravnborg.org>
+References: <20071228195841.GA3945@flint.arm.linux.org.uk> <20080115104526.GA32067@flint.arm.linux.org.uk> <alpine.LFD.1.00.0801150811250.2806@woody.linux-foundation.org> <20080115173701.GB8375@Krystal> <alpine.LFD.1.00.0801151051120.2806@woody.linux-foundation.org> <20080115190719.GA12236@Krystal>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-3.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080115190719.GA12236@Krystal>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-01-15 at 10:10 -0800, Casey Schaufler wrote:
-> --- David Howells <dhowells@redhat.com> wrote:
-> 
-> > Stephen Smalley <sds@tycho.nsa.gov> wrote:
+On Tue, Jan 15, 2008 at 02:07:20PM -0500, Mathieu Desnoyers wrote:
+> * Linus Torvalds (torvalds@linux-foundation.org) wrote:
 > > 
-> > > >  (3) Check that the kernel may create files as a particular secid (this
-> > > >      could be specified indirectly by specifying an inode, which would
-> > > >      hide the secid inside the LSM).
+> > 
+> > On Tue, 15 Jan 2008, Mathieu Desnoyers wrote:
 > > > 
-> > > I don't think this check is on the kernel per se but rather the ability
-> > > of the daemon to nominate a secid for use on files created later by the
-> > > kernel module.
+> > > Well, it goes along the lines of the patch I suggested as a reply to
+> > > Adrian, with these differences :
+> > > 
+> > > - I still source the kernel/Kconfig.instrumentation file.
+> > > - I put back the missing OPROFILE options directly in arch/arm/Kconfig
+> > > 
+> > > Then end result is the same as your patch, but without the code
+> > > duplication.
 > > 
-> > Hmmm...  At the moment the cachefiles module works out for itself what the
-> > file label should be by looking at the root directory it was given and
-> > assuming the label on that is what it's going to be using.  Are you
-> > suggesting
-> > this should be specified directly instead by the daemon?
+> > No it's not.
+> > 
+> > Now the config variables may all be there, but the UI for the *menu* 
+> > system is broken (ie all the ARM profiling config options are now outside 
+> > the profiling menu).
+> > 
+> > Is that menu really needed? I dunno. But since it exists, it should be 
+> > correct.
+> > 
+> > 		Linus
 > 
-> Oh my. While there will be cases where the label of the file
-> will match the label of the containing directory, and in fact
-> for most label based LSMs that will usually be the case, you
-> certainly can't count on it. The only place that you can find
-> the correct label for a file with any confidence in from the
-> xattr (assuming the LSM uses xattrs) on the file itself. I can
-> imaging an LSM for which it would make sense to derive the
-> label from the root directory, but I know Smack isn't one of
-> them, and I don't think that SELinux is either, although I
-> would defer a definitive answer on that to Stephen.
+> There is an "instrumentation menu removal" patchset I've submitted to
+> Andrew for the next release cycle that moves the instrumentation menu
+> content into General setup (I did this following your advice).
+> 
+> Furthermore, on ARM, the OPROFILE_ARMV6, OPROFILE_MPCORE and
+> OPROFILE_ARM11_CORE are all "bool , default y" (equivalent to the
+> preferred def_bool y). Unless I am grossly mistaken, this is not
+> supposed to show up in the menus; it's just selected when the
+> dependencies are met.
 
-The cache files are created by the cachefiles kernel module, not by the
-userspace daemon, and the userspace daemon doesn't need to directly
-read/write them at all (but I think it does need to be able to unlink
-them?).  The userspace daemon merely identifies the directory where the
-cache should live as part of configuring the cache when enabling it.
+This was the patch:
++if OPROFILE
++
++config OPROFILE_ARMV6
++	def_bool y
++	depends on CPU_V6 && !SMP
++	select OPROFILE_ARM11_CORE
++
++config OPROFILE_MPCORE
++	def_bool y
++	depends on CPU_V6 && SMP
++	select OPROFILE_ARM11_CORE
++
++config OPROFILE_ARM11_CORE
++	bool
++
++endif
 
-Hence, it is fine to use a fixed label for the cache files (systemhigh
-in a MLS world), and to let the directory's label serve as the basis for
-it.  Only the cachefiles kernel module directly reads and writes the
-files.
- 
--- 
-Stephen Smalley
-National Security Agency
+And none of these has a prompt defined so they do not show up
+as a menu.
+It is very easy to test if you have the patch applied.
+No cross toolchin is needed - just do:
+make ARCH=arm menuconfig
 
+	Sam
