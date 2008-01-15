@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753511AbYAOMWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754278AbYAOMWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753511AbYAOMWW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 07:22:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbYAOMWH
+	id S1754278AbYAOMWh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 07:22:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbYAOMWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 07:22:07 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:41963 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751140AbYAOMWE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 07:22:04 -0500
-Date: Tue, 15 Jan 2008 05:22:01 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>, Greg KH <greg@kroah.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH]PCIE ASPM support - takes 2
-Message-ID: <20080115122200.GW18741@parisc-linux.org>
-References: <1200367276.20538.1.camel@sli10-desk.sh.intel.com> <20080115041943.GS18741@parisc-linux.org> <1200373622.20869.2.camel@sli10-desk.sh.intel.com>
-MIME-Version: 1.0
+	Tue, 15 Jan 2008 07:22:19 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:35634 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751820AbYAOMWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 07:22:18 -0500
+Date: Tue, 15 Jan 2008 13:22:08 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: hrtimer.c devinit vs. cpuinit
+Message-ID: <20080115122208.GA17122@uranus.ravnborg.org>
+References: <1200357010.5887.72.camel@johannes.berg>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1200373622.20869.2.camel@sli10-desk.sh.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1200357010.5887.72.camel@johannes.berg>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 15, 2008 at 01:07:02PM +0800, Shaohua Li wrote:
-> > > +
-> > > +/* Called after ACPI is enabled */
-> > > +static int __init acpi_pcie_support_init(void)
-> > > +{
-> > > +	pcie_aspm_init();
-> > > +	return 0;
-> > > +}
-> > > +fs_initcall(acpi_pcie_support_init);
-> > 
-> > Is there any reason to put this in here instead of just making
-> > pcie_aspm_init an initcall?
-> yes, this will evaluate some ACPI methods, so must be called after ACPI
-> is initialized, which is a sub_system call
+On Tue, Jan 15, 2008 at 01:30:10AM +0100, Johannes Berg wrote:
+> Hi,
+> 
+> Looking through hrtimer.c I noticed
+> 
+> static void __devinit init_hrtimers_cpu(int cpu)
+> 
+> static int __cpuinit hrtimer_cpu_notify(struct notifier_block *self,
+>                                         unsigned long action, void *hcpu)
+> 
+> 
+> Couldn't the first be __cpuinit as well?
 
-I wasn't saying that you should change it from being an fs_initcall.  I
-was saying that you might want to consider deleting this function and
-adding
+As the only user of init_hrtimers_cpu is __cpuinit then it is a bug
+that init_hrtimers_cpu is __devinit today.
 
-fs_initcall(pcie_aspm_init);
+So you are correct and it must be fixed.
 
-in the file that defines pcie_aspm_init.
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+	Sam
