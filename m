@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758767AbYAOU4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758572AbYAOU5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758767AbYAOU4y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 15:56:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757421AbYAOUux
+	id S1758572AbYAOU5Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 15:57:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757431AbYAOUuy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 15:50:53 -0500
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:63812 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756055AbYAOUug (ORCPT
+	Tue, 15 Jan 2008 15:50:54 -0500
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:51796 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755487AbYAOUug (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 15 Jan 2008 15:50:36 -0500
-Message-Id: <20080115205022.261779612@goodmis.org>
+Message-Id: <20080115205022.908509019@goodmis.org>
 References: <20080115204907.838227723@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 15 Jan 2008 15:49:13 -0500
+Date: Tue, 15 Jan 2008 15:49:17 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -28,237 +28,171 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
        Jan Kiszka <jan.kiszka@siemens.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [RFC PATCH 06/30 v3] mcount based trace in the form of a header file library
-Content-Disposition: inline; filename=mcount-simple-tracer.patch
+Subject: [RFC PATCH 10/30 v3] Add a symbol only trace output
+Content-Disposition: inline; filename=mcount-tracer-symbol-only.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The design is for mcount based tracers to be added thru the
-lib/tracing/tracer_interface.h file, just like mcount users should add
-themselves to lib/tracing/mcount.h. A Kconfig rule chooses the right MCOUNT and
-MCOUNT_TRACER user.
+The trace output is very verbose with outputing both the
+IP address (Instruction Pointer not Internet Protocol!)
+and the kallsyms symbol. So if kallsyms is configured into
+the kernel, another file is created in the debugfs system.
 
-This is to avoid function call costs for something that is supposed to be used
-only in a debug kernel and that has to reduce to the bare minimum the per
-function call overhead of mcount based tracing.
+A new file is added to the debugfs. iter_ctrl
 
-Signed-off-by: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+ echo symonly > /debugfs/tracing/iter_ctrl
+
+will turn off printing of instruction pointers.
+
+ echo nosymonly > /debugfs/tracing/iter_ctrl
+
+will turn them back on.
+
+Here's an example:
+
+CPU 1: swapper:0 smp_apic_timer_interrupt+0xc/0x58 <-- apic_timer_interrupt+0x66/0x70
+CPU 1: swapper:0 exit_idle+0x9/0x22 <-- smp_apic_timer_interrupt+0x35/0x58
+CPU 0: sshd:2611 _spin_unlock+0x9/0x38 <-- __qdisc_run+0xb2/0x1a1
+CPU 1: swapper:0 __exit_idle+0x9/0x2e <-- exit_idle+0x20/0x22
+CPU 0: sshd:2611 _spin_lock+0xe/0x7a <-- __qdisc_run+0xba/0x1a1
+CPU 1: swapper:0 atomic_notifier_call_chain+0x9/0x16 <-- __exit_idle+0x2c/0x2e
+CPU 1: swapper:0 __atomic_notifier_call_chain+0xe/0x56 <-- atomic_notifier_call_chain+0x14/0x16
+
+
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- lib/tracing/Kconfig            |   11 +++
- lib/tracing/Makefile           |    2 
- lib/tracing/tracer.c           |  128 +++++++++++++++++++++++++++++++++++++++++
- lib/tracing/tracer.h           |   21 ++++++
- lib/tracing/tracer_interface.h |   14 ++++
- 5 files changed, 176 insertions(+)
+ lib/tracing/tracer.c |   65 +++++++++++++++++++++++++++++++++++++++++++++++----
+ lib/tracing/tracer.h |    1 
+ 2 files changed, 62 insertions(+), 4 deletions(-)
 
-Index: linux-compile.git/lib/tracing/Kconfig
-===================================================================
---- linux-compile.git.orig/lib/tracing/Kconfig	2008-01-15 14:54:17.000000000 -0500
-+++ linux-compile.git/lib/tracing/Kconfig	2008-01-15 14:54:37.000000000 -0500
-@@ -8,3 +8,14 @@ config HAVE_MCOUNT
- config MCOUNT
- 	bool
- 	select FRAME_POINTER
-+
-+config MCOUNT_TRACER
-+	bool "Profiler instrumentation based tracer"
-+	depends on DEBUG_KERNEL && HAVE_MCOUNT
-+	default n
-+	select MCOUNT
-+	help
-+	  Use profiler instrumentation, adding -pg to CFLAGS. This will
-+	  insert a call to an architecture specific __mcount routine,
-+	  that the debugging mechanism using this facility will hook by
-+	  providing a set of inline routines.
-Index: linux-compile.git/lib/tracing/Makefile
-===================================================================
---- linux-compile.git.orig/lib/tracing/Makefile	2008-01-15 14:54:17.000000000 -0500
-+++ linux-compile.git/lib/tracing/Makefile	2008-01-15 14:54:37.000000000 -0500
-@@ -1,3 +1,5 @@
- obj-$(CONFIG_MCOUNT) += libmcount.o
- 
-+obj-$(CONFIG_MCOUNT_TRACER) += tracer.o
-+
- libmcount-y := mcount.o
 Index: linux-compile.git/lib/tracing/tracer.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-compile.git/lib/tracing/tracer.c	2008-01-15 14:54:37.000000000 -0500
-@@ -0,0 +1,128 @@
-+/*
-+ * ring buffer based mcount tracer
-+ *
-+ * Copyright (C) 2007 Arnaldo Carvalho de Melo <acme@redhat.com>
-+ * 		      Steven Rostedt <srostedt@redhat.com>
-+ *
-+ * From code in the latency_tracer, that is:
-+ *
-+ *  Copyright (C) 2004-2006 Ingo Molnar
-+ *  Copyright (C) 2004 William Lee Irwin III
-+ */
-+
-+#include <linux/fs.h>
-+#include <linux/gfp.h>
-+#include <linux/init.h>
-+#include <linux/linkage.h>
-+#include <linux/seq_file.h>
-+#include <linux/mcount.h>
-+
-+#include "tracer.h"
-+#include "tracer_interface.h"
-+
-+static struct mctracer_trace mctracer_trace;
-+
-+static inline notrace void
-+mctracer_add_trace_entry(struct mctracer_trace *tr,
-+			 int cpu,
-+			 const unsigned long ip,
-+			 const unsigned long parent_ip)
-+{
-+	unsigned long idx, idx_next;
-+	struct mctracer_entry *entry;
-+
-+	idx = tr->trace_idx[cpu];
-+	idx_next = idx + 1;
-+
-+	if (unlikely(idx_next >= tr->entries)) {
-+		atomic_inc(&tr->underrun[cpu]);
-+		idx_next = 0;
-+	}
-+
-+	tr->trace_idx[cpu] = idx_next;
-+
-+	if (unlikely(idx_next != 0 && atomic_read(&tr->underrun[cpu])))
-+		atomic_inc(&tr->underrun[cpu]);
-+
-+	entry = tr->trace[cpu] + idx * MCTRACER_ENTRY_SIZE;
-+	entry->idx	 = atomic_inc_return(&tr->cnt);
-+	entry->ip	 = ip;
-+	entry->parent_ip = parent_ip;
-+}
-+
-+static notrace void trace_function(const unsigned long ip,
-+				   const unsigned long parent_ip)
-+{
-+	unsigned long flags;
-+	struct mctracer_trace *tr;
-+	int cpu;
-+
-+	raw_local_irq_save(flags);
-+	cpu = raw_smp_processor_id();
-+
-+	tr = &mctracer_trace;
-+
-+	atomic_inc(&tr->disabled[cpu]);
-+	if (likely(atomic_read(&tr->disabled[cpu]) == 1))
-+		mctracer_add_trace_entry(tr, cpu, ip, parent_ip);
-+
-+	atomic_dec(&tr->disabled[cpu]);
-+
-+	raw_local_irq_restore(flags);
-+}
-+
-+static struct mcount_ops trace_ops __read_mostly =
-+{
-+	.func = trace_function,
+--- linux-compile.git.orig/lib/tracing/tracer.c	2008-01-15 14:57:29.000000000 -0500
++++ linux-compile.git/lib/tracing/tracer.c	2008-01-15 14:57:36.000000000 -0500
+@@ -89,6 +89,10 @@ static struct mcount_ops trace_ops __rea
+ };
+ 
+ #ifdef CONFIG_DEBUG_FS
++enum trace_iterator {
++	TRACE_ITER_SYM_ONLY	= 1,
 +};
 +
-+static notrace int page_order(const unsigned long size)
+ struct mctracer_iterator {
+ 	struct mctracer_trace *tr;
+ 	struct mctracer_entry *ent;
+@@ -217,25 +221,29 @@ static void seq_print_symbol(struct seq_
+ #endif
+ 
+ static void notrace seq_print_ip_sym(struct seq_file *m,
+-				     unsigned long ip)
++				     unsigned long ip,
++				     int sym_only)
+ {
+ 	seq_print_symbol(m, "%s", ip);
+-	seq_printf(m, " <" IP_FMT ">", ip);
++	if (!sym_only)
++		seq_printf(m, " <" IP_FMT ">", ip);
+ }
+ 
+ static int s_show(struct seq_file *m, void *v)
+ {
+ 	struct mctracer_iterator *iter = v;
++	int sym_only = !!(iter->tr->iter_flags & TRACE_ITER_SYM_ONLY);
+ 
+ 	if (iter->ent == NULL) {
+ 		seq_printf(m, "mctracer:\n");
+ 	} else {
+ 		seq_printf(m, "CPU %d: ", iter->cpu);
+ 		seq_printf(m, "%s:%d ", iter->ent->comm, iter->ent->pid);
+-		seq_print_ip_sym(m, iter->ent->ip);
++		seq_print_ip_sym(m, iter->ent->ip, sym_only);
+ 		if (iter->ent->parent_ip) {
+ 			seq_printf(m, " <-- ");
+-			seq_print_ip_sym(m, iter->ent->parent_ip);
++			seq_print_ip_sym(m, iter->ent->parent_ip,
++					 sym_only);
+ 		}
+ 		seq_printf(m, "\n");
+ 	}
+@@ -345,6 +353,50 @@ static struct file_operations mctracer_c
+ 	.write = mctracer_ctrl_write,
+ };
+ 
++static ssize_t mctracer_iter_ctrl_read(struct file *filp, char __user *ubuf,
++				       size_t cnt, loff_t *ppos)
 +{
-+	const unsigned long nr_pages = DIV_ROUND_UP(size, PAGE_SIZE);
-+	return ilog2(roundup_pow_of_two(nr_pages));
++	struct mctracer_trace *tr = filp->private_data;
++	char buf[64];
++	int r = 0;
++
++	if (tr->iter_flags & TRACE_ITER_SYM_ONLY)
++		r = sprintf(buf, "%s", "symonly ");
++	r += sprintf(buf+r, "\n");
++
++	return simple_read_from_buffer(ubuf, cnt, ppos,
++				       buf, r);
 +}
 +
-+static notrace int mctracer_alloc_buffers(void)
++static ssize_t mctracer_iter_ctrl_write(struct file *filp,
++					const char __user *ubuf,
++					size_t cnt, loff_t *ppos)
 +{
-+	const int order = page_order(MCTRACER_NR_ENTRIES * MCTRACER_ENTRY_SIZE);
-+	const unsigned long size = (1UL << order) << PAGE_SHIFT;
-+	struct mctracer_entry *array;
-+	int i;
++	struct mctracer_trace *tr = filp->private_data;
++	char buf[64];
 +
-+	for_each_possible_cpu(i) {
-+		array = (struct mctracer_entry *)
-+			  __get_free_pages(GFP_KERNEL, order);
-+		if (array == NULL) {
-+			printk(KERN_ERR "mctracer: failed to allocate"
-+			       " %ld bytes for trace buffer!\n", size);
-+			goto free_buffers;
-+		}
-+		mctracer_trace.trace[i] = array;
-+	}
++	if (cnt > 63)
++		cnt = 63;
 +
-+	/*
-+	 * Since we allocate by orders of pages, we may be able to
-+	 * round up a bit.
-+	 */
-+	mctracer_trace.entries = size / MCTRACER_ENTRY_SIZE;
++	if (copy_from_user(&buf, ubuf, cnt))
++		return -EFAULT;
 +
-+	pr_info("mctracer: %ld bytes allocated for %ld entries of %ld bytes\n",
-+		size, MCTRACER_NR_ENTRIES, (long)MCTRACER_ENTRY_SIZE);
-+	pr_info("   actual entries %ld\n", mctracer_trace.entries);
++	buf[cnt] = 0;
 +
-+	register_mcount_function(&trace_ops);
++	if (strncmp(buf, "symonly", 7) == 0)
++		tr->iter_flags |= TRACE_ITER_SYM_ONLY;
 +
-+	return 0;
++	filp->f_pos += cnt;
 +
-+ free_buffers:
-+	for (i-- ; i >= 0; i--) {
-+		if (mctracer_trace.trace[i]) {
-+			free_pages((unsigned long)mctracer_trace.trace[i],
-+				   order);
-+			mctracer_trace.trace[i] = NULL;
-+		}
-+	}
-+	return -ENOMEM;
++	return cnt;
 +}
 +
-+device_initcall(mctracer_alloc_buffers);
++static struct file_operations mctracer_iter_fops = {
++	.open = mctracer_open_generic,
++	.read = mctracer_iter_ctrl_read,
++	.write = mctracer_iter_ctrl_write,
++};
++
+ static void mctrace_init_debugfs(void)
+ {
+ 	struct dentry *d_mctracer;
+@@ -361,10 +413,15 @@ static void mctrace_init_debugfs(void)
+ 	if (!entry)
+ 		pr_warning("Could not create debugfs 'ctrl' entry\n");
+ 
++	entry = debugfs_create_file("iter_ctrl", 0644, d_mctracer,
++				    &mctracer_trace, &mctracer_iter_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs 'iter_ctrl' entry\n");
+ 	entry = debugfs_create_file("trace", 0444, d_mctracer,
+ 				    &mctracer_trace, &mctrace_fops);
+ 	if (!entry)
+ 		pr_warning("Could not create debugfs 'trace' entry\n");
++
+ }
+ #else /* CONFIG_DEBUG_FS */
+ static void mctrace_init_debugfs(void)
 Index: linux-compile.git/lib/tracing/tracer.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-compile.git/lib/tracing/tracer.h	2008-01-15 14:54:37.000000000 -0500
-@@ -0,0 +1,21 @@
-+#ifndef _LINUX_MCOUNT_TRACER_H
-+#define _LINUX_MCOUNT_TRACER_H
-+
-+#include <asm/atomic.h>
-+
-+struct mctracer_entry {
-+	unsigned long idx;
-+	unsigned long ip;
-+	unsigned long parent_ip;
-+};
-+
-+struct mctracer_trace {
-+	void	      *trace[NR_CPUS];
-+	unsigned long trace_idx[NR_CPUS];
-+	unsigned long entries;
-+	atomic_t      cnt;
-+	atomic_t      disabled[NR_CPUS];
-+	atomic_t      underrun[NR_CPUS];
-+};
-+
-+#endif /* _LINUX_MCOUNT_TRACER_H */
-Index: linux-compile.git/lib/tracing/tracer_interface.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-compile.git/lib/tracing/tracer_interface.h	2008-01-15 14:54:37.000000000 -0500
-@@ -0,0 +1,14 @@
-+#ifndef _LINUX_MCTRACER_INTERFACE_H
-+#define _LINUX_MCTRACER_INTERFACE_H
-+
-+#include "tracer.h"
-+
-+/*
-+ * Will be at least sizeof(struct mctracer_entry), but callers can request more
-+ * space for private stuff, such as a timestamp, preempt_count, etc.
-+ */
-+#define MCTRACER_ENTRY_SIZE sizeof(struct mctracer_entry)
-+
-+#define MCTRACER_NR_ENTRIES (65536UL)
-+
-+#endif /* _LINUX_MCTRACER_INTERFACE_H */
+--- linux-compile.git.orig/lib/tracing/tracer.h	2008-01-15 14:57:29.000000000 -0500
++++ linux-compile.git/lib/tracing/tracer.h	2008-01-15 14:57:36.000000000 -0500
+@@ -17,6 +17,7 @@ struct mctracer_trace {
+ 	unsigned long trace_idx[NR_CPUS];
+ 	unsigned long entries;
+ 	long	      ctrl;
++	unsigned long iter_flags;
+ 	atomic_t      cnt;
+ 	atomic_t      disabled[NR_CPUS];
+ 	atomic_t      underrun[NR_CPUS];
 
 -- 
