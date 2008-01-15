@@ -1,70 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756261AbYAOUqB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbYAOUsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756261AbYAOUqB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 15:46:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbYAOUpy
+	id S1756541AbYAOUsv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 15:48:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750955AbYAOUso
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 15:45:54 -0500
-Received: from gw.goop.org ([64.81.55.164]:51043 "EHLO mail.goop.org"
+	Tue, 15 Jan 2008 15:48:44 -0500
+Received: from waste.org ([66.93.16.53]:44147 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751089AbYAOUpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 15:45:53 -0500
-Message-ID: <478D1B6F.8020003@goop.org>
-Date: Tue, 15 Jan 2008 12:45:35 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: Folding _PAGE_PWT into _PAGE_PCD (was Re: unify pagetable accessors
- patch causes double fault II)
-References: <20080114094814.GA28300@basil.nowhere.org> <20080114125638.GA9510@basil.nowhere.org> <20080114130620.GA14057@elte.hu> <20080114135811.GA16190@one.firstfloor.org> <478BDC43.6050105@goop.org> <20080114222349.GA23409@one.firstfloor.org> <478BE628.7090008@goop.org> <20080115135317.GA13493@elte.hu> <478CEA82.9010606@goop.org> <20080115203018.GA19746@linux-os.sc.intel.com>
-In-Reply-To: <20080115203018.GA19746@linux-os.sc.intel.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1750890AbYAOUsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 15:48:43 -0500
+Subject: Re: [PATCH 1/2] Massive code cleanup of sys_msync()
+From: Matt Mackall <mpm@selenic.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Anton Salikhmetov <salikhmetov@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>, linux-mm@kvack.org,
+       jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, protasnb@gmail.com, miklos@szeredi.hu
+In-Reply-To: <20080115111018.1e27a229.randy.dunlap@oracle.com>
+References: <12004129652397-git-send-email-salikhmetov@gmail.com>
+	 <12004129734126-git-send-email-salikhmetov@gmail.com>
+	 <20080115175705.GA21557@infradead.org>
+	 <4df4ef0c0801151102l4d72b6b5j702e21beb1ebe459@mail.gmail.com>
+	 <20080115111018.1e27a229.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Date: Tue, 15 Jan 2008 14:46:57 -0600
+Message-Id: <1200430017.19146.61.camel@cinder.waste.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Venki Pallipadi wrote:
-> On Tue, Jan 15, 2008 at 09:16:50AM -0800, Jeremy Fitzhardinge wrote:
->   
->> Ingo Molnar wrote:
->>     
->>> -#define _PAGE_PRESENT	(_AC(1, UL)<<_PAGE_BIT_PRESENT)
->>> -#define _PAGE_RW	(_AC(1, UL)<<_PAGE_BIT_RW)
->>> -#define _PAGE_USER	(_AC(1, UL)<<_PAGE_BIT_USER)
->>> -#define _PAGE_PWT	(_AC(1, UL)<<_PAGE_BIT_PWT)
->>> -#define _PAGE_PCD	((_AC(1, UL)<<_PAGE_BIT_PCD) | _PAGE_PWT)
->>>  
->>>       
->> BTW, I just noticed that _PAGE_PWT has been folded into _PAGE_PCD.  This 
->> seems like a really bad idea to me, since it breaks the rule that 
->> _PAGE_X == 1 << _PAGE_BIT_X.  I can't think of a specific place where 
->> this would cause problems, but this kind of non-uniformity always ends 
->> up biting someone in the arse.
->>
->> I think having a specific _PAGE_NOCACHE which combines these bits is a 
->> better approach.
->>
->>    J
->>     
->
-> How about the patch below. It defines new _PAGE_UC. One concern is drivers
-> continuing to use _PAGE_PCD and getting wrong attributes. May be we need to
-> rename _PAGE_PCD to catch those errors as well?
->   
 
-Sure, looks fine.  I would have said that _NOCACHE matches current usage 
-better, but if it makes more sense to have _UC and _WC then that's fine 
-with me.
+On Tue, 2008-01-15 at 11:10 -0800, Randy Dunlap wrote:
+> On Tue, 15 Jan 2008 22:02:54 +0300 Anton Salikhmetov wrote:
+> 
+> > 2008/1/15, Christoph Hellwig <hch@infradead.org>:
+> > > On Tue, Jan 15, 2008 at 07:02:44PM +0300, Anton Salikhmetov wrote:
+> 
+> > > > @@ -33,71 +34,65 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
+> > > >       unsigned long end;
+> > > >       struct mm_struct *mm = current->mm;
+> > > >       struct vm_area_struct *vma;
+> > > > -     int unmapped_error = 0;
+> > > > -     int error = -EINVAL;
+> > > > +     int error = 0, unmapped_error = 0;
+> > > >
+> > > >       if (flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC))
+> > > > -             goto out;
+> > > > +             return -EINVAL;
+> > > >       if (start & ~PAGE_MASK)
+> > > > -             goto out;
+> > > > +             return -EINVAL;
+> > >
+> > > The goto out for a simple return style is used quite commonly in kernel
+> > > code to have a single return statement which makes code maintaince, e.g.
+> > > adding locks or allocations simpler.  Not sure that getting rid of it
+> > > makes a lot of sense.
+> > 
+> > Sorry, I can't agree. That's what is written in the CodingStyle document:
+> > 
+> > The goto statement comes in handy when a function exits from multiple
+> > locations and some common work such as cleanup has to be done.
+> 
+> CodingStyle does not try to cover Everything.  Nor do we want it to.
+> 
+> At any rate, there is a desire for functions to have a single point
+> of return, regardless of the amount of cleanup to be done, so I agree
+> with Christoph's comments.
 
-I guess renaming _PAGE_BIT_PCD to _PAGE_BIT__PCD and the corresponding 
-_PAGE__PCD might be reasonable if you think there's a chance of new 
-misusers appearing (I guess something like out of tree DRI/proprietary 
-patches are a source of that).
+When we're not cleaning up resources, the main advantage of having a
+single point of return is that you can trace backwards from the return
+point through the function's logic. But that advantage flies right out
+the window when you use gotos. You still have to figure out how you got
+to the return statement by tracing back and looking at all the possible
+gotos. And the "goto out" style adds bulk and non-negligible complexity
+when we've got to search back for what the last explicitly set value of
+"ret" or "error" or whatever the function in question is using was.
+Sometimes people get this wrong ("retval is already -EINVAL, so I don't
+need to explicitly set it"), and create bugs.
 
-    J
+So I think if we're not actually going to use "structured
+programming" (no gotos) or "stack cleanup" styles, the single return
+point style is more trouble than it's worth.
+
+A lesser advantage of the single return point is that you can set a
+breakpoint or put a printk at the end of a function. But I don't think
+that's much justification.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
 
