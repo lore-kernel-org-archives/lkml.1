@@ -1,70 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753644AbYAOSbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757059AbYAOSdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753644AbYAOSbm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 13:31:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754383AbYAOSbd
+	id S1757059AbYAOSdV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 13:33:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbYAOSdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 13:31:33 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:59660 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751533AbYAOSbc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 13:31:32 -0500
-Date: Tue, 15 Jan 2008 19:31:32 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Adrian Bunk <bunk@kernel.org>, rjw@sisk.pl,
-       pavel@suse.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without HOTPLUG_CPU
-Message-ID: <20080115183132.GD18338@uranus.ravnborg.org>
-References: <20080114140910.GA8507@uranus.ravnborg.org> <20080114145854.GA31695@elte.hu> <20080114150553.GA3524@elte.hu> <20080114152440.GA9174@elte.hu> <20080114201214.GC9257@uranus.ravnborg.org> <20080115151742.GB10722@elte.hu> <20080115162513.GA18338@uranus.ravnborg.org> <20080115171146.GA2377@one.firstfloor.org> <20080115182142.GC18338@uranus.ravnborg.org> <20080115182904.GA3393@one.firstfloor.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 15 Jan 2008 13:33:10 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:33911 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752280AbYAOSdI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 13:33:08 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=CKWIvVH14gVK0K7HLT0ixiPwK+9q6gQugOTgtvpdTNfBYGbXFxwOPfTBMwIA9IbAk
+	8qROG+seNQCLIp/Uqs1FA==
+Message-ID: <532480950801151033w69411f8dk4d9ab14a2ff07d64@mail.gmail.com>
+Date: Tue, 15 Jan 2008 10:33:01 -0800
+From: "Michael Rubin" <mrubin@google.com>
+To: "Fengguang Wu" <wfg@mail.ustc.edu.cn>
+Subject: Re: [PATCH 00/13] writeback bug fixes and simplifications take 2
+Cc: "Andrew Morton" <akpm@osdl.org>, "Peter Zijlstra" <peterz@infradead.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <400401292.24795@ustc.edu.cn>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080115182904.GA3393@one.firstfloor.org>
-User-Agent: Mutt/1.4.2.1i
+References: <400401292.24795@ustc.edu.cn>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 15, 2008 at 07:29:04PM +0100, Andi Kleen wrote:
-> On Tue, Jan 15, 2008 at 07:21:42PM +0100, Sam Ravnborg wrote:
-> > With default options to gcc my .config produces ~65 warnings
-> > but with -fno-unit-a-time I get 112 warnings.
-> > Solely due to less inlining done by gcc.
-> > 
-> > So there are two sources for the 'randomization':
-> > a) The actual config
-> > b) The sometimes agressive inlining
-> 
-> Inlining should not be random.  And how does inlining cause such a warning?
-Consider:
+On Jan 15, 2008 4:36 AM, Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
+> Andrew,
+>
+> This patchset mainly polishes the writeback queuing policies.
 
-static int __init foo()
-{
-	// ...
-}
+Anyone know which tree is this patched based out of?
 
-static int bar()
-{
-	// ...
-	if (foo())
-		// ...
-}
+> The main goals are:
+>
+> (1) small files should not be starved by big dirty files
+> (2) sync as fast as possible for not-blocked inodes/pages
+>     - don't leave them out; no congestion_wait() in between them
+> (3) avoid busy iowait for blocked inodes
+>     - retry them in the next go of s_io(maybe at the next wakeup of pdflush)
+>
 
-gcc will often inline foo into bar - and then all code are suddenly
-part of .text and no section mismatch.
-But you add anohter call to foo() somewhere so gcc decide no longer
-to inline foo() and we then have a reference from .text to .init.text.
+Fengguang do you have any specific tests for any of these cases? As I
+have posted earlier I am putting together a writeback test suite for
+test.kernel.org and if you have one (even if it's an ugly shell
+script) that would save me some time.
 
-> > 
-> > a) will be addressed by having separate sections for each
-> > __init* type that is at link time combined where it belongs.
-> 
-> One problem I ran into the past was that older binutils seem
-> to have some exponential behaviour with a lot of named sections
-> and run very slowly.
-This is more the -ffunction-section issue I guess.
-What we are dealig with here is ~20 more sections and the kernel has
-~100 section today (or more). So not a huge increase.
+Also if you want any of mine let me know. :-)
 
-	Sam
+mrubin
+
+
+> The role of the queues:
+>
+> s_dirty:   park for dirtied_when expiration
+> s_io:      park for io submission
+> s_more_io: for big dirty inodes, they will be retried in this run of pdflush
+>            (it ensures fairness between small/large files)
+> s_more_io_wait: for blocked inodes, they will be picked up in next run of s_io
+>
+>
+> This patchset is in better shape, but still not ready for merge.
+> It begins with:
+>
+>         [PATCH 01/13] writeback: revert 2e6883bdf49abd0e7f0d9b6297fc3be7ebb2250b
+>         [PATCH 02/13] writeback: clear PAGECACHE_TAG_DIRTY for truncated page in block_write_full_page()
+>
+> Introduces more_io/more_io_wait based policies:
+>
+>         [PATCH 03/13] writeback: introduce writeback_control.more_io
+>         [PATCH 04/13] writeback: introduce super_block.s_more_io_wait
+>         [PATCH 05/13] writeback: merge duplicate code into writeback_some_pages()
+>         [PATCH 06/13] writeback: defer writeback on not-all-pages-written
+>         [PATCH 07/13] writeback: defer writeback on locked inode
+>         [PATCH 08/13] writeback: defer writeback on locked buffers
+>         [PATCH 09/13] writeback: requeue_io() on redirtied inode
+>
+> And finishes with some code cleanups:
+>
+>         [PATCH 10/13] writeback: introduce queue_dirty()
+>         [PATCH 11/13] writeback: queue_dirty() on memory-backed bdi
+>         [PATCH 12/13] writeback: remove redirty_tail()
+>         [PATCH 13/13] writeback: cleanup __sync_single_inode()
+>
+> Diffstat:
+>
+>  fs/buffer.c         |    2
+>  fs/fs-writeback.c   |  121 +++++++++++++++---------------------------
+>  fs/super.c          |    1
+>  include/linux/fs.h  |    1
+>  mm/page-writeback.c |   46 +++++++--------
+>  5 files changed, 72 insertions(+), 99 deletions(-)
+>
+> Regards,
+> Fengguang Wu
+> --
+>
