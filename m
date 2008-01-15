@@ -1,128 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757075AbYAOS7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757266AbYAOTAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757075AbYAOS7y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 13:59:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753766AbYAOS7r
+	id S1757266AbYAOTAa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 14:00:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbYAOTAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 13:59:47 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:19227 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753744AbYAOS7q (ORCPT
+	Tue, 15 Jan 2008 14:00:14 -0500
+Received: from keil-draco.com ([216.193.185.50]:50574 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750926AbYAOTAM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 13:59:46 -0500
-Message-ID: <478D0298.9060103@ct.jp.nec.com>
-Date: Tue, 15 Jan 2008 10:59:36 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Tue, 15 Jan 2008 14:00:12 -0500
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: 2.6.24-rc7, intel audio: alsa doesn't say a beep
+Date: Tue, 15 Jan 2008 14:00:06 -0500
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Harald Dunkel <harald.dunkel@t-online.de>, linux-kernel@vger.kernel.org
+References: <4782833D.3010600@t-online.de> <200801141603.22983.dhazelton@enter.net> <s5htzlf2yfm.wl%tiwai@suse.de>
+In-Reply-To: <s5htzlf2yfm.wl%tiwai@suse.de>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] x86: move warning message of polling idle and HT enabled
-References: <478BB226.6090105@ct.jp.nec.com> <20080114190904.GA2288@elte.hu> <478C1475.7060706@ct.jp.nec.com> <20080115132607.GE7025@elte.hu> <478D01E4.8010000@ct.jp.nec.com>
-In-Reply-To: <478D01E4.8010000@ct.jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801151400.07422.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Subject: [PATCH] x86: move warning message of polling idle and HT enabled
+On Tuesday 15 January 2008 05:08:45 Takashi Iwai wrote:
+> At Mon, 14 Jan 2008 16:03:22 -0500,
+>
+> Daniel Hazelton wrote:
+> > On Monday 14 January 2008 06:04:20 Takashi Iwai wrote:
+> > <snip>
+> >
+> > > > Could this have anything to do with the following messages I've seen
+> > > > when trying -rc7 ?
+> > > >
+> > > > [    7.760269] pnpacpi: exceeded the max number of mem resources: 12
+> > >
+> > > Judging from Harald's report, it looks like a different problem.
+> > > The buggy patch (regarding HDA-intel) was, at least, already reverted
+> > > on Linus git tree.  Could you give it a try?
+> > >
+> > >
+> > > Takashi
+> >
+> > Sorry, still no sound. Config, lspci and dmesg attached to help. System
+> > is, as stated, Dell Inspiron 1420n running a 64bit kernel and userland.
+>
+> Hm, has the sound on ever 2.6.24-rc kernel worked with your machine?
+>
+> Anyway, try to change HZ=300.  I got a report that HZ=1000 causes the
+> similar problem but HZ=300 not.
+>
+>
+> Takashi
 
-The warning message at idle_setup() is never shown because smp_num_sibling hasn't
-been updated at this point yet.
+That did it. Looks like the hardware really is that sensitive to the timing. 
+Strange, but I've seen worse.
 
-Move this polling idle and HT enabled warning to select_idle_routine().
-I also implement this warning on 64-bit kernel.
+DRH
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- arch/x86/kernel/process_32.c |   18 ++++++++++++------
- arch/x86/kernel/process_64.c |   17 ++++++++++++-----
- 2 files changed, 24 insertions(+), 11 deletions(-)
-
-diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index 69a69c3..d52c032 100644
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -287,17 +287,27 @@ static void mwait_idle(void)
- 
- void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
- {
-+	static int selected;
-+
-+	if (selected)
-+		return;
-+#ifdef CONFIG_X86_SMP
-+	if (pm_idle == poll_idle && smp_num_siblings > 1) {
-+		printk(KERN_WARNING "WARNING: polling idle and HT enabled,"
-+			" performance may degrade.\n");
-+	}
-+#endif
- 	if (cpu_has(c, X86_FEATURE_MWAIT)) {
--		printk("monitor/mwait feature present.\n");
- 		/*
- 		 * Skip, if setup has overridden idle.
- 		 * One CPU supports mwait => All CPUs supports mwait
- 		 */
- 		if (!pm_idle) {
--			printk("using mwait in idle threads.\n");
-+			printk(KERN_INFO "using mwait in idle threads.\n");
- 			pm_idle = mwait_idle;
- 		}
- 	}
-+	selected = 1;
- }
- 
- static int __init idle_setup(char *str)
-@@ -305,10 +315,6 @@ static int __init idle_setup(char *str)
- 	if (!strcmp(str, "poll")) {
- 		printk("using polling idle threads.\n");
- 		pm_idle = poll_idle;
--#ifdef CONFIG_X86_SMP
--		if (smp_num_siblings > 1)
--			printk("WARNING: polling idle and HT enabled, performance may degrade.\n");
--#endif
- 	} else if (!strcmp(str, "mwait"))
- 		force_mwait = 1;
- 	else
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index 5e12edd..8cff606 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -282,20 +282,27 @@ static void mwait_idle(void)
- 
- void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
- {
--	static int printed;
-+	static int selected;
-+
-+	if (selected)
-+		return;
-+#ifdef CONFIG_X86_SMP
-+	if (pm_idle == poll_idle && smp_num_siblings > 1) {
-+		printk(KERN_WARNING "WARNING: polling idle and HT enabled,"
-+			" performance may degrade.\n");
-+	}
-+#endif
- 	if (cpu_has(c, X86_FEATURE_MWAIT)) {
- 		/*
- 		 * Skip, if setup has overridden idle.
- 		 * One CPU supports mwait => All CPUs supports mwait
- 		 */
- 		if (!pm_idle) {
--			if (!printed) {
--				printk(KERN_INFO "using mwait in idle threads.\n");
--				printed = 1;
--			}
-+			printk(KERN_INFO "using mwait in idle threads.\n");
- 			pm_idle = mwait_idle;
- 		}
- 	}
-+	selected = 1;
- }
- 
- static int __init idle_setup(char *str)
 -- 
-1.5.3.6
-
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
