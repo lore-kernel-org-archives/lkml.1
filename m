@@ -1,64 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751571AbYAOMDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752403AbYAOMGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751571AbYAOMDg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 07:03:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750757AbYAOMD3
+	id S1752403AbYAOMGU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 07:06:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750859AbYAOMGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 07:03:29 -0500
-Received: from kanga.kvack.org ([66.96.29.28]:36187 "EHLO kanga.kvack.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750708AbYAOMD2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 07:03:28 -0500
-Date: Tue, 15 Jan 2008 10:05:52 -0200
-From: Marcelo Tosatti <marcelo@kvack.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Marcelo Tosatti <marcelo@kvack.org>,
-       Daniel Spang <daniel.spang@gmail.com>, Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH 3/5] add /dev/mem_notify device
-Message-ID: <20080115120552.GA25009@dmt>
-References: <20080115100029.1178.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080115104619.10dab6de@lxorguk.ukuu.org.uk> <20080115195022.11A3.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080115112027.6120915b@lxorguk.ukuu.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080115112027.6120915b@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 15 Jan 2008 07:06:06 -0500
+Received: from az33egw01.freescale.net ([192.88.158.102]:41912 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750757AbYAOMGC convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 07:06:02 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 0/3] UCC TDM driver for MPC83xx platforms
+Date: Tue, 15 Jan 2008 17:35:39 +0530
+Message-ID: <FBA61160C48B8D438F3323FEFB4EF2C26E7A6F@zin33exm24.fsl.freescale.net>
+In-Reply-To: <5927F7A4-D42A-40F6-AE9C-EDA34738A752@kernel.crashing.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 0/3] UCC TDM driver for MPC83xx platforms
+Thread-Index: AchXJyJ+yMkecJGPSrm9co55J3kxvAAR0m7A
+References: <FBA61160C48B8D438F3323FEFB4EF2C259F2F6@zin33exm24.fsl.freescale.net> <FBA61160C48B8D438F3323FEFB4EF2C26E7653@zin33exm24.fsl.freescale.net> <20080114120051.3207043b.kim.phillips@freescale.com> <20080114131530.9d33f50a.akpm@linux-foundation.org> <5927F7A4-D42A-40F6-AE9C-EDA34738A752@kernel.crashing.org>
+From: "Aggrwal Poonam" <Poonam.Aggrwal@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Cc: "Phillips Kim" <Kim.Phillips@freescale.com>, <sfr@canb.auug.org.au>,
+       <rubini@vision.unipv.it>, <linux-ppcdev@ozlabs.kernel.org>,
+       <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       "Barkowski Michael" <Michael.Barkowski@freescale.com>,
+       "Kalra Ashish" <ashish.kalra@freescale.com>,
+       "Cutler Richard" <Rich.Cutler@freescale.com>,
+       "Suresh PV" <pala@freescale.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
+Thanks Kumar/Morton/Kim
 
-On Tue, Jan 15, 2008 at 11:20:27AM +0000, Alan Cox wrote:
-> On Tue, 15 Jan 2008 19:59:02 +0900
-> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> 
-> > 
-> > > > the core of this patch series.
-> > > > add /dev/mem_notify device for notification low memory to user process.
-> > > 
-> > > As you only wake one process how would you use this API from processes
-> > > which want to monitor and can free memory under load. Also what fairness
-> > > guarantees are there...
-> > 
-> > Sorry, I don't make sense what you mean fairness.
-> > Could you tell more?
-> 
-> If you have two processes each waiting on mem_notify is it not possible
-> that one of them will keep being the one woken up and the other will
-> remain stuck ?
+I shall make a small paragraph which describes the TDM driver
+architecture and the interfaces it exposes.
 
-Tasks are added to the end of waitqueue->task_list through
-add_wait_queue_exclusive, and waken up from the start of the list. So
-I don't think that can happen (its FIFO).
+As far as 8315 TDM is concerned it is a non QE driver and quite
+different from this except for the functionality and external interface
+it exposes.
 
-> It also appears there is no way to wait for memory shortages (processes
-> that can free memory easily) only for memory to start appearing.
+Right now TDM is not a full-fledged bus driver which probably can be
+done may be very similar to SPI.
 
-The notification is sent once the VM starts moving anonymous pages to
-the inactive list (meaning there is memory shortage). So polling on the
-device is all about waiting for memory shortage.
+Please give your suggestions on this.
 
-Or do you mean something else?
+With Regards
+Poonam 
+ 
+ 
 
+-----Original Message-----
+From: Kumar Gala [mailto:galak@kernel.crashing.org] 
+Sent: Tuesday, January 15, 2008 9:01 AM
+To: Andrew Morton
+Cc: Phillips Kim; Aggrwal Poonam; sfr@canb.auug.org.au;
+rubini@vision.unipv.it; linux-ppcdev@ozlabs.kernel.org;
+netdev@vger.kernel.org; linux-kernel@vger.kernel.org; Barkowski Michael;
+Kalra Ashish; Cutler Richard
+Subject: Re: [PATCH 0/3] UCC TDM driver for MPC83xx platforms
+
+
+On Jan 14, 2008, at 3:15 PM, Andrew Morton wrote:
+
+> On Mon, 14 Jan 2008 12:00:51 -0600
+> Kim Phillips <kim.phillips@freescale.com> wrote:
+>
+>> On Thu, 10 Jan 2008 21:41:20 -0700
+>> "Aggrwal Poonam" <Poonam.Aggrwal@freescale.com> wrote:
+>>
+>>> Hello  All
+>>>
+>>> I am waiting for more feedback on the patches.
+>>>
+>>> If there are no objections please consider them for 2.6.25.
+>>>
+>> if this isn't going to go through Alessandro Rubini/misc drivers, can
+
+>> it go through the akpm/mm tree?
+>>
+>
+> That would work.  But it might be more appropriate to go Kumar-
+> >paulus->Linus.
+
+I'm ok w/taking the arch/powerpc bits, but I"m a bit concerned about  
+the driver itself.  I'm wondering if we need a TDM framework in the  
+kernel.
+
+I guess if Poonam could possibly describe how this driver is actually  
+used that would be helpful.  I see we have 8315 with a discrete TDM  
+block and I'm guessing 82xx/85xx based CPM parts of some form of TDM  
+as well.
+
+- k
