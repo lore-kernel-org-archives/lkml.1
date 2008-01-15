@@ -1,101 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752857AbYAOMpL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753262AbYAOMqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752857AbYAOMpL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 07:45:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbYAOMo7
+	id S1753262AbYAOMqm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 07:46:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751262AbYAOMqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 07:44:59 -0500
-Received: from il.qumranet.com ([82.166.9.18]:44365 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750914AbYAOMo6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 07:44:58 -0500
-Date: Tue, 15 Jan 2008 13:44:50 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       kvm-devel@lists.sourceforge.net, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, daniel.blueman@quadrics.com,
-       holt@sgi.com, steiner@sgi.com, Andrew Morton <akpm@osdl.org>,
-       Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] mmu notifiers #v2
-Message-ID: <20080115124449.GK30812@v2.random>
-References: <20080113162418.GE8736@v2.random> <Pine.LNX.4.64.0801141154240.8300@schroedinger.engr.sgi.com>
+	Tue, 15 Jan 2008 07:46:35 -0500
+Received: from bipbip.grupopie.com ([195.23.16.24]:46180 "EHLO
+	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750914AbYAOMqe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 07:46:34 -0500
+Message-ID: <478CAB25.30300@grupopie.com>
+Date: Tue, 15 Jan 2008 12:46:29 +0000
+From: Paulo Marques <pmarques@grupopie.com>
+Organization: Grupo PIE
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801141154240.8300@schroedinger.engr.sgi.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Rik van Riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC] mmaped copy too slow?
+References: <20080115100450.1180.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20080115100450.1180.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 14, 2008 at 12:02:42PM -0800, Christoph Lameter wrote:
-> Hmmm... In most of the callsites we hold a writelock on mmap_sem right?
-
-Not in all, like Marcelo pointed out in kvm-devel, so the lowlevel
-locking can't relay on the VM locks.
-
-About your request to schedule in the mmu notifier methods this is not
-feasible right now, the notifier is often called with the pte
-spinlocks held. I wonder if you can simply post/queue an event like a
-softirq/pdflush.
-
-> Passing mm is fine as long as mmap_sem is held.
-
-mmap_sem is not held, but don't worry "mm" can't go away under the mmu
-notifier, so it's ok. It's just that the KVM methods never uses "mm"
-at all (containerof translates the struct mmu_notifier to a struct
-kvm, and there is the mm in kvm->mm too). Perhaps others don't save
-the "mm" in their container where the mmu_notifier is embedded into,
-so I left mm as parameter to the methods.
-
-> Hmmm... this is ptep_clear_flush? What about the other uses of 
-> flush_tlb_page in asm-generic/pgtable.h and related uses in arch code?
-
-This is not necessarily a 1:1 relationship with the tlb
-flushes. Otherwise they'd be the tlb-notifiers not the mmu-notifiers.
-
-The other methods in the pgtable.h are not dropping an user page from
-the "mm". That's the invalidate case right now. Other methods will not
-call into invalidate_page, but you're welcome to add other methods and
-call them from other ptep_* functions if you're interested about being
-notified about more than just the invalidates of the "mm".
-
-Is invalidate_page/range a clear enough method name to explain when
-the ptes and tlb entries have been dropped for such page/range mapped
-in userland in that address/range?
-
-> (would help if your patches would mention the function name in the diff 
-> headers)
-
-my patches uses git diff defaults I guess, and they mention the
-function name in all other places, it's just git isn't smart enough
-there to catch the function name in that single place, it's ok.
-
-> > +#define mmu_notifier(function, mm, args...)				\
-> > +	do {								\
-> > +		struct mmu_notifier *__mn;				\
-> > +		struct hlist_node *__n;					\
-> > +									\
-> > +		hlist_for_each_entry(__mn, __n, &(mm)->mmu_notifier, hlist) \
-> > +			if (__mn->ops->function)			\
-> > +				__mn->ops->function(__mn, mm, args);	\
-> > +	} while (0)
+KOSAKI Motohiro wrote:
+> Hi
 > 
-> Does this have to be inline? ptep_clear_flush will become quite big
+> at one point, I found the large file copy speed was different depending on
+> the copy method.
+> 
+> I compared below method
+>  - read(2) and write(2).
+>  - mmap(2) x2 and memcpy.
+>  - mmap(2) and write(2).
+> 
+> in addition, effect of fadvice(2) and madvice(2) is checked.
+> 
+> to a strange thing, 
+>    - most faster method is read + write + fadvice.
+>    - worst method is mmap + memcpy.
 
-Inline makes the patch smaller and it avoids a call in the common case
-that the mmu_notifier list is empty. Perhaps I could add a:
+One thing you could also try is to pass MAP_POPULATE to mmap so that the 
+page tables are filled in at the time of the mmap, avoiding a lot of 
+page faults later.
 
-     if (unlikely(!list_empty(&(mm)->mmu_notifier)) {
-     	...
-     }
+Just my 2 cents,
 
-so gcc could offload the internal block in a cold-icache region of .text.
+-- 
+Paulo Marques - www.grupopie.com
 
-I think at least an unlikely(!list_empty(&(mm)->mmu_notifier)) check
-has to be inline. Currently there isn't such check because I'm unsure
-if it really makes sense. The idea is that if you really care to
-optimize this you'll use self-modifying code to turn a nop into a call
-when a certain method is armed. That's an extreme optimization though,
-current code shouldn't be measurable already when disarmed.
+"All I ask is a chance to prove that money can't make me happy."
