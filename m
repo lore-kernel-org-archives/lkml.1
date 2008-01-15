@@ -1,74 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbYAOXVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756405AbYAOX2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757433AbYAOXVZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 18:21:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbYAOXVR
+	id S1756405AbYAOX2q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 18:28:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751001AbYAOX2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 18:21:17 -0500
-Received: from mga09.intel.com ([134.134.136.24]:11604 "EHLO mga09.intel.com"
+	Tue, 15 Jan 2008 18:28:37 -0500
+Received: from gw.goop.org ([64.81.55.164]:54313 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752708AbYAOXVR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 18:21:17 -0500
-X-ExtLoop1: 1
-Date: Tue, 15 Jan 2008 15:21:15 -0800
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+	id S1750895AbYAOX2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 18:28:36 -0500
+Message-ID: <478D4197.8060904@goop.org>
+Date: Tue, 15 Jan 2008 15:28:23 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Andi Kleen <andi@firstfloor.org>, ebiederm@xmission.com,
-       rdreier@cisco.com, torvalds@linux-foundation.org, gregkh@suse.de,
-       airlied@skynet.ie, davej@redhat.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       jesse.barnes@intel.com
-Subject: Re: [patch 02/11] PAT x86: Map only usable memory in x86_64 identity map and kernel text
-Message-ID: <20080115232115.GD8903@linux-os.sc.intel.com>
-References: <p737iiho5yq.fsf@bingen.suse.de> <924EFEDD5F540B4284297C4DC59F3DEE5A2805@orsmsx423.amr.corp.intel.com> <20080110192808.GF747@one.firstfloor.org> <924EFEDD5F540B4284297C4DC59F3DEE5A28CE@orsmsx423.amr.corp.intel.com> <20080114164324.GH15542@elte.hu> <20080114212105.GB8903@linux-os.sc.intel.com> <20080115221758.GG2665@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080115221758.GG2665@elte.hu>
-User-Agent: Mutt/1.4.1i
+CC: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jan Beulich <jbeulich@novell.com>
+Subject: Re: [PATCH 0 of 4] x86: some more patches
+References: <patchbomb.1200435425@localhost> <20080115223534.GA20484@elte.hu>
+In-Reply-To: <20080115223534.GA20484@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 15, 2008 at 11:17:58PM +0100, Ingo Molnar wrote:
-> 
-> * Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
-> > Time to resurrect Jesse's old patches 
-> > i386-trim-memory-not-covered-by-wb-mtrrs.patch(which was in -mm 
-> > sometime back)
-> 
-> just to make sure i understood the attribute priorities right: we cannot 
-> just mark it WB in the PAT and expect it to be write-back - the UC of 
-> the MTRR will control?
+Ingo Molnar wrote:
+> unfortunately they dont solve it:
+>
+>  [   92.042586] Freeing unused kernel memory: 328k freed
+>  [   92.091838] khelper used greatest stack depth: 6244 bytes left
+>  [   92.281738] init[1]: segfault at 00000004 ip 49471cbb sp bff8dbb0 error 4
+>  [   92.288761] init[1]: segfault at 00000004 ip 49471cbb sp bff8dbb0 error 4
+>  [   92.295763] init[1]: segfault at 00000004 ip 49471cbb sp bff8dbb0 error 4
+>  [...]
+>  [   97.312484] printk: 611046 messages suppressed.
+>
+> 32-bit, PAE and RAM above 4GB seems to be enough to trigger that bug.
+>   
 
-unfortuantely PAT is not the over-riding winner always. It all depends
-on the individual attributes. For WB in PAT, mtrr always takes
-the precedence.
+Bum.  We established that once you fix the accessors+sign extension bug, 
+there's another bug somewhere later on in the series.  Any chance you 
+could move "x86/pgtable: fix constant sign extension problem" to be just 
+after "x86/pgtable: unify pagetable accessors" and bisect the following 
+patches?
 
-> 
-> > >        (NOTE: UC- would be fine and 
-> > >        overridable by PAT, hence it's not a conflict we should detect.)
-> > 
-> > UC- can't be specified by MTRR's.
-> 
-> hm, only by PATs? Not even by the default MTRR?
-
-No.
-
-> > >      - mmio area marked cacheable in the MTRR (results in broken 
-> > >      system)
-> > 
-> > PAT can help specify the UC/WC attribute here.
-> 
-> ok. So it seems we dont even need all that many special cases, a "dont 
-> write MTRRs" and "use PATs everywhere" rule would just do the right 
-> thing all across?
-
-Yes. The main thing required is on the lines of Jesse's patch.
-If the MTRR's def type is not WB, then we need to check if any of the RAM
-is not covered by MTRR range registers and trim the RAM accordingly.
-
-thanks,
-suresh
+Thanks,
+    J
