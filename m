@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757052AbYAOCU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757301AbYAOCUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757052AbYAOCU1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 21:20:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754748AbYAOCRo
+	id S1757301AbYAOCUs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 21:20:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754797AbYAOCRp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 21:17:44 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36894 "EHLO
+	Mon, 14 Jan 2008 21:17:45 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36900 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753836AbYAOCRh (ORCPT
+	with ESMTP id S1753843AbYAOCRi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 21:17:37 -0500
-Message-Id: <20080115021737.228970000@sgi.com>
+	Mon, 14 Jan 2008 21:17:38 -0500
+Message-Id: <20080115021737.396494000@sgi.com>
 References: <20080115021735.779102000@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 14 Jan 2008 18:17:43 -0800
+Date: Mon, 14 Jan 2008 18:17:44 -0800
 From: travis@sgi.com
 To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
        mingo@elte.hu
 Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
        linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 08/10] x86: Change NR_CPUS arrays in numa_64 V2
-Content-Disposition: inline; filename=NR_CPUS-arrays-in-numa_64
+Subject: [PATCH 09/10] x86: Change NR_CPUS arrays in acpi-cpufreq V2
+Content-Disposition: inline; filename=NR_CPUS-arrays-in-acpi-cpufreq
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -28,168 +28,123 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Change the following static arrays sized by NR_CPUS to
 per_cpu data variables:
 
-	char cpu_to_node_map[NR_CPUS];
-
+	acpi_cpufreq_data *drv_data[NR_CPUS]
 
 Signed-off-by: Mike Travis <travis@sgi.com>
 Reviewed-by: Christoph Lameter <clameter@sgi.com>
 ---
 V1->V2:
-    - Removed extraneous casts
-    - Fix !NUMA builds with '#ifdef CONFIG_NUMA"
+    - (none)
 ---
- arch/x86/kernel/setup_64.c   |    6 +++++-
- arch/x86/kernel/smpboot_64.c |   10 +++++++++-
- arch/x86/mm/numa_64.c        |   20 ++++++++++++++++----
- include/asm-x86/numa_64.h    |    2 --
- include/asm-x86/topology.h   |   15 +++++++++++++--
- net/sunrpc/svc.c             |    1 +
- 6 files changed, 44 insertions(+), 10 deletions(-)
+ arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |   25 +++++++++++++------------
+ 1 file changed, 13 insertions(+), 12 deletions(-)
 
---- a/arch/x86/kernel/setup_64.c
-+++ b/arch/x86/kernel/setup_64.c
-@@ -63,6 +63,7 @@
- #include <asm/cacheflush.h>
- #include <asm/mce.h>
- #include <asm/ds.h>
-+#include <asm/topology.h>
- 
- #ifdef CONFIG_PARAVIRT
- #include <asm/paravirt.h>
-@@ -372,8 +373,11 @@ void __init setup_arch(char **cmdline_p)
- 	io_delay_init();
- 
- #ifdef CONFIG_SMP
--	/* setup to use the static apicid table during kernel startup */
-+	/* setup to use the early static init tables during kernel startup */
- 	x86_cpu_to_apicid_early_ptr = (void *)&x86_cpu_to_apicid_init;
-+#ifdef CONFIG_NUMA
-+	x86_cpu_to_node_map_early_ptr = (void *)&x86_cpu_to_node_map_init;
-+#endif
- #endif
- 
- #ifdef CONFIG_ACPI
---- a/arch/x86/kernel/smpboot_64.c
-+++ b/arch/x86/kernel/smpboot_64.c
-@@ -861,9 +861,14 @@ void __init smp_set_apicids(void)
- 	int cpu;
- 
- 	for_each_possible_cpu(cpu) {
--		if (per_cpu_offset(cpu))
-+		if (per_cpu_offset(cpu)) {
- 			per_cpu(x86_cpu_to_apicid, cpu) =
- 						x86_cpu_to_apicid_init[cpu];
-+#ifdef CONFIG_NUMA
-+			per_cpu(x86_cpu_to_node_map, cpu) =
-+						x86_cpu_to_node_map_init[cpu];
-+#endif
-+		}
- 		else
- 			printk(KERN_NOTICE "per_cpu_offset zero for cpu %d\n",
- 									cpu);
-@@ -871,6 +876,9 @@ void __init smp_set_apicids(void)
- 
- 	/* indicate the early static arrays are gone */
- 	x86_cpu_to_apicid_early_ptr = NULL;
-+#ifdef CONFIG_NUMA
-+	x86_cpu_to_node_map_early_ptr = NULL;
-+#endif
- }
- 
- static void __init smp_cpu_index_default(void)
---- a/arch/x86/mm/numa_64.c
-+++ b/arch/x86/mm/numa_64.c
-@@ -31,10 +31,14 @@ bootmem_data_t plat_node_bdata[MAX_NUMNO
- 
- struct memnode memnode;
- 
--u16 cpu_to_node_map[NR_CPUS] __read_mostly = {
-+u16 x86_cpu_to_node_map_init[NR_CPUS] __initdata = {
- 	[0 ... NR_CPUS-1] = NUMA_NO_NODE
+--- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
++++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+@@ -67,7 +67,8 @@ struct acpi_cpufreq_data {
+ 	unsigned int cpu_feature;
  };
--EXPORT_SYMBOL(cpu_to_node_map);
-+void *x86_cpu_to_node_map_early_ptr;
-+EXPORT_SYMBOL(x86_cpu_to_node_map_init);
-+EXPORT_SYMBOL(x86_cpu_to_node_map_early_ptr);
-+DEFINE_PER_CPU(u16, x86_cpu_to_node_map) = NUMA_NO_NODE;
-+EXPORT_PER_CPU_SYMBOL(x86_cpu_to_node_map);
  
- u16 apicid_to_node[MAX_LOCAL_APIC] __cpuinitdata = {
- 	[0 ... MAX_LOCAL_APIC-1] = NUMA_NO_NODE
-@@ -545,7 +549,7 @@ void __init numa_initmem_init(unsigned l
- 	node_set(0, node_possible_map);
- 	for (i = 0; i < NR_CPUS; i++)
- 		numa_set_node(i, 0);
--	/* we can't use cpumask_of_cpu() yet */
-+	/* cpumask_of_cpu() may not be available during early startup */
- 	memset(&node_to_cpumask_map[0], 0, sizeof(node_to_cpumask_map[0]));
- 	cpu_set(0, node_to_cpumask_map[0]);
- 	e820_register_active_regions(0, start_pfn, end_pfn);
-@@ -559,8 +563,16 @@ __cpuinit void numa_add_cpu(int cpu)
- 
- void __cpuinit numa_set_node(int cpu, int node)
- {
-+	u16 *cpu_to_node_map = x86_cpu_to_node_map_early_ptr;
+-static struct acpi_cpufreq_data *drv_data[NR_CPUS];
++static DEFINE_PER_CPU(struct acpi_cpufreq_data *, drv_data);
 +
- 	cpu_pda(cpu)->nodenumber = node;
--	cpu_to_node_map[cpu] = node;
-+
-+	if(cpu_to_node_map)
-+		cpu_to_node_map[cpu] = node;
-+	else if(per_cpu_offset(cpu))
-+		per_cpu(x86_cpu_to_node_map, cpu) = node;
-+	else
-+		Dprintk(KERN_INFO "Setting node for non-present cpu %d\n", cpu);
- }
+ /* acpi_perf_data is a pointer to percpu data. */
+ static struct acpi_processor_performance *acpi_perf_data;
  
- unsigned long __init numa_free_all_bootmem(void)
---- a/include/asm-x86/numa_64.h
-+++ b/include/asm-x86/numa_64.h
-@@ -40,6 +40,4 @@ static inline void clear_node_cpumask(in
- #define clear_node_cpumask(cpu) do {} while (0)
+@@ -218,14 +219,14 @@ static u32 get_cur_val(cpumask_t mask)
+ 	if (unlikely(cpus_empty(mask)))
+ 		return 0;
+ 
+-	switch (drv_data[first_cpu(mask)]->cpu_feature) {
++	switch (per_cpu(drv_data, first_cpu(mask))->cpu_feature) {
+ 	case SYSTEM_INTEL_MSR_CAPABLE:
+ 		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
+ 		cmd.addr.msr.reg = MSR_IA32_PERF_STATUS;
+ 		break;
+ 	case SYSTEM_IO_CAPABLE:
+ 		cmd.type = SYSTEM_IO_CAPABLE;
+-		perf = drv_data[first_cpu(mask)]->acpi_data;
++		perf = per_cpu(drv_data, first_cpu(mask))->acpi_data;
+ 		cmd.addr.io.port = perf->control_register.address;
+ 		cmd.addr.io.bit_width = perf->control_register.bit_width;
+ 		break;
+@@ -325,7 +326,7 @@ static unsigned int get_measured_perf(un
+ 
  #endif
  
--#define NUMA_NO_NODE 0xffff
--
- #endif
---- a/include/asm-x86/topology.h
-+++ b/include/asm-x86/topology.h
-@@ -30,13 +30,24 @@
- #include <asm/mpspec.h>
+-	retval = drv_data[cpu]->max_freq * perf_percent / 100;
++	retval = per_cpu(drv_data, cpu)->max_freq * perf_percent / 100;
  
- /* Mappings between logical cpu number and node number */
--extern u16 cpu_to_node_map[];
-+DECLARE_PER_CPU(u16, x86_cpu_to_node_map);
-+extern u16 __initdata x86_cpu_to_node_map_init[];
-+extern void *x86_cpu_to_node_map_early_ptr;
- extern cpumask_t node_to_cpumask_map[];
+ 	put_cpu();
+ 	set_cpus_allowed(current, saved_mask);
+@@ -336,7 +337,7 @@ static unsigned int get_measured_perf(un
  
-+#define NUMA_NO_NODE	((u16)(~0))
-+
- /* Returns the number of the node containing CPU 'cpu' */
- static inline int cpu_to_node(int cpu)
+ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
  {
--	return cpu_to_node_map[cpu];
-+	u16 *cpu_to_node_map = x86_cpu_to_node_map_early_ptr;
-+
-+	if (cpu_to_node_map)
-+		return cpu_to_node_map[cpu];
-+	else if(per_cpu_offset(cpu))
-+		return per_cpu(x86_cpu_to_node_map, cpu);
-+	else
-+		return NUMA_NO_NODE;
+-	struct acpi_cpufreq_data *data = drv_data[cpu];
++	struct acpi_cpufreq_data *data = per_cpu(drv_data, cpu);
+ 	unsigned int freq;
+ 
+ 	dprintk("get_cur_freq_on_cpu (%d)\n", cpu);
+@@ -370,7 +371,7 @@ static unsigned int check_freqs(cpumask_
+ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
+ 			       unsigned int target_freq, unsigned int relation)
+ {
+-	struct acpi_cpufreq_data *data = drv_data[policy->cpu];
++	struct acpi_cpufreq_data *data = per_cpu(drv_data, policy->cpu);
+ 	struct acpi_processor_performance *perf;
+ 	struct cpufreq_freqs freqs;
+ 	cpumask_t online_policy_cpus;
+@@ -466,7 +467,7 @@ static int acpi_cpufreq_target(struct cp
+ 
+ static int acpi_cpufreq_verify(struct cpufreq_policy *policy)
+ {
+-	struct acpi_cpufreq_data *data = drv_data[policy->cpu];
++	struct acpi_cpufreq_data *data = per_cpu(drv_data, policy->cpu);
+ 
+ 	dprintk("acpi_cpufreq_verify\n");
+ 
+@@ -570,7 +571,7 @@ static int acpi_cpufreq_cpu_init(struct 
+ 		return -ENOMEM;
+ 
+ 	data->acpi_data = percpu_ptr(acpi_perf_data, cpu);
+-	drv_data[cpu] = data;
++	per_cpu(drv_data, cpu) = data;
+ 
+ 	if (cpu_has(c, X86_FEATURE_CONSTANT_TSC))
+ 		acpi_cpufreq_driver.flags |= CPUFREQ_CONST_LOOPS;
+@@ -714,20 +715,20 @@ err_unreg:
+ 	acpi_processor_unregister_performance(perf, cpu);
+ err_free:
+ 	kfree(data);
+-	drv_data[cpu] = NULL;
++	per_cpu(drv_data, cpu) = NULL;
+ 
+ 	return result;
  }
  
- /*
---- a/net/sunrpc/svc.c
-+++ b/net/sunrpc/svc.c
-@@ -18,6 +18,7 @@
- #include <linux/mm.h>
- #include <linux/interrupt.h>
- #include <linux/module.h>
-+#include <linux/sched.h>
+ static int acpi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+ {
+-	struct acpi_cpufreq_data *data = drv_data[policy->cpu];
++	struct acpi_cpufreq_data *data = per_cpu(drv_data, policy->cpu);
  
- #include <linux/sunrpc/types.h>
- #include <linux/sunrpc/xdr.h>
+ 	dprintk("acpi_cpufreq_cpu_exit\n");
+ 
+ 	if (data) {
+ 		cpufreq_frequency_table_put_attr(policy->cpu);
+-		drv_data[policy->cpu] = NULL;
++		per_cpu(drv_data, policy->cpu) = NULL;
+ 		acpi_processor_unregister_performance(data->acpi_data,
+ 						      policy->cpu);
+ 		kfree(data);
+@@ -738,7 +739,7 @@ static int acpi_cpufreq_cpu_exit(struct 
+ 
+ static int acpi_cpufreq_resume(struct cpufreq_policy *policy)
+ {
+-	struct acpi_cpufreq_data *data = drv_data[policy->cpu];
++	struct acpi_cpufreq_data *data = per_cpu(drv_data, policy->cpu);
+ 
+ 	dprintk("acpi_cpufreq_resume\n");
+ 
 
 -- 
