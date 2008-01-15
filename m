@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755395AbYAOSsj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbYAOStk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755395AbYAOSsj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 13:48:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbYAOSsc
+	id S1756781AbYAOStk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 13:49:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbYAOStc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 13:48:32 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:43613 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750981AbYAOSsc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 13:48:32 -0500
-Date: Tue, 15 Jan 2008 20:47:29 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>, rjw@sisk.pl,
-       pavel@suse.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH x86] [15/16] Force __cpuinit on for CONFIG_PM without
-	HOTPLUG_CPU
-Message-ID: <20080115184729.GB19192@does.not.exist>
-References: <20080114135240.GA15357@elte.hu> <20080114140910.GA8507@uranus.ravnborg.org> <20080114145854.GA31695@elte.hu> <20080114150553.GA3524@elte.hu> <20080114152440.GA9174@elte.hu> <20080114201214.GC9257@uranus.ravnborg.org> <20080115151742.GB10722@elte.hu> <20080115162513.GA18338@uranus.ravnborg.org> <20080115171146.GA2377@one.firstfloor.org> <20080115182142.GC18338@uranus.ravnborg.org>
+	Tue, 15 Jan 2008 13:49:32 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:14108 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751320AbYAOStb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 13:49:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=P/DNdoiDqwm3+tbxMgHJY46QVdaMCzKLV1s2H2zg65+HFaTupV7hReqpiqnFbIIhTI4bO2hahfbv/4M2Xefzzy9u+XQj1dAPbu2VJzzIlO5s2jMAzYFcEpin+4+KXDYlSMHriLnmp44FolS3HCRRahxM0AvCUC2LtSq+8PLYVwE=
+Date: Tue, 15 Jan 2008 21:49:12 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+Cc: apw@shadowen.org, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] checkpatch: add filename in the summary
+Message-ID: <20080115184912.GC6723@cvg>
+References: <20080114232339.2c018647@paolo-desktop> <20080115183056.GB6723@cvg> <4d8e3fd30801151043o29a1466cudca4b2a5fe807d9d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080115182142.GC18338@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-12-11)
+In-Reply-To: <4d8e3fd30801151043o29a1466cudca4b2a5fe807d9d@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 15, 2008 at 07:21:42PM +0100, Sam Ravnborg wrote:
->...
-> > > And I will add a config option to:
-> > > - set -fno-unit-at-a-time
-> > 
-> > I was told future gcc versions would remove that. Why do you
-> > want it?
-> Are there any better way to tell gcc no to inline so agressively?
+[Paolo Ciarrocchi - Tue, Jan 15, 2008 at 10:13:43PM +0330]
+| On 1/15/08, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| > [Paolo Ciarrocchi - Mon, Jan 14, 2008 at 11:23:39PM +0100]
+| 
+| > Hi Paolo,
+| >
+| > the options you're complaining about (in most) are enabled by default so
+| > there is no reason to 'turn them on' explicitly /methink/.
+| >
+| 
+| 
+| I was looking for more information, i didn't want to complain :-)
 
-I haven't tested it, but -fno-inline-functions-called-once alone 
-_might_ be enough.
+oh, typo, s/complain/worry/ ;)
 
-> 	Sam
-
-cu
-Adrian
-
-BTW: I hope it's clear for everyone that disabling such optimizations
-     should only be used for debugging section mismatches, not for
-     production kernels.
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+| That said, i still think that document how to disable/enable all the
+| options might be useful.
+| 
+| Ciao,
+| -- 
+| Paolo
+| http://paolo.ciarrocchi.googlepages.com/
+| 
+		- Cyrill -
