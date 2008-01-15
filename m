@@ -1,28 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756458AbYAOXrZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751884AbYAOXrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756458AbYAOXrZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 18:47:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbYAOXrN
+	id S1751884AbYAOXrn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 18:47:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751683AbYAOXrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 18:47:13 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:52273 "EHLO mx1.redhat.com"
+	Tue, 15 Jan 2008 18:47:15 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52276 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751248AbYAOXrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 18:47:12 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
+	id S1751348AbYAOXrN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 18:47:13 -0500
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 02/26] KEYS: Check starting keyring as part of search
+Subject: [PATCH 00/26] Permit filesystem local caching
 To: sds@tycho.nsa.gov, casey@schaufler-ca.com, Trond.Myklebust@netapp.com,
        npiggin@suse.de
 Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Tue, 15 Jan 2008 23:47:03 +0000
-Message-ID: <20080115234703.22183.65374.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20080115234652.22183.24850.stgit@warthog.procyon.org.uk>
-References: <20080115234652.22183.24850.stgit@warthog.procyon.org.uk>
+Date: Tue, 15 Jan 2008 23:46:52 +0000
+Message-ID: <20080115234652.22183.24850.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -31,115 +25,104 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check the starting keyring as part of the search to (a) see if that is what
-we're searching for, and (b) to check it is still valid for searching.
-
-The scenario:  User in process A does things that cause things to be
-created in its process session keyring.  The user then does an su to
-another user and starts a new process, B.  The two processes now
-share the same process session keyring.
-
-Process B does an NFS access which results in an upcall to gssd.
-When gssd attempts to instantiate the context key (to be linked
-into the process session keyring), it is denied access even though it
-has an authorization key.
-
-The order of calls is:
-
-   keyctl_instantiate_key()
-      lookup_user_key()				    (the default: case)
-         search_process_keyrings(current)
-	    search_process_keyrings(rka->context)   (recursive call)
-	       keyring_search_aux()
-
-keyring_search_aux() verifies the keys and keyrings underneath the
-top-level keyring it is given, but that top-level keyring is neither
-fully validated nor checked to see if it is the thing being searched for.
-
-This patch changes keyring_search_aux() to:
-1) do more validation on the top keyring it is given and
-2) check whether that top-level keyring is the thing being searched for
 
 
-Signed-off-by: Kevin Coffman <kwc@citi.umich.edu>
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+These patches add local caching for network filesystems such as NFS.
 
- security/keys/keyring.c |   35 +++++++++++++++++++++++++++++++----
- 1 files changed, 31 insertions(+), 4 deletions(-)
+The patches can roughly be broken down into a number of sets:
+
+  (*) 01-keys-inc-payload.diff
+  (*) 02-keys-search-keyring.diff
+  (*) 03-keys-callout-blob.diff
+
+      Three patches to the keyring code made to help the CIFS people.
+      Included because of patches 05-08.
+
+  (*) 04-keys-get-label.diff
+
+      A patch to allow the security label of a key to be retrieved.
+      Included because of patches 05-08.
+
+  (*) 05-security-current-fsugid.diff
+  (*) 06-security-separate-task-bits.diff
+  (*) 07-security-subjective.diff
+  (*) 08-security-secctx2secid.diff
+  (*) 09-security-additional-classes.diff
+  (*) 10-security-kernel_service-class.diff
+  (*) 11-security-kernel-service.diff
+
+      Patches to permit the subjective security of a task to be overridden.
+      All the security details in task_struct are decanted into a new struct
+      that task_struct then has two pointers two: one that defines the
+      objective security of that task (how other tasks may affect it) and one
+      that defines the subjective security (how it may affect other objects).
+
+      Note that I have dropped the idea of struct cred for the moment.  With
+      the amount of stuff that was excluded from it, it wasn't actually any
+      use to me.  However, it can be added later.
+
+      Required for cachefiles.
+
+  (*) 12-release-page.diff
+  (*) 13-fscache-page-flags.diff
+  (*) 14-add_wait_queue_tail.diff
+  (*) 15-fscache.diff
+
+      Patches to provide a local caching facility for network filesystems.
+
+  (*) 16-cachefiles-ia64.diff
+  (*) 17-cachefiles-ext3-f_mapping.diff
+  (*) 18-cachefiles-write.diff
+  (*) 19-cachefiles-monitor.diff
+  (*) 20-cachefiles-export.diff
+  (*) 21-cachefiles.diff
+
+      Patches to provide a local cache in a directory of an already mounted
+      filesystem.
+
+  (*) 22-nfs-memleak.diff
+  (*) 23-fscache-nfs.diff
+  (*) 24-fscache-nfs-mount.diff
+  (*) 25-fscache-nfs-display.diff
+  (*) 26-fscache-nfs-persb.diff
+
+      Patches to provide NFS with local caching.  The fifth of these patches
+      makes caching configurable per superblock.
+
+This release is mainly for the security guys (esp Stephen and Casey) to have a
+look at to see if they are happy with the security stuff.
+
+The SELinux base code will also need updating to have the security class, lest
+the following error appear in dmesg:
+
+	context_struct_compute_av:  unrecognized class 69
 
 
-diff --git a/security/keys/keyring.c b/security/keys/keyring.c
-index 88292e3..76b89b2 100644
---- a/security/keys/keyring.c
-+++ b/security/keys/keyring.c
-@@ -292,7 +292,7 @@ key_ref_t keyring_search_aux(key_ref_t keyring_ref,
- 
- 	struct keyring_list *keylist;
- 	struct timespec now;
--	unsigned long possessed;
-+	unsigned long possessed, kflags;
- 	struct key *keyring, *key;
- 	key_ref_t key_ref;
- 	long err;
-@@ -318,6 +318,32 @@ key_ref_t keyring_search_aux(key_ref_t keyring_ref,
- 	now = current_kernel_time();
- 	err = -EAGAIN;
- 	sp = 0;
-+	
-+	/* firstly we should check to see if this top-level keyring is what we
-+	 * are looking for */
-+	key_ref = ERR_PTR(-EAGAIN);
-+	kflags = keyring->flags;
-+	if (keyring->type == type && match(keyring, description)) {
-+		key = keyring;
-+
-+		/* check it isn't negative and hasn't expired or been
-+		 * revoked */
-+		if (kflags & (1 << KEY_FLAG_REVOKED))
-+			goto error_2;
-+		if (key->expiry && now.tv_sec >= key->expiry)
-+			goto error_2;
-+		key_ref = ERR_PTR(-ENOKEY);
-+		if (kflags & (1 << KEY_FLAG_NEGATIVE))
-+			goto error_2;
-+		goto found;
-+	}
-+
-+	/* otherwise, the top keyring must not be revoked, expired, or
-+	 * negatively instantiated if we are to search it */
-+	key_ref = ERR_PTR(-EAGAIN);
-+	if (kflags & ((1 << KEY_FLAG_REVOKED) | (1 << KEY_FLAG_NEGATIVE)) ||
-+	    (keyring->expiry && now.tv_sec >= keyring->expiry))
-+		goto error_2;
- 
- 	/* start processing a new keyring */
- descend:
-@@ -331,13 +357,14 @@ descend:
- 	/* iterate through the keys in this keyring first */
- 	for (kix = 0; kix < keylist->nkeys; kix++) {
- 		key = keylist->keys[kix];
-+		kflags = key->flags;
- 
- 		/* ignore keys not of this type */
- 		if (key->type != type)
- 			continue;
- 
- 		/* skip revoked keys and expired keys */
--		if (test_bit(KEY_FLAG_REVOKED, &key->flags))
-+		if (kflags & (1 << KEY_FLAG_REVOKED))
- 			continue;
- 
- 		if (key->expiry && now.tv_sec >= key->expiry)
-@@ -352,8 +379,8 @@ descend:
- 					context, KEY_SEARCH) < 0)
- 			continue;
- 
--		/* we set a different error code if we find a negative key */
--		if (test_bit(KEY_FLAG_NEGATIVE, &key->flags)) {
-+		/* we set a different error code if we pass a negative key */
-+		if (kflags & (1 << KEY_FLAG_NEGATIVE)) {
- 			err = -ENOKEY;
- 			continue;
- 		}
+I know Nick Piggin has a couple of issues still, but I'll look again at those
+next.
 
+Andrew, Linus, can you please hold off on taking these patches for the moment.
+
+
+--
+A tarball of the patches is available at:
+
+	http://people.redhat.com/~dhowells/fscache/patches/nfs+fscache-26.tar.bz2
+
+
+To use this version of CacheFiles, the cachefilesd-0.9 is also required.  It
+is available as an SRPM:
+
+	http://people.redhat.com/~dhowells/fscache/cachefilesd-0.9-1.fc7.src.rpm
+
+Or as individual bits:
+
+	http://people.redhat.com/~dhowells/fscache/cachefilesd-0.9.tar.bz2
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.fc
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.if
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.te
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.spec
+
+The .fc, .if and .te files are for manipulating SELinux.
+
+David
