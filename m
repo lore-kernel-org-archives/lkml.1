@@ -1,46 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301AbYAOH4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754435AbYAOIHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754301AbYAOH4p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 02:56:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752511AbYAOH4h
+	id S1754435AbYAOIHc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 03:07:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbYAOIHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 02:56:37 -0500
-Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:49891 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752074AbYAOH4h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 02:56:37 -0500
-From: Junio C Hamano <junio@pobox.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] Fix 32bit build for git-x86
-References: <20080115010449.GA5521@basil.nowhere.org>
-	<20080115074511.GA15285@uranus.ravnborg.org>
-cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Date: Mon, 14 Jan 2008 23:56:23 -0800
-In-Reply-To: <20080115074511.GA15285@uranus.ravnborg.org> (Sam Ravnborg's
-	message of "Tue, 15 Jan 2008 08:45:11 +0100")
-Message-ID: <7vodbnh68o.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 15 Jan 2008 03:07:23 -0500
+Received: from mail.gmx.net ([213.165.64.20]:54064 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750744AbYAOIHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 03:07:22 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19IZY8YQkpIeaa3Gzi9RB8bD9C+bjAZ7864/WN1pV
+	maO6l8EcT2/CW3
+Subject: Re: 2.6.24-rc7-rt1
+From: Mike Galbraith <efault@gmx.de>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>
+In-Reply-To: <1200317101.3733.14.camel@homer.simson.net>
+References: <1200250801.9190.7.camel@localhost.localdomain>
+	 <200801132143.34889.m.kozlowski@tuxland.pl>
+	 <Pine.LNX.4.58.0801131552350.10093@gandalf.stny.rr.com>
+	 <1200299260.4665.17.camel@homer.simson.net>
+	 <478B0B7C.BA47.005A.0@novell.com>
+	 <1200317101.3733.14.camel@homer.simson.net>
+Content-Type: text/plain
+Date: Tue, 15 Jan 2008 09:07:16 +0100
+Message-Id: <1200384437.4113.16.camel@homer.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg <sam@ravnborg.org> writes:
 
-> I wonder how these tabs came in.
-> I am almost sure they were not in my original patch. But as git-send-email
-> do not save copies of my sent mails I cannot be sure.
->
-> Ingo - do you have a script on your side that could have converted
-> the spaces to tabs?
-> It could be a simple "make checkpatch happy" change too - but in this case
-> it was wrong.
+On Mon, 2008-01-14 at 14:25 +0100, Mike Galbraith wrote:
 
-"git-apply --whitespace=fix" can also contribute to this issue,
-but only when "core.whitespace = indent-with-non-tab" is
-explicitly enabled by the user's configuration.
+> I forgot about it too.  I'll likely poke at it again.
+
+<poke>
+
+push_rt_task()
+  find_lock_lowest_rq()
+    find_lowest_rq()
+      return pick_optimal_cpu().
+
+returned cpu is offline.  Box prefers -1.
+
+	-Mike
+
 
 
