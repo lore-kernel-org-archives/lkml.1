@@ -1,59 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757160AbYAOKR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756741AbYAOKSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757160AbYAOKR3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 05:17:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754324AbYAOKRW
+	id S1756741AbYAOKSy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 05:18:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836AbYAOKSq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 05:17:22 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39900 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751668AbYAOKRV (ORCPT
+	Tue, 15 Jan 2008 05:18:46 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50709 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752708AbYAOKSp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 05:17:21 -0500
-Date: Tue, 15 Jan 2008 02:17:20 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Denys Fedoryshchenko" <denys@visp.net.lb>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: TSC && HPET calibration
-Message-Id: <20080115021720.ad71605f.akpm@linux-foundation.org>
-In-Reply-To: <20080110123612.M81049@visp.net.lb>
-References: <20080110123612.M81049@visp.net.lb>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 15 Jan 2008 05:18:45 -0500
+Message-ID: <478C881B.5030503@bull.net>
+Date: Tue, 15 Jan 2008 11:16:59 +0100
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       matthltc@us.ibm.com
+Subject: Re: [RFC PATCH 4/4] [RESEND] Recomputing msgmni on memory add / remove
+References: <20080115164440.6DBB.Y-GOTO@jp.fujitsu.com> <478C76D4.3010700@bull.net> <20080115182402.6DBD.Y-GOTO@jp.fujitsu.com>
+In-Reply-To: <20080115182402.6DBD.Y-GOTO@jp.fujitsu.com>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 15/01/2008 11:27:00,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 15/01/2008 11:27:02,
+	Serialize complete at 15/01/2008 11:27:02
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Jan 2008 14:36:12 +0200 "Denys Fedoryshchenko" <denys@visp.net.lb> wrote:
+Yasunori Goto wrote:
+>>Yasunori Goto wrote:
+>>
+>>>Hello Nadia-san.
+>>>
+>>>
+>>>
+>>>>@@ -118,6 +122,10 @@ struct ipc_namespace {
+>>>>	size_t		shm_ctlall;
+>>>>	int		shm_ctlmni;
+>>>>	int		shm_tot;
+>>>>+
+>>>>+#ifdef CONFIG_MEMORY_HOTPLUG
+>>>>+	struct notifier_block ipc_memory_hotplug;
+>>>>+#endif
+>>>>};
+>>>
+>>>
+>>>I'm sorry, but I don't see why each ipc namespace must have each callbacks
+>>>of memory hotplug.
+>>>I prefer only one callback for each subsystem, not for each namespace.
+>>>In addition, the recompute_msgmni() calculation looks very similar for
+>>>all ipc namespace.
+>>>Or do you wish each ipc namespace have different callback for the future?
+>>>
+>>
+>>Actually, this is what I wanted to do at the very beginning: have a 
+>>single callback that would recompute the msgmni for each ipc namespace. 
+>>But the issue here is that the namespaces are not linked to each other, 
+>>so I had no simple way to go through all the namespaces.
+>>I solved the issue by having a callback for any single ipc namespace and 
+>>make it recompute the msgmni value for itslef.
+> 
+> 
+> The recompute_msg() must be called when new ipc_namespace is created/removed
+> as you mentioned. I think namespaces should be linked each other for it
+> in the end....
 
-> Hi
-> 
-> I have same issue, but it's never passed synchronization.
-> 
-> Jan 10 12:59:44 visp-1 Time: tsc clocksource has been installed.
-> Jan 10 13:41:51 visp-1 ACPI: HPET 000F29CD, 0038 (r1 DELL   PE_SC3          1 
-> DELL        1)
-> Jan 10 13:41:51 visp-1 ACPI: HPET id: 0x8086a201 base: 0xfed00000
-> Jan 10 13:41:51 visp-1 hpet clockevent registered
-> Jan 10 13:41:51 visp-1 checking TSC synchronization [CPU#0 -> CPU#1]: passed.
-> Jan 10 13:41:51 visp-1 checking TSC synchronization [CPU#0 -> CPU#2]:
-> Jan 10 13:41:51 visp-1 Measured 1020 cycles TSC warp between CPUs, turning 
-> off TSC clock.
-> Jan 10 13:41:51 visp-1 Marking TSC unstable due to: check_tsc_sync_source 
-> failed.
-> Jan 10 13:41:51 visp-1 hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
-> Jan 10 13:41:51 visp-1 hpet0: 3 64-bit timers, 14318180 Hz
-> Jan 10 13:41:51 visp-1 Time: hpet clocksource has been installed.
-> 
-> grep Measures
-> Sep 19 14:31:28 visp-1 Measured 1044 cycles TSC warp between CPUs, turning 
-> off TSC clock.
-> Sep 19 18:22:46 visp-1 Measured 996 cycles TSC warp between CPUs, turning off 
-> TSC clock.
-> Sep 19 18:35:44 visp-1 Measured 1080 cycles TSC warp between CPUs, turning 
-> off TSC clock.
+Not if I do it the same way as for memory hotplug:
+1) definee a "namespace event notifier"
+2) insert another notifier block into the ipc namespace.
+3) The callback routines in the notifier chain would be activated upon 
+namespace creation / removal.
 
-Which kernel version?
+But I'm still thinking about it: Matt Helsley suggested that we might 
+just copy the old namespace's value when creating a new namespace.
+
+There's also the issue of an msgmni that has been changed via procfs: 
+may be we should not unconditionally recompute it upon namespace 
+creation / removal, so unregister the callback for the owning namespace 
+as soon as msgmni has been changed from userspace.
+
+
+Regards,
+Nadia
