@@ -1,82 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757212AbYAOMvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751848AbYAOMwD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757212AbYAOMvm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 07:51:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754541AbYAOMsc
+	id S1751848AbYAOMwD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 07:52:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755393AbYAOMsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 07:48:32 -0500
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:48018 "HELO ustc.edu.cn"
+	Tue, 15 Jan 2008 07:48:35 -0500
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:47967 "HELO ustc.edu.cn"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1754988AbYAOMsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751446AbYAOMsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 15 Jan 2008 07:48:08 -0500
-Message-ID: <400401292.24795@ustc.edu.cn>
+Message-ID: <400401292.17900@ustc.edu.cn>
 X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Message-Id: <20080115123637.518924046@mail.ustc.edu.cn>
+Message-Id: <20080115124800.190056249@mail.ustc.edu.cn>
+References: <20080115123637.518924046@mail.ustc.edu.cn>
 User-Agent: quilt/0.46-1
-Date: Tue, 15 Jan 2008 20:36:37 +0800
+Date: Tue, 15 Jan 2008 20:36:43 +0800
 From: Fengguang Wu <wfg@mail.ustc.edu.cn>
 To: Andrew Morton <akpm@osdl.org>
-Cc: Michael Rubin <mrubin@google.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Michael Rubin <mrubin@google.com>, Peter Zijlstra <peterz@infradead.org>
 Cc: linux-fsdevel@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 00/13] writeback bug fixes and simplifications take 2
+Subject: [PATCH 06/13] writeback: defer writeback on not-all-pages-written
+Content-Disposition: inline; filename=writeback-more_io_wait-a.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
+Convert to requeue_io_wait() for case:
 
-This patchset mainly polishes the writeback queuing policies.
-The main goals are:
+	- kupdate cannot write all pages due to some blocking condition;
+	- during sync, a file is being written to too fast, starving other
+	  files.
 
-(1) small files should not be starved by big dirty files
-(2) sync as fast as possible for not-blocked inodes/pages
-    - don't leave them out; no congestion_wait() in between them
-(3) avoid busy iowait for blocked inodes
-    - retry them in the next go of s_io(maybe at the next wakeup of pdflush)
+In the case of sync, requeue_io_wait() can break the starvation because the
+inode requeued into s_more_io_wait will be served _after_ normal inodes, hence
+won't stand in the way of other inodes in the next run.
 
-The role of the queues:
+Cc: Michael Rubin <mrubin@google.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+---
+ fs/fs-writeback.c |   33 ++++++++-------------------------
+ 1 files changed, 8 insertions(+), 25 deletions(-)
 
-s_dirty:   park for dirtied_when expiration
-s_io:      park for io submission
-s_more_io: for big dirty inodes, they will be retried in this run of pdflush
-           (it ensures fairness between small/large files)
-s_more_io_wait: for blocked inodes, they will be picked up in next run of s_io
+--- linux-mm.orig/fs/fs-writeback.c
++++ linux-mm/fs/fs-writeback.c
+@@ -275,37 +275,20 @@ __sync_single_inode(struct inode *inode,
+ 		    mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
+ 			/*
+ 			 * We didn't write back all the pages.  nfs_writepages()
+-			 * sometimes bales out without doing anything. Redirty
+-			 * the inode; Move it from s_io onto s_more_io/s_dirty.
++			 * sometimes bales out without doing anything.
+ 			 */
+-			/*
+-			 * akpm: if the caller was the kupdate function we put
+-			 * this inode at the head of s_dirty so it gets first
+-			 * consideration.  Otherwise, move it to the tail, for
+-			 * the reasons described there.  I'm not really sure
+-			 * how much sense this makes.  Presumably I had a good
+-			 * reasons for doing it this way, and I'd rather not
+-			 * muck with it at present.
+-			 */
+-			if (wbc->for_kupdate) {
++			inode->i_state |= I_DIRTY_PAGES;
++			if (wbc->for_kupdate && wbc->nr_to_write <= 0)
+ 				/*
+-				 * For the kupdate function we move the inode
+-				 * to s_more_io so it will get more writeout as
+-				 * soon as the queue becomes uncongested.
++				 * slice used up: queue for next turn
+ 				 */
+-				inode->i_state |= I_DIRTY_PAGES;
+ 				requeue_io(inode);
+-			} else {
++			else
+ 				/*
+-				 * Otherwise fully redirty the inode so that
+-				 * other inodes on this superblock will get some
+-				 * writeout.  Otherwise heavy writing to one
+-				 * file would indefinitely suspend writeout of
+-				 * all the other files.
++				 * 1) somehow blocked in kupdate: retry later
++				 * 2) fast writer during sync: give others a try
+ 				 */
+-				inode->i_state |= I_DIRTY_PAGES;
+-				redirty_tail(inode);
+-			}
++				requeue_io_wait(inode);
+ 		} else if (inode->i_state & I_DIRTY) {
+ 			/*
+ 			 * Someone redirtied the inode while were writing back
 
-
-This patchset is in better shape, but still not ready for merge.
-It begins with:
-
-	[PATCH 01/13] writeback: revert 2e6883bdf49abd0e7f0d9b6297fc3be7ebb2250b      
-	[PATCH 02/13] writeback: clear PAGECACHE_TAG_DIRTY for truncated page in block_write_full_page()
-
-Introduces more_io/more_io_wait based policies:
-
-	[PATCH 03/13] writeback: introduce writeback_control.more_io                  
-	[PATCH 04/13] writeback: introduce super_block.s_more_io_wait                 
-	[PATCH 05/13] writeback: merge duplicate code into writeback_some_pages()     
-	[PATCH 06/13] writeback: defer writeback on not-all-pages-written             
-	[PATCH 07/13] writeback: defer writeback on locked inode                      
-	[PATCH 08/13] writeback: defer writeback on locked buffers                    
-	[PATCH 09/13] writeback: requeue_io() on redirtied inode                      
-
-And finishes with some code cleanups:
-
-	[PATCH 10/13] writeback: introduce queue_dirty()                              
-	[PATCH 11/13] writeback: queue_dirty() on memory-backed bdi                   
-	[PATCH 12/13] writeback: remove redirty_tail()                                
-	[PATCH 13/13] writeback: cleanup __sync_single_inode()                        
-
-Diffstat:
-
- fs/buffer.c         |    2 
- fs/fs-writeback.c   |  121 +++++++++++++++---------------------------
- fs/super.c          |    1 
- include/linux/fs.h  |    1 
- mm/page-writeback.c |   46 +++++++--------
- 5 files changed, 72 insertions(+), 99 deletions(-)
-
-Regards,
-Fengguang Wu
 -- 
