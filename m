@@ -1,56 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757114AbYAOV5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758144AbYAOV5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757114AbYAOV5d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 16:57:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756309AbYAOV4u
+	id S1758144AbYAOV5u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 16:57:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756427AbYAOV4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 16:56:50 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:63081 "EHLO
+	Tue, 15 Jan 2008 16:56:52 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:63085 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753765AbYAOV4s (ORCPT
+	with ESMTP id S1754158AbYAOV4s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 15 Jan 2008 16:56:48 -0500
-Date: Tue, 15 Jan 2008 13:56:27 -0800
+Date: Tue, 15 Jan 2008 14:00:54 -0800
 From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH 1/4] x86: msr for AMD Fam 10h mmio
-In-reply-to: <200801151354.02859.yinghai.lu@sun.com>
+Subject: [PATCH 4/4] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG
+ is used.
+In-reply-to: <200801151358.59733.yinghai.lu@sun.com>
 To: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
        Thomas Gleixner <tglx@linutronix.de>,
        LKML <linux-kernel@vger.kernel.org>
-Message-id: <200801151356.27779.yinghai.lu@sun.com>
+Message-id: <200801151400.55029.yinghai.lu@sun.com>
 Organization: Sun
 MIME-version: 1.0
 Content-type: text/plain; charset=iso-8859-1
 Content-transfer-encoding: 7BIT
 Content-disposition: inline
 References: <200801141331.45898.yinghai.lu@sun.com>
- <478CD46D.5080104@zytor.com> <200801151354.02859.yinghai.lu@sun.com>
+ <200801151357.27231.yinghai.lu@sun.com> <200801151358.59733.yinghai.lu@sun.com>
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] x86: msr for AMD Fam 10h mmio
+[PATCH] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG is used.
+
+reuse pci_cfg_space_size but skip check pci express and pci-x CAP ID.
 
 Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-diff --git a/include/asm-x86/msr-index.h b/include/asm-x86/msr-index.h
-index f9c1453..c3237ff 100644
---- a/include/asm-x86/msr-index.h
-+++ b/include/asm-x86/msr-index.h
-@@ -96,6 +96,14 @@
- #define MSR_AMD64_IBSDCPHYSAD		0xc0011039
- #define MSR_AMD64_IBSCTL		0xc001103a
- 
-+/* Fam 10h MSRs */
-+#define MSR_FAM10H_MMIO_CONF_BASE	0xc0010058
-+#define FAM10H_MMIO_CONF_ENABLE		(1<<0)
-+#define FAM10H_MMIO_CONF_BUSRANGE_MASK	0xf
-+#define FAM10H_MMIO_CONF_BUSRANGE_SHIFT 2
-+#define FAM10H_MMIO_CONF_BASE_MASK	0xfffffff
-+#define FAM10H_MMIO_CONF_BASE_SHIFT	20
+===================================================================
+Index: linux-2.6/arch/x86/pci/fixup.c
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/fixup.c
++++ linux-2.6/arch/x86/pci/fixup.c
+@@ -491,3 +491,17 @@ static void __devinit pci_siemens_interr
+ }
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_SIEMENS, 0x0015,
+ 			  pci_siemens_interrupt_controller);
 +
- /* K8 MSRs */
- #define MSR_K8_TOP_MEM1			0xc001001a
- #define MSR_K8_TOP_MEM2			0xc001001d
++/*
++ * Regular PCI devices have 256 bytes, but AMD Family 10h Opteron ext config
++ * have 4096 bytes.  Even if the device is capable, that doesn't mean we can
++ * access it.  Maybe we don't have a way to generate extended config space
++ * accesses.   So check it
++ */
++static void fam10h_pci_cfg_space_size(struct pci_dev *dev)
++{
++	dev->cfg_size = pci_cfg_space_size_ext(dev, 0);
++}
++
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, PCI_ANY_ID,
++			 fam10h_pci_cfg_space_size);
+Index: linux-2.6/drivers/pci/probe.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/probe.c
++++ linux-2.6/drivers/pci/probe.c
+@@ -838,11 +838,14 @@ static void set_pcie_port_type(struct pc
+  * reading the dword at 0x100 which must either be 0 or a valid extended
+  * capability header.
+  */
+-int pci_cfg_space_size(struct pci_dev *dev)
++int pci_cfg_space_size_ext(struct pci_dev *dev, unsigned check_exp_pcix)
+ {
+ 	int pos;
+ 	u32 status;
+ 
++	if (!check_exp_pcix)
++		goto skip;
++
+ 	pos = pci_find_capability(dev, PCI_CAP_ID_EXP);
+ 	if (!pos) {
+ 		pos = pci_find_capability(dev, PCI_CAP_ID_PCIX);
+@@ -854,6 +857,7 @@ int pci_cfg_space_size(struct pci_dev *d
+ 			goto fail;
+ 	}
+ 
++ skip:
+ 	if (pci_read_config_dword(dev, 256, &status) != PCIBIOS_SUCCESSFUL)
+ 		goto fail;
+ 	if (status == 0xffffffff)
+@@ -865,6 +869,11 @@ int pci_cfg_space_size(struct pci_dev *d
+ 	return PCI_CFG_SPACE_SIZE;
+ }
+ 
++int pci_cfg_space_size(struct pci_dev *dev)
++{
++	return pci_cfg_space_size_ext(dev, 1);
++}
++
+ static void pci_release_bus_bridge_dev(struct device *dev)
+ {
+ 	kfree(dev);
+Index: linux-2.6/include/linux/pci.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci.h
++++ linux-2.6/include/linux/pci.h
+@@ -640,6 +640,7 @@ int pci_scan_bridge(struct pci_bus *bus,
+ 
+ void pci_walk_bus(struct pci_bus *top, void (*cb)(struct pci_dev *, void *),
+ 		  void *userdata);
++int pci_cfg_space_size_ext(struct pci_dev *dev, unsigned check_exp_pcix);
+ int pci_cfg_space_size(struct pci_dev *dev);
+ unsigned char pci_bus_max_busnr(struct pci_bus* bus);
+ 
