@@ -1,87 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbYAOImc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbYAOIoo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753421AbYAOImc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 03:42:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbYAOIm0
+	id S1753972AbYAOIoo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 03:44:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbYAOIog
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 03:42:26 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:44641 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751084AbYAOImZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 03:42:25 -0500
-Subject: Re: 2.6.24-rc7 lockdep warning when poweroff
-From: Peter Zijlstra <peterz@infradead.org>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20080115012402.GA2780@darkstar.te-china.tietoenator.com>
-References: <a8e1da0801140104m2d8dceaayd8cf85466659bbf@mail.gmail.com>
-	 <1200302644.7415.6.camel@twins> <1200306902.5887.39.camel@johannes.berg>
-	 <1200307288.7415.11.camel@twins> <1200307896.5887.42.camel@johannes.berg>
-	 <a8e1da0801141631k50dfd74fo923973722d13c3a3@mail.gmail.com>
-	 <20080115012402.GA2780@darkstar.te-china.tietoenator.com>
-Content-Type: text/plain
-Date: Tue, 15 Jan 2008 09:42:16 +0100
-Message-Id: <1200386536.15103.16.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.4 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Jan 2008 03:44:36 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45422 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751198AbYAOIog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 03:44:36 -0500
+Date: Tue, 15 Jan 2008 09:44:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: akpm@linux-foundation.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 0/3] i386 boot: replace boot_ioremap with enhanced
+	bt_ioremap
+Message-ID: <20080115084417.GA16449@elte.hu>
+References: <1200375902.3505.29.camel@caritas-dev.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1200375902.3505.29.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 2008-01-15 at 09:24 +0800, Dave Young wrote:
-> On Tue, Jan 15, 2008 at 08:31:48AM +0800, Dave Young wrote:
-> > On Jan 14, 2008 6:51 PM, Johannes Berg <johannes@sipsolutions.net> wrote:
-> > >
-> > > > The warning that triggered (lockdep.c:700) means that one class (key)
-> > > > was used with more than one name.
-> > >
-> > > Right.
-> > >
-> > > > Looking at cleanup_workqueue_thread(), the lock_acquire() there works on
-> > > > wq->lockdep_map, and that is only initialized at one spot:
-> > > > __create_workqueue_key(), thus it stands to reason that that was
-> > > > mis-used.
-> > >
-> > > Oh ok, yes, makes sense. Maybe something is generating a workqueue with
-> > > a name that's passed in but the key is statically from that place. I'll
-> > > try to find it.
-> > 
-> > I add some debug printk and found the names :
-> > 
-> > block_osm/exec_osm
-> > 
-> > in drivers/message/i2o
-> > 
-> > maybe this helps.
-> 
-> Not sure right or not, the following patch fixed the problem:
-> 
-> diff -upr linux/include/linux/workqueue.h linux.new/include/linux/workqueue.h
-> --- linux/include/linux/workqueue.h	2008-01-15 08:49:08.000000000 +0800
-> +++ linux.new/include/linux/workqueue.h	2008-01-15 08:49:42.000000000 +0800
-> @@ -154,7 +154,7 @@ __create_workqueue_key(const char *name,
->  #ifdef CONFIG_LOCKDEP
->  #define __create_workqueue(name, singlethread, freezeable)	\
->  ({								\
-> -	static struct lock_class_key __key;			\
-> +	struct lock_class_key __key;			\
->  								\
->  	__create_workqueue_key((name), (singlethread),		\
->  			       (freezeable), &__key);		\
+* Huang, Ying <ying.huang@intel.com> wrote:
 
-That didn't get you:
+> This patchset replaces boot_ioremap with a enhanced version of 
+> bt_ioremap and renames the bt_ioremap to early_ioremap. This reduces 
+> 12k from .init.data segment and increases the size of memory that can 
+> be re-mapped before paging_init to 64k.
 
-  INFO: trying to register non-static key.
+in latest x86.git#mm there's an early_ioremap() introduced as part of 
+the PAT series - available on both 32-bit and 64-bit. Could you take a 
+look at it and use that if it's OK for your purposes?
 
-Msgs?
-
-But it sure looks like __create_workqueue() is asking for trouble, if
-there is a __create_workqueue() instance that takes a non constant name
-we're in trouble.
-
+	Ingo
