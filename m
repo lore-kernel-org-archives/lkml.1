@@ -1,77 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757057AbYAOKJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754320AbYAOKJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757057AbYAOKJk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 05:09:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756450AbYAOKIy
+	id S1754320AbYAOKJz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 05:09:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756610AbYAOKIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 15 Jan 2008 05:08:54 -0500
-Received: from cantor.suse.de ([195.135.220.2]:57784 "EHLO mx1.suse.de"
+Received: from mail.suse.de ([195.135.220.2]:57788 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755450AbYAOKIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 05:08:51 -0500
+	id S1755662AbYAOKIw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 05:08:52 -0500
 From: Andi Kleen <ak@suse.de>
 Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
 To: "Jan Beulich" <jbeulich@novell.com>
-Subject: Re: [PATCH] [26/31] CPA: Fix reference counting when changing already changed pages
-Date: Tue, 15 Jan 2008 11:04:03 +0100
+Subject: Re: [PATCH] [0/31] Great change_page_attr patch series v2
+Date: Tue, 15 Jan 2008 11:06:15 +0100
 User-Agent: KMail/1.9.6
 Cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-References: <200801141116.534682000@suse.de> <20080114221659.63C7514F83@wotan.suse.de> <478C8578.76E4.0078.0@novell.com>
-In-Reply-To: <478C8578.76E4.0078.0@novell.com>
+References: <200801141116.534682000@suse.de> <478C86E0.76E4.0078.0@novell.com>
+In-Reply-To: <478C86E0.76E4.0078.0@novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801151104.03666.ak@suse.de>
+Message-Id: <200801151106.15452.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 January 2008 10:05:44 Jan Beulich wrote:
-> >+	ref_prot = canon_pgprot(ref_prot);
-> >+	prot = canon_pgprot(prot);
-> >+
-> > 	if (pgprot_val(prot) != pgprot_val(ref_prot)) { 
-> >...
-> > 	} else if (level == 4) {
-> >...
-> > 	} else {
-> > 		/*
-> > 		 * When you're here you either set the same page to PAGE_KERNEL
+On Tuesday 15 January 2008 10:11:44 Jan Beulich wrote:
+> >>> Andi Kleen <ak@suse.de> 14.01.08 23:16 >>>
+> >
+> >Lots of improvements to change_page_attr(). Make it a lot more
+> >efficient and fix various bugs.
+> >
+> >Changes against earlier version
+> >
+> >- Fixed some checkpatch.pl complaints
+> >- Improved self test suite
+> >- Fixed more reference bugs 
+> >- Fix NX handling on 32bit
+> >- Remove some useless code there
+> >- Few other random fixes
 > 
-> Doesn't this change require modifying the BUG() here into a BUG_ON() so
-> that it doesn't trigger if pgprot_val(prot) == pgprot_val(ref_prot) and
-> level != 4?
+> The one concept that I'm missing (but that I can easily produce a follow-up
+> patch for, as I had this in my c_p_a() changes) is the tracking and adjusting
+> of the reference protection for a large page range that got fully converted
+> to another type (namely relevant for .rodata if it exceeds 2/4 Mb), allowing
+> to use a large page mapping in this case even for non-default mappings.
 
-I addressed this in the comment
+Ah -- i got rid of that by changing the rodata code to not do this
+except for the debugging case
 
-+               /*
-+                * When you're here you either set the same page to PAGE_KERNEL
-+                * two times in a row or the page table reference counting is
-+                * broken again. To catch the later bug for now (sorry)
-+                */
+>>
+CPA: Only unmap kernel init pages in text mapping when CONFIG_DEBUG_RODATA is set
 
-Do you think it's important to handle?  The function already has too many
-special cases and setting something several times in a row to PAGE_KERNEL
-is usually a bug in the caller anyways (or a cpa bug)
+Otherwise the kernel will likely always run with 4K pages instead of 2MB pages,
+which is costly in terms of TLBs.
+<<
+
+But you're right that would be an useful feature. But wouldn't it require
+aligning rodata to 2MB in the vmlinux to be really effective? 
 
 > 
-> >+#define canon_pgprot(p) __pgprot(pgprot_val(p) & __supported_pte_mask)
+> Apart from the other comments, the whole series
 > 
-> While I remember you stated the inverse, 
+> Acked-by: Jan Beulich <jbeulich@novell.com>
 
-I changed my mind regarding not doing this. It was true when I said it originally.
-
-> I continue to think that it'd be 
-> safer to mask out the accessed and dirty flags for the comparisons this
-> macro is being used for.
-
-A and D should be always set for _PAGE_KERNEL and for kernel mappings in general. 
-The problem would only occur if someone made up custom page flags without those.
-Didn't think that usage was worth supporting. Perhaps it would be a good idea
-to add a WARN_ON for this case though.
-
-Thanks for the review.
+Thanks.
 
 -Andi
+
+
+
