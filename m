@@ -1,333 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439AbYAOTV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbYAOT1H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753439AbYAOTV6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 14:21:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYAOTVu
+	id S1754538AbYAOT1H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 14:27:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbYAOT04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 14:21:50 -0500
-Received: from ftp.linux-mips.org ([194.74.144.162]:46030 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbYAOTVt (ORCPT
+	Tue, 15 Jan 2008 14:26:56 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:46387 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751059AbYAOT0z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 14:21:49 -0500
-Date: Tue, 15 Jan 2008 19:21:45 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: linux-kernel@vger.kernel.org
-Subject: What's in linux-mips.git for Linux 2.6.25?
-Message-ID: <20080115192145.GA22506@linux-mips.org>
+	Tue, 15 Jan 2008 14:26:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OyPVOaTJgwsJCB+B73YmcWUuu6athRXamPicOrnNGRmKTjeC4Z6TIqgJ84xnKxvIrK0+v6ZbggPo9VeCbkT5ngXbb1GtHMdUjPobrkWXT08Dz7Ga+0cga1Ky2WvbW1oUI7xsMc/LN31u3SStRYNtDePKnrhOu25YE0/FIhHYnc0=
+Message-ID: <4df4ef0c0801151126p5dfdbc13ga9862c995890c33c@mail.gmail.com>
+Date: Tue, 15 Jan 2008 22:26:55 +0300
+From: "Anton Salikhmetov" <salikhmetov@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: [PATCH 1/2] Massive code cleanup of sys_msync()
+Cc: "Christoph Hellwig" <hch@infradead.org>, linux-mm@kvack.org,
+       jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, protasnb@gmail.com, miklos@szeredi.hu
+In-Reply-To: <20080115111018.1e27a229.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <12004129652397-git-send-email-salikhmetov@gmail.com>
+	 <12004129734126-git-send-email-salikhmetov@gmail.com>
+	 <20080115175705.GA21557@infradead.org>
+	 <4df4ef0c0801151102l4d72b6b5j702e21beb1ebe459@mail.gmail.com>
+	 <20080115111018.1e27a229.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The highlights:
+2008/1/15, Randy Dunlap <randy.dunlap@oracle.com>:
+> On Tue, 15 Jan 2008 22:02:54 +0300 Anton Salikhmetov wrote:
+>
+> > 2008/1/15, Christoph Hellwig <hch@infradead.org>:
+> > > On Tue, Jan 15, 2008 at 07:02:44PM +0300, Anton Salikhmetov wrote:
+>
+> > > > @@ -33,71 +34,65 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
+> > > >       unsigned long end;
+> > > >       struct mm_struct *mm = current->mm;
+> > > >       struct vm_area_struct *vma;
+> > > > -     int unmapped_error = 0;
+> > > > -     int error = -EINVAL;
+> > > > +     int error = 0, unmapped_error = 0;
+> > > >
+> > > >       if (flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC))
+> > > > -             goto out;
+> > > > +             return -EINVAL;
+> > > >       if (start & ~PAGE_MASK)
+> > > > -             goto out;
+> > > > +             return -EINVAL;
+> > >
+> > > The goto out for a simple return style is used quite commonly in kernel
+> > > code to have a single return statement which makes code maintaince, e.g.
+> > > adding locks or allocations simpler.  Not sure that getting rid of it
+> > > makes a lot of sense.
+> >
+> > Sorry, I can't agree. That's what is written in the CodingStyle document:
+> >
+> > The goto statement comes in handy when a function exits from multiple
+> > locations and some common work such as cleanup has to be done.
+>
+> CodingStyle does not try to cover Everything.  Nor do we want it to.
+>
+> At any rate, there is a desire for functions to have a single point
+> of return, regardless of the amount of cleanup to be done, so I agree
+> with Christoph's comments.
 
- - Support for Qemu platform removed due it being obsolete.
- - Support for SGI Indigo 2 R10000 aka IP28
- - Support for Routerboard RB532 and AR7 not merged yet, not sure if it'll
-   make it into 2.6.25.
+Should I replace "return -EINVAL;" statement with the following?
 
-  Ralf 
+{
+    error = -EINVAL;
+    goto out;
+}
 
-Alejandro Martinez Ruiz (1):
-      [MIPS] Converting most array size calculations to use ARRAY_SIZE().
-
-Andrew Sharp (1):
-      [MIPS] Put cast inside macro instead of all the callers
-
-Atsushi Nemoto (2):
-      [MIPS] cleanup tx39/tx49 setup code
-      [MIPS] TXx9 watchdog support for rbhma3100,rbhma4200,rbhma4500
-
-Christoph Hellwig (1):
-      [MIPS] CFE: Make code remotely resemble Linux code.
-
-Daniel Walker (1):
-      [MIPS] Lasat: Convert pvc_sem semaphore to mutex
-
-Florian Fainelli (2):
-      [MIPS] MTX-1: Add GPIO system button
-      [MIPS] Cobalt 64-bits kernels can be safely unmarked experimental
-
-Franck Bui-Huu (4):
-      [MIPS] tlbex.c: Cleanup __init usages.
-      [MIPS] tlbex.c: cleanup include files
-      [MIPS] tlbex.c: use __cacheline_aligned instead of __tlb_handler_align
-      [MIPS] tlbex.c: cleanup debug code
-
-Lucas Woods (1):
-      [MIPS] Remove duplicate includes.
-
-Maciej W. Rozycki (2):
-      [MIPS] R4000/R4400 errata workarounds
-      [MIPS] R4000/R4400 daddiu erratum workaround
-
-Manuel Lauss (1):
-      [MIPS] Alchemy: Au1210/Au1250 CPU support
-
-Ralf Baechle (17):
-      [MIPS] Delete unused CONFIG_DMA_IP32.
-      [MIPS] Delete unused CONFIG_64BIT_CONTEXT
-      [MIPS] tlbex: Cleanup handling of R2 hazards in TLB handlers.
-      [MIPS] Use pte_present instead of open coded test for _PAGE_PRESENT.
-      [MIPS] Remove useless S-cache flushes.
-      [MIPS] MT: Scheduler support for SMT
-      [MIPS] Cleanup pcspeaker platform device registration.
-      [MIPS] SMP: Call platform methods via ops structure.
-      [MIPS] Remove CONFIG_SIBYTE_PT{1120,1125,SWARM}
-      [MIPS] BCM1480: Use constants instead of magic numbers in PCI code.
-      [MIPS] Fulong: don't reinitialize pci_probe_only to it's default value.
-      [MIPS] Eleminate local symbols from the symbol table.
-      [MIPS] Extend performance counter event field.
-      [MIPS] fixmap: delete unused __set_fixmap, set_fixmap and set_fixmap_nocache
-      [MIPS] Altas, Malta: Switch boot file format to raw.
-      [MIPS] Delete CONFIG_MSP_FPGA
-      [MIPS] Qemu: Remove platform.
-
-Robert P. J. Day (1):
-      [MIPS]  Delete now-unreferenced i2c-yosemite.h header file.
-
-Roel Kluin (1):
-      [MIPS] ARC: Use strchr instead of strstr.
-
-Thomas Bogendoerfer (6):
-      [MIPS] Use real cache invalidate
-      [MIPS] IP22/IP28: fix extracting board/chip rev
-      [MIPS] IP28: added cache barrier to assembly routines
-      [MIPS] Use correct dma flushing in dma_cache_sync()
-      [MIPS] IP28 support
-      [MIPS] RM: Collected changes
-
-Vitaly Wool (1):
-      [MIPS] pnx8xxx: clocksource cleanups
-
-Yoichi Yuasa (7):
-      [MIPS] remove unused mips_machtype
-      [MIPS] clean up au1xxx_irqmap.c include files
-      [MIPS] time: remove unused mips_timer_state()
-      [MIPS] move vr41xx_calculate_clock_frequency() to plat_time_init()
-      [MIPS] remove unneeded button check for reset
-      [MIPS] add cpu_wait() to machine_halt()
-      [MIPS] move the eXcite local config to excitedirectory
-
- arch/mips/Kconfig                                  |  181 ++++---
- arch/mips/Makefile                                 |   40 +-
- arch/mips/au1000/common/au1xxx_irqmap.c            |   21 -
- arch/mips/au1000/common/dbdma.c                    |    2 
- arch/mips/au1000/db1x00/init.c                     |   11 
- arch/mips/au1000/mtx-1/init.c                      |    2 
- arch/mips/au1000/mtx-1/platform.c                  |   27 +
- arch/mips/au1000/pb1000/init.c                     |    2 
- arch/mips/au1000/pb1100/init.c                     |    2 
- arch/mips/au1000/pb1200/init.c                     |    2 
- arch/mips/au1000/pb1500/init.c                     |    2 
- arch/mips/au1000/pb1550/init.c                     |    2 
- arch/mips/au1000/xxs1500/init.c                    |    2 
- arch/mips/basler/excite/Kconfig                    |    9 
- arch/mips/basler/excite/excite_prom.c              |    2 
- arch/mips/cobalt/reset.c                           |   24 -
- arch/mips/configs/atlas_defconfig                  |    2 
- arch/mips/configs/bigsur_defconfig                 |    2 
- arch/mips/configs/capcella_defconfig               |    2 
- arch/mips/configs/cobalt_defconfig                 |    2 
- arch/mips/configs/db1000_defconfig                 |    2 
- arch/mips/configs/db1100_defconfig                 |    2 
- arch/mips/configs/db1200_defconfig                 |    2 
- arch/mips/configs/db1500_defconfig                 |    2 
- arch/mips/configs/db1550_defconfig                 |    2 
- arch/mips/configs/decstation_defconfig             |    2 
- arch/mips/configs/e55_defconfig                    |    2 
- arch/mips/configs/emma2rh_defconfig                |    2 
- arch/mips/configs/excite_defconfig                 |    2 
- arch/mips/configs/fulong_defconfig                 |    2 
- arch/mips/configs/ip22_defconfig                   |    2 
- arch/mips/configs/ip27_defconfig                   |    2 
- arch/mips/configs/ip32_defconfig                   |    2 
- arch/mips/configs/jazz_defconfig                   |    2 
- arch/mips/configs/jmr3927_defconfig                |   17 +
- arch/mips/configs/lasat_defconfig                  |    2 
- arch/mips/configs/malta_defconfig                  |    2 
- arch/mips/configs/mipssim_defconfig                |    2 
- arch/mips/configs/mpc30x_defconfig                 |    2 
- arch/mips/configs/msp71xx_defconfig                |    2 
- arch/mips/configs/mtx1_defconfig                   |    3 
- arch/mips/configs/pb1100_defconfig                 |    2 
- arch/mips/configs/pb1500_defconfig                 |    2 
- arch/mips/configs/pb1550_defconfig                 |    2 
- arch/mips/configs/pnx8550-jbs_defconfig            |    2 
- arch/mips/configs/pnx8550-stb810_defconfig         |    2 
- arch/mips/configs/qemu_defconfig                   |    2 
- arch/mips/configs/rbhma4200_defconfig              |   17 +
- arch/mips/configs/rbhma4500_defconfig              |   17 +
- arch/mips/configs/rm200_defconfig                  |    2 
- arch/mips/configs/sb1250-swarm_defconfig           |    2 
- arch/mips/configs/sead_defconfig                   |    2 
- arch/mips/configs/tb0219_defconfig                 |    2 
- arch/mips/configs/tb0226_defconfig                 |    2 
- arch/mips/configs/tb0287_defconfig                 |    2 
- arch/mips/configs/workpad_defconfig                |    2 
- arch/mips/configs/wrppmc_defconfig                 |    2 
- arch/mips/configs/yosemite_defconfig               |    2 
- arch/mips/dec/time.c                               |    1 
- arch/mips/defconfig                                |    2 
- arch/mips/fw/arc/cmdline.c                         |    2 
- arch/mips/fw/arc/init.c                            |    8 
- arch/mips/fw/cfe/cfe_api.c                         |  184 ++-----
- arch/mips/fw/cfe/cfe_api_int.h                     |  186 ++++---
- arch/mips/fw/lib/Makefile                          |    5 
- arch/mips/fw/lib/call_o32.S                        |   97 ++++
- arch/mips/fw/sni/Makefile                          |    5 
- arch/mips/fw/sni/sniprom.c                         |  152 ++++++
- arch/mips/gt64120/wrppmc/setup.c                   |    2 
- arch/mips/jazz/setup.c                             |    7 
- arch/mips/jmr3927/rbhma3100/init.c                 |    4 
- arch/mips/jmr3927/rbhma3100/setup.c                |   60 ++
- arch/mips/kernel/cpu-bugs64.c                      |   47 +-
- arch/mips/kernel/cpu-probe.c                       |    9 
- arch/mips/kernel/genex.S                           |    8 
- arch/mips/kernel/kspd.c                            |    3 
- arch/mips/kernel/mips-mt.c                         |    1 
- arch/mips/kernel/pcspeaker.c                       |   28 -
- arch/mips/kernel/proc.c                            |    1 
- arch/mips/kernel/rtlx.c                            |    1 
- arch/mips/kernel/setup.c                           |    7 
- arch/mips/kernel/smp-mt.c                          |  193 ++++----
- arch/mips/kernel/smp.c                             |   53 ++
- arch/mips/kernel/smtc-proc.c                       |    1 
- arch/mips/kernel/smtc.c                            |    1 
- arch/mips/kernel/time.c                            |    2 
- arch/mips/kernel/vpe.c                             |    1 
- arch/mips/lasat/picvue.c                           |    2 
- arch/mips/lasat/picvue.h                           |    3 
- arch/mips/lasat/picvue_proc.c                      |   18 -
- arch/mips/lemote/lm2e/pci.c                        |    3 
- arch/mips/lemote/lm2e/prom.c                       |    2 
- arch/mips/lib/csum_partial.S                       |  275 ++++++-----
- arch/mips/lib/memcpy-inatomic.S                    |  141 +++---
- arch/mips/lib/memcpy.S                             |  250 ++++++----
- arch/mips/lib/memset.S                             |   44 +-
- arch/mips/lib/strlen_user.S                        |    6 
- arch/mips/lib/strncpy_user.S                       |   15 -
- arch/mips/lib/strnlen_user.S                       |    7 
- arch/mips/lib/uncached.c                           |   12 
- arch/mips/mips-boards/generic/init.c               |    8 
- arch/mips/mips-boards/malta/malta_smtc.c           |   66 ++-
- arch/mips/mipssim/Makefile                         |    2 
- arch/mips/mipssim/sim_setup.c                      |   16 +
- arch/mips/mipssim/sim_smtc.c                       |   92 ++--
- arch/mips/mm/c-r4k.c                               |   17 -
- arch/mips/mm/dma-default.c                         |    2 
- arch/mips/mm/pg-r4k.c                              |   66 +--
- arch/mips/mm/tlbex.c                               |  252 +++++-----
- arch/mips/oprofile/op_model_mipsxx.c               |    2 
- arch/mips/pci/pci-bcm1480.c                        |    4 
- arch/mips/pci/pci-bcm1480ht.c                      |    4 
- arch/mips/philips/pnx8550/common/setup.c           |    2 
- arch/mips/philips/pnx8550/common/time.c            |   35 -
- arch/mips/philips/pnx8550/jbs/init.c               |    3 
- arch/mips/philips/pnx8550/stb810/prom_init.c       |    2 
- arch/mips/pmc-sierra/yosemite/i2c-yosemite.h       |   96 ----
- arch/mips/pmc-sierra/yosemite/prom.c               |    7 
- arch/mips/pmc-sierra/yosemite/smp.c                |  149 +++---
- arch/mips/qemu/Makefile                            |   10 
- arch/mips/qemu/q-console.c                         |   26 -
- arch/mips/qemu/q-firmware.c                        |   24 -
- arch/mips/qemu/q-irq.c                             |   37 -
- arch/mips/qemu/q-mem.c                             |    5 
- arch/mips/qemu/q-reset.c                           |   33 -
- arch/mips/qemu/q-setup.c                           |   22 -
- arch/mips/qemu/q-smp.c                             |   55 --
- arch/mips/sgi-ip22/Makefile                        |    8 
- arch/mips/sgi-ip22/ip22-mc.c                       |    4 
- arch/mips/sgi-ip22/ip28-berr.c                     |  503 ++++++++++++++++++++
- arch/mips/sgi-ip27/ip27-init.c                     |    1 
- arch/mips/sgi-ip27/ip27-klnuma.c                   |    1 
- arch/mips/sgi-ip27/ip27-smp.c                      |  109 +++-
- arch/mips/sibyte/bcm1480/smp.c                     |  101 ++++
- arch/mips/sibyte/cfe/Makefile                      |    1 
- arch/mips/sibyte/cfe/setup.c                       |   14 -
- arch/mips/sibyte/cfe/smp.c                         |  110 ----
- arch/mips/sibyte/sb1250/smp.c                      |  100 ++++
- arch/mips/sni/Makefile                             |    2 
- arch/mips/sni/a20r.c                               |   13 -
- arch/mips/sni/eisa.c                               |   52 ++
- arch/mips/sni/irq.c                                |    4 
- arch/mips/sni/pcit.c                               |    7 
- arch/mips/sni/rm200.c                              |  326 ++++++++++++-
- arch/mips/sni/setup.c                              |  143 ++++++
- arch/mips/sni/sniprom.c                            |  251 ----------
- arch/mips/sni/time.c                               |    1 
- arch/mips/tx4927/common/Makefile                   |    2 
- arch/mips/tx4927/common/tx4927_setup.c             |  186 -------
- .../toshiba_rbtx4927/toshiba_rbtx4927_setup.c      |   96 +++-
- arch/mips/tx4938/common/Makefile                   |    2 
- arch/mips/tx4938/common/setup.c                    |   45 --
- arch/mips/tx4938/toshiba_rbtx4938/prom.c           |    1 
- arch/mips/tx4938/toshiba_rbtx4938/setup.c          |   31 +
- arch/mips/vr41xx/common/init.c                     |    4 
- arch/mips/vr41xx/nec-cmbvr4133/setup.c             |    4 
- include/asm-mips/addrspace.h                       |    2 
- include/asm-mips/asm.h                             |    8 
- include/asm-mips/bootinfo.h                        |  105 ----
- include/asm-mips/bugs.h                            |   25 +
- include/asm-mips/cpu-info.h                        |    5 
- include/asm-mips/cpu.h                             |    4 
- include/asm-mips/delay.h                           |   23 +
- include/asm-mips/dma.h                             |    7 
- include/asm-mips/fixmap.h                          |   10 
- include/asm-mips/fw/cfe/cfe_api.h                  |   87 ---
- include/asm-mips/fw/cfe/cfe_error.h                |   19 -
- include/asm-mips/mach-cobalt/cobalt.h              |   15 -
- include/asm-mips/mach-ip28/cpu-feature-overrides.h |   50 ++
- include/asm-mips/mach-ip28/ds1286.h                |    4 
- include/asm-mips/mach-ip28/spaces.h                |   22 +
- include/asm-mips/mach-ip28/war.h                   |    8 
- include/asm-mips/mach-qemu/cpu-feature-overrides.h |   32 -
- include/asm-mips/mipsprom.h                        |    2 
- include/asm-mips/pmc-sierra/msp71xx/msp_regs.h     |    4 
- include/asm-mips/r4kcache.h                        |    7 
- include/asm-mips/sgi/ioc.h                         |    4 
- include/asm-mips/sibyte/board.h                    |    6 
- include/asm-mips/sibyte/sb1250.h                   |    2 
- include/asm-mips/sibyte/swarm.h                    |   18 -
- include/asm-mips/smp-ops.h                         |   56 ++
- include/asm-mips/smp.h                             |   64 ---
- include/asm-mips/sni.h                             |  159 ++++--
- include/asm-mips/stackframe.h                      |    9 
- include/asm-mips/time.h                            |    9 
- include/asm-mips/topology.h                        |   16 +
- include/asm-mips/tx4927/tx4927_pci.h               |    1 
- include/asm-mips/uaccess.h                         |   13 -
- include/asm-mips/war.h                             |   62 ++
- 189 files changed, 3530 insertions(+), 2797 deletions(-)
- create mode 100644 arch/mips/basler/excite/Kconfig
- create mode 100644 arch/mips/fw/lib/Makefile
- create mode 100644 arch/mips/fw/lib/call_o32.S
- create mode 100644 arch/mips/fw/sni/Makefile
- create mode 100644 arch/mips/fw/sni/sniprom.c
- delete mode 100644 arch/mips/kernel/pcspeaker.c
- rename arch/mips/mipssim/{sim_smp.c => sim_smtc.c} (64%)
- delete mode 100644 arch/mips/pmc-sierra/yosemite/i2c-yosemite.h
- delete mode 100644 arch/mips/qemu/Makefile
- delete mode 100644 arch/mips/qemu/q-console.c
- delete mode 100644 arch/mips/qemu/q-firmware.c
- delete mode 100644 arch/mips/qemu/q-irq.c
- delete mode 100644 arch/mips/qemu/q-mem.c
- delete mode 100644 arch/mips/qemu/q-reset.c
- delete mode 100644 arch/mips/qemu/q-setup.c
- delete mode 100644 arch/mips/qemu/q-smp.c
- create mode 100644 arch/mips/sgi-ip22/ip28-berr.c
- delete mode 100644 arch/mips/sibyte/cfe/smp.c
- create mode 100644 arch/mips/sni/eisa.c
- delete mode 100644 arch/mips/sni/sniprom.c
- delete mode 100644 arch/mips/tx4927/common/tx4927_setup.c
- delete mode 100644 arch/mips/tx4938/common/setup.c
- create mode 100644 include/asm-mips/mach-ip28/cpu-feature-overrides.h
- create mode 100644 include/asm-mips/mach-ip28/ds1286.h
- create mode 100644 include/asm-mips/mach-ip28/spaces.h
- rename include/asm-mips/{mach-qemu/war.h => mach-ip28/war.h} (82%)
- delete mode 100644 include/asm-mips/mach-qemu/cpu-feature-overrides.h
- create mode 100644 include/asm-mips/smp-ops.h
+>
+>
+> > The second part of requirement does not hold true for the sys_msync() routine.
+> >
+> > >
+> > > > +             file = vma->vm_file;
+> > > > +             if ((flags & MS_SYNC) && file && (vma->vm_flags & VM_SHARED)) {
+> > >
+> > > Given that file is assigned just above it would be more readable to test
+> > > it first.
+> >
+> > The second part of my solution changes this code, anyway.
+> >
+> > >
+> > > > +                     if (error)
+> > > > +                             return error;
+> > >
+> > > This should be an goto out, returns out of the middle of the function
+> > > make reading and maintaining the code not so nice.
+> >
+> > Sorry, I don't think so. No "common cleanup" is needed here.
+>
+>
+> ---
+> ~Randy
+>
