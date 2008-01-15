@@ -1,89 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbYAODIL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbYAODJP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755913AbYAODIL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 22:08:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYAODH7
+	id S1756137AbYAODJP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 22:09:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYAODI7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 22:07:59 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:42648 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751362AbYAODH6 (ORCPT
+	Mon, 14 Jan 2008 22:08:59 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41606 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750851AbYAODI6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 22:07:58 -0500
-Message-Id: <478C240F.8070004@ce.jp.nec.com>
-Date: Tue, 15 Jan 2008 12:10:07 +0900
-From: "K.Tanaka" <k-tanaka@ce.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 14 Jan 2008 22:08:58 -0500
+Date: Tue, 15 Jan 2008 12:08:52 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH 4/5] memory_pressure_notify() caller
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Marcelo Tosatti <marcelo@kvack.org>,
+       Daniel Spang <daniel.spang@gmail.com>, Rik van Riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080115120012.0fcdd0f8.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080115112114.118E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080115120012.0fcdd0f8.kamezawa.hiroyu@jp.fujitsu.com>
+Message-Id: <20080115120110.1194.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: linux-scsi@vger.kernel.org
-CC: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       dm-devel@redhat.com
-Subject: [BUG] The kernel thread for md RAID1 could cause a md RAID1 array
- deadlock
-Content-Type: text/plain; charset=ISO-2022-JP
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Kame,
 
-This message describes the details about md-RAID1 issue found by
-testing the md RAID1 using the SCSI fault injection framework.
+> > > > +	notify_threshold = (zone->pages_high +
+> > > > +			    zone->lowmem_reserve[MAX_NR_ZONES-1]) * 2;
+> > > > +
+> > > Why MAX_NR_ZONES-1 ?
+> > 
+> > this is intent to max lowmem_reserve.
+> > 
+> Ah, my point is.. how about this ?
+> ==
+> if (page_zoneid(page) != ZONE_DMA)
+> 	notify_threshold = zone->pages_high +
+>                    	zone->lowmem_reserve[page_zoneid(page) - 1] * 2;
 
-Abstract:
-Both the error handler for md RAID1 and write access request to the md RAID1
-use raid1d kernel thread. The nr_pending flag could cause a race condition
-in raid1d, results in a raid1d deadlock.
+your point out is very good point.
 
-Details:
-         error handling                            write operation
-   ------------------------------------------------------------------------------
-    A-1. Issue a read request
+but judged by zone size is more better, may be.
+on some 64bit system, ZONE_DMA is 4GB.
+small memory system can't ignore it. 
 
-    A-2  SCSI error detected
-                                               B-1. make_request() for raid1 starts.
-    A-3. raid1_end_read_request() is called
-         in the interrupt context. It detects
-         read error and wakes up raid1d
-         kernel thread.                        B-2. make_request() calls wait_barrier() to
-                                                    increment nr_pending flag.
-    A-4. raid1d wake up
+fortunately, zone size check can at free_area_init_core().
 
-    A-5. raid1d calls freeze_array() and waiting
-         for nr_pending to be decremented.
-         That means stop IO and wait for       B-3. make_request() wakes up raid1d kernel thread
-         everything to go quite.                    to send write request to the lower layer.
 
-                                               B-4. raid1d wake up (already waken up by A-3)
+- kosaki
 
-                   (****  process stalls here because A-5 never ends ****)
-
-    A-6. raid1d calls fix_read_error() to
-         handle read error.                    B-5. raid1d calls generic_make_request() for write request.
-
-                                               B-6. raid1_end_write_request() is called in the
-                                                    interrupt context when the write access is completed
-                                                    and nr_pending flag is decremented.
-The deadlock mechanism:
-If raid1d waken up by detecting read error (A-4) goes into freeze_array()
-right after make_request() for write request has incremented nr_pending flag(B-2),
-raid1d stalls waiting for nr_pending flag to be decremented (A-5).
-On the other hand, nr_pending flag incremented by make_request() for write request
-will never be decremented because the flag can be decremented after raid1d issues
-generic_make_request() (B-5, B-6) but now raid1d is stopped.
-
-This problem could could easily be reproduced with by using the new fault injection framework,
-using "no response from the SCSI device" simulation.
-However, it could also occur if raid1 error handler contends with write
-operation,  but with low probability.
-
-I will report the other problems after I clean up and post the code for
-the scsi fault injection framework.
-
--- 
-------------------------------------------------------------------------
-Kenichi TANAKA    | Open Source Software Platform Development Division
-                  | Computers Software Operations Unit, NEC Corporation
-                  | k-tanaka@ce.jp.nec.com
 
 
