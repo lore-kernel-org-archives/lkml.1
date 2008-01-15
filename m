@@ -1,52 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756626AbYANXTx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756329AbYANXVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756626AbYANXTx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Jan 2008 18:19:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753040AbYANXTm
+	id S1756329AbYANXVx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Jan 2008 18:21:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbYANXVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Jan 2008 18:19:42 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:3083 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751457AbYANXTl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Jan 2008 18:19:41 -0500
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett Packard
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: 2.6.24-rc6-mm1 - oddness with IPv4/v6 mapped sockets hanging...
-Date: Mon, 14 Jan 2008 18:19:32 -0500
-User-Agent: KMail/1.9.7
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-References: <30887.1200209733@turing-police.cc.vt.edu> <200801141407.46345.paul.moore@hp.com> <4382.1200351868@turing-police.cc.vt.edu>
-In-Reply-To: <4382.1200351868@turing-police.cc.vt.edu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Mon, 14 Jan 2008 18:21:46 -0500
+Received: from relay2.netbox.cz ([83.240.0.204]:39285 "EHLO relay.netbox.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751314AbYANXVp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Jan 2008 18:21:45 -0500
+X-Greylist: delayed 879 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 Jan 2008 18:21:45 EST
+Date: Tue, 15 Jan 2008 02:06:10 +0100
+From: Zbynek Hrabovsky <hrabosh@t-email.cz>
+To: kraxel@bytesex.org
+Cc: linux-kernel@vger.kernel.org, video4linux-list@redhat.com
+Subject: New type of DTV2000H TV Card
+Message-Id: <20080115020610.914ec790.hrabosh@t-email.cz>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801141819.33203.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 January 2008 6:04:28 pm Valdis.Kletnieks@vt.edu wrote:
-> On Mon, 14 Jan 2008 14:07:46 EST, Paul Moore said:
-> > http://git.infradead.org/?p=users/pcmoore/lblnet-2.6_testing;a=commitdiff
-> >;h=02f1c89d6e36507476f78108a3dcc78538be460b
->
-> Initial testing indicates that 2.6.24-rc6-mm1 plus this one commit is
-> behaving itself correctly - my Tcl test case that reliably demonstrated
-> wedges during SYN handling is definitively fixed, and the current issue
-> with hangs with data pending seems to be gone as well (after admittedly
-> light testing).
->
-> Thanks for finding the commit that fixed it...
+		Hello,
 
-No problem, glad to hear that fixed the problem.  It's already in Linus' tree 
-so any future -mm kernels as well as 2.6.24 should be problem-free, at least 
-with respect to this ;)
+first of all, sorry for my English. I've found your email address in the source code of module for CX2388X based cards. I bought Leadtek WinFast DTV2000H, but it didn't work. I found, that there are two types of this card. Type I (older), and type J (latest) ... and only type I is supported by the module.
 
--- 
-paul moore
-linux security @ hp
+Type J is not autodetected, and if you force card type (card = 51), DVB-T works, but there is no sound in analogue television. I know why (multiplexer, which is switching between the radio, TV, and external sound is driven by GPIO pins ... and setting of this pins is wrong), and I wrote a patch, which makes this card (DTV2000H type J) works. 
+
+With this patch, card is autodetected, I'm having sound in analogue television, I can switch between antenna, and cable signal input, and I can see video from external S-video and composite video input.
+
+So ... do you want me to send this patch to you ? I think it will be good to add support for this card to the cx88xx module.
+
+Bye,
+	Zbynek Hrabovsky, Brno, Czech Republic
