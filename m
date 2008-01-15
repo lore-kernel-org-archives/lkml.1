@@ -1,80 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbYAORPN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756264AbYAORRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755955AbYAORPN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 12:15:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbYAORO5
+	id S1756264AbYAORRR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 12:17:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbYAORRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 12:14:57 -0500
-Received: from zrtps0kn.nortel.com ([47.140.192.55]:56464 "EHLO
-	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751267AbYAORO4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 12:14:56 -0500
-Message-ID: <478CE9F1.8020409@nortel.com>
-Date: Tue, 15 Jan 2008 11:14:25 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Tue, 15 Jan 2008 12:17:07 -0500
+Received: from gw.goop.org ([64.81.55.164]:46219 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750841AbYAORRG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 12:17:06 -0500
+Message-ID: <478CEA82.9010606@goop.org>
+Date: Tue, 15 Jan 2008 09:16:50 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: "Radoslaw Szkodzinski (AstralStorm)" <lkml@astralstorm.puszkin.org>
-CC: Jarek Poplawski <jarkao2@gmail.com>, netdev@vger.kernel.org,
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andi Kleen <andi@firstfloor.org>, tglx@linutronix.de,
        linux-kernel@vger.kernel.org
-Subject: Re: questions on NAPI processing latency and dropped network packets
-References: <20080115071950.GA1696@ff.dom.local>	<478CC76B.1020804@nortel.com> <20080115161705.0724250d@astralstorm.puszkin.org>
-In-Reply-To: <20080115161705.0724250d@astralstorm.puszkin.org>
+Subject: Folding _PAGE_PWT into _PAGE_PCD (was Re: unify pagetable accessors
+ patch causes double fault II)
+References: <20080114094814.GA28300@basil.nowhere.org> <20080114125638.GA9510@basil.nowhere.org> <20080114130620.GA14057@elte.hu> <20080114135811.GA16190@one.firstfloor.org> <478BDC43.6050105@goop.org> <20080114222349.GA23409@one.firstfloor.org> <478BE628.7090008@goop.org> <20080115135317.GA13493@elte.hu>
+In-Reply-To: <20080115135317.GA13493@elte.hu>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 Jan 2008 17:14:32.0157 (UTC) FILETIME=[1822C0D0:01C8579A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Radoslaw Szkodzinski (AstralStorm) wrote:
-> On Tue, 15 Jan 2008 08:47:07 -0600
-> "Chris Friesen" <cfriesen@nortel.com> wrote:
+Ingo Molnar wrote:
+> -#define _PAGE_PRESENT	(_AC(1, UL)<<_PAGE_BIT_PRESENT)
+> -#define _PAGE_RW	(_AC(1, UL)<<_PAGE_BIT_RW)
+> -#define _PAGE_USER	(_AC(1, UL)<<_PAGE_BIT_USER)
+> -#define _PAGE_PWT	(_AC(1, UL)<<_PAGE_BIT_PWT)
+> -#define _PAGE_PCD	((_AC(1, UL)<<_PAGE_BIT_PCD) | _PAGE_PWT)
+>   
 
->>Some of our hardware is not supported on mainline, so we need per-kernel 
->>version patches to even bring up the blade.  The blades netboot via a 
->>jumbo-frame network, so kernel extensions are needed to handle setting 
->>the MTU before mounting the rootfs.
+BTW, I just noticed that _PAGE_PWT has been folded into _PAGE_PCD.  This 
+seems like a really bad idea to me, since it breaks the rule that 
+_PAGE_X == 1 << _PAGE_BIT_X.  I can't think of a specific place where 
+this would cause problems, but this kind of non-uniformity always ends 
+up biting someone in the arse.
 
-> Why? Can't you use a small initramfs to set it up?
+I think having a specific _PAGE_NOCACHE which combines these bits is a 
+better approach.
 
-Sure, if we changed our build system, engineered a suitable small 
-userspace, etc.  At this point it's easier to maintain a small patch to 
-the kernel dhcp parsing code so that we can specify mtu.
-
->>The blade in question uses CKRM 
->>which doesn't exist for newer kernels so the problem may simply be 
->>hidden by scheduling differences.
-
-> Current spiritual successor is Ingo's realtime patchset I guess.
-
-I think the group scheduling stuff for CFS is closer, but there are 
-design and API differences that would require us to rework our system.
-
->>The userspace application uses other 
->>kernel features that are not in mainline (and likely some of them won't 
->>ever be in mainline--I know because I've tried).
-
-> What would these be? Some proc or sysfs files that were removed or
-> renamed?
-> Maybe they can be worked around w/o changing the application at all, or
-> very minor changes.
-
-No, more than proc/sysfs.  Things like notification of process state 
-change (think like SIGCHLD but sent to arbitrary processes), additional 
-messaging protocol families, oom-killer protection, dirty page 
-monitoring, backwards compatibility for "dcbz" on the ppc970, nested 
-alternate signal stacks, and many others.  Between our kernel vendor's 
-patches and our own, there are something like 600 patches applied to the 
-mainline kernel.
-
-> Also, be sure to check if there are pauses with other CPU hogs.
-
-With the sctp hash patch applied we're now sitting with 45% cpu free on 
-one cpu, and about 25% free on the other, and we're still seeing 
-periodic bursts of rx fifo loss.  It's wierd.  Still trying to figure 
-out what's going on.
-
-Chris
+    J
