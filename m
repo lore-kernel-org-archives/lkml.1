@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757415AbYAOVZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbYAOV1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757415AbYAOVZu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 16:25:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbYAOVZ1
+	id S1756933AbYAOV1V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 16:27:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbYAOV1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 16:25:27 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:39672 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752280AbYAOVZZ (ORCPT
+	Tue, 15 Jan 2008 16:27:13 -0500
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:63064 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750917AbYAOV1M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 16:25:25 -0500
-Date: Tue, 15 Jan 2008 13:24:43 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>, linux-sound@vger.kernel.org
-Cc: perex@perex.cz, akpm <akpm@linux-foundation.org>, samr <sam@ravnborg.org>
-Subject: [PATCH 1/5] sound: fix mts64 section mismatches
-Message-Id: <20080115132443.38648a8c.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 15 Jan 2008 16:27:12 -0500
+Date: Tue, 15 Jan 2008 16:27:08 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>
+Subject: Re: [RFC PATCH 17/30 v3] initialize the clock source to jiffies
+ clock.
+In-Reply-To: <20080115211404.GB17439@Krystal>
+Message-ID: <Pine.LNX.4.58.0801151621140.29090@gandalf.stny.rr.com>
+References: <20080115204907.838227723@goodmis.org> <20080115205024.650312976@goodmis.org>
+ <20080115211404.GB17439@Krystal>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Fix section mismatches in mts64 by making a static variable __devinitdata.
+On Tue, 15 Jan 2008, Mathieu Desnoyers wrote:
+> >
+> > This patch simply initializes the clock to use clocksource_jiffies, so
+> > that any early user of clocksource_read will not crash.
+> >
+>
+> Hrm, is it sane at all to use the jiffies as a clocksource at early
+> boot? I thought it was updated by the timer interrupt, which is only
+> activated late in the boot process.
 
-WARNING: vmlinux.o(.data+0x2e33f0): Section mismatch: reference to .init.data:mts64_ctl_smpte_switch (between 'control.19929' and 'snd_mts64_rawmidi_output_ops')
-WARNING: vmlinux.o(.data+0x2e33f8): Section mismatch: reference to .init.data:mts64_ctl_smpte_time_hours (between 'control.19929' and 'snd_mts64_rawmidi_output_ops')
-WARNING: vmlinux.o(.data+0x2e3400): Section mismatch: reference to .init.data:mts64_ctl_smpte_time_minutes (between 'control.19929' and 'snd_mts64_rawmidi_output_ops')
-WARNING: vmlinux.o(.data+0x2e3408): Section mismatch: reference to .init.data:mts64_ctl_smpte_time_seconds (between 'control.19929' and 'snd_mts64_rawmidi_output_ops')
-WARNING: vmlinux.o(.data+0x2e3410): Section mismatch: reference to .init.data:mts64_ctl_smpte_time_frames (between 'control.19929' and 'snd_mts64_rawmidi_output_ops')
-WARNING: vmlinux.o(.data+0x2e3418): Section mismatch: reference to .init.data:mts64_ctl_smpte_fps (between 'control.19929' and 'snd_mts64_rawmidi_output_ops')
+It gives us a bogus value, but we know it's always there. This was
+discovered in the -rt patch where we had a hard hang at early bootup.
+Seems that the tracer was calling for a clock source before it was
+initialized, and it called a null pointer.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- sound/drivers/mts64.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The original fix was to just make a dummy timer source that returned zero.
+But using jiffies seemed a better solution.
 
---- linux-2.6.24-rc7-git7.orig/sound/drivers/mts64.c
-+++ linux-2.6.24-rc7-git7/sound/drivers/mts64.c
-@@ -662,7 +662,7 @@ static int __devinit snd_mts64_ctl_creat
- 					  struct mts64 *mts) 
- {
- 	int err, i;
--	static struct snd_kcontrol_new *control[] = {
-+	static struct snd_kcontrol_new *control[] __devinitdata = {
- 		&mts64_ctl_smpte_switch,
- 		&mts64_ctl_smpte_time_hours,
- 		&mts64_ctl_smpte_time_minutes,
+-- Steve
