@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbYAPTHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753044AbYAPTNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036AbYAPTHB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 14:07:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbYAPTGy
+	id S1753044AbYAPTNe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 14:13:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbYAPTNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 14:06:54 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:45465 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751691AbYAPTGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 14:06:53 -0500
-In-Reply-To: <4d47a5d10801151724m418e18efp9a0dd936e9a3584c@mail.gmail.com>
-To: "Daniel Phillips" <phillips@google.com>
-Cc: "Al Boldi" <a1426z@gawab.com>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "David Chinner" <dgc@sgi.com>, linux-kernel@vger.kernel.org,
-       "Pavel Machek" <pavel@ucw.cz>, "Rik van Riel" <riel@redhat.com>,
-       "Theodore Tso" <tytso@mit.edu>, "Valerie Henson" <val.henson@gmail.com>
+	Wed, 16 Jan 2008 14:13:24 -0500
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:53581 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751194AbYAPTNX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 14:13:23 -0500
+X-Sasl-enc: ll2YEmXc2oE4BE6gUgR+2Pr2Q3reoFbIV+E94hlgcTM1 1200510802
+Date: Wed, 16 Jan 2008 17:13:17 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Johannes Weiner <hannes@saeurebad.de>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: thinkpad_acpi: define _sta only when needed
+Message-ID: <20080116191317.GA29449@khazad-dum.debian.net>
+References: <1200488504-6789-1-git-send-email-hannes@saeurebad.de>
 MIME-Version: 1.0
-Subject: Re: [Patch] document ext3 requirements (was Re: [RFD] Incremental fsck)
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OFDB679999.9793D1C7-ON882573D2.00646D05-882573D2.0068FF85@us.ibm.com>
-From: Bryan Henderson <hbryan@us.ibm.com>
-Date: Wed, 16 Jan 2008 11:06:50 -0800
-X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Release 8.0|August 02, 2007) at 01/16/2008
- 14:06:51,
-	Serialize complete at 01/16/2008 14:06:51
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1200488504-6789-1-git-send-email-hannes@saeurebad.de>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->The "disk motor as a generator" tale may not be purely folklore.  When
->an IDE drive is not in writeback mode, something special needs to done
->to ensure the last write to media is not a scribble.
+On Wed, 16 Jan 2008, Johannes Weiner wrote:
+> Define _sta() helper conditionally; also remove its prototype from
+> the internal header and also some other unneeded ones.
+> 
+> This function is only needed when the bay or the dock subdriver is
+> enabled.  Otherwise, gcc complains about an unused static function.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-No it doesn't.  The last write _is_ a scribble.  Systems that make atomic 
-updates to disk drives use a shadow update mechanism and write the master 
-sector twice.  If the power fails in the middle of writing one, it will 
-almost certainly be unreadable due to a CRC failure, and the other one 
-will have either the old or new master block contents.
+Johannes, thanks for the patches, but NAK.  A similar group of patches that
+clean up the _sta and heander file (kills it, actually) has already been
+sent to Len Brown to be merged for 2.6.25.
 
-And I think there's a problem with drives that, upon sensing the 
-unreadable sector, assign an alternate even though the sector is fine, and 
-you eventually run out of spares.
-
-
-Incidentally, while this primitive behavior applies to IDE (ATA et al) 
-drives, that isn't the only thing people put filesystem on.  Many 
-important filesystems go on higher level storage subsystems that contain 
-IDE drives and cache memory and batteries.  A device like this _does_ make 
-sure that all data that it says has been written is actually retrievable 
-even if there's a subsequent power outage, even while giving the 
-performance of writeback caching.
-
---
-Bryan Henderson                     IBM Almaden Research Center
-San Jose CA                         Filesystems
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
