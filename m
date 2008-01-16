@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbYAPOo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755621AbYAPOpF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754894AbYAPOo2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 09:44:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbYAPOoV
+	id S1755621AbYAPOpF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 09:45:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbYAPOoy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 09:44:21 -0500
-Received: from ns2.suse.de ([195.135.220.15]:58653 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752541AbYAPOoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 09:44:20 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 0 of 4] x86: some more patches
-Date: Wed, 16 Jan 2008 15:44:15 +0100
-User-Agent: KMail/1.9.6
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jan Beulich <jbeulich@novell.com>
-References: <patchbomb.1200435425@localhost> <478D4197.8060904@goop.org> <20080116142242.GA23993@elte.hu>
-In-Reply-To: <20080116142242.GA23993@elte.hu>
+	Wed, 16 Jan 2008 09:44:54 -0500
+Received: from enterprise.ram.RWTH-Aachen.DE ([137.226.68.2]:56033 "EHLO
+	enterprise.ram.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751422AbYAPOox (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 09:44:53 -0500
+X-Greylist: delayed 1182 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Jan 2008 09:44:53 EST
+Date: Wed, 16 Jan 2008 15:27:41 +0100
+From: markus reichelt <ml@mareichelt.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.23.14
+Message-ID: <20080116142741.GB3987@tatooine.rebelbase.local>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+References: <20080114211012.GC3051@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="uQr8t48UFsdbeI+V"
 Content-Disposition: inline
-Message-Id: <200801161544.15884.ak@suse.de>
+In-Reply-To: <20080114211012.GC3051@kroah.com>
+Organization: still stuck in reorganization mode
+X-PGP-Key: 0xC2A3FEE4
+X-PGP-Fingerprint: FFB8 E22F D2BC 0488 3D56  F672 2CCC 933B C2A3 FEE4
+X-Request-PGP: http://mareichelt.de/keys/c2a3fee4.asc
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> Index: linux-x86.q/include/asm-x86/page.h
-> ===================================================================
-> --- linux-x86.q.orig/include/asm-x86/page.h
-> +++ linux-x86.q/include/asm-x86/page.h
-> @@ -11,7 +11,7 @@
->  #ifdef __KERNEL__
->  
->  #define PHYSICAL_PAGE_MASK	(PAGE_MASK & __PHYSICAL_MASK)
+--uQr8t48UFsdbeI+V
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+* Greg Kroah-Hartman <gregkh@suse.de> wrote:
 
-I haven't tested yet, but we looked at that one earlier and I thought
-it was ok because 
+> It contains a single fix for a problem that could cause a local
+> user to cause file system corruption on some types of filesystems.
 
-#define __PHYSICAL_MASK          _AT(phys_addr_t, (_AC(1,ULL) << __PHYSICAL_MASK_SHIFT) - 1)
+Some types of filesystems? Which ones?=20
 
-and 
+--=20
+left blank, right bald
 
-typedef u64     phys_addr_t;
+--uQr8t48UFsdbeI+V
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
-for PAE. So the expression above should have been already 64bit.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
+iD8DBQFHjhRdLMyTO8Kj/uQRAmH6AJ99eq2MQt9MAM+k0mtij5haolrGDQCgh9M3
+h81mtdG4BkuhMPc0yqD287g=
+=WFAP
+-----END PGP SIGNATURE-----
 
-
-> -#define PTE_MASK		PHYSICAL_PAGE_MASK
-> +#define PTE_MASK		(_AT(long, PHYSICAL_PAGE_MASK))
-
-That would mean it is 32bit again because 32bit long is 32bit, but on 32bit 
-PAE PTE_MASK definitely needs to be 64bit.
-
-So I would be surprised if the patch works.
-
-The problem seems to be rather that PAGE_MASK does not include the bits above 32bit. 
-Something like
-
-#define PHYSICAL_PAGE_MASK (__PHYSICAL_MASK & ~(phys_addr_t)(PAGE_SIZE-1))
-
-should work (untested) 
-
--Andi
+--uQr8t48UFsdbeI+V--
