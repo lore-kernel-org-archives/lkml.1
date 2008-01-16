@@ -1,182 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754939AbYAPQ2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbYAPQad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754939AbYAPQ2Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 11:28:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbYAPQ17
+	id S1754736AbYAPQad (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 11:30:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbYAPQaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 11:27:59 -0500
-Received: from wx-out-0506.google.com ([66.249.82.228]:40819 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752585AbYAPQ14 (ORCPT
+	Wed, 16 Jan 2008 11:30:25 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:22627 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751903AbYAPQaY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 11:27:56 -0500
+	Wed, 16 Jan 2008 11:30:24 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nNJKRBypUQF1csvuqC0k6XzPpKoS13AHzM3qfiedypAc5QkI4e1gQV7DzgrNQxNNQu9L7tZ74YT87xsiR89noMPvsd21TDxXuNP/SDlQTnKtFD8+Q2RAqkpRS88bZPsH6QQ6N4MZqHj5u5hFEKZHydn6KZ3XWKR8p3NgyyDQBho=
-Message-ID: <170fa0d20801160827p73ae28d0u702120a4f9f48936@mail.gmail.com>
-Date: Wed, 16 Jan 2008 11:27:54 -0500
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: "Martin Knoblauch" <spamtrap@knobisoft.de>
-Subject: Re: regression: 100% io-wait with 2.6.24-rcX
-Cc: "Fengguang Wu" <wfg@mail.ustc.edu.cn>,
-       "Peter Zijlstra" <peterz@infradead.org>, jplatte@naasa.net,
-       "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <230154.6549.qm@web32604.mail.mud.yahoo.com>
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=vZ5YpuNYu+q+mrTzRPO9Ih8+RK+iVtpqs9eJnznh87If3pGe0bKgX+mBxtyDUgftvUgB9rEfICldeiwP/NB8KDJzuBi3X6HnYpliFrv157DoVg+3l8bjRIl0ZnL5kpHq0LEBIY9z7WoPn68hS8EtImLVBNaLox8CncJjR6AHKeA=
+Message-ID: <2c0942db0801160830j72c0fc77xc4cc9e7fd676d78a@mail.gmail.com>
+Date: Wed, 16 Jan 2008 08:30:21 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Renato S. Yamane" <renatoyamane@mandic.com.br>
+Subject: Re: Updatedb hangs Kernel 2.6.22.9-cfs-v22
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <478B7F9F.3020209@mandic.com.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <230154.6549.qm@web32604.mail.mud.yahoo.com>
+References: <478900FF.2000706@mandic.com.br>
+	 <2c0942db0801121025h7f22d716s657af75ce7603af0@mail.gmail.com>
+	 <478B7F9F.3020209@mandic.com.br>
+X-Google-Sender-Auth: e798c6e6535ab546
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 16, 2008 9:15 AM, Martin Knoblauch <spamtrap@knobisoft.de> wrote:
-> ----- Original Message ----
-> > From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-> > To: Martin Knoblauch <knobi@knobisoft.de>
-> > Cc: Mike Snitzer <snitzer@gmail.com>; Peter Zijlstra <peterz@infradead.org>; jplatte@naasa.net; Ingo Molnar <mingo@elte.hu>; linux-kernel@vger.kernel.org; "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>; Linus Torvalds <torvalds@linux-foundation.org>
-> > Sent: Wednesday, January 16, 2008 1:00:04 PM
-> > Subject: Re: regression: 100% io-wait with 2.6.24-rcX
+On Jan 14, 2008 7:28 AM, Renato S. Yamane <renatoyamane@mandic.com.br> wrote:
+> Ray Lee escreveu:
+> > On Jan 12, 2008 10:03 AM, Renato S. Yamane wrote:
+> >> I can't use updatedb in Debian Etch (stable) using customized Kernel
+> >> 2.6.22.9-cfs-v22.
+> >>
+> >> When I ran updatedb, after ~1 minute my system hangs and "caps lock" LED
+> >> is blinking. No log is registered.
 > >
+> > Please switch out of X11 to a text mode console (CTRL-ALT-F1), and run
+> > updatedb there. Capture the oops with a digital camera, and post a
+> > link to the picture (not the picture itself!) to the list. Or, write
+> > down the oops carefully, and post the text.
 >
-> > On Wed, Jan 16, 2008 at 01:26:41AM -0800, Martin Knoblauch wrote:
-> > > > For those interested in using your writeback improvements in
-> > > > production sooner rather than later (primarily with ext3); what
-> > > > recommendations do you have?  Just heavily test our own 2.6.24
-> > +
-> >
->  your
-> > > > evolving "close, but not ready for merge" -mm writeback patchset?
-> > > >
-> > > Hi Fengguang, Mike,
-> > >
-> > >  I can add myself to Mikes question. It would be good to know
-> > a
-> >
->  "roadmap" for the writeback changes. Testing 2.6.24-rcX so far has
-> > been
-> >
->  showing quite nice improvement of the overall writeback situation and
-> > it
-> >
->  would be sad to see this [partially] gone in 2.6.24-final.
-> > Linus
-> >
->  apparently already has reverted  "...2250b". I will definitely repeat my
-> > tests
-> >
->  with -rc8. and report.
-> >
-> > Thank you, Martin. Can you help test this patch on 2.6.24-rc7?
-> > Maybe we can push it to 2.6.24 after your testing.
-> >
->
->  Will do tomorrow or friday. Actually a patch against -rc8 would be nicer for me, as I have not looked at -rc7 due to holidays and some of the reported problems with it.
+> I see a infinite loop and is very fast, so I can't capture errors messages.
+> None is registered in /var/log/*
 
-Fengguang's latest writeback patch applies cleanly, builds, boots on 2.6.24-rc8.
+Well, that's very odd. Please also try the latest CFS backport to see
+if that solves the problem.
 
-I'll be able to share ext3 performance results (relative to 2.6.24-rc7) shortly.
-
-Mike
->
->
-> > Fengguang
-> > ---
-> >  fs/fs-writeback.c         |   17 +++++++++++++++--
-> >  include/linux/writeback.h |    1 +
-> >  mm/page-writeback.c       |    9 ++++++---
-> >  3 files changed, 22 insertions(+), 5 deletions(-)
-> >
-> > --- linux.orig/fs/fs-writeback.c
-> > +++ linux/fs/fs-writeback.c
-> > @@ -284,7 +284,16 @@ __sync_single_inode(struct inode *inode,
-> >                   * soon as the queue becomes uncongested.
-> >                   */
-> >                  inode->i_state |= I_DIRTY_PAGES;
-> > -                requeue_io(inode);
-> > +                if (wbc->nr_to_write <= 0)
-> > +                    /*
-> > +                     * slice used up: queue for next turn
-> > +                     */
-> > +                    requeue_io(inode);
-> > +                else
-> > +                    /*
-> > +                     * somehow blocked: retry later
-> > +                     */
-> > +                    redirty_tail(inode);
-> >              } else {
-> >                  /*
-> >                   * Otherwise fully redirty the inode so that
-> > @@ -479,8 +488,12 @@ sync_sb_inodes(struct super_block *sb, s
-> >          iput(inode);
-> >          cond_resched();
-> >          spin_lock(&inode_lock);
-> > -        if (wbc->nr_to_write <= 0)
-> > +        if (wbc->nr_to_write <= 0) {
-> > +            wbc->more_io = 1;
-> >              break;
-> > +        }
-> > +        if (!list_empty(&sb->s_more_io))
-> > +            wbc->more_io = 1;
-> >      }
-> >      return;        /* Leave any unwritten inodes on s_io */
-> >  }
-> > --- linux.orig/include/linux/writeback.h
-> > +++ linux/include/linux/writeback.h
-> > @@ -62,6 +62,7 @@ struct writeback_control {
-> >      unsigned for_reclaim:1;        /* Invoked from the page
-> > allocator
-> >
->  */
-> >      unsigned for_writepages:1;    /* This is a writepages() call */
-> >      unsigned range_cyclic:1;    /* range_start is cyclic */
-> > +    unsigned more_io:1;        /* more io to be dispatched */
-> >  };
-> >
-> >  /*
-> > --- linux.orig/mm/page-writeback.c
-> > +++ linux/mm/page-writeback.c
-> > @@ -558,6 +558,7 @@ static void background_writeout(unsigned
-> >              global_page_state(NR_UNSTABLE_NFS) < background_thresh
-> >                  && min_pages <= 0)
-> >              break;
-> > +        wbc.more_io = 0;
-> >          wbc.encountered_congestion = 0;
-> >          wbc.nr_to_write = MAX_WRITEBACK_PAGES;
-> >          wbc.pages_skipped = 0;
-> > @@ -565,8 +566,9 @@ static void background_writeout(unsigned
-> >          min_pages -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
-> >          if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
-> >              /* Wrote less than expected */
-> > -            congestion_wait(WRITE, HZ/10);
-> > -            if (!wbc.encountered_congestion)
-> > +            if (wbc.encountered_congestion || wbc.more_io)
-> > +                congestion_wait(WRITE, HZ/10);
-> > +            else
-> >                  break;
-> >          }
-> >      }
-> > @@ -631,11 +633,12 @@ static void wb_kupdate(unsigned long arg
-> >              global_page_state(NR_UNSTABLE_NFS) +
-> >              (inodes_stat.nr_inodes - inodes_stat.nr_unused);
-> >      while (nr_to_write > 0) {
-> > +        wbc.more_io = 0;
-> >          wbc.encountered_congestion = 0;
-> >          wbc.nr_to_write = MAX_WRITEBACK_PAGES;
-> >          writeback_inodes(&wbc);
-> >          if (wbc.nr_to_write > 0) {
-> > -            if (wbc.encountered_congestion)
-> > +            if (wbc.encountered_congestion || wbc.more_io)
-> >                  congestion_wait(WRITE, HZ/10);
-> >              else
-> >                  break;    /* All the old data is written */
-> >
-> >
-> >
->
->
->
+Ray
