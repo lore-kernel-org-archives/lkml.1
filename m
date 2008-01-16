@@ -1,306 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbYAPO4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbYAPO6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754863AbYAPO4T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 09:56:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbYAPO4J
+	id S1754904AbYAPO6T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 09:58:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbYAPO6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 09:56:09 -0500
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:32948 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751279AbYAPO4H (ORCPT
+	Wed, 16 Jan 2008 09:58:06 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:37837 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751348AbYAPO6E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 09:56:07 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aj0KAM+pjUdMROHU/2dsb2JhbACBWJAQnDA
-Date: Wed, 16 Jan 2008 09:56:04 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>, Paul Mackerras <paulus@samba.org>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: [RFC PATCH 16/22 -v2] add get_monotonic_cycles
-Message-ID: <20080116145604.GB31329@Krystal>
-References: <20080109232914.676624725@goodmis.org> <20080109233044.777564395@goodmis.org> <20080115214636.GD17439@Krystal> <Pine.LNX.4.58.0801151658190.29090@gandalf.stny.rr.com> <20080115220824.GB22242@Krystal> <Pine.LNX.4.58.0801151717250.29090@gandalf.stny.rr.com> <20080116031730.GA2164@Krystal> <Pine.LNX.4.58.0801152238130.19680@gandalf.stny.rr.com>
+	Wed, 16 Jan 2008 09:58:04 -0500
+Subject: Re: INITIO scsi driver fails to work properly
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: psybases@gmail.com, linux-scsi@vger.kernel.org, cebbert@redhat.com,
+       bharrosh@panasas.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080116145916A.fujita.tomonori@lab.ntt.co.jp>
+References: <1200070903.3286.28.camel@localhost.localdomain>
+	 <9f00bd9d0801130428s5e4c034apf21052b918470f99@mail.gmail.com>
+	 <1200410166.9273.4.camel@localhost.localdomain>
+	 <20080116145916A.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain
+Date: Wed, 16 Jan 2008 08:57:51 -0600
+Message-Id: <1200495471.3136.1.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.12.2 (2.12.2-3.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0801152238130.19680@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:48:24 up 73 days, 19:53,  4 users,  load average: 0.46, 0.45,
-	0.50
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> 
-> [ CC'd Daniel Walker, since he had problems with this code ]
-> 
-> On Tue, 15 Jan 2008, Mathieu Desnoyers wrote:
-> >
-> > I agree with you that I don't see how the compiler could reorder this.
-> > So we forget about compiler barriers. Also, the clock source used is a
-> > synchronized clock source (get_cycles_sync on x86_64), so it should make
-> > sure the TSC is read at the right moment.
-> >
-> > However, what happens if the clock source is, say, the jiffies ?
-> >
-> > Is this case, we have :
-> >
-> > static cycle_t jiffies_read(void)
-> > {
-> >         return (cycle_t) jiffies;
-> > }
-> >
-> > Which is nothing more than a memory read of
-> >
-> > extern unsigned long volatile __jiffy_data jiffies;
-> 
-> Yep, and that's not my concern.
-> 
 
-Hrm, I will reply to the rest of this email in a separate mail, but
-there is another concern, simpler than memory ordering, that just hit
-me :
+On Wed, 2008-01-16 at 14:59 +0900, FUJITA Tomonori wrote:
+> On Tue, 15 Jan 2008 09:16:06 -0600
+> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> 
+> > 
+> > On Sun, 2008-01-13 at 14:28 +0200, Filippos Papadopoulos wrote:
+> > > On 1/11/08, James Bottomley <James.Bottomley@hansenpartnership.com> wrote:
+> > > >
+> > > > On Fri, 2008-01-11 at 18:44 +0200, Filippos Papadopoulos wrote:
+> > > > > On Jan 11, 2008 5:44 PM, James Bottomley
+> > > > > <James.Bottomley@hansenpartnership.com> wrote:
+> > > > > > >
+> > > > > > > I havent reported "initio: I/O port range 0x0 is busy."
+> > > > > >
+> > > > > > Sorry ... we appear to have several reporters of different bugs in this
+> > > > > > thread.  That message was copied by Chuck Ebbert from a Red Hat
+> > > > > > bugzilla ... I was assuming it was the same problem.
+> > > > > >
+> > > > > > > I applied the patch on 2.6.24-rc6-git9 but unfortunatelly same thing happens.
+> > > > > >
+> > > > > > First off, has this driver ever worked for you in 2.6?  Just booting
+> > > > > > SLES9 (2.6.5) or RHEL4 (2.6.9) ... or one of their open equivalents to
+> > > > > > check a really old kernel would be helpful.  If you can get it to work,
+> > > > > > then we can proceed with a patch reversion regime based on the
+> > > > > > assumption that the problem is a recent commit.
+> > > > >
+> > > > > Yes it works under 2.6.16.13.  See the beginning of this thread, i
+> > > > > mention there some things about newer versions.
+> > > >
+> > > > Thanks, actually, I see this:
+> > > >
+> > > > > I tried to install OpenSUSE 10.3 (kernel 2.6.22.5) and the latest
+> > > > > OpenSUSE 11.0 Alpha 0  (kernel 2.6.24-rc4) but although the initio
+> > > > > drivergets loaded during the installation process, yast reports that no hard
+> > > > > disk is found.
+> > > >
+> > > > Could you try with a vanilla 2.6.22 kernel?  The reason for all of this
+> > > > is that 2.6.22 predates Alan's conversion of this driver (which was my
+> > > > 95% candidate for the source of the bug).  I want you to try the vanilla
+> > > > kernel just in case the opensuse one contains a backport.
+> > > 
+> > > 
+> > > Yes you are right. I compiled the vanilla 2.6.22 and initio driver works.
+> > > Tell me if you want to apply any patch to it.
+> > 
+> > 
+> > That's good news ... at least we know where the issue lies; now the
+> > problem comes: there are two candidate patches for this issue: Alan's
+> > driver update patch and Tomo's accessors patch.  Unfortunately, due to
+> > merge conflicts the two are pretty hopelessly intertwined.  I think I
+> > already spotted one bug in the accessor conversion, so I'll look at that
+> > again.  Alan's also going to acquire an inito board and retest his
+> > conversions.
+> > 
+> > I'm afraid it might be a while before we have anything for you to test.
+> 
+> Can you try this patch?
+> 
+> Thanks,
+> 
+> diff --git a/drivers/scsi/initio.c b/drivers/scsi/initio.c
+> index 01bf018..6891d2b 100644
+> --- a/drivers/scsi/initio.c
+> +++ b/drivers/scsi/initio.c
+> @@ -2609,6 +2609,7 @@ static void initio_build_scb(struct initio_host * host, struct scsi_ctrl_blk * c
+>  		cblk->bufptr = cpu_to_le32((u32)dma_addr);
+>  		cmnd->SCp.dma_handle = dma_addr;
+>  
+> +		cblk->sglen = nseg;
+>  
+>  		cblk->flags |= SCF_SG;	/* Turn on SG list flag       */
+>  		total_len = 0;
 
-If we have CPU A calling clocksource_accumulate while CPU B is calling
-get_monotonic_cycles, but events happens in the following order (because
-of preemption or interrupts). Here, to make things worse, we would be on
-x86 where cycle_t is not an atomic write (64 bits) :
+We already tried a variant of this here:
+
+http://marc.info/?l=linux-scsi&m=120002863806103&w=2
+
+The answer was negative.  Although I've saved the patch because it's
+clearly one of the bugs.
+
+James
 
 
-CPU A                  CPU B
-
-clocksource read
-update cycle_mono (1st 32 bits)
-                       read cycle_mono
-                       read cycle_last
-                       clocksource read
-                       read cycle_mono
-                       read cycle_last
-update cycle_mono (2nd 32 bits)
-update cycle_last
-update cycle_acc
-
-Therefore, we have :
-- an inconsistant cycle_monotonic value
-- inconsistant cycle_monotonic and cycle_last values.
-
-Or is there something I have missed ?
-
-If you really want an seqlock free algorithm (I _do_ want this for
-tracing!) :) maybe going in the RCU direction could help (I refer to my
-RCU-based 32-to-64 bits lockless timestamp counter extension, which
-could be turned into the clocksource updater).
-
-Mathieu
-
-> >
-> > I think it is wrong to assume that reads from clock->cycle_raw and from
-> > jiffies will be ordered correctly in SMP. I am tempted to think that
-> > ordering memory writes to clock->cycle_raw vs jiffies is also needed in this
-> > case (where clock->cycle_raw is updated, or where jiffies is updated).
-> >
-> > We can fall in the same kind of issue if we read the HPET, which is
-> > memory I/O based. It does not seems correct to assume that MMIO vs
-> > normal memory reads are ordered. (pointing back to this article :
-> > http://lwn.net/Articles/198988/)
-> 
-> That and the dread memory barrier thread that my head is still spinning
-> on.
-> 
-> Ok, lets take a close look at the code in question. I may be wrong, and if
-> so, great, we can fix it.
-> 
-> We have this in get_monotonic_cycles:
-> 
-> {
-> 	cycle_t cycle_now, cycle_delta, cycle_monotonic, cycle_last;
-> 	do {
-> 		cycle_monotonic = clock->cycle_monotonic;
-> 		cycle_last = clock->cycle_last;
-> 		cycle_now = clocksource_read(clock);
-> 		cycle_delta = (cycle_now - cycle_last) & clock->mask;
-> 	} while (cycle_monotonic != clock->cycle_monotonic ||
-> 		 cycle_last != clock->cycle_last);
-> 	return cycle_monotonic + cycle_delta;
-> }
-> 
-> and this in clocksource.h
-> 
-> static inline void clocksource_accumulate(struct clocksource *cs, cycle_t now)
-> {
-> 	cycle_t offset = (now - cs->cycle_last) & cs->mask;
-> 	cs->cycle_last = now;
-> 	cs->cycle_accumulated += offset;
-> 	cs->cycle_monotonic += offset;
-> }
-> 
-> now is usually just a clocksource_read() passed in.
-> 
-> The goal is to have clock_monotonic always return something that is
-> greater than what was read the last time.
-> 
-> Let's make a few assumptions now (for others to shoot them down). One
-> thing is that we don't need to worry too much about MMIO, because we are
-> doing a read. This means we need the data right now to contiune. So the
-> read being a function call should keep gcc from moving stuff around, and
-> since we are doing an IO read, the order of events should be pretty much
-> synchronized. in
-> 
->     1. load cycle_last and cycle_monotonic (we don't care which order)*
->     2. read clock source
->     3. calculate delta and while() compare (order doesn't matter)
-> 
-> * we might care (see below)
-> 
-> If the above is incorrect, then we need to fix get_monotonic_cycles.
-> 
-> in clocksource_accumulate, we have:
-> 
->   offset = ((now = cs->read()) - cycle_last) & cs->mask;
->   cycle_last = now;
->   cycle_accumulate += offset;
->   cycle_monotonic += offset;
-> 
-> The order of events here are. Using the same reasoning as above, the read
-> must be first and completed because for gcc it's a function, and for IO,
-> it needs to return data.
-> 
->   1. cs->read
->   2. update cycle_last, cycle_accumulate, cycle_monotonic.
-> 
-> Can we assume, if the above for get_monotonic_cycles is correct, that
-> since we read and compare cycle_last and cycle_monotonic, that neither of
-> them have changed over the read? So we have a snapshot of the
-> clocksource_accumulate.
-> 
-> So the worst thing that I can think of, is that cycle_monotonic is update
-> *before* cycle_last:
-> 
->    cycle_monotonic += offest;
->      <get_monotonic_cycles run on other CPU>
->    cycle_last = now;
-> 
-> 
-> cycle_last = 5
-> cycle_monotonic = 0
-> 
-> 
->     CPU 0                         CPU 1
->   ----------                  -------------
->  cs->read() = 10
->  offset = 10 - 5 = 5
->  cycle_monotonic = 5
->                             cycle_monotonic = 5
->                             cycle_last = 5
->                             cs->read() = 11
->                             delta = 11 - 5 = 6
->                             cycle_monotonic and cycle_last still same
->                             return 5 + 6 = 11
-> 
->   cycle_last = 10
-> 
->                             cycle_monotonic = 5
->                             cycle_last = 10
->                             cs->read() = 12
->                             delta = 12 - 10 = 2
->                             cycle_monotonic and cycle_last still same
->                             return 5 + 2 = 7
-> 
->                            **** ERROR *****
-> 
-> So, we *do* need memory barriers.  Looks like cycle_last and
-> cycle_monotonic need to be synchronized.
-> 
-> OK, will this do?
-> 
-> cycle_t notrace get_monotonic_cycles(void)
-> {
->         cycle_t cycle_now, cycle_delta, cycle_monotonic, cycle_last;
->         do {
->                 cycle_monotonic = clock->cycle_monotonic;
-> 		smp_rmb();
->                 cycle_last = clock->cycle_last;
->                 cycle_now = clocksource_read(clock);
->                 cycle_delta = (cycle_now - cycle_last) & clock->mask;
->         } while (cycle_monotonic != clock->cycle_monotonic ||
->                  cycle_last != clock->cycle_last);
->         return cycle_monotonic + cycle_delta;
-> }
-> 
-> and this in clocksource.h
-> 
-> static inline void clocksource_accumulate(struct clocksource *cs, cycle_t now)
-> {
->         cycle_t offset = (now - cs->cycle_last) & cs->mask;
->         cs->cycle_last = now;
-> 	smp_wmb();
->         cs->cycle_accumulated += offset;
->         cs->cycle_monotonic += offset;
-> }
-> 
-> We may still get to a situation where cycle_monotonic is of the old value
-> and cycle_last is of the new value. That would give us a smaller delta
-> than we want.
-> 
-> Lets look at this, with a slightly different situation.
-> 
-> cycle_last = 5
-> cycle_monotonic = 0
-> 
-> 
->     CPU 0                         CPU 1
->   ----------                  -------------
->  cs->read() = 10
->  offset = 10 - 5 = 5
->  cycle_last = 10
->  cycle_monotonic = 5
-> 
->                             cycle_monotonic = 5
->                             cycle_last = 10
->                             cs->read() = 12
->                             delta = 12 - 10 = 2
->                             cycle_monotonic and cycle_last still same
->                             return 5 + 2 = 7
-> 
-> 
->  cs->read() = 13
->  offset = 13 - 10 = 2
->  cycle_last = 13
-> 
->                             cycle_monotonic = 5
->                             cycle_last = 13
->                             cs->read() = 14
->                             delta = 14 - 13 = 1
->                             cycle_monotonic and cycle_last still same
->                             return 5 + 1 = 6
-> 
->                         **** ERROR ****
-> 
-> Crap, looks like we do need a stronger locking here :-(
-> 
-> Hmm, I might as well just use seq_locks, and make sure that tracing
-> does not hit them.
-> 
-> Thanks!
-> 
-> -- Steve
-> 
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
