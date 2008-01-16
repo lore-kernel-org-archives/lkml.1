@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757781AbYAPXWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757093AbYAPXWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757781AbYAPXWV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 18:22:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbYAPXPy
+	id S1757093AbYAPXWn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 18:22:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755497AbYAPXQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 18:15:54 -0500
+	Wed, 16 Jan 2008 18:16:01 -0500
 Received: from ug-out-1314.google.com ([66.249.92.174]:10411 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755769AbYAPXPw (ORCPT
+	with ESMTP id S1756019AbYAPXP7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 18:15:52 -0500
+	Wed, 16 Jan 2008 18:15:59 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=XsA8P9KWsSV5RDf0vUtinlFiQKRwpGiwwvSb3dxzXjBmPgfO7TYiq6Qu1Mc9nWc+P5cxUkyYX9mvv0qtaT7UMp6J/OKLFvcq0kfTl3YICZc0F28IfFiXyUh9q9qdayq9K9aaPUwucEZhT7DmlNWHqN13/sS3ZPJV0C1tHj+KYIc=
+        b=SsCEYkc3jO2l08c5WL5vMPePeehmI5U8EdNVi1PIkP2OunZnJ+uIXcsX7i5cJ14EEzVpEdV8v9UR3d/EL14vMQk7iSWc2PL9AafbBjHyPpZlyTNiPsSVFLvWUNjScUzSQ08OuG341CaE9nO5aDM6pEmps+5+EgYEkIE803XZaok=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Thu, 17 Jan 2008 00:28:32 +0100
-Message-Id: <20080116232832.9166.29628.sendpatchset@localhost.localdomain>
+Date: Thu, 17 Jan 2008 00:28:39 +0100
+Message-Id: <20080116232839.9166.48289.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080116232556.9166.13457.sendpatchset@localhost.localdomain>
 References: <20080116232556.9166.13457.sendpatchset@localhost.localdomain>
-Subject: [PATCH 21/22] ide: move hwif->present check out from ide_proc_register_port()
+Subject: [PATCH 22/22] ide: move create_proc_ide_drives() call to ide_device_add_all()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move hwif->present check out from ide_proc_register_port() to
-ide_device_add_all().
+* Un-static create_proc_ide_drives() and call it from ide_device_add_all().
 
-There should be no functionality changes caused by this patch.
+While at it:
+* Rename create_proc_ide_drives() to ide_proc_port_register_devices().
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-probe.c |    9 +++++++--
- drivers/ide/ide-proc.c  |    3 ---
- 2 files changed, 7 insertions(+), 5 deletions(-)
+ drivers/ide/ide-probe.c |    4 +++-
+ drivers/ide/ide-proc.c  |    4 +---
+ include/linux/ide.h     |    2 ++
+ 3 files changed, 6 insertions(+), 4 deletions(-)
 
 Index: b/drivers/ide/ide-probe.c
 ===================================================================
 --- a/drivers/ide/ide-probe.c
 +++ b/drivers/ide/ide-probe.c
-@@ -1448,8 +1448,13 @@ int ide_device_add_all(u8 idx[MAX_HWIFS]
- 	}
+@@ -1453,8 +1453,10 @@ int ide_device_add_all(u8 idx[MAX_HWIFS]
  
- 	for (i = 0; i < MAX_HWIFS; i++) {
--		if (idx[i] != 0xff)
--			ide_proc_register_port(&ide_hwifs[idx[i]]);
-+		if (idx[i] == 0xff)
-+			continue;
-+
-+		hwif = &ide_hwifs[idx[i]];
-+
-+		if (hwif->present)
-+			ide_proc_register_port(hwif);
+ 		hwif = &ide_hwifs[idx[i]];
+ 
+-		if (hwif->present)
++		if (hwif->present) {
+ 			ide_proc_register_port(hwif);
++			ide_proc_port_register_devices(hwif);
++		}
  	}
  
  	return rc;
@@ -62,13 +59,41 @@ Index: b/drivers/ide/ide-proc.c
 ===================================================================
 --- a/drivers/ide/ide-proc.c
 +++ b/drivers/ide/ide-proc.c
-@@ -793,9 +793,6 @@ static ide_proc_entry_t hwif_entries[] =
+@@ -739,7 +739,7 @@ void ide_proc_unregister_driver(ide_driv
  
- void ide_proc_register_port(ide_hwif_t *hwif)
+ EXPORT_SYMBOL(ide_proc_unregister_driver);
+ 
+-static void create_proc_ide_drives(ide_hwif_t *hwif)
++void ide_proc_port_register_devices(ide_hwif_t *hwif)
  {
--	if (!hwif->present)
--		return;
--
- 	if (!hwif->proc) {
- 		hwif->proc = proc_mkdir(hwif->name, proc_ide_root);
+ 	int	d;
+ 	struct proc_dir_entry *ent;
+@@ -801,8 +801,6 @@ void ide_proc_register_port(ide_hwif_t *
  
+ 		ide_add_proc_entries(hwif->proc, hwif_entries, hwif);
+ 	}
+-
+-	create_proc_ide_drives(hwif);
+ }
+ 
+ #ifdef CONFIG_BLK_DEV_IDEPCI
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -715,6 +715,7 @@ typedef struct {
+ void proc_ide_create(void);
+ void proc_ide_destroy(void);
+ void ide_proc_register_port(ide_hwif_t *);
++void ide_proc_port_register_devices(ide_hwif_t *);
+ void ide_proc_unregister_port(ide_hwif_t *);
+ void ide_proc_register_driver(ide_drive_t *, ide_driver_t *);
+ void ide_proc_unregister_driver(ide_drive_t *, ide_driver_t *);
+@@ -747,6 +748,7 @@ void ide_pci_create_host_proc(const char
+ static inline void proc_ide_create(void) { ; }
+ static inline void proc_ide_destroy(void) { ; }
+ static inline void ide_proc_register_port(ide_hwif_t *hwif) { ; }
++static inline void ide_proc_port_register_devices(ide_hwif_t *hwif) { ; }
+ static inline void ide_proc_unregister_port(ide_hwif_t *hwif) { ; }
+ static inline void ide_proc_register_driver(ide_drive_t *drive, ide_driver_t *driver) { ; }
+ static inline void ide_proc_unregister_driver(ide_drive_t *drive, ide_driver_t *driver) { ; }
