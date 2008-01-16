@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758001AbYAPWbH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755084AbYAPWbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758001AbYAPWbH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 17:31:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756226AbYAPWV0
+	id S1755084AbYAPWbc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 17:31:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757136AbYAPWYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 17:21:26 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:38788 "EHLO mx2.suse.de"
+	Wed, 16 Jan 2008 17:24:25 -0500
+Received: from ns2.suse.de ([195.135.220.15]:39123 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756220AbYAPWVZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 17:21:25 -0500
-Date: Wed, 16 Jan 2008 23:21:21 +0100
+	id S1756727AbYAPWYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 17:24:23 -0500
+Date: Wed, 16 Jan 2008 23:24:21 +0100
 From: Andi Kleen <ak@suse.de>
-To: apw@shadowen.org, rdunlap@xenotime.net, jschopp@austin.ibm.com,
-       akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Deprecate checkpatch.pl --file mode; add warning; add --file-force
-Message-ID: <20080116222121.GA7185@wotan.suse.de>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH] Only print kernel debug information for OOMs caused by kernel allocations
+Message-ID: <20080116222421.GA7953@wotan.suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,75 +22,120 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-I'm not entirely sure who collects checkpatch patches for .25 -- i thought it
-was Andy W., but he doesn't seem to answer. Anyways whoever does it please
-queue this patch for the next checkpatch.pl update. Or perhaps it could
-be put into -mm?
+I recently suffered an 20+ minutes oom thrash disk to death and computer
+completely unresponsive situation on my desktop when some user program
+decided to grab all memory. It eventually recovered, but left lots
+of ugly and imho misleading messages in the kernel log. here's a minor
+improvement
 
-Thanks,
 -Andi
-----
 
-Deprecate checkpatch.pl --file mode; add warning; add --file-force
+---
 
-As discussed on linux-kernel checkpatch.pl only patches for whole
-files have a significant cost. Better such changes should be only
-done together with other changes. Add a explicit warning about
-this; deprecate --file and add a --file-force instead.
+Only print kernel debug information for OOMs caused by kernel allocations
+
+For any page cache allocation don't print the backtrace and the detailed
+zone debugging information. This makes the problem look less like 
+a kernel bug because it typically isn't.
+
+I needed a new task flag for that. Since the bits are running low
+I reused an unused one (PF_STARTING) 
+
+Also clarify the error message (OOM means nothing to a normal user) 
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- scripts/checkpatch.pl |   20 +++++++++++++++++++-
- 1 file changed, 19 insertions(+), 1 deletion(-)
+ include/linux/pagemap.h |    7 -------
+ include/linux/sched.h   |    2 +-
+ mm/filemap.c            |   16 +++++++++++-----
+ mm/oom_kill.c           |    9 ++++++---
+ 4 files changed, 18 insertions(+), 16 deletions(-)
 
-Index: linux/scripts/checkpatch.pl
+Index: linux/include/linux/sched.h
 ===================================================================
---- linux.orig/scripts/checkpatch.pl
-+++ linux/scripts/checkpatch.pl
-@@ -21,6 +21,7 @@ my $tst_type = 0;
- my $emacs = 0;
- my $terse = 0;
- my $file = 0;
-+my $file_force = 0;
- my $check = 0;
- my $summary = 1;
- my $mailback = 0;
-@@ -34,6 +35,7 @@ GetOptions(
- 	'emacs!'	=> \$emacs,
- 	'terse!'	=> \$terse,
- 	'file!'		=> \$file,
-+	'file-force!'	=> \$file_force,
- 	'subjective!'	=> \$check,
- 	'strict!'	=> \$check,
- 	'root=s'	=> \$root,
-@@ -50,12 +52,28 @@ if ($#ARGV < 0) {
- 	print "         --no-tree    => run without a kernel tree\n";
- 	print "         --terse      => one line per report\n";
- 	print "         --emacs      => emacs compile window format\n";
--	print "         --file       => check a source file\n";
-+	print " 	--file	     => check a source file (deprecated)\n";
-+	print " 	--file-force => check a source file\n";
- 	print "         --strict     => enable more subjective tests\n";
- 	print "         --root       => path to the kernel tree root\n";
- 	exit(1);
+--- linux.orig/include/linux/sched.h
++++ linux/include/linux/sched.h
+@@ -1358,7 +1358,7 @@ static inline void put_task_struct(struc
+  */
+ #define PF_ALIGNWARN	0x00000001	/* Print alignment warning msgs */
+ 					/* Not implemented yet, only for 486*/
+-#define PF_STARTING	0x00000002	/* being created */
++#define PF_USER_ALLOC	0x00000002	/* Current allocation is user initiated */
+ #define PF_EXITING	0x00000004	/* getting shut down */
+ #define PF_EXITPIDONE	0x00000008	/* pi exit done on shut down */
+ #define PF_VCPU		0x00000010	/* I'm a virtual CPU */
+Index: linux/mm/oom_kill.c
+===================================================================
+--- linux.orig/mm/oom_kill.c
++++ linux/mm/oom_kill.c
+@@ -340,11 +340,14 @@ static int oom_kill_process(struct task_
+ 	struct task_struct *c;
+ 
+ 	if (printk_ratelimit()) {
+-		printk(KERN_WARNING "%s invoked oom-killer: "
++		printk(KERN_WARNING "%s ran out of available memory: "
+ 			"gfp_mask=0x%x, order=%d, oomkilladj=%d\n",
+ 			current->comm, gfp_mask, order, current->oomkilladj);
+-		dump_stack();
+-		show_mem();
++		/* Only dump backtrace for kernel initiated allocations */
++		if (!(p->flags & PF_USER_ALLOC)) {
++			dump_stack();
++			show_mem();
++		}
+ 	}
+ 
+ 	/*
+Index: linux/include/linux/pagemap.h
+===================================================================
+--- linux.orig/include/linux/pagemap.h
++++ linux/include/linux/pagemap.h
+@@ -62,14 +62,7 @@ static inline void mapping_set_gfp_mask(
+ #define page_cache_release(page)	put_page(page)
+ void release_pages(struct page **pages, int nr, int cold);
+ 
+-#ifdef CONFIG_NUMA
+ extern struct page *__page_cache_alloc(gfp_t gfp);
+-#else
+-static inline struct page *__page_cache_alloc(gfp_t gfp)
+-{
+-	return alloc_pages(gfp, 0);
+-}
+-#endif
+ 
+ static inline struct page *page_cache_alloc(struct address_space *x)
+ {
+Index: linux/mm/filemap.c
+===================================================================
+--- linux.orig/mm/filemap.c
++++ linux/mm/filemap.c
+@@ -482,17 +482,23 @@ int add_to_page_cache_lru(struct page *p
+ 	return ret;
  }
  
-+if ($file) {
-+	print <<EOL
-+WARNING: Using --file mode. Please do not send patches to linux-kernel
-+that change whole existing files if you did not significantly change most
-+of the the file for other reasons anyways or just wrote the file newly
-+from scratch. Pure code style patches have a significant cost in a
-+quickly changing code base like Linux because they cause rejects
-+with other changes.
-+If you're sure you want to use whole file mode please use --file-force
-+EOL
-+;
-+	exit(1);
-+};
-+$file = $file_force;
+-#ifdef CONFIG_NUMA
+ struct page *__page_cache_alloc(gfp_t gfp)
+ {
++	struct task_struct *me = current;
++	unsigned old = (~me->flags) & PF_USER_ALLOC;
++	struct page *p;
 +
- if ($terse) {
- 	$emacs = 1;
- 	$quiet++;
++	me->flags |= PF_USER_ALLOC;
+ 	if (cpuset_do_page_mem_spread()) {
+ 		int n = cpuset_mem_spread_node();
+-		return alloc_pages_node(n, gfp, 0);
+-	}
+-	return alloc_pages(gfp, 0);
++		p = alloc_pages_node(n, gfp, 0);
++	} else
++		p = alloc_pages(gfp, 0);
++	/* Clear USER_ALLOC if it wasn't set originally */
++	me->flags ^= old;
++	return p;
+ }
+ EXPORT_SYMBOL(__page_cache_alloc);
+-#endif
+ 
+ static int __sleep_on_page_lock(void *word)
+ {
