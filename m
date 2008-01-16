@@ -1,51 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757935AbYAPCF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757343AbYAPCPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757935AbYAPCF5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 21:05:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754407AbYAPCFs
+	id S1757343AbYAPCPI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 21:15:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYAPCO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 21:05:48 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60139 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752074AbYAPCFr (ORCPT
+	Tue, 15 Jan 2008 21:14:57 -0500
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:40270 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751248AbYAPCO4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 21:05:47 -0500
-Date: Wed, 16 Jan 2008 11:05:09 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Paulo Marques <pmarques@grupopie.com>
-Subject: Re: [RFC] mmaped copy too slow?
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <478CAB25.30300@grupopie.com>
-References: <20080115100450.1180.KOSAKI.MOTOHIRO@jp.fujitsu.com> <478CAB25.30300@grupopie.com>
-Message-Id: <20080116110200.11B4.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 15 Jan 2008 21:14:56 -0500
+Date: Tue, 15 Jan 2008 21:14:09 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Frank Rowand <frank.rowand@am.sony.com>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de
+Subject: Re: [PATCH 3/4] RT: remove finish_arch_switch
+Message-ID: <20080116021409.GG30532@goodmis.org>
+References: <1200435646.4092.18.camel@bx740>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1200435646.4092.18.camel@bx740>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paulo
-
-> One thing you could also try is to pass MAP_POPULATE to mmap so that the 
-> page tables are filled in at the time of the mmap, avoiding a lot of 
-> page faults later.
+On Tue, Jan 15, 2008 at 02:20:46PM -0800, Frank Rowand wrote:
+> From: Frank Rowand <frank.rowand@am.sony.com>
 > 
-> Just my 2 cents,
+> 
+> Index: linux-2.6.24-rc7/include/asm-mips/mach-tx49xx/cpu-feature-overrides.h
+> ===================================================================
+> --- linux-2.6.24-rc7.orig/include/asm-mips/mach-tx49xx/cpu-feature-overrides.h
+> +++ linux-2.6.24-rc7/include/asm-mips/mach-tx49xx/cpu-feature-overrides.h
+> @@ -1,6 +1,13 @@
+>  #ifndef __ASM_MACH_TX49XX_CPU_FEATURE_OVERRIDES_H
+>  #define __ASM_MACH_TX49XX_CPU_FEATURE_OVERRIDES_H
+>  
+> +/* finish_arch_switch_empty is defined if we know finish_arch_switch() will
+> + * be empty, based on the lack of features defined in this file.  This is
+> + * needed because config preempt will barf in kernel/sched.c ifdef
+> + * finish_arch_switch
+> + */
+> +#define finish_arch_switch_empty
+> +
+>  #define cpu_has_llsc	1
+>  #define cpu_has_64bits	1
+>  #define cpu_has_inclusive_pcaches	0
+> Index: linux-2.6.24-rc7/include/asm-mips/system.h
+> ===================================================================
+> --- linux-2.6.24-rc7.orig/include/asm-mips/system.h
+> +++ linux-2.6.24-rc7/include/asm-mips/system.h
+> @@ -70,6 +70,8 @@ do {									\
+>  	(last) = resume(prev, next, task_thread_info(next));		\
+>  } while (0)
+>  
+> +/* preempt kernel barfs in kernel/sched.c ifdef finish_arch_switch */
+> +#ifndef finish_arch_switch_empty
 
-OK, I will test your idea and report about tomorrow.
-but I don't think page fault is major performance impact.
+I'll take this patch for now, but currently it looks like a hack. I know
+you said that, but I'm hoping someone will come up with a better
+solution.
 
-may be, below 2 things too big
-  - stupid page reclaim
-  - large cache pollution by memcpy.
+Thanks,
 
-Just my 2 cents :-p
+-- Steve
 
-
-- kosaki
-
-
+>  #define finish_arch_switch(prev)					\
+>  do {									\
+>  	if (cpu_has_dsp)						\
+> @@ -77,6 +79,7 @@ do {									\
+>  	if (cpu_has_userlocal)						\
+>  		write_c0_userlocal(current_thread_info()->tp_value);	\
+>  } while (0)
+> +#endif
+>  
+>  static inline unsigned long __xchg_u32(volatile int * m, unsigned int val)
+>  {
+> 
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
