@@ -1,96 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754255AbYAPNqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618AbYAPNsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754255AbYAPNqj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 08:46:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbYAPNqc
+	id S1754618AbYAPNsW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 08:48:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbYAPNsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 08:46:32 -0500
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:22625
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751363AbYAPNqb convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 08:46:31 -0500
-Message-Id: <478E18E1.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Wed, 16 Jan 2008 13:46:57 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-Cc: "Roman Zippel" <zippel@linux-m68k.org>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>, <david-b@pacbell.net>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: non-choice related config entries within choice
-References: <478DF61E.76E4.0078.0@novell.com>
- <20080116115233.GA26776@uranus.ravnborg.org>
-In-Reply-To: <20080116115233.GA26776@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Wed, 16 Jan 2008 08:48:13 -0500
+Received: from www.tglx.de ([62.245.132.106]:58426 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751710AbYAPNsM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 08:48:12 -0500
+Date: Wed, 16 Jan 2008 14:47:54 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Denys Fedoryshchenko <denys@visp.net.lb>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: TSC && HPET calibration
+In-Reply-To: <20080115021720.ad71605f.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.0.99999.0801161446240.3764@localhost.localdomain>
+References: <20080110123612.M81049@visp.net.lb> <20080115021720.ad71605f.akpm@linux-foundation.org>
+User-Agent: Alpine 0.99999 (LFD 796 2007-11-08)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->But one feature I really would like to see is named chocies so we can do stuff like:
->
->choice X86_PROCESSOR
->
->config GENERIC_PROCESSOR
->	bool "A generic X86 processor"
->endchoice
->
->
->...
->
->choice PPC_PROCESSOR
->
->config GENERIC_PROCESSOR
->	bool "A generic PowerPC processor
->
->endchoice
->
->The issue here is that we do not today allow the same config option
->to appear if more than one choice.
+On Tue, 15 Jan 2008, Andrew Morton wrote:
+> On Thu, 10 Jan 2008 14:36:12 +0200 "Denys Fedoryshchenko" <denys@visp.net.lb> wrote:
+> 
+> > Hi
+> > 
+> > I have same issue, but it's never passed synchronization.
+> > 
+> > Jan 10 12:59:44 visp-1 Time: tsc clocksource has been installed.
+> > Jan 10 13:41:51 visp-1 ACPI: HPET 000F29CD, 0038 (r1 DELL   PE_SC3          1 
+> > DELL        1)
+> > Jan 10 13:41:51 visp-1 ACPI: HPET id: 0x8086a201 base: 0xfed00000
+> > Jan 10 13:41:51 visp-1 hpet clockevent registered
+> > Jan 10 13:41:51 visp-1 checking TSC synchronization [CPU#0 -> CPU#1]: passed.
+> > Jan 10 13:41:51 visp-1 checking TSC synchronization [CPU#0 -> CPU#2]:
+> > Jan 10 13:41:51 visp-1 Measured 1020 cycles TSC warp between CPUs, turning 
+> > off TSC clock.
+> > Jan 10 13:41:51 visp-1 Marking TSC unstable due to: check_tsc_sync_source 
+> > failed.
+> > Jan 10 13:41:51 visp-1 hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
+> > Jan 10 13:41:51 visp-1 hpet0: 3 64-bit timers, 14318180 Hz
+> > Jan 10 13:41:51 visp-1 Time: hpet clocksource has been installed.
+> > 
+> > grep Measures
+> > Sep 19 14:31:28 visp-1 Measured 1044 cycles TSC warp between CPUs, turning 
+> > off TSC clock.
+> > Sep 19 18:22:46 visp-1 Measured 996 cycles TSC warp between CPUs, turning off 
+> > TSC clock.
+> > Sep 19 18:35:44 visp-1 Measured 1080 cycles TSC warp between CPUs, turning 
+> > off TSC clock.
+> 
+> Which kernel version?
 
-I want named choices, too, but for a different purpose (and not
-unconditionally): Currently, a choice really can just be a selection
-between individual boolean settings or (as the current intended
-extension) a mixture of boolean and tristate values. String or
-numerical values aren't permitted (and iirc they even cause the config
-process to crash). Nevertheless there are a couple of example where
-choosing between individual string or numeric values is intended (but
-needs to be made work with the current infrastructure, meaning that
-one first chooses between boolean values and then selects (or sets
-through default values in prompt-less config options) the intended
-string or numeric value.
+That's not a kernel version problem.
 
-What you want seems much more fundamental a change, and as I
-understand it you really want the name just as a name space
-separation mechanism.
+The TSCs on the CPUs are not synchronized, which means we can observe
+time going backwards when we read TSC on one and then on another CPU.
+TSC is switched off due to this.
 
->This is a mandatory feature before we can do a Kconfig covering all architectures.
->I guess there are other issues when we do:
->
->if X86
->source foo/bar/Kconfig
->endif
->
->if PPC
->source foo/bar/Kconfig
->endif
->
->Where we in foo/bar/Kconfig has a choice list.
+This is also unrelated to HPET. If there would be no HPET available we
+would use some other clocksource instead. On this box we use HPET
+because it's the best clocksource we have in the system.
 
-That you be done with
-
-if X86 || PPC
-source foo/bar/Kconfig
-endif
-
-then, I would think (which should be the default anyway if you want a
-Kconfig covering all architectures).
-
->I just wanted to raise this now that you anyway are looking into choice
->related issues.
-
-Jan
-
+Thanks,
+        tglx
