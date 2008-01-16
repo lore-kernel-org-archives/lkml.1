@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755621AbYAPOpF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbYAPOyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755621AbYAPOpF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 09:45:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbYAPOoy
+	id S1754599AbYAPOyu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 09:54:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbYAPOym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 09:44:54 -0500
-Received: from enterprise.ram.RWTH-Aachen.DE ([137.226.68.2]:56033 "EHLO
-	enterprise.ram.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751422AbYAPOox (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 09:44:53 -0500
-X-Greylist: delayed 1182 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Jan 2008 09:44:53 EST
-Date: Wed, 16 Jan 2008 15:27:41 +0100
-From: markus reichelt <ml@mareichelt.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.23.14
-Message-ID: <20080116142741.GB3987@tatooine.rebelbase.local>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-References: <20080114211012.GC3051@kroah.com>
+	Wed, 16 Jan 2008 09:54:42 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40741 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750931AbYAPOyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 09:54:41 -0500
+Date: Wed, 16 Jan 2008 15:54:27 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <ak@suse.de>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jan Beulich <jbeulich@novell.com>
+Subject: Re: [PATCH 0 of 4] x86: some more patches
+Message-ID: <20080116145427.GA640@elte.hu>
+References: <patchbomb.1200435425@localhost> <478D4197.8060904@goop.org> <20080116142242.GA23993@elte.hu> <200801161544.15884.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="uQr8t48UFsdbeI+V"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080114211012.GC3051@kroah.com>
-Organization: still stuck in reorganization mode
-X-PGP-Key: 0xC2A3FEE4
-X-PGP-Fingerprint: FFB8 E22F D2BC 0488 3D56  F672 2CCC 933B C2A3 FEE4
-X-Request-PGP: http://mareichelt.de/keys/c2a3fee4.asc
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200801161544.15884.ak@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---uQr8t48UFsdbeI+V
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+* Andi Kleen <ak@suse.de> wrote:
 
-* Greg Kroah-Hartman <gregkh@suse.de> wrote:
+> >  #define PHYSICAL_PAGE_MASK	(PAGE_MASK & __PHYSICAL_MASK)
+> 
+> 
+> I haven't tested yet, but we looked at that one earlier and I thought 
+> it was ok because
+> 
+> #define __PHYSICAL_MASK          _AT(phys_addr_t, (_AC(1,ULL) << __PHYSICAL_MASK_SHIFT) - 1)
+> 
+> and 
+> 
+> typedef u64     phys_addr_t;
+> 
+> for PAE. So the expression above should have been already 64bit.
 
-> It contains a single fix for a problem that could cause a local
-> user to cause file system corruption on some types of filesystems.
+no. The problem is that PAGE_MASK is:
 
-Some types of filesystems? Which ones?=20
+  #define PAGE_MASK        (~(PAGE_SIZE-1))
 
---=20
-left blank, right bald
+  #define PAGE_SIZE        (_AC(1,UL) << PAGE_SHIFT)
 
---uQr8t48UFsdbeI+V
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+that's u32 on PAE, and __PHYSICAL_MASK is u64. So PAGE_MASK gets 
+zero-extended to u64. So the combined mask:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+  #define PHYSICAL_PAGE_MASK      (PAGE_MASK & __PHYSICAL_MASK)
 
-iD8DBQFHjhRdLMyTO8Kj/uQRAmH6AJ99eq2MQt9MAM+k0mtij5haolrGDQCgh9M3
-h81mtdG4BkuhMPc0yqD287g=
-=WFAP
------END PGP SIGNATURE-----
+has the high bits chopped off. Please try my patch.
 
---uQr8t48UFsdbeI+V--
+(PHYSICAL_PAGE_MASK is broken too in the same way, i just fixed that in 
+my tree - but it's not used by anything on 32-bit PAE but by PAGE_MASK)
+
+> So I would be surprised if the patch works.
+
+try it ...
+
+	Ingo
