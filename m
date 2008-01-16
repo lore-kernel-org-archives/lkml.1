@@ -1,46 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753938AbYAPQrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754878AbYAPQsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753938AbYAPQrR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 11:47:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbYAPQrA
+	id S1754878AbYAPQsS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 11:48:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbYAPQsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 11:47:00 -0500
-Received: from host-66-43-248-10 ([67.55.143.10]:39542 "EHLO
-	thinix-laptop.local.rdi1.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752184AbYAPQq7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 11:46:59 -0500
-X-Greylist: delayed 1180 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Jan 2008 11:46:59 EST
-Subject: unionfs, cow, and whiteout
-From: Paul Albrecht <albrecht@rdi1.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 16 Jan 2008 10:27:13 -0600
-Message-Id: <1200500833.11000.0.camel@thinix-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Wed, 16 Jan 2008 11:48:09 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:49136 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751243AbYAPQsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 11:48:08 -0500
+Date: Wed, 16 Jan 2008 08:48:07 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Johannes Weiner <hannes@saeurebad.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       penberg@cs.helsinki.fi
+Subject: Re: Why is the kfree() argument const?
+In-Reply-To: <87lk6pvii0.fsf@saeurebad.de>
+Message-ID: <Pine.LNX.4.64.0801160831490.8188@schroedinger.engr.sgi.com>
+References: <87lk6pvii0.fsf@saeurebad.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 16 Jan 2008, Johannes Weiner wrote:
 
-I have a question about how unionfs handles file deletion when a write
-enabled file system is union mounted over a read only file system. For
-example, I do something like the following:
+> is there any reason why kfree() takes a const pointer just to degrade it
+> with the call to slab_free()/__cache_free() again?  The promise that the
+> pointee is not modified is just bogus in this case, anyway, isn't it?
 
-mount -t unionfs -o dirs=/cow=rw:/rofs=ro unionfs /mnt
+The object is modified in various cases f.e. because of poisoning or the 
+need to store the free pointer. So its bogus, yes. Pekka?
 
-If I create and delete a file in /mnt which is not present in /rofs it
-persists as whiteout in the cow file system which is not what I would
-have expected.
 
-Why does the deleted file persist as whiteout in the /cow file system of
-the union mount?
-
-Please cc me in your response as I'm not subscribed to the lkml.
-
--- 
-
-Paul Albrecht
