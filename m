@@ -1,78 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753940AbYAPLzJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753455AbYAPL6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753940AbYAPLzJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 06:55:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbYAPLy6
+	id S1753455AbYAPL6T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 06:58:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbYAPL6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 06:54:58 -0500
-Received: from mail.phnxsoft.com ([195.227.45.4]:2285 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752014AbYAPLy5 (ORCPT
+	Wed, 16 Jan 2008 06:58:11 -0500
+Received: from def92-3-81-56-114-101.fbx.proxad.net ([81.56.114.101]:41445
+	"EHLO barad-dur.regala.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751626AbYAPL6L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 06:54:57 -0500
-Message-ID: <478DF073.2020300@imap.cc>
-Date: Wed, 16 Jan 2008 12:54:27 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7 Mnenhy/0.7.5.666
+	Wed, 16 Jan 2008 06:58:11 -0500
+To: "rae l" <crquan@gmail.com>
+Cc: "Rusty Russell" <rusty@rustcorp.com.au>, open-iscsi@googlegroups.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC on MODULE SUPPORT] hello, Rusty, Should we provide module information even if the kernel module compiled built-in with bzImage?
+References: <91b13c310801160202y833df7bs37cbb5827e875569@mail.gmail.com>
+From: Mathieu SEGAUD <mathieu.segaud@regala.cx>
+Date: Wed, 16 Jan 2008 12:58:09 +0100
+In-Reply-To: <91b13c310801160202y833df7bs37cbb5827e875569@mail.gmail.com> (rae l.'s message of "Wed\, 16 Jan 2008 18\:02\:22 +0800")
+Message-ID: <87fxwyhtim.fsf@barad-dur.regala.cx>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-Subject: Re: where to maintain userspace daemon for line discipline
-References: <45AE507E.3040601@imap.cc> <20070122115644.b538908f.akpm@osdl.org> <45CA4D32.6010302@zytor.com>
-In-Reply-To: <45CA4D32.6010302@zytor.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig4CB1F8F3FE959B5D05F07739"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig4CB1F8F3FE959B5D05F07739
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
+Vous m'avez dit récemment :
 
-H. Peter Anvin schrieb:
-> Andrew Morton wrote:
->>>
->>> Is there an appropriate place in or near the kernel tree for
->>> stuff like that?
->>=20
->> Nope.  The requirement arises regularly.
->>=20
->> util-linux would seem to be a suitable place, but apparently there
->> are, umm, isues surrounding that.
->=20
-> util-linux-ng is already going, so it's a good place.
+> hello, Rusty:
+> I encountered a problem when modules compiled built-in with bzImage:
+>
+> open-iscsi is an iSCSI software, it has a userspace daemon(iscsid) and
+> a userspace mani tool(iscsiadm) and a kernel module
+> (scsi_transport_iscsi),
+> recently the kernel module has been accepted into the official kernel
+> release; since the module licensed with GPL, it could be compiled as
+> built-in,
+>
+> but when I compiled the module within the bzImage, the problem appeared:
+>
+> tux ~ # iscsid -f
+> iscsid: Missing or Invalid version from
+> /sys/module/scsi_transport_iscsi/version. Make sure a up to date
+> scsi_transport_iscsi module is loaded and a up todate version of
+> iscsid is running. Exiting...
+>
+> this is just because iscsid hope there's an external module could be
+> under /sys/module, and read the kernel module's version information,
+> but if the module compiled built-in, all its module information
+> discarded and it doesn't appeared under /sys/module/, that would break
+> iscsid.
+>
+> Now the problem is:
+>
+> Should we provide module information under
+> /sys/module/<module-name>/... even if the module compiled built-in
+> with bzImage?
+> Or just this module(scsi_transport_iscsi) should be marked with [M] only?
+>
+> if the former solution is preferred, I would be happy to work on
+> MODULE_INFO-like macros improvements with CONFIG_MODULE undefined.
 
-I have asked on the util-linux-ng mailing list but received
-a flat refusal by Karel:
+your userspace program is somewhat broken
+the userspace should not expect to find the version number in
+/sys/module, as this is used by the Linux kernel module subsystem. You
+should provide the required information in another way such as a
+/proc/ file (bad) or a /sys file (better, but no module stuff, this
+has no business with it).
 
->  I don't think that util-linux-ng is there for this purpose. It's not
->  place for HW specific tools. Sorry.
-
-Back to square one.
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig4CB1F8F3FE959B5D05F07739
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFHjfB8Q3+did9BuFsRAp8zAJ9jBvEn9ftphfOlJQs7UH4s7aLdvACggsFa
-8csK4Op98ETihI8j0xL2lRI=
-=zIJl
------END PGP SIGNATURE-----
-
---------------enig4CB1F8F3FE959B5D05F07739--
+-- 
+Mathieu
