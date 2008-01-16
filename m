@@ -1,113 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758204AbYAPCTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757331AbYAPC0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758204AbYAPCTg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 21:19:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756353AbYAPCT1
+	id S1757331AbYAPC0A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 21:26:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbYAPCZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 21:19:27 -0500
-Received: from mail-dub.bigfish.com ([213.199.154.10]:57435 "EHLO
-	mail79-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756386AbYAPCT0 convert rfc822-to-8bit (ORCPT
+	Tue, 15 Jan 2008 21:25:52 -0500
+Received: from py-out-1112.google.com ([64.233.166.181]:11040 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752023AbYAPCZv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 21:19:26 -0500
-X-BigFish: V
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 15 Jan 2008 21:25:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eqqfyQlBWLnh5QlYdQIayKzWxfSMlHDSzpHaGn6XiQKo1/IhF7+I8I684KNgFFIk2DFaOHmtoLKzqcoCwffS2NXlJkrbUOp5gAkIDwhrl77SLx3virzT0mRNghTLKtqUmSLKGNIiq9kARmYPd2M5Ct09NKxcq5T1BKbGFxT+byI=
+Message-ID: <386072610801151825ie5df817ldfb5e333ccd70db5@mail.gmail.com>
+Date: Wed, 16 Jan 2008 10:25:50 +0800
+From: "Bryan Wu" <cooloney.lkml@gmail.com>
+To: "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>
+Subject: Re: Fix Blackfin HARDWARE_PM support
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Adrian Bunk" <adrian.bunk@movial.fi>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>, bryan.wu@analog.com,
+       "Robin Getz" <rgetz@blackfin.uclinux.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080115174202.GD8375@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH 3/4] RT: remove finish_arch_switch
-Date: Tue, 15 Jan 2008 18:17:44 -0800
-Message-ID: <884020C16A0AFF4D8A8B7800EA0C98870FD5F7@ussdixms03.am.sony.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 3/4] RT: remove finish_arch_switch
-Thread-Index: AchX5X2zqfboJfUqT6a1tyisQpPSlwAAHy3E
-References: <1200435646.4092.18.camel@bx740> <20080116021409.GG30532@goodmis.org>
-From: "Rowand, Frank" <frank.rowand@us.sony.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Cc: <linux-kernel@vger.kernel.org>, <mingo@redhat.com>, <tglx@linutronix.de>
-X-OriginalArrivalTime: 16 Jan 2008 02:19:19.0631 (UTC) FILETIME=[336375F0:01C857E6]
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080115174202.GD8375@Krystal>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steve,
+On Jan 16, 2008 1:42 AM, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> This patch restores the blackfin Hardware Performance Monitor Profiling
+> support that was killed by
+> commit 09cadedbdc01f1a4bea1f427d4fb4642eaa19da9.
+>
+> Since there seems to be no good reason to behave differently from other
+> architectures, it now automatically selects the hardware performance counters
+> whenever the profiling is activated.
+>
+> mach-common/irqpanic.c: pm_overflow
+> calls pm_overflow_handler which is in oprofile/op_model_bf533.c. I doubt that
+> setting HARDWARE_PM as "m" will work at all, since the pm_overflow_handler
+> should be in the core kernel image because it is called by irqpanic.c.
+>
+> Therefore, I change HARDWARE_PM from a tristate to a bool.
+>
+> The whole arch/$(ARCH)/oprofile/ is built depending on CONFIG_OPROFILE. Since
+> part of the HARDWARE_PM support files sits in this directory, it makes sense to
+> also depend on OPROFILE, not only PROFILING. Since OPROFILE already depends on
+> PROFILING, it is correct to only depend on OPROFILE only.
+>
+> Thanks to Adrian Bunk for finding this bug and providing an initial
+> patch.
+>
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> CC: Linus Torvalds <torvalds@linux-foundation.org>
+> CC: Adrian Bunk <adrian.bunk@movial.fi>
+> CC: Randy Dunlap <randy.dunlap@oracle.com>
+> CC: bryan.wu@analog.com
+> CC: Robin Getz <rgetz@blackfin.uclinux.org>
+> ---
 
-Thanks, I'll bring this up over on the linux-mips list to see how they
-really want to handle it.
+Thanks, finally we got this.
 
--Frank
+Acked-by: Bryan Wu <bryan.wu@analog.com>
 
-
------Original Message-----
-From: Steven Rostedt [mailto:rostedt@goodmis.org]
-Sent: Tue 1/15/2008 6:14 PM
-To: Rowand, Frank
-Cc: linux-kernel@vger.kernel.org; mingo@redhat.com; tglx@linutronix.de
-Subject: Re: [PATCH 3/4] RT: remove finish_arch_switch
- 
-On Tue, Jan 15, 2008 at 02:20:46PM -0800, Frank Rowand wrote:
-> From: Frank Rowand <frank.rowand@am.sony.com>
-> 
-> 
-> Index: linux-2.6.24-rc7/include/asm-mips/mach-tx49xx/cpu-feature-overrides.h
+>  arch/blackfin/Kconfig |    4 ++++
+>  1 file changed, 4 insertions(+)
+>
+> Index: linux-2.6-lttng/arch/blackfin/Kconfig
 > ===================================================================
-> --- linux-2.6.24-rc7.orig/include/asm-mips/mach-tx49xx/cpu-feature-overrides.h
-> +++ linux-2.6.24-rc7/include/asm-mips/mach-tx49xx/cpu-feature-overrides.h
-> @@ -1,6 +1,13 @@
->  #ifndef __ASM_MACH_TX49XX_CPU_FEATURE_OVERRIDES_H
->  #define __ASM_MACH_TX49XX_CPU_FEATURE_OVERRIDES_H
->  
-> +/* finish_arch_switch_empty is defined if we know finish_arch_switch() will
-> + * be empty, based on the lack of features defined in this file.  This is
-> + * needed because config preempt will barf in kernel/sched.c ifdef
-> + * finish_arch_switch
-> + */
-> +#define finish_arch_switch_empty
+> --- linux-2.6-lttng.orig/arch/blackfin/Kconfig  2007-12-29 11:00:05.000000000 -0500
+> +++ linux-2.6-lttng/arch/blackfin/Kconfig       2007-12-29 11:25:39.000000000 -0500
+> @@ -65,6 +65,10 @@ config GENERIC_CALIBRATE_DELAY
+>         bool
+>         default y
+>
+> +config HARDWARE_PM
+> +       def_bool y
+> +       depends on OPROFILE
 > +
->  #define cpu_has_llsc	1
->  #define cpu_has_64bits	1
->  #define cpu_has_inclusive_pcaches	0
-> Index: linux-2.6.24-rc7/include/asm-mips/system.h
-> ===================================================================
-> --- linux-2.6.24-rc7.orig/include/asm-mips/system.h
-> +++ linux-2.6.24-rc7/include/asm-mips/system.h
-> @@ -70,6 +70,8 @@ do {									\
->  	(last) = resume(prev, next, task_thread_info(next));		\
->  } while (0)
->  
-> +/* preempt kernel barfs in kernel/sched.c ifdef finish_arch_switch */
-> +#ifndef finish_arch_switch_empty
-
-I'll take this patch for now, but currently it looks like a hack. I know
-you said that, but I'm hoping someone will come up with a better
-solution.
-
-Thanks,
-
--- Steve
-
->  #define finish_arch_switch(prev)					\
->  do {									\
->  	if (cpu_has_dsp)						\
-> @@ -77,6 +79,7 @@ do {									\
->  	if (cpu_has_userlocal)						\
->  		write_c0_userlocal(current_thread_info()->tp_value);	\
->  } while (0)
-> +#endif
->  
->  static inline unsigned long __xchg_u32(volatile int * m, unsigned int val)
->  {
-> 
-> 
-> 
+>  source "init/Kconfig"
+>  source "kernel/Kconfig.preempt"
+>
+>
+>
+> --
+> Mathieu Desnoyers
+> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > Please read the FAQ at  http://www.tux.org/lkml/
-
-
-
+>
