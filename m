@@ -1,155 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758089AbYAPCst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756386AbYAPCtD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758089AbYAPCst (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 21:48:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758209AbYAPCsh
+	id S1756386AbYAPCtD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 21:49:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758312AbYAPCsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 21:48:37 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:48538 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757581AbYAPCsc (ORCPT
+	Tue, 15 Jan 2008 21:48:39 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:57604 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758136AbYAPCse (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 21:48:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Ow+AX+0F82LuGo7n7sTLaeOwNNO5pS0ejgdCuMZmd+WmB3X76K/e0OT3UvRs88xBZX8xdPmyKIDUIqo9IOptu7IlaL9JcxraOxZM7ctnwA8Rl+clX3c8euFg7QYCbsll4SwY8vnnA1rIIiXE0/dpuU3xSL7Z+MfrW70K6ETShjM=
-Subject: [PATCH] x86: add is_f00f_bug helper to fault_32|64.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain
-Date: Tue, 15 Jan 2008 18:48:35 -0800
-Message-Id: <1200451715.16794.71.camel@brick>
+	Tue, 15 Jan 2008 21:48:34 -0500
+Date: Tue, 15 Jan 2008 18:48:08 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: linux-kernel@vger.kernel.org, daniel.ritz-ml@swissonline.ch,
+       jeff@garzik.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCHSET] printk: implement printk_header() and merging printk
+Message-Id: <20080115184808.e64aed5e.randy.dunlap@oracle.com>
+In-Reply-To: <1200445210549-git-send-email-htejun@gmail.com>
+References: <1200445210549-git-send-email-htejun@gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Further towards unifying these files, add another helper
-in same spirit as is_errata93.  Add an #ifdef around the
-forward declaration of do_invalid_op to make it clear it
-is only needed in the one place.
+On Wed, 16 Jan 2008 10:00:06 +0900 Tejun Heo wrote:
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> Hello, all.
+> 
+> This patchset implements printk_header() and mprintk - merging printk
+> - to make printing multiline messages and assembling message
+> piece-by-piece easier.
+> 
+> In a nutshell, printk_header() lets you do the following atomically
+> (against other messages).
+> 
+>  code:
++   printk_header(KERN_INFO "ata1.00: ", "line0\nline1\nline2\n");
+> 
+>  output:
+>   <6>ata1.00: line0
+>   <6>         line1
+>   <6>         line2
+> 
+> And mprintk the following.
+> 
+>  code:
+>   DEFINE_MPRINTK(mp, 2 * 80);
+> 
+>   mprintk_set_header(&mp, KERN_INFO "ata%u.%2u: ", 1, 0);
+>   mprintk_push(&mp, "ATA %d", 7);
+>   mprintk_push(&mp, ", %u sectors\n", 1024);
+>   mprintk(&mp, "everything seems dandy\n");
+
+Looks pretty good to me except that I would change mprintk_push to
+mprintk_add or mprintk_append (I think that I prefer _add).
+
+>  output:
+>   <6>ata1.00: ATA 7, 1024 sectors
+>   <6>         everything seems dandy
+> 
+> Please read the commit messages and comments for more detail.  If this
+> patchset is accepted, I'll write up Documentation/printk.txt which
+> contains describtion of the API and guidelines - "don't pack unrelated
+> messages into one" kind of stuff.
+> 
+> This patchset is against the current linux-2.6#master (031f2dcd) and
+> contains the following patches.
+> 
+> 0001-printk-keep-log-level-on-multiline-messages.patch
+> 0002-printk-implement-v-printk_header.patch
+> 0003-printk-implement-merging-printk.patch
+> 0004-libata-make-libata-use-printk_header-and-mprintk.patch
+> 
+>  drivers/ata/libata-core.c   |  202 +++++++++++++++----------
+>  drivers/ata/libata-eh.c     |  150 ++++++++----------
+>  drivers/ata/libata-pmp.c    |    5 
+>  drivers/ata/libata-scsi.c   |    6 
+>  drivers/ata/sata_inic162x.c |    2 
+>  drivers/ata/sata_nv.c       |    4 
+>  include/linux/kernel.h      |   83 ++++++++++
+>  include/linux/libata.h      |   35 ++--
+>  kernel/printk.c             |  354 ++++++++++++++++++++++++++++++++++++++++----
+>  9 files changed, 630 insertions(+), 211 deletions(-)
+> 
+> More than half of the code increase in kernel.h are from the dummy
+> declarations for !CONFIG_PRINTK.  More than one third of printk.c
+> increase are comments.  On my x86-64 configuration, printk.o grows
+> from 30152 to 34128.
+> 
+> libata code grows slightly but the increase is from converting the
+> printk wrapper from #define to proper functions.  The converted areas
+> - device configuration and EH reporting - were reduced in comlexity
+> and size.  With all-y, drivers/ata/built-in.o shrinks from 726509 to
+> 717657 mostly due to the conversion away from macros.
+
+
 ---
- arch/x86/mm/fault_32.c |   41 ++++++++++++++++++++++++-----------------
- arch/x86/mm/fault_64.c |   26 ++++++++++++++++++++++++++
- 2 files changed, 50 insertions(+), 17 deletions(-)
-
-diff --git a/arch/x86/mm/fault_32.c b/arch/x86/mm/fault_32.c
-index 936bb0c..f50df86 100644
---- a/arch/x86/mm/fault_32.c
-+++ b/arch/x86/mm/fault_32.c
-@@ -211,8 +211,6 @@ void dump_pagetable(unsigned long address)
- 	printk("\n");
- }
- 
--void do_invalid_op(struct pt_regs *, unsigned long);
--
- static inline pmd_t *vmalloc_sync_one(pgd_t *pgd, unsigned long address)
- {
- 	unsigned index = pgd_index(address);
-@@ -288,6 +286,28 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
- 	return 0;
- }
- 
-+#ifdef CONFIG_X86_F00F_BUG
-+void do_invalid_op(struct pt_regs *, unsigned long);
-+#endif
-+
-+static int is_f00f_bug(struct pt_regs *regs, unsigned long address)
-+{
-+#ifdef CONFIG_X86_F00F_BUG
-+	unsigned long nr;
-+	/*
-+	 * Pentium F0 0F C7 C8 bug workaround.
-+	 */
-+	if (boot_cpu_data.f00f_bug) {
-+		nr = (address - idt_descr.address) >> 3;
-+
-+		if (nr == 6) {
-+			do_invalid_op(regs, 0);
-+			return 1;
-+		}
-+	}
-+#endif
-+	return 0;
-+}
- 
- /*
-  * Handle a fault on the vmalloc or module mapping area
-@@ -570,21 +590,8 @@ bad_area_nosemaphore:
- 		return;
- 	}
- 
--#ifdef CONFIG_X86_F00F_BUG
--	/*
--	 * Pentium F0 0F C7 C8 bug workaround.
--	 */
--	if (boot_cpu_data.f00f_bug) {
--		unsigned long nr;
--
--		nr = (address - idt_descr.address) >> 3;
--
--		if (nr == 6) {
--			do_invalid_op(regs, 0);
--			return;
--		}
--	}
--#endif
-+	if (is_f00f_bug(regs, address))
-+		return;
- 
- no_context:
- 	/* Are we prepared to handle this kernel fault?  */
-diff --git a/arch/x86/mm/fault_64.c b/arch/x86/mm/fault_64.c
-index cde110c..17cafe8 100644
---- a/arch/x86/mm/fault_64.c
-+++ b/arch/x86/mm/fault_64.c
-@@ -256,6 +256,29 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
- 	return 0;
- }
- 
-+#ifdef CONFIG_X86_F00F_BUG
-+void do_invalid_op(struct pt_regs *, unsigned long);
-+#endif
-+
-+static int is_f00f_bug(struct pt_regs *regs, unsigned long address)
-+{
-+#ifdef CONFIG_X86_F00F_BUG
-+	unsigned long nr;
-+	/*
-+	 * Pentium F0 0F C7 C8 bug workaround.
-+	 */
-+	if (boot_cpu_data.f00f_bug) {
-+		nr = (address - idt_descr.address) >> 3;
-+
-+		if (nr == 6) {
-+			do_invalid_op(regs, 0);
-+			return 1;
-+		}
-+	}
-+#endif
-+	return 0;
-+}
-+
- static noinline void pgtable_bad(unsigned long address, struct pt_regs *regs,
- 				 unsigned long error_code)
- {
-@@ -572,6 +595,9 @@ bad_area_nosemaphore:
- 		return;
- 	}
- 
-+	if (is_f00f_bug(regs, address))
-+		return;
-+
- no_context:
- 	/* Are we prepared to handle this kernel fault?  */
- 	if (fixup_exception(regs))
--- 
-1.5.4.rc2.1164.g6451
-
+~Randy
