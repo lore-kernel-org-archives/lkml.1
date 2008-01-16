@@ -1,49 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbYAPM0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754040AbYAPM23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754029AbYAPM0j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 07:26:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbYAPM0c
+	id S1754040AbYAPM23 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 07:28:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbYAPM2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 07:26:32 -0500
-Received: from ozlabs.org ([203.10.76.45]:49592 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752087AbYAPM0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 07:26:31 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "rae l" <crquan@gmail.com>
-Subject: Re: [RFC on MODULE SUPPORT] hello, Rusty, Should we provide module information even if the kernel module compiled built-in with bzImage?
-Date: Wed, 16 Jan 2008 23:25:54 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: open-iscsi@googlegroups.com, linux-kernel@vger.kernel.org
-References: <91b13c310801160202y833df7bs37cbb5827e875569@mail.gmail.com>
-In-Reply-To: <91b13c310801160202y833df7bs37cbb5827e875569@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Wed, 16 Jan 2008 07:28:19 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59849
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752085AbYAPM2S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 07:28:18 -0500
+Date: Wed, 16 Jan 2008 04:28:17 -0800 (PST)
+Message-Id: <20080116.042817.143947133.davem@davemloft.net>
+To: slavon@bigtelecom.ru
+Cc: elendil@planet.nl, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [REGRESSION] 2.6.24-rc7: e1000: Detected Tx Unit Hang
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <478DC824.4030600@bigtelecom.ru>
+References: <200801150625.10823.elendil@planet.nl>
+	<20080114.215317.38045859.davem@davemloft.net>
+	<478DC824.4030600@bigtelecom.ru>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801162325.54326.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 January 2008 21:02:22 rae l wrote:
-> hello, Rusty:
+From: Badalian Vyacheslav <slavon@bigtelecom.ru>
+Date: Wed, 16 Jan 2008 12:02:28 +0300
 
-Hi Denis.
+> Also have regression after apply patch.
 
-> Should we provide module information under
-> /sys/module/<module-name>/... even if the module compiled built-in
-> with bzImage?
+BTW, if you are using the e1000e driver then this initial
+patch will not work.
 
-Absolutely.  Module parameters (should) already do that, for example.
+My more recent patch posting for this problem, will.
 
-> Or just this module(scsi_transport_iscsi) should be marked with [M] only?
->
-> if the former solution is preferred, I would be happy to work on
-> MODULE_INFO-like macros improvements with CONFIG_MODULE undefined.
+I include it again below for you:
 
-I'd love to see patches.  module_parm showed it's possible, if messy.
+[NET]: Fix TX timeout regression in Intel drivers.
 
-Thanks!
-Rusty.
+This fixes a regression added by changeset
+53e52c729cc169db82a6105fac7a166e10c2ec36 ("[NET]: Make ->poll()
+breakout consistent in Intel ethernet drivers.")
+
+As pointed out by Jesse Brandeburg, for three of the drivers edited
+above there is breakout logic in the *_clean_tx_irq() code to prevent
+running TX reclaim forever.  If this occurs, we have to elide NAPI
+poll completion or else those TX events will never be serviced.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
+index 13d57b0..0c9a6f7 100644
+--- a/drivers/net/e1000/e1000_main.c
++++ b/drivers/net/e1000/e1000_main.c
+@@ -3919,7 +3919,7 @@ e1000_clean(struct napi_struct *napi, int budget)
+ {
+ 	struct e1000_adapter *adapter = container_of(napi, struct e1000_adapter, napi);
+ 	struct net_device *poll_dev = adapter->netdev;
+-	int work_done = 0;
++	int tx_cleaned = 0, work_done = 0;
+ 
+ 	/* Must NOT use netdev_priv macro here. */
+ 	adapter = poll_dev->priv;
+@@ -3929,14 +3929,17 @@ e1000_clean(struct napi_struct *napi, int budget)
+ 	 * simultaneously.  A failure obtaining the lock means
+ 	 * tx_ring[0] is currently being cleaned anyway. */
+ 	if (spin_trylock(&adapter->tx_queue_lock)) {
+-		e1000_clean_tx_irq(adapter,
+-				   &adapter->tx_ring[0]);
++		tx_cleaned = e1000_clean_tx_irq(adapter,
++						&adapter->tx_ring[0]);
+ 		spin_unlock(&adapter->tx_queue_lock);
+ 	}
+ 
+ 	adapter->clean_rx(adapter, &adapter->rx_ring[0],
+ 	                  &work_done, budget);
+ 
++	if (tx_cleaned)
++		work_done = budget;
++
+ 	/* If budget not fully consumed, exit the polling mode */
+ 	if (work_done < budget) {
+ 		if (likely(adapter->itr_setting & 3))
+diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
+index 4a6fc74..2ab3bfb 100644
+--- a/drivers/net/e1000e/netdev.c
++++ b/drivers/net/e1000e/netdev.c
+@@ -1384,7 +1384,7 @@ static int e1000_clean(struct napi_struct *napi, int budget)
+ {
+ 	struct e1000_adapter *adapter = container_of(napi, struct e1000_adapter, napi);
+ 	struct net_device *poll_dev = adapter->netdev;
+-	int work_done = 0;
++	int tx_cleaned = 0, work_done = 0;
+ 
+ 	/* Must NOT use netdev_priv macro here. */
+ 	adapter = poll_dev->priv;
+@@ -1394,12 +1394,15 @@ static int e1000_clean(struct napi_struct *napi, int budget)
+ 	 * simultaneously.  A failure obtaining the lock means
+ 	 * tx_ring is currently being cleaned anyway. */
+ 	if (spin_trylock(&adapter->tx_queue_lock)) {
+-		e1000_clean_tx_irq(adapter);
++		tx_cleaned = e1000_clean_tx_irq(adapter);
+ 		spin_unlock(&adapter->tx_queue_lock);
+ 	}
+ 
+ 	adapter->clean_rx(adapter, &work_done, budget);
+ 
++	if (tx_cleaned)
++		work_done = budget;
++
+ 	/* If budget not fully consumed, exit the polling mode */
+ 	if (work_done < budget) {
+ 		if (adapter->itr_setting & 3)
+diff --git a/drivers/net/ixgbe/ixgbe_main.c b/drivers/net/ixgbe/ixgbe_main.c
+index a564916..de3f45e 100644
+--- a/drivers/net/ixgbe/ixgbe_main.c
++++ b/drivers/net/ixgbe/ixgbe_main.c
+@@ -1468,13 +1468,16 @@ static int ixgbe_clean(struct napi_struct *napi, int budget)
+ 	struct ixgbe_adapter *adapter = container_of(napi,
+ 					struct ixgbe_adapter, napi);
+ 	struct net_device *netdev = adapter->netdev;
+-	int work_done = 0;
++	int tx_cleaned = 0, work_done = 0;
+ 
+ 	/* In non-MSIX case, there is no multi-Tx/Rx queue */
+-	ixgbe_clean_tx_irq(adapter, adapter->tx_ring);
++	tx_cleaned = ixgbe_clean_tx_irq(adapter, adapter->tx_ring);
+ 	ixgbe_clean_rx_irq(adapter, &adapter->rx_ring[0], &work_done,
+ 			   budget);
+ 
++	if (tx_cleaned)
++		work_done = budget;
++
+ 	/* If budget not fully consumed, exit the polling mode */
+ 	if (work_done < budget) {
+ 		netif_rx_complete(netdev, napi);
