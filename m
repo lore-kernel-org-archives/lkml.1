@@ -1,64 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbYAPQXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbYAPQYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753880AbYAPQXZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 11:23:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750912AbYAPQXR
+	id S1754572AbYAPQYU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 11:24:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751394AbYAPQYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 11:23:17 -0500
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:50526 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751823AbYAPQXQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 11:23:16 -0500
-Date: Wed, 16 Jan 2008 11:22:37 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Valdis.Kletnieks@vt.edu
-cc: caglar@pardus.org.tr, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: 2.6.24-rc7-rt2
-In-Reply-To: <Pine.LNX.4.58.0801160904200.9544@gandalf.stny.rr.com>
-Message-ID: <Pine.LNX.4.58.0801161112140.15998@gandalf.stny.rr.com>
-References: <1200336080.318.8.camel@localhost.localdomain>
- <200801150237.44029.caglar@pardus.org.tr> <24149.1200455417@turing-police.cc.vt.edu>
-            <Pine.LNX.4.58.0801152302580.10869@gandalf.stny.rr.com>
- <31516.1200464589@turing-police.cc.vt.edu> <Pine.LNX.4.58.0801160904200.9544@gandalf.stny.rr.com>
+	Wed, 16 Jan 2008 11:24:13 -0500
+Received: from quasar.osc.edu ([192.148.249.15]:49373 "EHLO quasar.osc.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751360AbYAPQYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 11:24:12 -0500
+Date: Wed, 16 Jan 2008 11:24:10 -0500
+From: Pete Wyckoff <pw@osc.edu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: dean gaudet <dean@arctic.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: nosmp/maxcpus=0 or 1 -> TSC unstable
+Message-ID: <20080116162410.GB26898@osc.edu>
+References: <alpine.DEB.0.999999.0801121142370.11727@twinlark.arctic.org> <20080115225039.GA25701@osc.edu> <20080116153137.GA18553@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080116153137.GA18553@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+mingo@elte.hu wrote on Wed, 16 Jan 2008 16:31 +0100:
+> 
+> * Pete Wyckoff <pw@osc.edu> wrote:
+> 
+> > > pretty sure this is the culprit is that num_possible_cpus() > 1, 
+> > > which would mean cpu_possible_map contains the second cpu... but i'm 
+> > > not quite sure what the right fix is... or perhaps this is all 
+> > > intended.
+> > 
+> > We've seen the same problem.  We use gettimeofday() for timing of 
+> > network-ish operations on the order of 10-50 us.  But not having the 
+> > TSC makes gettimeofday() itself very slow, on the order of 30 us.
+> 
+> 30 usecs is too much - even with pmtimer it's typically below 5 usecs. 
+> Could you run this on your box:
+> 
+>   http://people.redhat.com/mingo/time-warp-test/time-warp-test.c
+> 
+> and send back what it reports? (run it for a few minutes)
 
-On Wed, 16 Jan 2008, Steven Rostedt wrote:
->
-> We modified mcount now, and it is derived from an objdump of glibc. So
-> this is most definitely a "derived" work from glibc. But glibc is licensed
-> as LGPL, which IIRC allows for non GPL to link to it.
->
-> I personally could care less if we use EXPORT_SYMBOL or EXPORT_SYMBOL_GPL.
-> But I really want to do The Right Thing(tm). I'm not a lawyer and don't
-> claim that I know anything about the law, but I'm leaning towards the non
-> _GPL version because the code was from LGPL and not from strict GPL.
+You're right.  That 30 us comes from an old comment.  Testing with
+your code shows under 5 us as you expected.  I had to hack out the
+#ifndef i386 error; compiling on x86-64.  Dual-socket 2.4 GHz
+Opteron 250.  TSC-warps grows continually in all situations.
 
-Sorry folks, I'm going to stick with the _GPL version. It doesn't mean
-that you can't still load your nVidia module into -rt. I just means you
-can't turn on function trace and then load it. Well, you might if you
-don't compile the nVidia wrapper against it with function trace on.
+On 2.6.24-rc6 + scsi-misc + random stuff, 2 processors:
 
-The reason simply is to cover my butt.  By limiting it to GPL, I'm fine.
-Even if the original author didn't care. But by opening it up to external
-prorietary modules, I may be considered infringing on the license.
+ | 0.39 us, TSC-warps:983002775 | 4.81 us, TOD-warps:0 | 4.81 us, CLOCK-warps:0 
 
-So, unless I hear from a lawyer that is willing to back me up on a non
-_GPL export publically, the mcount function will stay as an
-EXPORT_SYMBOL_GPL.
+With "maxcpus=1", no broken patch to force TSC:
 
-Note: There is a definite reason for this change. The previous version
-of mcount was written by Ingo Molnar, and he added the export. I've
-changed mcount to be closer to the glibc code (which I derived it from),
-so the change in EXPORT type is legitimate.
+ | 0.33 us, TSC-warps:679679972 | 3.30 us, TOD-warps:0 | 3.30 us, CLOCK-warps:0 
 
--- Steve
+With "maxcpus=1", including my broken patch to force use of TSC in
+this situation:
+
+ | 0.05 us, TSC-warps:2884019968 | 0.45 us, TOD-warps:0 | 0.45 us, CLOCK-warps:0
+
+For giggles, an older fedora kernel (2.6.23.1-42.fc8) gives:
+
+ | 0.87 us, TSC-warps:575054334 | 8.67 us, TOD-warps:0 | 8.67 us, CLOCK-warps:0 
+
+		-- Pete
