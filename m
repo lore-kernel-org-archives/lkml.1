@@ -1,61 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755174AbYAPWTX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754343AbYAPWTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755174AbYAPWTX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 17:19:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbYAPWPR
+	id S1754343AbYAPWTh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 17:19:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbYAPWPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 17:15:17 -0500
-Received: from namei.org ([69.55.235.186]:59111 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753449AbYAPWPL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 17:15:11 -0500
-Date: Thu, 17 Jan 2008 09:13:53 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: Paul Moore <paul.moore@hp.com>
-cc: David Howells <dhowells@redhat.com>, sds@tycho.nsa.gov,
-       casey@schaufler-ca.com, Trond.Myklebust@netapp.com, npiggin@suse.de,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 08/26] Add a secctx_to_secid() LSM hook to go along with
- the existing
-In-Reply-To: <200801160841.46633.paul.moore@hp.com>
-Message-ID: <Xine.LNX.4.64.0801170913100.23919@us.intercode.com.au>
-References: <20080115234652.22183.24850.stgit@warthog.procyon.org.uk>
- <20080115234735.22183.36356.stgit@warthog.procyon.org.uk>
- <Xine.LNX.4.64.0801161204470.24959@us.intercode.com.au>
- <200801160841.46633.paul.moore@hp.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 16 Jan 2008 17:15:18 -0500
+Received: from ns1.suse.de ([195.135.220.2]:55196 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751767AbYAPWPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 17:15:12 -0500
+From: Andi Kleen <ak@suse.de>
+References: <200801161114.239449000@suse.de>
+In-Reply-To: <200801161114.239449000@suse.de>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       jbeulich@novell.com, venkatesh.pallipadi@intel.com
+Subject: [PATCH] [12/36] Extract page table dumping code from i386 fault handler into dump_pagetable()
+Message-Id: <20080116221511.243A7150C8@wotan.suse.de>
+Date: Wed, 16 Jan 2008 23:15:11 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Jan 2008, Paul Moore wrote:
 
-> On Tuesday 15 January 2008 8:05:27 pm James Morris wrote:
-> > On Tue, 15 Jan 2008, David Howells wrote:
-> > > secid_to_secctx() LSM hook.  This patch also includes the SELinux
-> > > implementation for this hook.
-> > >
-> > > Signed-off-by: Paul Moore <paul.moore@hp.com>
-> > > Acked-by: Stephen Smalley <sds@tycho.nsa.gov>
-> >
-> > This is useful in its own right, and I would like to push it upstream for
-> > 2.6.24 unless there are any objections.
-> 
-> Isn't it a bit late in 2.6.24 to add new functionality, especially when there 
-> isn't an in-tree user for it in 2.6.24?
+Similar to x86-64. This is useful in other situations where we want
+the page table dumped too.
 
-Actually, I meant to go into 2.6.24 after the merge window opens.
+Besides anything that makes i386 do_page_fault shorter is good.
 
-> 
-> You are right, there are several users of this function currently under 
-> development but I'm pretty sure all of them are targeting 2.6.25 or greater.  
-> With that in mind, I think the prudent thing to is to wait and push this 
-> upstream for 2.6.25.
+Signed-off-by: Andi Kleen <ak@suse.de>
+Acked-by: Jan Beulich <jbeulich@novell.com>
 
+---
+ arch/x86/mm/fault_32.c |   72 ++++++++++++++++++++++++++-----------------------
+ 1 file changed, 39 insertions(+), 33 deletions(-)
 
--- 
-James Morris
-<jmorris@namei.org>
+Index: linux/arch/x86/mm/fault_32.c
+===================================================================
+--- linux.orig/arch/x86/mm/fault_32.c
++++ linux/arch/x86/mm/fault_32.c
+@@ -28,6 +28,44 @@
+ #include <asm/desc.h>
+ #include <asm/segment.h>
+ 
++void dump_pagetable(unsigned long address)
++{
++	typeof(pte_val(__pte(0))) page;
++
++	page = read_cr3();
++	page = ((__typeof__(page) *) __va(page))[address >> PGDIR_SHIFT];
++#ifdef CONFIG_X86_PAE
++	printk("*pdpt = %016Lx ", page);
++	if ((page >> PAGE_SHIFT) < max_low_pfn
++	    && page & _PAGE_PRESENT) {
++		page &= PAGE_MASK;
++		page = ((__typeof__(page) *) __va(page))[(address >> PMD_SHIFT)
++							 & (PTRS_PER_PMD - 1)];
++		printk(KERN_CONT "*pde = %016Lx ", page);
++		page &= ~_PAGE_NX;
++	}
++#else
++	printk("*pde = %08lx ", page);
++#endif
++
++	/*
++	 * We must not directly access the pte in the highpte
++	 * case if the page table is located in highmem.
++	 * And let's rather not kmap-atomic the pte, just in case
++	 * it's allocated already.
++	 */
++	if ((page >> PAGE_SHIFT) < max_low_pfn
++	    && (page & _PAGE_PRESENT)
++	    && !(page & _PAGE_PSE)) {
++		page &= PAGE_MASK;
++		page = ((__typeof__(page) *) __va(page))[(address >> PAGE_SHIFT)
++							 & (PTRS_PER_PTE - 1)];
++		printk("*pte = %0*Lx ", sizeof(page)*2, (u64)page);
++	}
++
++	printk("\n");
++}
++
+ /*
+  * Page fault error code bits
+  *	bit 0 == 0 means no page found, 1 means protection fault
+@@ -574,7 +612,6 @@ no_context:
+ 	bust_spinlocks(1);
+ 
+ 	if (oops_may_print()) {
+-		__typeof__(pte_val(__pte(0))) page;
+ 
+ #ifdef CONFIG_X86_PAE
+ 		if (error_code & PF_INSTR) {
+@@ -595,38 +632,7 @@ no_context:
+ 		printk(" at virtual address %08lx\n", address);
+ 		printk(KERN_ALERT "printing ip: %08lx ", regs->ip);
+ 
+-		page = read_cr3();
+-		page = ((__typeof__(page) *) __va(page))[address >> PGDIR_SHIFT];
+-#ifdef CONFIG_X86_PAE
+-		printk("*pdpt = %016Lx ", page);
+-		if ((page >> PAGE_SHIFT) < max_low_pfn
+-		    && page & _PAGE_PRESENT) {
+-			page &= PAGE_MASK;
+-			page = ((__typeof__(page) *) __va(page))[(address >> PMD_SHIFT)
+-			                                         & (PTRS_PER_PMD - 1)];
+-			printk(KERN_CONT "*pde = %016Lx ", page);
+-			page &= ~_PAGE_NX;
+-		}
+-#else
+-		printk("*pde = %08lx ", page);
+-#endif
+-
+-		/*
+-		 * We must not directly access the pte in the highpte
+-		 * case if the page table is located in highmem.
+-		 * And let's rather not kmap-atomic the pte, just in case
+-		 * it's allocated already.
+-		 */
+-		if ((page >> PAGE_SHIFT) < max_low_pfn
+-		    && (page & _PAGE_PRESENT)
+-		    && !(page & _PAGE_PSE)) {
+-			page &= PAGE_MASK;
+-			page = ((__typeof__(page) *) __va(page))[(address >> PAGE_SHIFT)
+-			                                         & (PTRS_PER_PTE - 1)];
+-			printk("*pte = %0*Lx ", sizeof(page)*2, (u64)page);
+-		}
+-
+-		printk("\n");
++		dump_pagetable(address);
+ 	}
+ 
+ 	tsk->thread.cr2 = address;
