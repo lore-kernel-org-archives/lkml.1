@@ -1,92 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757727AbYAPGr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758106AbYAPGvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757727AbYAPGr3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 01:47:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbYAPGrU
+	id S1758106AbYAPGvz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 01:51:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752829AbYAPGvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 01:47:20 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:4998 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751966AbYAPGrT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 01:47:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=nHo8VnhCRQnGhAAA6tN52BjF0860VkdO5C8ZcxKx9Y6ENo6Y82ZNC97tu+WKGAFZsBWzVczYp19bKhcrf3XCeVhzVNVKRMjZ/YZCWxWtWU4ryhjRHY7n94+MJAzpjLLvQRBv/NTVu3I0yWjJnBl3FREV/U9lM8JYsnFmOT8fdrk=
-Message-ID: <478DA86F.10905@gmail.com>
-Date: Wed, 16 Jan 2008 15:47:11 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Wed, 16 Jan 2008 01:51:48 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34361 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752322AbYAPGvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 01:51:47 -0500
+Date: Wed, 16 Jan 2008 07:51:33 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Balaji Rao <balajirrao@gmail.com>
+Subject: Re: hpet_late_init hang
+Message-ID: <20080116065133.GA26783@elte.hu>
+References: <86802c440801151932o6aaea248w7d1137eaa2ac3579@mail.gmail.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>, Gabor Gombas <gombasg@sztaki.hu>,
-       Greg KH <greg@kroah.com>, Dave Young <hidave.darkstar@gmail.com>,
-       bluez-devel@lists.sourceforge.net, cornelia.huck@de.ibm.com
-Subject: Re: [PATCH 2.6.24-rc7 2/2] sysfs: fix bugs in sysfs_rename/move_dir()
-References: <478D74A6.7000206@gmail.com> <478D75BD.1010805@gmail.com> <alpine.LFD.1.00.0801151928380.2806@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0801151928380.2806@woody.linux-foundation.org>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440801151932o6aaea248w7d1137eaa2ac3579@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+
+(Balaji Cc:-ed)
+
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+
+> "
+> commit e5ed385fa0d6f35406e3e3ed75e5eb9adeb811df
+> Author: Balaji Rao <balajirrao@gmail.com>
+> Date:   Tue Jan 15 16:53:29 2008 +0100
 > 
-> On Wed, 16 Jan 2008, Tejun Heo wrote:
->> * sysfs_move_dir() has an extra dput() on success path.
+>     Assign IRQs to HPET Timers
+> "
+> in x86.git
 > 
-> Are you sure? How did this ever work?
+> cause my servers hang
+> after
+> Calling initcall 0xffffffff80b9a465: hpet_late_init+0x0/0x100()
 
-I'm pretty sure.  I've seen dentry blowing up due to early release &&
-compared it with older code.  It was my mistake during restructuring
-error path.  The only user of sysfs_move_dir() was S390 Cornelia works
-on (cc'd).  Cornelia is usually very good at spotting and debugging
-sysfs bugs.  Dunno how it got slipped this time.
+i'm wondering, where does it hang exactly and why?
 
-> Also, looking at this, I think the "how did this ever work" question is 
-> answered by "it didn't",
-
-Before dput() bug was introduced, it worked although error handling path
-was broken.
-
-> but I also think there are still serious problems 
-> there. Look at
+> after reverting that I got:
 > 
-> 	again:
-> 	        mutex_lock(&old_parent->d_inode->i_mutex);
-> 	        if (!mutex_trylock(&new_parent->d_inode->i_mutex)) {
-> 	                mutex_unlock(&old_parent->d_inode->i_mutex);
-> 	                goto again;
-> 	        }
+> initcall 0xffffffff80b947d1 ran for 19 msecs: pci_iommu_init+0x0/0x13()
+> Calling initcall 0xffffffff80b9a465: hpet_late_init+0x0/0x100()
+> hpet0: at MMIO 0xfed00000, IRQs 2, 8, 31
+> hpet0: 3 32-bit timers, 25000000 Hz
+> initcall 0xffffffff80b9a465: hpet_late_init+0x0/0x100() returned 0.
+> initcall 0xffffffff80b9a465 ran for 7 msecs: hpet_late_init+0x0/0x100()
 > 
-> and wonder what happen sif old_parent == new_parent. Is that trying to 
-> avoid an ABBA deadlock?
+>            CPU0       CPU1       CPU2       CPU3       CPU4       CPU5
+>       CPU6       CPU7
+>   0:         86          0          0          0          0          0
+>          1          0   IO-APIC-edge      timer
+>   4:          0          0          0          0          0          0
+>          1        838   IO-APIC-edge      serial
+>   7:          1          0          0          0          0          0
+>          0          0   IO-APIC-edge
+>   8:          0          0          0          0          0          0
+>          0          0   IO-APIC-edge      rtc0
+> 
+> for mcp55, it should already route hpet to ioapic pin2 or the irq0.
 
-It will fall in infinite loop if old_parent == new_parent and for the
-question, I suppose so.  Cornelia, right?
+hm, these new bits:
 
-> Normally you'd do it by ordering the locks, or by 
-> taking a third lock to guarantee serialization at a higher level (ie the 
-> "s_vfs_rename_mutex" on the VFS layer)
++       /* Assign IRQs statically for legacy devices */
++       hpetp->hp_dev[0].hd_hdwirq = hdp->hd_irq[0];
++       hpetp->hp_dev[1].hd_hdwirq = hdp->hd_irq[1];
 
-sysfs currently doesn't depend on VFS locking.  VFS locking is done just
-to keep VFS layer happy.  sysfs_dirent hierarchy is protected by
-sysfs_mutex and renaming/moving are protected by sysfs_rename_mutex.  As
-both ops are under rename_mutex, I think the above code just can grab
-both mutexes in any order.  It's probably a remnant of the days when
-sysfs used VFS locking to protect internal structures.
+seem to be different from where we came from:
 
-s390 was the only user of the move interface till now and through all
-the recent sysfs change, it didn't receive enough attention other than
-Cornelia's testing.  Eventually, I think sysfs_rename_dir() and
-sysfs_move_dir() should be merged into sysfs_move() but for the current
-two users, I don't see anything wrong with the locking.
+-       for (i = 2; i < nrtimers; timer++, i++)
+-               hd.hd_irq[i] = (timer->hpet_config & Tn_INT_ROUTE_CNF_MASK) >>
+-                       Tn_INT_ROUTE_CNF_SHIFT;
 
-Thanks.
-
--- 
-tejun
+	Ingo
