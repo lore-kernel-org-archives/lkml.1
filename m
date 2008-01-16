@@ -1,65 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757876AbYAPCTG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758204AbYAPCTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757876AbYAPCTG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 21:19:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbYAPCSy
+	id S1758204AbYAPCTg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 21:19:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756353AbYAPCT1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 21:18:54 -0500
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:35293 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1754293AbYAPCSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 21:18:53 -0500
-Message-ID: <400449941.28506@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Wed, 16 Jan 2008 10:18:48 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Michael Rubin <mrubin@google.com>
-Cc: Andrew Morton <akpm@osdl.org>, Peter Zijlstra <peterz@infradead.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/13] writeback bug fixes and simplifications take 2
-References: <400401292.24795@ustc.edu.cn> <532480950801151033w69411f8dk4d9ab14a2ff07d64@mail.gmail.com>
+	Tue, 15 Jan 2008 21:19:27 -0500
+Received: from mail-dub.bigfish.com ([213.199.154.10]:57435 "EHLO
+	mail79-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756386AbYAPCT0 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 21:19:26 -0500
+X-BigFish: V
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <532480950801151033w69411f8dk4d9ab14a2ff07d64@mail.gmail.com>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.12-2006-07-14
-Message-Id: <E1JExrc-00014E-FC@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH 3/4] RT: remove finish_arch_switch
+Date: Tue, 15 Jan 2008 18:17:44 -0800
+Message-ID: <884020C16A0AFF4D8A8B7800EA0C98870FD5F7@ussdixms03.am.sony.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 3/4] RT: remove finish_arch_switch
+Thread-Index: AchX5X2zqfboJfUqT6a1tyisQpPSlwAAHy3E
+References: <1200435646.4092.18.camel@bx740> <20080116021409.GG30532@goodmis.org>
+From: "Rowand, Frank" <frank.rowand@us.sony.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Cc: <linux-kernel@vger.kernel.org>, <mingo@redhat.com>, <tglx@linutronix.de>
+X-OriginalArrivalTime: 16 Jan 2008 02:19:19.0631 (UTC) FILETIME=[336375F0:01C857E6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 15, 2008 at 10:33:01AM -0800, Michael Rubin wrote:
-> On Jan 15, 2008 4:36 AM, Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
-> > Andrew,
-> >
-> > This patchset mainly polishes the writeback queuing policies.
+Steve,
+
+Thanks, I'll bring this up over on the linux-mips list to see how they
+really want to handle it.
+
+-Frank
+
+
+-----Original Message-----
+From: Steven Rostedt [mailto:rostedt@goodmis.org]
+Sent: Tue 1/15/2008 6:14 PM
+To: Rowand, Frank
+Cc: linux-kernel@vger.kernel.org; mingo@redhat.com; tglx@linutronix.de
+Subject: Re: [PATCH 3/4] RT: remove finish_arch_switch
+ 
+On Tue, Jan 15, 2008 at 02:20:46PM -0800, Frank Rowand wrote:
+> From: Frank Rowand <frank.rowand@am.sony.com>
 > 
-> Anyone know which tree is this patched based out of?
-
-They are against the latest -mm tree, or 2.6.24-rc6-mm1.
-
-> > The main goals are:
-> >
-> > (1) small files should not be starved by big dirty files
-> > (2) sync as fast as possible for not-blocked inodes/pages
-> >     - don't leave them out; no congestion_wait() in between them
-> > (3) avoid busy iowait for blocked inodes
-> >     - retry them in the next go of s_io(maybe at the next wakeup of pdflush)
-> >
 > 
-> Fengguang do you have any specific tests for any of these cases? As I
-> have posted earlier I am putting together a writeback test suite for
-> test.kernel.org and if you have one (even if it's an ugly shell
-> script) that would save me some time.
+> Index: linux-2.6.24-rc7/include/asm-mips/mach-tx49xx/cpu-feature-overrides.h
+> ===================================================================
+> --- linux-2.6.24-rc7.orig/include/asm-mips/mach-tx49xx/cpu-feature-overrides.h
+> +++ linux-2.6.24-rc7/include/asm-mips/mach-tx49xx/cpu-feature-overrides.h
+> @@ -1,6 +1,13 @@
+>  #ifndef __ASM_MACH_TX49XX_CPU_FEATURE_OVERRIDES_H
+>  #define __ASM_MACH_TX49XX_CPU_FEATURE_OVERRIDES_H
+>  
+> +/* finish_arch_switch_empty is defined if we know finish_arch_switch() will
+> + * be empty, based on the lack of features defined in this file.  This is
+> + * needed because config preempt will barf in kernel/sched.c ifdef
+> + * finish_arch_switch
+> + */
+> +#define finish_arch_switch_empty
+> +
+>  #define cpu_has_llsc	1
+>  #define cpu_has_64bits	1
+>  #define cpu_has_inclusive_pcaches	0
+> Index: linux-2.6.24-rc7/include/asm-mips/system.h
+> ===================================================================
+> --- linux-2.6.24-rc7.orig/include/asm-mips/system.h
+> +++ linux-2.6.24-rc7/include/asm-mips/system.h
+> @@ -70,6 +70,8 @@ do {									\
+>  	(last) = resume(prev, next, task_thread_info(next));		\
+>  } while (0)
+>  
+> +/* preempt kernel barfs in kernel/sched.c ifdef finish_arch_switch */
+> +#ifndef finish_arch_switch_empty
 
-No, I just run tests with cp/dd etc.  I analyze the code and debug
-traces a lot, and know that it works in the situations I can imagine.
-But dedicated test suites are good in the long term.
+I'll take this patch for now, but currently it looks like a hack. I know
+you said that, but I'm hoping someone will come up with a better
+solution.
 
-> Also if you want any of mine let me know. :-)
+Thanks,
 
-OK, thank you.
+-- Steve
 
-Fengguang
+>  #define finish_arch_switch(prev)					\
+>  do {									\
+>  	if (cpu_has_dsp)						\
+> @@ -77,6 +79,7 @@ do {									\
+>  	if (cpu_has_userlocal)						\
+>  		write_c0_userlocal(current_thread_info()->tp_value);	\
+>  } while (0)
+> +#endif
+>  
+>  static inline unsigned long __xchg_u32(volatile int * m, unsigned int val)
+>  {
+> 
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+
 
