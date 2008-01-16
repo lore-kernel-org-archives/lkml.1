@@ -1,45 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757878AbYAPW2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757947AbYAPW25@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757878AbYAPW2l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 17:28:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754896AbYAPWQr
+	id S1757947AbYAPW25 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 17:28:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754304AbYAPWSt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 17:16:47 -0500
-Received: from ozlabs.org ([203.10.76.45]:35303 "EHLO ozlabs.org"
+	Wed, 16 Jan 2008 17:18:49 -0500
+Received: from saeurebad.de ([85.214.36.134]:36447 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754284AbYAPWQq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 17:16:46 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Mathieu SEGAUD <mathieu.segaud@regala.cx>
-Subject: Re: [RFC on MODULE SUPPORT] hello, Rusty, Should we provide module information even if the kernel module compiled built-in with bzImage?
-Date: Thu, 17 Jan 2008 09:15:25 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: "rae l" <crquan@gmail.com>, open-iscsi@googlegroups.com,
-       linux-kernel@vger.kernel.org
-References: <91b13c310801160202y833df7bs37cbb5827e875569@mail.gmail.com> <87fxwyhtim.fsf@barad-dur.regala.cx>
-In-Reply-To: <87fxwyhtim.fsf@barad-dur.regala.cx>
+	id S1755673AbYAPWSs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 17:18:48 -0500
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, clameter@sgi.com,
+       penberg@cs.helsinki.fi
+Subject: Re: Why is the kfree() argument const?
+References: <87lk6pvii0.fsf@saeurebad.de>
+	<alpine.LFD.1.00.0801161026550.2806@woody.linux-foundation.org>
+Date: Wed, 16 Jan 2008 23:19:46 +0100
+In-Reply-To: <alpine.LFD.1.00.0801161026550.2806@woody.linux-foundation.org>
+	(Linus Torvalds's message of "Wed, 16 Jan 2008 10:39:00 -0800 (PST)")
+Message-ID: <87odblct19.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801170915.26040.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 January 2008 22:58:09 Mathieu SEGAUD wrote:
-> your userspace program is somewhat broken
-> the userspace should not expect to find the version number in
-> /sys/module, as this is used by the Linux kernel module subsystem. You
-> should provide the required information in another way such as a
-> /proc/ file (bad) or a /sys file (better, but no module stuff, this
-> has no business with it).
+Hi,
 
-Shh!  He was going to implement a feature we want!
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-To be honest, I think his expectations of consistency are correct: if a 
-version number makes sense, surely it makes sense for builtins as well.
+[...]
 
-Thanks,
-Rusty.
+> "const" is a pointer type issue, and is meant to make certain mis-uses 
+> more visible at compile time. It has *no* other meaning, and anybody who 
+> thinks it has is just setting himself up for problems.
+
+[...]
+
+>  - From a very obvious and very *real* caller perspective, "free()" really 
+>    doesn't change the thing the pointer points to. It does something 
+>    totally different: it makes the *pointer* itself invalid.
+>
+>    In other words, if you think that "kfree()" changed the thing you 
+>    free'd, you're simply wrong. It did no such thing. The memory is 100% 
+>    the same, it's just that you cannot access it any more, and if you try, 
+>    you'll get somebody elses memory.
+>
+>    In other words, "kfree()" can be const.
+
+[...]
+
+> So never believe that "const" is some guarantee that the memory under the 
+> pointer doesn't change.  That is *never* true. It has never been true in 
+> C, since there can be arbitrary pointer aliases to that memory that aren't 
+> actually const. If you think "const *p" means that the memory behind "p" 
+> is immutable, you're simply wrong.
+
+Okay, I understood that now.  A const qualifier just forbids modifying
+the underlying memory _through this particular pointer_, right?
+
+In the case of slub's kfree(), which takes a const pointer, you pass it
+on to slab_free() which actually _DOES_ modification of the underlying
+memory when linking the object to the freelist (as far as I understood
+the code).
+
+So if I got it right and you actually modify the memory you only got a
+const pointer to, you reach a level where you _have to_ break this
+policy and cast to a non-const pointer, as it is currently done in
+kfree().  No?
+
+	Hannes
