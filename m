@@ -1,120 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbYAPTq2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbYAPTrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753918AbYAPTq2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 14:46:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbYAPTqV
+	id S1754209AbYAPTrT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 14:47:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbYAPTrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 14:46:21 -0500
-Received: from mail-dub.bigfish.com ([213.199.154.10]:42780 "EHLO
-	mail8-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752186AbYAPTqU (ORCPT
+	Wed, 16 Jan 2008 14:47:10 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:47370 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752239AbYAPTrI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 14:46:20 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: DF9F24A0-1A5C-40A5-8B0A-DEB676E72ECF
-Date: Wed, 16 Jan 2008 20:46:06 +0100
-From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
-cc: linux-kernel@vger.kernel.org, ak@suse.de
-Subject: [PATCH] x86: fix detection of CONSTANT_TSC bit for AMD CPUs
-Message-ID: <20080116194606.GB11244@alberich.amd.com>
+	Wed, 16 Jan 2008 14:47:08 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [patch 2/2] 8250_pnp: register x86 COM ports at the conventional ttyS names
+Date: Wed, 16 Jan 2008 12:47:33 -0700
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org,
+       Russell King <rmk+serial@arm.linux.org.uk>,
+       Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20080116170541.511233227@ldl.fc.hp.com> <20080116170914.959390017@ldl.fc.hp.com> <478E5095.2020803@zytor.com>
+In-Reply-To: <478E5095.2020803@zytor.com>
 MIME-Version: 1.0
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 16 Jan 2008 19:45:56.0966 (UTC)
- FILETIME=[69845860:01C85878]
-X-WSS-ID: 6B90817207S8212559-01-01
 Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801161247.34821.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commits
- - c52f61fcbdb2aa84f0e4d831ef07f375e6b99b2c 
-  (x86: allow TSC clock source on AMD Fam10h and some cleanup)
- - e30436f05d456efaff77611e4494f607b14c2782
-  (x86: move X86_FEATURE_CONSTANT_TSC into early cpu feature detection)
+On Wednesday 16 January 2008 11:44:37 am H. Peter Anvin wrote:
+> Bjorn Helgaas wrote:
+> > x86 users expect COM1-COM4 ports at the conventional ioport addresses
+> > to be named ttyS0-ttyS3.  For PNP devices, the BIOS determines the
+> > order we discover them, so we might discover COM2 before COM1.
+> > 
+> > We currently always get the correct names, even without this patch.
+> > But that's only because serial8250_isa_init_ports() first registers
+> > the hard-coded list of COM port addresses from SERIAL_PORT_DFNS.  When
+> > PNP rediscovers one of those ports, it gets the already-established
+> > line.
+> > 
+> > This patch removes the implicit dependency on SERIAL_PORT_DFNS by
+> > requesting the names we desire.
+> >  
+> >  static int __devinit
+> > +serial_pnp_line(struct uart_port *port)
+> > +{
+> > +#ifdef CONFIG_X86
+> > +	switch (port->iobase) {
+> > +	case 0x3f8:	return 0;	/* COM1 -> ttyS0 */
+> > +	case 0x2f8:	return 1;	/* COM2 -> ttyS1 */
+> > +	case 0x3e8:	return 2;	/* COM3 -> ttyS2 */
+> > +	case 0x2e8:	return 3;	/* COM4 -> ttyS3 */
+> > +	}
+> > +#endif
+> > +
+> 
+> Arguably, the right thing is to use the addresses present in the array 
+> at address 0x400.  In particular, COM3 and COM4 aren't always at those 
+> addresses.
 
-are supposed to fix the detection of contant TSC for AMD CPUs.
-Unfortunately on x86_64 it does still not work with current x86/mm.
-For a Phenom I still get:
+Wow.  I bow before your storehouse of x86 arcana :-)
 
-  ...
-  TSC calibrated against PM_TIMER 
-  Marking TSC unstable due to TSCs unsynchronized
-  time.c: Detected 2288.366 MHz processor.
-  ...
+I guess you're referring to the "BIOS data area," which I'd never
+heard of before (but fortunately, Google knows).
 
-We have to set c->x86_power in early_identify_cpu to properly detect
-the CONSTANT_TSC bit in early_init_amd.
+What would you think about doing this only for COM1 and COM2?  The
+only real value for doing this in the first place is so "console=ttyS0"
+always goes to COM1, even if we don't have SERIAL_PORT_DFNS.  User-
+space ought to use some sort of udev magic if it cares about persistent
+naming.
 
-Attached patch fixes this issue. Following the relevant boot
-messages when the fix is used:
-
-  ...
-  TSC calibrated against PM_TIMER
-  time.c: Detected 2288.279 MHz processor.
-  ...
-  Initializing CPU#1
-  ...
-  checking TSC synchronization [CPU#0 -> CPU#1]: passed.
-  ...
-  Initializing CPU#2
-  ...
-  checking TSC synchronization [CPU#0 -> CPU#2]: passed.
-  ...
-  Booting processor 3/4 APIC 0x3
-  ...
-  checking TSC synchronization [CPU#0 -> CPU#3]: passed.
-  Brought up 4 CPUs
-  ...
-
-Patch is against x86/mm (v2.6.24-rc8-672-ga9f7faa).
-Please apply.
-
-
-Regards,
-
-Andreas
-
----
-x86_64: fix detection of CONSTANT_TSC bit for AMD CPUs
-
-Set c->x86_power in early_identify_cpu. This ensures that
-X86_FEATURE_CONSTANT_TSC can properly be set in early_init_amd.
-
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
-diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
-index c8dcdd2..aeaa17d 100644
---- a/arch/x86/kernel/setup_64.c
-+++ b/arch/x86/kernel/setup_64.c
-@@ -1021,6 +1021,10 @@ static void __cpuinit early_identify_cpu(struct cpuinfo_x86 *c)
- 			c->x86_capability[2] = cpuid_edx(0x80860001);
- 	}
- 
-+	c->extended_cpuid_level = cpuid_eax(0x80000000);
-+	if (c->extended_cpuid_level >= 0x80000007)
-+		c->x86_power = cpuid_edx(0x80000007);
-+
- 	switch (c->x86_vendor) {
- 	case X86_VENDOR_AMD:
- 		early_init_amd(c);
-@@ -1091,11 +1095,6 @@ void __cpuinit identify_cpu(struct cpuinfo_x86 *c)
- 	numa_add_cpu(smp_processor_id());
- #endif
- 
--	c->extended_cpuid_level = cpuid_eax(0x80000000);
--
--	if (c->extended_cpuid_level >= 0x80000007)
--		c->x86_power = cpuid_edx(0x80000007);
--
- 	switch (c->x86_vendor) {
- 	case X86_VENDOR_AMD:
- 		early_init_amd(c);
-
-
-
+Bjorn
