@@ -1,132 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910AbYAPTEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbYAPTHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753910AbYAPTEw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 14:04:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbYAPTEp
+	id S1754036AbYAPTHB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 14:07:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbYAPTGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 14:04:45 -0500
-Received: from mga03.intel.com ([143.182.124.21]:4132 "EHLO mga03.intel.com"
+	Wed, 16 Jan 2008 14:06:54 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:45465 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752327AbYAPTEo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 14:04:44 -0500
-X-ExtLoop1: 1
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1751691AbYAPTGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 14:06:53 -0500
+In-Reply-To: <4d47a5d10801151724m418e18efp9a0dd936e9a3584c@mail.gmail.com>
+To: "Daniel Phillips" <phillips@google.com>
+Cc: "Al Boldi" <a1426z@gawab.com>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "David Chinner" <dgc@sgi.com>, linux-kernel@vger.kernel.org,
+       "Pavel Machek" <pavel@ucw.cz>, "Rik van Riel" <riel@redhat.com>,
+       "Theodore Tso" <tytso@mit.edu>, "Valerie Henson" <val.henson@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [patch 0/4] x86: PAT followup - Incremental changes and bug fixes
-Date: Wed, 16 Jan 2008 11:05:31 -0800
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE5E8B3B@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <20080116185748.GA11244@alberich.amd.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch 0/4] x86: PAT followup - Incremental changes and bug fixes
-Thread-Index: AchYceSIwTg7bnr3RZSOJxF4Nw9L5gAAMd+g
-References: <20080116023955.597433000@intel.com> <20080116185748.GA11244@alberich.amd.com>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-Cc: <ak@muc.de>, <ebiederm@xmission.com>, <rdreier@cisco.com>,
-       <torvalds@linux-foundation.org>, <gregkh@suse.de>, <airlied@skynet.ie>,
-       <davej@redhat.com>, <mingo@elte.hu>, <tglx@linutronix.de>,
-       <hpa@zytor.com>, <akpm@linux-foundation.org>, <arjan@infradead.org>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>, <davem@davemloft.net>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 16 Jan 2008 19:04:35.0257 (UTC) FILETIME=[A24D9A90:01C85872]
+Subject: Re: [Patch] document ext3 requirements (was Re: [RFD] Incremental fsck)
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OFDB679999.9793D1C7-ON882573D2.00646D05-882573D2.0068FF85@us.ibm.com>
+From: Bryan Henderson <hbryan@us.ibm.com>
+Date: Wed, 16 Jan 2008 11:06:50 -0800
+X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Release 8.0|August 02, 2007) at 01/16/2008
+ 14:06:51,
+	Serialize complete at 01/16/2008 14:06:51
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>The "disk motor as a generator" tale may not be purely folklore.  When
+>an IDE drive is not in writeback mode, something special needs to done
+>to ensure the last write to media is not a scribble.
 
-Can you attach the e820 map from the top of your dmesg.
+No it doesn't.  The last write _is_ a scribble.  Systems that make atomic 
+updates to disk drives use a shadow update mechanism and write the master 
+sector twice.  If the power fails in the middle of writing one, it will 
+almost certainly be unreadable due to a CRC failure, and the other one 
+will have either the old or new master block contents.
 
-Thanks,
-Venki 
+And I think there's a problem with drives that, upon sensing the 
+unreadable sector, assign an alternate even though the sector is fine, and 
+you eventually run out of spares.
 
->-----Original Message-----
->From: Andreas Herrmann [mailto:andreas.herrmann3@amd.com] 
->Sent: Wednesday, January 16, 2008 10:58 AM
->To: Pallipadi, Venkatesh
->Cc: ak@muc.de; ebiederm@xmission.com; rdreier@cisco.com; 
->torvalds@linux-foundation.org; gregkh@suse.de; 
->airlied@skynet.ie; davej@redhat.com; mingo@elte.hu; 
->tglx@linutronix.de; hpa@zytor.com; akpm@linux-foundation.org; 
->arjan@infradead.org; Barnes, Jesse; davem@davemloft.net; 
->linux-kernel@vger.kernel.org
->Subject: Re: [patch 0/4] x86: PAT followup - Incremental 
->changes and bug fixes
->
->Hi,
->
->I just want to report that the PAT support in x86/mm causes crashes
->on two of my test machines. On both boxes the SATA detection does
->not work when the PAT support is patched into the kernel.
->
->Symptoms are as follows -- best described by a diff between the
->two boot.logs:
->
-># diff boot-failing.log boot-working.log
->
->-Linux version 2.6.24-rc8-ga9f7faa5 (root@hunter) (gcc version ...
->+Linux version 2.6.24-rc8-g2ea3cf43 (root@hunter) (gcc version ...
->...
-> early_iounmap(ffffffff82a0b000, 00001000)
->-early_ioremap(000000000000c000, 00001000) => -000002103394304
->-early_iounmap(ffffffff82a0c000, 00001000)
-> early_iounmap(ffffffff82808000, 00001000)
->...
->-ACPI: PCI interrupt for device 0000:00:12.0 disabled
->-sata_sil: probe of 0000:00:12.0 failed with error -12
->+scsi0 : sata_sil
->+scsi1 : sata_sil
->+ata1: SATA max UDMA/100 mmio m512@0xc0403000 tf 0xc0403080 irq 22
->...
->-AC'97 space ioremap problem
->-ACPI: PCI interrupt for device 0000:00:14.5 disabled
->-ATI IXP AC97 controller: probe of 0000:00:14.5 failed with error -5
-> ALSA device list:
->-  No soundcards found.
->+  #0: ATI IXP rev 80 with ALC655 at 0xc0403800, irq 17
->...
->-VFS: Cannot open root device "sda1" or unknown-block(0,0)
->-Please append a correct "root=" boot option; here are the 
->available partitions:
->-1600    4194302 hdc driver: ide-cdrom
->-Kernel panic - not syncing: VFS: Unable to mount root fs on 
->unknown-block(0,0)
->+kjournald starting.  Commit interval 5 seconds
->+EXT3-fs: mounted filesystem with ordered data mode.
->+VFS: Mounted root (ext3 filesystem) readonly.
->...
->
->   <snip>
-> 
->The second test machine uses ahci. But the symptoms are similar.
->
->I performed a git-bisect on x86/mm. Last commit that worked for me was
->
->2ea3cf43fddecbfd66353caafdf73ec21ea3760b (x86: fix 
->early_ioremap() ISA window)
->
->The subsequent commits for PAT support introduced the problem.
->I noticed that PAT should be disabled by default, but 
->obviously the patches
->still have some side-effect. (Maybe ioremap changes lead to 
->the problem?)
->
->Boot-logs are attached:
->
->  boot-failing.log for x86/mm as of v2.6.24-rc8-672-ga9f7faa
->  boot-working.log for x86/mm as of v2.6.24-rc8-621-g2ea3cf4
->
->Hopefully it helps to track down the problem.
->Maybe someone has an idea why the PAT patches are causing that
->ominous "PCI interrupt for device ... disabled" messages.
->
->
->Thanks and regards,
->
->Andreas
->
+
+Incidentally, while this primitive behavior applies to IDE (ATA et al) 
+drives, that isn't the only thing people put filesystem on.  Many 
+important filesystems go on higher level storage subsystems that contain 
+IDE drives and cache memory and batteries.  A device like this _does_ make 
+sure that all data that it says has been written is actually retrievable 
+even if there's a subsequent power outage, even while giving the 
+performance of writeback caching.
+
+--
+Bryan Henderson                     IBM Almaden Research Center
+San Jose CA                         Filesystems
+
