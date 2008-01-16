@@ -1,86 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbYAPKTw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbYAPKaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753984AbYAPKTw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 05:19:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbYAPKTo
+	id S1753838AbYAPKaV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 05:30:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYAPKaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 05:19:44 -0500
-Received: from il.qumranet.com ([82.166.9.18]:35181 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751748AbYAPKTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 05:19:43 -0500
-Date: Wed, 16 Jan 2008 11:19:40 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Brice Goglin <Brice.Goglin@inria.fr>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] mmu notifiers #v2
-Message-ID: <20080116101939.GH7059@v2.random>
-References: <20080113162418.GE8736@v2.random> <478DC7EC.1040101@inria.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <478DC7EC.1040101@inria.fr>
+	Wed, 16 Jan 2008 05:30:09 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48925
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751745AbYAPKaH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 05:30:07 -0500
+Date: Wed, 16 Jan 2008 02:29:53 -0800 (PST)
+Message-Id: <20080116.022953.184520911.davem@davemloft.net>
+To: elendil@planet.nl
+Cc: jesse.brandeburg@intel.com, slavon@bigtelecom.ru, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [REGRESSION] 2.6.24-rc7: e1000: Detected Tx Unit Hang
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200801160956.09053.elendil@planet.nl>
+References: <36D9DB17C6DE9E40B059440DB8D95F52042FA541@orsmsx418.amr.corp.intel.com>
+	<20080115.210214.170759690.davem@davemloft.net>
+	<200801160956.09053.elendil@planet.nl>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 16, 2008 at 10:01:32AM +0100, Brice Goglin wrote:
-> One of the difference with my patch is that you attach the notifier list to 
-> the mm_struct while my code attached it to vmas. But I now don't think it 
-> was such a good idea since it probably didn't reduce the number of notifier 
-> calls a lot.
+From: Frans Pop <elendil@planet.nl>
+Date: Wed, 16 Jan 2008 09:56:08 +0100
 
-Thanks for raising this topic.
+> On Wednesday 16 January 2008, David Miller wrote:
+> > Ok, here is the patch I'll propose to fix this.  The goal is to make
+> > it as simple as possible without regressing the thing we were trying
+> > to fix.
+> 
+> Looks good to me. Tested with -rc8.
 
-Notably KVM also would be a bit more optimal with the notifier in the
-vma and that was the original implementation too. It's not a sure
-thing that it has to be in the mm.
-
-The quadrics patch does a mixture, it attaches it to the mm but then
-it pretends to pass the vma down to the method, and it's broken doing
-so, like during munmap where it passes the first vma being unmapped
-but not all the later ones in the munmap range.
-
-If we want to attach it to the vma, I think the vma should be passed
-as parameter instead of the mm. In some places like
-apply_to_page_range the vma isn't even available and I found a little
-dirty to run a find_vma inside a #ifdef CONFIG_MMU_NOTIFIER.
-
-The only thing the vma could be interesting about are the protection
-bits for things like update_range in the quadrics patch where they
-prefetch their secondary tlb. But again if we want to do that, we need
-to hook inside unmap_vmas and to pass all the different vmas and not
-just the first one touched by unmap_vmas. unmap_vmas is _plural_ not
-singular ;).
-
-In the end attaching to mm avoided solving all the above troubles and
-provided a strightforward implementation where I would need a single
-call to mmu_notifier_register and other minor advantages like that and
-not much downside.
-
-But certainly the mm vs vma decision wasn't trivial (I switched back
-and forth a few times from vma to mm and back) and if people thinks
-this shall be in the vma I can try again but it won't be as a
-strightforward patch as for the mm.
-
-One benefit is for example is that it could go in the memslot and
-effectively the notifier->memslot conversion would be just a
-containerof instead of a "search" over the memslots. Locking aside.
-
-> Also, one thing that I looked at in vmaspy was notifying fork. I am not 
-> sure what happens on Copy-on-write with your code, but for sure C-o-w is 
-> problematic for shadow page tables. I thought shadow pages should just be 
-> invalidated when a fork happens and the caller would refill them after 
-> forcing C-o-w or so. So adding a notifier call there too might be nice.
-
-There can't be any cows right now in KVM VM backing store, that's why
-it's enough to get full swapping working fine. For example I think
-we'll need to add more notifiers to handle swapping of MAP_PRIVATE non
-linear tmpfs shared pages properly (and it won't be an issue with
-fork() but with after the fact sharing).
-
-Right now I'm more interested in the interface, for the invalidates,
-things like mm vs vma, the places where we hook under pte spinlock,
-things like that, then the patch can hopefully be merged and extended
-with more methods like ->change_protection_page/range and added to cow
-etc...
+Thanks for testing.
