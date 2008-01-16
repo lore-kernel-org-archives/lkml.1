@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752294AbYAPVHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752735AbYAPVJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752294AbYAPVHX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 16:07:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbYAPVHK
+	id S1752735AbYAPVJh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 16:09:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbYAPVJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 16:07:10 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44075 "EHLO mx2.mail.elte.hu"
+	Wed, 16 Jan 2008 16:09:28 -0500
+Received: from saeurebad.de ([85.214.36.134]:35150 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750917AbYAPVHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 16:07:08 -0500
-Date: Wed, 16 Jan 2008 22:06:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@suse.de>
-Cc: Jan Beulich <jbeulich@novell.com>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 0 of 4] x86: some more patches
-Message-ID: <20080116210646.GA11967@elte.hu>
-References: <patchbomb.1200435425@localhost> <200801161840.44683.ak@suse.de> <20080116202234.GC4212@elte.hu> <200801162159.50274.ak@suse.de>
+	id S1750824AbYAPVJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 16:09:27 -0500
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: thinkpad_acpi: define _sta only when needed
+References: <1200488504-6789-1-git-send-email-hannes@saeurebad.de>
+	<20080116191317.GA29449@khazad-dum.debian.net>
+Date: Wed, 16 Jan 2008 22:10:27 +0100
+In-Reply-To: <20080116191317.GA29449@khazad-dum.debian.net> (Henrique de
+	Moraes Holschuh's message of "Wed, 16 Jan 2008 17:13:17 -0200")
+Message-ID: <87sl0xcw8s.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200801162159.50274.ak@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Henrique,
 
-* Andi Kleen <ak@suse.de> wrote:
+Henrique de Moraes Holschuh <hmh@hmh.eng.br> writes:
 
-> > truly stuck, or just an annoying message?
-> 
-> Just annoying message; system works after that for simple login etc. 
-> (haven't run anything complicated)
+> On Wed, 16 Jan 2008, Johannes Weiner wrote:
+>> Define _sta() helper conditionally; also remove its prototype from
+>> the internal header and also some other unneeded ones.
+>> 
+>> This function is only needed when the bay or the dock subdriver is
+>> enabled.  Otherwise, gcc complains about an unused static function.
+>
+> Johannes, thanks for the patches, but NAK.  A similar group of patches that
+> clean up the _sta and heander file (kills it, actually) has already been
+> sent to Len Brown to be merged for 2.6.25.
 
-ok, if you see no other failures and if you have some time it would be 
-nice to figure out why that message is happening. Is NOHZ enabled 
-perhaps?
+Sorry, I missed to check his tree in advance.  And if the work is
+already done - even better! :)
 
-	Ingo
+	Hannes
