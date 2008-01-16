@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754234AbYAPWSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbYAPWSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754234AbYAPWSV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 17:18:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753894AbYAPWPN
+	id S1755573AbYAPWSk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 17:18:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927AbYAPWPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 17:15:13 -0500
-Received: from ns1.suse.de ([195.135.220.2]:55185 "EHLO mx1.suse.de"
+	Wed, 16 Jan 2008 17:15:14 -0500
+Received: from ns2.suse.de ([195.135.220.15]:38240 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752629AbYAPWPJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 17:15:09 -0500
+	id S1752190AbYAPWPK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 17:15:10 -0500
 From: Andi Kleen <ak@suse.de>
 References: <200801161114.239449000@suse.de>
 In-Reply-To: <200801161114.239449000@suse.de>
 To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
        jbeulich@novell.com, venkatesh.pallipadi@intel.com
-Subject: [PATCH] [9/36] Add pte accessors for the global bit
-Message-Id: <20080116221507.EA97E150C8@wotan.suse.de>
-Date: Wed, 16 Jan 2008 23:15:07 +0100 (CET)
+Subject: [PATCH] [10/36] Add pte_pgprot on i386
+Message-Id: <20080116221509.041FB150C8@wotan.suse.de>
+Date: Wed, 16 Jan 2008 23:15:08 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Needed for some test code.
+64bit already had it.
+
+Needed for later patches.
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 Acked-by: Jan Beulich <jbeulich@novell.com>
 
 ---
- include/asm-x86/pgtable.h |    3 +++
- 1 file changed, 3 insertions(+)
+ include/asm-x86/pgtable.h    |    2 ++
+ include/asm-x86/pgtable_64.h |    2 --
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
 Index: linux/include/asm-x86/pgtable.h
 ===================================================================
 --- linux.orig/include/asm-x86/pgtable.h
 +++ linux/include/asm-x86/pgtable.h
-@@ -144,6 +144,7 @@ static inline int pte_young(pte_t pte)		
- static inline int pte_write(pte_t pte)		{ return pte_val(pte) & _PAGE_RW; }
- static inline int pte_file(pte_t pte)		{ return pte_val(pte) & _PAGE_FILE; }
- static inline int pte_huge(pte_t pte)		{ return pte_val(pte) & _PAGE_PSE; }
-+static inline int pte_global(pte_t pte) 	{ return pte_val(pte) & _PAGE_GLOBAL; }
+@@ -191,6 +191,8 @@ static inline pte_t pte_modify(pte_t pte
+ 	return __pte(val);
+ }
  
- static inline int pmd_large(pmd_t pte) {
- 	return (pmd_val(pte) & (_PAGE_PSE|_PAGE_PRESENT)) ==
-@@ -159,6 +160,8 @@ static inline pte_t pte_mkyoung(pte_t pt
- static inline pte_t pte_mkwrite(pte_t pte)	{ return __pte(pte_val(pte) | _PAGE_RW); }
- static inline pte_t pte_mkhuge(pte_t pte)	{ return __pte(pte_val(pte) | _PAGE_PSE); }
- static inline pte_t pte_clrhuge(pte_t pte)	{ return __pte(pte_val(pte) & ~_PAGE_PSE); }
-+static inline pte_t pte_mkglobal(pte_t pte)	{ return __pte(pte_val(pte) | _PAGE_GLOBAL); }
-+static inline pte_t pte_clrglobal(pte_t pte)	{ return __pte(pte_val(pte) & ~_PAGE_GLOBAL); }
++#define pte_pgprot(x) __pgprot(pte_val(x) & (0xfff | _PAGE_NX))
++
+ #ifdef CONFIG_PARAVIRT
+ #include <asm/paravirt.h>
+ #else  /* !CONFIG_PARAVIRT */
+Index: linux/include/asm-x86/pgtable_64.h
+===================================================================
+--- linux.orig/include/asm-x86/pgtable_64.h
++++ linux/include/asm-x86/pgtable_64.h
+@@ -120,8 +120,6 @@ static inline void native_pgd_clear(pgd_
  
- extern pteval_t __supported_pte_mask;
+ #define pte_same(a, b)		((a).pte == (b).pte)
  
+-#define pte_pgprot(a)	(__pgprot((a).pte & ~PHYSICAL_PAGE_MASK))
+-
+ #endif /* !__ASSEMBLY__ */
+ 
+ #define PMD_SIZE	(_AC(1,UL) << PMD_SHIFT)
