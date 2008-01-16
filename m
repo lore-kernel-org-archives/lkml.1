@@ -1,74 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753455AbYAPL6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753612AbYAPMAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753455AbYAPL6T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 06:58:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbYAPL6L
+	id S1753612AbYAPMAV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 07:00:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbYAPMAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 06:58:11 -0500
-Received: from def92-3-81-56-114-101.fbx.proxad.net ([81.56.114.101]:41445
-	"EHLO barad-dur.regala.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751626AbYAPL6L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 06:58:11 -0500
-To: "rae l" <crquan@gmail.com>
-Cc: "Rusty Russell" <rusty@rustcorp.com.au>, open-iscsi@googlegroups.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC on MODULE SUPPORT] hello, Rusty, Should we provide module information even if the kernel module compiled built-in with bzImage?
-References: <91b13c310801160202y833df7bs37cbb5827e875569@mail.gmail.com>
-From: Mathieu SEGAUD <mathieu.segaud@regala.cx>
-Date: Wed, 16 Jan 2008 12:58:09 +0100
-In-Reply-To: <91b13c310801160202y833df7bs37cbb5827e875569@mail.gmail.com> (rae l.'s message of "Wed\, 16 Jan 2008 18\:02\:22 +0800")
-Message-ID: <87fxwyhtim.fsf@barad-dur.regala.cx>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Wed, 16 Jan 2008 07:00:07 -0500
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:51274 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751866AbYAPMAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 07:00:05 -0500
+Message-ID: <400484811.11914@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Wed, 16 Jan 2008 20:00:04 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Martin Knoblauch <knobi@knobisoft.de>
+Cc: Mike Snitzer <snitzer@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
+       jplatte@naasa.net, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: regression: 100% io-wait with 2.6.24-rcX
+References: <76258.29672.qm@web32604.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <76258.29672.qm@web32604.mail.mud.yahoo.com>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.12-2006-07-14
+Message-Id: <E1JF6w8-0000vs-HM@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vous m'avez dit récemment :
+On Wed, Jan 16, 2008 at 01:26:41AM -0800, Martin Knoblauch wrote:
+> > For those interested in using your writeback improvements in
+> > production sooner rather than later (primarily with ext3); what
+> > recommendations do you have?  Just heavily test our own 2.6.24 + your
+> > evolving "close, but not ready for merge" -mm writeback patchset?
+> > 
+> Hi Fengguang, Mike,
+> 
+>  I can add myself to Mikes question. It would be good to know a "roadmap" for the writeback changes. Testing 2.6.24-rcX so far has been showing quite nice improvement of the overall writeback situation and it would be sad to see this [partially] gone in 2.6.24-final. Linus apparently already has reverted  "...2250b". I will definitely repeat my tests with -rc8. and report.
 
-> hello, Rusty:
-> I encountered a problem when modules compiled built-in with bzImage:
->
-> open-iscsi is an iSCSI software, it has a userspace daemon(iscsid) and
-> a userspace mani tool(iscsiadm) and a kernel module
-> (scsi_transport_iscsi),
-> recently the kernel module has been accepted into the official kernel
-> release; since the module licensed with GPL, it could be compiled as
-> built-in,
->
-> but when I compiled the module within the bzImage, the problem appeared:
->
-> tux ~ # iscsid -f
-> iscsid: Missing or Invalid version from
-> /sys/module/scsi_transport_iscsi/version. Make sure a up to date
-> scsi_transport_iscsi module is loaded and a up todate version of
-> iscsid is running. Exiting...
->
-> this is just because iscsid hope there's an external module could be
-> under /sys/module, and read the kernel module's version information,
-> but if the module compiled built-in, all its module information
-> discarded and it doesn't appeared under /sys/module/, that would break
-> iscsid.
->
-> Now the problem is:
->
-> Should we provide module information under
-> /sys/module/<module-name>/... even if the module compiled built-in
-> with bzImage?
-> Or just this module(scsi_transport_iscsi) should be marked with [M] only?
->
-> if the former solution is preferred, I would be happy to work on
-> MODULE_INFO-like macros improvements with CONFIG_MODULE undefined.
+Thank you, Martin. Can you help test this patch on 2.6.24-rc7?
+Maybe we can push it to 2.6.24 after your testing.
 
-your userspace program is somewhat broken
-the userspace should not expect to find the version number in
-/sys/module, as this is used by the Linux kernel module subsystem. You
-should provide the required information in another way such as a
-/proc/ file (bad) or a /sys file (better, but no module stuff, this
-has no business with it).
+Fengguang
+---
+ fs/fs-writeback.c         |   17 +++++++++++++++--
+ include/linux/writeback.h |    1 +
+ mm/page-writeback.c       |    9 ++++++---
+ 3 files changed, 22 insertions(+), 5 deletions(-)
 
--- 
-Mathieu
+--- linux.orig/fs/fs-writeback.c
++++ linux/fs/fs-writeback.c
+@@ -284,7 +284,16 @@ __sync_single_inode(struct inode *inode,
+ 				 * soon as the queue becomes uncongested.
+ 				 */
+ 				inode->i_state |= I_DIRTY_PAGES;
+-				requeue_io(inode);
++				if (wbc->nr_to_write <= 0)
++					/*
++					 * slice used up: queue for next turn
++					 */
++					requeue_io(inode);
++				else
++					/*
++					 * somehow blocked: retry later
++					 */
++					redirty_tail(inode);
+ 			} else {
+ 				/*
+ 				 * Otherwise fully redirty the inode so that
+@@ -479,8 +488,12 @@ sync_sb_inodes(struct super_block *sb, s
+ 		iput(inode);
+ 		cond_resched();
+ 		spin_lock(&inode_lock);
+-		if (wbc->nr_to_write <= 0)
++		if (wbc->nr_to_write <= 0) {
++			wbc->more_io = 1;
+ 			break;
++		}
++		if (!list_empty(&sb->s_more_io))
++			wbc->more_io = 1;
+ 	}
+ 	return;		/* Leave any unwritten inodes on s_io */
+ }
+--- linux.orig/include/linux/writeback.h
++++ linux/include/linux/writeback.h
+@@ -62,6 +62,7 @@ struct writeback_control {
+ 	unsigned for_reclaim:1;		/* Invoked from the page allocator */
+ 	unsigned for_writepages:1;	/* This is a writepages() call */
+ 	unsigned range_cyclic:1;	/* range_start is cyclic */
++	unsigned more_io:1;		/* more io to be dispatched */
+ };
+ 
+ /*
+--- linux.orig/mm/page-writeback.c
++++ linux/mm/page-writeback.c
+@@ -558,6 +558,7 @@ static void background_writeout(unsigned
+ 			global_page_state(NR_UNSTABLE_NFS) < background_thresh
+ 				&& min_pages <= 0)
+ 			break;
++		wbc.more_io = 0;
+ 		wbc.encountered_congestion = 0;
+ 		wbc.nr_to_write = MAX_WRITEBACK_PAGES;
+ 		wbc.pages_skipped = 0;
+@@ -565,8 +566,9 @@ static void background_writeout(unsigned
+ 		min_pages -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
+ 		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
+ 			/* Wrote less than expected */
+-			congestion_wait(WRITE, HZ/10);
+-			if (!wbc.encountered_congestion)
++			if (wbc.encountered_congestion || wbc.more_io)
++				congestion_wait(WRITE, HZ/10);
++			else
+ 				break;
+ 		}
+ 	}
+@@ -631,11 +633,12 @@ static void wb_kupdate(unsigned long arg
+ 			global_page_state(NR_UNSTABLE_NFS) +
+ 			(inodes_stat.nr_inodes - inodes_stat.nr_unused);
+ 	while (nr_to_write > 0) {
++		wbc.more_io = 0;
+ 		wbc.encountered_congestion = 0;
+ 		wbc.nr_to_write = MAX_WRITEBACK_PAGES;
+ 		writeback_inodes(&wbc);
+ 		if (wbc.nr_to_write > 0) {
+-			if (wbc.encountered_congestion)
++			if (wbc.encountered_congestion || wbc.more_io)
+ 				congestion_wait(WRITE, HZ/10);
+ 			else
+ 				break;	/* All the old data is written */
+
