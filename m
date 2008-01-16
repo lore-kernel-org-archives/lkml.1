@@ -1,42 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757391AbYAPIEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757655AbYAPIM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757391AbYAPIEk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 03:04:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbYAPIEd
+	id S1757655AbYAPIM2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 03:12:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbYAPIMT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 03:04:33 -0500
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:60825 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752199AbYAPIEc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 03:04:32 -0500
-Message-ID: <478DB9B4.1030107@keyaccess.nl>
-Date: Wed, 16 Jan 2008 09:00:52 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 16 Jan 2008 03:12:19 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54114 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753585AbYAPIMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 03:12:18 -0500
+Date: Wed, 16 Jan 2008 09:11:56 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       Dave Young <hidave.darkstar@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: 2.6.24-rc7 lockdep warning when poweroff
+Message-ID: <20080116081155.GA10019@elte.hu>
+References: <a8e1da0801140104m2d8dceaayd8cf85466659bbf@mail.gmail.com> <1200302644.7415.6.camel@twins> <1200306902.5887.39.camel@johannes.berg> <1200307288.7415.11.camel@twins> <1200307896.5887.42.camel@johannes.berg> <1200393685.5887.113.camel@johannes.berg> <1200399661.26045.13.camel@twins> <1200400787.5887.129.camel@johannes.berg> <1200401245.26045.19.camel@twins>
 MIME-Version: 1.0
-To: Dave Young <hidave.darkstar@gmail.com>
-CC: Frans Pop <elendil@planet.nl>, bjorn.helgaas@hp.com,
-       Len Brown <lenb@kernel.org>, akpm@osdl.org, cholvenstot@comcast.net,
-       linux-kernel@vger.kernel.org, shaohua.li@intel.com, trenn@suse.de,
-       yakui.zhao@intel.com
-Subject: Re: pnpacpi : exceeded the max number of IO resources
-References: <1196428488.7066.6.camel@localhost> <47508D3C.9050507@keyaccess.nl>	 <475436A3.90906@keyaccess.nl> <200801082250.51026.lenb@kernel.org>	 <E1JCXK5-0002GH-0x@faramir.fjphome.nl> <4784DE94.8020508@keyaccess.nl> <a8e1da0801152155x18cfd0dcvfe638323275e539d@mail.gmail.com>
-In-Reply-To: <a8e1da0801152155x18cfd0dcvfe638323275e539d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1200401245.26045.19.camel@twins>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16-01-08 06:55, Dave Young wrote:
 
-> I noticed the port number changed to 40 in 2.6.24-rc8, but it's not
-> enough for me still.
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-Yes, that's known. In .23 even more were (silently) ignored though. Since 
-.24-rc8 you should at least get just 1 warning (per resource type) and if 
-all's well .25 should kill the static limit completely.
+> > > The patch looks ok, one important thing to note is that it means 
+> > > that all workqueues instantiated by the same __create_workqueue() 
+> > > call-site share lock dependency chains - I'm unsure if that might 
+> > > get us into trouble or not.
+> > 
+> > It doesn't seem to have so far ;) I don't think it should. If some 
+> > code allocates a per-instance workqueue that's much like having an 
+> > inode lock or so.
+> 
+> We had to split up the inode lock to per filesystem classes, just 
+> because the lock chains were conflicting between them...
 
-Rene.
+i.e. filesystems can legally have different locking rules wrt. i_lock. I 
+dont really like it (we should have as simple locking rules as possible) 
+but it is the VFS status quo :)
+
+	Ingo
