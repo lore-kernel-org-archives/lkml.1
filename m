@@ -1,63 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758257AbYAPD5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758130AbYAPEC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758257AbYAPD5R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 22:57:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757294AbYAPD5I
+	id S1758130AbYAPEC0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 23:02:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751078AbYAPECR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 22:57:08 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:51526 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756935AbYAPD5F (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 22:57:05 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Greg KH <greg@kroah.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>
-Subject: Re: [PATCH]PCIE ASPM support - takes 2
-In-Reply-To: Your message of "Tue, 15 Jan 2008 13:02:26 +0800."
-             <1200373346.20739.4.camel@sli10-desk.sh.intel.com>
-From: Valdis.Kletnieks@vt.edu
-References: <1200373346.20739.4.camel@sli10-desk.sh.intel.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1200455812_2966P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Tue, 15 Jan 2008 22:56:52 -0500
-Message-ID: <24456.1200455812@turing-police.cc.vt.edu>
+	Tue, 15 Jan 2008 23:02:17 -0500
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:63896 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750801AbYAPECQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 23:02:16 -0500
+Date: Tue, 15 Jan 2008 23:01:42 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: =?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur <caglar@pardus.org.tr>
+cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.24-rc7-rt2
+In-Reply-To: <200801150237.44029.caglar@pardus.org.tr>
+Message-ID: <Pine.LNX.4.58.0801152259200.19680@gandalf.stny.rr.com>
+References: <1200336080.318.8.camel@localhost.localdomain>
+ <200801150237.44029.caglar@pardus.org.tr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1200455812_2966P
-Content-Type: text/plain; charset=us-ascii
 
-On Tue, 15 Jan 2008 13:02:26 +0800, Shaohua Li said:
+On Tue, 15 Jan 2008, [utf-8] S.Ã^GaÄ^_lar Onur wrote:
 
-> In my test, power difference between powersave mode and performance mode
-> is about 1.3w in a system with 3 PCIE links.
+>
+> 2.6.24-rc7-rt2 (-rt2 patchset on top of Linus's current git commit
+> 031f2dcd7075e218e74dd7f942ad015cf82dffab) starts to complain like following
+> (full dmesg can be found @ [1]) when try to login from console (the other
+> acpi related errors also existed in 2.6.24-rc5-rt1) and FYI, plain 2.6.24-rc7
+> (again commit 031f2dcd7075e218e74dd7f942ad015cf82dffab) has no issues.
 
-Do you have any numbers on what the added latency is for powersave mode, and
-a rough idea of how quickly chipsets will drop to low-power? It may affect
-usability a lot if it's "adds 10ms latency after 100ms idle" or "adds 100ms
-latency after 5 seconds idle" or some other pattern...
+Do you get the same issues if you add to -rc7 and not git.
 
-(The chipset in my laptop claims to be an 82801G with 4 PCI-Express ports on
-it - I'm trying to get a rough idea what usage I'd get out of that feature..)
+>
+> [...]
+> sysfs: duplicate filename 'vcs1' can not be created
+> WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+> Pid: 1298, comm: mingetty Not tainted 2.6.24-rc7-rt2-99 #1
+> [...]
+>
+> And because of mcount-add-basic-support-for-gcc-profiler-instrum.patch, closed
+> source nvidia-new module cannot be used with this release (mcount is exported
+> GPL only), i know this is not supported but i used it with that [2] patch up
+> until now without a single problem.
 
---==_Exmh_1200455812_2966P
-Content-Type: application/pgp-signature
+Ah, sorry about that. I'll try to fix that later on. You should still be
+able to use NVidia by turning off function trace.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+>
+> Please don't misunderstand this, i really do not want to start a discussion
+> for this, i just want to ask the possibility of converting this into
+> EXPORT_SYMBOL cause i thought some of the possible -rt users may need this
+> closed source module explicitly because of its 3D performance.
+>
+> If anything else needed for sysfs warnings please just say it...
+>
+> [1] http://cekirdek.pardus.org.tr/~caglar/dmesg.rt
+> [2]
+> http://svn.pardus.org.tr/pardus/devel/kernel/drivers/nvidia-new/files/rt.patch
+>
 
-iD8DBQFHjYCEcC3lWbTT17ARAhAhAJ9ZiY5Uua5IGdHOm05QLsvu8nF0/gCfU0zD
-g4w2n3pTVJZEZj7yrIUfvIc=
-=41lh
------END PGP SIGNATURE-----
+Thanks for the report. I'll see what I can do for the next release. But
+for now this will have to wait till after -rt3.
 
---==_Exmh_1200455812_2966P--
+-- Steve
