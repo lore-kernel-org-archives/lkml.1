@@ -1,105 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbYAPUdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbYAPUd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754116AbYAPUdh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 15:33:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbYAPUda
+	id S1754871AbYAPUd5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 15:33:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYAPUdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 15:33:30 -0500
-Received: from mga02.intel.com ([134.134.136.20]:14809 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751443AbYAPUd3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 15:33:29 -0500
-X-ExtLoop1: 1
-Date: Wed, 16 Jan 2008 12:33:28 -0800
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: venkatesh.pallipadi@intel.com, ak@muc.de, ebiederm@xmission.com,
-       rdreier@cisco.com, torvalds@linux-foundation.org, gregkh@suse.de,
-       airlied@skynet.ie, davej@redhat.com, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com, akpm@linux-foundation.org, arjan@infradead.org,
-       jesse.barnes@intel.com, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
-Subject: Re: [patch 0/4] x86: PAT followup - Incremental changes and bug fixes
-Message-ID: <20080116203328.GA17869@linux-os.sc.intel.com>
-References: <20080116023955.597433000@intel.com> <20080116185748.GA11244@alberich.amd.com>
-Mime-Version: 1.0
+	Wed, 16 Jan 2008 15:33:45 -0500
+Received: from moutng.kundenserver.de ([212.227.126.188]:55950 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753998AbYAPUdo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 15:33:44 -0500
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: [patch 2/2] 8250_pnp: register x86 COM ports at the conventional ttyS names
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+       Russell King <rmk+serial@arm.linux.org.uk>,
+       Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Reply-To: 7eggert@gmx.de
+Date: Wed, 16 Jan 2008 21:33:04 +0100
+References: <9MjWa-VI-9@gated-at.bofh.it> <9MjWb-VI-11@gated-at.bofh.it> <9MlEG-3Mx-13@gated-at.bofh.it> <9Mmra-56f-29@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080116185748.GA11244@alberich.amd.com>
-User-Agent: Mutt/1.4.1i
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1JFEwb-0000zs-2q@be1.7eggert.dyndns.org>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1+W8Li6vqYRMrTnmuLEtCc1delLuIBFZzjWeS8
+ AjF60IAkg+DNETLHeugpn0xMRnsVs4emtxK5DVecJ4OhN0gyK9
+ +cvySMmOidul6RE1MpPYQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 16, 2008 at 07:57:48PM +0100, Andreas Herrmann wrote:
-> Hi,
+Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> On Wednesday 16 January 2008 11:44:37 am H. Peter Anvin wrote:
+>> Bjorn Helgaas wrote:
+
+>> > +#ifdef CONFIG_X86
+>> > +  switch (port->iobase) {
+>> > +  case 0x3f8:     return 0;       /* COM1 -> ttyS0 */
+>> > +  case 0x2f8:     return 1;       /* COM2 -> ttyS1 */
+>> > +  case 0x3e8:     return 2;       /* COM3 -> ttyS2 */
+>> > +  case 0x2e8:     return 3;       /* COM4 -> ttyS3 */
+>> > +  }
+>> > +#endif
+>> > +
+>> 
+>> Arguably, the right thing is to use the addresses present in the array
+>> at address 0x400.  In particular, COM3 and COM4 aren't always at those
+>> addresses.
 > 
-> I just want to report that the PAT support in x86/mm causes crashes
-> on two of my test machines. On both boxes the SATA detection does
-> not work when the PAT support is patched into the kernel.
+> Wow.  I bow before your storehouse of x86 arcana :-)
 > 
-> Symptoms are as follows -- best described by a diff between the
-> two boot.logs:
-> 
-> # diff boot-failing.log boot-working.log
-> 
-> -Linux version 2.6.24-rc8-ga9f7faa5 (root@hunter) (gcc version ...
-> +Linux version 2.6.24-rc8-g2ea3cf43 (root@hunter) (gcc version ...
-> ...
->  early_iounmap(ffffffff82a0b000, 00001000)
-> -early_ioremap(000000000000c000, 00001000) => -000002103394304
-> -early_iounmap(ffffffff82a0c000, 00001000)
-This does not look to be the problem here. We just mapped some new low
-address due to possibly a different code path. But, seems to have worked fine.
+> I guess you're referring to the "BIOS data area," which I'd never
+> heard of before (but fortunately, Google knows).
 
->  early_iounmap(ffffffff82808000, 00001000)
-> ...
-> -ACPI: PCI interrupt for device 0000:00:12.0 disabled
-> -sata_sil: probe of 0000:00:12.0 failed with error -12
-> +scsi0 : sata_sil
-> +scsi1 : sata_sil
-> +ata1: SATA max UDMA/100 mmio m512@0xc0403000 tf 0xc0403080 irq 22
-> ...
-> -AC'97 space ioremap problem
-> -ACPI: PCI interrupt for device 0000:00:14.5 disabled
-> -ATI IXP AC97 controller: probe of 0000:00:14.5 failed with error -5
+You'll want to google for Ralph Brown ...
+if your back allowes bowing that much.
 
-This ioremap failing seems to be the real problem. This can be due to
-new tracking of ioremaps introduced by PAT patches. We do not allow
-conflicting ioremaps to same region. Probably that is happening
-in both Sound and sata initialization which results in driver init failing.
+> What would you think about doing this only for COM1 and COM2?  The
+> only real value for doing this in the first place is so "console=ttyS0"
+> always goes to COM1, even if we don't have SERIAL_PORT_DFNS.  User-
+> space ought to use some sort of udev magic if it cares about persistent
+> naming.
 
-Can you please try the debug patch below over latest x86/mm and boot kernel with
-debug boot option and send us the dmesg from the failure. That will give us
-better info about ioremaps.
+Since the first four COM ports are magic, and since using the BIOS port
+numbers will move the non-legacy ports anyway, you should use all up to
+four stored port numbers.
 
-Thanks,
-Venki
+BTW1: These addresses may be used to detect ports on non-standard addresses,
+but unfortunately they don't tell the IRQ.
 
+BTW2: When I submitted a patch using the BIOS data area, I was told that it
+might not exist on systems booting from non-PC firmware. This claim was not
+yet backed with any knowledge, nor did anybody suggest a way to detect this
+situation.
 
-Index: linux-2.6.git/arch/x86/mm/ioremap_64.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/mm/ioremap_64.c	2008-01-16 03:38:32.000000000 -0800
-+++ linux-2.6.git/arch/x86/mm/ioremap_64.c	2008-01-16 05:16:28.000000000 -0800
-@@ -150,6 +150,8 @@
- 
- void __iomem *ioremap_nocache (unsigned long phys_addr, unsigned long size)
- {
-+	printk(KERN_DEBUG "ioremap_nocache: addr %lx, size %lx\n",
-+	       phys_addr, size);
- 	return __ioremap(phys_addr, size, _PAGE_UC);
- }
- EXPORT_SYMBOL(ioremap_nocache);
-Index: linux-2.6.git/include/asm-x86/io_64.h
-===================================================================
---- linux-2.6.git.orig/include/asm-x86/io_64.h	2008-01-16 03:38:32.000000000 -0800
-+++ linux-2.6.git/include/asm-x86/io_64.h	2008-01-16 05:16:57.000000000 -0800
-@@ -154,6 +154,8 @@
- 
- static inline void __iomem * ioremap (unsigned long offset, unsigned long size)
- {
-+	printk(KERN_DEBUG "ioremap: addr %lx, size %lx\n",
-+	       offset, size);
- 	return __ioremap(offset, size, 0);
- }
- 
