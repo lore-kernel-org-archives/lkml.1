@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752643AbYAPUXF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbYAPU0P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752643AbYAPUXF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 15:23:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYAPUWx
+	id S1753997AbYAPU0P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 15:26:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbYAPU0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 15:22:53 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34174 "EHLO mx3.mail.elte.hu"
+	Wed, 16 Jan 2008 15:26:00 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48518 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752114AbYAPUWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 15:22:52 -0500
-Date: Wed, 16 Jan 2008 21:22:34 +0100
+	id S1750968AbYAPUZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 15:25:59 -0500
+Date: Wed, 16 Jan 2008 21:24:44 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@suse.de>
-Cc: Jan Beulich <jbeulich@novell.com>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0 of 4] x86: some more patches
-Message-ID: <20080116202234.GC4212@elte.hu>
-References: <patchbomb.1200435425@localhost> <478E3411.76E4.0078.0@novell.com> <20080116154710.GA28946@elte.hu> <200801161840.44683.ak@suse.de>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: venkatesh.pallipadi@intel.com, ak@muc.de, ebiederm@xmission.com,
+       rdreier@cisco.com, torvalds@linux-foundation.org, gregkh@suse.de,
+       airlied@skynet.ie, davej@redhat.com, tglx@linutronix.de, hpa@zytor.com,
+       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com,
+       davem@davemloft.net, linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/4] x86: PAT followup - Incremental changes and bug
+	fixes
+Message-ID: <20080116202444.GD4212@elte.hu>
+References: <20080116023955.597433000@intel.com> <20080116185748.GA11244@alberich.amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200801161840.44683.ak@suse.de>
+In-Reply-To: <20080116185748.GA11244@alberich.amd.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,30 +39,29 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andi Kleen <ak@suse.de> wrote:
+* Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
 
-> git-x86 upto a9f7faa5fd229a65747f02ab0f2d45ee35856760 boots, but gives
+> I just want to report that the PAT support in x86/mm causes crashes on 
+> two of my test machines. On both boxes the SATA detection does not 
+> work when the PAT support is patched into the kernel.
 > 
-> VFS: Mounted root (nfs filesystem).
-> Freeing unused kernel memory: 264k freed
-> eth0: no IPv6 routers present
-> Clocksource tsc unstable (delta = 18747555652 ns)
+> Symptoms are as follows -- best described by a diff between the two 
+> boot.logs:
 > 
-> BUG: soft lockup - CPU#2 stuck for 55s! [swapper:0]
+> # diff boot-failing.log boot-working.log
 > 
-> Pid: 0, comm: swapper Not tainted (2.6.24-rc8-ga9f7faa5 #23)
-> EIP: 0060:[<c0103b71>] EFLAGS: 00000206 CPU: 2
-> EIP is at default_idle+0x36/0x58
-> EAX: 6f179d4d EBX: 6f179d4d ECX: 000001c9 EDX: 0000006a
-> ESI: 0000006a EDI: 00000000 EBP: 00000000 ESP: f7c49fa4
->  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> CR0: 8005003b CR2: bfaaf990 CR3: 3749f000 CR4: 000006f0
-> DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-> DR6: ffff0ff0 DR7: 00000400
->  [<c0103b3b>] default_idle+0x0/0x58
->  [<c0103a7e>] cpu_idle+0xad/0xcd
->  =======================
+> -Linux version 2.6.24-rc8-ga9f7faa5 (root@hunter) (gcc version ...
+> +Linux version 2.6.24-rc8-g2ea3cf43 (root@hunter) (gcc version ...
+> ...
+>  early_iounmap(ffffffff82a0b000, 00001000)
+> -early_ioremap(000000000000c000, 00001000) => -000002103394304
+> -early_iounmap(ffffffff82a0c000, 00001000)
 
-truly stuck, or just an annoying message?
+hm, so the early_ioremap() stuff isnt working well enough ...
+
+that's the main effect of the PAT patches at the moment: no kernel code 
+will access the low linear mappings (BIOS tables, ACPI data, etc.) 
+directly, it's all done via early_ioremap(). But it's apparently buggy 
+somewhere ...
 
 	Ingo
