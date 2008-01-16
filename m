@@ -1,92 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758892AbYAPWgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759016AbYAPWgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758892AbYAPWgV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 17:36:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757622AbYAPWfi
+	id S1759016AbYAPWgj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 17:36:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756060AbYAPWgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 17:35:38 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:47004 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758441AbYAPWfe (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 17:35:34 -0500
-Date: Thu, 17 Jan 2008 09:35:10 +1100
-From: David Chinner <dgc@sgi.com>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Michael Rubin <mrubin@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [patch] Converting writeback linked lists to a tree based data structure
-Message-ID: <20080116223510.GY155407@sgi.com>
-References: <20080115080921.70E3810653@localhost> <1200386774.15103.20.camel@twins> <532480950801150953g5a25f041ge1ad4eeb1b9bc04b@mail.gmail.com> <400452490.28636@ustc.edu.cn> <20080115194415.64ba95f2.akpm@linux-foundation.org> <400457571.32162@ustc.edu.cn> <20080115204236.6349ac48.akpm@linux-foundation.org> <400459376.04290@ustc.edu.cn> <20080115215149.a881efff.akpm@linux-foundation.org> <E1JF4Ey-0000x4-5p@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 16 Jan 2008 17:36:07 -0500
+Received: from wr-out-0506.google.com ([64.233.184.235]:41806 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755455AbYAPWgE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 17:36:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=qquY+jgKF+H/HeOTU78F06y4VpfYAEnrTKaUAPPYxVq60KuBS6yU+LIlLUxPiOp41/68eGRIw5ZvAJSMKcZHhpsrCY1r1nVCXdeDtIhcDa3qYRIl5VoNx3JXLuXSd1TvcrIAnnRFiXwUPX4oZtyW6/FCOR0viYMNOY0IhyCJijs=
+Message-ID: <1f1b08da0801161436k4a7ac1e3kd83590951e7bebb9@mail.gmail.com>
+Date: Wed, 16 Jan 2008 14:36:02 -0800
+From: "john stultz" <johnstul@us.ibm.com>
+To: "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [RFC PATCH 16/22 -v2] add get_monotonic_cycles
+Cc: "Steven Rostedt" <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Gregory Haskins" <ghaskins@novell.com>,
+       "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Tim Bird" <tim.bird@am.sony.com>, "Sam Ravnborg" <sam@ravnborg.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       "Steven Rostedt" <srostedt@redhat.com>,
+       "Paul Mackerras" <paulus@samba.org>,
+       "Daniel Walker" <dwalker@mvista.com>, johnstul@us.ibm.com
+In-Reply-To: <20080116145604.GB31329@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <E1JF4Ey-0000x4-5p@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+References: <20080109232914.676624725@goodmis.org>
+	 <20080109233044.777564395@goodmis.org>
+	 <20080115214636.GD17439@Krystal>
+	 <Pine.LNX.4.58.0801151658190.29090@gandalf.stny.rr.com>
+	 <20080115220824.GB22242@Krystal>
+	 <Pine.LNX.4.58.0801151717250.29090@gandalf.stny.rr.com>
+	 <20080116031730.GA2164@Krystal>
+	 <Pine.LNX.4.58.0801152238130.19680@gandalf.stny.rr.com>
+	 <20080116145604.GB31329@Krystal>
+X-Google-Sender-Auth: bbc72e6c00e85baf
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 16, 2008 at 05:07:20PM +0800, Fengguang Wu wrote:
-> On Tue, Jan 15, 2008 at 09:51:49PM -0800, Andrew Morton wrote:
-> > > Then to do better ordering by adopting radix tree(or rbtree
-> > > if radix tree is not enough),
-> > 
-> > ordering of what?
-> 
-> Switch from time to location.
+On Jan 16, 2008 6:56 AM, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> If you really want an seqlock free algorithm (I _do_ want this for
+> tracing!) :) maybe going in the RCU direction could help (I refer to my
+> RCU-based 32-to-64 bits lockless timestamp counter extension, which
+> could be turned into the clocksource updater).
 
-Note that data writeback may be adversely affected by location
-based writeback rather than time based writeback - think of
-the effect of location based data writeback on an app that
-creates lots of short term (<30s) temp files and then removes
-them before they are written back.
+Yea. After our earlier discussion and talking w/ Steven, I'm taking a
+swing at this now.  The lock-free method still doesn't apply to the
+update_wall_time function, but does work fine for the monotonic cycle
+uses.  I'll send a patch for review as soon as I get things building.
 
-Also, data writeback locatio cannot be easily derived from
-the inode number in pretty much all cases. "near" in terms
-of XFS means the same AG which means the data could be up to
-a TB away from the inode, and if you have >1TB filesystems
-usingthe default inode32 allocator, file data is *never*
-placed near the inode - the inodes are in the first TB of
-the filesystem, the data is rotored around the rest of the
-filesystem.
-
-And with delayed allocation, you don't know where the data is even
-going to be written ahead of the filesystem ->writepage call, so you
-can't do optimal location ordering for data in this case.
-
-> > > and lastly get rid of the list_heads to
-> > > avoid locking. Does it sound like a good path?
-> > 
-> > I'd have thaought that replacing list_heads with another data structure
-> > would be a simgle commit.
-> 
-> That would be easy. s_more_io and s_more_io_wait can all be converted
-> to radix trees.
-
-Makes sense for location based writeback of the inodes themselves,
-but not for data.
-
-Hmmmm - I'm wondering if we'd do better to split data writeback from
-inode writeback. i.e. we do two passes.  The first pass writes all
-the data back in time order, the second pass writes all the inodes
-back in location order.
-
-Right now we interleave data and inode writeback, (i.e.  we do data,
-inode, data, inode, data, inode, ....). I'd much prefer to see all
-data written out first, then the inodes. ->writepage often dirties
-the inode and hence if we need to do multiple do_writepages() calls
-on an inode to flush all the data (e.g. congestion, large amounts of
-data to be written, etc), we really shouldn't be calling
-write_inode() after every do_writepages() call. The inode
-should not be written until all the data is written....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+thanks
+-john
