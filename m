@@ -1,141 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755084AbYAPWbc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758383AbYAPWbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755084AbYAPWbc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 17:31:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757136AbYAPWYZ
+	id S1758383AbYAPWbt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 17:31:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755650AbYAPW1F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 17:24:25 -0500
-Received: from ns2.suse.de ([195.135.220.15]:39123 "EHLO mx2.suse.de"
+	Wed, 16 Jan 2008 17:27:05 -0500
+Received: from cantor.suse.de ([195.135.220.2]:56751 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756727AbYAPWYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 17:24:23 -0500
-Date: Wed, 16 Jan 2008 23:24:21 +0100
+	id S1754635AbYAPW1E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 17:27:04 -0500
 From: Andi Kleen <ak@suse.de>
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH] Only print kernel debug information for OOMs caused by kernel allocations
-Message-ID: <20080116222421.GA7953@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Message-Id: <200801161127.268350000@suse.de>
+To: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: [PATCH] [0/7] Some random x86 patches that should all go into git-x86
+Date: Wed, 16 Jan 2008 23:27:03 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-I recently suffered an 20+ minutes oom thrash disk to death and computer
-completely unresponsive situation on my desktop when some user program
-decided to grab all memory. It eventually recovered, but left lots
-of ugly and imho misleading messages in the kernel log. here's a minor
-improvement
+Some are reposts, some are not. See patch descriptions for details.
+I believe I addressed all feedback that made sense in the reposted
+patches.
 
 -Andi
-
----
-
-Only print kernel debug information for OOMs caused by kernel allocations
-
-For any page cache allocation don't print the backtrace and the detailed
-zone debugging information. This makes the problem look less like 
-a kernel bug because it typically isn't.
-
-I needed a new task flag for that. Since the bits are running low
-I reused an unused one (PF_STARTING) 
-
-Also clarify the error message (OOM means nothing to a normal user) 
-
-Signed-off-by: Andi Kleen <ak@suse.de>
-
----
- include/linux/pagemap.h |    7 -------
- include/linux/sched.h   |    2 +-
- mm/filemap.c            |   16 +++++++++++-----
- mm/oom_kill.c           |    9 ++++++---
- 4 files changed, 18 insertions(+), 16 deletions(-)
-
-Index: linux/include/linux/sched.h
-===================================================================
---- linux.orig/include/linux/sched.h
-+++ linux/include/linux/sched.h
-@@ -1358,7 +1358,7 @@ static inline void put_task_struct(struc
-  */
- #define PF_ALIGNWARN	0x00000001	/* Print alignment warning msgs */
- 					/* Not implemented yet, only for 486*/
--#define PF_STARTING	0x00000002	/* being created */
-+#define PF_USER_ALLOC	0x00000002	/* Current allocation is user initiated */
- #define PF_EXITING	0x00000004	/* getting shut down */
- #define PF_EXITPIDONE	0x00000008	/* pi exit done on shut down */
- #define PF_VCPU		0x00000010	/* I'm a virtual CPU */
-Index: linux/mm/oom_kill.c
-===================================================================
---- linux.orig/mm/oom_kill.c
-+++ linux/mm/oom_kill.c
-@@ -340,11 +340,14 @@ static int oom_kill_process(struct task_
- 	struct task_struct *c;
- 
- 	if (printk_ratelimit()) {
--		printk(KERN_WARNING "%s invoked oom-killer: "
-+		printk(KERN_WARNING "%s ran out of available memory: "
- 			"gfp_mask=0x%x, order=%d, oomkilladj=%d\n",
- 			current->comm, gfp_mask, order, current->oomkilladj);
--		dump_stack();
--		show_mem();
-+		/* Only dump backtrace for kernel initiated allocations */
-+		if (!(p->flags & PF_USER_ALLOC)) {
-+			dump_stack();
-+			show_mem();
-+		}
- 	}
- 
- 	/*
-Index: linux/include/linux/pagemap.h
-===================================================================
---- linux.orig/include/linux/pagemap.h
-+++ linux/include/linux/pagemap.h
-@@ -62,14 +62,7 @@ static inline void mapping_set_gfp_mask(
- #define page_cache_release(page)	put_page(page)
- void release_pages(struct page **pages, int nr, int cold);
- 
--#ifdef CONFIG_NUMA
- extern struct page *__page_cache_alloc(gfp_t gfp);
--#else
--static inline struct page *__page_cache_alloc(gfp_t gfp)
--{
--	return alloc_pages(gfp, 0);
--}
--#endif
- 
- static inline struct page *page_cache_alloc(struct address_space *x)
- {
-Index: linux/mm/filemap.c
-===================================================================
---- linux.orig/mm/filemap.c
-+++ linux/mm/filemap.c
-@@ -482,17 +482,23 @@ int add_to_page_cache_lru(struct page *p
- 	return ret;
- }
- 
--#ifdef CONFIG_NUMA
- struct page *__page_cache_alloc(gfp_t gfp)
- {
-+	struct task_struct *me = current;
-+	unsigned old = (~me->flags) & PF_USER_ALLOC;
-+	struct page *p;
-+
-+	me->flags |= PF_USER_ALLOC;
- 	if (cpuset_do_page_mem_spread()) {
- 		int n = cpuset_mem_spread_node();
--		return alloc_pages_node(n, gfp, 0);
--	}
--	return alloc_pages(gfp, 0);
-+		p = alloc_pages_node(n, gfp, 0);
-+	} else
-+		p = alloc_pages(gfp, 0);
-+	/* Clear USER_ALLOC if it wasn't set originally */
-+	me->flags ^= old;
-+	return p;
- }
- EXPORT_SYMBOL(__page_cache_alloc);
--#endif
- 
- static int __sleep_on_page_lock(void *word)
- {
