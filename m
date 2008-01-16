@@ -1,91 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752297AbYAPPXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270AbYAPP0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752297AbYAPPXR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 10:23:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbYAPPXE
+	id S1753270AbYAPP0T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 10:26:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbYAPP0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 10:23:04 -0500
-Received: from www.tglx.de ([62.245.132.106]:55488 "EHLO www.tglx.de"
+	Wed, 16 Jan 2008 10:26:07 -0500
+Received: from cantor.suse.de ([195.135.220.2]:49312 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750968AbYAPPXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 10:23:03 -0500
-Date: Wed, 16 Jan 2008 16:21:28 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-cc: Andrew Paprocki <andrew@ishiboo.com>, linux-kernel@vger.kernel.org,
-       Balaji Rao <balajirrao@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       clemens@ladisch.de, venkatesh.pallipadi@intel.com, bob.picco@hp.com
-Subject: Re: HPET timer broken using 2.6.23.13 / nanosleep() hangs
-In-Reply-To: <alpine.LFD.0.99999.0801161524250.3764@localhost.localdomain>
-Message-ID: <alpine.LFD.0.99999.0801161618380.3764@localhost.localdomain>
-References: <76366b180801130310x57f24cc8s641d3ccb2415524c@mail.gmail.com> <20080113120337.GA5548@linux.vnet.ibm.com> <76366b180801130510w2af714fevf03f59164f90806f@mail.gmail.com> <20080113140620.GA22507@linux.vnet.ibm.com> <alpine.LFD.0.99999.0801161458470.3764@localhost.localdomain>
- <alpine.LFD.0.99999.0801161524250.3764@localhost.localdomain>
-User-Agent: Alpine 0.99999 (LFD 796 2007-11-08)
+	id S1751269AbYAPP0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 10:26:06 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 0 of 4] x86: some more patches
+Date: Wed, 16 Jan 2008 16:26:01 +0100
+User-Agent: KMail/1.9.6
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jan Beulich <jbeulich@novell.com>
+References: <patchbomb.1200435425@localhost> <200801161544.15884.ak@suse.de> <20080116145427.GA640@elte.hu>
+In-Reply-To: <20080116145427.GA640@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801161626.01711.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Jan 2008, Thomas Gleixner wrote:
-
-> On Wed, 16 Jan 2008, Thomas Gleixner wrote:
+On Wednesday 16 January 2008 15:54:27 Ingo Molnar wrote:
 > 
-> > On Sun, 13 Jan 2008, Dhaval Giani wrote:
-> > > On Sun, Jan 13, 2008 at 08:10:46AM -0500, Andrew Paprocki wrote:
-> > > > I applied the patch to my 2.6.23.13 tree and upon reboot it stopped right after:
-> > > > 
-> > > > Clocksource tsc unstable (delta = ... ns)
-> > > > Time: hpet clocksource has been installed.
-> > > > 
-> > > > It locked up hard.. cursor stopped blinking and SysRq isn't working either.
+> * Andi Kleen <ak@suse.de> wrote:
+> 
+> > >  #define PHYSICAL_PAGE_MASK	(PAGE_MASK & __PHYSICAL_MASK)
 > > 
-> > The hint is in the original report:
 > > 
-> > Clocksource tsc unstable (delta = 500013666 ns)
+> > I haven't tested yet, but we looked at that one earlier and I thought 
+> > it was ok because
 > > 
-> > That means, that the TSC was counting, but HPET not. So it looks like
-> > the HPET readout is stale. Which explains, why after switching to HPET
-> > clocksource the time system gets hosed.
+> > #define __PHYSICAL_MASK          _AT(phys_addr_t, (_AC(1,ULL) << __PHYSICAL_MASK_SHIFT) - 1)
 > > 
-> > I wonder why the HPET counter works check did not catch this.
+> > and 
 > > 
-> > Can you please apply the path below and provide the output ?
+> > typedef u64     phys_addr_t;
+> > 
+> > for PAE. So the expression above should have been already 64bit.
+> 
+> no. The problem is that PAGE_MASK is:
 
-This time against 2.6.23
+I covered that in the end of the email.
+> 
+> 
+> (PHYSICAL_PAGE_MASK is broken too in the same way, i just fixed that in 
+> my tree - but it's not used by anything on 32-bit PAE but by PAGE_MASK)
 
-Thanks,
-	tglx
+Yes, but if you cast to long the result will be 32bit again. Or do you
+rely on it being always used in 64bit signed context with sign extension?
+While that might work it would seem rather fragile to me, just asking
+for similar future bugs.
 
+-Andi
 
---- a/arch/i386/kernel/hpet.c
-+++ b/arch/i386/kernel/hpet.c
-@@ -233,7 +233,7 @@ int __init hpet_enable(void)
- 	unsigned long id;
- 	uint64_t hpet_freq;
- 	u64 tmp, start, now;
--	cycle_t t1;
-+	cycle_t t1, t2;
- 
- 	if (!is_hpet_capable())
- 		return 0;
-@@ -295,12 +295,17 @@ int __init hpet_enable(void)
- 		rdtscll(now);
- 	} while ((now - start) < 200000UL);
- 
--	if (t1 == read_hpet()) {
-+	t2 = read_hpet();
-+	if (t1 == t2) {
- 		printk(KERN_WARNING
- 		       "HPET counter not counting. HPET disabled\n");
- 		goto out_nohpet;
- 	}
- 
-+	printk(KERN_INFO "HPET check: t1=%llu t2=%llu s=%llu n=%llu\n",
-+	       (unsigned long long) t1, (unsigned long long) t2,
-+	       (unsigned long long) start, (unsigned long long) now);
-+
- 	/* Initialize and register HPET clocksource
- 	 *
- 	 * hpet period is in femto seconds per cycle
