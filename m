@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756640AbYAPXRM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbYAPXRj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756640AbYAPXRM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 18:17:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755494AbYAPXOb
+	id S1756177AbYAPXRj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 18:17:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755531AbYAPXOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 18:14:31 -0500
+	Wed, 16 Jan 2008 18:14:37 -0500
 Received: from ug-out-1314.google.com ([66.249.92.174]:10411 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755093AbYAPXO3 (ORCPT
+	with ESMTP id S1755276AbYAPXOg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 18:14:29 -0500
+	Wed, 16 Jan 2008 18:14:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=oSGFIIlfAsTq/+7LL+HanTmUhXMVlz24DPYEaUWCPwMEUlHtm/sSIJwwccSeJxRD84gzoQIMdDyj+EWgn6i+AvntryLo38YG1mj2iC3nXXWgYzyKz6LGTr5FSePaWhEl2HtNR20DcEnXCiIx/GCLQZqoDaK2Ksy36PsQBAYBknk=
+        b=C1i5GscxDiEWUn3RJcDjiRzVIz+ar8olOvoaUss/tg6tN8dmqr0caWjl+ZCpshx7kkkj6PvPvU2fwf9WoGBn9uReBuxGXqU8fRRizaeLkPXsCi1OoMyLryh/9P79yLvDKOYjVRydZJ3MUTsoImLsm9aUo2u/AQpcqVVVsyWirgw=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Thu, 17 Jan 2008 00:27:09 +0100
-Message-Id: <20080116232709.9166.21924.sendpatchset@localhost.localdomain>
+Date: Thu, 17 Jan 2008 00:27:16 +0100
+Message-Id: <20080116232716.9166.83558.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080116232556.9166.13457.sendpatchset@localhost.localdomain>
 References: <20080116232556.9166.13457.sendpatchset@localhost.localdomain>
-Subject: [PATCH 09/22] ide: remove incorrect init_gendisk() comment
+Subject: [PATCH 10/22] ide: skip not present devices in init_gendisk()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+No need to initialize drive->gendev and waste memory on IDE settings
+for not present devices.
+
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-probe.c |    6 ------
- 1 file changed, 6 deletions(-)
+ drivers/ide/ide-probe.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
 Index: b/drivers/ide/ide-probe.c
 ===================================================================
 --- a/drivers/ide/ide-probe.c
 +++ b/drivers/ide/ide-probe.c
-@@ -1182,12 +1182,6 @@ static void drive_release_dev (struct de
- 	complete(&drive->gendev_rel_comp);
- }
+@@ -1194,6 +1194,10 @@ static void init_gendisk (ide_hwif_t *hw
  
--/*
-- * init_gendisk() (as opposed to ide_geninit) is called for each major device,
-- * after probing for drives, to allocate partition tables and other data
-- * structures needed for the routines in genhd.c.  ide_geninit() gets called
-- * somewhat later, during the partition check.
-- */
- static void init_gendisk (ide_hwif_t *hwif)
- {
- 	unsigned int unit;
+ 	for (unit = 0; unit < MAX_DRIVES; ++unit) {
+ 		ide_drive_t * drive = &hwif->drives[unit];
++
++		if (!drive->present)
++			continue;
++
+ 		ide_add_generic_settings(drive);
+ 		snprintf(drive->gendev.bus_id,BUS_ID_SIZE,"%u.%u",
+ 			 hwif->index,unit);
