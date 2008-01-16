@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757694AbYAPBuQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757623AbYAPBxH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757694AbYAPBuQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 20:50:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756492AbYAPBt7
+	id S1757623AbYAPBxH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 20:53:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755452AbYAPBwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 20:49:59 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59407 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756484AbYAPBt6 (ORCPT
+	Tue, 15 Jan 2008 20:52:55 -0500
+Received: from web36702.mail.mud.yahoo.com ([209.191.85.36]:49000 "HELO
+	web36702.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751076AbYAPBwz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 20:49:58 -0500
-Date: Wed, 16 Jan 2008 10:48:55 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: =?ISO-2022-JP?B?IkRhbmllbCBTcBskQmlPGyhCZyI=?= 
-	<daniel.spang@gmail.com>
-Subject: Re: [RFC][PATCH 4/5] memory_pressure_notify() caller
-Cc: kosaki.motohiro@jp.fujitsu.com, "Rik van Riel" <riel@redhat.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       "Marcelo Tosatti" <marcelo@kvack.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <cfd9edbf0801151539g72ca9777h7ac43a31aadc730e@mail.gmail.com>
-References: <20080115175925.215471e1@bree.surriel.com> <cfd9edbf0801151539g72ca9777h7ac43a31aadc730e@mail.gmail.com>
-Message-Id: <20080116104536.11AE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 15 Jan 2008 20:52:55 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=zMtWJgM5xL+Oe1LHvD5t9m+ro/a31xGIoBtR4BhYpjdcmy/JLC1q53U5IVTAlifo4s03fpu2lj3cGKBnh/+vZ8x4shY+rQD1JeCu3ws7RmX28feZUTDv6xbi5Q7h6xHbKsYTlxgphvQdvd1a2kN+gvP1LKeE1SkDkAFnQb51EoQ=;
+X-YMail-OSG: 1yKa100VM1kPqAwNEXtE1A8AeFs.7MAYtZuKGEjZbiYE0lMdmQw58JCZ4xC17iH38fjEpBChHNQtqnJrrTr1vrmcQIqQDGOmZlw__vEwNWmJ.90-
+Date: Tue, 15 Jan 2008 17:52:54 -0800 (PST)
+From: Alex Dubov <oakad@yahoo.com>
+Subject: Re: [PATCH] [MEMSTICK] Initial commit for Sony MemoryStick support
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200801151821.09413.m.kozlowski@tuxland.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-2022-JP"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <582336.93194.qm@web36702.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Daniel
 
-> > > The notification fires after only ~100 MB allocated, i.e., when page
-> > > reclaim is beginning to nag from page cache. Isn't this a bit early?
-> > > Repeating the test with swap enabled results in a notification after
-> > > ~600 MB allocated, which is more reasonable and just before the system
-> > > starts to swap.
-> >
-> > Your issue may have more to do with the fact that the
-> > highmem zone is 128MB in size and some balancing issues
-> > between __alloc_pages and try_to_free_pages.
+--- Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
+
+> Hello,
 > 
-> I don't think so. I ran the test again without highmem and noticed the
-> same behaviour:
+> > Sony MemoryStick cards are used in many products manufactured by Sony. They
+> > are available both as storage and as IO expansion cards. Currently, only
+> > MemoryStick Pro storage cards are supported via TI FlashMedia MemoryStick
+> > interface.
+> 
+> I tried it here and it doesn't work. My Vaio (PCG-FR285M) is from ~2003 (Is it too old
+> for this?). I have some memory stick cards around so If you want a tester just drop me
+> an email.
+> 
+> Regards,
+> 
+> 	Mariusz
+> 
 
-Thank you for good point out!
-Could you please post your test program and reproduced method?
+The build year is nowhere as helpful as 'lspci -vv' output. Then, given that your vaio is equipped
+with tifm controller, you'll have to build the driver with debugging enabled and send me the
+relevant excerpt of your system log.
 
-unfortunately,
-my simple test is so good works in swapless system ;-)
+You should have the following modules loaded, by the way:
+memstick
+mspro_block
+tifm_core
+tifm_7xx1
+tifm_ms
 
-thanks.
+The autoloading is handled via udev (so the relevant rules are not there yet).
 
 
 
+      ____________________________________________________________________________________
+Never miss a thing.  Make Yahoo your home page. 
+http://www.yahoo.com/r/hs
