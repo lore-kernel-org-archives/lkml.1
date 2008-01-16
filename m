@@ -1,89 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753642AbYAPRpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753339AbYAPRq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753642AbYAPRpx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 12:45:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750916AbYAPRpo
+	id S1753339AbYAPRq4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 12:46:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbYAPRqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 12:45:44 -0500
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:41555 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751290AbYAPRpn (ORCPT
+	Wed, 16 Jan 2008 12:46:48 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:28532 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751390AbYAPRqr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 12:45:43 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Jaroslav Kysela <perex@perex.cz>
-Subject: Re: -mm: pnp-do-not-stop-start-devices-in-suspend-resume-path.patch breaks resuming isapnp cards
-Date: Wed, 16 Jan 2008 10:46:03 -0700
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Rene Herman <rene.herman@keyaccess.nl>, Andrew Morton <akpm@osdl.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pierre Ossman <drzeus@drzeus.cx>,
-       Pavel Machek <pavel@suse.cz>, Ondrej Zary <linux@rainbow-software.org>,
-       ALSA development <alsa-devel@alsa-project.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Takashi Iwai <tiwai@suse.de>, linux-pm@lists.linux-foundation.org
-References: <200801092343.48726.linux@rainbow-software.org> <200801141526.57744.bjorn.helgaas@hp.com> <Pine.LNX.4.61.0801150842480.7446@tm8103.perex-int.cz>
-In-Reply-To: <Pine.LNX.4.61.0801150842480.7446@tm8103.perex-int.cz>
+	Wed, 16 Jan 2008 12:46:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=vbIaTbwq1WuL4Vx6cCExOgh08hZmy5yZ37zwiJcM2qJBawlYpDoPBO1gQes3LN30z/T7XgJsOakbHLCnsgkYmFX+vqNZK4yBQ7MvYa+IL9UTzagS4aHv4rRHqHE1hsi1BgWPAakmmdv6DN3AbxKQ3eoQeecMlG6USMODCLbk36Q=
+Message-ID: <19f34abd0801160946j2fe1c75ap3617dd125c81008f@mail.gmail.com>
+Date: Wed, 16 Jan 2008 18:46:46 +0100
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Subject: Re: [BISECTED] Re: psmouse.c: GlidePoint at isa0060/serio1/input0 lost sync at byte 1
+Cc: linux-input@vger.kernel.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "William Pettersson" <william.pettersson@gmail.com>
+In-Reply-To: <20080116104024.ZZRA012@mailhub.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801161046.05174.bjorn.helgaas@hp.com>
+References: <19f34abd0711141226n60323630rdc4833db0bfb2eeb@mail.gmail.com>
+	 <19f34abd0801071224kb9cb121u244b00b274231db0@mail.gmail.com>
+	 <d120d5000801110647k4b1fa49ene974898baf745aec@mail.gmail.com>
+	 <478CFB56.1030700@gmail.com>
+	 <20080115154142.ZZRA012@mailhub.coreip.homeip.net>
+	 <20080116104024.ZZRA012@mailhub.coreip.homeip.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 January 2008 12:51:35 am Jaroslav Kysela wrote:
-> On Mon, 14 Jan 2008, Bjorn Helgaas wrote:
-> > On Saturday 12 January 2008 11:13:35 pm Rene Herman wrote:
-> > > ... And, now that I have your attention, while it's 
-> > > not important to the issue anymore with the tests removed as the submitted 
-> > > patch did, do you have an opinion on (include/linux/pnp.h):
-> > > 
-> > > /* pnp driver flags */
-> > > #define PNP_DRIVER_RES_DO_NOT_CHANGE    0x0001  /* do not change the state 
-> > > of the device */
-> > > #define PNP_DRIVER_RES_DISABLE          0x0003  /* ensure the device is 
-> > > disabled */
-> > > 
-> > > I find DISABLE including DO_NOT_CHANGE rather unexpected...
-> > 
-> > I don't know the history of those flags, but I wish they didn't exist.
-> 
-> Ok, something to explain. These flags exists to allow drivers to 
-> manually configure (override) PnP resources at init time - we know - for 
-> example in ALSA - that some combinations simply does not work for all 
-> soundcards.
+Hi,
+
+On Jan 16, 2008 4:42 PM, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> Ok, how about this one to begin with?
 >
-> The DISABLE flags simply tells core PnP layer - driver will handle 
-> resource allocation itself, don't do anything, just disable hw physically 
-> and do not change (allocate) any resources. Value 0x03 is valid in this 
-> semantics.
+> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+> ---
+>  drivers/input/mouse/alps.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> Index: linux/drivers/input/mouse/alps.c
+> ===================================================================
+> --- linux.orig/drivers/input/mouse/alps.c
+> +++ linux/drivers/input/mouse/alps.c
+> @@ -54,7 +54,7 @@ static const struct alps_model_info alps
+>         { { 0x20, 0x02, 0x0e }, 0xf8, 0xf8, ALPS_PASS | ALPS_DUALPOINT }, /* XXX */
+>         { { 0x22, 0x02, 0x0a }, 0xf8, 0xf8, ALPS_PASS | ALPS_DUALPOINT },
+>         { { 0x22, 0x02, 0x14 }, 0xff, 0xff, ALPS_PASS | ALPS_DUALPOINT }, /* Dell Latitude D600 */
+> -       { { 0x73, 0x02, 0x50 }, 0xcf, 0xff, ALPS_FW_BK_1 } /* Dell Vostro 1400 */
+> +       { { 0x73, 0x02, 0x50 }, 0xcf, 0xcf, ALPS_FW_BK_1 } /* Dell Vostro 1400 */
+>  };
+>
+>  /*
 
-It looks like sound drivers use PNP_DRIVER_RES_DISABLE to say "ignore
-what PNP tells us about resource usage and we'll just use the compiled-
-in or command-line-specified resources".
+I have now tried this patch. I don't see a sync error now, but the
+button still does not work as expected. Now the scroll down button
+acts like a middle button instead of scrolling down.
 
-The main reason to do that would be to work around BIOS defects or
-to work around deficiencies in the Linux PNP infrastructure (e.g.,
-maybe we erroneously place another device on top of the sound card
-or something).
+I am sorry for the confusion; on my laptop it looks like a single
+button, but in fact it can be pressed in four different ways (up,
+down, left, and right). In 2.6.23, pressing left or right, I get the
+traditional paste functionality. Pressing up or down, it acts like a
+scroll wheel (up or down). In 2.6.24-rc1, it is the scrolling up/down
+that causes the lost sync (but the left/right works correctly).
 
-I'm just suspicious because PNP_DRIVER_RES_DISABLE is only used in
-sound drivers.  If it's to work around BIOS defects, why wouldn't
-other PNP drivers need it sometimes, too?  And wouldn't it be better
-to use PNP quirks for BIOS workarounds?
-
-> Unfortunately, suspend / resume complicates things a bit, but PnP core can 
-> handle DO_NOT_CHANGE flag. But it will just mean - _preserve_ resource 
-> allocation from last suspend state for this device and enable hw 
-> physically before calling resume() callback.
-
-When resuming, wouldn't we *always* want to preserve the resource
-allocation from the last suspend, regardless of whether
-PNP_DRIVER_RES_DO_NOT_CHANGE is specified?
-
-Linux PNP definitely has issues with suspend/resume, and I suspect
-this is one of them.
-
-Bjorn
+Vegard
