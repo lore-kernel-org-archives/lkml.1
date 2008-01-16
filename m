@@ -1,57 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758188AbYAPCoE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbYAPCs3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758188AbYAPCoE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 21:44:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbYAPCnx
+	id S1758020AbYAPCs3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 21:48:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754830AbYAPCsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 21:43:53 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47455 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752023AbYAPCnw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 21:43:52 -0500
-Date: Wed, 16 Jan 2008 11:43:08 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [RFC][PATCH 3/5] add /dev/mem_notify device
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Marcelo Tosatti <marcelo@kvack.org>,
-       Daniel Spang <daniel.spang@gmail.com>, Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080115134209.7b3c2f7e@lxorguk.ukuu.org.uk>
-References: <20080115202711.11A6.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080115134209.7b3c2f7e@lxorguk.ukuu.org.uk>
-Message-Id: <20080116114121.11B7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 15 Jan 2008 21:48:22 -0500
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:15790 "EHLO
+	outbound2-wa4-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753134AbYAPCsU convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 21:48:20 -0500
+X-Greylist: delayed 1870 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Jan 2008 21:48:20 EST
+X-BigFish: V
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH] lost softirq, 2.6.24-rc7
+Date: Tue, 15 Jan 2008 18:17:07 -0800
+Message-ID: <884020C16A0AFF4D8A8B7800EA0C98870FD5F6@ussdixms03.am.sony.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] lost softirq, 2.6.24-rc7
+Thread-Index: AchX3w/jBsGjl1oDRHqeAsSzSiu1fQABUmMJ
+References: <1200435326.4092.9.camel@bx740> <20080116003946.GE30532@goodmis.org>
+From: "Rowand, Frank" <frank.rowand@us.sony.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Cc: <linux-kernel@vger.kernel.org>, <mingo@redhat.com>
+X-OriginalArrivalTime: 16 Jan 2008 02:17:08.0385 (UTC) FILETIME=[E528E910:01C857E5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan
 
-> > > It also appears there is no way to wait for memory shortages (processes
-> > > that can free memory easily) only for memory to start appearing.
-> > 
-> > poll() with never timeout don't fill your requirement?
-> > to be honest, maybe I don't understand your afraid yet. sorry.
+Steve,
+
+You are totally correct.  I used the wrong words when I said
+"ksoftirqd thread runs".  My apologies for very misleading wording.
+
+I have updated the wording in-line below, in the original message to
+indicate that it is softirq threads, in the ksoftirqd() function, not
+the ksoftirqd thread.
+
+-Frank
+
+-----Original Message-----
+From: Steven Rostedt [mailto:rostedt@goodmis.org]
+Sent: Tue 1/15/2008 4:39 PM
+To: Rowand, Frank
+Cc: linux-kernel@vger.kernel.org; mingo@redhat.com
+Subject: Re: [PATCH] lost softirq, 2.6.24-rc7
+ 
+On Tue, Jan 15, 2008 at 02:15:26PM -0800, Frank Rowand wrote:
+> From: Frank Rowand <frank.rowand@am.sony.com>
 > 
-> My misunderstanding. There is in fact no way to wait for memory to become
-> available. The poll() method you provide works nicely waiting for
-> shortages and responding to them by freeing memory.
+> (Ingo, there is a question for you after the description, just before the
+> patch.)
 > 
-> It would be interesting to add FASYNC support to this. Some users have
-> asked for a signal when memory shortage occurs (as IBM AIX provides
-> this). FASYNC support would allow a SIGIO to be delivered from this
-> device when memory shortages occurred. Poll as you have implemented is of
-> course the easier way for a program to monitor memory and a better
-> interface.
+> When running an interrupt and network intensive stress test with PREEMPT_RT
+> enabled, the target system stopped processing received network packets.
+> skbs from received packets were being queued by net_rx_action(), but the
+> NET_RX_SOFTIRQ softirq was never running to remove the skbs from the queue.
+> Since the target system root file system is NFS mounted, the system is now
+> effectively hung.
+> 
+> A pseudocode description of how this state was reached follows.
+> Each level of indentation represents a function call from the previous line.
+> 
+> 
+> ethernet driver irq handler receives packet
+>    netif_rx()
+>       queues skb (qlen == 1), raises NET_RX_SOFTIRQ
+> 
+> on return from irq
+>    ___do_softirq() [ 1 ]
+>       Reset the pending bitmask
 
-OK.
-I will challenge implement at mem_notify v5.
+Frank,
 
+This path should not be hit when running with PREEMPT_RT. The softirqs
+are now all separate, and are not run in batch in ksoftirqd. In fact,
+ksoftirqd should not be running at all with PREEMPT_RT.
 
-- kosaki
+-- Steve
+
+>       net_rx_action()
+>          dequeues skb (qlen == 0)
+>          jiffies incremented, so
+>             break out of processing
+>             and raise NET_RX_SOFTIRQ
+>             (but don't deassert NAPI_STATE_SCHED)
+> 
+> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+>          ksoftirqd thread runs
+
+           ^^^^^^^^^^^^^^^^^^^^^^  should have been:
+
+           the TIMER_SOFTIRQ and RCU_SOFTIRQ softirq threads, which are
+           both executing ksoftirqd() run
+
+>             process TIMER_SOFTIRQ
+>             process RCU_SOFTIRQ
+
+>             << ksoftirqd sleeps >>
+
+              ^^^^^^^^^^^^^^^^^^^^^^^  should have been:
+              the softirq threads, executing in ksoftirqd(), sleep
+
+> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+> 
+>          ___do_softirq() [ 2 ]
+>             Reset the pending bitmask
+>             finds NET_RX_SOFTIRQ raised but already running
+>             << ___do_softirq() [ 2 ] completes >>
+> 
+>       << ___do_softirq() [ 1 ] resumes >>
+>       the pending bitmask is empty, so NET_RX_SOFTIRQ is lost
+> 
+> 
+> 
+
 
 
