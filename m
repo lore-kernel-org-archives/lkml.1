@@ -1,108 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756594AbYAPRKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756743AbYAPRKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756594AbYAPRKb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 12:10:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbYAPRJI
+	id S1756743AbYAPRKr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 12:10:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbYAPRJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 12:09:08 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:41396 "EHLO relay.sgi.com"
+	Wed, 16 Jan 2008 12:09:09 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:41400 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755866AbYAPRJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755875AbYAPRJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 Jan 2008 12:09:03 -0500
-Message-Id: <20080116170902.006151000@sgi.com>
+Message-Id: <20080116170902.984066000@sgi.com>
+References: <20080116170902.006151000@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Jan 2008 09:09:02 -0800
+Date: Wed, 16 Jan 2008 09:09:09 -0800
 From: travis@sgi.com
 To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
        mingo@elte.hu
 Cc: Eric Dumazet <dada1@cosmosbay.com>, Christoph Lameter <clameter@sgi.com>,
        Jack Steiner <steiner@sgi.com>, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 00/10] x86: Reduce memory and intra-node effects with large count NR_CPUs V3
+Subject: [PATCH 07/10] x86: Cleanup x86_cpu_to_apicid references V3
+Content-Disposition: inline; filename=cleanup-x86_cpu_to_apicid
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-This patchset addresses the kernel bloat that occurs when NR_CPUS is increased.
-The memory numbers below are with NR_CPUS = 1024 which I've been testing (4 and
-32 real processors, the rest "possible" using the additional_cpus start option.)
-These changes are all specific to the x86 architecture, non-arch specific
-changes will follow.
-
-Based on 2.6.24-rc6-mm1
+Clean up references to x86_cpu_to_apicid.  Removes extraneous
+comments and standardizes on "x86_*_early_ptr" for the early
+kernel init references.
 
 Signed-off-by: Mike Travis <travis@sgi.com>
 Reviewed-by: Christoph Lameter <clameter@sgi.com>
 ---
 V1->V2:
-    - Remove extraneous casts
-    - Add comment about node memory < NODE_MIN_SIZE
-    - changed pxm_to_node_map to u16
-    - changed memnode map entries to u16
-    - Fix !NUMA builds with '#ifdef CONFIG_NUMA"
-    - Add slight optimization to apic_is_clustered_box()
-
-V2->V3:
-    - add early_cpu_to_node function to keep cpu_to_node efficient
-    - move and rename smp_set_apicids() to setup_percpu_maps()
-    - call setup_percpu_maps() as early as possible
-    - changed memnode.embedded_map from [64-16] to [64-8]
-      (and size comment to 128 bytes)
+    - Removed extraneous casts
 ---
+ arch/x86/kernel/genapic_64.c |   11 ++---------
+ arch/x86/kernel/mpparse_64.c |   14 +++++---------
+ arch/x86/kernel/setup_64.c   |    2 +-
+ arch/x86/kernel/smpboot_32.c |    9 ++-------
+ arch/x86/kernel/smpboot_64.c |   16 +++++++++-------
+ include/asm-x86/smp_32.h     |    2 +-
+ include/asm-x86/smp_64.h     |    2 +-
+ 7 files changed, 21 insertions(+), 35 deletions(-)
 
-[Updated memory usage table.]
-
-The following columns are using the SuSE default x86_64 config
-[which has NR_CPUS=128] and NR_CPUS=1024.  There are no modules
-in either.  Each column's percentage is relative to the first.
-
-128cpus			1kcpus-before		1kcpus-after
-       228 .altinstr_re        228 +0%		       228 +0%
-      1219 .altinstruct       1219 +0%		      1219 +0%
-    866632 .bss		   2260296 +160%	   2112968 +143%
-     61374 .comment	     61374 +0%		     61374 +0%
-	16 .con_initcal 	16 +0%			16 +0%
-    427560 .data	    445480 +4%		    444200 +3%
-   1165824 .data.cachel   13076992 +1021%	  13076992 +1021%
-      8192 .data.init_t       8192 +0%		      8192 +0%
-      4096 .data.page_a       4096 +0%		      4096 +0%
-     39296 .data.percpu     155776 +296%	    155904 +296%
-    188992 .data.read_m    8751776 +4530%	   8747680 +4528%
-	 4 .data_nosave 	 4 +0%			 4 +0%
-      5141 .exit.text	      5150 +0%		      5149 +0%
-    138576 .init.data	    139472 +0%		    145424 +4%
-       134 .init.ramfs	       134 +0%		       134 +0%
-      3192 .init.setup	      3192 +0%		      3192 +0%
-    160143 .init.text	    160643 +0%		    160914 +0%
-      2288 .initcall.in       2288 +0%		      2288 +0%
-	 8 .jiffies		 8 +0%			 8 +0%
-      4512 .pci_fixup	      4512 +0%		      4512 +0%
-   1314318 .rodata	   1315630 +0%		   1315305 +0%
-     36856 .smp_locks	     36808 +0%		     36800 +0%
-   3975021 .text	   3984829 +0%		   3987389 +0%
-      3368 .vdso	      3368 +0%		      3368 +0%
-	 4 .vgetcpu_mod 	 4 +0%			 4 +0%
-       218 .vsyscall_0	       218 +0%		       218 +0%
-	52 .vsyscall_1		52 +0%			52 +0%
-	91 .vsyscall_2		91 +0%			91 +0%
-	 8 .vsyscall_3		 8 +0%			 8 +0%
-	54 .vsyscall_fn 	54 +0%			54 +0%
-	80 .vsyscall_gt 	80 +0%			80 +0%
-     39480 __bug_table	     39480 +0%		     39480 +0%
-     16320 __ex_table	     16320 +0%		     16320 +0%
-      9160 __param	      9160 +0%		      9160 +0%
-						
-   1818299 Text		   1834603 +0%		   1834859 +0%
-   3975021 Data		   3984829 +0%		   3987389 +0%
-    866632 Bss		   2260296 +160%	   2112968 +143%
-    360448 InitData	    483328 +34%		    487424 +35%
-   1415640 OtherData	  21885912 +1446%	  21883096 +1445%
-     39296 PerCpu	    155776 +0%		    155904 +0%
-   8472457 Total	  30486950 +259%	  30342823 +258%
-
-
-[Note that the sum of the last 6 lines may not equal "Total" as some
-sections may contain others (eg., InitData contains PerCpu data.)]
+--- a/arch/x86/kernel/genapic_64.c
++++ b/arch/x86/kernel/genapic_64.c
+@@ -24,17 +24,10 @@
+ #include <acpi/acpi_bus.h>
+ #endif
+ 
+-/*
+- * which logical CPU number maps to which CPU (physical APIC ID)
+- *
+- * The following static array is used during kernel startup
+- * and the x86_cpu_to_apicid_ptr contains the address of the
+- * array during this time.  Is it zeroed when the per_cpu
+- * data area is removed.
+- */
++/* which logical CPU number maps to which CPU (physical APIC ID) */
+ u16 x86_cpu_to_apicid_init[NR_CPUS] __initdata
+ 					= { [0 ... NR_CPUS-1] = BAD_APICID };
+-void *x86_cpu_to_apicid_ptr;
++void *x86_cpu_to_apicid_early_ptr;
+ DEFINE_PER_CPU(u16, x86_cpu_to_apicid) = BAD_APICID;
+ EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
+ 
+--- a/arch/x86/kernel/mpparse_64.c
++++ b/arch/x86/kernel/mpparse_64.c
+@@ -125,15 +125,11 @@ static void __cpuinit MP_processor_info(
+ 		cpu = 0;
+  	}
+ 	bios_cpu_apicid[cpu] = m->mpc_apicid;
+-	/*
+-	 * We get called early in the the start_kernel initialization
+-	 * process when the per_cpu data area is not yet setup, so we
+-	 * use a static array that is removed after the per_cpu data
+-	 * area is created.
+-	 */
+-	if (x86_cpu_to_apicid_ptr) {
+-		u16 *x86_cpu_to_apicid = x86_cpu_to_apicid_ptr;
+-		x86_cpu_to_apicid[cpu] = m->mpc_apicid;
++	/* are we being called early in kernel startup? */
++	if (x86_cpu_to_apicid_early_ptr) {
++		u16 *cpu_to_apicid = x86_cpu_to_apicid_early_ptr;
++
++		cpu_to_apicid[cpu] = m->mpc_apicid;
+ 	} else {
+ 		per_cpu(x86_cpu_to_apicid, cpu) = m->mpc_apicid;
+ 	}
+--- a/arch/x86/kernel/setup_64.c
++++ b/arch/x86/kernel/setup_64.c
+@@ -373,7 +373,7 @@ void __init setup_arch(char **cmdline_p)
+ 
+ #ifdef CONFIG_SMP
+ 	/* setup to use the static apicid table during kernel startup */
+-	x86_cpu_to_apicid_ptr = (void *)&x86_cpu_to_apicid_init;
++	x86_cpu_to_apicid_early_ptr = (void *)&x86_cpu_to_apicid_init;
+ #endif
+ 
+ #ifdef CONFIG_ACPI
+--- a/arch/x86/kernel/smpboot_32.c
++++ b/arch/x86/kernel/smpboot_32.c
+@@ -91,15 +91,10 @@ static cpumask_t smp_commenced_mask;
+ DEFINE_PER_CPU_SHARED_ALIGNED(struct cpuinfo_x86, cpu_info);
+ EXPORT_PER_CPU_SYMBOL(cpu_info);
+ 
+-/*
+- * The following static array is used during kernel startup
+- * and the x86_cpu_to_apicid_ptr contains the address of the
+- * array during this time.  Is it zeroed when the per_cpu
+- * data area is removed.
+- */
++/* which logical CPU number maps to which CPU (physical APIC ID) */
+ u8 x86_cpu_to_apicid_init[NR_CPUS] __initdata =
+ 			{ [0 ... NR_CPUS-1] = BAD_APICID };
+-void *x86_cpu_to_apicid_ptr;
++void *x86_cpu_to_apicid_early_ptr;
+ DEFINE_PER_CPU(u8, x86_cpu_to_apicid) = BAD_APICID;
+ EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
+ 
+--- a/arch/x86/kernel/smpboot_64.c
++++ b/arch/x86/kernel/smpboot_64.c
+@@ -852,23 +852,25 @@ static int __init smp_sanity_check(unsig
+ }
+ 
+ /*
+- * Copy apicid's found by MP_processor_info from initial array to the per cpu
+- * data area.  The x86_cpu_to_apicid_init array is then expendable and the
+- * x86_cpu_to_apicid_ptr is zeroed indicating that the static array is no
+- * longer available.
++ * Copy data used in early init routines from the initial arrays to the
++ * per cpu data areas.  These arrays then become expendable and the
++ * *_ptrs are zeroed indicating that the static arrays are gone.
+  */
+ void __init smp_set_apicids(void)
+ {
+ 	int cpu;
+ 
+-	for_each_cpu_mask(cpu, cpu_possible_map) {
++	for_each_possible_cpu(cpu) {
+ 		if (per_cpu_offset(cpu))
+ 			per_cpu(x86_cpu_to_apicid, cpu) =
+ 						x86_cpu_to_apicid_init[cpu];
++		else
++			printk(KERN_NOTICE "per_cpu_offset zero for cpu %d\n",
++									cpu);
+ 	}
+ 
+-	/* indicate the static array will be going away soon */
+-	x86_cpu_to_apicid_ptr = NULL;
++	/* indicate the early static arrays are gone */
++	x86_cpu_to_apicid_early_ptr = NULL;
+ }
+ 
+ static void __init smp_cpu_index_default(void)
+--- a/include/asm-x86/smp_32.h
++++ b/include/asm-x86/smp_32.h
+@@ -30,7 +30,7 @@ extern void (*mtrr_hook) (void);
+ extern void zap_low_mappings (void);
+ 
+ extern u8 __initdata x86_cpu_to_apicid_init[];
+-extern void *x86_cpu_to_apicid_ptr;
++extern void *x86_cpu_to_apicid_early_ptr;
+ 
+ DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
+ DECLARE_PER_CPU(cpumask_t, cpu_core_map);
+--- a/include/asm-x86/smp_64.h
++++ b/include/asm-x86/smp_64.h
+@@ -27,7 +27,7 @@ extern int smp_call_function_mask(cpumas
+ 				  void *info, int wait);
+ 
+ extern u16 __initdata x86_cpu_to_apicid_init[];
+-extern void *x86_cpu_to_apicid_ptr;
++extern void *x86_cpu_to_apicid_early_ptr;
+ extern u16 bios_cpu_apicid[];
+ 
+ DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
 
 -- 
