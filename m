@@ -1,85 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754250AbYAPLwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753940AbYAPLzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754250AbYAPLwh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 06:52:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbYAPLw1
+	id S1753940AbYAPLzJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 06:55:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbYAPLy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 06:52:27 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:51417 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752061AbYAPLw1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 06:52:27 -0500
-Date: Wed, 16 Jan 2008 12:52:33 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: Roman Zippel <zippel@linux-m68k.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, david-b@pacbell.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: non-choice related config entries within choice
-Message-ID: <20080116115233.GA26776@uranus.ravnborg.org>
-References: <478DF61E.76E4.0078.0@novell.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <478DF61E.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 16 Jan 2008 06:54:58 -0500
+Received: from mail.phnxsoft.com ([195.227.45.4]:2285 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752014AbYAPLy5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 06:54:57 -0500
+Message-ID: <478DF073.2020300@imap.cc>
+Date: Wed, 16 Jan 2008 12:54:27 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: where to maintain userspace daemon for line discipline
+References: <45AE507E.3040601@imap.cc> <20070122115644.b538908f.akpm@osdl.org> <45CA4D32.6010302@zytor.com>
+In-Reply-To: <45CA4D32.6010302@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig4CB1F8F3FE959B5D05F07739"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 16, 2008 at 11:18:38AM +0000, Jan Beulich wrote:
-> Roman,
-> 
-> now that I finally found time to look into the problems that caused the
-> patch changing boolean/tristate choice behavior to be reverted I find
-> that due to the way things worked in the past there are a couple of
-> cases where config options not really belonging to the choice are inside
-> the choice scope (drivers/usb/gadget/Kconfig, arch/ppc/Kconfig, and
-> arch/mips/Kconfig are where I found such cases, and I hope this is a
-> complete list).
-> 
-> The question is: Is it intended for this to work the way it used to, or
-> is it rather reasonable to change these scripts so that stuff dependent
-> upon the choice selection is being dealt with outside the choice scope?
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig4CB1F8F3FE959B5D05F07739
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-Hi Jan.
+H. Peter Anvin schrieb:
+> Andrew Morton wrote:
+>>>
+>>> Is there an appropriate place in or near the kernel tree for
+>>> stuff like that?
+>>=20
+>> Nope.  The requirement arises regularly.
+>>=20
+>> util-linux would seem to be a suitable place, but apparently there
+>> are, umm, isues surrounding that.
+>=20
+> util-linux-ng is already going, so it's a good place.
 
-I will let Roman answer your question..
+I have asked on the util-linux-ng mailing list but received
+a flat refusal by Karel:
 
-But one feature I really would like to see is named chocies so we can do stuff like:
+>  I don't think that util-linux-ng is there for this purpose. It's not
+>  place for HW specific tools. Sorry.
 
-choice X86_PROCESSOR
+Back to square one.
 
-config GENERIC_PROCESSOR
-	bool "A generic X86 processor"
-endchoice
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
 
-...
+--------------enig4CB1F8F3FE959B5D05F07739
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-choice PPC_PROCESSOR
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-config GENERIC_PROCESSOR
-	bool "A generic PowerPC processor
+iD8DBQFHjfB8Q3+did9BuFsRAp8zAJ9jBvEn9ftphfOlJQs7UH4s7aLdvACggsFa
+8csK4Op98ETihI8j0xL2lRI=
+=zIJl
+-----END PGP SIGNATURE-----
 
-endchoice
-
-The issue here is that we do not today allow the same config option
-to appear if more than one choice.
-This is a mandatory feature before we can do a Kconfig covering all architectures.
-I guess there are other issues when we do:
-
-if X86
-source foo/bar/Kconfig
-endif
-
-if PPC
-source foo/bar/Kconfig
-endif
-
-Where we in foo/bar/Kconfig has a choice list.
-
-I just wanted to raise this now that you anyway are looking into choice
-related issues.
-
-	Sam
+--------------enig4CB1F8F3FE959B5D05F07739--
