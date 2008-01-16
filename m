@@ -1,67 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757449AbYAPXU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757944AbYAPXVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757449AbYAPXU4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 18:20:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755251AbYAPXPf
+	id S1757944AbYAPXVX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 18:21:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbYAPXPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 18:15:35 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:10411 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755666AbYAPXPb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 18:15:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=WqEKdeiCsca3z7wfrkuWU92a1eBJWx2Crjt7tHi5/zyuS3rYa6CPB05qKWHQEb3EDMoOh9XQSPyNKbXEPAqJswTn+/mHD/zuYeUU0btYgKV3AUtGKIlgeW43smw/fgciRS/wfTvt0bQSJ+inDTacc/++ZJT1oz+75iu9T6EHJ08=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org
-Date: Thu, 17 Jan 2008 00:28:11 +0100
-Message-Id: <20080116232811.9166.38451.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080116232556.9166.13457.sendpatchset@localhost.localdomain>
-References: <20080116232556.9166.13457.sendpatchset@localhost.localdomain>
-Subject: [PATCH 18/22] ide-acpi: remove needless exports
+	Wed, 16 Jan 2008 18:15:39 -0500
+Received: from ns.suse.de ([195.135.220.2]:34125 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755476AbYAPXPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 18:15:36 -0500
+Date: Thu, 17 Jan 2008 00:15:34 +0100
+From: Andi Kleen <ak@suse.de>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
+Subject: [PATCH] Print which shared library/executable faulted in segfault etc. messages v3
+Message-ID: <20080116231534.GA25995@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/ide-acpi.c |    4 ----
- 1 file changed, 4 deletions(-)
 
-Index: b/drivers/ide/ide-acpi.c
+The previously posted version was missing all the 64bit hunks. Fix 
+that. Please use over previous version.
+
+-Andi
+
+---
+
+They now look like
+
+hal-resmgr[13791]: segfault at 3c rip 2b9c8caec182 rsp 7fff1e825d30 error 4 in libacl.so.1.1.0[2b9c8caea000+6000]
+
+This makes it easier to pinpoint bugs to specific libraries. 
+
+And printing the offset into a mapping also always allows to find the 
+correct fault point in a library even with randomized mappings. Previously
+there was no way to actually find the correct code address inside
+the randomized mapping.
+
+Relies on earlier patch to shorten the printk formats.
+
+They are often now longer than 80 characters, but I think that's worth it.
+
+Patch for i386 and x86-64.
+
+[includes fix from Eric Dumazet to check d_path error value]
+v3: readd 64bit hunks that got dropped somewhere on the way
+
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+---
+ arch/x86/kernel/signal_32.c |    7 +++++--
+ arch/x86/kernel/signal_64.c |    7 +++++--
+ arch/x86/kernel/traps_32.c  |    7 +++++--
+ arch/x86/mm/fault_32.c      |    4 +++-
+ include/linux/mm.h          |    1 +
+ mm/memory.c                 |   31 +++++++++++++++++++++++++++++++
+ 6 files changed, 50 insertions(+), 7 deletions(-)
+
+Index: linux/include/linux/mm.h
 ===================================================================
---- a/drivers/ide/ide-acpi.c
-+++ b/drivers/ide/ide-acpi.c
-@@ -494,7 +494,6 @@ int ide_acpi_exec_tfs(ide_drive_t *drive
+--- linux.orig/include/linux/mm.h
++++ linux/include/linux/mm.h
+@@ -1145,6 +1145,7 @@ extern int randomize_va_space;
+ #endif
  
- 	return ret;
+ const char * arch_vma_name(struct vm_area_struct *vma);
++void print_vma_addr(char *prefix, unsigned long rip);
+ 
+ struct page *sparse_mem_map_populate(unsigned long pnum, int nid);
+ pgd_t *vmemmap_pgd_populate(unsigned long addr, int node);
+Index: linux/mm/memory.c
+===================================================================
+--- linux.orig/mm/memory.c
++++ linux/mm/memory.c
+@@ -2746,3 +2746,34 @@ int access_process_vm(struct task_struct
+ 
+ 	return buf - old_buf;
  }
--EXPORT_SYMBOL_GPL(ide_acpi_exec_tfs);
++
++/*
++ * Print the name of a VMA.
++ */
++void print_vma_addr(char *prefix, unsigned long ip)
++{
++	struct mm_struct *mm = current->mm;
++	struct vm_area_struct *vma;
++
++	down_read(&mm->mmap_sem);
++	vma = find_vma(mm, ip);
++	if (vma && vma->vm_file) {
++		struct file *f = vma->vm_file;
++		char *buf = (char *)__get_free_page(GFP_KERNEL);
++		if (buf) {
++			char *p, *s;
++
++			p = d_path(f->f_dentry, f->f_vfsmnt, buf, PAGE_SIZE);
++			if (IS_ERR(p))
++				p = "?";
++			s = strrchr(p, '/');
++			if (s)
++				p = s+1;
++			printk("%s%s[%lx+%lx]", prefix, p,
++					vma->vm_start,
++					vma->vm_end - vma->vm_start);
++			free_page((unsigned long)buf);
++		}
++	}
++	up_read(&current->mm->mmap_sem);
++}
+Index: linux/arch/x86/kernel/signal_32.c
+===================================================================
+--- linux.orig/arch/x86/kernel/signal_32.c
++++ linux/arch/x86/kernel/signal_32.c
+@@ -198,12 +198,15 @@ asmlinkage int sys_sigreturn(unsigned lo
+ 	return ax;
  
- /**
-  * ide_acpi_get_timing - get the channel (controller) timings
-@@ -580,7 +579,6 @@ void ide_acpi_get_timing(ide_hwif_t *hwi
+ badframe:
+-	if (show_unhandled_signals && printk_ratelimit())
++	if (show_unhandled_signals && printk_ratelimit()) {
+ 		printk("%s%s[%d] bad frame in sigreturn frame:%p ip:%lx"
+-		       " sp:%lx oeax:%lx\n",
++		       " sp:%lx oeax:%lx",
+ 		    task_pid_nr(current) > 1 ? KERN_INFO : KERN_EMERG,
+ 		    current->comm, task_pid_nr(current), frame, regs->ip,
+ 		    regs->sp, regs->orig_ax);
++		print_vma_addr(" in ", regs->ip);
++		printk("\n");
++	}
  
- 	kfree(output.pointer);
- }
--EXPORT_SYMBOL_GPL(ide_acpi_get_timing);
+ 	force_sig(SIGSEGV, current);
+ 	return 0;
+Index: linux/arch/x86/kernel/signal_64.c
+===================================================================
+--- linux.orig/arch/x86/kernel/signal_64.c
++++ linux/arch/x86/kernel/signal_64.c
+@@ -481,9 +481,12 @@ do_notify_resume(struct pt_regs *regs, v
+ void signal_fault(struct pt_regs *regs, void __user *frame, char *where)
+ { 
+ 	struct task_struct *me = current; 
+-	if (show_unhandled_signals && printk_ratelimit())
+-		printk("%s[%d] bad frame in %s frame:%p ip:%lx sp:%lx orax:%lx\n",
++	if (show_unhandled_signals && printk_ratelimit()) {
++		printk("%s[%d] bad frame in %s frame:%p ip:%lx sp:%lx orax:%lx",
+ 	       me->comm,me->pid,where,frame,regs->ip,regs->sp,regs->orig_ax);
++		print_vma_addr(" in ", regs->ip);
++		printk("\n");
++	}
  
- /**
-  * ide_acpi_push_timing - set the channel (controller) timings
-@@ -634,7 +632,6 @@ void ide_acpi_push_timing(ide_hwif_t *hw
- 	}
- 	DEBPRINT("_STM status: %d\n", status);
- }
--EXPORT_SYMBOL_GPL(ide_acpi_push_timing);
+ 	force_sig(SIGSEGV, me); 
+ } 
+Index: linux/arch/x86/kernel/traps_32.c
+===================================================================
+--- linux.orig/arch/x86/kernel/traps_32.c
++++ linux/arch/x86/kernel/traps_32.c
+@@ -608,11 +608,14 @@ void __kprobes do_general_protection(str
+ 	current->thread.error_code = error_code;
+ 	current->thread.trap_no = 13;
+ 	if (show_unhandled_signals && unhandled_signal(current, SIGSEGV) &&
+-	    printk_ratelimit())
++	    printk_ratelimit()) {
+ 		printk(KERN_INFO
+-		    "%s[%d] general protection ip:%lx sp:%lx error:%lx\n",
++		    "%s[%d] general protection ip:%lx sp:%lx error:%lx",
+ 		    current->comm, task_pid_nr(current),
+ 		    regs->ip, regs->sp, error_code);
++		print_vma_addr(" in ", regs->ip);
++		printk("\n");
++	}
  
- /**
-  * ide_acpi_set_state - set the channel power state
-@@ -762,4 +759,3 @@ void ide_acpi_init(ide_hwif_t *hwif)
+ 	force_sig(SIGSEGV, current);
+ 	return;
+Index: linux/arch/x86/mm/fault_32.c
+===================================================================
+--- linux.orig/arch/x86/mm/fault_32.c
++++ linux/arch/x86/mm/fault_32.c
+@@ -518,11 +518,13 @@ bad_area_nosemaphore:
+ #ifdef CONFIG_X86_32
+ 			"%s%s[%d]: segfault at %lx ip %08lx sp %08lx error %lx\n",
+ #else
+-			"%s%s[%d]: segfault at %lx ip %lx sp %lx error %lx\n",
++			"%s%s[%d]: segfault at %lx ip %lx sp %lx error %lx",
+ #endif
+ 			task_pid_nr(tsk) > 1 ? KERN_INFO : KERN_EMERG,
+ 			tsk->comm, task_pid_nr(tsk), address, regs->ip,
+ 			regs->sp, error_code);
++			print_vma_addr(" in ", regs->ip);
++			printk("\n");
  		}
- 	}
- }
--EXPORT_SYMBOL_GPL(ide_acpi_init);
+ 		tsk->thread.cr2 = address;
+ 		/* Kernel addresses are always protection faults */
+Index: linux/arch/x86/kernel/traps_64.c
+===================================================================
+--- linux.orig/arch/x86/kernel/traps_64.c
++++ linux/arch/x86/kernel/traps_64.c
+@@ -647,11 +647,14 @@ static void __kprobes do_trap(int trapnr
+ 		tsk->thread.trap_no = trapnr;
+ 
+ 		if (show_unhandled_signals && unhandled_signal(tsk, signr) &&
+-		    printk_ratelimit())
++		    printk_ratelimit()) {
+ 			printk(KERN_INFO
+-			       "%s[%d] trap %s ip:%lx sp:%lx error:%lx\n",
++			       "%s[%d] trap %s ip:%lx sp:%lx error:%lx",
+ 			       tsk->comm, tsk->pid, str,
+ 			       regs->ip, regs->sp, error_code);
++			print_vma_addr(" in ", regs->ip);
++			printk("\n");
++		}
+ 
+ 		if (info)
+ 			force_sig_info(signr, info, tsk);
+@@ -745,11 +748,14 @@ asmlinkage void __kprobes do_general_pro
+ 		tsk->thread.trap_no = 13;
+ 
+ 		if (show_unhandled_signals && unhandled_signal(tsk, SIGSEGV) &&
+-		    printk_ratelimit())
++		    printk_ratelimit()) {
+ 			printk(KERN_INFO
+-		       "%s[%d] general protection ip:%lx sp:%lx error:%lx\n",
++		       "%s[%d] general protection ip:%lx sp:%lx error:%lx",
+ 			       tsk->comm, tsk->pid,
+ 			       regs->ip, regs->sp, error_code);
++			print_vma_addr(" in ", regs->ip);
++			printk("\n");
++		}
+ 
+ 		force_sig(SIGSEGV, tsk);
+ 		return;
+Index: linux/arch/x86/mm/fault_64.c
+===================================================================
+--- linux.orig/arch/x86/mm/fault_64.c
++++ linux/arch/x86/mm/fault_64.c
+@@ -556,11 +556,13 @@ bad_area_nosemaphore:
+ #ifdef CONFIG_X86_32
+ 			"%s%s[%d]: segfault at %08lx ip %08lx sp %08lx error %lx\n",
+ #else
+-			"%s%s[%d]: segfault at %lx ip %lx sp %lx error %lx\n",
++			"%s%s[%d]: segfault at %lx ip %lx sp %lx error %lx",
+ #endif
+ 			task_pid_nr(tsk) > 1 ? KERN_INFO : KERN_EMERG,
+ 			tsk->comm, task_pid_nr(tsk), address, regs->ip,
+ 			regs->sp, error_code);
++			print_vma_addr(" in ", regs->ip);
++			printk("\n");
+ 		}
+ 
+ 		tsk->thread.cr2 = address;
