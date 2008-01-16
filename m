@@ -1,151 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757798AbYAPRNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbYAPRNw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757798AbYAPRNh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 12:13:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960AbYAPRJU
+	id S1757938AbYAPRNw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 12:13:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756612AbYAPRKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 12:09:20 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34379 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755901AbYAPRJI (ORCPT
+	Wed, 16 Jan 2008 12:10:38 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:42341 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756074AbYAPRKg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 12:09:08 -0500
-Message-Id: <20080116170903.245969000@sgi.com>
-References: <20080116170902.006151000@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Wed, 16 Jan 2008 09:09:11 -0800
-From: travis@sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       mingo@elte.hu
-Cc: Eric Dumazet <dada1@cosmosbay.com>, Christoph Lameter <clameter@sgi.com>,
-       Jack Steiner <steiner@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 09/10] x86: Change NR_CPUS arrays in acpi-cpufreq V3
-Content-Disposition: inline; filename=NR_CPUS-arrays-in-acpi-cpufreq
+	Wed, 16 Jan 2008 12:10:36 -0500
+Date: Wed, 16 Jan 2008 17:10:32 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       miklos@szeredi.hu, hch@infradead.org, Bryn Reeves <breeves@redhat.com>,
+       Alasdair G Kergon <agk@redhat.com>
+Subject: Re: [PATCH 04/27] kill filp_open()
+Message-ID: <20080116171032.GA24300@infradead.org>
+References: <20071101230826.9A4F6E00@kernel> <20071101230831.904FDE9A@kernel> <20080116005200.0165dc67.akpm@linux-foundation.org> <1200503096.22674.171.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1200503096.22674.171.camel@localhost>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change the following static arrays sized by NR_CPUS to
-per_cpu data variables:
+On Wed, Jan 16, 2008 at 09:04:56AM -0800, Dave Hansen wrote:
+> > is using filp_open() and hence doesn't work very well.
+> > 
+> > A shall revert dm-loop.patch and run away.
+> 
+> This one's pretty easy, thank goodness.  Just replace filp_open() with
+> open_namei():
+> 
+> 	/filp_open(/open_namei(AT_FDCWD, /
 
-	acpi_cpufreq_data *drv_data[NR_CPUS]
+But ultimatively I think we should remove this silly renaming from
+the patch.  It doesn't help the goal and just created churn, so please
+rename open_namei back to do_filp_open for now and put filp_open back.
 
-Signed-off-by: Mike Travis <travis@sgi.com>
-Reviewed-by: Christoph Lameter <clameter@sgi.com>
----
-V1->V2:
-    - (none)
----
- arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |   25 +++++++++++++------------
- 1 file changed, 13 insertions(+), 12 deletions(-)
+> BTW, why do we need this on top of the existing loopback driver?  Can
+> they really share no code?
 
---- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-+++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-@@ -67,7 +67,8 @@ struct acpi_cpufreq_data {
- 	unsigned int cpu_feature;
- };
- 
--static struct acpi_cpufreq_data *drv_data[NR_CPUS];
-+static DEFINE_PER_CPU(struct acpi_cpufreq_data *, drv_data);
-+
- /* acpi_perf_data is a pointer to percpu data. */
- static struct acpi_processor_performance *acpi_perf_data;
- 
-@@ -218,14 +219,14 @@ static u32 get_cur_val(cpumask_t mask)
- 	if (unlikely(cpus_empty(mask)))
- 		return 0;
- 
--	switch (drv_data[first_cpu(mask)]->cpu_feature) {
-+	switch (per_cpu(drv_data, first_cpu(mask))->cpu_feature) {
- 	case SYSTEM_INTEL_MSR_CAPABLE:
- 		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
- 		cmd.addr.msr.reg = MSR_IA32_PERF_STATUS;
- 		break;
- 	case SYSTEM_IO_CAPABLE:
- 		cmd.type = SYSTEM_IO_CAPABLE;
--		perf = drv_data[first_cpu(mask)]->acpi_data;
-+		perf = per_cpu(drv_data, first_cpu(mask))->acpi_data;
- 		cmd.addr.io.port = perf->control_register.address;
- 		cmd.addr.io.bit_width = perf->control_register.bit_width;
- 		break;
-@@ -325,7 +326,7 @@ static unsigned int get_measured_perf(un
- 
- #endif
- 
--	retval = drv_data[cpu]->max_freq * perf_percent / 100;
-+	retval = per_cpu(drv_data, cpu)->max_freq * perf_percent / 100;
- 
- 	put_cpu();
- 	set_cpus_allowed(current, saved_mask);
-@@ -336,7 +337,7 @@ static unsigned int get_measured_perf(un
- 
- static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
- {
--	struct acpi_cpufreq_data *data = drv_data[cpu];
-+	struct acpi_cpufreq_data *data = per_cpu(drv_data, cpu);
- 	unsigned int freq;
- 
- 	dprintk("get_cur_freq_on_cpu (%d)\n", cpu);
-@@ -370,7 +371,7 @@ static unsigned int check_freqs(cpumask_
- static int acpi_cpufreq_target(struct cpufreq_policy *policy,
- 			       unsigned int target_freq, unsigned int relation)
- {
--	struct acpi_cpufreq_data *data = drv_data[policy->cpu];
-+	struct acpi_cpufreq_data *data = per_cpu(drv_data, policy->cpu);
- 	struct acpi_processor_performance *perf;
- 	struct cpufreq_freqs freqs;
- 	cpumask_t online_policy_cpus;
-@@ -466,7 +467,7 @@ static int acpi_cpufreq_target(struct cp
- 
- static int acpi_cpufreq_verify(struct cpufreq_policy *policy)
- {
--	struct acpi_cpufreq_data *data = drv_data[policy->cpu];
-+	struct acpi_cpufreq_data *data = per_cpu(drv_data, policy->cpu);
- 
- 	dprintk("acpi_cpufreq_verify\n");
- 
-@@ -570,7 +571,7 @@ static int acpi_cpufreq_cpu_init(struct 
- 		return -ENOMEM;
- 
- 	data->acpi_data = percpu_ptr(acpi_perf_data, cpu);
--	drv_data[cpu] = data;
-+	per_cpu(drv_data, cpu) = data;
- 
- 	if (cpu_has(c, X86_FEATURE_CONSTANT_TSC))
- 		acpi_cpufreq_driver.flags |= CPUFREQ_CONST_LOOPS;
-@@ -714,20 +715,20 @@ err_unreg:
- 	acpi_processor_unregister_performance(perf, cpu);
- err_free:
- 	kfree(data);
--	drv_data[cpu] = NULL;
-+	per_cpu(drv_data, cpu) = NULL;
- 
- 	return result;
- }
- 
- static int acpi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- {
--	struct acpi_cpufreq_data *data = drv_data[policy->cpu];
-+	struct acpi_cpufreq_data *data = per_cpu(drv_data, policy->cpu);
- 
- 	dprintk("acpi_cpufreq_cpu_exit\n");
- 
- 	if (data) {
- 		cpufreq_frequency_table_put_attr(policy->cpu);
--		drv_data[policy->cpu] = NULL;
-+		per_cpu(drv_data, policy->cpu) = NULL;
- 		acpi_processor_unregister_performance(data->acpi_data,
- 						      policy->cpu);
- 		kfree(data);
-@@ -738,7 +739,7 @@ static int acpi_cpufreq_cpu_exit(struct 
- 
- static int acpi_cpufreq_resume(struct cpufreq_policy *policy)
- {
--	struct acpi_cpufreq_data *data = drv_data[policy->cpu];
-+	struct acpi_cpufreq_data *data = per_cpu(drv_data, policy->cpu);
- 
- 	dprintk("acpi_cpufreq_resume\n");
- 
-
--- 
+Yeah, given how much pain loop drivers in general are I don't think it's
+a good idea to add a second one.
