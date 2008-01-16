@@ -1,97 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755896AbYAPWWB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756587AbYAPWW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755896AbYAPWWB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 17:22:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbYAPWPb
+	id S1756587AbYAPWW1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 17:22:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYAPWPc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 17:15:31 -0500
-Received: from mx2.suse.de ([195.135.220.15]:38269 "EHLO mx2.suse.de"
+	Wed, 16 Jan 2008 17:15:32 -0500
+Received: from ns1.suse.de ([195.135.220.2]:55226 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754030AbYAPWPT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 17:15:19 -0500
+	id S1754034AbYAPWPU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 17:15:20 -0500
 From: Andi Kleen <ak@suse.de>
 References: <200801161114.239449000@suse.de>
 In-Reply-To: <200801161114.239449000@suse.de>
 To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
        jbeulich@novell.com, venkatesh.pallipadi@intel.com
-Subject: [PATCH] [19/36] CPA: Use page granuality TLB flushing in change_page_attr
-Message-Id: <20080116221518.919F4150C8@wotan.suse.de>
-Date: Wed, 16 Jan 2008 23:15:18 +0100 (CET)
+Subject: [PATCH] [20/36] CPA: Don't flush the caches when the CPU supports self-snoop
+Message-Id: <20080116221519.9D8D0150C8@wotan.suse.de>
+Date: Wed, 16 Jan 2008 23:15:19 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-With the infrastructure added for CLFLUSH it is possible
-to only TLB flush the actually changed pages in change_page_attr()
+When the self-snoop CPUID bit is set change_page_attr() only needs to flush
+TLBs, but not the caches.
 
-Take care of old Athlon K7 Errata on the 32bit version
+The description of self-snoop in the Intel manuals is a bit vague
+but I got confirmation that this is what SS really means.
+
+This should improve c_p_a() performance significantly on newer
+Intel CPUs.
+
+Note: the line > 80 characters will be modified again in a followup
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 Acked-by: Jan Beulich <jbeulich@novell.com>
 
 ---
- arch/x86/mm/pageattr_32.c |   15 ++++++++-------
- arch/x86/mm/pageattr_64.c |   10 +++++-----
- 2 files changed, 13 insertions(+), 12 deletions(-)
+ arch/x86/mm/pageattr_32.c    |    5 +++--
+ arch/x86/mm/pageattr_64.c    |    4 ++--
+ include/asm-x86/cpufeature.h |    1 +
+ 3 files changed, 6 insertions(+), 4 deletions(-)
 
 Index: linux/arch/x86/mm/pageattr_32.c
 ===================================================================
 --- linux.orig/arch/x86/mm/pageattr_32.c
 +++ linux/arch/x86/mm/pageattr_32.c
-@@ -97,19 +97,20 @@ static void flush_kernel_map(void *arg)
+@@ -97,10 +97,11 @@ static void flush_kernel_map(void *arg)
  	struct flush_arg *a = (struct flush_arg *)arg;
  	struct flush *f;
  
--	if (!cpu_has_clflush)
--		a->full_flush = 1;
--	if (a->full_flush && boot_cpu_data.x86_model >= 4)
-+	if ((!cpu_has_clflush || a->full_flush) && boot_cpu_data.x86_model >= 4)
+-	if ((!cpu_has_clflush || a->full_flush) && boot_cpu_data.x86_model >= 4)
++	if ((!cpu_has_clflush || a->full_flush) && boot_cpu_data.x86_model >= 4 &&
++		!cpu_has_ss)
  		wbinvd();
  	list_for_each_entry(f, &a->l, l) {
- 		if (!a->full_flush)
+-		if (!a->full_flush)
++		if (!a->full_flush && !cpu_has_ss)
  			clflush_cache_range((void *)f->addr, PAGE_SIZE);
-+		if (!a->full_flush)
-+			__flush_tlb_one(f->addr);
- 	}
+ 		if (!a->full_flush)
+ 			__flush_tlb_one(f->addr);
+Index: linux/include/asm-x86/cpufeature.h
+===================================================================
+--- linux.orig/include/asm-x86/cpufeature.h
++++ linux/include/asm-x86/cpufeature.h
+@@ -168,6 +168,7 @@
+ #define cpu_has_clflush		boot_cpu_has(X86_FEATURE_CLFLSH)
+ #define cpu_has_bts		boot_cpu_has(X86_FEATURE_BTS)
+ #define cpu_has_pat		boot_cpu_has(X86_FEATURE_PAT)
++#define cpu_has_ss		boot_cpu_has(X86_FEATURE_SELFSNOOP)
  
--	/* Flush all to work around Errata in early athlons regarding 
--	 * large page flushing. 
--	 */
--	__flush_tlb_all();	
-+	/* Handle errata with flushing large pages in early Athlons */
-+	if (a->full_flush ||
-+	    (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
-+	     boot_cpu_data.x86 == 7))
-+		__flush_tlb_all();
- }
- 
- static void set_pmd_pte(pte_t *kpte, unsigned long address, pte_t pte) 
+ #if defined(CONFIG_X86_INVLPG) || defined(CONFIG_X86_64)
+ # define cpu_has_invlpg		1
 Index: linux/arch/x86/mm/pageattr_64.c
 ===================================================================
 --- linux.orig/arch/x86/mm/pageattr_64.c
 +++ linux/arch/x86/mm/pageattr_64.c
-@@ -92,18 +92,18 @@ static void flush_kernel_map(void *arg)
- 	struct flush_arg *a = (struct flush_arg *)arg;
- 	struct flush *f;
+@@ -94,10 +94,10 @@ static void flush_kernel_map(void *arg)
  
--	if (!cpu_has_clflush)
--		a->full_flush = 1;
--
  	/* When clflush is available always use it because it is
  	   much cheaper than WBINVD. */
--	if (a->full_flush)
-+	if (a->full_flush || !cpu_has_clflush)
+-	if (a->full_flush || !cpu_has_clflush)
++	if ((a->full_flush || !cpu_has_clflush) && !cpu_has_ss)
  		asm volatile("wbinvd" ::: "memory");
  	list_for_each_entry(f, &a->l, l) {
- 		if (!a->full_flush)
+-		if (!a->full_flush)
++		if (!a->full_flush && !cpu_has_ss)
  			clflush_cache_range((void *)f->addr, PAGE_SIZE);
-+		if (!a->full_flush)
-+			__flush_tlb_one(f->addr);
- 	}
--	__flush_tlb_all();
-+	if (a->full_flush)
-+		__flush_tlb_all();
- }
- 
- /* both protected by init_mm.mmap_sem */
+ 		if (!a->full_flush)
+ 			__flush_tlb_one(f->addr);
