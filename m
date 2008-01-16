@@ -1,141 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754040AbYAPM23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbYAPM3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754040AbYAPM23 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 07:28:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbYAPM2T
+	id S1754340AbYAPM3m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 07:29:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbYAPM3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 07:28:19 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59849
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752085AbYAPM2S (ORCPT
+	Wed, 16 Jan 2008 07:29:35 -0500
+Received: from posthamster.phnxsoft.com ([195.227.45.4]:2869 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751832AbYAPM3e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 07:28:18 -0500
-Date: Wed, 16 Jan 2008 04:28:17 -0800 (PST)
-Message-Id: <20080116.042817.143947133.davem@davemloft.net>
-To: slavon@bigtelecom.ru
-Cc: elendil@planet.nl, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [REGRESSION] 2.6.24-rc7: e1000: Detected Tx Unit Hang
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <478DC824.4030600@bigtelecom.ru>
-References: <200801150625.10823.elendil@planet.nl>
-	<20080114.215317.38045859.davem@davemloft.net>
-	<478DC824.4030600@bigtelecom.ru>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Jan 2008 07:29:34 -0500
+Message-ID: <478DF8AB.50400@imap.cc>
+Date: Wed, 16 Jan 2008 13:29:31 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: assigning a line discipline to a serial device from inside the kernel
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig0EF1E080CD0DC36F74F6B3E4"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Badalian Vyacheslav <slavon@bigtelecom.ru>
-Date: Wed, 16 Jan 2008 12:02:28 +0300
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig0EF1E080CD0DC36F74F6B3E4
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-> Also have regression after apply patch.
+The Siemens Gigaset M101 driver (drivers/isdn/gigaset/ser_gigaset.ko)
+is implemented as a serial line discipline N_GIGASET_M101, much like
+the better-known N_SLIP and N_PPP LDs. It must therefore be "pushed"
+onto a serial device in order to be used.
 
-BTW, if you are using the e1000e driver then this initial
-patch will not work.
+The classic approach is a trivial userspace daemon which opens the
+device, sets the LD via ioctl(~,TIOCSETD,~), and must then sleep
+indefinitely while keeping the device open, because closing it
+would unload the LD.
 
-My more recent patch posting for this problem, will.
+Is there a clean and acceptable way to avoid this userspace daemon
+and push the LD onto the serial device from within the kernel?
 
-I include it again below for you:
+Thanks,
+Tilman
 
-[NET]: Fix TX timeout regression in Intel drivers.
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
-This fixes a regression added by changeset
-53e52c729cc169db82a6105fac7a166e10c2ec36 ("[NET]: Make ->poll()
-breakout consistent in Intel ethernet drivers.")
 
-As pointed out by Jesse Brandeburg, for three of the drivers edited
-above there is breakout logic in the *_clean_tx_irq() code to prevent
-running TX reclaim forever.  If this occurs, we have to elide NAPI
-poll completion or else those TX events will never be serviced.
+--------------enig0EF1E080CD0DC36F74F6B3E4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
-index 13d57b0..0c9a6f7 100644
---- a/drivers/net/e1000/e1000_main.c
-+++ b/drivers/net/e1000/e1000_main.c
-@@ -3919,7 +3919,7 @@ e1000_clean(struct napi_struct *napi, int budget)
- {
- 	struct e1000_adapter *adapter = container_of(napi, struct e1000_adapter, napi);
- 	struct net_device *poll_dev = adapter->netdev;
--	int work_done = 0;
-+	int tx_cleaned = 0, work_done = 0;
- 
- 	/* Must NOT use netdev_priv macro here. */
- 	adapter = poll_dev->priv;
-@@ -3929,14 +3929,17 @@ e1000_clean(struct napi_struct *napi, int budget)
- 	 * simultaneously.  A failure obtaining the lock means
- 	 * tx_ring[0] is currently being cleaned anyway. */
- 	if (spin_trylock(&adapter->tx_queue_lock)) {
--		e1000_clean_tx_irq(adapter,
--				   &adapter->tx_ring[0]);
-+		tx_cleaned = e1000_clean_tx_irq(adapter,
-+						&adapter->tx_ring[0]);
- 		spin_unlock(&adapter->tx_queue_lock);
- 	}
- 
- 	adapter->clean_rx(adapter, &adapter->rx_ring[0],
- 	                  &work_done, budget);
- 
-+	if (tx_cleaned)
-+		work_done = budget;
-+
- 	/* If budget not fully consumed, exit the polling mode */
- 	if (work_done < budget) {
- 		if (likely(adapter->itr_setting & 3))
-diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
-index 4a6fc74..2ab3bfb 100644
---- a/drivers/net/e1000e/netdev.c
-+++ b/drivers/net/e1000e/netdev.c
-@@ -1384,7 +1384,7 @@ static int e1000_clean(struct napi_struct *napi, int budget)
- {
- 	struct e1000_adapter *adapter = container_of(napi, struct e1000_adapter, napi);
- 	struct net_device *poll_dev = adapter->netdev;
--	int work_done = 0;
-+	int tx_cleaned = 0, work_done = 0;
- 
- 	/* Must NOT use netdev_priv macro here. */
- 	adapter = poll_dev->priv;
-@@ -1394,12 +1394,15 @@ static int e1000_clean(struct napi_struct *napi, int budget)
- 	 * simultaneously.  A failure obtaining the lock means
- 	 * tx_ring is currently being cleaned anyway. */
- 	if (spin_trylock(&adapter->tx_queue_lock)) {
--		e1000_clean_tx_irq(adapter);
-+		tx_cleaned = e1000_clean_tx_irq(adapter);
- 		spin_unlock(&adapter->tx_queue_lock);
- 	}
- 
- 	adapter->clean_rx(adapter, &work_done, budget);
- 
-+	if (tx_cleaned)
-+		work_done = budget;
-+
- 	/* If budget not fully consumed, exit the polling mode */
- 	if (work_done < budget) {
- 		if (adapter->itr_setting & 3)
-diff --git a/drivers/net/ixgbe/ixgbe_main.c b/drivers/net/ixgbe/ixgbe_main.c
-index a564916..de3f45e 100644
---- a/drivers/net/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ixgbe/ixgbe_main.c
-@@ -1468,13 +1468,16 @@ static int ixgbe_clean(struct napi_struct *napi, int budget)
- 	struct ixgbe_adapter *adapter = container_of(napi,
- 					struct ixgbe_adapter, napi);
- 	struct net_device *netdev = adapter->netdev;
--	int work_done = 0;
-+	int tx_cleaned = 0, work_done = 0;
- 
- 	/* In non-MSIX case, there is no multi-Tx/Rx queue */
--	ixgbe_clean_tx_irq(adapter, adapter->tx_ring);
-+	tx_cleaned = ixgbe_clean_tx_irq(adapter, adapter->tx_ring);
- 	ixgbe_clean_rx_irq(adapter, &adapter->rx_ring[0], &work_done,
- 			   budget);
- 
-+	if (tx_cleaned)
-+		work_done = budget;
-+
- 	/* If budget not fully consumed, exit the polling mode */
- 	if (work_done < budget) {
- 		netif_rx_complete(netdev, napi);
+iD8DBQFHjfirQ3+did9BuFsRAmbGAJ0b+OP7algwKampNoiM1H5yb1Ta4gCfZMLt
+FDICYRCa0+PrlfYO6DPs3Ok=
+=gVkQ
+-----END PGP SIGNATURE-----
+
+--------------enig0EF1E080CD0DC36F74F6B3E4--
