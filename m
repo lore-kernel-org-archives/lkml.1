@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753021AbYAPMGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752857AbYAPMWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753021AbYAPMGA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 07:06:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbYAPMFw
+	id S1752857AbYAPMWa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 07:22:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbYAPMWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 07:05:52 -0500
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:40050 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751301AbYAPMFv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 07:05:51 -0500
-Date: Wed, 16 Jan 2008 17:35:33 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrea Righi <righiandr@users.sourceforge.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] per-uid/gid I/O throttling (was Re: [RFC][PATCH]
-	per-task I/O throttling)
-Message-ID: <20080116120533.GB7166@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: Valdis.Kletnieks@vt.edu,
-	Andrea Righi <righiandr@users.sourceforge.net>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <47879A32.8060508@users.sourceforge.net> <3777.1200113861@turing-police.cc.vt.edu> <1200131197.7999.14.camel@lappy> <20080112105702.GC25388@balbir.in.ibm.com> <1200136245.7999.20.camel@lappy> <4789006C.2030804@users.sourceforge.net> <20080113044607.GA13633@balbir.in.ibm.com> <478CE41F.5010401@users.sourceforge.net> <20080116104541.GB25724@balbir.in.ibm.com> <13594.1200483031@turing-police.cc.vt.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <13594.1200483031@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 16 Jan 2008 07:22:21 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:33828 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751481AbYAPMWU (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 07:22:20 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Daniel Phillips <phillips@google.com>, David Chinner <dgc@sgi.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Al Boldi <a1426z@gawab.com>, Valerie Henson <val.henson@gmail.com>,
+       Rik van Riel <riel@redhat.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Patch] document ext3 requirements (was Re: [RFD] Incremental fsck)
+In-Reply-To: Your message of "Wed, 16 Jan 2008 12:51:44 +0100."
+             <20080116115144.GE22460@elf.ucw.cz>
+From: Valdis.Kletnieks@vt.edu
+References: <200801090740.12989.a1426z@gawab.com> <70b6f0bf0801082345vf57951ey642e35c3d6e5194f@mail.gmail.com> <200801091452.14890.a1426z@gawab.com> <20080112145140.GB6751@mit.edu> <20080113171916.GB4132@ucw.cz> <20080113174125.5f39ac64@lxorguk.ukuu.org.uk> <20080115201653.GA5639@elf.ucw.cz> <20080115214325.GN155407@sgi.com> <20080115230714.GC3573@elf.ucw.cz> <4d47a5d10801151544k3bc50223ob69c25d8732e3f12@mail.gmail.com>
+            <20080116115144.GE22460@elf.ucw.cz>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1200486036_2966P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Wed, 16 Jan 2008 07:20:36 -0500
+Message-ID: <16153.1200486036@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Valdis.Kletnieks@vt.edu <Valdis.Kletnieks@vt.edu> [2008-01-16 06:30:31]:
+--==_Exmh_1200486036_2966P
+Content-Type: text/plain; charset=us-ascii
 
-> On Wed, 16 Jan 2008 16:15:41 +0530, Balbir Singh said:
-> 
-> > Thanks for doing this. I am going to review the patches in greater
-> > detail and also test them. Why do you use configfs when we have a
-> > control group filesystem available for grouping tasks and providing a
-> > file system based interface for control and accounting?
-> 
-> And here I thought "There's more than one way to do it" was the Perl slogan. :)
->
+On Wed, 16 Jan 2008 12:51:44 +0100, Pavel Machek said:
 
-Yes, there are several ways to do it, but the discussion over the last
-year or so has been centered around control groups. We've discussed
-all approaches on lkml on there was consensus on using control groups.
-Please read the lkml archives for the discussion details.
+> I guess I should try to measure it. (Linux already does writeback
+> caching, with 2GB of memory. I wonder how important disks's 2MB of
+> cache can be).
 
- 
-> An equally valid question would be: "Why are we carrying around a control
-> group filesystem when we have configfs?"  (Honestly, I didn't know we *were*
-> carrying around such a filesystem - and quite likely Andrea Righi didn't
-> either...)
+It serves essentially the same purpose as the 'async' option in /etc/exports
+(i.e. we declare it "done" when the other end of the wire says it's caught
+the data, not when it's actually committed), with similar latency wins.  Of
+course, it's impedance-matching for bursty traffic - the 2M doesn't do much
+at all if you're streaming data to it.  For what it's worth, the 80G Seagate
+drive in my laptop claims it has 8M, so it probably does 4 times as much
+good as 2M. ;)
 
-Control groups is derived from cpusets and for those interested in
-grouping tasks for control, is the preferred method of providing
-control.
+--==_Exmh_1200486036_2966P
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+iD8DBQFHjfaUcC3lWbTT17ARAuh8AKDuMO2z/LU9eaU+1QeS/6k6wZnRbwCgkF8o
+N8XX46OK6g53lJpdGWIbUgw=
+=n5XN
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1200486036_2966P--
