@@ -1,91 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbYAPRJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477AbYAPRKD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756199AbYAPRJq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 12:09:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351AbYAPRIy
+	id S1755477AbYAPRKD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 12:10:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbYAPRJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 12:08:54 -0500
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:33204 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752693AbYAPRIu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 12:08:50 -0500
-Message-Id: <20080116170914.959390017@ldl.fc.hp.com>
-References: <20080116170541.511233227@ldl.fc.hp.com>
+	Wed, 16 Jan 2008 12:09:06 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:34819 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753725AbYAPRJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 12:09:03 -0500
+Message-Id: <20080116170902.589152000@sgi.com>
+References: <20080116170902.006151000@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Jan 2008 10:05:43 -0700
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-serial@vger.kernel.org
-Cc: Russell King <rmk+serial@arm.linux.org.uk>
-Cc: Jeff Garzik <jeff@garzik.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 2/2] 8250_pnp: register x86 COM ports at the conventional ttyS names
-Content-Disposition: inline; filename=8250-pnp-names
+Date: Wed, 16 Jan 2008 09:09:06 -0800
+From: travis@sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       mingo@elte.hu
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Christoph Lameter <clameter@sgi.com>,
+       Jack Steiner <steiner@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 04/10] x86: Change NR_CPUS arrays in intel_cacheinfo V3
+Content-Disposition: inline; filename=NR_CPUS-arrays-in-intel_cacheinfo
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86 users expect COM1-COM4 ports at the conventional ioport addresses
-to be named ttyS0-ttyS3.  For PNP devices, the BIOS determines the
-order we discover them, so we might discover COM2 before COM1.
+Change the following static arrays sized by NR_CPUS to
+per_cpu data variables:
 
-We currently always get the correct names, even without this patch.
-But that's only because serial8250_isa_init_ports() first registers
-the hard-coded list of COM port addresses from SERIAL_PORT_DFNS.  When
-PNP rediscovers one of those ports, it gets the already-established
-line.
+	_cpuid4_info *cpuid4_info[NR_CPUS];
+	_index_kobject *index_kobject[NR_CPUS];
+	kobject * cache_kobject[NR_CPUS];
 
-This patch removes the implicit dependency on SERIAL_PORT_DFNS by
-requesting the names we desire.
+Signed-off-by: Mike Travis <travis@sgi.com>
+Reviewed-by: Christoph Lameter <clameter@sgi.com>
+---
+V1->V2:
+    - (none)
+---
+ arch/x86/kernel/cpu/intel_cacheinfo.c |   55 +++++++++++++++++-----------------
+ 1 file changed, 29 insertions(+), 26 deletions(-)
 
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-
-Index: work5/drivers/serial/8250_pnp.c
-===================================================================
---- work5.orig/drivers/serial/8250_pnp.c	2008-01-16 09:29:33.000000000 -0700
-+++ work5/drivers/serial/8250_pnp.c	2008-01-16 09:51:09.000000000 -0700
-@@ -427,6 +427,21 @@
+--- a/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -451,8 +451,8 @@ unsigned int __cpuinit init_intel_cachei
  }
  
- static int __devinit
-+serial_pnp_line(struct uart_port *port)
-+{
-+#ifdef CONFIG_X86
-+	switch (port->iobase) {
-+	case 0x3f8:	return 0;	/* COM1 -> ttyS0 */
-+	case 0x2f8:	return 1;	/* COM2 -> ttyS1 */
-+	case 0x3e8:	return 2;	/* COM3 -> ttyS2 */
-+	case 0x2e8:	return 3;	/* COM4 -> ttyS3 */
-+	}
-+#endif
-+
-+	return -ENODEV;
-+}
-+
-+static int __devinit
- serial_pnp_probe(struct pnp_dev *dev, const struct pnp_device_id *dev_id)
- {
- 	struct uart_port port;
-@@ -462,7 +477,17 @@
- 	port.uartclk = 1843200;
- 	port.dev = &dev->dev;
+ /* pointer to _cpuid4_info array (for each cache leaf) */
+-static struct _cpuid4_info *cpuid4_info[NR_CPUS];
+-#define CPUID4_INFO_IDX(x,y)    (&((cpuid4_info[x])[y]))
++static DEFINE_PER_CPU(struct _cpuid4_info *, cpuid4_info);
++#define CPUID4_INFO_IDX(x,y)    (&((per_cpu(cpuid4_info, x))[y]))
  
--	line = serial8250_register_port(&port);
-+	line = serial_pnp_line(&port);
-+	if (line >= 0)
-+		line = serial8250_register_port_at(&port, line);
-+
-+	/*
-+	 * If the desired line was busy, or if we don't care which line
-+	 * we get, use the regular registration.
-+	 */
-+	if (line < 0)
-+		line = serial8250_register_port(&port);
-+
- 	if (line < 0)
- 		return -ENODEV;
+ #ifdef CONFIG_SMP
+ static void __cpuinit cache_shared_cpu_map_setup(unsigned int cpu, int index)
+@@ -474,7 +474,7 @@ static void __cpuinit cache_shared_cpu_m
+ 			if (cpu_data(i).apicid >> index_msb ==
+ 			    c->apicid >> index_msb) {
+ 				cpu_set(i, this_leaf->shared_cpu_map);
+-				if (i != cpu && cpuid4_info[i])  {
++				if (i != cpu && per_cpu(cpuid4_info, i))  {
+ 					sibling_leaf = CPUID4_INFO_IDX(i, index);
+ 					cpu_set(cpu, sibling_leaf->shared_cpu_map);
+ 				}
+@@ -505,8 +505,8 @@ static void __cpuinit free_cache_attribu
+ 	for (i = 0; i < num_cache_leaves; i++)
+ 		cache_remove_shared_cpu_map(cpu, i);
+ 
+-	kfree(cpuid4_info[cpu]);
+-	cpuid4_info[cpu] = NULL;
++	kfree(per_cpu(cpuid4_info, cpu));
++	per_cpu(cpuid4_info, cpu) = NULL;
+ }
+ 
+ static int __cpuinit detect_cache_attributes(unsigned int cpu)
+@@ -519,9 +519,9 @@ static int __cpuinit detect_cache_attrib
+ 	if (num_cache_leaves == 0)
+ 		return -ENOENT;
+ 
+-	cpuid4_info[cpu] = kzalloc(
++	per_cpu(cpuid4_info, cpu) = kzalloc(
+ 	    sizeof(struct _cpuid4_info) * num_cache_leaves, GFP_KERNEL);
+-	if (cpuid4_info[cpu] == NULL)
++	if (per_cpu(cpuid4_info, cpu) == NULL)
+ 		return -ENOMEM;
+ 
+ 	oldmask = current->cpus_allowed;
+@@ -546,8 +546,8 @@ static int __cpuinit detect_cache_attrib
+ 
+ out:
+ 	if (retval) {
+-		kfree(cpuid4_info[cpu]);
+-		cpuid4_info[cpu] = NULL;
++		kfree(per_cpu(cpuid4_info, cpu));
++		per_cpu(cpuid4_info, cpu) = NULL;
+ 	}
+ 
+ 	return retval;
+@@ -561,7 +561,7 @@ out:
+ extern struct sysdev_class cpu_sysdev_class; /* from drivers/base/cpu.c */
+ 
+ /* pointer to kobject for cpuX/cache */
+-static struct kobject * cache_kobject[NR_CPUS];
++static DEFINE_PER_CPU(struct kobject *, cache_kobject);
+ 
+ struct _index_kobject {
+ 	struct kobject kobj;
+@@ -570,8 +570,8 @@ struct _index_kobject {
+ };
+ 
+ /* pointer to array of kobjects for cpuX/cache/indexY */
+-static struct _index_kobject *index_kobject[NR_CPUS];
+-#define INDEX_KOBJECT_PTR(x,y)    (&((index_kobject[x])[y]))
++static DEFINE_PER_CPU(struct _index_kobject *, index_kobject);
++#define INDEX_KOBJECT_PTR(x,y)    (&((per_cpu(index_kobject, x))[y]))
+ 
+ #define show_one_plus(file_name, object, val)				\
+ static ssize_t show_##file_name						\
+@@ -684,10 +684,10 @@ static struct kobj_type ktype_percpu_ent
+ 
+ static void __cpuinit cpuid4_cache_sysfs_exit(unsigned int cpu)
+ {
+-	kfree(cache_kobject[cpu]);
+-	kfree(index_kobject[cpu]);
+-	cache_kobject[cpu] = NULL;
+-	index_kobject[cpu] = NULL;
++	kfree(per_cpu(cache_kobject, cpu));
++	kfree(per_cpu(index_kobject, cpu));
++	per_cpu(cache_kobject, cpu) = NULL;
++	per_cpu(index_kobject, cpu) = NULL;
+ 	free_cache_attributes(cpu);
+ }
+ 
+@@ -703,13 +703,14 @@ static int __cpuinit cpuid4_cache_sysfs_
+ 		return err;
+ 
+ 	/* Allocate all required memory */
+-	cache_kobject[cpu] = kzalloc(sizeof(struct kobject), GFP_KERNEL);
+-	if (unlikely(cache_kobject[cpu] == NULL))
++	per_cpu(cache_kobject, cpu) =
++		kzalloc(sizeof(struct kobject), GFP_KERNEL);
++	if (unlikely(per_cpu(cache_kobject, cpu) == NULL))
+ 		goto err_out;
+ 
+-	index_kobject[cpu] = kzalloc(
++	per_cpu(index_kobject, cpu) = kzalloc(
+ 	    sizeof(struct _index_kobject ) * num_cache_leaves, GFP_KERNEL);
+-	if (unlikely(index_kobject[cpu] == NULL))
++	if (unlikely(per_cpu(index_kobject, cpu) == NULL))
+ 		goto err_out;
+ 
+ 	return 0;
+@@ -733,7 +734,8 @@ static int __cpuinit cache_add_dev(struc
+ 	if (unlikely(retval < 0))
+ 		return retval;
+ 
+-	retval = kobject_init_and_add(cache_kobject[cpu], &ktype_percpu_entry,
++	retval = kobject_init_and_add(per_cpu(cache_kobject, cpu),
++				      &ktype_percpu_entry,
+ 				      &sys_dev->kobj, "%s", "cache");
+ 	if (retval < 0) {
+ 		cpuid4_cache_sysfs_exit(cpu);
+@@ -745,13 +747,14 @@ static int __cpuinit cache_add_dev(struc
+ 		this_object->cpu = cpu;
+ 		this_object->index = i;
+ 		retval = kobject_init_and_add(&(this_object->kobj),
+-					      &ktype_cache, cache_kobject[cpu],
++					      &ktype_cache,
++					      per_cpu(cache_kobject, cpu),
+ 					      "index%1lu", i);
+ 		if (unlikely(retval)) {
+ 			for (j = 0; j < i; j++) {
+ 				kobject_put(&(INDEX_KOBJECT_PTR(cpu,j)->kobj));
+ 			}
+-			kobject_put(cache_kobject[cpu]);
++			kobject_put(per_cpu(cache_kobject, cpu));
+ 			cpuid4_cache_sysfs_exit(cpu);
+ 			break;
+ 		}
+@@ -760,7 +763,7 @@ static int __cpuinit cache_add_dev(struc
+ 	if (!retval)
+ 		cpu_set(cpu, cache_dev_map);
+ 
+-	kobject_uevent(cache_kobject[cpu], KOBJ_ADD);
++	kobject_uevent(per_cpu(cache_kobject, cpu), KOBJ_ADD);
+ 	return retval;
+ }
+ 
+@@ -769,7 +772,7 @@ static void __cpuinit cache_remove_dev(s
+ 	unsigned int cpu = sys_dev->id;
+ 	unsigned long i;
+ 
+-	if (cpuid4_info[cpu] == NULL)
++	if (per_cpu(cpuid4_info, cpu) == NULL)
+ 		return;
+ 	if (!cpu_isset(cpu, cache_dev_map))
+ 		return;
+@@ -777,7 +780,7 @@ static void __cpuinit cache_remove_dev(s
+ 
+ 	for (i = 0; i < num_cache_leaves; i++)
+ 		kobject_put(&(INDEX_KOBJECT_PTR(cpu,i)->kobj));
+-	kobject_put(cache_kobject[cpu]);
++	kobject_put(per_cpu(cache_kobject, cpu));
+ 	cpuid4_cache_sysfs_exit(cpu);
+ }
  
 
 -- 
