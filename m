@@ -1,68 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753938AbYAPRFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755122AbYAPRGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753938AbYAPRFX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 12:05:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbYAPRFL
+	id S1755122AbYAPRGO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 12:06:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbYAPRF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 12:05:11 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:36025 "EHLO e5.ny.us.ibm.com"
+	Wed, 16 Jan 2008 12:05:59 -0500
+Received: from gw.goop.org ([64.81.55.164]:56825 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751014AbYAPRFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 12:05:09 -0500
-Subject: Re: [PATCH 04/27] kill filp_open()
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, miklos@szeredi.hu, hch@infradead.org,
-       Bryn Reeves <breeves@redhat.com>, Alasdair G Kergon <agk@redhat.com>
-In-Reply-To: <20080116005200.0165dc67.akpm@linux-foundation.org>
-References: <20071101230826.9A4F6E00@kernel>
-	 <20071101230831.904FDE9A@kernel>
-	 <20080116005200.0165dc67.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 16 Jan 2008 09:04:56 -0800
-Message-Id: <1200503096.22674.171.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	id S1751210AbYAPRF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 12:05:58 -0500
+Message-ID: <478E396A.50707@goop.org>
+Date: Wed, 16 Jan 2008 09:05:46 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jan Beulich <jbeulich@novell.com>, Andi Kleen <ak@suse.de>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0 of 4] x86: some more patches
+References: <patchbomb.1200435425@localhost> <200801161544.15884.ak@suse.de> <20080116145427.GA640@elte.hu> <200801161626.01711.ak@suse.de> <478E3411.76E4.0078.0@novell.com> <20080116154710.GA28946@elte.hu>
+In-Reply-To: <20080116154710.GA28946@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-01-16 at 00:52 -0800, Andrew Morton wrote:
-> On Thu, 01 Nov 2007 16:08:31 -0700 Dave Hansen <haveblue@us.ibm.com> wrote:
-> > Replace all callers with open_namei() directly, and move the
-> > nameidata stack allocation into open_namei().
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/dm-loop.patch
-> is using filp_open() and hence doesn't work very well.
-> 
-> A shall revert dm-loop.patch and run away.
+Ingo Molnar wrote:
+> * Jan Beulich <jbeulich@novell.com> wrote:
+>
+>   
+>>> Yes, but if you cast to long the result will be 32bit again. Or do 
+>>> you rely on it being always used in 64bit signed context with sign 
+>>> extension? While that might work it would seem rather fragile to me, 
+>>> just asking for similar future bugs.
+>>>       
+>> Even if conversion is to 64-bit unsigned, the value (being signed) 
+>> will be sign-extended first (to preserve its value modulo 2**<target 
+>> type width>).
+>>     
+>
+> yes. It would be nice if Andi could test my fix instead of arguing why 
+> he thinks it's unlikely to work ;-)
+>
+> (i've got the cleanup patch below as well ontop of today's x86.git which 
+> includes the first fix, but it's an RFC as it has wider impact and might 
+> break stuff.)
+>
+> 	Ingo
+>
+> --------------->
+> Subject: x86: PAGE_MASK cleanup
+> From: Ingo Molnar <mingo@elte.hu>
+>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  include/asm-x86/page.h |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> Index: linux-x86.q/include/asm-x86/page.h
+> ===================================================================
+> --- linux-x86.q.orig/include/asm-x86/page.h
+> +++ linux-x86.q/include/asm-x86/page.h
+> @@ -6,12 +6,12 @@
+>  /* PAGE_SHIFT determines the page size */
+>  #define PAGE_SHIFT	12
+>  #define PAGE_SIZE	(_AC(1,UL) << PAGE_SHIFT)
+> -#define PAGE_MASK	(~(PAGE_SIZE-1))
+> +#define PAGE_MASK	(_AT(phys_addr_t, ~(PAGE_SIZE-1)))
+>   
 
-This one's pretty easy, thank goodness.  Just replace filp_open() with
-open_namei():
+Hm, this seems fairly wide-ranging.  How about just making it signed?  
+In fact, all these masks which are of the form "all high bits set, some 
+low bits clear" (or perhaps "all set except some") should be signed, so 
+that the "all high bits set" property is maintained when its extended to 
+larger types.
 
-	/filp_open(/open_namei(AT_FDCWD, /
+Also, Andi, do you want to get rid of the PHYSICAL_MASK stuff?
 
-BTW, why do we need this on top of the existing loopback driver?  Can
-they really share no code?
-
- linux-2.6.git-dave/drivers/md/dm-loop.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff -puN drivers/md/dm-loop.c~fix-dm-loop drivers/md/dm-loop.c
---- linux-2.6.git/drivers/md/dm-loop.c~fix-dm-loop	2008-01-16 09:02:06.000000000 -0800
-+++ linux-2.6.git-dave/drivers/md/dm-loop.c	2008-01-16 09:02:06.000000000 -0800
-@@ -757,7 +757,7 @@ static int loop_get_file(struct dm_targe
- 	int r = 0;
- 
- 	ti->error = "could not open backing file";
--	filp = filp_open(lc->path, flags, 0);
-+	filp = open_namei(AT_FDCWD, lc->path, flags, 0);
- 	if (IS_ERR(filp))
- 		return PTR_ERR(filp);
- 	lc->filp = filp;
-_
-
-
--- Dave
-
+    J
