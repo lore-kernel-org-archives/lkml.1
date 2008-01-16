@@ -1,109 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbYAPM62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbYAPM7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753899AbYAPM62 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 07:58:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbYAPM6S
+	id S1754079AbYAPM7z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 07:59:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbYAPM7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 07:58:18 -0500
-Received: from as2.cineca.com ([130.186.84.242]:46876 "EHLO as2.cineca.com"
+	Wed, 16 Jan 2008 07:59:48 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:38716 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752345AbYAPM6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 07:58:17 -0500
-Message-ID: <478DFF62.3070408@users.sourceforge.net>
-From: Andrea Righi <righiandr@users.sourceforge.net>
-Reply-To: righiandr@users.sourceforge.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070604 Thunderbird/1.5.0.12 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Valdis.Kletnieks@vt.edu,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] per-uid/gid I/O throttling (was Re: [RFC][PATCH]
- per-task I/O throttling)
-References: <47869FFE.1050000@users.sourceforge.net> <661de9470801110759h318347acw5f08c91b48ca742d@mail.gmail.com> <47879A32.8060508@users.sourceforge.net> <3777.1200113861@turing-police.cc.vt.edu> <1200131197.7999.14.camel@lappy> <20080112105702.GC25388@balbir.in.ibm.com> <1200136245.7999.20.camel@lappy> <4789006C.2030804@users.sourceforge.net> <20080113044607.GA13633@balbir.in.ibm.com> <478CE41F.5010401@users.sourceforge.net> <20080116104541.GB25724@balbir.in.ibm.com>
-In-Reply-To: <20080116104541.GB25724@balbir.in.ibm.com>
-X-Enigmail-Version: 0.95.0
-OpenPGP: id=77CEF397;
-	url=keyserver.veridis.com
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-Date: Wed, 16 Jan 2008 13:58:11 +0100 (MET)
+	id S1751363AbYAPM7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 07:59:48 -0500
+Date: Wed, 16 Jan 2008 13:59:53 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: rae l <crquan@gmail.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, open-iscsi@googlegroups.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC on MODULE SUPPORT] hello, Rusty, Should we provide module information even if the kernel module compiled built-in with bzImage?
+Message-ID: <20080116125953.GA27176@uranus.ravnborg.org>
+References: <91b13c310801160202y833df7bs37cbb5827e875569@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <91b13c310801160202y833df7bs37cbb5827e875569@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> * Andrea Righi <righiandr@users.sourceforge.net> [2008-01-15 17:49:36]:
+On Wed, Jan 16, 2008 at 06:02:22PM +0800, rae l wrote:
+> hello, Rusty:
+> I encountered a problem when modules compiled built-in with bzImage:
 > 
->> Allow to limit the I/O bandwidth for specific uid(s) or gid(s) imposing
->> additional delays on those processes that exceed the limits defined in a
->> configfs tree.
->>
->> Examples:
->>
->> Limit the I/O bandwidth for user www-data (UID 33) to 4MB/s:
->>
->> root@linux:/config/io-throttle# mkdir uid:33
->> root@linux:/config/io-throttle# cd uid:33/
->> root@linux:/config/io-throttle/uid:33# cat io-rate
->>      io-rate: 0 KiB/sec
->>    requested: 0 KiB
->> last_request: 0 jiffies
->>        delta: 388202 jiffies
->> root@linux:/config/io-throttle/uid:33# echo 4096 > io-rate
->> root@linux:/config/io-throttle/uid:33# cat io-rate
->>      io-rate: 4096 KiB/sec
->>    requested: 0 KiB
->> last_request: 389271 jiffies
->>        delta: 91 jiffies
->>
->> Limit the I/O bandwidth of group backup (GID 34) to 512KB/s:
->>
->> root@linux:/config/io-throttle# mkdir gid:34
->> root@linux:/config/io-throttle# cd gid:34/
->> root@linux:/config/io-throttle/gid:34# cat io-rate
->>      io-rate: 0 KiB/sec
->>    requested: 0 KiB
->> last_request: 0 jiffies
->>        delta: 403160 jiffies
->> root@linux:/config/io-throttle/gid:34# echo 512 > io-rate
->> root@linux:/config/io-throttle/gid:34# cat io-rate
->>      io-rate: 512 KiB/sec
->>    requested: 0 KiB
->> last_request: 403618 jiffies
->>        delta: 80 jiffies
->>
->> Remove the I/O limit for user www-data:
->>
->> root@linux:/config/io-throttle# echo 0 > uid:33/io-rate
->> root@linux:/config/io-throttle# cat uid:33/io-rate
->>      io-rate: 0 KiB/sec
->>    requested: 0 KiB
->> last_request: 419009 jiffies
->>        delta: 568 jiffies
->>
->> or:
->>
->> root@linux:/config/io-throttle# rmdir uid:33
->>
->> Future improvements:
->> * allow to limit also I/O operations per second (instead of KB/s only)
->> * extend grouping criteria (allow to define rules based on process containers,
->>   process command, etc.) 
->>
->> Signed-off-by: Andrea Righi <a.righi@cineca.it>
+> open-iscsi is an iSCSI software, it has a userspace daemon(iscsid) and
+> a userspace mani tool(iscsiadm) and a kernel module
+> (scsi_transport_iscsi),
+> recently the kernel module has been accepted into the official kernel
+> release; since the module licensed with GPL, it could be compiled as
+> built-in,
 > 
-> Hi, Andrea,
+> but when I compiled the module within the bzImage, the problem appeared:
 > 
-> Thanks for doing this. I am going to review the patches in greater
-> detail and also test them. Why do you use configfs when we have a
-> control group filesystem available for grouping tasks and providing a
-> file system based interface for control and accounting?
+> tux ~ # iscsid -f
+> iscsid: Missing or Invalid version from
+> /sys/module/scsi_transport_iscsi/version. Make sure a up to date
+> scsi_transport_iscsi module is loaded and a up todate version of
+> iscsid is running. Exiting...
 > 
+> this is just because iscsid hope there's an external module could be
+> under /sys/module, and read the kernel module's version information,
+> but if the module compiled built-in, all its module information
+> discarded and it doesn't appeared under /sys/module/, that would break
+> iscsid.
+> 
+> Now the problem is:
+> 
+> Should we provide module information under
+> /sys/module/<module-name>/... even if the module compiled built-in
+> with bzImage?
+> Or just this module(scsi_transport_iscsi) should be marked with [M] only?
+> 
+> if the former solution is preferred, I would be happy to work on
+> MODULE_INFO-like macros improvements with CONFIG_MODULE undefined.
 
-Well... I didn't choose configfs for a technical reason, but simply
-because I'm more familiar with it, respect to the other equivalent ways
-to implement this. But I'll try to look also at the control group
-approach, I don't know in details all the advantages/disadvantages, but
-it seems interesting anyway.
+I recall Magnus Damm did something in this respect.
+Try to google a bit and see if you hit something that
+can be used as inspiration.
 
--Andrea
+I was maybe only for module parameters (autoparm was the name I think).
+
+It is not a perfect fit but maybe a help.
+
+	Sam
