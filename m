@@ -1,85 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758120AbYAPAso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758267AbYAPAtg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758120AbYAPAso (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 19:48:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYAPAsf
+	id S1758267AbYAPAtg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 19:49:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbYAPAt1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 19:48:35 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:36233 "EHLO
+	Tue, 15 Jan 2008 19:49:27 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:38039 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751884AbYAPAse (ORCPT
+	with ESMTP id S1752161AbYAPAt1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 19:48:34 -0500
+	Tue, 15 Jan 2008 19:49:27 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=ViMeb6lOdT/lSWAT1NKSz2DJGUiqXX/ii853qnKA5CXoiVWJNEUFvsUxMeGaITqqoYce19XBA8m2YOqeU8ZUVDXDOz7m4phg8fYb0mQ7m8oaycpz6jc1Z3WwCeaN8FwybGAMKcIynGiT1d0wiCHflS9UMyk3h268csuyz3csRe0=
-Date: Wed, 16 Jan 2008 08:51:45 +0800
+        b=g8RQ9uQg+aa7t+fTprzWnCUS8iTPQ9xWdKr5PcnRTxno9mdUjDmXlYvIhiNfLmNYjyt7i9cReGVI2K3gvb4i+xEgvR1/Np6locDs9vowUmUB2SawY7KV2ZGySAs3QjBdmX19zHUsG37/CCVgJKpL8Y2lZE/rcibBclnWepjw6qI=
+Date: Wed, 16 Jan 2008 08:52:38 +0800
 From: Dave Young <hidave.darkstar@gmail.com>
-To: James.Bottomley@hansenpartnership.com
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 5/7] scsi : use class iteration api
-Message-ID: <20080116005145.GB2929@darkstar.te-china.tietoenator.com>
-References: <20080112095517.GE2893@darkstar.te-china.tietoenator.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       spi-devel-general@lists.sourceforge.net
+Subject: Re: [PATCH 6/7] spi : use class iteration api
+Message-ID: <20080116005238.GC2929@darkstar.te-china.tietoenator.com>
+References: <20080112095711.GF2893@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080112095517.GE2893@darkstar.te-china.tietoenator.com>
+In-Reply-To: <20080112095711.GF2893@darkstar.te-china.tietoenator.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-update the patch with minor return path changes in match function:
+Update the patch with minor return path changes in match function:
 
 Convert to use the class iteration api.
 
 Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
 
 ---
- drivers/scsi/hosts.c |   24 +++++++++++++-----------
- 1 file changed, 13 insertions(+), 11 deletions(-)
+ drivers/spi/spi.c |   24 ++++++++++++++----------
+ 1 file changed, 14 insertions(+), 10 deletions(-)
 
-diff -upr linux/drivers/scsi/hosts.c linux.new/drivers/scsi/hosts.c
---- linux/drivers/scsi/hosts.c	2008-01-16 08:43:35.000000000 +0800
-+++ linux.new/drivers/scsi/hosts.c	2008-01-16 08:43:35.000000000 +0800
-@@ -429,6 +429,15 @@ void scsi_unregister(struct Scsi_Host *s
+diff -upr linux/drivers/spi/spi.c linux.new/drivers/spi/spi.c
+--- linux/drivers/spi/spi.c	2008-01-16 08:43:35.000000000 +0800
++++ linux.new/drivers/spi/spi.c	2008-01-16 08:43:35.000000000 +0800
+@@ -485,6 +485,15 @@ void spi_unregister_master(struct spi_ma
  }
- EXPORT_SYMBOL(scsi_unregister);
+ EXPORT_SYMBOL_GPL(spi_unregister_master);
  
-+static int __scsi_host_match(struct class_device *cdev, void *data)
++static int __spi_master_match(struct device *dev, void *data)
 +{
-+	struct Scsi_Host *p;
-+	unsigned short *hostnum = (unsigned short *)data;
++	struct spi_master *m;
++	u16 *bus_num = (u16 *)data;
 +
-+	p = class_to_shost(cdev);
-+	return p->host_no == *hostnum;
++	m = container_of(dev, struct spi_master, dev);
++	return m->bus_num == *bus_num;
 +}
 +
  /**
-  * scsi_host_lookup - get a reference to a Scsi_Host by host no
-  *
-@@ -439,19 +448,12 @@ EXPORT_SYMBOL(scsi_unregister);
-  **/
- struct Scsi_Host *scsi_host_lookup(unsigned short hostnum)
+  * spi_busnum_to_master - look up master associated with bus_num
+  * @bus_num: the master's bus number
+@@ -499,17 +508,12 @@ struct spi_master *spi_busnum_to_master(
  {
--	struct class *class = &shost_class;
- 	struct class_device *cdev;
--	struct Scsi_Host *shost = ERR_PTR(-ENXIO), *p;
-+	struct Scsi_Host *shost = ERR_PTR(-ENXIO);
+ 	struct device		*dev;
+ 	struct spi_master	*master = NULL;
+-	struct spi_master	*m;
  
--	down(&class->sem);
--	list_for_each_entry(cdev, &class->children, node) {
--		p = class_to_shost(cdev);
--		if (p->host_no == hostnum) {
--			shost = scsi_host_get(p);
+-	down(&spi_master_class.sem);
+-	list_for_each_entry(dev, &spi_master_class.children, node) {
+-		m = container_of(dev, struct spi_master, dev);
+-		if (m->bus_num == bus_num) {
+-			master = spi_master_get(m);
 -			break;
 -		}
 -	}
--	up(&class->sem);
-+	cdev = class_find_child(&shost_class, &hostnum, __scsi_host_match);
-+	if (cdev)
-+		shost = scsi_host_get(class_to_shost(cdev));
- 
- 	return shost;
+-	up(&spi_master_class.sem);
++	dev = class_find_device(&spi_master_class, &bus_num,
++				__spi_master_match);
++	if (dev)
++		master = container_of(dev, struct spi_master, dev);
++	/* reference got in class_find_device */
+ 	return master;
  }
+ EXPORT_SYMBOL_GPL(spi_busnum_to_master);
