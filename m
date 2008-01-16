@@ -1,83 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755122AbYAPRGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbYAPRHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755122AbYAPRGO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 12:06:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbYAPRF7
+	id S1755046AbYAPRHx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 12:07:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYAPRHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 12:05:59 -0500
-Received: from gw.goop.org ([64.81.55.164]:56825 "EHLO mail.goop.org"
+	Wed, 16 Jan 2008 12:07:44 -0500
+Received: from mx1.slu.se ([130.238.96.70]:52585 "EHLO mx1.slu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751210AbYAPRF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 12:05:58 -0500
-Message-ID: <478E396A.50707@goop.org>
-Date: Wed, 16 Jan 2008 09:05:46 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1751477AbYAPRHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 12:07:43 -0500
+From: Robert Olsson <Robert.Olsson@data.slu.se>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jan Beulich <jbeulich@novell.com>, Andi Kleen <ak@suse.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0 of 4] x86: some more patches
-References: <patchbomb.1200435425@localhost> <200801161544.15884.ak@suse.de> <20080116145427.GA640@elte.hu> <200801161626.01711.ak@suse.de> <478E3411.76E4.0078.0@novell.com> <20080116154710.GA28946@elte.hu>
-In-Reply-To: <20080116154710.GA28946@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18318.14810.877279.41815@robur.slu.se>
+Date: Wed, 16 Jan 2008 18:07:38 +0100
+To: David Miller <davem@davemloft.net>
+Cc: elendil@planet.nl, jesse.brandeburg@intel.com, slavon@bigtelecom.ru,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [REGRESSION] 2.6.24-rc7: e1000: Detected Tx Unit Hang
+In-Reply-To: <20080116.022953.184520911.davem@davemloft.net>
+References: <36D9DB17C6DE9E40B059440DB8D95F52042FA541@orsmsx418.amr.corp.intel.com>
+	<20080115.210214.170759690.davem@davemloft.net>
+	<200801160956.09053.elendil@planet.nl>
+	<20080116.022953.184520911.davem@davemloft.net>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jan Beulich <jbeulich@novell.com> wrote:
->
->   
->>> Yes, but if you cast to long the result will be 32bit again. Or do 
->>> you rely on it being always used in 64bit signed context with sign 
->>> extension? While that might work it would seem rather fragile to me, 
->>> just asking for similar future bugs.
->>>       
->> Even if conversion is to 64-bit unsigned, the value (being signed) 
->> will be sign-extended first (to preserve its value modulo 2**<target 
->> type width>).
->>     
->
-> yes. It would be nice if Andi could test my fix instead of arguing why 
-> he thinks it's unlikely to work ;-)
->
-> (i've got the cleanup patch below as well ontop of today's x86.git which 
-> includes the first fix, but it's an RFC as it has wider impact and might 
-> break stuff.)
->
-> 	Ingo
->
-> --------------->
-> Subject: x86: PAGE_MASK cleanup
-> From: Ingo Molnar <mingo@elte.hu>
->
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  include/asm-x86/page.h |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> Index: linux-x86.q/include/asm-x86/page.h
-> ===================================================================
-> --- linux-x86.q.orig/include/asm-x86/page.h
-> +++ linux-x86.q/include/asm-x86/page.h
-> @@ -6,12 +6,12 @@
->  /* PAGE_SHIFT determines the page size */
->  #define PAGE_SHIFT	12
->  #define PAGE_SIZE	(_AC(1,UL) << PAGE_SHIFT)
-> -#define PAGE_MASK	(~(PAGE_SIZE-1))
-> +#define PAGE_MASK	(_AT(phys_addr_t, ~(PAGE_SIZE-1)))
->   
 
-Hm, this seems fairly wide-ranging.  How about just making it signed?  
-In fact, all these masks which are of the form "all high bits set, some 
-low bits clear" (or perhaps "all set except some") should be signed, so 
-that the "all high bits set" property is maintained when its extended to 
-larger types.
+David Miller writes:
+ > > On Wednesday 16 January 2008, David Miller wrote:
+ > > > Ok, here is the patch I'll propose to fix this.  The goal is to make
+ > > > it as simple as possible without regressing the thing we were trying
+ > > > to fix.
+ > > 
+ > > Looks good to me. Tested with -rc8.
+ > 
+ > Thanks for testing.
 
-Also, Andi, do you want to get rid of the PHYSICAL_MASK stuff?
+ Yes that code looks nice. I'm using the patch but I've noticed another 
+ phenomena with the current e1000 driver. There is a race when taking a 
+ device down at high traffic loads. I've tracked and instrumented and it 
+ seems like occasionly irq_sem can get bump up so interrupts can't be 
+ enabled again.
 
-    J
+
+eth0 e1000_irq_enable sem = 1    <- High netload
+eth0 e1000_irq_enable sem = 1
+eth0 e1000_irq_enable sem = 1
+eth0 e1000_irq_enable sem = 1
+eth0 e1000_irq_enable sem = 1
+eth0 e1000_irq_enable sem = 1
+eth0 e1000_irq_enable sem = 1    <- ifconfig eth0 down
+eth0 e1000_irq_disable sem = 2
+
+**e1000_open                     <- ifconfig eth0 up
+eth0 e1000_irq_disable sem = 3      Dead. irq's can't be enabled
+e1000_irq_enable miss
+eth0 e1000_irq_enable sem = 2
+e1000_irq_enable miss
+eth0 e1000_irq_enable sem = 1
+ADDRCONF(NETDEV_UP): eth0: link is not ready
+
+
+Cheers
+					--ro
+
+static void
+e1000_irq_disable(struct e1000_adapter *adapter)
+{
+        atomic_inc(&adapter->irq_sem);
+        E1000_WRITE_REG(&adapter->hw, IMC, ~0);
+        E1000_WRITE_FLUSH(&adapter->hw);
+        synchronize_irq(adapter->pdev->irq);
+
+        if(adapter->netdev->ifindex == 3)
+        printk("%s e1000_irq_disable sem = %d\n",  adapter->netdev->name,
+               atomic_read(&adapter->irq_sem));
+}
+
+static void
+e1000_irq_enable(struct e1000_adapter *adapter)
+{
+        if (likely(atomic_dec_and_test(&adapter->irq_sem))) {
+                E1000_WRITE_REG(&adapter->hw, IMS, IMS_ENABLE_MASK);
+                E1000_WRITE_FLUSH(&adapter->hw);
+                }
+        else
+                printk("e1000_irq_enable miss\n");
+
+        if(adapter->netdev->ifindex == 3)
+          printk("%s e1000_irq_enable sem = %d\n",  adapter->netdev->name,
+                 atomic_read(&adapter->irq_sem));
+}
