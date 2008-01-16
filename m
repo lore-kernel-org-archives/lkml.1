@@ -1,126 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbYAPCs3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758089AbYAPCst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758020AbYAPCs3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 21:48:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754830AbYAPCsW
+	id S1758089AbYAPCst (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 21:48:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758209AbYAPCsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 21:48:22 -0500
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:15790 "EHLO
-	outbound2-wa4-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753134AbYAPCsU convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 21:48:20 -0500
-X-Greylist: delayed 1870 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Jan 2008 21:48:20 EST
-X-BigFish: V
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH] lost softirq, 2.6.24-rc7
-Date: Tue, 15 Jan 2008 18:17:07 -0800
-Message-ID: <884020C16A0AFF4D8A8B7800EA0C98870FD5F6@ussdixms03.am.sony.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] lost softirq, 2.6.24-rc7
-Thread-Index: AchX3w/jBsGjl1oDRHqeAsSzSiu1fQABUmMJ
-References: <1200435326.4092.9.camel@bx740> <20080116003946.GE30532@goodmis.org>
-From: "Rowand, Frank" <frank.rowand@us.sony.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Cc: <linux-kernel@vger.kernel.org>, <mingo@redhat.com>
-X-OriginalArrivalTime: 16 Jan 2008 02:17:08.0385 (UTC) FILETIME=[E528E910:01C857E5]
+	Tue, 15 Jan 2008 21:48:37 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:48538 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757581AbYAPCsc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 21:48:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Ow+AX+0F82LuGo7n7sTLaeOwNNO5pS0ejgdCuMZmd+WmB3X76K/e0OT3UvRs88xBZX8xdPmyKIDUIqo9IOptu7IlaL9JcxraOxZM7ctnwA8Rl+clX3c8euFg7QYCbsll4SwY8vnnA1rIIiXE0/dpuU3xSL7Z+MfrW70K6ETShjM=
+Subject: [PATCH] x86: add is_f00f_bug helper to fault_32|64.c
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain
+Date: Tue, 15 Jan 2008 18:48:35 -0800
+Message-Id: <1200451715.16794.71.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Further towards unifying these files, add another helper
+in same spirit as is_errata93.  Add an #ifdef around the
+forward declaration of do_invalid_op to make it clear it
+is only needed in the one place.
 
-Steve,
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ arch/x86/mm/fault_32.c |   41 ++++++++++++++++++++++++-----------------
+ arch/x86/mm/fault_64.c |   26 ++++++++++++++++++++++++++
+ 2 files changed, 50 insertions(+), 17 deletions(-)
 
-You are totally correct.  I used the wrong words when I said
-"ksoftirqd thread runs".  My apologies for very misleading wording.
-
-I have updated the wording in-line below, in the original message to
-indicate that it is softirq threads, in the ksoftirqd() function, not
-the ksoftirqd thread.
-
--Frank
-
------Original Message-----
-From: Steven Rostedt [mailto:rostedt@goodmis.org]
-Sent: Tue 1/15/2008 4:39 PM
-To: Rowand, Frank
-Cc: linux-kernel@vger.kernel.org; mingo@redhat.com
-Subject: Re: [PATCH] lost softirq, 2.6.24-rc7
+diff --git a/arch/x86/mm/fault_32.c b/arch/x86/mm/fault_32.c
+index 936bb0c..f50df86 100644
+--- a/arch/x86/mm/fault_32.c
++++ b/arch/x86/mm/fault_32.c
+@@ -211,8 +211,6 @@ void dump_pagetable(unsigned long address)
+ 	printk("\n");
+ }
  
-On Tue, Jan 15, 2008 at 02:15:26PM -0800, Frank Rowand wrote:
-> From: Frank Rowand <frank.rowand@am.sony.com>
-> 
-> (Ingo, there is a question for you after the description, just before the
-> patch.)
-> 
-> When running an interrupt and network intensive stress test with PREEMPT_RT
-> enabled, the target system stopped processing received network packets.
-> skbs from received packets were being queued by net_rx_action(), but the
-> NET_RX_SOFTIRQ softirq was never running to remove the skbs from the queue.
-> Since the target system root file system is NFS mounted, the system is now
-> effectively hung.
-> 
-> A pseudocode description of how this state was reached follows.
-> Each level of indentation represents a function call from the previous line.
-> 
-> 
-> ethernet driver irq handler receives packet
->    netif_rx()
->       queues skb (qlen == 1), raises NET_RX_SOFTIRQ
-> 
-> on return from irq
->    ___do_softirq() [ 1 ]
->       Reset the pending bitmask
-
-Frank,
-
-This path should not be hit when running with PREEMPT_RT. The softirqs
-are now all separate, and are not run in batch in ksoftirqd. In fact,
-ksoftirqd should not be running at all with PREEMPT_RT.
-
--- Steve
-
->       net_rx_action()
->          dequeues skb (qlen == 0)
->          jiffies incremented, so
->             break out of processing
->             and raise NET_RX_SOFTIRQ
->             (but don't deassert NAPI_STATE_SCHED)
-> 
-> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
->          ksoftirqd thread runs
-
-           ^^^^^^^^^^^^^^^^^^^^^^  should have been:
-
-           the TIMER_SOFTIRQ and RCU_SOFTIRQ softirq threads, which are
-           both executing ksoftirqd() run
-
->             process TIMER_SOFTIRQ
->             process RCU_SOFTIRQ
-
->             << ksoftirqd sleeps >>
-
-              ^^^^^^^^^^^^^^^^^^^^^^^  should have been:
-              the softirq threads, executing in ksoftirqd(), sleep
-
-> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-> 
->          ___do_softirq() [ 2 ]
->             Reset the pending bitmask
->             finds NET_RX_SOFTIRQ raised but already running
->             << ___do_softirq() [ 2 ] completes >>
-> 
->       << ___do_softirq() [ 1 ] resumes >>
->       the pending bitmask is empty, so NET_RX_SOFTIRQ is lost
-> 
-> 
-> 
-
-
+-void do_invalid_op(struct pt_regs *, unsigned long);
+-
+ static inline pmd_t *vmalloc_sync_one(pgd_t *pgd, unsigned long address)
+ {
+ 	unsigned index = pgd_index(address);
+@@ -288,6 +286,28 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_X86_F00F_BUG
++void do_invalid_op(struct pt_regs *, unsigned long);
++#endif
++
++static int is_f00f_bug(struct pt_regs *regs, unsigned long address)
++{
++#ifdef CONFIG_X86_F00F_BUG
++	unsigned long nr;
++	/*
++	 * Pentium F0 0F C7 C8 bug workaround.
++	 */
++	if (boot_cpu_data.f00f_bug) {
++		nr = (address - idt_descr.address) >> 3;
++
++		if (nr == 6) {
++			do_invalid_op(regs, 0);
++			return 1;
++		}
++	}
++#endif
++	return 0;
++}
+ 
+ /*
+  * Handle a fault on the vmalloc or module mapping area
+@@ -570,21 +590,8 @@ bad_area_nosemaphore:
+ 		return;
+ 	}
+ 
+-#ifdef CONFIG_X86_F00F_BUG
+-	/*
+-	 * Pentium F0 0F C7 C8 bug workaround.
+-	 */
+-	if (boot_cpu_data.f00f_bug) {
+-		unsigned long nr;
+-
+-		nr = (address - idt_descr.address) >> 3;
+-
+-		if (nr == 6) {
+-			do_invalid_op(regs, 0);
+-			return;
+-		}
+-	}
+-#endif
++	if (is_f00f_bug(regs, address))
++		return;
+ 
+ no_context:
+ 	/* Are we prepared to handle this kernel fault?  */
+diff --git a/arch/x86/mm/fault_64.c b/arch/x86/mm/fault_64.c
+index cde110c..17cafe8 100644
+--- a/arch/x86/mm/fault_64.c
++++ b/arch/x86/mm/fault_64.c
+@@ -256,6 +256,29 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_X86_F00F_BUG
++void do_invalid_op(struct pt_regs *, unsigned long);
++#endif
++
++static int is_f00f_bug(struct pt_regs *regs, unsigned long address)
++{
++#ifdef CONFIG_X86_F00F_BUG
++	unsigned long nr;
++	/*
++	 * Pentium F0 0F C7 C8 bug workaround.
++	 */
++	if (boot_cpu_data.f00f_bug) {
++		nr = (address - idt_descr.address) >> 3;
++
++		if (nr == 6) {
++			do_invalid_op(regs, 0);
++			return 1;
++		}
++	}
++#endif
++	return 0;
++}
++
+ static noinline void pgtable_bad(unsigned long address, struct pt_regs *regs,
+ 				 unsigned long error_code)
+ {
+@@ -572,6 +595,9 @@ bad_area_nosemaphore:
+ 		return;
+ 	}
+ 
++	if (is_f00f_bug(regs, address))
++		return;
++
+ no_context:
+ 	/* Are we prepared to handle this kernel fault?  */
+ 	if (fixup_exception(regs))
+-- 
+1.5.4.rc2.1164.g6451
 
