@@ -1,66 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752948AbYAPFBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756404AbYAPFC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752948AbYAPFBa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 00:01:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbYAPFBT
+	id S1756404AbYAPFC3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 00:02:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYAPFCQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 00:01:19 -0500
-Received: from twinlark.arctic.org ([208.69.40.136]:55616 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750753AbYAPFBT (ORCPT
+	Wed, 16 Jan 2008 00:02:16 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33649
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750910AbYAPFCP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 00:01:19 -0500
-Date: Tue, 15 Jan 2008 21:01:17 -0800 (PST)
-From: dean gaudet <dean@arctic.org>
-To: NeilBrown <neilb@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Dan Williams <dan.j.williams@gmail.com>
-Subject: Re: [PATCH 001 of 6] md: Fix an occasional deadlock in raid5
-In-Reply-To: <1080114014525.20337@suse.de>
-Message-ID: <alpine.DEB.0.999999.0801152059170.9578@twinlark.arctic.org>
-References: <20080114123726.19968.patches@notabene> <1080114014525.20337@suse.de>
-User-Agent: Alpine 0.999999 (DEB 847 2007-12-06)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 16 Jan 2008 00:02:15 -0500
+Date: Tue, 15 Jan 2008 21:02:14 -0800 (PST)
+Message-Id: <20080115.210214.170759690.davem@davemloft.net>
+To: jesse.brandeburg@intel.com
+Cc: slavon@bigtelecom.ru, elendil@planet.nl, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [REGRESSION] 2.6.24-rc7: e1000: Detected Tx Unit Hang
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <36D9DB17C6DE9E40B059440DB8D95F52042FA541@orsmsx418.amr.corp.intel.com>
+References: <200801151504.10047.elendil@planet.nl>
+	<20080115190458.rxt3yhb2o8o404kc@mail.bigtelecom.ru>
+	<36D9DB17C6DE9E40B059440DB8D95F52042FA541@orsmsx418.amr.corp.intel.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Jan 2008, NeilBrown wrote:
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+Date: Tue, 15 Jan 2008 13:53:43 -0800
 
-> 
-> raid5's 'make_request' function calls generic_make_request on
-> underlying devices and if we run out of stripe heads, it could end up
-> waiting for one of those requests to complete.
-> This is bad as recursive calls to generic_make_request go on a queue
-> and are not even attempted until make_request completes.
-> 
-> So: don't make any generic_make_request calls in raid5 make_request
-> until all waiting has been done.  We do this by simply setting
-> STRIPE_HANDLE instead of calling handle_stripe().
-> 
-> If we need more stripe_heads, raid5d will get called to process the
-> pending stripe_heads which will call generic_make_request from a
-> different thread where no deadlock will happen.
-> 
-> 
-> This change by itself causes a performance hit.  So add a change so
-> that raid5_activate_delayed is only called at unplug time, never in
-> raid5.  This seems to bring back the performance numbers.  Calling it
-> in raid5d was sometimes too soon...
-> 
-> Cc: "Dan Williams" <dan.j.williams@gmail.com>
-> Signed-off-by: Neil Brown <neilb@suse.de>
+> The tx code has an "early exit" that tries to limit the amount of tx
+> packets handled in a single poll loop and requires napi or interrupt
+> rescheduling based on the return value from e1000_clean_tx_irq.
 
-probably doesn't matter, but for the record:
+That explains everything, thanks Jesse.
 
-Tested-by: dean gaudet <dean@arctic.org>
+Ok, here is the patch I'll propose to fix this.  The goal is to make
+it as simple as possible without regressing the thing we were trying
+to fix.
 
-this time i tested with internal and external bitmaps and it survived 8h 
-and 14h resp. under the parallel tar workload i used to reproduce the 
-hang.
+Something more sophisticated can be done later.
 
-btw this should probably be a candidate for 2.6.22 and .23 stable.
+Three of the 5 Intel drivers had the TX breakout logic.  e1000,
+e1000e, and ixgbe.  e100 and ixgb did not, so they don't have any
+problems we need to fix here.
 
-thanks
--dean
+What the fix does is behave as if the budget was fully consumed if
+*_clean_tx_irq() returns true.
+
+The only valid way to return from ->poll() without copleting the NAPI
+poll is by returning work_done == budget.  That signals to the caller
+that the NAPI instance has not been descheduled and therefore the
+caller fully owns the NAPI context.
+
+This does mean that for these drivers any time TX work is done, we'll
+loop at least one extra time in the ->poll() loop of net_rx_work() but
+that is historically what these drivers have caused to happen for
+years.
+
+For 2.6.25 or similar I would suggest investigating courses of action
+to bring closure and consistency to this:
+
+1) Determine whether the loop breakout is actually necessary.
+   Jesse explained to me that they had seen a case where a
+   thread on one cpu feeding the TX ring could keep a thread
+   on another cpu constantly running the *_clean_tx_irq() code
+   in a loop.
+
+   I find this hard to believe since even the slowest CPU should be
+   able to free up TX entries faster than they can be transmitted on
+   gigabit links :-)
+
+2) If the investigation in #1 deems the breakout logic is necessary,
+   then consistently amongst all the 5 drivers a policy should be
+   implemented which is integrated with the NAPI budgetting logic.
+   For example, the simplest thing to do is to pass the budget and the
+   "work_done" thing down into *_clean_tx_irq() and break out if it is
+   exceeded.
+
+   As a further refinement we can say that TX work is about 1/4 the
+   expense of RX work and adjust the budget checking logic to match
+   that.
+
+[NET]: Fix TX timeout regression in Intel drivers.
+
+This fixes a regression added by changeset
+53e52c729cc169db82a6105fac7a166e10c2ec36 ("[NET]: Make ->poll()
+breakout consistent in Intel ethernet drivers.")
+
+As pointed out by Jesse Brandeburg, for three of the drivers edited
+above there is breakout logic in the *_clean_tx_irq() code to prevent
+running TX reclaim forever.  If this occurs, we have to elide NAPI
+poll completion or else those TX events will never be serviced.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
+index 13d57b0..0c9a6f7 100644
+--- a/drivers/net/e1000/e1000_main.c
++++ b/drivers/net/e1000/e1000_main.c
+@@ -3919,7 +3919,7 @@ e1000_clean(struct napi_struct *napi, int budget)
+ {
+ 	struct e1000_adapter *adapter = container_of(napi, struct e1000_adapter, napi);
+ 	struct net_device *poll_dev = adapter->netdev;
+-	int work_done = 0;
++	int tx_cleaned = 0, work_done = 0;
+ 
+ 	/* Must NOT use netdev_priv macro here. */
+ 	adapter = poll_dev->priv;
+@@ -3929,14 +3929,17 @@ e1000_clean(struct napi_struct *napi, int budget)
+ 	 * simultaneously.  A failure obtaining the lock means
+ 	 * tx_ring[0] is currently being cleaned anyway. */
+ 	if (spin_trylock(&adapter->tx_queue_lock)) {
+-		e1000_clean_tx_irq(adapter,
+-				   &adapter->tx_ring[0]);
++		tx_cleaned = e1000_clean_tx_irq(adapter,
++						&adapter->tx_ring[0]);
+ 		spin_unlock(&adapter->tx_queue_lock);
+ 	}
+ 
+ 	adapter->clean_rx(adapter, &adapter->rx_ring[0],
+ 	                  &work_done, budget);
+ 
++	if (tx_cleaned)
++		work_done = budget;
++
+ 	/* If budget not fully consumed, exit the polling mode */
+ 	if (work_done < budget) {
+ 		if (likely(adapter->itr_setting & 3))
+diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
+index 4a6fc74..2ab3bfb 100644
+--- a/drivers/net/e1000e/netdev.c
++++ b/drivers/net/e1000e/netdev.c
+@@ -1384,7 +1384,7 @@ static int e1000_clean(struct napi_struct *napi, int budget)
+ {
+ 	struct e1000_adapter *adapter = container_of(napi, struct e1000_adapter, napi);
+ 	struct net_device *poll_dev = adapter->netdev;
+-	int work_done = 0;
++	int tx_cleaned = 0, work_done = 0;
+ 
+ 	/* Must NOT use netdev_priv macro here. */
+ 	adapter = poll_dev->priv;
+@@ -1394,12 +1394,15 @@ static int e1000_clean(struct napi_struct *napi, int budget)
+ 	 * simultaneously.  A failure obtaining the lock means
+ 	 * tx_ring is currently being cleaned anyway. */
+ 	if (spin_trylock(&adapter->tx_queue_lock)) {
+-		e1000_clean_tx_irq(adapter);
++		tx_cleaned = e1000_clean_tx_irq(adapter);
+ 		spin_unlock(&adapter->tx_queue_lock);
+ 	}
+ 
+ 	adapter->clean_rx(adapter, &work_done, budget);
+ 
++	if (tx_cleaned)
++		work_done = budget;
++
+ 	/* If budget not fully consumed, exit the polling mode */
+ 	if (work_done < budget) {
+ 		if (adapter->itr_setting & 3)
+diff --git a/drivers/net/ixgbe/ixgbe_main.c b/drivers/net/ixgbe/ixgbe_main.c
+index a564916..de3f45e 100644
+--- a/drivers/net/ixgbe/ixgbe_main.c
++++ b/drivers/net/ixgbe/ixgbe_main.c
+@@ -1468,13 +1468,16 @@ static int ixgbe_clean(struct napi_struct *napi, int budget)
+ 	struct ixgbe_adapter *adapter = container_of(napi,
+ 					struct ixgbe_adapter, napi);
+ 	struct net_device *netdev = adapter->netdev;
+-	int work_done = 0;
++	int tx_cleaned = 0, work_done = 0;
+ 
+ 	/* In non-MSIX case, there is no multi-Tx/Rx queue */
+-	ixgbe_clean_tx_irq(adapter, adapter->tx_ring);
++	tx_cleaned = ixgbe_clean_tx_irq(adapter, adapter->tx_ring);
+ 	ixgbe_clean_rx_irq(adapter, &adapter->rx_ring[0], &work_done,
+ 			   budget);
+ 
++	if (tx_cleaned)
++		work_done = budget;
++
+ 	/* If budget not fully consumed, exit the polling mode */
+ 	if (work_done < budget) {
+ 		netif_rx_complete(netdev, napi);
