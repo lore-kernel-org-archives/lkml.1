@@ -1,59 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbYAPLto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753669AbYAPLvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753335AbYAPLto (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 06:49:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYAPLtf
+	id S1753669AbYAPLvg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 06:51:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYAPLv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 06:49:35 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42760 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751830AbYAPLte (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 06:49:34 -0500
-Date: Wed, 16 Jan 2008 12:49:40 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Daniel Phillips <phillips@google.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Al Boldi <a1426z@gawab.com>, Valerie Henson <val.henson@gmail.com>,
-       Rik van Riel <riel@redhat.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Patch] document ext3 requirements (was Re: [RFD] Incremental
-	fsck)
-Message-ID: <20080116114940.GC22460@elf.ucw.cz>
-References: <200801090022.55589.a1426z@gawab.com> <200801090740.12989.a1426z@gawab.com> <70b6f0bf0801082345vf57951ey642e35c3d6e5194f@mail.gmail.com> <200801091452.14890.a1426z@gawab.com> <20080112145140.GB6751@mit.edu> <20080113171916.GB4132@ucw.cz> <20080113174125.5f39ac64@lxorguk.ukuu.org.uk> <20080115201653.GA5639@elf.ucw.cz> <4d47a5d10801151744t378ecdcbj1c326181b4360452@mail.gmail.com>
+	Wed, 16 Jan 2008 06:51:28 -0500
+Received: from nz-out-0506.google.com ([64.233.162.226]:12378 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751823AbYAPLv1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 06:51:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=GgYuWpcfcAaxpxHLJiJWpiJ+ljSq4poHSYpPEAL96iK3dujZs6gr5xtHLw5MENHM7MrJLMVT1BQps5+mWbUDyCKYkyo1Y29NOmBSLEOveZQi1P8WZxVMqdD07W6LEEsFCIyXt3vdOA6gStylhxUawzGWCNTE9HqtKl2ECUmNG8Y=
+Message-ID: <cfd9edbf0801160351i2b819f31j65cc16b1e694168f@mail.gmail.com>
+Date: Wed, 16 Jan 2008 12:51:26 +0100
+From: "=?ISO-8859-1?Q?Daniel_Sp=E5ng?=" <daniel.spang@gmail.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH 3/5] add /dev/mem_notify device
+Cc: "Marcelo Tosatti" <marcelo@kvack.org>,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, "Rik van Riel" <riel@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20080116114234.GA22460@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4d47a5d10801151744t378ecdcbj1c326181b4360452@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20080115100029.1178.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20080115221627.GC1565@elf.ucw.cz>
+	 <20080116105102.11B1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20080116041332.GA30877@dmt> <20080116114234.GA22460@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On 1/16/08, Pavel Machek <pavel@ucw.cz> wrote:
+> On Wed 2008-01-16 02:13:32, Marcelo Tosatti wrote:
+> > On Wed, Jan 16, 2008 at 10:57:16AM +0900, KOSAKI Motohiro wrote:
+> > > Hi Pavel
+> > >
+> > > > >         err = poll(&pollfds, 1, -1); // wake up at low memory
+> > > > >
+> > > > >         ...
+> > > > > </usage example>
+> > > >
+> > > > Nice, this is really needed for openmoko, zaurus, etc....
+> > > >
+> > > > But this changelog needs to go into Documentation/...
+> > > >
+> > > > ...and /dev/mem_notify is really a bad name. /dev/memory_low?
+> > > > /dev/oom?
+> > >
+> > > thank you for your kindful advise.
+> > >
+> > > but..
+> > >
+> > > to be honest, my english is very limited.
+> > > I can't make judgments name is good or not.
+> > >
+> > > Marcelo, What do you think his idea?
+> >
+> > "mem_notify" sounds alright, but I don't really care.
+> >
+> > Notify:
+> >
+> > To give notice to; inform: notified the citizens of the curfew by
+> > posting signs.
+>
+> I'd read mem_notify as "tell me when new memory is unplugged" or
+> something. /dev/oom_notify? Plus, /dev/ names usually do not have "_"
+> in them.
 
-> Along with this effort, could you let me know if the world actually
-> cares about online fsck?  
-
-I'm not the world's spokeperson (yet ;-).
-
-> Now we know how to do it I think, but is it
-> worth the effort.
-
-ext3's "lets fsck on every 20 mounts" is good idea, but it can be
-annoying when developing. Having option to fsck while filesystem is
-online takes that annoyance away.
-
-So yes, it would be very useful for me...
-
-For long-running servers, this may be less of a problem... but OTOH
-their filesystems are not checked at all as long servers are
-online... so online fsck is actually important there, too, but for
-other reasons.
-
-So yes, it is very useful for world.
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I don't think we should use oom in the name, since the notification is
+sent long before oom.
