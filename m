@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbYAPQlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753938AbYAPQrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754621AbYAPQlR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 11:41:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbYAPQlG
+	id S1753938AbYAPQrR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 11:47:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbYAPQrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 11:41:06 -0500
-Received: from smtp-03.mandic.com.br ([200.225.81.143]:52202 "EHLO
-	smtp-03.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750986AbYAPQlE (ORCPT
+	Wed, 16 Jan 2008 11:47:00 -0500
+Received: from host-66-43-248-10 ([67.55.143.10]:39542 "EHLO
+	thinix-laptop.local.rdi1.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752184AbYAPQq7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 11:41:04 -0500
-Message-ID: <478E3395.6050301@mandic.com.br>
-Date: Wed, 16 Jan 2008 14:40:53 -0200
-From: "Renato S. Yamane" <renatoyamane@mandic.com.br>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Ray Lee <ray-lk@madrabbit.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Updatedb hangs Kernel 2.6.22.9-cfs-v22
-References: <478900FF.2000706@mandic.com.br>	 <2c0942db0801121025h7f22d716s657af75ce7603af0@mail.gmail.com>	 <478B7F9F.3020209@mandic.com.br> <2c0942db0801160830j72c0fc77xc4cc9e7fd676d78a@mail.gmail.com>
-In-Reply-To: <2c0942db0801160830j72c0fc77xc4cc9e7fd676d78a@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 16 Jan 2008 11:46:59 -0500
+X-Greylist: delayed 1180 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Jan 2008 11:46:59 EST
+Subject: unionfs, cow, and whiteout
+From: Paul Albrecht <albrecht@rdi1.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Wed, 16 Jan 2008 10:27:13 -0600
+Message-Id: <1200500833.11000.0.camel@thinix-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ray Lee escreveu:
-> On Jan 14, 2008 7:28 AM, Renato S. Yamane <renatoyamane@mandic.com.br> wrote:
->> Ray Lee escreveu:
->>> On Jan 12, 2008 10:03 AM, Renato S. Yamane wrote:
->>>> I can't use updatedb in Debian Etch (stable) using customized Kernel
->>>> 2.6.22.9-cfs-v22.
->>>>
->>>> When I ran updatedb, after ~1 minute my system hangs and "caps lock" LED
->>>> is blinking. No log is registered.
->>> Please switch out of X11 to a text mode console (CTRL-ALT-F1), and run
->>> updatedb there. Capture the oops with a digital camera, and post a
->>> link to the picture (not the picture itself!) to the list. Or, write
->>> down the oops carefully, and post the text.
->> I see a infinite loop and is very fast, so I can't capture errors messages.
->> None is registered in /var/log/*
-> 
-> Well, that's very odd. Please also try the latest CFS backport to see
-> if that solves the problem.
+Hi,
 
-This problem still occour in 2.6.23.13 with CFS 24.1
-I see a part of error message: Is something about ipw2200.
-I need find a Camera with good focus, because my cam is not so good to 
-take a picture in distance <=20cm.
+I have a question about how unionfs handles file deletion when a write
+enabled file system is union mounted over a read only file system. For
+example, I do something like the following:
 
-Best regards,
-Renato
+mount -t unionfs -o dirs=/cow=rw:/rofs=ro unionfs /mnt
+
+If I create and delete a file in /mnt which is not present in /rofs it
+persists as whiteout in the cow file system which is not what I would
+have expected.
+
+Why does the deleted file persist as whiteout in the /cow file system of
+the union mount?
+
+Please cc me in your response as I'm not subscribed to the lkml.
+
+-- 
+
+Paul Albrecht
