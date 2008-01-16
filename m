@@ -1,94 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757894AbYAPF0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbYAPFwK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757894AbYAPF0y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 00:26:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbYAPF0p
+	id S1754882AbYAPFwK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 00:52:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbYAPFv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 00:26:45 -0500
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:48444 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1750753AbYAPF0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 00:26:44 -0500
-Message-ID: <400461184.09985@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Wed, 16 Jan 2008 13:25:13 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Mike Snitzer <snitzer@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, jplatte@naasa.net,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: regression: 100% io-wait with 2.6.24-rcX
-References: <200801071151.11200.lists@naasa.net> <20080114035439.GA7330@mail.ustc.edu.cn> <400304530.01514@ustc.edu.cn> <200801141230.13694.jplatte@naasa.net> <1200310886.15103.1.camel@twins> <400358577.30629@ustc.edu.cn> <170fa0d20801151313s57dcc08cn550113036c3003be@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <170fa0d20801151313s57dcc08cn550113036c3003be@mail.gmail.com>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.12-2006-07-14
-Message-Id: <E1JF0m1-000101-OK@localhost.localdomain>
+	Wed, 16 Jan 2008 00:51:56 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59789 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751172AbYAPFvz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 00:51:55 -0500
+Date: Tue, 15 Jan 2008 21:51:49 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: Michael Rubin <mrubin@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch] Converting writeback linked lists to a tree based data
+ structure
+Message-Id: <20080115215149.a881efff.akpm@linux-foundation.org>
+In-Reply-To: <400459376.04290@ustc.edu.cn>
+References: <20080115080921.70E3810653@localhost>
+	<1200386774.15103.20.camel@twins>
+	<532480950801150953g5a25f041ge1ad4eeb1b9bc04b@mail.gmail.com>
+	<400452490.28636@ustc.edu.cn>
+	<20080115194415.64ba95f2.akpm@linux-foundation.org>
+	<400457571.32162@ustc.edu.cn>
+	<20080115204236.6349ac48.akpm@linux-foundation.org>
+	<400459376.04290@ustc.edu.cn>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 15, 2008 at 04:13:22PM -0500, Mike Snitzer wrote:
-> On Jan 14, 2008 7:50 AM, Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
-> > On Mon, Jan 14, 2008 at 12:41:26PM +0100, Peter Zijlstra wrote:
-> > >
-> > > On Mon, 2008-01-14 at 12:30 +0100, Joerg Platte wrote:
-> > > > Am Montag, 14. Januar 2008 schrieb Fengguang Wu:
-> > > >
-> > > > > Joerg, this patch fixed the bug for me :-)
-> > > >
-> > > > Fengguang, congratulations, I can confirm that your patch fixed the bug! With
-> > > > previous kernels the bug showed up after each reboot. Now, when booting the
-> > > > patched kernel everything is fine and there is no longer any suspicious
-> > > > iowait!
-> > > >
-> > > > Do you have an idea why this problem appeared in 2.6.24? Did somebody change
-> > > > the ext2 code or is it related to the changes in the scheduler?
-> > >
-> > > It was Fengguang who changed the inode writeback code, and I guess the
-> > > new and improved code was less able do deal with these funny corner
-> > > cases. But he has been very good in tracking them down and solving them,
-> > > kudos to him for that work!
-> >
-> > Thank you.
-> >
-> > In particular the bug is triggered by the patch named:
-> >         "writeback: introduce writeback_control.more_io to indicate more io"
-> > That patch means to speed up writeback, but unfortunately its
-> > aggressiveness has disclosed bugs in reiserfs, jfs and now ext2.
-> >
-> > Linus, given the number of bugs it triggered, I'd recommend revert
-> > this patch(git commit 2e6883bdf49abd0e7f0d9b6297fc3be7ebb2250b). Let's
-> > push it back to -mm tree for more testings?
-> 
-> Fengguang,
-> 
-> I'd like to better understand where your writeback work stands
-> relative to 2.6.24-rcX and -mm.  To be clear, your changes in
-> 2.6.24-rc7 have been benchmarked to provide a ~33% sequential write
-> performance improvement with ext3 (as compared to 2.6.22, CFS could be
-> helping, etc but...).  Very impressive!
+On Wed, 16 Jan 2008 12:55:07 +0800 Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
 
-Wow, glad to hear that.
-
-> Given this improvement it is unfortunate to see your request to revert
-> 2e6883bdf49abd0e7f0d9b6297fc3be7ebb2250b but it is understandable if
-> you're not confident in it for 2.6.24.
+> On Tue, Jan 15, 2008 at 08:42:36PM -0800, Andrew Morton wrote:
+> > On Wed, 16 Jan 2008 12:25:53 +0800 Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
+> > 
+> > > list_heads are OK if we use them for one and only function.
+> > 
+> > Not really.  They're inappropriate when you wish to remember your
+> > position in the list while you dropped the lock (as we must do in
+> > writeback).
+> > 
+> > A data structure which permits us to interate across the search key rather
+> > than across the actual storage locations is more appropriate.
 > 
-> That said, you recently posted an -mm patchset that first reverts
-> 2e6883bdf49abd0e7f0d9b6297fc3be7ebb2250b and then goes on to address
-> the "slow writes for concurrent large and small file writes" bug:
-> http://lkml.org/lkml/2008/1/15/132
-> 
-> For those interested in using your writeback improvements in
-> production sooner rather than later (primarily with ext3); what
-> recommendations do you have?  Just heavily test our own 2.6.24 + your
-> evolving "close, but not ready for merge" -mm writeback patchset?
+> I totally agree with you. What I mean is to first do the split of
+> functions - into three: ordering, starvation prevention, and blockade
+> waiting.
 
-It's not ready mainly because it is fresh made and need more
-feedbacks. It's doing OK on my desktop :-)
+Does "ordering" here refer to ordering bt time-of-first-dirty?
 
+What is "blockade waiting"?
+
+> Then to do better ordering by adopting radix tree(or rbtree
+> if radix tree is not enough),
+
+ordering of what?
+
+> and lastly get rid of the list_heads to
+> avoid locking. Does it sound like a good path?
+
+I'd have thaought that replacing list_heads with another data structure
+would be a simgle commit.
