@@ -1,87 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752669AbYAPLXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752669AbYAPLbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752669AbYAPLXA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 06:23:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbYAPLWw
+	id S1752669AbYAPLbx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 06:31:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbYAPLbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 06:22:52 -0500
-Received: from ro-out-1112.google.com ([72.14.202.180]:62009 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751453AbYAPLWv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 06:22:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YCQ4oo+M211sINUAHu77Ih4sX9fU24Z2A7rQuLfl0COR/+5YwgcYcieiTU/Yb/qVnUYefBrx0MqkGzVaDOJ0tNPBhJPh8VZfIwNAIIuk4j7iv5oGIUI5BzzrKaid8osPs6PeQoejwiflPQawNHsdVYvfH3Yp7rAJhPPpA3pNJRM=
-Message-ID: <4df4ef0c0801160322j31645554oa6faec5cca64509d@mail.gmail.com>
-Date: Wed, 16 Jan 2008 14:22:49 +0300
-From: "Anton Salikhmetov" <salikhmetov@gmail.com>
-To: "Rogier Wolff" <R.E.Wolff@bitwizard.nl>
-Subject: Re: mtime updates for mmapped files.
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080116094640.GA2071@bitwizard.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 16 Jan 2008 06:31:44 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:34644 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751595AbYAPLbn (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 06:31:43 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: balbir@linux.vnet.ibm.com
+Cc: Andrea Righi <righiandr@users.sourceforge.net>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] per-uid/gid I/O throttling (was Re: [RFC][PATCH] per-task I/O throttling)
+In-Reply-To: Your message of "Wed, 16 Jan 2008 16:15:41 +0530."
+             <20080116104541.GB25724@balbir.in.ibm.com>
+From: Valdis.Kletnieks@vt.edu
+References: <47869FFE.1050000@users.sourceforge.net> <661de9470801110759h318347acw5f08c91b48ca742d@mail.gmail.com> <47879A32.8060508@users.sourceforge.net> <3777.1200113861@turing-police.cc.vt.edu> <1200131197.7999.14.camel@lappy> <20080112105702.GC25388@balbir.in.ibm.com> <1200136245.7999.20.camel@lappy> <4789006C.2030804@users.sourceforge.net> <20080113044607.GA13633@balbir.in.ibm.com> <478CE41F.5010401@users.sourceforge.net>
+            <20080116104541.GB25724@balbir.in.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1200483031_2966P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080116094640.GA2071@bitwizard.nl>
+Date: Wed, 16 Jan 2008 06:30:31 -0500
+Message-ID: <13594.1200483031@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/1/16, Rogier Wolff <R.E.Wolff@bitwizard.nl>:
->
-> Hi,
->
-> I  wrote a small app yesterday that updates a file by mmapping the
-> file (RW), changing the thing around, and then exiting.
->
-> This did not trigger a change in the mtime of the file. Thus rsync
-> didn't pick up that the file had changed.
->
-> I understand that tracking every change to a RW mmapped file is
-> costly, and thus unfeasable, but shouldn't then the close cause a
-> mtime update?
->
-> The server where this happened is running 2.6.21, so my apologies if
-> this has already been corrected.
+--==_Exmh_1200483031_2966P
+Content-Type: text/plain; charset=us-ascii
 
-Unfortunately, this issue has not been fully fixed yet.
+On Wed, 16 Jan 2008 16:15:41 +0530, Balbir Singh said:
 
-My last attempt (http://lkml.org/lkml/2008/1/15/202) to solve
-this problem has a couple of drawbacks:
+> Thanks for doing this. I am going to review the patches in greater
+> detail and also test them. Why do you use configfs when we have a
+> control group filesystem available for grouping tasks and providing a
+> file system based interface for control and accounting?
 
-1) calling a possibly sleeping function from atomic context -
-I've already corrected this;
+And here I thought "There's more than one way to do it" was the Perl slogan. :)
 
-2) there's a very special case with retouching the memory-mapped data
-after a call to msync() with MS_ASYNC.
+An equally valid question would be: "Why are we carrying around a control
+group filesystem when we have configfs?"  (Honestly, I didn't know we *were*
+carrying around such a filesystem - and quite likely Andrea Righi didn't
+either...)
 
-I'm still working on the latter case, but I guess that I have found a solution.
+--==_Exmh_1200483031_2966P
+Content-Type: application/pgp-signature
 
-If you badly need a quick fix, I can send my working unreleased patch to you.
-I reckon that your particular problem will be fixed by this patch.
-Let me know if you want that.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-However, if your application calls msync() with the MS_ASYNC flag,
-it's better to wait a little bit more - I'll release the next version
-of my solution
-shortly.
+iD8DBQFHjerXcC3lWbTT17ARAntkAKCPu9b8VlzBWuLyPrvf9y/FdbZLBwCeIa+X
+sivo2BAT8rQke6HaxmQQW7I=
+=Ul4v
+-----END PGP SIGNATURE-----
 
->
->         Roger.
->
-> --
-> ** R.E.Wolff@BitWizard.nl ** http://www.BitWizard.nl/ ** +31-15-2600998 **
-> **    Delftechpark 26 2628 XH  Delft, The Netherlands. KVK: 27239233    **
-> *-- BitWizard writes Linux device drivers for any device you may have! --*
-> Q: It doesn't work. A: Look buddy, doesn't work is an ambiguous statement.
-> Does it sit on the couch all day? Is it unemployed? Please be specific!
-> Define 'it' and what it isn't doing. --------- Adapted from lxrbot FAQ
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+--==_Exmh_1200483031_2966P--
