@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752495AbYAPQUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbYAPQXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752495AbYAPQUY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 11:20:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbYAPQUI
+	id S1753880AbYAPQXZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 11:23:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750912AbYAPQXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 11:20:08 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36222 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751328AbYAPQUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 11:20:06 -0500
-Date: Wed, 16 Jan 2008 17:19:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Colin Fowler <elethiomel@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Performance loss 2.6.22->22.6.23->2.6.24-rc7 on CPU intensive
-	benchmark on 8 Core Xeon
-Message-ID: <20080116161951.GA15000@elte.hu>
-References: <cf3edd8d0801140937w755c3e75me83c214ebc1f4cd3@mail.gmail.com> <20080114185520.GA26540@elte.hu> <cf3edd8d0801141442nedf4ac1p6b1fd6bc94900063@mail.gmail.com> <cf3edd8d0801150901p653edeear62d5bc91d9f46981@mail.gmail.com> <20080115220641.GC2665@elte.hu> <cf3edd8d0801151505r54bfd9d0r89f57e3835f295e1@mail.gmail.com> <20080116153505.GB18553@elte.hu> <cf3edd8d0801160810w4302afa5vd731cc6852c778ba@mail.gmail.com>
+	Wed, 16 Jan 2008 11:23:17 -0500
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:50526 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751823AbYAPQXQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 11:23:16 -0500
+Date: Wed, 16 Jan 2008 11:22:37 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Valdis.Kletnieks@vt.edu
+cc: caglar@pardus.org.tr, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: 2.6.24-rc7-rt2
+In-Reply-To: <Pine.LNX.4.58.0801160904200.9544@gandalf.stny.rr.com>
+Message-ID: <Pine.LNX.4.58.0801161112140.15998@gandalf.stny.rr.com>
+References: <1200336080.318.8.camel@localhost.localdomain>
+ <200801150237.44029.caglar@pardus.org.tr> <24149.1200455417@turing-police.cc.vt.edu>
+            <Pine.LNX.4.58.0801152302580.10869@gandalf.stny.rr.com>
+ <31516.1200464589@turing-police.cc.vt.edu> <Pine.LNX.4.58.0801160904200.9544@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cf3edd8d0801160810w4302afa5vd731cc6852c778ba@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Colin Fowler <elethiomel@gmail.com> wrote:
+On Wed, 16 Jan 2008, Steven Rostedt wrote:
+>
+> We modified mcount now, and it is derived from an objdump of glibc. So
+> this is most definitely a "derived" work from glibc. But glibc is licensed
+> as LGPL, which IIRC allows for non GPL to link to it.
+>
+> I personally could care less if we use EXPORT_SYMBOL or EXPORT_SYMBOL_GPL.
+> But I really want to do The Right Thing(tm). I'm not a lawyer and don't
+> claim that I know anything about the law, but I'm leaning towards the non
+> _GPL version because the code was from LGPL and not from strict GPL.
 
-> Hi Ingo, I'll need to convince my supervisor first if I can release a 
-> binary. Technically anythin glike this needs to go through our 
-> University's "innovations department" and requires lengthy paperwork 
-> and NDAs :(.
+Sorry folks, I'm going to stick with the _GPL version. It doesn't mean
+that you can't still load your nVidia module into -rt. I just means you
+can't turn on function trace and then load it. Well, you might if you
+don't compile the nVidia wrapper against it with function trace on.
 
-a binary wouldnt work for me anyway. But you could try to write a 
-"workload simulator": just pick out the pthread ops and replace the 
-worker functions with some dummy stuff that just touches an array that 
-has similar size to the tiles (in a tight loop). Make sure it has 
-similar context-switch rate and idle percentage as your real workload - 
-then send us the .c file. As long as it's a single .c file that runs for 
-a few seconds and outputs a precise enough "run time" result, kernel 
-developers would pick it up and use it for optimizations. To get the # 
-of cpus automatically you can do:
+The reason simply is to cover my butt.  By limiting it to GPL, I'm fine.
+Even if the original author didn't care. But by opening it up to external
+prorietary modules, I may be considered infringing on the license.
 
-        cpus = system("exit `grep processor /proc/cpuinfo  | wc -l`");
-        cpus = WEXITSTATUS(cpus);
+So, unless I hear from a lawyer that is willing to back me up on a non
+_GPL export publically, the mcount function will stay as an
+EXPORT_SYMBOL_GPL.
 
-and start as many threads as many CPUs there are in the system.
+Note: There is a definite reason for this change. The previous version
+of mcount was written by Ingo Molnar, and he added the export. I've
+changed mcount to be closer to the glibc code (which I derived it from),
+so the change in EXPORT type is legitimate.
 
-	Ingo
+-- Steve
