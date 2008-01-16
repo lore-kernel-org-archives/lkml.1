@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753074AbYAPJiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbYAPJoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753074AbYAPJiA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 04:38:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbYAPJhs
+	id S1753421AbYAPJoj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 04:44:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbYAPJo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 04:37:48 -0500
-Received: from pip10.gyao.ne.jp ([61.122.117.248]:38262 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751494AbYAPJhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 04:37:46 -0500
-Date: Wed, 16 Jan 2008 18:37:18 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: What's in sh-2.6.git for 2.6.25?
-Message-ID: <20080116093718.GB14107@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Sam Ravnborg <sam@ravnborg.org>, linux-sh@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20080116070403.GA14107@linux-sh.org> <20080116073844.GA25205@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080116073844.GA25205@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 16 Jan 2008 04:44:28 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:36814 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751307AbYAPJo0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 04:44:26 -0500
+To: serue@us.ibm.com
+CC: miklos@szeredi.hu, accensi@gmail.com, serue@us.ibm.com,
+       akpm@linux-foundation.org, hch@infradead.org, viro@ftp.linux.org.uk,
+       ebiederm@xmission.com, kzak@redhat.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       util-linux-ng@vger.kernel.org
+In-reply-to: <20080115134719.GB4453@sergelap.austin.ibm.com>
+	(serue@us.ibm.com)
+Subject: Re: [patch 9/9] unprivileged mounts: add "no submounts" flag
+References: <20080108113502.184459371@szeredi.hu> <20080108113634.382855604@szeredi.hu> <20080114233910.GI6704@sergelap.austin.ibm.com> <E1JEjEE-0000xZ-RU@pomaz-ex.szeredi.hu> <643ea2b10801150253i735d7342q73bf01f864d6167c@mail.gmail.com> <E1JEjUx-00010q-Ny@pomaz-ex.szeredi.hu> <20080115134719.GB4453@sergelap.austin.ibm.com>
+Message-Id: <E1JF4ne-0003HO-CG@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 16 Jan 2008 10:43:10 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 16, 2008 at 08:38:44AM +0100, Sam Ravnborg wrote:
-> On Wed, Jan 16, 2008 at 04:04:03PM +0900, Paul Mundt wrote:
-> > This is a brief summary of the changes that are sitting in the sh queue
-> > for 2.6.25.
+> > > Why not "nosubmnt"?
 > > 
-> > The main points to note are as follows:
-> > 
-> > 	- sh64->sh integration.
-> > 	- A handful of new CPUs (SH7721, SH7763, SH7203, SH7263).
-> > 	- SH-2A FPU support.
-> > 	- Board support updates (R2D, R7785RP).
-> > 
-> > The sh64->sh integration is basically the only thing that's really
-> > interesting, and so it's worth summarizing that a bit.
+> > Why not indeed.  Maybe I should try to use my brain sometime.
 > 
-> Any kbuild bits that needs an extra pair of eyes before
-> integration or can I postpone my review until it hits mainline?
-> If you feel confident I prefer to wait as I'm busy atm.
-> 
-Most of the kbuild bits have been pretty painless. I started out going
-the SRCARCH route, but that ended up creating a lot of additional
-duplication, so I opted to just roll them together and stick with abusing
-KCONFIG_ALLCONFIG for restricting the options. Based on the heavy sharing
-between the Kconfig options, this seemed to be the best way to go.
+> Well it really should have 'user' or 'unpriv' in the name
+> somewhere.  'nosubmnt' is more confusing than 'nomnt' because
+> it no submounts really sounds like a reasonable thing in
+> itself...
 
-So, I'm reasonably content with it the way it is, but any input you have
-on cleaning it up is certainly welcome at any time :-)
+I slept on it, and I still think 'nosubmnt' might be the best
+compromise.  Obviously the superuser has privileges, that override
+what is normally allowed, and we don't find it strange when a
+read-only file is happily being written by root.
+
+It may feel wrong in the context of mounts, because we are so used to
+mounts being privileged-only.
+
+Objections?  Once this goes in, it will stay the same forever, so now
+is the time to express any doubts...
+
+Thanks,
+Miklos
