@@ -1,248 +1,262 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314AbYAPXOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752908AbYAPXPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755314AbYAPXOl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 18:14:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbYAPXNk
+	id S1752908AbYAPXPA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 18:15:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755178AbYAPXNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 18:13:40 -0500
+	Wed, 16 Jan 2008 18:13:52 -0500
 Received: from ug-out-1314.google.com ([66.249.92.174]:10411 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754648AbYAPXNh (ORCPT
+	with ESMTP id S1752604AbYAPXNt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 18:13:37 -0500
+	Wed, 16 Jan 2008 18:13:49 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=UJ/qgjjq5MvlWdkUxhUVKKL46xQYk64JkxG6xjtN/45pG36elU14+S75Aeg7AjxlZ2VACWva7tp094CXSiyQMqrnKVN6jrNhMIKoywNCw2Y96EdNTGKYnS9SJ3JBgV4zkTWfspHAdUDTGiAsUHLEJ3RbOoku0tJlK7gXbu1jdRI=
+        b=H7xCWjBTz0u0shv4wnuAjsPiADdZmPgQ3qHTnvh5RCRza0HBqP3F3GM70Z8OMZdK+poaefE3i4i5hei9J6cat01PONdh1/ImpDxijiWkK53/dQiMyBmXqfZcUSRZa2jDSheAKOn9g5hzIXcA9TkBhw5Su4QKiRtLZ0/Xw+jqR9c=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Thu, 17 Jan 2008 00:26:17 +0100
-Message-Id: <20080116232617.9166.68848.sendpatchset@localhost.localdomain>
+Date: Thu, 17 Jan 2008 00:26:24 +0100
+Message-Id: <20080116232624.9166.73929.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080116232556.9166.13457.sendpatchset@localhost.localdomain>
 References: <20080116232556.9166.13457.sendpatchset@localhost.localdomain>
-Subject: [PATCH 03/22] ide: add 'init_default' and 'restore' arguments to ide_unregister()
+Subject: [PATCH 04/22] ide: add ide_deprecated_find_port() helper
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Add 'init_default' (flag for calling init_hwif_default()) and 'restore'
-  (flag for calling ide_hwif_restore()) arguments to ide_unregister().
+* Factor out code for finding ide_hwifs[] slot from ide_register_hw()
+  to ide_deprecated_find_port().
 
-* Update ide_unregister() users to set 'init_default' and 'restore' flags.
+* Convert bast-ide, ide-cs and delkin_cb host drivers to use ide_device_add()
+  instead of ide_register_hw() (while at it drop doing "ide_unregister()" loop
+  which tries to unregister _all_ IDE interfaces if useable ide_hwifs[] slot
+  cannot be find).
 
-* No need to set 'init_default' flag in ide_register_hw() if the setup done
-  by init_hwif_default() is going to be overridden by ide_init_port_hw().
-
-* No need to set 'init_default' and 'restore' flags in cleanup_module().
-
-There should be no functionality changes caused by this patch.
+This patch leaves us with only two ide_register_hw() users:
+- drivers/macintosh/mediabay.c
+- drivers/ide/ide.c
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/arm/rapide.c          |    2 +-
- drivers/ide/ide-pnp.c             |    7 ++++---
- drivers/ide/ide.c                 |   19 ++++++++++++-------
- drivers/ide/legacy/ide-cs.c       |    2 +-
- drivers/ide/legacy/ide_platform.c |    2 +-
- drivers/ide/mips/au1xxx-ide.c     |    2 +-
- drivers/ide/pci/delkin_cb.c       |    3 ++-
- drivers/ide/pci/scc_pata.c        |    2 +-
- drivers/macintosh/mediabay.c      |    2 +-
- include/linux/ide.h               |    2 +-
- 10 files changed, 25 insertions(+), 18 deletions(-)
+ drivers/ide/arm/bast-ide.c  |   20 +++++++++++++++++++-
+ drivers/ide/ide.c           |   41 +++++++++++++++++++++++++++++------------
+ drivers/ide/legacy/ide-cs.c |   25 ++++++++++++++++++++++++-
+ drivers/ide/pci/delkin_cb.c |   33 +++++++++++++++++++++++++++------
+ include/linux/ide.h         |    1 +
+ 5 files changed, 100 insertions(+), 20 deletions(-)
 
-Index: b/drivers/ide/arm/rapide.c
+Index: b/drivers/ide/arm/bast-ide.c
 ===================================================================
---- a/drivers/ide/arm/rapide.c
-+++ b/drivers/ide/arm/rapide.c
-@@ -76,7 +76,7 @@ static void __devexit rapide_remove(stru
- 
- 	ecard_set_drvdata(ec, NULL);
- 
--	ide_unregister(hwif->index);
-+	ide_unregister(hwif->index, 1, 1);
- 
- 	ecard_release_resources(ec);
- }
-Index: b/drivers/ide/ide-pnp.c
-===================================================================
---- a/drivers/ide/ide-pnp.c
-+++ b/drivers/ide/ide-pnp.c
-@@ -60,9 +60,10 @@ static int idepnp_probe(struct pnp_dev *
- static void idepnp_remove(struct pnp_dev * dev)
+--- a/drivers/ide/arm/bast-ide.c
++++ b/drivers/ide/arm/bast-ide.c
+@@ -28,8 +28,10 @@ static int __init
+ bastide_register(unsigned int base, unsigned int aux, int irq,
+ 		 ide_hwif_t **hwif)
  {
- 	ide_hwif_t *hwif = pnp_get_drvdata(dev);
--	if (hwif) {
--		ide_unregister(hwif->index);
--	} else
++	ide_hwif_t *hwif;
+ 	hw_regs_t hw;
+ 	int i;
++	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
+ 
+ 	memset(&hw, 0, sizeof(hw));
+ 
+@@ -44,8 +46,24 @@ bastide_register(unsigned int base, unsi
+ 	hw.io_ports[IDE_CONTROL_OFFSET] = aux + (6 * 0x20);
+ 	hw.irq = irq;
+ 
+-	ide_register_hw(&hw, NULL, hwif);
++	hwif = ide_deprecated_find_port(hw.io_ports[IDE_DATA_OFFSET]);
++	if (hwif == NULL)
++		goto out;
+ 
++	i = hwif->index;
 +
-+	if (hwif)
-+		ide_unregister(hwif->index, 1, 1);
-+	else
- 		printk(KERN_ERR "idepnp: Unable to remove device, please report.\n");
++	if (hwif->present)
++		ide_unregister(i, 0, 1);
++	else if (!hwif->hold)
++		ide_init_port_data(hwif, i);
++
++	ide_init_port_hw(hwif, &hw);
++	hwif->quirkproc = NULL;
++
++	idx[0] = i;
++
++	ide_device_add(idx, NULL);
++out:
+ 	return 0;
  }
  
 Index: b/drivers/ide/ide.c
 ===================================================================
 --- a/drivers/ide/ide.c
 +++ b/drivers/ide/ide.c
-@@ -499,6 +499,8 @@ void ide_remove_port_from_hwgroup(ide_hw
- /**
-  *	ide_unregister		-	free an IDE interface
-  *	@index: index of interface (will change soon to a pointer)
-+ *	@init_default: init default hwif flag
-+ *	@restore: restore hwif flag
-  *
-  *	Perform the final unregister of an IDE interface. At the moment
-  *	we don't refcount interfaces so this will also get split up.
-@@ -518,7 +520,7 @@ void ide_remove_port_from_hwgroup(ide_hw
-  *	This is raving bonkers.
-  */
+@@ -683,6 +683,31 @@ void ide_init_port_hw(ide_hwif_t *hwif, 
+ }
+ EXPORT_SYMBOL_GPL(ide_init_port_hw);
  
--void ide_unregister(unsigned int index)
-+void ide_unregister(unsigned int index, int init_default, int restore)
- {
- 	ide_drive_t *drive;
- 	ide_hwif_t *hwif, *g;
-@@ -602,9 +604,12 @@ void ide_unregister(unsigned int index)
- 
- 	/* restore hwif data to pristine status */
- 	ide_init_port_data(hwif, index);
--	init_hwif_default(hwif, index);
- 
--	ide_hwif_restore(hwif, &tmp_hwif);
-+	if (init_default)
-+		init_hwif_default(hwif, index);
++ide_hwif_t *ide_deprecated_find_port(unsigned long base)
++{
++	ide_hwif_t *hwif;
++	int i;
 +
-+	if (restore)
-+		ide_hwif_restore(hwif, &tmp_hwif);
++	for (i = 0; i < MAX_HWIFS; i++) {
++		hwif = &ide_hwifs[i];
++		if (hwif->io_ports[IDE_DATA_OFFSET] == base)
++			goto found;
++	}
++
++	for (i = 0; i < MAX_HWIFS; i++) {
++		hwif = &ide_hwifs[i];
++		if (hwif->hold)
++			continue;
++		if (!hwif->present && hwif->mate == NULL)
++			goto found;
++	}
++
++	hwif = NULL;
++found:
++	return hwif;
++}
++EXPORT_SYMBOL_GPL(ide_deprecated_find_port);
++
+ /**
+  *	ide_register_hw		-	register IDE interface
+  *	@hw: hardware registers
+@@ -702,18 +727,10 @@ int ide_register_hw(hw_regs_t *hw, void 
+ 	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
  
- abort:
- 	spin_unlock_irq(&ide_lock);
-@@ -710,12 +715,12 @@ int ide_register_hw(hw_regs_t *hw, void 
- 				goto found;
- 		}
+ 	do {
+-		for (index = 0; index < MAX_HWIFS; ++index) {
+-			hwif = &ide_hwifs[index];
+-			if (hwif->io_ports[IDE_DATA_OFFSET] == hw->io_ports[IDE_DATA_OFFSET])
+-				goto found;
+-		}
+-		for (index = 0; index < MAX_HWIFS; ++index) {
+-			hwif = &ide_hwifs[index];
+-			if (hwif->hold)
+-				continue;
+-			if (!hwif->present && hwif->mate == NULL)
+-				goto found;
+-		}
++		hwif = ide_deprecated_find_port(hw->io_ports[IDE_DATA_OFFSET]);
++		index = hwif->index;
++		if (hwif)
++			goto found;
  		for (index = 0; index < MAX_HWIFS; index++)
--			ide_unregister(index);
-+			ide_unregister(index, 1, 1);
+ 			ide_unregister(index, 1, 1);
  	} while (retry--);
- 	return -1;
- found:
- 	if (hwif->present)
--		ide_unregister(index);
-+		ide_unregister(index, 0, 1);
- 	else if (!hwif->hold)
- 		ide_init_port_data(hwif, index);
- 
-@@ -1058,7 +1063,7 @@ int generic_ide_ioctl(ide_drive_t *drive
- 	        case HDIO_UNREGISTER_HWIF:
- 			if (!capable(CAP_SYS_RAWIO)) return -EACCES;
- 			/* (arg > MAX_HWIFS) checked in function */
--			ide_unregister(arg);
-+			ide_unregister(arg, 1, 1);
- 			return 0;
- 		case HDIO_SET_NICE:
- 			if (!capable(CAP_SYS_ADMIN)) return -EACCES;
-@@ -1703,7 +1708,7 @@ void __exit cleanup_module (void)
- 	int index;
- 
- 	for (index = 0; index < MAX_HWIFS; ++index)
--		ide_unregister(index);
-+		ide_unregister(index, 0, 0);
- 
- 	proc_ide_destroy();
- 
 Index: b/drivers/ide/legacy/ide-cs.c
 ===================================================================
 --- a/drivers/ide/legacy/ide-cs.c
 +++ b/drivers/ide/legacy/ide-cs.c
-@@ -337,7 +337,7 @@ void ide_release(struct pcmcia_device *l
-     if (info->ndev) {
- 	/* FIXME: if this fails we need to queue the cleanup somehow
- 	   -- need to investigate the required PCMCIA magic */
--	ide_unregister(info->hd);
-+	ide_unregister(info->hd, 1, 1);
-     }
-     info->ndev = 0;
+@@ -145,13 +145,36 @@ static void ide_detach(struct pcmcia_dev
  
-Index: b/drivers/ide/legacy/ide_platform.c
-===================================================================
---- a/drivers/ide/legacy/ide_platform.c
-+++ b/drivers/ide/legacy/ide_platform.c
-@@ -122,7 +122,7 @@ static int __devexit plat_ide_remove(str
+ static int idecs_register(unsigned long io, unsigned long ctl, unsigned long irq, struct pcmcia_device *handle)
  {
- 	ide_hwif_t *hwif = pdev->dev.driver_data;
- 
--	ide_unregister(hwif->index);
-+	ide_unregister(hwif->index, 1, 1);
- 
- 	return 0;
++    ide_hwif_t *hwif;
+     hw_regs_t hw;
++    int i;
++    u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
++
+     memset(&hw, 0, sizeof(hw));
+     ide_init_hwif_ports(&hw, io, ctl, NULL);
+     hw.irq = irq;
+     hw.chipset = ide_pci;
+     hw.dev = &handle->dev;
+-    return ide_register_hw(&hw, &ide_undecoded_slave, NULL);
++
++    hwif = ide_deprecated_find_port(hw.io_ports[IDE_DATA_OFFSET]);
++    if (hwif == NULL)
++	return -1;
++
++    i = hwif->index;
++
++    if (hwif->present)
++	ide_unregister(i, 0, 1);
++    else if (!hwif->hold)
++	ide_init_port_data(hwif, i);
++
++    ide_init_port_hw(hwif, &hw);
++    hwif->quirkproc = &ide_undecoded_slave;
++
++    idx[0] = i;
++
++    ide_device_add(idx, NULL);
++
++    return hwif->present ? i : -1;
  }
-Index: b/drivers/ide/mips/au1xxx-ide.c
-===================================================================
---- a/drivers/ide/mips/au1xxx-ide.c
-+++ b/drivers/ide/mips/au1xxx-ide.c
-@@ -678,7 +678,7 @@ static int au_ide_remove(struct device *
- 	ide_hwif_t *hwif = dev_get_drvdata(dev);
- 	_auide_hwif *ahwif = &auide_hwif;
  
--	ide_unregister(hwif->index);
-+	ide_unregister(hwif->index, 1, 1);
- 
- 	iounmap((void *)ahwif->regbase);
- 
+ /*======================================================================
 Index: b/drivers/ide/pci/delkin_cb.c
 ===================================================================
 --- a/drivers/ide/pci/delkin_cb.c
 +++ b/drivers/ide/pci/delkin_cb.c
-@@ -99,7 +99,8 @@ delkin_cb_remove (struct pci_dev *dev)
- 	ide_hwif_t *hwif = pci_get_drvdata(dev);
+@@ -51,6 +51,7 @@ delkin_cb_probe (struct pci_dev *dev, co
+ 	ide_hwif_t *hwif = NULL;
+ 	ide_drive_t *drive;
+ 	int i, rc;
++	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
  
- 	if (hwif)
--		ide_unregister(hwif->index);
-+		ide_unregister(hwif->index, 1, 1);
+ 	rc = pci_enable_device(dev);
+ 	if (rc) {
+@@ -77,12 +78,27 @@ delkin_cb_probe (struct pci_dev *dev, co
+ 	hw.irq = dev->irq;
+ 	hw.chipset = ide_pci;		/* this enables IRQ sharing */
+ 
+-	rc = ide_register_hw(&hw, &ide_undecoded_slave, &hwif);
+-	if (rc < 0) {
+-		printk(KERN_ERR "delkin_cb: ide_register_hw failed (%d)\n", rc);
+-		pci_disable_device(dev);
+-		return -ENODEV;
+-	}
++	hwif = ide_deprecated_find_port(hw.io_ports[IDE_DATA_OFFSET]);
++	if (hwif == NULL)
++		goto out_disable;
 +
- 	pci_disable_device(dev);
++	i = hwif->index;
++
++	if (hwif->present)
++		ide_unregister(i, 0, 1);
++	else if (!hwif->hold)
++		ide_init_port_data(hwif, i);
++
++	ide_init_port_hw(hwif, &hw);
++	hwif->quirkproc = &ide_undecoded_slave;
++
++	idx[0] = i;
++
++	ide_device_add(idx, NULL);
++
++	if (!hwif->present)
++		goto out_disable;
++
+ 	pci_set_drvdata(dev, hwif);
+ 	hwif->dev = &dev->dev;
+ 	drive = &hwif->drives[0];
+@@ -91,6 +107,11 @@ delkin_cb_probe (struct pci_dev *dev, co
+ 		drive->unmask   = 1;
+ 	}
+ 	return 0;
++
++out_disable:
++	printk(KERN_ERR "delkin_cb: no IDE devices found\n");
++	pci_disable_device(dev);
++	return -ENODEV;
  }
  
-Index: b/drivers/ide/pci/scc_pata.c
-===================================================================
---- a/drivers/ide/pci/scc_pata.c
-+++ b/drivers/ide/pci/scc_pata.c
-@@ -736,7 +736,7 @@ static void __devexit scc_remove(struct 
- 		hwif->dmatable_cpu = NULL;
- 	}
- 
--	ide_unregister(hwif->index);
-+	ide_unregister(hwif->index, 1, 1);
- 
- 	hwif->chipset = ide_unknown;
- 	iounmap((void*)ports->dma);
-Index: b/drivers/macintosh/mediabay.c
-===================================================================
---- a/drivers/macintosh/mediabay.c
-+++ b/drivers/macintosh/mediabay.c
-@@ -595,7 +595,7 @@ static void media_bay_step(int i)
-     	        if (bay->cd_index >= 0) {
- 			printk(KERN_DEBUG "Unregistering mb %d ide, index:%d\n", i,
- 			       bay->cd_index);
--			ide_unregister(bay->cd_index);
-+			ide_unregister(bay->cd_index, 1, 1);
- 			bay->cd_index = -1;
- 		}
- 	    	if (bay->cd_retry) {
+ static void
 Index: b/include/linux/ide.h
 ===================================================================
 --- a/include/linux/ide.h
 +++ b/include/linux/ide.h
-@@ -1211,7 +1211,7 @@ static inline void ide_acpi_set_state(id
- void ide_remove_port_from_hwgroup(ide_hwif_t *);
- extern int ide_hwif_request_regions(ide_hwif_t *hwif);
- extern void ide_hwif_release_regions(ide_hwif_t* hwif);
--extern void ide_unregister (unsigned int index);
-+void ide_unregister(unsigned int, int, int);
+@@ -196,6 +196,7 @@ typedef struct hw_regs_s {
+ } hw_regs_t;
  
- void ide_register_region(struct gendisk *);
- void ide_unregister_region(struct gendisk *);
+ struct hwif_s * ide_find_port(unsigned long);
++struct hwif_s *ide_deprecated_find_port(unsigned long);
+ void ide_init_port_data(struct hwif_s *, unsigned int);
+ void ide_init_port_hw(struct hwif_s *, hw_regs_t *);
+ 
