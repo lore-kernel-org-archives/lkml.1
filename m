@@ -1,76 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbYAPUL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754332AbYAPUMO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754012AbYAPUL1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 15:11:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbYAPULT
+	id S1754332AbYAPUMO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 15:12:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752114AbYAPUL6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 15:11:19 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54191 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751378AbYAPULS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 15:11:18 -0500
-Date: Wed, 16 Jan 2008 20:08:29 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Newall <davidn@davidnewall.com>
-Cc: "David P. Reed" <dpreed@reed.com>, David Woodhouse <dwmw2@infradead.org>,
-       Rene Herman <rene.herman@keyaccess.nl>,
-       Zachary Amsden <zach@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Christer Weinigel <christer@weinigel.se>,
-       Ondrej Zary <linux@rainbow-software.org>, Bodo Eggert <7eggert@gmx.de>,
-       Ingo Molnar <mingo@elte.hu>, Paul Rolland <rol@as2917.net>,
-       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       rol <rol@witbe.net>
-Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
- I/O delay override.
-Message-ID: <20080116200829.26040351@lxorguk.ukuu.org.uk>
-In-Reply-To: <478E57C8.2080403@davidnewall.com>
-References: <9BdU5-1YW-9@gated-at.bofh.it>
-	<200801081810.58904.linux@rainbow-software.org>
-	<4783B1B2.6070005@reed.com>
-	<200801081838.16241.linux@rainbow-software.org>
-	<4783C4A6.9060402@reed.com>
-	<20080108185120.3ff7ed18@lxorguk.ukuu.org.uk>
-	<4783CBD9.7020709@reed.com>
-	<1199847162.7369.323.camel@bodhitayantram.eng.vmware.com>
-	<47845972.9090803@zytor.com>
-	<1199915614.7369.367.camel@bodhitayantram.eng.vmware.com>
-	<47854916.4080703@reed.com>
-	<1200015388.6192.22.camel@bodhitayantram.eng.vmware.com>
-	<4786DD05.20804@keyaccess.nl>
-	<47877ECD.9060408@reed.com>
-	<1200347847.2647.97.camel@shinybook.infradead.org>
-	<478BE08B.3090306@reed.com>
-	<478E1668.9040404@davidnewall.com>
-	<20080116145515.6d84dc7b@lxorguk.ukuu.org.uk>
-	<478E57C8.2080403@davidnewall.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 16 Jan 2008 15:11:58 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:33778 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751732AbYAPUL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 15:11:56 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: [patch] util-linux-ng: unprivileged mounts support
+Date: Wed, 16 Jan 2008 08:17:10 -0500
+User-Agent: KMail/1.9.7
+Cc: util-linux-ng@vger.kernel.org, akpm@linux-foundation.org,
+       hch@infradead.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
+       kzak@redhat.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+References: <E1JF7Xh-0003q3-Qv@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1JF7Xh-0003q3-Qv@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart2023442.yLlF9ht91N";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200801160817.12812.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If the hardware required an intermediate junk I/O, that would be a
-> reason to do one, but it doesn't, does it?  It requires a delay.  It's
-> written thus in all of the application notes.
+--nextPart2023442.yLlF9ht91N
+Content-Type: text/plain;
+  charset="iso-8859-6"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-And the only instruction that is synchronized to the bus in question is
-an I/O instruction. 
+On Wednesday 16 January 2008, Miklos Szeredi wrote:
+> This is an experimental patch for supporing unprivileged mounts and
+> umounts.  The following features are added:
 
-> Wrong again.  Of course one knows how long the delay should be.  The bus
-> speed is known. 
+same feedback as last time ... the cap stuff needs to be made optional and=
+=20
+proper header checks added to configure ...
 
-Wrong again. ISA bus speed is neither defined precisely, nor visible in a
-system portable fashion.
+> 1) If mount/umount are suid, first try without privileges.
+>
+> This is done by forking, dropping privileges in child, and redirecting
+> stderr to /dev/null.  If this succeeds, then parent exits with zero
+> exit code.  Otherwise parent continues normally (with privileges).
+> This isn't perfect, because the wrong error message will be printed if
+> mount/umount failed not because of insufficient privileges, but some
+> other error (e.g. mountpoint busy).
 
-I'm so glad you have nothing better to do than troll, if you
-actually wrote code I'd be worried it might get into something people
-used.
+this normalization of error information does kind of suck ... but i think t=
+he=20
+way it's written, the end user will still get the real answer the second ti=
+me=20
+around when the mount is attempted with root privs and not stderr sent=20
+to /dev/null ?
+=2Dmike
 
-Alan
+--nextPart2023442.yLlF9ht91N
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iQIVAwUAR44D2EFjO5/oN/WBAQLHGQ/+OJUNzIPbqlnFlJRi8//Cz5Mpzbsq+YiD
+EOqxq46Bo4+Q2TEoSxHeBCV06/h701EpBi4vrD/SHdZTT+Druj8h5+FERGXWNd1z
+4gkYHn11XsrjIeFHMTtSAyOFRQra5ccLZ71uUZ4C/d8u9av+2N6a/ULK0TF3MqBX
+7O3YtABsBQ7BpG3bOxRfuHQvMZKhQxkfpUcIBdOl32q4nMjRUTDyv92P52t3lLT+
++oKywGvyaeAGia0TB4APpVDY+1V36Wxuj9catL/YVNtuzaKS+fJ1fWjbsgedwKqz
+zsDsNDrmPeFjqS/6GYDQXpX3++8IWFjTzKTNcY3+Kumi5+MzpO5Hh1uk7U3BE/2c
+rp84kRozAqP+17iQD6y1cI+fybwW8AFxmXbceite07tk8VMOHs84TepwdQcZPpee
+YKkj+HwswKuC55sJ/9OublzIUFaIYa2BlvQKUoO6cMBk/5BSb28Hw6e/421E2vwV
+kNegHZW0pvXCPTOasJU+cAXiZ/X4pRhf/F45NFyeUxCJ9AU0kuBL6RCBUo2s4qYE
+/IhN/4rEeMnJNT1sZoYVedE2W5CSoWc+RAjue+Zwr1Uujad0+NaOv9zwqXHxectw
+4jfZw2CcD48im7P7kYzB6JgciQm/E3DZ+sDIOTbkJE/0dvi9Gv5lxUQE/yrR1Onq
+mBVWAUUbFkI=
+=bJgu
+-----END PGP SIGNATURE-----
+
+--nextPart2023442.yLlF9ht91N--
