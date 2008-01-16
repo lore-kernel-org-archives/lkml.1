@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755305AbYAPOXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688AbYAPOcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755305AbYAPOXt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 09:23:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbYAPOXl
+	id S1754688AbYAPOcT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 09:32:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753455AbYAPOcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 09:23:41 -0500
-Received: from vena.lwn.net ([206.168.112.25]:41616 "EHLO vena.lwn.net"
+	Wed, 16 Jan 2008 09:32:06 -0500
+Received: from www.tglx.de ([62.245.132.106]:44429 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752078AbYAPOXk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 09:23:40 -0500
-To: Pavel Emelyanov <xemul@openvz.org>
-CC: Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Cedric Le Goater <clg@fr.ibm.com>, drepper@redhat.com,
-       Serge Hallyn <serue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] Extend sys_clone and sys_unshare system calls API 
-From: corbet@lwn.net (Jonathan Corbet)
-In-reply-to: Your message of "Wed, 16 Jan 2008 15:58:55 +0300."
-             <478DFF8F.9030006@openvz.org> 
-Date: Wed, 16 Jan 2008 07:23:40 -0700
-Message-ID: <9803.1200493420@vena.lwn.net>
+	id S1753450AbYAPOcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 09:32:04 -0500
+Date: Wed, 16 Jan 2008 15:28:54 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+cc: Andrew Paprocki <andrew@ishiboo.com>, linux-kernel@vger.kernel.org,
+       Balaji Rao <balajirrao@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       clemens@ladisch.de, venkatesh.pallipadi@intel.com, bob.picco@hp.com
+Subject: Re: HPET timer broken using 2.6.23.13 / nanosleep() hangs
+In-Reply-To: <alpine.LFD.0.99999.0801161458470.3764@localhost.localdomain>
+Message-ID: <alpine.LFD.0.99999.0801161524250.3764@localhost.localdomain>
+References: <76366b180801130310x57f24cc8s641d3ccb2415524c@mail.gmail.com> <20080113120337.GA5548@linux.vnet.ibm.com> <76366b180801130510w2af714fevf03f59164f90806f@mail.gmail.com> <20080113140620.GA22507@linux.vnet.ibm.com>
+ <alpine.LFD.0.99999.0801161458470.3764@localhost.localdomain>
+User-Agent: Alpine 0.99999 (LFD 796 2007-11-08)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Pavel,
+On Wed, 16 Jan 2008, Thomas Gleixner wrote:
 
-[Adding Ulrich]
+> On Sun, 13 Jan 2008, Dhaval Giani wrote:
+> > On Sun, Jan 13, 2008 at 08:10:46AM -0500, Andrew Paprocki wrote:
+> > > I applied the patch to my 2.6.23.13 tree and upon reboot it stopped right after:
+> > > 
+> > > Clocksource tsc unstable (delta = ... ns)
+> > > Time: hpet clocksource has been installed.
+> > > 
+> > > It locked up hard.. cursor stopped blinking and SysRq isn't working either.
+> 
+> The hint is in the original report:
+> 
+> Clocksource tsc unstable (delta = 500013666 ns)
+> 
+> That means, that the TSC was counting, but HPET not. So it looks like
+> the HPET readout is stale. Which explains, why after switching to HPET
+> clocksource the time system gets hosed.
+> 
+> I wonder why the HPET counter works check did not catch this.
+> 
+> Can you please apply the path below and provide the output ?
 
-> I use the last bit in the clone_flags for CLONE_LONGARG. When set it
-> will denote that the child_tidptr is not a pointer to a tid storage,
-> but the pointer to the struct long_clone_struct which currently 
-> looks like this:
+Oh. Stupid me. This is 2.6.23. So the patch won't apply.
 
-I'm probably just totally off the deep end, but something did occur to
-me: this looks an awful lot like a special version of the sys_indirect()
-idea.  Unless it has been somehow decided that sys_indirect() is the
-wrong idea, might it not be better to look at making that interface
-solve the extended clone() problem as well?
+Andrew, can you please check, whether 2.6.24-rc8 works on your machine ?
 
-jon
+I look into a backport fix for 2.6.23 later.
+
+Thanks,
+	tglx
+
+
