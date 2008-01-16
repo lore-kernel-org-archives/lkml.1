@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbYAPAWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756898AbYAPA3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757340AbYAPAWa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 19:22:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbYAPAWW
+	id S1756898AbYAPA3r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 19:29:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbYAPA3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 19:22:22 -0500
-Received: from ms0.nttdata.co.jp ([163.135.193.231]:44945 "EHLO
-	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751585AbYAPAWV (ORCPT
+	Tue, 15 Jan 2008 19:29:38 -0500
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:25126 "EHLO
+	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751379AbYAPA3h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 19:22:21 -0500
-Message-ID: <478D4E35.8000208@nttdata.co.jp>
-Date: Wed, 16 Jan 2008 09:22:13 +0900
-From: Kentaro Takeda <takedakn@nttdata.co.jp>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.9) Gecko/20071031 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
+	Tue, 15 Jan 2008 19:29:37 -0500
+Date: Tue, 15 Jan 2008 17:30:18 -0700
+From: dougthompson@xmission.com
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] drivers edac i3000 document type promotion
+Message-ID: <478d501a.Y76I0VJGkMZyz9aA%dougthompson@xmission.com>
+User-Agent: Heirloom mailx 12.1 6/15/06
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [TOMOYO #6 retry 02/21] Add struct vfsmount to struct task_struct.
-References: <20080109005320.323184643@nttdata.co.jp> <20080109005418.469053691@nttdata.co.jp> <20080115211656.GA10644@sergelap.austin.ibm.com>
-In-Reply-To: <20080115211656.GA10644@sergelap.austin.ibm.com>
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Jan 2008 00:22:17.0827 (UTC) FILETIME=[DA113330:01C857D5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+From: Jason Uhlenkott <juhlenko@akamai.com>
 
-Serge E. Hallyn wrote:
-> I must say I personally prefer the apparmor approach.
-No problem.
+Applied to 2.6.24-rc6-mm1
 
-> But I'd recommend
-> you get together and get this piece pushed on its own, whichever version
-> you can agree on.
-TOMOYO can use AppArmor's patch.
+By popular request, add a comment documenting the implicit type
+promotion here.
 
-> Yes it needs a user, but at this point I would think
-> both tomoyo and apparmor have had enough visibility that everyone knows
-> the intended users.
-Not only AppArmor and TOMOYO but also SELinux want to use "vfsmount".
-(http://marc.info/?l=selinux&m=120005904211942&w=2)
+Signed-off-by: Jason Uhlenkott <juhlenko@akamai.com>
+Signed-off-by: Doug Thompson <dougthompson@xmission.com?
+---
+ i3000_edac.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
-> It seems to me you're both being held up by this piece, and getting
-> another full posting of either tomoyo or apparmor isn't going to help,
-> so hopefully you can combine your efforts to get this solved.
-We welcome AppArmor's vfsmount patches, but I wonder why AppArmor's
-vfsmount patches are not merged yet.
-
-What prevents AppArmor's vfsmount patches from merging into -mm tree?
-
-Regards.
-Kentaro Takeda
+Index: linux/drivers/edac/i3000_edac.c
+===================================================================
+--- linux.orig/drivers/edac/i3000_edac.c	2008-01-14 15:16:11.137167678 -0800
++++ linux/drivers/edac/i3000_edac.c	2008-01-14 15:16:13.387855416 -0800
+@@ -44,6 +44,13 @@
+ 				 */
+ #define I3000_DEAP_GRAIN 		(1 << 7)
+ 
++/*
++ * Helper functions to decode the DEAP/EDEAP hardware registers.
++ *
++ * The type promotion here is deliberate; we're deriving an
++ * unsigned long pfn and offset from hardware regs which are u8/u32.
++ */
++
+ static inline unsigned long deap_pfn(u8 edeap, u32 deap)
+ {
+ 	deap >>= PAGE_SHIFT;
 
