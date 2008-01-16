@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbYAPVjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753107AbYAPVlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752664AbYAPVjz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 16:39:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbYAPVjp
+	id S1753107AbYAPVlh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 16:41:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbYAPVl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 16:39:45 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:37909 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750990AbYAPVjo (ORCPT
+	Wed, 16 Jan 2008 16:41:29 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:41606 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750753AbYAPVl3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 16:39:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=I2TRBv4+IleLuRiTyjQW8l2qcdT2kPRwwxzDKK4m8BESx1yCoR4G5o9SlwWsGsKVjhx8XJ9U63UqVYrxQtTFnU2fV4ulQAFqKEeNvCFivb3NxCEI9BxRu9h+iQXL2JVU3xq4gSvo8TRj3mtSpq/VI+gp2dT2eYKpGPLD0R2FOP0=
-Message-ID: <86802c440801161339h4e3e983co67e05a231666d050@mail.gmail.com>
-Date: Wed, 16 Jan 2008 13:39:42 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Balaji Rao" <balajirrao@gmail.com>
-Subject: Re: hpet_late_init hang
-Cc: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <200801161404.33519.balajirrao@gmail.com>
+	Wed, 16 Jan 2008 16:41:29 -0500
+Date: Wed, 16 Jan 2008 14:41:28 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: SLUB: Increasing partial pages
+Message-ID: <20080116214127.GA11559@parisc-linux.org>
+References: <20080116195949.GO18741@parisc-linux.org> <Pine.LNX.4.64.0801161219050.9694@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <86802c440801151932o6aaea248w7d1137eaa2ac3579@mail.gmail.com>
-	 <20080116065133.GA26783@elte.hu>
-	 <200801161404.33519.balajirrao@gmail.com>
+In-Reply-To: <Pine.LNX.4.64.0801161219050.9694@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 16, 2008 12:34 AM, Balaji Rao <balajirrao@gmail.com> wrote:
-> On Wednesday 16 January 2008 12:21:33 pm Ingo Molnar wrote:
-> Hi Ingo,
-> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> > > "
-> > > commit e5ed385fa0d6f35406e3e3ed75e5eb9adeb811df
-> > > Author: Balaji Rao <balajirrao@gmail.com>
-> > > Date:   Tue Jan 15 16:53:29 2008 +0100
-> > >
-> > >     Assign IRQs to HPET Timers
-> > > "
-> > > in x86.git
-> > >
-> > > cause my servers hang
-> > > after
-> > > Calling initcall 0xffffffff80b9a465: hpet_late_init+0x0/0x100()
-..
-> Looks like IRQ 31 is assigned to timer 3, even without the patch! I wonder who wrote the number 31. But the manual says
-> that it is zero by default.
->
-> I think we should check whether the timer has been allocated an IRQ before proceeding to assign one to it.
-> Here is a patch that does this.
->
-> Yinghai, could you please apply this on top of my patch and check ?
->
-> ---
-> Index: linux-2.6/arch/x86/kernel/hpet.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/hpet.c
-...
->
+On Wed, Jan 16, 2008 at 12:39:31PM -0800, Christoph Lameter wrote:
+> Ahhh.. Good to hear that the issue on x86_64 gets better. I am still 
+> waiting for a test with the patchset that I did specifically to address 
+> your regression: http://lkml.org/lkml/2007/10/27/245 (where I tried to 
+> come up with an in kernel benchmark that exposes the issue even more)? It 
+> is much more likely now that this patchset in mm addresses your regression 
+> since the hackbench performance improvement fix already reduce it 
+> partially.
 
-it works
+I sent you a mail on December 6th ... here are the contents of that
+mail:
 
-YH
+---
+
+On Thu, Nov 29, 2007 at 07:54:44PM -0800, Christoph Lameter wrote:
+> Hmmmm... I have been running them for awhile and they have been in mm 
+> for awhile. Never seen a boot issue.
+
+After investigation, there are two issues.
+
+Patch 8/10 oopses during the run, typically after about an hour.
+
+Patch 10/10 oopses during boot.  I haven't been able to reproduce this
+on my quad-core machine, but it happens every time for them on their
+dual quad-core machine.
+
+---
+
+Applying just patches 1-7 and 9 leads to a slight (0.34%) performance
+reduction compared to slub.  That is 6.45% versus slab, reduces to 6.79%
+with the 8 patches applied.
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
