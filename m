@@ -1,39 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751641AbYAPIxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752592AbYAPI4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751641AbYAPIxW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 03:53:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbYAPIwx
+	id S1752592AbYAPI4X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 03:56:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbYAPI4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 03:52:53 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59437 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751308AbYAPIwv (ORCPT
+	Wed, 16 Jan 2008 03:56:13 -0500
+Received: from hpsmtp-eml15.KPNXCHANGE.COM ([213.75.38.115]:17882 "EHLO
+	hpsmtp-eml15.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751308AbYAPI4M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 03:52:51 -0500
-Date: Wed, 16 Jan 2008 00:52:00 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, miklos@szeredi.hu, hch@infradead.org,
-       Bryn Reeves <breeves@redhat.com>, Alasdair G Kergon <agk@redhat.com>
-Subject: Re: [PATCH 04/27] kill filp_open()
-Message-Id: <20080116005200.0165dc67.akpm@linux-foundation.org>
-In-Reply-To: <20071101230831.904FDE9A@kernel>
-References: <20071101230826.9A4F6E00@kernel>
-	<20071101230831.904FDE9A@kernel>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 16 Jan 2008 03:56:12 -0500
+From: Frans Pop <elendil@planet.nl>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [REGRESSION] 2.6.24-rc7: e1000: Detected Tx Unit Hang
+Date: Wed, 16 Jan 2008 09:56:08 +0100
+User-Agent: KMail/1.9.7
+Cc: jesse.brandeburg@intel.com, slavon@bigtelecom.ru, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200801151504.10047.elendil@planet.nl> <36D9DB17C6DE9E40B059440DB8D95F52042FA541@orsmsx418.amr.corp.intel.com> <20080115.210214.170759690.davem@davemloft.net>
+In-Reply-To: <20080115.210214.170759690.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801160956.09053.elendil@planet.nl>
+X-OriginalArrivalTime: 16 Jan 2008 08:56:09.0647 (UTC) FILETIME=[A34393F0:01C8581D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 01 Nov 2007 16:08:31 -0700 Dave Hansen <haveblue@us.ibm.com> wrote:
+On Wednesday 16 January 2008, David Miller wrote:
+> Ok, here is the patch I'll propose to fix this.  The goal is to make
+> it as simple as possible without regressing the thing we were trying
+> to fix.
 
-> Replace all callers with open_namei() directly, and move the
-> nameidata stack allocation into open_namei().
+Looks good to me. Tested with -rc8.
 
-ftp://ftp.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/dm-loop.patch
-is using filp_open() and hence doesn't work very well.
-
-A shall revert dm-loop.patch and run away.
+Cheers,
+FJP
