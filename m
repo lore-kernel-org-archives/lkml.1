@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbYAPJoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753109AbYAPJyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753421AbYAPJoj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 04:44:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbYAPJo2
+	id S1753109AbYAPJyT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 04:54:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbYAPJyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 04:44:28 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:36814 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751307AbYAPJo0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 04:44:26 -0500
-To: serue@us.ibm.com
-CC: miklos@szeredi.hu, accensi@gmail.com, serue@us.ibm.com,
-       akpm@linux-foundation.org, hch@infradead.org, viro@ftp.linux.org.uk,
-       ebiederm@xmission.com, kzak@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
-       util-linux-ng@vger.kernel.org
-In-reply-to: <20080115134719.GB4453@sergelap.austin.ibm.com>
-	(serue@us.ibm.com)
-Subject: Re: [patch 9/9] unprivileged mounts: add "no submounts" flag
-References: <20080108113502.184459371@szeredi.hu> <20080108113634.382855604@szeredi.hu> <20080114233910.GI6704@sergelap.austin.ibm.com> <E1JEjEE-0000xZ-RU@pomaz-ex.szeredi.hu> <643ea2b10801150253i735d7342q73bf01f864d6167c@mail.gmail.com> <E1JEjUx-00010q-Ny@pomaz-ex.szeredi.hu> <20080115134719.GB4453@sergelap.austin.ibm.com>
-Message-Id: <E1JF4ne-0003HO-CG@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 16 Jan 2008 10:43:10 +0100
+	Wed, 16 Jan 2008 04:54:08 -0500
+Received: from dtp.xs4all.nl ([80.126.206.180]:17203 "HELO abra2.bitwizard.nl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751785AbYAPJyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 04:54:07 -0500
+X-Greylist: delayed 441 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Jan 2008 04:54:06 EST
+Date: Wed, 16 Jan 2008 10:46:40 +0100
+From: Rogier Wolff <R.E.Wolff@BitWizard.nl>
+To: linux-kernel@vger.kernel.org
+Subject: mtime updates for mmapped files. 
+Message-ID: <20080116094640.GA2071@bitwizard.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: BitWizard.nl
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > Why not "nosubmnt"?
-> > 
-> > Why not indeed.  Maybe I should try to use my brain sometime.
-> 
-> Well it really should have 'user' or 'unpriv' in the name
-> somewhere.  'nosubmnt' is more confusing than 'nomnt' because
-> it no submounts really sounds like a reasonable thing in
-> itself...
 
-I slept on it, and I still think 'nosubmnt' might be the best
-compromise.  Obviously the superuser has privileges, that override
-what is normally allowed, and we don't find it strange when a
-read-only file is happily being written by root.
+Hi,
 
-It may feel wrong in the context of mounts, because we are so used to
-mounts being privileged-only.
+I  wrote a small app yesterday that updates a file by mmapping the 
+file (RW), changing the thing around, and then exiting. 
 
-Objections?  Once this goes in, it will stay the same forever, so now
-is the time to express any doubts...
+This did not trigger a change in the mtime of the file. Thus rsync
+didn't pick up that the file had changed.
 
-Thanks,
-Miklos
+I understand that tracking every change to a RW mmapped file is
+costly, and thus unfeasable, but shouldn't then the close cause a
+mtime update?
+
+The server where this happened is running 2.6.21, so my apologies if
+this has already been corrected.
+
+	Roger. 
+
+-- 
+** R.E.Wolff@BitWizard.nl ** http://www.BitWizard.nl/ ** +31-15-2600998 **
+**    Delftechpark 26 2628 XH  Delft, The Netherlands. KVK: 27239233    **
+*-- BitWizard writes Linux device drivers for any device you may have! --*
+Q: It doesn't work. A: Look buddy, doesn't work is an ambiguous statement. 
+Does it sit on the couch all day? Is it unemployed? Please be specific! 
+Define 'it' and what it isn't doing. --------- Adapted from lxrbot FAQ
