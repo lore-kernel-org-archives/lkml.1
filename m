@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758669AbYAPDwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758257AbYAPD5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758669AbYAPDwk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 22:52:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757291AbYAPDwd
+	id S1758257AbYAPD5R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 22:57:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757294AbYAPD5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 22:52:33 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:47706 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757115AbYAPDwc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 22:52:32 -0500
-Date: Wed, 16 Jan 2008 03:52:24 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Tejun Heo <htejun@gmail.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Gabor Gombas <gombasg@sztaki.hu>, Greg KH <greg@kroah.com>,
-       Dave Young <hidave.darkstar@gmail.com>,
-       bluez-devel@lists.sourceforge.net
-Subject: Re: [PATCH 2.6.24-rc7 2/2] sysfs: fix bugs in sysfs_rename/move_dir()
-Message-ID: <20080116035224.GW27894@ZenIV.linux.org.uk>
-References: <478D74A6.7000206@gmail.com> <478D75BD.1010805@gmail.com> <alpine.LFD.1.00.0801151928380.2806@woody.linux-foundation.org>
+	Tue, 15 Jan 2008 22:57:08 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:51526 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756935AbYAPD5F (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 22:57:05 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Greg KH <greg@kroah.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>
+Subject: Re: [PATCH]PCIE ASPM support - takes 2
+In-Reply-To: Your message of "Tue, 15 Jan 2008 13:02:26 +0800."
+             <1200373346.20739.4.camel@sli10-desk.sh.intel.com>
+From: Valdis.Kletnieks@vt.edu
+References: <1200373346.20739.4.camel@sli10-desk.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0801151928380.2806@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.3i
+Content-Type: multipart/signed; boundary="==_Exmh_1200455812_2966P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 15 Jan 2008 22:56:52 -0500
+Message-ID: <24456.1200455812@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 15, 2008 at 07:41:58PM -0800, Linus Torvalds wrote:
+--==_Exmh_1200455812_2966P
+Content-Type: text/plain; charset=us-ascii
 
-> and wonder what happen sif old_parent == new_parent. Is that trying to 
-> avoid an ABBA deadlock? Normally you'd do it by ordering the locks, or by 
-> taking a third lock to guarantee serialization at a higher level (ie the 
-> "s_vfs_rename_mutex" on the VFS layer)
-> 
-> I'd like to apply these two patches, but I really want to get more of an 
-> ack for them from somebody like Al, or at least more of an explanation for 
-> why it's all the right thing.
+On Tue, 15 Jan 2008 13:02:26 +0800, Shaohua Li said:
 
-No ACK is coming until we get something resembling analysis of locking
-scheme.  Which won't happen until we at least get the "what callers are
-allowed to do" written down, damnit.  As it is, I'm more than inclined
-to propose ripping kobject_move() out, especially since it has only two
-users - something s390-specific and rfcomm, with its shitloads of problems
-beyond just sysfs interaction.
+> In my test, power difference between powersave mode and performance mode
+> is about 1.3w in a system with 3 PCIE links.
+
+Do you have any numbers on what the added latency is for powersave mode, and
+a rough idea of how quickly chipsets will drop to low-power? It may affect
+usability a lot if it's "adds 10ms latency after 100ms idle" or "adds 100ms
+latency after 5 seconds idle" or some other pattern...
+
+(The chipset in my laptop claims to be an 82801G with 4 PCI-Express ports on
+it - I'm trying to get a rough idea what usage I'd get out of that feature..)
+
+--==_Exmh_1200455812_2966P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFHjYCEcC3lWbTT17ARAhAhAJ9ZiY5Uua5IGdHOm05QLsvu8nF0/gCfU0zD
+g4w2n3pTVJZEZj7yrIUfvIc=
+=41lh
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1200455812_2966P--
