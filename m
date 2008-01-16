@@ -1,43 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753183AbYAPXX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758723AbYAPXXn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753183AbYAPXX3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 18:23:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756160AbYAPXRK
+	id S1758723AbYAPXXn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 18:23:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757210AbYAPXSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 18:17:10 -0500
-Received: from hellhawk.shadowen.org ([80.68.90.175]:2666 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756036AbYAPXRH (ORCPT
+	Wed, 16 Jan 2008 18:18:43 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41174 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756339AbYAPXSm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 18:17:07 -0500
-Date: Wed, 16 Jan 2008 23:17:04 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andi Kleen <ak@suse.de>
-Cc: rdunlap@xenotime.net, jschopp@austin.ibm.com, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Deprecate checkpatch.pl --file mode; add warning; add --file-force
-Message-ID: <20080116231704.GE24409@shadowen.org>
-References: <20080116222121.GA7185@wotan.suse.de>
+	Wed, 16 Jan 2008 18:18:42 -0500
+Date: Wed, 16 Jan 2008 15:18:33 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+cc: Johannes Weiner <hannes@saeurebad.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       penberg@cs.helsinki.fi
+Subject: Re: Why is the kfree() argument const?
+In-Reply-To: <Pine.LNX.4.64.0801161419290.11922@schroedinger.engr.sgi.com>
+Message-ID: <alpine.LFD.1.00.0801161517090.2806@woody.linux-foundation.org>
+References: <87lk6pvii0.fsf@saeurebad.de> <alpine.LFD.1.00.0801161026550.2806@woody.linux-foundation.org> <87odblct19.fsf@saeurebad.de> <Pine.LNX.4.64.0801161419290.11922@schroedinger.engr.sgi.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080116222121.GA7185@wotan.suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 16, 2008 at 11:21:21PM +0100, Andi Kleen wrote:
+
+
+On Wed, 16 Jan 2008, Christoph Lameter wrote:
 > 
-> I'm not entirely sure who collects checkpatch patches for .25 -- i thought it
-> was Andy W., but he doesn't seem to answer. Anyways whoever does it please
-> queue this patch for the next checkpatch.pl update. Or perhaps it could
-> be put into -mm?
+> Correct and we have gcc 4.2 currently spitting out warnings because of 
+> casting to non const. Any idea how to convince gcc that this is okay?
 
-It is me, I have been off on holiday skiing.  I have a whole bunch of
-updates merged already which I will send out tommorrow.  Your --file is
-in the next batch which should be tested and ready by next week.
+Either don't use a broken compiler (casting a const pointer to a non-const 
+is definitely not a bug), or cast to "unsigned long" (if it still 
+complains, now the compiler is not just stupid, it's broken).
 
-Sorry for the delay.
+The whole point of memory management is that we know how pointers work, 
+and understand that they have a *bit* representation, not just the C 
+semantics.
 
--apw
+		Linus
