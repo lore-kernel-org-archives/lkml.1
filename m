@@ -1,110 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753441AbYAPUS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466AbYAPUTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753441AbYAPUS7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 15:18:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbYAPUSv
+	id S1754466AbYAPUTe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 15:19:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbYAPUT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 15:18:51 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:33880 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750861AbYAPUSu (ORCPT
+	Wed, 16 Jan 2008 15:19:26 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:31138 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750968AbYAPUTY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 15:18:50 -0500
-Date: Wed, 16 Jan 2008 15:18:41 -0500
-Message-Id: <200801162018.m0GKIf1c004098@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Paul Albrecht <albrecht@rdi1.com>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, unionfs@filesystems.org
-Subject: Re: unionfs, cow, and whiteout 
-In-reply-to: Your message of "Wed, 16 Jan 2008 13:48:46 CST."
-             <1200512926.12092.33.camel@thinix-laptop> 
-X-MailKey: Erez_Zadok
+	Wed, 16 Jan 2008 15:19:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=j13pbkQX48Sd+v7f10bLARdhVE3Pfw2A6oZVmaPpN/5KkvubZqeRgpO6YuJ9JUnMXUV1h5sOEBOEY378q/FS6jJo5Dbu/EzoHUORq39SMxh/158MyeiCuT2GhnCHGoTpijzTiHYRWUymksB9CzGlcZcfwXMldbru/FlN213OqAs=
+Message-ID: <19f34abd0801161219oe478b50se13c0710759d581f@mail.gmail.com>
+Date: Wed, 16 Jan 2008 21:19:23 +0100
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Subject: Re: [BISECTED] Re: psmouse.c: GlidePoint at isa0060/serio1/input0 lost sync at byte 1
+Cc: linux-input@vger.kernel.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "William Pettersson" <william.pettersson@gmail.com>
+In-Reply-To: <20080116142815.ZZRA012@mailhub.coreip.homeip.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <19f34abd0711141226n60323630rdc4833db0bfb2eeb@mail.gmail.com>
+	 <19f34abd0801071224kb9cb121u244b00b274231db0@mail.gmail.com>
+	 <d120d5000801110647k4b1fa49ene974898baf745aec@mail.gmail.com>
+	 <478CFB56.1030700@gmail.com>
+	 <20080115154142.ZZRA012@mailhub.coreip.homeip.net>
+	 <20080116104024.ZZRA012@mailhub.coreip.homeip.net>
+	 <19f34abd0801160946j2fe1c75ap3617dd125c81008f@mail.gmail.com>
+	 <20080116142815.ZZRA012@mailhub.coreip.homeip.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[I recommend we direct future discussions in this thread to the unionfs
-ML. -ezk]
+On Jan 16, 2008 8:33 PM, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> On Wed, Jan 16, 2008 at 06:46:46PM +0100, Vegard Nossum wrote:
+> >
+> > I have now tried this patch. I don't see a sync error now, but the
+> > button still does not work as expected. Now the scroll down button
+> > acts like a middle button instead of scrolling down.
+> >
+> > I am sorry for the confusion; on my laptop it looks like a single
+> > button, but in fact it can be pressed in four different ways (up,
+> > down, left, and right). In 2.6.23, pressing left or right, I get the
+> > traditional paste functionality. Pressing up or down, it acts like a
+> > scroll wheel (up or down). In 2.6.24-rc1, it is the scrolling up/down
+> > that causes the lost sync (but the left/right works correctly).
+> >
+>
+> I see. Could you please provide me with another debug log of all
+> 4 presses/releases of all the buttons, with the patch applied?
+> Do it in the following order please: left, right, middle, up, down.
 
-In message <1200512926.12092.33.camel@thinix-laptop>, Paul Albrecht writes:
-[...]
-> I'm not sure we're talking about the same problem. What I do is union
-> mount a write enabled file system like tmpfs over a read only file
-> system like squashfs.
-> 
-> There's no way to create, modify, or delete files in a squashed file
-> system; they can be copied up when they're modified; or, they can be
-> whited out when they're deleted.
-> 
-> Whenever a file is created in the union mount, it necessarily gets
-> created in tmpfs. When that file gets deleted, it gets whited out which
-> doesn't make sense because it doesn't exist in the other layer.
-> 
-> This is a problem because over time as files are created, modified, and
-> deleted whiteout cruft accumulates in the cow layer of the union mount.
-> 
-> Fixing the problem doesn't seem that complex and shouldn't require
-> searching all the layers of the union mount.
+Ok. Remember, there really is no dedicated middle button (I've been
+using left button for this purpose, i.e. pasting in X). Here's the
+log. I cannot tell why the first keypress is twice the size of the
+rest, maybe I accidentally pressed it twice, though I tried not to.
 
-Paul, you're looking into a specific 2-branch configuration where one branch
-is r-o and the other is r-w.  Yes, in that specific case, one could argue
-that a whiteout isn't needed.  But what if I have N branches, with a mix of
-rw/ro branches, where a file or its whiteout could exist in any branch?  If
-I don't create a whiteout, then I have to scan all N branches and remove the
-same file from there (assuming the file doesn't exist on a r-o branch --
-then I have to abort).
+# left
+> drivers/input/serio/i8042.c: 9c <- i8042 (interrupt, 0, 1) [121267]
+> drivers/input/serio/i8042.c: cf <- i8042 (interrupt, 1, 12) [126078]
+> drivers/input/serio/i8042.c: 43 <- i8042 (interrupt, 1, 12) [126081]
+> drivers/input/serio/i8042.c: 18 <- i8042 (interrupt, 1, 12) [126083]
+> drivers/input/serio/i8042.c: 4c <- i8042 (interrupt, 1, 12) [126087]
+> drivers/input/serio/i8042.c: 6d <- i8042 (interrupt, 1, 12) [126088]
+> drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [126090]
+> drivers/input/serio/i8042.c: cf <- i8042 (interrupt, 1, 12) [126447]
+> drivers/input/serio/i8042.c: 43 <- i8042 (interrupt, 1, 12) [126450]
+> drivers/input/serio/i8042.c: 18 <- i8042 (interrupt, 1, 12) [126452]
+> drivers/input/serio/i8042.c: 48 <- i8042 (interrupt, 1, 12) [126454]
+> drivers/input/serio/i8042.c: 6d <- i8042 (interrupt, 1, 12) [126456]
+> drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [126460]
+> drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [128634]
+> drivers/input/serio/i8042.c: 48 <- i8042 (interrupt, 0, 1) [128636]
+> drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [128737]
+> drivers/input/serio/i8042.c: c8 <- i8042 (interrupt, 0, 1) [128741]
+> drivers/input/serio/i8042.c: 0e <- i8042 (interrupt, 0, 1) [129161]
+> drivers/input/serio/i8042.c: 8e <- i8042 (interrupt, 0, 1) [129267]
+> drivers/input/serio/i8042.c: 03 <- i8042 (interrupt, 0, 1) [129332]
+> drivers/input/serio/i8042.c: 83 <- i8042 (interrupt, 0, 1) [129437]
+> drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [130032]
+> drivers/input/serio/i8042.c: 4b <- i8042 (interrupt, 0, 1) [130033]
+> drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [130518]
+> drivers/input/serio/i8042.c: 4b <- i8042 (interrupt, 0, 1) [130521]
+> drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [130550]
+> drivers/input/serio/i8042.c: 4b <- i8042 (interrupt, 0, 1) [130552]
+> drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [130583]
+> drivers/input/serio/i8042.c: 4b <- i8042 (interrupt, 0, 1) [130585]
+> drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [130614]
+> drivers/input/serio/i8042.c: 4b <- i8042 (interrupt, 0, 1) [130616]
+> drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [130644]
+> drivers/input/serio/i8042.c: 4b <- i8042 (interrupt, 0, 1) [130646]
+> drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [130676]
+> drivers/input/serio/i8042.c: 4b <- i8042 (interrupt, 0, 1) [130679]
+> drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [130708]
+> drivers/input/serio/i8042.c: 4b <- i8042 (interrupt, 0, 1) [130710]
+> drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [130731]
+> drivers/input/serio/i8042.c: cb <- i8042 (interrupt, 0, 1) [130737]
+> drivers/input/serio/i8042.c: 2a <- i8042 (interrupt, 0, 1) [130992]
+> drivers/input/serio/i8042.c: 56 <- i8042 (interrupt, 0, 1) [131098]
+> drivers/input/serio/i8042.c: d6 <- i8042 (interrupt, 0, 1) [131274]
+> drivers/input/serio/i8042.c: aa <- i8042 (interrupt, 0, 1) [131343]
+> drivers/input/serio/i8042.c: 1c <- i8042 (interrupt, 0, 1) [131859]
 
-Note also that branches could be dynamically marked r-o or r-w over the
-lifetime of the union: so a file which was deletable before may not be
-deletable in the future.
+# right
+> drivers/input/serio/i8042.c: 9c <- i8042 (interrupt, 0, 1) [132001]
+> drivers/input/serio/i8042.c: ef <- i8042 (interrupt, 1, 12) [135113]
+> drivers/input/serio/i8042.c: 43 <- i8042 (interrupt, 1, 12) [135115]
+> drivers/input/serio/i8042.c: 18 <- i8042 (interrupt, 1, 12) [135118]
+> drivers/input/serio/i8042.c: 48 <- i8042 (interrupt, 1, 12) [135120]
+> drivers/input/serio/i8042.c: 6d <- i8042 (interrupt, 1, 12) [135122]
+> drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [135125]
+> drivers/input/serio/i8042.c: cf <- i8042 (interrupt, 1, 12) [135401]
+> drivers/input/serio/i8042.c: 43 <- i8042 (interrupt, 1, 12) [135403]
+> drivers/input/serio/i8042.c: 18 <- i8042 (interrupt, 1, 12) [135406]
+> drivers/input/serio/i8042.c: 48 <- i8042 (interrupt, 1, 12) [135407]
+> drivers/input/serio/i8042.c: 6d <- i8042 (interrupt, 1, 12) [135409]
+> drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [135412]
+> drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [137074]
+> drivers/input/serio/i8042.c: 48 <- i8042 (interrupt, 0, 1) [137075]
+> drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [137215]
+> drivers/input/serio/i8042.c: c8 <- i8042 (interrupt, 0, 1) [137218]
+> drivers/input/serio/i8042.c: 0e <- i8042 (interrupt, 0, 1) [137868]
+> drivers/input/serio/i8042.c: 8e <- i8042 (interrupt, 0, 1) [138009]
+> drivers/input/serio/i8042.c: 04 <- i8042 (interrupt, 0, 1) [138056]
+> drivers/input/serio/i8042.c: 84 <- i8042 (interrupt, 0, 1) [138163]
+> drivers/input/serio/i8042.c: 1c <- i8042 (interrupt, 0, 1) [139036]
 
-We used to have several modes of operations, including one called
-DELETE_ALL, which was similar to what you're asking for.  But it complicated
-the code considerably and most users didn't use that mode.  So we opted for
-simplicity and clarity of code, rather than having special cases for
-different branch configurations.
+# up
+> drivers/input/serio/i8042.c: 9c <- i8042 (interrupt, 0, 1) [139177]
+> drivers/input/serio/i8042.c: cf <- i8042 (interrupt, 1, 12) [142763]
+> drivers/input/serio/i8042.c: 43 <- i8042 (interrupt, 1, 12) [142764]
+> drivers/input/serio/i8042.c: 1c <- i8042 (interrupt, 1, 12) [142767]
+> drivers/input/serio/i8042.c: 48 <- i8042 (interrupt, 1, 12) [142769]
+> drivers/input/serio/i8042.c: 6d <- i8042 (interrupt, 1, 12) [142772]
+> drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [142774]
+> drivers/input/serio/i8042.c: cf <- i8042 (interrupt, 1, 12) [143002]
+> drivers/input/serio/i8042.c: 43 <- i8042 (interrupt, 1, 12) [143004]
+> drivers/input/serio/i8042.c: 18 <- i8042 (interrupt, 1, 12) [143006]
+> drivers/input/serio/i8042.c: 48 <- i8042 (interrupt, 1, 12) [143008]
+> drivers/input/serio/i8042.c: 6d <- i8042 (interrupt, 1, 12) [143012]
+> drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [143013]
+> drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [143965]
+> drivers/input/serio/i8042.c: 48 <- i8042 (interrupt, 0, 1) [143968]
+> drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [144103]
+> drivers/input/serio/i8042.c: c8 <- i8042 (interrupt, 0, 1) [144107]
+> drivers/input/serio/i8042.c: 0e <- i8042 (interrupt, 0, 1) [144556]
+> drivers/input/serio/i8042.c: 8e <- i8042 (interrupt, 0, 1) [144699]
+> drivers/input/serio/i8042.c: 05 <- i8042 (interrupt, 0, 1) [144777]
+> drivers/input/serio/i8042.c: 85 <- i8042 (interrupt, 0, 1) [144881]
+> drivers/input/serio/i8042.c: 1c <- i8042 (interrupt, 0, 1) [145299]
 
-If you're willing to open a feature-request report on
-https://bugzilla.filesystems.org/, then we'll be happy to consider your
-request and see how it can be incorporated while keeping the base code
-devoid of special cases.  Thanks.
+# down
+> drivers/input/serio/i8042.c: 9c <- i8042 (interrupt, 0, 1) [145406]
+> drivers/input/serio/i8042.c: df <- i8042 (interrupt, 1, 12) [146456]
+> drivers/input/serio/i8042.c: 43 <- i8042 (interrupt, 1, 12) [146457]
+> drivers/input/serio/i8042.c: 18 <- i8042 (interrupt, 1, 12) [146460]
+> drivers/input/serio/i8042.c: 48 <- i8042 (interrupt, 1, 12) [146462]
+> drivers/input/serio/i8042.c: 6d <- i8042 (interrupt, 1, 12) [146465]
+> drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [146467]
+> drivers/input/serio/i8042.c: cf <- i8042 (interrupt, 1, 12) [146596]
+> drivers/input/serio/i8042.c: 43 <- i8042 (interrupt, 1, 12) [146599]
+> drivers/input/serio/i8042.c: 18 <- i8042 (interrupt, 1, 12) [146601]
+> drivers/input/serio/i8042.c: 48 <- i8042 (interrupt, 1, 12) [146603]
+> drivers/input/serio/i8042.c: 6d <- i8042 (interrupt, 1, 12) [146606]
+> drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [146609]
+> drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [147496]
+> drivers/input/serio/i8042.c: 48 <- i8042 (interrupt, 0, 1) [147499]
+> drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [147599]
+> drivers/input/serio/i8042.c: c8 <- i8042 (interrupt, 0, 1) [147604]
+> drivers/input/serio/i8042.c: 0e <- i8042 (interrupt, 0, 1) [148123]
+> drivers/input/serio/i8042.c: 8e <- i8042 (interrupt, 0, 1) [148228]
+> drivers/input/serio/i8042.c: 06 <- i8042 (interrupt, 0, 1) [148232]
+> drivers/input/serio/i8042.c: 86 <- i8042 (interrupt, 0, 1) [148335]
+> drivers/input/serio/i8042.c: 1c <- i8042 (interrupt, 0, 1) [150325]
 
-> If the union file system simply took note of whether a file was created
-> in the cow layer because it's new or because it's been modified and
-> copied up from the read only file system, then it would simply delete
-> the file in the former case and and use whiteout in the latter.
 
-Taking that "note" requires that the information survives a reboot; so I
-can't store it in memory, but it has to be stored persistently.  That would
-complicate the code and one might as well use unionfs-odf instead.
+Hope this helps :-) And thanks again.
 
-> > Another possible problem is that if you choose to insert a new branch in
-> > the middle, and you didn't have the whiteout, you may re-expose the file
-> > name unintentionally.
-> > 
-> 
-> I don't see how the a "deleted" file in a read only file system could be
-> re-exposed unless its whiteout in the cow layer was deleted, but that's
-> really not the issue.
-
-Suppose you have your two branches, you created a file X and deleted it.
-Now, you insert a new branch in the *middle*, which has file X in it: do you
-want that new file to show up in /bin/ls, or not?  If you didn't create a
-whiteout in the /cow layer, then file X will re-appear after the user
-supposedly deleted it.  (To be fair, the desired semantics here are not
-clear -- some users may want it one way or another -- but I want to ensure a
-*consistent* semantics that is simple to understand).
-
-> What I'm objecting to is creating the whiteout in the cow layer when the
-> file didn't get there via a copy up from a read only file system. In
-> this case there's no worry about re-exposing the deleted file because
-> it's really deleted.
-
-Paul, it really looks to me that you'd prefer the unionfs-odf version: it
-has a flavor of the older delete-all mode.  In unionfs-odf, we first try to
-delete the file from all branches.  If we can't (b/c of r-o branches/media),
-then we create a whiteout in the (small) /odf partition.  Therefore,
-whiteouts are never stored in the main union'ed branches.
-
-Cheers,
-Erez.
+Vegard
