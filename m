@@ -1,70 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752678AbYAPLmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752827AbYAPLsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752678AbYAPLmf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 06:42:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbYAPLm1
+	id S1752827AbYAPLsS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 06:48:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbYAPLsD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 06:42:27 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59465 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751415AbYAPLm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 06:42:26 -0500
-Date: Wed, 16 Jan 2008 12:42:34 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Marcelo Tosatti <marcelo@kvack.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Daniel Spang <daniel.spang@gmail.com>,
-       Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH 3/5] add /dev/mem_notify device
-Message-ID: <20080116114234.GA22460@elf.ucw.cz>
-References: <20080115100029.1178.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080115221627.GC1565@elf.ucw.cz> <20080116105102.11B1.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080116041332.GA30877@dmt>
+	Wed, 16 Jan 2008 06:48:03 -0500
+Received: from az33egw01.freescale.net ([192.88.158.102]:34799 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751453AbYAPLsA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 06:48:00 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080116041332.GA30877@dmt>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 0/3] UCC TDM driver for MPC83xx platforms
+Date: Wed, 16 Jan 2008 17:17:38 +0530
+Message-ID: <2A6F278C5B66C4459AF4013E77A40CD301149086@zin33exm20.fsl.freescale.net>
+In-Reply-To: <5927F7A4-D42A-40F6-AE9C-EDA34738A752@kernel.crashing.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 0/3] UCC TDM driver for MPC83xx platforms
+Thread-Index: AchXJyJXfQxp3NXiQrCSHWzSvdSKYQBDdywA
+From: "Kalra Ashish" <ashish.kalra@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Cc: "Phillips Kim" <Kim.Phillips@freescale.com>,
+       "Aggrwal Poonam" <Poonam.Aggrwal@freescale.com>, <sfr@canb.auug.org.au>,
+       <rubini@vision.unipv.it>, <linux-ppcdev@ozlabs.kernel.org>,
+       <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       "Barkowski Michael" <Michael.Barkowski@freescale.com>,
+       "Cutler Richard" <Rich.Cutler@freescale.com>,
+       "Kalra Ashish" <ashish.kalra@freescale.com>,
+       "Suresh PV" <pala@freescale.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-01-16 02:13:32, Marcelo Tosatti wrote:
-> On Wed, Jan 16, 2008 at 10:57:16AM +0900, KOSAKI Motohiro wrote:
-> > Hi Pavel
-> > 
-> > > > 	err = poll(&pollfds, 1, -1); // wake up at low memory
-> > > > 
-> > > >         ...
-> > > > </usage example>
-> > > 
-> > > Nice, this is really needed for openmoko, zaurus, etc....
-> > > 
-> > > But this changelog needs to go into Documentation/...
-> > > 
-> > > ...and /dev/mem_notify is really a bad name. /dev/memory_low?
-> > > /dev/oom?
-> > 
-> > thank you for your kindful advise.
-> > 
-> > but..
-> > 
-> > to be honest, my english is very limited.
-> > I can't make judgments name is good or not.
-> > 
-> > Marcelo, What do you think his idea?
-> 
-> "mem_notify" sounds alright, but I don't really care.
-> 
-> Notify:
-> 
-> To give notice to; inform: notified the citizens of the curfew by
-> posting signs.
+Hello All,
+ 
+I am sure that the TDM bus driver model/framework will make us put a lot
+more programming effort without
+any assurance of the code being accepted by the Linux community,
+especially as there are many
+Telephony/VoIP stack implementations in Linux such as the Sangoma
+WANPIPE Kernel suite which
+have their own Zaptel TDM (channelized zero-copy) interface layer. There
+are other High Speed serial (HSS)
+API interfaces, again supporting channelized and/or prioritized API
+interfaces. All these implementations 
+are proprietary and have their own tightly coupled upper layers and
+hardware abstraction layers. It is
+difficult to predict that these stacks will move towards a generic TDM
+bus driver interface. Therefore, i think
+we can have our own tightly coupled interface with our VoIP framework
+and let us the keep the driver as it is,
+i.e., as a misc driver.
 
-I'd read mem_notify as "tell me when new memory is unplugged" or
-something. /dev/oom_notify? Plus, /dev/ names usually do not have "_"
-in them.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Ashish
+
+-----Original Message-----
+From: Kumar Gala [mailto:galak@kernel.crashing.org] 
+Sent: Tuesday, January 15, 2008 9:01 AM
+To: Andrew Morton
+Cc: Phillips Kim; Aggrwal Poonam; sfr@canb.auug.org.au;
+rubini@vision.unipv.it; linux-ppcdev@ozlabs.kernel.org;
+netdev@vger.kernel.org; linux-kernel@vger.kernel.org; Barkowski Michael;
+Kalra Ashish; Cutler Richard
+Subject: Re: [PATCH 0/3] UCC TDM driver for MPC83xx platforms
+
+
+On Jan 14, 2008, at 3:15 PM, Andrew Morton wrote:
+
+> On Mon, 14 Jan 2008 12:00:51 -0600
+> Kim Phillips <kim.phillips@freescale.com> wrote:
+>
+>> On Thu, 10 Jan 2008 21:41:20 -0700
+>> "Aggrwal Poonam" <Poonam.Aggrwal@freescale.com> wrote:
+>>
+>>> Hello  All
+>>>
+>>> I am waiting for more feedback on the patches.
+>>>
+>>> If there are no objections please consider them for 2.6.25.
+>>>
+>> if this isn't going to go through Alessandro Rubini/misc drivers, can
+
+>> it go through the akpm/mm tree?
+>>
+>
+> That would work.  But it might be more appropriate to go Kumar-
+> >paulus->Linus.
+
+I'm ok w/taking the arch/powerpc bits, but I"m a bit concerned about  
+the driver itself.  I'm wondering if we need a TDM framework in the  
+kernel.
+
+I guess if Poonam could possibly describe how this driver is actually  
+used that would be helpful.  I see we have 8315 with a discrete TDM  
+block and I'm guessing 82xx/85xx based CPM parts of some form of TDM  
+as well.
+
+- k
