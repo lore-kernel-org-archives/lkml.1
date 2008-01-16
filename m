@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757675AbYAPXUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757449AbYAPXU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757675AbYAPXUj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 18:20:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbYAPXP1
+	id S1757449AbYAPXU4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 18:20:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755251AbYAPXPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 18:15:27 -0500
+	Wed, 16 Jan 2008 18:15:35 -0500
 Received: from ug-out-1314.google.com ([66.249.92.174]:10411 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755513AbYAPXPY (ORCPT
+	with ESMTP id S1755666AbYAPXPb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 18:15:24 -0500
+	Wed, 16 Jan 2008 18:15:31 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=eiC3lt1E0F8isBG/fzPVMJnrOwsRAqC+ens5+GElAqPs5Cp35cIuiyWvbMVyEK7GNS/NvIOJ90Y3HTFdwMBG9JEjYdfWJBojtj/jtcL3Qkw8o7Tgbtmo+frQMZIl1Gk680jS4D037+apZSdGugZpPjvdaV36MgNG2CdZz6LVb7E=
+        b=WqEKdeiCsca3z7wfrkuWU92a1eBJWx2Crjt7tHi5/zyuS3rYa6CPB05qKWHQEb3EDMoOh9XQSPyNKbXEPAqJswTn+/mHD/zuYeUU0btYgKV3AUtGKIlgeW43smw/fgciRS/wfTvt0bQSJ+inDTacc/++ZJT1oz+75iu9T6EHJ08=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Thu, 17 Jan 2008 00:28:04 +0100
-Message-Id: <20080116232804.9166.57061.sendpatchset@localhost.localdomain>
+Date: Thu, 17 Jan 2008 00:28:11 +0100
+Message-Id: <20080116232811.9166.38451.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080116232556.9166.13457.sendpatchset@localhost.localdomain>
 References: <20080116232556.9166.13457.sendpatchset@localhost.localdomain>
-Subject: [PATCH 17/22] ide: move ide_acpi_init() call to ide_device_add_all()
+Subject: [PATCH 18/22] ide-acpi: remove needless exports
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There should be no functionality changes caused by this patch.
-
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-probe.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/ide/ide-acpi.c |    4 ----
+ 1 file changed, 4 deletions(-)
 
-Index: b/drivers/ide/ide-probe.c
+Index: b/drivers/ide/ide-acpi.c
 ===================================================================
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -1260,7 +1260,6 @@ static int hwif_init(ide_hwif_t *hwif)
- done:
- 	blk_register_region(MKDEV(hwif->major, 0), MAX_DRIVES << PARTN_BITS,
- 			    THIS_MODULE, ata_probe, ata_lock, hwif);
--	ide_acpi_init(hwif);
- 	return 1;
+--- a/drivers/ide/ide-acpi.c
++++ b/drivers/ide/ide-acpi.c
+@@ -494,7 +494,6 @@ int ide_acpi_exec_tfs(ide_drive_t *drive
  
- out:
-@@ -1429,6 +1428,8 @@ int ide_device_add_all(u8 idx[MAX_HWIFS]
- 			rc = -1;
- 			continue;
- 		}
-+
-+		ide_acpi_init(hwif);
+ 	return ret;
+ }
+-EXPORT_SYMBOL_GPL(ide_acpi_exec_tfs);
+ 
+ /**
+  * ide_acpi_get_timing - get the channel (controller) timings
+@@ -580,7 +579,6 @@ void ide_acpi_get_timing(ide_hwif_t *hwi
+ 
+ 	kfree(output.pointer);
+ }
+-EXPORT_SYMBOL_GPL(ide_acpi_get_timing);
+ 
+ /**
+  * ide_acpi_push_timing - set the channel (controller) timings
+@@ -634,7 +632,6 @@ void ide_acpi_push_timing(ide_hwif_t *hw
  	}
+ 	DEBPRINT("_STM status: %d\n", status);
+ }
+-EXPORT_SYMBOL_GPL(ide_acpi_push_timing);
  
- 	for (i = 0; i < MAX_HWIFS; i++) {
+ /**
+  * ide_acpi_set_state - set the channel power state
+@@ -762,4 +759,3 @@ void ide_acpi_init(ide_hwif_t *hwif)
+ 		}
+ 	}
+ }
+-EXPORT_SYMBOL_GPL(ide_acpi_init);
