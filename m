@@ -1,77 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbYAPPqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755320AbYAPPrg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754812AbYAPPqp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 10:46:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbYAPPqh
+	id S1755320AbYAPPrg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 10:47:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbYAPPr2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 10:46:37 -0500
-Received: from crystal.sipsolutions.net ([195.210.38.204]:50780 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750986AbYAPPqf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 10:46:35 -0500
-Subject: Re: 2.6.24-rc7 lockdep warning when poweroff
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Dave Young <hidave.darkstar@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@tv-sign.ru>
-In-Reply-To: <1200399661.26045.13.camel@twins>
-References: <a8e1da0801140104m2d8dceaayd8cf85466659bbf@mail.gmail.com>
-	 <1200302644.7415.6.camel@twins>  <1200306902.5887.39.camel@johannes.berg>
-	 <1200307288.7415.11.camel@twins>  <1200307896.5887.42.camel@johannes.berg>
-	 <1200393685.5887.113.camel@johannes.berg> <1200399661.26045.13.camel@twins>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-g4KsQ4ktY+zrfYQioE7w"
-Date: Wed, 16 Jan 2008 00:54:53 +0100
-Message-Id: <1200441293.5887.158.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+	Wed, 16 Jan 2008 10:47:28 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40481 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751542AbYAPPr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 10:47:27 -0500
+Date: Wed, 16 Jan 2008 16:47:10 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: Andi Kleen <ak@suse.de>, Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0 of 4] x86: some more patches
+Message-ID: <20080116154710.GA28946@elte.hu>
+References: <patchbomb.1200435425@localhost> <200801161544.15884.ak@suse.de> <20080116145427.GA640@elte.hu> <200801161626.01711.ak@suse.de> <478E3411.76E4.0078.0@novell.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <478E3411.76E4.0078.0@novell.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-g4KsQ4ktY+zrfYQioE7w
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+* Jan Beulich <jbeulich@novell.com> wrote:
 
+> > Yes, but if you cast to long the result will be 32bit again. Or do 
+> > you rely on it being always used in 64bit signed context with sign 
+> > extension? While that might work it would seem rather fragile to me, 
+> > just asking for similar future bugs.
+> 
+> Even if conversion is to 64-bit unsigned, the value (being signed) 
+> will be sign-extended first (to preserve its value modulo 2**<target 
+> type width>).
 
-> > Turns out that there are many users that give a dynamic string as the
-> > workqueue name (only the first three are relevant for the problem at
-> > hand because the others are single-threaded):
->=20
-> I'm not sure the single threadedness of a workqueue matters here.
+yes. It would be nice if Andi could test my fix instead of arguing why 
+he thinks it's unlikely to work ;-)
 
-Oh I should have explained this, missed it earlier. No, the
-single-threadedness doesn't really matter for the problem, but the
-warning Dave got couldn't possibly have triggered for a single-threaded
-workqueue because it was from the CPU up/down code that spawns/stops the
-new workqueue thread on a new/dying CPU.
+(i've got the cleanup patch below as well ontop of today's x86.git which 
+includes the first fix, but it's an RFC as it has wider impact and might 
+break stuff.)
 
-johannes
+	Ingo
 
---=-g4KsQ4ktY+zrfYQioE7w
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+--------------->
+Subject: x86: PAGE_MASK cleanup
+From: Ingo Molnar <mingo@elte.hu>
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/asm-x86/page.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-iQIVAwUAR41HzKVg1VMiehFYAQK/fg/6AiPNOzPp5pyivaoQZIHByGNd1GxN3DzQ
-AsYVV4R7PqEqB55XtFQGbOjAxrmai7PJtpv8c8ZhpDm02TN5OJsoU2aBJD2tsOkR
-1K2/30B6qjvqBXrXFe5aZ9JjAwNmCAPGJGIv+e32u8tk3kEKlKJoQZQQE0Vf/hR3
-/YOBQctNJG6nFLB2NNi6p/jXCYYf4rzWPra5e2dhoOs/OrjJsCroO4M1TlBTI4YM
-kClZt8W1J7vVZ4rw4QQSrpCpwUtLoAVxwbSspQ1tNgsLWu09aFayadOPjyHPDUGz
-TsTiFhmREkYJYlwmdJ06SWVpKz8jMnPztWd9t5pTzAE7ACdmEnmucof96PNoO3ok
-CzamJX6VOfiSiEmcOoTmzG+unK7+qZdnUQhwGTQ6+guy1w7ONSLlBl4e4gOI4zRv
-rMcBwdcRDxn8fCihl/sK6H6VI2saGmXRa7swc71/kYQxaESlvujQLdHQLivwa6Ou
-bx+9ANCojSNSI/bC+Hf9Qtyy+7jXTsKSeIUyJ66EoBtmeS7lkKOXAt21WmOpAQWT
-/eoK+/OPcDKeBiO9C6cm3AIzAISlV0w6k9QxYpj1VI1zZX8sCIl/zHWy/jATscQQ
-fr2wnhl04GV+z3HiqcVLGWNRIL/nIcTtIuFK1urHiA8EBhfnRLo2lMx4VuS2MCy2
-MBH65sf6Sak=
-=Uq5I
------END PGP SIGNATURE-----
-
---=-g4KsQ4ktY+zrfYQioE7w--
-
+Index: linux-x86.q/include/asm-x86/page.h
+===================================================================
+--- linux-x86.q.orig/include/asm-x86/page.h
++++ linux-x86.q/include/asm-x86/page.h
+@@ -6,12 +6,12 @@
+ /* PAGE_SHIFT determines the page size */
+ #define PAGE_SHIFT	12
+ #define PAGE_SIZE	(_AC(1,UL) << PAGE_SHIFT)
+-#define PAGE_MASK	(~(PAGE_SIZE-1))
++#define PAGE_MASK	(_AT(phys_addr_t, ~(PAGE_SIZE-1)))
+ 
+ #ifdef __KERNEL__
+ 
+ #define PHYSICAL_PAGE_MASK	(PAGE_MASK & __PHYSICAL_MASK)
+-#define PTE_MASK		(_AT(long, PHYSICAL_PAGE_MASK))
++#define PTE_MASK		PHYSICAL_PAGE_MASK
+ 
+ #define LARGE_PAGE_SIZE		(_AC(1,UL) << PMD_SHIFT)
+ #define LARGE_PAGE_MASK		(~(LARGE_PAGE_SIZE-1))
