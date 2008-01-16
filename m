@@ -1,61 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753826AbYAPSMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753971AbYAPSOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753826AbYAPSMz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 13:12:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbYAPSMr
+	id S1753971AbYAPSOV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 13:14:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbYAPSOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 13:12:47 -0500
-Received: from mis011.exch011.intermedia.net ([64.78.21.10]:55230 "EHLO
-	mis011.exch011.intermedia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751607AbYAPSMq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 13:12:46 -0500
-X-Greylist: delayed 972 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Jan 2008 13:12:46 EST
-Message-ID: <478E4356.7030303@qumranet.com>
-Date: Wed, 16 Jan 2008 19:48:06 +0200
-From: Izik Eidus <izike@qumranet.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 16 Jan 2008 13:14:14 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:42716 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751732AbYAPSON (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 13:14:13 -0500
+Message-ID: <478E4972.5050705@sgi.com>
+Date: Wed, 16 Jan 2008 10:14:10 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Andrea Arcangeli <andrea@qumranet.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, kvm-devel@lists.sourceforge.net,
-       Avi Kivity <avi@qumranet.com>, clameter@sgi.com,
-       daniel.blueman@quadrics.com, holt@sgi.com, steiner@sgi.com,
-       Andrew Morton <akpm@osdl.org>, Hugh Dickins <hugh@veritas.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] mmu notifiers #v2
-References: <20080113162418.GE8736@v2.random> <20080116124256.44033d48@bree.surriel.com>
-In-Reply-To: <20080116124256.44033d48@bree.surriel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Frans Pop <elendil@planet.nl>
+CC: ak@suse.de, akpm@linux-foundation.org, clameter@sgi.com,
+       dada1@cosmosbay.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       mingo@elte.hu, steiner@sgi.com
+Subject: Re: [PATCH 00/10] x86: Reduce memory and intra-node effects with
+ large count NR_CPUs V3
+References: <20080116170902.006151000@sgi.com> <E1JFCZo-000618-8r@faramir.fjphome.nl>
+In-Reply-To: <E1JFCZo-000618-8r@faramir.fjphome.nl>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Jan 2008 17:56:31.0614 (UTC) FILETIME=[204321E0:01C85869]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> On Sun, 13 Jan 2008 17:24:18 +0100
-> Andrea Arcangeli <andrea@qumranet.com> wrote:
->
->   
->> In my basic initial patch I only track the tlb flushes which should be
->> the minimum required to have a nice linux-VM controlled swapping
->> behavior of the KVM gphysical memory. 
->>     
->
-> I have a vaguely related question on KVM swapping.
->
-> Do page accesses inside KVM guests get propagated to the host
-> OS, so Linux can choose a reasonable page for eviction, or is
-> the pageout of KVM guest pages essentially random?
->
->   
-right now when kvm remove pte from the shadow cache, it mark as access 
-the page that this pte pointed to.
-it was a good solution untill the mmut notifiers beacuse the pages were 
-pinned and couldnt be swapped to disk
-so now it will have to do something more sophisticated or at least mark 
-as access every page pointed by pte
-that get insrted to the shadow cache....
+Frans Pop wrote:
+> travis@sgi.com wrote:
+>>    8472457 Total          30486950 +259%          30342823 +258%
+> 
+> Hmmm. The table for previous versions looked a lot more impressive.
+> 
+> now:    8472457 Total	 +22014493 +259%	 +21870366 +258%
+> V2 :    7172678 Total    +23314404 +325%           -147590   -2%
+> (recalculated for comparison)
+> 
+> Did something go wrong with the "after" data?
 
+The previous version had each column's difference from the
+previous.  The new one had eacho column's difference from the
+first column.  (Also, there are differences in what "after"
+means. ;-)
+
+Here's the "each-relative" version.  It sort of depends on if
+you want to see each incremental change or the net overall change.
+
+Thanks,
+Mike
+--- 
+
+128cpus                 1kcpus-before           1kcpus-after
+       228 .altinstr_re         +0 +0%                  +0 +0%
+      1219 .altinstruct         +0 +0%                  +0 +0%
+    866632 .bss           +1393664 +160%           -147328 -6%
+     61374 .comment             +0 +0%                  +0 +0%
+        16 .con_initcal         +0 +0%                  +0 +0%
+    427560 .data            +17920 +4%               -1280 +0%
+   1165824 .data.cachel  +11911168 +1021%               +0 +0%
+      8192 .data.init_t         +0 +0%                  +0 +0%
+      4096 .data.page_a         +0 +0%                  +0 +0%
+     39296 .data.percpu    +116480 +296%              +128 +0%
+    188992 .data.read_m   +8562784 +4530%            -4096 +0%
+         4 .data_nosave         +0 +0%                  +0 +0%
+      5141 .exit.text           +9 +0%                  -1 +0%
+    138576 .init.data         +896 +0%               +5952 +4%
+       134 .init.ramfs          +0 +0%                  +0 +0%
+      3192 .init.setup          +0 +0%                  +0 +0%
+    160143 .init.text         +500 +0%                +271 +0%
+      2288 .initcall.in         +0 +0%                  +0 +0%
+         8 .jiffies             +0 +0%                  +0 +0%
+      4512 .pci_fixup           +0 +0%                  +0 +0%
+   1314318 .rodata           +1312 +0%                -325 +0%
+     36856 .smp_locks          -48 +0%                  -8 +0%
+   3975021 .text             +9808 +0%               +2560 +0%
+      3368 .vdso                +0 +0%                  +0 +0%
+         4 .vgetcpu_mod         +0 +0%                  +0 +0%
+       218 .vsyscall_0          +0 +0%                  +0 +0%
+        52 .vsyscall_1          +0 +0%                  +0 +0%
+        91 .vsyscall_2          +0 +0%                  +0 +0%
+         8 .vsyscall_3          +0 +0%                  +0 +0%
+        54 .vsyscall_fn         +0 +0%                  +0 +0%
+        80 .vsyscall_gt         +0 +0%                  +0 +0%
+     39480 __bug_table          +0 +0%                  +0 +0%
+     16320 __ex_table           +0 +0%                  +0 +0%
+      9160 __param              +0 +0%                  +0 +0%
+
+   1818299 Text             +16304 +0%                +256 +0%
+   3975021 Data              +9808 +0%               +2560 +0%
+    866632 Bss            +1393664 +160%           -147328 -6%
+    360448 InitData        +122880 +34%              +4096 +0%
+   1415640 OtherData     +20470272 +1446%            -2816 +0%
+     39296 PerCpu          +116480 +0%                +128 +0%
+   8472457 Total         +22014493 +259%           -144127 +0%
