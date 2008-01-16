@@ -1,175 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757425AbYAPXVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757781AbYAPXWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757425AbYAPXVy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 18:21:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755967AbYAPXPs
+	id S1757781AbYAPXWV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 18:22:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbYAPXPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 18:15:48 -0500
+	Wed, 16 Jan 2008 18:15:54 -0500
 Received: from ug-out-1314.google.com ([66.249.92.174]:10411 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755948AbYAPXPp (ORCPT
+	with ESMTP id S1755769AbYAPXPw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 18:15:45 -0500
+	Wed, 16 Jan 2008 18:15:52 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=GeBg0RwpKontps1cKryHoJ9tEXplcVZw+EdknnUx2UU+xQ4/9MsE+GiaDnEvi/hy9GsiwtzQVqGmOYPTyeQUcPPfWnDtkqL4dvsTMw1UbgmqsEvzifk2/wNJxIsesOkliiCpKFXKbOos0yqP8hVgq3m1qlTQnNMOoFmJNfLrdC4=
+        b=XsA8P9KWsSV5RDf0vUtinlFiQKRwpGiwwvSb3dxzXjBmPgfO7TYiq6Qu1Mc9nWc+P5cxUkyYX9mvv0qtaT7UMp6J/OKLFvcq0kfTl3YICZc0F28IfFiXyUh9q9qdayq9K9aaPUwucEZhT7DmlNWHqN13/sS3ZPJV0C1tHj+KYIc=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Thu, 17 Jan 2008 00:28:25 +0100
-Message-Id: <20080116232825.9166.31653.sendpatchset@localhost.localdomain>
+Date: Thu, 17 Jan 2008 00:28:32 +0100
+Message-Id: <20080116232832.9166.29628.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080116232556.9166.13457.sendpatchset@localhost.localdomain>
 References: <20080116232556.9166.13457.sendpatchset@localhost.localdomain>
-Subject: [PATCH 20/22] ide: factor out devices setup from ide_acpi_init()
+Subject: [PATCH 21/22] ide: move hwif->present check out from ide_proc_register_port()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Factor out devices setup from ide_acpi_init() to
-  ide_acpi_port_init_devices().
-
-* Call ide_acpi_port_init_devices() in ide_device_add_all().
-
-While at it:
-* Remove no longer needed 'drive' field from struct ide_acpi_drive_link.
+Move hwif->present check out from ide_proc_register_port() to
+ide_device_add_all().
 
 There should be no functionality changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-acpi.c  |   49 +++++++++++++++++++-----------------------------
- drivers/ide/ide-probe.c |    1 
- include/linux/ide.h     |    2 +
- 3 files changed, 23 insertions(+), 29 deletions(-)
+ drivers/ide/ide-probe.c |    9 +++++++--
+ drivers/ide/ide-proc.c  |    3 ---
+ 2 files changed, 7 insertions(+), 5 deletions(-)
 
-Index: b/drivers/ide/ide-acpi.c
-===================================================================
---- a/drivers/ide/ide-acpi.c
-+++ b/drivers/ide/ide-acpi.c
-@@ -39,7 +39,6 @@ struct GTM_buffer {
- };
- 
- struct ide_acpi_drive_link {
--	ide_drive_t	*drive;
- 	acpi_handle	 obj_handle;
- 	u8		 idbuff[512];
- };
-@@ -675,11 +674,6 @@ void ide_acpi_set_state(ide_hwif_t *hwif
-  */
- void ide_acpi_init(ide_hwif_t *hwif)
- {
--	int unit;
--	int			err;
--	struct ide_acpi_drive_link	*master;
--	struct ide_acpi_drive_link	*slave;
--
- 	ide_acpi_blacklist();
- 
- 	hwif->acpidata = kzalloc(sizeof(struct ide_acpi_hwif_link), GFP_KERNEL);
-@@ -691,40 +685,38 @@ void ide_acpi_init(ide_hwif_t *hwif)
- 		DEBPRINT("no ACPI object for %s found\n", hwif->name);
- 		kfree(hwif->acpidata);
- 		hwif->acpidata = NULL;
--		return;
- 	}
-+}
-+
-+void ide_acpi_port_init_devices(ide_hwif_t *hwif)
-+{
-+	ide_drive_t *drive;
-+	int i, err;
-+
-+	if (hwif->acpidata == NULL)
-+		return;
- 
- 	/*
- 	 * The ACPI spec mandates that we send information
- 	 * for both drives, regardless whether they are connected
- 	 * or not.
- 	 */
--	hwif->acpidata->master.drive = &hwif->drives[0];
- 	hwif->drives[0].acpidata = &hwif->acpidata->master;
--	master = &hwif->acpidata->master;
--
--	hwif->acpidata->slave.drive = &hwif->drives[1];
- 	hwif->drives[1].acpidata = &hwif->acpidata->slave;
--	slave = &hwif->acpidata->slave;
--
- 
- 	/*
- 	 * Send IDENTIFY for each drive
- 	 */
--	if (master->drive->present) {
--		err = taskfile_lib_get_identify(master->drive, master->idbuff);
--		if (err) {
--			DEBPRINT("identify device %s failed (%d)\n",
--				 master->drive->name, err);
--		}
--	}
-+	for (i = 0; i < MAX_DRIVES; i++) {
-+		drive = &hwif->drives[i];
-+
-+		if (!drive->present)
-+			continue;
- 
--	if (slave->drive->present) {
--		err = taskfile_lib_get_identify(slave->drive, slave->idbuff);
--		if (err) {
-+		err = taskfile_lib_get_identify(drive, drive->acpidata->idbuff);
-+		if (err)
- 			DEBPRINT("identify device %s failed (%d)\n",
--				 slave->drive->name, err);
--		}
-+				 drive->name, err);
- 	}
- 
- 	if (ide_noacpionboot) {
-@@ -740,12 +732,11 @@ void ide_acpi_init(ide_hwif_t *hwif)
- 	ide_acpi_get_timing(hwif);
- 	ide_acpi_push_timing(hwif);
- 
--	for (unit = 0; unit < MAX_DRIVES; ++unit) {
--		ide_drive_t *drive = &hwif->drives[unit];
-+	for (i = 0; i < MAX_DRIVES; i++) {
-+		drive = &hwif->drives[i];
- 
--		if (drive->present) {
-+		if (drive->present)
- 			/* Execute ACPI startup code */
- 			ide_acpi_exec_tfs(drive);
--		}
- 	}
- }
 Index: b/drivers/ide/ide-probe.c
 ===================================================================
 --- a/drivers/ide/ide-probe.c
 +++ b/drivers/ide/ide-probe.c
-@@ -1430,6 +1430,7 @@ int ide_device_add_all(u8 idx[MAX_HWIFS]
- 		}
- 
- 		ide_acpi_init(hwif);
-+		ide_acpi_port_init_devices(hwif);
+@@ -1448,8 +1448,13 @@ int ide_device_add_all(u8 idx[MAX_HWIFS]
  	}
  
  	for (i = 0; i < MAX_HWIFS; i++) {
-Index: b/include/linux/ide.h
+-		if (idx[i] != 0xff)
+-			ide_proc_register_port(&ide_hwifs[idx[i]]);
++		if (idx[i] == 0xff)
++			continue;
++
++		hwif = &ide_hwifs[idx[i]];
++
++		if (hwif->present)
++			ide_proc_register_port(hwif);
+ 	}
+ 
+ 	return rc;
+Index: b/drivers/ide/ide-proc.c
 ===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -1205,12 +1205,14 @@ extern int ide_acpi_exec_tfs(ide_drive_t
- extern void ide_acpi_get_timing(ide_hwif_t *hwif);
- extern void ide_acpi_push_timing(ide_hwif_t *hwif);
- extern void ide_acpi_init(ide_hwif_t *hwif);
-+void ide_acpi_port_init_devices(ide_hwif_t *);
- extern void ide_acpi_set_state(ide_hwif_t *hwif, int on);
- #else
- static inline int ide_acpi_exec_tfs(ide_drive_t *drive) { return 0; }
- static inline void ide_acpi_get_timing(ide_hwif_t *hwif) { ; }
- static inline void ide_acpi_push_timing(ide_hwif_t *hwif) { ; }
- static inline void ide_acpi_init(ide_hwif_t *hwif) { ; }
-+static inline void ide_acpi_port_init_devices(ide_hwif_t *hwif) { ; }
- static inline void ide_acpi_set_state(ide_hwif_t *hwif, int on) {}
- #endif
+--- a/drivers/ide/ide-proc.c
++++ b/drivers/ide/ide-proc.c
+@@ -793,9 +793,6 @@ static ide_proc_entry_t hwif_entries[] =
+ 
+ void ide_proc_register_port(ide_hwif_t *hwif)
+ {
+-	if (!hwif->present)
+-		return;
+-
+ 	if (!hwif->proc) {
+ 		hwif->proc = proc_mkdir(hwif->name, proc_ide_root);
  
