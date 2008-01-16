@@ -1,82 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758109AbYAPAJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757256AbYAPARa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758109AbYAPAJT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 19:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbYAPAJL
+	id S1757256AbYAPARa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 19:17:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbYAPART
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 19:09:11 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:38929 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752693AbYAPAJK (ORCPT
+	Tue, 15 Jan 2008 19:17:19 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:55592 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751440AbYAPARQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 19:09:10 -0500
-Date: Tue, 15 Jan 2008 16:05:06 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: jlan@sgi.com, balbir@linux.vnet.ibm.com, nagar@watson.ibm.com,
-       akpm <akpm@linux-foundation.org>
-Subject: [PATCH] getdelays: fix gcc warnings
-Message-Id: <20080115160506.b1360614.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 15 Jan 2008 19:17:16 -0500
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: jarkao2@gmail.com (Jarek Poplawski)
+Subject: Re: questions on NAPI processing latency and dropped network	packets
+Cc: cfriesen@nortel.com, davem@davemloft.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Organization: Core
+In-Reply-To: <20080115202905.GA2680@ami.dom.local>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1JEvxs-0006cZ-00@gondolin.me.apana.org.au>
+Date: Wed, 16 Jan 2008 11:17:08 +1100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Jarek Poplawski <jarkao2@gmail.com> wrote:
+>
+> So, it was more a rhetorical trick (sorry!) to suggest, that such a
+> business model of being always late with kernels might be quite
+> practical and reasonable for many companies, but looks like the
+> worst possible development model for Linux.
 
-Fix gcc warnings in getdelays.c:
+Well people are always going to operate on this model for commercial
+reasons.  FWIW I used to work for a company that stuck to a specific
+version of the Linux kernel, and I suppose I still do even now :)
 
-Documentation/accounting/getdelays.c: In function 'task_context_switch_counts':
-Documentation/accounting/getdelays.c:214: warning: format '%15lu' expects type 'long unsigned int', but argument 4 has type '__u64'
-Documentation/accounting/getdelays.c:214: warning: format '%15lu' expects type 'long unsigned int', but argument 5 has type '__u64'
-Documentation/accounting/getdelays.c: In function 'main':
-Documentation/accounting/getdelays.c:402: warning: format '%d' expects type 'int', but argument 2 has type 'long unsigned int'
-Documentation/accounting/getdelays.c: In function 'get_family_id':
-Documentation/accounting/getdelays.c:171: warning: 'id' may be used uninitialized in this function
+But the important thing is that if you're going to do that, then the
+cost that comes with it should be borne by the company and not the
+community.
 
-One warning is not a problem and can be dismissed:
-Documentation/accounting/getdelays.c: In function 'main':
-Documentation/accounting/getdelays.c:236: warning: 'cmd_type' may be used uninitialized in this function
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- Documentation/accounting/getdelays.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
---- linux-2.6.24-rc7.orig/Documentation/accounting/getdelays.c
-+++ linux-2.6.24-rc7/Documentation/accounting/getdelays.c
-@@ -168,7 +168,7 @@ int get_family_id(int sd)
- 		char buf[256];
- 	} ans;
- 
--	int id, rc;
-+	int id = 0, rc;
- 	struct nlattr *na;
- 	int rep_len;
- 
-@@ -209,7 +209,7 @@ void print_delayacct(struct taskstats *t
- void task_context_switch_counts(struct taskstats *t)
- {
- 	printf("\n\nTask   %15s%15s\n"
--	       "       %15lu%15lu\n",
-+	       "       %15llu%15llu\n",
- 	       "voluntary", "nonvoluntary",
- 	       t->nvcsw, t->nivcsw);
- }
-@@ -399,7 +399,7 @@ int main(int argc, char *argv[])
- 			goto done;
- 		}
- 
--		PRINTF("nlmsghdr size=%d, nlmsg_len=%d, rep_len=%d\n",
-+		PRINTF("nlmsghdr size=%zu, nlmsg_len=%d, rep_len=%d\n",
- 		       sizeof(struct nlmsghdr), msg.n.nlmsg_len, rep_len);
- 
- 
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
