@@ -1,37 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754878AbYAPQsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbYAPQtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754878AbYAPQsS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 11:48:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbYAPQsJ
+	id S1755359AbYAPQtT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 11:49:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752732AbYAPQtI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 11:48:09 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:49136 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751243AbYAPQsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 11:48:08 -0500
-Date: Wed, 16 Jan 2008 08:48:07 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Johannes Weiner <hannes@saeurebad.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       penberg@cs.helsinki.fi
-Subject: Re: Why is the kfree() argument const?
-In-Reply-To: <87lk6pvii0.fsf@saeurebad.de>
-Message-ID: <Pine.LNX.4.64.0801160831490.8188@schroedinger.engr.sgi.com>
-References: <87lk6pvii0.fsf@saeurebad.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 16 Jan 2008 11:49:08 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47635 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751419AbYAPQtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 11:49:06 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <Xine.LNX.4.64.0801161156410.24959@us.intercode.com.au>
+References: <Xine.LNX.4.64.0801161156410.24959@us.intercode.com.au> <20080115234652.22183.24850.stgit@warthog.procyon.org.uk>
+To: James Morris <jmorris@namei.org>
+Cc: dhowells@redhat.com, Stephen Smalley <sds@tycho.nsa.gov>,
+       casey@schaufler-ca.com, Trond.Myklebust@netapp.com, npiggin@suse.de,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org, Eric Paris <eparis@redhat.com>
+Subject: Re: [PATCH 00/26] Permit filesystem local caching
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Wed, 16 Jan 2008 16:48:46 +0000
+Message-ID: <30642.1200502126@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Jan 2008, Johannes Weiner wrote:
+James Morris <jmorris@namei.org> wrote:
 
-> is there any reason why kfree() takes a const pointer just to degrade it
-> with the call to slab_free()/__cache_free() again?  The promise that the
-> pointee is not modified is just bogus in this case, anyway, isn't it?
+> > The SELinux base code will also need updating to have the security class, lest
+> > the following error appear in dmesg:
+> > 
+> > 	context_struct_compute_av:  unrecognized class 69
+> 
+> Alternately, what's needed is a newer policy which supports unknown 
+> permission classes.  Any recent distro policy should have this.
 
-The object is modified in various cases f.e. because of poisoning or the 
-need to store the free pointer. So its bogus, yes. Pekka?
+I'm seeing this with an up to date Fedora 7 installation.  Do I need F8
+instead?
 
-
+David
