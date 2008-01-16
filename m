@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688AbYAPOcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755122AbYAPOfL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754688AbYAPOcT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 09:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753455AbYAPOcG
+	id S1755122AbYAPOfL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 09:35:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753717AbYAPOe7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 09:32:06 -0500
-Received: from www.tglx.de ([62.245.132.106]:44429 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753450AbYAPOcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 09:32:04 -0500
-Date: Wed, 16 Jan 2008 15:28:54 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-cc: Andrew Paprocki <andrew@ishiboo.com>, linux-kernel@vger.kernel.org,
-       Balaji Rao <balajirrao@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       clemens@ladisch.de, venkatesh.pallipadi@intel.com, bob.picco@hp.com
-Subject: Re: HPET timer broken using 2.6.23.13 / nanosleep() hangs
-In-Reply-To: <alpine.LFD.0.99999.0801161458470.3764@localhost.localdomain>
-Message-ID: <alpine.LFD.0.99999.0801161524250.3764@localhost.localdomain>
-References: <76366b180801130310x57f24cc8s641d3ccb2415524c@mail.gmail.com> <20080113120337.GA5548@linux.vnet.ibm.com> <76366b180801130510w2af714fevf03f59164f90806f@mail.gmail.com> <20080113140620.GA22507@linux.vnet.ibm.com>
- <alpine.LFD.0.99999.0801161458470.3764@localhost.localdomain>
-User-Agent: Alpine 0.99999 (LFD 796 2007-11-08)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 16 Jan 2008 09:34:59 -0500
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:54356 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752703AbYAPOe6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 09:34:58 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aj0KACKljUdMROHU/2dsb2JhbACBWKxU
+Date: Wed, 16 Jan 2008 09:34:46 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, ananth@in.ibm.com,
+       dhowells@redhat.com, jdike@addtoit.com, sam@ravnborg.org,
+       Adrian Bunk <adrian.bunk@movial.fi>,
+       Randy Dunlap <randy.dunlap@oracle.com>, phil.el@wanadoo.fr,
+       oprofile-list@lists.sourceforge.net
+Subject: Re: [PATCH for -mm] Fix ARM to play nicely with generic
+	Instrumentation menu
+Message-ID: <20080116143446.GA31329@Krystal>
+References: <20080116025341.GA31346@Krystal> <20080116085155.GA11617@flint.arm.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080116085155.GA11617@flint.arm.linux.org.uk>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 09:27:33 up 73 days, 19:33,  3 users,  load average: 1.21, 0.92,
+	0.62
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Jan 2008, Thomas Gleixner wrote:
-
-> On Sun, 13 Jan 2008, Dhaval Giani wrote:
-> > On Sun, Jan 13, 2008 at 08:10:46AM -0500, Andrew Paprocki wrote:
-> > > I applied the patch to my 2.6.23.13 tree and upon reboot it stopped right after:
-> > > 
-> > > Clocksource tsc unstable (delta = ... ns)
-> > > Time: hpet clocksource has been installed.
-> > > 
-> > > It locked up hard.. cursor stopped blinking and SysRq isn't working either.
+* Russell King (rmk+lkml@arm.linux.org.uk) wrote:
+> On Tue, Jan 15, 2008 at 09:53:41PM -0500, Mathieu Desnoyers wrote:
+> > This patch cleans up the fix from Linus so it does not conflict with the
+> > following patches in -mm.
 > 
-> The hint is in the original report:
+> What following patches?
 > 
-> Clocksource tsc unstable (delta = 500013666 ns)
-> 
-> That means, that the TSC was counting, but HPET not. So it looks like
-> the HPET readout is stale. Which explains, why after switching to HPET
-> clocksource the time system gets hosed.
-> 
-> I wonder why the HPET counter works check did not catch this.
-> 
-> Can you please apply the path below and provide the output ?
 
-Oh. Stupid me. This is 2.6.23. So the patch won't apply.
+Instrumentation menu removal, which was in -mm until yesterday.
 
-Andrew, can you please check, whether 2.6.24-rc8 works on your machine ?
+http://lkml.org/lkml/2007/12/8/81
 
-I look into a backport fix for 2.6.23 later.
+I did this patch following a discussion with Linus about a month ago
+where I was proposing the creation of the instrumentation/ directory in
+the kernel sources to follow the menus/tree directories logic found in
+the rest of the kernel.
 
-Thanks,
-	tglx
+http://lkml.org/lkml/2007/10/30/318
 
+Mathieu
 
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
