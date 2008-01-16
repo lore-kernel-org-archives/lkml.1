@@ -1,82 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758579AbYAPDo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758219AbYAPDvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758579AbYAPDo1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 22:44:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754252AbYAPDoT
+	id S1758219AbYAPDvA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 22:51:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754252AbYAPDuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 22:44:19 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58756 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754130AbYAPDoS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 22:44:18 -0500
-Date: Tue, 15 Jan 2008 19:44:15 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Michael Rubin <mrubin@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch] Converting writeback linked lists to a tree based data
- structure
-Message-Id: <20080115194415.64ba95f2.akpm@linux-foundation.org>
-In-Reply-To: <400452490.28636@ustc.edu.cn>
-References: <20080115080921.70E3810653@localhost>
-	<1200386774.15103.20.camel@twins>
-	<532480950801150953g5a25f041ge1ad4eeb1b9bc04b@mail.gmail.com>
-	<400452490.28636@ustc.edu.cn>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 15 Jan 2008 22:50:51 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:56755 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751078AbYAPDuu (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 22:50:50 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: caglar@pardus.org.tr
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.24-rc7-rt2
+In-Reply-To: Your message of "Tue, 15 Jan 2008 02:37:37 +0200."
+             <200801150237.44029.caglar@pardus.org.tr>
+From: Valdis.Kletnieks@vt.edu
+References: <1200336080.318.8.camel@localhost.localdomain>
+            <200801150237.44029.caglar@pardus.org.tr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; boundary="==_Exmh_1200455417_2966P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Tue, 15 Jan 2008 22:50:17 -0500
+Message-ID: <24149.1200455417@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Jan 2008 11:01:08 +0800 Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
+--==_Exmh_1200455417_2966P
+Content-Type: text/plain; charset=us-ascii
 
-> On Tue, Jan 15, 2008 at 09:53:42AM -0800, Michael Rubin wrote:
-> > On Jan 15, 2008 12:46 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > > Just a quick question, how does this interact/depend-uppon etc.. with
-> > > Fengguangs patches I still have in my mailbox? (Those from Dec 28th)
-> > 
-> > They don't. They apply to a 2.6.24rc7 tree. This is a candidte for 2.6.25.
-> > 
-> > This work was done before Fengguang's patches. I am trying to test
-> > Fengguang's for comparison but am having problems with getting mm1 to
-> > boot on my systems.
-> 
-> Yeah, they are independent ones. The initial motivation is to fix the
-> bug "sluggish writeback on small+large files". Michael introduced
-> a new rbtree, and me introduced a new list(s_more_io_wait).
-> 
-> Basically I think rbtree is an overkill to do time based ordering.
-> Sorry, Michael. But s_dirty would be enough for that. Plus, s_more_io
-> provides fair queuing between small/large files, and s_more_io_wait
-> provides waiting mechanism for blocked inodes.
-> 
-> The time ordered rbtree may delay io for a blocked inode simply by
-> modifying its dirtied_when and reinsert it. But it would no longer be
-> that easy if it is to be ordered by location.
+On Tue, 15 Jan 2008 02:37:37 +0200, =?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur said:
+> And because of mcount-add-basic-support-for-gcc-profiler-instrum.patch, closed
+> source nvidia-new module cannot be used with this release (mcount is exported
+> GPL only), i know this is not supported but i used it with that [2] patch up
+> until now without a single problem.
 
-What does the term "ordered by location" mean?  Attemting to sort inodes by
-physical disk address?  By using their i_ino as a key?
+Playing devil's advocate here - the claim is that EXPORT_SYMBOL_GPL is to
+indicate that code is getting too chummy with Linux internals.
 
-That sounds optimistic.
+However, in *this* case, isn't it "code that is too chummy with *GCC* internals",
+and thus it isn't our place to say what can and can't be done with code that
+is derivative of the GCC compiler? ;)
 
-> If we are going to do location based ordering in the future, the lists
-> will continue to be useful. It would simply be a matter of switching
-> from the s_dirty(order by time) to some rbtree or radix tree(order by
-> location).
-> 
-> We can even provide both ordering at the same time to different
-> fs/inodes which is configurable by the user. Because the s_dirty
-> and/or rbtree would provide _only_ ordering(not faireness or waiting)
-> and hence is interchangeable.
-> 
-> This patchset could be a good reference. It does location based
-> ordering with radix tree:
-> 
-> [RFC][PATCH] clustered writeback <http://lkml.org/lkml/2007/8/27/45>
+--==_Exmh_1200455417_2966P
+Content-Type: application/pgp-signature
 
-list_heads are just the wrong data structure for this function.  Especially
-list_heads which are protected by a non-sleeping lock.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
+iD8DBQFHjX75cC3lWbTT17ARAklbAJ9fOrubFIXeSaMtF97YL2rnH3c0awCgrHb4
+VblFYzWX7B+X0P/pGW+ZvEw=
+=CbCr
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1200455417_2966P--
