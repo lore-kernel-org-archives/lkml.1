@@ -1,94 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757772AbYAPGNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757912AbYAPGSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757772AbYAPGNV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 01:13:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbYAPGNI
+	id S1757912AbYAPGSZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 01:18:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbYAPGSR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 01:13:08 -0500
-Received: from twinlark.arctic.org ([208.69.40.136]:42312 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752711AbYAPGNH (ORCPT
+	Wed, 16 Jan 2008 01:18:17 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42770 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751534AbYAPGSQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 01:13:07 -0500
-Date: Tue, 15 Jan 2008 22:13:06 -0800 (PST)
-From: dean gaudet <dean@arctic.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: NeilBrown <neilb@suse.de>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Dan Williams <dan.j.williams@gmail.com>
-Subject: Re: [PATCH 001 of 6] md: Fix an occasional deadlock in raid5
-In-Reply-To: <20080115215425.b1fcba31.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.0.999999.0801152157310.9578@twinlark.arctic.org>
-References: <20080114123726.19968.patches@notabene> <1080114014525.20337@suse.de> <alpine.DEB.0.999999.0801152059170.9578@twinlark.arctic.org> <20080115215425.b1fcba31.akpm@linux-foundation.org>
-User-Agent: Alpine 0.999999 (DEB 847 2007-12-06)
+	Wed, 16 Jan 2008 01:18:16 -0500
+Date: Wed, 16 Jan 2008 15:17:36 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Rik van Riel <riel@redhat.com>, Lee Schermerhorn <lee.schermerhorn@hp.com>
+Subject: rvr split LRU minor regression ?
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20080108205939.323955454@redhat.com>
+References: <20080108205939.323955454@redhat.com>
+Message-Id: <20080116144826.11C0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jan 2008, Andrew Morton wrote:
+Hi Rik
 
-> On Tue, 15 Jan 2008 21:01:17 -0800 (PST) dean gaudet <dean@arctic.org> wrote:
-> 
-> > On Mon, 14 Jan 2008, NeilBrown wrote:
-> > 
-> > > 
-> > > raid5's 'make_request' function calls generic_make_request on
-> > > underlying devices and if we run out of stripe heads, it could end up
-> > > waiting for one of those requests to complete.
-> > > This is bad as recursive calls to generic_make_request go on a queue
-> > > and are not even attempted until make_request completes.
-> > > 
-> > > So: don't make any generic_make_request calls in raid5 make_request
-> > > until all waiting has been done.  We do this by simply setting
-> > > STRIPE_HANDLE instead of calling handle_stripe().
-> > > 
-> > > If we need more stripe_heads, raid5d will get called to process the
-> > > pending stripe_heads which will call generic_make_request from a
-> > > different thread where no deadlock will happen.
-> > > 
-> > > 
-> > > This change by itself causes a performance hit.  So add a change so
-> > > that raid5_activate_delayed is only called at unplug time, never in
-> > > raid5.  This seems to bring back the performance numbers.  Calling it
-> > > in raid5d was sometimes too soon...
-> > > 
-> > > Cc: "Dan Williams" <dan.j.williams@gmail.com>
-> > > Signed-off-by: Neil Brown <neilb@suse.de>
-> > 
-> > probably doesn't matter, but for the record:
-> > 
-> > Tested-by: dean gaudet <dean@arctic.org>
-> > 
-> > this time i tested with internal and external bitmaps and it survived 8h 
-> > and 14h resp. under the parallel tar workload i used to reproduce the 
-> > hang.
-> > 
-> > btw this should probably be a candidate for 2.6.22 and .23 stable.
-> > 
-> 
-> hm, Neil said
-> 
->   The first fixes a bug which could make it a candidate for 24-final. 
->   However it is a deadlock that seems to occur very rarely, and has been in
->   mainline since 2.6.22.  So letting it into one more release shouldn't be
->   a big problem.  While the fix is fairly simple, it could have some
->   unexpected consequences, so I'd rather go for the next cycle.
-> 
-> food fight!
-> 
+I tested new hackbench on rvr split LRU patch.
 
-heheh.
+new hackbench URL is
+   http://people.redhat.com/mingo/cfs-scheduler/tools/hackbench.c
 
-it's really easy to reproduce the hang without the patch -- i could
-hang the box in under 20 min on 2.6.22+ w/XFS and raid5 on 7x750GB.
-i'll try with ext3... Dan's experiences suggest it won't happen with ext3
-(or is even more rare), which would explain why this has is overall a
-rare problem.
 
-but it doesn't result in dataloss or permanent system hangups as long
-as you can become root and raise the size of the stripe cache...
+method of test
 
-so OK i agree with Neil, let's test more... food fight over! :)
+(1) $ ./hackbench 150 process 1000
+(2) # sync; echo 3 > /proc/sys/vm/drop_caches
+    $ dd if=tmp10G of=/dev/null
+    $ ./hackbench 150 process 1000
 
--dean
+test machine:
+  CPU:    x86_64 1.86GHz x2
+  memory: 6GB
+
+
+result:
+
+         2.6.24-rc6-mm1      +rvr-split-lru      ratio
+                                                (small is faster)
+-------------------------------------------------------------------
+(1)      364.981             359.386            98.47%
+(2)      364.461             387.471           106.31%
+
+
+more detail:
+1. /usr/bin/time command output
+
+vanilla 2.6.24-rc6-mm1
+	33.74user 703.10system 6:09.56elapsed 199%CPU (0avgtext+0avgdata 0maxresident)k
+	0inputs+0outputs (0major+372467minor)pagefaults 0swaps
+
+2.6.24-rc6-mm1 + rvr-split-lru
+	36.22user 731.30system 6:35.16elapsed 194%CPU (0avgtext+0avgdata 0maxresident)k
+	0inputs+0outputs (804major+389524minor)pagefaults 0swaps
+
+It seems increase page fault.
+
+
+2.
+after test (2), cat /proc/meminfo
+
+vanilla 2.6.24-rc6-mm1
+
+	MemTotal:      5931808 kB
+	MemFree:       1751632 kB
+	Buffers:          4360 kB
+	Cached:        3930020 kB
+	SwapCached:          0 kB
+	Active:          46396 kB
+	Inactive:      3924108 kB
+	SwapTotal:    20972848 kB
+	SwapFree:     20972720 kB
+	Dirty:               0 kB
+	Writeback:           0 kB
+	AnonPages:       36140 kB
+	Mapped:          10104 kB
+	Slab:           160020 kB
+	SReclaimable:     3460 kB
+	SUnreclaim:     156560 kB
+	PageTables:       3712 kB
+	NFS_Unstable:        0 kB
+	Bounce:              0 kB
+	CommitLimit:  23938752 kB
+	Committed_AS:    78940 kB
+	VmallocTotal: 34359738367 kB
+	VmallocUsed:     57220 kB
+	VmallocChunk: 34359680999 kB
+	HugePages_Total:     0
+	HugePages_Free:      0
+	HugePages_Rsvd:      0
+	HugePages_Surp:      0
+	Hugepagesize:     2048 kB
+
+
+2.6.24-rc6-mm1 + rvr-split-lru
+
+	MemTotal:        5931356 kB
+	MemFree:         1771800 kB
+	Buffers:            2776 kB
+	Cached:          3914800 kB
+	SwapCached:         7940 kB
+	Active(anon):      21868 kB
+	Inactive(anon):     6560 kB
+	Active(file):    1722888 kB
+	Inactive(file):  2192128 kB
+	Noreclaim:        3472 kB
+	Mlocked:          3724 kB
+	SwapTotal:      20972848 kB
+	SwapFree:       20935032 kB
+	Dirty:                 8 kB
+	Writeback:             0 kB
+	AnonPages:         23912 kB
+	Mapped:             9500 kB
+	Slab:             162188 kB
+	SReclaimable:       5544 kB
+	SUnreclaim:       156644 kB
+	PageTables:         4444 kB
+	NFS_Unstable:          0 kB
+	Bounce:                0 kB
+	CommitLimit:    23938524 kB
+	Committed_AS:     106816 kB
+	VmallocTotal:   34359738367 kB
+	VmallocUsed:       57220 kB
+	VmallocChunk:   34359680999 kB
+	HugePages_Total:     0
+	HugePages_Free:      0
+	HugePages_Rsvd:      0
+	HugePages_Surp:      0
+	Hugepagesize:     2048 kB
+
+
+It seems used once memory incorrect activation increased.
+What do you think it?
+
+
+
+- kosaki
+
+
