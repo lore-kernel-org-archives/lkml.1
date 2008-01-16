@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754374AbYAPUel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754698AbYAPUft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754374AbYAPUel (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 15:34:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYAPUeb
+	id S1754698AbYAPUft (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 15:35:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbYAPUfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 15:34:31 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:32845 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752788AbYAPUea (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 15:34:30 -0500
-To: vapier@gentoo.org
-CC: miklos@szeredi.hu, util-linux-ng@vger.kernel.org,
-       akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
-       viro@ftp.linux.org.uk, kzak@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org
-In-reply-to: <200801160817.12812.vapier@gentoo.org> (message from Mike
-	Frysinger on Wed, 16 Jan 2008 08:17:10 -0500)
-Subject: Re: [patch] util-linux-ng: unprivileged mounts support
-References: <E1JF7Xh-0003q3-Qv@pomaz-ex.szeredi.hu> <200801160817.12812.vapier@gentoo.org>
-Message-Id: <E1JFEx0-0004tn-TZ@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 16 Jan 2008 21:33:30 +0100
+	Wed, 16 Jan 2008 15:35:41 -0500
+Received: from 1wt.eu ([62.212.114.60]:1349 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751045AbYAPUfk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 15:35:40 -0500
+Date: Wed, 16 Jan 2008 21:14:00 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Adrian Bunk <adrian.bunk@movial.fi>, linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.16.58
+Message-ID: <20080116201400.GD8953@1wt.eu>
+References: <20080115221832.GA4449@does.not.exist> <Pine.LNX.4.64.0801161703190.15647@twin.jikos.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0801161703190.15647@twin.jikos.cz>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > This is an experimental patch for supporing unprivileged mounts and
-> > umounts.  The following features are added:
+Hi,
+
+On Wed, Jan 16, 2008 at 05:04:17PM +0100, Jiri Kosina wrote:
+> On Wed, 16 Jan 2008, Adrian Bunk wrote:
 > 
-> same feedback as last time ... the cap stuff needs to be made optional and 
-> proper header checks added to configure ...
-
-Later, sure.  For now, I'm concentrating on the actual functionality.
-
-> > 1) If mount/umount are suid, first try without privileges.
-> >
-> > This is done by forking, dropping privileges in child, and redirecting
-> > stderr to /dev/null.  If this succeeds, then parent exits with zero
-> > exit code.  Otherwise parent continues normally (with privileges).
-> > This isn't perfect, because the wrong error message will be printed if
-> > mount/umount failed not because of insufficient privileges, but some
-> > other error (e.g. mountpoint busy).
+> > RSS feed of the git tree:
+> > http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
+> > Changes since 2.6.16.57:
+> > Adrian Bunk (3):
+> >       ipv4/arp.c:arp_process(): remove bogus #ifdef mess
+> >       Linux 2.6.16.58-rc1
+> >       Linux 2.6.16.58
 > 
-> this normalization of error information does kind of suck ... but i
-> think the way it's written, the end user will still get the real
-> answer the second time around when the mount is attempted with root
-> privs and not stderr sent to /dev/null ?
+> Hi Adrian,
+> 
+> I don't seem to see v2.6.16.58 tag in your git repository -- the HEAD 
+> (a8d648b74) is tagged v2.6.16.58-rc1. Is that intended?
 
-No, for example the user will get: "only root can umount foo" instead
-of "foo is busy", which is very misleading, if the user _can_ umount
-foo.
+Not replying for Adrian, but it happened several times to me too.
+What sometimes happens when we push Git updates from home is that
+we don't push all the refs. Sometimes I forget to update the tags,
+sometimes the master, etc...
 
-Miklos
+Just looked at the git repo itself, it looks like it has not changed
+since 2008/01/08 :-/
+
+Adrian, maybe your git-push did not succeed ?
+
+Regards,
+Willy
+
