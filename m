@@ -1,58 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754698AbYAPUft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300AbYAPUj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754698AbYAPUft (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 15:35:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbYAPUfl
+	id S1753300AbYAPUj1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 15:39:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751001AbYAPUjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 15:35:41 -0500
-Received: from 1wt.eu ([62.212.114.60]:1349 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751045AbYAPUfk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 15:35:40 -0500
-Date: Wed, 16 Jan 2008 21:14:00 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Jiri Kosina <jikos@jikos.cz>
-Cc: Adrian Bunk <adrian.bunk@movial.fi>, linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.16.58
-Message-ID: <20080116201400.GD8953@1wt.eu>
-References: <20080115221832.GA4449@does.not.exist> <Pine.LNX.4.64.0801161703190.15647@twin.jikos.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801161703190.15647@twin.jikos.cz>
-User-Agent: Mutt/1.5.11
+	Wed, 16 Jan 2008 15:39:17 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:47405 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751269AbYAPUjQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 15:39:16 -0500
+Message-ID: <478E6AFD.1020302@cosmosbay.com>
+Date: Wed, 16 Jan 2008 21:37:17 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: Mike Travis <travis@sgi.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       mingo@elte.hu, Christoph Lameter <clameter@sgi.com>,
+       Jack Steiner <steiner@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 02/10] x86: Change size of node ids from u8 to u16 V3
+References: <20080116170902.006151000@sgi.com>	<20080116170902.328187000@sgi.com> <20080116185356.e8d02344.dada1@cosmosbay.com> <478E57F2.8010206@sgi.com>
+In-Reply-To: <478E57F2.8010206@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Wed, 16 Jan 2008 21:37:24 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Wed, Jan 16, 2008 at 05:04:17PM +0100, Jiri Kosina wrote:
-> On Wed, 16 Jan 2008, Adrian Bunk wrote:
+Mike Travis a écrit :
+>> Another point: you want this change, sorry if my previous mail was not detailed enough :
+>>
+>> --- a/arch/x86/mm/numa_64.c
+>> +++ b/arch/x86/mm/numa_64.c
+>> @@ -78,7 +78,7 @@ static int __init allocate_cachealigned_memnodemap(void)
+>>         unsigned long pad, pad_addr;
+>>
+>>         memnodemap = memnode.embedded_map;
+>> -       if (memnodemapsize <= 48)
+>> +       if (memnodemapsize <= ARRAY_SIZE(memnode.embedded_map))
+>>                 return 0;
+>>
+>>         pad = L1_CACHE_BYTES - 1;
+>>
 > 
-> > RSS feed of the git tree:
-> > http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
-> > Changes since 2.6.16.57:
-> > Adrian Bunk (3):
-> >       ipv4/arp.c:arp_process(): remove bogus #ifdef mess
-> >       Linux 2.6.16.58-rc1
-> >       Linux 2.6.16.58
+> Hi Eric,
 > 
-> Hi Adrian,
+> I'm still getting this message with the numa=fake=4 start option:
 > 
-> I don't seem to see v2.6.16.58 tag in your git repository -- the HEAD 
-> (a8d648b74) is tagged v2.6.16.58-rc1. Is that intended?
+> Faking node 0 at 0000000000000000-0000000028000000 (640MB)
+> Faking node 1 at 0000000028000000-0000000050000000 (640MB)
+> Faking node 2 at 0000000050000000-0000000078000000 (640MB)
+> Faking node 3 at 0000000078000000-000000009ff00000 (639MB)
+> 
+> NUMA: Using 27 for the hash shift.
+> Your memory is not aligned you need to rebuild your kernel
+> with a bigger NODEMAPSIZE shift=27 No NUMA hash function found.
+> NUMA emulation disabled.
+> 
+> Is there something else I need to change?  (This is on an AMD box.)
+> 
 
-Not replying for Adrian, but it happened several times to me too.
-What sometimes happens when we push Git updates from home is that
-we don't push all the refs. Sometimes I forget to update the tags,
-sometimes the master, etc...
+Sure, check populate_memnodemap() in arch/x86/mm/numa_64.c
 
-Just looked at the git repo itself, it looks like it has not changed
-since 2008/01/08 :-/
 
-Adrian, maybe your git-push did not succeed ?
+--- a/arch/x86/mm/numa_64.c
++++ b/arch/x86/mm/numa_64.c
+@@ -54,7 +54,7 @@ populate_memnodemap(const struct bootnode *nodes, int 
+numnodes, int shift)
+         int res = -1;
+         unsigned long addr, end;
 
-Regards,
-Willy
+-       memset(memnodemap, 0xff, memnodemapsize);
++       memset(memnodemap, 0xff, sizeof(u16)*memnodemapsize);
+         for (i = 0; i < numnodes; i++) {
+                 addr = nodes[i].start;
+                 end = nodes[i].end;
+@@ -63,7 +63,7 @@ populate_memnodemap(const struct bootnode *nodes, int 
+numnodes, int shift)
+                 if ((end >> shift) >= memnodemapsize)
+                         return 0;
+                 do {
+-                       if (memnodemap[addr >> shift] != 0xff)
++                       if (memnodemap[addr >> shift] != NUMA_NO_NODE)
+                                 return -1;
+                         memnodemap[addr >> shift] = i;
+                         addr += (1UL << shift);
 
