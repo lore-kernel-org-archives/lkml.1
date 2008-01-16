@@ -1,48 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752213AbYAPVyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753545AbYAPVyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752213AbYAPVyX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 16:54:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbYAPVyN
+	id S1753545AbYAPVyu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 16:54:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbYAPVyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 16:54:13 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:48038 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750917AbYAPVyM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 16:54:12 -0500
-X-Sasl-enc: aL3KQF1GNIoOWMVAT5xJ0FOX2ZSbDVPk1JZm4UDyMEaV 1200520451
-Date: Wed, 16 Jan 2008 19:54:00 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Johannes Weiner <hannes@saeurebad.de>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: thinkpad_acpi: define _sta only when needed
-Message-ID: <20080116215400.GA554@khazad-dum.debian.net>
-References: <1200488504-6789-1-git-send-email-hannes@saeurebad.de> <20080116191317.GA29449@khazad-dum.debian.net> <87sl0xcw8s.fsf@saeurebad.de>
+	Wed, 16 Jan 2008 16:54:38 -0500
+Received: from mx2.suse.de ([195.135.220.15]:36276 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752781AbYAPVyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 16:54:37 -0500
+From: Neil Brown <neilb@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Thu, 17 Jan 2008 08:54:26 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87sl0xcw8s.fsf@saeurebad.de>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17 (2007-12-11)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18318.32018.271377.148440@notabene.brown>
+Cc: "Dan Williams" <dan.j.williams@intel.com>, "dean gaudet" <dean@arctic.org>,
+       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 001 of 6] md: Fix an occasional deadlock in raid5
+In-Reply-To: message from Andrew Morton on Tuesday January 15
+References: <20080114123726.19968.patches@notabene>
+	<1080114014525.20337@suse.de>
+	<alpine.DEB.0.999999.0801152059170.9578@twinlark.arctic.org>
+	<20080115215425.b1fcba31.akpm@linux-foundation.org>
+	<alpine.DEB.0.999999.0801152157310.9578@twinlark.arctic.org>
+	<e9c3a7c20801152309g28493cecx57efa8a8bba2fd21@mail.gmail.com>
+	<20080115231504.4df1b739.akpm@linux-foundation.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Jan 2008, Johannes Weiner wrote:
-> > Johannes, thanks for the patches, but NAK.  A similar group of patches that
-> > clean up the _sta and heander file (kills it, actually) has already been
-> > sent to Len Brown to be merged for 2.6.25.
+On Tuesday January 15, akpm@linux-foundation.org wrote:
+> On Wed, 16 Jan 2008 00:09:31 -0700 "Dan Williams" <dan.j.williams@intel.com> wrote:
 > 
-> Sorry, I missed to check his tree in advance.  And if the work is
-> already done - even better! :)
+> > > heheh.
+> > >
+> > > it's really easy to reproduce the hang without the patch -- i could
+> > > hang the box in under 20 min on 2.6.22+ w/XFS and raid5 on 7x750GB.
+> > > i'll try with ext3... Dan's experiences suggest it won't happen with ext3
+> > > (or is even more rare), which would explain why this has is overall a
+> > > rare problem.
+> > >
+> > 
+> > Hmmm... how rare?
+> > 
+> > http://marc.info/?l=linux-kernel&m=119461747005776&w=2
+> > 
+> > There is nothing specific that prevents other filesystems from hitting
+> > it, perhaps XFS is just better at submitting large i/o's.  -stable
+> > should get some kind of treatment.  I'll take altered performance over
+> > a hung system.
+> 
+> We can always target 2.6.25-rc1 then 2.6.24.1 if Neil is still feeling
+> wimpy.
 
-I don't think Len merged the latest version of the patchset yet, but a
-previous version is available in the acpi-test tree.  The latest version was
-posted to linux-acpi recently.
+I am feeling wimpy.  There've been a few too many raid5 breakages
+recently and it is very hard to really judge the performance impact of
+this change.  I even have a small uncertainty of correctness - could
+it still hang in some other way?  I don't think so, but this is
+complex code...
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+If it were really common I would have expected more noise on the
+mailing list.  Sure, there has been some, but not much.  However maybe
+people are searching the archives and finding the "increase stripe
+cache size" trick, and not reporting anything .... seems unlikely
+though.
+
+How about we queue it for 2.6.25-rc1 and then about when -rc2 comes
+out, we queue it for 2.6.24.y?  Any one (or any distro) that really
+needs it can of course grab the patch them selves...
+
+??
+
+NeilBrown
