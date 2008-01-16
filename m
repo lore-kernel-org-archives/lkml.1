@@ -1,78 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbYAPTrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754034AbYAPTtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754209AbYAPTrT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 14:47:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbYAPTrK
+	id S1754034AbYAPTtA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 14:49:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbYAPTsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 14:47:10 -0500
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:47370 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752239AbYAPTrI (ORCPT
+	Wed, 16 Jan 2008 14:48:53 -0500
+Received: from host-66-43-248-10 ([67.55.143.10]:39877 "EHLO
+	thinix-laptop.local.rdi1.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752327AbYAPTsw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 14:47:08 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [patch 2/2] 8250_pnp: register x86 COM ports at the conventional ttyS names
-Date: Wed, 16 Jan 2008 12:47:33 -0700
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       linux-serial@vger.kernel.org,
-       Russell King <rmk+serial@arm.linux.org.uk>,
-       Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20080116170541.511233227@ldl.fc.hp.com> <20080116170914.959390017@ldl.fc.hp.com> <478E5095.2020803@zytor.com>
-In-Reply-To: <478E5095.2020803@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 16 Jan 2008 14:48:52 -0500
+Subject: Re: unionfs, cow, and whiteout
+From: Paul Albrecht <albrecht@rdi1.com>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200801161713.m0GHDRUN023917@agora.fsl.cs.sunysb.edu>
+References: <200801161713.m0GHDRUN023917@agora.fsl.cs.sunysb.edu>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801161247.34821.bjorn.helgaas@hp.com>
+Date: Wed, 16 Jan 2008 13:48:46 -0600
+Message-Id: <1200512926.12092.33.camel@thinix-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 January 2008 11:44:37 am H. Peter Anvin wrote:
-> Bjorn Helgaas wrote:
-> > x86 users expect COM1-COM4 ports at the conventional ioport addresses
-> > to be named ttyS0-ttyS3.  For PNP devices, the BIOS determines the
-> > order we discover them, so we might discover COM2 before COM1.
+
+On Wed, 2008-01-16 at 12:13 -0500, Erez Zadok wrote: 
+> In message <1200500833.11000.0.camel@thinix-laptop>, Paul Albrecht writes:
+> > Hi,
 > > 
-> > We currently always get the correct names, even without this patch.
-> > But that's only because serial8250_isa_init_ports() first registers
-> > the hard-coded list of COM port addresses from SERIAL_PORT_DFNS.  When
-> > PNP rediscovers one of those ports, it gets the already-established
-> > line.
+> > I have a question about how unionfs handles file deletion when a write
+> > enabled file system is union mounted over a read only file system. For
+> > example, I do something like the following:
 > > 
-> > This patch removes the implicit dependency on SERIAL_PORT_DFNS by
-> > requesting the names we desire.
-> >  
-> >  static int __devinit
-> > +serial_pnp_line(struct uart_port *port)
-> > +{
-> > +#ifdef CONFIG_X86
-> > +	switch (port->iobase) {
-> > +	case 0x3f8:	return 0;	/* COM1 -> ttyS0 */
-> > +	case 0x2f8:	return 1;	/* COM2 -> ttyS1 */
-> > +	case 0x3e8:	return 2;	/* COM3 -> ttyS2 */
-> > +	case 0x2e8:	return 3;	/* COM4 -> ttyS3 */
-> > +	}
-> > +#endif
-> > +
+> > mount -t unionfs -o dirs=/cow=rw:/rofs=ro unionfs /mnt
+> > 
+> > If I create and delete a file in /mnt which is not present in /rofs it
+> > persists as whiteout in the cow file system which is not what I would
+> > have expected.
 > 
-> Arguably, the right thing is to use the addresses present in the array 
-> at address 0x400.  In particular, COM3 and COM4 aren't always at those 
-> addresses.
+> Paul, the alternative is to scan all branches (there could be many) to
+> ensure that the file may not exist by that name anywhere else, and if so,
+> try to delete all instances of it.  This was deemed too expensive and
+> complex.
+> 
 
-Wow.  I bow before your storehouse of x86 arcana :-)
+I'm not sure we're talking about the same problem. What I do is union
+mount a write enabled file system like tmpfs over a read only file
+system like squashfs.
 
-I guess you're referring to the "BIOS data area," which I'd never
-heard of before (but fortunately, Google knows).
+There's no way to create, modify, or delete files in a squashed file
+system; they can be copied up when they're modified; or, they can be
+whited out when they're deleted.
 
-What would you think about doing this only for COM1 and COM2?  The
-only real value for doing this in the first place is so "console=ttyS0"
-always goes to COM1, even if we don't have SERIAL_PORT_DFNS.  User-
-space ought to use some sort of udev magic if it cares about persistent
-naming.
+Whenever a file is created in the union mount, it necessarily gets
+created in tmpfs. When that file gets deleted, it gets whited out which
+doesn't make sense because it doesn't exist in the other layer.
 
-Bjorn
+This is a problem because over time as files are created, modified, and
+deleted whiteout cruft accumulates in the cow layer of the union mount.
+
+Fixing the problem doesn't seem that complex and shouldn't require
+searching all the layers of the union mount.
+
+If the union file system simply took note of whether a file was created
+in the cow layer because it's new or because it's been modified and
+copied up from the read only file system, then it would simply delete
+the file in the former case and and use whiteout in the latter.
+
+> Another possible problem is that if you choose to insert a new branch in the
+> middle, and you didn't have the whiteout, you may re-expose the file name
+> unintentionally.
+> 
+
+I don't see how the a "deleted" file in a read only file system could be
+re-exposed unless its whiteout in the cow layer was deleted, but that's
+really not the issue.
+
+What I'm objecting to is creating the whiteout in the cow layer when the
+file didn't get there via a copy up from a read only file system. In
+this case there's no worry about re-exposing the deleted file because
+it's really deleted.
+
+> You might want to take a look at our unionfs-odf version: it places
+> whiteouts in a separate persistent store outside the branches, not as .wh.*
+> files in individual branches.
+> 
+> > Why does the deleted file persist as whiteout in the /cow file system of
+> > the union mount?
+> > 
+> > Please cc me in your response as I'm not subscribed to the lkml.
+> > 
+> > -- 
+> > 
+> > Paul Albrecht
+> 
+> Cheers,
+> Erez.
+-- 
+
+Paul Albrecht
