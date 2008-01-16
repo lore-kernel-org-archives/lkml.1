@@ -1,88 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754332AbYAPUMO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbYAPUPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754332AbYAPUMO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 15:12:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752114AbYAPUL6
+	id S1753904AbYAPUPH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 15:15:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbYAPUO4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 15:11:58 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:33778 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751732AbYAPUL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 15:11:56 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [patch] util-linux-ng: unprivileged mounts support
-Date: Wed, 16 Jan 2008 08:17:10 -0500
-User-Agent: KMail/1.9.7
-Cc: util-linux-ng@vger.kernel.org, akpm@linux-foundation.org,
-       hch@infradead.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
-       kzak@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org
-References: <E1JF7Xh-0003q3-Qv@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1JF7Xh-0003q3-Qv@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2023442.yLlF9ht91N";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200801160817.12812.vapier@gentoo.org>
+	Wed, 16 Jan 2008 15:14:56 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:53756 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751326AbYAPUOz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 15:14:55 -0500
+Date: Wed, 16 Jan 2008 20:14:38 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 0/2] serial: explicitly request ttyS0-3 for COM1-4
+Message-ID: <20080116201438.GD23371@flint.arm.linux.org.uk>
+References: <20080116170541.511233227@ldl.fc.hp.com> <20080116183933.GB23371@flint.arm.linux.org.uk> <200801161259.28723.bjorn.helgaas@hp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200801161259.28723.bjorn.helgaas@hp.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2023442.yLlF9ht91N
-Content-Type: text/plain;
-  charset="iso-8859-6"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Wed, Jan 16, 2008 at 12:59:27PM -0700, Bjorn Helgaas wrote:
+> On Wednesday 16 January 2008 11:39:34 am Russell King wrote:
+> > On Wed, Jan 16, 2008 at 10:05:41AM -0700, Bjorn Helgaas wrote:
+> > > When 8250_pnp discovers COM ports, we only get the correct ttyS names
+> > > by accident -- we rely on serial8250_isa_init_ports(), which discovers
+> > > the COM ports earlier using the addresses in SERIAL_PORT_DFNS.
+> > 
+> > It's not by accident but by design.  It's quite intentional that it
+> > remembers the addresses of serial ports, and if another port is
+> > registered later with the same base address, it gets the same name.
+> 
+> It's certainly by design that if we register a port twice, it gets
+> the same name both times.
 
-On Wednesday 16 January 2008, Miklos Szeredi wrote:
-> This is an experimental patch for supporing unprivileged mounts and
-> umounts.  The following features are added:
+Incorrect - if it's not detected first time around (eg, the port isn't
+accessible at that time), its slot will still be reserved due to the
+way slots are given out.
 
-same feedback as last time ... the cap stuff needs to be made optional and=
-=20
-proper header checks added to configure ...
+Slots are given to users in order of:
 
-> 1) If mount/umount are suid, first try without privileges.
->
-> This is done by forking, dropping privileges in child, and redirecting
-> stderr to /dev/null.  If this succeeds, then parent exits with zero
-> exit code.  Otherwise parent continues normally (with privileges).
-> This isn't perfect, because the wrong error message will be printed if
-> mount/umount failed not because of insufficient privileges, but some
-> other error (e.g. mountpoint busy).
+1. does the IO type and base address of a previously known port match
+   the new port?  If so, use that.
+2. do we have a slot which has never been used - use that.
+3. find the first slot which is not currently in use.
 
-this normalization of error information does kind of suck ... but i think t=
-he=20
-way it's written, the end user will still get the real answer the second ti=
-me=20
-around when the mount is attempted with root privs and not stderr sent=20
-to /dev/null ?
-=2Dmike
+So, the only way we'd get the first set of ttyS slots used is if all of
+the following are true:
 
---nextPart2023442.yLlF9ht91N
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+a) the ISA probe doesn't detect them
+b) some other driver registers many ports which don't correspond with any
+   of the ISA listed addresses and we run out of empty slots
+c) 8250_pnp initialises after this driver
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
+(c) is unlikely, except in the modular case - we explicitly list 8250_pnp
+immediately after the 8250 driver so that it gets first call on the
+slots during initialisation time, before we probe for PCI devices.
 
-iQIVAwUAR44D2EFjO5/oN/WBAQLHGQ/+OJUNzIPbqlnFlJRi8//Cz5Mpzbsq+YiD
-EOqxq46Bo4+Q2TEoSxHeBCV06/h701EpBi4vrD/SHdZTT+Druj8h5+FERGXWNd1z
-4gkYHn11XsrjIeFHMTtSAyOFRQra5ccLZ71uUZ4C/d8u9av+2N6a/ULK0TF3MqBX
-7O3YtABsBQ7BpG3bOxRfuHQvMZKhQxkfpUcIBdOl32q4nMjRUTDyv92P52t3lLT+
-+oKywGvyaeAGia0TB4APpVDY+1V36Wxuj9catL/YVNtuzaKS+fJ1fWjbsgedwKqz
-zsDsNDrmPeFjqS/6GYDQXpX3++8IWFjTzKTNcY3+Kumi5+MzpO5Hh1uk7U3BE/2c
-rp84kRozAqP+17iQD6y1cI+fybwW8AFxmXbceite07tk8VMOHs84TepwdQcZPpee
-YKkj+HwswKuC55sJ/9OublzIUFaIYa2BlvQKUoO6cMBk/5BSb28Hw6e/421E2vwV
-kNegHZW0pvXCPTOasJU+cAXiZ/X4pRhf/F45NFyeUxCJ9AU0kuBL6RCBUo2s4qYE
-/IhN/4rEeMnJNT1sZoYVedE2W5CSoWc+RAjue+Zwr1Uujad0+NaOv9zwqXHxectw
-4jfZw2CcD48im7P7kYzB6JgciQm/E3DZ+sDIOTbkJE/0dvi9Gv5lxUQE/yrR1Onq
-mBVWAUUbFkI=
-=bJgu
------END PGP SIGNATURE-----
-
---nextPart2023442.yLlF9ht91N--
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
