@@ -1,210 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbYAPNTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754387AbYAPNga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755399AbYAPNTf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 08:19:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbYAPNTW
+	id S1754387AbYAPNga (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 08:36:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbYAPNgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 08:19:22 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35041 "EHLO mx1.redhat.com"
+	Wed, 16 Jan 2008 08:36:21 -0500
+Received: from bde.crans.org ([138.231.137.76]:43277 "EHLO bde.crans.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753673AbYAPNTT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 08:19:19 -0500
-Date: Wed, 16 Jan 2008 14:19:16 +0100
-From: Karel Zak <kzak@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org
-Subject: [ANNOUNCE] util-linux-ng 2.13.1 (stable)
-Message-ID: <20080116131916.GB26049@petra.dvoda.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	id S1752121AbYAPNgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 08:36:21 -0500
+From: Mathieu Segaud <mathieu.segaud@regala.cx>
+To: dri-devel@lists.sourceforge.net
+Cc: airlied@linux.ie, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Mathieu Segaud <mathieu.segaud@regala.cx>
+Subject: [PATCH] Convert drivers/char/agp/frontend.c to use unlocked_ioctl
+Date: Wed, 16 Jan 2008 14:36:18 +0100
+Message-Id: <1200490578-25717-1-git-send-email-mathieu.segaud@regala.cx>
+X-Mailer: git-send-email 1.5.3.8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+As of now, agp_compat_ioctl already runs without the BKL. Mutual exclusion
+is enforced by agp_fe.agp_mutex in agp_ioctl() and agp_compat_ioctl().
+Apply the same locking rationale to the two functions allowing BKL cleanup.
 
-Util-linux-ng 2.13.1 Release Notes
-==================================
+Signed-off-by: Mathieu Segaud <mathieu.segaud@regala.cx>
+---
+ drivers/char/agp/frontend.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Fixed security issues:
----------------------
-
- CVE-2007-5191 - mount(8) doesn't drop privileges properly when
-                 calling helpers
-
-Changelog:
----------
-
- For more details see ChangeLog files at:
- ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.13/
-
-
-blockdev:
-   - add --getsz to blockdev.8  [Karel Zak]
-   - add missing description about option --report in manpage  [Li Zefan]
-build-sys:
-   - fix localedir (unsupported by autoconf < 2.60)  [Karel Zak]
-   - nls/locale handling in util-linux-ng general  [Mike Frysinger]
-   - release++  [Karel Zak]
-   - release++ (-rc2)  [Karel Zak]
-   - remove files that are no longer delivered from git  [LaMont Jones]
-   - remove hardcoded _GNU_SOURCE  [Karel Zak]
-cal:
-   - add description about option -V to manpage  [Li Zefan]
-chfn:
-   - add pam_end() call and cleanup PAM code  [Karel Zak]
-chsh:
-   - should use pam_end function to terminate the PAM transaction  [Yu Zhiguo, Karel Zak]
-docs:
-   - add info about .bugfix releases and branches  [Karel Zak]
-   - add note about incorrect tag 2.13.1  [Karel Zak]
-   - add v2.13.1 ReleaseNotes  [Karel Zak]
-   - fix ChangeLog URL  [Pascal Terjan]
-   - fix stable branche name in README.devel  [Karel Zak]
-   - update AUTHORS file  [Karel Zak]
-   - update AUTHORS file, add all translators  [Karel Zak]
-   - update ReleaseNotes  [Karel Zak]
-fdisk:
-   - fix typo  [Karel Zak]
-flock:
-   - typo in man page  [A. Costa]
-getopt:
-   - fix path to examples in getopt.1  [Karel Zak]
-hwclock:
-   - check for ENODEV  [David Woodhouse]
-   - fix --rtc option  [Matthias Koenig, Karel Zak]
-ionice:
-   - add a note about permissions to ionice.1  [Karel Zak]
-login:
-   - login segfaults on EOF (rh#298461)  [Karel Zak]
-losetup:
-   - fix errno usage  [Karel Zak]
-mkswap:
-   - possible to crash with SELinux relabeling support  [KaiGai Kohei]
-mount:
-   - -L|-U segfault when label or uuid doesn't exist  [Karel Zak]
-   - chain of symlinks to fstab causes use of pointer after free  [Norbert Buchmuller]
-   - doesn't drop privileges properly when calling helpers  [Ludwig Nussel]
-   - don't call canonicalize(SPEC) for cifs, smbfs and nfs  [Karel Zak]
-   - fix fd leak  [Matthias Koenig]
-   - improve error message when helper program not present  [LaMont Jones]
-pg:
-   - fix segfault on search  [Rajeev V. Pillai]
-po:
-   - add eu.po (from translationproject.org)  [Mikel Olasagasti]
-   - add pl.po (from translationproject.org)  [Andrzej Krzysztofowicz]
-   - fix typo in de.po  [Karel Zak]
-   - merge files  [Karel Zak]
-   - update ca.po (from translationproject.org)  [Josep Puigdemont]
-   - update cs.po (from translationproject.org)  [Petr Pisar]
-   - update da.po (from translationproject.org)  [Claus Hindsgaul]
-   - update de.po (from translationproject.org)  [Michael Piefel]
-   - update es.po (from translationproject.org)  [Santiago Vila Doncel]
-   - update et.po (from translationproject.org)  [Meelis Roos]
-   - update eu.po (from translationproject.org)  [Mikel Olasagasti]
-   - update fi.po (from translationproject.org)  [Lauri Nurmi]
-   - update fr.po (from translationproject.org)  [Michel Robitaille]
-   - update hu.po (from translationproject.org)  [Gabor Kelemen]
-   - update id.po (from translationproject.org)  [Arif E. Nugroho]
-   - update it.po (from translationproject.org)  [Marco Colombo]
-   - update ja.po (from translationproject.org)  [Daisuke Yamashita]
-   - update nl.po (from translationproject.org)  [Benno Schulenberg]
-   - update pl.po (from translationproject.org)  [Andrzej Krzysztofowicz]
-   - update po files  [Karel Zak]
-   - update pt_BR.po (from translationproject.org)  [Rodrigo Stulzer Lopes]
-   - update ru.po (from translationproject.org)  [Pavel Maryanov]
-   - update sl.po (from translationproject.org)  [Simon Mihevc]
-   - update sv.po (from translationproject.org)  [Daniel Nylander]
-   - update tr.po (from translationproject.org)  [Nilgün Belma Bugüner]
-   - update uk.po (from translationproject.org)  [Maxim V. Dziumanenko]
-   - update vi.po (from translationproject.org)  [Clytie Siddall]
-rename:
-   - add description about option -V to manpage  [Li Zefan]
-   - remove useless variable  [Li Zefan]
-script:
-   - dies on SIGWINCH  [Karel Zak]
-setarch:
-   - adding groff symlinks to setarch manual page  [Arkadiusz Miskiewicz]
-   - fix compiler warning  [LaMont Jones]
-   - generate groff links in a better way  [Karel Zak]
-sfdisk:
-   - allow partitioning drives of over 2^31 sectors.  [Kunihiko IMAI]
-sys-utils:
-   - correct setarch.8 manpage link creation  [Frédéric Bothamy]
-tests:
-   - fix blkid cache usage  [Karel Zak]
-
-
-
- AUTHORS                    |   46 +-
- NEWS                       |   25 +-
- README                     |    3 +-
- README.devel               |   14 +-
- config/include-Makefile.am |    1 +
- configure.ac               |    3 +-
- disk-utils/blockdev.8      |   17 +-
- disk-utils/fsck.cramfs.c   |    1 -
- disk-utils/mkfs.cramfs.c   |    2 +-
- disk-utils/mkswap.c        |   15 +-
- docs/v2.13.1-ReleaseNotes  |  111 +
- fdisk/fdisk.c              |    2 +-
- fdisk/sfdisk.c             |    3 +-
- getopt/getopt.1            |    5 +-
- hwclock/rtc.c              |   33 +-
- include/nls.h              |    8 +-
- login-utils/chfn.c         |   55 +-
- login-utils/chsh.c         |   57 +-
- login-utils/login.c        |    4 +-
- misc-utils/cal.1           |    2 +
- misc-utils/cal.c           |    1 -
- misc-utils/look.c          |    1 -
- misc-utils/rename.1        |    7 +
- misc-utils/rename.c        |    5 +-
- misc-utils/script.c        |   14 +-
- misc-utils/write.c         |    1 -
- mount/h/swap.h             |    5 -
- mount/lomount.c            |   20 +-
- mount/mount.c              |   43 +-
- mount/mount.smbfs          |   68 -
- mount/realpath.c           |    9 +-
- mount/umount.c             |    8 +-
- po/ca.po                   |  744 ++--
- po/cs.po                   |  772 ++--
- po/da.po                   |  742 ++--
- po/de.po                   | 1072 +++---
- po/es.po                   |  761 ++--
- po/et.po                   |  924 ++---
- po/eu.po                   | 9466 ++++++++++++++++++++++++++++++++++++++++
- po/fi.po                   | 1494 ++++----
- po/fr.po                   |  767 ++--
- po/hu.po                   |10286 ++++++++++++++++++++++++++++++++++++++++++++
- po/id.po                   |  777 ++--
- po/it.po                   |  792 ++--
- po/ja.po                   |  985 ++---
- po/nl.po                   |  790 ++--
- po/pl.po                   | 9467 ++++++++++++++++++++++++++++++++++++++++
- po/pt_BR.po                | 1190 +++---
- po/ru.po                   |  766 ++--
- po/sl.po                   |  746 ++--
- po/sv.po                   |  762 ++--
- po/tr.po                   |  772 ++--
- po/uk.po                   |  760 ++--
- po/util-linux-ng.pot       |  722 ++--
- po/vi.po                   |  758 ++--
- schedutils/chrt.c          |    2 -
- schedutils/ionice.1        |    6 +-
- schedutils/taskset.c       |    2 -
- sys-utils/Makefile.am      |   16 +
- sys-utils/flock.1          |    2 +-
- sys-utils/setarch.c        |    6 +-
- tests/functions.sh         |   30 +-
- tests/ts-cramfs-mkfs       |    2 +
- text-utils/colrm.c         |    2 +-
- text-utils/more.c          |    1 -
- text-utils/pg.c            |    4 +-
- 66 files changed, 38333 insertions(+), 8644 deletions(-)
-
+diff --git a/drivers/char/agp/frontend.c b/drivers/char/agp/frontend.c
+index 7791e98..6212a9e 100644
+--- a/drivers/char/agp/frontend.c
++++ b/drivers/char/agp/frontend.c
+@@ -960,7 +960,7 @@ static int agpioc_unbind_wrap(struct agp_file_private *priv, void __user *arg)
+ 	return agp_unbind_memory(memory);
+ }
+ 
+-static int agp_ioctl(struct inode *inode, struct file *file,
++static long agp_ioctl(struct file *file,
+ 		     unsigned int cmd, unsigned long arg)
+ {
+ 	struct agp_file_private *curr_priv = file->private_data;
+@@ -1047,7 +1047,7 @@ static const struct file_operations agp_fops =
+ 	.llseek		= no_llseek,
+ 	.read		= agp_read,
+ 	.write		= agp_write,
+-	.ioctl		= agp_ioctl,
++	.unlocked_ioctl	= agp_ioctl,
+ #ifdef CONFIG_COMPAT
+ 	.compat_ioctl	= compat_agp_ioctl,
+ #endif
 -- 
- Karel Zak  <kzak@redhat.com>
+1.5.3.8
+
