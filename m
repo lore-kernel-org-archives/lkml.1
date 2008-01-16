@@ -1,66 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758276AbYAPDcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758031AbYAPDmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758276AbYAPDcZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 22:32:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757263AbYAPDcS
+	id S1758031AbYAPDmP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 22:42:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755030AbYAPDmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 22:32:18 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:55036 "EHLO
+	Tue, 15 Jan 2008 22:42:00 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:5828 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757245AbYAPDcR (ORCPT
+	with ESMTP id S1753134AbYAPDl7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 22:32:17 -0500
+	Tue, 15 Jan 2008 22:41:59 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=VxUJPvMRDA2coRPhuVnf5JWcQvvqy6PdBnGxiiz80J13eihvRR1KO1esWmHkT4EQucEf8EfWP0xfF1Xi+iZQlrDl2CP+rrkekgdACqT4ZLovsQTCdFRP7dYMgPj4KHY9akHe2ODzVh6uRpn8zahTCsXo/eUyK+WsxnbpMjXKapM=
-Message-ID: <86802c440801151932o6aaea248w7d1137eaa2ac3579@mail.gmail.com>
-Date: Tue, 15 Jan 2008 19:32:17 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: hpet_late_init hang
-Cc: LKML <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=veEcz6FRs+xA+Jfr92RtIxCCHLMqens18gTPxYUEZfcgUcKwrKsZV1N1MWmLXKNsYZNQB7SrsVgPv5AClU4sY2s8fNmPchTltlxn50VW2RUMeaf8cOa8rXU0+uy0kBfwz1bxj5JJq1tr2gekTlhrkpGVeDIk+zF9WwHwoEg/WuQ=
+Subject: [PATCHv2] x86: add is_f00f_bug helper to fault_32|64.c
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Kyle McMartin <kyle@mcmartin.ca>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <478D786F.2040505@zytor.com>
+References: <1200451715.16794.71.camel@brick>
+	 <20080116031149.GA14210@phobos.i.cabal.ca>  <478D786F.2040505@zytor.com>
+Content-Type: text/plain
+Date: Tue, 15 Jan 2008 19:42:02 -0800
+Message-Id: <1200454922.16794.75.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"
-commit e5ed385fa0d6f35406e3e3ed75e5eb9adeb811df
-Author: Balaji Rao <balajirrao@gmail.com>
-Date:   Tue Jan 15 16:53:29 2008 +0100
+On Tue, 2008-01-15 at 22:22 -0500, H. Peter Anvin wrote:
+> Kyle McMartin wrote:
+> > On Tue, Jan 15, 2008 at 06:48:35PM -0800, Harvey Harrison wrote:
+> >> +#ifdef CONFIG_X86_F00F_BUG
+> >> +void do_invalid_op(struct pt_regs *, unsigned long);
+> >> +#endif
+> >> +
+> >> +static int is_f00f_bug(struct pt_regs *regs, unsigned long address)
+> >> +{
+> >> +#ifdef CONFIG_X86_F00F_BUG
+> >> +	unsigned long nr;
+> > 
+> > You can just put the prototype inside the function, you know...
+> 
+> You can also make the prototype unconditional, even if the function 
+> doesn't necessarily exist.
 
-    Assign IRQs to HPET Timers
-"
-in x86.git
+I'll go with the unconditional prototype, the function will always
+exist, it's a bit hard to find as it's done with a macro in
+traps_32|64.c.
 
-cause my servers hang
-after
-Calling initcall 0xffffffff80b9a465: hpet_late_init+0x0/0x100()
+Harvey
 
-after reverting that I got:
 
-initcall 0xffffffff80b947d1 ran for 19 msecs: pci_iommu_init+0x0/0x13()
-Calling initcall 0xffffffff80b9a465: hpet_late_init+0x0/0x100()
-hpet0: at MMIO 0xfed00000, IRQs 2, 8, 31
-hpet0: 3 32-bit timers, 25000000 Hz
-initcall 0xffffffff80b9a465: hpet_late_init+0x0/0x100() returned 0.
-initcall 0xffffffff80b9a465 ran for 7 msecs: hpet_late_init+0x0/0x100()
+From: Harvey Harrison <harvey.harrison@gmail.com>
 
-           CPU0       CPU1       CPU2       CPU3       CPU4       CPU5
-      CPU6       CPU7
-  0:         86          0          0          0          0          0
-         1          0   IO-APIC-edge      timer
-  4:          0          0          0          0          0          0
-         1        838   IO-APIC-edge      serial
-  7:          1          0          0          0          0          0
-         0          0   IO-APIC-edge
-  8:          0          0          0          0          0          0
-         0          0   IO-APIC-edge      rtc0
+Further towards unifying these files, add another helper
+in same spirit as is_errata93.
 
-for mcp55, it should already route hpet to ioapic pin2 or the irq0.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ arch/x86/mm/fault_32.c |   39 ++++++++++++++++++++++-----------------
+ arch/x86/mm/fault_64.c |   24 ++++++++++++++++++++++++
+ 2 files changed, 46 insertions(+), 17 deletions(-)
 
-YH
+diff --git a/arch/x86/mm/fault_32.c b/arch/x86/mm/fault_32.c
+index 936bb0c..dae4f69 100644
+--- a/arch/x86/mm/fault_32.c
++++ b/arch/x86/mm/fault_32.c
+@@ -211,8 +211,6 @@ void dump_pagetable(unsigned long address)
+ 	printk("\n");
+ }
+ 
+-void do_invalid_op(struct pt_regs *, unsigned long);
+-
+ static inline pmd_t *vmalloc_sync_one(pgd_t *pgd, unsigned long address)
+ {
+ 	unsigned index = pgd_index(address);
+@@ -288,6 +286,26 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
+ 	return 0;
+ }
+ 
++void do_invalid_op(struct pt_regs *, unsigned long);
++
++static int is_f00f_bug(struct pt_regs *regs, unsigned long address)
++{
++#ifdef CONFIG_X86_F00F_BUG
++	unsigned long nr;
++	/*
++	 * Pentium F0 0F C7 C8 bug workaround.
++	 */
++	if (boot_cpu_data.f00f_bug) {
++		nr = (address - idt_descr.address) >> 3;
++
++		if (nr == 6) {
++			do_invalid_op(regs, 0);
++			return 1;
++		}
++	}
++#endif
++	return 0;
++}
+ 
+ /*
+  * Handle a fault on the vmalloc or module mapping area
+@@ -570,21 +588,8 @@ bad_area_nosemaphore:
+ 		return;
+ 	}
+ 
+-#ifdef CONFIG_X86_F00F_BUG
+-	/*
+-	 * Pentium F0 0F C7 C8 bug workaround.
+-	 */
+-	if (boot_cpu_data.f00f_bug) {
+-		unsigned long nr;
+-
+-		nr = (address - idt_descr.address) >> 3;
+-
+-		if (nr == 6) {
+-			do_invalid_op(regs, 0);
+-			return;
+-		}
+-	}
+-#endif
++	if (is_f00f_bug(regs, address))
++		return;
+ 
+ no_context:
+ 	/* Are we prepared to handle this kernel fault?  */
+diff --git a/arch/x86/mm/fault_64.c b/arch/x86/mm/fault_64.c
+index cde110c..ce1a870 100644
+--- a/arch/x86/mm/fault_64.c
++++ b/arch/x86/mm/fault_64.c
+@@ -256,6 +256,27 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
+ 	return 0;
+ }
+ 
++void do_invalid_op(struct pt_regs *, unsigned long);
++
++static int is_f00f_bug(struct pt_regs *regs, unsigned long address)
++{
++#ifdef CONFIG_X86_F00F_BUG
++	unsigned long nr;
++	/*
++	 * Pentium F0 0F C7 C8 bug workaround.
++	 */
++	if (boot_cpu_data.f00f_bug) {
++		nr = (address - idt_descr.address) >> 3;
++
++		if (nr == 6) {
++			do_invalid_op(regs, 0);
++			return 1;
++		}
++	}
++#endif
++	return 0;
++}
++
+ static noinline void pgtable_bad(unsigned long address, struct pt_regs *regs,
+ 				 unsigned long error_code)
+ {
+@@ -572,6 +593,9 @@ bad_area_nosemaphore:
+ 		return;
+ 	}
+ 
++	if (is_f00f_bug(regs, address))
++		return;
++
+ no_context:
+ 	/* Are we prepared to handle this kernel fault?  */
+ 	if (fixup_exception(regs))
+-- 
+1.5.4.rc2.1164.g6451
+
+
+
