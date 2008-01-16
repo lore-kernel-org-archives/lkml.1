@@ -1,70 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbYAPM3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbYAPMbG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754340AbYAPM3m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 07:29:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbYAPM3f
+	id S1754479AbYAPMbG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 07:31:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbYAPMaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 07:29:35 -0500
-Received: from posthamster.phnxsoft.com ([195.227.45.4]:2869 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751832AbYAPM3e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 07:29:34 -0500
-Message-ID: <478DF8AB.50400@imap.cc>
-Date: Wed, 16 Jan 2008 13:29:31 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7 Mnenhy/0.7.5.666
+	Wed, 16 Jan 2008 07:30:55 -0500
+Received: from dtp.xs4all.nl ([80.126.206.180]:27821 "HELO abra2.bitwizard.nl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752292AbYAPMay (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 07:30:54 -0500
+Date: Wed, 16 Jan 2008 13:30:52 +0100
+From: Rogier Wolff <R.E.Wolff@BitWizard.nl>
+To: Anton Salikhmetov <salikhmetov@gmail.com>
+Cc: Rogier Wolff <R.E.Wolff@BitWizard.nl>, linux-kernel@vger.kernel.org
+Subject: Re: mtime updates for mmapped files.
+Message-ID: <20080116123052.GB2451@bitwizard.nl>
+References: <20080116094640.GA2071@bitwizard.nl> <4df4ef0c0801160322j31645554oa6faec5cca64509d@mail.gmail.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: assigning a line discipline to a serial device from inside the kernel
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig0EF1E080CD0DC36F74F6B3E4"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4df4ef0c0801160322j31645554oa6faec5cca64509d@mail.gmail.com>
+Organization: BitWizard.nl
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig0EF1E080CD0DC36F74F6B3E4
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: quoted-printable
+On Wed, Jan 16, 2008 at 02:22:49PM +0300, Anton Salikhmetov wrote:
+> Unfortunately, this issue has not been fully fixed yet.
+> 
+> My last attempt (http://lkml.org/lkml/2008/1/15/202) to solve
+> this problem has a couple of drawbacks:
+> 
+> 1) calling a possibly sleeping function from atomic context -
+> I've already corrected this;
+> 
+> 2) there's a very special case with retouching the memory-mapped data
+> after a call to msync() with MS_ASYNC.
+ 
+> I'm still working on the latter case, but I guess that I have found
+> a solution.
+ 
+> If you badly need a quick fix, I can send my working unreleased
+> patch to you.  I reckon that your particular problem will be fixed
+> by this patch.  Let me know if you want that.
 
-The Siemens Gigaset M101 driver (drivers/isdn/gigaset/ser_gigaset.ko)
-is implemented as a serial line discipline N_GIGASET_M101, much like
-the better-known N_SLIP and N_PPP LDs. It must therefore be "pushed"
-onto a serial device in order to be used.
+No need. Thanks for the offer. 
 
-The classic approach is a trivial userspace daemon which opens the
-device, sets the LD via ioctl(~,TIOCSETD,~), and must then sleep
-indefinitely while keeping the device open, because closing it
-would unload the LD.
+> However, if your application calls msync() with the MS_ASYNC flag,
+> it's better to wait a little bit more - I'll release the next version
+> of my solution
+> shortly.
 
-Is there a clean and acceptable way to avoid this userspace daemon
-and push the LD onto the serial device from within the kernel?
+My application calls "exit" (*). My workaround was to type
 
-Thanks,
-Tilman
+	touch <destfile>
 
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+to get things to work. In my situation, I was worried about the more
+general case, and not really about my personal situation.
 
+I could integrate the "touch <destfile>" into my application, but I
+think it is the OS's duty to do this for me. This would be the easiest
+non-manual fix for me.
 
---------------enig0EF1E080CD0DC36F74F6B3E4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+	Roger.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+(*) So please check that: 
+	- mmap file
+	- change mmapped area
+	- exit
+also works (modifies the timestamp). 
 
-iD8DBQFHjfirQ3+did9BuFsRAmbGAJ0b+OP7algwKampNoiM1H5yb1Ta4gCfZMLt
-FDICYRCa0+PrlfYO6DPs3Ok=
-=gVkQ
------END PGP SIGNATURE-----
-
---------------enig0EF1E080CD0DC36F74F6B3E4--
+-- 
+** R.E.Wolff@BitWizard.nl ** http://www.BitWizard.nl/ ** +31-15-2600998 **
+**    Delftechpark 26 2628 XH  Delft, The Netherlands. KVK: 27239233    **
+*-- BitWizard writes Linux device drivers for any device you may have! --*
+Q: It doesn't work. A: Look buddy, doesn't work is an ambiguous statement. 
+Does it sit on the couch all day? Is it unemployed? Please be specific! 
+Define 'it' and what it isn't doing. --------- Adapted from lxrbot FAQ
