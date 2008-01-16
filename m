@@ -1,97 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758532AbYAPBBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758573AbYAPBDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758532AbYAPBBx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 20:01:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758083AbYAPBAf
+	id S1758573AbYAPBDU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 20:03:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbYAPBDI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 20:00:35 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:4629 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754252AbYAPBAV (ORCPT
+	Tue, 15 Jan 2008 20:03:08 -0500
+Received: from nz-out-0506.google.com ([64.233.162.224]:63617 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751028AbYAPBDF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 20:00:21 -0500
+	Tue, 15 Jan 2008 20:03:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:message-id:x-mailer;
-        b=olVZsBVWOaNCdLom2A4sV+3r3frNIeTszB9uQQSMCC6CJZ64cd56K12XF/VLrYoY7M4x5LUyU8iGFkRm3NK1craQyVIEPQ/6XKHa0PnQ1DJlZtSaLrlzQ0nHWP+6hF3yujhupIEHfFd6XXMoJdplD60KDgsphoDHOCgif/LR3OI=
-From: Tejun Heo <htejun@gmail.com>
-To: linux-kernel@vger.kernel.org, daniel.ritz-ml@swissonline.ch,
-       randy.dunlap@oracle.com, jeff@garzik.org, linux-ide@vger.kernel.org
-Subject: [PATCHSET] printk: implement printk_header() and merging printk
-Date: Wed, 16 Jan 2008 10:00:06 +0900
-Message-Id: <1200445210549-git-send-email-htejun@gmail.com>
-X-Mailer: git-send-email 1.5.2.4
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ADaQvAlIu2K4emabJ7Ju7RF5rpFmY9f080wx2UtwGWBb5pgDOhda79IeGLs8rlkD8wZD4zGWf1xqn3p7gzXeYAyD0gNfohksUXSKHhLWtt04SyyVSyTckM6ERN4L04tyxQYm9WwHcJgcXZzVjUK40f+5cOWyPmOuY/VOSIDunS8=
+Message-ID: <a8e1da0801151703w52df227en42eae85e75d5017f@mail.gmail.com>
+Date: Wed, 16 Jan 2008 09:03:03 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Jarek Poplawski" <jarkao2@gmail.com>
+Subject: Re: [PATCH 7/7] driver-core : convert semaphore to mutex in struct class
+Cc: "Greg KH" <gregkh@suse.de>, stefanr@s5r6.in-berlin.de, david-b@pacbell.net,
+       stern@rowland.harvard.edu, linux-kernel@vger.kernel.org
+In-Reply-To: <20080115135604.GD1696@ff.dom.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080112100515.GA2956@darkstar.te-china.tietoenator.com>
+	 <20080115091527.GB3186@darkstar.te-china.tietoenator.com>
+	 <20080115135604.GD1696@ff.dom.local>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, all.
+On Jan 15, 2008 9:56 PM, Jarek Poplawski <jarkao2@gmail.com> wrote:
+>
+> On Tue, Jan 15, 2008 at 05:15:27PM +0800, Dave Young wrote:
+> > Convert the class semaphore to mutex.
+> >
+> > Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+> >
+> > ---
+> >  drivers/base/class.c   |   38 +++++++++++++++++++-------------------
+> >  drivers/base/core.c    |   18 ++++++++----------
+> >  include/linux/device.h |    3 ++-
+> >  3 files changed, 29 insertions(+), 30 deletions(-)
+> >
+> > diff -upr linux/drivers/base/class.c linux.new/drivers/base/class.c
+> > --- linux/drivers/base/class.c        2008-01-15 14:04:26.000000000 +0800
+> > +++ linux.new/drivers/base/class.c    2008-01-15 14:04:26.000000000 +0800
+> > @@ -144,7 +144,7 @@ int class_register(struct class * cls)
+> >       INIT_LIST_HEAD(&cls->devices);
+> >       INIT_LIST_HEAD(&cls->interfaces);
+> >       kset_init(&cls->class_dirs);
+> > -     init_MUTEX(&cls->sem);
+> > +     mutex_init(&cls->mutex);
+> >       error = kobject_set_name(&cls->subsys.kobj, "%s", cls->name);
+> >       if (error)
+> >               return error;
+> > @@ -617,13 +617,13 @@ int class_device_add(struct class_device
+> >       kobject_uevent(&class_dev->kobj, KOBJ_ADD);
+> >
+> >       /* notify any interfaces this device is now here */
+> > -     down(&parent_class->sem);
+> > +     mutex_lock_nested(&parent_class->mutex, SINGLE_DEPTH_NESTING);
+> >       list_add_tail(&class_dev->node, &parent_class->children);
+> >       list_for_each_entry(class_intf, &parent_class->interfaces, node) {
+> >               if (class_intf->add)
+> >                       class_intf->add(class_dev, class_intf);
+> >       }
+> > -     up(&parent_class->sem);
+> > +     mutex_unlock(&parent_class->mutex);
+> >
+> >       goto out1;
+> >
+> > @@ -725,12 +725,12 @@ void class_device_del(struct class_devic
+> >       struct class_interface *class_intf;
+> >
+> >       if (parent_class) {
+> > -             down(&parent_class->sem);
+> > +             mutex_lock(&parent_class->mutex);
+>
+> I hope I'm wrong with this (I don't know this code at all...), and
+> of course I should've noticed this earlier after all, but I wonder
+> about this _NESTING corretness here. So, if these variables names
+> are right, and say about real nesting dependency, then it seems
+> mutex_lock_nested() should be used consistently even if (currently?)
+> not forced by lockdep warnings; otherwise this could possibly cover
+> some other warnings. Alas, if accidentally I'm right, it seems a
+> bit of new testing would be necessary...
 
-This patchset implements printk_header() and mprintk - merging printk
-- to make printing multiline messages and assembling message
-piece-by-piece easier.
+The lockdep warining was posted in the below thread, actually, I have
+built and run this patced kernel for several days, there's no more
+warnings.
+http://lkml.org/lkml/2008/1/3/2
 
-In a nutshell, printk_header() lets you do the following atomically
-(against other messages).
-
- code:
-  printk(KERN_INFO "ata1.00: ", "line0\nline1\nline2\n");
-
- output:
-  <6>ata1.00: line0
-  <6>         line1
-  <6>         line2
-
-And mprintk the following.
-
- code:
-  DEFINE_MPRINTK(mp, 2 * 80);
-
-  mprintk_set_header(&mp, KERN_INFO "ata%u.%2u: ", 1, 0);
-  mprintk_push(&mp, "ATA %d", 7);
-  mprintk_push(&mp, ", %u sectors\n", 1024);
-  mprintk(&mp, "everything seems dandy\n");
-
- output:
-  <6>ata1.00: ATA 7, 1024 sectors
-  <6>         everything seems dandy
-
-Please read the commit messages and comments for more detail.  If this
-patchset is accepted, I'll write up Documentation/printk.txt which
-contains describtion of the API and guidelines - "don't pack unrelated
-messages into one" kind of stuff.
-
-This patchset is against the current linux-2.6#master (031f2dcd) and
-contains the following patches.
-
-0001-printk-keep-log-level-on-multiline-messages.patch
-0002-printk-implement-v-printk_header.patch
-0003-printk-implement-merging-printk.patch
-0004-libata-make-libata-use-printk_header-and-mprintk.patch
-
- drivers/ata/libata-core.c   |  202 +++++++++++++++----------
- drivers/ata/libata-eh.c     |  150 ++++++++----------
- drivers/ata/libata-pmp.c    |    5 
- drivers/ata/libata-scsi.c   |    6 
- drivers/ata/sata_inic162x.c |    2 
- drivers/ata/sata_nv.c       |    4 
- include/linux/kernel.h      |   83 ++++++++++
- include/linux/libata.h      |   35 ++--
- kernel/printk.c             |  354 ++++++++++++++++++++++++++++++++++++++++----
- 9 files changed, 630 insertions(+), 211 deletions(-)
-
-More than half of the code increase in kernel.h are from the dummy
-declarations for !CONFIG_PRINTK.  More than one third of printk.c
-increase are comments.  On my x86-64 configuration, printk.o grows
-from 30152 to 34128.
-
-libata code grows slightly but the increase is from converting the
-printk wrapper from #define to proper functions.  The converted areas
-- device configuration and EH reporting - were reduced in comlexity
-and size.  With all-y, drivers/ata/built-in.o shrinks from 726509 to
-717657 mostly due to the conversion away from macros.
-
-Thanks.
-
---
-tejun
+>
+> Regards,
+> Jarek P.
+>
