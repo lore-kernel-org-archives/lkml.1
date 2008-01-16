@@ -1,72 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753128AbYAPT6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbYAPT7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753128AbYAPT6S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 14:58:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbYAPT6K
+	id S1754066AbYAPT7T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 14:59:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbYAPT7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 14:58:10 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:59642 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750824AbYAPT6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 14:58:08 -0500
-Subject: Re: [rfc] lockless get_user_pages for dio (and more)
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Ken Chen <kenchen@google.com>, Badari Pulavarty <pbadari@gmail.com>,
-       linux-mm <linux-mm@kvack.org>, tony.luck@intel.com,
-       Adam Litke <agl@us.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <200712121640.17077.nickpiggin@yahoo.com.au>
-References: <20071008225234.GC27824@linux-os.sc.intel.com>
-	 <200712121557.20807.nickpiggin@yahoo.com.au>
-	 <1197436306.6367.12.camel@norville.austin.ibm.com>
-	 <200712121640.17077.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Wed, 16 Jan 2008 13:58:02 -0600
-Message-Id: <1200513482.6935.15.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Wed, 16 Jan 2008 14:59:05 -0500
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:10197 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750884AbYAPT7E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 14:59:04 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [patch 0/2] serial: explicitly request ttyS0-3 for COM1-4
+Date: Wed, 16 Jan 2008 12:59:27 -0700
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20080116170541.511233227@ldl.fc.hp.com> <20080116183933.GB23371@flint.arm.linux.org.uk>
+In-Reply-To: <20080116183933.GB23371@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801161259.28723.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2007-12-12 at 16:40 +1100, Nick Piggin wrote:
-> On Wednesday 12 December 2007 16:11, Dave Kleikamp wrote:
-> > On Wed, 2007-12-12 at 15:57 +1100, Nick Piggin wrote:
-
-> > > Anyway, I am hoping that someone will one day and test if this and
-> > > find it helps their workload, but on the other hand, if it doesn't
-> > > help anyone then we don't have to worry about adding it to the
-> > > kernel ;) I don't have any real setups that hammers DIO with threads.
-> > > I'm guessing DB2 and/or Oracle does?
-> >
-> > I'll try to get someone to run a DB2 benchmark and see what it looks
-> > like.
+On Wednesday 16 January 2008 11:39:34 am Russell King wrote:
+> On Wed, Jan 16, 2008 at 10:05:41AM -0700, Bjorn Helgaas wrote:
+> > When 8250_pnp discovers COM ports, we only get the correct ttyS names
+> > by accident -- we rely on serial8250_isa_init_ports(), which discovers
+> > the COM ports earlier using the addresses in SERIAL_PORT_DFNS.
 > 
-> That would be great if you could.
+> It's not by accident but by design.  It's quite intentional that it
+> remembers the addresses of serial ports, and if another port is
+> registered later with the same base address, it gets the same name.
 
-We weren't able to get in any runs before the holidays, but we finally
-have some good news from our performance team:
+It's certainly by design that if we register a port twice, it gets
+the same name both times.
 
-"To test the effects of the patch, an OLTP workload was run on an IBM
-x3850 M2 server with 2 processors (quad-core Intel Xeon processors at
-2.93 GHz) using IBM DB2 v9.5 running Linux 2.6.24rc7 kernel. Comparing
-runs with and without the patch resulted in an overall performance
-benefit of ~9.8%. Correspondingly, oprofiles showed that samples from
-__up_read and __down_read routines that is seen during thread contention
-for system resources was reduced from 2.8% down to .05%. Monitoring
-the /proc/vmstat output from the patched run showed that the counter for
-fast_gup contained a very high number while the fast_gup_slow value was
-zero."
+But that's not quite what I was referring to.  I meant that I don't
+think 8250_pnp should depend on the fact that COM1-4 have been
+previously discovered to get the right names.
 
-Great work, Nick!
-
-Thanks,
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
-
+Bjorn
