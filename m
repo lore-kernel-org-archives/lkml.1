@@ -1,84 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266AbYAPKzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbYAPLED@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753266AbYAPKzq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 05:55:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbYAPKzi
+	id S1753457AbYAPLED (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 06:04:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbYAPLDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 05:55:38 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:58623 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751779AbYAPKzg (ORCPT
+	Wed, 16 Jan 2008 06:03:52 -0500
+Received: from py-out-1112.google.com ([64.233.166.179]:37221 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751139AbYAPLDv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 05:55:36 -0500
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: ppc: 4xx: sysctl table check failed: /kernel/l2cr .1.31 Missing strategy
-Date: Wed, 16 Jan 2008 11:55:15 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Josh Boyer <jwboyer@gmail.com>, Wolfgang Denk <wd@denx.de>
+	Wed, 16 Jan 2008 06:03:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=kdYK/lkyqPtHtoAjgvl3vvz+TiUJfXFhhbtfBL3ztxZFa40SBI0HfZhxGCGzD0/lnETkTNSiobrTOdujgcePycbH1dV2fgCZGCGO7yLoQXqYD9O7WR2CU6N27frD4XMsxkOL3Ead9ompbVf/QCgE2M53YyqWC3HJhez1t5Avb3k=
+Message-ID: <cfd9edbf0801160303s53237b81yb9d5e374c16cd006@mail.gmail.com>
+Date: Wed, 16 Jan 2008 12:03:49 +0100
+From: "=?ISO-8859-1?Q?Daniel_Sp=E5ng?=" <daniel.spang@gmail.com>
+To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH 4/5] memory_pressure_notify() caller
+Cc: "Rik van Riel" <riel@redhat.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, "Marcelo Tosatti" <marcelo@kvack.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20080116104536.11AE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801161155.15676.sr@denx.de>
-X-Provags-ID: V01U2FsdGVkX18srJdjeYqlpHQA5t917q2dZuYP7zJnjh6ERog
- Vgh35ZbF4i7AINa7PWKHiwbmdBCJ1vGQyTYVrtt9AXlNIbwQLM
- kjmgl5RQAr+8NtLNEQrxa8pT5/7sTxD
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_23898_28428135.1200481429593"
+References: <20080115175925.215471e1@bree.surriel.com>
+	 <cfd9edbf0801151539g72ca9777h7ac43a31aadc730e@mail.gmail.com>
+	 <20080116104536.11AE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm seeing this error message when booting an recent arch/ppc kernel on
-4xx platforms (tested on Ocotea and other 4xx platforms). Booting NFS
-rootfs still works fine, but this message kind of makes me "nervous".
-This is not seen on 4xx arch/powerpc platforms. Here the bootlog:
+------=_Part_23898_28428135.1200481429593
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Linux version 2.6.24-rc8 (stefan@ubuntu) (gcc version 4.2.2) #1 Wed Jan 16 11:51:57 CET 2008
-IBM Ocotea port (MontaVista Software, Inc. <source@mvista.com>)
-Zone PFN ranges:
-  DMA             0 ->    65536
-  Normal      65536 ->    65536
-Movable zone start PFN for each node
-early_node_map[1] active PFN ranges
-    0:        0 ->    65536
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 65024
-Kernel command line: root=/dev/nfs rw nfsroot=192.168.1.1:/opt/eldk-4.1/ppc_4xx ip=192.168.80.2:192.168.1.1::255.255.0.0:ocotea:eth0:off panic=1 console=ttyS0,115200
-PID hash table entries: 1024 (order: 10, 4096 bytes)
-console [ttyS0] enabled
-Dentry cache hash table entries: 32768 (order: 5, 131072 bytes)
-Inode-cache hash table entries: 16384 (order: 4, 65536 bytes)
-Memory: 257536k available (1660k kernel code, 540k data, 104k init, 0k highmem)
-SLUB: Genslabs=11, HWalign=32, Order=0-1, MinObjects=4, CPUs=1, Nodes=1
-Mount-cache hash table entries: 512
-net_namespace: 64 bytes
-NET: Registered protocol family 16
-PCI: Probing PCI hardware
-NET: Registered protocol family 2
-IP route cache hash table entries: 2048 (order: 1, 8192 bytes)
-TCP established hash table entries: 8192 (order: 4, 65536 bytes)
-TCP bind hash table entries: 8192 (order: 3, 32768 bytes)
-TCP: Hash tables configured (established 8192 bind 8192)
-TCP reno registered
-sysctl table check failed: /kernel/l2cr .1.31 Missing strategy
-Call Trace:
-[cfc11df0] [c00082d0] show_stack+0x44/0x1ac (unreliable)
-[cfc11e30] [c0034ffc] set_fail+0x50/0x68
-[cfc11e50] [c0035428] sysctl_check_table+0x414/0x70c
-[cfc11ec0] [c003543c] sysctl_check_table+0x428/0x70c
-[cfc11f30] [c0021fe4] register_sysctl_table+0x64/0xb4
-[cfc11f50] [c0213858] register_ppc_htab_sysctl+0x18/0x2c
-[cfc11f60] [c02121f4] kernel_init+0xd0/0x2b0
-[cfc11ff0] [c0003b3c] kernel_thread+0x44/0x60
-io scheduler noop registered
-io scheduler anticipatory registered
-io scheduler deadline registered
-io scheduler cfq registered (default)
-...
+On 1/16/08, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> Hi Daniel
+>
+> > > > The notification fires after only ~100 MB allocated, i.e., when page
+> > > > reclaim is beginning to nag from page cache. Isn't this a bit early?
+> > > > Repeating the test with swap enabled results in a notification after
+> > > > ~600 MB allocated, which is more reasonable and just before the system
+> > > > starts to swap.
+> > >
+> > > Your issue may have more to do with the fact that the
+> > > highmem zone is 128MB in size and some balancing issues
+> > > between __alloc_pages and try_to_free_pages.
+> >
+> > I don't think so. I ran the test again without highmem and noticed the
+> > same behaviour:
+>
+> Thank you for good point out!
+> Could you please post your test program and reproduced method?
 
-Any ideas?
+Sure:
 
-Thanks.
+1. Fill almost all available memory with page cache in a system without swap.
+2. Run attached alloc-test program.
+3. Notification fires when page cache is reclaimed.
 
-Best regards,
-Stefan
+Example:
+
+$ cat /bigfile > /dev/null
+$ cat /proc/meminfo
+MemTotal:       895876 kB
+MemFree:         94272 kB
+Buffers:           884 kB
+Cached:         782868 kB
+SwapCached:          0 kB
+Active:          15356 kB
+Inactive:       778000 kB
+HighTotal:           0 kB
+HighFree:            0 kB
+LowTotal:       895876 kB
+LowFree:         94272 kB
+SwapTotal:           0 kB
+SwapFree:            0 kB
+Dirty:               0 kB
+Writeback:           0 kB
+AnonPages:        9624 kB
+Mapped:           1352 kB
+Slab:             4220 kB
+SReclaimable:     1168 kB
+SUnreclaim:       3052 kB
+PageTables:        528 kB
+NFS_Unstable:        0 kB
+Bounce:              0 kB
+CommitLimit:    447936 kB
+Committed_AS:    28988 kB
+VmallocTotal:   122872 kB
+VmallocUsed:       904 kB
+VmallocChunk:   121864 kB
+$ ./test-alloc
+---------
+Got notification, allocated 90 MB
+$ cat /proc/meminfo
+MemTotal:       895876 kB
+MemFree:        101960 kB
+Buffers:           888 kB
+Cached:         775200 kB
+SwapCached:          0 kB
+Active:          15356 kB
+Inactive:       770336 kB
+HighTotal:           0 kB
+HighFree:            0 kB
+LowTotal:       895876 kB
+LowFree:        101960 kB
+SwapTotal:           0 kB
+SwapFree:            0 kB
+Dirty:              28 kB
+Writeback:           0 kB
+AnonPages:        9624 kB
+Mapped:           1352 kB
+Slab:             4224 kB
+SReclaimable:     1168 kB
+SUnreclaim:       3056 kB
+PageTables:        532 kB
+NFS_Unstable:        0 kB
+Bounce:              0 kB
+CommitLimit:    447936 kB
+Committed_AS:    28988 kB
+VmallocTotal:   122872 kB
+VmallocUsed:       904 kB
+VmallocChunk:   121864 kB
+
+------=_Part_23898_28428135.1200481429593
+Content-Type: application/octet-stream; name=alloc-test.c
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fbhrli8a
+Content-Disposition: attachment; filename=alloc-test.c
+
+LyoKICogQWxsb2NhdGUgMTAgTUIgZWFjaCBzZWNvbmQuIEV4aXQgb24gbm90aWZpY2F0aW9uLgog
+Ki8KCiNpbmNsdWRlIDxzeXMvbW1hbi5oPgojaW5jbHVkZSA8ZmNudGwuaD4KI2luY2x1ZGUgPHN0
+ZGlvLmg+CiNpbmNsdWRlIDxzdGRsaWIuaD4KI2luY2x1ZGUgPHVuaXN0ZC5oPgojaW5jbHVkZSA8
+c3RyaW5nLmg+CiNpbmNsdWRlIDxwb2xsLmg+CiNpbmNsdWRlIDxwdGhyZWFkLmg+CiNpbmNsdWRl
+IDxlcnJuby5oPgoKaW50IGNvdW50ID0gMDsKaW50IHNpemUgPSAxMDsKCnZvaWQgKmRvX2FsbG9j
+KCkgCnsKICAgICAgICBmb3IoOzspIHsKICAgICAgICAgICAgICAgIGludCAqYnVmZmVyOwogICAg
+ICAgICAgICAgICAgYnVmZmVyID0gbW1hcChOVUxMLCAgc2l6ZSoxMDI0KjEwMjQsCiAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgIFBST1RfUkVBRCB8IFBST1RfV1JJVEUsCiAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgIE1BUF9QUklWQVRFIHwgTUFQX0FOT05ZTU9VUywgLTEsIDApOwog
+ICAgICAgICAgICAgICAgaWYgKGJ1ZmZlciA9PSBNQVBfRkFJTEVEKSB7CiAgICAgICAgICAgICAg
+ICAgICAgICAgIHBlcnJvcigibW1hcCIpOwogICAgICAgICAgICAgICAgICAgICAgICBleGl0KEVY
+SVRfRkFJTFVSRSk7CiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICBtZW1zZXQoYnVm
+ZmVyLCAxICwgc2l6ZSoxMDI0KjEwMjQpOwoKICAgICAgICAgICAgICAgIHByaW50ZigiLSIpOwog
+ICAgICAgICAgICAgICAgZmZsdXNoKHN0ZG91dCk7CgogICAgICAgICAgICAgICAgY291bnQrKzsK
+ICAgICAgICAgICAgICAgIHNsZWVwKDEpOwogICAgICAgIH0KfQoKaW50IHdhaXRfZm9yX25vdGlm
+aWNhdGlvbihzdHJ1Y3QgcG9sbGZkICpwZmQpCnsKICAgICAgICBpbnQgcmV0OwogICAgICAgIHJl
+YWQocGZkLT5mZCwgMCwgMCk7CiAgICAgICAgcmV0ID0gcG9sbChwZmQsIDEsIC0xKTsKICAgICAg
+ICBpZiAocmV0ID09IC0xICYmIGVycm5vICE9IEVJTlRSKSB7CiAgICAgICAgICAgICAgICBwZXJy
+b3IoInBvbGwiKTsKICAgICAgICAgICAgICAgIGV4aXQoRVhJVF9GQUlMVVJFKTsKICAgICAgICB9
+CiAgICAgICAgcmV0dXJuIHJldDsKfQoKdm9pZCBkb19mcmVlKCkgCnsKICAgICAgICBzdHJ1Y3Qg
+cG9sbGZkIHBmZDsKCiAgICAgICAgcGZkLmZkID0gb3BlbigiL2Rldi9tZW1fbm90aWZ5IiwgT19S
+RE9OTFkpOwogICAgICAgIGlmIChwZmQuZmQgPT0gLTEpIHsKICAgICAgICAgICAgICAgIHBlcnJv
+cigib3BlbiIpOwogICAgICAgICAgICAgICAgZXhpdChFWElUX0ZBSUxVUkUpOwogICAgICAgIH0K
+ICAgICAgICBwZmQuZXZlbnRzID0gUE9MTElOOwogICAgICAgIGZvcig7OykKICAgICAgICAgICAg
+ICAgIGlmICh3YWl0X2Zvcl9ub3RpZmljYXRpb24oJnBmZCkgPiAwKSB7CiAgICAgICAgICAgICAg
+ICAgICAgICAgIHByaW50ZigiXG5Hb3Qgbm90aWZpY2F0aW9uLCBhbGxvY2F0ZWQgJWQgTUJcbiIs
+CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBzaXplICogY291bnQpOwogICAgICAgICAg
+ICAgICAgICAgICAgICBleGl0KEVYSVRfU1VDQ0VTUyk7CiAgICAgICAgICAgICAgICB9Cn0KCmlu
+dCBtYWluKGludCBhcmdjLCBjaGFyICphcmd2W10pCnsKICAgICAgICBwdGhyZWFkX3QgYWxsb2Nh
+dG9yOwoKICAgICAgICBwdGhyZWFkX2NyZWF0ZSgmYWxsb2NhdG9yLCBOVUxMLCBkb19hbGxvYywg
+TlVMTCk7CiAgICAgICAgZG9fZnJlZSgpOwp9Cg==
+------=_Part_23898_28428135.1200481429593--
