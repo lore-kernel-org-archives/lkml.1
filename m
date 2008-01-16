@@ -1,106 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752827AbYAPLsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbYAPLto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752827AbYAPLsS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 06:48:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbYAPLsD
+	id S1753335AbYAPLto (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 06:49:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYAPLtf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 06:48:03 -0500
-Received: from az33egw01.freescale.net ([192.88.158.102]:34799 "EHLO
-	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751453AbYAPLsA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 06:48:00 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 16 Jan 2008 06:49:35 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42760 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751830AbYAPLte (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 06:49:34 -0500
+Date: Wed, 16 Jan 2008 12:49:40 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Daniel Phillips <phillips@google.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Al Boldi <a1426z@gawab.com>, Valerie Henson <val.henson@gmail.com>,
+       Rik van Riel <riel@redhat.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Patch] document ext3 requirements (was Re: [RFD] Incremental
+	fsck)
+Message-ID: <20080116114940.GC22460@elf.ucw.cz>
+References: <200801090022.55589.a1426z@gawab.com> <200801090740.12989.a1426z@gawab.com> <70b6f0bf0801082345vf57951ey642e35c3d6e5194f@mail.gmail.com> <200801091452.14890.a1426z@gawab.com> <20080112145140.GB6751@mit.edu> <20080113171916.GB4132@ucw.cz> <20080113174125.5f39ac64@lxorguk.ukuu.org.uk> <20080115201653.GA5639@elf.ucw.cz> <4d47a5d10801151744t378ecdcbj1c326181b4360452@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 0/3] UCC TDM driver for MPC83xx platforms
-Date: Wed, 16 Jan 2008 17:17:38 +0530
-Message-ID: <2A6F278C5B66C4459AF4013E77A40CD301149086@zin33exm20.fsl.freescale.net>
-In-Reply-To: <5927F7A4-D42A-40F6-AE9C-EDA34738A752@kernel.crashing.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 0/3] UCC TDM driver for MPC83xx platforms
-Thread-Index: AchXJyJXfQxp3NXiQrCSHWzSvdSKYQBDdywA
-From: "Kalra Ashish" <ashish.kalra@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Cc: "Phillips Kim" <Kim.Phillips@freescale.com>,
-       "Aggrwal Poonam" <Poonam.Aggrwal@freescale.com>, <sfr@canb.auug.org.au>,
-       <rubini@vision.unipv.it>, <linux-ppcdev@ozlabs.kernel.org>,
-       <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       "Barkowski Michael" <Michael.Barkowski@freescale.com>,
-       "Cutler Richard" <Rich.Cutler@freescale.com>,
-       "Kalra Ashish" <ashish.kalra@freescale.com>,
-       "Suresh PV" <pala@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4d47a5d10801151744t378ecdcbj1c326181b4360452@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello All,
- 
-I am sure that the TDM bus driver model/framework will make us put a lot
-more programming effort without
-any assurance of the code being accepted by the Linux community,
-especially as there are many
-Telephony/VoIP stack implementations in Linux such as the Sangoma
-WANPIPE Kernel suite which
-have their own Zaptel TDM (channelized zero-copy) interface layer. There
-are other High Speed serial (HSS)
-API interfaces, again supporting channelized and/or prioritized API
-interfaces. All these implementations 
-are proprietary and have their own tightly coupled upper layers and
-hardware abstraction layers. It is
-difficult to predict that these stacks will move towards a generic TDM
-bus driver interface. Therefore, i think
-we can have our own tightly coupled interface with our VoIP framework
-and let us the keep the driver as it is,
-i.e., as a misc driver.
+Hi!
 
-Ashish
+> Along with this effort, could you let me know if the world actually
+> cares about online fsck?  
 
------Original Message-----
-From: Kumar Gala [mailto:galak@kernel.crashing.org] 
-Sent: Tuesday, January 15, 2008 9:01 AM
-To: Andrew Morton
-Cc: Phillips Kim; Aggrwal Poonam; sfr@canb.auug.org.au;
-rubini@vision.unipv.it; linux-ppcdev@ozlabs.kernel.org;
-netdev@vger.kernel.org; linux-kernel@vger.kernel.org; Barkowski Michael;
-Kalra Ashish; Cutler Richard
-Subject: Re: [PATCH 0/3] UCC TDM driver for MPC83xx platforms
+I'm not the world's spokeperson (yet ;-).
 
+> Now we know how to do it I think, but is it
+> worth the effort.
 
-On Jan 14, 2008, at 3:15 PM, Andrew Morton wrote:
+ext3's "lets fsck on every 20 mounts" is good idea, but it can be
+annoying when developing. Having option to fsck while filesystem is
+online takes that annoyance away.
 
-> On Mon, 14 Jan 2008 12:00:51 -0600
-> Kim Phillips <kim.phillips@freescale.com> wrote:
->
->> On Thu, 10 Jan 2008 21:41:20 -0700
->> "Aggrwal Poonam" <Poonam.Aggrwal@freescale.com> wrote:
->>
->>> Hello  All
->>>
->>> I am waiting for more feedback on the patches.
->>>
->>> If there are no objections please consider them for 2.6.25.
->>>
->> if this isn't going to go through Alessandro Rubini/misc drivers, can
+So yes, it would be very useful for me...
 
->> it go through the akpm/mm tree?
->>
->
-> That would work.  But it might be more appropriate to go Kumar-
-> >paulus->Linus.
+For long-running servers, this may be less of a problem... but OTOH
+their filesystems are not checked at all as long servers are
+online... so online fsck is actually important there, too, but for
+other reasons.
 
-I'm ok w/taking the arch/powerpc bits, but I"m a bit concerned about  
-the driver itself.  I'm wondering if we need a TDM framework in the  
-kernel.
+So yes, it is very useful for world.
 
-I guess if Poonam could possibly describe how this driver is actually  
-used that would be helpful.  I see we have 8315 with a discrete TDM  
-block and I'm guessing 82xx/85xx based CPM parts of some form of TDM  
-as well.
-
-- k
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
