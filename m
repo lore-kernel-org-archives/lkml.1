@@ -1,89 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755450AbYAPPHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754138AbYAPPQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755450AbYAPPHA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 10:07:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121AbYAPPGw
+	id S1754138AbYAPPQX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 10:16:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbYAPPQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 10:06:52 -0500
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:58880 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752551AbYAPPGu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 10:06:50 -0500
-Date: Wed, 16 Jan 2008 10:06:40 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>, Paul Mackerras <paulus@samba.org>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: [RFC PATCH 16/22 -v2] add get_monotonic_cycles
-In-Reply-To: <20080116145604.GB31329@Krystal>
-Message-ID: <Pine.LNX.4.58.0801161003010.15758@gandalf.stny.rr.com>
-References: <20080109232914.676624725@goodmis.org> <20080109233044.777564395@goodmis.org>
- <20080115214636.GD17439@Krystal> <Pine.LNX.4.58.0801151658190.29090@gandalf.stny.rr.com>
- <20080115220824.GB22242@Krystal> <Pine.LNX.4.58.0801151717250.29090@gandalf.stny.rr.com>
- <20080116031730.GA2164@Krystal> <Pine.LNX.4.58.0801152238130.19680@gandalf.stny.rr.com>
- <20080116145604.GB31329@Krystal>
+	Wed, 16 Jan 2008 10:16:14 -0500
+Received: from saeurebad.de ([85.214.36.134]:57225 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750896AbYAPPQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 10:16:13 -0500
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: akpm@linux-foundation.org, davej@codemonkey.org.uk, rjw@sisk.pl,
+       tglx@linutronix.de, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch for 2.6.24? 1/1] cpufreq: Initialise default governor before use
+In-Reply-To: <20080114091401.GB8026@elte.hu> (Ingo Molnar's message of "Mon,
+	14 Jan 2008 10:14:01 +0100")
+Date: Wed, 16 Jan 2008 16:17:02 +0100
+Message-ID: <87tzldvlzl.fsf@saeurebad.de>
+References: <200801140906.m0E962IL020530@imap1.linux-foundation.org>
+	<20080114091401.GB8026@elte.hu>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Wed, 16 Jan 2008, Mathieu Desnoyers wrote:
-> Hrm, I will reply to the rest of this email in a separate mail, but
-> there is another concern, simpler than memory ordering, that just hit
-> me :
->
-> If we have CPU A calling clocksource_accumulate while CPU B is calling
-> get_monotonic_cycles, but events happens in the following order (because
-> of preemption or interrupts). Here, to make things worse, we would be on
-> x86 where cycle_t is not an atomic write (64 bits) :
->
->
-> CPU A                  CPU B
->
-> clocksource read
-> update cycle_mono (1st 32 bits)
->                        read cycle_mono
->                        read cycle_last
->                        clocksource read
->                        read cycle_mono
->                        read cycle_last
-> update cycle_mono (2nd 32 bits)
-> update cycle_last
-> update cycle_acc
->
-> Therefore, we have :
-> - an inconsistant cycle_monotonic value
-> - inconsistant cycle_monotonic and cycle_last values.
->
-> Or is there something I have missed ?
+Ingo Molnar <mingo@elte.hu> writes:
 
-No, there's probably issues there too, but no need to worry about it,
-since I already showed that allowing for clocksource_accumulate to happen
-inside the get_monotonic_cycles loop is already flawed.
-
+> * akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
 >
-> If you really want an seqlock free algorithm (I _do_ want this for
-> tracing!) :) maybe going in the RCU direction could help (I refer to my
-> RCU-based 32-to-64 bits lockless timestamp counter extension, which
-> could be turned into the clocksource updater).
+>> +#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
+>> +fs_initcall(cpufreq_gov_dbs_init);
+>> +#else
+>>  module_init(cpufreq_gov_dbs_init);
+>> +#endif
+>
+> silly question: why not unconditional fs_initcall() ?
 
-I know you pointed me the code, but lets assume that I'm still ignorant
-;-)
+Would there be a way to avoid the fs_initcall at all?
 
-do you actually use the RCU internals? or do you just reimplement an RCU
-algorithm?
+Otherwise, this is just a psychological thing to show, hey, this still
+sucks, find a better solution.  But perhaps the plain fs_initcall is
+marker enough for that fact.
 
--- Steve
+	Hannes
