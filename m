@@ -1,65 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbYAPOND@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbYAPOQD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754338AbYAPOND (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 09:13:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbYAPOMw
+	id S1754643AbYAPOQD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 09:16:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbYAPOPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 09:12:52 -0500
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:62496 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751746AbYAPOMv (ORCPT
+	Wed, 16 Jan 2008 09:15:53 -0500
+Received: from web32604.mail.mud.yahoo.com ([68.142.207.231]:31564 "HELO
+	web32604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752348AbYAPOPv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 09:12:51 -0500
-Date: Wed, 16 Jan 2008 09:12:05 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Valdis.Kletnieks@vt.edu
-cc: caglar@pardus.org.tr, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: 2.6.24-rc7-rt2
-In-Reply-To: <31516.1200464589@turing-police.cc.vt.edu>
-Message-ID: <Pine.LNX.4.58.0801160904200.9544@gandalf.stny.rr.com>
-References: <1200336080.318.8.camel@localhost.localdomain>
- <200801150237.44029.caglar@pardus.org.tr> <24149.1200455417@turing-police.cc.vt.edu>
-            <Pine.LNX.4.58.0801152302580.10869@gandalf.stny.rr.com>
- <31516.1200464589@turing-police.cc.vt.edu>
+	Wed, 16 Jan 2008 09:15:51 -0500
+X-YMail-OSG: x_ms5cUVM1kYxKjU9D9.28v.YlmMsRmKFzrKOzzCfJpzunv1
+X-Mailer: YahooMailRC/818.31 YahooMailWebService/0.7.160
+Date: Wed, 16 Jan 2008 06:15:49 -0800 (PST)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Subject: Re: regression: 100% io-wait with 2.6.24-rcX
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: Mike Snitzer <snitzer@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
+       jplatte@naasa.net, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <230154.6549.qm@web32604.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+----- Original Message ----
+> From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+> To: Martin Knoblauch <knobi@knobisoft.de>
+> Cc: Mike Snitzer <snitzer@gmail.com>; Peter Zijlstra <peterz@infradead.org>; jplatte@naasa.net; Ingo Molnar <mingo@elte.hu>; linux-kernel@vger.kernel.org; "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>; Linus Torvalds <torvalds@linux-foundation.org>
+> Sent: Wednesday, January 16, 2008 1:00:04 PM
+> Subject: Re: regression: 100% io-wait with 2.6.24-rcX
+> 
+> On Wed, Jan 16, 2008 at 01:26:41AM -0800, Martin Knoblauch wrote:
+> > > For those interested in using your writeback improvements in
+> > > production sooner rather than later (primarily with ext3); what
+> > > recommendations do you have?  Just heavily test our own 2.6.24
+> +
+> 
+ your
+> > > evolving "close, but not ready for merge" -mm writeback patchset?
+> > > 
+> > Hi Fengguang, Mike,
+> > 
+> >  I can add myself to Mikes question. It would be good to know
+> a
+> 
+ "roadmap" for the writeback changes. Testing 2.6.24-rcX so far has
+> been
+> 
+ showing quite nice improvement of the overall writeback situation and
+> it
+> 
+ would be sad to see this [partially] gone in 2.6.24-final.
+> Linus
+> 
+ apparently already has reverted  "...2250b". I will definitely repeat my
+> tests
+> 
+ with -rc8. and report.
+> 
+> Thank you, Martin. Can you help test this patch on 2.6.24-rc7?
+> Maybe we can push it to 2.6.24 after your testing.
+> 
 
-> > > On Tue, 15 Jan 2008 02:37:37 +0200, =?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur said:
-> > > > And because of mcount-add-basic-support-for-gcc-profiler-instrum.patch, closed
-> > > > source nvidia-new module cannot be used with this release (mcount is exported
-> > > > GPL only), i know this is not supported but i used it with that [2] patch up
-> > > > until now without a single problem.
-> > >
-> > > Playing devil's advocate here - the claim is that EXPORT_SYMBOL_GPL is to
-> > > indicate that code is getting too chummy with Linux internals.
-> > >
-> > > However, in *this* case, isn't it "code that is too chummy with *GCC* internals",
-> > > and thus it isn't our place to say what can and can't be done with code that
-> > > is derivative of the GCC compiler? ;)
-> >
-> > Actually, it got put in there by accident. I usually default all my
-> > exports as GPL.  But this breaks pretty much everything, so I'll leave it
-> > as EXPORT_SYMBOL.
->
-> OK, I can live with that. ;)
->
+ Will do tomorrow or friday. Actually a patch against -rc8 would be nicer for me, as I have not looked at -rc7 due to holidays and some of the reported problems with it.
 
-We modified mcount now, and it is derived from an objdump of glibc. So
-this is most definitely a "derived" work from glibc. But glibc is licensed
-as LGPL, which IIRC allows for non GPL to link to it.
+Cheers
+Martin
 
-I personally could care less if we use EXPORT_SYMBOL or EXPORT_SYMBOL_GPL.
-But I really want to do The Right Thing(tm). I'm not a lawyer and don't
-claim that I know anything about the law, but I'm leaning towards the non
-_GPL version because the code was from LGPL and not from strict GPL.
+> Fengguang
+> ---
+>  fs/fs-writeback.c         |   17 +++++++++++++++--
+>  include/linux/writeback.h |    1 +
+>  mm/page-writeback.c       |    9 ++++++---
+>  3 files changed, 22 insertions(+), 5 deletions(-)
+> 
+> --- linux.orig/fs/fs-writeback.c
+> +++ linux/fs/fs-writeback.c
+> @@ -284,7 +284,16 @@ __sync_single_inode(struct inode *inode,
+>                   * soon as the queue becomes uncongested.
+>                   */
+>                  inode->i_state |= I_DIRTY_PAGES;
+> -                requeue_io(inode);
+> +                if (wbc->nr_to_write <= 0)
+> +                    /*
+> +                     * slice used up: queue for next turn
+> +                     */
+> +                    requeue_io(inode);
+> +                else
+> +                    /*
+> +                     * somehow blocked: retry later
+> +                     */
+> +                    redirty_tail(inode);
+>              } else {
+>                  /*
+>                   * Otherwise fully redirty the inode so that
+> @@ -479,8 +488,12 @@ sync_sb_inodes(struct super_block *sb, s
+>          iput(inode);
+>          cond_resched();
+>          spin_lock(&inode_lock);
+> -        if (wbc->nr_to_write <= 0)
+> +        if (wbc->nr_to_write <= 0) {
+> +            wbc->more_io = 1;
+>              break;
+> +        }
+> +        if (!list_empty(&sb->s_more_io))
+> +            wbc->more_io = 1;
+>      }
+>      return;        /* Leave any unwritten inodes on s_io */
+>  }
+> --- linux.orig/include/linux/writeback.h
+> +++ linux/include/linux/writeback.h
+> @@ -62,6 +62,7 @@ struct writeback_control {
+>      unsigned for_reclaim:1;        /* Invoked from the page
+> allocator
+> 
+ */
+>      unsigned for_writepages:1;    /* This is a writepages() call */
+>      unsigned range_cyclic:1;    /* range_start is cyclic */
+> +    unsigned more_io:1;        /* more io to be dispatched */
+>  };
+>  
+>  /*
+> --- linux.orig/mm/page-writeback.c
+> +++ linux/mm/page-writeback.c
+> @@ -558,6 +558,7 @@ static void background_writeout(unsigned
+>              global_page_state(NR_UNSTABLE_NFS) < background_thresh
+>                  && min_pages <= 0)
+>              break;
+> +        wbc.more_io = 0;
+>          wbc.encountered_congestion = 0;
+>          wbc.nr_to_write = MAX_WRITEBACK_PAGES;
+>          wbc.pages_skipped = 0;
+> @@ -565,8 +566,9 @@ static void background_writeout(unsigned
+>          min_pages -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
+>          if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
+>              /* Wrote less than expected */
+> -            congestion_wait(WRITE, HZ/10);
+> -            if (!wbc.encountered_congestion)
+> +            if (wbc.encountered_congestion || wbc.more_io)
+> +                congestion_wait(WRITE, HZ/10);
+> +            else
+>                  break;
+>          }
+>      }
+> @@ -631,11 +633,12 @@ static void wb_kupdate(unsigned long arg
+>              global_page_state(NR_UNSTABLE_NFS) +
+>              (inodes_stat.nr_inodes - inodes_stat.nr_unused);
+>      while (nr_to_write > 0) {
+> +        wbc.more_io = 0;
+>          wbc.encountered_congestion = 0;
+>          wbc.nr_to_write = MAX_WRITEBACK_PAGES;
+>          writeback_inodes(&wbc);
+>          if (wbc.nr_to_write > 0) {
+> -            if (wbc.encountered_congestion)
+> +            if (wbc.encountered_congestion || wbc.more_io)
+>                  congestion_wait(WRITE, HZ/10);
+>              else
+>                  break;    /* All the old data is written */
+> 
+> 
+> 
 
--- Steve
 
