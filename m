@@ -1,66 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753436AbYAPUKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbYAPUL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753436AbYAPUKX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 15:10:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYAPUKK
+	id S1754012AbYAPUL1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 15:11:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbYAPULT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 15:10:10 -0500
-Received: from wx-out-0506.google.com ([66.249.82.233]:24668 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751269AbYAPUKI (ORCPT
+	Wed, 16 Jan 2008 15:11:19 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54191 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751378AbYAPULS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 15:10:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sTaxZ4DFnFOGrtiIbmcBmmrfcWpaOAIjDFGuLpcIGKM3AlmFgMNDPqQ/3hGYNHAGB2UJjZeNyQa6eMHbbDH6gdo4Ye7LgaudyR+fv6wQjA7XSEtqJ93iO9oST0Sl+K4PiNlKufbmX/GfqZDbaT3nLBhyQICK8ABku76IPuGcoIU=
-Message-ID: <5bdc1c8b0801161210t63071f40n9521f5530590d309@mail.gmail.com>
-Date: Wed, 16 Jan 2008 12:10:06 -0800
-From: "Mark Knecht" <markknecht@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: 2.6.24-rc7-rt3
-Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <Pine.LNX.4.58.0801161453100.15850@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 16 Jan 2008 15:11:18 -0500
+Date: Wed, 16 Jan 2008 20:08:29 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Newall <davidn@davidnewall.com>
+Cc: "David P. Reed" <dpreed@reed.com>, David Woodhouse <dwmw2@infradead.org>,
+       Rene Herman <rene.herman@keyaccess.nl>,
+       Zachary Amsden <zach@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Christer Weinigel <christer@weinigel.se>,
+       Ondrej Zary <linux@rainbow-software.org>, Bodo Eggert <7eggert@gmx.de>,
+       Ingo Molnar <mingo@elte.hu>, Paul Rolland <rol@as2917.net>,
+       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       rol <rol@witbe.net>
+Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
+ I/O delay override.
+Message-ID: <20080116200829.26040351@lxorguk.ukuu.org.uk>
+In-Reply-To: <478E57C8.2080403@davidnewall.com>
+References: <9BdU5-1YW-9@gated-at.bofh.it>
+	<200801081810.58904.linux@rainbow-software.org>
+	<4783B1B2.6070005@reed.com>
+	<200801081838.16241.linux@rainbow-software.org>
+	<4783C4A6.9060402@reed.com>
+	<20080108185120.3ff7ed18@lxorguk.ukuu.org.uk>
+	<4783CBD9.7020709@reed.com>
+	<1199847162.7369.323.camel@bodhitayantram.eng.vmware.com>
+	<47845972.9090803@zytor.com>
+	<1199915614.7369.367.camel@bodhitayantram.eng.vmware.com>
+	<47854916.4080703@reed.com>
+	<1200015388.6192.22.camel@bodhitayantram.eng.vmware.com>
+	<4786DD05.20804@keyaccess.nl>
+	<47877ECD.9060408@reed.com>
+	<1200347847.2647.97.camel@shinybook.infradead.org>
+	<478BE08B.3090306@reed.com>
+	<478E1668.9040404@davidnewall.com>
+	<20080116145515.6d84dc7b@lxorguk.ukuu.org.uk>
+	<478E57C8.2080403@davidnewall.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1200456773.318.14.camel@localhost.localdomain>
-	 <5bdc1c8b0801161144x62aa3f9bj868602db94b42570@mail.gmail.com>
-	 <Pine.LNX.4.58.0801161453100.15850@gandalf.stny.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 16, 2008 11:55 AM, Steven Rostedt <rostedt@goodmis.org> wrote:
->
-> On Wed, 16 Jan 2008, Mark Knecht wrote:
-> >
-> > Jan 16 11:12:55 lightning sshd[5915]: Server listening on :: port 22.
-> > Jan 16 11:12:55 lightning sshd[5915]: error: Bind to port 22 on
-> > 0.0.0.0 failed: Address already in use.
-> >
-> > Will continue testing as I get time.
->
-> Thanks,
->
-> Are you sure you don't see this when booting the vanilla kernel. Also, if
-> you do try a vanilla kernel, don't use the distro version. Use what ever
-> version of the -rt patch you used. ie. for 2.6.23-rt1 try out 2.6.23 with
-> the same config (with necessary updates).
->
-> -- Steve
+> If the hardware required an intermediate junk I/O, that would be a
+> reason to do one, but it doesn't, does it?  It requires a delay.  It's
+> written thus in all of the application notes.
 
-Steve,
-   I'll give it a try. I am pretty sure it's a distro specific issue
-so I'm going to check with them about how to properly configure sshd.
-It's likely jsut some oversight in one of my config files. Being a
-Gentoo user we have more things like this that we have to look after.
-Probably some update clobbered something and I just noticed it
-recently.
+And the only instruction that is synchronized to the bus in question is
+an I/O instruction. 
 
-   If I get a quick minute I'll build the 2.6.23 and take a look at that also.
+> Wrong again.  Of course one knows how long the delay should be.  The bus
+> speed is known. 
 
-Thanks,
-Mark
+Wrong again. ISA bus speed is neither defined precisely, nor visible in a
+system portable fashion.
+
+I'm so glad you have nothing better to do than troll, if you
+actually wrote code I'd be worried it might get into something people
+used.
+
+Alan
