@@ -1,111 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753776AbYAQCMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbYAQCNa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753776AbYAQCMm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 21:12:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751759AbYAQCMe
+	id S1754790AbYAQCNa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 21:13:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbYAQCNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 21:12:34 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:48821 "EHLO
-	outbound4-va3-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751270AbYAQCMd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 21:12:33 -0500
-X-BigFish: V
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
-Subject: Re: [PATCH 1/4] RT: remove duplicate time/Kconfig
-From: Frank Rowand <frank.rowand@am.sony.com>
-Reply-To: frank.rowand@am.sony.com
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de
-In-Reply-To: <Pine.LNX.4.58.0801162027110.19540@gandalf.stny.rr.com>
-References: <1200435525.4092.14.camel@bx740>
-	 <20080116004051.GF30532@goodmis.org> <1200530798.3939.17.camel@bx740>
-	 <Pine.LNX.4.58.0801162027110.19540@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Wed, 16 Jan 2008 18:11:21 -0800
-Message-Id: <1200535881.3939.23.camel@bx740>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
+	Wed, 16 Jan 2008 21:13:23 -0500
+Received: from cantor.suse.de ([195.135.220.2]:48672 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751716AbYAQCNW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 21:13:22 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 0 of 4] x86: some more patches
+Date: Wed, 16 Jan 2008 22:35:10 +0100
+User-Agent: KMail/1.9.6
+Cc: Jan Beulich <jbeulich@novell.com>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+References: <patchbomb.1200435425@localhost> <200801162159.50274.ak@suse.de> <20080116210646.GA11967@elte.hu>
+In-Reply-To: <20080116210646.GA11967@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Jan 2008 02:12:26.0977 (UTC) FILETIME=[67D73510:01C858AE]
+Content-Disposition: inline
+Message-Id: <200801162235.11076.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 16 January 2008 22:06:46 Ingo Molnar wrote:
+> 
+> * Andi Kleen <ak@suse.de> wrote:
+> 
+> > > truly stuck, or just an annoying message?
+> > 
+> > Just annoying message; system works after that for simple login etc. 
+> > (haven't run anything complicated)
+> 
+> ok, if you see no other failures and if you have some time it would be 
+> nice to figure out why that message is happening. Is NOHZ enabled 
+> perhaps?
 
-On Wed, 2008-01-16 at 20:29 -0500, Steven Rostedt wrote:
-> On Wed, 16 Jan 2008, Frank Rowand wrote:
-> 
-> >
-> > time/Kconfig added by preempt-realtime-mips.patch duplicates other entry,
-> > resulting in kernel make error:
-> >
-> > Signed-off-by: Frank Rowand <frank.rowand@am.sony.com>
-> > ---
-> >  arch/mips/Kconfig |    2 	0 +	2 -	0 !
-> >  1 files changed, 2 deletions(-)
-> >
-> > Index: linux-2.6.24-rc7/arch/mips/Kconfig
-> > ===================================================================
-> > --- linux-2.6.24-rc7.orig/arch/mips/Kconfig
-> > +++ linux-2.6.24-rc7/arch/mips/Kconfig
-> > @@ -1001,8 +1001,6 @@ config BOOT_ELF64
-> >
-> >  menu "CPU selection"
-> >
-> > -source "kernel/time/Kconfig"
-> > -
-> >  choice
-> >  	prompt "CPU type"
-> >  	default CPU_R4X00
-> 
-> heh, This doesn't apply either. Or is this to be done before the patches
-> are added?
+I updated now to latest git-x86 and the problem seems to have gone away.
 
-Hmmm, I don't seem to be doing to well here.  It was created after the
--rt3 patch was applied.  Thanks for you patience with me here!!
+But NO_HZ was enabled yes and the system also had a very unsynchronous
+TSC (dual K8 opteron with cpufreq) 
 
-> 
-> Anyway, I did find the two konfig references:
-> 
-> ...
-> 
->           This is purely to save memory - each supported CPU adds
->           approximately eight kilobytes to the kernel image.  For best
->           performance should round up your number of processors to the next
->           power of two.
-> 
-> source "kernel/time/Kconfig"
-> 
-> #
-> # Timer Interrupt Frequency Configuration
-> #
-> 
-> ...
-> 
-> config GENERIC_TIME
->         bool
->         default y
-> 
-> source "kernel/time/Kconfig"
-> 
-> config CPU_SPEED
->         int "CPU speed used for clocksource/clockevent calculations"
->         default 600
-> endmenu
-> 
-> ...
-> 
-> 
-> I'll apply your patch in quilt and then make the proper change. Which
-> Kconfig do you want gone?
+Also I should say my patches were applied, but I didn't change
+anything in this area.
 
-It would be good to get rid of the first one, but I'm especially picky.
-
-
-> 
-> -- Steve
-> 
-> 
-
+-Andi
 
