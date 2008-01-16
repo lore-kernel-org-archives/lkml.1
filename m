@@ -1,125 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754487AbYAPWcd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758615AbYAPWcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754487AbYAPWcd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 17:32:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757011AbYAPW1I
+	id S1758615AbYAPWcs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 17:32:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757181AbYAPW1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 17:27:08 -0500
-Received: from ns2.suse.de ([195.135.220.15]:39461 "EHLO mx2.suse.de"
+	Wed, 16 Jan 2008 17:27:09 -0500
+Received: from mail.suse.de ([195.135.220.2]:56758 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754635AbYAPW1H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756798AbYAPW1H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 Jan 2008 17:27:07 -0500
 From: Andi Kleen <ak@suse.de>
 References: <200801161127.268350000@suse.de>
 In-Reply-To: <200801161127.268350000@suse.de>
-To: andreas.herrmann3@amd.com, mingo@elte.hu, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] [2/7] Use the correct cpuid method to detect MWAIT support for C states
-Message-Id: <20080116222705.70BD014EE3@wotan.suse.de>
-Date: Wed, 16 Jan 2008 23:27:05 +0100 (CET)
+To: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: [PATCH] [3/7] Use shorter addresses in i386 segfault printks
+Message-Id: <20080116222706.8074A14EE3@wotan.suse.de>
+Date: Wed, 16 Jan 2008 23:27:06 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Previously there was a AMD specific quirk to handle the case of
-AMD Fam10h MWAIT not supporting any C states. But it turns out
-that CPUID already has ways to detectly detect that without
-using special quirks. 
-
-The new code simply checks if MWAIT supports at least C1 and doesn't
-use it if it doesn't. No more vendor specific code.
-
-Note this is does not simply clear MWAIT because MWAIT can be still
-useful even without C states.
-
-Credit goes to Ben Serebrin for pointing out the (nearly) obvious.
-
-Cc: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86/kernel/cpu/amd.c    |    3 ---
- arch/x86/kernel/process_32.c |   10 +++++++++-
- arch/x86/kernel/process_64.c |   11 ++++++++++-
- arch/x86/kernel/setup_64.c   |    4 ----
- 4 files changed, 19 insertions(+), 9 deletions(-)
+ arch/x86/mm/fault_32.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux/arch/x86/kernel/cpu/amd.c
+Index: linux/arch/x86/mm/fault_32.c
 ===================================================================
---- linux.orig/arch/x86/kernel/cpu/amd.c
-+++ linux/arch/x86/kernel/cpu/amd.c
-@@ -300,9 +300,6 @@ static void __cpuinit init_amd(struct cp
- 		local_apic_timer_disabled = 1;
+--- linux.orig/arch/x86/mm/fault_32.c
++++ linux/arch/x86/mm/fault_32.c
+@@ -516,7 +516,7 @@ bad_area_nosemaphore:
+ 		    printk_ratelimit()) {
+ 			printk(
+ #ifdef CONFIG_X86_32
+-			"%s%s[%d]: segfault at %08lx ip %08lx sp %08lx error %lx\n",
++			"%s%s[%d]: segfault at %lx ip %08lx sp %08lx error %lx\n",
+ #else
+ 			"%s%s[%d]: segfault at %lx ip %lx sp %lx error %lx\n",
  #endif
- 
--	if (c->x86 == 0x10 && !force_mwait)
--		clear_bit(X86_FEATURE_MWAIT, c->x86_capability);
--
- 	/* K6s reports MCEs but don't actually have all the MSRs */
- 	if (c->x86 < 6)
- 		clear_bit(X86_FEATURE_MCE, c->x86_capability);
-Index: linux/arch/x86/kernel/process_32.c
-===================================================================
---- linux.orig/arch/x86/kernel/process_32.c
-+++ linux/arch/x86/kernel/process_32.c
-@@ -285,9 +285,17 @@ static void mwait_idle(void)
- 	mwait_idle_with_hints(0, 0);
- }
- 
-+static int mwait_usable(const struct cpuinfo_x86 *c)
-+{
-+	if (force_mwait)
-+		return 1;
-+	/* Any C1 states supported? */
-+	return c->cpuid_level >= 5 && ((cpuid_edx(5) >> 4) & 0xf) > 0;
-+}
-+
- void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
- {
--	if (cpu_has(c, X86_FEATURE_MWAIT)) {
-+	if (cpu_has(c, X86_FEATURE_MWAIT) && mwait_usable(c)) {
- 		printk("monitor/mwait feature present.\n");
- 		/*
- 		 * Skip, if setup has overridden idle.
-Index: linux/arch/x86/kernel/process_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/process_64.c
-+++ linux/arch/x86/kernel/process_64.c
-@@ -280,10 +280,19 @@ static void mwait_idle(void)
- 	}
- }
- 
-+
-+static int mwait_usable(const struct cpuinfo_x86 *c)
-+{
-+	if (force_mwait)
-+		return 1;
-+	/* Any C1 states supported? */
-+	return c->cpuid_level >= 5 && ((cpuid_edx(5) >> 4) & 0xf) > 0;
-+}
-+
- void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
- {
- 	static int printed;
--	if (cpu_has(c, X86_FEATURE_MWAIT)) {
-+	if (cpu_has(c, X86_FEATURE_MWAIT) && mwait_usable(c)) {
- 		/*
- 		 * Skip, if setup has overridden idle.
- 		 * One CPU supports mwait => All CPUs supports mwait
-Index: linux/arch/x86/kernel/setup_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/setup_64.c
-+++ linux/arch/x86/kernel/setup_64.c
-@@ -778,10 +778,6 @@ static void __cpuinit init_amd(struct cp
- 	/* MFENCE stops RDTSC speculation */
- 	set_cpu_cap(c, X86_FEATURE_MFENCE_RDTSC);
- 
--	/* Family 10 doesn't support C states in MWAIT so don't use it */
--	if (c->x86 == 0x10 && !force_mwait)
--		clear_cpu_cap(c, X86_FEATURE_MWAIT);
--
- 	if (amd_apic_timer_broken())
- 		disable_apic_timer = 1;
- }
