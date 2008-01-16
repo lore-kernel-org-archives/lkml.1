@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758716AbYAPBHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757522AbYAPBOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758716AbYAPBHh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 20:07:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbYAPBH0
+	id S1757522AbYAPBOT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 20:14:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbYAPBOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 20:07:26 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:24321 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754222AbYAPBHY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 20:07:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=Z2Tc5HI5dxe3jWLKfyEiZ8W4STvsh2k0AuQp5rMIO5t+b5TTgK9qAlNNqBGh42RFptRS7RZ4FRmT0hN+AOWcJofWGagZKoP4e7C9q/sIqg1CK3w0BVe36Q2vOgRXnqA2LM3ofC0oWnlnJrLecGfLuOrnoHqx2tATK/TvQqiXhaM=
-Message-ID: <478D58B8.1000705@gmail.com>
-Date: Wed, 16 Jan 2008 10:07:04 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, daniel.ritz-ml@swissonline.ch,
-       randy.dunlap@oracle.com, jeff@garzik.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCHSET] printk: implement printk_header() and merging printk
-References: <1200445210549-git-send-email-htejun@gmail.com>
-In-Reply-To: <1200445210549-git-send-email-htejun@gmail.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 15 Jan 2008 20:14:08 -0500
+Received: from mga11.intel.com ([192.55.52.93]:51517 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752519AbYAPBOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Jan 2008 20:14:07 -0500
+X-ExtLoop1: 1
+Subject: Re: [PATCH]PCIE ASPM support - takes 2
+From: Shaohua Li <shaohua.li@intel.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>, Greg KH <greg@kroah.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080115122200.GW18741@parisc-linux.org>
+References: <1200367276.20538.1.camel@sli10-desk.sh.intel.com>
+	 <20080115041943.GS18741@parisc-linux.org>
+	 <1200373622.20869.2.camel@sli10-desk.sh.intel.com>
+	 <20080115122200.GW18741@parisc-linux.org>
+Content-Type: text/plain
+Date: Wed, 16 Jan 2008 09:14:51 +0800
+Message-Id: <1200446091.26438.3.camel@sli10-desk.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Hello, all.
-> 
-> This patchset implements printk_header() and mprintk - merging printk
-> - to make printing multiline messages and assembling message
-> piece-by-piece easier.
-> 
-> In a nutshell, printk_header() lets you do the following atomically
-> (against other messages).
-> 
->  code:
->   printk(KERN_INFO "ata1.00: ", "line0\nline1\nline2\n");
 
-That should have been printk_header instead of printk.  Sorry.
+On Tue, 2008-01-15 at 05:22 -0700, Matthew Wilcox wrote:
+> On Tue, Jan 15, 2008 at 01:07:02PM +0800, Shaohua Li wrote:
+> > > > +
+> > > > +/* Called after ACPI is enabled */
+> > > > +static int __init acpi_pcie_support_init(void)
+> > > > +{
+> > > > +	pcie_aspm_init();
+> > > > +	return 0;
+> > > > +}
+> > > > +fs_initcall(acpi_pcie_support_init);
+> > > 
+> > > Is there any reason to put this in here instead of just making
+> > > pcie_aspm_init an initcall?
+> > yes, this will evaluate some ACPI methods, so must be called after ACPI
+> > is initialized, which is a sub_system call
+> 
+> I wasn't saying that you should change it from being an fs_initcall.  I
+> was saying that you might want to consider deleting this function and
+> adding
+> 
+> fs_initcall(pcie_aspm_init);
+> 
+> in the file that defines pcie_aspm_init.
+I thought we'd better put all ACPI support bits support in one routine
+call, like OSC_EXT_PCI_CONFIG_SUPPORT, we didn't do it so far, so I
+added a new routine. But I might be over thinking.
 
--- 
-tejun
+Thanks,
+Shaohua
+
