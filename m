@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbYAPU0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754617AbYAPU2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754877AbYAPU0x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 15:26:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836AbYAPU0m
+	id S1754617AbYAPU2q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 15:28:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbYAPU2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 15:26:42 -0500
-Received: from 1wt.eu ([62.212.114.60]:1345 "EHLO 1wt.eu"
+	Wed, 16 Jan 2008 15:28:36 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37795 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752772AbYAPU0l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 15:26:41 -0500
-Date: Wed, 16 Jan 2008 21:04:58 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, cfriesen@nortel.com,
-       davem@davemloft.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: questions on NAPI processing latency and dropped network packets
-Message-ID: <20080116200458.GC8953@1wt.eu>
-References: <20080115202905.GA2680@ami.dom.local> <E1JEvxs-0006cZ-00@gondolin.me.apana.org.au> <20080116065836.GA1638@ff.dom.local>
-Mime-Version: 1.0
+	id S1750968AbYAPU2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 15:28:35 -0500
+Date: Wed, 16 Jan 2008 21:28:20 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       ak@suse.de
+Subject: Re: [PATCH] x86: fix detection of CONSTANT_TSC bit for AMD CPUs
+Message-ID: <20080116202820.GA6016@elte.hu>
+References: <20080116194606.GB11244@alberich.amd.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080116065836.GA1638@ff.dom.local>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080116194606.GB11244@alberich.amd.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 16, 2008 at 07:58:36AM +0100, Jarek Poplawski wrote:
-> On Wed, Jan 16, 2008 at 11:17:08AM +1100, Herbert Xu wrote:
-> ...
-> > Well people are always going to operate on this model for commercial
-> > reasons.  FWIW I used to work for a company that stuck to a specific
-> > version of the Linux kernel, and I suppose I still do even now :)
-> > 
-> > But the important thing is that if you're going to do that, then the
-> > cost that comes with it should be borne by the company and not the
-> > community.
+
+* Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
+
+> Commits
+>  - c52f61fcbdb2aa84f0e4d831ef07f375e6b99b2c 
+>   (x86: allow TSC clock source on AMD Fam10h and some cleanup)
+>  - e30436f05d456efaff77611e4494f607b14c2782
+>   (x86: move X86_FEATURE_CONSTANT_TSC into early cpu feature detection)
 > 
-> Sure. But the most sad thing is there seems to be not so much savings
-> in this (unless a company isn't sure of its near future). Trying to
-> upgrade and test current products with current kernels, even if not
-> necessary, should be always useful and make developing of new products
-> faster and better fit (and of course, BTW, make the kernel better on
-> time).
+> are supposed to fix the detection of contant TSC for AMD CPUs.
+> Unfortunately on x86_64 it does still not work with current x86/mm.
+> For a Phenom I still get:
+> 
+>   ...
+>   TSC calibrated against PM_TIMER 
+>   Marking TSC unstable due to TSCs unsynchronized
+>   time.c: Detected 2288.366 MHz processor.
+>   ...
+> 
+> We have to set c->x86_power in early_identify_cpu to properly detect
+> the CONSTANT_TSC bit in early_init_amd.
+> 
+> Attached patch fixes this issue. Following the relevant boot
+> messages when the fix is used:
+> 
+>   ...
+>   TSC calibrated against PM_TIMER
+>   time.c: Detected 2288.279 MHz processor.
+>   ...
+>   Initializing CPU#1
+>   ...
+>   checking TSC synchronization [CPU#0 -> CPU#1]: passed.
+>   ...
+>   Initializing CPU#2
+>   ...
+>   checking TSC synchronization [CPU#0 -> CPU#2]: passed.
+>   ...
+>   Booting processor 3/4 APIC 0x3
+>   ...
+>   checking TSC synchronization [CPU#0 -> CPU#3]: passed.
+>   Brought up 4 CPUs
+>   ...
+> 
+> Patch is against x86/mm (v2.6.24-rc8-672-ga9f7faa).
+> Please apply.
 
-you can work with latest release provided that you always have a fallback
-to an earlier one. That way, you don't bet too much on something you don't
-completely control. If it works, it tells you you'll be able to completely
-exploit its new possibilities in next product release, and if it breaks,
-it's easy to issue a fix to get back to earlier, well-tested version.
+thanks, applied.
 
-Regards,
-Willy
-
+	Ingo
