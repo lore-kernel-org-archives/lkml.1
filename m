@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbYAPKD3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751785AbYAPKKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754118AbYAPKD3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 05:03:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYAPKDV
+	id S1751785AbYAPKKn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 05:10:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbYAPKKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 05:03:21 -0500
-Received: from py-out-1112.google.com ([64.233.166.180]:4781 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751925AbYAPKDU (ORCPT
+	Wed, 16 Jan 2008 05:10:35 -0500
+Received: from phoenix.clifford.at ([88.198.7.52]:39755 "EHLO
+	phoenix.clifford.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751767AbYAPKKe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 05:03:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Yv5GCMDdgY8FW5KZrt/TjfvxictogjcRhfS4x9ORxCsSAKUfbDgNTi9Ym/daah/B8WTF4y1wL5SISzkt5afAEH7Q9u0GkWiQESwTxMNrXNWC5bpuqvsQKQ7+veAU39PNPWz3MJqbDN2t5bHpPuvhQqYn7ISZJJ4G5PmI22OZFCo=
-Message-ID: <a8e1da0801160203s234f7005k3e95aa8b007c0f70@mail.gmail.com>
-Date: Wed, 16 Jan 2008 18:03:17 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Rogier Wolff" <R.E.Wolff@bitwizard.nl>
-Subject: Re: mtime updates for mmapped files.
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080116094640.GA2071@bitwizard.nl>
+	Wed, 16 Jan 2008 05:10:34 -0500
+Date: Wed, 16 Jan 2008 11:04:14 +0100
+From: Clifford Wolf <clifford@clifford.at>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] rlim in proc/<pid>/status (2nd rev.)
+Message-ID: <20080116100414.GA27576@clifford.at>
+References: <20080115203659.GA5404@vino.hallyn.com> <20080116070346.GA24106@clifford.at> <20080116163045.11C8.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080116094640.GA2071@bitwizard.nl>
+In-Reply-To: <20080116163045.11C8.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 16, 2008 5:46 PM, Rogier Wolff <R.E.Wolff@bitwizard.nl> wrote:
->
-> Hi,
->
-> I  wrote a small app yesterday that updates a file by mmapping the
-> file (RW), changing the thing around, and then exiting.
->
-> This did not trigger a change in the mtime of the file. Thus rsync
-> didn't pick up that the file had changed.
->
-> I understand that tracking every change to a RW mmapped file is
-> costly, and thus unfeasable, but shouldn't then the close cause a
-> mtime update?
->
-> The server where this happened is running 2.6.21, so my apologies if
-> this has already been corrected.
+Hi,
 
-This is an old bug, don't know if it was fixed or not. Please see
-http://lkml.org/lkml/2006/5/17/138
+On Wed, Jan 16, 2008 at 04:33:12PM +0900, KOSAKI Motohiro wrote:
+> Hi Clifford,
+> 
+> > +static inline char *task_rlim(struct task_struct *p, char *buffer)
+> > +{
+> > +	unsigned long flags;
+> > +	struct rlimit rlim[RLIM_NLIMITS];
+> > +	int i;
+> > +	
+> > +	rcu_read_lock();
+> > +	if (lock_task_sighand(p, &flags)) {
+> > +		for (i=0; i<RLIM_NLIMITS; i++)
+> > +			rlim[i] = p->signal->rlim[i];
+> > +		unlock_task_sighand(p, &flags);
+> > +	}
+> 
+> lock_task_sighand is possible return NULL?
+> if so, rlim is uninitialized when NULL.
 
->
->         Roger.
->
-> --
-> ** R.E.Wolff@BitWizard.nl ** http://www.BitWizard.nl/ ** +31-15-2600998 **
-> **    Delftechpark 26 2628 XH  Delft, The Netherlands. KVK: 27239233    **
-> *-- BitWizard writes Linux device drivers for any device you may have! --*
-> Q: It doesn't work. A: Look buddy, doesn't work is an ambiguous statement.
-> Does it sit on the couch all day? Is it unemployed? Please be specific!
-> Define 'it' and what it isn't doing. --------- Adapted from lxrbot FAQ
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+hmm.. can p->sighand be NULL here? If so, there also is a problem in the
+task_sig() function in the same file.
+
+In fact that code is copy&paste from task_sig(). In fact I'm not even sure
+if I actually need to lock anything to access p->signal->rlim.. I've
+searched the kernel code a bit and it looks like most acesses to the rlimits
+are done unlocked, which is no problem imo given the typical change-pattern
+of this values..
+
+anyone a clue on this issues?
+
+yours,
+ - clifford
+
+-- 
+2B OR (NOT 2B) That is the question. The answer is FF.
