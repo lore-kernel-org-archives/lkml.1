@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756358AbYAPROq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758372AbYAPRPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756358AbYAPROq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 12:14:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757618AbYAPRNX
+	id S1758372AbYAPRPH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 12:15:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbYAPRNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 12:13:23 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:44848 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757211AbYAPRNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 12:13:21 -0500
-Message-ID: <478E3B00.1030503@redhat.com>
-Date: Wed, 16 Jan 2008 17:12:32 +0000
-From: "Bryn M. Reeves" <breeves@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Dave Hansen <haveblue@us.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       miklos@szeredi.hu, hch@infradead.org,
-       Alasdair G Kergon <agk@redhat.com>
-Subject: Re: [PATCH 04/27] kill filp_open()
-References: <20071101230826.9A4F6E00@kernel>	 <20071101230831.904FDE9A@kernel>	 <20080116005200.0165dc67.akpm@linux-foundation.org> <1200503096.22674.171.camel@localhost>
-In-Reply-To: <1200503096.22674.171.camel@localhost>
-X-Enigmail-Version: 0.94.0.0
-OpenPGP: id=C61463DE
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Jan 2008 12:13:34 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:52197 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757717AbYAPRNd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 12:13:33 -0500
+Date: Wed, 16 Jan 2008 12:13:27 -0500
+Message-Id: <200801161713.m0GHDRUN023917@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Paul Albrecht <albrecht@rdi1.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: unionfs, cow, and whiteout 
+In-reply-to: Your message of "Wed, 16 Jan 2008 10:27:13 CST."
+             <1200500833.11000.0.camel@thinix-laptop> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Dave Hansen wrote:
-> On Wed, 2008-01-16 at 00:52 -0800, Andrew Morton wrote:
->> On Thu, 01 Nov 2007 16:08:31 -0700 Dave Hansen <haveblue@us.ibm.com> wrote:
->>> Replace all callers with open_namei() directly, and move the
->>> nameidata stack allocation into open_namei().
->> ftp://ftp.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/dm-loop.patch
->> is using filp_open() and hence doesn't work very well.
->>
->> A shall revert dm-loop.patch and run away.
+In message <1200500833.11000.0.camel@thinix-laptop>, Paul Albrecht writes:
+> Hi,
 > 
-> This one's pretty easy, thank goodness.  Just replace filp_open() with
-> open_namei():
+> I have a question about how unionfs handles file deletion when a write
+> enabled file system is union mounted over a read only file system. For
+> example, I do something like the following:
 > 
-> 	/filp_open(/open_namei(AT_FDCWD, /
+> mount -t unionfs -o dirs=/cow=rw:/rofs=ro unionfs /mnt
 > 
-> BTW, why do we need this on top of the existing loopback driver?  Can
-> they really share no code?
+> If I create and delete a file in /mnt which is not present in /rofs it
+> persists as whiteout in the cow file system which is not what I would
+> have expected.
 
-The current dm-loop patch was really written to demonstrate the value of
-block-mapping as an alternative to doing file backed I/O via the pagecache.
+Paul, the alternative is to scan all branches (there could be many) to
+ensure that the file may not exist by that name anywhere else, and if so,
+try to delete all instances of it.  This was deemed too expensive and
+complex.
 
-Personally, I would like to see a single "loopback block devices" driver
-in the kernel with loop.c and dm-loop as alternate interfaces to it.
+Another possible problem is that if you choose to insert a new branch in the
+middle, and you didn't have the whiteout, you may re-expose the file name
+unintentionally.
 
-There seems to be some demand for this, e.g.:
+You might want to take a look at our unionfs-odf version: it places
+whiteouts in a separate persistent store outside the branches, not as .wh.*
+files in individual branches.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=5333
+> Why does the deleted file persist as whiteout in the /cow file system of
+> the union mount?
+> 
+> Please cc me in your response as I'm not subscribed to the lkml.
+> 
+> -- 
+> 
+> Paul Albrecht
 
-And numerous similar posts to dm-devel (although I think obsoleting may
-be going a bit far to start with!).
-
-Regards,
-Bryn.
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFHjjsA6YSQoMYUY94RAv+fAJ90mbqDQ/17nd3j9OAIXXc8Y4SRbQCfR75I
-KtDxHXDnYmCmBlw/lOzGmms=
-=A+Vb
------END PGP SIGNATURE-----
+Cheers,
+Erez.
