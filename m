@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757958AbYAPASM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbYAPAWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757958AbYAPASM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Jan 2008 19:18:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbYAPAR5
+	id S1757340AbYAPAWa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Jan 2008 19:22:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbYAPAWW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Jan 2008 19:17:57 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46881 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751533AbYAPARz (ORCPT
+	Tue, 15 Jan 2008 19:22:22 -0500
+Received: from ms0.nttdata.co.jp ([163.135.193.231]:44945 "EHLO
+	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751585AbYAPAWV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Jan 2008 19:17:55 -0500
-Date: Wed, 16 Jan 2008 00:15:03 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Daniel Phillips" <phillips@google.com>
-Cc: "Pavel Machek" <pavel@ucw.cz>, "David Chinner" <dgc@sgi.com>,
-       "Theodore Tso" <tytso@mit.edu>, "Al Boldi" <a1426z@gawab.com>,
-       "Valerie Henson" <val.henson@gmail.com>,
-       "Rik van Riel" <riel@redhat.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Patch] document ext3 requirements (was Re: [RFD] Incremental
- fsck)
-Message-ID: <20080116001503.3c0c97cf@lxorguk.ukuu.org.uk>
-In-Reply-To: <4d47a5d10801151544k3bc50223ob69c25d8732e3f12@mail.gmail.com>
-References: <200801090022.55589.a1426z@gawab.com>
-	<200801090740.12989.a1426z@gawab.com>
-	<70b6f0bf0801082345vf57951ey642e35c3d6e5194f@mail.gmail.com>
-	<200801091452.14890.a1426z@gawab.com>
-	<20080112145140.GB6751@mit.edu>
-	<20080113171916.GB4132@ucw.cz>
-	<20080113174125.5f39ac64@lxorguk.ukuu.org.uk>
-	<20080115201653.GA5639@elf.ucw.cz>
-	<20080115214325.GN155407@sgi.com>
-	<20080115230714.GC3573@elf.ucw.cz>
-	<4d47a5d10801151544k3bc50223ob69c25d8732e3f12@mail.gmail.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 15 Jan 2008 19:22:21 -0500
+Message-ID: <478D4E35.8000208@nttdata.co.jp>
+Date: Wed, 16 Jan 2008 09:22:13 +0900
+From: Kentaro Takeda <takedakn@nttdata.co.jp>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.9) Gecko/20071031 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [TOMOYO #6 retry 02/21] Add struct vfsmount to struct task_struct.
+References: <20080109005320.323184643@nttdata.co.jp> <20080109005418.469053691@nttdata.co.jp> <20080115211656.GA10644@sergelap.austin.ibm.com>
+In-Reply-To: <20080115211656.GA10644@sergelap.austin.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Jan 2008 00:22:17.0827 (UTC) FILETIME=[DA113330:01C857D5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Writeback cache on disk in iteself is not bad, it only gets bad if the
-> disk is not engineered to save all its dirty cache on power loss,
-> using the disk motor as a generator or alternatively a small battery.
-> It would be awfully nice to know which brands fail here, if any,
-> because writeback cache is a big performance booster.
+Hello.
 
-AFAIK no drive saves the cache. The worst case cache flush for drives is
-several seconds with no retries and a couple of minutes if something
-really bad happens.
+Serge E. Hallyn wrote:
+> I must say I personally prefer the apparmor approach.
+No problem.
 
-This is why the kernel has some knowledge of barriers and uses them to
-issue flushes when needed.
+> But I'd recommend
+> you get together and get this piece pushed on its own, whichever version
+> you can agree on.
+TOMOYO can use AppArmor's patch.
+
+> Yes it needs a user, but at this point I would think
+> both tomoyo and apparmor have had enough visibility that everyone knows
+> the intended users.
+Not only AppArmor and TOMOYO but also SELinux want to use "vfsmount".
+(http://marc.info/?l=selinux&m=120005904211942&w=2)
+
+> It seems to me you're both being held up by this piece, and getting
+> another full posting of either tomoyo or apparmor isn't going to help,
+> so hopefully you can combine your efforts to get this solved.
+We welcome AppArmor's vfsmount patches, but I wonder why AppArmor's
+vfsmount patches are not merged yet.
+
+What prevents AppArmor's vfsmount patches from merging into -mm tree?
+
+Regards.
+Kentaro Takeda
+
