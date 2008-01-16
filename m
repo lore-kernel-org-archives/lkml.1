@@ -1,72 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbYAPGXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757727AbYAPGr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758224AbYAPGXs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 01:23:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbYAPGXk
+	id S1757727AbYAPGr3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 01:47:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbYAPGrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 01:23:40 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:39418 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752125AbYAPGXj (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 01:23:39 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: caglar@pardus.org.tr, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.24-rc7-rt2
-In-Reply-To: Your message of "Tue, 15 Jan 2008 23:04:39 EST."
-             <Pine.LNX.4.58.0801152302580.10869@gandalf.stny.rr.com>
-From: Valdis.Kletnieks@vt.edu
-References: <1200336080.318.8.camel@localhost.localdomain> <200801150237.44029.caglar@pardus.org.tr> <24149.1200455417@turing-police.cc.vt.edu>
-            <Pine.LNX.4.58.0801152302580.10869@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1200464589_2966P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Wed, 16 Jan 2008 01:47:20 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:4998 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751966AbYAPGrT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 01:47:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=nHo8VnhCRQnGhAAA6tN52BjF0860VkdO5C8ZcxKx9Y6ENo6Y82ZNC97tu+WKGAFZsBWzVczYp19bKhcrf3XCeVhzVNVKRMjZ/YZCWxWtWU4ryhjRHY7n94+MJAzpjLLvQRBv/NTVu3I0yWjJnBl3FREV/U9lM8JYsnFmOT8fdrk=
+Message-ID: <478DA86F.10905@gmail.com>
+Date: Wed, 16 Jan 2008 15:47:11 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, Gabor Gombas <gombasg@sztaki.hu>,
+       Greg KH <greg@kroah.com>, Dave Young <hidave.darkstar@gmail.com>,
+       bluez-devel@lists.sourceforge.net, cornelia.huck@de.ibm.com
+Subject: Re: [PATCH 2.6.24-rc7 2/2] sysfs: fix bugs in sysfs_rename/move_dir()
+References: <478D74A6.7000206@gmail.com> <478D75BD.1010805@gmail.com> <alpine.LFD.1.00.0801151928380.2806@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0801151928380.2806@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Wed, 16 Jan 2008 01:23:09 -0500
-Message-ID: <31516.1200464589@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1200464589_2966P
-Content-Type: text/plain; charset=us-ascii
-
-On Tue, 15 Jan 2008 23:04:39 EST, Steven Rostedt said:
+Linus Torvalds wrote:
 > 
-> On Tue, 15 Jan 2008 Valdis.Kletnieks@vt.edu wrote:
+> On Wed, 16 Jan 2008, Tejun Heo wrote:
+>> * sysfs_move_dir() has an extra dput() on success path.
 > 
-> > On Tue, 15 Jan 2008 02:37:37 +0200, =?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur said:
-> > > And because of mcount-add-basic-support-for-gcc-profiler-instrum.patch, closed
-> > > source nvidia-new module cannot be used with this release (mcount is exported
-> > > GPL only), i know this is not supported but i used it with that [2] patch up
-> > > until now without a single problem.
-> >
-> > Playing devil's advocate here - the claim is that EXPORT_SYMBOL_GPL is to
-> > indicate that code is getting too chummy with Linux internals.
-> >
-> > However, in *this* case, isn't it "code that is too chummy with *GCC* internals",
-> > and thus it isn't our place to say what can and can't be done with code that
-> > is derivative of the GCC compiler? ;)
+> Are you sure? How did this ever work?
+
+I'm pretty sure.  I've seen dentry blowing up due to early release &&
+compared it with older code.  It was my mistake during restructuring
+error path.  The only user of sysfs_move_dir() was S390 Cornelia works
+on (cc'd).  Cornelia is usually very good at spotting and debugging
+sysfs bugs.  Dunno how it got slipped this time.
+
+> Also, looking at this, I think the "how did this ever work" question is 
+> answered by "it didn't",
+
+Before dput() bug was introduced, it worked although error handling path
+was broken.
+
+> but I also think there are still serious problems 
+> there. Look at
 > 
-> Actually, it got put in there by accident. I usually default all my
-> exports as GPL.  But this breaks pretty much everything, so I'll leave it
-> as EXPORT_SYMBOL.
+> 	again:
+> 	        mutex_lock(&old_parent->d_inode->i_mutex);
+> 	        if (!mutex_trylock(&new_parent->d_inode->i_mutex)) {
+> 	                mutex_unlock(&old_parent->d_inode->i_mutex);
+> 	                goto again;
+> 	        }
+> 
+> and wonder what happen sif old_parent == new_parent. Is that trying to 
+> avoid an ABBA deadlock?
 
-OK, I can live with that. ;)
+It will fall in infinite loop if old_parent == new_parent and for the
+question, I suppose so.  Cornelia, right?
 
---==_Exmh_1200464589_2966P
-Content-Type: application/pgp-signature
+> Normally you'd do it by ordering the locks, or by 
+> taking a third lock to guarantee serialization at a higher level (ie the 
+> "s_vfs_rename_mutex" on the VFS layer)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+sysfs currently doesn't depend on VFS locking.  VFS locking is done just
+to keep VFS layer happy.  sysfs_dirent hierarchy is protected by
+sysfs_mutex and renaming/moving are protected by sysfs_rename_mutex.  As
+both ops are under rename_mutex, I think the above code just can grab
+both mutexes in any order.  It's probably a remnant of the days when
+sysfs used VFS locking to protect internal structures.
 
-iD8DBQFHjaLNcC3lWbTT17ARAhyuAKC3o+wF4KyP912ZxaTP51ruZ6mQUgCfR4cL
-VaJPUclrvxksF0H92ijLKCU=
-=z2JA
------END PGP SIGNATURE-----
+s390 was the only user of the move interface till now and through all
+the recent sysfs change, it didn't receive enough attention other than
+Cornelia's testing.  Eventually, I think sysfs_rename_dir() and
+sysfs_move_dir() should be merged into sysfs_move() but for the current
+two users, I don't see anything wrong with the locking.
 
---==_Exmh_1200464589_2966P--
+Thanks.
+
+-- 
+tejun
