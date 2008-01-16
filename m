@@ -1,54 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756817AbYAPFZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757894AbYAPF0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756817AbYAPFZj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 00:25:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbYAPFZa
+	id S1757894AbYAPF0y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 00:26:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbYAPF0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 00:25:30 -0500
-Received: from mga02.intel.com ([134.134.136.20]:18549 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751220AbYAPFZ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 00:25:29 -0500
-X-ExtLoop1: 1
-Subject: Re: [PATCH]PCIE ASPM support - takes 2
-From: Shaohua Li <shaohua.li@intel.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Greg KH <greg@kroah.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>
-In-Reply-To: <24456.1200455812@turing-police.cc.vt.edu>
-References: <1200373346.20739.4.camel@sli10-desk.sh.intel.com>
-	 <24456.1200455812@turing-police.cc.vt.edu>
-Content-Type: text/plain
-Date: Wed, 16 Jan 2008 13:26:14 +0800
-Message-Id: <1200461174.26885.4.camel@sli10-desk.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Jan 2008 00:26:45 -0500
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:48444 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1750753AbYAPF0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 00:26:44 -0500
+Message-ID: <400461184.09985@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Wed, 16 Jan 2008 13:25:13 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Mike Snitzer <snitzer@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, jplatte@naasa.net,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: regression: 100% io-wait with 2.6.24-rcX
+References: <200801071151.11200.lists@naasa.net> <20080114035439.GA7330@mail.ustc.edu.cn> <400304530.01514@ustc.edu.cn> <200801141230.13694.jplatte@naasa.net> <1200310886.15103.1.camel@twins> <400358577.30629@ustc.edu.cn> <170fa0d20801151313s57dcc08cn550113036c3003be@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <170fa0d20801151313s57dcc08cn550113036c3003be@mail.gmail.com>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.12-2006-07-14
+Message-Id: <E1JF0m1-000101-OK@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jan 15, 2008 at 04:13:22PM -0500, Mike Snitzer wrote:
+> On Jan 14, 2008 7:50 AM, Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
+> > On Mon, Jan 14, 2008 at 12:41:26PM +0100, Peter Zijlstra wrote:
+> > >
+> > > On Mon, 2008-01-14 at 12:30 +0100, Joerg Platte wrote:
+> > > > Am Montag, 14. Januar 2008 schrieb Fengguang Wu:
+> > > >
+> > > > > Joerg, this patch fixed the bug for me :-)
+> > > >
+> > > > Fengguang, congratulations, I can confirm that your patch fixed the bug! With
+> > > > previous kernels the bug showed up after each reboot. Now, when booting the
+> > > > patched kernel everything is fine and there is no longer any suspicious
+> > > > iowait!
+> > > >
+> > > > Do you have an idea why this problem appeared in 2.6.24? Did somebody change
+> > > > the ext2 code or is it related to the changes in the scheduler?
+> > >
+> > > It was Fengguang who changed the inode writeback code, and I guess the
+> > > new and improved code was less able do deal with these funny corner
+> > > cases. But he has been very good in tracking them down and solving them,
+> > > kudos to him for that work!
+> >
+> > Thank you.
+> >
+> > In particular the bug is triggered by the patch named:
+> >         "writeback: introduce writeback_control.more_io to indicate more io"
+> > That patch means to speed up writeback, but unfortunately its
+> > aggressiveness has disclosed bugs in reiserfs, jfs and now ext2.
+> >
+> > Linus, given the number of bugs it triggered, I'd recommend revert
+> > this patch(git commit 2e6883bdf49abd0e7f0d9b6297fc3be7ebb2250b). Let's
+> > push it back to -mm tree for more testings?
+> 
+> Fengguang,
+> 
+> I'd like to better understand where your writeback work stands
+> relative to 2.6.24-rcX and -mm.  To be clear, your changes in
+> 2.6.24-rc7 have been benchmarked to provide a ~33% sequential write
+> performance improvement with ext3 (as compared to 2.6.22, CFS could be
+> helping, etc but...).  Very impressive!
 
-On Tue, 2008-01-15 at 22:56 -0500, Valdis.Kletnieks@vt.edu wrote:
-> On Tue, 15 Jan 2008 13:02:26 +0800, Shaohua Li said:
-> 
-> > In my test, power difference between powersave mode and performance mode
-> > is about 1.3w in a system with 3 PCIE links.
-> 
-> Do you have any numbers on what the added latency is for powersave mode, and
-> a rough idea of how quickly chipsets will drop to low-power? It may affect
-> usability a lot if it's "adds 10ms latency after 100ms idle" or "adds 100ms
-> latency after 5 seconds idle" or some other pattern...
-> 
-> (The chipset in my laptop claims to be an 82801G with 4 PCI-Express ports on
-> it - I'm trying to get a rough idea what usage I'd get out of that feature..)
-No, I thought to get the latency impact with ASPM enabled, but haven't
-found a way to measure it. This is why the default setting of ASPM
-currently is using BIOS setting.
+Wow, glad to hear that.
 
-Thanks,
-Shaohua
+> Given this improvement it is unfortunate to see your request to revert
+> 2e6883bdf49abd0e7f0d9b6297fc3be7ebb2250b but it is understandable if
+> you're not confident in it for 2.6.24.
+> 
+> That said, you recently posted an -mm patchset that first reverts
+> 2e6883bdf49abd0e7f0d9b6297fc3be7ebb2250b and then goes on to address
+> the "slow writes for concurrent large and small file writes" bug:
+> http://lkml.org/lkml/2008/1/15/132
+> 
+> For those interested in using your writeback improvements in
+> production sooner rather than later (primarily with ext3); what
+> recommendations do you have?  Just heavily test our own 2.6.24 + your
+> evolving "close, but not ready for merge" -mm writeback patchset?
+
+It's not ready mainly because it is fresh made and need more
+feedbacks. It's doing OK on my desktop :-)
 
