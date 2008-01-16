@@ -1,104 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752859AbYAPSdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbYAPSj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752859AbYAPSdZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 13:33:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbYAPSdR
+	id S1753199AbYAPSj0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 13:39:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbYAPSjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 13:33:17 -0500
-Received: from ns.gsystems.sk ([62.176.172.50]:33656 "EHLO www.gsystems.sk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750996AbYAPSdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 13:33:16 -0500
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: -mm: pnp-do-not-stop-start-devices-in-suspend-resume-path.patch breaks resuming isapnp cards
-Date: Wed, 16 Jan 2008 19:03:23 +0100
-User-Agent: KMail/1.9.7
-Cc: Jaroslav Kysela <perex@perex.cz>, Rene Herman <rene.herman@keyaccess.nl>,
-       Andrew Morton <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pierre Ossman <drzeus@drzeus.cx>, Pavel Machek <pavel@suse.cz>,
-       ALSA development <alsa-devel@alsa-project.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Takashi Iwai <tiwai@suse.de>, linux-pm@lists.linux-foundation.org
-References: <200801092343.48726.linux@rainbow-software.org> <Pine.LNX.4.61.0801150842480.7446@tm8103.perex-int.cz> <200801161046.05174.bjorn.helgaas@hp.com>
-In-Reply-To: <200801161046.05174.bjorn.helgaas@hp.com>
+	Wed, 16 Jan 2008 13:39:18 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57870 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751701AbYAPSjR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 13:39:17 -0500
+Date: Wed, 16 Jan 2008 10:39:00 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Johannes Weiner <hannes@saeurebad.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, clameter@sgi.com,
+       penberg@cs.helsinki.fi
+Subject: Re: Why is the kfree() argument const?
+In-Reply-To: <87lk6pvii0.fsf@saeurebad.de>
+Message-ID: <alpine.LFD.1.00.0801161026550.2806@woody.linux-foundation.org>
+References: <87lk6pvii0.fsf@saeurebad.de>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801161903.28813.linux@rainbow-software.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 January 2008 18:46:03 Bjorn Helgaas wrote:
-> On Tuesday 15 January 2008 12:51:35 am Jaroslav Kysela wrote:
-> > On Mon, 14 Jan 2008, Bjorn Helgaas wrote:
-> > > On Saturday 12 January 2008 11:13:35 pm Rene Herman wrote:
-> > > > ... And, now that I have your attention, while it's
-> > > > not important to the issue anymore with the tests removed as the
-> > > > submitted patch did, do you have an opinion on (include/linux/pnp.h):
-> > > >
-> > > > /* pnp driver flags */
-> > > > #define PNP_DRIVER_RES_DO_NOT_CHANGE    0x0001  /* do not change the
-> > > > state of the device */
-> > > > #define PNP_DRIVER_RES_DISABLE          0x0003  /* ensure the device
-> > > > is disabled */
-> > > >
-> > > > I find DISABLE including DO_NOT_CHANGE rather unexpected...
-> > >
-> > > I don't know the history of those flags, but I wish they didn't exist.
-> >
-> > Ok, something to explain. These flags exists to allow drivers to
-> > manually configure (override) PnP resources at init time - we know - for
-> > example in ALSA - that some combinations simply does not work for all
-> > soundcards.
-> >
-> > The DISABLE flags simply tells core PnP layer - driver will handle
-> > resource allocation itself, don't do anything, just disable hw physically
-> > and do not change (allocate) any resources. Value 0x03 is valid in this
-> > semantics.
->
-> It looks like sound drivers use PNP_DRIVER_RES_DISABLE to say "ignore
-> what PNP tells us about resource usage and we'll just use the compiled-
-> in or command-line-specified resources".
->
-> The main reason to do that would be to work around BIOS defects or
-> to work around deficiencies in the Linux PNP infrastructure (e.g.,
-> maybe we erroneously place another device on top of the sound card
-> or something).
->
-> I'm just suspicious because PNP_DRIVER_RES_DISABLE is only used in
-> sound drivers.  If it's to work around BIOS defects, why wouldn't
-> other PNP drivers need it sometimes, too?  And wouldn't it be better
-> to use PNP quirks for BIOS workarounds?
->
-> > Unfortunately, suspend / resume complicates things a bit, but PnP core
-> > can handle DO_NOT_CHANGE flag. But it will just mean - _preserve_
-> > resource allocation from last suspend state for this device and enable hw
-> > physically before calling resume() callback.
->
-> When resuming, wouldn't we *always* want to preserve the resource
-> allocation from the last suspend, regardless of whether
-> PNP_DRIVER_RES_DO_NOT_CHANGE is specified?
-
-I'd say yes. If base address of a card changes, driver will break.
-
-I grepped drivers for these flags too - to find out what they do (or should 
-do?) - but failed to find out anything useful.
-
-> Linux PNP definitely has issues with suspend/resume, and I suspect
-> this is one of them.
->
-> Bjorn
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
 
 
+On Wed, 16 Jan 2008, Johannes Weiner wrote:
+> 
+> is there any reason why kfree() takes a const pointer just to degrade it
+> with the call to slab_free()/__cache_free() again?  The promise that the
+> pointee is not modified is just bogus in this case, anyway, isn't it?
 
--- 
-Ondrej Zary
+"const" has *never* been about the thing not being modified. Forget all 
+that claptrap. C does not have such a notion.
+
+"const" is a pointer type issue, and is meant to make certain mis-uses 
+more visible at compile time. It has *no* other meaning, and anybody who 
+thinks it has is just setting himself up for problems.
+
+In the particular case of kfree(), the pointer argument *should* be const, 
+and the fact that the C library gets this wrong is not the kernels 
+problem, it's a problem with the C library.
+
+Why?
+
+ - From a very obvious and very *real* caller perspective, "free()" really 
+   doesn't change the thing the pointer points to. It does something 
+   totally different: it makes the *pointer* itself invalid.
+
+   In other words, if you think that "kfree()" changed the thing you 
+   free'd, you're simply wrong. It did no such thing. The memory is 100% 
+   the same, it's just that you cannot access it any more, and if you try, 
+   you'll get somebody elses memory.
+
+   In other words, "kfree()" can be const.
+
+ - Anything that *can* take a const pointer should always do so.
+
+   Why? Because we want the types to be as tight as possible, and normal 
+   code should need as few casts as possible.
+
+   Here's a question for you: let's say that you have a structure that 
+   has a member that is never changed. To make that obvious, and to allow 
+   the compiler to warn about mis-use of a pointer, the structure should 
+   look something like
+
+		struct mystruct {
+			const char *name;
+			..
+
+   and let's look at what happens if the allocation of that const thing is 
+   dynamic.
+
+   The *correct* way to do that is:
+
+		char *name = kmalloc(...)
+		/* Fill it in */
+		snprintf(name, ...)
+		mystruct->name = name;
+
+   and there are no casts anywhere, and you get exactly the semantics you 
+   want: "name" itself isn't constant (it's obviously modified), but at 
+   the same time the type system makes it very clear that trying to change 
+   it through that mystruct member pointer is wrong.
+
+   How do you free it?
+
+   That's right, you do:
+
+		kfree(mystruct->name);
+
+   and this is why "kfree()" should take a const pointer. If it doesn't, 
+   you have to add an *incorrect* and totally useless cast to code that 
+   was correct.
+
+So never believe that "const" is some guarantee that the memory under the 
+pointer doesn't change.  That is *never* true. It has never been true in 
+C, since there can be arbitrary pointer aliases to that memory that aren't 
+actually const. If you think "const *p" means that the memory behind "p" 
+is immutable, you're simply wrong.
+
+Anybody who thinks that kfree() cannot (or should not) be const doesn't 
+understand the C type system.
+
+			Linus
