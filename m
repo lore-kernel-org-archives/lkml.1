@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753303AbYAPKCg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbYAPKCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753303AbYAPKCg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 05:02:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbYAPKC1
+	id S1754033AbYAPKCt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 05:02:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbYAPKCg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 05:02:27 -0500
-Received: from mu-out-0910.google.com ([209.85.134.188]:32259 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751645AbYAPKC0 (ORCPT
+	Wed, 16 Jan 2008 05:02:36 -0500
+Received: from kolab.mylinuxtime.de ([212.112.242.22]:53989 "EHLO
+	kolab.mylinuxtime.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752811AbYAPKCe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 05:02:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=bwLq1Hki2cF1hnYpLUu+zcAcmA3udFDcakLvAeORcKLmSciB7z6EGhbt111CCjuxjXeJC4ho7yrp9uZQPmdqvjo38/KRYQ6Eo+LthQF+WZFKThCFKiFcbIKhCx8AKaTVauZl9Rrh0Z10ktzxjbE21iOBj1pjQV8yWrv5wdKFbas=
-Message-ID: <91b13c310801160202y833df7bs37cbb5827e875569@mail.gmail.com>
-Date: Wed, 16 Jan 2008 18:02:22 +0800
-From: "rae l" <crquan@gmail.com>
-To: "Rusty Russell" <rusty@rustcorp.com.au>
-Subject: [RFC on MODULE SUPPORT] hello, Rusty, Should we provide module information even if the kernel module compiled built-in with bzImage?
-Cc: open-iscsi@googlegroups.com, linux-kernel@vger.kernel.org
+	Wed, 16 Jan 2008 05:02:34 -0500
+X-Spam-ASN: AS24900 212.112.224.0/19
+From: Christian Hesse <mail@earthworm.de>
+To: btrfs-devel@oss.oracle.com
+Subject: Re: [Btrfs-devel] [ANNOUNCE] Btrfs v0.10 (online growing/shrinking, ext3 conversion, and more)
+Date: Wed, 16 Jan 2008 11:02:11 +0100
+User-Agent: KMail/1.9.7
+Cc: Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+References: <20080115105238.4fc3e992@think.oraclecorp.com>
+In-Reply-To: <20080115105238.4fc3e992@think.oraclecorp.com>
+X-Face: 1\p'dhO'VZk,x0lx6U}!Y*9UjU4n2@4c<"a*K%3Eiu'VwM|-OYs;S-PH>4EdJMfGyycC)=?utf-8?q?k=0A=09=3Anv*xqk4C?=@1b8tdr||mALWpN[2|~h#Iv;)M"O$$#P9Kg+S8+O#%EJx0TBH7b&Q<m)=?utf-8?q?n=23Q=2Eo=0A=09kE=7E=26T=5D0cQX6=5D?=<q!HEE,F}O'Jd#lx/+){Gr@W~J`h7sTS(M+oe5<=?utf-8?q?3O7GY9y=5Fi!qG=26Vv=5CD8/=0A=09=254?=@&~$Z@UwV'NQ$Ph&3fZc(qbDO?{LN'nk>+kRh4`C3[KN`-1uT-TD_m
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200801161102.22010.mail@earthworm.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hello, Rusty:
-I encountered a problem when modules compiled built-in with bzImage:
+On Tuesday 15 January 2008, Chris Mason wrote:
+> Hello everyone,
+>
+> Btrfs v0.10 is now available for download from:
 
-open-iscsi is an iSCSI software, it has a userspace daemon(iscsid) and
-a userspace mani tool(iscsiadm) and a kernel module
-(scsi_transport_iscsi),
-recently the kernel module has been accepted into the official kernel
-release; since the module licensed with GPL, it could be compiled as
-built-in,
+It does not even compile for me, tested with 2.6.24-rc{7,8}. I will look at 
+that later.
 
-but when I compiled the module within the bzImage, the problem appeared:
+fs/built-in.o: In function `btrfs_xattr_set_acl':
+acl.c:(.text+0x68f33): undefined reference to `posix_acl_from_xattr'
+acl.c:(.text+0x68f47): undefined reference to `posix_acl_valid'
+make: *** [.tmp_vmlinux1] Error 1
 
-tux ~ # iscsid -f
-iscsid: Missing or Invalid version from
-/sys/module/scsi_transport_iscsi/version. Make sure a up to date
-scsi_transport_iscsi module is loaded and a up todate version of
-iscsid is running. Exiting...
-
-this is just because iscsid hope there's an external module could be
-under /sys/module, and read the kernel module's version information,
-but if the module compiled built-in, all its module information
-discarded and it doesn't appeared under /sys/module/, that would break
-iscsid.
-
-Now the problem is:
-
-Should we provide module information under
-/sys/module/<module-name>/... even if the module compiled built-in
-with bzImage?
-Or just this module(scsi_transport_iscsi) should be marked with [M] only?
-
-if the former solution is preferred, I would be happy to work on
-MODULE_INFO-like macros improvements with CONFIG_MODULE undefined.
-
+Is this release supposed to fix the suspend problem?
 -- 
-Denis
+Regards,
+Chris
