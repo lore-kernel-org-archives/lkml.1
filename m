@@ -1,97 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbYAPRHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755583AbYAPRI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755046AbYAPRHx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 12:07:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYAPRHo
+	id S1755583AbYAPRI2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 12:08:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYAPRIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 12:07:44 -0500
-Received: from mx1.slu.se ([130.238.96.70]:52585 "EHLO mx1.slu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751477AbYAPRHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 12:07:43 -0500
-From: Robert Olsson <Robert.Olsson@data.slu.se>
+	Wed, 16 Jan 2008 12:08:18 -0500
+Received: from web36604.mail.mud.yahoo.com ([209.191.85.21]:21034 "HELO
+	web36604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752490AbYAPRIR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 12:08:17 -0500
+X-YMail-OSG: n0GKImIVM1m0GMUbI7KsteReQnF53nQQ3ABtN55IZj32mU1SIPoj74YJsYi15f.6mAy1BuE8mg--
+X-RocketYMMF: rancidfat
+Date: Wed, 16 Jan 2008 09:08:16 -0800 (PST)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH 08/26] Add a secctx_to_secid() LSM hook to go along with the existing
+To: Paul Moore <paul.moore@hp.com>, James Morris <jmorris@namei.org>
+Cc: David Howells <dhowells@redhat.com>, sds@tycho.nsa.gov,
+       casey@schaufler-ca.com, Trond.Myklebust@netapp.com, npiggin@suse.de,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <200801160841.46633.paul.moore@hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18318.14810.877279.41815@robur.slu.se>
-Date: Wed, 16 Jan 2008 18:07:38 +0100
-To: David Miller <davem@davemloft.net>
-Cc: elendil@planet.nl, jesse.brandeburg@intel.com, slavon@bigtelecom.ru,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [REGRESSION] 2.6.24-rc7: e1000: Detected Tx Unit Hang
-In-Reply-To: <20080116.022953.184520911.davem@davemloft.net>
-References: <36D9DB17C6DE9E40B059440DB8D95F52042FA541@orsmsx418.amr.corp.intel.com>
-	<20080115.210214.170759690.davem@davemloft.net>
-	<200801160956.09053.elendil@planet.nl>
-	<20080116.022953.184520911.davem@davemloft.net>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <229068.55387.qm@web36604.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-David Miller writes:
- > > On Wednesday 16 January 2008, David Miller wrote:
- > > > Ok, here is the patch I'll propose to fix this.  The goal is to make
- > > > it as simple as possible without regressing the thing we were trying
- > > > to fix.
- > > 
- > > Looks good to me. Tested with -rc8.
- > 
- > Thanks for testing.
+--- Paul Moore <paul.moore@hp.com> wrote:
 
- Yes that code looks nice. I'm using the patch but I've noticed another 
- phenomena with the current e1000 driver. There is a race when taking a 
- device down at high traffic loads. I've tracked and instrumented and it 
- seems like occasionly irq_sem can get bump up so interrupts can't be 
- enabled again.
+> On Tuesday 15 January 2008 8:05:27 pm James Morris wrote:
+> > On Tue, 15 Jan 2008, David Howells wrote:
+> > > secid_to_secctx() LSM hook.  This patch also includes the SELinux
+> > > implementation for this hook.
+> > >
+> > > Signed-off-by: Paul Moore <paul.moore@hp.com>
+> > > Acked-by: Stephen Smalley <sds@tycho.nsa.gov>
+> >
+> > This is useful in its own right, and I would like to push it upstream for
+> > 2.6.24 unless there are any objections.
+> 
+> Isn't it a bit late in 2.6.24 to add new functionality, especially when there
+> 
+> isn't an in-tree user for it in 2.6.24?
+> 
+> You are right, there are several users of this function currently under 
+> development but I'm pretty sure all of them are targeting 2.6.25 or greater. 
+> 
+> With that in mind, I think the prudent thing to is to wait and push this 
+> upstream for 2.6.25.
+
+I concur with Paul. I had to delete the message I was composing because
+it said exactly the same thing.
+
+I do think that we need to put some thought into what a secid
+really is and what a secctx ought to look like what with multiple
+user cropping up for them. To date audit is the only out-of-LSM
+user of the secctx, and assumes it's a printable text string, but
+if cacheing is going to be using it as well we're approaching the
+secctx being a "general" interface, and hence a part of the LSM
+proper. Probably makes sense to include something in the LSM
+documentation. With luck, someone who spells better than I will
+beat me to it, but such an update is on my todo list.
 
 
-eth0 e1000_irq_enable sem = 1    <- High netload
-eth0 e1000_irq_enable sem = 1
-eth0 e1000_irq_enable sem = 1
-eth0 e1000_irq_enable sem = 1
-eth0 e1000_irq_enable sem = 1
-eth0 e1000_irq_enable sem = 1
-eth0 e1000_irq_enable sem = 1    <- ifconfig eth0 down
-eth0 e1000_irq_disable sem = 2
-
-**e1000_open                     <- ifconfig eth0 up
-eth0 e1000_irq_disable sem = 3      Dead. irq's can't be enabled
-e1000_irq_enable miss
-eth0 e1000_irq_enable sem = 2
-e1000_irq_enable miss
-eth0 e1000_irq_enable sem = 1
-ADDRCONF(NETDEV_UP): eth0: link is not ready
 
 
-Cheers
-					--ro
-
-static void
-e1000_irq_disable(struct e1000_adapter *adapter)
-{
-        atomic_inc(&adapter->irq_sem);
-        E1000_WRITE_REG(&adapter->hw, IMC, ~0);
-        E1000_WRITE_FLUSH(&adapter->hw);
-        synchronize_irq(adapter->pdev->irq);
-
-        if(adapter->netdev->ifindex == 3)
-        printk("%s e1000_irq_disable sem = %d\n",  adapter->netdev->name,
-               atomic_read(&adapter->irq_sem));
-}
-
-static void
-e1000_irq_enable(struct e1000_adapter *adapter)
-{
-        if (likely(atomic_dec_and_test(&adapter->irq_sem))) {
-                E1000_WRITE_REG(&adapter->hw, IMS, IMS_ENABLE_MASK);
-                E1000_WRITE_FLUSH(&adapter->hw);
-                }
-        else
-                printk("e1000_irq_enable miss\n");
-
-        if(adapter->netdev->ifindex == 3)
-          printk("%s e1000_irq_enable sem = %d\n",  adapter->netdev->name,
-                 atomic_read(&adapter->irq_sem));
-}
+Casey Schaufler
+casey@schaufler-ca.com
