@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbYAPU03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbYAPU0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754781AbYAPU03 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 15:26:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbYAPU0R
+	id S1754877AbYAPU0x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 15:26:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836AbYAPU0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 15:26:17 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:51949 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753826AbYAPU0P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 15:26:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=XLvIdHn64e/ZoqKPRDZEUy54C/Nn01TmMrlXBK5xfXNS+r3+2s/bURjmuMsqx8xR8mcxNhfD1VQ5IEPLbmnHK0KZWsgk5jzP0YUSNf9rRlySicbtvVpx4JREcTFDkLFA+7DNV0i3qaGGrlNdqH2pA4zIqLdjRSoCO0/yIsmylyc=
-From: Balaji Rao <balajirrao@gmail.com>
-Organization: NITK
-To: linux-kernel@vger.kernel.org
-Subject: setting jiffies as the clocksource stops time
-Date: Thu, 17 Jan 2008 02:09:42 +0530
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Jan 2008 15:26:42 -0500
+Received: from 1wt.eu ([62.212.114.60]:1345 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752772AbYAPU0l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 15:26:41 -0500
+Date: Wed, 16 Jan 2008 21:04:58 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, cfriesen@nortel.com,
+       davem@davemloft.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: questions on NAPI processing latency and dropped network packets
+Message-ID: <20080116200458.GC8953@1wt.eu>
+References: <20080115202905.GA2680@ami.dom.local> <E1JEvxs-0006cZ-00@gondolin.me.apana.org.au> <20080116065836.GA1638@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801170209.42138.balajirrao@gmail.com>
+In-Reply-To: <20080116065836.GA1638@ff.dom.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Jan 16, 2008 at 07:58:36AM +0100, Jarek Poplawski wrote:
+> On Wed, Jan 16, 2008 at 11:17:08AM +1100, Herbert Xu wrote:
+> ...
+> > Well people are always going to operate on this model for commercial
+> > reasons.  FWIW I used to work for a company that stuck to a specific
+> > version of the Linux kernel, and I suppose I still do even now :)
+> > 
+> > But the important thing is that if you're going to do that, then the
+> > cost that comes with it should be borne by the company and not the
+> > community.
+> 
+> Sure. But the most sad thing is there seems to be not so much savings
+> in this (unless a company isn't sure of its near future). Trying to
+> upgrade and test current products with current kernels, even if not
+> necessary, should be always useful and make developing of new products
+> faster and better fit (and of course, BTW, make the kernel better on
+> time).
 
-When i set jiffies as the current_clocksource, date(1) tells me that wallclock time has stopped, and soon after that, the 
-system becomes unresponsive. This is not seen with CONFIG_NO_HZ disabled.
+you can work with latest release provided that you always have a fallback
+to an earlier one. That way, you don't bet too much on something you don't
+completely control. If it works, it tells you you'll be able to completely
+exploit its new possibilities in next product release, and if it breaks,
+it's easy to issue a fix to get back to earlier, well-tested version.
 
-This happens in 2.6.24-rc4,rc5, and even in rc8.
+Regards,
+Willy
 
-I wonder how can jiffies be used as a clocksource.. Its value depends on the tick and when we turn off ticks, we would stop 
-incrementing jiffies and when we come come out of idle, we update the jiffies by reading the current_clocksource which now 
-is 'jiffies', and hence jiffies wouldn't get updated. Could this be the explanation ?
-
-I also encountered the same problem when i ran the kernel in qemu, and set pit as the current_clocksource. Why does this 
-happen ?
-
-So, i think should we unregister jiffies as a clocksource when we go into NO_HZ ?
-
-Thomas, Ingo what are your thoughts on this ?
-
-regards,
-balaji rao
