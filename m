@@ -1,102 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758049AbYAPGAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757772AbYAPGNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758049AbYAPGAa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 01:00:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbYAPGAS
+	id S1757772AbYAPGNV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 01:13:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbYAPGNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 01:00:18 -0500
-Received: from tama555.ecl.ntt.co.jp ([129.60.39.106]:57659 "EHLO
-	tama555.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751757AbYAPGAQ (ORCPT
+	Wed, 16 Jan 2008 01:13:08 -0500
+Received: from twinlark.arctic.org ([208.69.40.136]:42312 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752711AbYAPGNH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 01:00:16 -0500
-To: psybases@gmail.com, James.Bottomley@HansenPartnership.com
-Cc: linux-scsi@vger.kernel.org, cebbert@redhat.com, bharrosh@panasas.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: INITIO scsi driver fails to work properly
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1200410166.9273.4.camel@localhost.localdomain>
-References: <1200070903.3286.28.camel@localhost.localdomain>
-	<9f00bd9d0801130428s5e4c034apf21052b918470f99@mail.gmail.com>
-	<1200410166.9273.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080116145916A.fujita.tomonori@lab.ntt.co.jp>
-Date: Wed, 16 Jan 2008 14:59:16 +0900
-X-Dispatcher: imput version 20040704(IM147)
+	Wed, 16 Jan 2008 01:13:07 -0500
+Date: Tue, 15 Jan 2008 22:13:06 -0800 (PST)
+From: dean gaudet <dean@arctic.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: NeilBrown <neilb@suse.de>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Dan Williams <dan.j.williams@gmail.com>
+Subject: Re: [PATCH 001 of 6] md: Fix an occasional deadlock in raid5
+In-Reply-To: <20080115215425.b1fcba31.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.0.999999.0801152157310.9578@twinlark.arctic.org>
+References: <20080114123726.19968.patches@notabene> <1080114014525.20337@suse.de> <alpine.DEB.0.999999.0801152059170.9578@twinlark.arctic.org> <20080115215425.b1fcba31.akpm@linux-foundation.org>
+User-Agent: Alpine 0.999999 (DEB 847 2007-12-06)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Jan 2008 09:16:06 -0600
-James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+On Tue, 15 Jan 2008, Andrew Morton wrote:
 
+> On Tue, 15 Jan 2008 21:01:17 -0800 (PST) dean gaudet <dean@arctic.org> wrote:
 > 
-> On Sun, 2008-01-13 at 14:28 +0200, Filippos Papadopoulos wrote:
-> > On 1/11/08, James Bottomley <James.Bottomley@hansenpartnership.com> wrote:
-> > >
-> > > On Fri, 2008-01-11 at 18:44 +0200, Filippos Papadopoulos wrote:
-> > > > On Jan 11, 2008 5:44 PM, James Bottomley
-> > > > <James.Bottomley@hansenpartnership.com> wrote:
-> > > > > >
-> > > > > > I havent reported "initio: I/O port range 0x0 is busy."
-> > > > >
-> > > > > Sorry ... we appear to have several reporters of different bugs in this
-> > > > > thread.  That message was copied by Chuck Ebbert from a Red Hat
-> > > > > bugzilla ... I was assuming it was the same problem.
-> > > > >
-> > > > > > I applied the patch on 2.6.24-rc6-git9 but unfortunatelly same thing happens.
-> > > > >
-> > > > > First off, has this driver ever worked for you in 2.6?  Just booting
-> > > > > SLES9 (2.6.5) or RHEL4 (2.6.9) ... or one of their open equivalents to
-> > > > > check a really old kernel would be helpful.  If you can get it to work,
-> > > > > then we can proceed with a patch reversion regime based on the
-> > > > > assumption that the problem is a recent commit.
-> > > >
-> > > > Yes it works under 2.6.16.13.  See the beginning of this thread, i
-> > > > mention there some things about newer versions.
-> > >
-> > > Thanks, actually, I see this:
-> > >
-> > > > I tried to install OpenSUSE 10.3 (kernel 2.6.22.5) and the latest
-> > > > OpenSUSE 11.0 Alpha 0  (kernel 2.6.24-rc4) but although the initio
-> > > > drivergets loaded during the installation process, yast reports that no hard
-> > > > disk is found.
-> > >
-> > > Could you try with a vanilla 2.6.22 kernel?  The reason for all of this
-> > > is that 2.6.22 predates Alan's conversion of this driver (which was my
-> > > 95% candidate for the source of the bug).  I want you to try the vanilla
-> > > kernel just in case the opensuse one contains a backport.
+> > On Mon, 14 Jan 2008, NeilBrown wrote:
 > > 
+> > > 
+> > > raid5's 'make_request' function calls generic_make_request on
+> > > underlying devices and if we run out of stripe heads, it could end up
+> > > waiting for one of those requests to complete.
+> > > This is bad as recursive calls to generic_make_request go on a queue
+> > > and are not even attempted until make_request completes.
+> > > 
+> > > So: don't make any generic_make_request calls in raid5 make_request
+> > > until all waiting has been done.  We do this by simply setting
+> > > STRIPE_HANDLE instead of calling handle_stripe().
+> > > 
+> > > If we need more stripe_heads, raid5d will get called to process the
+> > > pending stripe_heads which will call generic_make_request from a
+> > > different thread where no deadlock will happen.
+> > > 
+> > > 
+> > > This change by itself causes a performance hit.  So add a change so
+> > > that raid5_activate_delayed is only called at unplug time, never in
+> > > raid5.  This seems to bring back the performance numbers.  Calling it
+> > > in raid5d was sometimes too soon...
+> > > 
+> > > Cc: "Dan Williams" <dan.j.williams@gmail.com>
+> > > Signed-off-by: Neil Brown <neilb@suse.de>
 > > 
-> > Yes you are right. I compiled the vanilla 2.6.22 and initio driver works.
-> > Tell me if you want to apply any patch to it.
+> > probably doesn't matter, but for the record:
+> > 
+> > Tested-by: dean gaudet <dean@arctic.org>
+> > 
+> > this time i tested with internal and external bitmaps and it survived 8h 
+> > and 14h resp. under the parallel tar workload i used to reproduce the 
+> > hang.
+> > 
+> > btw this should probably be a candidate for 2.6.22 and .23 stable.
+> > 
 > 
+> hm, Neil said
 > 
-> That's good news ... at least we know where the issue lies; now the
-> problem comes: there are two candidate patches for this issue: Alan's
-> driver update patch and Tomo's accessors patch.  Unfortunately, due to
-> merge conflicts the two are pretty hopelessly intertwined.  I think I
-> already spotted one bug in the accessor conversion, so I'll look at that
-> again.  Alan's also going to acquire an inito board and retest his
-> conversions.
+>   The first fixes a bug which could make it a candidate for 24-final. 
+>   However it is a deadlock that seems to occur very rarely, and has been in
+>   mainline since 2.6.22.  So letting it into one more release shouldn't be
+>   a big problem.  While the fix is fairly simple, it could have some
+>   unexpected consequences, so I'd rather go for the next cycle.
 > 
-> I'm afraid it might be a while before we have anything for you to test.
+> food fight!
+> 
 
-Can you try this patch?
+heheh.
 
-Thanks,
+it's really easy to reproduce the hang without the patch -- i could
+hang the box in under 20 min on 2.6.22+ w/XFS and raid5 on 7x750GB.
+i'll try with ext3... Dan's experiences suggest it won't happen with ext3
+(or is even more rare), which would explain why this has is overall a
+rare problem.
 
-diff --git a/drivers/scsi/initio.c b/drivers/scsi/initio.c
-index 01bf018..6891d2b 100644
---- a/drivers/scsi/initio.c
-+++ b/drivers/scsi/initio.c
-@@ -2609,6 +2609,7 @@ static void initio_build_scb(struct initio_host * host, struct scsi_ctrl_blk * c
- 		cblk->bufptr = cpu_to_le32((u32)dma_addr);
- 		cmnd->SCp.dma_handle = dma_addr;
- 
-+		cblk->sglen = nseg;
- 
- 		cblk->flags |= SCF_SG;	/* Turn on SG list flag       */
- 		total_len = 0;
+but it doesn't result in dataloss or permanent system hangups as long
+as you can become root and raise the size of the stripe cache...
+
+so OK i agree with Neil, let's test more... food fight over! :)
+
+-dean
