@@ -1,60 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbYAPKRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbYAPKTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753842AbYAPKRv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 05:17:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbYAPKRo
+	id S1753984AbYAPKTw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 05:19:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbYAPKTo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 05:17:44 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:55182 "EHLO pasmtpB.tele.dk"
+	Wed, 16 Jan 2008 05:19:44 -0500
+Received: from il.qumranet.com ([82.166.9.18]:35181 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751785AbYAPKRn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 05:17:43 -0500
-Date: Wed, 16 Jan 2008 11:17:47 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: What's in sh-2.6.git for 2.6.25?
-Message-ID: <20080116101747.GA26235@uranus.ravnborg.org>
-References: <20080116070403.GA14107@linux-sh.org> <20080116073844.GA25205@uranus.ravnborg.org> <20080116093718.GB14107@linux-sh.org>
-Mime-Version: 1.0
+	id S1751748AbYAPKTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 05:19:43 -0500
+Date: Wed, 16 Jan 2008 11:19:40 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Brice Goglin <Brice.Goglin@inria.fr>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] mmu notifiers #v2
+Message-ID: <20080116101939.GH7059@v2.random>
+References: <20080113162418.GE8736@v2.random> <478DC7EC.1040101@inria.fr>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080116093718.GB14107@linux-sh.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <478DC7EC.1040101@inria.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 16, 2008 at 06:37:18PM +0900, Paul Mundt wrote:
-> On Wed, Jan 16, 2008 at 08:38:44AM +0100, Sam Ravnborg wrote:
-> > On Wed, Jan 16, 2008 at 04:04:03PM +0900, Paul Mundt wrote:
-> > > This is a brief summary of the changes that are sitting in the sh queue
-> > > for 2.6.25.
-> > > 
-> > > The main points to note are as follows:
-> > > 
-> > > 	- sh64->sh integration.
-> > > 	- A handful of new CPUs (SH7721, SH7763, SH7203, SH7263).
-> > > 	- SH-2A FPU support.
-> > > 	- Board support updates (R2D, R7785RP).
-> > > 
-> > > The sh64->sh integration is basically the only thing that's really
-> > > interesting, and so it's worth summarizing that a bit.
-> > 
-> > Any kbuild bits that needs an extra pair of eyes before
-> > integration or can I postpone my review until it hits mainline?
-> > If you feel confident I prefer to wait as I'm busy atm.
-> > 
-> Most of the kbuild bits have been pretty painless. I started out going
-> the SRCARCH route, but that ended up creating a lot of additional
-> duplication, so I opted to just roll them together and stick with abusing
-> KCONFIG_ALLCONFIG for restricting the options. Based on the heavy sharing
-> between the Kconfig options, this seemed to be the best way to go.
-> 
-> So, I'm reasonably content with it the way it is, but any input you have
-> on cleaning it up is certainly welcome at any time :-)
+On Wed, Jan 16, 2008 at 10:01:32AM +0100, Brice Goglin wrote:
+> One of the difference with my patch is that you attach the notifier list to 
+> the mm_struct while my code attached it to vmas. But I now don't think it 
+> was such a good idea since it probably didn't reduce the number of notifier 
+> calls a lot.
 
-I will take a look when it hits mainline then.
-Ping me if you do not hear from me.
+Thanks for raising this topic.
 
-	Sam
+Notably KVM also would be a bit more optimal with the notifier in the
+vma and that was the original implementation too. It's not a sure
+thing that it has to be in the mm.
+
+The quadrics patch does a mixture, it attaches it to the mm but then
+it pretends to pass the vma down to the method, and it's broken doing
+so, like during munmap where it passes the first vma being unmapped
+but not all the later ones in the munmap range.
+
+If we want to attach it to the vma, I think the vma should be passed
+as parameter instead of the mm. In some places like
+apply_to_page_range the vma isn't even available and I found a little
+dirty to run a find_vma inside a #ifdef CONFIG_MMU_NOTIFIER.
+
+The only thing the vma could be interesting about are the protection
+bits for things like update_range in the quadrics patch where they
+prefetch their secondary tlb. But again if we want to do that, we need
+to hook inside unmap_vmas and to pass all the different vmas and not
+just the first one touched by unmap_vmas. unmap_vmas is _plural_ not
+singular ;).
+
+In the end attaching to mm avoided solving all the above troubles and
+provided a strightforward implementation where I would need a single
+call to mmu_notifier_register and other minor advantages like that and
+not much downside.
+
+But certainly the mm vs vma decision wasn't trivial (I switched back
+and forth a few times from vma to mm and back) and if people thinks
+this shall be in the vma I can try again but it won't be as a
+strightforward patch as for the mm.
+
+One benefit is for example is that it could go in the memslot and
+effectively the notifier->memslot conversion would be just a
+containerof instead of a "search" over the memslots. Locking aside.
+
+> Also, one thing that I looked at in vmaspy was notifying fork. I am not 
+> sure what happens on Copy-on-write with your code, but for sure C-o-w is 
+> problematic for shadow page tables. I thought shadow pages should just be 
+> invalidated when a fork happens and the caller would refill them after 
+> forcing C-o-w or so. So adding a notifier call there too might be nice.
+
+There can't be any cows right now in KVM VM backing store, that's why
+it's enough to get full swapping working fine. For example I think
+we'll need to add more notifiers to handle swapping of MAP_PRIVATE non
+linear tmpfs shared pages properly (and it won't be an issue with
+fork() but with after the fact sharing).
+
+Right now I'm more interested in the interface, for the invalidates,
+things like mm vs vma, the places where we hook under pte spinlock,
+things like that, then the patch can hopefully be merged and extended
+with more methods like ->change_protection_page/range and added to cow
+etc...
