@@ -1,43 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758805AbYAPWel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758852AbYAPWe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758805AbYAPWel (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 17:34:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754896AbYAPW2r
+	id S1758852AbYAPWe6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 17:34:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758058AbYAPW3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 17:28:47 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45186 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757892AbYAPW2p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 17:28:45 -0500
-Date: Wed, 16 Jan 2008 14:28:44 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Matthew Wilcox <matthew@wil.cx>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: SLUB: Increasing partial pages
-In-Reply-To: <20080116221618.GB11559@parisc-linux.org>
-Message-ID: <Pine.LNX.4.64.0801161421240.12024@schroedinger.engr.sgi.com>
-References: <20080116195949.GO18741@parisc-linux.org>
- <Pine.LNX.4.64.0801161219050.9694@schroedinger.engr.sgi.com>
- <20080116214127.GA11559@parisc-linux.org> <Pine.LNX.4.64.0801161347160.11353@schroedinger.engr.sgi.com>
- <20080116221618.GB11559@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 16 Jan 2008 17:29:44 -0500
+Received: from colin.muc.de ([193.149.48.1]:2321 "EHLO mail.muc.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758053AbYAPW3m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 17:29:42 -0500
+Date: 16 Jan 2008 23:29:40 +0100
+Date: Wed, 16 Jan 2008 23:29:40 +0100
+From: Andi Kleen <ak@muc.de>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Andreas Herrmann <andreas.herrmann3@amd.com>, ebiederm@xmission.com,
+       rdreier@cisco.com, torvalds@linux-foundation.org, gregkh@suse.de,
+       airlied@skynet.ie, davej@redhat.com, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com, akpm@linux-foundation.org, arjan@infradead.org,
+       "Barnes, Jesse" <jesse.barnes@intel.com>, davem@davemloft.net,
+       linux-kernel@vger.kernel.org,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Subject: Re: [patch 0/4] x86: PAT followup - Incremental changes and bug fixes
+Message-ID: <20080116222940.GB39717@muc.de>
+References: <20080116023955.597433000@intel.com> <20080116185748.GA11244@alberich.amd.com> <20080116203328.GA17869@linux-os.sc.intel.com> <20080116220153.GA39717@muc.de> <924EFEDD5F540B4284297C4DC59F3DEE5E8C86@orsmsx423.amr.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE5E8C86@orsmsx423.amr.corp.intel.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Jan 2008, Matthew Wilcox wrote:
+> Yes. Printks are there. But are with KERN_DEBUG now. We should change
+> them to WARNING atleast.
 
-> About 0.1-0.2%  0.3% is considered significant.
+I'm pretty sure they were without KERN_* originally. Another reason
+why the checkpatch.pl KERN_* warnings suck -- the original state would 
+have been better and I bet you changed it just to shut up the dumb scripts.
 
-The results are that stable? A kernel compilation which slightly 
-rearranges cachelines due to code and data changes typically leads to a 
-larger variance on my 8 way box (gets even larger under NUMA). I would 
-expect that the variations on a database load would be more significant.
-
-I repeatedly saw patches from Intel to do minor changes to SLAB that 
-increase performance by 0.5% or so (like the recent removal of a BUG_ON 
-for performance reasons). These do not regress again when you build a 
-newer kernel release?
+-Andi
