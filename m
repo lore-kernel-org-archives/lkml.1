@@ -1,123 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753215AbYAPUtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbYAPUtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753215AbYAPUtf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 15:49:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751194AbYAPUtZ
+	id S1753947AbYAPUtu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 15:49:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbYAPUtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 15:49:25 -0500
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:56332 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751269AbYAPUtY (ORCPT
+	Wed, 16 Jan 2008 15:49:31 -0500
+Received: from ag-out-0708.google.com ([72.14.246.240]:64761 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752687AbYAPUt3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 15:49:24 -0500
-Date: Wed, 16 Jan 2008 15:49:16 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>, Paul Mackerras <paulus@samba.org>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: [RFC PATCH 16/22 -v2] add get_monotonic_cycles
-In-Reply-To: <20080116201713.GA14336@Krystal>
-Message-ID: <Pine.LNX.4.58.0801161535320.16156@gandalf.stny.rr.com>
-References: <20080115220824.GB22242@Krystal> <Pine.LNX.4.58.0801151717250.29090@gandalf.stny.rr.com>
- <20080116031730.GA2164@Krystal> <Pine.LNX.4.58.0801152238130.19680@gandalf.stny.rr.com>
- <20080116145604.GB31329@Krystal> <Pine.LNX.4.58.0801161003010.15758@gandalf.stny.rr.com>
- <20080116152838.GA970@Krystal> <Pine.LNX.4.58.0801161041010.15998@gandalf.stny.rr.com>
- <20080116170011.GA3651@Krystal> <Pine.LNX.4.58.0801161428180.14368@gandalf.stny.rr.com>
- <20080116201713.GA14336@Krystal>
+	Wed, 16 Jan 2008 15:49:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=lMKuloeqZjw72bQDte0o9uV0SB+1Q5+uDAbiVf3lV1g3TeiFnIUztFBcjtqatCVGkpprOED77T+GD4CXuXTKSx6dvO10yGZ35MJmn5jJtBGzgjsDqDaMOgQVNIyFV5iubUHrdmUN9OhPXwZiaSDGMlk8CEOMpHT7nrZRApK3rZA=
+Date: Wed, 16 Jan 2008 15:49:23 -0500
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: linux-input@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       William Pettersson <william.pettersson@gmail.com>
+Subject: Re: [BISECTED] Re: psmouse.c: GlidePoint at isa0060/serio1/input0
+	lost sync at byte 1
+Message-ID: <20080116154524.ZZRA012@mailhub.coreip.homeip.net>
+References: <19f34abd0711141226n60323630rdc4833db0bfb2eeb@mail.gmail.com> <19f34abd0801071224kb9cb121u244b00b274231db0@mail.gmail.com> <d120d5000801110647k4b1fa49ene974898baf745aec@mail.gmail.com> <478CFB56.1030700@gmail.com> <20080115154142.ZZRA012@mailhub.coreip.homeip.net> <20080116104024.ZZRA012@mailhub.coreip.homeip.net> <19f34abd0801160946j2fe1c75ap3617dd125c81008f@mail.gmail.com> <20080116142815.ZZRA012@mailhub.coreip.homeip.net> <19f34abd0801161219oe478b50se13c0710759d581f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19f34abd0801161219oe478b50se13c0710759d581f@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 16 Jan 2008, Mathieu Desnoyers wrote:
+On Wed, Jan 16, 2008 at 09:19:23PM +0100, Vegard Nossum wrote:
+> On Jan 16, 2008 8:33 PM, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> > On Wed, Jan 16, 2008 at 06:46:46PM +0100, Vegard Nossum wrote:
+> > >
+> > > I have now tried this patch. I don't see a sync error now, but the
+> > > button still does not work as expected. Now the scroll down button
+> > > acts like a middle button instead of scrolling down.
+> > >
+> > > I am sorry for the confusion; on my laptop it looks like a single
+> > > button, but in fact it can be pressed in four different ways (up,
+> > > down, left, and right). In 2.6.23, pressing left or right, I get the
+> > > traditional paste functionality. Pressing up or down, it acts like a
+> > > scroll wheel (up or down). In 2.6.24-rc1, it is the scrolling up/down
+> > > that causes the lost sync (but the left/right works correctly).
+> > >
 > >
-> > In-other-words, latency_tracer is LTTng-lite ;-)
-> >
->
-> If LTTng is already ported to your specific kernel, the learning-curve
-> is not big at all. Here is what the latency_tracer over LTTng guide
-> could look like :
->
-> Well, once you have LTTng in your kernel and have compiled and installed
-> the ltt-control and lttv packages (configure, make, make install), all
-> that would be needed is :
->
-> (there may be some bits in the QUICKSTART GUIDE on
-> http://ltt.polymtl.ca, like adding the debugfs mount to fstab and make sure
-> the LTTng modules are loaded)
->
-> #arm all the markers
-> ltt-armall
-> #start lttng tracing
-> lttctl -n test -t /tmp/trace1 -d -l /mnt/debugfs/ltt
->
-> -> start latency tracer
-> -> stop latency tracer
-> -> trigger latency tracer dump
->
-> While the tracing is active, trigger the condition...
->
-> (rince, repeat, can handle multiple latency tracer dumps)
->
-> #stop lttng tracing
-> lttctl -n test -R
-> #disarm all markers
-> ltt-disarmall
->
-> You can easily test the trace with :
-> lttv -m textDump -t /tmp/trace1
->
-> Your users would issue something like :
->
-> lttv -m latencytracerDump -t /tmp/trace1
->
-> that's it. LatencytracerDump would be a new specialized plugin, inspired
-> from the generic textDump.c plugin and from the state.c module (for
-> hooking on specific events rather that on _all_ events). It would
-> generate a text output from the trace collected at each latency tracer
-> dump.
->
+> > I see. Could you please provide me with another debug log of all
+> > 4 presses/releases of all the buttons, with the patch applied?
+> > Do it in the following order please: left, right, middle, up, down.
+> 
+> Ok. Remember, there really is no dedicated middle button (I've been
+> using left button for this purpose, i.e. pasting in X). Here's the
+> log. I cannot tell why the first keypress is twice the size of the
+> rest, maybe I accidentally pressed it twice, though I tried not to.
+> 
 
-Mathieu,
+Hmm, it seems to work properly, I think it is now a setup issue to a
+certain degree. The touchpad now works in native mode (as opposed to
+Intellimouse emulation) and so I'd recommend installing Synaptics X
+driver from http://web.telia.com/~u89404340/touchpad/
 
-That's quite a bit. Currently we have tools that already hook into
-latency_tracer. e.g. Thomas Gleixner's cyclictest. It turns on the latency
-tracer runs a quick test, turns it off. If the latency is ok, the trace is
-discarded and it runs the test again. When the latency is not acceptable,
-it stops the test. Then all one needs to do is look at the given trace.
+Just to verify, could you please locate evtest utility and check
+whether your up and down buttons generate BTN_FORWARD and BTN_BACK
+events?
 
-Hooking something simple as this to LTTng is not going to fly.
-
-Don't get me wrong, I'm a huge supporter of LTTng, and even recommend it.
-But there's things that using LTTng for is like using a sledgehammer for
-a tack.  I like to use the tools that are best for the job (which also
-mean easiest).  I don't buy the one tracer fits all mentality. And by
-pushing that too much, I'm thinking we'll never get a tracer into the
-kernel.
-
-What my goal of these patches is, is to get the infrastructure for tracing
-into the kernel.  The latency_tracer is like Rusty Russells lguest is for
-pvops. LTTng is the Xen equivalent. Where latency_tracer is nothing more
-than the quick and dirty tracer. For administrators that want to analyze
-their systems, LTTng is much more appropriate. latency_tracer is more of
-the first aid in finding latency troubles, and if that doesn't work, then
-we can do the LTTng surgery.
-
-Lets go back and focus on the infrastructure again. Namely, the mcount and
-notrace parts of the kernel. As well as the tracer timer, which by the
-way, we are looking more into what you have done ;-)
-
--- Steve
-
+-- 
+Dmitry
