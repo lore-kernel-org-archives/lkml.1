@@ -1,63 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756517AbYAPROP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbYAPRO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756517AbYAPROP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 12:14:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756552AbYAPRMJ
+	id S1758131AbYAPRO2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 12:14:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757592AbYAPRND
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 12:12:09 -0500
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:34825 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757287AbYAPRMH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 12:12:07 -0500
-Date: Wed, 16 Jan 2008 22:41:34 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: "Renato S. Yamane" <renatoyamane@mandic.com.br>
-Cc: Ray Lee <ray-lk@madrabbit.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Updatedb hangs Kernel 2.6.22.9-cfs-v22
-Message-ID: <20080116171134.GA20063@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <478900FF.2000706@mandic.com.br> <2c0942db0801121025h7f22d716s657af75ce7603af0@mail.gmail.com> <478B7F9F.3020209@mandic.com.br> <2c0942db0801160830j72c0fc77xc4cc9e7fd676d78a@mail.gmail.com> <478E3395.6050301@mandic.com.br>
+	Wed, 16 Jan 2008 12:13:03 -0500
+Received: from mx2.suse.de ([195.135.220.15]:51648 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757574AbYAPRNB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 12:13:01 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 0 of 4] x86: some more patches
+Date: Wed, 16 Jan 2008 18:12:55 +0100
+User-Agent: KMail/1.9.6
+Cc: Ingo Molnar <mingo@elte.hu>, Jan Beulich <jbeulich@novell.com>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <patchbomb.1200435425@localhost> <20080116154710.GA28946@elte.hu> <478E396A.50707@goop.org>
+In-Reply-To: <478E396A.50707@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <478E3395.6050301@mandic.com.br>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200801161812.55599.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 16, 2008 at 02:40:53PM -0200, Renato S. Yamane wrote:
-> Ray Lee escreveu:
->> On Jan 14, 2008 7:28 AM, Renato S. Yamane <renatoyamane@mandic.com.br> wrote:
->>> Ray Lee escreveu:
->>>> On Jan 12, 2008 10:03 AM, Renato S. Yamane wrote:
->>>>> I can't use updatedb in Debian Etch (stable) using customized Kernel
->>>>> 2.6.22.9-cfs-v22.
->>>>>
->>>>> When I ran updatedb, after ~1 minute my system hangs and "caps lock" LED
->>>>> is blinking. No log is registered.
->>>> Please switch out of X11 to a text mode console (CTRL-ALT-F1), and run
->>>> updatedb there. Capture the oops with a digital camera, and post a
->>>> link to the picture (not the picture itself!) to the list. Or, write
->>>> down the oops carefully, and post the text.
->>> I see a infinite loop and is very fast, so I can't capture errors messages.
->>> None is registered in /var/log/*
->>
->> Well, that's very odd. Please also try the latest CFS backport to see
->> if that solves the problem.
->
-> This problem still occour in 2.6.23.13 with CFS 24.1
-> I see a part of error message: Is something about ipw2200.
-> I need find a Camera with good focus, because my cam is not so good to take 
-> a picture in distance <=20cm.
->
+ 
+> Also, Andi, do you want to get rid of the PHYSICAL_MASK stuff?
 
-Please see if you can reproduce it without the CFS backport.
+That would be fine, just all the accessors need to mask out NX explicitely.
+I didn't have plans to code that up myself though.
 
-[Please keep Ingo Molnar in the cc for CFS bugs, he is the maintainer.]
-
--- 
-regards,
-Dhaval
+-Andi
