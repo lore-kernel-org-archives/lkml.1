@@ -1,180 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758320AbYAPWfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758892AbYAPWgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758320AbYAPWfy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 17:35:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758743AbYAPWdv
+	id S1758892AbYAPWgV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 17:36:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757622AbYAPWfi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 17:33:51 -0500
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:63962 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753545AbYAPWdt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 17:33:49 -0500
-Date: Wed, 16 Jan 2008 17:33:23 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Johannes Weiner <hannes@saeurebad.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       clameter@sgi.com, penberg@cs.helsinki.fi
-Subject: Re: Why is the kfree() argument const?
-Message-ID: <20080116223323.GI30532@goodmis.org>
-References: <87lk6pvii0.fsf@saeurebad.de> <alpine.LFD.1.00.0801161026550.2806@woody.linux-foundation.org>
-MIME-Version: 1.0
+	Wed, 16 Jan 2008 17:35:38 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:47004 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758441AbYAPWfe (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 17:35:34 -0500
+Date: Thu, 17 Jan 2008 09:35:10 +1100
+From: David Chinner <dgc@sgi.com>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Michael Rubin <mrubin@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [patch] Converting writeback linked lists to a tree based data structure
+Message-ID: <20080116223510.GY155407@sgi.com>
+References: <20080115080921.70E3810653@localhost> <1200386774.15103.20.camel@twins> <532480950801150953g5a25f041ge1ad4eeb1b9bc04b@mail.gmail.com> <400452490.28636@ustc.edu.cn> <20080115194415.64ba95f2.akpm@linux-foundation.org> <400457571.32162@ustc.edu.cn> <20080115204236.6349ac48.akpm@linux-foundation.org> <400459376.04290@ustc.edu.cn> <20080115215149.a881efff.akpm@linux-foundation.org> <E1JF4Ey-0000x4-5p@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0801161026550.2806@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <E1JF4Ey-0000x4-5p@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 16, 2008 at 10:39:00AM -0800, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 16 Jan 2008, Johannes Weiner wrote:
+On Wed, Jan 16, 2008 at 05:07:20PM +0800, Fengguang Wu wrote:
+> On Tue, Jan 15, 2008 at 09:51:49PM -0800, Andrew Morton wrote:
+> > > Then to do better ordering by adopting radix tree(or rbtree
+> > > if radix tree is not enough),
 > > 
-> > is there any reason why kfree() takes a const pointer just to degrade it
-> > with the call to slab_free()/__cache_free() again?  The promise that the
-> > pointee is not modified is just bogus in this case, anyway, isn't it?
+> > ordering of what?
 > 
-> "const" has *never* been about the thing not being modified. Forget all 
-> that claptrap. C does not have such a notion.
+> Switch from time to location.
+
+Note that data writeback may be adversely affected by location
+based writeback rather than time based writeback - think of
+the effect of location based data writeback on an app that
+creates lots of short term (<30s) temp files and then removes
+them before they are written back.
+
+Also, data writeback locatio cannot be easily derived from
+the inode number in pretty much all cases. "near" in terms
+of XFS means the same AG which means the data could be up to
+a TB away from the inode, and if you have >1TB filesystems
+usingthe default inode32 allocator, file data is *never*
+placed near the inode - the inodes are in the first TB of
+the filesystem, the data is rotored around the rest of the
+filesystem.
+
+And with delayed allocation, you don't know where the data is even
+going to be written ahead of the filesystem ->writepage call, so you
+can't do optimal location ordering for data in this case.
+
+> > > and lastly get rid of the list_heads to
+> > > avoid locking. Does it sound like a good path?
+> > 
+> > I'd have thaought that replacing list_heads with another data structure
+> > would be a simgle commit.
 > 
-> "const" is a pointer type issue, and is meant to make certain mis-uses 
-> more visible at compile time. It has *no* other meaning, and anybody who 
-> thinks it has is just setting himself up for problems.
+> That would be easy. s_more_io and s_more_io_wait can all be converted
+> to radix trees.
 
-I totally agree with the above.
+Makes sense for location based writeback of the inodes themselves,
+but not for data.
 
-> 
-> In the particular case of kfree(), the pointer argument *should* be const, 
-> and the fact that the C library gets this wrong is not the kernels 
-> problem, it's a problem with the C library.
+Hmmmm - I'm wondering if we'd do better to split data writeback from
+inode writeback. i.e. we do two passes.  The first pass writes all
+the data back in time order, the second pass writes all the inodes
+back in location order.
 
-Here, I'm not so sure.
+Right now we interleave data and inode writeback, (i.e.  we do data,
+inode, data, inode, data, inode, ....). I'd much prefer to see all
+data written out first, then the inodes. ->writepage often dirties
+the inode and hence if we need to do multiple do_writepages() calls
+on an inode to flush all the data (e.g. congestion, large amounts of
+data to be written, etc), we really shouldn't be calling
+write_inode() after every do_writepages() call. The inode
+should not be written until all the data is written....
 
-> 
-> Why?
-> 
->  - From a very obvious and very *real* caller perspective, "free()" really 
->    doesn't change the thing the pointer points to. It does something 
->    totally different: it makes the *pointer* itself invalid.
+Cheers,
 
-I'm OK with this.
-
-> 
->    In other words, if you think that "kfree()" changed the thing you 
->    free'd, you're simply wrong. It did no such thing. The memory is 100% 
->    the same, it's just that you cannot access it any more, and if you try, 
->    you'll get somebody elses memory.
-
-This too.
-
-> 
->    In other words, "kfree()" can be const.
-
-Err, not sure.
-
-> 
->  - Anything that *can* take a const pointer should always do so.
-> 
->    Why? Because we want the types to be as tight as possible, and normal 
->    code should need as few casts as possible.
-
-OK
-
-> 
->    Here's a question for you: let's say that you have a structure that 
->    has a member that is never changed. To make that obvious, and to allow 
->    the compiler to warn about mis-use of a pointer, the structure should 
->    look something like
-> 
-> 		struct mystruct {
-> 			const char *name;
-> 			..
-> 
->    and let's look at what happens if the allocation of that const thing is 
->    dynamic.
-> 
->    The *correct* way to do that is:
-> 
-> 		char *name = kmalloc(...)
-> 		/* Fill it in */
-> 		snprintf(name, ...)
-> 		mystruct->name = name;
-> 
->    and there are no casts anywhere, and you get exactly the semantics you 
->    want: "name" itself isn't constant (it's obviously modified), but at 
->    the same time the type system makes it very clear that trying to change 
->    it through that mystruct member pointer is wrong.
-> 
->    How do you free it?
-> 
->    That's right, you do:
-> 
-> 		kfree(mystruct->name);
-
-This is where I disagree. If a struct has a constant pointer to it, then
-the usage of that pointer by the struct should never modify it. If I
-need to allocate memory for a name to a struct, I would not expect that
-struct to ever free it.
-
-Let's use your example. I'll assume that the struct was created by some
-constructor and the destructor freed it. I'd argue the correct way would
-be to have the kfree with a typecast.
-
-Why?
-
-  - const pointers (especially strings) should be able to point to
-    static data. One thing that we would like to avoid is:
-
-    mystruct->name = "myobj";
-	...
-    kfree(mystruct->name);
-
-  - really, kfree should match kmalloc for types. What kmalloc returns
-    should be what kfree accepts.  Passing in a const pointer to kfree
-    *should* be a red flag that something might not be right.
-
-> 
->    and this is why "kfree()" should take a const pointer. If it doesn't, 
->    you have to add an *incorrect* and totally useless cast to code that 
->    was correct.
-
-    char *name = kmalloc(...);
-	...
-    mystruct->name = name; /* this is an implicit cast */
-
-    So adding a cast to kfree isn't incorrect. C automatically casts
-    name to a const pointer, which means if we want to free it, then
-    we should cast it back.
-
-> 
-> So never believe that "const" is some guarantee that the memory under the 
-> pointer doesn't change.  That is *never* true. It has never been true in 
-> C, since there can be arbitrary pointer aliases to that memory that aren't 
-> actually const. If you think "const *p" means that the memory behind "p" 
-> is immutable, you're simply wrong.
-
-Again, I totally agree with the above.
-
-> 
-> Anybody who thinks that kfree() cannot (or should not) be const doesn't 
-> understand the C type system.
-
-OK, I think that kfree should not be const, but not because of the
-explanation that you gave, but because of the C type system in general.
-
-kfree should match the kmalloc type. We don't declare
-
-  const void *kmalloc(...)
-
-so we shouldn't do the same with kfree. If you assign a const pointer to
-something from kmalloc, C implicitly does the cast. This doesn't mean
-that we should ignore doing the cast back in kfree. Especially since
-this could help us avoid the kfree("mystring") issue.
-
-Just my $0.02
-
--- Steve
-
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
