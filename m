@@ -1,79 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755084AbYAPPnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754519AbYAPPou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755084AbYAPPnA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 10:43:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbYAPPms
+	id S1754519AbYAPPou (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 10:44:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbYAPPoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 10:42:48 -0500
-Received: from py-out-1112.google.com ([64.233.166.177]:20981 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752742AbYAPPmq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 10:42:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=uUc5DA57uEOnV4Zv/PpG5qQK9jk4+HzR5aWux8jUXgnR/cVD8zzppPSFkEXjx/upk2uGeJDo9Xt04RirVZbn8gYZV4lAi2fH5OEyhzupW7QhMZiux8US0j0lVBNqtkWqSRSfvkSw+BzbmKv7Ih1lQ8OYrg8VCa0Ni3pqgVXl2Vs=
-Date: Wed, 16 Jan 2008 10:42:42 -0500
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: linux-input@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Pettersson <william.pettersson@gmail.com>
-Subject: Re: [BISECTED] Re: psmouse.c: GlidePoint at isa0060/serio1/input0
-	lost sync at byte 1
-Message-ID: <20080116104024.ZZRA012@mailhub.coreip.homeip.net>
-References: <19f34abd0711141226n60323630rdc4833db0bfb2eeb@mail.gmail.com> <19f34abd0801071224kb9cb121u244b00b274231db0@mail.gmail.com> <d120d5000801110647k4b1fa49ene974898baf745aec@mail.gmail.com> <478CFB56.1030700@gmail.com> <20080115154142.ZZRA012@mailhub.coreip.homeip.net>
+	Wed, 16 Jan 2008 10:44:44 -0500
+Received: from lizzard.sbs.de ([194.138.37.39]:23829 "EHLO lizzard.sbs.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751810AbYAPPon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 10:44:43 -0500
+Message-ID: <478E2662.2070606@siemens.com>
+Date: Wed, 16 Jan 2008 16:44:34 +0100
+From: Jan Kiszka <jan.kiszka@siemens.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080115154142.ZZRA012@mailhub.coreip.homeip.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Jason Wessel <jason.wessel@windriver.com>
+CC: Jan Kiszka <jan.kiszka@web.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: State of kgdb on x86-64
+References: <478BB35B.9060507@siemens.com> <478BB74E.6020506@windriver.com> <478C786A.3090709@siemens.com> <478CB724.3000900@windriver.com> <478CFF08.1090608@web.de> <478D839A.4010201@windriver.com>
+In-Reply-To: <478D839A.4010201@windriver.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 15, 2008 at 03:49:12PM -0500, Dmitry Torokhov wrote:
-> Hi Vegard,
+Jason Wessel wrote:
+> Jan Kiszka wrote:
+>> Jason Wessel wrote:
+>>   
+>>> Jan Kiszka wrote:
+>>>     
+>>>> Jason Wessel wrote:
+>>>>   
+>>>>       
+>>>>> It was working at the point that I tested it with the 2.6.24-rc5 on
+>>>>> x86_64.  However I suspect my kernel config may differ drastically from
+>>>>> what you are using.
+>>>>>
+>>>>> Without any other context provided than the generic message, it is hard
+>>>>> to know what might have happened. 
+>>>>>     
+>>>>>         
+>>>> Here is the promised .config. I could also dig out the backtrace of the
+>>>> panic as kgdb sees it if that helps, just let me know.
+>>>>
+>>>> Jan
+>>>>
+>>>>   
+>>>>       
+>>> The backtrace might be very telling as to what happened.  More
+>>> information is always better than less :-)
+>>>
+>>>     
+>> My primary test box is again out of reach, but meanwhile I was able to
+>> reproduce some kind of problem under QEMU - that one at least is
+>> triggered by SMP. With only one CPU -> all apparently fine. Once booting
+>> QEMU with "-smp 2" -> this happens:
+>>
+>> (gdb) tar remote /dev/pts/6
+>> Remote debugging using /dev/pts/6
+>> Not all CPUs have been synced for KGDB
+>> breakpoint () at kernel/kgdb.c:1895
+>> 1895            wmb(); /* Sync point after breakpoint */
+>> (gdb) c
+>> Continuing.
+>> Not all CPUs have been synced for KGDB
+>> [New Thread 32769]
+>>
+>> Program received signal SIGFPE, Arithmetic exception.
+>> [Switching to Thread 32769]
+>> 0xffffffff8020adb7 in default_idle () at include/asm/irqflags_64.h:140
+>> 140             __asm__ __volatile__("sti; hlt" : : : "memory");
+>> (gdb) bt
+>> #0  0xffffffff8020adb7 in default_idle () at include/asm/irqflags_64.h:140
+>> #1  0xffffffff8020ae65 in cpu_idle () at arch/x86/kernel/process_64.c:225
+>> #2  0xffffffff8021ccb9 in start_secondary () at arch/x86/kernel/smpboot_64.c:375
+>> #3  0x0000000000000000 in ?? ()
+>> (gdb)                                                                                     
+>>
+>> The problem seems to be related to continuing SMP boxes. I'm able to
+>> boot my box up if I leave kgdb unattached. But when I then later attach
+>> and continue execution, I get the same crash. Any ideas what goes wrong,
+>> any suggestion where to start digging? Maybe at "Not all CPUs have been
+>> synched"?
+>>   
 > 
-> On Tue, Jan 15, 2008 at 07:28:38PM +0100, Vegard Nossum wrote:
-> > # up/down scroll button
-> > drivers/input/serio/i8042.c: 9c <- i8042 (interrupt, 0, 1) [592682]
-> > drivers/input/serio/i8042.c: df <- i8042 (interrupt, 1, 12) [596318]
-> > psmouse.c: GlidePoint at isa0060/serio1/input0 lost sync at byte 1
-> > drivers/input/serio/i8042.c: 21 <- i8042 (interrupt, 1, 12) [596321]
-> > psmouse.c: GlidePoint at isa0060/serio1/input0 lost sync at byte 1
-> > drivers/input/serio/i8042.c: 20 <- i8042 (interrupt, 1, 12) [596323]
-> > psmouse.c: GlidePoint at isa0060/serio1/input0 lost sync at byte 1
-> > drivers/input/serio/i8042.c: 18 <- i8042 (interrupt, 1, 12) [596325]
-> > drivers/input/serio/i8042.c: 67 <- i8042 (interrupt, 1, 12) [596328]
-> > drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 1, 12) [596331]
+> Generally speaking when you get an error that the CPUs have not been
+> synced, it means that the IPI which was sent to all the non-master
+> processors failed.  I took a quick look and it appears that the DIE_TRAP
+> is occuring after kgdb sends the IPI to the non master cores with the call:
 > 
-> Thank you for the debug data. It looks like the scroll buttons on your
-> box send 0xdf instead of 0xcf. That should be pretty easy to fix, please
-> stay tuned.
+>     send_IPI_allbutself(APIC_DM_NMI);
 > 
+> In prior kernels that ultimately resulted in an NMI trap.  I am not sure
+> of the cause of the DIE_TRAP as a result of the IPI.  For now, if you
+> add the statement "case DIE_TRAP:" right before "    case
+> DIE_NMIWATCHDOG:" in arch/x86/kernel/kgdb_64.c it will sync te
+> processors, however the kernel should not be trapping for this error
+> code from the IPI event.  I suspect there has been some kind of change
+> to the way the IPI/NMI handling is being done in the latest kernels.
 
-Ok, how about this one to begin with?
+Things I found out so far:
 
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
- drivers/input/mouse/alps.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ - delivery of this IPI under QEMU somehow doesn't work
+   (I would dare to say: at emulation level. But I'm not sure yet.)
 
-Index: linux/drivers/input/mouse/alps.c
-===================================================================
---- linux.orig/drivers/input/mouse/alps.c
-+++ linux/drivers/input/mouse/alps.c
-@@ -54,7 +54,7 @@ static const struct alps_model_info alps
- 	{ { 0x20, 0x02, 0x0e },	0xf8, 0xf8, ALPS_PASS | ALPS_DUALPOINT }, /* XXX */
- 	{ { 0x22, 0x02, 0x0a },	0xf8, 0xf8, ALPS_PASS | ALPS_DUALPOINT },
- 	{ { 0x22, 0x02, 0x14 }, 0xff, 0xff, ALPS_PASS | ALPS_DUALPOINT }, /* Dell Latitude D600 */
--	{ { 0x73, 0x02, 0x50 }, 0xcf, 0xff, ALPS_FW_BK_1 } /* Dell Vostro 1400 */
-+	{ { 0x73, 0x02, 0x50 }, 0xcf, 0xcf, ALPS_FW_BK_1 } /* Dell Vostro 1400 */
- };
- 
- /*
+ - the breakdown of my Xeon box with kdbg is a separate issue
+
+ - stuffing my Xeon kernel into QEMU triggers the original bug there
+   too, even under UP => debugging with QEMU should be feasible
+
+But I'm first trying to identify the related config switch that makes it
+pop up, because this mostly means compiling and quick testing (I can't
+spent my full time on it yet). Will let you know about news, and I would
+appreciate to hear from you if you have any updates.
+
+Jan
 
 -- 
-Dmitry
+Siemens AG, Corporate Technology, CT SE 2
+Corporate Competence Center Embedded Linux
